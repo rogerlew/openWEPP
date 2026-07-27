@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
 import subprocess
 import sys
@@ -28,6 +29,7 @@ OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 TOKEN = OBJECTS / "holdout-opened-once.lock"
 RECEIPTS = OBJECTS / "freeze-receipts"
 EXECUTOR = Path("/nonexistent/cal04b-execution-root-required")
+CUSTODY = Path("/nonexistent/cal04b-custody-root-required")
 HARVARD = ROOT / "tests/fixtures/cancov_forest/harvard_deciduous_ma"
 TIMING = ROOT / "docs/work-packages/20260726-canopy-cal-04-05-authority-evidence-admission-001/artifacts/cal04-timing-windows.csv"
 
@@ -73,10 +75,21 @@ def preflight() -> str:
     )
     observe.validate_prefix("freeze_barrier")
     digest, _members = validate_freeze(
-        SOURCE_ARTIFACTS / "holdout-freeze-manifest.csv",
-        SOURCE_ARTIFACTS / "holdout-freeze-digest.txt",
-        _frozen_bundle_root(SOURCE_ARTIFACTS / "holdout-freeze-manifest.csv"),
+        ARTIFACTS / "holdout-freeze-manifest.csv",
+        ARTIFACTS / "holdout-freeze-digest.txt",
+        _frozen_bundle_root(ARTIFACTS / "holdout-freeze-manifest.csv"),
     )
+    calibration = json.loads((CUSTODY / "calibration-v1.receipt.json").read_bytes())
+    if (
+        calibration.get("transaction_id") != "calibration-v1"
+        or calibration.get("result") != "PASS"
+    ):
+        raise ValueError("Generation-B calibration receipt is not passing")
+    freeze_receipt = json.loads((CUSTODY / "freeze.receipt.json").read_bytes())
+    if freeze_receipt.get("result") != "PASS" or freeze_receipt.get(
+        "freeze_digest"
+    ) != digest:
+        raise ValueError("Generation-B freeze receipt differs from frozen digest")
     receipt_paths = [RECEIPTS / "verifier_a.csv", RECEIPTS / "verifier_b.csv"]
     expected_commands = {
         verifier_id: verifier_command(verifier_id)
@@ -89,12 +102,14 @@ def preflight() -> str:
         expected_commands,
     )
     summary = read_csv_exact(
-        SOURCE_ARTIFACTS / "freeze-verifier-receipts.csv",
+        ARTIFACTS / "freeze-verifier-receipts.csv",
         RECEIPT_FIELDS,
     )
     if summary != rows:
         raise ValueError("published verifier barrier differs from immutable receipts")
-    with (SOURCE_ARTIFACTS / "accepted-calibration-ensemble.csv").open(newline="", encoding="utf-8") as stream:
+    with (ARTIFACTS / "accepted-calibration-ensemble.csv").open(
+        newline="", encoding="utf-8"
+    ) as stream:
         if sum(1 for _ in csv.DictReader(stream)) == 0:
             raise ValueError("accepted ensemble is empty")
     return digest
@@ -147,7 +162,7 @@ def record_incomplete(digest: str) -> None:
 
 
 def validate_harvard_after_open() -> None:
-    expected = SOURCE_ARTIFACTS / "harvard-expected-input-manifest.csv"
+    expected = ARTIFACTS / "harvard-expected-input-manifest.csv"
     rows = read_csv_exact(expected, ["path", "expected_git_blob", "state"])
     if len(rows) != 6:
         raise ValueError("expected six sealed Harvard input identities")
@@ -173,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--execution-root", type=Path, required=True)
     parser.add_argument("--opening-token", type=Path)
     parser.add_argument("--custody-root", type=Path, required=True)
+    parser.add_argument("--preflight-only", action="store_true")
     options = parser.parse_args(argv)
     execution_root = options.execution_root.resolve(strict=True)
     if not execution_root.is_dir():
@@ -187,14 +203,18 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("opening token escapes custody root") from None
     if opening_token.exists() or opening_token.is_symlink():
         raise ValueError("opening token already exists")
-    global ARTIFACTS, OBJECTS, TOKEN, RECEIPTS, EXECUTOR
+    global ARTIFACTS, OBJECTS, TOKEN, RECEIPTS, EXECUTOR, CUSTODY
     ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     OBJECTS = execution_root
     TOKEN = opening_token
     RECEIPTS = custody_root / "freeze-receipts"
+    CUSTODY = custody_root
     EXECUTOR = attempt_root / "cargo-target/release"
     digest = preflight()
+    if options.preflight_only:
+        print(f"PASS holdout preflight sealed digest={digest}")
+        return 0
     # Recheck mutable output targets immediately before the irreversible token.
     validate_unopened_targets()
     create_token(digest)
@@ -206,8 +226,8 @@ def main(argv: list[str] | None = None) -> int:
         identity = holdout_root / "harvard-gsi-identity.csv"
         producer_command = [
             str(EXECUTOR / "holdout-producer"),
-            "--configs", str(SOURCE_ARTIFACTS / "candidate-configurations.csv"),
-            "--accepted", str(SOURCE_ARTIFACTS / "accepted-calibration-ensemble.csv"),
+            "--configs", str(ARTIFACTS / "candidate-configurations.csv"),
+            "--accepted", str(ARTIFACTS / "accepted-calibration-ensemble.csv"),
             "--climate", str(HARVARD / "p6.cli"),
             "--trace", str(trace), "--identity", str(identity),
         ]
@@ -219,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
             str(EXECUTOR / "holdout-reconstruct"),
             "--trace", str(trace), "--calendar", str(trace.with_suffix(".calendar.csv")),
             "--identity", str(identity),
-            "--accepted", str(SOURCE_ARTIFACTS / "accepted-calibration-ensemble.csv"),
+            "--accepted", str(ARTIFACTS / "accepted-calibration-ensemble.csv"),
             "--observations", str(TIMING),
             "--observation-out", str(observation_out), "--annual-out", str(annual_out),
             "--result-out", str(result_out),
@@ -230,10 +250,10 @@ def main(argv: list[str] | None = None) -> int:
             "freeze_digest": digest,
             "token_sha256": sha(TOKEN),
             "expected_input_manifest_sha256": sha(
-                SOURCE_ARTIFACTS / "harvard-expected-input-manifest.csv"
+                ARTIFACTS / "harvard-expected-input-manifest.csv"
             ),
             "accepted_ensemble_sha256": sha(
-                SOURCE_ARTIFACTS / "accepted-calibration-ensemble.csv"
+                ARTIFACTS / "accepted-calibration-ensemble.csv"
             ),
             "trace_sha256": sha(trace),
             "trace_identity_sha256": sha(identity),
@@ -262,7 +282,7 @@ Evidence class: `Ran`
 - Freeze digest: `{digest}`
 - Opened: `{datetime.now(timezone.utc).isoformat()}`
 - Expected Harvard identities: `PASS`
-- Accepted ensemble SHA-256: `{sha(SOURCE_ARTIFACTS / 'accepted-calibration-ensemble.csv')}`
+- Accepted ensemble SHA-256: `{sha(ARTIFACTS / 'accepted-calibration-ensemble.csv')}`
 - Holdout trace SHA-256: `{sha(trace)}`
 - Holdout trace identity SHA-256: `{sha(identity)}`
 - Observation components SHA-256: `{sha(observation_out)}`

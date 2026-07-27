@@ -34,17 +34,18 @@ Correction gates on the integrated worktree:
 
 | Gate | Result |
 |---|---|
-| gate-planner Nextest | PASS, 199/199; 14 skipped; run `62860f41-5a98-415f-8a00-b550fedc25f8` |
+| gate-planner Nextest | PASS, 209/209; 14 skipped; run `61878fbf-04cf-4798-9b20-354e5defd2a3` |
 | gate-planner all-target/all-feature Clippy with `-D warnings` | PASS |
-| CAL Python discovery | PASS, 26/26 |
+| CAL Python discovery | PASS, 28/28 |
 | CAL executor Rust tests | PASS, 22/22 |
 | CAL executor warnings-denied Clippy | PASS |
 | exact-base and worktree diff hygiene | PASS |
 | Rust formatting and all gate-policy JSON parsing | PASS |
-| exact dual-CSV reconstruction | PASS, plan `64a95a1e878bfa2bd71436159de6874b13074c5f71be1b116f5a3c281bcde9a4` |
+| exact dual-CSV reconstruction | PASS, plan `7be0f9139d65cf0f789a18b766067ccfc4ad47814f1c448f8c95e9963224495d` |
 | real LIGHT -> evaluated READY -> HEAVY subprocess fixture | PASS |
 | descriptor-relative publication/race fixtures | PASS |
-| real reconstruct/verify/readiness dual-root equivalence | PASS |
+| real readiness successful dual-root equivalence | PASS, 4,644 memberships |
+| reconstruct/verify dual-root path equivalence | PASS for matched failure paths; successful production-sized execution deferred to the authenticated CAL transaction |
 
 All `GED-R01` through `GED-R16` have implemented corrections and passing
 focused consumer/adversarial evidence. Independent re-review remains mandatory
@@ -55,6 +56,13 @@ STARTED-before-validation with balanced terminal lifecycle, exhaustive confined
 output manifests, independent verification, journaled publication/recovery,
 two-generation custody admission, external execution-root injection, and
 path-only CAL executor changes.
+
+Successful production reconstruct and verify execution requires the canonical
+4,320,812,180-byte trace. The focused gate therefore proves identical external
+and repository-root behavior for their reachable failure paths, while static
+review confines the changes to output-root selection. This is not represented
+as successful workflow evidence; the authenticated CAL transaction remains the
+consumer-path proof. See `external-dag-path-equivalence.md` in the CAL package.
 
 The Generation-A plan intentionally has empty holdout custody bindings.
 Execution must reject `holdout-v1` until post-freeze Generation B binds the

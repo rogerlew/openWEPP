@@ -69,7 +69,7 @@ class ExecutePrefixTest(unittest.TestCase):
 
     def generation_fixture(
         self, root: Path
-    ) -> tuple[Path, Path, list[Path], Path, Path]:
+    ) -> tuple[Path, Path, list[Path], Path, Path, Path]:
         repository = root / "source"
         repository.mkdir()
         base_plan = repository / "generation-a.json"
@@ -91,6 +91,9 @@ class ExecutePrefixTest(unittest.TestCase):
             cwd=repository,
             check=True,
         )
+        planner = root / "verify-plan"
+        planner.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        planner.chmod(0o755)
         custody = root / "custody"
         (custody / "capabilities").mkdir(parents=True)
         (custody / "freeze-receipts").mkdir()
@@ -109,6 +112,9 @@ class ExecutePrefixTest(unittest.TestCase):
         )
         freeze = custody / "freeze.receipt.json"
         freeze_value = {
+            "calibration_receipt_sha256": hashlib.sha256(
+                calibration.read_bytes()
+            ).hexdigest(),
             "freeze_digest": "b" * 64,
             "freeze_receipt_id": "",
             "result": "PASS",
@@ -160,19 +166,19 @@ class ExecutePrefixTest(unittest.TestCase):
                 encoding="utf-8",
             )
             attestations.append(path)
-        return custody, calibration, attestations, freeze, base_plan
+        return custody, calibration, attestations, freeze, base_plan, planner
 
     def test_generation_b_binds_exact_custody_and_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            custody, calibration, attestations, freeze, base_plan = (
+            custody, calibration, attestations, freeze, base_plan, planner = (
                 self.generation_fixture(root)
             )
             first = MODULE.build_generation_b(
-                base_plan, calibration, freeze, attestations, custody
+                base_plan, calibration, freeze, attestations, custody, planner
             )
             second = MODULE.build_generation_b(
-                base_plan, calibration, freeze, attestations, custody
+                base_plan, calibration, freeze, attestations, custody, planner
             )
             output = root / "generation-b.json"
             subprocess.run(
@@ -195,6 +201,8 @@ class ExecutePrefixTest(unittest.TestCase):
                     str(custody),
                     "--output",
                     str(output),
+                    "--planner",
+                    str(planner),
                 ],
                 check=True,
                 capture_output=True,
@@ -236,7 +244,7 @@ class ExecutePrefixTest(unittest.TestCase):
     def test_generation_b_rejects_attestation_replay_and_receipt_drift(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            custody, calibration, attestations, freeze, base_plan = (
+            custody, calibration, attestations, freeze, base_plan, planner = (
                 self.generation_fixture(root)
             )
             with self.assertRaises(ValueError):
@@ -246,12 +254,25 @@ class ExecutePrefixTest(unittest.TestCase):
                     freeze,
                     [attestations[0], attestations[0]],
                     custody,
+                    planner,
                 )
             receipt = custody / "freeze-receipts/verifier_a.csv"
             receipt.write_text("state\nDRIFT\n", encoding="utf-8")
             with self.assertRaises(ValueError):
                 MODULE.build_generation_b(
-                    base_plan, calibration, freeze, attestations, custody
+                    base_plan, calibration, freeze, attestations, custody, planner
+                )
+
+    def test_generation_b_rejects_receipt_rejected_by_rust_verifier(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            custody, calibration, attestations, freeze, base_plan, planner = (
+                self.generation_fixture(root)
+            )
+            planner.write_text("#!/bin/sh\nexit 23\n", encoding="utf-8")
+            with self.assertRaises(subprocess.CalledProcessError):
+                MODULE.build_generation_b(
+                    base_plan, calibration, freeze, attestations, custody, planner
                 )
 
     def test_coordinator_cli_rejects_existing_attempt_before_planner_build(self) -> None:

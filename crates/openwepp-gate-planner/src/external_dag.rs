@@ -14,10 +14,13 @@ use crate::canonical::{canonical_bytes, derived_id, digest, parse_strict, valida
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::external_outputs::{
-    OutputManifest, manifest_declared_outputs, prepare_attempt_root, verify_historical_manifest,
+    OutputManifest, manifest_declared_outputs, manifest_reserved_cache, prepare_attempt_root,
+    verify_historical_manifest,
 };
 use crate::package_validation::validate_package;
-use crate::pre_heavy::{ConstructedAudit, append_attempt_record, reconcile_orphaned_attempts};
+use crate::pre_heavy::{
+    ConstructedAudit, admit_attempt_ledger, append_attempt_record, reconcile_orphaned_attempts,
+};
 
 pub const EXTERNAL_PLAN_SCHEMA: &str = "openwepp-external-dag-plan-v1";
 const EXTERNAL_AUDIT_SCHEMA: &str = "openwepp-external-pre-heavy-audit-v1";
@@ -92,6 +95,8 @@ pub struct ExternalNode {
     #[serde(default)]
     pub env: BTreeMap<String, String>,
     pub cwd: String,
+    pub source_working_directory: String,
+    pub source_inputs: Vec<String>,
     #[serde(default)]
     pub prerequisites: Vec<String>,
     pub cost_class: String,
@@ -153,6 +158,8 @@ pub struct ExternalNodeReceipt {
     pub exit_code: i32,
     pub result: String,
     pub output_manifest: OutputManifest,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub build_cache_manifest: Option<OutputManifest>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -425,7 +432,7 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
     verify_source_bindings(&options.repo, &plan)?;
     verify_node_sources(&options.repo, transaction)?;
     verify_custody(transaction)?;
-    let custody_receipts = verify_custody_files(options, transaction)?;
+    let custody_receipts = verify_custody_files(options, transaction, true)?;
     let source_before = repository_identity(&options.repo)?;
     let light = execute_stage(
         options,
@@ -435,6 +442,7 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
         &source_before,
         custody_receipts,
         &attempt_identity,
+        BTreeSet::new(),
     )?;
     let light_value = serde_json::to_value(&light)
         .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SERIALIZE", error))?;
@@ -454,7 +462,7 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
         &options.receipt_path.with_extension("light.json"),
         &light_value,
     )?;
-    let audit = construct_ready_audit(
+    let audit_report = construct_audit_report(
         options,
         &plan,
         transaction,
@@ -464,20 +472,23 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
     )?;
     persist_exclusive(
         &options.receipt_path.with_extension("audit.json"),
-        audit.as_value(),
+        &audit_report,
     )?;
-    let started = append_started(options, &plan, &audit)?;
-    let outcome = execute_heavy_after_started(
-        options,
-        &plan,
-        transaction,
-        &audit,
-        &light,
-        &source_before,
-        &started,
-        &attempt_identity,
-    );
-    close_started(options, &plan, &audit, &started, outcome)
+    let started = append_started(options, &plan, &audit_report)?;
+    let outcome = (|| {
+        let audit = ConstructedAudit::from_external(audit_report.clone())?;
+        execute_heavy_after_started(
+            options,
+            &plan,
+            transaction,
+            &audit,
+            &light,
+            &source_before,
+            &started,
+            &attempt_identity,
+        )
+    })();
+    close_started(options, &plan, &audit_report, &started, outcome)
 }
 
 fn validate_external_paths(options: &ExternalTransitionOptions) -> Result<()> {
@@ -541,6 +552,10 @@ fn validate_external_paths(options: &ExternalTransitionOptions) -> Result<()> {
 ///
 /// Returns a typed receipt error for identity, inventory, audit, result, or
 /// external-output drift.
+#[allow(
+    clippy::too_many_lines,
+    reason = "independent verification keeps the complete trust reconstruction visible in one fail-closed sequence"
+)]
 pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<()> {
     let plan = load_plan(plan_path)?;
     let repo = if plan.generation == "B" {
@@ -552,6 +567,21 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         discover_repository(plan_path)?
     };
     validate_plan_generation(&repo, plan_path, &plan)?;
+    require_base_ancestor(&repo, &plan.authority.base_commit)?;
+    let live_package_audit = validate_package(
+        &repo,
+        &plan.authority.base_commit,
+        Path::new(&plan.authority.package_path),
+    )?;
+    if live_package_audit["status"] != "READY" {
+        return Err(policy_error(
+            "GATE-EXTERNAL-PACKAGE-BLOCKED",
+            "live package admission is not READY",
+        ));
+    }
+    verify_cheap_evidence(&repo, &plan.authority.cheap_gate_evidence)?;
+    verify_source_bindings(&repo, &plan)?;
+    reconstruct_source_inventory(&repo, &plan)?;
     if receipt["schema"] != EXTERNAL_RECEIPT_SCHEMA
         || receipt["result"] != "PASS"
         || derived_id(receipt, "receipt_id")? != receipt["receipt_id"]
@@ -590,6 +620,9 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         opening_token: receipt["opening_token"].as_str().map(PathBuf::from),
         claims: execution_claims_from_value(&receipt["claims"])?,
     };
+    verify_node_sources(&options.repo, transaction)?;
+    verify_custody(transaction)?;
+    let custody_receipts = verify_custody_files(&options, transaction, false)?;
     if receipt["attempt_root_identity"] != directory_identity(&options.attempt_root)? {
         return Err(policy_error(
             "GATE-EXTERNAL-ROOT-REPLACED",
@@ -597,7 +630,7 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         ));
     }
     let mut declared = Vec::new();
-    let mut prerequisite_ids = BTreeMap::new();
+    let mut prerequisite_ids = custody_receipts;
     verify_receipt_stage(
         &transaction.light,
         &receipt["light"],
@@ -618,13 +651,25 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         || receipt["audit"]["status"] != "READY"
         || derived_id(&receipt["audit"], "audit_id")? != receipt["audit"]["audit_id"]
         || receipt["audit"]["light_receipts"] != receipt["light"]
+        || receipt["audit"]["attempt_root"] != receipt["attempt_root"]
+        || receipt["audit"]["attempt_root_identity"] != receipt["attempt_root_identity"]
+        || receipt["audit"]["ledger"] != receipt["ledger"]
+        || receipt["audit"]["custody_root"] != receipt["custody_root"]
+        || receipt["audit"]["claims"] != receipt["claims"]
+        || receipt["audit"]["package_audit"] != live_package_audit
+        || receipt["audit"]["node_identities"]
+            != json!(collect_node_identities(&options, transaction)?)
+        || receipt["audit"]["source_identity"] != receipt["source_before"]
         || receipt["source_before"] != receipt["source_after"]
+        || receipt["source_after"] != json!(repository_identity(&options.repo)?)
     {
         return Err(policy_error(
             "GATE-EXTERNAL-RECEIPT-AUDIT",
             "embedded READY audit or source identity mismatch",
         ));
     }
+    verify_external_ledger_chain(&options, &plan, receipt)?;
+    verify_opening_token_custody_receipt(&options, transaction, &receipt["opening_token_custody"])?;
     Ok(())
 }
 
@@ -685,7 +730,7 @@ fn verify_receipt_stage(
         }
         let expected_environment = admitted_environment(options, node)?;
         let expected_executable = resolve_executable(&expected_argv[0], &expected_environment)?;
-        let expected_executable_sha256 = file_sha256(&expected_executable)?;
+        let expected_executable_sha256 = executable_sha256(&expected_executable)?;
         if receipt.prerequisite_receipt_ids.len() != node.prerequisites.len() {
             return Err(policy_error(
                 "GATE-EXTERNAL-RECEIPT-PREREQUISITES",
@@ -693,9 +738,7 @@ fn verify_receipt_stage(
             ));
         }
         for (index, prerequisite) in node.prerequisites.iter().enumerate() {
-            if prior_receipts.get(prerequisite).is_some_and(|expected| {
-                receipt.prerequisite_receipt_ids.get(index) != Some(expected)
-            }) {
+            if prior_receipts.get(prerequisite) != receipt.prerequisite_receipt_ids.get(index) {
                 return Err(policy_error(
                     "GATE-EXTERNAL-RECEIPT-PREREQUISITES",
                     &node.command_id,
@@ -719,6 +762,21 @@ fn verify_receipt_stage(
         }
         declared_so_far.extend(node.declared_outputs.iter().map(PathBuf::from));
         verify_historical_manifest(&options.attempt_root, &receipt.output_manifest)?;
+        match (
+            &receipt.build_cache_manifest,
+            node.command_id.starts_with("build_"),
+        ) {
+            (Some(manifest), true) => {
+                verify_historical_manifest(&build_cache_root(options, node), manifest)?;
+            }
+            (None, false) => {}
+            _ => {
+                return Err(policy_error(
+                    "GATE-EXTERNAL-BUILD-CACHE-RECEIPT",
+                    &node.command_id,
+                ));
+            }
+        }
         prior_receipts.insert(node.command_id.clone(), digest(value)?);
     }
     Ok(())
@@ -737,6 +795,89 @@ fn execution_claims_from_value(value: &Value) -> Result<ExecutionClaims> {
             .as_u64()
             .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-CLAIMS", "attempt"))?,
     })
+}
+
+fn verify_external_ledger_chain(
+    options: &ExternalTransitionOptions,
+    plan: &ExternalDagPlan,
+    receipt: &Value,
+) -> Result<()> {
+    let bytes =
+        fs::read(&options.ledger).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+    let records = bytes
+        .split(|byte| *byte == b'\n')
+        .filter(|line| !line.is_empty())
+        .map(parse_strict)
+        .collect::<Result<Vec<_>>>()?;
+    let mut previous = Value::Null;
+    for record in &records {
+        if record["previous_entry_sha256"] != previous {
+            return Err(policy_error(
+                "GATE-EXTERNAL-LEDGER-CHAIN",
+                "previous entry mismatch",
+            ));
+        }
+        let claimed = record["entry_sha256"]
+            .as_str()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-LEDGER-CHAIN", "entry_sha256"))?;
+        let mut unsigned = record.clone();
+        unsigned
+            .as_object_mut()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-LEDGER-CHAIN", "record"))?
+            .remove("entry_sha256");
+        if digest(&unsigned)? != claimed {
+            return Err(policy_error(
+                "GATE-EXTERNAL-LEDGER-CHAIN",
+                "entry digest mismatch",
+            ));
+        }
+        previous = Value::String(claimed.to_owned());
+    }
+    let audit = &receipt["audit"];
+    let started_index = records
+        .iter()
+        .position(|record| {
+            record["record_type"] == "EXTERNAL_TRANSACTION"
+                && record["status"] == "STARTED"
+                && record["stage"] == "HEAVY"
+                && record["plan_id"] == plan.plan_id
+                && record["transaction_id"] == options.transaction_id
+                && record["audit_id"] == audit["audit_id"]
+                && record["attempt_root"] == receipt["attempt_root"]
+                && record["claims"] == receipt["claims"]
+                && record["previous_entry_sha256"] == audit["ledger_head_sha256"]
+        })
+        .ok_or_else(|| {
+            policy_error(
+                "GATE-EXTERNAL-STARTED-MISSING",
+                "exact audited STARTED record missing",
+            )
+        })?;
+    let started = &records[started_index];
+    let terminal = records.get(started_index + 1).ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-TERMINAL-MISSING",
+            "balanced terminal record missing",
+        )
+    })?;
+    if started_index + 2 != records.len()
+        || terminal["record_type"] != "EXTERNAL_TRANSACTION"
+        || terminal["status"] != "CLOSED"
+        || terminal["stage"] != "HEAVY"
+        || terminal["plan_id"] != plan.plan_id
+        || terminal["transaction_id"] != options.transaction_id
+        || terminal["audit_id"] != audit["audit_id"]
+        || terminal["started_entry_sha256"] != started["entry_sha256"]
+        || terminal["attempt_root"] != receipt["attempt_root"]
+        || terminal["result"] != receipt["result"]
+        || !terminal["reason_code"].is_null()
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-LEDGER-TERMINAL",
+            "terminal record does not exactly close the audited STARTED record",
+        ));
+    }
+    Ok(())
 }
 
 fn json_string(value: &Value, name: &str) -> Result<String> {
@@ -790,6 +931,11 @@ fn execute_heavy_after_started(
         source_before,
         imported_light,
         attempt_identity,
+        light
+            .iter()
+            .filter(|receipt| receipt.build_cache_manifest.is_some())
+            .map(|receipt| receipt.command_id.clone())
+            .collect(),
     )?;
     if repository_identity(&options.repo)? != *source_before {
         return Err(policy_error(
@@ -797,6 +943,7 @@ fn execute_heavy_after_started(
             "source checkout changed during transaction",
         ));
     }
+    let opening_token_custody = create_opening_token_custody_receipt(options, transaction)?;
     let mut receipt = json!({
         "schema": EXTERNAL_RECEIPT_SCHEMA,
         "receipt_id": "",
@@ -814,6 +961,7 @@ fn execute_heavy_after_started(
         "source_after": source_before,
         "light": light,
         "heavy": heavy,
+        "opening_token_custody": opening_token_custody,
     });
     let receipt_id = derived_id(&receipt, "receipt_id")?;
     receipt["receipt_id"] = Value::String(receipt_id);
@@ -821,6 +969,10 @@ fn execute_heavy_after_started(
     Ok(receipt)
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "stage execution keeps authority, custody, cache, and root bindings explicit"
+)]
 fn execute_stage(
     options: &ExternalTransitionOptions,
     stage: &str,
@@ -829,9 +981,18 @@ fn execute_stage(
     source_before: &RepositoryIdentity,
     mut receipt_ids: BTreeMap<String, String>,
     attempt_identity: &str,
+    mut built_caches: BTreeSet<String>,
 ) -> Result<Vec<ExternalNodeReceipt>> {
     let mut receipts = Vec::new();
     for node in nodes {
+        if node.command_id.starts_with("build_")
+            && fs::symlink_metadata(build_cache_root(options, node)).is_ok()
+        {
+            return Err(policy_error(
+                "GATE-EXTERNAL-BUILD-CACHE-EXISTS",
+                &node.command_id,
+            ));
+        }
         let prerequisites = node
             .prerequisites
             .iter()
@@ -855,9 +1016,65 @@ fn execute_stage(
         let receipt_value = serde_json::to_value(&receipt)
             .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SERIALIZE", error))?;
         receipt_ids.insert(node.command_id.clone(), digest(&receipt_value)?);
+        if receipt.build_cache_manifest.is_some() {
+            built_caches.insert(node.command_id.clone());
+        }
+        verify_build_cache_namespaces(options, &built_caches)?;
         receipts.push(receipt);
     }
     Ok(receipts)
+}
+
+fn verify_build_cache_namespaces(
+    options: &ExternalTransitionOptions,
+    expected: &BTreeSet<String>,
+) -> Result<()> {
+    let root = options.attempt_root.join("build-cache");
+    if expected.is_empty() {
+        return if fs::symlink_metadata(&root).is_ok() {
+            Err(policy_error(
+                "GATE-EXTERNAL-BUILD-CACHE-UNEXPECTED",
+                &root.display().to_string(),
+            ))
+        } else {
+            Ok(())
+        };
+    }
+    let metadata = fs::symlink_metadata(&root)
+        .map_err(|error| external_error("GATE-EXTERNAL-BUILD-CACHE-READ", error))?;
+    if metadata.file_type().is_symlink() || !metadata.is_dir() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-BUILD-CACHE-TYPE",
+            &root.display().to_string(),
+        ));
+    }
+    let observed = fs::read_dir(&root)
+        .map_err(|error| external_error("GATE-EXTERNAL-BUILD-CACHE-READ", error))?
+        .map(|entry| {
+            let entry =
+                entry.map_err(|error| external_error("GATE-EXTERNAL-BUILD-CACHE-READ", error))?;
+            let metadata = entry
+                .file_type()
+                .map_err(|error| external_error("GATE-EXTERNAL-BUILD-CACHE-READ", error))?;
+            if !metadata.is_dir() || metadata.is_symlink() {
+                return Err(policy_error(
+                    "GATE-EXTERNAL-BUILD-CACHE-TYPE",
+                    &entry.path().display().to_string(),
+                ));
+            }
+            entry
+                .file_name()
+                .into_string()
+                .map_err(|_| policy_error("GATE-EXTERNAL-BUILD-CACHE-UTF8", "command ID"))
+        })
+        .collect::<Result<BTreeSet<_>>>()?;
+    if observed != *expected {
+        return Err(policy_error(
+            "GATE-EXTERNAL-BUILD-CACHE-INVENTORY",
+            &root.display().to_string(),
+        ));
+    }
+    Ok(())
 }
 
 fn execute_node(
@@ -897,7 +1114,7 @@ fn execute_node(
     fs::create_dir_all(&cwd).map_err(|error| external_error("GATE-EXTERNAL-CWD-CREATE", error))?;
     let environment = admitted_environment(options, node)?;
     let executable_path = resolve_executable(executable, &environment)?;
-    let executable_sha256 = file_sha256(&executable_path)?;
+    let executable_sha256 = executable_sha256(&executable_path)?;
     let executable_version = executable_version(&executable_path, &executable_sha256)?;
     let source_sha256 = file_sha256(&options.repo.join(&node.source_path))?;
     let mut command = Command::new(&executable_path);
@@ -932,6 +1149,13 @@ fn execute_node(
             &format!("{} exited {exit_code}", node.command_id),
         ));
     }
+    let build_cache_manifest = if node.command_id.starts_with("build_") {
+        let cache_root = build_cache_root(options, node);
+        stage_build_outputs(options, node, &cache_root)?;
+        Some(manifest_reserved_cache(&cache_root)?)
+    } else {
+        None
+    };
     if repository_identity(&options.repo)? != *source_before {
         return Err(policy_error(
             "GATE-EXTERNAL-SOURCE-MUTATION",
@@ -959,7 +1183,56 @@ fn execute_node(
         exit_code,
         result: "PASS".to_owned(),
         output_manifest,
+        build_cache_manifest,
     })
+}
+
+fn build_cache_root(options: &ExternalTransitionOptions, node: &ExternalNode) -> PathBuf {
+    options
+        .attempt_root
+        .join("build-cache")
+        .join(&node.command_id)
+}
+
+fn stage_build_outputs(
+    options: &ExternalTransitionOptions,
+    node: &ExternalNode,
+    cache_root: &Path,
+) -> Result<()> {
+    for output in &node.declared_outputs {
+        let relative = Path::new(output)
+            .strip_prefix("cargo-target")
+            .map_err(|_| policy_error("GATE-EXTERNAL-BUILD-OUTPUT", output))?;
+        if relative.as_os_str().is_empty() {
+            return Err(policy_error("GATE-EXTERNAL-BUILD-OUTPUT", output));
+        }
+        let source = cache_root.join(relative);
+        let metadata = fs::symlink_metadata(&source)
+            .map_err(|error| external_error("GATE-EXTERNAL-BUILD-OUTPUT", error))?;
+        if metadata.file_type().is_symlink() || !metadata.is_file() {
+            return Err(policy_error("GATE-EXTERNAL-BUILD-OUTPUT", output));
+        }
+        let destination = options.attempt_root.join(output);
+        let parent = destination
+            .parent()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-BUILD-OUTPUT", output))?;
+        fs::create_dir_all(parent)
+            .map_err(|error| external_error("GATE-EXTERNAL-BUILD-OUTPUT", error))?;
+        if fs::symlink_metadata(&destination).is_ok() {
+            return Err(policy_error("GATE-EXTERNAL-BUILD-OUTPUT-EXISTS", output));
+        }
+        fs::copy(&source, &destination)
+            .map_err(|error| external_error("GATE-EXTERNAL-BUILD-OUTPUT", error))?;
+        let destination_file = OpenOptions::new()
+            .read(true)
+            .open(&destination)
+            .map_err(|error| external_error("GATE-EXTERNAL-BUILD-OUTPUT", error))?;
+        destination_file
+            .sync_all()
+            .map_err(|error| external_error("GATE-EXTERNAL-BUILD-OUTPUT", error))?;
+        FileSync::sync_parent(&destination)?;
+    }
+    Ok(())
 }
 
 fn admitted_environment(
@@ -980,7 +1253,12 @@ fn admitted_environment(
         }
     }
     for (name, value) in &node.env {
-        environment.insert(name.clone(), expand_operand(options, value)?);
+        let expanded = if name == "CARGO_TARGET_DIR" && node.command_id.starts_with("build_") {
+            build_cache_root(options, node).display().to_string()
+        } else {
+            expand_operand(options, value)?
+        };
+        environment.insert(name.clone(), expanded);
     }
     environment.insert(
         "OPENWEPP_EXTERNAL_ATTEMPT_ROOT".to_owned(),
@@ -992,8 +1270,10 @@ fn admitted_environment(
 fn resolve_executable(executable: &str, environment: &BTreeMap<String, String>) -> Result<PathBuf> {
     let path = Path::new(executable);
     if path.is_absolute() {
-        return fs::canonicalize(path)
-            .map_err(|error| external_error("GATE-EXTERNAL-EXECUTABLE", error));
+        return path
+            .is_file()
+            .then(|| path.to_path_buf())
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-EXECUTABLE-MISSING", executable));
     }
     let search = environment
         .get("PATH")
@@ -1001,7 +1281,6 @@ fn resolve_executable(executable: &str, environment: &BTreeMap<String, String>) 
     std::env::split_paths(search)
         .map(|directory| directory.join(path))
         .find(|candidate| candidate.is_file())
-        .and_then(|candidate| fs::canonicalize(candidate).ok())
         .ok_or_else(|| policy_error("GATE-EXTERNAL-EXECUTABLE-MISSING", executable))
 }
 
@@ -1036,6 +1315,12 @@ fn file_sha256(path: &Path) -> Result<String> {
     fs::read(path)
         .map(|bytes| sha256_bytes(&bytes))
         .map_err(|error| external_error("GATE-EXTERNAL-FILE-READ", error))
+}
+
+fn executable_sha256(invoked_path: &Path) -> Result<String> {
+    let authenticated_target = fs::canonicalize(invoked_path)
+        .map_err(|error| external_error("GATE-EXTERNAL-EXECUTABLE", error))?;
+    file_sha256(&authenticated_target)
 }
 
 fn directory_identity(path: &Path) -> Result<String> {
@@ -1092,7 +1377,7 @@ include!("external_dag/audit.rs");
 fn append_started(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
-    audit: &ConstructedAudit,
+    audit: &Value,
 ) -> Result<String> {
     append_attempt_record(
         &options.ledger,
@@ -1103,7 +1388,7 @@ fn append_started(
             "phase": "ADMISSION",
             "plan_id": plan.plan_id,
             "transaction_id": options.transaction_id,
-            "audit_id": audit.as_value()["audit_id"],
+            "audit_id": audit["audit_id"],
             "attempt_root": options.attempt_root.display().to_string(),
             "claims": claims_value(&options.claims),
         }),
@@ -1113,7 +1398,7 @@ fn append_started(
 fn close_started(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
-    audit: &ConstructedAudit,
+    audit: &Value,
     started: &str,
     outcome: Result<Value>,
 ) -> Result<Value> {
@@ -1133,7 +1418,7 @@ fn close_started(
             "stage": "HEAVY",
             "plan_id": plan.plan_id,
             "transaction_id": options.transaction_id,
-            "audit_id": audit.as_value()["audit_id"],
+            "audit_id": audit["audit_id"],
             "started_entry_sha256": started,
             "attempt_root": options.attempt_root.display().to_string(),
             "result": result,
@@ -1313,7 +1598,38 @@ fn sha256_bytes(bytes: &[u8]) -> String {
 }
 
 fn external_error(code: &'static str, error: impl std::fmt::Display) -> GatePolicyError {
-    GatePolicyError::new(ErrorClass::Execution, code, error.to_string())
+    let class = if code.contains("SCHEMA") {
+        ErrorClass::Schema
+    } else if code.contains("JSON")
+        || code.contains("CSV")
+        || code.contains("UTF8")
+        || code.contains("SERIALIZE")
+        || code.contains("SHAPE")
+    {
+        ErrorClass::Json
+    } else if code.contains("IDENTITY")
+        || code.contains("DIGEST")
+        || code.contains("HASH")
+        || code.contains("REPLACED")
+        || code.contains("DRIFT")
+    {
+        ErrorClass::Identity
+    } else if code.contains("LEDGER") {
+        ErrorClass::Ledger
+    } else if code.contains("RECEIPT") || code.contains("CUSTODY") {
+        ErrorClass::Receipt
+    } else if code.contains("READ")
+        || code.contains("WRITE")
+        || code.contains("OPEN")
+        || code.contains("DIR")
+        || code.contains("FILE")
+        || code.contains("PERSIST")
+    {
+        ErrorClass::Io
+    } else {
+        ErrorClass::Execution
+    };
+    GatePolicyError::new(class, code, error.to_string())
 }
 
 fn policy_error(code: &'static str, message: &str) -> GatePolicyError {

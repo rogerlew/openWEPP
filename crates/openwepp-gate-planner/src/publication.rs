@@ -303,7 +303,6 @@ fn install_entry(
     sequence: usize,
     already_journaled: bool,
 ) -> Result<()> {
-    let source = confined_join(&plan.source_root, &entry.relative_path)?;
     let destination = confined_join(&plan.destination_root, &entry.relative_path)?;
     let staged = confined_join(&plan.transaction_root.join("staged"), &entry.relative_path)?;
     let backup_relative = entry
@@ -313,8 +312,9 @@ fn install_entry(
     if !already_journaled {
         if let Some(relative) = &backup_relative {
             let backup = confined_join(&plan.transaction_root, relative)?;
-            copy_verified(
-                &destination,
+            copy_destination_backup(
+                plan,
+                entry,
                 &backup,
                 entry.destination_baseline_sha256.as_deref(),
             )?;
@@ -333,13 +333,409 @@ fn install_entry(
             },
         )?;
     }
-    copy_verified(&source, &staged, Some(&entry.source_sha256))?;
+    copy_source_to_stage(plan, entry, &staged, || {})?;
     ensure_parent(&destination)?;
     reject_symlink_or_special_if_present(&destination)?;
     verify_one_destination_baseline(plan, entry)?;
     install_staged_destination(plan, entry, &staged, || {})?;
     sync_parent(&destination)?;
     require_hash(&destination, &entry.source_sha256)
+}
+
+#[cfg(target_os = "linux")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "backup custody keeps descriptor acquisition, byte binding, fsync, and root rechecks contiguous"
+)]
+fn copy_destination_backup(
+    plan: &PublicationPlan,
+    entry: &PublicationEntry,
+    backup: &Path,
+    expected: Option<&str>,
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let destination_root = openat2(
+        rustix::fs::CWD,
+        &plan.destination_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-SOURCE-ROOT",
+            &plan.destination_root,
+            error,
+        )
+    })?;
+    let transaction_root = openat2(
+        rustix::fs::CWD,
+        &plan.transaction_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-ROOT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let destination_root_identity = rustix::fs::fstat(&destination_root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-SOURCE-ROOT-STAT",
+            &plan.destination_root,
+            error,
+        )
+    })?;
+    let transaction_root_identity = rustix::fs::fstat(&transaction_root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-ROOT-STAT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let source_descriptor = openat2(
+        &destination_root,
+        &entry.relative_path,
+        OFlags::RDONLY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-SOURCE-OPEN",
+            &plan.destination_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    let mut source = File::from(source_descriptor);
+    let mut bytes = Vec::new();
+    source.read_to_end(&mut bytes).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-BACKUP-SOURCE-READ",
+            &plan.destination_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    if expected.is_none() || expected.is_some_and(|digest| sha256_bytes(&bytes) != digest) {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-BACKUP-BASELINE-DRIFT",
+            "destination bytes changed before backup",
+        ));
+    }
+    let relative = backup.strip_prefix(&plan.transaction_root).map_err(|_| {
+        publication_error(
+            ErrorClass::Policy,
+            "GATE-PUBLICATION-BACKUP-CONFINEMENT",
+            "backup is outside the transaction root",
+        )
+    })?;
+    ensure_relative_parent_at(&transaction_root, relative, backup)?;
+    let output_descriptor = openat2(
+        &transaction_root,
+        relative,
+        OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+        Mode::RUSR | Mode::WUSR,
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| io_error("GATE-PUBLICATION-BACKUP-CREATE", backup, error))?;
+    let mut output = File::from(output_descriptor);
+    output
+        .write_all(&bytes)
+        .and_then(|()| output.sync_all())
+        .map_err(|error| io_error("GATE-PUBLICATION-BACKUP-WRITE", backup, error))?;
+    require_unchanged_root(
+        &plan.destination_root,
+        destination_root_identity.st_dev,
+        destination_root_identity.st_ino,
+        "GATE-PUBLICATION-BACKUP-SOURCE-ROOT-RACE",
+    )?;
+    require_unchanged_root(
+        &plan.transaction_root,
+        transaction_root_identity.st_dev,
+        transaction_root_identity.st_ino,
+        "GATE-PUBLICATION-BACKUP-ROOT-RACE",
+    )
+}
+
+#[cfg(not(target_os = "linux"))]
+fn copy_destination_backup(
+    _plan: &PublicationPlan,
+    _entry: &PublicationEntry,
+    _backup: &Path,
+    _expected: Option<&str>,
+) -> Result<()> {
+    Err(publication_error(
+        ErrorClass::Policy,
+        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
+        "descriptor-relative publication backups are required",
+    ))
+}
+
+#[cfg(target_os = "linux")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "source descriptor acquisition, byte verification, root recheck, and staging form one auditable custody boundary"
+)]
+fn copy_source_to_stage(
+    plan: &PublicationPlan,
+    entry: &PublicationEntry,
+    staged: &Path,
+    before_root_recheck: impl FnOnce(),
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+    use std::os::unix::fs::MetadataExt;
+
+    let source_root = openat2(
+        rustix::fs::CWD,
+        &plan.source_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-ROOT-OPEN",
+            &plan.source_root,
+            error,
+        )
+    })?;
+    let source_root_identity = rustix::fs::fstat(&source_root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-ROOT-STAT",
+            &plan.source_root,
+            error,
+        )
+    })?;
+    let source_descriptor = openat2(
+        &source_root,
+        &entry.relative_path,
+        OFlags::RDONLY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-OPEN",
+            &plan.source_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    let mut source = File::from(source_descriptor);
+    let source_metadata = source.metadata().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-STAT",
+            &plan.source_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    if !source_metadata.is_file() || source_metadata.nlink() != 1 {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-SOURCE-NONREGULAR",
+            "publication source must be a singly linked regular file",
+        ));
+    }
+    let mut bytes = Vec::new();
+    source.read_to_end(&mut bytes).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-READ",
+            &plan.source_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    let after = source.metadata().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-STAT",
+            &plan.source_root.join(&entry.relative_path),
+            error,
+        )
+    })?;
+    if (
+        source_metadata.dev(),
+        source_metadata.ino(),
+        source_metadata.len(),
+    ) != (after.dev(), after.ino(), after.len())
+        || source_metadata.modified().ok() != after.modified().ok()
+        || sha256_bytes(&bytes) != entry.source_sha256
+    {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-SOURCE-DRIFT",
+            "publication source identity or bytes changed while reading",
+        ));
+    }
+
+    before_root_recheck();
+
+    let reopened_source_root = openat2(
+        rustix::fs::CWD,
+        &plan.source_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-ROOT-OPEN",
+            &plan.source_root,
+            error,
+        )
+    })?;
+    let current_source_root = rustix::fs::fstat(&reopened_source_root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-SOURCE-ROOT-STAT",
+            &plan.source_root,
+            error,
+        )
+    })?;
+    if (source_root_identity.st_dev, source_root_identity.st_ino)
+        != (current_source_root.st_dev, current_source_root.st_ino)
+    {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-SOURCE-ROOT-RACE",
+            "publication source root identity changed while reading",
+        ));
+    }
+
+    let staged_relative = staged.strip_prefix(&plan.transaction_root).map_err(|_| {
+        publication_error(
+            ErrorClass::Policy,
+            "GATE-PUBLICATION-STAGE-CONFINEMENT",
+            "staged path is outside the transaction root",
+        )
+    })?;
+    let transaction_root = openat2(
+        rustix::fs::CWD,
+        &plan.transaction_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-STAGE-ROOT-OPEN",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let transaction_root_identity = rustix::fs::fstat(&transaction_root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-STAGE-ROOT-STAT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    ensure_relative_parent_at(&transaction_root, staged_relative, staged)?;
+    let mut output = File::from(
+        openat2(
+            &transaction_root,
+            staged_relative,
+            OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+            Mode::RUSR | Mode::WUSR,
+            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| io_error("GATE-PUBLICATION-STAGE-CREATE", staged, error))?,
+    );
+    output
+        .write_all(&bytes)
+        .and_then(|()| output.sync_all())
+        .map_err(|error| io_error("GATE-PUBLICATION-STAGE-WRITE", staged, error))?;
+    require_unchanged_root(
+        &plan.transaction_root,
+        transaction_root_identity.st_dev,
+        transaction_root_identity.st_ino,
+        "GATE-PUBLICATION-STAGE-ROOT-RACE",
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn require_unchanged_root(
+    path: &Path,
+    expected_device: u64,
+    expected_inode: u64,
+    code: &'static str,
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let reopened = openat2(
+        rustix::fs::CWD,
+        path,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| io_error(code, path, error))?;
+    let current = rustix::fs::fstat(&reopened).map_err(|error| io_error(code, path, error))?;
+    if (expected_device, expected_inode) == (current.st_dev, current.st_ino) {
+        Ok(())
+    } else {
+        Err(publication_error(
+            ErrorClass::Identity,
+            code,
+            format!("root identity changed: {}", path.display()),
+        ))
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn ensure_relative_parent_at(
+    root: &rustix::fd::OwnedFd,
+    relative: &Path,
+    display_path: &Path,
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, mkdirat, openat2};
+
+    let parent = relative.parent().ok_or_else(|| {
+        publication_error(
+            ErrorClass::Schema,
+            "GATE-PUBLICATION-RELATIVE-PARENT",
+            "transaction-relative path has no parent",
+        )
+    })?;
+    let mut cumulative = PathBuf::new();
+    for component in parent.components() {
+        cumulative.push(component);
+        match mkdirat(root, &cumulative, Mode::RUSR | Mode::WUSR | Mode::XUSR) {
+            Ok(()) => {}
+            Err(error) if error == rustix::io::Errno::EXIST => {}
+            Err(error) => {
+                return Err(io_error(
+                    "GATE-PUBLICATION-TRANSACTION-MKDIR",
+                    display_path,
+                    error,
+                ));
+            }
+        }
+        openat2(
+            root,
+            &cumulative,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+            Mode::empty(),
+            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| io_error("GATE-PUBLICATION-TRANSACTION-DIR-OPEN", display_path, error))?;
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn copy_source_to_stage(
+    _plan: &PublicationPlan,
+    _entry: &PublicationEntry,
+    _staged: &Path,
+    _before_root_recheck: impl FnOnce(),
+) -> Result<()> {
+    Err(publication_error(
+        ErrorClass::Policy,
+        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
+        "descriptor-relative publication source reads are required",
+    ))
 }
 
 #[cfg(target_os = "linux")]
@@ -413,6 +809,36 @@ fn install_staged_destination(
             "publication staged path has no file name",
         )
     })?;
+    let staged_descriptor = openat2(
+        &staged_parent,
+        staged_name,
+        OFlags::RDONLY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| io_error("GATE-PUBLICATION-STAGE-OPEN", staged, error))?;
+    let mut staged_file = File::from(staged_descriptor);
+    let staged_metadata = staged_file
+        .metadata()
+        .map_err(|error| io_error("GATE-PUBLICATION-STAGE-STAT", staged, error))?;
+    if !staged_metadata.is_file() || staged_metadata.nlink() != 1 {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-STAGE-NONREGULAR",
+            "staged publication source must be a singly linked regular file",
+        ));
+    }
+    let mut staged_bytes = Vec::new();
+    staged_file
+        .read_to_end(&mut staged_bytes)
+        .map_err(|error| io_error("GATE-PUBLICATION-STAGE-READ", staged, error))?;
+    if sha256_bytes(&staged_bytes) != entry.source_sha256 {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-STAGE-DRIFT",
+            "staged publication bytes differ from the source authority",
+        ));
+    }
 
     // Capture the exact directory objects and destination inode immediately
     // before the only mutating syscall. The pathname is reopened after the
@@ -513,6 +939,17 @@ fn install_staged_destination(
                 "destination inode changed before installation",
             ));
         }
+        let current_staged = statat(&staged_parent, staged_name, AtFlags::SYMLINK_NOFOLLOW)
+            .map_err(|error| io_error("GATE-PUBLICATION-STAGE-RECHECK", staged, error))?;
+        if (staged_metadata.dev(), staged_metadata.ino())
+            != (current_staged.st_dev, current_staged.st_ino)
+        {
+            return Err(publication_error(
+                ErrorClass::Identity,
+                "GATE-PUBLICATION-STAGE-RACE",
+                "staged publication inode changed before installation",
+            ));
+        }
         renameat(
             &staged_parent,
             staged_name,
@@ -527,6 +964,17 @@ fn install_staged_destination(
             )
         })
     } else {
+        let current_staged = statat(&staged_parent, staged_name, AtFlags::SYMLINK_NOFOLLOW)
+            .map_err(|error| io_error("GATE-PUBLICATION-STAGE-RECHECK", staged, error))?;
+        if (staged_metadata.dev(), staged_metadata.ino())
+            != (current_staged.st_dev, current_staged.st_ino)
+        {
+            return Err(publication_error(
+                ErrorClass::Identity,
+                "GATE-PUBLICATION-STAGE-RACE",
+                "staged publication inode changed before installation",
+            ));
+        }
         renameat_with(
             &staged_parent,
             staged_name,
@@ -910,6 +1358,120 @@ fn prepare_transaction_directories(plan: &PublicationPlan) -> Result<()> {
 }
 
 fn append_journal(plan: &PublicationPlan, record: &PublicationJournalRecord) -> Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        append_journal_descriptor_relative(plan, record)
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        append_journal_portable(plan, record)
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn append_journal_descriptor_relative(
+    plan: &PublicationPlan,
+    record: &PublicationJournalRecord,
+) -> Result<()> {
+    append_journal_descriptor_relative_with_hook(plan, record, || {})
+}
+
+#[cfg(target_os = "linux")]
+fn append_journal_descriptor_relative_with_hook(
+    plan: &PublicationPlan,
+    record: &PublicationJournalRecord,
+    before_root_recheck: impl FnOnce(),
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let mut bytes = canonical_bytes(&serde_json::to_value(record).map_err(|error| {
+        publication_error(
+            ErrorClass::Json,
+            "GATE-PUBLICATION-JOURNAL-JSON",
+            error.to_string(),
+        )
+    })?)?;
+    bytes.push(b'\n');
+    let relative = plan
+        .journal_path
+        .strip_prefix(&plan.transaction_root)
+        .map_err(|_| {
+            publication_error(
+                ErrorClass::Policy,
+                "GATE-PUBLICATION-JOURNAL-CONFINEMENT",
+                "journal is outside the transaction root",
+            )
+        })?;
+    let root = openat2(
+        rustix::fs::CWD,
+        &plan.transaction_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-TRANSACTION-ROOT-OPEN",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let root_identity = rustix::fs::fstat(&root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-TRANSACTION-ROOT-STAT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let descriptor = openat2(
+        &root,
+        relative,
+        OFlags::WRONLY | OFlags::APPEND | OFlags::CREATE | OFlags::CLOEXEC,
+        Mode::RUSR | Mode::WUSR,
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| io_error("GATE-PUBLICATION-JOURNAL-OPEN", &plan.journal_path, error))?;
+    let mut file = File::from(descriptor);
+    file.write_all(&bytes)
+        .and_then(|()| file.sync_all())
+        .map_err(|error| io_error("GATE-PUBLICATION-JOURNAL-WRITE", &plan.journal_path, error))?;
+    before_root_recheck();
+    let reopened = openat2(
+        rustix::fs::CWD,
+        &plan.transaction_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-TRANSACTION-ROOT-REOPEN",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let current = rustix::fs::fstat(&reopened).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-TRANSACTION-ROOT-STAT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    if (root_identity.st_dev, root_identity.st_ino) != (current.st_dev, current.st_ino) {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-TRANSACTION-ROOT-RACE",
+            "transaction root changed during journal append",
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn append_journal_portable(
+    plan: &PublicationPlan,
+    record: &PublicationJournalRecord,
+) -> Result<()> {
     let mut bytes = canonical_bytes(&serde_json::to_value(record).map_err(|error| {
         publication_error(
             ErrorClass::Json,
@@ -1310,6 +1872,8 @@ fn publication_error(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::executor::ExecutionClaims;
+    use crate::external_dag::{ExternalTransitionOptions, run_external_transition};
 
     fn scratch(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
@@ -1353,18 +1917,24 @@ mod tests {
     fn plan(root: &Path, destination_baseline: Option<&[u8]>) -> PublicationPlan {
         let source = root.join("source");
         let destination = root.join("destination");
-        write(&source.join("artifacts/result.json"), b"new-result");
+        if source.exists() {
+            fs::remove_dir_all(&source).expect("replace publication source root");
+        }
+        let transaction_receipt_path = root.join("transaction-receipt.json");
+        for receipt in [
+            transaction_receipt_path.clone(),
+            transaction_receipt_path.with_extension("light.json"),
+            transaction_receipt_path.with_extension("audit.json"),
+        ] {
+            if let Err(error) = fs::remove_file(receipt) {
+                assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+            }
+        }
         if let Some(bytes) = destination_baseline {
-            write(&destination.join("artifacts/result.json"), bytes);
+            write(&destination.join("objects/artifacts/result.json"), bytes);
         } else {
             fs::create_dir_all(&destination).expect("destination root");
         }
-        let source_manifest =
-            manifest_declared_outputs(&source, &[PathBuf::from("artifacts/result.json")])
-                .expect("source manifest");
-        let source_manifest_sha256 =
-            digest(&serde_json::to_value(&source_manifest).expect("source manifest JSON"))
-                .expect("source manifest digest");
         let authority_repo = root.join("authority-repo");
         if authority_repo.exists() {
             fs::remove_dir_all(&authority_repo).expect("replace authority repository");
@@ -1376,50 +1946,113 @@ mod tests {
             &authority_repo,
             &["config", "user.email", "openwepp-test@example.invalid"],
         );
+        let package_path = "docs/work-packages/publication-fixture/package.md";
         write(
-            &authority_repo.join("tool"),
-            b"publication authority tool\n",
+            &authority_repo.join(package_path),
+            b"# Publication fixture\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n",
         );
-        let external_plan_path = authority_repo.join("external-plan.json");
-        let transaction_receipt_path = root.join("transaction-receipt.json");
-        let node = |order: u64, command_id: &str, stage: &str| {
+        write(
+            &authority_repo.join("gate-policy/v1/schemas/package-audit.schema.json"),
+            include_bytes!("../../../gate-policy/v1/schemas/package-audit.schema.json"),
+        );
+        git(&authority_repo, &["add", "."]);
+        git(
+            &authority_repo,
+            &["commit", "--quiet", "-m", "publication fixture scaffold"],
+        );
+        let base_commit = git(&authority_repo, &["rev-parse", "HEAD"]);
+        write(
+            &authority_repo.join("evidence/cheap.txt"),
+            b"focused gates passed\n",
+        );
+        write(
+            &authority_repo.join("tools/light.sh"),
+            b"#!/bin/sh\nset -eu\nmkdir -p \"$(dirname \"$1\")\"\nprintf 'new-result' > \"$1\"\n",
+        );
+        write(
+            &authority_repo.join("tools/heavy.sh"),
+            b"#!/bin/sh\nset -eu\ntest \"$(cat \"$1\")\" = new-result\n",
+        );
+        #[cfg(unix)]
+        for script in ["tools/light.sh", "tools/heavy.sh"] {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(
+                authority_repo.join(script),
+                fs::Permissions::from_mode(0o755),
+            )
+            .expect("executable fixture script");
+        }
+        let source_csv = format!(
+            "order,command_id,source_path,command,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
+             1,light,tools/light.sh,tools/light.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},seed,objects/artifacts/result.json,FORBIDDEN,QUICK\n\
+             2,heavy,tools/heavy.sh,tools/heavy.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},light output,,FORBIDDEN,HEAVY\n",
+            authority_repo.display(),
+            authority_repo.display(),
+        );
+        write(
+            &authority_repo.join("plan/source.csv"),
+            source_csv.as_bytes(),
+        );
+        write(
+            &authority_repo.join("plan/contract.csv"),
+            b"command_id,prerequisites,outputs\nlight,-,objects/artifacts/result.json\nheavy,light,-\n",
+        );
+        let binding = |path: &str| {
             serde_json::json!({
-                "order": order,
-                "command_id": command_id,
-                "argv": ["/usr/bin/true"],
-                "env": {},
-                "cwd": "work",
-                "prerequisites": if stage == "HEAVY" { vec!["light"] } else { Vec::<&str>::new() },
-                "cost_class": if stage == "HEAVY" { "HEAVY" } else { "QUICK" },
-                "source_path": "tool",
-                "declared_outputs": if stage == "LIGHT" {
-                    vec!["artifacts/result.json"]
-                } else {
-                    Vec::<&str>::new()
-                },
-                "timeout_seconds": 1,
-                "max_attempts": 1,
-                "handoff": "none",
-                "harvard_access": "NONE"
+                "path": path,
+                "sha256": sha256_bytes(&fs::read(authority_repo.join(path)).expect("binding bytes"))
             })
         };
+        let external_plan_path = authority_repo.join("plan/external.json");
         let mut external_plan = serde_json::json!({
             "schema": "openwepp-external-dag-plan-v1",
             "plan_id": "0".repeat(64),
             "generation": "A",
             "parent_plan": null,
             "source_identity": null,
-            "source_plan": {"path": "plan", "sha256": "1".repeat(64)},
-            "source_contract": {"path": "contract", "sha256": "2".repeat(64)},
+            "source_plan": binding("plan/source.csv"),
+            "source_contract": binding("plan/contract.csv"),
             "authority": {
-                "package_path": "package",
-                "base_commit": "0123456",
-                "cheap_gate_evidence": [{"path": "gate", "sha256": "3".repeat(64)}]
+                "package_path": package_path,
+                "base_commit": base_commit,
+                "cheap_gate_evidence": [binding("evidence/cheap.txt")]
             },
             "transactions": [{
                 "transaction_id": "publication-source",
-                "light": [node(1, "light", "LIGHT")],
-                "heavy": [node(2, "heavy", "HEAVY")],
+                "light": [{
+                    "order": 1,
+                    "command_id": "light",
+                    "argv": ["${REPO}/tools/light.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
+                    "env": {},
+                    "cwd": authority_repo.display().to_string(),
+                    "source_working_directory": authority_repo.display().to_string(),
+                    "source_inputs": ["seed"],
+                    "prerequisites": [],
+                    "cost_class": "QUICK",
+                    "source_path": "tools/light.sh",
+                    "declared_outputs": ["objects/artifacts/result.json"],
+                    "timeout_seconds": 10,
+                    "max_attempts": 1,
+                    "handoff": "READY audit",
+                    "harvard_access": "NONE"
+                }],
+                "heavy": [{
+                    "order": 2,
+                    "command_id": "heavy",
+                    "argv": ["${REPO}/tools/heavy.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
+                    "env": {},
+                    "cwd": authority_repo.display().to_string(),
+                    "source_working_directory": authority_repo.display().to_string(),
+                    "source_inputs": ["light output"],
+                    "prerequisites": ["light"],
+                    "cost_class": "HEAVY",
+                    "source_path": "tools/heavy.sh",
+                    "declared_outputs": [],
+                    "timeout_seconds": 10,
+                    "max_attempts": 1,
+                    "handoff": "terminal receipt",
+                    "harvard_access": "NONE"
+                }],
                 "custody_prerequisites": [],
                 "custody_receipts": []
             }],
@@ -1431,106 +2064,46 @@ mod tests {
             &external_plan_path,
             &canonical_bytes(&external_plan).expect("canonical external plan"),
         );
-        git(&authority_repo, &["add", "external-plan.json", "tool"]);
+        git(&authority_repo, &["add", "."]);
         git(
             &authority_repo,
-            &["commit", "--quiet", "-m", "test publication authority"],
+            &["commit", "--quiet", "-m", "bind publication transaction"],
         );
-        let executable = fs::canonicalize("/usr/bin/true").expect("canonical test executable path");
-        let executable_sha256 = regular_file_hash(&executable).expect("test executable SHA-256");
-        let mut environment = std::collections::BTreeMap::new();
-        for name in [
-            "PATH",
-            "HOME",
-            "CARGO_HOME",
-            "RUSTUP_HOME",
-            "RUSTC",
-            "CARGO",
-        ] {
-            if let Ok(value) = std::env::var(name) {
-                environment.insert(name.to_owned(), value);
-            }
-        }
-        environment.insert(
-            "OPENWEPP_EXTERNAL_ATTEMPT_ROOT".to_owned(),
-            source.display().to_string(),
-        );
-        let repo_identity = serde_json::json!({
-            "head": git(&authority_repo, &["rev-parse", "HEAD"]),
-            "tree": git(&authority_repo, &["rev-parse", "HEAD^{tree}"]),
-            "diff_sha256": sha256_bytes(b"")
-        });
-        let node_receipt = |command_id: &str, order: u64, stage: &str| {
-            serde_json::json!({
-                "command_id": command_id,
-                "order": order,
-                "stage": stage,
-                "argv": ["/usr/bin/true"],
-                "environment": environment,
-                "source_sha256": sha256_bytes(b"publication authority tool\n"),
-                "executable_sha256": executable_sha256,
-                "executable_version": format!("sha256:{executable_sha256}"),
-                "repo_identity": repo_identity,
-                "prerequisite_receipt_ids": [],
-                "exit_code": 0,
-                "result": "PASS",
-                "output_manifest": source_manifest.clone()
-            })
-        };
-        let light_receipt = node_receipt("light", 1, "LIGHT");
-        let mut heavy_receipt = node_receipt("heavy", 2, "HEAVY");
-        heavy_receipt["prerequisite_receipt_ids"] =
-            serde_json::json!([digest(&light_receipt).expect("light receipt digest")]);
-        let mut audit = serde_json::json!({
-            "schema": "openwepp-external-pre-heavy-audit-v1",
-            "audit_id": "0".repeat(64),
-            "status": "READY",
-            "light_receipts": [light_receipt.clone()]
-        });
-        audit["audit_id"] =
-            serde_json::Value::String(derived_id(&audit, "audit_id").expect("audit ID"));
-        #[cfg(unix)]
-        let attempt_root_identity = {
-            use std::os::unix::fs::MetadataExt;
-            let metadata = fs::metadata(&source).expect("source root metadata");
-            format!("{}:{}", metadata.dev(), metadata.ino())
-        };
-        #[cfg(not(unix))]
-        let attempt_root_identity =
-            format!("len:{}", fs::metadata(&source).expect("metadata").len());
-        let mut transaction_receipt = serde_json::json!({
-            "schema": "openwepp-external-transaction-receipt-v1",
-            "receipt_id": "0".repeat(64),
-            "result": "PASS",
-            "plan_id": external_plan["plan_id"],
-            "transaction_id": "publication-source",
-            "audit": audit,
-            "attempt_root": source,
-            "attempt_root_identity": attempt_root_identity,
-            "ledger": root.join("ledger"),
-            "custody_root": null,
-            "opening_token": null,
-            "claims": {
-                "principal": "test",
-                "repository": "test",
-                "source_event": "test",
-                "source_ref": "test",
-                "workflow": "test",
-                "job": "test",
-                "runner": "test",
-                "attempt": 1
+        let ledger = std::env::current_dir()
+            .expect("publication fixture cwd")
+            .join("target/publication-fixture-ledgers")
+            .join(root.file_name().expect("publication fixture root name"))
+            .join("execution-ledger.jsonl");
+        write(&ledger, b"");
+        let transaction_receipt = run_external_transition(&ExternalTransitionOptions {
+            repo: authority_repo.clone(),
+            plan_path: external_plan_path.clone(),
+            transaction_id: "publication-source".to_owned(),
+            attempt_root: source.clone(),
+            ledger,
+            receipt_path: transaction_receipt_path.clone(),
+            custody_root: None,
+            opening_token: None,
+            claims: ExecutionClaims {
+                principal: "publication-test".to_owned(),
+                repository: "local/publication".to_owned(),
+                source_event: "test".to_owned(),
+                source_ref: "refs/heads/main".to_owned(),
+                workflow: "publication-fixture".to_owned(),
+                job: "light-ready-heavy".to_owned(),
+                runner: "local-test".to_owned(),
+                attempt: 1,
             },
-            "source_before": repo_identity,
-            "source_after": repo_identity,
-            "light": [light_receipt],
-            "heavy": [heavy_receipt]
-        });
-        transaction_receipt["receipt_id"] = serde_json::Value::String(
-            derived_id(&transaction_receipt, "receipt_id").expect("transaction receipt ID"),
-        );
+        })
+        .expect("execute authenticated publication source transaction");
         let transaction_receipt_bytes =
-            canonical_bytes(&transaction_receipt).expect("canonical transaction receipt");
-        write(&transaction_receipt_path, &transaction_receipt_bytes);
+            fs::read(&transaction_receipt_path).expect("persisted transaction receipt");
+        let source_manifest =
+            manifest_declared_outputs(&source, &[PathBuf::from("objects/artifacts/result.json")])
+                .expect("source manifest");
+        let source_manifest_sha256 =
+            digest(&serde_json::to_value(&source_manifest).expect("source manifest JSON"))
+                .expect("source manifest digest");
         PublicationPlan {
             publication_id: "publication-1".to_owned(),
             external_plan_path,
@@ -1543,7 +2116,7 @@ mod tests {
             source_manifest_id: source_manifest.manifest_id,
             source_manifest_sha256,
             destination_baseline_sha256: destination_baseline_digest(&[PublicationEntry {
-                relative_path: PathBuf::from("artifacts/result.json"),
+                relative_path: PathBuf::from("objects/artifacts/result.json"),
                 source_sha256: sha256_bytes(b"new-result"),
                 destination_baseline_sha256: destination_baseline.map(sha256_bytes),
             }])
@@ -1554,7 +2127,7 @@ mod tests {
             journal_path: root.join("transaction/journal/publication.jsonl"),
             receipt_path: root.join("transaction/receipt/publication.json"),
             entries: vec![PublicationEntry {
-                relative_path: PathBuf::from("artifacts/result.json"),
+                relative_path: PathBuf::from("objects/artifacts/result.json"),
                 source_sha256: sha256_bytes(b"new-result"),
                 destination_baseline_sha256: destination_baseline.map(sha256_bytes),
             }],
@@ -1569,7 +2142,8 @@ mod tests {
         let outcome = publish(&plan).expect("publication");
         assert_eq!(outcome.status, PublicationStatus::Accepted);
         assert_eq!(
-            fs::read(plan.destination_root.join("artifacts/result.json")).expect("installed"),
+            fs::read(plan.destination_root.join("objects/artifacts/result.json"),)
+                .expect("installed"),
             b"new-result"
         );
         let receipt: PublicationReceipt =
@@ -1585,7 +2159,9 @@ mod tests {
         remove_scratch(&root);
         let mut publication_plan = plan(&root, None);
         fs::write(
-            publication_plan.source_root.join("artifacts/result.json"),
+            publication_plan
+                .source_root
+                .join("objects/artifacts/result.json"),
             b"source drift",
         )
         .expect("source drift");
@@ -1600,7 +2176,7 @@ mod tests {
         write(
             &publication_plan
                 .destination_root
-                .join("artifacts/result.json"),
+                .join("objects/artifacts/result.json"),
             b"collision",
         );
         assert_eq!(
@@ -1668,7 +2244,8 @@ mod tests {
         let outcome = recover(&plan, RecoveryAction::Restore).expect("restore");
         assert_eq!(outcome.status, PublicationStatus::Restored);
         assert_eq!(
-            fs::read(plan.destination_root.join("artifacts/result.json")).expect("restored"),
+            fs::read(plan.destination_root.join("objects/artifacts/result.json"),)
+                .expect("restored"),
             b"old-result"
         );
         remove_scratch(&root);
@@ -1686,7 +2263,7 @@ mod tests {
         assert_eq!(outcome.status, PublicationStatus::Accepted);
         assert!(plan.receipt_path.exists());
         assert_eq!(
-            fs::read(plan.destination_root.join("artifacts/result.json")).expect("result"),
+            fs::read(plan.destination_root.join("objects/artifacts/result.json"),).expect("result"),
             b"new-result"
         );
         remove_scratch(&root);
@@ -1764,6 +2341,207 @@ mod tests {
             b"old-result"
         );
         assert!(staged.exists(), "staged source remains recoverable");
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_source_root_replacement_after_descriptor_read_without_staging() {
+        let root = scratch("source-read-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, None);
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let entry = &publication_plan.entries[0];
+        let staged = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+        let displaced = root.join("source-displaced");
+        let replacement_source = publication_plan.source_root.join(&entry.relative_path);
+
+        let error = copy_source_to_stage(&publication_plan, entry, &staged, || {
+            fs::rename(&publication_plan.source_root, &displaced).expect("displace source root");
+            write(&replacement_source, b"attacker-owned");
+        })
+        .expect_err("source root replacement must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-SOURCE-ROOT-RACE");
+        assert!(!staged.exists(), "unaccepted bytes were not staged");
+        assert_eq!(
+            fs::read(&replacement_source).expect("replacement preserved"),
+            b"attacker-owned"
+        );
+        assert_eq!(
+            fs::read(displaced.join(&entry.relative_path)).expect("verified source preserved"),
+            b"new-result"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_transaction_root_replacement_before_staged_install() {
+        let root = scratch("transaction-install-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, None);
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let entry = &publication_plan.entries[0];
+        let source = publication_plan.source_root.join(&entry.relative_path);
+        let staged = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+        copy_verified(&source, &staged, Some(&entry.source_sha256)).expect("stage source");
+        ensure_parent(&publication_plan.destination_root.join(&entry.relative_path))
+            .expect("destination parent");
+        let displaced = root.join("transaction-displaced");
+        let replacement_stage = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+
+        let error = install_staged_destination(&publication_plan, entry, &staged, || {
+            fs::rename(&publication_plan.transaction_root, &displaced)
+                .expect("displace transaction root");
+            write(&replacement_stage, b"attacker-owned");
+        })
+        .expect_err("transaction root replacement must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-ROOT-RACE");
+        assert_eq!(
+            fs::read(&replacement_stage).expect("replacement stage preserved"),
+            b"attacker-owned"
+        );
+        assert!(
+            !publication_plan
+                .destination_root
+                .join(&entry.relative_path)
+                .exists(),
+            "no destination bytes installed"
+        );
+        assert!(
+            displaced.join("staged").join(&entry.relative_path).exists(),
+            "verified staged bytes remain recoverable"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_transaction_root_replacement_during_journal_append() {
+        let root = scratch("journal-root-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, None);
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let entry = &publication_plan.entries[0];
+        let record = PublicationJournalRecord {
+            schema_version: JOURNAL_SCHEMA.to_owned(),
+            publication_id: publication_plan.publication_id.clone(),
+            sequence: 1,
+            operation: JournalOperation::Install,
+            relative_path: entry.relative_path.clone(),
+            source_sha256: entry.source_sha256.clone(),
+            destination_baseline_sha256: None,
+            backup_relative_path: None,
+        };
+        let displaced = root.join("journal-transaction-displaced");
+
+        let error =
+            append_journal_descriptor_relative_with_hook(&publication_plan, &record, || {
+                fs::rename(&publication_plan.transaction_root, &displaced)
+                    .expect("displace journal transaction root");
+                fs::create_dir_all(
+                    publication_plan
+                        .journal_path
+                        .parent()
+                        .expect("journal parent"),
+                )
+                .expect("replacement journal tree");
+            })
+            .expect_err("journal root replacement must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-TRANSACTION-ROOT-RACE");
+        assert!(
+            !publication_plan.journal_path.exists(),
+            "replacement transaction root received no journal bytes"
+        );
+        assert!(
+            displaced.join("journal/publication.jsonl").exists(),
+            "durable journal remains bound to the verified root"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_symlinked_staging_subtree_without_external_write() {
+        use std::os::unix::fs::symlink;
+
+        let root = scratch("staging-subtree-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, None);
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        fs::remove_dir_all(publication_plan.transaction_root.join("staged"))
+            .expect("remove staging directory");
+        let external = root.join("external-staging");
+        fs::create_dir_all(&external).expect("external staging");
+        symlink(&external, publication_plan.transaction_root.join("staged"))
+            .expect("replace staging subtree");
+        let entry = &publication_plan.entries[0];
+        let staged = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+
+        let error = copy_source_to_stage(&publication_plan, entry, &staged, || {})
+            .expect_err("symlinked staging subtree must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-TRANSACTION-DIR-OPEN");
+        assert!(
+            fs::read_dir(&external)
+                .expect("external directory")
+                .next()
+                .is_none(),
+            "external staging target remains untouched"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_symlinked_backup_subtree_without_external_write() {
+        use std::os::unix::fs::symlink;
+
+        let root = scratch("backup-subtree-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, Some(b"old-result"));
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let external = root.join("external-backups");
+        fs::create_dir_all(&external).expect("external backups");
+        symlink(&external, publication_plan.transaction_root.join("backups"))
+            .expect("replace backup subtree");
+        let entry = &publication_plan.entries[0];
+        let backup = publication_plan
+            .transaction_root
+            .join("backups")
+            .join(&entry.relative_path);
+
+        let error = copy_destination_backup(
+            &publication_plan,
+            entry,
+            &backup,
+            entry.destination_baseline_sha256.as_deref(),
+        )
+        .expect_err("symlinked backup subtree must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-TRANSACTION-DIR-OPEN");
+        assert!(
+            fs::read_dir(&external)
+                .expect("external directory")
+                .next()
+                .is_none(),
+            "external backup target remains untouched"
+        );
         remove_scratch(&root);
     }
 }

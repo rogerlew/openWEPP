@@ -94,6 +94,14 @@ pub fn prepare_attempt_root_with_outputs(root: &Path, declared: &[PathBuf]) -> R
 /// Returns an error for missing or undeclared outputs, links, special files,
 /// path escapes, non-UTF-8 paths, I/O failures, or observed mutation.
 pub fn manifest_declared_outputs(root: &Path, declared: &[PathBuf]) -> Result<OutputManifest> {
+    manifest_outputs(root, declared, false)
+}
+
+fn manifest_outputs(
+    root: &Path,
+    declared: &[PathBuf],
+    allow_internal_hardlinks: bool,
+) -> Result<OutputManifest> {
     let declarations = normalized_declarations(declared)?;
     let root_before = checked_root_metadata(root)?;
     let root_text = utf8_path(root, "GATE-EXTERNAL-ROOT-UTF8")?;
@@ -105,6 +113,7 @@ pub fn manifest_declared_outputs(root: &Path, declared: &[PathBuf]) -> Result<Ou
         &declarations,
         &mut observed_declarations,
         &mut entries,
+        allow_internal_hardlinks,
     )?;
     for declaration in &declarations {
         if !observed_declarations.contains(declaration) {
@@ -125,6 +134,31 @@ pub fn manifest_declared_outputs(root: &Path, declared: &[PathBuf]) -> Result<Ou
     };
     validate_manifest_schema(&manifest)?;
     Ok(manifest)
+}
+
+/// Exhaustively bind a reserved non-scientific build-cache namespace.
+///
+/// Each immediate cache entry becomes a declaration for the standard recursive
+/// walker, preserving its link, special-file, hardlink, and mutation checks.
+///
+/// # Errors
+///
+/// Returns a typed error if the cache is empty, inaccessible, mutable, or
+/// contains an entry that cannot be exhaustively authenticated.
+pub fn manifest_reserved_cache(root: &Path) -> Result<OutputManifest> {
+    let mut declared = fs::read_dir(root)
+        .map_err(|error| io_error("GATE-EXTERNAL-CACHE-READDIR", &error))?
+        .map(|entry| {
+            entry
+                .map(|value| PathBuf::from(value.file_name()))
+                .map_err(|error| io_error("GATE-EXTERNAL-CACHE-READDIR", &error))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    declared.sort();
+    if declared.is_empty() {
+        return Err(output_error("GATE-EXTERNAL-CACHE-EMPTY", root));
+    }
+    manifest_outputs(root, &declared, true)
 }
 
 /// Independently reconstruct and compare an external-output manifest.
@@ -172,7 +206,11 @@ pub fn verify_historical_manifest(root: &Path, expected: &OutputManifest) -> Res
     for entry in &expected.entries {
         let relative = PathBuf::from(&entry.path);
         validate_relative(&relative)?;
-        let observed = hash_regular_file(root, &root.join(&relative))?;
+        let allow_internal_hardlinks = root
+            .parent()
+            .and_then(Path::file_name)
+            .is_some_and(|name| name == "build-cache");
+        let observed = hash_regular_file(root, &root.join(&relative), allow_internal_hardlinks)?;
         if observed != *entry {
             return Err(GatePolicyError::new(
                 ErrorClass::Identity,
@@ -204,6 +242,7 @@ fn walk_outputs(
     declarations: &[PathBuf],
     observed: &mut BTreeSet<PathBuf>,
     entries: &mut Vec<OutputEntry>,
+    allow_internal_hardlinks: bool,
 ) -> Result<()> {
     let relative_directory = confined_relative(root, directory)?;
     if !directory_allowed(&relative_directory, declarations) {
@@ -222,19 +261,29 @@ fn walk_outputs(
     for child in children {
         let path = child.path();
         let relative = confined_relative(root, &path)?;
+        if directory == root && relative == Path::new("build-cache") {
+            continue;
+        }
         let metadata = fs::symlink_metadata(&path)
             .map_err(|error| io_error("GATE-EXTERNAL-OUTPUT-METADATA", &error))?;
         if metadata.file_type().is_symlink() {
             return Err(output_error("GATE-EXTERNAL-OUTPUT-SYMLINK", &path));
         }
         if metadata.is_dir() {
-            walk_outputs(root, &path, declarations, observed, entries)?;
+            walk_outputs(
+                root,
+                &path,
+                declarations,
+                observed,
+                entries,
+                allow_internal_hardlinks,
+            )?;
         } else if metadata.is_file() {
             if !file_declared(&relative, declarations) {
                 return Err(output_error("GATE-EXTERNAL-OUTPUT-UNDECLARED", &path));
             }
             mark_observed(&relative, declarations, observed);
-            entries.push(hash_regular_file(root, &path)?);
+            entries.push(hash_regular_file(root, &path, allow_internal_hardlinks)?);
         } else {
             return Err(output_error("GATE-EXTERNAL-OUTPUT-SPECIAL", &path));
         }
@@ -242,7 +291,11 @@ fn walk_outputs(
     ensure_same_identity(directory, &before, "GATE-EXTERNAL-OUTPUT-DIRECTORY-MUTATED")
 }
 
-fn hash_regular_file(root: &Path, path: &Path) -> Result<OutputEntry> {
+fn hash_regular_file(
+    root: &Path,
+    path: &Path,
+    allow_internal_hardlinks: bool,
+) -> Result<OutputEntry> {
     #[cfg(unix)]
     let mut file = {
         use rustix::fs::{Mode, OFlags, open};
@@ -267,7 +320,7 @@ fn hash_regular_file(root: &Path, path: &Path) -> Result<OutputEntry> {
     let before = file
         .metadata()
         .map_err(|error| io_error("GATE-EXTERNAL-OUTPUT-METADATA", &error))?;
-    reject_non_regular_or_linked(path, &before)?;
+    reject_non_regular(path, &before, allow_internal_hardlinks)?;
     let mut hasher = Sha256::new();
     let mut buffer = vec![0_u8; 64 * 1024];
     loop {
@@ -285,7 +338,7 @@ fn hash_regular_file(root: &Path, path: &Path) -> Result<OutputEntry> {
     if !same_identity(&before, &after) {
         return Err(output_error("GATE-EXTERNAL-OUTPUT-MUTATED", path));
     }
-    reject_non_regular_or_linked(path, &after)?;
+    reject_non_regular(path, &after, allow_internal_hardlinks)?;
     Ok(OutputEntry {
         path: utf8_path(&confined_relative(root, path)?, "GATE-EXTERNAL-OUTPUT-UTF8")?,
         file_type: "REGULAR".to_owned(),
@@ -397,14 +450,18 @@ fn reject_non_directory(path: &Path, metadata: &Metadata) -> Result<()> {
     Ok(())
 }
 
-fn reject_non_regular_or_linked(path: &Path, metadata: &Metadata) -> Result<()> {
+fn reject_non_regular(
+    path: &Path,
+    metadata: &Metadata,
+    allow_internal_hardlinks: bool,
+) -> Result<()> {
     if !metadata.is_file() {
         return Err(output_error("GATE-EXTERNAL-OUTPUT-FILE-TYPE", path));
     }
     #[cfg(unix)]
     {
         use std::os::unix::fs::MetadataExt;
-        if metadata.nlink() != 1 {
+        if !allow_internal_hardlinks && metadata.nlink() != 1 {
             return Err(output_error("GATE-EXTERNAL-OUTPUT-HARDLINK", path));
         }
     }

@@ -913,8 +913,11 @@ pub fn reconcile_orphaned_attempts(path: &Path) -> Result<usize> {
     let orphaned = records
         .iter()
         .filter(|item| {
-            item["record_type"] == "STAGE_ATTEMPT"
-                && item["status"] == "STARTED"
+            matches!(
+                item["record_type"].as_str(),
+                Some("STAGE_ATTEMPT" | "EXTERNAL_TRANSACTION")
+            ) && item["status"] == "STARTED"
+                && item["stage"] == "HEAVY"
                 && item["phase"] == "ADMISSION"
         })
         .filter(|item| {

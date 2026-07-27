@@ -188,6 +188,8 @@
         "prerequisites",
         "cost_class",
         "source_path",
+        "source_working_directory",
+        "source_inputs",
         "declared_outputs",
         "timeout_seconds",
         "max_attempts",
@@ -238,6 +240,17 @@
         },
         "source_path": {
           "$ref": "#/$defs/path"
+        },
+        "source_working_directory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "declared_outputs": {
           "type": "array",

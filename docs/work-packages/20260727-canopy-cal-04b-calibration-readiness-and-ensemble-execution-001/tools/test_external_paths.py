@@ -88,6 +88,22 @@ class ExternalPathTest(unittest.TestCase):
         combined = reconstruct + verify + readiness
         self.assertNotIn("/home/workdir/cal04b-objects", combined)
 
+    def test_holdout_preflight_consumes_generation_b_custody_without_harvard(self) -> None:
+        source = (TOOLS / "holdout.py").read_text(encoding="utf-8")
+        operational = source.split("def sha(", maxsplit=1)[1]
+        self.assertNotIn("SOURCE_ARTIFACTS", operational)
+        self.assertIn('CUSTODY / "calibration-v1.receipt.json"', operational)
+        self.assertIn('CUSTODY / "freeze.receipt.json"', operational)
+        self.assertIn("if options.preflight_only:", operational)
+        self.assertLess(
+            operational.index("if options.preflight_only:"),
+            operational.index("create_token(digest)"),
+        )
+        self.assertLess(
+            operational.index("create_token(digest)"),
+            operational.rindex("validate_harvard_after_open()"),
+        )
+
     def test_actual_dual_executable_path_fixtures_are_science_equivalent(self) -> None:
         executor = TOOLS / "executor"
         subprocess.run(

@@ -48,6 +48,7 @@ fn verify_custody(transaction: &ExternalTransaction) -> Result<()> {
 fn verify_custody_files(
     options: &ExternalTransitionOptions,
     transaction: &ExternalTransaction,
+    consume_capabilities: bool,
 ) -> Result<BTreeMap<String, String>> {
     let opens_harvard = transaction
         .heavy
@@ -117,15 +118,8 @@ fn verify_custody_files(
         imported.insert(command_id.to_owned(), attestation.attestation_id.clone());
         attestations.push((relative.clone(), attestation));
     }
-    if !attestations.is_empty() {
-        verify_independent_attestations(
-            &attestations
-                .iter()
-                .map(|(_, attestation)| attestation.clone())
-                .collect::<Vec<_>>(),
-        )?;
-        authenticate_verifier_custody(options, &canonical_root, &attestations)?;
-    }
+    let mut transaction_receipt = None;
+    let mut freeze_receipt = None;
     for binding in &transaction.custody_receipts {
         confined_relative(&binding.path)?;
         if !matches!(binding.kind.as_str(), "TRANSACTION" | "FREEZE") {
@@ -146,6 +140,11 @@ fn verify_custody_files(
         if value["result"] != "PASS" {
             return Err(policy_error("GATE-EXTERNAL-CUSTODY-RESULT", &binding.path));
         }
+        match binding.kind.as_str() {
+            "TRANSACTION" => transaction_receipt = Some((binding, value.clone())),
+            "FREEZE" => freeze_receipt = Some((binding, value.clone())),
+            _ => unreachable!("custody kind checked above"),
+        }
         let receipt_id = value["receipt_id"]
             .as_str()
             .or_else(|| value["freeze_receipt_id"].as_str())
@@ -159,6 +158,38 @@ fn verify_custody_files(
                 &binding.command_id,
             ));
         }
+    }
+    if opens_harvard {
+        authenticate_cross_transition_custody(
+            options,
+            &attestations,
+            transaction_receipt.ok_or_else(|| {
+                policy_error(
+                    "GATE-EXTERNAL-HARVARD-CUSTODY-INCOMPLETE",
+                    "transaction receipt missing",
+                )
+            })?,
+            freeze_receipt.ok_or_else(|| {
+                policy_error(
+                    "GATE-EXTERNAL-HARVARD-CUSTODY-INCOMPLETE",
+                    "freeze receipt missing",
+                )
+            })?,
+        )?;
+    }
+    if !attestations.is_empty() {
+        verify_independent_attestations(
+            &attestations
+                .iter()
+                .map(|(_, attestation)| attestation.clone())
+                .collect::<Vec<_>>(),
+        )?;
+        authenticate_verifier_custody(
+            options,
+            &canonical_root,
+            &attestations,
+            consume_capabilities,
+        )?;
     }
     Ok(imported)
 }
@@ -222,6 +253,7 @@ fn authenticate_verifier_custody(
     options: &ExternalTransitionOptions,
     custody_root: &Path,
     attestations: &[(String, ExternalVerifierAttestation)],
+    consume: bool,
 ) -> Result<()> {
     let consumed_root = custody_root.join("consumed-capabilities");
     fs::create_dir(&consumed_root)
@@ -244,7 +276,11 @@ fn authenticate_verifier_custody(
     for (attestation_path, attestation) in attestations {
         let verifier_id = verifier_id_from_attestation_path(attestation_path)?;
         let capability = custody_root
-            .join("capabilities")
+            .join(if consume {
+                "capabilities"
+            } else {
+                "consumed-capabilities"
+            })
             .join(format!("{}.cap", attestation.capability_hash));
         let consumed = consumed_root.join(format!("{}.cap", attestation.capability_hash));
         let metadata = fs::symlink_metadata(&capability)
@@ -264,17 +300,247 @@ fn authenticate_verifier_custody(
             ));
         }
         authenticate_verifier_receipt(options, custody_root, verifier_id, attestation)?;
-        rustix::fs::renameat_with(
-            rustix::fs::CWD,
-            &capability,
-            rustix::fs::CWD,
-            &consumed,
-            rustix::fs::RenameFlags::NOREPLACE,
-        )
-        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME", error))?;
-        FileSync::sync_parent(&consumed)?;
+        if consume {
+            rustix::fs::renameat_with(
+                rustix::fs::CWD,
+                &capability,
+                rustix::fs::CWD,
+                &consumed,
+                rustix::fs::RenameFlags::NOREPLACE,
+            )
+            .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME", error))?;
+            FileSync::sync_parent(&consumed)?;
+        }
     }
     Ok(())
+}
+
+fn authenticate_cross_transition_custody(
+    options: &ExternalTransitionOptions,
+    attestations: &[(String, ExternalVerifierAttestation)],
+    transaction: (&CustodyReceiptBinding, Value),
+    freeze: (&CustodyReceiptBinding, Value),
+) -> Result<()> {
+    let (transaction_binding, transaction_value) = transaction;
+    let (freeze_binding, freeze_value) = freeze;
+    if transaction_value["schema"] != EXTERNAL_RECEIPT_SCHEMA
+        || transaction_value["transaction_id"] != "calibration-v1"
+        || derived_id(&transaction_value, "receipt_id")? != transaction_value["receipt_id"]
+        || freeze_value["schema"] != "cal04b-freeze-receipt-v1"
+        || derived_id(&freeze_value, "freeze_receipt_id")? != freeze_value["freeze_receipt_id"]
+        || freeze_value["calibration_receipt_sha256"] != transaction_binding.sha256
+        || freeze_value["manifest_sha256"] != freeze_value["freeze_digest"]
+        || attestations
+            .iter()
+            .any(|(_, attestation)| attestation.freeze_digest != freeze_value["freeze_digest"])
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-CUSTODY-CROSS-BINDING",
+            &freeze_binding.path,
+        ));
+    }
+    let plan = load_plan(&options.plan_path)?;
+    let parent = plan.parent_plan.as_ref().ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-PARENT-PLAN",
+            "holdout custody requires a Generation-A parent plan",
+        )
+    })?;
+    verify_external_transaction(Path::new(&parent.path), &transaction_value)
+}
+
+fn create_opening_token_custody_receipt(
+    options: &ExternalTransitionOptions,
+    transaction: &ExternalTransaction,
+) -> Result<Value> {
+    if !transaction
+        .heavy
+        .iter()
+        .any(|node| node.harvard_access == "OPENS_HARVARD")
+    {
+        return Ok(Value::Null);
+    }
+    let custody_root = options.custody_root.as_ref().ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-CUSTODY-ROOT-REQUIRED",
+            &transaction.transaction_id,
+        )
+    })?;
+    let token = options.opening_token.as_ref().ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-HARVARD-TOKEN-REQUIRED",
+            &transaction.transaction_id,
+        )
+    })?;
+    let token_canonical = fs::canonicalize(token)
+        .map_err(|error| external_error("GATE-EXTERNAL-HARVARD-TOKEN", error))?;
+    let custody_canonical = fs::canonicalize(custody_root)
+        .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-ROOT", error))?;
+    let token_metadata = fs::symlink_metadata(token)
+        .map_err(|error| external_error("GATE-EXTERNAL-HARVARD-TOKEN", error))?;
+    if token_metadata.file_type().is_symlink()
+        || !token_metadata.is_file()
+        || token_canonical != custody_canonical.join("holdout-opened-once.lock")
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-HARVARD-TOKEN-PATH",
+            &token.display().to_string(),
+        ));
+    }
+    let holdout_receipt = holdout_execution_receipt_path(options, transaction)?;
+    let holdout_bytes = fs::read(&holdout_receipt)
+        .map_err(|error| external_error("GATE-EXTERNAL-HOLDOUT-RECEIPT", error))?;
+    let fields = holdout_execution_fields(&holdout_bytes)?;
+    let freeze = parse_strict(
+        &fs::read(custody_root.join("freeze.receipt.json"))
+            .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?,
+    )?;
+    let token_sha256 = file_sha256(token)?;
+    if fields.get("state").map(String::as_str) != Some("PASS_SCORED_NO_REFIT")
+        || fields.get("token_sha256") != Some(&token_sha256)
+        || fields.get("freeze_digest").map(String::as_str) != freeze["freeze_digest"].as_str()
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-OPENING-CUSTODY",
+            "holdout receipt does not bind the opening token and freeze",
+        ));
+    }
+    let mut value = json!({
+        "schema": "openwepp-holdout-opening-token-receipt-v1",
+        "opening_token_receipt_id": "",
+        "result": "PASS",
+        "token_path": token.display().to_string(),
+        "token_sha256": token_sha256,
+        "freeze_digest": freeze["freeze_digest"],
+        "holdout_execution_receipt_path": holdout_receipt.display().to_string(),
+        "holdout_execution_receipt_sha256": sha256_bytes(&holdout_bytes),
+    });
+    value["opening_token_receipt_id"] =
+        Value::String(derived_id(&value, "opening_token_receipt_id")?);
+    persist_exclusive(
+        &custody_root.join("holdout-opening-token.receipt.json"),
+        &value,
+    )?;
+    Ok(value)
+}
+
+fn verify_opening_token_custody_receipt(
+    options: &ExternalTransitionOptions,
+    transaction: &ExternalTransaction,
+    embedded: &Value,
+) -> Result<()> {
+    let opens = transaction
+        .heavy
+        .iter()
+        .any(|node| node.harvard_access == "OPENS_HARVARD");
+    if !opens {
+        return if embedded.is_null() {
+            Ok(())
+        } else {
+            Err(policy_error(
+                "GATE-EXTERNAL-OPENING-CUSTODY",
+                "non-Harvard transaction carried opening custody",
+            ))
+        };
+    }
+    let custody_root = options
+        .custody_root
+        .as_ref()
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-CUSTODY-ROOT-REQUIRED", "opening custody"))?;
+    let path = custody_root.join("holdout-opening-token.receipt.json");
+    let persisted = parse_strict(
+        &fs::read(&path).map_err(|error| external_error("GATE-EXTERNAL-OPENING-CUSTODY", error))?,
+    )?;
+    let schema = parse_strict(include_bytes!(
+        "../../../../gate-policy/v1/schemas/holdout-opening-token-receipt.schema.json"
+    ))?;
+    validate_schema(&schema, &persisted, "holdout-opening-token-receipt")?;
+    if &persisted != embedded
+        || embedded["schema"] != "openwepp-holdout-opening-token-receipt-v1"
+        || embedded["result"] != "PASS"
+        || derived_id(embedded, "opening_token_receipt_id")? != embedded["opening_token_receipt_id"]
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-OPENING-CUSTODY",
+            &path.display().to_string(),
+        ));
+    }
+    let token = options
+        .opening_token
+        .as_ref()
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-HARVARD-TOKEN-REQUIRED", "opening custody"))?;
+    if token != &custody_root.join("holdout-opened-once.lock") {
+        return Err(policy_error(
+            "GATE-EXTERNAL-HARVARD-TOKEN-PATH",
+            &token.display().to_string(),
+        ));
+    }
+    let holdout_receipt = holdout_execution_receipt_path(options, transaction)?;
+    let holdout_bytes = fs::read(&holdout_receipt)
+        .map_err(|error| external_error("GATE-EXTERNAL-HOLDOUT-RECEIPT", error))?;
+    let fields = holdout_execution_fields(&holdout_bytes)?;
+    let freeze = parse_strict(
+        &fs::read(custody_root.join("freeze.receipt.json"))
+            .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?,
+    )?;
+    if embedded["token_path"] != token.display().to_string()
+        || embedded["token_sha256"] != file_sha256(token)?
+        || embedded["holdout_execution_receipt_path"] != holdout_receipt.display().to_string()
+        || embedded["holdout_execution_receipt_sha256"] != sha256_bytes(&holdout_bytes)
+        || fields.get("token_sha256").map(String::as_str) != embedded["token_sha256"].as_str()
+        || fields.get("freeze_digest").map(String::as_str) != embedded["freeze_digest"].as_str()
+        || embedded["freeze_digest"] != freeze["freeze_digest"]
+        || fields.get("state").map(String::as_str) != Some("PASS_SCORED_NO_REFIT")
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-OPENING-CUSTODY",
+            "opening token, freeze, or holdout receipt drifted",
+        ));
+    }
+    Ok(())
+}
+
+fn holdout_execution_receipt_path(
+    options: &ExternalTransitionOptions,
+    transaction: &ExternalTransaction,
+) -> Result<PathBuf> {
+    let relative = transaction
+        .heavy
+        .iter()
+        .flat_map(|node| &node.declared_outputs)
+        .find(|path| path.ends_with("/holdout-execution-receipt.csv"))
+        .ok_or_else(|| {
+            policy_error(
+                "GATE-EXTERNAL-OPENING-CUSTODY",
+                "holdout execution receipt is undeclared",
+            )
+        })?;
+    Ok(options.attempt_root.join(relative))
+}
+
+fn holdout_execution_fields(bytes: &[u8]) -> Result<BTreeMap<String, String>> {
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_reader(bytes);
+    let headers = reader
+        .headers()
+        .map_err(|error| external_error("GATE-EXTERNAL-HOLDOUT-RECEIPT", error))?
+        .clone();
+    let rows = reader
+        .records()
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|error| external_error("GATE-EXTERNAL-HOLDOUT-RECEIPT", error))?;
+    if rows.len() != 1 || headers.len() != rows[0].len() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-HOLDOUT-RECEIPT",
+            "expected exactly one complete row",
+        ));
+    }
+    Ok(headers
+        .iter()
+        .zip(rows[0].iter())
+        .map(|(name, value)| (name.to_owned(), value.to_owned()))
+        .collect())
 }
 
 #[cfg(unix)]
@@ -346,15 +612,19 @@ fn authenticate_attestation_argv(
     if attestation.argv.first().map(String::as_str) != script.to_str() {
         return Err(policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id));
     }
-    let operands = attestation.argv.get(1..).ok_or_else(|| {
-        policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id)
-    })?;
+    let operands = attestation
+        .argv
+        .get(1..)
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id))?;
     if operands.len() % 2 != 0 {
         return Err(policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id));
     }
     let mut supplied = BTreeMap::new();
     for pair in operands.chunks_exact(2) {
-        if supplied.insert(pair[0].as_str(), pair[1].as_str()).is_some() {
+        if supplied
+            .insert(pair[0].as_str(), pair[1].as_str())
+            .is_some()
+        {
             return Err(policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id));
         }
     }
@@ -370,9 +640,9 @@ fn authenticate_attestation_argv(
     {
         return Err(policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id));
     }
-    let verifier_suffix = verifier_id.strip_prefix("verifier_").ok_or_else(|| {
-        policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id)
-    })?;
+    let verifier_suffix = verifier_id
+        .strip_prefix("verifier_")
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-CUSTODY-ARGV", verifier_id))?;
     let expected = BTreeMap::from([
         ("--execution-root", execution_root.display().to_string()),
         ("--verifier-id", verifier_id.to_owned()),

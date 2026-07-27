@@ -113,7 +113,7 @@ def git_output(repository: Path, *arguments: str, binary: bool = False) -> bytes
     return result.stdout if binary else result.stdout.decode("utf-8").strip()
 
 
-def authenticated_source_identity(base_plan: Path) -> dict[str, str]:
+def authenticated_source_identity(base_plan: Path) -> tuple[Path, dict[str, str]]:
     repository = Path(
         str(git_output(base_plan.parent, "rev-parse", "--show-toplevel"))
     ).resolve(strict=True)
@@ -131,7 +131,7 @@ def authenticated_source_identity(base_plan: Path) -> dict[str, str]:
     )
     if status:
         raise ValueError("Generation-B requires a clean authenticated source checkout")
-    return {
+    return repository, {
         "head": str(git_output(repository, "rev-parse", "HEAD")),
         "tree": str(git_output(repository, "rev-parse", "HEAD^{tree}")),
         "diff_sha256": sha256_bytes(status),
@@ -200,9 +200,10 @@ def build_generation_b(
     freeze_receipt: Path,
     attestation_paths: list[Path],
     custody_root: Path,
+    planner: Path,
 ) -> dict[str, object]:
     base_raw, plan = read_canonical_json(base_plan)
-    source_identity = authenticated_source_identity(base_plan)
+    repository, source_identity = authenticated_source_identity(base_plan)
     if (
         plan.get("schema") != "openwepp-external-dag-plan-v1"
         or plan.get("generation") != "A"
@@ -235,6 +236,21 @@ def build_generation_b(
         or len(calibration["receipt_id"]) != 64
     ):
         raise ValueError("calibration transaction receipt is not passing")
+    subprocess.run(
+        [
+            str(planner.resolve(strict=True)),
+            "verify-external-transaction",
+            "--repo",
+            str(repository),
+            "--external-plan",
+            str(base_plan.resolve(strict=True)),
+            "--receipt",
+            str(calibration_receipt.resolve(strict=True)),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     freeze_relative = confined_custody_path(custody_root, freeze_receipt)
     freeze_raw, freeze = read_canonical_json(freeze_receipt)
     freeze_digest = freeze.get("freeze_digest")
@@ -245,6 +261,8 @@ def build_generation_b(
         != derived_id(freeze, "freeze_receipt_id")
         or not isinstance(freeze_digest, str)
         or len(freeze_digest) != 64
+        or freeze.get("calibration_receipt_sha256")
+        != sha256_bytes(calibration_raw)
     ):
         raise ValueError("freeze receipt is not passing or digest-bound")
 
@@ -316,6 +334,7 @@ def generate_holdout_plan_main(argv: list[str]) -> int:
     parser.add_argument("--attestation", type=Path, action="append", required=True)
     parser.add_argument("--custody-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--planner", type=Path, required=True)
     options = parser.parse_args(argv)
     custody_root = options.custody_root.resolve(strict=True)
     output = options.output.resolve(strict=False)
@@ -331,6 +350,7 @@ def generate_holdout_plan_main(argv: list[str]) -> int:
         options.freeze_receipt.resolve(strict=True),
         [path.resolve(strict=True) for path in options.attestation],
         custody_root,
+        options.planner,
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8") as stream:

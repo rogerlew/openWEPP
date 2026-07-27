@@ -1,53 +1,95 @@
-fn construct_ready_audit(
+fn construct_audit_report(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
     transaction: &ExternalTransaction,
     light: &[ExternalNodeReceipt],
     source_before: &RepositoryIdentity,
     attempt_identity: &str,
-) -> Result<ConstructedAudit> {
-    require_base_ancestor(&options.repo, &plan.authority.base_commit)?;
-    let package_audit = validate_package(
-        &options.repo,
-        &plan.authority.base_commit,
-        Path::new(&plan.authority.package_path),
-    )?;
-    if package_audit["status"] != "READY" {
-        return Err(policy_error(
-            "GATE-EXTERNAL-PACKAGE-BLOCKED",
-            "canonical package admission did not return READY",
-        ));
-    }
-    verify_cheap_evidence(&options.repo, &plan.authority.cheap_gate_evidence)?;
-    reconstruct_source_inventory(&options.repo, plan)?;
-    verify_light_receipts(options, transaction, light)?;
-    let node_identities = collect_node_identities(options, transaction)?;
-    verify_root_separation(options)?;
-    verify_ledger_admission(&options.ledger)?;
-    let checks = [
-        ("package_authority", package_audit["package_audit_id"].clone()),
-        ("source_identity", json!(source_before)),
-        ("plan_identity", json!(plan.plan_id)),
-        ("light_receipts", json!(light.len())),
-        ("inventory_order", json!(transaction.light.len() + transaction.heavy.len())),
-        ("toolchain_environment", json!(node_identities)),
-        ("fresh_external_root", json!(options.attempt_root)),
-        ("root_separation", json!("VERIFIED")),
-        ("custody_prerequisites", json!(transaction.custody_prerequisites)),
-        ("durable_ledger", ledger_head(&options.ledger)?),
-    ]
-    .map(|(check_id, evidence)| {
-        json!({"check_id": check_id, "result": "PASS", "evidence": evidence})
+) -> Result<Value> {
+    let package_result = (|| {
+        require_base_ancestor(&options.repo, &plan.authority.base_commit)?;
+        let package_audit = validate_package(
+            &options.repo,
+            &plan.authority.base_commit,
+            Path::new(&plan.authority.package_path),
+        )?;
+        if package_audit["status"] != "READY" {
+            return Err(policy_error(
+                "GATE-EXTERNAL-PACKAGE-BLOCKED",
+                "canonical package admission did not return READY",
+            ));
+        }
+        Ok(package_audit)
+    })();
+    let package_audit = package_result
+        .as_ref()
+        .map_or(Value::Null, |value| (*value).clone());
+    let source_result = (|| {
+        verify_cheap_evidence(&options.repo, &plan.authority.cheap_gate_evidence)?;
+        Ok(json!(source_before))
+    })();
+    let plan_result =
+        reconstruct_source_inventory(&options.repo, plan).map(|()| json!(plan.plan_id));
+    let inventory_result = reconstruct_source_inventory(&options.repo, plan)
+        .map(|()| json!(transaction.light.len() + transaction.heavy.len()));
+    let light_result =
+        verify_light_receipts(options, transaction, light).map(|()| json!(light.len()));
+    let node_result = collect_node_identities(options, transaction).map(|value| json!(value));
+    let node_identities = node_result
+        .as_ref()
+        .map_or_else(|_| Value::Null, Clone::clone);
+    let root_result = directory_identity(&options.attempt_root).and_then(|identity| {
+        if identity == attempt_identity {
+            Ok(json!(identity))
+        } else {
+            Err(policy_error(
+                "GATE-EXTERNAL-ROOT-REPLACED",
+                "attempt root changed during audit construction",
+            ))
+        }
     });
+    let separation_result = verify_root_separation(options).map(|()| json!("VERIFIED"));
+    let custody_result = verify_custody_files(options, transaction, true).map(|value| json!(value));
+    let ledger_result = (|| {
+        admit_attempt_ledger(&options.ledger)?;
+        verify_ledger_admission(&options.ledger)?;
+        ledger_head(&options.ledger)
+    })();
+    let node_check = match node_result {
+        Ok(evidence) => {
+            json!({"check_id": "toolchain_environment", "result": "PASS", "evidence": evidence})
+        }
+        Err(error) => json!({
+            "check_id": "toolchain_environment",
+            "result": "FAIL",
+            "evidence": null,
+            "reason_code": error.code,
+            "reason": error.message,
+        }),
+    };
+    let checks = vec![
+        evaluated_check("package_authority", package_result),
+        evaluated_check("source_identity", source_result),
+        evaluated_check("plan_identity", plan_result),
+        evaluated_check("light_receipts", light_result),
+        evaluated_check("inventory_order", inventory_result),
+        node_check,
+        evaluated_check("fresh_external_root", root_result),
+        evaluated_check("root_separation", separation_result),
+        evaluated_check("custody_prerequisites", custody_result),
+        evaluated_check("durable_ledger", ledger_result),
+    ];
+    let ready = checks.iter().all(|check| check["result"] == "PASS");
     let mut audit = json!({
         "schema": EXTERNAL_AUDIT_SCHEMA,
         "audit_id": "",
-        "status": "READY",
+        "status": if ready { "READY" } else { "BLOCKED" },
         "plan_id": plan.plan_id,
         "transaction_id": transaction.transaction_id,
         "attempt_root": options.attempt_root.display().to_string(),
         "attempt_root_identity": attempt_identity,
         "ledger": options.ledger.display().to_string(),
+        "custody_root": options.custody_root.as_ref().map(|path| path.display().to_string()),
         "ledger_head_sha256": ledger_head(&options.ledger)?,
         "claims": claims_value(&options.claims),
         "source_identity": source_before,
@@ -58,7 +100,22 @@ fn construct_ready_audit(
     });
     let audit_id = derived_id(&audit, "audit_id")?;
     audit["audit_id"] = Value::String(audit_id);
-    ConstructedAudit::from_external(audit)
+    Ok(audit)
+}
+
+fn evaluated_check(check_id: &str, result: Result<Value>) -> Value {
+    match result {
+        Ok(evidence) => {
+            json!({"check_id": check_id, "result": "PASS", "evidence": evidence})
+        }
+        Err(error) => json!({
+            "check_id": check_id,
+            "result": "FAIL",
+            "evidence": null,
+            "reason_code": error.code,
+            "reason": error.message,
+        }),
+    }
 }
 
 fn require_base_ancestor(repo: &Path, base: &str) -> Result<()> {
@@ -96,6 +153,8 @@ fn verify_cheap_evidence(repo: &Path, bindings: &[SourceBinding]) -> Result<()> 
 }
 
 fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<()> {
+    let repo =
+        fs::canonicalize(repo).map_err(|error| external_error("GATE-EXTERNAL-REPO", error))?;
     let mut all_nodes = plan
         .transactions
         .iter()
@@ -115,36 +174,36 @@ fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<(
             "external projection differs from source command inventory",
         ));
     }
-    let order_labels = rows
-        .iter()
-        .filter_map(|row| row.get(0))
-        .collect::<BTreeSet<_>>();
-    if order_labels.len() != rows.len() || order_labels.contains("") {
-        return Err(policy_error(
-            "GATE-EXTERNAL-INVENTORY-ORDER",
-            "source command order labels must be nonempty and unique",
-        ));
-    }
-    for (index, (row, node)) in rows.iter().zip(&all_nodes).enumerate() {
-        let projected_order = u64::try_from(index + 1)
-            .map_err(|error| external_error("GATE-EXTERNAL-INVENTORY-ORDER", error))?;
+    let projected_orders = project_source_orders(&rows)?;
+    for (row, node) in rows.iter().zip(&all_nodes) {
+        let order_label = row.get(0).unwrap_or("");
+        let projected_order = projected_orders
+            .get(order_label)
+            .copied()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-INVENTORY-ORDER", order_label))?;
         let source_path = row.get(2).unwrap_or("");
         let command = row.get(3).unwrap_or("");
         let environment = row.get(4).unwrap_or("");
+        let working_directory = row.get(5).unwrap_or("");
+        let inputs = row.get(6).unwrap_or("");
         let outputs = row.get(7).unwrap_or("");
         let access = row.get(8).unwrap_or("");
         let cost = row.get(9).unwrap_or("");
         if projected_order != node.order
             || row.get(1) != Some(node.command_id.as_str())
-            || !source_path.ends_with(&node.source_path)
-            || !command_projection_matches(repo, command, node)?
+            || canonical_source_path(&repo, source_path).as_deref()
+                != Some(node.source_path.as_str())
+            || !command_projection_matches(&repo, command, node)?
             || !environment_projection_matches(command, environment, node)?
+            || working_directory != node.source_working_directory
+            || canonical_source_working_directory(&repo, working_directory)
+                != canonical_plan_working_directory(&repo, &node.cwd)
+            || split_source_inventory(inputs) != node.source_inputs
             || !output_projection_matches(outputs, node)
             || matches!(
                 access,
                 "FORBIDDEN" | "EXPECTED_IDENTITIES_ONLY" | "OPENED_RESULTS_ONLY"
-            )
-                != (node.harvard_access == "NONE")
+            ) != (node.harvard_access == "NONE")
             || cost != node.cost_class
         {
             return Err(policy_error(
@@ -153,7 +212,93 @@ fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<(
             ));
         }
     }
-    verify_contract_inventory(repo, plan, &all_nodes)
+    verify_contract_inventory(&repo, plan, &all_nodes)
+}
+
+fn canonical_source_working_directory(repo: &Path, working_directory: &str) -> String {
+    let normalized_repo = fs::canonicalize(repo).unwrap_or_else(|_| repo.to_path_buf());
+    if Path::new(working_directory) == normalized_repo {
+        "${REPO}".to_owned()
+    } else {
+        working_directory.to_owned()
+    }
+}
+
+fn canonical_plan_working_directory(repo: &Path, working_directory: &str) -> String {
+    let normalized_repo = fs::canonicalize(repo).unwrap_or_else(|_| repo.to_path_buf());
+    if Path::new(working_directory) == normalized_repo {
+        "${REPO}".to_owned()
+    } else {
+        working_directory.to_owned()
+    }
+}
+
+fn split_source_inventory(inputs: &str) -> Vec<String> {
+    inputs
+        .split(';')
+        .map(str::trim)
+        .filter(|input| !input.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+
+fn canonical_source_path(repo: &Path, source_path: &str) -> Option<String> {
+    let path = Path::new(source_path);
+    if path.is_absolute() {
+        let normalized_repo = fs::canonicalize(repo).unwrap_or_else(|_| repo.to_path_buf());
+        path.strip_prefix(normalized_repo)
+            .ok()
+            .and_then(Path::to_str)
+            .map(str::to_owned)
+    } else {
+        confined_relative(source_path)
+            .ok()
+            .map(|()| source_path.to_owned())
+    }
+}
+
+fn project_source_orders(rows: &[csv::StringRecord]) -> Result<BTreeMap<String, u64>> {
+    let mut parsed = rows
+        .iter()
+        .map(|row| {
+            let label = row.get(0).unwrap_or("");
+            let split = label
+                .find(|character: char| !character.is_ascii_digit())
+                .unwrap_or(label.len());
+            let (number, suffix) = label.split_at(split);
+            if number.is_empty()
+                || number.starts_with('0')
+                || !suffix
+                    .chars()
+                    .all(|character| character.is_ascii_lowercase())
+            {
+                return Err(policy_error("GATE-EXTERNAL-INVENTORY-ORDER", label));
+            }
+            let number = number
+                .parse::<u64>()
+                .map_err(|error| external_error("GATE-EXTERNAL-INVENTORY-ORDER", error))?;
+            Ok(((number, suffix.to_owned()), label.to_owned()))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    parsed.sort_by(|left, right| left.0.cmp(&right.0));
+    if parsed
+        .windows(2)
+        .any(|pair| pair[0].0 == pair[1].0 || pair[0].1 == pair[1].1)
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-INVENTORY-ORDER",
+            "source command order labels must be unique",
+        ));
+    }
+    parsed
+        .into_iter()
+        .enumerate()
+        .map(|(index, (_, label))| {
+            u64::try_from(index + 1)
+                .map(|order| (label, order))
+                .map_err(|error| external_error("GATE-EXTERNAL-INVENTORY-ORDER", error))
+        })
+        .collect()
 }
 
 fn command_projection_matches(repo: &Path, command: &str, node: &ExternalNode) -> Result<bool> {
@@ -249,19 +394,25 @@ fn environment_projection_matches(
     if !assignments.is_empty() {
         return Ok(node.env == assignments);
     }
-    Ok(environment == "default"
-        && (node.env.is_empty()
-            || node.command_id.starts_with("build_")
+    if matches!(environment, "default" | "none") {
+        return Ok(node.env.is_empty()
+            || environment == "default"
+                && node.command_id.starts_with("build_")
                 && node.env
                     == BTreeMap::from([(
                         "CARGO_TARGET_DIR".to_owned(),
                         "${CARGO_TARGET_DIR}".to_owned(),
-                    )]))
-        || node.env.iter().all(|(name, value)| {
-            environment
-                .split_whitespace()
-                .any(|item| item == format!("{name}={value}"))
-        }))
+                    )]));
+    }
+    let declared = environment
+        .split_whitespace()
+        .map(|item| {
+            item.split_once('=')
+                .map(|(name, value)| (name.to_owned(), value.to_owned()))
+                .ok_or_else(|| policy_error("GATE-EXTERNAL-SOURCE-ENV", item))
+        })
+        .collect::<Result<BTreeMap<_, _>>>()?;
+    Ok(node.env == declared)
 }
 
 fn output_projection_matches(outputs: &str, node: &ExternalNode) -> bool {
@@ -280,13 +431,11 @@ fn output_projection_matches(outputs: &str, node: &ExternalNode) -> bool {
         .map(canonical_contract_output)
         .collect::<Vec<_>>();
     expected.iter().all(|path| {
-        node.declared_outputs
-            .iter()
-            .any(|declaration| {
-                path == declaration
-                    || path.starts_with(&format!("{declaration}/"))
-                    || declaration.ends_with(&format!("/{path}"))
-            })
+        node.declared_outputs.iter().any(|declaration| {
+            path == declaration
+                || path.starts_with(&format!("{declaration}/"))
+                || declaration.ends_with(&format!("/{path}"))
+        })
     })
 }
 
@@ -434,7 +583,7 @@ fn collect_node_identities(
                 .collect::<Result<Vec<_>>>()?;
             let environment = admitted_environment(options, node)?;
             let executable = resolve_executable(&argv[0], &environment)?;
-            let executable_sha256 = file_sha256(&executable)?;
+            let executable_sha256 = executable_sha256(&executable)?;
             let source_sha256 = file_sha256(&options.repo.join(&node.source_path))?;
             if Path::new(&node.source_path)
                 .extension()
@@ -481,15 +630,28 @@ fn verify_root_separation(options: &ExternalTransitionOptions) -> Result<()> {
 }
 
 fn verify_ledger_admission(path: &Path) -> Result<()> {
+    admit_attempt_ledger(path)?;
     let text =
         fs::read_to_string(path).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+    let mut defect_statuses = BTreeMap::new();
     for line in text.lines().filter(|line| !line.is_empty()) {
         let value = parse_strict(line.as_bytes())?;
-        if value["record_type"] == "TOOLING_DEFECT" && value["status"] == "OPEN" {
-            return Err(policy_error(
-                "GATE-EXTERNAL-TOOLING-DEFECT",
-                value["defect_id"].as_str().unwrap_or("unknown"),
-            ));
+        if value["record_type"] == "TOOLING_DEFECT" {
+            let defect_id = value["defect_id"]
+                .as_str()
+                .ok_or_else(|| policy_error("GATE-EXTERNAL-TOOLING-DEFECT-SHAPE", "defect_id"))?;
+            let status = value["status"]
+                .as_str()
+                .ok_or_else(|| policy_error("GATE-EXTERNAL-TOOLING-DEFECT-SHAPE", "status"))?;
+            if !matches!(status, "OPEN" | "CLOSED") {
+                return Err(policy_error("GATE-EXTERNAL-TOOLING-DEFECT-SHAPE", status));
+            }
+            defect_statuses.insert(defect_id.to_owned(), status.to_owned());
+        }
+    }
+    for (defect_id, status) in defect_statuses {
+        if status == "OPEN" {
+            return Err(policy_error("GATE-EXTERNAL-TOOLING-DEFECT", &defect_id));
         }
     }
     Ok(())
