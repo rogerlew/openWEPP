@@ -4,9 +4,9 @@ use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use openwepp_assurance::{
-    V2AmendMode, amend_attribution, amend_attribution_at_generation, amend_lifecycle,
-    amend_principal, amend_role, inspect_report, rebind_implementation, recover_amendment,
-    sha256_bytes, verify_generation,
+    V2AmendMode, adopt_report_source, adopt_report_source_at_generation, amend_attribution,
+    amend_attribution_at_generation, amend_lifecycle, amend_principal, amend_role, inspect_report,
+    rebind_implementation, recover_amendment, sha256_bytes, verify_generation,
 };
 
 const GROUNDWATER: &str = "linear-groundwater-reservoir-recurrence";
@@ -259,6 +259,280 @@ fn implementation_rebind_adopts_only_the_finite_contract_surface() {
             .to_string()
             .contains("generated identity member changed")
     );
+}
+
+#[test]
+fn report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority() {
+    let fixture = current_unverified_fixture("assurance-adopt-report-source");
+    let source = Path::new("tests/fixtures/cancov_forest/README.md");
+    let source_path = fixture.path.join(source);
+    let mut changed_source = fs::read(&source_path).unwrap();
+    changed_source.extend_from_slice(b"\nSource-adoption integration fixture.\n");
+    fs::write(&source_path, &changed_source).unwrap();
+    let before_tree = capture_tree(&fixture.path.join("assurance/v2"));
+    let before_events = capture_tree(
+        &fixture
+            .path
+            .join(format!("assurance/v2/reports/{SNOW}/review-events")),
+    );
+    let before_lock: serde_json::Value = serde_json::from_slice(
+        &fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/review.lock.json")),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let old_active = before_lock["event_ids"].as_array().unwrap().clone();
+    let unaffected_report_path = fixture
+        .path
+        .join(format!("assurance/v2/reports/{GROUNDWATER}/report.yaml"));
+    let unaffected_lock_path = fixture.path.join(format!(
+        "assurance/v2/reports/{GROUNDWATER}/review.lock.json"
+    ));
+    let unaffected_report = fs::read(&unaffected_report_path).unwrap();
+    let unaffected_lock: serde_json::Value =
+        serde_json::from_slice(&fs::read(&unaffected_lock_path).unwrap()).unwrap();
+    let prior_report: serde_yaml::Value = serde_yaml::from_slice(
+        &fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/report.yaml")),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        prior_report["authorship"]["scientific_approver"].as_str(),
+        Some("roger-lew")
+    );
+
+    let first = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Check).unwrap();
+    let second = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Check).unwrap();
+    assert_eq!(first, second);
+    assert!(first.changed);
+    assert_eq!(first.operation, "adopt-report-source");
+    assert_eq!(first.impact_class, "scientific-full");
+    assert_eq!(first.affected_reports, [GROUNDWATER, SNOW]);
+    assert!(first.affected_paths.contains(&source.display().to_string()));
+    assert!(first.affected_paths.contains(&format!(
+        "assurance/v2/reports/{GROUNDWATER}/review.lock.json"
+    )));
+    assert_eq!(
+        before_tree,
+        capture_tree(&fixture.path.join("assurance/v2"))
+    );
+
+    let applied = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Apply).unwrap();
+    assert_eq!(first, applied);
+    let report: serde_yaml::Value = serde_yaml::from_slice(
+        &fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/report.yaml")),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(report["lifecycle"].as_str(), Some("DRAFT"));
+    assert_eq!(
+        report["agent_assistance"]["review_entry_authorized"].as_bool(),
+        Some(false)
+    );
+    assert!(report["authorship"]["scientific_approver"].is_null());
+    assert_eq!(report["review"]["state"].as_str(), Some("DRAFT"));
+    assert_eq!(report["review"]["decision"].as_str(), Some("not_started"));
+    assert!(report["review"]["review_charge"].is_null());
+    assert!(report["review"]["build_maintainer_id"].is_null());
+    assert!(
+        report["review"]["material_producer_ids"]
+            .as_sequence()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        report["review"]["independence_assessment"].as_str(),
+        Some("not_assessed")
+    );
+    let after_lock: serde_json::Value = serde_json::from_slice(
+        &fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/review.lock.json")),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert!(after_lock["event_ids"].as_array().unwrap().is_empty());
+    for event in old_active {
+        assert!(
+            after_lock["invalidated_event_ids"]
+                .as_array()
+                .unwrap()
+                .contains(&event)
+        );
+    }
+    assert_eq!(
+        before_events,
+        capture_tree(
+            &fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/review-events"))
+        )
+    );
+    assert_eq!(
+        unaffected_report,
+        fs::read(&unaffected_report_path).unwrap()
+    );
+    let unaffected_after: serde_json::Value =
+        serde_json::from_slice(&fs::read(&unaffected_lock_path).unwrap()).unwrap();
+    for field in [
+        "report_id",
+        "lifecycle",
+        "event_ids",
+        "invalidated_event_ids",
+        "science_root",
+        "communication_root",
+        "attribution_root",
+        "review_governance_root",
+        "content_review_subject_root",
+    ] {
+        assert_eq!(unaffected_lock[field], unaffected_after[field]);
+    }
+    let identity: serde_json::Value = serde_json::from_slice(
+        &fs::read(fixture.path.join("assurance/v2/identity.lock.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        identity["sources"][source.to_str().unwrap()].as_str(),
+        Some(sha256_bytes(&changed_source).as_str())
+    );
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_report(SNOW)
+        .unwrap();
+
+    let installed = capture_tree(&fixture.path.join("assurance/v2"));
+    for mode in [V2AmendMode::Check, V2AmendMode::Apply] {
+        let repeated = adopt_report_source(&fixture.path, SNOW, source, mode).unwrap();
+        assert!(!repeated.changed);
+        assert!(repeated.gate_ids.is_empty());
+        assert_eq!(installed, capture_tree(&fixture.path.join("assurance/v2")));
+    }
+}
+
+#[test]
+fn report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation() {
+    let source = Path::new("tests/fixtures/cancov_forest/README.md");
+    let fixture = current_unverified_fixture("assurance-adopt-report-source-negatives");
+    let unchanged = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Check).unwrap();
+    assert!(!unchanged.changed);
+    assert!(
+        adopt_report_source(&fixture.path, GROUNDWATER, source, V2AmendMode::Check)
+            .unwrap_err()
+            .to_string()
+            .contains("not declared")
+    );
+    assert!(
+        adopt_report_source(
+            &fixture.path,
+            SNOW,
+            Path::new("tests/fixtures/not-declared.txt"),
+            V2AmendMode::Check,
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("not declared")
+    );
+
+    fs::write(fixture.path.join(source), b"first external source drift\n").unwrap();
+    let second = Path::new("tests/fixtures/snowfreeze_observed/README.md");
+    let mut second_bytes = fs::read(fixture.path.join(second)).unwrap();
+    second_bytes.push(b'\n');
+    fs::write(fixture.path.join(second), second_bytes).unwrap();
+    let before = capture_tree(&fixture.path);
+    assert!(
+        adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Apply)
+            .unwrap_err()
+            .to_string()
+            .contains("generated identity member changed")
+    );
+    assert_eq!(before, capture_tree(&fixture.path));
+
+    let stale = current_unverified_fixture("assurance-adopt-report-source-stale");
+    fs::write(stale.path.join(source), b"stale generation source drift\n").unwrap();
+    let before = capture_tree(&stale.path);
+    for mode in [V2AmendMode::Check, V2AmendMode::Apply] {
+        assert!(
+            adopt_report_source_at_generation(
+                &stale.path,
+                SNOW,
+                source,
+                mode,
+                Some("not-the-current-generation"),
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("stale generation")
+        );
+        assert_eq!(before, capture_tree(&stale.path));
+    }
+}
+
+#[test]
+fn report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies() {
+    let source = Path::new("tests/fixtures/cancov_forest/README.md");
+    let wrong_kind = current_unverified_fixture("assurance-adopt-report-source-kind");
+    rewrite_canopy_dependency(&wrong_kind.path, |dependency| {
+        dependency["kind"] = serde_yaml::Value::String("external_immutable".to_owned());
+    });
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_kind.path).unwrap();
+    assert!(
+        adopt_report_source(&wrong_kind.path, SNOW, source, V2AmendMode::Check)
+            .unwrap_err()
+            .to_string()
+            .contains("local_content")
+    );
+
+    let internal = current_unverified_fixture("assurance-adopt-report-source-internal");
+    let internal_path =
+        Path::new("assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md");
+    rewrite_canopy_dependency(&internal.path, |dependency| {
+        dependency["path"] =
+            serde_yaml::Value::String(internal_path.to_string_lossy().into_owned());
+    });
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&internal.path).unwrap();
+    assert!(
+        adopt_report_source(&internal.path, SNOW, internal_path, V2AmendMode::Check,)
+            .unwrap_err()
+            .to_string()
+            .contains("outside assurance/v2")
+    );
+}
+
+#[test]
+fn report_source_adoption_rolls_back_an_invalid_isolated_candidate() {
+    let fixture = current_unverified_fixture("assurance-adopt-report-source-rollback");
+    let source = Path::new("tests/fixtures/cancov_forest/README.md");
+    let report_path = fixture
+        .path
+        .join(format!("assurance/v2/reports/{SNOW}/report.yaml"));
+    let mut report: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&report_path).unwrap()).unwrap();
+    report["reader_metadata"]["scientific_question"] = serde_yaml::Value::String(String::new());
+    fs::write(&report_path, serde_yaml::to_string(&report).unwrap()).unwrap();
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&fixture.path).unwrap();
+    fs::write(fixture.path.join(source), b"rollback source drift\n").unwrap();
+    let before = capture_tree(&fixture.path);
+    assert!(
+        adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Apply)
+            .unwrap_err()
+            .to_string()
+            .contains("scientific question")
+    );
+    assert_eq!(before, capture_tree(&fixture.path));
+    assert!(!fixture.path.join("assurance/.v2.amend.next").exists());
 }
 
 #[test]
@@ -550,6 +824,104 @@ fn fixture(label: &str) -> Scratch {
     openwepp_assurance::copy_v2_test_fixture(&repository_root(), &target.path).unwrap();
     openwepp_assurance::rebind_v2_test_fixture(&target.path).unwrap();
     target
+}
+
+fn current_unverified_fixture(label: &str) -> Scratch {
+    let target = Scratch::new(label);
+    let source = repository_root();
+    copy_tree(
+        &source.join("assurance/v2"),
+        &target.path.join("assurance/v2"),
+    );
+    copy_tree(&source.join("usersum"), &target.path.join("usersum"));
+    let identity: serde_json::Value =
+        serde_json::from_slice(&fs::read(source.join("assurance/v2/identity.lock.json")).unwrap())
+            .unwrap();
+    for path in identity["sources"].as_object().unwrap().keys() {
+        if path.starts_with("assurance/v2/") {
+            continue;
+        }
+        let source_path = source.join(path);
+        let target_path = target.path.join(path);
+        fs::create_dir_all(target_path.parent().unwrap()).unwrap();
+        fs::copy(source_path, target_path).unwrap();
+    }
+    let report_path = target
+        .path
+        .join(format!("assurance/v2/reports/{SNOW}/report.yaml"));
+    let mut report: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&report_path).unwrap()).unwrap();
+    report["lifecycle"] = serde_yaml::Value::String("DRAFT".to_owned());
+    report["agent_assistance"]["review_entry_authorized"] = serde_yaml::Value::Bool(false);
+    report["review"]["state"] = serde_yaml::Value::String("DRAFT".to_owned());
+    report["review"]["decision"] = serde_yaml::Value::String("not_started".to_owned());
+    report["review"]["review_charge"] = serde_yaml::Value::Null;
+    report["review"]["build_maintainer_id"] = serde_yaml::Value::Null;
+    report["review"]["material_producer_ids"] = serde_yaml::Value::Sequence(Vec::new());
+    report["review"]["independence_assessment"] =
+        serde_yaml::Value::String("not_assessed".to_owned());
+    fs::write(&report_path, serde_yaml::to_string(&report).unwrap()).unwrap();
+    let lock_path = target
+        .path
+        .join(format!("assurance/v2/reports/{SNOW}/review.lock.json"));
+    let lock_text = fs::read_to_string(&lock_path).unwrap();
+    let mut lock: serde_json::Value = serde_json::from_str(&lock_text).unwrap();
+    let event_start = lock_text.find("  \"event_ids\": [").unwrap();
+    let active = std::mem::take(lock["event_ids"].as_array_mut().unwrap());
+    let mut invalidated = lock["invalidated_event_ids"].as_array().unwrap().clone();
+    invalidated.extend(active);
+    invalidated.sort_by(|left, right| left.as_str().cmp(&right.as_str()));
+    invalidated.dedup();
+    let invalidated = invalidated
+        .iter()
+        .enumerate()
+        .map(|(index, event)| {
+            let comma = if index + 1 == invalidated.len() {
+                ""
+            } else {
+                ","
+            };
+            format!("    \"{}\"{comma}", event.as_str().unwrap())
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let lock_text = format!(
+        "{}  \"event_ids\": [],\n  \"invalidated_event_ids\": [\n{invalidated}\n  ]\n}}\n",
+        &lock_text[..event_start]
+    );
+    fs::write(&lock_path, lock_text).unwrap();
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&target.path).unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(&target.path).unwrap();
+    let review_entry = br"schema_version: 1
+event_type: review_entry
+principal_id: roger-lew
+decision: entered_pending_review
+rationale: Establish an isolated current-source review-entry fixture.
+recorded_on: 2026-07-27
+authority_source: assurance source-adoption integration contract
+predecessor_event_ids: []
+review_charge: Review the isolated source-adoption fixture.
+build_maintainer_id: codex-agent-assure05
+material_producer_ids:
+- roger-lew
+independence_assessment: Integration fixture authority is intentionally pending.
+scientific_approver_id: roger-lew
+";
+    amend_lifecycle(&target.path, SNOW, review_entry, V2AmendMode::Apply).unwrap();
+    target
+}
+
+fn rewrite_canopy_dependency(root: &Path, rewrite: impl FnOnce(&mut serde_yaml::Value)) {
+    let path = root.join(format!("assurance/v2/reports/{SNOW}/report.yaml"));
+    let mut report: serde_yaml::Value = serde_yaml::from_slice(&fs::read(&path).unwrap()).unwrap();
+    let dependency = report["dependencies"]
+        .as_sequence_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|dependency| dependency["id"].as_str() == Some("SF-DEP-CANOPY-README"))
+        .unwrap();
+    rewrite(dependency);
+    fs::write(path, serde_yaml::to_string(&report).unwrap()).unwrap();
 }
 
 fn capture_tree(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {

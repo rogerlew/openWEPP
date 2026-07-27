@@ -7,7 +7,7 @@ use super::amendment_support::{
     gate_argv, gate_id, parse_yaml, read_regular, receipt_bytes, receipt_id, render_yaml,
     require_optional_text, require_text, set_yaml_string, yaml_key,
 };
-use super::confined::ConfinedDirectory;
+use super::confined::{ConfinedDirectory, validate_relative};
 use super::identity::{
     IDENTITY_LOCK_PATH, IdentityLock, ReviewEvent, ReviewLock, calculate_review_lock,
 };
@@ -261,14 +261,7 @@ pub fn inspect_report(root: &Path, report_id: &str) -> Result<V2Inspection> {
 /// Returns an error for stale source identity, invalid approval authority, or
 /// transaction failure.
 pub fn rebind_implementation(root: &Path, mode: V2AmendMode) -> Result<V2AmendmentReceipt> {
-    let catalog_path = PathBuf::from(CATALOG_PATH);
-    let catalog: serde_yaml::Value =
-        parse_yaml(&catalog_path, &read_regular(root, &catalog_path)?)?;
-    let mut reports = report_paths(&catalog)?
-        .into_iter()
-        .map(|(report_id, _)| report_id)
-        .collect::<Vec<_>>();
-    reports.sort();
+    let reports = all_report_ids(root)?;
     let previous = IdentityLock::load(root)?;
     let exceptions = IMPLEMENTATION_CONTRACT_PATHS
         .iter()
@@ -307,6 +300,7 @@ pub fn rebind_implementation(root: &Path, mode: V2AmendMode) -> Result<V2Amendme
             .iter()
             .map(|path| (*path).to_owned())
             .collect(),
+        BTreeMap::new(),
     )
 }
 
@@ -318,6 +312,195 @@ fn implementation_contract_replacements(root: &Path) -> Result<BTreeMap<PathBuf,
             read_regular(root, &path).map(|bytes| (path, bytes))
         })
         .collect()
+}
+
+/// Adopts one report-declared external local-content source.
+///
+/// An in-review report is returned to draft custody and all active review
+/// events are invalidated because their authority remains bound to the prior
+/// source bytes.
+///
+/// # Errors
+///
+/// Returns an error for an undeclared or assurance-internal source, additional
+/// identity drift, invalid report state, or transaction failure.
+pub fn adopt_report_source(
+    root: &Path,
+    report_id: &str,
+    path: &Path,
+    mode: V2AmendMode,
+) -> Result<V2AmendmentReceipt> {
+    adopt_report_source_at_generation(root, report_id, path, mode, None)
+}
+
+/// Adopts one report source only when the supplied generation remains current.
+///
+/// # Errors
+///
+/// Returns an error for a stale generation, source-selection violation,
+/// additional identity drift, or transaction failure.
+pub fn adopt_report_source_at_generation(
+    root: &Path,
+    report_id: &str,
+    path: &Path,
+    mode: V2AmendMode,
+    if_generation: Option<&str>,
+) -> Result<V2AmendmentReceipt> {
+    validate_relative(path)?;
+    let selected = path.to_str().ok_or_else(|| {
+        AssuranceError::Invalid(format!(
+            "report source path is not UTF-8: {}",
+            path.display()
+        ))
+    })?;
+    let report_path = report_path(root, report_id)?;
+    let report_bytes = read_regular(root, &report_path)?;
+    let mut report: serde_yaml::Value = parse_yaml(&report_path, &report_bytes)?;
+    require_report_lifecycle(&report, report_id, "report source adoption")?;
+    require_declared_external_local_content(&report, report_id, selected)?;
+
+    let previous = IdentityLock::load(root)?;
+    require_expected_generation(&previous, if_generation)?;
+    let expected = previous.sources.get(selected).ok_or_else(|| {
+        AssuranceError::Invalid(format!(
+            "declared report source '{selected}' is absent from generated identity"
+        ))
+    })?;
+    let exceptions = BTreeSet::from([selected]);
+    previous.verify_files_except(root, &exceptions)?;
+    let observed = sha256_bytes(&read_regular(root, path)?);
+    if observed == *expected {
+        return no_op_receipt(
+            root,
+            "adopt-report-source",
+            "scientific-full",
+            vec![report_id.to_owned()],
+            if_generation,
+        );
+    }
+
+    reset_report_to_draft(&mut report)?;
+    let current_review = load_review_lock(root, report_id)?;
+    let event_updates = (!current_review.event_ids.is_empty())
+        .then(|| {
+            BTreeMap::from([(
+                report_id.to_owned(),
+                EventUpdate {
+                    event_ids: Vec::new(),
+                    invalidate_existing: true,
+                },
+            )])
+        })
+        .unwrap_or_default();
+    let affected_reports = all_report_ids(root)?;
+    prepare_or_apply_successor_with_drift(
+        root,
+        "adopt-report-source",
+        "scientific-full",
+        affected_reports,
+        BTreeMap::from([(report_path, render_yaml(&report)?)]),
+        event_updates,
+        mode,
+        if_generation,
+        BTreeSet::from([selected.to_owned()]),
+        BTreeMap::from([(selected.to_owned(), observed)]),
+    )
+}
+
+fn all_report_ids(root: &Path) -> Result<Vec<String>> {
+    let catalog_path = PathBuf::from(CATALOG_PATH);
+    let catalog: serde_yaml::Value =
+        parse_yaml(&catalog_path, &read_regular(root, &catalog_path)?)?;
+    let mut reports = report_paths(&catalog)?
+        .into_iter()
+        .map(|(report_id, _)| report_id)
+        .collect::<Vec<_>>();
+    reports.sort();
+    Ok(reports)
+}
+
+fn require_declared_external_local_content(
+    report: &serde_yaml::Value,
+    report_id: &str,
+    selected: &str,
+) -> Result<()> {
+    let dependencies = report
+        .get("dependencies")
+        .and_then(serde_yaml::Value::as_sequence)
+        .ok_or_else(|| AssuranceError::Invalid("report dependencies are missing".to_owned()))?;
+    let mut matches = dependencies.iter().filter(|dependency| {
+        dependency.get("path").and_then(serde_yaml::Value::as_str) == Some(selected)
+    });
+    let dependency = matches.next().ok_or_else(|| {
+        AssuranceError::Invalid(format!(
+            "source '{selected}' is not declared by report '{report_id}'"
+        ))
+    })?;
+    if matches.next().is_some() {
+        return Err(AssuranceError::Invalid(format!(
+            "source '{selected}' is declared more than once by report '{report_id}'"
+        )));
+    }
+    if dependency.get("kind").and_then(serde_yaml::Value::as_str) != Some("local_content") {
+        return Err(AssuranceError::Invalid(format!(
+            "source '{selected}' must be a local_content dependency"
+        )));
+    }
+    if selected.starts_with("assurance/v2/") {
+        return Err(AssuranceError::Invalid(format!(
+            "adopted report source '{selected}' must be outside assurance/v2"
+        )));
+    }
+    Ok(())
+}
+
+fn reset_report_to_draft(report: &mut serde_yaml::Value) -> Result<()> {
+    let report = report
+        .as_mapping_mut()
+        .ok_or_else(|| AssuranceError::Invalid("report is not an object".to_owned()))?;
+    report.insert(
+        yaml_key("lifecycle"),
+        serde_yaml::Value::String("DRAFT".to_owned()),
+    );
+    let assistance = report
+        .get_mut(yaml_key("agent_assistance"))
+        .and_then(serde_yaml::Value::as_mapping_mut)
+        .ok_or_else(|| AssuranceError::Invalid("report agent_assistance is missing".to_owned()))?;
+    assistance.insert(
+        yaml_key("review_entry_authorized"),
+        serde_yaml::Value::Bool(false),
+    );
+    let authorship = report
+        .get_mut(yaml_key("authorship"))
+        .and_then(serde_yaml::Value::as_mapping_mut)
+        .ok_or_else(|| AssuranceError::Invalid("report authorship is missing".to_owned()))?;
+    authorship.insert(yaml_key("scientific_approver"), serde_yaml::Value::Null);
+    let review = report
+        .get_mut(yaml_key("review"))
+        .and_then(serde_yaml::Value::as_mapping_mut)
+        .ok_or_else(|| AssuranceError::Invalid("report review is missing".to_owned()))?;
+    for (field, value) in [
+        ("state", serde_yaml::Value::String("DRAFT".to_owned())),
+        (
+            "decision",
+            serde_yaml::Value::String("not_started".to_owned()),
+        ),
+        (
+            "independence_assessment",
+            serde_yaml::Value::String("not_assessed".to_owned()),
+        ),
+        ("review_charge", serde_yaml::Value::Null),
+        ("build_maintainer_id", serde_yaml::Value::Null),
+        (
+            "material_producer_ids",
+            serde_yaml::Value::Sequence(Vec::new()),
+        ),
+        ("findings", serde_yaml::Value::Sequence(Vec::new())),
+        ("approvals", serde_yaml::Value::Sequence(Vec::new())),
+    ] {
+        review.insert(yaml_key(field), value);
+    }
+    Ok(())
 }
 
 /// Plans or applies a typed bibliographic attribution correction.
@@ -1765,6 +1948,7 @@ fn prepare_or_apply_successor(
         mode,
         if_generation,
         BTreeSet::new(),
+        BTreeMap::new(),
     )
 }
 
@@ -1779,6 +1963,7 @@ fn prepare_or_apply_successor_with_drift(
     mode: V2AmendMode,
     if_generation: Option<&str>,
     allowed_preexisting_drift: BTreeSet<String>,
+    adopted_source_digests: BTreeMap<String, String>,
 ) -> Result<V2AmendmentReceipt> {
     let previous = IdentityLock::load(root)?;
     let exceptions = allowed_preexisting_drift
@@ -1800,6 +1985,14 @@ fn prepare_or_apply_successor_with_drift(
             sources.insert(text.to_owned(), sha256_bytes(bytes));
         }
     }
+    for (path, digest) in &adopted_source_digests {
+        if !sources.contains_key(path) {
+            return Err(AssuranceError::Invalid(format!(
+                "source adoption cannot add undeclared identity member '{path}'"
+            )));
+        }
+        sources.insert(path.clone(), digest.clone());
+    }
     let mut review_locks = previous.review_locks.clone();
     review_locks.extend(replacement_review_lock_digests(&replacements));
     let next = IdentityLock::successor(&previous, sources, review_locks)?;
@@ -1808,7 +2001,9 @@ fn prepare_or_apply_successor_with_drift(
         .keys()
         .map(|path| path.to_string_lossy().into_owned())
         .collect::<Vec<_>>();
+    paths.extend(adopted_source_digests.keys().cloned());
     paths.sort();
+    paths.dedup();
     let invalidated = event_updates
         .iter()
         .filter(|(_, update)| update.invalidate_existing)

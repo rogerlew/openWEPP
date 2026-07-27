@@ -19,11 +19,11 @@ mod publication;
 mod transaction;
 
 pub use amendment::{
-    V2AmendMode, V2AmendmentReceipt, V2Inspection, V2RecoveryAction, amend_attribution,
-    amend_attribution_at_generation, amend_lifecycle, amend_lifecycle_at_generation,
-    amend_normalize, amend_normalize_at_generation, amend_principal, amend_principal_at_generation,
-    amend_role, amend_role_at_generation, inspect_report, rebind_implementation, recover_amendment,
-    verify_generation,
+    V2AmendMode, V2AmendmentReceipt, V2Inspection, V2RecoveryAction, adopt_report_source,
+    adopt_report_source_at_generation, amend_attribution, amend_attribution_at_generation,
+    amend_lifecycle, amend_lifecycle_at_generation, amend_normalize, amend_normalize_at_generation,
+    amend_principal, amend_principal_at_generation, amend_role, amend_role_at_generation,
+    inspect_report, rebind_implementation, recover_amendment, verify_generation,
 };
 pub use assembly::{V2AssemblyResult, V2AssemblySummary};
 pub use fixture::{
