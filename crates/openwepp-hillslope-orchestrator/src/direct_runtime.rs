@@ -229,7 +229,8 @@ pub use groundwater::{
 pub use growth::{
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,
     DirectGrowthInputs, DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
-    DirectGrowthStateSurface,
+    DirectGrowthStateSurface, direct_native_canopy_height_m,
+    validate_direct_native_canopy_height_parameters,
 };
 pub use laned_active::{
     DirectLanedActiveConfig, DirectLanedActiveDayRouting, DirectLanedActiveLaneConfig,

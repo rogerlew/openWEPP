@@ -537,6 +537,9 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let native_height_projection = builder
         .find("direct_native_canopy_height_m(")
         .expect("same-day native height projection");
+    let native_state_commit = builder
+        .find("states[lane_index] = Some(candidate_state);")
+        .expect("validated native GSI state commit");
     let native_height_publication = builder
         .find("growth_state.canopy_height_m =")
         .expect("same-day native height publication");
@@ -546,8 +549,9 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     );
     assert!(
         native_state_mutation < native_height_projection
-            && native_height_projection < native_height_publication,
-        "native height must be derived from and published with the post-GSI realization"
+            && native_height_projection < native_state_commit
+            && native_state_commit < native_height_publication,
+        "native state mutation must remain provisional until height validation succeeds"
     );
     assert!(
         builder.contains("perennial_growth_inputs.state_before = growth_state_for_publication")

@@ -12,6 +12,100 @@ use super::{
     validate_finite, validate_nonnegative_direct_m,
 };
 
+fn direct_growth_canopy_height_m(
+    total_aboveground_biomass_kg_m2: f64,
+    canopy_height_coefficient_m2_kg: f64,
+    maximum_canopy_height_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "growth.canopy_height_total_aboveground_biomass_kg_m2",
+        total_aboveground_biomass_kg_m2,
+    )?;
+    validate_nonnegative_direct_m(
+        "growth.canopy_height_coefficient_m2_kg",
+        canopy_height_coefficient_m2_kg,
+    )?;
+    validate_nonnegative_direct_m("growth.maximum_canopy_height_m", maximum_canopy_height_m)?;
+    let exponent_magnitude = canopy_height_coefficient_m2_kg * total_aboveground_biomass_kg_m2;
+    validate_finite(
+        "growth.canopy_height_exponent_magnitude",
+        exponent_magnitude,
+    )?;
+    let canopy_height_fraction = 1.0 - (-exponent_magnitude).exp();
+    validate_finite("growth.canopy_height_fraction", canopy_height_fraction)?;
+    let canopy_height_m = canopy_height_fraction * maximum_canopy_height_m;
+    validate_nonnegative_direct_m("growth.canopy_height_m", canopy_height_m)?;
+    if canopy_height_m > maximum_canopy_height_m {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "growth.canopy_height_m",
+        });
+    }
+    Ok(canopy_height_m)
+}
+
+/// Validate selected-crop canopy-height parameters before native GSI mutation.
+pub fn validate_direct_native_canopy_height_parameters(
+    canopy_height_coefficient_m2_kg: f64,
+    maximum_canopy_height_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_finite(
+        "growth.native_canopy_height_coefficient_m2_kg",
+        canopy_height_coefficient_m2_kg,
+    )?;
+    if canopy_height_coefficient_m2_kg <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "growth.native_canopy_height_coefficient_m2_kg",
+        });
+    }
+    validate_finite(
+        "growth.native_maximum_canopy_height_m",
+        maximum_canopy_height_m,
+    )?;
+    if maximum_canopy_height_m <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "growth.native_maximum_canopy_height_m",
+        });
+    }
+    Ok(())
+}
+
+/// Compute SC-PLANT-001 native height from checked `Bt = Bs + Bf`.
+pub fn direct_native_canopy_height_m(
+    live_foliar_biomass_kg_m2: f64,
+    structural_biomass_kg_m2: f64,
+    canopy_height_coefficient_m2_kg: f64,
+    maximum_canopy_height_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_direct_native_canopy_height_parameters(
+        canopy_height_coefficient_m2_kg,
+        maximum_canopy_height_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "growth.native_live_foliar_biomass_kg_m2",
+        live_foliar_biomass_kg_m2,
+    )?;
+    validate_nonnegative_direct_m(
+        "growth.native_structural_biomass_kg_m2",
+        structural_biomass_kg_m2,
+    )?;
+    let total_aboveground_biomass_kg_m2 = live_foliar_biomass_kg_m2 + structural_biomass_kg_m2;
+    validate_finite(
+        "growth.native_total_aboveground_biomass_kg_m2",
+        total_aboveground_biomass_kg_m2,
+    )?;
+    let canopy_height_m = direct_growth_canopy_height_m(
+        total_aboveground_biomass_kg_m2,
+        canopy_height_coefficient_m2_kg,
+        maximum_canopy_height_m,
+    )?;
+    if total_aboveground_biomass_kg_m2 > 0.0 && canopy_height_m <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "growth.native_canopy_height_m",
+        });
+    }
+    Ok(canopy_height_m)
+}
+
 impl DirectDayFrame {
     pub fn run_r5d_annual_growth_phase(
         &mut self,
@@ -778,12 +872,7 @@ impl DirectGrowthInputs {
             )?;
             cancov_next = (cancov_next * (1.0 - canopy_decline)).clamp(0.0, PL_GROWTH_CANCOV_MAX);
         }
-        let canopy_height_m = if vdmt_next > 0.0 && self.hmax > 0.0 {
-            (1.0 - (-self.bbb * vdmt_next).exp()) * self.hmax
-        } else {
-            0.0
-        };
-        validate_nonnegative_direct_m("growth.canopy_height_m", canopy_height_m)?;
+        let canopy_height_m = direct_growth_canopy_height_m(vdmt_next, self.bbb, self.hmax)?;
 
         let lai_next = if management_class == DirectGrowthManagementClass::Perennial {
             let denom = vdmt_next
@@ -1715,7 +1804,7 @@ mod cqr_row6_growth_tests {
 
         let positive = direct_native_canopy_height_m(0.05, 0.10, 3.0, 0.2)
             .expect("TV-PLANT-GSI-HC-001 zero-to-positive limb");
-        let expected = (1.0 - (-3.0_f64 * 0.15).exp()) * 0.2;
+        let expected = (1.0 - (-3.0_f64 * (0.05 + 0.10)).exp()) * 0.2;
         assert_eq!(positive.to_bits(), expected.to_bits());
         assert!(positive > 0.0);
 

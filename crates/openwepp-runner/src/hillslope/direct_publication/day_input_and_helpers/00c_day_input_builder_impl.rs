@@ -270,7 +270,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             }
             pending[lane_index] = Some(trace);
             #[cfg(test)]
-            record_native_canopy_builder_trace(trace);
+            record_native_canopy_builder_trace(&trace);
         }
         maybe_write_r7h_direct_production_wb15_trace(
             day_index,
@@ -557,6 +557,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let Some(phenology) = selection.crop.forest_phenology else {
             return Ok((growth_state, None));
         };
+        openwepp_hillslope_orchestrator::validate_direct_native_canopy_height_parameters(
+            selection.crop.bbb,
+            selection.crop.hmax,
+        )
+        .map_err(|source| direct_growth_failure(source.to_string()))?;
         let parameters = openwepp_plant_phenology::ForestCanopyParameters {
             gsi: openwepp_plant_phenology::GsiParameters {
                 minimum_temperature_inactive_c: phenology.minimum_temperature_inactive_c,
@@ -587,23 +592,28 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         if lane_index >= states.len() {
             states.resize(lane_index + 1, None);
         }
-        let state = if let Some(state) = &mut states[lane_index] {
-            state
+        let mut candidate_state = if let Some(state) = &states[lane_index] {
+            state.clone()
         } else {
-            states[lane_index] =
-                Some(openwepp_plant_phenology::ForestCanopyState::new_uninitialized());
-            states[lane_index].as_mut().ok_or_else(|| {
-                direct_growth_failure("native forest GSI state initialization failed")
-            })?
+            openwepp_plant_phenology::ForestCanopyState::new_uninitialized()
         };
-        let daily = state
+        let daily = candidate_state
             .advance(parameters, gsi_forcing)
             .map_err(|source| direct_growth_failure(source.to_string()))?;
         let canopy = daily.canopy;
+        let canopy_height_m = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            canopy.live_foliar_biomass_kg_m2,
+            canopy.structural_biomass_kg_m2,
+            selection.crop.bbb,
+            selection.crop.hmax,
+        )
+        .map_err(|source| direct_growth_failure(source.to_string()))?;
+        states[lane_index] = Some(candidate_state);
         growth_state.live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.interception_live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.leaf_area_index = canopy.leaf_area_index;
         growth_state.canopy_cover_fraction = canopy.canopy_cover_fraction;
+        growth_state.canopy_height_m = canopy_height_m;
         Ok((growth_state, Some(daily)))
     }
 
@@ -752,6 +762,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     }
 }
 
+#[allow(clippy::items_after_statements, clippy::too_many_lines)]
 fn validate_canopy_research_trace_value(
     value: &serde_json::Value,
 ) -> Result<(), HillslopeCliError> {
@@ -801,10 +812,10 @@ fn validate_canopy_research_trace_value(
         "/residue/residue_depth_m",
     ];
     for path in REQUIRED_STRINGS {
-        if !value
+        if value
             .pointer(path)
             .and_then(serde_json::Value::as_str)
-            .is_some_and(|text| !text.is_empty())
+            .is_none_or(str::is_empty)
         {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "canopy_research_trace",

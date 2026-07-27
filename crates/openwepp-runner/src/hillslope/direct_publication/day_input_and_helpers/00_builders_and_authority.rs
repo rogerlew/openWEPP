@@ -373,11 +373,11 @@ fn reset_native_canopy_runtime_traces() {
 }
 
 #[cfg(test)]
-fn record_native_canopy_builder_trace(trace: NativeCanopyBuilderTrace) {
+fn record_native_canopy_builder_trace(trace: &NativeCanopyBuilderTrace) {
     native_canopy_builder_traces()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .push(trace);
+        .push(*trace);
 }
 
 #[cfg(test)]
