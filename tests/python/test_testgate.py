@@ -456,6 +456,106 @@ class TestGateTest(unittest.TestCase):
             finally:
                 guard.close()
 
+    def test_observe_binds_exact_guard_descriptor_to_transition_transport(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/home/workdir") as directory:
+            root = Path(directory)
+            repo = root / "repo"
+            repo.mkdir()
+            ledger = root / "history/attempts.jsonl"
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            args = mock.Mock(
+                repo=repo,
+                artifact_root=root / "artifacts",
+                history_ledger=ledger,
+                binary=repo / "gate",
+                base="base",
+                head="head",
+                dirty=False,
+                intent_package="docs/work-packages/example/package.md",
+                execute=True,
+                boundary="INCREMENT",
+                campaign="CAMPAIGN",
+                principal="developer",
+                repository="owner/repo",
+                source_event="local",
+                source_ref="refs/heads/main",
+                workflow="testgate",
+                job="job",
+                runner="runner",
+                attempt=1,
+                _history_ledger_guard=guard,
+            )
+            calls: list[tuple[list[str], dict[str, object]]] = []
+
+            def invoke(
+                arguments: list[str], _repo: Path, **kwargs: object
+            ) -> dict:
+                calls.append((arguments, kwargs))
+                output = Path(arguments[arguments.index("--output") + 1])
+                if len(calls) == 1:
+                    output.write_text('{"plan_id":"intent"}\n', encoding="utf-8")
+                    return {"plan_id": "intent"}
+                if len(calls) == 2:
+                    output.write_text(
+                        json.dumps(
+                            {
+                                "plan_id": "terminal",
+                                "nodes": [
+                                    {
+                                        "execution_cost_class": "HEAVY",
+                                        "expected_inventory": {"ids": []},
+                                    }
+                                ],
+                                "risk": {"class": "CRITICAL", "reason_codes": []},
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+                    return {"plan_id": "terminal"}
+                raise TESTGATE.TestgateError("stop before gate execution")
+
+            def authorize(
+                _repo: Path,
+                _binary: Path,
+                _base: str,
+                _head: str,
+                _paths: list[str],
+                _package: str,
+                output: Path,
+            ) -> dict:
+                value = {"status": "READY"}
+                output.write_text(json.dumps(value), encoding="utf-8")
+                return value
+
+            try:
+                with (
+                    mock.patch.object(
+                        TESTGATE, "_resolve_commit", side_effect=("a" * 40, "b" * 40)
+                    ),
+                    mock.patch.object(
+                        TESTGATE, "_changed_paths", return_value=["changed"]
+                    ),
+                    mock.patch.object(
+                        TESTGATE, "_intent_authorization", side_effect=authorize
+                    ),
+                    mock.patch.object(TESTGATE, "_invoke", side_effect=invoke),
+                    mock.patch.object(TESTGATE, "_initialize_recovery_plan"),
+                ):
+                    observation = TESTGATE.observe(args)
+                self.assertEqual(observation["execution_error"], "stop before gate execution")
+                transition_arguments, transition_kwargs = calls[2]
+                descriptor = guard.fileno()
+                self.assertEqual(
+                    transition_arguments[
+                        transition_arguments.index("--resume-fd") + 1
+                    ],
+                    str(descriptor),
+                )
+                self.assertEqual(transition_kwargs["pass_fds"], (descriptor,))
+                self.assertEqual(TESTGATE.os.fstat(descriptor).st_ino, ledger.stat().st_ino)
+            finally:
+                guard.close()
+
     def test_attempt_index_covers_pre_receipt_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

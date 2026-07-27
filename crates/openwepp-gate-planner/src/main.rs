@@ -229,6 +229,11 @@ fn reject_unknown_options(options: &BTreeMap<String, String>, allowed: &[&str]) 
 }
 
 fn run_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    if options.contains_key("resume-fd")
+        && options.get("stage").map(String::as_str) != Some("transition")
+    {
+        return Err(usage_error());
+    }
     let (plan, artifact_root, claims) = execution_inputs(options)?;
     if let Some(stage) = options.get("stage") {
         return staged_run_command(repo, options, &plan, &artifact_root, &claims, stage);
@@ -1407,8 +1412,9 @@ mod tests {
 
     use super::{
         close_tooling_defect_command, package_authority, parse_options, plan_request,
-        prepare_transition, require_exact_package_authority, run_arguments, staged_run_command,
-        validate_package_chain_command, validate_transition_outputs, write_plan_confined,
+        prepare_transition, require_exact_package_authority, run_arguments, run_command,
+        staged_run_command, validate_package_chain_command, validate_transition_outputs,
+        write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
     use openwepp_gate_planner::pre_heavy::append_attempt_record;
@@ -1733,17 +1739,15 @@ mod tests {
 
     #[test]
     fn resume_fd_is_rejected_outside_transition_stage() {
-        let options = BTreeMap::from([("resume-fd".to_owned(), "3".to_owned())]);
-        let error = staged_run_command(
-            Path::new("."),
-            &options,
-            &json!({}),
-            Path::new("."),
-            &ExecutionClaims::default(),
-            "light",
-        )
-        .expect_err("resume fd is transition-only");
-        assert_eq!(error.code, "GATE-CLI-USAGE");
+        for stage in [None, Some("light"), Some("heavy")] {
+            let mut options = BTreeMap::from([("resume-fd".to_owned(), "3".to_owned())]);
+            if let Some(stage) = stage {
+                options.insert("stage".to_owned(), stage.to_owned());
+            }
+            let error =
+                run_command(Path::new("."), &options).expect_err("resume fd is transition-only");
+            assert_eq!(error.code, "GATE-CLI-USAGE");
+        }
     }
 
     #[test]

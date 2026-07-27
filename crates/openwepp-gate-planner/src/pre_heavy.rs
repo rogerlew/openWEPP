@@ -5,6 +5,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Mutex, MutexGuard};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -48,7 +49,7 @@ const FAILURE_CHECK_INDEX_RULES: &[(&[&str], usize)] = &[
 #[derive(Debug)]
 pub struct BoundAttemptLedger {
     authority_path: PathBuf,
-    file: File,
+    file: Mutex<File>,
 }
 
 impl BoundAttemptLedger {
@@ -59,9 +60,25 @@ impl BoundAttemptLedger {
     /// Returns a typed error when the path or descriptor is unsafe, non-regular,
     /// ephemeral, mismatched, unreadable, or contains an invalid ledger chain.
     pub fn new(authority_path: PathBuf, file: File) -> Result<Self> {
+        Self::new_internal(authority_path, file, || {})
+    }
+
+    fn new_internal(
+        authority_path: PathBuf,
+        file: File,
+        between_validation_and_identity: impl FnOnce(),
+    ) -> Result<Self> {
         validate_ledger_path_nofollow(&authority_path)?;
-        let path_metadata = fs::metadata(&authority_path)
+        if authority_path.starts_with("/tmp") || authority_path.starts_with("/t") {
+            return Err(audit_error(
+                "GATE-AUDIT-LEDGER-EPHEMERAL",
+                authority_path.display().to_string(),
+            ));
+        }
+        between_validation_and_identity();
+        let path_metadata = fs::symlink_metadata(&authority_path)
             .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+        validate_ledger_path_nofollow(&authority_path)?;
         let file_metadata = file
             .metadata()
             .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
@@ -83,20 +100,11 @@ impl BoundAttemptLedger {
                 ));
             }
         }
+        validate_ledger_path_nofollow(&authority_path)?;
         let ledger = Self {
             authority_path,
-            file,
+            file: Mutex::new(file),
         };
-        let absolute = ledger
-            .authority_path
-            .canonicalize()
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
-        if absolute.starts_with("/tmp") || absolute.starts_with("/t") {
-            return Err(audit_error(
-                "GATE-AUDIT-LEDGER-EPHEMERAL",
-                absolute.display().to_string(),
-            ));
-        }
         durable_ledger_bound(&ledger)?;
         Ok(ledger)
     }
@@ -112,28 +120,24 @@ impl BoundAttemptLedger {
     ///
     /// Returns a typed ledger-read error when duplication, seeking, or reading fails.
     pub fn read_text(&self) -> Result<String> {
-        let mut file = self
-            .file
-            .try_clone()
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
-        file.seek(SeekFrom::Start(0))
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
-        let mut text = String::new();
-        file.read_to_string(&mut text)
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
-        Ok(text)
+        let mut file = self.lock_file()?;
+        read_locked(&mut file)
     }
 
-    fn append_bytes(&self, bytes: &[u8]) -> Result<()> {
-        let mut file = self
-            .file
-            .try_clone()
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
-        file.seek(SeekFrom::End(0))
-            .and_then(|_| file.write_all(bytes))
-            .and_then(|()| file.sync_all())
-            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))
+    fn lock_file(&self) -> Result<MutexGuard<'_, File>> {
+        self.file
+            .lock()
+            .map_err(|_| audit_error("GATE-AUDIT-LEDGER-LOCK", "ledger lock is poisoned"))
     }
+}
+
+fn read_locked(file: &mut File) -> Result<String> {
+    file.seek(SeekFrom::Start(0))
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let mut text = String::new();
+    file.read_to_string(&mut text)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    Ok(text)
 }
 
 /// An audit value constructed by the repository-owned implementation.
@@ -1521,7 +1525,8 @@ pub fn append_bound_attempt_record(
     ledger: &BoundAttemptLedger,
     mut record: Value,
 ) -> Result<String> {
-    let text = ledger.read_text()?;
+    let mut file = ledger.lock_file()?;
+    let text = read_locked(&mut file)?;
     verify_ledger_chain_text(&text)?;
     let object = record
         .as_object_mut()
@@ -1550,7 +1555,10 @@ pub fn append_bound_attempt_record(
         .insert("entry_sha256".to_owned(), Value::String(entry.clone()));
     let mut bytes = canonical_bytes(&record)?;
     bytes.push(b'\n');
-    ledger.append_bytes(&bytes)?;
+    file.seek(SeekFrom::End(0))
+        .and_then(|_| file.write_all(&bytes))
+        .and_then(|()| file.sync_all())
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
     Ok(entry)
 }
 
@@ -2162,8 +2170,8 @@ fn durable_ledger(path: &Path) -> Result<()> {
 }
 
 fn durable_ledger_bound(ledger: &BoundAttemptLedger) -> Result<()> {
-    let metadata = ledger
-        .file
+    let file = ledger.lock_file()?;
+    let metadata = file
         .metadata()
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
     if !metadata.is_file() {
@@ -2172,6 +2180,7 @@ fn durable_ledger_bound(ledger: &BoundAttemptLedger) -> Result<()> {
             "bound ledger is not regular",
         ));
     }
+    drop(file);
     verify_ledger_chain_text(&ledger.read_text()?)
 }
 
@@ -2533,11 +2542,14 @@ mod coverage_tests;
 mod bound_ledger_tests {
     use std::fs::{self, File};
     use std::os::fd::AsRawFd;
+    use std::panic::{AssertUnwindSafe, catch_unwind};
     use std::path::PathBuf;
+    use std::sync::Arc;
+    use std::thread;
 
     use serde_json::json;
 
-    use super::{BoundAttemptLedger, append_bound_attempt_record};
+    use super::{BoundAttemptLedger, append_bound_attempt_record, verify_ledger_chain_text};
 
     fn root(label: &str) -> PathBuf {
         PathBuf::from("/home/workdir").join(format!(
@@ -2570,6 +2582,53 @@ mod bound_ledger_tests {
         let error = BoundAttemptLedger::new(selected, inherited(&other_file))
             .expect_err("mismatched fd must fail");
         assert_eq!(error.code, "GATE-AUDIT-LEDGER-FD-IDENTITY");
+        let directory = File::open(&root).expect("directory fd");
+        let type_error = BoundAttemptLedger::new(root.join("selected.jsonl"), directory)
+            .expect_err("directory descriptor must fail");
+        assert_eq!(type_error.code, "GATE-AUDIT-LEDGER-FD-TYPE");
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn admission_rejects_same_inode_final_symlink_swap() {
+        let root = root("admission-final");
+        fs::create_dir_all(&root).expect("root");
+        let selected = root.join("attempts.jsonl");
+        let retained = root.join("retained.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let error = BoundAttemptLedger::new_internal(selected.clone(), inherited(&file), || {
+            fs::rename(&selected, &retained).expect("retain");
+            std::os::unix::fs::symlink(&retained, &selected).expect("same inode symlink");
+        })
+        .expect_err("final symlink race must fail");
+        assert_eq!(error.code, "GATE-AUDIT-LEDGER-PATH");
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn admission_rejects_same_inode_ancestor_symlink_swap() {
+        let root = root("admission-ancestor");
+        let history = root.join("history");
+        let retained = root.join("retained-history");
+        fs::create_dir_all(&history).expect("history");
+        let selected = history.join("attempts.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let error = BoundAttemptLedger::new_internal(selected, inherited(&file), || {
+            fs::rename(&history, &retained).expect("retain");
+            std::os::unix::fs::symlink(&retained, &history).expect("same inode ancestor");
+        })
+        .expect_err("ancestor symlink race must fail");
+        assert_eq!(error.code, "GATE-AUDIT-LEDGER-PATH");
         fs::remove_dir_all(root).expect("cleanup");
     }
 
@@ -2626,6 +2685,64 @@ mod bound_ledger_tests {
                 .is_empty()
         );
         assert!(!outside.join("attempts.jsonl").exists());
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn concurrent_bound_appends_form_one_exact_predecessor_chain() {
+        let root = root("concurrent");
+        fs::create_dir_all(&root).expect("root");
+        let selected = root.join("attempts.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let selected_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let ledger =
+            Arc::new(BoundAttemptLedger::new(selected, inherited(&selected_file)).expect("bind"));
+        let workers = (0..32)
+            .map(|index| {
+                let ledger = Arc::clone(&ledger);
+                thread::spawn(move || {
+                    append_bound_attempt_record(
+                        &ledger,
+                        json!({"record_type":"ATTEMPT","status":"CLOSED","index":index}),
+                    )
+                })
+            })
+            .collect::<Vec<_>>();
+        for worker in workers {
+            worker
+                .join()
+                .expect("worker did not panic")
+                .expect("append failed");
+        }
+        let text = ledger.read_text().expect("ledger");
+        verify_ledger_chain_text(&text).expect("valid chain");
+        assert_eq!(text.lines().filter(|line| !line.is_empty()).count(), 32);
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn poisoned_bound_ledger_lock_is_a_typed_error() {
+        let root = root("poison");
+        fs::create_dir_all(&root).expect("root");
+        let selected = root.join("attempts.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let selected_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let ledger = BoundAttemptLedger::new(selected, inherited(&selected_file)).expect("bind");
+        let poisoned = catch_unwind(AssertUnwindSafe(|| {
+            let _guard = ledger.file.lock().expect("lock");
+            panic!("poison");
+        }));
+        assert!(poisoned.is_err());
+        let error = ledger.read_text().expect_err("poison must be typed");
+        assert_eq!(error.code, "GATE-AUDIT-LEDGER-LOCK");
         fs::remove_dir_all(root).expect("cleanup");
     }
 
