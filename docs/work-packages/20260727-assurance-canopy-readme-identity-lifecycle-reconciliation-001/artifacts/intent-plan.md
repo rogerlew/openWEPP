@@ -11,6 +11,13 @@ Intent: add a typed assurance lifecycle implementation operation and execute one
 scientific-full report-source transaction. The transaction must reset stale
 review authority to DRAFT rather than carry it to changed evidence.
 
+Prospective amendment: the callable API requires a `v2.rs` re-export.
+`v2.rs` is a canonical review-realization implementation-digest member, so the
+transaction must regenerate both registered report locks and list both reports.
+Only the snow report's authored lifecycle and event custody may change; tests
+must prove groundwater source/lifecycle/events and nonimplementation roots are
+preserved.
+
 Selected increment gates:
 
 - contract-derived amendment/CLI tests;

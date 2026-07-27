@@ -57,6 +57,8 @@ reviewed bytes.
 - generated `assurance/v2/identity.lock.json`
 - generated
   `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
+- generated
+  `assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json`
 - mechanically updated authored lifecycle fields in
   `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml`
 - this package, the CAL04B-NATIVE package disposition/handoff, and
@@ -72,6 +74,9 @@ reviewed bytes.
 - mechanically reset `IN_REVIEW` report/review state to `DRAFT`, clear
   review-entry authorization fields, and invalidate all active review events;
 - atomically regenerate review lock, identity lock, and deterministic receipt;
+- regenerate every report lock affected by the canonical `v2.rs`
+  implementation digest, while changing authored lifecycle/event state only
+  for the report that declares the adopted source;
 - add contract-derived transaction, rollback, CLI, negative-path, and
   idempotence tests;
 - update lifecycle documentation and package evidence.
@@ -135,6 +140,13 @@ The operation records the current external source hash only after proving the
 path is the target report's declared `local_content` dependency and the sole
 allowed preexisting drift.
 
+The callable public API must be re-exported through `v2.rs`, which is
+intentionally part of every report realization's implementation digest.
+Consequently, the real scientific-full transaction affects both registered
+report locks and lists both reports. The groundwater report's authored source,
+lifecycle, and event custody must remain byte-identical; only its
+implementation-derived lock roots may regenerate.
+
 ## Phase Plan
 
 1. Commit this authenticated scaffold before implementation.
@@ -156,7 +168,11 @@ allowed preexisting drift.
 - No direct hash edit occurs.
 - Check mode is read-only and deterministic.
 - Apply mode updates only the declared source identity, affected report
-  lifecycle/lock, global identity, and deterministic receipt.
+  lifecycle, implementation-affected report locks, global identity, and
+  deterministic receipt.
+- The unaffected groundwater report source, lifecycle, active/invalidated event
+  sets, and scientific/communication/governance roots remain unchanged; only
+  implementation-derived realization roots may change.
 - Old active review events are invalidated; no new human-authority event is
   created.
 - The report validates as `DRAFT`, the current README identity is bound, and a
@@ -204,6 +220,9 @@ considered in-envelope routes, and the next defect.
   report evidence drift.
 - The current CLI has no typed operation for adopting changed external report
   evidence while invalidating active review authority.
+- The public API export changes `v2.rs`, a canonical implementation-digest
+  member. Both registered review locks must therefore regenerate atomically,
+  although only the snow report loses review authority.
 
 ## Decision Log
 
