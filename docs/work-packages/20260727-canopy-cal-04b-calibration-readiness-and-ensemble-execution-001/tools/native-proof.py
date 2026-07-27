@@ -18,10 +18,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
 FIXTURE = ROOT / "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh"
-RUNNER = ROOT / "target/debug/openwepp-cli-hill"
-EXPECTED = PACKAGE / "tools/executor/target/release/expected-probe"
+RUNNER = Path("/nonexistent/cal04b-execution-root-required")
+EXPECTED = Path("/nonexistent/cal04b-execution-root-required")
 
 GSI_KEYS = (
     "minimum_temperature_inactive_c", "minimum_temperature_unconstrained_c",
@@ -217,7 +218,10 @@ def validate_case_plan(cases: list[dict[str, str]]) -> None:
         values = [case[field] for case in cases]
         if len(values) != len(set(values)):
             raise ValueError(f"native proof {field} values are not unique")
-    proof_root = Path("/home/workdir/cal04b-objects/native-proof").resolve()
+    proof_roots = {Path(case["workdir"]).resolve().parent for case in cases}
+    if len(proof_roots) != 1:
+        raise ValueError("native proof workdirs do not share one planned object root")
+    proof_root = next(iter(proof_roots))
     emitted_paths: set[Path] = set()
     for case in cases:
         if set(case) != set(CASE_FIELDS) or not all(
@@ -335,10 +339,24 @@ def compare(trace: Path, expected: Path, calendar: list[date]) -> tuple[int, int
     return len(trace_lines), len(trace_lines) * len(TRACE_FIELDS)
 
 
-def main() -> int:
+def remap_case_path(value: str, planned_workdir: str, execution_root: Path) -> Path:
+    planned_root = Path(planned_workdir).parent
+    return execution_root / "objects/native-proof" / Path(value).relative_to(planned_root)
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case-plan", required=True)
-    options = parser.parse_args()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, RUNNER, EXPECTED
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    RUNNER = execution_root.parent / "cargo-target/debug/openwepp-cli-hill"
+    EXPECTED = execution_root.parent / "cargo-target/release/expected-probe"
     config_index, saturated = configs()
     with Path(options.case_plan).open(newline="", encoding="utf-8") as stream:
         reader = csv.DictReader(stream)
@@ -348,7 +366,7 @@ def main() -> int:
     validate_case_plan(cases)
     results = []
     for case in cases:
-        workdir = Path(case["workdir"])
+        workdir = remap_case_path(case["workdir"], case["workdir"], execution_root.parent)
         if workdir.exists():
             raise ValueError(f"refusing existing case workdir {workdir}")
         shutil.copytree(FIXTURE, workdir)
@@ -377,7 +395,7 @@ def main() -> int:
             copied = workdir / source.name
             if source.name != management.name and source.is_file() and sha(source) != sha(copied):
                 raise ValueError(f"{case['case_id']} changed protected fixture member {source.name}")
-        trace = Path(case["trace_path"])
+        trace = remap_case_path(case["trace_path"], case["workdir"], execution_root.parent)
         trace.parent.mkdir(parents=True, exist_ok=True)
         environment = os.environ.copy()
         environment.update({
@@ -385,14 +403,17 @@ def main() -> int:
             "OPENWEPP_CANOPY_RESEARCH_SITE_ID": "hubbard_brook",
             "OPENWEPP_CANOPY_RESEARCH_ARM_ID": "deciduous",
         })
+        output_dir = remap_case_path(case["output_dir"], case["workdir"], execution_root.parent)
         command = [str(RUNNER), "--run-dir", str(workdir), "--run-file", case["run_file"],
-                   "--output-dir", case["output_dir"], "--direct-production-executor"]
-        with Path(case["stdout_log"]).open("w", encoding="utf-8") as stdout, Path(case["stderr_log"]).open("w", encoding="utf-8") as stderr:
+                   "--output-dir", str(output_dir), "--direct-production-executor"]
+        stdout_path = remap_case_path(case["stdout_log"], case["workdir"], execution_root.parent)
+        stderr_path = remap_case_path(case["stderr_log"], case["workdir"], execution_root.parent)
+        with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
             completed = subprocess.run(command, env=environment, stdout=stdout, stderr=stderr, check=False)
         if case["case_id"] == "invalid_threshold_order":
             if completed.returncode == 0 or trace.exists():
                 raise ValueError("invalid case did not fail before trace creation")
-            error_text = Path(case["stderr_log"]).read_text(encoding="utf-8")
+            error_text = stderr_path.read_text(encoding="utf-8")
             if not has_typed_temperature_threshold_order_error(error_text):
                 raise ValueError("invalid case lacked typed threshold error")
             compared = 0

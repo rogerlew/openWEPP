@@ -7,6 +7,9 @@ use std::time::Instant;
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
 use openwepp_gate_planner::error::{ErrorClass, GatePolicyError, Result};
 use openwepp_gate_planner::executor::{ExecutionClaims, execute_plan, execute_plan_stage};
+use openwepp_gate_planner::external_dag::{
+    ExternalTransitionOptions, run_external_transition, verify_external_transaction,
+};
 use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_ledger};
 use openwepp_gate_planner::package_validation::{validate_package, validate_package_chain};
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
@@ -15,6 +18,9 @@ use openwepp_gate_planner::pre_heavy::{
     ConstructedAudit, admit_attempt_ledger, append_attempt_record, build_audit,
     build_failure_audit, close_tooling_defect, construct_audit, reconcile_orphaned_attempts,
     record_heavy_failure, validate_resume_ledger,
+};
+use openwepp_gate_planner::publication::{
+    PublicationPlan, PublicationStatus, RecoveryAction, publish, recover,
 };
 use openwepp_gate_planner::repository::{
     ObservedSource, observe_committed, observe_dirty, require_exact_ancestor_commit,
@@ -29,7 +35,7 @@ type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 type CommandDefinition = (&'static str, CommandHandler, &'static [&'static str]);
 
 const RECEIPT_OPTIONS: &[&str] = &["repo", "plan", "receipt", "artifact-root"];
-const COMMANDS: [CommandDefinition; 12] = [
+const COMMANDS: [CommandDefinition; 15] = [
     (
         "plan",
         plan_command,
@@ -96,6 +102,7 @@ const COMMANDS: [CommandDefinition; 12] = [
             "artifact-root",
             "ledger",
             "output",
+            "custody-root",
         ],
     ),
     (
@@ -124,6 +131,37 @@ const COMMANDS: [CommandDefinition; 12] = [
             "closure-evidence",
             "invalidated-recovery-root",
         ],
+    ),
+    (
+        "run-external-transition",
+        external_transition_command,
+        &[
+            "repo",
+            "external-plan",
+            "transaction-id",
+            "attempt-root",
+            "ledger",
+            "output",
+            "opening-token",
+            "principal",
+            "repository",
+            "source-event",
+            "source-ref",
+            "workflow",
+            "job",
+            "runner",
+            "attempt",
+        ],
+    ),
+    (
+        "verify-external-transaction",
+        verify_external_transaction_command,
+        &["repo", "external-plan", "receipt"],
+    ),
+    (
+        "publish-external-results",
+        publish_external_results_command,
+        &["repo", "publication-plan", "recovery"],
     ),
 ];
 
@@ -199,6 +237,73 @@ fn run_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value>
         "receipt_id": verdict["receipt_id"],
         "trust_class": verdict["trust_class"],
         "output": output
+    }))
+}
+
+fn external_transition_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let execution = ExternalTransitionOptions {
+        repo: repo.to_owned(),
+        plan_path: PathBuf::from(required(options, "external-plan")?),
+        transaction_id: required(options, "transaction-id")?.to_owned(),
+        attempt_root: PathBuf::from(required(options, "attempt-root")?),
+        ledger: PathBuf::from(required(options, "ledger")?),
+        receipt_path: PathBuf::from(required(options, "output")?),
+        custody_root: options.get("custody-root").map(PathBuf::from),
+        opening_token: options.get("opening-token").map(PathBuf::from),
+        claims: execution_claims(options)?,
+    };
+    let receipt = run_external_transition(&execution)?;
+    Ok(json!({
+        "result": receipt["result"],
+        "receipt_id": receipt["receipt_id"],
+        "transaction_id": receipt["transaction_id"],
+        "output": execution.receipt_path.display().to_string(),
+    }))
+}
+
+fn verify_external_transaction_command(
+    _repo: &Path,
+    options: &BTreeMap<String, String>,
+) -> Result<Value> {
+    let plan = PathBuf::from(required(options, "external-plan")?);
+    let receipt = read_json(Path::new(required(options, "receipt")?))?;
+    verify_external_transaction(&plan, &receipt)?;
+    Ok(json!({
+        "result": "PASS",
+        "receipt_id": receipt["receipt_id"],
+        "transaction_id": receipt["transaction_id"],
+    }))
+}
+
+fn publish_external_results_command(
+    _repo: &Path,
+    options: &BTreeMap<String, String>,
+) -> Result<Value> {
+    let plan_value = read_json(Path::new(required(options, "publication-plan")?))?;
+    let plan: PublicationPlan = serde_json::from_value(plan_value).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Cli,
+            "GATE-PUBLICATION-PLAN-SHAPE",
+            error.to_string(),
+        )
+    })?;
+    let outcome = match options.get("recovery").map(String::as_str) {
+        None => publish(&plan)?,
+        Some("complete") => recover(&plan, RecoveryAction::Complete)?,
+        Some("restore") => recover(&plan, RecoveryAction::Restore)?,
+        Some(_) => return Err(usage_error()),
+    };
+    let status = match outcome.status {
+        PublicationStatus::Accepted => "ACCEPTED",
+        PublicationStatus::NonAccepted => "NON_ACCEPTED",
+        PublicationStatus::Restored => "RESTORED",
+    };
+    Ok(json!({
+        "result": status,
+        "installed_entries": outcome.installed_entries,
+        "failure_code": outcome.failure_code,
+        "receipt": plan.receipt_path.display().to_string(),
+        "journal": plan.journal_path.display().to_string(),
     }))
 }
 

@@ -324,7 +324,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let accepted_hash = sha256(&accepted)?;
     fs::create_dir_all(&out)?;
 
-    let object_root = PathBuf::from("/home/workdir/cal04b-objects/readiness");
+    let object_root = PathBuf::from(arg_value(&args, "--object-root")?);
     fs::create_dir_all(&object_root)?;
     let results_path = out.join("later-stage-results.csv");
     let mut results = BufWriter::new(File::create(&results_path)?);

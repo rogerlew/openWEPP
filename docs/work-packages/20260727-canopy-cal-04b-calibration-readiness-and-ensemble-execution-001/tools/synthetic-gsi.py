@@ -3,16 +3,19 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import subprocess
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
-BIN = PACKAGE / "tools/executor/target/release"
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
+BIN = Path("/nonexistent/cal04b-execution-root-required")
 TRACE = OBJECTS / "synthetic-gsi.bin"
 IDENTITY = OBJECTS / "synthetic-gsi-identity.csv"
 PRIMARY = OBJECTS / "synthetic-primary"
@@ -44,7 +47,23 @@ def run(argv: list[str]) -> None:
     subprocess.run(argv, cwd=PACKAGE.parents[2], check=True)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, BIN, TRACE, IDENTITY, PRIMARY, VERIFICATION, RESULT
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    OBJECTS = execution_root
+    BIN = execution_root.parent / "cargo-target/release"
+    TRACE = OBJECTS / "synthetic-gsi.bin"
+    IDENTITY = OBJECTS / "synthetic-gsi-identity.csv"
+    PRIMARY = OBJECTS / "synthetic-primary"
+    VERIFICATION = OBJECTS / "synthetic-verification"
+    RESULT = ARTIFACTS / "synthetic-recovery-results.csv"
     outputs = [TRACE, IDENTITY, PRIMARY, VERIFICATION]
     existing = [path for path in outputs if path.exists()]
     if existing:
@@ -52,7 +71,7 @@ def main() -> int:
     if RESULT.exists() and RESULT.read_text(encoding="utf-8") != RESULT_HEADER:
         raise ValueError(f"refusing populated synthetic result: {RESULT}")
     configs = ARTIFACTS / "candidate-configurations.csv"
-    design = ARTIFACTS / "synthetic-gsi-design.csv"
+    design = SOURCE_ARTIFACTS / "synthetic-gsi-design.csv"
     if not configs.is_file() or not design.is_file():
         raise ValueError("synthetic inputs are absent")
     with design.open(newline="", encoding="utf-8") as stream:

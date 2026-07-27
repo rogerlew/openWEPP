@@ -1,74 +1,115 @@
 #!/usr/bin/env python3
-"""Run the authorized observed CAL-04B pre-freeze prefix without shell eval."""
+"""Launch one authenticated CAL-04B external-DAG transaction."""
 
 from __future__ import annotations
 
-import csv
-import shlex
+import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-PLAN = PACKAGE / "artifacts/executor-command-plan.csv"
-OBSERVE = PACKAGE / "tools/observe.py"
-AUTHORIZED_PREFIX = (
-    "prepare",
-    "build_executor",
-    "build_production_runner",
-    "native_proof",
-    "synthetic_gsi",
-    "hubbard_producer",
-    "hubbard_primary_reconstruct",
-    "hubbard_verify_reconstruct",
-    "retain_trace",
-    "readiness",
-    "summarize_pre_freeze",
-)
+PLAN = PACKAGE / "artifacts/external-dag-transaction-plan.json"
+TRANSACTIONS = ("calibration-v1", "holdout-v1")
 
 
-def select_prefix(rows: list[dict[str, str]]) -> list[dict[str, str]]:
-    ids = [row["command_id"] for row in rows]
-    prefix_length = len(AUTHORIZED_PREFIX)
-    if tuple(ids[:prefix_length]) != AUTHORIZED_PREFIX:
-        raise ValueError("observed plan does not begin with the exact authorized prefix")
-    if len(ids) <= prefix_length or ids[prefix_length] != "freeze":
-        raise ValueError("authorized prefix is not followed immediately by freeze")
-    return rows[:prefix_length]
-
-
-def main() -> int:
-    with PLAN.open(newline="", encoding="utf-8") as stream:
-        rows = list(csv.DictReader(stream))
-    selected = select_prefix(rows)
-    for row in selected:
-        command = [
-            str(ROOT / ".venv/bin/python"),
-            str(OBSERVE),
-            "run",
-            "--command-id",
-            row["command_id"],
-            "--",
-            *shlex.split(row["argv"]),
-        ]
-        print(f"OBSERVED_START {row['command_id']}", flush=True)
-        subprocess.run(command, cwd=ROOT, check=True)
-        print(f"OBSERVED_PASS {row['command_id']}", flush=True)
+def planner_binary(execution_root: Path) -> Path:
+    target = execution_root.with_name(f"{execution_root.name}.planner-target")
+    environment = {
+        **os.environ,
+        "CARGO_TARGET_DIR": str(target),
+    }
     subprocess.run(
         [
-            str(ROOT / ".venv/bin/python"),
-            str(OBSERVE),
-            "render",
-            "--through",
-            AUTHORIZED_PREFIX[-1],
-            "--snapshot",
-            "pre-freeze",
+            "cargo",
+            "build",
+            "-p",
+            "openwepp-gate-planner",
+            "--bin",
+            "openwepp-gate-plan",
         ],
         cwd=ROOT,
+        env=environment,
         check=True,
     )
-    print("PASS observed pre-freeze prefix and immutable snapshot", flush=True)
+    return target / "debug/openwepp-gate-plan"
+
+
+def command(options: argparse.Namespace, binary: Path) -> list[str]:
+    execution_root = options.execution_root
+    control_root = options.control_root
+    transaction_id = options.transaction_id
+    argv = [
+        str(binary),
+        "run-external-transition",
+        "--repo",
+        str(ROOT),
+        "--external-plan",
+        str(PLAN),
+        "--transaction-id",
+        transaction_id,
+        "--attempt-root",
+        str(execution_root),
+        "--ledger",
+        str(control_root / "ledger.jsonl"),
+        "--output",
+        str(control_root / f"{transaction_id}.receipt.json"),
+        "--principal",
+        options.principal,
+        "--repository",
+        options.repository,
+        "--source-event",
+        options.source_event,
+        "--source-ref",
+        options.source_ref,
+        "--workflow",
+        options.workflow,
+        "--job",
+        options.job,
+        "--runner",
+        options.runner,
+        "--attempt",
+        str(options.attempt),
+    ]
+    if transaction_id == "holdout-v1":
+        custody_root = options.custody_root.resolve(strict=True)
+        argv.extend(
+            [
+                "--custody-root",
+                str(custody_root),
+                "--opening-token",
+                str(custody_root / "holdout-opened-once.lock"),
+            ]
+        )
+    return argv
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--transaction-id", choices=TRANSACTIONS, required=True)
+    parser.add_argument("--principal", required=True)
+    parser.add_argument("--repository", required=True)
+    parser.add_argument("--source-event", required=True)
+    parser.add_argument("--source-ref", required=True)
+    parser.add_argument("--workflow", required=True)
+    parser.add_argument("--job", required=True)
+    parser.add_argument("--runner", required=True)
+    parser.add_argument("--attempt", type=int, required=True)
+    parser.add_argument("--custody-root", type=Path)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=False)
+    if execution_root.exists() or not execution_root.parent.is_dir():
+        raise ValueError("execution root must be a fresh path below an existing directory")
+    options.execution_root = execution_root
+    control_root = execution_root.with_name(f"{execution_root.name}.control")
+    control_root.mkdir()
+    options.control_root = control_root
+    if options.transaction_id == "holdout-v1" and options.custody_root is None:
+        raise ValueError("holdout transaction requires an external custody root")
+    subprocess.run(command(options, planner_binary(execution_root)), cwd=ROOT, check=True)
     return 0
 
 

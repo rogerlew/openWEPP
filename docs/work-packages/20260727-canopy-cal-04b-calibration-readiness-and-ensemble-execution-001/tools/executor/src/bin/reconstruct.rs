@@ -247,7 +247,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let configs_path = PathBuf::from(arg_value(&args, "--configs")?);
     let observations_path = PathBuf::from(arg_value(&args, "--observations")?);
     let out = PathBuf::from(arg_value(&args, "--out")?);
-    let object_root = PathBuf::from("/home/workdir/cal04b-objects/primary");
+    let object_root = PathBuf::from(arg_value(&args, "--component-out")?);
     fs::create_dir_all(&object_root)?;
     fs::create_dir_all(&out)?;
 

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import os
@@ -11,9 +12,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 RAW = OBJECTS / "hubbard-gsi.bin"
 IDENTITY = OBJECTS / "hubbard-gsi-identity.csv"
 COMPRESSED = OBJECTS / "hubbard-gsi.bin.zst"
@@ -140,7 +143,22 @@ def decompressed_identity(path: Path) -> tuple[str, int]:
     return digest.hexdigest(), expanded_bytes
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, RAW, IDENTITY, COMPRESSED, RECEIPT, PARTIAL
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    OBJECTS = execution_root
+    RAW = OBJECTS / "hubbard-gsi.bin"
+    IDENTITY = OBJECTS / "hubbard-gsi-identity.csv"
+    COMPRESSED = OBJECTS / "hubbard-gsi.bin.zst"
+    RECEIPT = ARTIFACTS / "trace-retention.csv"
+    PARTIAL = OBJECTS / "hubbard-gsi.bin.zst.partial"
     if COMPRESSED.exists() or RECEIPT.exists() or PARTIAL.exists():
         raise ValueError("trace retention output already exists")
     trace_identity = identity()

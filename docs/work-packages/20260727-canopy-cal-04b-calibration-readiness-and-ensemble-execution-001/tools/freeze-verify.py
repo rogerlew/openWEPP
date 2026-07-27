@@ -7,54 +7,92 @@ import argparse
 import csv
 import hashlib
 import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from custody import (
     RECEIPT_FIELDS,
+    consume_capability,
     sha256_file,
     validate_freeze,
     validate_receipt_barrier,
+    write_attestation,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 RECEIPTS = OBJECTS / "freeze-receipts"
 SCRIPT = Path(__file__).resolve()
 PREOPEN = PACKAGE / "tools/validate_preopen.py"
 
 
-def verifier_command(verifier_id: str) -> str:
+def artifact_input(name: str) -> Path:
+    external = ARTIFACTS / name
+    return external if external.is_file() else SOURCE_ARTIFACTS / name
+
+
+def frozen_bundle_root(manifest: Path) -> Path:
+    with manifest.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    roots = {
+        Path(row["path_or_command"]).parent
+        for row in rows
+        if Path(row["path_or_command"]).parent.name == "freeze-bundles"
+    }
+    if len(roots) != 1:
+        raise ValueError("freeze manifest does not bind exactly one bundle root")
+    return next(iter(roots))
+
+
+def verifier_command(verifier_id: str, execution_root: Path) -> str:
     relative = SCRIPT.relative_to(ROOT)
     return (
         "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python "
-        f"{relative} --verifier-id {verifier_id}"
+        f"{relative} --execution-root {execution_root} --verifier-id {verifier_id}"
     )
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--custody-root", type=Path, required=True)
     parser.add_argument("--verifier-id")
     parser.add_argument("--validate-barrier", action="store_true")
-    options = parser.parse_args()
-    subprocess.run(
-        [str(ROOT / ".venv/bin/python"), str(PREOPEN)],
-        cwd=ROOT,
-        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-        check=True,
-    )
+    parser.add_argument("--capability", type=Path)
+    parser.add_argument("--attestation-out", type=Path)
+    parser.add_argument("--parent-dispatch-id")
+    parser.add_argument("--agent-task-id")
+    parser.add_argument("--principal")
+    parser.add_argument("--workflow")
+    parser.add_argument("--job")
+    parser.add_argument("--runner")
+    parser.add_argument("--attempt", type=int)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, RECEIPTS
+    attempt_root = execution_root.parent
+    custody_root = options.custody_root.resolve(strict=True)
+    if not custody_root.is_dir():
+        raise ValueError("custody root must be an existing directory")
+    ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    OBJECTS = execution_root
+    RECEIPTS = custody_root / "freeze-receipts"
+    manifest = artifact_input("holdout-freeze-manifest.csv")
     digest, members = validate_freeze(
-        ARTIFACTS / "holdout-freeze-manifest.csv",
-        ARTIFACTS / "holdout-freeze-digest.txt",
-        OBJECTS / "freeze-bundles",
+        manifest,
+        artifact_input("holdout-freeze-digest.txt"),
+        frozen_bundle_root(manifest),
     )
     RECEIPTS.mkdir(parents=True, exist_ok=True)
     expected_commands = {
-        verifier_id: verifier_command(verifier_id)
+        verifier_id: verifier_command(verifier_id, execution_root)
         for verifier_id in ("verifier_a", "verifier_b")
     }
     if options.validate_barrier:
@@ -73,6 +111,19 @@ def main() -> int:
         return 0
     if options.verifier_id not in {"verifier_a", "verifier_b"}:
         raise ValueError("verifier id must be verifier_a or verifier_b")
+    claims = (
+        options.capability,
+        options.attestation_out,
+        options.parent_dispatch_id,
+        options.agent_task_id,
+        options.principal,
+        options.workflow,
+        options.job,
+        options.runner,
+        options.attempt,
+    )
+    if any(value is None for value in claims):
+        raise ValueError("verifier capability, attestation output, and claims are required")
     path = RECEIPTS / f"{options.verifier_id}.csv"
     if path.exists():
         raise ValueError(f"receipt already exists {path}")
@@ -93,6 +144,38 @@ def main() -> int:
         stream.flush()
         os.fsync(stream.fileno())
     path.chmod(0o444)
+    capability = options.capability.resolve(strict=True)
+    attestation = options.attestation_out.resolve(strict=False)
+    for candidate in (capability, attestation):
+        try:
+            candidate.relative_to(custody_root)
+        except ValueError:
+            raise ValueError("verifier custody path escapes custody root") from None
+    expected_attestation = (
+        f"freeze_verify_{options.verifier_id.removeprefix('verifier_')}.json"
+    )
+    if attestation.name != expected_attestation:
+        raise ValueError("verifier attestation filename differs from command identity")
+    capability_hash = consume_capability(
+        capability,
+        custody_root / "consumed-capabilities" / f"{options.verifier_id}.capability",
+    )
+    attestation_argv = [str(SCRIPT), *(argv if argv is not None else sys.argv[1:])]
+    write_attestation(
+        attestation,
+        capability_hash=capability_hash,
+        parent_dispatch_id=options.parent_dispatch_id,
+        agent_task_id=options.agent_task_id,
+        principal=options.principal,
+        workflow=options.workflow,
+        job=options.job,
+        runner=options.runner,
+        attempt=options.attempt,
+        script=SCRIPT,
+        argv=attestation_argv,
+        receipt=path,
+        freeze_digest=digest,
+    )
     print(
         f"PASS {options.verifier_id} digest={digest} "
         f"transitive_members={members}"

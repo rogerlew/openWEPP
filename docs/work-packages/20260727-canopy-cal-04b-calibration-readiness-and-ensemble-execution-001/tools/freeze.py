@@ -3,18 +3,21 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import subprocess
 import sys
 from pathlib import Path
 
 from custody import sha256_file, validate_freeze
-import observe
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
+EXECUTOR = Path("/nonexistent/cal04b-execution-root-required")
+EXECUTION_ROOT = Path("/nonexistent/cal04b-execution-root-required")
 
 
 def sha(path: Path) -> str:
@@ -59,8 +62,8 @@ def readiness_entries() -> list[tuple[str, Path]]:
     index = ARTIFACTS / "later-stage-membership.csv"
     entries = [
         ("source", PACKAGE / "tools/executor/src/bin/readiness.rs"),
-        ("binary", PACKAGE / "tools/executor/target/release/readiness"),
-        ("design", ARTIFACTS / "later-stage-design.csv"),
+        ("binary", EXECUTOR / "readiness"),
+        ("design", SOURCE_ARTIFACTS / "later-stage-design.csv"),
         ("results", ARTIFACTS / "later-stage-results.csv"),
         ("membership_index", index),
         ("gsi_recovery", ARTIFACTS / "synthetic-recovery-results.csv"),
@@ -83,7 +86,7 @@ def readiness_entries() -> list[tuple[str, Path]]:
 
 
 def synthetic_entries() -> list[tuple[str, Path]]:
-    executor = PACKAGE / "tools/executor/target/release"
+    executor = EXECUTOR
     primary = OBJECTS / "synthetic-primary"
     verification = OBJECTS / "synthetic-verification"
     entries = [
@@ -118,14 +121,14 @@ def synthetic_entries() -> list[tuple[str, Path]]:
 
 
 def native_proof_entries() -> list[tuple[str, Path]]:
-    plan = ARTIFACTS / "native-proof-case-plan.csv"
+    plan = SOURCE_ARTIFACTS / "native-proof-case-plan.csv"
     result = ARTIFACTS / "native-consumer-proof.csv"
     entries = [
         ("native_proof_source", PACKAGE / "tools/native-proof.py"),
         ("native_proof_plan", plan),
         ("native_proof_result", result),
-        ("native_proof_runner", ROOT / "target/debug/openwepp-cli-hill"),
-        ("native_proof_expected_probe", PACKAGE / "tools/executor/target/release/expected-probe"),
+        ("native_proof_runner", EXECUTION_ROOT / "cargo-target/debug/openwepp-cli-hill"),
+        ("native_proof_expected_probe", EXECUTOR / "expected-probe"),
     ]
     with plan.open(newline="", encoding="utf-8") as stream:
         cases = list(csv.DictReader(stream))
@@ -133,17 +136,35 @@ def native_proof_entries() -> list[tuple[str, Path]]:
         case_id = case["case_id"]
         entries.extend(
             [
-                (f"native_{case_id}_management", Path(case["workdir"]) / "p10.man.yaml"),
-                (f"native_{case_id}_stdout", Path(case["stdout_log"])),
-                (f"native_{case_id}_stderr", Path(case["stderr_log"])),
+                (f"native_{case_id}_management", _native_path(case["workdir"], case["workdir"]) / "p10.man.yaml"),
+                (f"native_{case_id}_stdout", _native_path(case["stdout_log"], case["workdir"])),
+                (f"native_{case_id}_stderr", _native_path(case["stderr_log"], case["workdir"])),
             ]
         )
         if case_id != "invalid_threshold_order":
-            entries.append((f"native_{case_id}_trace", Path(case["trace_path"])))
+            entries.append((f"native_{case_id}_trace", _native_path(case["trace_path"], case["workdir"])))
     return entries
 
 
-def main() -> int:
+def _native_path(value: str, planned_workdir: str) -> Path:
+    planned_root = Path(planned_workdir).parent
+    return OBJECTS / "native-proof" / Path(value).relative_to(planned_root)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, EXECUTOR, EXECUTION_ROOT
+    attempt_root = execution_root.parent
+    ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    OBJECTS = execution_root
+    EXECUTOR = attempt_root / "cargo-target/release"
+    EXECUTION_ROOT = attempt_root
     if (OBJECTS / "holdout-opened-once.lock").exists():
         raise ValueError("refusing to regenerate freeze after Harvard was opened")
     accepted = ARTIFACTS / "accepted-calibration-ensemble.csv"
@@ -153,7 +174,7 @@ def main() -> int:
     OBJECTS.mkdir(parents=True, exist_ok=True)
     bundles = OBJECTS / "freeze-bundles"
     bundles.mkdir(exist_ok=True)
-    executor = PACKAGE / "tools/executor/target/release"
+    executor = EXECUTOR
     input_bundle = bundles / "authenticated-inputs.csv"
     write_bundle(input_bundle, authenticated_inputs())
     primary_bundle = bundles / "primary-components.csv"
@@ -227,29 +248,14 @@ def main() -> int:
         ("producer_binary", executor / "holdout-producer"),
         ("reconstructor_source", PACKAGE / "tools/executor/src/bin/holdout_reconstruct.rs"),
         ("reconstructor_binary", executor / "holdout-reconstruct"),
-        ("command_plan", ARTIFACTS / "executor-command-plan.csv"),
-        ("observed_command_contract", ARTIFACTS / "observed-command-contract.csv"),
+        ("command_plan", SOURCE_ARTIFACTS / "executor-command-plan.csv"),
+        ("observed_command_contract", SOURCE_ARTIFACTS / "observed-command-contract.csv"),
     ])
-    observed_rows = observe.validate_snapshot(
-        "pre-freeze",
-        "summarize_pre_freeze",
-    )
+    control_root = attempt_root.with_name(f"{attempt_root.name}.control")
+    transaction_receipt = control_root / "calibration-v1.receipt.json"
     observed_entries: list[tuple[str, Path]] = [
-        ("observed_pre_freeze_snapshot", observe.LEDGER / "pre-freeze-snapshot.csv")
+        ("external_calibration_transaction_receipt", transaction_receipt)
     ]
-    for row in observed_rows:
-        command_id = row["command_id"]
-        receipt = Path(row["receipt_path"])
-        receipt_row = observe.read_receipt(receipt)
-        observed_entries.extend([
-            (f"observed_{command_id}_receipt", receipt),
-            (f"observed_{command_id}_stdout", Path(receipt_row["stdout_path"])),
-            (f"observed_{command_id}_stderr", Path(receipt_row["stderr_path"])),
-            (
-                f"observed_{command_id}_outputs",
-                Path(receipt_row["output_manifest_path"]),
-            ),
-        ])
     custody_bundle = bundles / "freeze-custody-controls.csv"
     custody_entries = [
         ("custody_library", PACKAGE / "tools/custody.py"),
@@ -259,11 +265,11 @@ def main() -> int:
         ("observed_runner", PACKAGE / "tools/observe.py"),
         ("observed_prefix_coordinator", PACKAGE / "tools/execute-prefix.py"),
         ("observed_runner_test", PACKAGE / "tools/test_observe.py"),
-        ("observed_command_contract", ARTIFACTS / "observed-command-contract.csv"),
-        ("observed_execution_procedure", ARTIFACTS / "observed-execution-procedure.md"),
+        ("observed_command_contract", SOURCE_ARTIFACTS / "observed-command-contract.csv"),
+        ("observed_execution_procedure", SOURCE_ARTIFACTS / "observed-execution-procedure.md"),
         (
             "calibration_forcing_authority_resolution",
-            ARTIFACTS / "calibration-forcing-authority-resolution.md",
+            SOURCE_ARTIFACTS / "calibration-forcing-authority-resolution.md",
         ),
         ("preopen_validator", PACKAGE / "tools/validate_preopen.py"),
         ("summarize_script", PACKAGE / "tools/summarize.py"),
@@ -304,7 +310,7 @@ def main() -> int:
 
     timing = ROOT / "docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts/phenology-forcing-join.csv"
     operator = ROOT / "docs/work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/artifacts/objective-and-observation-operator.md"
-    command_plan = ARTIFACTS / "executor-command-plan.csv"
+    command_plan = SOURCE_ARTIFACTS / "executor-command-plan.csv"
     rows = [
         ("accepted_ensemble", accepted, "calibration_output"),
         ("candidate_configurations", input_bundle, "frozen_configuration_and_authenticated_inputs"),

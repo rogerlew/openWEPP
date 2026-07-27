@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import subprocess
@@ -12,12 +13,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
 CAL04A = ROOT / "docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts"
 TIMING = CAL04A / "phenology-forcing-join.csv"
 DAYMET_ROOT = ROOT / "references/canopy_phenology/daymet_calibration"
 HUBBARD = ROOT / "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh"
-FORCING_AUTHORITY = ARTIFACTS / "calibration-forcing-authority-resolution.md"
+FORCING_AUTHORITY = SOURCE_ARTIFACTS / "calibration-forcing-authority-resolution.md"
 FORCING_AUTHORITY_SHA256 = (
     "13c715046dd1ef700796d1651efa09b9e541f51cbb3c1a8feb2ebd45f072781d"
 )
@@ -69,7 +71,16 @@ def factor(family: str, value: float, lower: float, upper: float) -> float:
     return 1.0 - increasing if family == "vpd" else increasing
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     grid_path = CAL04A / "proposed-domain-grid.csv"
     with grid_path.open(newline="", encoding="utf-8") as stream:
         grid = list(csv.DictReader(stream))

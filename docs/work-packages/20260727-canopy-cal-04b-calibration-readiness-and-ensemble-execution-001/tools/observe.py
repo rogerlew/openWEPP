@@ -19,8 +19,9 @@ from custody import sha256_file
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 LEDGER = OBJECTS / "execution-ledger"
 PLAN = ARTIFACTS / "executor-command-plan.csv"
 CONTRACT = ARTIFACTS / "observed-command-contract.csv"
@@ -87,7 +88,23 @@ def output_paths(value: str) -> list[Path]:
     if value == "-":
         return []
     paths = [Path(item) for item in value.split(";") if item]
-    return [path if path.is_absolute() else ROOT / path for path in paths]
+    mapped = []
+    legacy_objects = Path("/home/workdir") / "cal04b-objects"
+    for path in paths:
+        if path.is_absolute():
+            try:
+                mapped.append(OBJECTS / path.relative_to(legacy_objects))
+                continue
+            except ValueError:
+                pass
+        repository_path = path if path.is_absolute() else ROOT / path
+        try:
+            relative = repository_path.relative_to(ROOT)
+        except ValueError:
+            mapped.append(repository_path)
+        else:
+            mapped.append(OBJECTS.parent / "publication" / relative)
+    return mapped
 
 
 def read_receipt(path: Path) -> dict[str, str]:
@@ -394,8 +411,9 @@ def render(last_command_id: str, snapshot: str | None) -> None:
     print(f"PASS observed ledger rendered commands={len(rows)} destination={destination}")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
     subparsers = parser.add_subparsers(dest="action", required=True)
     run = subparsers.add_parser("run")
     run.add_argument("--command-id", required=True)
@@ -403,7 +421,14 @@ def main() -> int:
     render_parser = subparsers.add_parser("render")
     render_parser.add_argument("--through", required=True)
     render_parser.add_argument("--snapshot")
-    options = parser.parse_args()
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, LEDGER
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    OBJECTS = execution_root
+    LEDGER = execution_root.parent / "legacy-observed-ledger"
     if options.action == "run":
         command = options.command
         if command and command[0] == "--":

@@ -11,11 +11,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 
 
 def rows(name: str) -> list[dict[str, str]]:
-    with (ARTIFACTS / name).open(newline="", encoding="utf-8") as stream:
+    external = ARTIFACTS / name
+    path = external if external.is_file() else SOURCE_ARTIFACTS / name
+    with path.open(newline="", encoding="utf-8") as stream:
         return list(csv.DictReader(stream))
 
 
@@ -70,8 +74,8 @@ def pre_freeze() -> None:
     matrix_rows = [
         ("typed/enumerable parameter surface", "PASS", "candidate-configurations.csv; later-stage-design.csv", "All axes and complete deterministic levels are retained."),
         ("observation operator with units and scale", "PASS", "executor-schema.md; later-stage-results.csv", "Interval timing, biomass, LAI, activity, and cover operators retain units and evidence roles."),
-        ("deterministic candidate execution", "PASS", "/home/workdir/cal04b-objects/hubbard-gsi-identity.csv", "Native raw trace has exact candidate/calendar/source/binary identity."),
-        ("objective reconstruction", "PASS", "/home/workdir/cal04b-objects/verification/verification-receipt.csv", "Independent reconstruction is byte-identical across all derived ledgers."),
+        ("deterministic candidate execution", "PASS", str(OBJECTS / "hubbard-gsi-identity.csv"), "Native raw trace has exact candidate/calendar/source/binary identity."),
+        ("objective reconstruction", "PASS", str(OBJECTS / "verification/verification-receipt.csv"), "Independent reconstruction is byte-identical across all derived ledgers."),
         ("sensitivity analysis", "PASS", "later-stage-results.csv", "Native finite differences include central and boundary schemes."),
         ("identifiability/confounding analysis", "PASS", "identifiability-and-equifinality.md", "GSI ensemble and all downstream equifinal sets remain explicit."),
         ("boundary, saturation, and failure reporting", "PASS", "saturation-evidence.csv; failure-ledger.csv; later-stage-results.csv", "All candidate families, typed failures, and enumeration boundaries are retained."),
@@ -163,10 +167,18 @@ def post_holdout() -> None:
     print(f"PASS post-holdout candidates={len(holdout)} finite={len(finite)}")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", choices=("pre-freeze", "post-holdout"), required=True)
-    options = parser.parse_args()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS
+    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    OBJECTS = execution_root
     if options.phase == "pre-freeze":
         pre_freeze()
     else:

@@ -18,8 +18,9 @@ This ExecPlan is maintained under `docs/codex_exec_plans.md`.
 - [x] Commit the prerequisite scaffold at `9bf3f344`.
 - [x] Complete first dual scaffold review; both reviewers returned `HOLD`.
 - [x] Close every scaffold finding and obtain dual `GO` at `edc102bc`.
-- [ ] Freeze red fixtures and implement the adapter.
-- [ ] Execute focused and campaign-strength gates through canonical admission.
+- [x] Freeze adversarial fixtures and implement the adapter.
+- [ ] Execute focused and campaign-strength gates through canonical admission;
+  focused gates pass, canonical heavy admission remains pending review.
 - [ ] Complete dual implementation review, dual terminal verification, and
   package closeout.
 

@@ -55,6 +55,35 @@ impl ConstructedAudit {
     pub fn as_value(&self) -> &Value {
         &self.0
     }
+
+    /// Admit a repository-constructed external-DAG audit capability.
+    ///
+    /// The constructor remains crate-private so callers cannot promote
+    /// self-authored JSON into an execution capability.
+    pub(crate) fn from_external(value: Value) -> Result<Self> {
+        if value["schema"] != "openwepp-external-pre-heavy-audit-v1"
+            || value["status"] != "READY"
+            || value["checks"].as_array().map_or(0, Vec::len) != 10
+            || value["checks"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .any(|check| check["result"] != "PASS")
+        {
+            return Err(audit_error(
+                "GATE-EXTERNAL-AUDIT-INVALID",
+                "external audit is not an exact ten-check READY decision",
+            ));
+        }
+        let expected = derived_id(&value, "audit_id")?;
+        if value["audit_id"] != expected {
+            return Err(audit_error(
+                "GATE-EXTERNAL-AUDIT-ID",
+                "external audit identity mismatch",
+            ));
+        }
+        Ok(Self(value))
+    }
 }
 
 /// Construct and retain provenance for one audit decision.

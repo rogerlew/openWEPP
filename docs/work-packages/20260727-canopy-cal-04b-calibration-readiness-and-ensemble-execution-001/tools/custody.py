@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
+import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -19,6 +22,7 @@ RECEIPT_FIELDS = [
     "timestamp",
     "state",
 ]
+ATTESTATION_SCHEMA = "openwepp-external-verifier-attestation-v1"
 
 
 def sha256_file(path: Path) -> str:
@@ -29,6 +33,71 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def derived_id(value: dict[str, object], field: str) -> str:
+    candidate = dict(value)
+    candidate.pop(field, None)
+    encoded = json.dumps(
+        candidate, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def consume_capability(path: Path, consumed_path: Path) -> str:
+    metadata = path.lstat()
+    if path.is_symlink() or not path.is_file() or metadata.st_nlink != 1:
+        raise ValueError("verifier capability is not a unique regular file")
+    capability = path.read_bytes()
+    if len(capability) < 32:
+        raise ValueError("verifier capability is too short")
+    consumed_path.parent.mkdir(parents=True, exist_ok=True)
+    if consumed_path.exists():
+        raise ValueError("verifier capability was already consumed")
+    os.rename(path, consumed_path)
+    return hashlib.sha256(capability).hexdigest()
+
+
+def write_attestation(
+    path: Path,
+    *,
+    capability_hash: str,
+    parent_dispatch_id: str,
+    agent_task_id: str,
+    principal: str,
+    workflow: str,
+    job: str,
+    runner: str,
+    attempt: int,
+    script: Path,
+    argv: list[str],
+    receipt: Path,
+    freeze_digest: str,
+) -> None:
+    value: dict[str, object] = {
+        "schema": ATTESTATION_SCHEMA,
+        "attestation_id": "",
+        "capability_hash": capability_hash,
+        "parent_dispatch_id": parent_dispatch_id,
+        "agent_task_id": agent_task_id,
+        "principal": principal,
+        "workflow": workflow,
+        "job": job,
+        "runner": runner,
+        "attempt": attempt,
+        "script_sha256": sha256_file(script),
+        "argv": argv,
+        "receipt_sha256": sha256_file(receipt),
+        "freeze_digest": freeze_digest,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    value["attestation_id"] = derived_id(value, "attestation_id")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as stream:
+        json.dump(value, stream, sort_keys=True, separators=(",", ":"))
+        stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def read_csv_exact(path: Path, fields: list[str]) -> list[dict[str, str]]:

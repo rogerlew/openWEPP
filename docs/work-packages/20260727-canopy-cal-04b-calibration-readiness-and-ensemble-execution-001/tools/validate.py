@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
+import json
 import math
 import struct
 import subprocess
@@ -14,7 +16,6 @@ from datetime import date
 from pathlib import Path
 
 import numpy as np
-import observe
 from custody import (
     RECEIPT_FIELDS,
     read_csv_exact,
@@ -25,8 +26,20 @@ from custody import (
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-ARTIFACTS = PACKAGE / "artifacts"
-OBJECTS = Path("/home/workdir/cal04b-objects")
+SOURCE_ARTIFACTS = PACKAGE / "artifacts"
+ARTIFACTS = SOURCE_ARTIFACTS
+OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
+EXECUTION_ROOT = Path("/nonexistent/cal04b-execution-root-required")
+
+
+class ReadOverlay:
+    def __init__(self, external: Path, source: Path) -> None:
+        self.external = external
+        self.source = source
+
+    def __truediv__(self, name: str) -> Path:
+        external = self.external / name
+        return external if external.exists() else self.source / name
 
 TRACE_MAGIC = b"CAL04B03"
 TRACE_HEADER = struct.Struct("<8sIII")
@@ -174,7 +187,9 @@ TIMING_FIELDS = (
 
 
 def rows(name: str) -> list[dict[str, str]]:
-    with (ARTIFACTS / name).open(newline="", encoding="utf-8") as stream:
+    output = ARTIFACTS / name
+    path = output if output.is_file() else SOURCE_ARTIFACTS / name
+    with path.open(newline="", encoding="utf-8") as stream:
         return list(csv.DictReader(stream))
 
 
@@ -200,7 +215,17 @@ def exact_float(observed: str, expected: float) -> bool:
 
 def repository_path(value: str) -> Path:
     path = Path(value)
-    return path if path.is_absolute() else ROOT / path
+    legacy_objects = Path("/home/workdir") / "cal04b-objects"
+    if path.is_absolute():
+        try:
+            return OBJECTS / path.relative_to(legacy_objects)
+        except ValueError:
+            return path
+    source_artifacts = PACKAGE.relative_to(ROOT) / "artifacts"
+    try:
+        return ARTIFACTS / path.relative_to(source_artifacts)
+    except ValueError:
+        return ROOT / path
 
 
 def read_trace_header(path: Path) -> tuple[int, int, int]:
@@ -1285,7 +1310,22 @@ def validate_holdout_arithmetic(accepted_ids: list[str]) -> None:
         require(next(annuals, None) is None, "extra holdout annual components")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    global ARTIFACTS, OBJECTS, EXECUTION_ROOT
+    EXECUTION_ROOT = execution_root
+    attempt_root = execution_root.parent
+    EXECUTION_ROOT = attempt_root
+    external_artifacts = (
+        attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    )
+    ARTIFACTS = ReadOverlay(external_artifacts, SOURCE_ARTIFACTS)
+    OBJECTS = execution_root
     command_plan = rows("executor-command-plan.csv")
     plan_by_id = {row["command_id"]: row for row in command_plan}
     require(len(plan_by_id) == len(command_plan), "command plan IDs duplicate")
@@ -1605,7 +1645,7 @@ def main() -> int:
     )
     expected_producer_command = " ".join(
         [
-            str(PACKAGE / "tools/executor/target/release/holdout-producer"),
+            str(EXECUTION_ROOT / "cargo-target/release/holdout-producer"),
             "--configs",
             str(ARTIFACTS / "candidate-configurations.csv"),
             "--accepted",
@@ -1620,7 +1660,7 @@ def main() -> int:
     )
     expected_reconstructor_command = " ".join(
         [
-            str(PACKAGE / "tools/executor/target/release/holdout-reconstruct"),
+            str(EXECUTION_ROOT / "cargo-target/release/holdout-reconstruct"),
             "--trace",
             str(holdout_root / "harvard-gsi.bin"),
             "--calendar",
@@ -1657,45 +1697,13 @@ def main() -> int:
     )
     validate_holdout_arithmetic(accepted_ids)
 
-    command_log = rows("command-log.csv")
-    logged_ids = [row["command_id"] for row in command_log]
-    planned_ids = [row["command_id"] for row in command_plan]
+    control_root = EXECUTION_ROOT.with_name(f"{EXECUTION_ROOT.name}.control")
+    receipt_path = control_root / "holdout-v1.receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     require(
-        logged_ids in (planned_ids[:-1], planned_ids),
-        "derived command log does not match observed DAG receipts",
-    )
-    observed_receipts = observe.validate_prefix(
-        "terminal_validate"
-        if logged_ids == planned_ids
-        else "summarize_post_holdout"
-    )
-    for row, receipt in zip(command_log, observed_receipts):
-        require(
-            row["state"] == "PASS"
-            and row["working_directory"] == receipt["working_directory"]
-            and row["planned_command"] == receipt["planned_argv"]
-            and row["observed_argv_json"] == receipt["observed_argv_json"]
-            and row["started_at"] == receipt["started_at"]
-            and row["finished_at"] == receipt["finished_at"]
-            and row["exit_code"] == "0"
-            and row["stdout_sha256"] == receipt["stdout_sha256"]
-            and row["stderr_sha256"] == receipt["stderr_sha256"]
-            and row["output_manifest_sha256"] == receipt["output_manifest_sha256"]
-            and row["receipt_sha256"]
-            == sha256_file(Path(row["receipt_path"])),
-            f"derived command log differs for {row['command_id']}",
-        )
-    inventories = rows("execution-inventory.csv")
-    require(inventories and {row["state"] for row in inventories} == {"PASS"}, "execution inventory differs")
-    covered = [
-        command_id
-        for row in inventories
-        for command_id in row["command_ids"].split(";")
-        if command_id
-    ]
-    require(
-        covered == logged_ids,
-        "execution inventory does not cover the derived observed DAG",
+        receipt.get("transaction_id") == "holdout-v1"
+        and receipt.get("result") == "PASS",
+        "external holdout transaction receipt differs",
     )
 
     statuses = rows("stage-status-ledger.csv")

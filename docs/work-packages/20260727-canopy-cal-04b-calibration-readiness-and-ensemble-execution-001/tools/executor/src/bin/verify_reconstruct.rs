@@ -528,7 +528,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let rendered = objective.map_or_else(|| "+infinity".into(), |value| format!("{value:.17}"));
         writeln!(
             candidate_writer,
-            "{},{},{},{},{},{},/home/workdir/cal04b-objects/primary/candidate-observation-components.csv",
+            "{},{},{},{},{},{},{}",
             candidate.id,
             candidate.configuration_id,
             if objective.is_some() {
@@ -538,7 +538,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
             rendered,
             candidate.boundary,
-            candidate.saturation
+            candidate.saturation,
+            primary_components
+                .join("candidate-observation-components.csv")
+                .display()
         )?;
         if objective.is_some_and(|value| value <= threshold) {
             writeln!(
