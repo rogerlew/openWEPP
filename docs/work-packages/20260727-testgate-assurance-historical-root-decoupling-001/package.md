@@ -56,6 +56,9 @@ Protected:
 ## Intended Write Set
 
 - `crates/openwepp-gate-planner/src/policy.rs`
+- the isolated policy fixture in
+  `crates/openwepp-gate-planner/src/executor.rs` only as required to exercise
+  the canonical generated review-lock and identity-lock contract
 - adjacent policy unit/coverage tests in
   `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs` only if needed
 - `tests/integration/testgate_assure_campaign_currency_contract.rs`
@@ -130,6 +133,13 @@ disposition.
   requirement against mutable current DRAFT locks.
   Rationale: moving the registry root would erase the baseline that impact
   planning is required to compare against.
+  Date/Author: 2026-07-27 / Codex.
+- Decision: accept the independent reviewers' fail-closed finding and validate
+  current review locks against the canonical schema and current identity-lock
+  digest binding. The isolated executor fixture is added to the write set so
+  planner tests exercise the real generated-lock contract.
+  Rationale: subset deserialization alone did not support the package's
+  structural-validation claim.
   Date/Author: 2026-07-27 / Codex.
 
 ## Outcomes
