@@ -13,6 +13,23 @@ its assurance/TESTGATE blockers through reviewed work-package corrections.
 This defect-closure ExecPlan is maintained under
 `docs/defect_closure_execplans.md`.
 
+## Correction Authority Envelope
+
+- Defect: canonical receipt
+  `30054b51863488b85d23c95a68b8d5ebc8f5d2d9be5b94959dfec4dab194b54f`
+  fails workspace Clippy only because one cohesive assurance integration test
+  is 156 lines.
+- Observed violation: `clippy::too_many_lines` under exact command
+  `cargo clippy --workspace --all-targets -- -D warnings`.
+- Allowed edit class: one function-scoped Clippy attribute and one adjacent
+  explanatory comment on the named test.
+- Validation surfaces: exact source diff, focused assurance target, workspace
+  Clippy, full Nextest, doc tests, authority anti-evasion, formatting,
+  documentation lint, and canonical TESTGATE receipt.
+- Protected boundaries: every test statement and assertion, assurance
+  implementation/fixture/identity/review authority, gate policy/inventory,
+  ledger implementation, CAL data, and Harvard state.
+
 ## Objective
 
 Close the exact workspace-Clippy failure retained in the TESTGATE ledger
@@ -71,8 +88,11 @@ No other path is writable. This write set must not widen.
 2. Add the single function-scoped disposition and rationale.
 3. Run every command in `Validation Commands`.
 4. Commit the exact implementation and obtain two independent implementation
-   reviews.
-5. Record exact evidence and obtain two terminal verifiers.
+   reviews. Record every finding as `accepted`, `rejected`, `deferred`, or
+   `follow-up` in `artifacts/review-findings.md`.
+5. Record exact gate evidence, worker handoff, Rust line-count review, exact
+   declared-base-to-terminal-head diff reconciliation, and final disposition
+   artifacts; obtain two terminal verifiers.
 6. Delegate one comparator-owned exact-head canonical transaction on a fresh
    root/ledger. Require LIGHT PASS, READY audit, and every HEAVY node PASS.
 7. Obtain two independent receipt verifiers, close this successor, and resume
@@ -88,6 +108,11 @@ No other path is writable. This write set must not widen.
 - Workspace Clippy passes with `-D warnings`.
 - Full workspace regression and authority anti-evasion gates pass.
 - The canonical successor receipt is PASS with no unavailable required item.
+- The exact terminal diff contains only declared paths; the Rust diff contains
+  only the scoped attribute and rationale.
+- Required package artifacts exist: `review-findings.md`,
+  `implementation-gates.md`, `worker-handoff.md`,
+  `line-count-disposition.md`, and `final-disposition.md`.
 
 ## Validation Commands
 
@@ -100,13 +125,47 @@ bash tools/release/check_authority_suite_antievasion.sh
 cargo nextest run --test auth11_required_suite_obligation_guards_contract
 cargo fmt --all -- --check
 markdown-doc lint --path docs/work-packages/20260727-assurance-v2-amendment-contract-clippy-line-disposition-001
+markdown-doc lint --path docs/work-packages/README.md
+markdown-doc lint --path docs/planning/canopy-phenology-assurance-roadmap.md
+markdown-doc lint --path docs/work-packages/20260727-testgate-first-attempt-ledger-bootstrap-001/artifacts/canonical-execution.md
 git diff --check
+git diff --name-only <declared-base>..<terminal-head>
 ```
 
 ## Line-Count Governance
 
-The touched integration file is below the 2,000-line Rust WARN threshold.
-This package does not authorize a source-file line-count exception.
+The touched integration file is 1,044 lines, below the 2,000-line Rust WARN
+threshold. Both implementation reviewers and both terminal verifiers must
+recount it and explicitly evaluate the 2,000-line WARN and 3,000-line mandatory
+refactor thresholds. This package does not authorize a source-file line-count
+exception.
+
+## Progress
+
+- [x] Canonical failure reproduced and retained.
+- [x] Prospective scaffold committed.
+- [ ] Corrected scaffold receives dual `GO`.
+- [ ] Scoped implementation and exact gates complete.
+- [ ] Dual implementation review and finding disposition complete.
+- [ ] Dual terminal verification complete.
+- [ ] Canonical PASS receipt and dual receipt verification complete.
+
+## Surprises & Discoveries
+
+- The ledger bootstrap and inherited-FD consumer path passed through LIGHT and
+  the ten-check READY audit; the successor is isolated to a pre-existing
+  integration-test lint disposition.
+
+## Decision Log
+
+- Decision: preserve the cohesive lifecycle test and use the narrowest
+  function-scoped Clippy disposition.
+  Rationale: extracting helpers solely to satisfy a line-count heuristic would
+  fragment one audit scenario and enlarge the behavioral diff.
+
+## Outcomes & Retrospective
+
+Pending implementation, canonical PASS, and closeout.
 
 Harvard remains sealed and CAL population remains prohibited.
 

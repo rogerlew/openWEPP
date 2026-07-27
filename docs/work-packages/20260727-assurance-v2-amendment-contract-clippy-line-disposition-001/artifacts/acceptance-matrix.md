@@ -13,3 +13,7 @@ Evidence class: `Static + Ran`
 | AC-05 | Workspace Clippy restored | strict workspace Clippy |
 | AC-06 | Full regression restored | full Nextest and doc tests |
 | AC-07 | Independent closure | dual reviews, verifiers, canonical receipt |
+| AC-08 | Findings explicitly dispositioned | `review-findings.md` |
+| AC-09 | Worker/final handoff complete | `worker-handoff.md` and `final-disposition.md` |
+| AC-10 | Rust line count governed | `line-count-disposition.md`; dual recount |
+| AC-11 | Exact terminal diff reconciled | declared-base-to-head path/diff evidence |

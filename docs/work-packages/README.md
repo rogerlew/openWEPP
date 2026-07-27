@@ -11,6 +11,11 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/` is the
+  active narrow successor to the ledger-bootstrap canonical HOLD. It owns only
+  the function-scoped Clippy line disposition on the cohesive assurance-v2
+  report-source adoption integration test, followed by exact full regression
+  and a fresh comparator-owned canonical receipt.
 - `20260727-testgate-assurance-historical-root-decoupling-001/`,
   `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/`,
   and
