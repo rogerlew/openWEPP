@@ -359,14 +359,7 @@ fn verify_assessed_roots(repo_root: &Path, registry: &AssuranceRegistry) -> Resu
                 error.to_string(),
             )
         })?;
-        let assessed_root = lock
-            .realization_root
-            .as_deref()
-            .unwrap_or(&lock.preapproval_realization_root);
-        if lock.report_id != report.report_id
-            || lock.science_root != report.source_root
-            || assessed_root != report.assessed_realization_root
-        {
+        if !review_lock_is_associated(report, &lock) {
             return Err(GatePolicyError::new(
                 ErrorClass::Policy,
                 "GATE-ASSURANCE-ASSESSED-ROOT",
@@ -375,6 +368,22 @@ fn verify_assessed_roots(repo_root: &Path, registry: &AssuranceRegistry) -> Resu
         }
     }
     Ok(())
+}
+
+fn review_lock_is_associated(report: &AssuranceReport, lock: &ReviewLock) -> bool {
+    lock.report_id == report.report_id
+        && is_sha256(&report.source_root)
+        && is_sha256(&report.assessed_realization_root)
+        && is_sha256(&lock.science_root)
+        && is_sha256(&lock.preapproval_realization_root)
+        && lock.realization_root.as_deref().is_none_or(is_sha256)
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
 fn verify_resolution_authorities(
@@ -836,7 +845,10 @@ fn verify_definition_dag(definitions: &BTreeMap<String, GateDefinition>) -> Resu
 mod tests {
     use std::path::Path;
 
-    use super::{AssuranceRegistry, Matcher, matcher_matches, verify_lifecycle_authorities};
+    use super::{
+        AssuranceRegistry, Matcher, ReviewLock, matcher_matches, review_lock_is_associated,
+        verify_lifecycle_authorities,
+    };
 
     #[test]
     fn component_prefix_and_git_style_glob_are_bounded() {
@@ -882,5 +894,39 @@ mod tests {
         let error = verify_lifecycle_authorities(&root, &registry)
             .expect_err("null principal cannot substitute the unresolved lifecycle role");
         assert_eq!(error.code, "GATE-ASSURANCE-LIFECYCLE-AUTHORITY");
+    }
+
+    #[test]
+    fn review_lock_association_allows_historical_root_divergence_but_rejects_invalid_roots() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let bytes =
+            std::fs::read(root.join("gate-policy/v1/assurance-registry.json")).expect("registry");
+        let registry: AssuranceRegistry = serde_json::from_slice(&bytes).expect("registry JSON");
+        let report = registry
+            .reports
+            .iter()
+            .find(|report| report.report_id == "linear-groundwater-reservoir-recurrence")
+            .expect("groundwater report");
+        let mut lock = ReviewLock {
+            report_id: report.report_id.clone(),
+            science_root: "1".repeat(64),
+            preapproval_realization_root: "2".repeat(64),
+            realization_root: None,
+        };
+        assert_ne!(lock.science_root, report.source_root);
+        assert_ne!(
+            lock.preapproval_realization_root,
+            report.assessed_realization_root
+        );
+        assert!(review_lock_is_associated(report, &lock));
+
+        lock.report_id = "different-report".to_owned();
+        assert!(!review_lock_is_associated(report, &lock));
+        lock.report_id.clone_from(&report.report_id);
+        lock.preapproval_realization_root = "not-a-digest".to_owned();
+        assert!(!review_lock_is_associated(report, &lock));
+        lock.preapproval_realization_root = "2".repeat(64);
+        lock.realization_root = Some("A".repeat(64));
+        assert!(!review_lock_is_associated(report, &lock));
     }
 }

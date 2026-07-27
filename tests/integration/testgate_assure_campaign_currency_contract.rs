@@ -161,6 +161,10 @@ fn assert_match_and_currency_bindings(plan: &Value) {
         old["assessed_realization_root"],
         "78231571d51e9d3a95868d3f928b84bc9ce5a58d2deb8cc54e70b18b3784f1bb"
     );
+    assert_eq!(
+        old["source_root"],
+        "1b2f0d0e3c8de9107d7ea5adca8d79c524840dd7555d6eee79538552b162e43d"
+    );
     assert_eq!(old["impact_state"], "OPEN_UNKNOWN");
     assert_eq!(
         old["lifecycle_boundaries"],
@@ -273,6 +277,47 @@ fn production_registry_is_strict_and_equals_the_canonical_catalog() {
     let mut invalid = valid;
     invalid["reports"][0]["watches"] = mutation["invalid_value"].clone();
     assert!(validator.validate(&invalid).is_err());
+}
+
+#[test]
+fn current_draft_roots_may_diverge_while_plans_retain_historical_registry_roots() {
+    let root = repo();
+    let policy = PolicyBundle::load(&root).expect("load policy with current DRAFT divergence");
+    let report = policy
+        .assurance_registry
+        .reports
+        .iter()
+        .find(|report| report.report_id == "linear-groundwater-reservoir-recurrence")
+        .expect("groundwater registry report");
+    let lock: Value =
+        serde_json::from_slice(
+            &std::fs::read(root.join(
+                "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+            ))
+            .expect("current groundwater review lock"),
+        )
+        .expect("review lock JSON");
+    let current_assessed_root = lock["realization_root"]
+        .as_str()
+        .or_else(|| lock["preapproval_realization_root"].as_str())
+        .expect("best available current realization root");
+    assert!(
+        report.source_root != lock["science_root"]
+            || report.assessed_realization_root != current_assessed_root,
+        "the production DRAFT lock must exercise historical/current root divergence"
+    );
+
+    let plan = build_plan(&root);
+    let emitted = impact(
+        &plan,
+        &report.report_id,
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
+    );
+    assert_eq!(emitted["source_root"], report.source_root);
+    assert_eq!(
+        emitted["assessed_realization_root"],
+        report.assessed_realization_root
+    );
 }
 
 #[test]

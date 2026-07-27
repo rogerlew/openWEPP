@@ -69,8 +69,13 @@ When a resolution principal is known, `role_record_sha256` is the RFC 8785
 digest of `principal_id`, `record_version`, and `role_id`; policy loading
 reconstructs it from `assurance/v2/principals.yaml`. A missing principal and
 digest is explicit incomplete ownership and yields `OPEN_UNKNOWN`.
-Each registry report also binds `source_root` and the best available assessed
-realization root (`realization_root`, otherwise `preapproval_realization_root`)
-from its generated review lock. Policy loading rejects drift, so a `CURRENT`
-integrity axis is never target-free while ordinary impact planning remains
-read-only.
+Each registry report binds the immutable historical `source_root` and
+`assessed_realization_root` used by impact records. Policy loading validates
+those roots and the current generated review lock structurally, requires the
+lock to identify the registered report, and independently validates current
+lifecycle and resolution authority. It does not require the historical roots
+to equal the mutable current DRAFT lock's `science_root` or best available
+realization root (`realization_root`, otherwise
+`preapproval_realization_root`). Ordinary source movement can therefore create
+pending campaign impact without retargeting or invalidating the historical
+assessment.
