@@ -538,6 +538,29 @@ fn report_source_adoption_rolls_back_an_invalid_isolated_candidate() {
 }
 
 #[test]
+fn report_source_adoption_rejects_noncanonical_unchanged_reset_repair() {
+    let fixture = fixture("assurance-adopt-report-source-invalid-repair");
+    let source = Path::new("tests/fixtures/cancov_forest/README.md");
+    let report_path = fixture
+        .path
+        .join(format!("assurance/v2/reports/{SNOW}/report.yaml"));
+    let mut report: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&report_path).unwrap()).unwrap();
+    report["review"]["review_charge"] =
+        serde_yaml::Value::String("Noncanonical retained authority.".to_owned());
+    fs::write(&report_path, serde_yaml::to_string(&report).unwrap()).unwrap();
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&fixture.path).unwrap();
+    let before = capture_tree(&fixture.path);
+    assert!(
+        adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Apply)
+            .unwrap_err()
+            .to_string()
+            .contains("outside the repairable DRAFT reset")
+    );
+    assert_eq!(before, capture_tree(&fixture.path));
+}
+
+#[test]
 fn generated_identity_event_and_receipt_schemas_accept_current_artifacts() {
     let root = repository_root();
     assert_schema_accepts(
@@ -862,6 +885,14 @@ fn current_unverified_fixture(label: &str) -> Scratch {
     report["review"]["material_producer_ids"] = serde_yaml::Value::Sequence(Vec::new());
     report["review"]["independence_assessment"] =
         serde_yaml::Value::String("not_assessed".to_owned());
+    report["review"]
+        .as_mapping_mut()
+        .unwrap()
+        .remove(serde_yaml::Value::String("findings".to_owned()));
+    report["review"]
+        .as_mapping_mut()
+        .unwrap()
+        .remove(serde_yaml::Value::String("approvals".to_owned()));
     fs::write(&report_path, serde_yaml::to_string(&report).unwrap()).unwrap();
     let lock_path = target
         .path

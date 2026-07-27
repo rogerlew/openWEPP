@@ -447,6 +447,20 @@ fn requires_adoption_reset_repair(
             .get(yaml_key("decision"))
             .and_then(serde_yaml::Value::as_str)
             == Some("not_started")
+        && review
+            .get(yaml_key("review_charge"))
+            .is_some_and(serde_yaml::Value::is_null)
+        && review
+            .get(yaml_key("build_maintainer_id"))
+            .is_some_and(serde_yaml::Value::is_null)
+        && review
+            .get(yaml_key("material_producer_ids"))
+            .and_then(serde_yaml::Value::as_sequence)
+            .is_some_and(Vec::is_empty)
+        && review
+            .get(yaml_key("independence_assessment"))
+            .and_then(serde_yaml::Value::as_str)
+            == Some("not_assessed")
         && review_lock.event_ids.is_empty()
         && empty_sequence(findings)
         && empty_sequence(approvals);
