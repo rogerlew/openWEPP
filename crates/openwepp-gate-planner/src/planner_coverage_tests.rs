@@ -25,7 +25,15 @@
             definition: &GateDefinition,
             target: &str,
         ) -> Result<Vec<String>> {
-            Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
+            if definition.gate_definition_id == "authority-required-suite-obligation-guards-v1" {
+                Ok(vec![
+                    "auth11_all_active_required_suite_targets_exist_and_are_registered".to_owned(),
+                    "auth11_obligations_schema_and_anchor_bindings_are_enforced".to_owned(),
+                    "auth11_registry_posture_and_protocol_guard_paths_exist".to_owned(),
+                ])
+            } else {
+                Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
+            }
         }
     }
 
@@ -199,6 +207,29 @@
             .map(|node| node["node_id"].as_str().expect("node ID"))
             .collect::<std::collections::BTreeSet<_>>();
         assert!(!ids.is_empty());
+        let nodes = first["nodes"].as_array().expect("nodes");
+        let node = |definition_id: &str| {
+            nodes
+                .iter()
+                .find(|node| node["gate_definition_id"] == definition_id)
+                .unwrap_or_else(|| panic!("missing node {definition_id}"))
+        };
+        let auth11 = node("authority-required-suite-obligation-guards-v1");
+        assert_eq!(
+            auth11["expected_inventory"]["ids"],
+            serde_json::json!([
+                "auth11_all_active_required_suite_targets_exist_and_are_registered",
+                "auth11_obligations_schema_and_anchor_bindings_are_enforced",
+                "auth11_registry_posture_and_protocol_guard_paths_exist"
+            ])
+        );
+        assert_eq!(
+            auth11["prerequisites"],
+            serde_json::json!([
+                node("authority-admission-v1")["node_id"],
+                node("authority-antievasion-v1")["node_id"]
+            ])
+        );
     }
 
     #[test]

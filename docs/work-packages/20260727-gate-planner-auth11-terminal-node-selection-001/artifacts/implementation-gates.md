@@ -61,16 +61,19 @@ Post-review reruns:
 | formatting, JSON, diff hygiene | PASS |
 | full gate-planner Nextest | FAIL, 226/227, run `b47dca9b-8772-46fe-a596-c5efc464851f` |
 
-The one full-suite failure is
+The one full-suite failure was
 `planner::tests::gate_policy_change_is_deterministic_and_critical`. Its
 `FixedInventory` test provider lives in
 `crates/openwepp-gate-planner/src/planner_coverage_tests.rs`, outside this
 package's frozen write set, and returns one synthetic item for every selected
 node. The now-correct `auth11-gate-policy` selection requires exactly three
 AUTH11 items, so planning fails closed with `GATE-INVENTORY-EMPTY`. The
-production inventory and focused AUTH11 tests are correct. This package remains
-`HOLD` until a prospective bounded successor corrects that test provider and
-the full suite passes.
+production inventory and focused AUTH11 tests are correct. Prospective
+successor
+`20260727-gate-planner-auth11-fixed-inventory-test-provider-001` now owns the
+test-only correction. Its uncommitted exact diff passes the reproducer and full
+planner suite 227/227; clean-commit review and terminal verification remain
+pending.
 
 Independent `cargo nextest list --test
 auth11_required_suite_obligation_guards_contract` enumerated exactly:
