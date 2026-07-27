@@ -1558,7 +1558,10 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // CANOPY-PHENOLOGY-02 adds two exact consumed-value observations for the
     // erosion canopy and frost residue-depth seams (+32 B including Option
     // discriminants); these are contract closure evidence, not producers.
-    assert!(day_frame <= 15_568);
+    // CAL04B-NATIVE-001 adds the paired erosion/frost canopy-height
+    // observations (+32 B) needed to prove those consumers read the identical
+    // post-growth height.
+    assert!(day_frame <= 15_600);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {

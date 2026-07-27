@@ -578,11 +578,11 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
             "the executor must publish the typed state to its real downstream consumers"
         );
     assert!(
-        erosion.contains("canopy_height_m: growth.canopy_height_m")
-            && !erosion.contains(
-                "pmet_compute\n            .as_ref()\n            .map_or(0.0, |pmet| pmet.canopy_height_m)",
-            ),
-        "active erosion must consume post-growth height without an optional-PMET zero fallback"
+        erosion.contains(
+            "growth_state.active_action == DirectGrowthAction::TypedStateOverride",
+        ) && erosion.contains("growth.canopy_height_m")
+            && erosion.contains(".map_or(0.0, |pmet| pmet.canopy_height_m)"),
+        "native active erosion must consume post-growth height while legacy paths retain PMET semantics"
     );
     assert!(
         builder.contains("Some(growth_state_for_publication.canopy_height_m)")

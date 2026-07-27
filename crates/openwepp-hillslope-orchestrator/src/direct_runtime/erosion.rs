@@ -3,10 +3,10 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
     DirectErosionConsolidationCarry, DirectErosionInflowIntake, DirectErosionRuntimeCarry,
-    DirectPublicationErosionOperands, DirectRuntimeError, DirectWave1ContinuityInputs,
-    DirectWave1ContinuityState, DirectWave1DailyState, DirectWave1OperandSeed,
-    ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime, ErosionParticleClass,
-    ErosionRfcumInputs, Wave1InflowOperands, advance_erosion_consolidation,
+    DirectGrowthAction, DirectPublicationErosionOperands, DirectRuntimeError,
+    DirectWave1ContinuityInputs, DirectWave1ContinuityState, DirectWave1DailyState,
+    DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime,
+    ErosionParticleClass, ErosionRfcumInputs, Wave1InflowOperands, advance_erosion_consolidation,
     assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
     compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
     resolve_erosion_frost_regime, validate_finite, validate_nonnegative_direct_m,
@@ -518,11 +518,21 @@ impl DirectDayFrame {
         // Gate 3: build `DirectWave1DailyState` ONLY from verified frame
         // surfaces.
         let peak = self.peak_runoff_shadow_projection.as_ref();
-        let growth = if self.perennial_growth_inputs.active_context.is_active() {
-            &self.perennial_growth.state_after
+        let growth_state = if self.perennial_growth_inputs.active_context.is_active() {
+            &self.perennial_growth
         } else {
-            &self.annual_growth.state_after
+            &self.annual_growth
         };
+        let growth = &growth_state.state_after;
+        let canopy_height_m =
+            if growth_state.active_action == DirectGrowthAction::TypedStateOverride {
+                growth.canopy_height_m
+            } else {
+                self.evapotranspiration_compute_inputs
+                    .pmet_compute
+                    .as_ref()
+                    .map_or(0.0, |pmet| pmet.canopy_height_m)
+            };
         let residue = &self.residue_partition;
         let seed = &self.erosion_inputs.wave1_operand_seed;
         let precipitation_m = self.forcing.precipitation_m;
@@ -538,7 +548,7 @@ impl DirectDayFrame {
                 &self.wb14_hourly_rainfall_m,
             ),
             canopy_cover_fraction: growth.canopy_cover_fraction,
-            canopy_height_m: growth.canopy_height_m,
+            canopy_height_m,
             // GAP-SED-009 closure: the covcal covers from the evolved
             // ground pools (formerly both read a zero composite).
             interrill_cover_fraction: residue.interrill_cover_fraction,
