@@ -38,6 +38,17 @@ paths, Harvard-access classifications, and cost classes remain embedded. The
 transaction projection may strengthen a later QUICK node to the enclosing
 HEAVY stage but cannot weaken a HEAVY row.
 
+Package scripts that currently derive output locations internally gain one
+required, fail-closed `--execution-root` interface. This applies to `prepare`,
+`native-proof`, `synthetic-gsi`, `retain`, `summarize`, `freeze`,
+`freeze-verify`, `holdout`, and `validate`. Their default remains the historical
+path only for non-transactional compatibility; the external transaction rejects
+an invocation without the exact admitted root. Focused tests enumerate source
+for hard-coded write paths and prove every write is rooted through this
+interface. Cargo build nodes receive an exact plan-bound `CARGO_TARGET_DIR`
+below the attempt root; all downstream binary operands are mechanically rebound
+to its manifest paths.
+
 ## Output Remapping
 
 Execution never writes the source checkout.
@@ -55,10 +66,11 @@ Execution never writes the source checkout.
   missing paths, hardlinks, symlinks, special files, path escapes, root
   replacement, or mutation during hashing invalidate the transaction.
 
-The adapter rewrites only plan-declared output operands and their exact
-dependent-input references. Any argument change outside that mechanically
-derived mapping is `INVALID`. Primary and verification reconstruction roots
-remain distinct.
+The adapter rewrites plan-declared output operands, adds the frozen
+`--execution-root` operand to the enumerated package scripts, sets the frozen
+Cargo target environment, and rewrites exact dependent-input references. Any
+other argument or environment change is `INVALID`. Primary and verification
+reconstruction roots remain distinct.
 
 ## Durable HEAVY Sequence
 
@@ -88,11 +100,15 @@ unchanged source checkout.
 Publication accepts only a passing terminal transaction receipt and derives an
 exact source/destination manifest. It validates both roots with no-follow
 descriptor-relative traversal, requires a clean expected destination baseline,
-stages regular files on the destination filesystem, fsyncs files/directories,
-atomically renames only after the complete staged manifest verifies, and
-refuses collisions or destination drift. Any failure before commit leaves
-destination bytes unchanged; an interruption is recoverable by a typed staging
-record, never partial acceptance.
+and writes an append-only journal before each descriptor-relative installation.
+Files are staged and verified on the destination filesystem, then individually
+renamed and fsynced. Multi-file publication is not falsely claimed atomic:
+interruption may leave journaled partial bytes, but that state is explicitly
+`NON_ACCEPTED` and blocks execution, review, commit, and another publication.
+Recovery verifies installed bytes and deterministically completes the original
+manifest or restores journal-bound prior bytes before any retry. A final
+publication receipt is created only after the complete destination manifest
+verifies; collisions or unjournaled destination drift fail.
 
 After publication, a new commit captures the imported result bytes. The
 terminal planner reconstructs the exact base-to-new-head diff and independently
@@ -101,9 +117,18 @@ receipts. Publication is not retroactively added to the earlier READY audit.
 
 ## Harvard Custody And Irreversibility
 
-Freeze and verifier activity uses an external custody root. The second LIGHT
-stage rejects missing, duplicate, same-actor, executor-produced, forged,
-replayed, stale, or wrong-digest verifier receipts and requires barrier order.
+Freeze and verifier activity uses an external custody root. The parent creates
+two single-use random verifier capabilities before dispatch and binds only
+their hashes, distinct task slots, and common freeze digest into the plan.
+Each independently dispatched read-only verifier returns a canonical
+attestation binding its capability preimage, parent dispatch ID, agent task ID,
+principal, workflow/job/runner/attempt claims, script and command identities,
+receipt bytes, and freeze digest. Capability files are consumed by no-follow
+exclusive rename. The second LIGHT stage rejects missing, duplicate, same-task,
+same-principal, same-claims, executor-produced, forged, replayed, stale, or
+wrong-digest attestations and requires barrier order. This mechanically defines
+independence within the repository's delegated-agent trust model; labels alone
+never establish it.
 No audit, BLOCKED, INVALID, verifier, or pre-spawn path may open Harvard.
 
 After HEAVY STARTED and successful audit/context validation, `holdout` creates
@@ -113,4 +138,3 @@ rejects without a Harvard read. Any later failure is terminal and nonretryable;
 the failure receipt and opening record remain preserved. Holdout results,
 opening record, summaries, and terminal validation output remain external until
 publication.
-

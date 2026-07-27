@@ -98,9 +98,24 @@ The exact retained reproducer and disposition are in
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/execute-prefix.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/observe.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/publish-results.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/prepare.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/native-proof.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/synthetic-gsi.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/retain.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/summarize.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze-verify.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/custody.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/holdout.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/validate.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_execute_prefix.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_external_paths.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_freeze_custody.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_native_proof.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_observe.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_publish_results.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_validate_calibration.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_validate_scaffold.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/external-dag-transaction-plan.json`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/**`
 
@@ -136,6 +151,7 @@ No other path is writable without a prospective amendment and scaffold review.
 - `gate-policy/v1/schemas/external-dag-plan.schema.json`
 - `gate-policy/v1/schemas/external-output-manifest.schema.json`
 - `gate-policy/v1/schemas/publication-receipt.schema.json`
+- `gate-policy/v1/schemas/external-verifier-attestation.schema.json`
 - typed Rust modules `external_dag.rs`, `external_outputs.rs`, and
   `publication.rs`; existing 2,000+ line modules receive only narrow hooks;
 - CLI `openwepp-gate-plan run-external-transition` accepting committed plan,
@@ -146,6 +162,9 @@ No other path is writable without a prospective amendment and scaffold review.
   baseline, and publication receipt path;
 - independent verifier support for external transaction, output manifest, and
   publication receipts; and
+- verifier dispatch capabilities and attestations binding distinct parent
+  dispatch IDs, agent task IDs, principals, execution claims, receipt bytes,
+  freeze digest, and one non-reusable verifier capability per actor;
 - package evidence `implementation-gates.md`, `review-a.md`, `review-b.md`,
   `finding-disposition.md`, `verification-a.md`, `verification-b.md`,
   `line-count-governance.md`, `worker-handoff.md`, and
@@ -185,16 +204,30 @@ exact-head campaign-strength full-workspace run.
 
 ## Concrete Execution And Expected Results
 
-1. Run package/schema/diff/documentation checks; expect no findings.
-2. Run frozen red fixtures before production edits; expect every GED case to
-   fail with its typed reason.
-3. Run gate-planner focused Nextest and warnings-denied Clippy during edits;
-   expect all focused tests and adversarial cases to pass after implementation.
-4. Commit the complete intended closure state, construct canonical READY, and
+All commands run from `/home/workdir/openWEPP`.
+
+1. Run `git diff --check` and
+   `markdown-doc lint --path
+   docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001`;
+   expect zero findings.
+2. Run `.venv/bin/python -m unittest discover -s
+   docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools
+   -p 'test_*.py'`; before implementation the newly frozen GED tests must fail
+   for their expected typed reasons, and after implementation all tests pass.
+3. Run `cargo nextest run -p openwepp-gate-planner` and
+   `cargo clippy -p openwepp-gate-planner --all-targets --all-features --
+   -D warnings`; expect the exact current focused inventory to pass and zero
+   warnings.
+4. Run `cargo run -p openwepp-gate-planner --bin openwepp-gate-plan --
+   validate-package --repo /home/workdir/openWEPP --base 9bf3f344
+   --package
+   docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/package.md
+   --output <attempt-root>/package-validation.json`; expect `PASS`.
+5. Commit the complete intended closure state, construct canonical READY, and
    delegate selected heavy gates once; expect READY plus passing receipts.
-5. Run the fresh exact-head full workspace and anti-evasion gates; expect zero
+6. Run the fresh exact-head full workspace and anti-evasion gates; expect zero
    failures.
-6. Obtain two independent implementation reviews, close findings, then obtain
+7. Obtain two independent implementation reviews, close findings, then obtain
    two independent terminal verifications at one exact commit.
 
 ## Dependencies
