@@ -17,3 +17,4 @@ Evidence class: `Static + Ran`
 | AC-09 | Worker/final handoff complete | `worker-handoff.md` and `final-disposition.md` |
 | AC-10 | Rust line count governed | `line-count-disposition.md`; dual recount |
 | AC-11 | Exact terminal diff reconciled | declared-base-to-head path/diff evidence |
+| AC-12 | Independent reports retained | scaffold/implementation/terminal/receipt A+B artifacts |

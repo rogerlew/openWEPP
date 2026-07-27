@@ -84,19 +84,24 @@ No other path is writable. This write set must not widen.
 ## Execution Plan
 
 1. Commit this prospective scaffold and obtain two independent read-only
-   scaffold reviews.
+   scaffold reviews recorded with separate attribution in
+   `artifacts/scaffold-reviews.md`.
 2. Add the single function-scoped disposition and rationale.
 3. Run every command in `Validation Commands`.
 4. Commit the exact implementation and obtain two independent implementation
    reviews. Record every finding as `accepted`, `rejected`, `deferred`, or
-   `follow-up` in `artifacts/review-findings.md`.
+   `follow-up` in `artifacts/review-findings.md`, with both full independent
+   reports retained in `artifacts/implementation-reviews.md`.
 5. Record exact gate evidence, worker handoff, Rust line-count review, exact
    declared-base-to-terminal-head diff reconciliation, and final disposition
-   artifacts; obtain two terminal verifiers.
+   artifacts; obtain two terminal verifiers recorded separately in
+   `artifacts/terminal-verifications.md`.
 6. Delegate one comparator-owned exact-head canonical transaction on a fresh
-   root/ledger. Require LIGHT PASS, READY audit, and every HEAVY node PASS.
+   root/ledger and record it in `artifacts/canonical-execution.md`. Require
+   LIGHT PASS, READY audit, and every HEAVY node PASS.
 7. Obtain two independent receipt verifiers, close this successor, and resume
-   the ledger/CAL closeout chain.
+   the ledger/CAL closeout chain. Retain both reports in
+   `artifacts/receipt-verifications.md`.
 
 ## Acceptance
 
@@ -112,7 +117,12 @@ No other path is writable. This write set must not widen.
   only the scoped attribute and rationale.
 - Required package artifacts exist: `review-findings.md`,
   `implementation-gates.md`, `worker-handoff.md`,
-  `line-count-disposition.md`, and `final-disposition.md`.
+  `line-count-disposition.md`, `final-disposition.md`,
+  `scaffold-reviews.md`, `implementation-reviews.md`,
+  `terminal-verifications.md`, `canonical-execution.md`, and
+  `receipt-verifications.md`. Consolidated review files identify reviewer A
+  and reviewer B separately, preserve each evidence class/findings/verdict, and
+  demonstrate independence.
 
 ## Validation Commands
 
@@ -129,7 +139,8 @@ markdown-doc lint --path docs/work-packages/README.md
 markdown-doc lint --path docs/planning/canopy-phenology-assurance-roadmap.md
 markdown-doc lint --path docs/work-packages/20260727-testgate-first-attempt-ledger-bootstrap-001/artifacts/canonical-execution.md
 git diff --check
-git diff --name-only <declared-base>..<terminal-head>
+git diff --name-only 388432b8b8ee595c1f4433df49903ab34809f039..HEAD
+git diff 388432b8b8ee595c1f4433df49903ab34809f039..HEAD -- tests/integration/assurance_v2_amendment_contract.rs
 ```
 
 ## Line-Count Governance
@@ -174,6 +185,8 @@ Harvard remains sealed and CAL population remains prohibited.
 Subagent authorization: this package explicitly authorizes one bounded
 implementation worker, two independent scaffold/implementation reviewers, two
 independent terminal/receipt verifiers, and the `comparator_suite_runner`;
-writes are limited to the declared write set. Heavy/comparator work must use
-`comparator_suite_runner`; if unavailable, disposition `HOLD` without parent
-fallback.
+writes are limited to the declared write set. Each reviewer/verifier must return
+its evidence class, exact subject commit, findings, gate results, and GO/HOLD or
+PASS/HOLD verdict for separately attributed retention in the named artifacts.
+Heavy/comparator work must use `comparator_suite_runner`; if unavailable,
+disposition `HOLD` without parent fallback.
