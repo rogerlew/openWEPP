@@ -18,4 +18,3 @@ Evidence class: `Static`
 
 Dual re-review at `edc102bc3140c44de6ef4ae62cc35477223f8447`
 returned `GO`.
-

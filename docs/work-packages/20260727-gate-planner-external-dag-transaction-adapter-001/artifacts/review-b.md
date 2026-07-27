@@ -13,4 +13,3 @@ line-count governance.
 
 Implementation watches: define canonical delegated-agent `principal` identity
 and test subprocess/cwd output confinement rather than lexical paths alone.
-

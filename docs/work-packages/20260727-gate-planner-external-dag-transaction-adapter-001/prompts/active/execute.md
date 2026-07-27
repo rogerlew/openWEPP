@@ -23,4 +23,3 @@ READY transition.
 
 Continue through truthful closeout unless a hard boundary outside the declared
 write set is proven.
-

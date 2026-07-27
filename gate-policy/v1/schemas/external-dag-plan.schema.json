@@ -7,8 +7,12 @@
   "required": [
     "schema",
     "plan_id",
+    "generation",
+    "parent_plan",
+    "source_identity",
     "source_plan",
     "source_contract",
+    "authority",
     "transactions",
     "custody_commands"
   ],
@@ -19,11 +23,21 @@
     "plan_id": {
       "$ref": "#/$defs/digest"
     },
+    "generation": {"enum": ["A", "B"]},
+    "parent_plan": {
+      "oneOf": [{"$ref": "#/$defs/parentPlan"}, {"type": "null"}]
+    },
+    "source_identity": {
+      "oneOf": [{"$ref": "#/$defs/repositoryIdentity"}, {"type": "null"}]
+    },
     "source_plan": {
       "$ref": "#/$defs/source"
     },
     "source_contract": {
       "$ref": "#/$defs/source"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
     },
     "transactions": {
       "type": "array",
@@ -67,6 +81,41 @@
         },
         "sha256": {
           "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "parentPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "plan_id", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "plan_id": {"$ref": "#/$defs/digest"},
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "repositoryIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["head", "tree", "diff_sha256"],
+      "properties": {
+        "head": {"$ref": "#/$defs/digest"},
+        "tree": {"$ref": "#/$defs/digest"},
+        "diff_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package_path", "base_commit", "cheap_gate_evidence"],
+      "properties": {
+        "package_path": {"$ref": "#/$defs/path"},
+        "base_commit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+        "cheap_gate_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/source"}
         }
       }
     },

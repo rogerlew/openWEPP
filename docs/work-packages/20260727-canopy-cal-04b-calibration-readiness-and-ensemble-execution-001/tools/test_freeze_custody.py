@@ -15,15 +15,13 @@ SPEC.loader.exec_module(MODULE)
 
 
 class FreezeCustodyTest(unittest.TestCase):
-    def test_capability_is_consumed_and_attestation_is_identity_bound(self) -> None:
+    def test_capability_is_retained_for_rust_and_attestation_is_identity_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             capability = root / "capability"
             capability.write_bytes(secrets.token_bytes(32))
-            consumed = root / "consumed/capability"
-            capability_hash = MODULE.consume_capability(capability, consumed)
-            self.assertFalse(capability.exists())
-            self.assertTrue(consumed.is_file())
+            capability_hash = MODULE.capability_identity(capability)
+            self.assertTrue(capability.is_file())
             receipt = root / "receipt.csv"
             receipt.write_text("state\nPASS\n", encoding="utf-8")
             script = root / "verifier.py"
@@ -49,15 +47,18 @@ class FreezeCustodyTest(unittest.TestCase):
                 value["attestation_id"], MODULE.derived_id(value, "attestation_id")
             )
 
-    def test_capability_cannot_be_reused(self) -> None:
+    def test_capability_identity_rejects_links_and_short_preimages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             capability = root / "capability"
             capability.write_bytes(secrets.token_bytes(32))
-            consumed = root / "consumed"
-            MODULE.consume_capability(capability, consumed)
-            with self.assertRaises((FileNotFoundError, ValueError)):
-                MODULE.consume_capability(capability, root / "again")
+            linked = root / "linked"
+            linked.symlink_to(capability)
+            with self.assertRaises(ValueError):
+                MODULE.capability_identity(linked)
+            capability.write_bytes(b"short")
+            with self.assertRaises(ValueError):
+                MODULE.capability_identity(capability)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import csv
-import io
 import json
 import subprocess
 import tempfile
@@ -89,29 +88,150 @@ class ExternalPathTest(unittest.TestCase):
         combined = reconstruct + verify + readiness
         self.assertNotIn("/home/workdir/cal04b-objects", combined)
 
-    def test_dual_path_fixture_changes_only_normalized_evidence_path(self) -> None:
-        header = (
-            "candidate_id,configuration_id,state,objective,boundary_flags,"
-            "saturation_flags,evidence\n"
+    def test_actual_dual_executable_path_fixtures_are_science_equivalent(self) -> None:
+        executor = TOOLS / "executor"
+        subprocess.run(
+            [
+                "cargo",
+                "build",
+                "--manifest-path",
+                str(executor / "Cargo.toml"),
+                "--bins",
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
         )
-        scientific = "GSI-0001,CFG-0001,FINITE,1.25,NONE,NONE,"
-        legacy = header + scientific + "/legacy/primary/candidate-observation-components.csv\n"
-        external = header + scientific + "/attempt/objects/primary/candidate-observation-components.csv\n"
+        binaries = executor / "target/debug"
+        with tempfile.TemporaryDirectory() as temporary:
+            scratch = Path(temporary)
+            missing = scratch / "same-missing-input"
+            failure_commands = {
+                "reconstruct": [
+                    "--trace", str(missing), "--identity", str(missing),
+                    "--configs", str(missing), "--observations", str(missing),
+                ],
+                "verify-reconstruct": [
+                    "--trace", str(missing), "--identity", str(missing),
+                    "--configs", str(missing), "--observations", str(missing),
+                    "--primary-components", str(missing),
+                    "--primary-ledgers", str(missing),
+                ],
+            }
+            for binary, shared in failure_commands.items():
+                results = []
+                for label in ("legacy", "external"):
+                    ledger = scratch / label / binary / "ledgers"
+                    objects = scratch / label / binary / "objects"
+                    result = subprocess.run(
+                        [
+                            str(binaries / binary),
+                            *shared,
+                            "--out", str(ledger),
+                            *(
+                                ["--component-out", str(objects)]
+                                if binary == "reconstruct"
+                                else []
+                            ),
+                        ],
+                        capture_output=True,
+                        text=True,
+                    )
+                    results.append((result, ledger, objects))
+                self.assertEqual(results[0][0].returncode, results[1][0].returncode)
+                self.assertNotEqual(results[0][0].returncode, 0)
+                self.assertEqual(results[0][0].stderr, results[1][0].stderr)
+                self.assertEqual(
+                    [path.name for path in results[0][1].glob("*")],
+                    [path.name for path in results[1][1].glob("*")],
+                )
+                self.assertEqual(
+                    [path.name for path in results[0][2].glob("*")],
+                    [path.name for path in results[1][2].glob("*")],
+                )
 
-        def normalized(value: str) -> tuple[list[tuple[str, ...]], list[str]]:
-            reader = csv.DictReader(io.StringIO(value))
-            scientific_rows = []
-            evidence = []
-            for row in reader:
-                evidence.append(Path(row.pop("evidence")).name)
-                scientific_rows.append(tuple(row[field] for field in reader.fieldnames[:-1]))
-            return scientific_rows, evidence
+            accepted = scratch / "accepted.csv"
+            accepted.write_text("candidate_id\nGSI-0001\n", encoding="utf-8")
+            readiness_runs = []
+            for label in ("legacy", "external"):
+                root = scratch / label / "readiness"
+                out = root / "ledgers"
+                objects = root / "objects"
+                result = subprocess.run(
+                    [
+                        str(binaries / "readiness"),
+                        "--design", str(PACKAGE / "artifacts/later-stage-design.csv"),
+                        "--accepted", str(accepted),
+                        "--out", str(out),
+                        "--object-root", str(objects),
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+                readiness_runs.append((result, root))
+            self.assertEqual(readiness_runs[0][0].returncode, 0)
+            self.assertEqual(readiness_runs[1][0].returncode, 0)
 
-        legacy_rows, legacy_paths = normalized(legacy)
-        external_rows, external_paths = normalized(external)
-        self.assertEqual(len(legacy_rows), len(external_rows))
-        self.assertEqual(legacy_rows, external_rows)
-        self.assertEqual(legacy_paths, external_paths)
+            def normalized_tree(root: Path) -> dict[str, bytes]:
+                values = {}
+                for path in sorted(item for item in root.rglob("*") if item.is_file()):
+                    raw = path.read_bytes()
+                    normalized = raw.replace(str(root).encode(), b"<FIXTURE_ROOT>")
+                    values[path.relative_to(root).as_posix()] = normalized
+                return values
+
+            legacy_tree = normalized_tree(readiness_runs[0][1])
+            external_tree = normalized_tree(readiness_runs[1][1])
+            self.assertEqual(set(legacy_tree), set(external_tree))
+            path_metadata = {
+                "ledgers/later-stage-membership.csv",
+                "objects/execution-receipt.csv",
+            }
+            for name in set(legacy_tree) - path_metadata:
+                self.assertEqual(legacy_tree[name], external_tree[name], name)
+
+            def csv_rows(root: Path, relative: str) -> list[dict[str, str]]:
+                with (root / relative).open(newline="", encoding="utf-8") as stream:
+                    return list(csv.DictReader(stream))
+
+            legacy_membership = csv_rows(
+                readiness_runs[0][1], "ledgers/later-stage-membership.csv"
+            )
+            external_membership = csv_rows(
+                readiness_runs[1][1], "ledgers/later-stage-membership.csv"
+            )
+            for left, right in zip(
+                legacy_membership, external_membership, strict=True
+            ):
+                for field in set(left) - {"membership_path", "parent_results_path"}:
+                    self.assertEqual(left[field], right[field], field)
+                self.assertEqual(
+                    Path(left["membership_path"]).name,
+                    Path(right["membership_path"]).name,
+                )
+                self.assertEqual(
+                    Path(left["parent_results_path"]).name,
+                    Path(right["parent_results_path"]).name,
+                )
+
+            def receipt(root: Path) -> dict[str, str]:
+                rows = csv_rows(root, "objects/execution-receipt.csv")
+                return {row["field"]: row["value"] for row in rows}
+
+            legacy_receipt = receipt(readiness_runs[0][1])
+            external_receipt = receipt(readiness_runs[1][1])
+            receipt_path_allowlist = {"exact_command", "membership_index_sha256"}
+            for field in set(legacy_receipt) - receipt_path_allowlist:
+                self.assertEqual(
+                    legacy_receipt[field], external_receipt[field], field
+                )
+            for name, raw in legacy_tree.items():
+                if name.endswith(".csv"):
+                    self.assertEqual(
+                        raw.count(b"\n"),
+                        external_tree[name].count(b"\n"),
+                        name,
+                    )
 
     def test_external_plan_maps_all_frozen_rows_and_path_injections(self) -> None:
         artifact_root = PACKAGE / "artifacts"
@@ -145,6 +265,10 @@ class ExternalPathTest(unittest.TestCase):
             {row["command_id"] for row in frozen},
         )
         by_id = {node["command_id"]: node for node in nodes}
+        self.assertEqual(
+            by_id["build_production_runner"]["declared_outputs"],
+            ["cargo-target/debug/openwepp-cli-hill"],
+        )
         self.assertEqual(
             by_id["hubbard_primary_reconstruct"]["argv"][-2:],
             ["--component-out", "${OBJECTS_ROOT}/primary"],

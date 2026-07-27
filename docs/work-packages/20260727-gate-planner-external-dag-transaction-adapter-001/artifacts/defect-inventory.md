@@ -16,4 +16,3 @@ Evidence class: `Static`
 The prepare-only CAL-04B attempt is `NON_REUSABLE` because its schema predates
 the correction. It will be archived byte-preservingly; no receipt is imported
 or rewritten.
-

@@ -44,17 +44,13 @@ def derived_id(value: dict[str, object], field: str) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def consume_capability(path: Path, consumed_path: Path) -> str:
+def capability_identity(path: Path) -> str:
     metadata = path.lstat()
     if path.is_symlink() or not path.is_file() or metadata.st_nlink != 1:
         raise ValueError("verifier capability is not a unique regular file")
     capability = path.read_bytes()
     if len(capability) < 32:
         raise ValueError("verifier capability is too short")
-    consumed_path.parent.mkdir(parents=True, exist_ok=True)
-    if consumed_path.exists():
-        raise ValueError("verifier capability was already consumed")
-    os.rename(path, consumed_path)
     return hashlib.sha256(capability).hexdigest()
 
 

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from custody import (
     RECEIPT_FIELDS,
-    consume_capability,
+    capability_identity,
     sha256_file,
     validate_freeze,
     validate_receipt_barrier,
@@ -156,10 +156,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     if attestation.name != expected_attestation:
         raise ValueError("verifier attestation filename differs from command identity")
-    capability_hash = consume_capability(
-        capability,
-        custody_root / "consumed-capabilities" / f"{options.verifier_id}.capability",
-    )
+    capability_hash = capability_identity(capability)
+    expected_capability = custody_root / "capabilities" / f"{capability_hash}.cap"
+    if capability != expected_capability:
+        raise ValueError("verifier capability path is not hash-addressed for Rust consumption")
     attestation_argv = [str(SCRIPT), *(argv if argv is not None else sys.argv[1:])]
     write_attestation(
         attestation,

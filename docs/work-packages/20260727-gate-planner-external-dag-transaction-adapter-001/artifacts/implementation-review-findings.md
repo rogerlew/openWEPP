@@ -1,6 +1,6 @@
 # Implementation Review Findings
 
-Status: `HOLD / CORRECTION IN PROGRESS`
+Status: `CORRECTED / DUAL RE-REVIEW REQUIRED`
 
 Evidence class: `Ran + Static`
 
@@ -27,3 +27,25 @@ Exact reviewed commit: `08205b57`.
 
 The existing focused PASS results demonstrate regression stability only. They
 do not override these semantic consumer-path failures.
+
+Correction disposition:
+
+- READY is now an evaluated canonical ten-check decision with package admission,
+  committed-plan authority, independent CSV reconstruction, and durable LIGHT
+  evidence.
+- Exact HEAD/tree/diff, source, executable, environment, toolchain, root,
+  prerequisite, claim, and receipt identities are bound and independently
+  verified.
+- Historical manifests verify their own declared scope while permitting later
+  declared DAG outputs.
+- Generation B is deterministically derived from committed Generation A and
+  exact calibration/freeze/verifier custody receipts.
+- Capability consumption is single-use and Rust-owned; attestations authenticate
+  actual receipt, script, argv, freeze digest, dispatch/task/principal claims,
+  and verifier-specific outputs.
+- CLI/environment, orphan recovery, Harvard pre-open ordering, publication
+  authority, descriptor-relative traversal, race checks, science equivalence,
+  exact CSV authority, and diff hygiene have focused passing tests.
+
+Re-review must independently confirm closure; this artifact is not authority by
+itself.

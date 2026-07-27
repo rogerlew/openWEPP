@@ -14,4 +14,3 @@ prospectively implementable.
 
 Implementation watch: prove all writes and internal binary references are
 confined and exercise interrupted publication recovery.
-

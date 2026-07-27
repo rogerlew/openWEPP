@@ -101,8 +101,10 @@ def preflight() -> str:
 
 
 def create_token(digest: str) -> None:
-    OBJECTS.mkdir(parents=True, exist_ok=True)
-    descriptor = os.open(TOKEN, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(TOKEN, flags, 0o444)
     try:
         payload = f"state=OPENED_ONCE\nfreeze_digest={digest}\ncommand=PYTHONDONTWRITEBYTECODE=1 .venv/bin/python {PACKAGE.relative_to(ROOT)}/tools/holdout.py\ntimestamp={datetime.now(timezone.utc).isoformat()}\n"
         encoded = payload.encode()
@@ -115,11 +117,11 @@ def create_token(digest: str) -> None:
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
-    directory = os.open(OBJECTS, os.O_RDONLY)
+    directory = os.open(TOKEN.parent, os.O_RDONLY)
     try:
         os.fsync(directory)
     finally:
-    os.close(directory)
+        os.close(directory)
 
 
 def _frozen_bundle_root(manifest: Path) -> Path:
@@ -177,12 +179,14 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("execution root must be an existing directory")
     custody_root = options.custody_root.resolve(strict=True)
     token_option = options.opening_token or custody_root / "holdout-opened-once.lock"
-    opening_token = token_option.resolve(strict=True)
+    opening_token = token_option.resolve(strict=False)
     attempt_root = execution_root.parent
     try:
-        opening_token.relative_to(attempt_root)
+        opening_token.relative_to(custody_root)
     except ValueError:
-        raise ValueError("opening token escapes execution root") from None
+        raise ValueError("opening token escapes custody root") from None
+    if opening_token.exists() or opening_token.is_symlink():
+        raise ValueError("opening token already exists")
     global ARTIFACTS, OBJECTS, TOKEN, RECEIPTS, EXECUTOR
     ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
@@ -193,8 +197,7 @@ def main(argv: list[str] | None = None) -> int:
     digest = preflight()
     # Recheck mutable output targets immediately before the irreversible token.
     validate_unopened_targets()
-    if TOKEN.read_text(encoding="ascii").strip() != "OPENED_ONCE":
-        raise ValueError("trusted opening token state differs")
+    create_token(digest)
     try:
         validate_harvard_after_open()
         holdout_root = OBJECTS / "holdout"

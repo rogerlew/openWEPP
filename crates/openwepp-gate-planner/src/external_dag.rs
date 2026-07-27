@@ -14,9 +14,10 @@ use crate::canonical::{canonical_bytes, derived_id, digest, parse_strict, valida
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::external_outputs::{
-    OutputManifest, manifest_declared_outputs, prepare_attempt_root, verify_manifest,
+    OutputManifest, manifest_declared_outputs, prepare_attempt_root, verify_historical_manifest,
 };
-use crate::pre_heavy::{ConstructedAudit, append_attempt_record};
+use crate::package_validation::validate_package;
+use crate::pre_heavy::{ConstructedAudit, append_attempt_record, reconcile_orphaned_attempts};
 
 pub const EXTERNAL_PLAN_SCHEMA: &str = "openwepp-external-dag-plan-v1";
 const EXTERNAL_AUDIT_SCHEMA: &str = "openwepp-external-pre-heavy-audit-v1";
@@ -27,11 +28,31 @@ const EXTERNAL_RECEIPT_SCHEMA: &str = "openwepp-external-transaction-receipt-v1"
 pub struct ExternalDagPlan {
     pub schema: String,
     pub plan_id: String,
+    pub generation: String,
+    pub parent_plan: Option<ParentPlanBinding>,
+    pub source_identity: Option<RepositoryIdentity>,
     pub source_plan: SourceBinding,
     pub source_contract: SourceBinding,
+    pub authority: ExternalAuthority,
     pub transactions: Vec<ExternalTransaction>,
     #[serde(default)]
     pub custody_commands: Vec<ExternalNode>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ParentPlanBinding {
+    pub path: String,
+    pub plan_id: String,
+    pub sha256: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExternalAuthority {
+    pub package_path: String,
+    pub base_commit: String,
+    pub cheap_gate_evidence: Vec<SourceBinding>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -123,10 +144,23 @@ pub struct ExternalNodeReceipt {
     pub order: u64,
     pub stage: String,
     pub argv: Vec<String>,
+    pub environment: BTreeMap<String, String>,
+    pub source_sha256: String,
+    pub executable_sha256: String,
+    pub executable_version: String,
+    pub repo_identity: RepositoryIdentity,
     pub prerequisite_receipt_ids: Vec<String>,
     pub exit_code: i32,
     pub result: String,
     pub output_manifest: OutputManifest,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RepositoryIdentity {
+    pub head: String,
+    pub tree: String,
+    pub diff_sha256: String,
 }
 
 /// Parse and independently validate a committed external-DAG plan.
@@ -146,6 +180,33 @@ pub fn load_plan(path: &Path) -> Result<ExternalDagPlan> {
         .map_err(|error| external_error("GATE-EXTERNAL-PLAN-SHAPE", error))?;
     validate_plan(&plan, &value)?;
     Ok(plan)
+}
+
+fn require_committed_plan(repo: &Path, path: &Path) -> Result<()> {
+    let repository =
+        fs::canonicalize(repo).map_err(|error| external_error("GATE-EXTERNAL-REPO", error))?;
+    let plan_path =
+        fs::canonicalize(path).map_err(|error| external_error("GATE-EXTERNAL-PLAN-PATH", error))?;
+    let relative = plan_path.strip_prefix(&repository).map_err(|_| {
+        policy_error(
+            "GATE-EXTERNAL-PLAN-OUTSIDE-REPOSITORY",
+            &plan_path.display().to_string(),
+        )
+    })?;
+    let relative_text = relative
+        .to_str()
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-PLAN-UTF8", "plan path"))?;
+    let live =
+        fs::read(&plan_path).map_err(|error| external_error("GATE-EXTERNAL-PLAN-READ", error))?;
+    let committed = git_bytes(repo, &["show", &format!("HEAD:{relative_text}")])?;
+    if live == committed {
+        Ok(())
+    } else {
+        Err(policy_error(
+            "GATE-EXTERNAL-PLAN-UNCOMMITTED",
+            relative_text,
+        ))
+    }
 }
 
 fn validate_plan(plan: &ExternalDagPlan, value: &Value) -> Result<()> {
@@ -179,6 +240,86 @@ fn validate_plan(plan: &ExternalDagPlan, value: &Value) -> Result<()> {
     }
     validate_global_order(plan)?;
     Ok(())
+}
+
+fn validate_plan_generation(repo: &Path, path: &Path, plan: &ExternalDagPlan) -> Result<()> {
+    match plan.generation.as_str() {
+        "A" if plan.parent_plan.is_none() && plan.source_identity.is_none() => {
+            require_committed_plan(repo, path)
+        }
+        "B" => validate_generation_b(repo, plan),
+        _ => Err(policy_error(
+            "GATE-EXTERNAL-PLAN-GENERATION",
+            "Generation A has no parent/source binding; Generation B requires both",
+        )),
+    }
+}
+
+fn validate_generation_b(repo: &Path, plan: &ExternalDagPlan) -> Result<()> {
+    let parent = plan.parent_plan.as_ref().ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-PARENT-PLAN",
+            "Generation B parent is missing",
+        )
+    })?;
+    let source_identity = plan.source_identity.as_ref().ok_or_else(|| {
+        policy_error(
+            "GATE-EXTERNAL-PARENT-SOURCE",
+            "Generation B source identity is missing",
+        )
+    })?;
+    if *source_identity != repository_identity(repo)? {
+        return Err(policy_error(
+            "GATE-EXTERNAL-PARENT-SOURCE",
+            "Generation B source identity differs from runtime HEAD/tree/diff",
+        ));
+    }
+    let parent_path = {
+        let candidate = PathBuf::from(&parent.path);
+        if candidate.is_absolute() {
+            candidate
+        } else {
+            repo.join(candidate)
+        }
+    };
+    require_committed_plan(repo, &parent_path)?;
+    let parent_bytes = fs::read(&parent_path)
+        .map_err(|error| external_error("GATE-EXTERNAL-PARENT-READ", error))?;
+    let parent_value = parse_strict(&parent_bytes)?;
+    if sha256_bytes(&parent_bytes) != parent.sha256 || parent_value["plan_id"] != parent.plan_id {
+        return Err(policy_error("GATE-EXTERNAL-PARENT-IDENTITY", &parent.path));
+    }
+    let current = serde_json::to_value(plan)
+        .map_err(|error| external_error("GATE-EXTERNAL-PLAN-SERIALIZE", error))?;
+    if normalized_generation(current)? != normalized_generation(parent_value)? {
+        return Err(policy_error(
+            "GATE-EXTERNAL-GENERATION-DRIFT",
+            "Generation B may change only custody bindings and generation authority",
+        ));
+    }
+    Ok(())
+}
+
+fn normalized_generation(mut value: Value) -> Result<Value> {
+    let object = value
+        .as_object_mut()
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-GENERATION-SHAPE", "plan object"))?;
+    for field in ["plan_id", "generation", "parent_plan", "source_identity"] {
+        object.remove(field);
+    }
+    for transaction in object
+        .get_mut("transactions")
+        .and_then(Value::as_array_mut)
+        .into_iter()
+        .flatten()
+    {
+        let transaction = transaction
+            .as_object_mut()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-GENERATION-SHAPE", "transaction"))?;
+        transaction.remove("custody_prerequisites");
+        transaction.remove("custody_receipts");
+    }
+    Ok(value)
 }
 
 fn validate_inventory(
@@ -266,7 +407,9 @@ fn validate_node(node: &ExternalNode, stage: &str) -> Result<()> {
 /// Returns a typed error for invalid authority, custody, filesystem state,
 /// audit admission, subprocess failure, source mutation, or receipt custody.
 pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Value> {
+    validate_external_paths(options)?;
     let plan = load_plan(&options.plan_path)?;
+    validate_plan_generation(&options.repo, &options.plan_path, &plan)?;
     let transaction = plan
         .transactions
         .iter()
@@ -275,23 +418,54 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
             policy_error("GATE-EXTERNAL-TRANSACTION-UNKNOWN", &options.transaction_id)
         })?;
     prepare_attempt_root(&options.attempt_root)?;
+    let attempt_identity = directory_identity(&options.attempt_root)?;
     require_external_root(&options.repo, &options.attempt_root)?;
     require_regular_ledger(&options.ledger)?;
+    reconcile_orphaned_attempts(&options.ledger)?;
     verify_source_bindings(&options.repo, &plan)?;
     verify_node_sources(&options.repo, transaction)?;
     verify_custody(transaction)?;
     let custody_receipts = verify_custody_files(options, transaction)?;
-    let source_before = source_identity(&options.repo)?;
+    let source_before = repository_identity(&options.repo)?;
     let light = execute_stage(
         options,
-        transaction,
         "LIGHT",
         &transaction.light,
         Vec::new(),
         &source_before,
         custody_receipts,
+        &attempt_identity,
     )?;
-    let audit = construct_ready_audit(options, &plan, transaction, &light, &source_before)?;
+    let light_value = serde_json::to_value(&light)
+        .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SERIALIZE", error))?;
+    append_attempt_record(
+        &options.ledger,
+        json!({
+            "record_type": "EXTERNAL_TRANSACTION",
+            "status": "CLOSED",
+            "stage": "LIGHT",
+            "plan_id": plan.plan_id,
+            "transaction_id": transaction.transaction_id,
+            "attempt_root": options.attempt_root,
+            "receipt_id": digest(&light_value)?,
+        }),
+    )?;
+    persist_exclusive(
+        &options.receipt_path.with_extension("light.json"),
+        &light_value,
+    )?;
+    let audit = construct_ready_audit(
+        options,
+        &plan,
+        transaction,
+        &light,
+        &source_before,
+        &attempt_identity,
+    )?;
+    persist_exclusive(
+        &options.receipt_path.with_extension("audit.json"),
+        audit.as_value(),
+    )?;
     let started = append_started(options, &plan, &audit)?;
     let outcome = execute_heavy_after_started(
         options,
@@ -301,8 +475,64 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
         &light,
         &source_before,
         &started,
+        &attempt_identity,
     );
     close_started(options, &plan, &audit, &started, outcome)
+}
+
+fn validate_external_paths(options: &ExternalTransitionOptions) -> Result<()> {
+    if [
+        options.receipt_path.clone(),
+        options.receipt_path.with_extension("light.json"),
+        options.receipt_path.with_extension("audit.json"),
+    ]
+    .iter()
+    .any(|path| fs::symlink_metadata(path).is_ok())
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-RECEIPT-COLLISION",
+            &options.receipt_path.display().to_string(),
+        ));
+    }
+    for path in [
+        Some(options.attempt_root.as_path()),
+        Some(options.ledger.as_path()),
+        Some(options.receipt_path.as_path()),
+        options.custody_root.as_deref(),
+        options.opening_token.as_deref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if !path.is_absolute()
+            || path
+                .components()
+                .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+        {
+            return Err(policy_error(
+                "GATE-EXTERNAL-ABSOLUTE-PATH",
+                &path.display().to_string(),
+            ));
+        }
+        let existing = if path.exists() {
+            path
+        } else {
+            path.parent().ok_or_else(|| {
+                policy_error("GATE-EXTERNAL-PATH-PARENT", &path.display().to_string())
+            })?
+        };
+        for ancestor in existing.ancestors() {
+            let metadata = fs::symlink_metadata(ancestor)
+                .map_err(|error| external_error("GATE-EXTERNAL-PATH-METADATA", error))?;
+            if metadata.file_type().is_symlink() {
+                return Err(policy_error(
+                    "GATE-EXTERNAL-PATH-SYMLINK",
+                    &ancestor.display().to_string(),
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// Independently reconstruct an external transaction receipt and its outputs.
@@ -313,6 +543,15 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
 /// external-output drift.
 pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<()> {
     let plan = load_plan(plan_path)?;
+    let repo = if plan.generation == "B" {
+        let parent = plan.parent_plan.as_ref().ok_or_else(|| {
+            policy_error("GATE-EXTERNAL-PARENT-PLAN", "Generation B parent missing")
+        })?;
+        discover_repository(Path::new(&parent.path))?
+    } else {
+        discover_repository(plan_path)?
+    };
+    validate_plan_generation(&repo, plan_path, &plan)?;
     if receipt["schema"] != EXTERNAL_RECEIPT_SCHEMA
         || receipt["result"] != "PASS"
         || derived_id(receipt, "receipt_id")? != receipt["receipt_id"]
@@ -331,18 +570,49 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         .iter()
         .find(|item| item.transaction_id == transaction_id)
         .ok_or_else(|| policy_error("GATE-EXTERNAL-TRANSACTION-UNKNOWN", transaction_id))?;
+    let attempt_root = PathBuf::from(
+        receipt["attempt_root"]
+            .as_str()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", "attempt_root"))?,
+    );
+    let options = ExternalTransitionOptions {
+        repo,
+        plan_path: plan_path.to_owned(),
+        transaction_id: transaction_id.to_owned(),
+        attempt_root,
+        ledger: PathBuf::from(
+            receipt["ledger"]
+                .as_str()
+                .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", "ledger"))?,
+        ),
+        receipt_path: PathBuf::new(),
+        custody_root: receipt["custody_root"].as_str().map(PathBuf::from),
+        opening_token: receipt["opening_token"].as_str().map(PathBuf::from),
+        claims: execution_claims_from_value(&receipt["claims"])?,
+    };
+    if receipt["attempt_root_identity"] != directory_identity(&options.attempt_root)? {
+        return Err(policy_error(
+            "GATE-EXTERNAL-ROOT-REPLACED",
+            &options.attempt_root.display().to_string(),
+        ));
+    }
     let mut declared = Vec::new();
+    let mut prerequisite_ids = BTreeMap::new();
     verify_receipt_stage(
         &transaction.light,
         &receipt["light"],
         "LIGHT",
         &mut declared,
+        &options,
+        &mut prerequisite_ids,
     )?;
     verify_receipt_stage(
         &transaction.heavy,
         &receipt["heavy"],
         "HEAVY",
         &mut declared,
+        &options,
+        &mut prerequisite_ids,
     )?;
     if receipt["audit"]["schema"] != EXTERNAL_AUDIT_SCHEMA
         || receipt["audit"]["status"] != "READY"
@@ -358,11 +628,33 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
     Ok(())
 }
 
+fn discover_repository(path: &Path) -> Result<PathBuf> {
+    let parent = path
+        .parent()
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-PLAN-PARENT", "missing parent"))?;
+    let output = Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .current_dir(parent)
+        .output()
+        .map_err(|error| external_error("GATE-EXTERNAL-REPO-DISCOVERY", error))?;
+    if !output.status.success() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-REPO-DISCOVERY",
+            &path.display().to_string(),
+        ));
+    }
+    String::from_utf8(output.stdout)
+        .map(|value| PathBuf::from(value.trim()))
+        .map_err(|error| external_error("GATE-EXTERNAL-REPO-UTF8", error))
+}
+
 fn verify_receipt_stage(
     nodes: &[ExternalNode],
     receipts: &Value,
     stage: &str,
     declared_so_far: &mut Vec<PathBuf>,
+    options: &ExternalTransitionOptions,
+    prior_receipts: &mut BTreeMap<String, String>,
 ) -> Result<()> {
     let receipts = receipts
         .as_array()
@@ -373,32 +665,100 @@ fn verify_receipt_stage(
     for (node, value) in nodes.iter().zip(receipts) {
         let receipt: ExternalNodeReceipt = serde_json::from_value(value.clone())
             .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SHAPE", error))?;
+        let mut expected_argv = node
+            .argv
+            .iter()
+            .map(|argument| expand_operand(options, argument))
+            .collect::<Result<Vec<_>>>()?;
+        if node.harvard_access == "OPENS_HARVARD" {
+            expected_argv.extend([
+                "--opening-token".to_owned(),
+                options
+                    .opening_token
+                    .as_ref()
+                    .ok_or_else(|| {
+                        policy_error("GATE-EXTERNAL-HARVARD-TOKEN-REQUIRED", &node.command_id)
+                    })?
+                    .display()
+                    .to_string(),
+            ]);
+        }
+        let expected_environment = admitted_environment(options, node)?;
+        let expected_executable = resolve_executable(&expected_argv[0], &expected_environment)?;
+        let expected_executable_sha256 = file_sha256(&expected_executable)?;
+        if receipt.prerequisite_receipt_ids.len() != node.prerequisites.len() {
+            return Err(policy_error(
+                "GATE-EXTERNAL-RECEIPT-PREREQUISITES",
+                &node.command_id,
+            ));
+        }
+        for (index, prerequisite) in node.prerequisites.iter().enumerate() {
+            if prior_receipts.get(prerequisite).is_some_and(|expected| {
+                receipt.prerequisite_receipt_ids.get(index) != Some(expected)
+            }) {
+                return Err(policy_error(
+                    "GATE-EXTERNAL-RECEIPT-PREREQUISITES",
+                    &node.command_id,
+                ));
+            }
+        }
         if receipt.command_id != node.command_id
             || receipt.order != node.order
             || receipt.stage != stage
+            || receipt.argv != expected_argv
+            || receipt.environment != expected_environment
+            || receipt.source_sha256 != file_sha256(&options.repo.join(&node.source_path))?
+            || receipt.executable_sha256 != expected_executable_sha256
+            || receipt.executable_version
+                != executable_version(&expected_executable, &expected_executable_sha256)?
+            || receipt.repo_identity != repository_identity(&options.repo)?
             || receipt.result != "PASS"
             || receipt.exit_code != 0
         {
             return Err(policy_error("GATE-EXTERNAL-RECEIPT-NODE", &node.command_id));
         }
         declared_so_far.extend(node.declared_outputs.iter().map(PathBuf::from));
-        verify_manifest(
-            Path::new(&receipt.output_manifest.root),
-            declared_so_far,
-            &receipt.output_manifest,
-        )?;
+        verify_historical_manifest(&options.attempt_root, &receipt.output_manifest)?;
+        prior_receipts.insert(node.command_id.clone(), digest(value)?);
     }
     Ok(())
 }
 
+fn execution_claims_from_value(value: &Value) -> Result<ExecutionClaims> {
+    Ok(ExecutionClaims {
+        principal: json_string(value, "principal")?,
+        repository: json_string(value, "repository")?,
+        source_event: json_string(value, "source_event")?,
+        source_ref: json_string(value, "source_ref")?,
+        workflow: json_string(value, "workflow")?,
+        job: json_string(value, "job")?,
+        runner: json_string(value, "runner")?,
+        attempt: value["attempt"]
+            .as_u64()
+            .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-CLAIMS", "attempt"))?,
+    })
+}
+
+fn json_string(value: &Value, name: &str) -> Result<String> {
+    value[name]
+        .as_str()
+        .map(str::to_owned)
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-CLAIMS", name))
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "trusted transition keeps every authenticated binding explicit"
+)]
 fn execute_heavy_after_started(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
     transaction: &ExternalTransaction,
     audit: &ConstructedAudit,
     light: &[ExternalNodeReceipt],
-    source_before: &str,
+    source_before: &RepositoryIdentity,
     started_entry_sha256: &str,
+    attempt_identity: &str,
 ) -> Result<Value> {
     validate_ready(
         options,
@@ -424,14 +784,14 @@ fn execute_heavy_after_started(
         .collect::<Result<BTreeMap<_, _>>>()?;
     let heavy = execute_stage(
         options,
-        transaction,
         "HEAVY",
         &transaction.heavy,
         prior_outputs,
         source_before,
         imported_light,
+        attempt_identity,
     )?;
-    if source_identity(&options.repo)? != source_before {
+    if repository_identity(&options.repo)? != *source_before {
         return Err(policy_error(
             "GATE-EXTERNAL-SOURCE-MUTATION",
             "source checkout changed during transaction",
@@ -445,7 +805,10 @@ fn execute_heavy_after_started(
         "transaction_id": transaction.transaction_id,
         "audit": audit.as_value(),
         "attempt_root": options.attempt_root.display().to_string(),
+        "attempt_root_identity": attempt_identity,
         "ledger": options.ledger.display().to_string(),
+        "custody_root": options.custody_root.as_ref().map(|path| path.display().to_string()),
+        "opening_token": options.opening_token.as_ref().map(|path| path.display().to_string()),
         "claims": claims_value(&options.claims),
         "source_before": source_before,
         "source_after": source_before,
@@ -460,12 +823,12 @@ fn execute_heavy_after_started(
 
 fn execute_stage(
     options: &ExternalTransitionOptions,
-    transaction: &ExternalTransaction,
     stage: &str,
     nodes: &[ExternalNode],
     mut declared_so_far: Vec<PathBuf>,
-    source_before: &str,
+    source_before: &RepositoryIdentity,
     mut receipt_ids: BTreeMap<String, String>,
+    attempt_identity: &str,
 ) -> Result<Vec<ExternalNodeReceipt>> {
     let mut receipts = Vec::new();
     for node in nodes {
@@ -479,9 +842,6 @@ fn execute_stage(
                     .ok_or_else(|| policy_error("GATE-EXTERNAL-PREREQUISITE-RECEIPT", id))
             })
             .collect::<Result<Vec<String>>>()?;
-        if node.harvard_access == "OPENS_HARVARD" {
-            create_opening_token(options, transaction)?;
-        }
         declared_so_far.extend(node.declared_outputs.iter().map(PathBuf::from));
         let receipt = execute_node(
             options,
@@ -490,6 +850,7 @@ fn execute_stage(
             prerequisites,
             &declared_so_far,
             source_before,
+            attempt_identity,
         )?;
         let receipt_value = serde_json::to_value(&receipt)
             .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SERIALIZE", error))?;
@@ -505,22 +866,43 @@ fn execute_node(
     stage: &str,
     prerequisite_receipt_ids: Vec<String>,
     declared_so_far: &[PathBuf],
-    source_before: &str,
+    source_before: &RepositoryIdentity,
+    attempt_identity: &str,
 ) -> Result<ExternalNodeReceipt> {
-    let argv = node
+    if directory_identity(&options.attempt_root)? != attempt_identity {
+        return Err(policy_error(
+            "GATE-EXTERNAL-ROOT-REPLACED",
+            &options.attempt_root.display().to_string(),
+        ));
+    }
+    let mut argv = node
         .argv
         .iter()
         .map(|argument| expand_operand(options, argument))
         .collect::<Result<Vec<_>>>()?;
+    if node.harvard_access == "OPENS_HARVARD" {
+        let token = options.opening_token.as_ref().ok_or_else(|| {
+            policy_error("GATE-EXTERNAL-HARVARD-TOKEN-REQUIRED", &node.command_id)
+        })?;
+        if fs::symlink_metadata(token).is_ok() {
+            return Err(policy_error(
+                "GATE-EXTERNAL-HARVARD-TOKEN-EXISTS",
+                &token.display().to_string(),
+            ));
+        }
+        argv.extend(["--opening-token".to_owned(), token.display().to_string()]);
+    }
     let executable = &argv[0];
     let cwd = remap_cwd(&options.repo, &options.attempt_root, &node.cwd)?;
     fs::create_dir_all(&cwd).map_err(|error| external_error("GATE-EXTERNAL-CWD-CREATE", error))?;
-    let mut command = Command::new(executable);
+    let environment = admitted_environment(options, node)?;
+    let executable_path = resolve_executable(executable, &environment)?;
+    let executable_sha256 = file_sha256(&executable_path)?;
+    let executable_version = executable_version(&executable_path, &executable_sha256)?;
+    let source_sha256 = file_sha256(&options.repo.join(&node.source_path))?;
+    let mut command = Command::new(&executable_path);
     command.args(&argv[1..]).current_dir(cwd).env_clear();
-    for (name, value) in &node.env {
-        command.env(name, expand_operand(options, value)?);
-    }
-    command.env("OPENWEPP_EXTERNAL_ATTEMPT_ROOT", &options.attempt_root);
+    command.envs(&environment);
     let mut child = command
         .spawn()
         .map_err(|error| external_error("GATE-EXTERNAL-SPAWN", error))?;
@@ -550,10 +932,16 @@ fn execute_node(
             &format!("{} exited {exit_code}", node.command_id),
         ));
     }
-    if source_identity(&options.repo)? != source_before {
+    if repository_identity(&options.repo)? != *source_before {
         return Err(policy_error(
             "GATE-EXTERNAL-SOURCE-MUTATION",
             &node.command_id,
+        ));
+    }
+    if directory_identity(&options.attempt_root)? != attempt_identity {
+        return Err(policy_error(
+            "GATE-EXTERNAL-ROOT-REPLACED",
+            &options.attempt_root.display().to_string(),
         ));
     }
     let output_manifest = manifest_declared_outputs(&options.attempt_root, declared_so_far)?;
@@ -562,11 +950,111 @@ fn execute_node(
         order: node.order,
         stage: stage.to_owned(),
         argv,
+        environment,
+        source_sha256,
+        executable_sha256,
+        executable_version,
+        repo_identity: source_before.clone(),
         prerequisite_receipt_ids,
         exit_code,
         result: "PASS".to_owned(),
         output_manifest,
     })
+}
+
+fn admitted_environment(
+    options: &ExternalTransitionOptions,
+    node: &ExternalNode,
+) -> Result<BTreeMap<String, String>> {
+    let mut environment = BTreeMap::new();
+    for name in [
+        "PATH",
+        "HOME",
+        "CARGO_HOME",
+        "RUSTUP_HOME",
+        "RUSTC",
+        "CARGO",
+    ] {
+        if let Ok(value) = std::env::var(name) {
+            environment.insert(name.to_owned(), value);
+        }
+    }
+    for (name, value) in &node.env {
+        environment.insert(name.clone(), expand_operand(options, value)?);
+    }
+    environment.insert(
+        "OPENWEPP_EXTERNAL_ATTEMPT_ROOT".to_owned(),
+        options.attempt_root.display().to_string(),
+    );
+    Ok(environment)
+}
+
+fn resolve_executable(executable: &str, environment: &BTreeMap<String, String>) -> Result<PathBuf> {
+    let path = Path::new(executable);
+    if path.is_absolute() {
+        return fs::canonicalize(path)
+            .map_err(|error| external_error("GATE-EXTERNAL-EXECUTABLE", error));
+    }
+    let search = environment
+        .get("PATH")
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-PATH-MISSING", executable))?;
+    std::env::split_paths(search)
+        .map(|directory| directory.join(path))
+        .find(|candidate| candidate.is_file())
+        .and_then(|candidate| fs::canonicalize(candidate).ok())
+        .ok_or_else(|| policy_error("GATE-EXTERNAL-EXECUTABLE-MISSING", executable))
+}
+
+fn executable_version(path: &Path, sha256: &str) -> Result<String> {
+    let name = path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("");
+    if name.contains("cargo") || name.contains("python") || name.contains("rustc") {
+        let output = Command::new(path)
+            .arg("--version")
+            .output()
+            .map_err(|error| external_error("GATE-EXTERNAL-TOOLCHAIN-VERSION", error))?;
+        if output.status.success() {
+            return String::from_utf8(output.stdout)
+                .map(|value| value.trim().to_owned())
+                .map_err(|error| external_error("GATE-EXTERNAL-TOOLCHAIN-UTF8", error));
+        }
+    }
+    Ok(format!("sha256:{sha256}"))
+}
+
+fn file_sha256(path: &Path) -> Result<String> {
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|error| external_error("GATE-EXTERNAL-FILE-IDENTITY", error))?;
+    if metadata.file_type().is_symlink() || !metadata.is_file() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-FILE-IDENTITY",
+            &path.display().to_string(),
+        ));
+    }
+    fs::read(path)
+        .map(|bytes| sha256_bytes(&bytes))
+        .map_err(|error| external_error("GATE-EXTERNAL-FILE-READ", error))
+}
+
+fn directory_identity(path: &Path) -> Result<String> {
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|error| external_error("GATE-EXTERNAL-ROOT-IDENTITY", error))?;
+    if metadata.file_type().is_symlink() || !metadata.is_dir() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-ROOT-IDENTITY",
+            &path.display().to_string(),
+        ));
+    }
+    #[cfg(unix)]
+    {
+        Ok(format!("{}:{}", metadata.dev(), metadata.ino()))
+    }
+    #[cfg(not(unix))]
+    {
+        Ok(format!("len:{}", metadata.len()))
+    }
 }
 
 fn expand_operand(options: &ExternalTransitionOptions, operand: &str) -> Result<String> {
@@ -599,92 +1087,7 @@ fn expand_operand(options: &ExternalTransitionOptions, operand: &str) -> Result<
     }
 }
 
-fn construct_ready_audit(
-    options: &ExternalTransitionOptions,
-    plan: &ExternalDagPlan,
-    transaction: &ExternalTransaction,
-    light: &[ExternalNodeReceipt],
-    source_before: &str,
-) -> Result<ConstructedAudit> {
-    let checks = [
-        "package_authority",
-        "source_identity",
-        "plan_identity",
-        "light_receipts",
-        "inventory_order",
-        "toolchain_environment",
-        "fresh_external_root",
-        "root_separation",
-        "custody_prerequisites",
-        "durable_ledger",
-    ]
-    .map(|check_id| json!({"check_id": check_id, "result": "PASS"}));
-    let mut audit = json!({
-        "schema": EXTERNAL_AUDIT_SCHEMA,
-        "audit_id": "",
-        "status": "READY",
-        "plan_id": plan.plan_id,
-        "transaction_id": transaction.transaction_id,
-        "attempt_root": options.attempt_root.display().to_string(),
-        "ledger": options.ledger.display().to_string(),
-        "ledger_head_sha256": ledger_head(&options.ledger)?,
-        "claims": claims_value(&options.claims),
-        "source_identity": source_before,
-        "light_receipts": light,
-        "checks": checks,
-    });
-    let audit_id = derived_id(&audit, "audit_id")?;
-    audit["audit_id"] = Value::String(audit_id);
-    ConstructedAudit::from_external(audit)
-}
-
-fn validate_ready(
-    options: &ExternalTransitionOptions,
-    plan: &ExternalDagPlan,
-    transaction: &ExternalTransaction,
-    audit: &ConstructedAudit,
-    light: &[ExternalNodeReceipt],
-    source_before: &str,
-    started_entry_sha256: &str,
-) -> Result<()> {
-    let value = audit.as_value();
-    if value["plan_id"] != plan.plan_id
-        || value["transaction_id"] != transaction.transaction_id
-        || value["attempt_root"] != options.attempt_root.display().to_string()
-        || value["claims"] != claims_value(&options.claims)
-        || value["source_identity"] != source_before
-        || value["light_receipts"]
-            != serde_json::to_value(light)
-                .map_err(|error| external_error("GATE-EXTERNAL-AUDIT-SERIALIZE", error))?
-    {
-        return Err(policy_error(
-            "GATE-EXTERNAL-AUDIT-CONTEXT",
-            "READY context changed before HEAVY admission",
-        ));
-    }
-    let bytes =
-        fs::read(&options.ledger).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
-    let last = bytes
-        .split(|byte| *byte == b'\n')
-        .rev()
-        .find(|line| !line.is_empty())
-        .ok_or_else(|| policy_error("GATE-EXTERNAL-STARTED-MISSING", "ledger is empty"))?;
-    let started = parse_strict(last)?;
-    if started["entry_sha256"] != started_entry_sha256
-        || started["previous_entry_sha256"] != value["ledger_head_sha256"]
-        || started["status"] != "STARTED"
-        || started["stage"] != "HEAVY"
-        || started["audit_id"] != value["audit_id"]
-        || started["plan_id"] != plan.plan_id
-        || started["transaction_id"] != transaction.transaction_id
-    {
-        return Err(policy_error(
-            "GATE-EXTERNAL-LEDGER-SUCCESSOR",
-            "ledger must equal the audited head plus the exact current STARTED record",
-        ));
-    }
-    Ok(())
-}
+include!("external_dag/audit.rs");
 
 fn append_started(
     options: &ExternalTransitionOptions,
@@ -740,305 +1143,7 @@ fn close_started(
     outcome
 }
 
-fn create_opening_token(
-    options: &ExternalTransitionOptions,
-    transaction: &ExternalTransaction,
-) -> Result<()> {
-    let token = options.opening_token.as_ref().ok_or_else(|| {
-        policy_error(
-            "GATE-EXTERNAL-HARVARD-TOKEN-REQUIRED",
-            &transaction.transaction_id,
-        )
-    })?;
-    let parent = token.parent().ok_or_else(|| {
-        policy_error(
-            "GATE-EXTERNAL-HARVARD-TOKEN-PATH",
-            &token.display().to_string(),
-        )
-    })?;
-    fs::create_dir_all(parent)
-        .map_err(|error| external_error("GATE-EXTERNAL-HARVARD-TOKEN-DIR", error))?;
-    let mut stream = OpenOptions::new()
-        .create_new(true)
-        .write(true)
-        .open(token)
-        .map_err(|error| external_error("GATE-EXTERNAL-HARVARD-TOKEN-EXISTS", error))?;
-    stream
-        .write_all(b"OPENED_ONCE\n")
-        .and_then(|()| stream.sync_all())
-        .map_err(|error| external_error("GATE-EXTERNAL-HARVARD-TOKEN-WRITE", error))
-}
-
-fn verify_source_bindings(repo: &Path, plan: &ExternalDagPlan) -> Result<()> {
-    for binding in [&plan.source_plan, &plan.source_contract] {
-        confined_relative(&binding.path)?;
-        let bytes = fs::read(repo.join(&binding.path))
-            .map_err(|error| external_error("GATE-EXTERNAL-SOURCE-READ", error))?;
-        let observed = sha256_bytes(&bytes);
-        if observed != binding.sha256 {
-            return Err(policy_error("GATE-EXTERNAL-SOURCE-DIGEST", &binding.path));
-        }
-    }
-    Ok(())
-}
-
-fn verify_node_sources(repo: &Path, transaction: &ExternalTransaction) -> Result<()> {
-    for node in transaction.light.iter().chain(&transaction.heavy) {
-        confined_relative(&node.source_path)?;
-        let metadata = fs::symlink_metadata(repo.join(&node.source_path))
-            .map_err(|error| external_error("GATE-EXTERNAL-NODE-SOURCE", error))?;
-        if metadata.file_type().is_symlink() || !metadata.is_file() {
-            return Err(policy_error(
-                "GATE-EXTERNAL-NODE-SOURCE-TYPE",
-                &node.source_path,
-            ));
-        }
-    }
-    Ok(())
-}
-
-fn verify_custody(transaction: &ExternalTransaction) -> Result<()> {
-    let unique = transaction
-        .custody_prerequisites
-        .iter()
-        .collect::<BTreeSet<_>>();
-    if unique.len() == transaction.custody_prerequisites.len() {
-        Ok(())
-    } else {
-        Err(policy_error(
-            "GATE-EXTERNAL-CUSTODY-DUPLICATE",
-            &transaction.transaction_id,
-        ))
-    }
-}
-
-#[allow(
-    clippy::too_many_lines,
-    reason = "custody admission keeps capability consumption and receipt imports in authority order"
-)]
-fn verify_custody_files(
-    options: &ExternalTransitionOptions,
-    transaction: &ExternalTransaction,
-) -> Result<BTreeMap<String, String>> {
-    let opens_harvard = transaction
-        .heavy
-        .iter()
-        .any(|node| node.harvard_access == "OPENS_HARVARD");
-    if opens_harvard
-        && (transaction.custody_prerequisites.len() != 2
-            || !transaction
-                .custody_receipts
-                .iter()
-                .any(|binding| binding.kind == "TRANSACTION")
-            || !transaction
-                .custody_receipts
-                .iter()
-                .any(|binding| binding.kind == "FREEZE"))
-    {
-        return Err(policy_error(
-            "GATE-EXTERNAL-HARVARD-CUSTODY-INCOMPLETE",
-            "Harvard admission requires two attestations plus transaction and freeze receipts",
-        ));
-    }
-    if transaction.custody_prerequisites.is_empty() && transaction.custody_receipts.is_empty() {
-        return Ok(BTreeMap::new());
-    }
-    let root = options.custody_root.as_ref().ok_or_else(|| {
-        policy_error(
-            "GATE-EXTERNAL-CUSTODY-ROOT-REQUIRED",
-            &transaction.transaction_id,
-        )
-    })?;
-    let canonical_root = fs::canonicalize(root)
-        .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-ROOT", error))?;
-    let mut attestations = Vec::new();
-    let mut imported = BTreeMap::new();
-    for relative in &transaction.custody_prerequisites {
-        confined_relative(relative)?;
-        let path = root.join(relative);
-        let metadata = fs::symlink_metadata(&path)
-            .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?;
-        let canonical = fs::canonicalize(&path)
-            .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?;
-        if metadata.file_type().is_symlink()
-            || !metadata.is_file()
-            || !canonical.starts_with(&canonical_root)
-        {
-            return Err(policy_error("GATE-EXTERNAL-CUSTODY-PATH", relative));
-        }
-        let value = parse_strict(
-            &fs::read(&path)
-                .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?,
-        )?;
-        let schema = parse_strict(include_bytes!(
-            "../../../gate-policy/v1/schemas/external-verifier-attestation.schema.json"
-        ))?;
-        validate_schema(&schema, &value, "external-verifier-attestation")?;
-        let attestation: ExternalVerifierAttestation = serde_json::from_value(value.clone())
-            .map_err(|error| external_error("GATE-EXTERNAL-ATTESTATION-SHAPE", error))?;
-        if attestation.schema != "openwepp-external-verifier-attestation-v1"
-            || derived_id(&value, "attestation_id")? != attestation.attestation_id
-        {
-            return Err(policy_error("GATE-EXTERNAL-ATTESTATION-IDENTITY", relative));
-        }
-        let command_id = Path::new(relative)
-            .file_stem()
-            .and_then(|name| name.to_str())
-            .ok_or_else(|| policy_error("GATE-EXTERNAL-CUSTODY-PATH", relative))?;
-        imported.insert(command_id.to_owned(), attestation.attestation_id.clone());
-        attestations.push(attestation);
-    }
-    if !attestations.is_empty() {
-        verify_independent_attestations(&attestations)?;
-        consume_capabilities(&canonical_root, &attestations)?;
-    }
-    for binding in &transaction.custody_receipts {
-        confined_relative(&binding.path)?;
-        if !matches!(binding.kind.as_str(), "TRANSACTION" | "FREEZE") {
-            return Err(policy_error("GATE-EXTERNAL-CUSTODY-KIND", &binding.kind));
-        }
-        let path = canonical_root.join(&binding.path);
-        let metadata = fs::symlink_metadata(&path)
-            .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?;
-        if metadata.file_type().is_symlink() || !metadata.is_file() {
-            return Err(policy_error("GATE-EXTERNAL-CUSTODY-PATH", &binding.path));
-        }
-        let bytes =
-            fs::read(&path).map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-READ", error))?;
-        if sha256_bytes(&bytes) != binding.sha256 {
-            return Err(policy_error("GATE-EXTERNAL-CUSTODY-DIGEST", &binding.path));
-        }
-        let value = parse_strict(&bytes)?;
-        if value["result"] != "PASS" {
-            return Err(policy_error("GATE-EXTERNAL-CUSTODY-RESULT", &binding.path));
-        }
-        let receipt_id = value["receipt_id"]
-            .as_str()
-            .or_else(|| value["freeze_receipt_id"].as_str())
-            .ok_or_else(|| policy_error("GATE-EXTERNAL-CUSTODY-RECEIPT-ID", &binding.path))?;
-        if imported
-            .insert(binding.command_id.clone(), receipt_id.to_owned())
-            .is_some()
-        {
-            return Err(policy_error(
-                "GATE-EXTERNAL-CUSTODY-DUPLICATE",
-                &binding.command_id,
-            ));
-        }
-    }
-    Ok(imported)
-}
-
-fn verify_independent_attestations(attestations: &[ExternalVerifierAttestation]) -> Result<()> {
-    if attestations.len() < 2 {
-        return Err(policy_error(
-            "GATE-EXTERNAL-CUSTODY-CARDINALITY",
-            "two independent attestations are required",
-        ));
-    }
-    let first = &attestations[0];
-    let same_freeze = attestations
-        .iter()
-        .all(|item| item.freeze_digest == first.freeze_digest);
-    let same_dispatch = attestations
-        .iter()
-        .all(|item| item.parent_dispatch_id == first.parent_dispatch_id);
-    let distinct = [
-        attestations
-            .iter()
-            .map(|item| item.capability_hash.as_str())
-            .collect::<BTreeSet<_>>()
-            .len(),
-        attestations
-            .iter()
-            .map(|item| item.agent_task_id.as_str())
-            .collect::<BTreeSet<_>>()
-            .len(),
-        attestations
-            .iter()
-            .map(|item| item.principal.as_str())
-            .collect::<BTreeSet<_>>()
-            .len(),
-        attestations
-            .iter()
-            .map(|item| {
-                (
-                    item.workflow.as_str(),
-                    item.job.as_str(),
-                    item.runner.as_str(),
-                    item.attempt,
-                )
-            })
-            .collect::<BTreeSet<_>>()
-            .len(),
-    ]
-    .into_iter()
-    .all(|count| count == attestations.len());
-    if same_freeze && same_dispatch && distinct {
-        Ok(())
-    } else {
-        Err(policy_error(
-            "GATE-EXTERNAL-CUSTODY-INDEPENDENCE",
-            "attestations are stale, duplicate, or not independently produced",
-        ))
-    }
-}
-
-fn consume_capabilities(
-    custody_root: &Path,
-    attestations: &[ExternalVerifierAttestation],
-) -> Result<()> {
-    let consumed_root = custody_root.join("consumed-capabilities");
-    fs::create_dir(&consumed_root)
-        .or_else(|error| {
-            if error.kind() == std::io::ErrorKind::AlreadyExists {
-                Ok(())
-            } else {
-                Err(error)
-            }
-        })
-        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-DIR", error))?;
-    let consumed_metadata = fs::symlink_metadata(&consumed_root)
-        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-DIR", error))?;
-    if consumed_metadata.file_type().is_symlink() || !consumed_metadata.is_dir() {
-        return Err(policy_error(
-            "GATE-EXTERNAL-CAPABILITY-DIR-TYPE",
-            &consumed_root.display().to_string(),
-        ));
-    }
-    for attestation in attestations {
-        let source = custody_root
-            .join("capabilities")
-            .join(format!("{}.cap", attestation.capability_hash));
-        let destination = consumed_root.join(format!("{}.cap", attestation.capability_hash));
-        let metadata = fs::symlink_metadata(&source)
-            .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-MISSING", error))?;
-        if metadata.file_type().is_symlink() || !metadata.is_file() {
-            return Err(policy_error(
-                "GATE-EXTERNAL-CAPABILITY-TYPE",
-                &source.display().to_string(),
-            ));
-        }
-        let preimage = fs::read(&source)
-            .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-READ", error))?;
-        if sha256_bytes(&preimage) != attestation.capability_hash {
-            return Err(policy_error(
-                "GATE-EXTERNAL-CAPABILITY-HASH",
-                &source.display().to_string(),
-            ));
-        }
-        rustix::fs::renameat_with(
-            rustix::fs::CWD,
-            &source,
-            rustix::fs::CWD,
-            &destination,
-            rustix::fs::RenameFlags::NOREPLACE,
-        )
-        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME", error))?;
-        FileSync::sync_parent(&destination)?;
-    }
-    Ok(())
-}
+include!("external_dag/custody.rs");
 
 struct FileSync;
 
@@ -1084,7 +1189,9 @@ fn require_regular_ledger(path: &Path) -> Result<()> {
     }
 }
 
-fn source_identity(repo: &Path) -> Result<String> {
+fn repository_identity(repo: &Path) -> Result<RepositoryIdentity> {
+    let head = git_stdout(repo, &["rev-parse", "HEAD"])?;
+    let tree = git_stdout(repo, &["rev-parse", "HEAD^{tree}"])?;
     let output = Command::new("git")
         .args(["status", "--porcelain=v1", "-z", "--untracked-files=all"])
         .current_dir(repo)
@@ -1096,7 +1203,36 @@ fn source_identity(repo: &Path) -> Result<String> {
             "git status failed",
         ));
     }
-    Ok(sha256_bytes(&output.stdout))
+    if !output.stdout.is_empty() {
+        return Err(policy_error(
+            "GATE-EXTERNAL-SOURCE-DIRTY",
+            "external execution requires an exact clean committed checkout",
+        ));
+    }
+    Ok(RepositoryIdentity {
+        head,
+        tree,
+        diff_sha256: sha256_bytes(&output.stdout),
+    })
+}
+
+fn git_stdout(repo: &Path, arguments: &[&str]) -> Result<String> {
+    let output = git_bytes(repo, arguments)?;
+    String::from_utf8(output)
+        .map(|value| value.trim().to_owned())
+        .map_err(|error| external_error("GATE-EXTERNAL-GIT-UTF8", error))
+}
+
+fn git_bytes(repo: &Path, arguments: &[&str]) -> Result<Vec<u8>> {
+    let output = Command::new("git")
+        .args(arguments)
+        .current_dir(repo)
+        .output()
+        .map_err(|error| external_error("GATE-EXTERNAL-GIT", error))?;
+    if !output.status.success() {
+        return Err(policy_error("GATE-EXTERNAL-GIT", &arguments.join(" ")));
+    }
+    Ok(output.stdout)
 }
 
 fn ledger_head(path: &Path) -> Result<Value> {
@@ -1185,90 +1321,5 @@ fn policy_error(code: &'static str, message: &str) -> GatePolicyError {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn rejects_heavy_node_in_light_inventory() {
-        let node = ExternalNode {
-            order: 1,
-            command_id: "population".to_owned(),
-            argv: vec!["false".to_owned()],
-            env: BTreeMap::new(),
-            cwd: "work".to_owned(),
-            prerequisites: Vec::new(),
-            cost_class: "HEAVY".to_owned(),
-            source_path: "tool.py".to_owned(),
-            declared_outputs: vec!["objects/result".to_owned()],
-            timeout_seconds: 1,
-            max_attempts: 1,
-            handoff: "none".to_owned(),
-            harvard_access: "NONE".to_owned(),
-        };
-        let error = validate_node(&node, "LIGHT").expect_err("must reject");
-        assert_eq!(error.code, "GATE-EXTERNAL-NODE-INVALID");
-    }
-
-    #[test]
-    fn rejects_parent_path() {
-        let error = confined_relative("../escape").expect_err("must reject");
-        assert_eq!(error.code, "GATE-EXTERNAL-PATH");
-    }
-
-    #[test]
-    fn placeholder_expansion_is_exact_and_unknowns_fail() {
-        let options = ExternalTransitionOptions {
-            repo: PathBuf::from("/repo"),
-            plan_path: PathBuf::from("/plan"),
-            transaction_id: "calibration-v1".to_owned(),
-            attempt_root: PathBuf::from("/attempt"),
-            ledger: PathBuf::from("/ledger"),
-            receipt_path: PathBuf::from("/receipt"),
-            custody_root: Some(PathBuf::from("/custody")),
-            opening_token: None,
-            claims: ExecutionClaims::default(),
-        };
-        assert_eq!(
-            expand_operand(&options, "${OBJECTS_ROOT}/x").expect("known placeholder"),
-            "/attempt/objects/x"
-        );
-        let error = expand_operand(&options, "${CALLER_VALUE}").expect_err("must reject");
-        assert_eq!(error.code, "GATE-EXTERNAL-PLACEHOLDER-UNKNOWN");
-    }
-
-    #[test]
-    fn verifier_labels_cannot_fake_independence() {
-        let first = attestation("task-a", "alice", "job-a", "cap-a");
-        let mut second = attestation("task-b", "bob", "job-b", "cap-b");
-        assert!(verify_independent_attestations(&[first.clone(), second.clone()]).is_ok());
-        second.principal.clone_from(&first.principal);
-        let error =
-            verify_independent_attestations(&[first, second]).expect_err("must reject reuse");
-        assert_eq!(error.code, "GATE-EXTERNAL-CUSTODY-INDEPENDENCE");
-    }
-
-    fn attestation(
-        task: &str,
-        principal: &str,
-        job: &str,
-        capability: &str,
-    ) -> ExternalVerifierAttestation {
-        ExternalVerifierAttestation {
-            schema: "openwepp-external-verifier-attestation-v1".to_owned(),
-            attestation_id: "0".repeat(64),
-            capability_hash: capability.to_owned(),
-            parent_dispatch_id: "dispatch".to_owned(),
-            agent_task_id: task.to_owned(),
-            principal: principal.to_owned(),
-            workflow: "workflow".to_owned(),
-            job: job.to_owned(),
-            runner: job.to_owned(),
-            attempt: 1,
-            script_sha256: "1".repeat(64),
-            argv: vec!["verify".to_owned()],
-            receipt_sha256: "2".repeat(64),
-            freeze_digest: "3".repeat(64),
-            created_at: "2026-07-27T00:00:00Z".to_owned(),
-        }
-    }
-}
+#[path = "external_dag/tests.rs"]
+mod tests;

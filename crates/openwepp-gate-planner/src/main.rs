@@ -142,6 +142,7 @@ const COMMANDS: [CommandDefinition; 15] = [
             "attempt-root",
             "ledger",
             "output",
+            "custody-root",
             "opening-token",
             "principal",
             "repository",

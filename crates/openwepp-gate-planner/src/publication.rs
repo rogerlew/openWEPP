@@ -20,6 +20,7 @@ use crate::canonical::{
     canonical_bytes, derived_id, digest, parse_strict, sha256_bytes, validate_schema,
 };
 use crate::error::{ErrorClass, GatePolicyError, Result};
+use crate::external_dag::verify_external_transaction;
 use crate::external_outputs::manifest_declared_outputs;
 
 const RECEIPT_SCHEMA: &str = "openwepp-publication-receipt-v1";
@@ -38,6 +39,8 @@ pub struct PublicationEntry {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct PublicationPlan {
     pub publication_id: String,
+    pub external_plan_path: PathBuf,
+    pub transaction_receipt_path: PathBuf,
     pub transaction_receipt_id: String,
     pub transaction_receipt_sha256: String,
     pub source_manifest_id: String,
@@ -76,6 +79,8 @@ pub enum JournalOperation {
 pub struct PublicationReceipt {
     pub schema_version: String,
     pub receipt_id: String,
+    pub external_plan_path: PathBuf,
+    pub transaction_receipt_path: PathBuf,
     pub transaction_receipt_id: String,
     pub transaction_receipt_sha256: String,
     pub source_manifest_id: String,
@@ -145,6 +150,7 @@ pub enum RecoveryAction {
 pub fn publish(plan: &PublicationPlan) -> Result<PublicationOutcome> {
     let started_at = now()?;
     validate_plan(plan)?;
+    verify_producing_transaction(plan)?;
     require_fresh_transaction(plan)?;
     verify_sources(plan)?;
     verify_destination_baseline(plan)?;
@@ -178,6 +184,7 @@ pub fn publish(plan: &PublicationPlan) -> Result<PublicationOutcome> {
 /// another plan, or if source, installed, baseline, or backup bytes drifted.
 pub fn recover(plan: &PublicationPlan, action: RecoveryAction) -> Result<PublicationOutcome> {
     validate_plan(plan)?;
+    verify_producing_transaction(plan)?;
     let journal = load_journal(plan)?;
     validate_journal(plan, &journal)?;
     if plan.receipt_path.exists() {
@@ -200,8 +207,11 @@ pub fn recover(plan: &PublicationPlan, action: RecoveryAction) -> Result<Publica
 /// Returns a typed receipt or identity error for any mismatch.
 pub fn verify_receipt(plan: &PublicationPlan, receipt: &PublicationReceipt) -> Result<()> {
     validate_plan(plan)?;
+    verify_producing_transaction(plan)?;
     validate_receipt_schema(receipt)?;
     if receipt.schema_version != RECEIPT_SCHEMA
+        || receipt.external_plan_path != plan.external_plan_path
+        || receipt.transaction_receipt_path != plan.transaction_receipt_path
         || receipt.transaction_receipt_id != plan.transaction_receipt_id
         || receipt.transaction_receipt_sha256 != plan.transaction_receipt_sha256
         || receipt.source_manifest_id != plan.source_manifest_id
@@ -326,10 +336,226 @@ fn install_entry(
     copy_verified(&source, &staged, Some(&entry.source_sha256))?;
     ensure_parent(&destination)?;
     reject_symlink_or_special_if_present(&destination)?;
-    fs::rename(&staged, &destination)
-        .map_err(|error| io_error("GATE-PUBLICATION-INSTALL-RENAME", &destination, error))?;
+    verify_one_destination_baseline(plan, entry)?;
+    install_staged_destination(plan, entry, &staged, || {})?;
     sync_parent(&destination)?;
     require_hash(&destination, &entry.source_sha256)
+}
+
+#[cfg(target_os = "linux")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the install boundary intentionally keeps descriptor acquisition, identity rechecks, and the single rename in one auditable scope"
+)]
+fn install_staged_destination(
+    plan: &PublicationPlan,
+    entry: &PublicationEntry,
+    staged: &Path,
+    before_install: impl FnOnce(),
+) -> Result<()> {
+    use rustix::fd::OwnedFd;
+    use rustix::fs::{
+        AtFlags, Mode, OFlags, RenameFlags, ResolveFlags, openat2, renameat, renameat_with, statat,
+    };
+    use std::os::unix::fs::MetadataExt;
+
+    fn open_root(path: &Path) -> Result<OwnedFd> {
+        openat2(
+            rustix::fs::CWD,
+            path,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+            Mode::empty(),
+            ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| io_error("GATE-PUBLICATION-ROOT-OPEN", path, error))
+    }
+
+    fn open_parent(root: &OwnedFd, relative: &Path) -> Result<OwnedFd> {
+        let parent = relative.parent().unwrap_or_else(|| Path::new("."));
+        openat2(
+            root,
+            parent,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+            Mode::empty(),
+            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| {
+            publication_error(
+                ErrorClass::Io,
+                "GATE-PUBLICATION-PARENT-OPEN",
+                format!("{}: {error}", relative.display()),
+            )
+        })
+    }
+
+    let destination_root = open_root(&plan.destination_root)?;
+    let transaction_root = open_root(&plan.transaction_root)?;
+    let destination_parent = open_parent(&destination_root, &entry.relative_path)?;
+    let staged_relative = staged.strip_prefix(&plan.transaction_root).map_err(|_| {
+        publication_error(
+            ErrorClass::Policy,
+            "GATE-PUBLICATION-STAGE-CONFINEMENT",
+            "staged path is outside the transaction root",
+        )
+    })?;
+    let staged_parent = open_parent(&transaction_root, staged_relative)?;
+    let destination_name = entry.relative_path.file_name().ok_or_else(|| {
+        publication_error(
+            ErrorClass::Schema,
+            "GATE-PUBLICATION-PATH",
+            "publication destination has no file name",
+        )
+    })?;
+    let staged_name = staged_relative.file_name().ok_or_else(|| {
+        publication_error(
+            ErrorClass::Schema,
+            "GATE-PUBLICATION-PATH",
+            "publication staged path has no file name",
+        )
+    })?;
+
+    // Capture the exact directory objects and destination inode immediately
+    // before the only mutating syscall. The pathname is reopened after the
+    // test hook so replacement of either root cannot redirect or detach the
+    // descriptor-relative rename.
+    let destination_root_identity = rustix::fs::fstat(&destination_root)
+        .map_err(|error| io_error("GATE-PUBLICATION-ROOT-STAT", &plan.destination_root, error))?;
+    let transaction_root_identity = rustix::fs::fstat(&transaction_root)
+        .map_err(|error| io_error("GATE-PUBLICATION-ROOT-STAT", &plan.transaction_root, error))?;
+    let baseline_identity = match &entry.destination_baseline_sha256 {
+        Some(expected) => {
+            let descriptor = openat2(
+                &destination_parent,
+                destination_name,
+                OFlags::RDONLY | OFlags::CLOEXEC,
+                Mode::empty(),
+                ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+            )
+            .map_err(|error| {
+                io_error(
+                    "GATE-PUBLICATION-BASELINE-OPEN",
+                    &plan.destination_root.join(&entry.relative_path),
+                    error,
+                )
+            })?;
+            let mut file = File::from(descriptor);
+            let mut bytes = Vec::new();
+            file.read_to_end(&mut bytes).map_err(|error| {
+                io_error(
+                    "GATE-PUBLICATION-BASELINE-READ",
+                    &plan.destination_root.join(&entry.relative_path),
+                    error,
+                )
+            })?;
+            if sha256_bytes(&bytes) != *expected {
+                return Err(publication_error(
+                    ErrorClass::Identity,
+                    "GATE-PUBLICATION-BASELINE-RACE",
+                    "destination baseline changed before installation",
+                ));
+            }
+            Some(file.metadata().map_err(|error| {
+                io_error(
+                    "GATE-PUBLICATION-BASELINE-STAT",
+                    &plan.destination_root.join(&entry.relative_path),
+                    error,
+                )
+            })?)
+        }
+        None => None,
+    };
+
+    before_install();
+
+    let reopened_destination_root = open_root(&plan.destination_root)?;
+    let reopened_transaction_root = open_root(&plan.transaction_root)?;
+    let current_destination_root = rustix::fs::fstat(&reopened_destination_root)
+        .map_err(|error| io_error("GATE-PUBLICATION-ROOT-STAT", &plan.destination_root, error))?;
+    let current_transaction_root = rustix::fs::fstat(&reopened_transaction_root)
+        .map_err(|error| io_error("GATE-PUBLICATION-ROOT-STAT", &plan.transaction_root, error))?;
+    if (
+        destination_root_identity.st_dev,
+        destination_root_identity.st_ino,
+    ) != (
+        current_destination_root.st_dev,
+        current_destination_root.st_ino,
+    ) || (
+        transaction_root_identity.st_dev,
+        transaction_root_identity.st_ino,
+    ) != (
+        current_transaction_root.st_dev,
+        current_transaction_root.st_ino,
+    ) {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-ROOT-RACE",
+            "publication root identity changed before installation",
+        ));
+    }
+
+    if let Some(baseline) = baseline_identity {
+        let current = statat(
+            &destination_parent,
+            destination_name,
+            AtFlags::SYMLINK_NOFOLLOW,
+        )
+        .map_err(|error| {
+            io_error(
+                "GATE-PUBLICATION-BASELINE-RECHECK",
+                &plan.destination_root.join(&entry.relative_path),
+                error,
+            )
+        })?;
+        if (baseline.dev(), baseline.ino()) != (current.st_dev, current.st_ino) {
+            return Err(publication_error(
+                ErrorClass::Identity,
+                "GATE-PUBLICATION-BASELINE-RACE",
+                "destination inode changed before installation",
+            ));
+        }
+        renameat(
+            &staged_parent,
+            staged_name,
+            &destination_parent,
+            destination_name,
+        )
+        .map_err(|error| {
+            io_error(
+                "GATE-PUBLICATION-INSTALL-RENAME",
+                &plan.destination_root.join(&entry.relative_path),
+                error,
+            )
+        })
+    } else {
+        renameat_with(
+            &staged_parent,
+            staged_name,
+            &destination_parent,
+            destination_name,
+            RenameFlags::NOREPLACE,
+        )
+        .map_err(|error| {
+            io_error(
+                "GATE-PUBLICATION-INSTALL-NOREPLACE",
+                &plan.destination_root.join(&entry.relative_path),
+                error,
+            )
+        })
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn install_staged_destination(
+    _plan: &PublicationPlan,
+    _entry: &PublicationEntry,
+    _staged: &Path,
+    _before_install: impl FnOnce(),
+) -> Result<()> {
+    Err(publication_error(
+        ErrorClass::Policy,
+        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
+        "descriptor-relative publication is required",
+    ))
 }
 
 fn restore_entry(plan: &PublicationPlan, record: &PublicationJournalRecord) -> Result<()> {
@@ -413,6 +639,15 @@ fn validate_plan(plan: &PublicationPlan) -> Result<()> {
         ));
     }
     require_absolute_distinct_roots(plan)?;
+    for path in [&plan.external_plan_path, &plan.transaction_receipt_path] {
+        if !path.is_absolute() {
+            return Err(publication_error(
+                ErrorClass::Schema,
+                "GATE-PUBLICATION-AUTHORITY-PATH",
+                "external plan and transaction receipt paths must be absolute",
+            ));
+        }
+    }
     let mut paths = BTreeSet::new();
     for entry in &plan.entries {
         validate_relative_path(&entry.relative_path)?;
@@ -431,13 +666,68 @@ fn validate_plan(plan: &PublicationPlan) -> Result<()> {
     Ok(())
 }
 
+fn verify_producing_transaction(plan: &PublicationPlan) -> Result<()> {
+    reject_symlink_or_special_if_present(&plan.external_plan_path)?;
+    reject_symlink_or_special_if_present(&plan.transaction_receipt_path)?;
+    let receipt_bytes = fs::read(&plan.transaction_receipt_path).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-TRANSACTION-RECEIPT-READ",
+            &plan.transaction_receipt_path,
+            error,
+        )
+    })?;
+    if sha256_bytes(&receipt_bytes) != plan.transaction_receipt_sha256 {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-TRANSACTION-RECEIPT-SHA",
+            "producing transaction receipt bytes differ from the publication plan",
+        ));
+    }
+    let receipt = parse_strict(&receipt_bytes)?;
+    verify_external_transaction(&plan.external_plan_path, &receipt)?;
+    if receipt["receipt_id"].as_str() != Some(plan.transaction_receipt_id.as_str()) {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-TRANSACTION-RECEIPT-ID",
+            "producing transaction receipt identity differs from the publication plan",
+        ));
+    }
+    let final_manifest = receipt["heavy"]
+        .as_array()
+        .and_then(|receipts| receipts.last())
+        .and_then(|node| node.get("output_manifest"))
+        .ok_or_else(|| {
+            publication_error(
+                ErrorClass::Receipt,
+                "GATE-PUBLICATION-TRANSACTION-MANIFEST",
+                "producing transaction has no terminal output manifest",
+            )
+        })?;
+    if final_manifest["root"].as_str() != Some(plan.source_root.to_string_lossy().as_ref())
+        || final_manifest["manifest_id"].as_str() != Some(plan.source_manifest_id.as_str())
+        || digest(final_manifest)? != plan.source_manifest_sha256
+    {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-TRANSACTION-MANIFEST",
+            "publication source does not correspond to the verified producing manifest",
+        ));
+    }
+    Ok(())
+}
+
 fn require_absolute_distinct_roots(plan: &PublicationPlan) -> Result<()> {
     let roots = [
         &plan.source_root,
         &plan.destination_root,
         &plan.transaction_root,
     ];
-    if roots.iter().any(|root| !root.is_absolute()) {
+    if roots.iter().any(|root| {
+        !root.is_absolute()
+            || root
+                .components()
+                .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+    }) {
         return Err(publication_error(
             ErrorClass::Schema,
             "GATE-PUBLICATION-ROOT",
@@ -465,6 +755,24 @@ fn require_absolute_distinct_roots(plan: &PublicationPlan) -> Result<()> {
             "GATE-PUBLICATION-TRANSACTION-PATH",
             "journal and receipt must be confined below the transaction root",
         ));
+    }
+    for path in [
+        &plan.external_plan_path,
+        &plan.transaction_receipt_path,
+        &plan.journal_path,
+        &plan.receipt_path,
+    ] {
+        if !path.is_absolute()
+            || path
+                .components()
+                .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+        {
+            return Err(publication_error(
+                ErrorClass::Schema,
+                "GATE-PUBLICATION-LEXICAL-PATH",
+                "authority, journal, and receipt paths must be normalized absolute paths",
+            ));
+        }
     }
     Ok(())
 }
@@ -681,6 +989,8 @@ fn finish_accepted(
     let mut receipt = PublicationReceipt {
         schema_version: RECEIPT_SCHEMA.to_owned(),
         receipt_id: "0".repeat(64),
+        external_plan_path: plan.external_plan_path.clone(),
+        transaction_receipt_path: plan.transaction_receipt_path.clone(),
         transaction_receipt_id: plan.transaction_receipt_id.clone(),
         transaction_receipt_sha256: plan.transaction_receipt_sha256.clone(),
         source_manifest_id: plan.source_manifest_id.clone(),
@@ -1019,6 +1329,27 @@ mod tests {
         fs::write(path, bytes).expect("test write");
     }
 
+    fn git(repo: &Path, arguments: &[&str]) -> String {
+        let output = std::process::Command::new("git")
+            .args(arguments)
+            .current_dir(repo)
+            .output()
+            .expect("test git command");
+        assert!(
+            output.status.success(),
+            "git {arguments:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8(output.stdout)
+            .expect("git UTF-8")
+            .trim()
+            .to_owned()
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "fixture constructs a complete authenticated publication authority"
+    )]
     fn plan(root: &Path, destination_baseline: Option<&[u8]>) -> PublicationPlan {
         let source = root.join("source");
         let destination = root.join("destination");
@@ -1034,10 +1365,181 @@ mod tests {
         let source_manifest_sha256 =
             digest(&serde_json::to_value(&source_manifest).expect("source manifest JSON"))
                 .expect("source manifest digest");
+        let authority_repo = root.join("authority-repo");
+        if authority_repo.exists() {
+            fs::remove_dir_all(&authority_repo).expect("replace authority repository");
+        }
+        fs::create_dir_all(&authority_repo).expect("authority repository");
+        git(&authority_repo, &["init", "--quiet"]);
+        git(&authority_repo, &["config", "user.name", "openWEPP test"]);
+        git(
+            &authority_repo,
+            &["config", "user.email", "openwepp-test@example.invalid"],
+        );
+        write(
+            &authority_repo.join("tool"),
+            b"publication authority tool\n",
+        );
+        let external_plan_path = authority_repo.join("external-plan.json");
+        let transaction_receipt_path = root.join("transaction-receipt.json");
+        let node = |order: u64, command_id: &str, stage: &str| {
+            serde_json::json!({
+                "order": order,
+                "command_id": command_id,
+                "argv": ["/usr/bin/true"],
+                "env": {},
+                "cwd": "work",
+                "prerequisites": if stage == "HEAVY" { vec!["light"] } else { Vec::<&str>::new() },
+                "cost_class": if stage == "HEAVY" { "HEAVY" } else { "QUICK" },
+                "source_path": "tool",
+                "declared_outputs": if stage == "LIGHT" {
+                    vec!["artifacts/result.json"]
+                } else {
+                    Vec::<&str>::new()
+                },
+                "timeout_seconds": 1,
+                "max_attempts": 1,
+                "handoff": "none",
+                "harvard_access": "NONE"
+            })
+        };
+        let mut external_plan = serde_json::json!({
+            "schema": "openwepp-external-dag-plan-v1",
+            "plan_id": "0".repeat(64),
+            "generation": "A",
+            "parent_plan": null,
+            "source_identity": null,
+            "source_plan": {"path": "plan", "sha256": "1".repeat(64)},
+            "source_contract": {"path": "contract", "sha256": "2".repeat(64)},
+            "authority": {
+                "package_path": "package",
+                "base_commit": "0123456",
+                "cheap_gate_evidence": [{"path": "gate", "sha256": "3".repeat(64)}]
+            },
+            "transactions": [{
+                "transaction_id": "publication-source",
+                "light": [node(1, "light", "LIGHT")],
+                "heavy": [node(2, "heavy", "HEAVY")],
+                "custody_prerequisites": [],
+                "custody_receipts": []
+            }],
+            "custody_commands": []
+        });
+        external_plan["plan_id"] =
+            serde_json::Value::String(derived_id(&external_plan, "plan_id").expect("plan ID"));
+        write(
+            &external_plan_path,
+            &canonical_bytes(&external_plan).expect("canonical external plan"),
+        );
+        git(&authority_repo, &["add", "external-plan.json", "tool"]);
+        git(
+            &authority_repo,
+            &["commit", "--quiet", "-m", "test publication authority"],
+        );
+        let executable = fs::canonicalize("/usr/bin/true").expect("canonical test executable path");
+        let executable_sha256 = regular_file_hash(&executable).expect("test executable SHA-256");
+        let mut environment = std::collections::BTreeMap::new();
+        for name in [
+            "PATH",
+            "HOME",
+            "CARGO_HOME",
+            "RUSTUP_HOME",
+            "RUSTC",
+            "CARGO",
+        ] {
+            if let Ok(value) = std::env::var(name) {
+                environment.insert(name.to_owned(), value);
+            }
+        }
+        environment.insert(
+            "OPENWEPP_EXTERNAL_ATTEMPT_ROOT".to_owned(),
+            source.display().to_string(),
+        );
+        let repo_identity = serde_json::json!({
+            "head": git(&authority_repo, &["rev-parse", "HEAD"]),
+            "tree": git(&authority_repo, &["rev-parse", "HEAD^{tree}"]),
+            "diff_sha256": sha256_bytes(b"")
+        });
+        let node_receipt = |command_id: &str, order: u64, stage: &str| {
+            serde_json::json!({
+                "command_id": command_id,
+                "order": order,
+                "stage": stage,
+                "argv": ["/usr/bin/true"],
+                "environment": environment,
+                "source_sha256": sha256_bytes(b"publication authority tool\n"),
+                "executable_sha256": executable_sha256,
+                "executable_version": format!("sha256:{executable_sha256}"),
+                "repo_identity": repo_identity,
+                "prerequisite_receipt_ids": [],
+                "exit_code": 0,
+                "result": "PASS",
+                "output_manifest": source_manifest.clone()
+            })
+        };
+        let light_receipt = node_receipt("light", 1, "LIGHT");
+        let mut heavy_receipt = node_receipt("heavy", 2, "HEAVY");
+        heavy_receipt["prerequisite_receipt_ids"] =
+            serde_json::json!([digest(&light_receipt).expect("light receipt digest")]);
+        let mut audit = serde_json::json!({
+            "schema": "openwepp-external-pre-heavy-audit-v1",
+            "audit_id": "0".repeat(64),
+            "status": "READY",
+            "light_receipts": [light_receipt.clone()]
+        });
+        audit["audit_id"] =
+            serde_json::Value::String(derived_id(&audit, "audit_id").expect("audit ID"));
+        #[cfg(unix)]
+        let attempt_root_identity = {
+            use std::os::unix::fs::MetadataExt;
+            let metadata = fs::metadata(&source).expect("source root metadata");
+            format!("{}:{}", metadata.dev(), metadata.ino())
+        };
+        #[cfg(not(unix))]
+        let attempt_root_identity =
+            format!("len:{}", fs::metadata(&source).expect("metadata").len());
+        let mut transaction_receipt = serde_json::json!({
+            "schema": "openwepp-external-transaction-receipt-v1",
+            "receipt_id": "0".repeat(64),
+            "result": "PASS",
+            "plan_id": external_plan["plan_id"],
+            "transaction_id": "publication-source",
+            "audit": audit,
+            "attempt_root": source,
+            "attempt_root_identity": attempt_root_identity,
+            "ledger": root.join("ledger"),
+            "custody_root": null,
+            "opening_token": null,
+            "claims": {
+                "principal": "test",
+                "repository": "test",
+                "source_event": "test",
+                "source_ref": "test",
+                "workflow": "test",
+                "job": "test",
+                "runner": "test",
+                "attempt": 1
+            },
+            "source_before": repo_identity,
+            "source_after": repo_identity,
+            "light": [light_receipt],
+            "heavy": [heavy_receipt]
+        });
+        transaction_receipt["receipt_id"] = serde_json::Value::String(
+            derived_id(&transaction_receipt, "receipt_id").expect("transaction receipt ID"),
+        );
+        let transaction_receipt_bytes =
+            canonical_bytes(&transaction_receipt).expect("canonical transaction receipt");
+        write(&transaction_receipt_path, &transaction_receipt_bytes);
         PublicationPlan {
             publication_id: "publication-1".to_owned(),
-            transaction_receipt_id: "1".repeat(64),
-            transaction_receipt_sha256: "2".repeat(64),
+            external_plan_path,
+            transaction_receipt_path,
+            transaction_receipt_id: transaction_receipt["receipt_id"]
+                .as_str()
+                .expect("receipt ID string")
+                .to_owned(),
+            transaction_receipt_sha256: sha256_bytes(&transaction_receipt_bytes),
             source_manifest_id: source_manifest.manifest_id,
             source_manifest_sha256,
             destination_baseline_sha256: destination_baseline_digest(&[PublicationEntry {
@@ -1089,7 +1591,7 @@ mod tests {
         .expect("source drift");
         assert_eq!(
             publish(&publication_plan).expect_err("drift rejected").code,
-            "GATE-PUBLICATION-DRIFT"
+            "GATE-EXTERNAL-MANIFEST-HISTORICAL-DRIFT"
         );
         assert!(!publication_plan.journal_path.exists());
 
@@ -1106,6 +1608,49 @@ mod tests {
                 .expect_err("collision rejected")
                 .code,
             "GATE-PUBLICATION-COLLISION"
+        );
+        assert!(!publication_plan.journal_path.exists());
+        remove_scratch(&root);
+    }
+
+    #[test]
+    fn rejects_forged_transaction_claims_before_publication_mutation() {
+        let root = scratch("forged-transaction");
+        remove_scratch(&root);
+        let mut publication_plan = plan(&root, None);
+        publication_plan.transaction_receipt_id = "a".repeat(64);
+        assert_eq!(
+            publish(&publication_plan)
+                .expect_err("caller-supplied transaction identity must not be trusted")
+                .code,
+            "GATE-PUBLICATION-TRANSACTION-RECEIPT-ID"
+        );
+        assert!(!publication_plan.journal_path.exists());
+
+        publication_plan = plan(&root, None);
+        fs::write(&publication_plan.transaction_receipt_path, b"{}\n")
+            .expect("replace receipt bytes");
+        assert_eq!(
+            publish(&publication_plan)
+                .expect_err("exact producing receipt bytes must be bound")
+                .code,
+            "GATE-PUBLICATION-TRANSACTION-RECEIPT-SHA"
+        );
+        assert!(!publication_plan.journal_path.exists());
+        remove_scratch(&root);
+    }
+
+    #[test]
+    fn rejects_valid_receipt_bound_to_a_different_source_manifest() {
+        let root = scratch("foreign-manifest");
+        remove_scratch(&root);
+        let mut publication_plan = plan(&root, None);
+        publication_plan.source_manifest_id = "b".repeat(64);
+        assert_eq!(
+            publish(&publication_plan)
+                .expect_err("publication must consume the producer's terminal manifest")
+                .code,
+            "GATE-PUBLICATION-TRANSACTION-MANIFEST"
         );
         assert!(!publication_plan.journal_path.exists());
         remove_scratch(&root);
@@ -1133,28 +1678,7 @@ mod tests {
     fn recovery_completes_a_journaled_partial_transaction() {
         let root = scratch("complete");
         remove_scratch(&root);
-        let mut plan = plan(&root, None);
-        write(&plan.source_root.join("artifacts/second.json"), b"second");
-        plan.entries.push(PublicationEntry {
-            relative_path: PathBuf::from("artifacts/second.json"),
-            source_sha256: sha256_bytes(b"second"),
-            destination_baseline_sha256: None,
-        });
-        plan.destination_baseline_sha256 =
-            destination_baseline_digest(&plan.entries).expect("baseline digest");
-        let source_manifest = manifest_declared_outputs(
-            &plan.source_root,
-            &plan
-                .entries
-                .iter()
-                .map(|entry| entry.relative_path.clone())
-                .collect::<Vec<_>>(),
-        )
-        .expect("source manifest");
-        plan.source_manifest_sha256 =
-            digest(&serde_json::to_value(&source_manifest).expect("manifest JSON"))
-                .expect("manifest digest");
-        plan.source_manifest_id = source_manifest.manifest_id;
+        let plan = plan(&root, None);
         prepare_transaction_directories(&plan).expect("transaction dirs");
         install_entry(&plan, &plan.entries[0], 1, false).expect("first install");
 
@@ -1162,9 +1686,84 @@ mod tests {
         assert_eq!(outcome.status, PublicationStatus::Accepted);
         assert!(plan.receipt_path.exists());
         assert_eq!(
-            fs::read(plan.destination_root.join("artifacts/second.json")).expect("second"),
-            b"second"
+            fs::read(plan.destination_root.join("artifacts/result.json")).expect("result"),
+            b"new-result"
         );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_destination_root_replacement_at_install_boundary_without_overwrite() {
+        let root = scratch("root-install-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, None);
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let entry = &publication_plan.entries[0];
+        let source = publication_plan.source_root.join(&entry.relative_path);
+        let staged = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+        copy_verified(&source, &staged, Some(&entry.source_sha256)).expect("stage source");
+        ensure_parent(&publication_plan.destination_root.join(&entry.relative_path))
+            .expect("destination parent");
+
+        let displaced = root.join("destination-displaced");
+        let replacement_file = publication_plan.destination_root.join(&entry.relative_path);
+        let error = install_staged_destination(&publication_plan, entry, &staged, || {
+            fs::rename(&publication_plan.destination_root, &displaced)
+                .expect("displace destination root");
+            write(&replacement_file, b"attacker-owned");
+        })
+        .expect_err("root replacement must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-ROOT-RACE");
+        assert_eq!(
+            fs::read(&replacement_file).expect("replacement preserved"),
+            b"attacker-owned"
+        );
+        assert!(staged.exists(), "staged source remains recoverable");
+        assert!(
+            !displaced.join(&entry.relative_path).exists(),
+            "detached verified root was not mutated"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rejects_destination_inode_replacement_at_install_boundary_without_overwrite() {
+        let root = scratch("destination-install-race");
+        remove_scratch(&root);
+        let publication_plan = plan(&root, Some(b"old-result"));
+        prepare_transaction_directories(&publication_plan).expect("transaction dirs");
+        let entry = &publication_plan.entries[0];
+        let source = publication_plan.source_root.join(&entry.relative_path);
+        let staged = publication_plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+        copy_verified(&source, &staged, Some(&entry.source_sha256)).expect("stage source");
+        let destination = publication_plan.destination_root.join(&entry.relative_path);
+        let displaced = root.join("displaced-baseline");
+
+        let error = install_staged_destination(&publication_plan, entry, &staged, || {
+            fs::rename(&destination, &displaced).expect("displace verified baseline");
+            fs::write(&destination, b"attacker-owned").expect("replace destination inode");
+        })
+        .expect_err("destination replacement must reject");
+
+        assert_eq!(error.code, "GATE-PUBLICATION-BASELINE-RACE");
+        assert_eq!(
+            fs::read(&destination).expect("replacement preserved"),
+            b"attacker-owned"
+        );
+        assert_eq!(
+            fs::read(&displaced).expect("baseline preserved"),
+            b"old-result"
+        );
+        assert!(staged.exists(), "staged source remains recoverable");
         remove_scratch(&root);
     }
 }

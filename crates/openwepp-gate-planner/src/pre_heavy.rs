@@ -850,8 +850,10 @@ pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Resu
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .filter(|item| {
-            item["record_type"] == "STAGE_ATTEMPT"
-                && item["status"] == "FAILED"
+            matches!(
+                item["record_type"].as_str(),
+                Some("STAGE_ATTEMPT" | "EXTERNAL_TRANSACTION")
+            ) && item["status"] == "FAILED"
                 && item["cause_key"] == cause_key
         })
         .count();
@@ -927,12 +929,14 @@ pub fn reconcile_orphaned_attempts(path: &Path) -> Result<usize> {
         record_heavy_failure(
             path,
             json!({
-                "record_type": "STAGE_ATTEMPT",
+                "record_type": started["record_type"],
                 "status": "FAILED",
                 "stage": "HEAVY",
                 "plan_id": started["plan_id"],
                 "audit_id": started["audit_id"],
                 "artifact_root": started["artifact_root"],
+                "attempt_root": started["attempt_root"],
+                "transaction_id": started["transaction_id"],
                 "recovery_root": started["recovery_root"],
                 "workflow": started["workflow"],
                 "job": started["job"],

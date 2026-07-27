@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -22,6 +25,13 @@ EXECUTION_ROOT = Path("/nonexistent/cal04b-execution-root-required")
 
 def sha(path: Path) -> str:
     return sha256_file(path)
+
+
+def derived_id(value: dict[str, object], field: str) -> str:
+    payload = dict(value)
+    payload.pop(field, None)
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def write_bundle(path: Path, entries: list[tuple[str, Path]]) -> None:
@@ -154,12 +164,16 @@ def _native_path(value: str, planned_workdir: str) -> Path:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--custody-root", type=Path, required=True)
     options = parser.parse_args(argv)
     execution_root = options.execution_root.resolve(strict=True)
     if not execution_root.is_dir():
         raise ValueError("execution root must be an existing directory")
     global ARTIFACTS, OBJECTS, EXECUTOR, EXECUTION_ROOT
     attempt_root = execution_root.parent
+    custody_root = options.custody_root.resolve(strict=True)
+    if not custody_root.is_dir():
+        raise ValueError("custody root must be an existing directory")
     ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     OBJECTS = execution_root
@@ -342,6 +356,22 @@ def main(argv: list[str] | None = None) -> int:
         ARTIFACTS / "holdout-freeze-digest.txt",
         bundles,
     )
+    freeze_receipt = {
+        "schema": "cal04b-freeze-receipt-v1",
+        "freeze_receipt_id": "",
+        "result": "PASS",
+        "freeze_digest": verified_digest,
+        "manifest_sha256": sha(manifest),
+        "calibration_receipt_sha256": sha(transaction_receipt),
+    }
+    freeze_receipt["freeze_receipt_id"] = derived_id(
+        freeze_receipt, "freeze_receipt_id"
+    )
+    receipt_path = custody_root / "freeze.receipt.json"
+    with receipt_path.open("x", encoding="utf-8") as stream:
+        json.dump(freeze_receipt, stream, sort_keys=True, separators=(",", ":"))
+        stream.flush()
+        os.fsync(stream.fileno())
     print(f"PASS freeze_digest={verified_digest} transitive_members={members}")
     return 0
 

@@ -153,6 +153,37 @@ pub fn verify_manifest(root: &Path, declared: &[PathBuf], expected: &OutputManif
     Ok(())
 }
 
+/// Verify the immutable files bound by a historical manifest without treating
+/// later, separately declared outputs as historical siblings.
+///
+/// # Errors
+///
+/// Returns a typed error when the manifest root drifts, an entry escapes, or
+/// any exact historical file identity or bytes differ.
+pub fn verify_historical_manifest(root: &Path, expected: &OutputManifest) -> Result<()> {
+    validate_manifest_schema(expected)?;
+    if utf8_path(root, "GATE-EXTERNAL-ROOT-UTF8")? != expected.root {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-EXTERNAL-MANIFEST-ROOT",
+            "historical manifest root differs from the admitted attempt root",
+        ));
+    }
+    for entry in &expected.entries {
+        let relative = PathBuf::from(&entry.path);
+        validate_relative(&relative)?;
+        let observed = hash_regular_file(root, &root.join(&relative))?;
+        if observed != *entry {
+            return Err(GatePolicyError::new(
+                ErrorClass::Identity,
+                "GATE-EXTERNAL-MANIFEST-HISTORICAL-DRIFT",
+                entry.path.clone(),
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn validate_manifest_schema(manifest: &OutputManifest) -> Result<()> {
     let schema = parse_strict(include_bytes!(
         "../../../gate-policy/v1/schemas/external-output-manifest.schema.json"
