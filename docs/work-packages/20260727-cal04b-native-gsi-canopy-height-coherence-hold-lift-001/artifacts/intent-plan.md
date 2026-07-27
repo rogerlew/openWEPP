@@ -60,6 +60,9 @@ gate complete.
   canopy height consumed by active frost
 - this package's artifacts, prompt custody, CAL-04B handoff/status, catalog,
   and canopy assurance roadmap
+- the frozen CAL-04B native-proof verifier and one owning regression test only
+  to recognize the canonical typed threshold-order parser wording; no case
+  plan, input, semantic expectation, or production behavior may change
 
 Any other production or authority surface requires a prospective package
 amendment and renewed intent review.

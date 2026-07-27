@@ -74,6 +74,19 @@ CASE_FIELDS = (
 )
 
 
+def has_typed_temperature_threshold_order_error(error_text: str) -> bool:
+    """Recognize both runtime and canonical intake forms of the typed error."""
+    normalized = error_text.casefold()
+    return "temperature" in normalized and (
+        "lower threshold must be less than upper threshold" in normalized
+        or (
+            "minimum_temperature_inactive_c must be less than "
+            "minimum_temperature_unconstrained_c"
+        )
+        in normalized
+    )
+
+
 def replace_yaml(path: Path, values: dict[str, float]) -> None:
     output = []
     seen = set()
@@ -380,11 +393,7 @@ def main() -> int:
             if completed.returncode == 0 or trace.exists():
                 raise ValueError("invalid case did not fail before trace creation")
             error_text = Path(case["stderr_log"]).read_text(encoding="utf-8")
-            if (
-                "lower threshold must be less than upper threshold"
-                not in error_text.lower()
-                or "temperature" not in error_text.lower()
-            ):
+            if not has_typed_temperature_threshold_order_error(error_text):
                 raise ValueError("invalid case lacked typed threshold error")
             compared = 0
             state = "PASS_TYPED_FAILURE_TRACE_ABSENT"

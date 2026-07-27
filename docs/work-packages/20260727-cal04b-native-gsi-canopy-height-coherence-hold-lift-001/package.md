@@ -198,6 +198,10 @@ contract decision; do not synthesize a formula.
 - CAL-04B status/handoff artifacts and `docs/work-packages/README.md`
 - the frozen CAL-04B `artifacts/native-consumer-proof.csv` output only, as
   current hold-lift replay evidence and not a calibration/result claim
+- the frozen CAL-04B `tools/native-proof.py` invalid-case error recognizer and
+  one owning regression test only if the unchanged case reaches the canonical
+  typed parser error but the verifier rejects wording alone; its plan, inputs,
+  semantic expectation, and production path remain immutable
 - `docs/planning/canopy-phenology-assurance-roadmap.md`
 
 Any wider production or contract surface requires a prospective package
