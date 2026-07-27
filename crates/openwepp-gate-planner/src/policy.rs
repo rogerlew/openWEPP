@@ -245,9 +245,11 @@ struct PrincipalRecord {
 #[derive(Deserialize)]
 struct ReviewLock {
     report_id: String,
-    science_root: String,
-    preapproval_realization_root: String,
-    realization_root: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct AssuranceIdentityLock {
+    review_locks: BTreeMap<String, String>,
 }
 
 #[derive(Deserialize)]
@@ -312,7 +314,7 @@ fn load_assurance_registry(
         })?;
     verify_resolution_authorities(&registry, &principals)?;
     verify_lifecycle_authorities(repo_root, &registry)?;
-    verify_assessed_roots(repo_root, &registry)?;
+    verify_current_review_locks(repo_root, &registry)?;
     Ok((registry, value, bytes))
 }
 
@@ -346,44 +348,67 @@ fn verify_lifecycle_authorities(repo_root: &Path, registry: &AssuranceRegistry) 
     Ok(())
 }
 
-fn verify_assessed_roots(repo_root: &Path, registry: &AssuranceRegistry) -> Result<()> {
-    for report in &registry.reports {
-        let path = repo_root.join(format!(
-            "assurance/v2/reports/{}/review.lock.json",
-            report.report_id
-        ));
-        let lock: ReviewLock = serde_json::from_slice(&read(&path)?).map_err(|error| {
+fn verify_current_review_locks(repo_root: &Path, registry: &AssuranceRegistry) -> Result<()> {
+    let schema = load_json(&repo_root.join("assurance/v2/schemas/review-lock.schema.json"))?;
+    let identity_bytes = read(&repo_root.join("assurance/v2/identity.lock.json"))?;
+    let identity_value = parse_strict(&identity_bytes)?;
+    let identity_schema =
+        load_json(&repo_root.join("assurance/v2/schemas/identity-lock.schema.json"))?;
+    validate_schema(&identity_schema, &identity_value, "assurance identity lock")?;
+    let identity: AssuranceIdentityLock =
+        serde_json::from_value(identity_value).map_err(|error| {
             GatePolicyError::new(
                 ErrorClass::Policy,
-                "GATE-ASSURANCE-REVIEW-LOCK-DECODE",
+                "GATE-ASSURANCE-IDENTITY-LOCK-DECODE",
                 error.to_string(),
             )
         })?;
-        if !review_lock_is_associated(report, &lock) {
-            return Err(GatePolicyError::new(
+
+    for report in &registry.reports {
+        let relative_path = format!("assurance/v2/reports/{}/review.lock.json", report.report_id);
+        let bytes = read(&repo_root.join(&relative_path))?;
+        let expected_sha256 = identity.review_locks.get(&relative_path).ok_or_else(|| {
+            GatePolicyError::new(
                 ErrorClass::Policy,
-                "GATE-ASSURANCE-ASSESSED-ROOT",
-                &report.report_id,
-            ));
-        }
+                "GATE-ASSURANCE-REVIEW-LOCK-IDENTITY",
+                format!("{relative_path}: missing identity-lock binding"),
+            )
+        })?;
+        decode_current_review_lock(report, &schema, &bytes, expected_sha256)?;
     }
     Ok(())
 }
 
-fn review_lock_is_associated(report: &AssuranceReport, lock: &ReviewLock) -> bool {
-    lock.report_id == report.report_id
-        && is_sha256(&report.source_root)
-        && is_sha256(&report.assessed_realization_root)
-        && is_sha256(&lock.science_root)
-        && is_sha256(&lock.preapproval_realization_root)
-        && lock.realization_root.as_deref().is_none_or(is_sha256)
-}
-
-fn is_sha256(value: &str) -> bool {
-    value.len() == 64
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+fn decode_current_review_lock(
+    report: &AssuranceReport,
+    schema: &Value,
+    bytes: &[u8],
+    expected_sha256: &str,
+) -> Result<ReviewLock> {
+    let value = parse_strict(bytes)?;
+    validate_schema(schema, &value, "assurance review lock")?;
+    if sha256_bytes(bytes) != expected_sha256 {
+        return Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REVIEW-LOCK-IDENTITY",
+            &report.report_id,
+        ));
+    }
+    let lock: ReviewLock = serde_json::from_value(value).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REVIEW-LOCK-DECODE",
+            error.to_string(),
+        )
+    })?;
+    if lock.report_id != report.report_id {
+        return Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REVIEW-LOCK-ASSOCIATION",
+            &report.report_id,
+        ));
+    }
+    Ok(lock)
 }
 
 fn verify_resolution_authorities(
@@ -846,7 +871,7 @@ mod tests {
     use std::path::Path;
 
     use super::{
-        AssuranceRegistry, Matcher, ReviewLock, matcher_matches, review_lock_is_associated,
+        AssuranceRegistry, Matcher, decode_current_review_lock, matcher_matches,
         verify_lifecycle_authorities,
     };
 
@@ -897,36 +922,79 @@ mod tests {
     }
 
     #[test]
-    fn review_lock_association_allows_historical_root_divergence_but_rejects_invalid_roots() {
+    fn current_review_lock_validation_allows_historical_roots_but_rejects_invalid_structure() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let bytes =
+        let registry_bytes =
             std::fs::read(root.join("gate-policy/v1/assurance-registry.json")).expect("registry");
-        let registry: AssuranceRegistry = serde_json::from_slice(&bytes).expect("registry JSON");
+        let registry: AssuranceRegistry =
+            serde_json::from_slice(&registry_bytes).expect("registry JSON");
         let report = registry
             .reports
             .iter()
             .find(|report| report.report_id == "linear-groundwater-reservoir-recurrence")
             .expect("groundwater report");
-        let mut lock = ReviewLock {
-            report_id: report.report_id.clone(),
-            science_root: "1".repeat(64),
-            preapproval_realization_root: "2".repeat(64),
-            realization_root: None,
-        };
-        assert_ne!(lock.science_root, report.source_root);
-        assert_ne!(
-            lock.preapproval_realization_root,
-            report.assessed_realization_root
+        let path = root
+            .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json");
+        let bytes = std::fs::read(path).expect("review lock");
+        let schema: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(root.join("assurance/v2/schemas/review-lock.schema.json"))
+                .expect("review-lock schema"),
+        )
+        .expect("review-lock schema JSON");
+        decode_current_review_lock(
+            report,
+            &schema,
+            &bytes,
+            &crate::canonical::sha256_bytes(&bytes),
+        )
+        .expect("valid current lock");
+        let current: serde_json::Value = serde_json::from_slice(&bytes).expect("review lock JSON");
+        let current_assessed_root = current["realization_root"]
+            .as_str()
+            .or_else(|| current["preapproval_realization_root"].as_str())
+            .expect("best available current realization root");
+        assert!(
+            current["science_root"] != report.source_root
+                || current_assessed_root != report.assessed_realization_root,
+            "the production DRAFT lock must exercise historical/current root divergence"
         );
-        assert!(review_lock_is_associated(report, &lock));
 
-        lock.report_id = "different-report".to_owned();
-        assert!(!review_lock_is_associated(report, &lock));
-        lock.report_id.clone_from(&report.report_id);
-        lock.preapproval_realization_root = "not-a-digest".to_owned();
-        assert!(!review_lock_is_associated(report, &lock));
-        lock.preapproval_realization_root = "2".repeat(64);
-        lock.realization_root = Some("A".repeat(64));
-        assert!(!review_lock_is_associated(report, &lock));
+        let mut missing_required: serde_json::Value =
+            serde_json::from_slice(&bytes).expect("review lock JSON");
+        missing_required
+            .as_object_mut()
+            .expect("review lock object")
+            .remove("lifecycle");
+        let missing_bytes = serde_json::to_vec(&missing_required).expect("mutated review lock");
+        assert!(
+            decode_current_review_lock(
+                report,
+                &schema,
+                &missing_bytes,
+                &crate::canonical::sha256_bytes(&missing_bytes),
+            )
+            .is_err()
+        );
+
+        let mut extra_property: serde_json::Value =
+            serde_json::from_slice(&bytes).expect("review lock JSON");
+        extra_property
+            .as_object_mut()
+            .expect("review lock object")
+            .insert("unexpected".to_owned(), serde_json::Value::Bool(true));
+        let extra_bytes = serde_json::to_vec(&extra_property).expect("mutated review lock");
+        assert!(
+            decode_current_review_lock(
+                report,
+                &schema,
+                &extra_bytes,
+                &crate::canonical::sha256_bytes(&extra_bytes),
+            )
+            .is_err()
+        );
+        assert!(
+            decode_current_review_lock(report, &schema, &bytes, &"0".repeat(64)).is_err(),
+            "identity-lock digest mismatch must fail closed"
+        );
     }
 }

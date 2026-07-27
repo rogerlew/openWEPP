@@ -2061,6 +2061,16 @@ pub(crate) mod tests {
             let entry = entry.expect("schema entry");
             fs::copy(entry.path(), destination.join(entry.file_name())).expect("copy schema");
         }
+        let assurance_source = source_repo().join("assurance/v2/schemas");
+        let assurance_destination = repo.join("assurance/v2/schemas");
+        fs::create_dir_all(&assurance_destination).expect("create assurance schema directory");
+        for name in ["identity-lock.schema.json", "review-lock.schema.json"] {
+            fs::copy(
+                assurance_source.join(name),
+                assurance_destination.join(name),
+            )
+            .expect("copy assurance schema");
+        }
     }
 
     fn git(repo: &Path, arguments: &[&str]) -> String {
@@ -2192,15 +2202,50 @@ pub(crate) mod tests {
             "id: executor-fixture-report\nauthorship:\n  human_report_lead: null\n",
         )
         .expect("write fixture report lifecycle");
+        let review_lock_path = repo
+            .path()
+            .join("assurance/v2/reports/executor-fixture-report/review.lock.json");
         write_json(
-            &repo
-                .path()
-                .join("assurance/v2/reports/executor-fixture-report/review.lock.json"),
+            &review_lock_path,
             &json!({
+                "machine_owned": true,
+                "format_version": 1,
+                "identity_algorithm_version": "openwepp-assurance-generated-identity-v2",
                 "report_id": "executor-fixture-report",
+                "lifecycle": "DRAFT",
+                "legacy_subject_root": null,
                 "science_root": "1".repeat(64),
+                "communication_root": "3".repeat(64),
+                "attribution_root": "4".repeat(64),
+                "review_governance_root": "5".repeat(64),
+                "content_review_subject_root": "6".repeat(64),
+                "finding_ledger_root": null,
                 "preapproval_realization_root": "2".repeat(64),
-                "realization_root": null
+                "pre_steward_approval_root": null,
+                "approval_lock_root": null,
+                "realization_root": null,
+                "release_transfer_root": null,
+                "event_ids": [],
+                "invalidated_event_ids": []
+            }),
+        );
+        let review_lock_sha256 =
+            sha256_bytes(&fs::read(&review_lock_path).expect("read fixture review lock"));
+        write_json(
+            &repo.path().join("assurance/v2/identity.lock.json"),
+            &json!({
+                "machine_owned": true,
+                "format_version": 1,
+                "identity_algorithm_version": "openwepp-assurance-generated-identity-v2",
+                "tool_identity": "openwepp-assurance:fixture",
+                "genesis": null,
+                "previous_generation_id": null,
+                "sources": {},
+                "review_locks": {
+                    "assurance/v2/reports/executor-fixture-report/review.lock.json":
+                        review_lock_sha256
+                },
+                "generation_id": "7".repeat(64)
             }),
         );
         write_json(
