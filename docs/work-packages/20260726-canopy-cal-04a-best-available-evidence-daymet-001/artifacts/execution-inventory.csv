@@ -1,0 +1,17 @@
+artifact,state,records_or_result,role
+references/canopy_phenology/daymet_calibration/raw/,VERIFIED,9 source-native responses,external forcing source
+artifacts/source-and-request-manifest.csv,COMPLETE,9 sources,request and checksum binding
+artifacts/retrieval-receipt.csv,COMPLETE,9 receipts,request time and returned metadata custody
+artifacts/hubbard-plot-geometry.csv,COMPLETE,9 plots,source geometry
+artifacts/daymet-daily-derived.csv,COMPLETE,118260 plot-days,derived forcing
+artifacts/fixture-daily-derived.csv,COMPLETE,13149 days,comparison-only forcing
+artifacts/phenology-forcing-join.csv,COMPLETE,932 intervals,Hubbard calibration join
+artifacts/forcing-support-summary.csv,COMPLETE,21 levels,model-result-blind support
+artifacts/proposed-domain-grid.csv,COMPLETE,63 threshold-pair definitions,9261-vector design basis
+artifacts/fixture-daymet-comparison.csv,COMPLETE,13140 days,forcing mismatch diagnostic
+artifacts/best-available-evidence-ledger.csv,COMPLETE,9 entries,evidence classification
+artifacts/proposed-calibration-design.md,COMPLETE,finite design,prospective authority
+artifacts/limitations-and-caveats.md,COMPLETE,10 caveats,truthful interpretation
+Harvard admitted timing metadata,ROLE_FILTER_ONLY,319 combined-ledger rows inspected and 0 joined or analyzed,holdout protection
+Harvard raw source and modeled results,SEALED,0 opened,holdout
+production code and protected fixtures,READ_ONLY,0 changes,excluded

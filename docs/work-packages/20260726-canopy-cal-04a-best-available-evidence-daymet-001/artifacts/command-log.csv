@@ -1,0 +1,11 @@
+command_id,state,command,result
+CMD-001,PASS,"tools/agents/find-agents --for package paths and references path","Applicable instruction chains resolved"
+CMD-002,PASS,"bash docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/tools/acquire_daymet.sh","Nine Daymet Single Pixel responses downloaded for 1989-2024"
+CMD-003,PASS_AFTER_CORRECTION,".venv/bin/python docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/tools/analyze.py","First attempt rejected assumed 12-field CLI rows; corrected 13-field parser produced 118260 Daymet rows, 13149 fixture rows, 932 joins, and 63 pair rows"
+CMD-004,PASS,"sha256sum -c references/canopy_phenology/daymet_calibration/SHA256SUMS","README and nine source objects verified"
+CMD-005,PASS,".venv/bin/python docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/tools/validate.py","Checksums; source roles; all-row native-equation reconstruction; reference vectors; exact record/calendar/forcing joins; 9261-vector design; and byte-deterministic rebuild passed"
+CMD-006,PASS,"markdown-doc lint --path docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001","11 Markdown files; zero errors and warnings"
+CMD-007,PASS,"git diff --check","No whitespace errors"
+CMD-008,PASS,".venv/bin/python docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/tools/validate_write_set.py","44 CAL-04A paths admitted; 31 ambient predecessor CAL-04 paths classified separately"
+CMD-009,PASS,"test ! -e <package>/prompts/active/kickoff.md && test -e <package>/prompts/archived/kickoff.md","Kickoff archived and active prompt absent"
+CMD-010,PASS,"dual independent terminal verification","Both verifiers pass after Harvard-role wording, write-set evidence, and terminal-state corrections"

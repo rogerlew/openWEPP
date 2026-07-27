@@ -1,0 +1,10 @@
+plot_id,latitude_deg,longitude_deg,source_elevation_ft,source_elevation_m,geometry_authority,role
+1B,43.952022,-71.725558,1549,472.1352,knb-lter-hbr.51.16 EML,calibration
+6T,43.955547,-71.742178,2518,767.4864,knb-lter-hbr.51.16 EML,calibration
+4B,43.950917,-71.728739,1733,528.2184,knb-lter-hbr.51.16 EML,calibration
+4T,43.958947,-71.731661,1996,608.3808,knb-lter-hbr.51.16 EML,calibration
+5B,43.949128,-71.731831,1556,474.2688,knb-lter-hbr.51.16 EML,calibration
+5T,43.957400,-71.736869,2385,726.9480,knb-lter-hbr.51.16 EML,calibration
+7B,43.928928,-71.765647,1985,605.0280,knb-lter-hbr.51.16 EML,calibration
+7T,43.918358,-71.769733,2700,822.9600,knb-lter-hbr.51.16 EML,calibration
+HQ,43.945733,-71.700975,750,228.6000,knb-lter-hbr.51.16 EML,calibration

@@ -1,0 +1,25 @@
+execution_id,stage,member,configuration_id,command_id,expected_outputs,state,notes
+INTAKE-000,INTAKE,instruction_chain,AGENT-DISCOVERY,CMD-001,required_reading_chain,PASS,Resolved root and work-package instructions
+INTAKE-001,INTAKE,authority_objects,SHA256SUMS,CMD-002,checksum_results,PASS,All 20 retained authority objects
+INTAKE-002,INTAKE,observation_corpus,SHA256SUMS,CMD-003,checksum_results,PASS,All four retained corpus objects
+INTAKE-ERR-001,INTAKE,timing_windows,SUMMARY-TABLE-ERROR,CMD-004,retained_failed_invocation,FAILED_RETAINED,Wrong Harvard table schema; no repository change; corrected by CMD-005
+INTAKE-003,INTAKE,timing_windows,CAL04-EXTRACTOR,CMD-005|CMD-006,byte_identical_rebuild,PASS,1251 rows and admitted SHA-256 reproduced
+INTAKE-004,INTAKE,relied_upon_identities,SHA256,CMD-007,identity_manifest,PASS,Contracts inputs tools manifests and runner bound
+INTAKE-005,INTAKE,role_partition,CAL04-TIMING-WINDOWS,CMD-009,role_and_disjointness_result,PASS,932 Hubbard calibration and 319 Harvard holdout
+CLOSURE-001,CLOSURE,package_hold,VALIDATE-HOLD,CMD-008,empty_ledgers_stage_order_and_embargo,PASS,No candidate ensemble or holdout rows
+CLOSURE-002,CLOSURE,package_docs,MARKDOWN-DOC,CMD-010,documentation_lint,PASS,Package-local Markdown only
+CLOSURE-003,CLOSURE,terminal_diff,GIT-DIFF-CHECK,CMD-011,diff_hygiene,PASS,No whitespace errors
+CLOSURE-004,CLOSURE,terminal_diff,WRITE-SET,CMD-012,write_set_reconciliation,PASS,All status paths declared
+CLOSURE-005,CLOSURE,prompt_state,PROMPT-ARCHIVE,CMD-013,active_empty_and_archived_kickoff,PASS,Executed package prompt archived
+TERMINAL-001,POST_VERIFICATION,package_hold,VALIDATE-HOLD,CMD-014,refreshed_hold_reconciliation,PASS,Resulting verification state passed
+TERMINAL-002,POST_VERIFICATION,roles_and_diff,VALIDATE-ROLES-WRITE-SET,CMD-015,refreshed_roles_and_write_set,PASS,Resulting verification state passed
+TERMINAL-003,POST_VERIFICATION,package_docs,MARKDOWN-DOC,CMD-016,refreshed_documentation_lint,PASS,Resulting verification state passed
+TERMINAL-004,POST_VERIFICATION,diff_and_prompt,GIT-PROMPT,CMD-017,refreshed_diff_and_prompt_state,PASS,Resulting verification state passed
+TERMINAL-005,POST_VERIFICATION,terminal_evidence,SHA256,CMD-018,terminal_artifact_hashes,PASS,Scientific ledgers tools reviews and verifications bound
+PLAN-001,GSI_TIMING,hubbardbrook_deciduous_nh/p10,NONE,NONE,candidate_trace_and_score,BLOCKED_PROSPECTIVE,No finite complete GSI search domain or initial grid can be frozen from admitted authority
+PLAN-002,BIOMASS_PARTITION,hubbardbrook_deciduous_nh/p10,NONE,NONE,stage_profile,BLOCKED_AUTHORITY,CAL03-OBS-HB-001 constrains only the partition sum and supplies no finite operand bounds
+PLAN-003,EVERGREEN_FRACTION,hubbardbrook_deciduous_nh/p10,NONE,NONE,stage_profile,BLOCKED_AUTHORITY,No admitted stage-specific evergreen observation
+PLAN-004,PEAK_LAI,hubbardbrook_deciduous_nh/p10,NONE,NONE,stage_profile,BLOCKED_UPSTREAM,CAL03-OBS-HB-005 is admitted but upstream GSI and fe are not frozen and no finite xmxlai search bound exists
+PLAN-005,CANOPY_COVER,hubbardbrook_deciduous_nh/p10,NONE,NONE,stage_profile,BLOCKED_AUTHORITY,No admitted stage-specific canopy-cover observation
+PLAN-006,HARVARD_HOLDOUT,harvard_deciduous_ma/p6,NONE,NONE,holdout_score,BLOCKED_SEALED,No nonempty accepted calibration ensemble exists
+PLAN-007,DOWNSTREAM_EVALUATION,NONE,NONE,NONE,evaluation_only_outputs,BLOCKED_UPSTREAM,No frozen accepted ensemble exists

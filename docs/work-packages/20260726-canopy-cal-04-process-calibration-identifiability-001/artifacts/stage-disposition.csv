@@ -1,0 +1,8 @@
+stage,authority_ids,candidate_count,failure_count,accepted_range,identifiability_state,boundary_state,terminal_state,notes
+GSI_TIMING,ADM-001|DESIGN-CAL04-PRIOR-FREE-001,0,0,NONE,NOT_EXECUTED,MISSING_FINITE_SEARCH_BOUND_AUTHORITY,HOLD,Typed validation domain is not a bounded calibration domain; no lawful initial grid
+BIOMASS_PARTITION,CAL03-OBS-HB-001,0,0,NONE,NOT_EXECUTED,NONSEPARATING_SUM_AUTHORITY_AND_MISSING_FINITE_UPPER_BOUNDS,HOLD,Total aboveground inventory constrains only Bf_max plus Bs
+EVERGREEN_FRACTION,NONE,0,0,NONE,NOT_EXECUTED,MISSING_STAGE_OBSERVATION,HOLD,No admitted evergreen-fraction calibration observation
+PEAK_LAI,CAL03-OBS-HB-005,0,0,NONE,NOT_EXECUTED,UPSTREAM_NOT_FROZEN_AND_MISSING_FINITE_UPPER_BOUND,HOLD,Bounded mature LAI authority retained but cannot execute before GSI and fe freeze
+CANOPY_COVER,NONE,0,0,NONE,NOT_EXECUTED,MISSING_STAGE_OBSERVATION_AND_BB_UPPER_BOUND,HOLD,No admitted quantitative canopy-cover calibration observation
+HARVARD_HOLDOUT,ADM-002,0,0,NONE,NOT_OPENED,SEALED,HOLD,Accepted calibration ensemble is empty
+DOWNSTREAM_EVALUATION,EVALUATION_ONLY,0,0,NONE,NOT_EXECUTED,UPSTREAM_ENSEMBLE_ABSENT,HOLD,Downstream outputs cannot select parameters
