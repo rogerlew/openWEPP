@@ -264,6 +264,8 @@ fn implementation_rebind_adopts_only_the_finite_contract_surface() {
 }
 
 #[test]
+// This cohesive integration test intentionally proves one atomic check/apply/review-authority invalidation/idempotence lifecycle.
+#[allow(clippy::too_many_lines)]
 fn report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority() {
     let fixture = current_unverified_fixture("assurance-adopt-report-source");
     let source = Path::new("tests/fixtures/cancov_forest/README.md");
