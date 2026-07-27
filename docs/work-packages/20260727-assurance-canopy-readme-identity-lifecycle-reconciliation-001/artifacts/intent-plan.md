@@ -20,7 +20,8 @@ Selected increment gates:
 - assurance amendment/source/planner/assembly/publication focused suites;
 - source anti-evasion and AUTH11 obligation guards;
 - exact release binary build and check/apply provenance;
-- receipt-authorized assurance amendment gate;
+- scientific-full receipt/schema/generation validation; the focused amendment
+  runner is not applicable to this impact class;
 - validate, inspect, plan, disposable build/check;
 - exact-head unfiltered full workspace profile;
 - exact diff, line-count, documentation, dual review, and dual verification.

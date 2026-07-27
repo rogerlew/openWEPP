@@ -143,8 +143,10 @@ allowed preexisting drift.
 4. Run focused assurance and anti-evasion gates.
 5. Build the exact release assurance binary, run check, then apply the real
    transaction and retain its receipt.
-6. Run the receipt-authorized gate, validate/inspect/plan/build, and unfiltered
-   full workspace profile.
+6. Validate the scientific-full receipt and generation chain, run
+   validate/inspect/plan/build, and execute the implementation-package and
+   unfiltered full-workspace gates. The focused receipt runner is intentionally
+   inapplicable to `scientific-full`.
 7. Reopen CAL04B-NATIVE terminal verification, complete dual review and dual
    verification, disposition findings, archive prompt, and close both packages
    only if every gate passes.
@@ -161,8 +163,8 @@ allowed preexisting drift.
   repeat check is a no-op.
 - Wrong report/path/kind, unchanged path, second drift, stale generation, and
   external race fail without writes.
-- `validate`, `inspect`, `plan`, disposable `build`/`check`, focused receipt
-  gate, anti-evasion gates, and exact-head full workspace profile pass.
+- `validate`, `inspect`, `plan`, disposable `build`/`check`, generation-chain
+  verification, anti-evasion gates, and exact-head full workspace profile pass.
 - CAL04B-NATIVE terminal verification passes before its prerequisite is lifted.
 
 Coverage/CRAP disposition: `DEFERRED_TO_QUALITY_CI` per ADR-0041.
