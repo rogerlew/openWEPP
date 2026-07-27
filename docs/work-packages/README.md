@@ -319,10 +319,14 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  ACTIVE / RESUMED: the production, assurance, and TESTGATE prerequisite chain
-  is complete. The frozen CAL-04B design is reopened for a fresh reviewed
-  empty-root restart from `prepare`; prior attempts remain evidence only, and
-  Harvard remains sealed through the freeze-verifier barrier.
+  ACTIVE / TOOLING HOLD BEFORE HEAVY: the science prerequisite chain is
+  complete, but restart review proved the legacy Python executor cannot satisfy
+  the canonical same-process pre-heavy trust contract. Prior attempts remain
+  evidence only and Harvard remains sealed.
+- `20260727-gate-planner-external-dag-transaction-adapter-001/` -
+  SCAFFOLD / REVIEW REQUIRED: owns canonical Rust support for manifest-driven
+  external-output DAG transactions and the second authenticated transition
+  required after CAL-04B's independent freeze-verifier handoff.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

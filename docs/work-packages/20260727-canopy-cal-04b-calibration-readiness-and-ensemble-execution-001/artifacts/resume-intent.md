@@ -1,6 +1,6 @@
 # Resume Intent
 
-Status: `PRE-HEAVY PASS / DUAL REVIEW REQUIRED`
+Status: `PRE-HEAVY HOLD / TOOLING CORRECTION IN PROGRESS`
 
 Evidence class: `Static`
 
@@ -59,3 +59,43 @@ remain independent and read-only.
 - Markdown lint and diff hygiene: `PASS`.
 
 Harvard remains `SEALED`. No Hubbard population command has run.
+
+## Resume Review Disposition
+
+The first independent restart review returned `HOLD` before population work.
+The package accepts both high-severity findings:
+
+- the observed coordinator lacks the mandatory versioned
+  `LIGHT -> READY -> HEAVY` admission barrier required by
+  `docs/standards/testing-and-gate-strategy.md`;
+- observed receipt schema 01 does not bind the repository, coordinator,
+  observer, toolchain, prerequisite-package, and READY-audit identities
+  declared by this resume increment.
+
+The prepare-only attempt is not reusable because its receipt predates the
+tooling-correction commit and cannot authenticate the corrected observer or
+READY audit. It will be retained byte-preservingly outside the active object
+root with reuse disposition `INVALIDATED_BY_OBSERVER_AND_ADMISSION_SCHEMA`.
+The active root will then be recreated empty and execution will restart at
+`prepare`; no successful result-bearing population receipt is being discarded.
+
+This correction remains inside the declared package write set. It adds a
+repository-owned pre-heavy audit, separates LIGHT execution from HEAVY
+admission, upgrades observed receipts to bind the exact execution identities,
+and adds focused fail-closed tests. Heavy execution remains forbidden until
+the corrected tools pass focused gates, are committed, and two independent
+read-only reviewers return `GO` at that exact commit.
+
+Further inspection proved that the correction cannot remain inside this
+package's write set. The canonical `openwepp-pre-heavy-audit-v1` authority and
+same-process transition live in `openwepp-gate-planner`; CAL-04B's CSV executor
+cannot synthesize or transport equivalent authority. The canonical executor
+also rejects repository mutation, while the legacy CAL-04B DAG publishes
+result-bearing files directly into this package.
+
+The prerequisite
+`20260727-gate-planner-external-dag-transaction-adapter-001` therefore owns the
+generic external-output DAG transaction, manifest, receipt, and two-transition
+support. CAL-04B remains active on a tooling hold, Harvard remains sealed, and
+no population command may resume until that prerequisite is complete and this
+package passes a fresh exact-commit dual restart review.

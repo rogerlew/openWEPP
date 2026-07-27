@@ -3,7 +3,7 @@
 Package ID:
 `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
 
-Status: `ACTIVE / RESUMED AFTER PRODUCTION PREREQUISITE LIFT`
+Status: `ACTIVE / TOOLING HOLD BEFORE HEAVY`
 
 Date opened: `2026-07-27`
 
