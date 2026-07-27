@@ -83,9 +83,16 @@ reset envelope, schema acceptance, and no-op behavior now have focused tests.
 
 ## Pending
 
-- Comparator-run exact-head unfiltered
-  `cargo nextest run --workspace --profile full`.
-- Comparator-run `cargo deny check` and any terminal broad Clippy selection.
-- Dual independent review and dual terminal verification.
+- Comparator run `9d17ef98-c121-4f18-b528-59d33b7afcce` at `2bf1a600`
+  completed 2,299 tests: 2,278 passed, 21 failed, and 43 skipped. All 21
+  failures share `GATE-ASSURANCE-ASSESSED-ROOT`: TESTGATE policy incorrectly
+  requires immutable registry historical roots to equal mutable current DRAFT
+  review-lock roots. This is owned by
+  `20260727-testgate-assurance-historical-root-decoupling-001`; the full profile
+  must rerun after correction.
+- The same comparator execution passed `cargo deny check` and warnings-denied
+  all-target Clippy for `openwepp-assurance`. Logs:
+  `/tmp/openwepp-gate-rerun-2bf1f-20260727-083312/`.
+- Dual terminal verification.
 
 Coverage/CRAP disposition: `DEFERRED_TO_QUALITY_CI` per ADR-0041.
