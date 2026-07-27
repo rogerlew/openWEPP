@@ -7,5 +7,6 @@ inventory, run heavy gates before admission, populate CAL, or access Harvard.
 
 Subagent authorization: this package explicitly authorizes subagent
 spawning/delegation to one bounded implementation worker, two independent
-read-only reviewers, and two independent terminal verifiers; writes are limited
-to the declared write set.
+read-only reviewers, two independent terminal/receipt verifiers, and the
+`comparator_suite_runner` for one exact-head canonical admitted execution;
+writes are limited to the declared write set.

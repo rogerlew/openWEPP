@@ -80,6 +80,9 @@ No other path is writable. This write set must not widen.
    inventory arithmetic, prerequisite edges, and no-production-diff security
    gate.
 7. Resume canonical admission only after every check is green.
+8. Delegate the one exact-head admitted execution to the
+   `comparator_suite_runner`, retain its audit/receipt/ledger evidence, and
+   obtain two independent receipt verifications before closeout.
 
 ## Acceptance
 
@@ -100,6 +103,9 @@ No other path is writable. This write set must not widen.
   remain green.
 - Dual review, explicit finding disposition, exact terminal reconstruction,
   and dual terminal verification pass before canonical execution.
+- One comparator-owned exact-head execution passes every selected LIGHT and
+  HEAVY node, produces a READY audit plus valid receipt/ledger evidence, and
+  receives two independent receipt-verification PASS dispositions.
 
 ## Security-Impact Gate
 
@@ -120,7 +126,9 @@ unchanged. Any production-path diff is `FAIL` and blocks closure.
 
 Subagent authorization: this package explicitly authorizes subagent
 spawning/delegation to one bounded implementation worker, two independent
-read-only reviewers, and two independent terminal verifiers; expected outputs
-are the exact test-provider correction, focused/full validation, review finding
-dispositions, and terminal verification receipts; write access is limited to
-the declared write set.
+read-only reviewers, two independent terminal/receipt verifiers, and the
+`comparator_suite_runner` for one exact-head canonical admitted execution;
+expected outputs are the exact test-provider correction, focused/full
+validation, review finding dispositions, terminal verification receipts, and
+retained audit/receipt/ledger evidence; write access is limited to the declared
+write set.
