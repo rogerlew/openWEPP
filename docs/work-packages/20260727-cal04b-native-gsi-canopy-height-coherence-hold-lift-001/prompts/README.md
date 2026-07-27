@@ -1,6 +1,4 @@
 # Prompt Lifecycle
 
-The active kickoff authorizes contract-first closure of
-`CAL04B-NATIVE-001`. Move it byte-identically to `archived/` only at terminal
-package disposition.
-
+The kickoff authorized contract-first closure of `CAL04B-NATIVE-001` and was
+moved byte-identically to `archived/` at terminal package disposition.

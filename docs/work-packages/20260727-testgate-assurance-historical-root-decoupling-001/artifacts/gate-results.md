@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `IN PROGRESS / FULL WORKSPACE RUNNING`
+Status: `PASS`
 
 Evidence class: `Ran + Static`
 
@@ -29,5 +29,18 @@ The pre-correction full run remains diagnosis evidence: run
 with 2,278 passed, 21 failed, and 43 skipped. Every failure shared the now
 corrected `GATE-ASSURANCE-ASSESSED-ROOT` coupling.
 
-The comparator-owned exact implementation-head full workspace rerun is in
-progress. Coverage/CRAP is `DEFERRED_TO_QUALITY_CI` per ADR-0041.
+The comparator-owned exact closure-candidate run at
+`3e78dedbd3b0f0a2c3e1e6d7d90bf625a240ddfd` passed:
+
+- `cargo nextest run --workspace --profile full`: `PASS`;
+- run `7e79049d-0871-4142-a9f7-86ac7ac714be`;
+- 2,301/2,301 tests passed, 43 skipped, zero failures;
+- retained log:
+  `/tmp/openwepp-testgate-full-3e78dedb-20260727T163100Z/full-gate.log`;
+- exit marker records `exit_code=0` and completion at
+  `2026-07-27T16:47:03Z`.
+
+At the same exact closure-candidate head, cargo-deny and warnings-denied
+all-target Clippy for both `openwepp-gate-planner` and
+`openwepp-assurance` passed. Coverage/CRAP is
+`DEFERRED_TO_QUALITY_CI` per ADR-0041.

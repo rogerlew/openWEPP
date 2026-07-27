@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `PASS / TERMINAL GATES PENDING`
+Status: `PASS`
 
 Evidence class: `Static + Ran`
 

@@ -1,6 +1,6 @@
 # Kernel-Profile Compliance
 
-Status: `PASS / TERMINAL FULL GATE BLOCKED EXTERNALLY`
+Status: `PASS`
 
 Evidence class: `Static + Ran`
 
@@ -26,9 +26,9 @@ Evidence class: `Static + Ran`
   transition, invalid-state, real-consumer, and source-negative tests pass.
 - Security gates: the authority-suite anti-evasion script and AUTH11 required
   obligation guard suite pass.
-- Broad correctness: the non-assurance full profile passes 2,180/2,180. The
-  unfiltered profile remains blocked only by a pre-existing assurance report
-  identity mismatch documented in `hold-legitimacy-audit.md`.
+- Broad correctness: the non-assurance full profile passes 2,180/2,180. After
+  the separately owned assurance/TESTGATE prerequisite corrections, the
+  unfiltered profile passes 2,301/2,301.
 
-Coverage/CRAP is `DEFERRED_TO_QUALITY_CI` under ADR-0041. The current status is
-kernel-profile compliant but not terminally closed.
+Coverage/CRAP is `DEFERRED_TO_QUALITY_CI` under ADR-0041. The package is
+kernel-profile compliant and terminally closed.

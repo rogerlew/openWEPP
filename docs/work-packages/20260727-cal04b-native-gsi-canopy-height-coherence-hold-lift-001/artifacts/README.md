@@ -1,11 +1,11 @@
 # Artifact Status
 
-Status: `POPULATED / TERMINAL HOLD`
+Status: `COMPLETE`
 
 Evidence class: `Static`
 
 Contract, implementation, consumer, replay, gate, review, finding, exact-diff,
-line-count, HOLD-audit, disposition, and handoff evidence is populated.
-Terminal verification is explicitly not run because the mandatory unfiltered
-full-workspace gate remains red. These artifacts support an active HOLD, not
-package closure or a CAL-04B prerequisite lift.
+line-count, historical HOLD-audit, disposition, handoff, and dual terminal
+verification evidence is populated. The mandatory unfiltered full-workspace
+gate passes. These artifacts support package closure and the CAL-04B
+production-prerequisite lift.

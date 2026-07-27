@@ -1,6 +1,6 @@
 # Write-Set Reconciliation
 
-Status: `PASS / TERMINAL DISPOSITION PENDING`
+Status: `PASS`
 
 Evidence class: `Static`
 
@@ -27,6 +27,6 @@ publication surface, calibration input/output, Harvard artifact, or population
 artifact changed.
 
 The separate TESTGATE historical-root correction owns only gate-policy
-surfaces and its own package. Terminal reconciliation must add the final
-package/CAL04B disposition paths and compare the exact closing `HEAD` to this
-base.
+surfaces and its own package. Terminal reconciliation adds only authorized
+package/CAL04B disposition, verification, catalog, roadmap, and prompt-archive
+paths.

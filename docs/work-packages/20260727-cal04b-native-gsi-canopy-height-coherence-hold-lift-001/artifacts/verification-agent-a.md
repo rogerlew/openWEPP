@@ -1,11 +1,15 @@
 # Terminal Verification A
 
-Status: `BLOCKED / NOT RUN — PACKAGE HELD BEFORE CLOSURE`
+Status: `PASS`
 
-Evidence class: `NOT RUN`
+Evidence class: `Ran + Static`
 
-Terminal verification is a closure gate. It is not represented as passing
-while the mandatory unfiltered full-workspace profile is red. Run an
-independent verification only after
-`ASSURANCE-CANOPY-README-IDENTITY-001` closes and this package reruns its
-terminal gate set at the resulting exact HEAD.
+Independent verifier A checked the 44-path native package slice, separate
+ownership of the assurance/TESTGATE prerequisite corrections, the retained
+12-case native proof, closed findings, and exact full run
+`7e79049d-0871-4142-a9f7-86ac7ac714be` at 2,301/2,301.
+
+The production prerequisite may be lifted. The historical CAL04B attempt
+remains evidence rather than a result; a fresh reviewed empty-root rerun is
+still required, and Harvard/population remained sealed. No finding. Verdict:
+`PASS`.

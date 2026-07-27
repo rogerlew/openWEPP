@@ -1,6 +1,6 @@
 # Write-Set Reconciliation
 
-Status: `PASS / TERMINAL DOCS PENDING`
+Status: `PASS`
 
 Evidence class: `Static`
 
@@ -21,5 +21,5 @@ review lock, identity lock, event, receipt, lifecycle source, scientific
 contract, calibration artifact, Harvard artifact, or population artifact was
 changed by this package.
 
-Terminal closure will add only authorized package/catalog/roadmap disposition
-paths and prompt archival.
+Terminal closure adds only authorized package/catalog/roadmap disposition
+paths, verification records, and prompt archival.

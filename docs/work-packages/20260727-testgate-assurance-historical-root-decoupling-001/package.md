@@ -3,7 +3,7 @@
 Package ID:
 `20260727-testgate-assurance-historical-root-decoupling-001`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Execution mode: `package-end-to-end`
 
@@ -125,8 +125,8 @@ disposition.
 - [x] Added contract-derived divergence and fail-closed coverage.
 - [x] Corrected policy loading and documentation.
 - [x] Passed focused gates and dual corrected review.
-- [ ] Passed the exact closure-candidate full workspace gate.
-- [ ] Completed dual terminal verification and closure.
+- [x] Passed the exact closure-candidate full workspace gate.
+- [x] Completed dual terminal verification and closure.
 
 ## Decision Log
 
@@ -145,5 +145,8 @@ disposition.
 
 ## Outcomes
 
-Implementation and corrected dual review pass. Exact closure-candidate full
-workspace evidence and terminal verification remain pending.
+The loader now preserves immutable historical assessment roots while
+validating current locks against their canonical schemas, exact identity-lock
+byte bindings, and report association. Focused gates, corrected dual review,
+the exact closure-candidate 2,301-test full workspace profile, and dual
+terminal verification pass.

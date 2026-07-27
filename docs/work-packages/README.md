@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260727-testgate-assurance-historical-root-decoupling-001/`,
+  `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/`,
+  and
+  `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/`
+  completed the CAL04B-NATIVE prerequisite chain. Typed source adoption binds
+  the current canopy README and invalidates stale review authority; TESTGATE
+  preserves immutable historical assessment roots while validating current
+  identity-bound locks; the native canopy-height correction passes its 12-case
+  frozen replay and the exact 2,301-test full profile. No calibration
+  population or Harvard run occurred. The historical CAL-04B HOLD is retained,
+  and a fresh reviewed empty-root rerun is next.
 - `20260726-canopy-cal-03-observation-native-research-001/` completed the
   pre-calibration canopy evidence package. It installs immutable observation
   roles, source-supplied Marcell/Harvard/Hubbard native pairs, a default-off
@@ -307,28 +318,11 @@
 
 State as of `2026-07-27 UTC`:
 
-- `20260727-testgate-assurance-historical-root-decoupling-001/` -
-  ACTIVE: decouples immutable historical assurance assessment roots from
-  mutable current DRAFT review-lock roots so gate planning can emit required
-  campaign impacts without moving the assessed baseline.
-- `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/` -
-  ACTIVE: closes `ASSURANCE-CANOPY-README-IDENTITY-001` through a typed
-  report-source adoption that invalidates stale review authority, resets the
-  affected report to DRAFT, and unblocks CAL04B-NATIVE terminal verification.
-- `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/` -
-  ACTIVE / TERMINAL HOLD: `CAL04B-NATIVE-001` production and its 12-case frozen
-  replay pass, including retained `GSI-5557`, but the mandatory unfiltered
-  full-workspace gate is blocked by pre-existing assurance identity drift for
-  the canopy-fixture README. A separate assurance lifecycle correction is
-  required before terminal closure verification, hold lift, or fresh
-  calibration; two independent reviewers passed the HOLD legitimacy record.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED: the reviewed reworked
-  scaffold passed pre-heavy gates, but frozen interior vector `GSI-5557`
-  published positive LAI with non-positive post-growth canopy height in the real
-  production consumer. Attempt 004 is retained, Hubbard did not run, and Harvard
-  remains sealed. Follow-up defect `CAL04B-NATIVE-001` owns contract-first
-  production coupling closure.
+  COMPLETE / HISTORICAL HOLD / PREREQUISITE RESOLVED: attempt 004 remains
+  retained evidence rather than a result. `CAL04B-NATIVE-001` and its assurance
+  correction chain are complete, so a fresh reviewed empty-root CAL-04B rerun
+  is next. Hubbard did not run and Harvard remains sealed.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

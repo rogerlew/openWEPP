@@ -6,7 +6,7 @@ This Defect-Closure ExecPlan is a living document governed by
 Package ID:
 `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Execution mode: `package-end-to-end`
 
@@ -218,8 +218,8 @@ considered in-envelope routes, and the next defect.
 - [x] Added pre-implementation contract tests.
 - [x] Implemented typed source adoption.
 - [x] Applied and validated the real transaction.
-- [ ] Passed dual review and dual terminal verification.
-- [ ] Closed this package and lifted CAL04B-NATIVE.
+- [x] Passed dual review and dual terminal verification.
+- [x] Closed this package and lifted CAL04B-NATIVE.
 
 ## Surprises And Discoveries
 
@@ -264,11 +264,19 @@ considered in-envelope routes, and the next defect.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+The current canopy README was adopted through a typed scientific-full
+transaction without a manual hash edit. The affected report moved from
+`IN_REVIEW` to `DRAFT`, old review authority was invalidated, both
+implementation-affected locks regenerated, and the final generation is
+`94df966626df18d8231227f83dacb9c617198553c0676d7ba21eacb931fc4160`.
+The corrected dual review, exact 2,301-test closure-candidate full profile, and
+dual terminal verification pass. CAL04B-NATIVE's external assurance
+prerequisite is lifted.
 
 ## Defect-Shaped Handoff
 
-First actionable item: close defect
-`ASSURANCE-CANOPY-README-IDENTITY-001` end-to-end through the typed transaction,
-real apply, full gate, and CAL04B-NATIVE hold lift. Do not relay a manual hash
-edit or another diagnostic-only package.
+Closed: `ASSURANCE-CANOPY-README-IDENTITY-001`.
+
+Non-blocking follow-up: add `adopt-report-source` to the lifecycle matrix in
+`docs/specifications/assurance-amendment-and-identity-workflow.md` when that
+workflow document is next maintained.

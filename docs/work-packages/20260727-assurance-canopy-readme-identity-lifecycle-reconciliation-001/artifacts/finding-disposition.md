@@ -1,6 +1,6 @@
 # Finding Disposition
 
-Status: `IMPLEMENTATION FINDINGS CLOSED / TERMINAL BLOCKER ACTIVE`
+Status: `PASS / ALL FINDINGS CLOSED`
 
 Evidence class: `Static + Ran`
 
@@ -13,7 +13,8 @@ Evidence class: `Static + Ran`
 | Terminal-event tests relied on live IN_REVIEW state | accepted | fixtures enter review explicitly |
 | `v2.rs` WARN omitted from line-count artifact | accepted | exact count and split intent recorded |
 | Lifecycle-matrix doc could name source adoption | follow-up | non-blocking; assurance README documents command and behavior |
-| Historical assessed root coupled to current DRAFT lock | follow-up / closure-blocking | owned by `TESTGATE-ASSURANCE-HISTORICAL-ROOT-001` |
+| Historical assessed root coupled to current DRAFT lock | accepted and closed | `20260727-testgate-assurance-historical-root-decoupling-001` preserves historical roots while validating current lock structure and identity |
 
-No assurance implementation finding remains open. Closure awaits the named
-TESTGATE policy correction, exact full-profile pass, and terminal verification.
+No assurance implementation or terminal finding remains open. The
+lifecycle-matrix documentation suggestion remains a non-blocking maintenance
+follow-up.

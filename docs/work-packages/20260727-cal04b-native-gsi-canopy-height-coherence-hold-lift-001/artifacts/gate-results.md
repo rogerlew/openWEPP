@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `HOLD / FULL-WORKSPACE CORRECTNESS BLOCKED`
+Status: `PASS`
 
 Evidence class: `Ran + Static`
 
@@ -33,7 +33,7 @@ Evidence class: `Ran + Static`
 
 Coverage/CRAP disposition: `DEFERRED_TO_QUALITY_CI` per ADR-0041.
 
-## Blocking gate
+## Historical blocking gate and closure
 
 `cargo nextest run --workspace --profile full`:
 
@@ -63,8 +63,20 @@ The compact retained evidence is
 `artifacts/full-workspace-current-failure-summary.md`; it records the exact run
 counts, current JUnit checksum, failure ownership, and source-hash provenance.
 
-This is not deferrable for the package's declared critical terminal gate.
-Canonical assurance authority also prohibits manually editing hashes or using
-`rebind-implementation` to adopt report-evidence drift. The package remains
-open on HOLD pending a separately authorized assurance lifecycle correction
-and an exact unfiltered full-profile rerun.
+The separately authorized assurance lifecycle and TESTGATE historical-root
+packages corrected that external blocker without manual hash editing or
+registry retargeting.
+
+The comparator-owned exact closure-candidate rerun at
+`3e78dedbd3b0f0a2c3e1e6d7d90bf625a240ddfd` passed:
+
+- `cargo nextest run --workspace --profile full`: 2,301/2,301 passed,
+  43 skipped, zero failures;
+- run `7e79049d-0871-4142-a9f7-86ac7ac714be`;
+- cargo-deny and warnings-denied all-target Clippy for the owning assurance and
+  gate-planner crates also passed at that exact head;
+- retained log:
+  `/tmp/openwepp-testgate-full-3e78dedb-20260727T163100Z/full-gate.log`.
+
+The mandatory critical terminal gate is no longer blocked. Dual terminal
+verification passes.

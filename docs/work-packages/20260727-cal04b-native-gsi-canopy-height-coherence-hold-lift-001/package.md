@@ -8,7 +8,7 @@ This Defect-Closure ExecPlan is a living document governed by
 Package ID:
 `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001`
 
-Status: `ACTIVE / TERMINAL HOLD — PRE-EXISTING ASSURANCE IDENTITY DRIFT`
+Status: `COMPLETE`
 
 Execution mode: `package-end-to-end`
 
@@ -66,9 +66,9 @@ authority to close end-to-end.
 - [x] Correct production projection and prove all named real consumers.
 - [x] Reconcile the exact 44-path diff and pass two independent terminal-HOLD
   legitimacy reviews.
-- [ ] Pass the blocked unfiltered critical gate and dual terminal
+- [x] Pass the unfiltered critical gate and dual terminal
   verification.
-- [ ] Lift the CAL-04B production prerequisite and close this package.
+- [x] Lift the CAL-04B production prerequisite and close this package.
 
 ## Correction Authority Envelope
 
@@ -329,10 +329,11 @@ disposition, hold audit, and worker handoff.
 - The frozen invalid-case verifier recognized only runtime threshold wording,
   not the canonical typed parser wording. A bounded recognizer repair left the
   case plan, input, expectation, and production behavior unchanged.
-- The exact native replay passes 12/12 and the non-assurance full profile
-  passes 2,180/2,180, but the declared full-workspace gate is blocked by
-  assurance identity drift predating this package: the generated lock binds
-  the predecessor hash of `tests/fixtures/cancov_forest/README.md`.
+- The exact native replay passed 12/12 and the non-assurance full profile
+  passed 2,180/2,180. The declared full-workspace gate then exposed assurance
+  identity drift predating this package; the separately owned typed assurance
+  and TESTGATE corrections closed it, and the final full profile passed
+  2,301/2,301.
 
 ## Decision Log
 
@@ -346,14 +347,14 @@ disposition, hold audit, and worker handoff.
 
 The production defect and every named native consumer are corrected and
 proven, including the retained `GSI-5557` transition and the complete frozen
-12-case replay. No calibration population or Harvard command ran.
+12-case replay. Exact full correctness and dual terminal verification pass,
+and the production prerequisite is lifted. No calibration population or
+Harvard command ran; a fresh CAL-04B rerun remains separate.
 
-The package cannot close or lift the CAL-04B prerequisite because its mandatory
-full-workspace gate remains red on pre-existing assurance dossier identity
-drift. Canonical assurance governance forbids adopting report-evidence drift
-through an implementation rebind. A separately authorized assurance lifecycle
-correction must reconcile that evidence source, after which this package must
-rerun the unfiltered full profile and terminal review/verification.
+The separately authorized assurance lifecycle and TESTGATE historical-root
+packages corrected the external identity blocker without an implementation
+rebind or manual hash edit. The mandatory full profile and renewed terminal
+verification now pass.
 
 ## Idempotence And Recovery
 
@@ -363,25 +364,11 @@ reproducer. An observed semantic failure is not retried unchanged.
 
 ## Defect-Shaped Handoff
 
-First actionable item: close defect
-`ASSURANCE-CANOPY-README-IDENTITY-001` under separately authorized assurance
-lifecycle authority. The observable failure is the unfiltered full profile's
-typed generated-identity drift for
-`tests/fixtures/cancov_forest/README.md`. Commit `502dd745` changed that admitted
-`IN_REVIEW` report dependency without a corresponding governed assurance
-transaction, leaving `assurance/v2/identity.lock.json` bound to the predecessor
-hash.
+Closed defect chain: `CAL04B-NATIVE-001`,
+`ASSURANCE-CANOPY-README-IDENTITY-001`, and
+`TESTGATE-ASSURANCE-HISTORICAL-ROOT-001`.
 
-The new package must own the affected assurance report, review lock, generated
-identity transaction, and directly required evidence surfaces; read
-`assurance/v2/README.md`, the snow/frozen-soil report and review lock, and the
-assurance amendment contracts before mutation. Its acceptance target is a
-governed, review-valid identity reconciliation followed by a passing exact-head
-unfiltered full profile. Manual hash editing, `rebind-implementation` adoption
-of report evidence, reverting the prior research-documentation change, or
-merely inspecting the next assurance function are forbidden relay routes.
-
-After that separate defect closes, return to this package for its still-pending
-full-profile pass, dual terminal verification, prompt archival, prerequisite
-lift, and closure. No calibration population or Harvard execution is
-authorized by this handoff.
+Next actionable item: execute CAL-04B from a freshly reviewed empty root under
+its own authority. The old attempt remains historical evidence, not a result.
+No calibration population or Harvard execution was authorized or performed by
+this hold-lift chain.

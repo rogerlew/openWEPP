@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `IN PROGRESS / FULL WORKSPACE PENDING`
+Status: `PASS`
 
 Evidence class: `Ran + Static`
 
@@ -82,18 +82,22 @@ and `3b24155f`, plus corrective generation `94df9666...`, close those findings.
 The selected-source race, full `assurance/` namespace rejection, exact defective
 reset envelope, schema acceptance, and no-op behavior now have focused tests.
 
-## Pending
+## Terminal full-workspace closure
 
-- Comparator run `9d17ef98-c121-4f18-b528-59d33b7afcce` at `2bf1a600`
+- Diagnostic comparator run `9d17ef98-c121-4f18-b528-59d33b7afcce` at `2bf1a600`
   completed 2,299 tests: 2,278 passed, 21 failed, and 43 skipped. All 21
   failures share `GATE-ASSURANCE-ASSESSED-ROOT`: TESTGATE policy incorrectly
   requires immutable registry historical roots to equal mutable current DRAFT
   review-lock roots. This is owned by
   `20260727-testgate-assurance-historical-root-decoupling-001`; the full profile
-  must rerun after correction.
+  required the bounded correction.
 - The same comparator execution passed `cargo deny check` and warnings-denied
   all-target Clippy for `openwepp-assurance`. Logs:
   `/tmp/openwepp-gate-rerun-2bf1f-20260727-083312/`.
-- Dual terminal verification.
+- Comparator-owned closure-candidate run
+  `7e79049d-0871-4142-a9f7-86ac7ac714be` at `3e78dedb`:
+  `PASS`, 2,301/2,301 passed, 43 skipped, zero failures. Retained log:
+  `/tmp/openwepp-testgate-full-3e78dedb-20260727T163100Z/full-gate.log`.
+- Dual terminal verification: `PASS`.
 
 Coverage/CRAP disposition: `DEFERRED_TO_QUALITY_CI` per ADR-0041.

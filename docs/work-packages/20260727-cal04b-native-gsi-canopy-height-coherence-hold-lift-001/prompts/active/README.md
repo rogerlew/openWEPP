@@ -1,5 +1,4 @@
 # Active Prompts
 
-`cal04b_native_001_kickoff_agent_prompt.md` is the active autonomous
-defect-closure prompt.
-
+No active prompt remains. The kickoff prompt was archived at terminal
+disposition.

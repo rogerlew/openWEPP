@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `ACTIVE / WARN BUDGET`
+Status: `COMPLETE / WARN BUDGET`
 
 Evidence class: `Static`
 
