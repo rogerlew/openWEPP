@@ -639,9 +639,9 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         &receipt["audit"]["consumed_custody_proof"],
     )?;
     if receipt["attempt_root_identity"] != directory_identity(&options.attempt_root)? {
-        return Err(policy_error(
+        return Err(identity_error(
             "GATE-EXTERNAL-ROOT-REPLACED",
-            &options.attempt_root.display().to_string(),
+            options.attempt_root.display().to_string(),
         ));
     }
     let mut declared = Vec::new();
@@ -1183,9 +1183,9 @@ fn execute_node(
         ));
     }
     if directory_identity(&options.attempt_root)? != attempt_identity {
-        return Err(policy_error(
+        return Err(identity_error(
             "GATE-EXTERNAL-ROOT-REPLACED",
-            &options.attempt_root.display().to_string(),
+            options.attempt_root.display().to_string(),
         ));
     }
     let output_manifest = manifest_declared_outputs(&options.attempt_root, declared_so_far)?;

@@ -8,10 +8,10 @@ Exact worktree base: `9dd2c5a340d8c083d0297facebad767fab988186`
 
 | Gate | Result |
 |---|---|
-| Gate-planner Nextest | PASS, 223/223; 14 skipped; run `bcacc07d-c0b1-4d90-a0c5-ee5117d6753f` |
+| Gate-planner Nextest | PASS, 225/225; 14 skipped; run `2fc94126-b277-493b-ae48-26aec9e4f7c0` |
 | Gate-planner all-target/all-feature Clippy with warnings denied | PASS |
 | CAL Python discovery | PASS, 29/29 |
-| Publication focused suite | PASS, 18/18 |
+| Publication focused suite | PASS, 20/20 |
 | External-DAG focused suite | PASS, 23/23 |
 | `cargo check -p openwepp-gate-planner` | PASS |
 | Rust formatting and diff hygiene | PASS |
@@ -41,6 +41,12 @@ add the real consumer fixture, dispatch-scoped atomic consumption, attestation
 time freshness, actual consumer error-class assertions, interruption-idempotent
 publication recovery, dynamic destination-ancestor attachment checks, and
 line-count deduplication. Dual re-review is required at the next clean commit.
+
+The second review cycle added immutable historical attestation custody,
+authenticated RESTORE progress with final all-entry baseline verification,
+future/older-than-24-hour rejection, receipt-bound exact attestation time, and
+actual root-replacement `Identity` classification. Focused evidence is green
+and awaits final exact-commit review.
 
 Campaign-strength full workspace and anti-evasion gates remain prohibited until
 the corrected implementation is committed, receives dual implementation

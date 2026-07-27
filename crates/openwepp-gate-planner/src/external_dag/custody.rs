@@ -200,29 +200,132 @@ pub(super) fn verify_custody_files(
 }
 
 fn verify_attestation_freshness(attestations: &[ExternalVerifierAttestation]) -> Result<()> {
-    let now = time::OffsetDateTime::now_utc()
-        .format(&time::format_description::well_known::Rfc3339)
-        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
-    let today = now.get(..10).ok_or_else(|| {
-        custody_error(
-            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
-            "current UTC date",
-        )
-    })?;
-    let current_utc_day = attestations.iter().all(|item| {
-        item.created_at.len() >= 20
-            && item.created_at.get(..10) == Some(today)
-            && item.created_at.as_bytes().get(10) == Some(&b'T')
-            && (item.created_at.ends_with('Z') || item.created_at.ends_with("+00:00"))
-    });
-    if current_utc_day {
-        Ok(())
-    } else {
-        Err(custody_error(
-            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
-            "attestations must be created on the current UTC dispatch day",
-        ))
+    const MAX_AGE_NANOS: i128 = 24 * 60 * 60 * 1_000_000_000;
+    let now = time::OffsetDateTime::now_utc().unix_timestamp_nanos();
+    for attestation in attestations {
+        let created = parse_rfc3339_nanos(&attestation.created_at)?;
+        if created > now || now - created > MAX_AGE_NANOS {
+            return Err(custody_error(
+                "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+                "attestation creation time is future-dated or older than 24 hours",
+            ));
+        }
     }
+    Ok(())
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "dependency-free RFC3339 parsing keeps every accepted timestamp component and offset bound explicit"
+)]
+fn parse_rfc3339_nanos(value: &str) -> Result<i128> {
+    let (date_time, offset_seconds) = if let Some(date_time) = value.strip_suffix('Z') {
+        (date_time, 0)
+    } else {
+        let split = value.len().checked_sub(6).ok_or_else(|| {
+            custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "timestamp offset")
+        })?;
+        let (date_time, offset) = value.split_at(split);
+        let sign = match offset.as_bytes().first() {
+            Some(b'+') => 1,
+            Some(b'-') => -1,
+            _ => {
+                return Err(custody_error(
+                    "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+                    "timestamp offset sign",
+                ));
+            }
+        };
+        if offset.as_bytes().get(3) != Some(&b':') {
+            return Err(custody_error(
+                "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+                "timestamp offset shape",
+            ));
+        }
+        let hours = parse_timestamp_u8(&offset[1..3])?;
+        let minutes = parse_timestamp_u8(&offset[4..6])?;
+        (date_time, sign * (i32::from(hours) * 3600 + i32::from(minutes) * 60))
+    };
+    let (date, clock) = date_time.split_once('T').ok_or_else(|| {
+        custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "timestamp separator")
+    })?;
+    let mut date_parts = date.split('-');
+    let year = date_parts
+        .next()
+        .and_then(|part| part.parse::<i32>().ok())
+        .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "timestamp year"))?;
+    let month = parse_timestamp_u8(
+        date_parts
+            .next()
+            .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "month"))?,
+    )?;
+    let day = parse_timestamp_u8(
+        date_parts
+            .next()
+            .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "day"))?,
+    )?;
+    if date_parts.next().is_some() {
+        return Err(custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "timestamp date shape",
+        ));
+    }
+    let mut clock_parts = clock.split(':');
+    let hour = parse_timestamp_u8(
+        clock_parts
+            .next()
+            .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "hour"))?,
+    )?;
+    let minute = parse_timestamp_u8(
+        clock_parts
+            .next()
+            .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "minute"))?,
+    )?;
+    let second_fraction = clock_parts
+        .next()
+        .ok_or_else(|| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", "second"))?;
+    if clock_parts.next().is_some() {
+        return Err(custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "timestamp clock shape",
+        ));
+    }
+    let (second_text, fraction) = second_fraction
+        .split_once('.')
+        .map_or((second_fraction, ""), |parts| parts);
+    let second = parse_timestamp_u8(second_text)?;
+    if fraction.len() > 9 || !fraction.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "timestamp fractional seconds",
+        ));
+    }
+    let nanos = if fraction.is_empty() {
+        0
+    } else {
+        fraction.parse::<u32>().map_err(|error| {
+            custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error)
+        })? * 10_u32.pow(u32::try_from(9 - fraction.len()).map_err(|error| {
+            custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error)
+        })?)
+    };
+    let month = time::Month::try_from(month)
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
+    let date = time::Date::from_calendar_date(year, month, day)
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
+    let clock = time::Time::from_hms_nano(hour, minute, second, nanos)
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
+    let offset = time::UtcOffset::from_whole_seconds(offset_seconds)
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
+    Ok(time::PrimitiveDateTime::new(date, clock)
+        .assume_offset(offset)
+        .unix_timestamp_nanos())
+}
+
+fn parse_timestamp_u8(value: &str) -> Result<u8> {
+    value
+        .parse()
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))
 }
 
 fn verify_independent_attestations(attestations: &[ExternalVerifierAttestation]) -> Result<()> {
@@ -1055,6 +1158,12 @@ fn authenticate_receipt_row(
         || fields[6] != "PASS"
     {
         return Err(policy_error("GATE-EXTERNAL-CUSTODY-RECEIPT", verifier_id));
+    }
+    if parse_rfc3339_nanos(fields[5])? != parse_rfc3339_nanos(&attestation.created_at)? {
+        return Err(custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "attestation created_at differs from authenticated receipt timestamp",
+        ));
     }
     Ok(())
 }

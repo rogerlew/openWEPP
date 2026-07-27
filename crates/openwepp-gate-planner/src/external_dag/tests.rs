@@ -519,6 +519,15 @@ fn generation_b_run_external_transition_consumes_once_and_verifies_final_receipt
         .expect_err("actual verifier must type receipt shape failures");
     assert_eq!(receipt_error.class, ErrorClass::Receipt);
 
+    let mut replaced_root = receipt.clone();
+    replaced_root["attempt_root_identity"] = json!("0:0");
+    replaced_root["receipt_id"] =
+        json!(derived_id(&replaced_root, "receipt_id").expect("replaced-root receipt identity"));
+    let identity_error = verify_external_transaction(&plan_path, &replaced_root)
+        .expect_err("actual verifier must type root identity replacement");
+    assert_eq!(identity_error.code, "GATE-EXTERNAL-ROOT-REPLACED");
+    assert_eq!(identity_error.class, ErrorClass::Identity);
+
     let mut forged_custody = receipt.clone();
     forged_custody["audit"]["consumed_custody_proof"]["entries"]
         .as_array_mut()
@@ -1332,6 +1341,28 @@ fn generation_b_rejects_stale_verifier_attestation() {
     assert_eq!(error.code, "GATE-EXTERNAL-ATTESTATION-FRESHNESS");
     assert_eq!(error.class, ErrorClass::Trust);
 
+    let future = CustodyFixture::new("holdout-v1");
+    let future_path = future.custody.path.join("freeze_verify_a.json");
+    let mut future_value: Value =
+        parse_strict(&fs::read(&future_path).expect("future attestation"))
+            .expect("future attestation JSON");
+    future_value["created_at"] = json!(
+        (time::OffsetDateTime::now_utc() + time::Duration::hours(1))
+            .format(&time::format_description::well_known::Rfc3339)
+            .expect("future timestamp")
+    );
+    future_value["attestation_id"] =
+        json!(derived_id(&future_value, "attestation_id").expect("future attestation identity"));
+    fs::write(
+        future_path,
+        canonical_bytes(&future_value).expect("canonical future attestation"),
+    )
+    .expect("write future attestation");
+    let error = verify_custody_files(&future.options, &future.transaction, false)
+        .expect_err("future timestamp on the current UTC day must fail closed");
+    assert_eq!(error.code, "GATE-EXTERNAL-ATTESTATION-FRESHNESS");
+    assert_eq!(error.class, ErrorClass::Trust);
+
     let fresh = CustodyFixture::new("holdout-v1");
     let mut proof = consume_custody_capabilities(&fresh.options, &fresh.transaction)
         .expect("fresh dispatch consumption");
@@ -1375,11 +1406,12 @@ fn verifier_receipt_authenticates_freeze_script_and_command() {
         options.attempt_root.join("objects").display()
     );
     let row = format!(
-        "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\nverifier_a,{},{},{},{},2026-07-27T00:00:00+00:00,PASS\n",
+        "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\nverifier_a,{},{},{},{},{},PASS\n",
         attestation.freeze_digest,
         attestation.script_sha256,
         command,
-        sha256_bytes(command.as_bytes())
+        sha256_bytes(command.as_bytes()),
+        attestation.created_at,
     );
     authenticate_receipt_row(
         &options,
@@ -1390,6 +1422,18 @@ fn verifier_receipt_authenticates_freeze_script_and_command() {
         row.as_bytes(),
     )
     .expect("Python receipt must authenticate");
+    let mismatched_time = row.replace(&attestation.created_at, "2000-01-01T00:00:00Z");
+    let error = authenticate_receipt_row(
+        &options,
+        "verifier_a",
+        &script,
+        &options.attempt_root.join("objects"),
+        &attestation,
+        mismatched_time.as_bytes(),
+    )
+    .expect_err("receipt timestamp must bind the attestation creation time");
+    assert_eq!(error.code, "GATE-EXTERNAL-ATTESTATION-FRESHNESS");
+    assert_eq!(error.class, ErrorClass::Trust);
     let forged = row.replace(&attestation.freeze_digest, &"9".repeat(64));
     let error = authenticate_receipt_row(
         &options,
@@ -1585,11 +1629,12 @@ fn install_custody_dispatch(
             options.attempt_root.join("objects").display()
         );
         let receipt = format!(
-            "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\n{verifier_id},{},{},{},{},2026-07-27T00:00:00+00:00,PASS\n",
+            "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\n{verifier_id},{},{},{},{},{},PASS\n",
             value.freeze_digest,
             value.script_sha256,
             command,
-            sha256_bytes(command.as_bytes())
+            sha256_bytes(command.as_bytes()),
+            value.created_at,
         );
         value.receipt_sha256 = sha256_bytes(receipt.as_bytes());
         let mut attestation_value =
@@ -1728,11 +1773,12 @@ impl CustodyFixture {
                 options.attempt_root.join("objects").display()
             );
             let receipt = format!(
-                "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\n{verifier_id},{},{},{},{},2026-07-27T00:00:00+00:00,PASS\n",
+                "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\n{verifier_id},{},{},{},{},{},PASS\n",
                 value.freeze_digest,
                 value.script_sha256,
                 command,
-                sha256_bytes(command.as_bytes())
+                sha256_bytes(command.as_bytes()),
+                value.created_at,
             );
             value.receipt_sha256 = sha256_bytes(receipt.as_bytes());
             let mut attestation_value =

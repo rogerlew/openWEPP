@@ -22,5 +22,10 @@ interruption-idempotent restore, dynamic destination-ancestor races, and
 reduction of `publication.rs` below 3,000 lines. All are implemented with
 focused passing evidence and await exact-commit re-review.
 
+Subsequent re-review required historical receipt verification across redispatch,
+authenticated RESTORE progress/final baseline proof, exact receipt-bound time
+freshness with future rejection, and consumer-path identity classification.
+Those corrections also have focused passing evidence.
+
 Independent implementation review must confirm these dispositions against the
 actual consumer paths before canonical heavy admission.

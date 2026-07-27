@@ -265,23 +265,25 @@ fn recover_complete(
     finish_accepted(plan, installed, &started_at)
 }
 
-fn recover_restore(
-    plan: &PublicationPlan,
-    journal: &[PublicationJournalRecord],
-) -> Result<PublicationOutcome> {
-    for record in journal
-        .iter()
-        .filter(|record| record.operation == JournalOperation::Install)
-        .rev()
-    {
-        restore_entry(plan, record)?;
+#[rustfmt::skip]
+fn recover_restore(plan: &PublicationPlan, journal: &[PublicationJournalRecord]) -> Result<PublicationOutcome> {
+    let restored = journal.iter().filter(|r| r.operation == JournalOperation::Restore)
+        .map(|r| r.sequence).collect::<BTreeSet<_>>();
+    let installs = || journal.iter().filter(|r| r.operation == JournalOperation::Install);
+    for record in installs().rev() {
+        if !restored.contains(&record.sequence) || verify_restored_entry(plan, record).is_err() { restore_entry(plan, record)?; }
     }
+    for record in installs() { verify_restored_entry(plan, record)?; }
     sync_directory(&plan.destination_root)?;
-    Ok(PublicationOutcome {
-        status: PublicationStatus::Restored,
-        installed_entries: 0,
-        failure_code: None,
-    })
+    Ok(PublicationOutcome { status: PublicationStatus::Restored, installed_entries: 0, failure_code: None })
+}
+
+#[rustfmt::skip]
+fn verify_restored_entry(plan: &PublicationPlan, record: &PublicationJournalRecord) -> Result<()> {
+    let observed = destination_hash_descriptor_relative(plan, &record.relative_path)?;
+    if observed.as_ref() == record.destination_baseline_sha256.as_ref() { Ok(()) }
+    else { Err(publication_error(ErrorClass::Identity, "GATE-PUBLICATION-RECOVERY-FINAL-BASELINE",
+        format!("restored baseline mismatch: {}", record.relative_path.display()))) }
 }
 
 fn install_entry(
@@ -752,6 +754,15 @@ fn destination_hash_descriptor_relative(
     plan: &PublicationPlan,
     relative: &Path,
 ) -> Result<Option<String>> {
+    destination_hash_descriptor_relative_with_hook(plan, relative, || {})
+}
+
+#[cfg(target_os = "linux")]
+fn destination_hash_descriptor_relative_with_hook(
+    plan: &PublicationPlan,
+    relative: &Path,
+    before_attachment_check: impl FnOnce(),
+) -> Result<Option<String>> {
     use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
 
     let root = openat2(
@@ -768,15 +779,32 @@ fn destination_hash_descriptor_relative(
             error,
         )
     })?;
+    let parent = open_parent_beneath(&root, relative)?;
+    let name = relative.file_name().ok_or_else(|| {
+        publication_error(
+            ErrorClass::Schema,
+            "GATE-PUBLICATION-PATH",
+            "missing file name",
+        )
+    })?;
     let descriptor = match openat2(
-        &root,
-        relative,
+        &parent,
+        name,
         OFlags::RDONLY | OFlags::CLOEXEC,
         Mode::empty(),
         ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
     ) {
         Ok(descriptor) => descriptor,
-        Err(error) if error == rustix::io::Errno::NOENT => return Ok(None),
+        Err(error) if error == rustix::io::Errno::NOENT => {
+            before_attachment_check();
+            require_parent_attached(
+                &root,
+                relative,
+                &parent,
+                "GATE-PUBLICATION-RECOVERY-FINAL-ANCESTOR-RACE",
+            )?;
+            return Ok(None);
+        }
         Err(error) => {
             return Err(io_error(
                 "GATE-PUBLICATION-RECOVERY-DESTINATION-FILE",
@@ -812,6 +840,13 @@ fn destination_hash_descriptor_relative(
             error,
         )
     })?;
+    before_attachment_check();
+    require_parent_attached(
+        &root,
+        relative,
+        &parent,
+        "GATE-PUBLICATION-RECOVERY-FINAL-ANCESTOR-RACE",
+    )?;
     Ok(Some(sha256_bytes(&bytes)))
 }
 
@@ -929,10 +964,7 @@ fn install_staged_destination(
         ));
     }
 
-    // Capture the exact directory objects and destination inode immediately
-    // before the only mutating syscall. The pathname is reopened after the
-    // test hook so replacement of either root cannot redirect or detach the
-    // descriptor-relative rename.
+    // Bind roots and destination immediately before the only mutating syscall.
     let destination_root_identity = rustix::fs::fstat(&destination_root)
         .map_err(|error| io_error("GATE-PUBLICATION-ROOT-STAT", &plan.destination_root, error))?;
     let transaction_root_identity = rustix::fs::fstat(&transaction_root)
@@ -2877,102 +2909,90 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn recovery_restore_resumes_authenticated_existing_stage() {
-        let root = fresh("recovery-resume-stage");
-        let plan = plan(&root, Some(b"old-result"));
+        let root = fresh("recovery-resume-stage"); let plan = plan(&root, Some(b"old-result"));
         prepare_transaction_directories(&plan).expect("transaction dirs");
         install_entry(&plan, &plan.entries[0], 1, false).expect("partial publication");
-        let records = load_journal(&plan).expect("install journal");
-        let install = &records[0];
-        let backup = install
-            .backup_relative_path
-            .as_ref()
-            .expect("backup binding");
-        let staged = plan
-            .transaction_root
-            .join("restore-staged")
-            .join(&install.relative_path);
+        let records = load_journal(&plan).expect("install journal"); let install = &records[0];
+        let backup = install.backup_relative_path.as_ref().expect("backup binding");
+        let staged = plan.transaction_root.join("restore-staged").join(&install.relative_path);
         copy_transaction_file_to_stage(
-            &plan,
-            backup,
-            &staged,
-            install
-                .destination_baseline_sha256
-                .as_deref()
-                .expect("baseline digest"),
-        )
-        .expect("interrupted restore stage");
+            &plan, backup, &staged, install.destination_baseline_sha256.as_deref().expect("baseline digest"),
+        ).expect("interrupted restore stage");
         append_restore_record(&plan, install).expect("interrupted restore journal");
-
         let outcome = recover(&plan, RecoveryAction::Restore).expect("resume restore");
         assert_eq!(outcome.status, PublicationStatus::Restored);
-        assert_eq!(
-            fs::read(plan.destination_root.join(&install.relative_path)).expect("restored bytes"),
-            b"old-result"
-        );
+        assert_eq!(fs::read(plan.destination_root.join(&install.relative_path)).expect("restored bytes"), b"old-result");
         remove_scratch(&root);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn install_rejects_dynamic_destination_ancestor_swap() {
-        let root = fresh("install-ancestor-swap");
-        let plan = plan(&root, None);
+        let root = fresh("install-ancestor-swap"); let plan = plan(&root, None);
         prepare_transaction_directories(&plan).expect("transaction dirs");
-        let entry = &plan.entries[0];
-        let source = plan.source_root.join(&entry.relative_path);
-        let staged = plan
-            .transaction_root
-            .join("staged")
-            .join(&entry.relative_path);
+        let entry = &plan.entries[0]; let source = plan.source_root.join(&entry.relative_path);
+        let staged = plan.transaction_root.join("staged").join(&entry.relative_path);
         copy_verified(&source, &staged, Some(&entry.source_sha256)).expect("stage source");
-        let destination = plan.destination_root.join(&entry.relative_path);
-        ensure_parent(&destination).expect("destination parent");
-        let parent = destination.parent().expect("destination parent").to_owned();
-        let displaced = root.join("destination-parent-displaced");
-
+        let destination = plan.destination_root.join(&entry.relative_path); ensure_parent(&destination).expect("destination parent");
+        let parent = destination.parent().expect("destination parent").to_owned(); let displaced = root.join("destination-parent-displaced");
         let error = install_staged_destination(&plan, entry, &staged, || {
             fs::rename(&parent, &displaced).expect("displace destination ancestor");
             fs::create_dir_all(&parent).expect("replacement destination ancestor");
-        })
-        .expect_err("ancestor swap must reject");
+        }).expect_err("ancestor swap must reject");
         assert_eq!(error.code, "GATE-PUBLICATION-DESTINATION-ANCESTOR-RACE");
-        assert!(!destination.exists());
-        assert!(!displaced.join("result.json").exists());
+        assert!(!destination.exists()); assert!(!displaced.join("result.json").exists()); remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    #[rustfmt::skip]
+    fn recovery_delete_rejects_dynamic_destination_ancestor_swap() {
+        let root = fresh("recovery-delete-ancestor-swap"); let plan = plan(&root, None);
+        let entry = &plan.entries[0]; let destination = plan.destination_root.join(&entry.relative_path); write(&destination, b"new-result");
+        let record = PublicationJournalRecord {
+            schema_version: JOURNAL_SCHEMA.to_owned(), publication_id: plan.publication_id.clone(), sequence: 1,
+            operation: JournalOperation::Install, relative_path: entry.relative_path.clone(),
+            source_sha256: entry.source_sha256.clone(), destination_baseline_sha256: None, backup_relative_path: None,
+        };
+        let parent = destination.parent().expect("destination parent").to_owned(); let displaced = root.join("recovery-delete-parent-displaced");
+        let error = remove_installed_descriptor_relative_with_hook(&plan, &record, || {
+            fs::rename(&parent, &displaced).expect("displace delete ancestor");
+            fs::create_dir_all(&parent).expect("replacement delete ancestor");
+        }).expect_err("delete ancestor swap must reject");
+        assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-DESTINATION-ANCESTOR-RACE");
+        assert!(displaced.join("result.json").exists()); assert!(!destination.exists()); remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    #[rustfmt::skip]
+    fn recovery_retry_after_successful_absent_unlink_is_idempotent() {
+        let root = fresh("recovery-absent-retry"); let plan = plan(&root, None);
+        prepare_transaction_directories(&plan).expect("transaction dirs");
+        install_entry(&plan, &plan.entries[0], 1, false).expect("partial publication");
+        let install = load_journal(&plan).expect("journal").remove(0);
+        restore_entry(&plan, &install).expect("first unlink");
+        assert!(!plan.destination_root.join(&install.relative_path).exists());
+        assert_eq!(recover(&plan, RecoveryAction::Restore).expect("retry").status, PublicationStatus::Restored);
         remove_scratch(&root);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn recovery_delete_rejects_dynamic_destination_ancestor_swap() {
-        let root = fresh("recovery-delete-ancestor-swap");
-        let plan = plan(&root, None);
-        let entry = &plan.entries[0];
-        let destination = plan.destination_root.join(&entry.relative_path);
+    #[rustfmt::skip]
+    fn final_baseline_check_rejects_dynamic_ancestor_attachment_race() {
+        let root = fresh("recovery-final-attachment"); let plan = plan(&root, None);
+        let relative = &plan.entries[0].relative_path; let destination = plan.destination_root.join(relative);
         write(&destination, b"new-result");
-        let record = PublicationJournalRecord {
-            schema_version: JOURNAL_SCHEMA.to_owned(),
-            publication_id: plan.publication_id.clone(),
-            sequence: 1,
-            operation: JournalOperation::Install,
-            relative_path: entry.relative_path.clone(),
-            source_sha256: entry.source_sha256.clone(),
-            destination_baseline_sha256: None,
-            backup_relative_path: None,
-        };
-        let parent = destination.parent().expect("destination parent").to_owned();
-        let displaced = root.join("recovery-delete-parent-displaced");
-        let error = remove_installed_descriptor_relative_with_hook(&plan, &record, || {
-            fs::rename(&parent, &displaced).expect("displace delete ancestor");
-            fs::create_dir_all(&parent).expect("replacement delete ancestor");
-        })
-        .expect_err("delete ancestor swap must reject");
-        assert_eq!(
-            error.code,
-            "GATE-PUBLICATION-RECOVERY-DESTINATION-ANCESTOR-RACE"
-        );
-        assert!(displaced.join("result.json").exists());
-        assert!(!destination.exists());
-        remove_scratch(&root);
+        let parent = destination.parent().expect("parent").to_owned(); let displaced = root.join("final-parent-displaced");
+        let error = destination_hash_descriptor_relative_with_hook(&plan, relative, || {
+            fs::rename(&parent, &displaced).expect("displace final parent");
+            fs::create_dir_all(&parent).expect("replacement parent");
+        }).expect_err("attachment race");
+        assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-FINAL-ANCESTOR-RACE");
+        assert!(displaced.join("result.json").exists()); remove_scratch(&root);
     }
 }
