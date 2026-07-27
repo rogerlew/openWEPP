@@ -4,7 +4,7 @@ Package ID: `20260727-gate-planner-external-dag-transaction-adapter-001`
 
 Queue ID: `GATE-EXTERNAL-DAG-01`
 
-Status: `SCAFFOLD / REVIEW REQUIRED`
+Status: `ACTIVE / SCAFFOLD REVIEWED`
 
 Authorization: the user's 2026-07-27 direction to complete CAL-04B, including
 strategy, scaffold rework, delegated review, and finding disposition.
@@ -17,7 +17,7 @@ This ExecPlan is maintained under `docs/codex_exec_plans.md`.
 - [x] Freeze the defect inventory and initial adversarial matrix.
 - [x] Commit the prerequisite scaffold at `9bf3f344`.
 - [x] Complete first dual scaffold review; both reviewers returned `HOLD`.
-- [ ] Close every scaffold finding and obtain dual `GO`.
+- [x] Close every scaffold finding and obtain dual `GO` at `edc102bc`.
 - [ ] Freeze red fixtures and implement the adapter.
 - [ ] Execute focused and campaign-strength gates through canonical admission.
 - [ ] Complete dual implementation review, dual terminal verification, and
