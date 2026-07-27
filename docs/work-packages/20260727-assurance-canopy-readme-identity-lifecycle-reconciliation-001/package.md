@@ -206,10 +206,10 @@ considered in-envelope routes, and the next defect.
 
 - [x] Reproduced and attributed the stale external source identity.
 - [x] Authored the implementation intent and correction envelope.
-- [ ] Committed scaffold.
-- [ ] Added pre-implementation contract tests.
-- [ ] Implemented typed source adoption.
-- [ ] Applied and validated the real transaction.
+- [x] Committed scaffold.
+- [x] Added pre-implementation contract tests.
+- [x] Implemented typed source adoption.
+- [x] Applied and validated the real transaction.
 - [ ] Passed dual review and dual terminal verification.
 - [ ] Closed this package and lifted CAL04B-NATIVE.
 
@@ -223,12 +223,24 @@ considered in-envelope routes, and the next defect.
 - The public API export changes `v2.rs`, a canonical implementation-digest
   member. Both registered review locks must therefore regenerate atomically,
   although only the snow report loses review authority.
+- The lifecycle correction exposed two integration tests whose terminal-event
+  setup had implicitly depended on the production report being `IN_REVIEW`.
+  Their fixtures now enter review explicitly before withdrawal/supersession.
+- The exact release build was verified by timestamp, size, SHA-256, and command
+  surface before apply after an earlier concurrent build attempt left the old
+  binary untouched.
 
 ## Decision Log
 
 - Decision: preserve the CAL03 README and reset the affected report to DRAFT.
   Rationale: the new bytes are admitted evidence, but the old review-entry
   decision cannot be carried to a new content-review subject.
+  Date/Author: 2026-07-27 / Codex.
+- Decision: document source adoption in a second typed implementation rebind
+  after the scientific-full adoption transaction.
+  Rationale: editing the assurance README before adoption would have created a
+  second preexisting identity drift and correctly blocked the single-source
+  operation.
   Date/Author: 2026-07-27 / Codex.
 
 ## Outcomes And Retrospective
