@@ -295,9 +295,8 @@ fn assert_receipt_runtime_guards() {
     assert!(cli.contains("verify_receipt_after_ready_audit("));
     assert!(cli.contains("trusted_transition_command("));
     assert!(cli.contains("GATE-EXEC-AUDIT-UNAUTHENTICATED"));
-    assert!(cli.contains(
-        "load_candidate_after_ready_audit(repo, plan, ledger, claims, audit, started_entry_sha256)"
-    ));
+    assert!(cli.contains("load_candidate_after_ready_audit_text("));
+    assert!(cli.contains("&ledger.read_text()?"));
     let final_context_check = executor
         .rfind("validate_current_execution_context(&repository, plan)?")
         .expect("final HEAVY context check");
