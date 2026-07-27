@@ -591,6 +591,9 @@ fn generation_b_run_external_transition_consumes_once_and_verifies_final_receipt
         .expect("new dispatch in the same custody root must pass");
     verify_external_transaction(&plan_path, &second_receipt)
         .expect("independently verify second dispatch");
+    verify_external_transaction(&plan_path, &receipt).expect(
+        "dispatch-one receipt must remain independently verifiable after live attestations change",
+    );
     let after_second = capability_tree_at(&custody_root);
     assert!(after_second.active.is_empty());
     assert_eq!(after_second.consumed.len(), 4);

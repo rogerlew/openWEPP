@@ -430,6 +430,7 @@ pub(super) fn consume_custody_capabilities(
         "consumed_root": consumed_root.display().to_string(),
         "consumed_root_identity": directory_identity(&consumed_root)?,
         "entries": entries,
+        "attestations": attestations,
         "imported_receipts": imported,
     });
     proof["proof_id"] = Value::String(derived_id(&proof, "proof_id")?);
@@ -482,7 +483,39 @@ pub(super) fn verify_consumed_custody_proof(
                 "parent dispatch identity",
             )
         })?;
-    let attestations = read_transaction_attestations(&custody_root, transaction)?;
+    let attestation_values = proof["attestations"].as_array().ok_or_else(|| {
+        custody_error(
+            "GATE-EXTERNAL-CONSUMED-PROOF",
+            "immutable attestation inventory",
+        )
+    })?;
+    let attestation_schema = parse_strict(include_bytes!(
+        "../../../../gate-policy/v1/schemas/external-verifier-attestation.schema.json"
+    ))?;
+    let attestations = attestation_values
+        .iter()
+        .map(|value| {
+            validate_schema(
+                &attestation_schema,
+                value,
+                "consumed external-verifier-attestation",
+            )?;
+            let attestation: ExternalVerifierAttestation =
+                serde_json::from_value(value.clone()).map_err(|error| {
+                    custody_error("GATE-EXTERNAL-CONSUMED-PROOF", error)
+                })?;
+            if derived_id(value, "attestation_id")? != attestation.attestation_id
+                || attestation.transaction_id != transaction.transaction_id
+            {
+                return Err(custody_error(
+                    "GATE-EXTERNAL-CONSUMED-PROOF",
+                    "immutable attestation identity",
+                ));
+            }
+            Ok(attestation)
+        })
+        .collect::<Result<Vec<_>>>()?;
+    verify_independent_attestations(&attestations)?;
     let dispatch_id = attestations
         .first()
         .map(|item| item.parent_dispatch_id.as_str())
