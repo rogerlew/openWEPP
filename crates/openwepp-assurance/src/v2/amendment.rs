@@ -381,17 +381,17 @@ pub fn adopt_report_source_at_generation(
 
     reset_report_to_draft(&mut report)?;
     let current_review = load_review_lock(root, report_id)?;
-    let event_updates = (!current_review.event_ids.is_empty())
-        .then(|| {
-            BTreeMap::from([(
-                report_id.to_owned(),
-                EventUpdate {
-                    event_ids: Vec::new(),
-                    invalidate_existing: true,
-                },
-            )])
-        })
-        .unwrap_or_default();
+    let event_updates = if current_review.event_ids.is_empty() {
+        BTreeMap::new()
+    } else {
+        BTreeMap::from([(
+            report_id.to_owned(),
+            EventUpdate {
+                event_ids: Vec::new(),
+                invalidate_existing: true,
+            },
+        )])
+    };
     let affected_reports = all_report_ids(root)?;
     prepare_or_apply_successor_with_drift(
         root,

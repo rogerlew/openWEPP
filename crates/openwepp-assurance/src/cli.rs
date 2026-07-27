@@ -1238,7 +1238,7 @@ mod tests {
     }
 
     #[test]
-    fn amendment_data_commands_parse_complete_requests_before_backend_entry() {
+    fn adopt_report_source_parses_complete_requests_before_backend_entry() {
         let missing = Path::new("/not-opened");
         assert!(
             amend(
@@ -1282,6 +1282,11 @@ mod tests {
             .to_string()
             .contains("--path")
         );
+    }
+
+    #[test]
+    fn amendment_data_commands_parse_complete_requests_before_backend_entry() {
+        let missing = Path::new("/not-opened");
         assert!(
             amend(
                 missing,
