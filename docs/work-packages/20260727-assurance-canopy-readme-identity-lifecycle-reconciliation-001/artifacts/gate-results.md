@@ -51,14 +51,15 @@ Evidence class: `Ran + Static`
   prior review-entry event is in invalidated custody.
 - `plan --all --format json`: `PASS`; both reports and all nodes current.
 - Disposable `build --all` then `check --all`: `PASS`, two reports.
-- `cargo test -p openwepp --test assurance_v2_amendment_contract
-  -- --test-threads=1`: `PASS`, 15 passed and two fixture generators ignored.
+- `cargo nextest run --test assurance_v2_amendment_contract`: `PASS`, 16/16
+  with two fixture generators skipped; independent QA run
+  `b8c7ac7e-df36-4e69-9721-fdcc77b56a35`.
 - `cargo nextest run -p openwepp-assurance`: `PASS`, 25/25.
 - Post-review assurance crate run: `PASS`, 27/27, run
   `d5bb2ea3-1897-41cb-8237-7dcd1ea84955`, including the
   adoption-specific selected-source race.
 - Production source contract suite: `PASS`, 12/12, independent QA run
-  `bde239ec-ad7e-4737-9d4c-9badef973369`.
+  `b032ed1a-e416-4d4a-9e3c-2801e7283988`.
 - `cargo clippy -p openwepp-assurance --all-targets -- -D warnings`:
   `PASS` after accepting and correcting two style findings.
 - `cargo fmt --all -- --check`: `PASS`.

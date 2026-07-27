@@ -122,10 +122,11 @@ disposition.
 
 - [x] Diagnosed the shared historical/current-root equality defect.
 - [x] Authored correction authority and intent.
-- [ ] Added failing contract coverage.
-- [ ] Corrected policy loading and documentation.
-- [ ] Passed focused and full gates.
-- [ ] Completed review, verification, and closure.
+- [x] Added contract-derived divergence and fail-closed coverage.
+- [x] Corrected policy loading and documentation.
+- [x] Passed focused gates and dual corrected review.
+- [ ] Passed the exact closure-candidate full workspace gate.
+- [ ] Completed dual terminal verification and closure.
 
 ## Decision Log
 
@@ -144,4 +145,5 @@ disposition.
 
 ## Outcomes
 
-Pending execution.
+Implementation and corrected dual review pass. Exact closure-candidate full
+workspace evidence and terminal verification remain pending.

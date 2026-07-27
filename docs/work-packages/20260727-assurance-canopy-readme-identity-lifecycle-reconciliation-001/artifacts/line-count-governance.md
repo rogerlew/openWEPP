@@ -12,7 +12,7 @@ Terminal counts:
 | `crates/openwepp-assurance/src/v2/amendment.rs` | 2,657 | WARN, below 3,000 required-refactor threshold |
 | `crates/openwepp-assurance/src/v2/transaction.rs` | 790 | PASS |
 | `crates/openwepp-assurance/src/cli.rs` | 1,413 | PASS |
-| `tests/integration/assurance_v2_amendment_contract.rs` | 1,043 | PASS |
+| `tests/integration/assurance_v2_amendment_contract.rs` | 1,044 | PASS |
 | `tests/integration/assurance_v2_source_contract.rs` | 709 | PASS |
 
 `amendment.rs` remains the transaction/lifecycle coordinator for a tightly
