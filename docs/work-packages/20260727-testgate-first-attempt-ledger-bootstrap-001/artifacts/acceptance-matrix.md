@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `SCAFFOLD REVIEW REQUIRED`
+Status: `TERMINAL VERIFICATION REQUIRED`
 
 Evidence class: `Static + Ran`
 
@@ -18,5 +18,5 @@ Evidence class: `Static + Ran`
 | LB-10 | Invalid/mismatched FD fails before LIGHT | missing/malformed/closed/directory/mismatch tests |
 | LB-11 | Post-admission path swap cannot redirect Rust I/O | final/ancestor race tests; replacement untouched |
 | LB-12 | Original path authority and schema remain exact | path-hash/recovery tests and security review |
-| LB-13 | Full regression | planner 227/227 and canonical exact-head receipt |
+| LB-13 | Full regression | planner 236/236 and canonical exact-head receipt |
 | LB-14 | Independent acceptance | dual review, terminal verification, and receipt verification |
