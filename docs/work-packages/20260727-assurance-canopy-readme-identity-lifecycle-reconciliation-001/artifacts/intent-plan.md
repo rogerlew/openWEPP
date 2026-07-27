@@ -43,3 +43,9 @@ transaction-installed DRAFT report does not satisfy the declared JSON schema.
 That owning test is admitted to distinguish stale expectation from incomplete
 DRAFT reset and to correct the contract/test pair without weakening schema
 validation. The full profile must be rerun from a new exact head.
+
+Prospective review amendment: independent QA found that the generic transaction
+race test exercises `amend-attribution`, not the adoption path's uniquely
+allowed preexisting drift. The owning transaction unit-test module is admitted
+for one selected-source race regression that must prove the external read-set
+snapshot still blocks exchange.

@@ -47,6 +47,8 @@ reviewed bytes.
 ### Intended write set
 
 - `crates/openwepp-assurance/src/v2/amendment.rs`
+- `crates/openwepp-assurance/src/v2/transaction.rs` only for the
+  adoption-specific selected-source race regression
 - `crates/openwepp-assurance/src/v2.rs`
 - `crates/openwepp-assurance/src/lib.rs`
 - `crates/openwepp-assurance/src/cli.rs`
@@ -81,6 +83,8 @@ reviewed bytes.
   for the report that declares the adopted source;
 - add contract-derived transaction, rollback, CLI, negative-path, and
   idempotence tests;
+- prove that a race on the uniquely exempted selected source is caught before
+  exchange, rather than relying only on generic non-exempted drift coverage;
 - update the production source contract's lifecycle/schema expectation to the
   transaction-installed DRAFT state without weakening schema validation;
 - update lifecycle documentation and package evidence.
