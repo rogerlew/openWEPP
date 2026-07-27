@@ -1491,6 +1491,10 @@ fn add_definition_instances<'a>(
 
 fn definition_applies(definition: &GateDefinition, selection: &Selection, boundary: &str) -> bool {
     match definition.gate_definition_id.as_str() {
+        "authority-required-suite-obligation-guards-v1" => selection
+            .explicit_definitions
+            .iter()
+            .any(|selected| selected == "authority-required-suite-obligation-guards-v1"),
         "documentation-lint-v1" => !selection.documentation_paths.is_empty(),
         "cargo-deny-v1" => {
             matches!(boundary, "CAMPAIGN" | "RELEASE")
@@ -1539,6 +1543,12 @@ fn prerequisite_keys(
             keys.push(target_key);
         } else if instances.contains_key(&workspace_key) {
             keys.push(workspace_key);
+        } else {
+            keys.extend(instances.iter().filter_map(|(key, (candidate, _))| {
+                (candidate.gate_definition_id == *prerequisite
+                    && candidate.target_template == "STATIC")
+                    .then_some(key.clone())
+            }));
         }
     }
     keys.sort();
@@ -2490,7 +2500,7 @@ mod tests {
         }
     }
 
-    fn assert_auth11_plan_contract(repo: &std::path::Path) {
+    fn build_auth11_test_plan(repo: &std::path::Path, path: &str) -> serde_json::Value {
         let head = std::process::Command::new("git")
             .args(["rev-parse", "HEAD"])
             .current_dir(repo)
@@ -2501,7 +2511,7 @@ mod tests {
             predecessor_intent_plan_id: None,
             boundary: "INCREMENT".to_owned(),
             campaign_id: Some("AUTH11-NODE-TEST".to_owned()),
-            authorized_paths: vec!["gate-policy/v1/gate-definitions.json".to_owned()],
+            authorized_paths: vec![path.to_owned()],
             package_authority_chain_id: "aa".repeat(32),
             intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
             source: crate::repository::ObservedSource {
@@ -2514,12 +2524,16 @@ mod tests {
                 index_digest: Some("22".repeat(32)),
                 worktree_digest: Some("33".repeat(32)),
                 untracked_digest: Some("44".repeat(32)),
-                changes: vec![auth11_change("gate-policy/v1/gate-definitions.json")],
+                changes: vec![auth11_change(path)],
             },
         };
-        let plan = super::Planner::new(Auth11Inventory)
+        super::Planner::new(Auth11Inventory)
             .build(repo, &request)
-            .expect("AUTH11 plan");
+            .expect("AUTH11 plan")
+    }
+
+    fn assert_auth11_plan_contract(repo: &std::path::Path) {
+        let plan = build_auth11_test_plan(repo, "gate-policy/v1/gate-definitions.json");
         let nodes = plan["nodes"].as_array().expect("nodes");
         let auth11_nodes = nodes
             .iter()
@@ -2545,6 +2559,28 @@ mod tests {
                 "auth11_obligations_schema_and_anchor_bindings_are_enforced",
                 "auth11_registry_posture_and_protocol_guard_paths_exist"
             ])
+        );
+        let node_id = |definition_id: &str| {
+            nodes
+                .iter()
+                .find(|node| node["gate_definition_id"] == definition_id)
+                .and_then(|node| node["node_id"].as_str())
+                .unwrap_or_else(|| panic!("missing node {definition_id}"))
+        };
+        assert_eq!(
+            auth11_nodes[0]["prerequisites"],
+            serde_json::json!([
+                node_id("authority-admission-v1"),
+                node_id("authority-antievasion-v1")
+            ])
+        );
+        let antievasion = nodes
+            .iter()
+            .find(|node| node["gate_definition_id"] == "authority-antievasion-v1")
+            .expect("authority anti-evasion node");
+        assert_eq!(
+            antievasion["prerequisites"],
+            serde_json::json!([node_id("authority-admission-v1")])
         );
         let definition_ids = nodes
             .iter()
@@ -2581,7 +2617,7 @@ mod tests {
             "docs/specifications/external-authority/required-suite-obligations.json",
             "docs/specifications/external-authority/suites/constitutive.md",
             "docs/specifications/external-authority/promotion-protocol.md",
-            "tests/integration/auth/required_suite_obligation_guards_contract.rs",
+            "tests/integration/auth11_required_suite_obligation_guards_contract.rs",
             "tests/fixtures/constitutive/cohort.json",
             "tests/fixtures/infile/cohort.json",
             "tools/release/check_authority_suite_antievasion.sh",
@@ -2636,6 +2672,13 @@ mod tests {
                 definition == "authority-required-suite-obligation-guards-v1"
             })
         );
+        let plan = build_auth11_test_plan(
+            &repo,
+            "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+        );
+        assert!(plan["nodes"].as_array().expect("nodes").iter().all(|node| {
+            node["gate_definition_id"] != "authority-required-suite-obligation-guards-v1"
+        }));
     }
 
     include!("planner_coverage_tests.rs");

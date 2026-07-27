@@ -92,7 +92,7 @@
     },
     {
       "entry_id": "auth11-integration-contracts",
-      "matcher": { "kind": "path_prefix", "value": "tests/integration/auth" },
+      "matcher": { "kind": "exact_path", "value": "tests/integration/auth11_required_suite_obligation_guards_contract.rs" },
       "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
       "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
       "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],

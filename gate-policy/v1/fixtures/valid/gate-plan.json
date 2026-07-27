@@ -52,7 +52,10 @@
   "impact_edges": [{
     "entry_id": "gate-policy-authority",
     "changed_path": "gate-policy/v1/impact-map.json",
-    "selected_ids": ["gate-policy-schema-consistency-v1"]
+    "selected_ids": [
+      "authority-required-suite-obligation-guards-v1",
+      "gate-policy-schema-consistency-v1"
+    ]
   }],
   "risk": {
     "class": "CRITICAL",

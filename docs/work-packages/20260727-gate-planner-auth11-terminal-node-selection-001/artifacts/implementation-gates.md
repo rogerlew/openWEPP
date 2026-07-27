@@ -3,6 +3,16 @@
 Reviewed implementation state: `0c71782ad447953ec6006549050bbc2806f356ae`
 is `HOLD`; its retained terminal plan must not execute.
 
+Review correction state: pending clean commit. Accepted production findings are
+corrected within the declared write set:
+
+- cross-target STATIC prerequisites bind generated prerequisite node IDs;
+- AUTH11 is selected only by explicit impact entries;
+- the unrelated CRITICAL negative case builds a plan and proves absence;
+- the integration matcher and positive case use the exact real repository
+  path;
+- fixture impact selection and receipt node counts are reconciled.
+
 ## Static
 
 - The gate definition is
@@ -39,6 +49,29 @@ implementation diff:
 | JSON parsing for both policy files and all three valid fixtures | PASS |
 | `git diff --check` | PASS |
 
+Post-review reruns:
+
+| Gate | Result |
+|---|---|
+| focused AUTH11 planner tests | PASS, 2/2, run `2b13663a-79d8-4e44-b408-8b747a0c4e67` |
+| AUTH11 obligation guards | PASS, 3/3, run `1022ab5c-2d44-443b-bcb6-0f7c3e8dfee4` |
+| gate-policy alignment | PASS, 11/11, run `9ee8cd94-4ace-4c05-9f2e-ebfd80b15215` |
+| strict package Clippy | PASS |
+| anti-evasion script | PASS |
+| formatting, JSON, diff hygiene | PASS |
+| full gate-planner Nextest | FAIL, 226/227, run `b47dca9b-8772-46fe-a596-c5efc464851f` |
+
+The one full-suite failure is
+`planner::tests::gate_policy_change_is_deterministic_and_critical`. Its
+`FixedInventory` test provider lives in
+`crates/openwepp-gate-planner/src/planner_coverage_tests.rs`, outside this
+package's frozen write set, and returns one synthetic item for every selected
+node. The now-correct `auth11-gate-policy` selection requires exactly three
+AUTH11 items, so planning fails closed with `GATE-INVENTORY-EMPTY`. The
+production inventory and focused AUTH11 tests are correct. This package remains
+`HOLD` until a prospective bounded successor corrects that test provider and
+the full suite passes.
+
 Independent `cargo nextest list --test
 auth11_required_suite_obligation_guards_contract` enumerated exactly:
 
@@ -49,7 +82,7 @@ auth11_required_suite_obligation_guards_contract` enumerated exactly:
 ## Pending
 
 - exact clean implementation commit;
-- prerequisite-key, bounded-selection, real matcher, and fixture corrections;
+- prospective correction of the out-of-scope shared fixed-inventory provider;
 - canonical terminal reconstruction proving 13 nodes, 2,378 globally unique
   IDs, 3,095 summed per-node entries, and 2,352 workspace tests;
 - fresh dual implementation review;

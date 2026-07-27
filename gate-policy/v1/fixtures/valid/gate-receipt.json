@@ -117,7 +117,7 @@
   },
   "started_at": "2026-07-17T12:00:00Z",
   "finished_at": "2026-07-17T12:01:00Z",
-  "counts": { "passed": 3, "failed": 0, "skipped": 0, "blocked": 0, "retried": 0 },
+  "counts": { "passed": 1, "failed": 0, "skipped": 0, "blocked": 0, "retried": 0 },
   "authority_outcomes": [{
     "gate_id": "authority-required-suite-obligation-guards-v1",
     "authority_class": "NONE",
