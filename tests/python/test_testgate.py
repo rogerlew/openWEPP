@@ -102,6 +102,265 @@ class TestGateTest(unittest.TestCase):
             with self.assertRaises(TESTGATE.TestgateError):
                 TESTGATE._append_history(ledger, {"wall_time": 1.5})
 
+    def test_ledger_bootstrap_creates_durable_regular_file_once(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = Path(directory) / "new/deep/attempts.jsonl"
+            with mock.patch.object(
+                TESTGATE.os, "fsync", wraps=TESTGATE.os.fsync
+            ) as fsync:
+                guard = TESTGATE._open_ledger_guard(ledger, create=True)
+                try:
+                    self.assertEqual(guard.path, ledger)
+                    self.assertEqual(ledger.read_bytes(), b"")
+                    self.assertTrue(TESTGATE.stat.S_ISREG(ledger.lstat().st_mode))
+                    self.assertEqual(ledger.stat().st_mode & 0o777, 0o600)
+                    self.assertGreaterEqual(fsync.call_count, 2)
+                finally:
+                    guard.close()
+
+    def test_ledger_bootstrap_preserves_valid_existing_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = Path(directory) / "attempts.jsonl"
+            TESTGATE._append_history(
+                ledger, {"record_type": "ATTEMPT", "status": "CLOSED"}
+            )
+            before = ledger.read_bytes()
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            try:
+                self.assertEqual(guard.read_bytes(), before)
+            finally:
+                guard.close()
+            self.assertEqual(ledger.read_bytes(), before)
+
+    def test_ledger_bootstrap_rejects_final_and_ancestor_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outside = root / "outside"
+            outside.mkdir()
+            outside_ledger = outside / "attempts.jsonl"
+            outside_ledger.write_text("outside\n", encoding="utf-8")
+            final = root / "final.jsonl"
+            final.symlink_to(outside_ledger)
+            with self.assertRaises((OSError, TESTGATE.TestgateError)):
+                TESTGATE._open_ledger_guard(final, create=True)
+            ancestor = root / "history"
+            ancestor.symlink_to(outside, target_is_directory=True)
+            with self.assertRaises((OSError, TESTGATE.TestgateError)):
+                TESTGATE._open_ledger_guard(
+                    ancestor / "attempts.jsonl", create=True
+                )
+            self.assertEqual(outside_ledger.read_text(encoding="utf-8"), "outside\n")
+
+    def test_ledger_bootstrap_rejects_directory_fifo_and_unsafe_components(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            directory_ledger = root / "directory"
+            directory_ledger.mkdir()
+            with self.assertRaises(TESTGATE.TestgateError):
+                TESTGATE._open_ledger_guard(directory_ledger, create=True)
+            if hasattr(TESTGATE.os, "mkfifo"):
+                fifo = root / "fifo"
+                TESTGATE.os.mkfifo(fifo)
+                with self.assertRaises(TESTGATE.TestgateError):
+                    TESTGATE._open_ledger_guard(fifo, create=True)
+            with self.assertRaises(TESTGATE.TestgateError):
+                TESTGATE._open_ledger_guard(
+                    Path(directory) / "safe/../escape.jsonl", create=True
+                )
+
+    def test_ledger_bootstrap_rejects_malformed_chains_without_mutation(self) -> None:
+        malformed = (
+            b"{not-json}\n",
+            b'{"previous_entry_sha256":null,"entry_sha256":"bad"}\n',
+            (
+                b'{"entry_sha256":'
+                + json.dumps("0" * 64).encode()
+                + b',"previous_entry_sha256":"unexpected"}\n'
+            ),
+        )
+        for content in malformed:
+            with self.subTest(content=content):
+                with tempfile.TemporaryDirectory() as directory:
+                    ledger = Path(directory) / "attempts.jsonl"
+                    ledger.write_bytes(content)
+                    with self.assertRaises(
+                        (json.JSONDecodeError, TESTGATE.TestgateError)
+                    ):
+                        TESTGATE._open_ledger_guard(ledger, create=True)
+                    self.assertEqual(ledger.read_bytes(), content)
+
+    def test_ledger_exclusive_create_collision_preserves_competing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = Path(directory) / "attempts.jsonl"
+            real_open = TESTGATE.os.open
+
+            def collide(path: object, flags: int, *args: object, **kwargs: object) -> int:
+                if flags & TESTGATE.os.O_EXCL:
+                    ledger.write_bytes(b"competitor\n")
+                    raise FileExistsError
+                return real_open(path, flags, *args, **kwargs)
+
+            with mock.patch.object(TESTGATE.os, "open", side_effect=collide):
+                with self.assertRaisesRegex(
+                    TESTGATE.TestgateError, "exclusive creation collided"
+                ):
+                    TESTGATE._open_ledger_guard(ledger, create=True)
+            self.assertEqual(ledger.read_bytes(), b"competitor\n")
+
+    def test_bootstrap_failure_never_invokes_transition(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outside = root / "outside"
+            outside.mkdir()
+            ledger = root / "history/attempts.jsonl"
+            ledger.parent.symlink_to(outside, target_is_directory=True)
+            args = mock.Mock()
+            args.execute = True
+            args.history_ledger = ledger
+            args.artifact_root = root / "artifacts"
+            with (
+                mock.patch.object(TESTGATE, "_parse_args", return_value=args),
+                mock.patch.object(TESTGATE, "_invoke") as invoke,
+                redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(TESTGATE.main(), 2)
+            invoke.assert_not_called()
+            self.assertFalse((outside / "attempts.jsonl").exists())
+
+    def test_ledger_file_swap_is_rejected_before_append_and_finalization(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ledger = root / "history/attempts.jsonl"
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            try:
+                retained = ledger.with_name("retained.jsonl")
+                ledger.rename(retained)
+                ledger.write_bytes(b"replacement\n")
+                with self.assertRaises(TESTGATE.TestgateError):
+                    TESTGATE._append_history(
+                        ledger, {"record_type": "ATTEMPT"}, guard
+                    )
+                artifacts = root / "artifacts"
+                artifacts.mkdir()
+                with self.assertRaises(TESTGATE.AttemptFinalizationError):
+                    TESTGATE._finalize_attempt_archive(ledger, artifacts, guard)
+                self.assertEqual(ledger.read_bytes(), b"replacement\n")
+                self.assertEqual(retained.read_bytes(), b"")
+            finally:
+                guard.close()
+
+    def test_ledger_ancestor_swap_is_rejected_without_outside_write(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            history = root / "history"
+            ledger = history / "attempts.jsonl"
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            outside = root / "outside"
+            outside.mkdir()
+            moved = root / "retained-history"
+            history.rename(moved)
+            history.symlink_to(outside, target_is_directory=True)
+            try:
+                with self.assertRaises(TESTGATE.TestgateError):
+                    guard.validate()
+                with self.assertRaises(TESTGATE.TestgateError):
+                    TESTGATE._append_history(
+                        ledger, {"record_type": "ATTEMPT"}, guard
+                    )
+                self.assertFalse((outside / "attempts.jsonl").exists())
+                self.assertEqual((moved / "attempts.jsonl").read_bytes(), b"")
+            finally:
+                guard.close()
+
+    def test_ledger_swap_is_rejected_before_transition_invoke(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/home/workdir") as directory:
+            root = Path(directory)
+            repo = root / "repo"
+            repo.mkdir()
+            ledger = root / "history/attempts.jsonl"
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            args = mock.Mock(
+                repo=repo,
+                artifact_root=root / "artifacts",
+                history_ledger=ledger,
+                binary=repo / "gate",
+                base="base",
+                head="head",
+                dirty=False,
+                intent_package="docs/work-packages/example/package.md",
+                execute=True,
+                boundary="INCREMENT",
+                campaign="CAMPAIGN",
+                principal="developer",
+                repository="owner/repo",
+                source_event="local",
+                source_ref="refs/heads/main",
+                workflow="testgate",
+                job="job",
+                runner="runner",
+                attempt=1,
+                _history_ledger_guard=guard,
+            )
+            calls = 0
+
+            def invoke(arguments: list[str], _repo: Path, **_kwargs: object) -> dict:
+                nonlocal calls
+                calls += 1
+                output = Path(arguments[arguments.index("--output") + 1])
+                if calls == 1:
+                    output.write_text('{"plan_id":"intent"}\n', encoding="utf-8")
+                    return {"plan_id": "intent"}
+                if calls == 2:
+                    output.write_text(
+                        json.dumps(
+                            {
+                                "plan_id": "terminal",
+                                "nodes": [{"execution_cost_class": "HEAVY"}],
+                                "risk": {"class": "CRITICAL", "reason_codes": []},
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+                    retained = ledger.with_name("retained.jsonl")
+                    ledger.rename(retained)
+                    ledger.write_bytes(b"replacement\n")
+                    return {"plan_id": "terminal"}
+                self.fail("transition was invoked after ledger substitution")
+
+            def authorize(
+                _repo: Path,
+                _binary: Path,
+                _base: str,
+                _head: str,
+                _paths: list[str],
+                _package: str,
+                output: Path,
+            ) -> dict:
+                value = {"status": "READY"}
+                output.write_text(json.dumps(value), encoding="utf-8")
+                return value
+
+            try:
+                with (
+                    mock.patch.object(
+                        TESTGATE, "_resolve_commit", side_effect=("a" * 40, "b" * 40)
+                    ),
+                    mock.patch.object(
+                        TESTGATE, "_changed_paths", return_value=["changed"]
+                    ),
+                    mock.patch.object(
+                        TESTGATE, "_intent_authorization", side_effect=authorize
+                    ),
+                    mock.patch.object(TESTGATE, "_invoke", side_effect=invoke),
+                    mock.patch.object(TESTGATE, "_initialize_recovery_plan"),
+                ):
+                    with self.assertRaises(TESTGATE.TestgateError):
+                        TESTGATE.observe(args)
+                self.assertEqual(calls, 2)
+                self.assertEqual(ledger.read_bytes(), b"replacement\n")
+            finally:
+                guard.close()
+
     def test_attempt_index_covers_pre_receipt_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

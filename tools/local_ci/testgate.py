@@ -34,6 +34,218 @@ class AttemptFinalizationError(TestgateError):
     """Raised after the single authoritative attempt-finalization pass fails."""
 
 
+class _PathIdentity:
+    __slots__ = ("path", "device", "inode", "mode")
+
+    def __init__(self, path: Path, device: int, inode: int, mode: int) -> None:
+        self.path = path
+        self.device = device
+        self.inode = inode
+        self.mode = mode
+
+
+class _LedgerGuard:
+    """Retain no-follow identities and descriptors for one selected ledger."""
+
+    def __init__(
+        self,
+        path: Path,
+        directories: list[tuple[int, _PathIdentity]],
+        file_descriptor: int,
+        file_identity: _PathIdentity,
+    ) -> None:
+        self.path = path
+        self._directories = directories
+        self._file_descriptor = file_descriptor
+        self._file_identity = file_identity
+
+    def close(self) -> None:
+        for descriptor, _identity in reversed(self._directories):
+            os.close(descriptor)
+        self._directories.clear()
+        if self._file_descriptor >= 0:
+            os.close(self._file_descriptor)
+            self._file_descriptor = -1
+
+    def validate(self) -> None:
+        """Reject substitution of the file or any selected path ancestor."""
+        if self._file_descriptor < 0:
+            raise TestgateError("history ledger authority is closed")
+        for descriptor, identity in self._directories:
+            current = os.fstat(descriptor)
+            _require_identity(current, identity, "history ledger ancestor")
+            try:
+                visible = identity.path.lstat()
+            except FileNotFoundError as error:
+                raise TestgateError(
+                    f"history ledger ancestor was replaced: {identity.path}"
+                ) from error
+            _require_identity(visible, identity, "history ledger ancestor")
+        current_file = os.fstat(self._file_descriptor)
+        _require_identity(current_file, self._file_identity, "history ledger")
+        try:
+            visible_file = self.path.lstat()
+        except FileNotFoundError as error:
+            raise TestgateError(f"history ledger was replaced: {self.path}") from error
+        _require_identity(visible_file, self._file_identity, "history ledger")
+
+    def read_bytes(self) -> bytes:
+        self.validate()
+        os.lseek(self._file_descriptor, 0, os.SEEK_SET)
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(self._file_descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+
+    def append(self, payload: bytes) -> None:
+        self.validate()
+        os.lseek(self._file_descriptor, 0, os.SEEK_END)
+        view = memoryview(payload)
+        while view:
+            written = os.write(self._file_descriptor, view)
+            if written <= 0:
+                raise TestgateError("history ledger append made no progress")
+            view = view[written:]
+        os.fsync(self._file_descriptor)
+
+
+def _identity(path: Path, value: os.stat_result) -> _PathIdentity:
+    return _PathIdentity(path, value.st_dev, value.st_ino, value.st_mode)
+
+
+def _require_identity(
+    value: os.stat_result, expected: _PathIdentity, description: str
+) -> None:
+    if (
+        value.st_dev != expected.device
+        or value.st_ino != expected.inode
+        or stat.S_IFMT(value.st_mode) != stat.S_IFMT(expected.mode)
+    ):
+        raise TestgateError(f"{description} identity changed: {expected.path}")
+
+
+def _lexical_absolute_path(raw: Path) -> Path:
+    """Make a selected path absolute without resolving any filesystem entry."""
+    source = os.fspath(raw)
+    if not source:
+        raise TestgateError("history ledger path must not be empty")
+    selected = raw if raw.is_absolute() else Path.cwd() / raw
+    if any(component in {"", ".", ".."} for component in selected.parts[1:]):
+        raise TestgateError("history ledger path contains an unsafe component")
+    if selected.name in {"", ".", ".."}:
+        raise TestgateError("history ledger path must name a file")
+    return selected
+
+
+def _open_ledger_guard(raw: Path, *, create: bool) -> _LedgerGuard:
+    """Open a ledger and its full path chain without following symlinks."""
+    path = _lexical_absolute_path(raw)
+    directory_flags = os.O_RDONLY | os.O_DIRECTORY
+    nofollow = getattr(os, "O_NOFOLLOW", 0)
+    directory_flags |= nofollow
+    descriptors: list[tuple[int, _PathIdentity]] = []
+    file_descriptor = -1
+    descriptor = os.open(path.anchor, directory_flags)
+    root_stat = os.fstat(descriptor)
+    descriptors.append((descriptor, _identity(Path(path.anchor), root_stat)))
+    current = Path(path.anchor)
+    try:
+        for component in path.parts[1:-1]:
+            current /= component
+            try:
+                child = os.open(component, directory_flags, dir_fd=descriptor)
+            except FileNotFoundError:
+                if not create:
+                    raise
+                try:
+                    os.mkdir(component, mode=0o700, dir_fd=descriptor)
+                except FileExistsError:
+                    pass
+                os.fsync(descriptor)
+                child = os.open(component, directory_flags, dir_fd=descriptor)
+            child_stat = os.fstat(child)
+            if not stat.S_ISDIR(child_stat.st_mode):
+                os.close(child)
+                raise TestgateError(
+                    f"history ledger ancestor is not a directory: {current}"
+                )
+            descriptors.append((child, _identity(current, child_stat)))
+            descriptor = child
+
+        flags = os.O_RDWR | nofollow
+        created = False
+        try:
+            selected_status = os.stat(
+                path.name, dir_fd=descriptor, follow_symlinks=False
+            )
+        except FileNotFoundError:
+            selected_status = None
+        if selected_status is not None and not stat.S_ISREG(selected_status.st_mode):
+            raise TestgateError(f"history ledger is not a regular file: {path}")
+        if selected_status is None:
+            if not create:
+                raise FileNotFoundError(path)
+            try:
+                file_descriptor = os.open(
+                    path.name,
+                    flags | os.O_CREAT | os.O_EXCL,
+                    0o600,
+                    dir_fd=descriptor,
+                )
+                created = True
+            except FileExistsError:
+                # A competing creator owns the name; never adopt or overwrite it.
+                raise TestgateError(
+                    f"history ledger exclusive creation collided: {path}"
+                ) from None
+        else:
+            file_descriptor = os.open(path.name, flags, dir_fd=descriptor)
+        file_stat = os.fstat(file_descriptor)
+        if not stat.S_ISREG(file_stat.st_mode):
+            os.close(file_descriptor)
+            file_descriptor = -1
+            raise TestgateError(f"history ledger is not a regular file: {path}")
+        if selected_status is not None:
+            try:
+                _require_identity(
+                    file_stat,
+                    _identity(path, selected_status),
+                    "history ledger",
+                )
+            except TestgateError:
+                os.close(file_descriptor)
+                file_descriptor = -1
+                raise
+        guard = _LedgerGuard(
+            path,
+            descriptors,
+            file_descriptor,
+            _identity(path, file_stat),
+        )
+        if created:
+            os.fsync(file_descriptor)
+            os.fsync(descriptor)
+        guard.validate()
+        _verify_history_bytes(guard.read_bytes())
+        file_descriptor = -1
+        return guard
+    except BaseException as error:
+        if file_descriptor >= 0:
+            os.close(file_descriptor)
+        for opened, _identity_value in reversed(descriptors):
+            os.close(opened)
+        if isinstance(error, FileNotFoundError):
+            raise
+        if isinstance(error, OSError):
+            raise TestgateError(
+                f"history ledger path is unsafe or unavailable: {path}"
+            ) from error
+        raise
+
+
 def _canonical_json(value: Any) -> str:
     """Serialize the integer-only RFC 8785 subset shared with the Rust gate."""
     if value is None or isinstance(value, (bool, str)):
@@ -73,24 +285,27 @@ def _atomic_json(path: Path, value: Any) -> None:
     temporary.replace(path)
 
 
-def _append_history(path: Path, value: dict[str, Any]) -> str:
+def _append_history(
+    path: Path, value: dict[str, Any], guard: _LedgerGuard | None = None
+) -> str:
     """Append one canonical, predecessor-bound record and return its digest."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    previous = None
-    if path.is_file():
-        _verify_history_chain(path)
-        lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
-        if lines:
-            previous = _strict_json(lines[-1]).get("entry_sha256")
-    record = {**value, "previous_entry_sha256": previous}
-    canonical = _canonical_json(record)
-    entry_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    record["entry_sha256"] = entry_sha256
-    with path.open("a", encoding="utf-8") as stream:
-        stream.write(_canonical_json(record) + "\n")
-        stream.flush()
-        os.fsync(stream.fileno())
-    return entry_sha256
+    owned = guard is None
+    authority = guard or _open_ledger_guard(path, create=True)
+    try:
+        authority.validate()
+        raw = authority.read_bytes()
+        _verify_history_bytes(raw)
+        lines = [line for line in raw.decode("utf-8").splitlines() if line]
+        previous = _strict_json(lines[-1]).get("entry_sha256") if lines else None
+        record = {**value, "previous_entry_sha256": previous}
+        canonical = _canonical_json(record)
+        entry_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        record["entry_sha256"] = entry_sha256
+        authority.append((_canonical_json(record) + "\n").encode("utf-8"))
+        return entry_sha256
+    finally:
+        if owned:
+            authority.close()
 
 
 def _write_attempt_index(root: Path, provenance: dict[str, Any] | None = None) -> None:
@@ -134,32 +349,52 @@ def _prune_disposable_execution_state(artifact_root: Path) -> None:
             shutil.rmtree(target)
 
 
-def _finalize_attempt_archive(ledger: Path, artifact_root: Path) -> None:
+def _finalize_attempt_archive(
+    ledger: Path,
+    artifact_root: Path,
+    ledger_guard: _LedgerGuard | None = None,
+) -> None:
     """Snapshot, prune, and index once; expose finalizer failures distinctly."""
     try:
-        _snapshot_history(ledger, artifact_root)
+        if ledger_guard is not None:
+            ledger_guard.validate()
+        _snapshot_history(ledger, artifact_root, ledger_guard)
         _prune_disposable_execution_state(artifact_root)
         _write_attempt_index(artifact_root)
     except (OSError, KeyError, ValueError, TestgateError) as error:
         raise AttemptFinalizationError(str(error)) from error
 
 
-def _snapshot_history(ledger: Path, artifact_root: Path) -> None:
+def _snapshot_history(
+    ledger: Path,
+    artifact_root: Path,
+    ledger_guard: _LedgerGuard | None = None,
+) -> None:
     """Copy the durable ledger into the indexed upload without changing authority."""
-    if not ledger.is_file():
+    owned = ledger_guard is None
+    try:
+        authority = ledger_guard or _open_ledger_guard(ledger, create=False)
+    except FileNotFoundError:
         return
+    try:
+        authority.validate()
+        ledger_bytes = authority.read_bytes()
+        _verify_history_bytes(ledger_bytes)
+    finally:
+        if owned:
+            authority.close()
     destination = artifact_root / "attempts.jsonl"
-    if destination.resolve() == ledger.resolve():
+    if destination == authority.path:
         return
     temporary = destination.with_name(f".{destination.name}.tmp")
-    temporary.write_bytes(ledger.read_bytes())
+    temporary.write_bytes(ledger_bytes)
     temporary.replace(destination)
     recovery_roots: set[Path] = set()
     configured = os.environ.get("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
     current_recovery = Path(configured) if configured else None
     if configured:
         recovery_roots.add(current_recovery)
-    for raw in ledger.read_text(encoding="utf-8").splitlines():
+    for raw in ledger_bytes.decode("utf-8").splitlines():
         if not raw:
             continue
         record = _strict_json(raw)
@@ -377,9 +612,13 @@ def _workflow_provenance() -> dict[str, Any]:
     }
 
 
-def _verify_history_chain(path: Path) -> None:
+def _verify_history_bytes(content: bytes) -> None:
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise TestgateError("attempt ledger is not UTF-8") from error
     previous = None
-    for raw in path.read_text(encoding="utf-8").splitlines():
+    for raw in text.splitlines():
         if not raw:
             continue
         record = _strict_json(raw)
@@ -390,6 +629,14 @@ def _verify_history_chain(path: Path) -> None:
         if claimed != actual:
             raise TestgateError("attempt ledger entry digest mismatch")
         previous = claimed
+
+
+def _verify_history_chain(path: Path) -> None:
+    authority = _open_ledger_guard(path, create=False)
+    try:
+        _verify_history_bytes(authority.read_bytes())
+    finally:
+        authority.close()
 
 
 def _verify_attempt_archive(
@@ -634,7 +881,12 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     artifact_root.mkdir(parents=True, exist_ok=True)
     execution_root = artifact_root / "execution"
     execution_root.mkdir(exist_ok=False)
-    ledger = args.history_ledger.resolve()
+    ledger_guard = getattr(args, "_history_ledger_guard", None)
+    ledger = (
+        ledger_guard.path
+        if isinstance(ledger_guard, _LedgerGuard)
+        else _lexical_absolute_path(args.history_ledger)
+    )
     if Path("/tmp") in ledger.parents or ledger == Path("/tmp"):
         raise TestgateError("history ledger must not be ephemeral-only")
     base = _resolve_commit(repo, args.base)
@@ -713,6 +965,9 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     execution_error: str | None = None
     execution_ms: int | None = None
     if args.execute:
+        if not isinstance(ledger_guard, _LedgerGuard):
+            ledger_guard = _open_ledger_guard(ledger, create=True)
+            args._history_ledger_guard = ledger_guard
         _initialize_recovery_plan(terminal_path)
         execution_started = time.monotonic_ns()
         try:
@@ -734,6 +989,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                 for node in terminal_plan["nodes"]
             )
             if has_heavy:
+                ledger_guard.validate()
                 execution_result = _invoke(
                     [
                         str(args.binary.resolve()), "run", *execution_arguments,
@@ -747,6 +1003,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                     allow_nonpass=True,
                 )
             else:
+                ledger_guard.validate()
                 execution_result = _invoke(
                     [
                         str(args.binary.resolve()), "run", *execution_arguments,
@@ -771,6 +1028,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                 "recovery_root": recovery_root,
                 "wall_time_ms": execution_ms,
             },
+            ledger_guard,
         )
 
     observation = _final_observation({
@@ -824,7 +1082,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             "runner_image": os.environ.get("OPENWEPP_RUNNER_IMAGE_ID"),
         }
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
-    _finalize_attempt_archive(ledger, artifact_root)
+    _finalize_attempt_archive(ledger, artifact_root, ledger_guard)
     return observation
 
 
@@ -866,7 +1124,11 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
+    ledger_guard: _LedgerGuard | None = None
     try:
+        if getattr(args, "execute", False):
+            ledger_guard = _open_ledger_guard(args.history_ledger, create=True)
+            args._history_ledger_guard = ledger_guard
         observation = observe(args)
     except (OSError, KeyError, ValueError, TestgateError) as error:
         if args.artifact_root.is_dir():
@@ -880,7 +1142,9 @@ def main() -> int:
                 )
                 if not isinstance(error, AttemptFinalizationError):
                     _finalize_attempt_archive(
-                        args.history_ledger.resolve(), args.artifact_root
+                        _lexical_absolute_path(args.history_ledger),
+                        args.artifact_root,
+                        ledger_guard,
                     )
             except (OSError, KeyError, ValueError, TestgateError) as finalization_error:
                 print(f"ERROR: {error}", file=sys.stderr)
@@ -888,9 +1152,15 @@ def main() -> int:
                     f"ERROR: attempt finalization failed: {finalization_error}",
                     file=sys.stderr,
                 )
+                if ledger_guard is not None:
+                    ledger_guard.close()
                 return 2
         print(f"ERROR: {error}", file=sys.stderr)
+        if ledger_guard is not None:
+            ledger_guard.close()
         return 2
+    if ledger_guard is not None:
+        ledger_guard.close()
     print(json.dumps(observation, sort_keys=True))
     execution = observation["execution_result"]
     accepted = not observation["execution_requested"] or (
