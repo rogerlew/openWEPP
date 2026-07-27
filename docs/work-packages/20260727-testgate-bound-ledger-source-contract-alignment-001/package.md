@@ -103,6 +103,8 @@ markdown-doc lint --path docs/work-packages/README.md
 markdown-doc lint --path docs/planning/canopy-phenology-assurance-roadmap.md
 markdown-doc lint --path docs/work-packages/20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/artifacts/implementation-gates.md
 git diff --check
+git diff --name-only f8cba1c9f3e02d241a2bb7fccc3329a0a142ac57..HEAD
+git diff f8cba1c9f3e02d241a2bb7fccc3329a0a142ac57..HEAD -- tests/integration/testgate_ci_executor_contract.rs
 ```
 
 ## Line-Count Governance

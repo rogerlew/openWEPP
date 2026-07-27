@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `SCAFFOLD BASE BINDING REQUIRED`
+Status: `SCAFFOLD REVIEW REQUIRED`
 
 Evidence class: `Static + Ran`
 

@@ -10,7 +10,8 @@ data, or Harvard state.
 
 Subagent requirement: REQUIRED: canonical heavy execution uses
 `comparator_suite_runner`, never the parent model. Use an exact clean terminal
-head, the committed scaffold authority base, this package identity, boundary
+head, authority base `f8cba1c9f3e02d241a2bb7fccc3329a0a142ac57`,
+this package identity, boundary
 `INCREMENT`, campaign `TESTGATE-BOUND-LEDGER-CONTRACT-01`, and one fresh
 external artifact root/ledger. No reuse, placeholder, retry, or fallback.
 Require package chain READY, exact intent/terminal predecessor, LIGHT PASS,
