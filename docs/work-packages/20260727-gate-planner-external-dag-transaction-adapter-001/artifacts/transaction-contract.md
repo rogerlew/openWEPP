@@ -14,6 +14,14 @@ Unknown columns, duplicate IDs/orders, shell command strings, unresolved
 variables, undeclared prerequisites, or incomplete output coverage are
 `INVALID`.
 
+Exact reconstruction may expose historical prose or incomplete output cells in
+the two frozen CSV controls. This package may canonicalize only those output
+cells to exact filenames/directories already written by the bound producer and
+may enumerate already-built package binaries. The change is an authority
+clarification, not a new output or command. Static producer-source enumeration,
+the observed contract, the generated JSON projection, and runtime exhaustive
+manifest must agree exactly. No other CSV field may change.
+
 The versioned JSON plan expands every CSV row. It contains no free-form command
 string: `argv` is an array and the executable is direct. Expected cardinality is
 18 rows total and these exact transaction inventories:
