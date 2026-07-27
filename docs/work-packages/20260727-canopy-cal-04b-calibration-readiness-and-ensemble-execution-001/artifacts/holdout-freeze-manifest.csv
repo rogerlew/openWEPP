@@ -1,0 +1,17 @@
+identity_id,path_or_command,role,sha256,state
+accepted_ensemble,not-created-native-proof-hold,calibration_output,not-applicable,SEALED
+candidate_configurations,not-frozen-native-proof-hold,frozen_configuration,not-applicable,SEALED
+calibration_daily_trace,not-created-native-proof-hold,raw_native_evidence,not-applicable,SEALED
+calibration_trace_identity,not-created-native-proof-hold,trace_identity_sidecar,not-applicable,SEALED
+timing_observation_ledger,not-frozen-native-proof-hold,calibration_and_holdout_authority,not-applicable,SEALED
+objective_operator,not-frozen-native-proof-hold,frozen_operator,not-applicable,SEALED
+primary_component_ledgers,not-created-native-proof-hold,reconstructed_calibration_results,not-applicable,SEALED
+verification_component_ledgers,not-created-native-proof-hold,independent_reconstruction_results,not-applicable,SEALED
+producer_source_binary,not-frozen-native-proof-hold,immutable_producer,not-applicable,SEALED
+primary_reconstructor_source_binary,not-frozen-native-proof-hold,immutable_primary_reconstructor,not-applicable,SEALED
+verification_reconstructor_source_binary,not-frozen-native-proof-hold,immutable_verification_reconstructor,not-applicable,SEALED
+readiness_source_binary_results,not-created-native-proof-hold,ordered_stage_identity,not-applicable,SEALED
+freeze_source_command,not-run-native-proof-hold,canonical_freeze_identity,not-applicable,SEALED
+holdout_source_binary_command,not-run-native-proof-hold,one_time_holdout_identity,not-applicable,SEALED
+harvard_expected_input_manifest,not-opened-native-proof-hold,expected_identity_without_content_read,not-applicable,SEALED
+toolchain_identity,not-frozen-native-proof-hold,rust_python_zstd_identity,not-applicable,SEALED

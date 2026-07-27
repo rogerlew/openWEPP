@@ -1,1 +1,5 @@
 command_id,state,working_directory,command,result
+prepare,PASS,/home/workdir/openWEPP,frozen prepare command,retained attempt-004 receipt
+build_executor,PASS,/home/workdir/openWEPP,frozen executor build command,retained attempt-004 receipt
+build_production_runner,PASS,/home/workdir/openWEPP,frozen production-runner build command,retained attempt-004 receipt
+native_proof,FAIL,/home/workdir/openWEPP,frozen native-proof command,interior production path failed; execution-incident-004.md

@@ -307,10 +307,18 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/` -
+  QUEUED / PREREQUISITE HOLD LIFT: close `CAL04B-NATIVE-001` contract-first so
+  every valid generalized-GSI zero-to-positive transition publishes coherent
+  same-day foliar mass, LAI, cover, and canopy height through the real
+  production consumers without weakening the fail-closed guard.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  QUEUED: execute CAL-04A's 9,261-vector GSI ensemble, freeze and score Harvard
-  once, and close every remaining Order 4 operand through empirical calibration
-  or auditable ADR-0042 calibration readiness.
+  COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED: the reviewed reworked
+  scaffold passed pre-heavy gates, but frozen interior vector `GSI-5557`
+  published positive LAI with non-positive post-growth canopy height in the real
+  production consumer. Attempt 004 is retained, Hubbard did not run, and Harvard
+  remains sealed. Follow-up defect `CAL04B-NATIVE-001` owns contract-first
+  production coupling closure.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

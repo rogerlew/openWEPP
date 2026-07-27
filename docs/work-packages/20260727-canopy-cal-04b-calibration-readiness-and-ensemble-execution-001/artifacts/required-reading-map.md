@@ -1,8 +1,8 @@
 # Required Reading Map
 
-Status: `PROSPECTIVE MAP COMPLETE / READING NOT RUN`
+Status: `COMPLETE`
 
-Evidence class: `NOT RUN`
+Evidence class: `Static: read before result-bearing execution`
 
 Required-reading budget: `197083` local bytes, `OK`.
 
@@ -22,6 +22,7 @@ Required-reading budget: `197083` local bytes, `OK`.
 - `docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts/best-available-evidence-ledger.csv`
 - `docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts/final-disposition.md`
 - `docs/work-packages/20260726-canopy-cal-04-05-authority-evidence-admission-001/artifacts/cal04-partition-and-objective.md`
+- `artifacts/calibration-forcing-authority-resolution.md`
 
 ## Conditional
 

@@ -1,3 +1,3 @@
 # Active Prompts
 
-Contains the current package-end-to-end kickoff.
+No active prompt. The executed kickoff is archived with the terminal package.

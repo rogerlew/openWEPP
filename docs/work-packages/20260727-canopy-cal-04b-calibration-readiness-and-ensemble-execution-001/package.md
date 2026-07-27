@@ -3,7 +3,7 @@
 Package ID:
 `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
 
-Status: `QUEUED`
+Status: `COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED`
 
 Date opened: `2026-07-27`
 
@@ -104,7 +104,20 @@ Package-local scripts and temporary/configuration copies are allowed.
 
 ## Frozen GSI Design
 
+`artifacts/calibration-forcing-authority-resolution.md` is the binding,
+result-blind amendment that resolves CAL-04's older composite-member operator
+against CAL-04A's later nine-plot forcing authority. All other objective and
+holdout semantics remain unchanged.
+
 - Population: nine Hubbard plots, 1989–2024, spring forcing support.
+- Forcing: CAL-04A's checksum-bound plot-specific Daymet daily derivation and
+  source-EML plot latitude; the protected `p10.cli` fixture is comparison and
+  native-path-proof evidence only, never calibration forcing.
+- State/calendar rule: each `(plot_id, year)` is a separate native
+  `GsiState` cold start. Admit only real Daymet yday 1–180 in order, with no
+  synthetic prefill or cross-year state carry. Days 1–59 are warm-up and are
+  ineligible for crossing selection; the first upward crossing is selected
+  only within the frozen yday 60–180 spring-support window.
 - Threshold levels: q00, q05, q25, q50, q75, q95, q100 for temperature, VPD,
   and photoperiod.
 - Family profiles: every strictly ordered pair, 21 per family.
@@ -141,6 +154,12 @@ required synthetic recovery, or other required readiness defect is a hold.
 
 ## Phase Plan
 
+The correction strategy in `artifacts/rework-strategy.md` is binding. No
+result-bearing execution may begin until the reworked scaffold receives two
+prospective scientific PASS reviews, two independent scaffold-verification PASS
+records, and every row in `artifacts/prospective-finding-ledger.csv` is
+`CONTROL_ACCEPTED`.
+
 ### Phase 1: prospective intake and calibration machinery
 
 Authenticate all predecessor identities and immutable roles. Rebuild the
@@ -148,30 +167,44 @@ Authenticate all predecessor identities and immutable roles. Rebuild the
 enumeration, acceptance, failure, boundary, and stopping behavior before
 result-bearing work.
 
-Prove real parameter-path consumption, independent objective reconstruction,
-and synthetic recovery for representative interior, boundary, saturated,
-equifinal, and invalid cases. Complete prospective dual review before empirical
+Implement separate native-proof, calibration-producer, independent-
+reconstruction, readiness-stage, freeze, and holdout commands. Prove real
+parameter-path consumption for representative interior, boundary, saturated,
+and invalid cases. The population producer must call the actual Rust GSI kernel;
+an independently implemented equation reconstruction is verification evidence
+only. Complete dual scaffold review, then dual executor review, before empirical
 candidate execution.
 
 ### Phase 2: Hubbard GSI execution
 
-Run the full deterministic ensemble. Retain configurations, outputs, component
-losses, annual aggregation, failures, flags, and profiles. Rebuild the ledger
-independently and freeze the accepted ensemble.
+Run the full deterministic ensemble across every candidate, all nine plots,
+and all 36 plot-years. Retain configurations, plot-keyed daily state,
+modeled crossings, observation distances, species diagnostics, annual
+components, aggregate losses, failures, flags, and profiles. Rebuild
+objectives and membership independently from immutable daily GSI traces,
+frozen configurations, and admitted observations. The reconstructor derives
+crossings by `(candidate_id, plot_id, year)`, joins each record by
+`(candidate_id, plot_id, year, record_id)`, and derives distances, annual
+components, objective, and membership without reading producer crossings,
+components, aggregates, or scoring code, then freezes the accepted ensemble.
 
 ### Phase 3: Harvard one-time independent validation
 
-Checksum-freeze ensemble membership, analysis code, configuration, and exact
-command. Record the holdout-opening event. Open Harvard modeled results once,
-score the frozen ensemble, and retain results without any feedback to
-calibration.
+Checksum-freeze ensemble membership, executable/source, configuration, input
+manifest, and exact command in `artifacts/holdout-freeze-manifest.csv`. Two
+independent verifiers must PASS the nonempty freeze before a separate holdout
+command can transition `SEALED` to `OPENED_ONCE`. Open Harvard modeled results
+once, use the first `previous > 0.5 && current <= 0.5` crossing, score the frozen
+ensemble, and retain results without any calibration write capability.
 
 ### Phase 4: remaining ordered operands
 
-For each later stage, freeze the observation operator and deterministic
-execution design, propagate upstream uncertainty, execute supported empirical
-constraints, and complete sensitivity/synthetic-readiness evidence for
-unsupported axes. Retain equifinality rather than selecting convenient values.
+For each later stage, freeze units, axes, observation operator, enumeration,
+objective, acceptance, and failure behavior before execution. Propagate
+upstream accepted membership, execute supported empirical constraints, and
+compute sensitivity and synthetic recovery for unsupported axes. Retain
+equifinality rather than selecting convenient values. Hard-coded PASS rows are
+not evidence.
 
 ### Phase 5: roadmap closure
 
@@ -183,6 +216,18 @@ and roadmap Order 4 disposition.
 ## Required Deliverables
 
 - `artifacts/required-reading-map.md`
+- `artifacts/rework-strategy.md`
+- `artifacts/execution-control-contract.md`
+- `artifacts/later-stage-design.csv`
+- `artifacts/prospective-finding-ledger.csv`
+- `artifacts/holdout-freeze-manifest.csv`
+- `artifacts/freeze-verifier-receipts.csv`
+- `artifacts/executor-command-plan.csv`
+- `artifacts/executor-schema.md`
+- `artifacts/synthetic-gsi-design.csv`
+- `artifacts/native-proof-case-plan.csv`
+- `artifacts/scaffold-verification-agent-a.md`
+- `artifacts/scaffold-verification-agent-b.md`
 - `artifacts/intent-plan.md`
 - `artifacts/input-and-authority-manifest.csv`
 - `artifacts/calibration-readiness-matrix.md`
@@ -250,18 +295,50 @@ spawning/delegation to two prospective reviewers, two terminal scientific
 reviewers, two terminal verifiers, and the `comparator_suite_runner` for heavy
 candidate/population execution; expected outputs are compact review,
 verification, metrics, receipt, and artifact-path results; reviewer/verifier
-write access is read-only and comparator write access is limited to
-package-local results/logs.
+write access is read-only and comparator write access is limited to package-local
+results/logs plus the exact checksum-bound external object paths under
+`/home/workdir/cal04b-objects/` enumerated by
+`artifacts/executor-command-plan.csv`.
 
 ## Minimum Gates
 
 ```text
-sha256sum -c references/canopy_phenology/daymet_calibration/SHA256SUMS
-.venv/bin/python <package>/tools/validate.py
+(cd references/canopy_phenology/daymet_calibration && sha256sum -c SHA256SUMS)
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python <package>/tools/validate_scaffold.py
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python <package>/tools/validate_executor.py
+cargo test --manifest-path <package>/tools/executor/Cargo.toml
+cargo clippy --manifest-path <package>/tools/executor/Cargo.toml --all-targets -- -D warnings
+cargo deny --manifest-path <package>/tools/executor/Cargo.toml check
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python <package>/tools/validate.py
 markdown-doc lint --path <package>
 git diff --check
 ```
 
-No production Rust campaign is selected unless execution discovers and the
-package prospectively authorizes an in-scope production-code change. As
-scaffolded, production code is read-only.
+The scaffold and executor validators are pre-heavy gates. The result validator
+is terminal and must authenticate producer identity, dual reconstruction,
+membership propagation, freeze receipts, one-shot holdout state, and every
+required status artifact. Production code remains read-only; the package-local
+executor calls the existing native kernel and the native-proof command checks
+the production consumer path.
+
+The package-local `.gitattributes` treats the byte-identical inherited CAL-04A
+CRLF grid as binary for diff purposes; all authored text retains normal
+whitespace checking.
+
+## Outcome
+
+The reworked scaffold and executor passed their prospective reviews and
+pre-heavy gates. Four bounded, append-only attempts then stopped before
+population execution. The first and third exposed package-local proof defects
+that were corrected and regression-tested; the second was an orchestration
+interrupt. Attempt 004 passed the corrected native-default real-consumer proof
+and then exposed `CAL04B-NATIVE-001`: the frozen interior `GSI-5557` vector
+publishes positive LAI before the production post-growth path provides positive
+canopy height, so the required rev-21/rev-36 guard fails closed.
+
+This is a broken real parameter path and therefore a package hold boundary.
+Production correction is outside the declared write set. The full Hubbard
+ensemble, later readiness stages, freeze, and Harvard holdout did not run.
+Harvard remains sealed. `artifacts/hold-legitimacy-audit.md` and
+`artifacts/worker-handoff.md` define the evidence and separately authorized
+defect-closure target.

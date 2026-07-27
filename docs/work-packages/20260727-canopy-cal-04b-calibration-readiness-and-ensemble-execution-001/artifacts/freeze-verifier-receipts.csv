@@ -1,0 +1,3 @@
+verifier_id,freeze_digest,verifier_identity,command,timestamp,state
+verifier_a,not-created,not-run,not-run,not-applicable,SEALED_NATIVE_PROOF_HOLD
+verifier_b,not-created,not-run,not-run,not-applicable,SEALED_NATIVE_PROOF_HOLD

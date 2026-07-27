@@ -1,4 +1,5 @@
 # Prompt Lifecycle
 
-The kickoff remains under `active/` while CAL-04B is queued or executing and
-moves to `archived/` only after terminal disposition.
+The executed scaffold-rework kickoff is archived. CAL-04B closed in terminal
+`HOLD` after its frozen interior native-production proof exposed
+`CAL04B-NATIVE-001`. No active prompt remains.

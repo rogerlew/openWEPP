@@ -1,1 +1,1 @@
-stage,configuration_id,observation_role,objective_or_diagnostic,state,evidence
+result_id,design_id,stage_member_id,evidence_role,operand_values,observation_or_truth,objective_components,objective,sensitivity,boundary_flags,failure,accepted_or_recovered,equifinal_set,evidence

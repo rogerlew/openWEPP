@@ -1,0 +1,9 @@
+finding_id,reviewer,severity,finding,disposition,control,status
+TR-A-001,terminal_review_a,HIGH,scaffold validator rejected truthful terminal-HOLD freeze and prompt lifecycle,accepted,evidence-bound terminal-HOLD validator branch plus four regressions,CLOSED
+TR-B-001,terminal_review_b,MEDIUM,root-cause artifacts lacked exact source and function anchors,accepted,incident and HOLD audit name exact builder functions growth module and current lines,CLOSED
+TR-B-002,terminal_review_b,MEDIUM,post-EXEC-015 rereview claim lacked corrected test counts and explicit coverage,accepted,primary and QA artifacts record post-EXEC-015 PASS with 22 Rust and 11 Python tests,CLOSED
+TR-B-003,terminal_review_b,LOW,successor authority-map claim and roadmap link were incomplete,accepted,authority-map artifact added and roadmap links concrete successor,CLOSED
+TV-A-001,terminal_verifier_a,LOW,terminal Markdown evidence retained the earlier 24-file count,accepted,terminal gate section records exact current 39 CAL04B plus 25 successor plus two catalog files,CLOSED
+TV-B-001,terminal_verifier_b,HIGH,successor lacked complete mandatory DC and kernel scaffold wording,accepted,package and kickoff expanded with seven-gate bar phases dependencies scope non-deferral and numeric budget,CLOSED
+QA-T-001,terminal_qa,HIGH,terminal review and verification artifacts remained queued,accepted,populate four terminal artifacts and cite them before final disposition,CLOSED
+QA-T-002,terminal_qa,HIGH,successor required-reading map omitted science-contract instructions and stale byte count,accepted,add exact science-contract and crate instruction paths and recompute budget,CLOSED

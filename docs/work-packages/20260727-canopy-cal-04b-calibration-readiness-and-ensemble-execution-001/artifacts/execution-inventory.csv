@@ -1,1 +1,5 @@
 inventory_id,stage,state,command_ids,evidence
+CAL04B-01,prepare,PASS,prepare,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/1-prepare.receipt.csv
+CAL04B-02,build_executor,PASS,build_executor,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/2-build_executor.receipt.csv
+CAL04B-03,build_production_runner,PASS,build_production_runner,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/3-build_production_runner.receipt.csv
+CAL04B-04,native_proof,FAIL,native_proof,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/4-native_proof.receipt.csv

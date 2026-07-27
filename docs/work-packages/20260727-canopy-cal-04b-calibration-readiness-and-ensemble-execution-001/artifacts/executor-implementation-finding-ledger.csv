@@ -1,0 +1,18 @@
+finding_id,finding,disposition,control_or_correction,state
+EXEC-001,p10 single-lane forcing contradicted later nine-plot authority,accepted,prospective forcing authority amendment plus authenticated nine-lane Daymet producer,CLOSED
+EXEC-002,Daymet leap-calendar gap made continuous cross-year state invalid,accepted,fresh native state per plot-year with real yday 1-180 and no synthetic prefill,CLOSED
+EXEC-003,crossing warm-up eligibility was unspecified,accepted,result-blind yday 60-180 eligibility including day 59-to-60,CLOSED
+EXEC-004,reconstruction broadcast one crossing across plots,accepted,plot-keyed crossing and observation joins in two independent reconstructors,CLOSED
+EXEC-005,plot-year averaging changed the frozen equal-year objective,accepted,record mean within calendar year then equal-year root mean square,CLOSED
+EXEC-006,planned execution evidence was circular,accepted,append-only observed receipts with exact argv cwd exit logs output hashes and immutable snapshot,CLOSED
+EXEC-007,observed receipts did not rehash declared outputs,accepted,current output hash and byte validation plus unique immutable ownership,CLOSED
+EXEC-008,freeze verification authenticated identity without full semantics,accepted,shared Harvard-free raw semantic validator in both verifiers and holdout preflight,CLOSED
+EXEC-009,dual reconstruction omitted exact crossing-ledger comparison,accepted,complete primary and verification crossing ledgers exact-compared and frozen,CLOSED
+EXEC-010,serialized objective precision could drift membership,accepted,round-trip exact 17-decimal objective and threshold plus independent membership reconstruction,CLOSED
+EXEC-011,canonical candidate diagnostics were replaced by plot diagnostics,accepted,one canonical candidate-level diagnostics row independently reconstructed,CLOSED
+EXEC-012,holdout and calibration component authority could share a wrong parser,accepted,independent authenticated 932-record and post-open 319-record authority projections,CLOSED
+EXEC-013,missing-crossing completeness covered only 313 observed plot-years,accepted,all 324 canonical plot-years govern candidate completeness with independent regressions,CLOSED
+EXEC-014,native proof resolved underscore path instead of declared hyphenated Cargo binary,accepted,resolve exact expected-probe release binary and restart from a new empty append-only attempt root,CLOSED
+EXEC-015,direct-kernel proof decimal serialization did not round-trip small f64 values,accepted,scientific notation with 18 significant digits plus bit-round-trip regression,CLOSED
+EXEC-016,frozen interior GSI vector publishes positive LAI before the production post-growth path provides positive canopy height,accepted,stop before population; retain attempt 004; close CAL04B-NATIVE-001 in a separately authorized production defect package,FOLLOW_UP_OUT_OF_SCOPE
+EXEC-017,scaffold validator rejected the truthful terminal-HOLD freeze and archived-prompt lifecycle,accepted,add a narrow evidence-bound terminal-HOLD lifecycle branch while preserving pre-heavy pending/frozen validation,CLOSED

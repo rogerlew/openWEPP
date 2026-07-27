@@ -1,0 +1,15 @@
+finding_id,source,status,required_control,evidence,disposition
+PR-A-01,prospective-review-a,CONTROL_ACCEPTED,CTRL-NATIVE-01,execution-control-contract.md,accepted
+PR-A-02,prospective-review-a,CONTROL_ACCEPTED,CTRL-RECOVERY-01,later-stage-design.csv,accepted
+PR-A-03,prospective-review-a,CONTROL_ACCEPTED,CTRL-HOLDOUT-01,execution-control-contract.md,accepted
+PR-A-04,prospective-review-a,CONTROL_ACCEPTED,CTRL-RECON-01,execution-control-contract.md,accepted
+PR-A-05,prospective-review-a,CONTROL_ACCEPTED,CTRL-ID-01,execution-control-contract.md,accepted
+PR-A-06,prospective-review-a,CONTROL_ACCEPTED,CTRL-RECON-01,execution-control-contract.md,accepted
+PR-A-07,prospective-review-a,CONTROL_ACCEPTED,CTRL-SAT-01,execution-control-contract.md,accepted
+PR-B-01,prospective-review-b,CONTROL_ACCEPTED,CTRL-NATIVE-01,execution-control-contract.md,accepted
+PR-B-02,prospective-review-b,CONTROL_ACCEPTED,CTRL-RECON-01,execution-control-contract.md,accepted
+PR-B-03,prospective-review-b,CONTROL_ACCEPTED,CTRL-ID-01,execution-control-contract.md,accepted
+PR-B-04,prospective-review-b,CONTROL_ACCEPTED,CTRL-SAT-01,execution-control-contract.md,accepted
+PR-B-05,prospective-review-b,CONTROL_ACCEPTED,CTRL-RECOVERY-01,later-stage-design.csv,accepted
+PR-B-06,prospective-review-b,CONTROL_ACCEPTED,CTRL-HOLDOUT-01,execution-control-contract.md,accepted
+PR-B-07,prospective-review-b,CONTROL_ACCEPTED,CTRL-RECON-01,execution-control-contract.md,accepted

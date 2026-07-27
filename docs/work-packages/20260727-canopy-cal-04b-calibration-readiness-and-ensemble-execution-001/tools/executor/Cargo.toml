@@ -1,0 +1,52 @@
+[package]
+name = "cal04b-executor"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+autobins = false
+
+[dependencies]
+openwepp-plant-phenology = { version = "0.1.0", path = "../../../../../crates/openwepp-plant-phenology" }
+
+[workspace]
+
+[[bin]]
+name = "native-producer"
+path = "src/bin/native_producer.rs"
+
+[[bin]]
+name = "reconstruct"
+path = "src/bin/reconstruct.rs"
+
+[[bin]]
+name = "verify-reconstruct"
+path = "src/bin/verify_reconstruct.rs"
+
+[[bin]]
+name = "readiness"
+path = "src/bin/readiness.rs"
+
+[[bin]]
+name = "expected-probe"
+path = "src/bin/expected_probe.rs"
+
+[[bin]]
+name = "synthetic-trace"
+path = "src/bin/synthetic_trace.rs"
+
+[[bin]]
+name = "synthetic-reconstruct"
+path = "src/bin/synthetic_reconstruct.rs"
+
+[[bin]]
+name = "synthetic-verify-reconstruct"
+path = "src/bin/synthetic_verify_reconstruct.rs"
+
+[[bin]]
+name = "holdout-producer"
+path = "src/bin/holdout_producer.rs"
+
+[[bin]]
+name = "holdout-reconstruct"
+path = "src/bin/holdout_reconstruct.rs"
