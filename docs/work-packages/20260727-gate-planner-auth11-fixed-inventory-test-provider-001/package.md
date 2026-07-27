@@ -42,6 +42,12 @@ formatting, JSON, and anti-evasion checks pass.
 - return the predecessor AUTH11 package to fresh dual implementation review,
   exact terminal reconstruction, and canonical admission.
 
+The exact sorted AUTH11 identities are:
+
+1. `auth11_all_active_required_suite_targets_exist_and_are_registered`
+2. `auth11_obligations_schema_and_anchor_bindings_are_enforced`
+3. `auth11_registry_posture_and_protocol_guard_paths_exist`
+
 ## Excluded Scope
 
 - production planner, policy, fixture, schema, executor, or verifier changes;
@@ -65,26 +71,44 @@ No other path is writable. This write set must not widen.
 2. Apply the smallest test-only provider correction and exact assertions.
 3. Run the reproducer, focused AUTH11 tests, full gate-planner Nextest, strict
    package Clippy, formatting, JSON/alignment, diff, and line-count checks.
-4. Obtain dual implementation review at one exact clean commit.
+4. Obtain dual implementation review at one exact clean commit and disposition
+   every finding as `ACCEPTED`, `REJECTED`, `DEFERRED`, or `FOLLOW_UP`.
 5. Reconstruct the predecessor AUTH11 terminal plan and require 13 nodes,
    2,378 globally unique inventory IDs, 3,095 summed per-node entries, 2,352
    workspace tests, the exact three AUTH11 IDs, and exact prerequisite edges.
-6. Resume canonical admission only after every check is green.
+6. Obtain two independent terminal verifications of the exact retained plan,
+   inventory arithmetic, prerequisite edges, and no-production-diff security
+   gate.
+7. Resume canonical admission only after every check is green.
 
 ## Acceptance
 
-- Only the test-local `FixedInventory` implementation changes.
-- Its AUTH11 branch returns exactly the three sorted identities frozen in the
-  predecessor package; every other branch retains its previous single
-  `definition:target` synthetic identity.
+- The only Rust changes are the test-local `FixedInventory` AUTH11 branch and
+  assertions inside
+  `gate_policy_change_is_deterministic_and_critical`; no other test or
+  production item changes.
+- Its AUTH11 branch returns exactly this sorted list:
+  `auth11_all_active_required_suite_targets_exist_and_are_registered`,
+  `auth11_obligations_schema_and_anchor_bindings_are_enforced`,
+  `auth11_registry_posture_and_protocol_guard_paths_exist`. Every other branch
+  retains its previous single `definition:target` synthetic identity.
 - The reproducer passes without lowering `minimum_count`, bypassing exact
   inventory, padding production inventory, or special-casing production code.
 - The deterministic gate-policy test proves AUTH11 selection, exact inventory,
   and exact generated admission/anti-evasion prerequisite node IDs.
 - Full gate-planner Nextest passes 227/227 and all predecessor focused gates
   remain green.
-- Dual review and exact terminal reconstruction pass before canonical
-  execution.
+- Dual review, explicit finding disposition, exact terminal reconstruction,
+  and dual terminal verification pass before canonical execution.
+
+## Security-Impact Gate
+
+The exact terminal diff must contain no production Rust, policy, fixture,
+schema, executor, verifier, or inventory-enforcement change. Both terminal
+verifiers must independently confirm that the only Rust diff is the two
+test-local changes authorized above and that production `minimum_count`,
+`inventory_mode`, inventory enumeration, and fail-closed behavior remain
+unchanged. Any production-path diff is `FAIL` and blocks closure.
 
 ## Security Invariants
 
@@ -95,7 +119,8 @@ No other path is writable. This write set must not widen.
 ## Subagent Authorization
 
 Subagent authorization: this package explicitly authorizes subagent
-spawning/delegation to one bounded implementation worker and two independent
-read-only reviewers; expected outputs are the exact test-provider correction,
-focused/full validation, and review dispositions; write access is limited to
+spawning/delegation to one bounded implementation worker, two independent
+read-only reviewers, and two independent terminal verifiers; expected outputs
+are the exact test-provider correction, focused/full validation, review finding
+dispositions, and terminal verification receipts; write access is limited to
 the declared write set.
