@@ -3330,8 +3330,6 @@ review:
   review_charge: null
   build_maintainer_id: null
   material_producer_ids: []
-  findings: []
-  approvals: []
 publication:
   id: SF-PUBLICATION
   title: Publication authorization state
