@@ -1706,4 +1706,53 @@ mod cqr_row6_growth_tests {
         assert_eq!(state.state_after.root_depth_m.to_bits(), 0.90_f64.to_bits());
         assert!(state.state_after.root_depth_m.is_finite());
     }
+
+    #[test]
+    fn native_canopy_height_zero_positive_and_structural_vectors() {
+        let zero = direct_native_canopy_height_m(0.0, 0.0, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-004 exact-zero biomass");
+        assert_eq!(zero.to_bits(), 0.0_f64.to_bits());
+
+        let positive = direct_native_canopy_height_m(0.05, 0.10, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-001 zero-to-positive limb");
+        let expected = (1.0 - (-3.0_f64 * 0.15).exp()) * 0.2;
+        assert_eq!(positive.to_bits(), expected.to_bits());
+        assert!(positive > 0.0);
+
+        let structural = direct_native_canopy_height_m(0.0, 0.10, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-002 structural-only leaf-off");
+        assert!(structural > 0.0);
+    }
+
+    #[test]
+    fn native_canopy_height_is_monotone_and_allows_finite_saturation() {
+        let low = direct_native_canopy_height_m(0.01, 0.0, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-004 low endpoint");
+        let high = direct_native_canopy_height_m(0.20, 0.10, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-004 high endpoint");
+        assert!(low > 0.0 && low < high && high <= 0.2);
+
+        let saturated = direct_native_canopy_height_m(1.0, 0.0, 1.0e300, 0.2)
+            .expect("finite exponential saturation is valid");
+        assert_eq!(saturated.to_bits(), 0.2_f64.to_bits());
+    }
+
+    #[test]
+    fn native_canopy_height_rejects_invalid_and_incoherent_arithmetic() {
+        for (foliar, structural, bbb, hmax) in [
+            (0.1, 0.0, 0.0, 0.2),
+            (0.1, 0.0, -1.0, 0.2),
+            (0.1, 0.0, f64::NAN, 0.2),
+            (0.1, 0.0, 3.0, 0.0),
+            (0.1, 0.0, 3.0, f64::INFINITY),
+            (f64::MAX, f64::MAX, 1.0, 0.2),
+            (f64::MAX, 0.0, 2.0, 0.2),
+            (f64::MIN_POSITIVE, 0.0, f64::MIN_POSITIVE, 0.2),
+        ] {
+            assert!(
+                direct_native_canopy_height_m(foliar, structural, bbb, hmax).is_err(),
+                "TV-PLANT-GSI-HC-005 must reject ({foliar}, {structural}, {bbb}, {hmax})"
+            );
+        }
+    }
 }

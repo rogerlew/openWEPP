@@ -61,7 +61,7 @@ authority to close end-to-end.
   total above-ground biomass, while CP-GSI02 `Bf` is foliar-only.
 - [x] 2026-07-27: Amend canonical authority if the current-day height law or transition
   ordering is not already explicit.
-- [ ] Add contract-derived zero-to-positive transition tests and run the
+- [x] 2026-07-27: Add contract-derived zero-to-positive transition tests and run the
   pre-implementation contract gate.
 - [ ] Correct production projection and prove all named real consumers.
 - [ ] Pass critical gates, dual review, finding disposition, and dual terminal

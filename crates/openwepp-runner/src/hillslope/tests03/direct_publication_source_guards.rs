@@ -528,6 +528,27 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
         builder.contains(".native_forest_growth_state_for_build("),
         "the growth-state producer must realize native forest phenology"
     );
+    let native_height_parameter_validation = builder
+        .find("validate_direct_native_canopy_height_parameters(")
+        .expect("native bbb/hmax validation must be explicit");
+    let native_state_mutation = builder
+        .find(".advance(parameters, gsi_forcing)")
+        .expect("native GSI state mutation");
+    let native_height_projection = builder
+        .find("direct_native_canopy_height_m(")
+        .expect("same-day native height projection");
+    let native_height_publication = builder
+        .find("growth_state.canopy_height_m =")
+        .expect("same-day native height publication");
+    assert!(
+        native_height_parameter_validation < native_state_mutation,
+        "native bbb/hmax validation must precede GSI state mutation"
+    );
+    assert!(
+        native_state_mutation < native_height_projection
+            && native_height_projection < native_height_publication,
+        "native height must be derived from and published with the post-GSI realization"
+    );
     assert!(
         builder.contains("perennial_growth_inputs.state_before = growth_state_for_publication")
             && builder.contains("annual_growth_inputs.state_before = growth_state_for_publication"),
