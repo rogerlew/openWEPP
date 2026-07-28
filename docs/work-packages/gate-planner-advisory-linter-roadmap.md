@@ -1,6 +1,6 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `ACCEPTED / ORDER 2 COMPLETE; ORDER 3 AWAITS AUTHORIZATION`
+Status: `ACCEPTED / ORDER 3 ACTIVE`
 
 Owner: maintainers
 
@@ -150,7 +150,7 @@ authority.
 | 0 | `complete` | `20260727-gate-planner-advisory-linter-roadmap-001` | Ratified the philosophy, ADR, conflict inventory, target interface, migration/deletion map, value metrics, and decomposition with three independent `GO` reviews. Documentation only. | User direction |
 | 1 | `complete` | `20260727-gate-planner-governance-authority-alignment-001` | Applied ADR-0043 to operative guidance, direct governance guards, historical identity, and frozen package statuses while preserving underlying correctness and protected-data obligations. | User authorization |
 | 2 | `complete` | `20260727-gate-planner-cal04b-legacy-integration-removal-001` | Removed obsolete planner/external-transaction dependencies from prospective CAL tooling while preserving direct execution, durable primary-failure evidence, Harvard sealing, and the freeze/open barrier. | Completed Order 1 and explicit user authorization |
-| 3 | `queued / not scaffolded` | Advisory linter thin slice | Deliver the read-only lint command and prove its findings on representative package/diff fixtures without executing or mutating anything. | Orders 1-2 |
+| 3 | `active` | `20260727-gate-planner-advisory-linter-thin-slice-001` | Deliver the read-only lint command and prove its findings on representative package/diff fixtures without executing or mutating anything. | Orders 1-2 and explicit user authorization |
 | 4 | `queued / not scaffolded` | Legacy execution and CI retirement | Remove or quarantine planner execution, CI, receipt, ledger, resume, recovery, external-DAG, and publication surfaces after exact consumer inventory. Preserve only historical evidence verification that still has a named consumer. | Order 3 |
 | 5 | `queued / not scaffolded` | Agent-friction qualification | Compare the linter with manual planning on real modeling packages, verify the nonblocking failure path, and retain or delete features according to measured utility. No CI qualification. | Orders 3-4 |
 
