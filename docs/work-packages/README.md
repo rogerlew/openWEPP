@@ -332,6 +332,11 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-gate-planner-governance-authority-alignment-001/` -
+  ACTIVE: roadmap Order 1 applies ADR-0043 to operative guidance,
+  source-coupled guards, historical policy identity, and frozen planner package
+  statuses through direct manual validation. It does not modify planner
+  executables, CI, CAL, science, or Harvard state.
 - `20260727-gate-planner-advisory-linter-roadmap-001/` -
   EXECUTED-COMPLETE / PLANNING ONLY: accepted ADR-0043, the advisory interface,
   manual fallback, exact governance amendment plan, migration/deletion map,
