@@ -59,19 +59,6 @@ POLICY_PATHS = (
     "docs/standards/testing-and-gate-strategy.md",
     "docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
 )
-PRUNED_ATTRIBUTE_DIRECTORIES = {
-    ".git",
-    ".venv",
-    ".mypy_cache",
-    ".pytest_cache",
-    "__pycache__",
-    "node_modules",
-    "target",
-    "build",
-    "dist",
-}
-
-
 class InvocationError(ValueError):
     """The user-facing command shape is invalid."""
 
@@ -255,6 +242,8 @@ def prohibited_config(root: Path) -> list[str]:
                 or key in {"clean", "smudge", "process"}
             ):
                 findings.append(f"{relative}:{line_number}:{qualified}")
+    if findings:
+        return sorted(findings)
     attribute_paths = [".git/info/attributes"]
     for directory, names, _files in os.walk(root, followlinks=False):
         directory_path = Path(directory)
@@ -265,7 +254,6 @@ def prohibited_config(root: Path) -> list[str]:
             name
             for name in names
             if not (directory_path / name).is_symlink()
-            and name not in PRUNED_ATTRIBUTE_DIRECTORIES
         ]
         attributes = directory_path / ".gitattributes"
         if not attributes.exists():

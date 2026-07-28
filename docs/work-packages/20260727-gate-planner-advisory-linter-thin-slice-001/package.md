@@ -161,9 +161,9 @@ access is read-only.
 
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 3.
 - [x] 2026-07-27 — Thin slice implemented.
-- [x] 2026-07-27 — Twenty-four adversarial and representative tests passed.
+- [x] 2026-07-27 — Twenty-five adversarial and representative tests passed.
 - [x] 2026-07-27 — Documentation and manual fallback passed.
-- [ ] Dual review and finding disposition passed.
+- [x] 2026-07-27 — Dual review and finding disposition passed.
 - [ ] Dual verification and exact-diff closure passed.
 - [ ] Prompt archived, catalogs closed, and completion committed.
 

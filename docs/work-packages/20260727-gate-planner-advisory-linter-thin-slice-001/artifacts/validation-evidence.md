@@ -9,7 +9,7 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
   -m unittest tools/validation/test_workplan_lint.py
 ........................
 ----------------------------------------------------------------------
-Ran 24 tests in 3.014s
+Ran 25 tests in 3.738s
 
 OK
 ```
@@ -55,7 +55,7 @@ refusal behavior, not a lifecycle verdict.
 ## Line Count
 
 ```text
- 1013 tools/validation/workplan_lint.py
+ 1001 tools/validation/workplan_lint.py
    10 tools/validation/workplan-lint
-1,023 production lines
+1,011 production lines
 ```

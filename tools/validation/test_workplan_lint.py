@@ -636,6 +636,30 @@ class WorkplanLintTest(unittest.TestCase):
                     LINT.default_runner(fixture.root, suffix)
         process.assert_not_called()
 
+    def test_nested_attributes_are_never_pruned_before_launch(self) -> None:
+        for directory in (
+            ".venv",
+            ".mypy_cache",
+            ".pytest_cache",
+            "__pycache__",
+            "node_modules",
+            "target",
+            "build",
+            "dist",
+        ):
+            with self.subTest(directory=directory):
+                temporary, fixture = self.fixture()
+                try:
+                    fixture.write(f"{directory}/.gitattributes", "*.txt filter=driver\n")
+                    with patch.object(LINT.subprocess, "Popen") as process:
+                        with self.assertRaises(LINT.AnalysisUnavailable):
+                            LINT.default_runner(
+                                fixture.root, ("rev-parse", "--show-toplevel")
+                            )
+                    process.assert_not_called()
+                finally:
+                    temporary.cleanup()
+
     def test_helper_and_network_canaries_are_never_executed(self) -> None:
         temporary, fixture = self.fixture()
         self.addCleanup(temporary.cleanup)
