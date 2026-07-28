@@ -55,7 +55,7 @@ refusal behavior, not a lifecycle verdict.
 ## Line Count
 
 ```text
-  994 tools/validation/workplan_lint.py
+ 1013 tools/validation/workplan_lint.py
    10 tools/validation/workplan-lint
-1,004 production lines
+1,023 production lines
 ```

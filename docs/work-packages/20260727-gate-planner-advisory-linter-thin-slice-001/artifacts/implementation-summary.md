@@ -20,8 +20,8 @@ The thin slice provides:
 - pre-launch refusal for prohibited Git configuration and attributes; and
 - a manual route that never makes linter repair a prerequisite.
 
-The product implementation is 1,004 lines including the executable wrapper,
-below the 3,000-line package ceiling. The test implementation is 709 lines.
+The product implementation is 1,023 lines including the executable wrapper,
+below the 3,000-line package ceiling. The test implementation is 712 lines.
 
 The repository's existing Git LFS filter configuration is prohibited by the
 frozen safety contract. Consequently, direct use against openWEPP reports

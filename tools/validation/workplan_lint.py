@@ -28,6 +28,8 @@ FORMATS = ("human", "json")
 REVISION = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/@{}^~:+-]{0,199}\Z")
 HEX40 = re.compile(r"[0-9a-f]{40}\Z")
 PACKAGE_ID = re.compile(r"`([^`\n]+)`")
+CONFIG_SECTION = re.compile(r"^\[([^\]\r\n]+)\]\s*(?:[#;].*)?$")
+CONFIG_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9-]*)(?:\s*=|\s*$)")
 
 GIT_PREFIX = (
     str(GIT),
@@ -210,19 +212,33 @@ def prohibited_config(root: Path) -> list[str]:
             line = raw_line.strip()
             if not line or line.startswith(("#", ";")):
                 continue
-            if line.startswith("[") and line.endswith("]"):
-                section = line[1:-1].strip().lower()
-                if (
-                    section.startswith("include")
-                    or section.startswith("alias")
-                    or section.startswith("pager")
-                    or section.startswith("credential")
-                    or section.startswith("url ")
-                    or section.startswith("filter ")
-                ):
+            if line.startswith("["):
+                section_match = CONFIG_SECTION.fullmatch(line)
+                if section_match is None:
+                    findings.append(f"{relative}:{line_number}:unparsed-section")
+                    section = ""
+                    continue
+                section = section_match.group(1).strip().lower()
+                section_root = re.split(r'[ ."]', section, maxsplit=1)[0]
+                if section_root in {
+                    "include",
+                    "includeif",
+                    "alias",
+                    "pager",
+                    "credential",
+                    "url",
+                    "filter",
+                }:
                     findings.append(f"{relative}:{line_number}:{section}")
                 continue
-            key = line.split("=", 1)[0].strip().lower()
+            if line.endswith("\\"):
+                findings.append(f"{relative}:{line_number}:continued-value")
+                continue
+            key_match = CONFIG_KEY.match(line)
+            if key_match is None:
+                findings.append(f"{relative}:{line_number}:unparsed-key")
+                continue
+            key = key_match.group(1).lower()
             qualified = f"{section}.{key}"
             if (
                 qualified

@@ -567,6 +567,8 @@ class WorkplanLintTest(unittest.TestCase):
             '[core]\nhooksPath = /tmp/hooks\n',
             '[core]\npager = /tmp/helper\n',
             '[core]\nattributesFile = /tmp/attributes\n',
+            '[core] # accepted trailing comment\npager = /tmp/helper\n',
+            '[include] ; accepted trailing comment\npath = /tmp/other\n',
             '[maintenance "daily"]\ncommand = /tmp/helper\n',
             '[alias]\nstatus = !/tmp/helper\n',
             '[pager]\nstatus = /tmp/helper\n',
