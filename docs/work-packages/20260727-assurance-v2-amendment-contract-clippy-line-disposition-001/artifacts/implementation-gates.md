@@ -30,5 +30,11 @@ with 12/12 nodes and 2,387/2,387 inventory items. The stale-assertion HOLD in
 this artifact is therefore `LIFTED`; this package may proceed through its own
 terminal/receipt disposition.
 
+The assurance-specific canonical transaction at exact head
+`ffe1dd71eec578a621f66fc2939304971653e92b` then passed all 12 nodes,
+2,387/2,387 inventory items, and full 2,361/2,361 under campaign
+`ASSURANCE-V2-CLIPPY-LINE-01`. The gate table's retained historical HOLD is
+superseded by this exact closure evidence.
+
 Harvard remained sealed and CAL population remained prohibited during these
 gates.

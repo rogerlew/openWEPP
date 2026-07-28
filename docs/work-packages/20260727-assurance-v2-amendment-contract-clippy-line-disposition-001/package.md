@@ -160,7 +160,8 @@ exception.
 - [x] Dual implementation review and finding disposition complete.
 - [x] Full-regression follow-up closed with 2,361/2,361 PASS.
 - [x] Dual terminal verification complete.
-- [ ] Canonical PASS receipt and dual receipt verification complete.
+- [x] Canonical PASS receipt complete.
+- [ ] Dual receipt verification complete.
 
 ## Surprises & Discoveries
 
