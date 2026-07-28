@@ -15,12 +15,20 @@ Evidence class: `Ran`
 | formatting, docs lint, diff hygiene | PASS |
 | full workspace Nextest profile | HOLD, 2,360/2,361 passed; 43 skipped; run `dd04b429-27d3-494d-96be-1d3a7a80423f` |
 
-The sole full-profile failure is a stale source-string assertion in
+The retained full-profile failure was a stale source-string assertion in
 `tests/integration/testgate_ci_executor_contract.rs`. It expects
 `load_candidate_after_ready_audit(...)`, while the reviewed ledger correction
 intentionally uses `load_candidate_after_ready_audit_text(...)` with bytes read
-from the retained bound handle. A prospective successor must update that exact
-consumer assertion before this package can reach terminal verification.
+from the retained bound handle.
+
+Successor
+`20260727-testgate-bound-ledger-source-contract-alignment-001` replaced that
+exact assertion and passed focused 11/11, strict Clippy, full 2,361/2,361,
+dual implementation/terminal review, and fresh canonical receipt
+`940e599d3ff77e6ef96e5ccae1343915a4edd67d4d1b948b0d3027502b2e6904`
+with 12/12 nodes and 2,387/2,387 inventory items. The stale-assertion HOLD in
+this artifact is therefore `LIFTED`; this package may proceed through its own
+terminal/receipt disposition.
 
 Harvard remained sealed and CAL population remained prohibited during these
 gates.

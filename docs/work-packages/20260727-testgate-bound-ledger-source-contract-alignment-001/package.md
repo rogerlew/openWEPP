@@ -4,7 +4,7 @@ Package ID: `20260727-testgate-bound-ledger-source-contract-alignment-001`
 
 Queue ID: `TESTGATE-BOUND-LEDGER-CONTRACT-01`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Authorization: the user's 2026-07-27 direction to complete CAL-04B and resolve
 its assurance/TESTGATE blockers through reviewed work-package corrections.
@@ -174,7 +174,8 @@ refactor thresholds.
   passed, including full 2,361/2,361.
 - [x] (2026-07-27, verifiers A/B) Dual terminal verification passed.
 - [x] (2026-07-27, comparator) Canonical TESTGATE PASS retained.
-- [ ] Dual receipt verification and final disposition complete.
+- [x] (2026-07-27, receipt verifiers A/B) Dual receipt verification passed.
+- [x] (2026-07-27, Codex) Final disposition complete.
 
 ## Surprises & Discoveries
 
@@ -197,7 +198,11 @@ refactor thresholds.
 
 ## Outcomes & Retrospective
 
-Pending implementation and closure.
+The exact two-assertion correction restored the full profile to 2,361/2,361
+and passed a fresh 12-node canonical transaction with 2,387 planned/executed
+inventory items. All independent gates passed with no findings. The key
+scaffold lesson was that evidence-byte arithmetic and predecessor claims must
+be literal and prospectively bounded, even for a two-line test-only repair.
 
 Harvard remains sealed and CAL population remains prohibited.
 

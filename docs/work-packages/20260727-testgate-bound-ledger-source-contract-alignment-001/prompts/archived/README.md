@@ -1,3 +1,3 @@
 # Archived Prompts
 
-No archived prompt exists for this package.
+`execute.md` is the completed end-to-end kickoff prompt retained for audit.
