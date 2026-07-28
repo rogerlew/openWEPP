@@ -37,7 +37,7 @@ markdown-doc lint --path tools/validation
 
 markdown-doc lint --path \
   docs/work-packages/20260727-gate-planner-advisory-linter-thin-slice-001
-11 files validated, 0 errors, 0 warnings
+15 files validated, 0 errors, 0 warnings
 
 git diff --check
 PASS

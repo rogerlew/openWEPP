@@ -1,3 +1,3 @@
 # Archived Prompts
 
-Move the execution prompt here after terminal disposition.
+`execute.md` is the archived Order 3 execution prompt.

@@ -332,9 +332,9 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-gate-planner-advisory-linter-thin-slice-001/` -
-  ACTIVE: roadmap Order 3 implements the neutral read-only advisory command,
-  deterministic findings, and adversarial no-execution/no-mutation proof. It
-  has no CI or lifecycle role.
+  COMPLETE / PASS: roadmap Order 3 delivered the neutral read-only advisory
+  command, deterministic findings, and adversarial no-execution/no-mutation
+  proof with dual review and verification. It has no CI or lifecycle role.
 - `20260727-gate-planner-cal04b-legacy-integration-removal-001/` -
   COMPLETE / PASS: roadmap Order 2 removed prospective CAL planner transactions
   and publication, replacing them with direct execution, durable

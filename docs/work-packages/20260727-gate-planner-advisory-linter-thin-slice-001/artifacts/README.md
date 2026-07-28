@@ -9,3 +9,6 @@ Current implementation evidence is in `implementation-summary.md` and
 
 Independent findings and their disposition are in `review-a.md`, `review-b.md`,
 and `finding-disposition.md`.
+
+Terminal evidence is in `verification-a.md`, `verification-b.md`,
+`exact-diff-reconciliation.md`, and `final-disposition.md`.
