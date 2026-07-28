@@ -333,14 +333,15 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-gate-planner-advisory-linter-roadmap-001/` -
-  QUEUED / PLANNING ONLY: establishes the binding philosophy, ADR, advisory
-  interface, manual fallback, migration/deletion map, friction criteria, and
-  reviewed downstream decomposition. No implementation child may be
-  scaffolded before this package closes.
+  EXECUTED-COMPLETE / PLANNING ONLY: accepted ADR-0043, the advisory interface,
+  manual fallback, exact governance amendment plan, migration/deletion map,
+  friction protocol, and downstream decomposition after three independent
+  `GO` reviews. No implementation child was scaffolded.
 - Gate-planner closeout and prerequisite packages listed below are frozen by
   the 2026-07-27 user-directed re-conceptualization. Their code and artifacts
-  remain historical evidence; no further execution advances them while the
-  planning-only advisory-linter roadmap is pending.
+  remain historical evidence; no further execution advances them. Order 1 owns
+  exact package-local frozen-status overlays so no stale `ACTIVE` file can
+  resume them.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
   ACTIVE / SCIENCE INCIDENT RECONCILIATION PENDING: the planner no longer
   blocks direct package-authored modeling under the 2026-07-27 user direction.
@@ -1380,7 +1381,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   EXECUTED-HOLD-ACTIVE-ROUTER-CLAMP-NUMERICS (2026-07-08): reran the WA
   selected-cohort active-plain mesh ladder on current `main` and reproduced
   the Tier-2 blocker. `dx2p5` and `dx1p25` fail the first active day-cascade
-  closure guard on day 1122 with sub-litre absolute residuals but
+  closure guard on day 1122 with sub-liter absolute residuals but
   `190M-858M m3` clamp/storage operands; completed rungs show the dominant
   magnitude at day 1418 lane 5, including a material clamp event at the retained
   fixed `10 cells/OFE` active default. Hydrology-source rows are invariant
@@ -1989,7 +1990,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   at `0:00.07-0:00.08`, and practical full openWEPP command-chain repeats at
   `1:02.38`, `1:01.41`, and `1:01.06` (`avg 1:01.62`) plus a full-chain profile
   run at `1:02.07`. The package closes with no active blockers; legacy and
-  openWEPP timing scopes remain non-equivalent unless a legacy-equivalent
+  openWEPP timing scopes remain nonequivalent unless a legacy-equivalent
   openWEPP surface is introduced. The initial comparator subagent dispatch
   errored due model capacity, so benchmark runs completed locally with
   command-level evidence.
@@ -2833,11 +2834,11 @@ artifacts remain factual; do not dispatch or resume them independently.
   direct R4G state, downstream operands, shadow projection, runtime carry, and
   publication-facing winter-column state. Full workspace gates pass. Its
   next-route note is superseded by the completed SNOWDENSITY-08 gate rerun.
-- `20260626-snowdensity-06b-coe-bound-density-replay-001/` is complete as
+- `20260626-snowdensity-06b-ce-bound-density-replay-001/` is complete as
   SNOWDENSITY-06B, the CoE-bound density replay gate. It amended
   `SC-SNOWFREEZE-001` to v85 with `INV-SNOWFREEZE-059`,
   `OBL-SNOWFREEZE-P-034`, and the 06B addendum; added diagnostic-only
-  `openwepp-snowbench coe-bound-density`; replayed `density_compaction_v1`
+  `openwepp-snowbench ce-bound-density`; replayed `density_compaction_v1`
   against fixed `legacy_coe` and `coe_shortwave_albedo_v1` CoE
   melt/liquid/SWE-loss boundaries; and ran five-site SNOTEL adjudication.
   Both CoE-bound candidates preserve daily CoE SWE identity
@@ -2866,7 +2867,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   SNOWDENSITY-05G, the harness-fidelity rerun gate. It amended
   `SC-SNOWFREEZE-001` to v83 with `INV-SNOWFREEZE-057`,
   `OBL-SNOWFREEZE-P-032`, and the 05G addendum; corrected diagnostic
-  `openwepp-snowbench coe-melt` replay to consume configured runtime-surface
+  `openwepp-snowbench ce-melt` replay to consume configured runtime-surface
   coniferous canopy (`cancov = 0.9` for all five SNOTEL fixtures) instead of
   the prior `0.0` harness constant; recorded the PySnobal bridge shortwave
   inversion identity as like-for-like; and reran five-site SNOTEL adjudication.
@@ -2895,7 +2896,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   `SNOWDENSITY-05G Harness Fidelity Rerun`.
 - `20260626-snowdensity-05e-melt-rubric-adjudication-001/` is complete as
   SNOWDENSITY-05E, the melt-rubric adjudication gate. It added diagnostic-only
-  `openwepp-snowbench coe-melt` replay for `legacy_coe` and
+  `openwepp-snowbench ce-melt` replay for `legacy_coe` and
   `coe_shortwave_albedo_v1`, generated five-site SNOTEL rubric profiles, and
   reran the non-SNOTEL baseline. The opt-in path is a bounded
   `PROMOTION-CANDIDATE` relative to diagnostic legacy
@@ -2904,7 +2905,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   `robust_fail_count=9`, `robust_ordinal_score=84`, and non-SNOTEL frost
   attribution remains blocked by snow-control failures. The next route is
   `SNOWDENSITY-05F Melt Closure / Density Handoff`.
-- `20260626-snowdensity-05d-opt-in-coe-melt-implementation-001/` is complete
+- `20260626-snowdensity-05d-opt-in-ce-melt-implementation-001/` is complete
   as SNOWDENSITY-05D, the opt-in CoE melt implementation gate. It amended
   `SC-SNOWFREEZE-001` to v79 with `INV-SNOWFREEZE-055`,
   `OBL-SNOWFREEZE-P-030`, and
@@ -3166,7 +3167,7 @@ artifacts remain factual; do not dispatch or resume them independently.
   `direct_runtime`, added inert boxed `DirectWinterColumnState` ownership hooks
   to direct lane/day frames, reused existing runtime-input hourly winter forcing
   authority, proved the new module has no compatibility request/symbol
-  authority, split the oversized direct-publication day-input helper into
+  authority, split the oversize direct-publication day-input helper into
   sub-3000-line chunks, and fixed the active-frost no-freeze hourly diagnostic
   gate blocker exposed by workspace validation. It does not claim solver
   migration, publication parity, performance closure, default activation, or
@@ -4066,7 +4067,7 @@ State as of `2026-06-21`:
   The scoped target reduced `build_simulation_owned_wb13_row_for_ofe` CRAP from
   `251.62932776803854` to `16.0`, with every newly extracted helper CRAP
   `<= 12.584884659264825`. WARNs remain for `cargo crap` LCOV source-map
-  warnings and the pre-existing same-file out-of-scope
+  warnings and the preexisting same-file out-of-scope
   `derive_profile_fc_store_from_authoritative_layers` row above CRAP `30`.
   Package: `20260615-cqr31-runner-output-climate-complexity-001/`.
 - CQR30 is complete-with-warnings for behavior-preserving
@@ -4090,7 +4091,7 @@ State as of `2026-06-21`:
   The scoped target reduced `run_percolation` CRAP from
   `281.82979375564685` to `17.19373252009578`, with every newly extracted
   helper CRAP `<= 22.896222121074196`. WARNs remain for `cargo crap` LCOV
-  source-map warnings and pre-existing same-file out-of-scope rows above CRAP
+  source-map warnings and preexisting same-file out-of-scope rows above CRAP
   `30`. Package: `20260615-cqr28-plant-percolation-complexity-001/`.
 - CQR27 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
@@ -4114,7 +4115,7 @@ State as of `2026-06-21`:
   WB16 helper at CRAP `<= 15.401920438957477`, without changing public API,
   runtime symbols, publication formulas, typed guard behavior, parser
   compatibility, or science-contract behavior. WARNs remain for target-file
-  coverage below the ADR-0021 line threshold and pre-existing same-file
+  coverage below the ADR-0021 line threshold and preexisting same-file
   out-of-scope rows above CRAP `30`. Package:
   `20260615-cqr24-scheduler-seed-runtime-complexity-001/`.
 - CQR23 is complete-with-warnings for behavior-preserving
@@ -4125,7 +4126,7 @@ State as of `2026-06-21`:
   below `15`, without changing public API, runtime symbols, writeback order,
   typed guard behavior, parser compatibility, or science-contract behavior.
   WARNs remain for target-file coverage below the ADR-0021 line threshold and
-  the pre-existing out-of-scope `erod19_depend` row at CRAP
+  the preexisting out-of-scope `erod19_depend` row at CRAP
   `87.98408081839372`. Package:
   `20260615-cqr23-erod19-route-segment-complexity-001/`.
 - CQR22 completed behavior-preserving CRAP/cyclomatic-complexity
@@ -4165,7 +4166,7 @@ State as of `2026-06-21`:
   aliases, units, publication units, scalar exceptions, parser compatibility,
   or science-contract behavior. Required Rust closure gates passed. WARNs
   remain for target-file coverage below the full ADR-0021 module threshold and
-  the pre-existing out-of-scope `validate_entry` row at CRAP
+  the preexisting out-of-scope `validate_entry` row at CRAP
   `62.4742520806637`. Package:
   `20260615-cqr16-unit-registries-complexity-001/`.
 - CQR15 is complete-with-warnings for behavior-preserving
@@ -4188,7 +4189,7 @@ State as of `2026-06-21`:
   release sidecar schema, binary role classification, stable error variants,
   candidate filtering, HBP pair parity, hash, timestamp, or JSON field
   behavior. Required Rust closure gates passed. WARN remains for the
-  pre-existing out-of-scope `validate_release_sidecar_unlocked` row at CRAP
+  preexisting out-of-scope `validate_release_sidecar_unlocked` row at CRAP
   `31.459079074798446`. Package:
   `20260615-cqr14-runner-release-complexity-001/`.
 - CQR13 is complete for live-metric closure of the rank-7
@@ -4212,7 +4213,7 @@ State as of `2026-06-21`:
   compatibility, period iteration, sprinkler/furrow field meanings, or
   kernel-facing projection behavior. Required Rust closure gates passed. WARN
   holds remain for target-file coverage below the science-tier threshold and
-  the pre-existing out-of-scope frost `too_many_lines` suppression. Package:
+  the preexisting out-of-scope frost `too_many_lines` suppression. Package:
   `20260615-cqr12-irrigation-depletion-runtime-001/`.
 - CQR11 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
@@ -4223,7 +4224,7 @@ State as of `2026-06-21`:
   names, count/cardinality guards, branch compatibility, parser output shape, or
   runtime/kernel-facing management semantics. Required Rust closure gates
   passed. WARN holds remain for target-file coverage below the science-tier
-  threshold and pre-existing out-of-scope CRAP rows above `30`. Package:
+  threshold and preexisting out-of-scope CRAP rows above `30`. Package:
   `20260615-cqr11-management-parser-complexity-001/`.
 - CQR10 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
@@ -4235,7 +4236,7 @@ State as of `2026-06-21`:
   and allowed strings, fixed-date irrigation symbols, units, parser
   compatibility, event order, furrow formulas, or kernel-facing projection
   behavior. Required closure gates passed. WARN holds remain for target-file
-  coverage below the science-tier threshold and the pre-existing out-of-scope
+  coverage below the science-tier threshold and the preexisting out-of-scope
   depletion CRAP row above `30`. Package:
   `20260615-cqr10-irrigation-fixeddate-runtime-001/`.
 - CQR09 is complete-with-warnings for behavior-preserving
@@ -4247,7 +4248,7 @@ State as of `2026-06-21`:
   stable error reasons, decomposition symbols, units, parser compatibility,
   scheduler payload fields, or output formulas. Required closure gates passed.
   WARN holds remain for target-file coverage below the science-tier threshold
-  and pre-existing out-of-scope CRAP rows above `30`. Package:
+  and preexisting out-of-scope CRAP rows above `30`. Package:
   `20260615-cqr09-decomposition-equations-complexity-001/`.
 - CQR08 is complete for behavior-preserving function-length/lint-debt
   decomposition of
@@ -4266,7 +4267,7 @@ State as of `2026-06-21`:
   reducing `read_batch_into` CRAP from `4830.0` to `4.0`, without changing WAT
   reader, aggregation, optional-column, fail-closed, or public publication
   behavior. Required closure gates passed. WARN holds remain for target coverage
-  below the science-tier threshold and pre-existing out-of-scope CRAP rows above
+  below the science-tier threshold and preexisting out-of-scope CRAP rows above
   `30`. Package:
   `20260615-cqr07-watershed-wat-complexity-001/`.
 - CQR06 is complete-with-warnings for behavior-preserving CRAP/cyclomatic-complexity

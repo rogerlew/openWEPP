@@ -31,9 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `GATE-LINT-ROADMAP-01` gate-planner advisory-linter re-conceptualization | Agent tooling | `next` | Complete the planning-only [Order-0 package](work-packages/20260727-gate-planner-advisory-linter-roadmap-001/package.md): ratify the non-authoritative philosophy, target contract, migration/deletion map, value criteria, and downstream decomposition before any implementation child is scaffolded. |
-| `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `complete` | Closed at exact receipt `7b3c199d...`: 15/15 PASS, zero retries, zero actionable global CRAP rows, and dual terminal verification. |
-| `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `complete` | Closed by the same exact transaction: LIGHT 6/6, audit 10/10 READY, HEAVY 9/9, and zero open durable defects. |
+| `GATE-LINT-GOV-01` advisory-linter governance alignment | Agent tooling | `next` | Obtain explicit user authorization, then scaffold Order 1 from the accepted [advisory-linter roadmap](work-packages/gate-planner-advisory-linter-roadmap.md). Apply its exact governance, guard-test, history-identity, and frozen-status amendments through the direct manual landing rule. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `next` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
@@ -44,12 +42,15 @@ state was reached. Execution history lives in the
 
 The user directed on 2026-07-27 that the gate planner be treated as a tool and
 re-conceptualized as a non-authoritative, read-only advisory linter. It must
-inform agents without executing commands, integrating with CI, changing
-lifecycle state, or blocking progress. The planning-only
+inform agents without executing validation, suggested, package-declared,
+workflow, remote, or user-controlled commands; only the frozen literal
+read-only Git inspection allowlist may run. It cannot integrate with CI, change
+lifecycle state, or block progress. The planning-only
 [advisory-linter roadmap](work-packages/gate-planner-advisory-linter-roadmap.md)
-is now the controlling prospective queue. Existing TESTGATE history remains
-evidence, but no further planner closeout or prerequisite execution advances
-while Order 0 is pending.
+is now the controlling prospective queue. Order 0 accepted ADR-0043 and closed
+with three independent `GO` reviews. Existing TESTGATE history remains
+evidence, but no further planner closeout or prerequisite execution is
+prospective work.
 
 ### Historical Pre-Redirect Direction
 

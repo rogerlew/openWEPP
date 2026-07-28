@@ -43,3 +43,4 @@ repository's `<=400000` byte threshold.
 | `gate-policy/**` | Policy/schema retention or deletion decision |
 | `.github/workflows/**` | CI retirement inventory |
 | CAL-04B package-local tools | CAL and Harvard boundary discovery |
+| `docs/audits/20260727_gate_planner_demotion_readiness_audit.md` | Concurrent supplemental static audit; read and incorporated, but the untracked user-owned file remains outside this package's write set and commit |

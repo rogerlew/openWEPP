@@ -1,6 +1,6 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `PROPOSED / ORDER 0 NEXT`
+Status: `ACCEPTED / ORDER 1 NEXT`
 
 Owner: maintainers
 
@@ -35,8 +35,9 @@ packages:
    not execution permission and cannot stop originating work.
 2. **Read-only.** The linter does not modify source, package status, ledgers,
    receipts, evidence, queues, or protected data.
-3. **No execution.** It never launches tests, builds, calibration commands,
-   population jobs, publication, cleanup, or remote work.
+3. **No workflow execution.** It never launches validation, suggested,
+   package-declared, workflow, remote, or user-controlled commands. Only the
+   closed literal read-only Git inspection allowlist may run.
 4. **No CI role.** It has no workflow dispatch, runner identity, concurrency,
    attestation, artifact promotion, hosted verification, or trust elevation.
 5. **No lifecycle ownership.** It has no LIGHT/HEAVY transition, pre-heavy
@@ -125,12 +126,12 @@ declaration consistency, and render findings. Execution, receipts, trust,
 custody, recovery, publication, assurance lifecycle, and CI orchestration are
 outside the product boundary.
 
-Repository inspection is limited to direct read-only filesystem access and
-explicit argument-vector calls to `git` for status, diff, object, and history
-queries and `cargo metadata` for dependency discovery. Order 0 must ratify the
-exact subcommand and flag allowlist. Shell execution, package-derived commands,
-suggested-command execution, tests, builds, network access, remote calls, and
-commands that write repository or tool state are prohibited.
+Repository inspection is limited to direct read-only filesystem access and the
+literal argument-vector `git` allowlist ratified by Order 0. Cargo dependency
+metadata is parsed in process from repository manifests and the lockfile. Shell
+execution, package-derived executable selection, suggested-command execution,
+tests, builds, network access, remote calls, and commands that write repository
+or tool state are prohibited.
 
 Scientific campaign execution remains package-owned and agent-operated.
 Harvard sealing and single-open custody remain a separate protected-data
@@ -146,12 +147,12 @@ authority.
 
 | Order | State | Prospective package | Outcome | Dependency |
 | --- | --- | --- | --- | --- |
-| 0 | `next` | `20260727-gate-planner-advisory-linter-roadmap-001` | Ratify the philosophy, ADR, policy-conflict inventory, target interface, migration/deletion map, value metrics, and final package decomposition through independent review. Documentation only. | User direction |
-| 1 | `not scaffolded before Order 0` | Governance authority alignment | Apply the clause-level amendment plan to operative agent/work-package/testing guidance while preserving underlying correctness and protected-data obligations. | Accepted ADR and reviewed conflict matrix |
-| 2 | `not scaffolded before Order 0` | CAL legacy-integration removal | Remove obsolete planner/external-transaction dependencies from CAL tooling and documentation while preserving direct execution, primary-result recording, Harvard sealing, and the freeze/open barrier. | Order 1 and the existing CAL package authority |
-| 3 | `not scaffolded before Order 0` | Advisory linter thin slice | Deliver the read-only lint command and prove its findings on representative package/diff fixtures without executing or mutating anything. | Orders 1-2 |
-| 4 | `not scaffolded before Order 0` | Legacy execution and CI retirement | Remove or quarantine planner execution, CI, receipt, ledger, resume, recovery, external-DAG, and publication surfaces after exact consumer inventory. Preserve only historical evidence verification that still has a named consumer. | Order 3 |
-| 5 | `not scaffolded before Order 0` | Agent-friction qualification | Compare the linter with manual planning on real modeling packages, verify the nonblocking failure path, and retain or delete features according to measured utility. No CI qualification. | Orders 3-4 |
+| 0 | `complete` | `20260727-gate-planner-advisory-linter-roadmap-001` | Ratified the philosophy, ADR, conflict inventory, target interface, migration/deletion map, value metrics, and decomposition with three independent `GO` reviews. Documentation only. | User direction |
+| 1 | `next / not scaffolded` | Governance authority alignment | Apply the exact amendment plan to operative guidance, guard tests, historical identity, and frozen package statuses while preserving underlying correctness and protected-data obligations. | Explicit user authorization |
+| 2 | `queued / not scaffolded` | CAL legacy-integration removal | Remove obsolete planner/external-transaction dependencies from CAL tooling and documentation while preserving direct execution, primary-result recording, Harvard sealing, and the freeze/open barrier. | Order 1 and the existing CAL package authority |
+| 3 | `queued / not scaffolded` | Advisory linter thin slice | Deliver the read-only lint command and prove its findings on representative package/diff fixtures without executing or mutating anything. | Orders 1-2 |
+| 4 | `queued / not scaffolded` | Legacy execution and CI retirement | Remove or quarantine planner execution, CI, receipt, ledger, resume, recovery, external-DAG, and publication surfaces after exact consumer inventory. Preserve only historical evidence verification that still has a named consumer. | Order 3 |
+| 5 | `queued / not scaffolded` | Agent-friction qualification | Compare the linter with manual planning on real modeling packages, verify the nonblocking failure path, and retain or delete features according to measured utility. No CI qualification. | Orders 3-4 |
 
 CAL-04B direct, package-authored modeling work may resume independently under
 its existing authority and the user's direction. It does not wait for any
@@ -262,8 +263,8 @@ The following outcomes are explicitly rejected:
 
 ## Current-State Disposition
 
-All active gate-planner closeout and prerequisite execution is frozen while
-Order 0 is pending. Existing code and artifacts remain intact for inventory and
-historical evidence. The freeze does not block direct modeling commands or
-truthful manual validation. CAL-04B's scientific failure remains owned by
-CAL-04B, not by this roadmap.
+All gate-planner closeout and prerequisite execution remains frozen as
+non-prospective work. Existing code and artifacts remain intact until their
+ordered migration, historical-consumer review, and deletion. The freeze does
+not block direct modeling commands or truthful manual validation. CAL-04B's
+scientific failure remains owned by CAL-04B, not by this roadmap.

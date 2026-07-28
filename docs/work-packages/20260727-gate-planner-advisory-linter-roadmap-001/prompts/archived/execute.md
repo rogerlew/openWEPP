@@ -1,5 +1,7 @@
 # Execute Gate Planner Advisory-Linter Roadmap Authoring
 
+Archived: 2026-07-27 after planning-only completion.
+
 Scope: local repository documentation and architecture-planning work;
 flat-file reads/edits only; no external systems or network actions are
 required.
@@ -46,7 +48,9 @@ migration/deletion design, friction criteria, and downstream package
 decomposition.
 
 Constraints: the linter is read-only and non-authoritative. It informs agents
-but never executes commands, owns evidence, changes lifecycle state, integrates
+but never executes validation, suggested, package-declared, workflow, remote,
+or user-controlled commands; only the frozen literal read-only Git inspection
+allowlist may run. It never owns evidence, changes lifecycle state, integrates
 with CI, controls progress, or manages CAL/Harvard. Preserve underlying
 correctness, science-contract, evidence, and protected-data obligations.
 

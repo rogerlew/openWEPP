@@ -5,7 +5,7 @@ Package ID:
 
 Queue ID: `GATE-LINT-ROADMAP-01`
 
-Status: `QUEUED / PLANNING ONLY`
+Status: `EXECUTED-COMPLETE / PLANNING ONLY`
 
 Authorization: the user's 2026-07-27 direction to roadmap the gate planner's
 re-conceptualization, make the philosophy unambiguous, and make the first work
@@ -31,18 +31,24 @@ friction.
 - [x] 2026-07-27 20:00 PDT — Record the user-directed planning-only boundary.
 - [x] 2026-07-27 20:00 PDT — Create the initial roadmap and Order-0 package
       scaffold.
-- [ ] Record the complete current-state capability and authority inventory.
-- [ ] Author and ratify ADR-0043.
-- [ ] Reconcile every conflicting governance statement.
-- [ ] Freeze the target interface, finding model, failure semantics, and manual
+- [x] 2026-07-27 20:04 PDT — Record the complete current-state capability and
+      authority inventory.
+- [x] 2026-07-27 20:06 PDT — Author and ratify ADR-0043.
+- [x] 2026-07-27 20:08 PDT — Reconcile every conflicting governance statement.
+- [x] 2026-07-27 20:09 PDT — Freeze the target interface, finding model,
+      failure semantics, and manual
       fallback.
-- [ ] Freeze the migration, quarantine, deletion, and historical-verification
+- [x] 2026-07-27 20:10 PDT — Freeze the migration, quarantine, deletion, and
+      historical-verification
       boundaries.
-- [ ] Define the friction baseline, budgets, and deletion triggers.
-- [ ] Obtain three independent reviews and disposition every finding.
-- [ ] Finalize the downstream package decomposition without implementing or
-      scaffolding a child package.
-- [ ] Validate documentation and close the planning package.
+- [x] 2026-07-27 20:10 PDT — Define the friction baseline, budgets, and
+      deletion triggers.
+- [x] 2026-07-27 20:24 PDT — Obtain three independent reviews, patch every
+      accepted finding, and receive three final `GO` dispositions.
+- [x] 2026-07-27 20:11 PDT — Finalize the downstream package decomposition
+      without implementing or scaffolding a child package.
+- [x] 2026-07-27 20:25 PDT — Validate documentation and close the planning
+      package.
 
 ## Binding Philosophy
 
@@ -283,9 +289,26 @@ comparator subagent is authorized or required.
 - 2026-07-27: A planning-only package must author the ADR and exact operative
   amendment plan without itself applying Order-1 changes to `AGENTS.md`,
   standards, or tool guidance.
+- 2026-07-27: A concurrent untracked demotion-readiness audit surfaced live
+  guard-test, transition-regime, historical-digest, and package-status
+  omissions. Its findings were incorporated. The audit file was not created,
+  moved, edited, or claimed by this package and remains outside its write set.
 
 ## Outcomes And Retrospective
 
-Populate only after the ADR, roadmap, reviews, finding disposition, and
-documentation verification are complete. This section is not implementation
-evidence.
+ADR-0043 and the roadmap now make the product boundary unambiguous: the linter
+is advisory, read-only, non-CI, non-lifecycle, and nonblocking. It may execute
+only the frozen literal read-only Git inspection allowlist; it never executes
+validation or suggested work.
+
+The planning review found and closed 18 findings. The most important
+corrections preserved conservative unknown-impact handling, claim-proportional
+evidence reuse, assurance transfer obligations, a reproducible utility
+protocol, actual no-helper/no-write Git inspection, safe Harvard migration,
+historical policy identity, source-text guard ownership, and a direct Order-1
+landing that does not ask the planner to authorize its own demotion.
+
+The current 39,242-line Rust/controller system is frozen as transition debt.
+No implementation child was scaffolded. Order 1 is next only after explicit
+user authorization. CAL-04B remains independent of this roadmap and Harvard
+remains sealed.
