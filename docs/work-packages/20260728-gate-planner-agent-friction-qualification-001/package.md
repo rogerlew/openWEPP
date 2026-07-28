@@ -185,8 +185,10 @@ spawning/delegation to comparison agents for the 18 paired cases, two
 independent blinded scorers/reviewers, and two independent read-only terminal
 verifiers. Expected outputs are raw anonymizable plans, timestamps, invocation
 counts, linter outputs, compact metrics, findings, and PASS/HOLD
-recommendations. Write access is read-only; only the parent edits package
-artifacts or applies the mechanical stop-loss deletion.
+recommendations. Repository write access is read-only; disposable shared
+clones and ignored `target/order5-qualification/**` result files are the only
+participant writes. Only the parent edits tracked package artifacts or applies
+the mechanical stop-loss deletion.
 
 Subagent requirement: REQUIRED for paired trials, dual blinded scoring/review,
 and dual verification. No comparison subagent may execute suggested modeling,
@@ -195,7 +197,8 @@ validation, CAL, or Harvard commands.
 ## Progress
 
 - [x] 2026-07-28 — Scaffolded from accepted roadmap Order 5.
-- [ ] Cohort, snapshots, obligation key, arm order, and schema frozen.
+- [x] 2026-07-28 — Cohort, snapshots, obligation key, arm order, and schema
+  frozen.
 - [ ] Eighteen paired cases completed.
 - [ ] Dual blinded scoring and metric computation completed.
 - [ ] Stop-loss disposition implemented.

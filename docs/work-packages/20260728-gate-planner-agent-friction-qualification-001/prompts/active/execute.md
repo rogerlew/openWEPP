@@ -26,7 +26,9 @@ Subagent requirement: REQUIRED. This prompt explicitly authorizes subagent
 spawning/delegation to comparison agents for paired trials, two independent
 blinded scorers/reviewers, and two independent read-only verifiers. Outputs are
 raw plans, timestamps, invocation counts, linter outputs, compact metrics,
-findings, and PASS/HOLD recommendations. Write access is read-only.
+findings, and PASS/HOLD recommendations. Repository write access is read-only;
+disposable clones and ignored `target/order5-qualification/**` results are the
+only subagent writes.
 
 Autonomy: execute end-to-end without requesting user direction unless a
 declared hard boundary is proven.
