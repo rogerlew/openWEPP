@@ -161,7 +161,7 @@ access is read-only.
 
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 3.
 - [x] 2026-07-27 — Thin slice implemented.
-- [x] 2026-07-27 — Nineteen adversarial and representative tests passed.
+- [x] 2026-07-27 — Twenty-four adversarial and representative tests passed.
 - [x] 2026-07-27 — Documentation and manual fallback passed.
 - [ ] Dual review and finding disposition passed.
 - [ ] Dual verification and exact-diff closure passed.
@@ -172,6 +172,9 @@ access is read-only.
 - 2026-07-27: Implement as a clean Python thin slice with no legacy crate
   dependency.
 - 2026-07-27: Frozen allowlist may be narrowed but not expanded.
+- 2026-07-27: Independent review found incomplete config/attribute refusal,
+  unbounded capture, dirty-path parsing, and identity-advice defects. Corrected
+  them in this package without creating a downstream prerequisite.
 
 ## Outcomes
 

@@ -6,3 +6,6 @@ reconciliation, and final disposition.
 
 Current implementation evidence is in `implementation-summary.md` and
 `validation-evidence.md`.
+
+Independent findings and their disposition are in `review-a.md`, `review-b.md`,
+and `finding-disposition.md`.

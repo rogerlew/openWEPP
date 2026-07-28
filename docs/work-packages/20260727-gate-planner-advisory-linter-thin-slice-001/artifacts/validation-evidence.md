@@ -7,9 +7,9 @@ Evidence class: Ran.
 ```text
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
   -m unittest tools/validation/test_workplan_lint.py
-...................
+........................
 ----------------------------------------------------------------------
-Ran 19 tests in 1.907s
+Ran 24 tests in 3.014s
 
 OK
 ```
@@ -19,8 +19,10 @@ zero, partial/unavailable/misuse output, argument and operand validation,
 timeout and output bounds, exact Git argv/environment/stdin confinement,
 pre-launch refusal for every prohibited configuration and attribute class,
 helper and network canaries, file/index/object byte-and-metadata stability,
-symlink refusal, wrapper behavior, and absence of legacy imports or secondary
-subprocess surfaces.
+symlink refusal, wrapper behavior, exact dirty rename/conflict parsing,
+identity-conflict and detached-HEAD findings, full Git-tree metadata snapshots,
+live fixed-bound capture, OS-level absence of IP network calls in every mode,
+and absence of legacy imports or secondary subprocess surfaces.
 
 ## Documentation And Static Checks
 
@@ -35,7 +37,7 @@ markdown-doc lint --path tools/validation
 
 markdown-doc lint --path \
   docs/work-packages/20260727-gate-planner-advisory-linter-thin-slice-001
-6 files validated, 0 errors, 0 warnings
+11 files validated, 0 errors, 0 warnings
 
 git diff --check
 PASS
@@ -53,7 +55,7 @@ refusal behavior, not a lifecycle verdict.
 ## Line Count
 
 ```text
-830 tools/validation/workplan_lint.py
-  6 tools/validation/workplan-lint
-836 production lines
+  994 tools/validation/workplan_lint.py
+   10 tools/validation/workplan-lint
+1,004 production lines
 ```

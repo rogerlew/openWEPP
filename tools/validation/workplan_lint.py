@@ -8,9 +8,11 @@ import hashlib
 import json
 import os
 import re
+import selectors
 import stat
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Sequence
@@ -96,6 +98,7 @@ class PackageDeclaration:
     base: str
     write_set: tuple[str, ...]
     has_intent: bool
+    declaration_issues: tuple[str, ...]
     text: str
 
 
@@ -222,13 +225,21 @@ def prohibited_config(root: Path) -> list[str]:
             key = line.split("=", 1)[0].strip().lower()
             qualified = f"{section}.{key}"
             if (
-                qualified in {"core.fsmonitor", "core.hookspath", "diff.external"}
+                qualified
+                in {
+                    "core.fsmonitor",
+                    "core.hookspath",
+                    "core.pager",
+                    "core.attributesfile",
+                    "diff.external",
+                }
                 or section.startswith("maintenance ")
                 or (section == "maintenance" and key.startswith("repo"))
                 or key in {"textconv", "command", "helper", "insteadOf".lower()}
                 or key in {"clean", "smudge", "process"}
             ):
                 findings.append(f"{relative}:{line_number}:{qualified}")
+    attribute_paths = [".git/info/attributes"]
     for directory, names, _files in os.walk(root, followlinks=False):
         directory_path = Path(directory)
         if directory_path == root / ".git":
@@ -243,8 +254,11 @@ def prohibited_config(root: Path) -> list[str]:
         attributes = directory_path / ".gitattributes"
         if not attributes.exists():
             continue
-        relative = attributes.relative_to(root).as_posix()
-        raw = read_regular(root, relative)
+        attribute_paths.append(attributes.relative_to(root).as_posix())
+    for relative in sorted(set(attribute_paths)):
+        raw = read_regular(root, relative, required=False)
+        if raw is None:
+            continue
         assert raw is not None
         for line_number, raw_line in enumerate(
             raw.decode("utf-8", errors="replace").splitlines(), 1
@@ -308,6 +322,63 @@ def validate_git_suffix(suffix: Sequence[str]) -> tuple[str, ...]:
     )
 
 
+def stop_process(process: subprocess.Popen[bytes]) -> None:
+    process.kill()
+    for stream in (process.stdout, process.stderr):
+        if stream is not None:
+            stream.close()
+    try:
+        process.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+        pass
+
+
+def bounded_communicate(process: subprocess.Popen[bytes]) -> tuple[bytes, bytes]:
+    """Capture both pipes without retaining more than the declared bounds."""
+    if process.stdout is None or process.stderr is None:
+        raise AnalysisUnavailable("git", "GIT_CAPTURE_FAILED", "Git pipes are unavailable")
+    selector = selectors.DefaultSelector()
+    buffers = {"stdout": bytearray(), "stderr": bytearray()}
+    for name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
+        os.set_blocking(stream.fileno(), False)
+        selector.register(stream, selectors.EVENT_READ, name)
+    deadline = time.monotonic() + GIT_TIMEOUT_SECONDS
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                stop_process(process)
+                raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out")
+            events = selector.select(remaining)
+            if not events:
+                stop_process(process)
+                raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out")
+            for key, _mask in events:
+                block = os.read(key.fileobj.fileno(), 65536)
+                if not block:
+                    selector.unregister(key.fileobj)
+                    key.fileobj.close()
+                    continue
+                buffer = buffers[key.data]
+                buffer.extend(block)
+                if len(buffer) > MAX_GIT_BYTES:
+                    stop_process(process)
+                    raise AnalysisUnavailable(
+                        "git", "GIT_OUTPUT_LIMIT", "bounded Git output exceeded"
+                    )
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            stop_process(process)
+            raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out")
+        process.wait(timeout=remaining)
+    except subprocess.TimeoutExpired as error:
+        stop_process(process)
+        raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out") from error
+    finally:
+        selector.close()
+    return bytes(buffers["stdout"]), bytes(buffers["stderr"])
+
+
 def default_runner(root: Path, suffix: Sequence[str]) -> bytes:
     allowed_suffix = validate_git_suffix(suffix)
     validate_git_binary()
@@ -327,14 +398,7 @@ def default_runner(root: Path, suffix: Sequence[str]) -> bytes:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    try:
-        stdout, stderr = process.communicate(timeout=GIT_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired as error:
-        process.kill()
-        process.communicate()
-        raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out") from error
-    if len(stdout) > MAX_GIT_BYTES or len(stderr) > MAX_GIT_BYTES:
-        raise AnalysisUnavailable("git", "GIT_OUTPUT_LIMIT", "bounded Git output exceeded")
+    stdout, stderr = bounded_communicate(process)
     if process.returncode != 0:
         message = stderr.decode("utf-8", errors="replace").strip()
         raise AnalysisUnavailable(
@@ -384,11 +448,26 @@ def parse_status(payload: bytes) -> tuple[str, ...]:
         if text.startswith("? "):
             values.append(normalize_relative(text[2:], label="Git path"))
         elif text.startswith(("1 ", "u ")):
-            values.append(normalize_relative(text.split(" ", 8)[-1], label="Git path"))
+            split_at = 10 if text.startswith("u ") else 8
+            fields = text.split(" ", split_at)
+            if len(fields) != split_at + 1:
+                raise AnalysisUnavailable(
+                    "git", "STATUS_PARSE_FAILED", "malformed porcelain record"
+                )
+            values.append(normalize_relative(fields[-1], label="Git path"))
         elif text.startswith("2 "):
-            values.append(normalize_relative(text.split(" ", 9)[-1], label="Git path"))
-            if index < len(records):
-                index += 1
+            fields = text.split(" ", 9)
+            if len(fields) != 10 or index >= len(records) or not records[index]:
+                raise AnalysisUnavailable(
+                    "git", "STATUS_PARSE_FAILED", "truncated rename record"
+                )
+            values.append(normalize_relative(fields[-1], label="Git path"))
+            values.append(
+                normalize_relative(
+                    records[index].decode("utf-8", errors="strict"), label="Git path"
+                )
+            )
+            index += 1
         elif not text.startswith("# "):
             raise AnalysisUnavailable("git", "STATUS_PARSE_FAILED", "unknown porcelain record")
     return tuple(sorted(set(values)))
@@ -418,6 +497,10 @@ def inspect_git(
     root: Path, declaration: PackageDeclaration, mode: str, runner: Runner
 ) -> GitObservation:
     verify_root(root, runner)
+    if not declaration.base:
+        raise AnalysisUnavailable(
+            "git", "BASE_UNAVAILABLE", "Git inspection requires one valid declared base"
+        )
     base = resolve_commit(root, declaration.base, runner)
     head = resolve_commit(root, "HEAD", runner)
     runner(root, ("merge-base", "--is-ancestor", base, head))
@@ -466,17 +549,20 @@ def parse_package(root: Path, package_path: str) -> PackageDeclaration:
         text = raw.decode("utf-8", errors="strict")
     except UnicodeError as error:
         raise AnalysisUnavailable("package", "PACKAGE_ENCODING", str(error)) from error
-    identifier = ""
-    base = ""
+    identifiers: list[str] = []
+    bases: list[str] = []
     write_set: list[str] = []
     lines = text.splitlines()
     for index, line in enumerate(lines):
         if line.strip() == "Package ID:" and index + 1 < len(lines):
             match = PACKAGE_ID.search(lines[index + 1])
-            identifier = match.group(1) if match else ""
+            if match:
+                identifiers.append(match.group(1))
         if line.startswith("Base commit:"):
             match = PACKAGE_ID.search(line)
-            base = match.group(1) if match else line.partition(":")[2].strip()
+            candidate = match.group(1) if match else line.partition(":")[2].strip()
+            if candidate:
+                bases.append(candidate)
         if line.strip() == "## Declared Write Set":
             for item in lines[index + 1 :]:
                 if item.startswith("## "):
@@ -487,20 +573,25 @@ def parse_package(root: Path, package_path: str) -> PackageDeclaration:
                     if candidate == "this package subtree":
                         continue
                     write_set.append(candidate)
-    if not identifier:
-        raise AnalysisUnavailable("package", "PACKAGE_ID_MISSING", "Package ID is missing")
-    if not base:
-        raise AnalysisUnavailable("package", "BASE_MISSING", "Base commit is missing")
-    try:
-        validated_revision(base)
-    except InvocationError as error:
-        raise AnalysisUnavailable("package", "BASE_INVALID", str(error)) from error
+    issues: list[str] = []
+    identifier = identifiers[0] if len(identifiers) == 1 else ""
+    if len(identifiers) != 1:
+        issues.append("PACKAGE_ID_MISSING" if not identifiers else "PACKAGE_ID_AMBIGUOUS")
+    if identifier and identifier != PurePosixPath(relative).parent.name:
+        issues.append("PACKAGE_ID_PATH_MISMATCH")
+    base = bases[0] if len(bases) == 1 else ""
+    if len(bases) != 1:
+        issues.append("BASE_MISSING" if not bases else "BASE_AMBIGUOUS")
+    elif not REVISION.fullmatch(base) or base.startswith("-"):
+        issues.append("BASE_INVALID")
+        base = ""
     return PackageDeclaration(
         identifier,
         relative,
         base,
         tuple(write_set),
         "## Implementation Intent" in text or "Implementation intent:" in text,
+        tuple(issues),
         text,
     )
 
@@ -536,6 +627,22 @@ def location(path: str, line: int = 1) -> dict[str, object]:
     return {"path": path, "line": line}
 
 
+def detached_head(root: Path) -> bool:
+    raw = read_regular(root, ".git/HEAD")
+    assert raw is not None
+    try:
+        value = raw.decode("ascii", errors="strict").strip()
+    except UnicodeError as error:
+        raise AnalysisUnavailable("repository", "HEAD_ENCODING", str(error)) from error
+    if value.startswith("ref: refs/"):
+        return False
+    if HEX40.fullmatch(value):
+        return True
+    raise AnalysisUnavailable(
+        "repository", "HEAD_IDENTITY_FAILED", "HEAD has an unsupported representation"
+    )
+
+
 def finding(
     rule_id: str,
     category: str,
@@ -565,9 +672,49 @@ def finding(
 
 
 def analyze_findings(
-    declaration: PackageDeclaration, observation: GitObservation | None
+    declaration: PackageDeclaration,
+    observation: GitObservation | None,
+    is_detached: bool | None,
 ) -> list[dict[str, object]]:
     values: list[dict[str, object]] = []
+    issue_messages = {
+        "PACKAGE_ID_MISSING": "The package does not declare one package identity.",
+        "PACKAGE_ID_AMBIGUOUS": "The package declares multiple package identities.",
+        "PACKAGE_ID_PATH_MISMATCH": "The package identity does not match its directory.",
+        "BASE_MISSING": "The package does not declare one base revision.",
+        "BASE_AMBIGUOUS": "The package declares multiple base revisions.",
+        "BASE_INVALID": "The declared base revision has invalid syntax.",
+    }
+    for issue in declaration.declaration_issues:
+        values.append(
+            finding(
+                f"WP-IDENTITY-{issue}",
+                "declaration-conflict",
+                "deterministic",
+                "high",
+                "amend-declaration",
+                issue_messages[issue],
+                "docs/work-packages/AGENTS.md",
+                "work-package identity and terminal boundary",
+                "The linter will not infer or choose package or base identity.",
+                location(declaration.path),
+            )
+        )
+    if is_detached:
+        values.append(
+            finding(
+                "WP-IDENTITY-DETACHED-HEAD",
+                "declaration-conflict",
+                "deterministic",
+                "medium",
+                "inspect",
+                "Repository HEAD is detached.",
+                "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+                "repository identity",
+                "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+                location(".git/HEAD"),
+            )
+        )
     if not declaration.has_intent:
         values.append(
             finding(
@@ -630,9 +777,9 @@ def analyze_findings(
                 "changed Markdown documentation",
                 "Documentation lint is a cheap deterministic check.",
                 suggested_command={
-                    "argv": ["markdown-doc", "lint", "--path", "docs"],
+                    "argv": ["markdown-doc", "lint", "--path", "."],
                     "working_directory": ".",
-                    "affected_surface": "changed Markdown documentation",
+                    "affected_surface": "repository Markdown documentation",
                     "governing_citation": "docs/work-packages/AGENTS.md",
                     "cost_class": "quick",
                 },
@@ -687,13 +834,19 @@ def analyze(package_path: str, mode: str, runner: Runner = default_runner) -> di
     unavailable: list[dict[str, str]] = []
     try:
         declaration = parse_package(root, package_path)
-        result["package"] = {"id": declaration.identifier, "path": declaration.path}
+        if declaration.identifier:
+            result["package"] = {"id": declaration.identifier, "path": declaration.path}
     except AnalysisUnavailable as error:
         unavailable.append(error.value())
     policies, policy_unavailable = policy_inputs(root)
     result["policy_inputs"] = policies
     unavailable.extend(policy_unavailable)
     observation: GitObservation | None = None
+    is_detached: bool | None = None
+    try:
+        is_detached = detached_head(root)
+    except AnalysisUnavailable as error:
+        unavailable.append(error.value())
     if declaration is not None:
         try:
             observation = inspect_git(root, declaration, mode, runner)
@@ -702,7 +855,9 @@ def analyze(package_path: str, mode: str, runner: Runner = default_runner) -> di
             result["observed_scope"] = observation.scope
         except AnalysisUnavailable as error:
             unavailable.append(error.value())
-    result["findings"] = analyze_findings(declaration, observation) if declaration else []
+    result["findings"] = (
+        analyze_findings(declaration, observation, is_detached) if declaration else []
+    )
     result["unavailable_analyses"] = sorted(
         unavailable, key=lambda item: (item["analysis_id"], item["reason_code"])
     )
@@ -754,9 +909,10 @@ def human_output(result: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def misuse(message: str, json_requested: bool) -> int:
+def misuse(message: str, json_requested: bool, mode: str | None = None) -> int:
     if json_requested:
         result = empty_envelope()
+        result["mode"] = mode
         result["error"] = {"code": "INVOCATION_MISUSE", "message": message}
         print(canonical_json(result))
     else:
@@ -791,15 +947,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments[index : index + 2] == ["--format", "json"]
         for index in range(len(arguments))
     ) or "--format=json" in arguments
+    recognized_mode = next(
+        (
+            arguments[index + 1]
+            for index, value in enumerate(arguments[:-1])
+            if value == "--mode" and arguments[index + 1] in MODES
+        ),
+        None,
+    )
     try:
         options = parse_arguments(arguments)
     except InvocationError as error:
-        return misuse(str(error), json_requested)
+        return misuse(str(error), json_requested, recognized_mode)
     try:
         result = analyze(options.package, options.mode)
     except (InvocationError, AnalysisUnavailable) as error:
         if isinstance(error, InvocationError):
-            return misuse(str(error), options.format == "json")
+            return misuse(str(error), options.format == "json", options.mode)
         result = empty_envelope()
         result["mode"] = options.mode
         result["analysis_status"] = "unavailable"
