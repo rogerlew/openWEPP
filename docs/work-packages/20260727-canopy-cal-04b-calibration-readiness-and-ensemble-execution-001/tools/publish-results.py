@@ -1,63 +1,148 @@
 #!/usr/bin/env python3
-"""Publish an authenticated CAL-04B external result transaction."""
+"""Atomically publish the bounded CAL-04B package result set."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
-import subprocess
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
+PACKAGE = Path(__file__).resolve().parents[1]
+
+PUBLISHABLE = frozenset(
+    {
+        "accepted-calibration-ensemble.csv",
+        "additional-data-inventory.csv",
+        "calibration-readiness-matrix.md",
+        "candidate-configurations.csv",
+        "candidate-ledger.csv",
+        "failure-ledger.csv",
+        "gsi-domain-grid.csv",
+        "identifiability-and-equifinality.md",
+        "input-and-authority-manifest.csv",
+        "later-stage-membership.csv",
+        "later-stage-recovery.csv",
+        "later-stage-results.csv",
+        "native-consumer-proof.csv",
+        "producer-failure-ledger.csv",
+        "saturation-evidence.csv",
+        "saturation-window-inventory.csv",
+        "stage-status-ledger.csv",
+        "synthetic-recovery-results.csv",
+        "trace-retention.csv",
+    }
+)
 
 
-def planner_binary(objects_root: Path) -> Path:
-    attempt_root = objects_root.parent
-    target = attempt_root.with_name(f"{attempt_root.name}.publication-target")
-    subprocess.run(
-        [
-            "cargo",
-            "build",
-            "-p",
-            "openwepp-gate-planner",
-            "--bin",
-            "openwepp-gate-plan",
-        ],
-        cwd=ROOT,
-        env={**os.environ, "CARGO_TARGET_DIR": str(target)},
-        check=True,
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def source_artifacts(execution_root: Path) -> Path:
+    return (
+        execution_root.parent
+        / "publication"
+        / PACKAGE.relative_to(ROOT)
+        / "artifacts"
     )
-    return target / "debug/openwepp-gate-plan"
+
+
+def inventory(source: Path) -> list[Path]:
+    if not source.is_dir():
+        raise ValueError(f"publication source is missing: {source}")
+    paths: list[Path] = []
+    for name in sorted(PUBLISHABLE):
+        path = source / name
+        if path.exists():
+            metadata = path.lstat()
+            if path.is_symlink() or not path.is_file() or metadata.st_nlink != 1:
+                raise ValueError(f"publication source is not a unique regular file: {path}")
+            paths.append(path)
+    unexpected = [
+        path.name
+        for path in source.iterdir()
+        if path.is_file() and path.name not in PUBLISHABLE
+    ]
+    if unexpected:
+        raise ValueError(f"unrecognized package result files: {sorted(unexpected)}")
+    if not paths:
+        raise ValueError("no bounded CAL-04B results are available to publish")
+    return paths
+
+
+def atomic_copy(source: Path, destination: Path) -> None:
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=destination.parent, prefix=f".{destination.name}.", suffix=".tmp"
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as output, source.open("rb") as input_stream:
+            shutil.copyfileobj(input_stream, output)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temporary, destination)
+        directory = os.open(destination.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def publish(execution_root: Path, *, apply: bool, replace: bool) -> list[str]:
+    source = source_artifacts(execution_root)
+    destination_root = PACKAGE / "artifacts"
+    actions: list[str] = []
+    for item in inventory(source):
+        destination = destination_root / item.name
+        if destination.exists() and destination.is_symlink():
+            raise ValueError(f"publication destination is a symlink: {destination}")
+        if destination.is_file() and sha256_file(destination) == sha256_file(item):
+            actions.append(f"UNCHANGED {item.name}")
+            continue
+        if destination.exists() and not replace:
+            raise ValueError(
+                f"publication would replace differing result without --replace: {destination}"
+            )
+        actions.append(f"{'REPLACE' if destination.exists() else 'CREATE'} {item.name}")
+        if apply:
+            atomic_copy(item, destination)
+    return actions
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--execution-root", type=Path, required=True)
-    parser.add_argument("--publication-plan", type=Path, required=True)
-    parser.add_argument("--recovery", choices=("complete", "restore"))
+    parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--replace", action="store_true")
     options = parser.parse_args(argv)
-    objects_root = options.execution_root.resolve(strict=True)
-    if not objects_root.is_dir():
-        raise ValueError("execution root must be an existing objects directory")
-    publication_plan = options.publication_plan.resolve(strict=True)
-    command = [
-        str(planner_binary(objects_root)),
-        "publish-external-results",
-        "--repo",
-        str(ROOT),
-        "--publication-plan",
-        str(publication_plan),
-    ]
-    if options.recovery:
-        command.extend(["--recovery", options.recovery])
-    subprocess.run(command, cwd=ROOT, check=True)
+    execution_root = options.execution_root.resolve(strict=True)
+    if not execution_root.is_dir():
+        raise ValueError("execution root must be an existing directory")
+    actions = publish(
+        execution_root, apply=options.apply, replace=options.replace
+    )
+    mode = "APPLIED" if options.apply else "PLAN"
+    print(f"{mode} bounded CAL-04B publication files={len(actions)}")
+    for action in actions:
+        print(action)
     return 0
 
 
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)

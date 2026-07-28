@@ -1,26 +1,20 @@
 # Worker Handoff
 
-Status: `FOLLOW-UP REQUIRED`
+Status: `FOLLOW-UP REQUIRES EXPLICIT SCIENCE AUTHORITY`
 
-Evidence class: `Ran + Static`
+Evidence class: `Static`
 
-1. Close defect `CAL04B-NATIVE-001` in a separately authorized
-   defect-closure work package: make the authoritative production
-   phenology-to-post-growth path publish contract-coherent positive canopy
-   height whenever it publishes positive LAI for valid admitted GSI
-   configurations, without weakening the rev-21/rev-36 fail-closed guard.
-2. Bind the correction to the applicable `SC-PLANT-001` invariants and pinned
-   legacy/contract authority; do not introduce surrogate or heuristic canopy
-   geometry. Define the authoritative current-day height law before changing
-   production projection.
-3. Prove native-default plus representative interior, boundary, saturated, and
-   invalid configurations through the real production consumer, including the
-   exact retained `GSI-5557` reproducer from attempt 004.
-   Include an exact zero-to-positive GSI transition regression and real
-   downstream ET, interception, erosion, and frost consumption evidence.
-4. After the production defect closes, create a fresh CAL-04B execution
-   package or explicitly reopen this one. Prospectively rebind source, binary,
-   command, and object-root identities; repeat dual review; and restart from
-   `prepare` in a new empty attempt root.
-5. Keep Harvard sealed until a complete Hubbard population, dual
-   reconstruction, freeze, and two-verifier barrier all pass.
+1. Close the incident-005 synthetic-recovery design defect in CAL-04B. Determine
+   why hidden candidate `GSI-5557` does not produce exactly one required
+   crossing per synthetic year and correct the case or justified
+   parameterization without weakening the recovery obligation.
+2. Prove both independent reconstructors recover the hidden truth with a
+   nonvacuous competitor before any Hubbard population.
+3. Start the next CAL attempt in a fresh root through the package-local direct
+   executor. Preserve the first failure evidence and do not reuse prior
+   attempts.
+4. Keep Harvard sealed until the complete Hubbard population, dual
+   reconstruction, nonempty freeze, and two distinct verifier invocations pass.
+
+The production canopy-height defect from incident 004 is closed and is no
+longer the current prerequisite.

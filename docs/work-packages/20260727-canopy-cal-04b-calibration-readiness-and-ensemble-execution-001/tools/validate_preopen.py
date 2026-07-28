@@ -3,12 +3,13 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import math
 import sys
 from pathlib import Path
 
 import validate as terminal
-import observe
 from custody import sha256_file
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -21,8 +22,32 @@ def require(condition: bool, message: str) -> None:
         raise ValueError(message)
 
 
-def main() -> int:
-    observed = observe.validate_prefix("freeze")
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--custody-root", type=Path, required=True)
+    options = parser.parse_args(argv)
+    execution_root = options.execution_root.resolve(strict=True)
+    custody_root = options.custody_root.resolve(strict=True)
+    if not execution_root.is_dir() or not custody_root.is_dir():
+        raise ValueError("execution and custody roots must be existing directories")
+    attempt_root = execution_root.parent
+    global ARTIFACTS, OBJECTS
+    ARTIFACTS = (
+        attempt_root / "publication" / PACKAGE.relative_to(terminal.ROOT) / "artifacts"
+    )
+    OBJECTS = execution_root
+    terminal.ARTIFACTS = terminal.ReadOverlay(ARTIFACTS, PACKAGE / "artifacts")
+    terminal.OBJECTS = OBJECTS
+    terminal.EXECUTION_ROOT = attempt_root
+    completion_path = attempt_root / "direct-evidence/calibration-complete.json"
+    completion = json.loads(completion_path.read_text(encoding="utf-8"))
+    require(
+        completion.get("state") == "PASS"
+        and completion.get("plan_sha256")
+        == sha256_file(PACKAGE / "artifacts/direct-execution-plan.json"),
+        "direct calibration completion differs",
+    )
     authority = ARTIFACTS / "calibration-forcing-authority-resolution.md"
     authority_rows = terminal.rows("input-and-authority-manifest.csv")
     authority_entry = [
@@ -38,7 +63,7 @@ def main() -> int:
         and authority_entry[0]["observed_sha256"] == sha256_file(authority),
         "calibration forcing authority resolution is not custody-bound",
     )
-    plan = terminal.rows("executor-command-plan.csv")
+    plan = terminal.direct_command_plan()
     plan_by_id = {row["command_id"]: row for row in plan}
     candidates = terminal.rows("candidate-ledger.csv")
     accepted = terminal.rows("accepted-calibration-ensemble.csv")
@@ -207,7 +232,7 @@ def main() -> int:
     )
     print(
         f"PASS preopen_semantics candidates=9261 accepted={len(accepted_ids)} "
-        f"membership_stages={len(membership)} observed_commands={len(observed)}"
+        f"membership_stages={len(membership)}"
     )
     return 0
 

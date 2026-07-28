@@ -1,3 +1,3 @@
 # Archived Prompts
 
-Move the execution prompt here after terminal disposition.
+The completed Order 2 execution prompt is retained here.

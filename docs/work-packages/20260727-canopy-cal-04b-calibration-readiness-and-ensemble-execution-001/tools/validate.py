@@ -30,6 +30,8 @@ SOURCE_ARTIFACTS = PACKAGE / "artifacts"
 ARTIFACTS = SOURCE_ARTIFACTS
 OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 EXECUTION_ROOT = Path("/nonexistent/cal04b-execution-root-required")
+HOLDOUT_OBJECTS = Path("/nonexistent/cal04b-holdout-output-required")
+HOLDOUT_TOKEN = Path("/nonexistent/cal04b-custody-token-required")
 
 
 class ReadOverlay:
@@ -191,6 +193,46 @@ def rows(name: str) -> list[dict[str, str]]:
     path = output if output.is_file() else SOURCE_ARTIFACTS / name
     with path.open(newline="", encoding="utf-8") as stream:
         return list(csv.DictReader(stream))
+
+
+def direct_command_plan() -> list[dict[str, str]]:
+    """Render calibration command identities from the canonical direct plan."""
+
+    value = json.loads(
+        (SOURCE_ARTIFACTS / "direct-execution-plan.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    replacements = {
+        "${REPO}": str(ROOT),
+        "${OBJECTS_ROOT}": str(OBJECTS),
+        "${PUBLICATION_ROOT}": str(EXECUTION_ROOT / "publication"),
+        "${CARGO_TARGET_DIR}": str(EXECUTION_ROOT / "cargo-target"),
+    }
+
+    def expand(item: str) -> str:
+        for token, replacement in replacements.items():
+            item = item.replace(token, replacement)
+        return item
+
+    rendered = []
+    for node in value["phases"]["calibration"]:
+        environment = " ".join(
+            f"{key}={expand(str(item))}"
+            for key, item in node.get("env", {}).items()
+        )
+        argv = " ".join(expand(item) for item in node["argv"])
+        source = Path(expand(node["source_path"]))
+        if not source.is_absolute():
+            source = ROOT / source
+        rendered.append(
+            {
+                "command_id": node["command_id"],
+                "argv": f"{environment} {argv}".strip(),
+                "source_path": str(source),
+            }
+        )
+    return rendered
 
 
 def field_map(path: Path) -> dict[str, str]:
@@ -853,10 +895,37 @@ def zstd_expanded_sha(path: Path) -> str:
     return digest.hexdigest()
 
 
-def verifier_command(verifier_id: str) -> str:
+def verifier_command(
+    verifier_id: str, execution_root: Path, custody_root: Path
+) -> str:
     return (
         "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python "
-        f"{PACKAGE.relative_to(ROOT)}/tools/freeze-verify.py --verifier-id {verifier_id}"
+        f"{PACKAGE.relative_to(ROOT)}/tools/freeze-verify.py "
+        f"--execution-root {execution_root} --custody-root {custody_root} "
+        f"--verifier-id {verifier_id}"
+    )
+
+
+def holdout_opening_command(
+    execution_root: Path,
+    custody_root: Path,
+    output_root: Path,
+    token: Path,
+) -> str:
+    return " ".join(
+        [
+            str(ROOT / ".venv/bin/python"),
+            str(PACKAGE / "tools/holdout.py"),
+            "--sandboxed",
+            "--execution-root",
+            str(execution_root),
+            "--custody-root",
+            str(custody_root),
+            "--holdout-output-root",
+            str(output_root),
+            "--opening-token",
+            str(token),
+        ]
     )
 
 
@@ -1069,7 +1138,7 @@ def same_number(observed: str, expected: float, tolerance: float = 1.0e-9) -> bo
 def derive_holdout_crossings(
     accepted_ids: list[str],
 ) -> dict[str, dict[int, int]]:
-    calendar_path = OBJECTS / "holdout/harvard-gsi.calendar.csv"
+    calendar_path = HOLDOUT_OBJECTS / "harvard-gsi.calendar.csv"
     calendar: list[tuple[int, int]] = []
     with calendar_path.open(newline="", encoding="utf-8") as stream:
         reader = csv.DictReader(stream)
@@ -1085,7 +1154,7 @@ def derive_holdout_crossings(
         year_days = 366 if left[0] % 4 == 0 and (left[0] % 100 != 0 or left[0] % 400 == 0) else 365
         expected = (left[0] + 1, 1) if left[1] == year_days else (left[0], left[1] + 1)
         require(right == expected, "holdout calendar is not consecutive")
-    trace_path = OBJECTS / "holdout/harvard-gsi.bin"
+    trace_path = HOLDOUT_OBJECTS / "harvard-gsi.bin"
     result: dict[str, dict[int, int]] = {}
     with trace_path.open("rb") as stream:
         header = stream.read(20)
@@ -1118,7 +1187,7 @@ def derive_holdout_crossings(
 
 def load_holdout_authority() -> list[dict[str, str]]:
     require(
-        (OBJECTS / "holdout-opened-once.lock").is_file(),
+        HOLDOUT_TOKEN.is_file(),
         "holdout authority cannot be resolved before OPENED_ONCE",
     )
     timing_path = (
@@ -1162,8 +1231,8 @@ def load_holdout_authority() -> list[dict[str, str]]:
 def validate_holdout_arithmetic(accepted_ids: list[str]) -> None:
     authority = load_holdout_authority()
     derived_crossings = derive_holdout_crossings(accepted_ids)
-    observation_path = OBJECTS / "holdout/harvard-observation-components.csv"
-    annual_path = OBJECTS / "holdout/harvard-annual-components.csv"
+    observation_path = HOLDOUT_OBJECTS / "harvard-observation-components.csv"
+    annual_path = HOLDOUT_OBJECTS / "harvard-annual-components.csv"
     with (
         observation_path.open(newline="", encoding="utf-8") as observation_stream,
         annual_path.open(newline="", encoding="utf-8") as annual_stream,
@@ -1313,20 +1382,33 @@ def validate_holdout_arithmetic(accepted_ids: list[str]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--custody-root", type=Path, required=True)
+    parser.add_argument("--holdout-output-root", type=Path)
     options = parser.parse_args(argv)
     execution_root = options.execution_root.resolve(strict=True)
     if not execution_root.is_dir():
         raise ValueError("execution root must be an existing directory")
-    global ARTIFACTS, OBJECTS, EXECUTION_ROOT
+    global ARTIFACTS, OBJECTS, EXECUTION_ROOT, HOLDOUT_OBJECTS, HOLDOUT_TOKEN
     EXECUTION_ROOT = execution_root
     attempt_root = execution_root.parent
+    custody_root = options.custody_root.resolve(strict=True)
+    if not custody_root.is_dir():
+        raise ValueError("custody root must be an existing directory")
+    if options.holdout_output_root is None:
+        raise ValueError("terminal validation requires --holdout-output-root")
+    holdout_output_root = options.holdout_output_root.resolve(strict=True)
     EXECUTION_ROOT = attempt_root
     external_artifacts = (
         attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
     )
-    ARTIFACTS = ReadOverlay(external_artifacts, SOURCE_ARTIFACTS)
+    result_artifacts = (
+        holdout_output_root / "artifacts"
+    )
+    ARTIFACTS = ReadOverlay(result_artifacts, external_artifacts)
     OBJECTS = execution_root
-    command_plan = rows("executor-command-plan.csv")
+    HOLDOUT_OBJECTS = holdout_output_root / "objects"
+    HOLDOUT_TOKEN = custody_root / "holdout-opened-once.lock"
+    command_plan = direct_command_plan()
     plan_by_id = {row["command_id"]: row for row in command_plan}
     require(len(plan_by_id) == len(command_plan), "command plan IDs duplicate")
     candidates = rows("candidate-ledger.csv")
@@ -1570,14 +1652,19 @@ def main(argv: list[str] | None = None) -> int:
         OBJECTS / "freeze-bundles",
     )
     external_receipts = [
-        OBJECTS / "freeze-receipts/verifier_a.csv",
-        OBJECTS / "freeze-receipts/verifier_b.csv",
+        custody_root / "freeze-receipts/verifier_a.csv",
+        custody_root / "freeze-receipts/verifier_b.csv",
     ]
     receipt_rows = validate_receipt_barrier(
         external_receipts,
         digest,
         PACKAGE / "tools/freeze-verify.py",
-        {verifier_id: verifier_command(verifier_id) for verifier_id in ("verifier_a", "verifier_b")},
+        {
+            verifier_id: verifier_command(
+                verifier_id, execution_root, custody_root
+            )
+            for verifier_id in ("verifier_a", "verifier_b")
+        },
     )
     require(
         read_csv_exact(ARTIFACTS / "freeze-verifier-receipts.csv", RECEIPT_FIELDS)
@@ -1586,7 +1673,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     require(transitive > 0, "freeze has no transitive members")
 
-    token = OBJECTS / "holdout-opened-once.lock"
+    token = custody_root / "holdout-opened-once.lock"
     require(token.is_file(), "holdout token missing")
     token_fields = dict(
         line.split("=", 1)
@@ -1595,7 +1682,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     require(
         token_fields.get("state") == "OPENED_ONCE"
-        and token_fields.get("freeze_digest") == digest,
+        and token_fields.get("freeze_digest") == digest
+        and token_fields.get("command")
+        == holdout_opening_command(
+            execution_root,
+            custody_root,
+            holdout_output_root,
+            token,
+        ),
         "holdout token does not bind the current freeze",
     )
     opening_text = (ARTIFACTS / "holdout-opening-record.md").read_text(encoding="utf-8")
@@ -1607,7 +1701,7 @@ def main(argv: list[str] | None = None) -> int:
     receipt_rows = rows("holdout-execution-receipt.csv")
     require(len(receipt_rows) == 1, "holdout execution receipt differs")
     holdout_receipt = receipt_rows[0]
-    holdout_root = OBJECTS / "holdout"
+    holdout_root = holdout_output_root / "objects"
     holdout_paths = {
         "token_sha256": token,
         "expected_input_manifest_sha256": ARTIFACTS / "harvard-expected-input-manifest.csv",
@@ -1696,15 +1790,6 @@ def main(argv: list[str] | None = None) -> int:
         "holdout result state differs",
     )
     validate_holdout_arithmetic(accepted_ids)
-
-    control_root = EXECUTION_ROOT.with_name(f"{EXECUTION_ROOT.name}.control")
-    receipt_path = control_root / "holdout-v1.receipt.json"
-    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    require(
-        receipt.get("transaction_id") == "holdout-v1"
-        and receipt.get("result") == "PASS",
-        "external holdout transaction receipt differs",
-    )
 
     statuses = rows("stage-status-ledger.csv")
     require(

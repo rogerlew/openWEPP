@@ -1,8 +1,15 @@
 # Execution Control Contract
 
-Status: `PROSPECTIVE / REVIEW REQUIRED`
+Status: `DIRECT EXECUTION CONTROL`
 
 Evidence class: `Static`
+
+`direct-execution-plan.json` is the prospective command inventory. The
+package-local executor launches its literal argv arrays without a shell,
+records command evidence directly, and fsyncs the first failure before
+returning. It has no planner, CI, transition, receipt, or lifecycle dependency.
+The command-plan CSV and observed-runner artifacts are retained only as
+historical execution evidence and are not prospective control authority.
 
 ## CTRL-NATIVE-01 Production Consumer Chain
 
@@ -103,7 +110,10 @@ existing token or active lock, digest mismatch, non-PASS receipt, empty
 ensemble, or incomplete manifest refuses execution. A crash
 after the durable transition remains `OPENED_ONCE / INCOMPLETE`; rerun is
 forbidden and requires a separately authorized incident disposition. The
-holdout process has no calibration-output write path.
+holdout process has no calibration-output write path. It runs under
+`bubblewrap` with the repository, Harvard fixtures, calibration artifacts, and
+executables read-only. Only the custody root and a separate initially empty
+holdout-output root are writable. Missing `bubblewrap` fails closed.
 
 ## CTRL-SAT-01 Saturation
 

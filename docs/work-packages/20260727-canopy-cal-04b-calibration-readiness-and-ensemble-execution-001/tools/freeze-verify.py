@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create or validate checksum-bound CAL-04B freeze verifier receipts."""
+"""Create or validate two direct, checksum-bound freeze verifier records."""
 
 from __future__ import annotations
 
@@ -7,32 +7,22 @@ import argparse
 import csv
 import hashlib
 import os
+import secrets
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from custody import (
     RECEIPT_FIELDS,
-    capability_identity,
     sha256_file,
     validate_freeze,
     validate_receipt_barrier,
-    write_attestation,
 )
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-SOURCE_ARTIFACTS = PACKAGE / "artifacts"
-ARTIFACTS = SOURCE_ARTIFACTS
-OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
-RECEIPTS = OBJECTS / "freeze-receipts"
 SCRIPT = Path(__file__).resolve()
-PREOPEN = PACKAGE / "tools/validate_preopen.py"
-
-
-def artifact_input(name: str) -> Path:
-    external = ARTIFACTS / name
-    return external if external.is_file() else SOURCE_ARTIFACTS / name
 
 
 def frozen_bundle_root(manifest: Path) -> Path:
@@ -48,12 +38,27 @@ def frozen_bundle_root(manifest: Path) -> Path:
     return next(iter(roots))
 
 
-def verifier_command(verifier_id: str, execution_root: Path) -> str:
+def verifier_command(
+    verifier_id: str, execution_root: Path, custody_root: Path
+) -> str:
     relative = SCRIPT.relative_to(ROOT)
     return (
         "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python "
-        f"{relative} --execution-root {execution_root} --verifier-id {verifier_id}"
+        f"{relative} --execution-root {execution_root} "
+        f"--custody-root {custody_root} --verifier-id {verifier_id}"
     )
+
+
+def fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def paths_overlap(left: Path, right: Path) -> bool:
+    return left == right or left in right.parents or right in left.parents
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -62,123 +67,83 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--custody-root", type=Path, required=True)
     parser.add_argument("--verifier-id")
     parser.add_argument("--validate-barrier", action="store_true")
-    parser.add_argument("--capability", type=Path)
-    parser.add_argument("--attestation-out", type=Path)
-    parser.add_argument("--transaction-id")
-    parser.add_argument("--parent-dispatch-id")
-    parser.add_argument("--agent-task-id")
-    parser.add_argument("--principal")
-    parser.add_argument("--workflow")
-    parser.add_argument("--job")
-    parser.add_argument("--runner")
-    parser.add_argument("--attempt", type=int)
     options = parser.parse_args(argv)
     execution_root = options.execution_root.resolve(strict=True)
-    if not execution_root.is_dir():
-        raise ValueError("execution root must be an existing directory")
-    global ARTIFACTS, OBJECTS, RECEIPTS
-    attempt_root = execution_root.parent
     custody_root = options.custody_root.resolve(strict=True)
-    if not custody_root.is_dir():
-        raise ValueError("custody root must be an existing directory")
-    ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
-    ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    OBJECTS = execution_root
-    RECEIPTS = custody_root / "freeze-receipts"
-    manifest = artifact_input("holdout-freeze-manifest.csv")
+    if not execution_root.is_dir() or not custody_root.is_dir():
+        raise ValueError("execution and custody roots must be existing directories")
+    attempt_root = execution_root.parent
+    if paths_overlap(custody_root, ROOT.resolve()) or paths_overlap(
+        custody_root, attempt_root
+    ):
+        raise ValueError("custody root overlaps repository or calibration attempt")
+    artifacts = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    manifest = artifacts / "holdout-freeze-manifest.csv"
     digest, members = validate_freeze(
         manifest,
-        artifact_input("holdout-freeze-digest.txt"),
+        artifacts / "holdout-freeze-digest.txt",
         frozen_bundle_root(manifest),
     )
-    RECEIPTS.mkdir(parents=True, exist_ok=True)
-    expected_commands = {
-        verifier_id: verifier_command(verifier_id, execution_root)
+    receipts = custody_root / "freeze-receipts"
+    receipts.mkdir(exist_ok=True)
+    expected = {
+        verifier_id: verifier_command(verifier_id, execution_root, custody_root)
         for verifier_id in ("verifier_a", "verifier_b")
     }
     if options.validate_barrier:
-        paths = [RECEIPTS / "verifier_a.csv", RECEIPTS / "verifier_b.csv"]
         rows = validate_receipt_barrier(
-            paths,
+            [receipts / "verifier_a.csv", receipts / "verifier_b.csv"],
             digest,
             SCRIPT,
-            expected_commands,
+            expected,
         )
-        summary = ARTIFACTS / "freeze-verifier-receipts.csv"
-        with summary.open("w", newline="", encoding="utf-8") as stream:
-            writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\n")
-            writer.writeheader(); writer.writerows(rows)
+        summary = artifacts / "freeze-verifier-receipts.csv"
+        with summary.open("x", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(
+                stream, fieldnames=RECEIPT_FIELDS, lineterminator="\n"
+            )
+            writer.writeheader()
+            writer.writerows(rows)
+            stream.flush()
+            os.fsync(stream.fileno())
+        fsync_directory(summary.parent)
         print(f"PASS freeze barrier digest={digest} transitive_members={members}")
         return 0
-    if options.verifier_id not in {"verifier_a", "verifier_b"}:
+    if options.verifier_id not in expected:
         raise ValueError("verifier id must be verifier_a or verifier_b")
-    claims = (
-        options.capability,
-        options.attestation_out,
-        options.transaction_id,
-        options.parent_dispatch_id,
-        options.agent_task_id,
-        options.principal,
-        options.workflow,
-        options.job,
-        options.runner,
-        options.attempt,
+    subprocess.run(
+        [
+            str(ROOT / ".venv/bin/python"),
+            str(PACKAGE / "tools/validate_preopen.py"),
+            "--execution-root",
+            str(execution_root),
+            "--custody-root",
+            str(custody_root),
+        ],
+        cwd=ROOT,
+        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        check=True,
     )
-    if any(value is None for value in claims):
-        raise ValueError("verifier capability, attestation output, and claims are required")
-    path = RECEIPTS / f"{options.verifier_id}.csv"
-    if path.exists():
-        raise ValueError(f"receipt already exists {path}")
+    path = receipts / f"{options.verifier_id}.csv"
+    command = expected[options.verifier_id]
     row = {
         "verifier_id": options.verifier_id,
+        "invocation_id": secrets.token_hex(16),
         "freeze_digest": digest,
         "verifier_script_sha256": sha256_file(SCRIPT),
-        "command": expected_commands[options.verifier_id],
-        "command_sha256": hashlib.sha256(
-            expected_commands[options.verifier_id].encode("utf-8")
-        ).hexdigest(),
+        "command": command,
+        "command_sha256": hashlib.sha256(command.encode()).hexdigest(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "state": "PASS",
     }
     with path.open("x", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=RECEIPT_FIELDS, lineterminator="\n")
-        writer.writeheader(); writer.writerow(row)
+        writer.writeheader()
+        writer.writerow(row)
         stream.flush()
         os.fsync(stream.fileno())
+    fsync_directory(path.parent)
     path.chmod(0o444)
-    capability = options.capability.resolve(strict=True)
-    attestation = options.attestation_out.resolve(strict=False)
-    for candidate in (capability, attestation):
-        try:
-            candidate.relative_to(custody_root)
-        except ValueError:
-            raise ValueError("verifier custody path escapes custody root") from None
-    expected_attestation = (
-        f"freeze_verify_{options.verifier_id.removeprefix('verifier_')}.json"
-    )
-    if attestation.name != expected_attestation:
-        raise ValueError("verifier attestation filename differs from command identity")
-    capability_hash = capability_identity(capability)
-    expected_capability = custody_root / "capabilities" / f"{capability_hash}.cap"
-    if capability != expected_capability:
-        raise ValueError("verifier capability path is not hash-addressed for Rust consumption")
-    attestation_argv = [str(SCRIPT), *(argv if argv is not None else sys.argv[1:])]
-    write_attestation(
-        attestation,
-        capability_hash=capability_hash,
-        transaction_id=options.transaction_id,
-        parent_dispatch_id=options.parent_dispatch_id,
-        agent_task_id=options.agent_task_id,
-        principal=options.principal,
-        workflow=options.workflow,
-        job=options.job,
-        runner=options.runner,
-        attempt=options.attempt,
-        script=SCRIPT,
-        argv=attestation_argv,
-        receipt=path,
-        freeze_digest=digest,
-    )
     print(
         f"PASS {options.verifier_id} digest={digest} "
         f"transitive_members={members}"
@@ -189,6 +154,6 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)

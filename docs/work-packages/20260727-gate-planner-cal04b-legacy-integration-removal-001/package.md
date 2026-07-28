@@ -5,7 +5,7 @@ Package ID:
 
 Queue ID: `GATE-LINT-CAL-01`
 
-Status: `ACTIVE`
+Status: `COMPLETE / PASS`
 
 Authorization: the user's 2026-07-27 direction to scaffold and execute roadmap
 Order 2.
@@ -62,17 +62,26 @@ barrier required by ADR-0043 Decision 10.
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/external-dag-path-equivalence.md`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/execution-incident-005.md`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/stage-status-ledger.csv`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/calibration-readiness-matrix.md`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/final-disposition.md`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/identifiability-and-equifinality.md`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/execute-prefix.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/publish-results.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/custody.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze-verify.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/holdout.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/observe.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/summarize.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/validate_preopen.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/validate.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/validate_executor.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_execute_prefix.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_publish_results.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_freeze_custody.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_external_paths.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_observe.py`
 - this package subtree
 
 The untracked
@@ -145,12 +154,12 @@ command-backed verification records. Write access is read-only.
 ## Progress
 
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 2.
-- [ ] Direct executor and failure durability implemented.
-- [ ] Publication and custody migration implemented.
-- [ ] Incident/status reconciliation completed.
-- [ ] Focused validation passed.
-- [ ] Dual review and dual verification passed.
-- [ ] Prompt archived, catalogs closed, and package committed.
+- [x] Direct executor and failure durability implemented.
+- [x] Publication and custody migration implemented.
+- [x] Incident/status reconciliation completed.
+- [x] Focused validation passed.
+- [x] Dual review and dual verification passed.
+- [x] Prompt archived, catalogs closed, and package committed.
 
 ## Decision Log
 
@@ -161,4 +170,11 @@ command-backed verification records. Write access is read-only.
 
 ## Outcomes
 
-Populate after implementation and verification.
+- CAL prospective execution is package-local, direct, and shell-free.
+- The first command failure is durable before return and outside publication
+  cleanup scope.
+- Publication is a bounded atomic file copy, not a transaction lifecycle.
+- Harvard custody retains all seven ADR-0043 Decision 10 properties without
+  planner capabilities or attestations.
+- Incident 005 is the current CAL science-design hold; Harvard remains sealed.
+- Order 3 remains queued and unscaffolded.

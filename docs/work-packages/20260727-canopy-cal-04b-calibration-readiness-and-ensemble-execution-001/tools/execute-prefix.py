@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch one authenticated CAL-04B external-DAG transaction."""
+"""Run CAL-04B package commands directly with durable failure evidence."""
 
 from __future__ import annotations
 
@@ -9,406 +9,352 @@ import json
 import os
 import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
-PLAN = PACKAGE / "artifacts/external-dag-transaction-plan.json"
-TRANSACTIONS = ("calibration-v1", "holdout-v1")
+PLAN = PACKAGE / "artifacts/direct-execution-plan.json"
+SCHEMA = "cal04b-direct-execution-plan-v1"
+EXPECTED_PHASES = {
+    "calibration": [
+        "prepare",
+        "build_executor",
+        "build_production_runner",
+        "native_proof",
+        "synthetic_gsi",
+        "hubbard_producer",
+        "hubbard_primary_reconstruct",
+        "hubbard_verify_reconstruct",
+        "retain_trace",
+        "readiness",
+        "summarize_pre_freeze",
+    ],
+    "custody": ["freeze", "freeze_verify_a", "freeze_verify_b"],
+    "holdout": [
+        "freeze_barrier",
+        "holdout",
+        "summarize_post_holdout",
+        "terminal_validate",
+    ],
+}
+ALLOWED_EXECUTABLES = {
+    "cargo",
+    "${REPO}/.venv/bin/python",
+    "${CARGO_TARGET_DIR}/release/native-producer",
+    "${CARGO_TARGET_DIR}/release/reconstruct",
+    "${CARGO_TARGET_DIR}/release/verify-reconstruct",
+    "${CARGO_TARGET_DIR}/release/readiness",
+}
 
 
-def planner_binary(execution_root: Path) -> Path:
-    target = execution_root.with_name(f"{execution_root.name}.planner-target")
-    environment = {
-        **os.environ,
-        "CARGO_TARGET_DIR": str(target),
-    }
-    subprocess.run(
-        [
-            "cargo",
-            "build",
-            "-p",
-            "openwepp-gate-planner",
-            "--bin",
-            "openwepp-gate-plan",
-        ],
-        cwd=ROOT,
-        env=environment,
-        check=True,
-    )
-    return target / "debug/openwepp-gate-plan"
+@dataclass(frozen=True)
+class Context:
+    execution_root: Path
+    attempt_root: Path
+    publication_root: Path
+    cargo_target_dir: Path
+    evidence_root: Path
+    custody_root: Path | None = None
 
 
-def command(options: argparse.Namespace, binary: Path) -> list[str]:
-    execution_root = options.execution_root
-    control_root = options.control_root
-    transaction_id = options.transaction_id
-    argv = [
-        str(binary),
-        "run-external-transition",
-        "--repo",
-        str(ROOT),
-        "--external-plan",
-        str(options.external_plan),
-        "--transaction-id",
-        transaction_id,
-        "--attempt-root",
-        str(execution_root),
-        "--ledger",
-        str(control_root / "ledger.jsonl"),
-        "--output",
-        str(control_root / f"{transaction_id}.receipt.json"),
-        "--principal",
-        options.principal,
-        "--repository",
-        options.repository,
-        "--source-event",
-        options.source_event,
-        "--source-ref",
-        options.source_ref,
-        "--workflow",
-        options.workflow,
-        "--job",
-        options.job,
-        "--runner",
-        options.runner,
-        "--attempt",
-        str(options.attempt),
-    ]
-    if transaction_id == "holdout-v1":
-        custody_root = options.custody_root.resolve(strict=True)
-        argv.extend(
-            [
-                "--custody-root",
-                str(custody_root),
-                "--opening-token",
-                str(custody_root / "holdout-opened-once.lock"),
-            ]
-        )
-    return argv
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
-def sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
+def canonical_bytes(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
-def read_canonical_json(path: Path) -> tuple[bytes, dict[str, object]]:
-    raw = path.read_bytes()
-    value = json.loads(raw)
-    if not isinstance(value, dict):
-        raise ValueError(f"JSON custody object is not an object: {path}")
-    canonical = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    if raw.strip() != canonical:
-        raise ValueError(f"JSON custody object is not canonical: {path}")
-    return raw, value
-
-
-def git_output(repository: Path, *arguments: str, binary: bool = False) -> bytes | str:
-    result = subprocess.run(
-        ["git", *arguments],
-        cwd=repository,
-        check=True,
-        capture_output=True,
-    )
-    return result.stdout if binary else result.stdout.decode("utf-8").strip()
-
-
-def authenticated_source_identity(base_plan: Path) -> tuple[Path, dict[str, str]]:
-    repository = Path(
-        str(git_output(base_plan.parent, "rev-parse", "--show-toplevel"))
-    ).resolve(strict=True)
-    relative = base_plan.resolve(strict=True).relative_to(repository).as_posix()
-    committed = git_output(repository, "show", f"HEAD:{relative}", binary=True)
-    if committed != base_plan.read_bytes():
-        raise ValueError("Generation-A plan bytes are not committed at HEAD")
-    status = git_output(
-        repository,
-        "status",
-        "--porcelain=v1",
-        "-z",
-        "--untracked-files=all",
-        binary=True,
-    )
-    if status:
-        raise ValueError("Generation-B requires a clean authenticated source checkout")
-    return repository, {
-        "head": str(git_output(repository, "rev-parse", "HEAD")),
-        "tree": str(git_output(repository, "rev-parse", "HEAD^{tree}")),
-        "diff_sha256": sha256_bytes(status),
-    }
-
-
-def derived_id(value: dict[str, object], field: str) -> str:
-    payload = dict(value)
-    payload.pop(field, None)
-    return sha256_bytes(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    )
-
-
-def confined_custody_path(root: Path, path: Path) -> str:
-    resolved = path.resolve(strict=True)
+def fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
     try:
-        relative = resolved.relative_to(root)
-    except ValueError:
-        raise ValueError(f"custody input escapes custody root: {path}") from None
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"custody input is not a regular file: {path}")
-    return relative.as_posix()
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
-def verified_attestation(
-    custody_root: Path, path: Path, freeze_digest: str, transaction_id: str
-) -> tuple[str, dict[str, object]]:
-    relative = confined_custody_path(custody_root, path)
-    raw, value = read_canonical_json(path)
-    if (
-        value.get("schema") != "openwepp-external-verifier-attestation-v1"
-        or value.get("attestation_id") != derived_id(value, "attestation_id")
-        or value.get("freeze_digest") != freeze_digest
-        or value.get("transaction_id") != transaction_id
-    ):
-        raise ValueError(f"verifier attestation identity differs: {path}")
-    command_id = Path(relative).stem
-    if command_id not in {"freeze_verify_a", "freeze_verify_b"}:
-        raise ValueError("verifier attestation filename does not bind command identity")
-    capability_hash = str(value.get("capability_hash", ""))
-    capability = custody_root / "capabilities" / f"{capability_hash}.cap"
-    capability_metadata = capability.lstat()
-    if (
-        capability.is_symlink()
-        or not capability.is_file()
-        or capability_metadata.st_nlink != 1
-        or sha256_bytes(capability.read_bytes()) != capability_hash
-    ):
-        raise ValueError("verifier capability preimage differs")
-    verifier_id = command_id.removeprefix("freeze_verify_")
-    receipt = custody_root / "freeze-receipts" / f"verifier_{verifier_id}.csv"
-    if sha256_bytes(receipt.read_bytes()) != value.get("receipt_sha256"):
-        raise ValueError("verifier attestation receipt bytes differ")
-    script = PACKAGE / "tools/freeze-verify.py"
-    if sha256_bytes(script.read_bytes()) != value.get("script_sha256"):
-        raise ValueError("verifier attestation script bytes differ")
-    argv = value.get("argv")
-    if not isinstance(argv, list) or "--verifier-id" not in argv:
-        raise ValueError("verifier attestation argv is incomplete")
-    return relative, value
-
-
-def build_generation_b(
-    base_plan: Path,
-    calibration_receipt: Path,
-    freeze_receipt: Path,
-    attestation_paths: list[Path],
-    custody_root: Path,
-    planner: Path,
-) -> dict[str, object]:
-    base_raw, plan = read_canonical_json(base_plan)
-    repository, source_identity = authenticated_source_identity(base_plan)
-    if (
-        plan.get("schema") != "openwepp-external-dag-plan-v1"
-        or plan.get("generation") != "A"
-        or plan.get("parent_plan") is not None
-        or plan.get("source_identity") is not None
-    ):
-        raise ValueError("base external plan schema differs")
-    transactions = plan.get("transactions")
-    if not isinstance(transactions, list):
-        raise ValueError("base external plan transaction inventory differs")
-    holdout = next(
-        (
-            transaction
-            for transaction in transactions
-            if isinstance(transaction, dict)
-            and transaction.get("transaction_id") == "holdout-v1"
-        ),
-        None,
-    )
-    if holdout is None or holdout.get("custody_prerequisites") or holdout.get(
-        "custody_receipts"
-    ):
-        raise ValueError("base plan is not the sealed Generation-A plan")
-
-    calibration_raw, calibration = read_canonical_json(calibration_receipt)
-    if (
-        calibration.get("transaction_id") != "calibration-v1"
-        or calibration.get("result") != "PASS"
-        or not isinstance(calibration.get("receipt_id"), str)
-        or len(calibration["receipt_id"]) != 64
-    ):
-        raise ValueError("calibration transaction receipt is not passing")
-    subprocess.run(
-        [
-            str(planner.resolve(strict=True)),
-            "verify-external-transaction",
-            "--repo",
-            str(repository),
-            "--external-plan",
-            str(base_plan.resolve(strict=True)),
-            "--receipt",
-            str(calibration_receipt.resolve(strict=True)),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    freeze_relative = confined_custody_path(custody_root, freeze_receipt)
-    freeze_raw, freeze = read_canonical_json(freeze_receipt)
-    freeze_digest = freeze.get("freeze_digest")
-    if (
-        freeze.get("result") != "PASS"
-        or not isinstance(freeze.get("freeze_receipt_id"), str)
-        or freeze["freeze_receipt_id"]
-        != derived_id(freeze, "freeze_receipt_id")
-        or not isinstance(freeze_digest, str)
-        or len(freeze_digest) != 64
-        or freeze.get("calibration_receipt_sha256")
-        != sha256_bytes(calibration_raw)
-    ):
-        raise ValueError("freeze receipt is not passing or digest-bound")
-
-    if len(attestation_paths) != 2:
-        raise ValueError("exactly two verifier attestations are required")
-    attestations = [
-        verified_attestation(custody_root, path, freeze_digest, "holdout-v1")
-        for path in attestation_paths
-    ]
-    values = [value for _relative, value in attestations]
-    distinct_fields = ("attestation_id", "capability_hash", "agent_task_id", "principal")
-    if any(len({value[field] for value in values}) != 2 for field in distinct_fields):
-        raise ValueError("verifier attestations are duplicate or replayed")
-    execution_claims = {
-        (
-            value["workflow"],
-            value["job"],
-            value["runner"],
-            value["attempt"],
-        )
-        for value in values
-    }
-    if len(execution_claims) != 2:
-        raise ValueError("verifier execution claims are duplicate or replayed")
-    if len({value["parent_dispatch_id"] for value in values}) != 1:
-        raise ValueError("verifier attestations do not share one parent dispatch")
-
-    calibration_destination = custody_root / "calibration-v1.receipt.json"
-    if calibration_destination.exists():
-        if calibration_destination.read_bytes() != calibration_raw:
-            raise ValueError("calibration custody receipt drifted")
-    else:
-        with calibration_destination.open("xb") as stream:
-            stream.write(calibration_raw)
-            stream.flush()
-            os.fsync(stream.fileno())
-    holdout["custody_prerequisites"] = sorted(relative for relative, _value in attestations)
-    holdout["custody_receipts"] = [
-        {
-            "command_id": "summarize_pre_freeze",
-            "path": calibration_destination.relative_to(custody_root).as_posix(),
-            "sha256": sha256_bytes(calibration_raw),
-            "kind": "TRANSACTION",
-        },
-        {
-            "command_id": "freeze",
-            "path": freeze_relative,
-            "sha256": sha256_bytes(freeze_raw),
-            "kind": "FREEZE",
-        },
-    ]
-    plan["generation"] = "B"
-    plan["parent_plan"] = {
-        "path": str(base_plan.resolve(strict=True)),
-        "plan_id": plan["plan_id"],
-        "sha256": sha256_bytes(base_raw),
-    }
-    plan["source_identity"] = source_identity
-    plan.pop("plan_id", None)
-    plan["plan_id"] = derived_id(plan, "plan_id")
-    return plan
-
-
-def generate_holdout_plan_main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--base-plan", type=Path, required=True)
-    parser.add_argument("--calibration-receipt", type=Path, required=True)
-    parser.add_argument("--freeze-receipt", type=Path, required=True)
-    parser.add_argument("--attestation", type=Path, action="append", required=True)
-    parser.add_argument("--custody-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--planner", type=Path, required=True)
-    options = parser.parse_args(argv)
-    custody_root = options.custody_root.resolve(strict=True)
-    output = options.output.resolve(strict=False)
-    try:
-        output.relative_to(ROOT)
-    except ValueError:
-        pass
-    else:
-        raise ValueError("Generation-B plan must be written outside the repository")
-    plan = build_generation_b(
-        options.base_plan.resolve(strict=True),
-        options.calibration_receipt.resolve(strict=True),
-        options.freeze_receipt.resolve(strict=True),
-        [path.resolve(strict=True) for path in options.attestation],
-        custody_root,
-        options.planner,
-    )
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("x", encoding="utf-8") as stream:
-        json.dump(plan, stream, sort_keys=True, separators=(",", ":"))
+def write_exclusive_json(path: Path, value: object) -> None:
+    encoded = canonical_bytes(value) + b"\n"
+    with path.open("xb") as stream:
+        stream.write(encoded)
         stream.flush()
         os.fsync(stream.fileno())
-    return 0
+    fsync_directory(path.parent)
+
+
+def append_jsonl(path: Path, value: object) -> None:
+    encoded = canonical_bytes(value) + b"\n"
+    with path.open("ab") as stream:
+        stream.write(encoded)
+        stream.flush()
+        os.fsync(stream.fileno())
+    fsync_directory(path.parent)
+
+
+def load_plan(path: Path = PLAN) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if (
+        not isinstance(value, dict)
+        or value.get("schema") != SCHEMA
+        or value.get("planner_state") is not False
+        or value.get("ci") is not False
+    ):
+        raise ValueError("direct execution plan authority fields differ")
+    phases = value.get("phases")
+    if not isinstance(phases, dict) or list(phases) != list(EXPECTED_PHASES):
+        raise ValueError("direct execution phases are missing")
+    identifiers: list[str] = []
+    orders: list[int] = []
+    for phase, nodes in phases.items():
+        if not isinstance(nodes, list) or [
+            node.get("command_id") for node in nodes if isinstance(node, dict)
+        ] != EXPECTED_PHASES[phase]:
+            raise ValueError("direct execution phase inventory differs")
+        for node in nodes:
+            if not isinstance(node, dict):
+                raise ValueError("direct execution command is malformed")
+            required = {
+                "command_id": str,
+                "order": int,
+                "argv": list,
+                "cwd": str,
+                "env": dict,
+                "source_path": str,
+                "declared_outputs": list,
+                "prerequisites": list,
+                "harvard_access": str,
+                "timeout_seconds": int,
+            }
+            if any(not isinstance(node.get(key), kind) for key, kind in required.items()):
+                raise ValueError(f"direct execution command fields differ: {node}")
+            identifiers.append(node["command_id"])
+            orders.append(node["order"])
+            argv = node.get("argv")
+            if (
+                not isinstance(argv, list)
+                or not argv
+                or any(not isinstance(item, str) or not item for item in argv)
+            ):
+                raise ValueError(f"invalid argv for {node['command_id']}")
+            if argv[0] not in ALLOWED_EXECUTABLES:
+                raise ValueError(f"executable is outside the literal allowlist: {argv[0]}")
+            if (
+                node["cwd"] != "${REPO}"
+                or node["timeout_seconds"] <= 0
+                or any(not isinstance(item, str) for item in node["declared_outputs"])
+                or any(not isinstance(item, str) for item in node["prerequisites"])
+                or node["prerequisites"]
+                != ([] if not identifiers[:-1] else [identifiers[-2]])
+            ):
+                raise ValueError(f"direct command boundary differs: {node['command_id']}")
+            expected_harvard = (
+                "OPENS_HARVARD"
+                if node["command_id"] == "holdout"
+                else "NONE"
+            )
+            if node["harvard_access"] != expected_harvard:
+                raise ValueError(f"Harvard policy differs: {node['command_id']}")
+    if len(identifiers) != len(set(identifiers)):
+        raise ValueError("direct execution command IDs are duplicated")
+    if orders != list(range(1, 19)):
+        raise ValueError("direct execution order is not exactly 1 through 18")
+    return value
+
+
+def prepare_context(execution_root: Path) -> Context:
+    root = execution_root.resolve(strict=False)
+    if root.exists() or not root.parent.is_dir():
+        raise ValueError("execution root must be a fresh path below an existing directory")
+    attempt = root.parent
+    publication = attempt / "publication"
+    cargo_target = attempt / "cargo-target"
+    evidence = attempt / "direct-evidence"
+    for path in (root, publication, cargo_target, evidence):
+        path.mkdir(parents=True, exist_ok=False)
+    return Context(root, attempt, publication, cargo_target, evidence)
+
+
+def replacements(context: Context) -> dict[str, str]:
+    values = {
+        "${REPO}": str(ROOT),
+        "${OBJECTS_ROOT}": str(context.execution_root),
+        "${PUBLICATION_ROOT}": str(context.publication_root),
+        "${CARGO_TARGET_DIR}": str(context.cargo_target_dir),
+    }
+    if context.custody_root is not None:
+        values["${CUSTODY_ROOT}"] = str(context.custody_root)
+    return values
+
+
+def expand(value: str, context: Context) -> str:
+    expanded = value
+    for token, replacement in replacements(context).items():
+        expanded = expanded.replace(token, replacement)
+    if "${" in expanded:
+        raise ValueError(f"unresolved direct execution operand: {expanded}")
+    return expanded
+
+
+def command_record(
+    node: dict[str, Any],
+    context: Context,
+    *,
+    started: str,
+    finished: str,
+    exit_code: int | None,
+    state: str,
+    stdout_path: Path,
+    stderr_path: Path,
+    error: str | None = None,
+) -> dict[str, object]:
+    source = Path(expand(str(node["source_path"]), context))
+    if not source.is_absolute():
+        source = ROOT / source
+    argv = [expand(item, context) for item in node["argv"]]
+    cwd = Path(expand(str(node["cwd"]), context)).resolve()
+    environment = {
+        key: expand(str(value), context)
+        for key, value in dict(node.get("env", {})).items()
+    }
+    record: dict[str, object] = {
+        "schema": "cal04b-direct-command-evidence-v1",
+        "command_id": node["command_id"],
+        "order": node["order"],
+        "state": state,
+        "argv": argv,
+        "cwd": str(cwd),
+        "environment": environment,
+        "source_path": str(source),
+        "source_sha256": sha256_file(source),
+        "started_at": started,
+        "finished_at": finished,
+        "exit_code": exit_code,
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": sha256_file(stdout_path),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": sha256_file(stderr_path),
+        "declared_outputs": [
+            expand(str(path), context) for path in node.get("declared_outputs", [])
+        ],
+        "harvard_access": node["harvard_access"],
+    }
+    if error is not None:
+        record["error"] = error
+    return record
+
+
+def execute_node(node: dict[str, Any], context: Context) -> dict[str, object]:
+    command_id = str(node["command_id"])
+    stdout_path = context.evidence_root / f"{node['order']}-{command_id}.stdout.log"
+    stderr_path = context.evidence_root / f"{node['order']}-{command_id}.stderr.log"
+    evidence_path = context.evidence_root / f"{node['order']}-{command_id}.json"
+    for path in (stdout_path, stderr_path, evidence_path):
+        if path.exists():
+            raise ValueError(f"direct execution evidence already exists: {path}")
+    argv = [expand(item, context) for item in node["argv"]]
+    cwd = Path(expand(str(node["cwd"]), context)).resolve()
+    environment = os.environ.copy()
+    environment.update(
+        {
+            key: expand(str(value), context)
+            for key, value in dict(node.get("env", {})).items()
+        }
+    )
+    started = datetime.now(timezone.utc).isoformat()
+    state = "FAIL"
+    exit_code: int | None = None
+    error: str | None = None
+    with stdout_path.open("xb") as stdout, stderr_path.open("xb") as stderr:
+        try:
+            result = subprocess.run(
+                argv,
+                cwd=cwd,
+                env=environment,
+                stdout=stdout,
+                stderr=stderr,
+                timeout=int(node["timeout_seconds"]),
+                check=False,
+            )
+            exit_code = result.returncode
+            state = "PASS" if result.returncode == 0 else "FAIL"
+        except subprocess.TimeoutExpired:
+            state = "TIMEOUT"
+            error = "command timed out"
+        except OSError as command_error:
+            state = "ERROR"
+            error = f"{type(command_error).__name__}: {command_error}"
+            stderr.write((error + "\n").encode())
+        finally:
+            stdout.flush()
+            stderr.flush()
+            os.fsync(stdout.fileno())
+            os.fsync(stderr.fileno())
+    finished = datetime.now(timezone.utc).isoformat()
+    record = command_record(
+        node,
+        context,
+        started=started,
+        finished=finished,
+        exit_code=exit_code,
+        state=state,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+        error=error,
+    )
+    write_exclusive_json(evidence_path, record)
+    append_jsonl(context.evidence_root / "command-log.jsonl", record)
+    if state != "PASS":
+        primary = context.evidence_root / "primary-failure.json"
+        if not primary.exists():
+            write_exclusive_json(primary, record)
+    return record
+
+
+def run_calibration(context: Context, plan: dict[str, Any]) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    for node in plan["phases"]["calibration"]:
+        record = execute_node(node, context)
+        records.append(record)
+        if record["state"] != "PASS":
+            raise RuntimeError(
+                f"CAL-04B direct command failed: {record['command_id']} "
+                f"evidence={context.evidence_root / 'primary-failure.json'}"
+            )
+    completion = {
+        "schema": "cal04b-direct-calibration-completion-v1",
+        "state": "PASS",
+        "plan_sha256": sha256_file(PLAN),
+        "command_log_sha256": sha256_file(context.evidence_root / "command-log.jsonl"),
+        "command_ids": [record["command_id"] for record in records],
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    write_exclusive_json(context.evidence_root / "calibration-complete.json", completion)
+    return records
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--execution-root", type=Path, required=True)
-    parser.add_argument("--transaction-id", choices=TRANSACTIONS, required=True)
-    parser.add_argument("--external-plan", type=Path)
-    parser.add_argument("--principal", required=True)
-    parser.add_argument("--repository", required=True)
-    parser.add_argument("--source-event", required=True)
-    parser.add_argument("--source-ref", required=True)
-    parser.add_argument("--workflow", required=True)
-    parser.add_argument("--job", required=True)
-    parser.add_argument("--runner", required=True)
-    parser.add_argument("--attempt", type=int, required=True)
-    parser.add_argument("--custody-root", type=Path)
     options = parser.parse_args(argv)
-    execution_root = options.execution_root.resolve(strict=False)
-    if execution_root.exists() or not execution_root.parent.is_dir():
-        raise ValueError("execution root must be a fresh path below an existing directory")
-    options.execution_root = execution_root
-    if options.transaction_id == "holdout-v1":
-        if options.external_plan is None:
-            raise ValueError("holdout transaction requires a Generation-B external plan")
-        options.external_plan = options.external_plan.resolve(strict=True)
-        try:
-            options.external_plan.relative_to(ROOT)
-        except ValueError:
-            pass
-        else:
-            raise ValueError("holdout Generation-B plan must remain outside the repository")
-    else:
-        if options.external_plan not in (None, PLAN):
-            raise ValueError("calibration transaction uses the committed Generation-A plan")
-        options.external_plan = PLAN
-    control_root = execution_root.with_name(f"{execution_root.name}.control")
-    control_root.mkdir()
-    options.control_root = control_root
-    if options.transaction_id == "holdout-v1" and options.custody_root is None:
-        raise ValueError("holdout transaction requires an external custody root")
-    subprocess.run(command(options, planner_binary(execution_root)), cwd=ROOT, check=True)
+    context = prepare_context(options.execution_root)
+    run_calibration(context, load_plan())
+    print(
+        "PASS direct CAL-04B calibration commands "
+        f"evidence={context.evidence_root}"
+    )
     return 0
 
 
 if __name__ == "__main__":
     try:
-        arguments = sys.argv[1:]
-        if arguments[:1] == ["generate-holdout-plan"]:
-            sys.exit(generate_holdout_plan_main(arguments[1:]))
-        sys.exit(main(arguments))
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        sys.exit(main())
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)

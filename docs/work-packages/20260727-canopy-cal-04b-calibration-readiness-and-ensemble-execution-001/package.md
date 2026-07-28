@@ -3,7 +3,7 @@
 Package ID:
 `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
 
-Status: `ACTIVE / TOOLING HOLD BEFORE HEAVY`
+Status: `ACTIVE / SCIENCE-DESIGN HOLD AT SYNTHETIC RECOVERY`
 
 Date opened: `2026-07-27`
 
@@ -15,6 +15,13 @@ holdout evaluation.
 
 This ExecPlan is a living document maintained under
 `docs/codex_exec_plans.md`.
+
+Current execution truth: the production-consumer defect from incident 004 is
+fixed and its twelve native cases pass in retained evidence. The next command
+failed at the required synthetic hidden-truth recovery check; see
+`artifacts/execution-incident-005.md`. No candidate population has run and
+Harvard remains sealed. Gate-planner and external-transaction machinery are no
+longer CAL prerequisites.
 
 ## Purpose
 

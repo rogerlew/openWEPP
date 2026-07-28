@@ -27,6 +27,10 @@ def sha(path: Path) -> str:
     return sha256_file(path)
 
 
+def paths_overlap(left: Path, right: Path) -> bool:
+    return left == right or left in right.parents or right in left.parents
+
+
 def derived_id(value: dict[str, object], field: str) -> str:
     payload = dict(value)
     payload.pop(field, None)
@@ -174,12 +178,16 @@ def main(argv: list[str] | None = None) -> int:
     custody_root = options.custody_root.resolve(strict=True)
     if not custody_root.is_dir():
         raise ValueError("custody root must be an existing directory")
+    if paths_overlap(custody_root, ROOT.resolve()) or paths_overlap(
+        custody_root, attempt_root
+    ):
+        raise ValueError("custody root overlaps repository or calibration attempt")
     ARTIFACTS = attempt_root / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     OBJECTS = execution_root
     EXECUTOR = attempt_root / "cargo-target/release"
     EXECUTION_ROOT = attempt_root
-    if (OBJECTS / "holdout-opened-once.lock").exists():
+    if (custody_root / "holdout-opened-once.lock").exists():
         raise ValueError("refusing to regenerate freeze after Harvard was opened")
     accepted = ARTIFACTS / "accepted-calibration-ensemble.csv"
     with accepted.open(newline="", encoding="utf-8") as stream:
@@ -265,10 +273,17 @@ def main(argv: list[str] | None = None) -> int:
         ("command_plan", SOURCE_ARTIFACTS / "executor-command-plan.csv"),
         ("observed_command_contract", SOURCE_ARTIFACTS / "observed-command-contract.csv"),
     ])
-    control_root = attempt_root.with_name(f"{attempt_root.name}.control")
-    transaction_receipt = control_root / "calibration-v1.receipt.json"
+    completion = attempt_root / "direct-evidence/calibration-complete.json"
+    completion_value = json.loads(completion.read_text(encoding="utf-8"))
+    if (
+        completion_value.get("state") != "PASS"
+        or completion_value.get("plan_sha256")
+        != sha(SOURCE_ARTIFACTS / "direct-execution-plan.json")
+    ):
+        raise ValueError("direct calibration completion does not bind the plan")
     observed_entries: list[tuple[str, Path]] = [
-        ("external_calibration_transaction_receipt", transaction_receipt)
+        ("direct_calibration_completion", completion),
+        ("direct_execution_plan", SOURCE_ARTIFACTS / "direct-execution-plan.json"),
     ]
     custody_bundle = bundles / "freeze-custody-controls.csv"
     custody_entries = [
@@ -276,11 +291,8 @@ def main(argv: list[str] | None = None) -> int:
         ("freeze_script", PACKAGE / "tools/freeze.py"),
         ("verifier_script", PACKAGE / "tools/freeze-verify.py"),
         ("holdout_script", PACKAGE / "tools/holdout.py"),
-        ("observed_runner", PACKAGE / "tools/observe.py"),
-        ("observed_prefix_coordinator", PACKAGE / "tools/execute-prefix.py"),
-        ("observed_runner_test", PACKAGE / "tools/test_observe.py"),
-        ("observed_command_contract", SOURCE_ARTIFACTS / "observed-command-contract.csv"),
-        ("observed_execution_procedure", SOURCE_ARTIFACTS / "observed-execution-procedure.md"),
+        ("direct_executor", PACKAGE / "tools/execute-prefix.py"),
+        ("direct_execution_plan", SOURCE_ARTIFACTS / "direct-execution-plan.json"),
         (
             "calibration_forcing_authority_resolution",
             SOURCE_ARTIFACTS / "calibration-forcing-authority-resolution.md",
@@ -362,7 +374,7 @@ def main(argv: list[str] | None = None) -> int:
         "result": "PASS",
         "freeze_digest": verified_digest,
         "manifest_sha256": sha(manifest),
-        "calibration_receipt_sha256": sha(transaction_receipt),
+        "calibration_completion_sha256": sha(completion),
     }
     freeze_receipt["freeze_receipt_id"] = derived_id(
         freeze_receipt, "freeze_receipt_id"

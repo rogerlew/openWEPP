@@ -332,9 +332,10 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-gate-planner-cal04b-legacy-integration-removal-001/` -
-  ACTIVE: roadmap Order 2 replaces CAL planner transactions and publication
-  with direct execution, durable primary-failure evidence, and a minimal
-  protected Harvard custody owner. It does not execute CAL or open Harvard.
+  COMPLETE / PASS: roadmap Order 2 removed prospective CAL planner transactions
+  and publication, replacing them with direct execution, durable
+  primary-failure evidence, bounded publication, and a minimal protected
+  Harvard custody owner. It did not execute CAL or open Harvard.
 - `20260727-gate-planner-governance-authority-alignment-001/` -
   COMPLETE / PASS: roadmap Order 1 applies ADR-0043 to operative guidance,
   source-coupled guards, historical policy identity, and frozen planner-package
@@ -351,11 +352,11 @@ State as of `2026-07-27 UTC`:
   applied exact package-local frozen-status overlays so no stale `ACTIVE` file
   can resume them.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  ACTIVE / SCIENCE INCIDENT RECONCILIATION PENDING: the planner no longer
-  blocks direct package-authored modeling under the 2026-07-27 user direction.
-  The retained synthetic reconstruction failure must be recorded and resolved
-  before population. Prior attempts remain evidence only and Harvard remains
-  sealed.
+  ACTIVE / SCIENCE-DESIGN HOLD AT SYNTHETIC RECOVERY: direct package-authored
+  execution is available without planner authority. Incident 005 records that
+  the hidden candidate lacks one crossing per year; this must be scientifically
+  resolved before population. Prior attempts remain evidence only and Harvard
+  remains sealed.
 - `20260727-gate-planner-external-dag-transaction-adapter-001/` -
   FROZEN / SUPERSEDED BY ADR-0043: its scaffold authority and independent
   implementation review failed closed. Historical evidence remains; explicit

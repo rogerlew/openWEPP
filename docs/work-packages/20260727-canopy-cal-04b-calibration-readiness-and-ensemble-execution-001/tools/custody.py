@@ -6,8 +6,6 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import os
-from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -15,6 +13,7 @@ FREEZE_FIELDS = ["identity_id", "path_or_command", "role", "sha256", "state"]
 BUNDLE_FIELDS = ["identity", "path", "sha256"]
 RECEIPT_FIELDS = [
     "verifier_id",
+    "invocation_id",
     "freeze_digest",
     "verifier_script_sha256",
     "command",
@@ -22,7 +21,6 @@ RECEIPT_FIELDS = [
     "timestamp",
     "state",
 ]
-ATTESTATION_SCHEMA = "openwepp-external-verifier-attestation-v1"
 
 
 def sha256_file(path: Path) -> str:
@@ -42,60 +40,6 @@ def derived_id(value: dict[str, object], field: str) -> str:
         candidate, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
-
-
-def capability_identity(path: Path) -> str:
-    metadata = path.lstat()
-    if path.is_symlink() or not path.is_file() or metadata.st_nlink != 1:
-        raise ValueError("verifier capability is not a unique regular file")
-    capability = path.read_bytes()
-    if len(capability) < 32:
-        raise ValueError("verifier capability is too short")
-    return hashlib.sha256(capability).hexdigest()
-
-
-def write_attestation(
-    path: Path,
-    *,
-    capability_hash: str,
-    transaction_id: str,
-    parent_dispatch_id: str,
-    agent_task_id: str,
-    principal: str,
-    workflow: str,
-    job: str,
-    runner: str,
-    attempt: int,
-    script: Path,
-    argv: list[str],
-    receipt: Path,
-    freeze_digest: str,
-) -> None:
-    value: dict[str, object] = {
-        "schema": ATTESTATION_SCHEMA,
-        "attestation_id": "",
-        "capability_hash": capability_hash,
-        "transaction_id": transaction_id,
-        "parent_dispatch_id": parent_dispatch_id,
-        "agent_task_id": agent_task_id,
-        "principal": principal,
-        "workflow": workflow,
-        "job": job,
-        "runner": runner,
-        "attempt": attempt,
-        "script_sha256": sha256_file(script),
-        "argv": argv,
-        "receipt_sha256": sha256_file(receipt),
-        "freeze_digest": freeze_digest,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    value["attestation_id"] = derived_id(value, "attestation_id")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("x", encoding="utf-8") as stream:
-        json.dump(value, stream, sort_keys=True, separators=(",", ":"))
-        stream.write("\n")
-        stream.flush()
-        os.fsync(stream.fileno())
 
 
 def read_csv_exact(path: Path, fields: list[str]) -> list[dict[str, str]]:
@@ -201,6 +145,10 @@ def validate_receipt_barrier(
         rows.append(receipt_rows[0])
     if {row["verifier_id"] for row in rows} != set(expected_commands):
         raise ValueError("verifier identities are not the required distinct pair")
+    if len({row["invocation_id"] for row in rows}) != 2 or any(
+        len(row["invocation_id"]) != 32 for row in rows
+    ):
+        raise ValueError("verifier records do not prove distinct invocations")
     for row in rows:
         command = expected_commands[row["verifier_id"]]
         if (

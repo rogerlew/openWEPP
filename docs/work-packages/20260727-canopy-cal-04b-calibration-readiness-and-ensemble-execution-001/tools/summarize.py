@@ -13,12 +13,13 @@ ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
 SOURCE_ARTIFACTS = PACKAGE / "artifacts"
 ARTIFACTS = SOURCE_ARTIFACTS
+FALLBACK_ARTIFACTS = SOURCE_ARTIFACTS
 OBJECTS = Path("/nonexistent/cal04b-execution-root-required")
 
 
 def rows(name: str) -> list[dict[str, str]]:
     external = ARTIFACTS / name
-    path = external if external.is_file() else SOURCE_ARTIFACTS / name
+    path = external if external.is_file() else FALLBACK_ARTIFACTS / name
     with path.open(newline="", encoding="utf-8") as stream:
         return list(csv.DictReader(stream))
 
@@ -171,12 +172,24 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", choices=("pre-freeze", "post-holdout"), required=True)
     parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--holdout-output-root", type=Path)
     options = parser.parse_args(argv)
     execution_root = options.execution_root.resolve(strict=True)
     if not execution_root.is_dir():
         raise ValueError("execution root must be an existing directory")
-    global ARTIFACTS, OBJECTS
-    ARTIFACTS = execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    global ARTIFACTS, FALLBACK_ARTIFACTS, OBJECTS
+    calibration_artifacts = (
+        execution_root.parent / "publication" / PACKAGE.relative_to(ROOT) / "artifacts"
+    )
+    if options.phase == "post-holdout":
+        if options.holdout_output_root is None:
+            raise ValueError("post-holdout summary requires --holdout-output-root")
+        output_root = options.holdout_output_root.resolve(strict=True)
+        ARTIFACTS = output_root / "artifacts"
+        FALLBACK_ARTIFACTS = calibration_artifacts
+    else:
+        ARTIFACTS = calibration_artifacts
+        FALLBACK_ARTIFACTS = SOURCE_ARTIFACTS
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     OBJECTS = execution_root
     if options.phase == "pre-freeze":

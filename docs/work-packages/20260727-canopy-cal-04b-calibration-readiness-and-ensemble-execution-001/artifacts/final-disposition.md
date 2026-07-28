@@ -1,29 +1,20 @@
-# Final Disposition
+# Current Disposition
 
 Evidence class: `Ran + Static`
 
-Package disposition: `COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED`
+Package disposition: `ACTIVE / SCIENCE-DESIGN HOLD AT SYNTHETIC RECOVERY`
 
-The reworked scaffold and executor passed prospective review and pre-heavy
-gates. Attempt 004 then passed the full native-default production/direct-kernel
-comparison and failed on the frozen representative interior `GSI-5557` case.
-The real production runtime published positive LAI with missing/non-positive
-post-growth canopy height and correctly stopped at its fail-closed guard.
+The production canopy-height defect from incident 004 was corrected by its
+separate hold-lift package. Retained execution then passed preparation, both
+builds, all twelve native production-consumer cases, and synthetic trace
+production. The required hidden-truth reconstruction failed because the hidden
+candidate lacks one crossing per year; see `execution-incident-005.md`.
 
-This proves `CAL04B-NATIVE-001`, a broken production parameter path over the
-admitted calibration domain. Production correction is outside this package's
-declared write set. Candidate substitution, fixture manipulation, run
-truncation, or guard weakening is rejected as evasion.
+No Hubbard candidate population, later-stage readiness, freeze, verifier,
+holdout, or Harvard command ran. Harvard remains sealed. CAL-04B can resume
+only after an explicitly authorized science correction makes the synthetic
+case valid and recoverable without weakening the required identifiability
+proof.
 
-No Hubbard population, later-stage readiness, freeze, or Harvard command ran.
-Harvard remains sealed. Roadmap Order 4 does not close. The package itself
-closes truthfully in `HOLD`; `hold-legitimacy-audit.md` and
-`worker-handoff.md` define the boundary and next defect-closure target.
-
-Both terminal scientific reviews and both independent terminal verifications
-pass after all accepted findings were corrected. The exact-current terminal
-scaffold/executor validators, 15 Python controls, 22 package Rust tests,
-warnings-denied Clippy, cargo-deny, Daymet custody, Markdown, CSV, line-count,
-and diff gates pass. The queued
-`20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001` package is
-the concrete prerequisite owner.
+Order 2 removes obsolete planner and external-transaction dependencies. That
+tooling correction neither resolves nor masks the current science hold.
