@@ -77,22 +77,23 @@ complete module list, and intended write set. Duplicate headings/fields,
 non-canonical paths, late bindings, and post-scaffold write-set changes fail
 closed. Retain the PASS JSON before production/test implementation.
 
-## Historical TESTGATE Interface
+## Retired TESTGATE Interface
 
 TESTGATE, its controller, planner transitions, receipts, ledgers, recovery, and
-forest1 workflow are frozen historical interfaces pending ordered deletion
-under ADR-0043. Do not invoke, dispatch, repair, or extend them for prospective
-work.
+forest1 workflow were deleted by ADR-0043 roadmap Order 4. They have no live
+command or workflow interface. Do not reconstruct or invoke them for
+prospective work.
 
 Use the direct commands in
 `docs/standards/local-ci-gate-selection.md` and record exact commands/results in
-the owning package. Historical verification is read-only and confers no
+the owning package. Historical evidence inspection is read-only and confers no
 prospective authority. Defunct Omarchy records are historical metadata, not
 live queue occupancy.
 
 Existing receipts, attempts, and verdicts retain their original bytes and
-meaning. A historical verifier must use the exact frozen policy object bound to
-that evidence, never the current live testing standard.
+meaning. Generation-17 policy identity is pinned in
+`gate-policy/history/adr0039-generation17.json` to an immutable Git object and
+digest, never the current live testing standard.
 
 ## Assurance Amendment Receipts
 

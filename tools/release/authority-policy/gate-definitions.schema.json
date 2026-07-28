@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.example/schemas/direct-authority-definitions-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "definitions"],
+  "properties": {
+    "schema_version": {
+      "const": "openwepp-direct-authority-definitions-v1"
+    },
+    "definitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gate_definition_id",
+          "authority_class",
+          "executor",
+          "outcome_policy",
+          "failure_classification",
+          "inventory_mode",
+          "inventory_source",
+          "arguments_template"
+        ],
+        "properties": {
+          "gate_definition_id": {"type": "string", "minLength": 1},
+          "authority_class": {"enum": ["A1", "NONE"]},
+          "executor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {"kind": {"const": "NEXTEST_V1"}}
+          },
+          "outcome_policy": {"const": "BLOCKING"},
+          "failure_classification": {"const": "HARD_FAIL"},
+          "inventory_mode": {"const": "EXACT"},
+          "inventory_source": {
+            "type": "string",
+            "pattern": "^NEXTEST_"
+          },
+          "arguments_template": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

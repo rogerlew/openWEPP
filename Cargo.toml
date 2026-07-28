@@ -28,7 +28,6 @@ members = [
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
-    "crates/openwepp-gate-planner",
     "crates/openwepp-runner",
 ]
 
@@ -92,7 +91,6 @@ sha2 = "0.10"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }
-openwepp-gate-planner = { path = "crates/openwepp-gate-planner", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -451,8 +449,8 @@ name = "auth04_release_gate_authority_stack_contract"
 path = "tests/integration/auth04_release_gate_authority_stack_contract.rs"
 
 [[test]]
-name = "testgate_align_authority_contract"
-path = "tests/integration/testgate_align_authority_contract.rs"
+name = "advisory_linter_authority_contract"
+path = "tests/integration/advisory_linter_authority_contract.rs"
 
 [[test]]
 name = "quality_observatory_merged_coverage_contract"
@@ -461,10 +459,6 @@ path = "tests/integration/quality_observatory_merged_coverage_contract.rs"
 [[test]]
 name = "quality_observatory_workflow_contract"
 path = "tests/integration/quality_observatory_workflow_contract.rs"
-
-[[test]]
-name = "testgate_assure_campaign_currency_contract"
-path = "tests/integration/testgate_assure_campaign_currency_contract.rs"
 
 [[test]]
 name = "auth05_level4_constitutive_authority_hardening_contract"

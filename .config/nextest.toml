@@ -62,25 +62,6 @@ report-name = "openwepp-nextest-affected"
 store-success-output = false
 store-failure-output = true
 
-# Explicit development fixture for changes to TESTGATE inventory enumeration,
-# repository reconstruction, gate definitions, or audit bindings. It is
-# intentionally ignored by routine profiles; run it with:
-# cargo nextest run -p openwepp-gate-planner --profile testgate-development --run-ignored ignored-only
-[profile.testgate-development]
-inherits = "default"
-default-filter = '''
-package(openwepp-gate-planner)
-& test(/(pre_heavy::coverage_tests::exact_planner_output_reconstructs_through_the_public_audit_path|planner::tests::terminal_reconciliation_reports_added_paths_and_escalation|verifier::tests::(verifier_accepts_truthful_fail_and_blocked_receipts|normalized_junit_artifacts_reconstruct_exact_inventory|receipt_verification_reconstructs_identity_dag_inventory_and_artifacts|envelope_requires_exact_subject_bundle_current_issuer_and_external_proof)|verifier::tests::coverage_tests::ready_audit_verification_preserves_order_and_exact_verdict|executor::tests::terminal_plan_(executes_and_independent_verifier_accepts_pass_receipt|preserves_fail_and_blocked_attempts_in_verified_receipt|detects_out_of_manifest_source_mutation_and_verifies_invalid_receipt)|executor::coverage_tests::(public_stage_selection_preserves_light_final_and_rejection_shapes|ready_audited_heavy_preserves_import_and_final_receipt_bindings))/)
-'''
-fail-fast = true
-slow-timeout = { period = "90s", terminate-after = 8 }
-
-[profile.testgate-development.junit]
-path = "junit.xml"
-report-name = "openwepp-nextest-testgate-development"
-store-success-output = false
-store-failure-output = true
-
 # Scientific-assurance editorial loop. This retains the complete assurance
 # crate plus the source, planner, assembly, normalization, and report-facing
 # integration boundaries while excluding unrelated kernel and publication suites.
@@ -315,16 +296,10 @@ filter = 'binary(assurance_v2_publication_contract)'
 test-group = "assurance-publication"
 threads-required = 2
 
-# Planner executor/verifier fixtures archive the repository and may compile an
-# independent target tree. Keep those content-independence checks intact while
-# preventing complete snapshot/linker builds from competing with any other
-# test on bounded runner memory and executable temporary storage.
 [[profile.default.overrides]]
 filter = '''
-(package(openwepp-gate-planner)
- & test(/(pre_heavy::coverage_tests::exact_planner_output_reconstructs_through_the_public_audit_path|planner::tests::terminal_reconciliation_reports_added_paths_and_escalation|verifier::tests::(verifier_accepts_truthful_fail_and_blocked_receipts|normalized_junit_artifacts_reconstruct_exact_inventory|receipt_verification_reconstructs_identity_dag_inventory_and_artifacts|envelope_requires_exact_subject_bundle_current_issuer_and_external_proof)|verifier::tests::coverage_tests::ready_audit_verification_preserves_order_and_exact_verdict|executor::tests::terminal_plan_(executes_and_independent_verifier_accepts_pass_receipt|preserves_fail_and_blocked_attempts_in_verified_receipt|detects_out_of_manifest_source_mutation_and_verifies_invalid_receipt)|executor::coverage_tests::(public_stage_selection_preserves_light_final_and_rejection_shapes|ready_audited_heavy_preserves_import_and_final_receipt_bindings))/))
-| (binary(cqr_quality_evidence_handoff_contract)
-   & test(cqr_quality_evidence_self_test_passes))
+binary(cqr_quality_evidence_handoff_contract)
+& test(cqr_quality_evidence_self_test_passes)
 '''
 test-group = "repository-snapshot"
 threads-required = "num-test-threads"

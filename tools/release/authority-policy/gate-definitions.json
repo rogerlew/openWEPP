@@ -1,0 +1,119 @@
+{
+  "schema_version": "openwepp-direct-authority-definitions-v1",
+  "definitions": [
+    {
+      "gate_definition_id": "authority-required-suite-obligation-guards-v1",
+      "authority_class": "NONE",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_TEST_TARGET",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "--test",
+        "auth11_required_suite_obligation_guards_contract"
+      ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-groundwater-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGE",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "-p",
+        "openwepp-hillslope-orchestrator"
+      ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-snow-phase-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGE",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "-p",
+        "openwepp-meteorology"
+      ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-plant-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGE",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "-p",
+        "openwepp-plant-phenology"
+      ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-management-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGES",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "--package",
+        "openwepp-management-schema",
+        "--package",
+        "openwepp-input-contract",
+        "--package",
+        "openwepp-landuse-migrate"
+      ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-runtime-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGES",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "--package",
+        "openwepp-hillslope-orchestrator",
+        "--package",
+        "openwepp-runner"
+      ]
+    }
+  ]
+}

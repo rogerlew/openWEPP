@@ -7,10 +7,6 @@ on:
         description: "Exact current main commit to observe"
         required: true
         type: string
-      qualification_run_id:
-        description: "Successful exact-head TESTGATE run ID"
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -21,87 +17,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  priority-preflight:
-    name: openwepp/quality-priority-preflight
-    runs-on: ubuntu-24.04
-    outputs:
-      disposition: ${{ steps.occupancy.outputs.disposition }}
-    steps:
-      - name: Validate exact source input
-        env:
-          SOURCE_SHA: ${{ inputs.source_sha }}
-          QUALIFICATION_RUN_ID: ${{ inputs.qualification_run_id }}
-          WORKFLOW_SHA: ${{ github.workflow_sha }}
-          WORKFLOW_REF: ${{ github.workflow_ref }}
-        run: |
-          set -euo pipefail
-          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
-          [[ "${QUALIFICATION_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
-          [[ "${WORKFLOW_SHA}" =~ ^[0-9a-f]{40}$ ]]
-          test "${WORKFLOW_SHA}" = "${SOURCE_SHA}"
-          [[ "${WORKFLOW_REF}" == "${GITHUB_REPOSITORY}/.github/workflows/quality-observatory.yml@refs/heads/main" ]]
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: ${{ inputs.source_sha }}
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Admit current main and inspect TESTGATE priority
-        id: occupancy
-        env:
-          GH_TOKEN: ${{ github.token }}
-          QUALIFICATION_RUN_ID: ${{ inputs.qualification_run_id }}
-          SOURCE_SHA: ${{ inputs.source_sha }}
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin main
-          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
-          test "$(git rev-parse refs/remotes/origin/main)" = "${SOURCE_SHA}"
-          qualification="$(gh api --method GET \
-            "repos/${GITHUB_REPOSITORY}/actions/runs/${QUALIFICATION_RUN_ID}")"
-          jq -e \
-            --arg source_sha "${SOURCE_SHA}" \
-            --arg repository "${GITHUB_REPOSITORY}" \
-            '
-              .event == "workflow_dispatch" and
-              .status == "completed" and
-              .conclusion == "success" and
-              .head_sha == $source_sha and
-              .head_branch == "main" and
-              .path == ".github/workflows/testgate-shadow.yml" and
-              .repository.full_name == $repository
-            ' <<<"${qualification}"
-          python3 tools/local_ci/quality_observatory_workflow.py preflight \
-            --repository "${GITHUB_REPOSITORY}" \
-            --output "${RUNNER_TEMP}/quality-control-receipt.json"
-          disposition="$(jq -r '.disposition' \
-            "${RUNNER_TEMP}/quality-control-receipt.json")"
-          echo "disposition=${disposition}" >> "${GITHUB_OUTPUT}"
-      - name: Upload typed preflight deferral
-        if: ${{ steps.occupancy.outputs.disposition != 'READY' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: quality-observatory-control-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/quality-control-receipt.json
-          if-no-files-found: error
-          overwrite: false
-          retention-days: 30
-
   observe:
     name: openwepp/quality-observation
-    needs: priority-preflight
-    if: ${{ needs.priority-preflight.outputs.disposition == 'READY' }}
     runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]
     timeout-minutes: 120
     env:
       GH_TOKEN: ${{ github.token }}
       CARGO_TARGET_DIR: /t
-      QUALITY_HISTORY_ROOT: /testgate-history/quality-observatory
+      QUALITY_HISTORY_ROOT: /quality-history/quality-observatory
       # Keep TMPDIR descendants within Unix-domain socket path budgets while
-      # retaining the attempt on disk-backed /testgate-history.
-      QUALITY_ATTEMPT_ROOT: /testgate-history/q/${{ github.run_id }}-${{ github.run_attempt }}
-      QUALITY_CONTROL_ROOT: /testgate-history/quality-observatory-control/${{ github.run_id }}-${{ github.run_attempt }}
-      QUALITY_STAGING_ROOT: /testgate-history/quality-observatory-staging/${{ github.run_id }}-${{ github.run_attempt }}
-      QUALITY_FOREST1_LEASE: /testgate-history/forest1-heavy.lock
+      # retaining the attempt on disk-backed /quality-history.
+      QUALITY_ATTEMPT_ROOT: /quality-history/q/${{ github.run_id }}-${{ github.run_attempt }}
+      QUALITY_CONTROL_ROOT: /quality-history/quality-observatory-control/${{ github.run_id }}-${{ github.run_attempt }}
+      QUALITY_STAGING_ROOT: /quality-history/quality-observatory-staging/${{ github.run_id }}-${{ github.run_attempt }}
+      QUALITY_FOREST1_LEASE: /quality-history/forest1-heavy.lock
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:

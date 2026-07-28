@@ -110,7 +110,8 @@ plan are part of the accepted Order-0 evidence in
 - A tool failure becomes ordinary tooling debt, not a prerequisite package.
 - Evidence is again the result of commands actually run, not a planner-owned
   permission or receipt hierarchy.
-- Existing planner/executor/CI surfaces remain historical transition debt until
-  the ordered removal packages delete or quarantine them.
+- The legacy planner/executor/CI surfaces were retired by roadmap Order 4.
+  Historical evidence retains its bytes and immutable policy identity without
+  a live verifier executable.
 - The repository must maintain clear canonical requirements because the linter
   is neither a substitute for readable governance nor an authority.

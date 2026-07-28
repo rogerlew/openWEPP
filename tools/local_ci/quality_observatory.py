@@ -363,7 +363,7 @@ def source_tree(repo: Path) -> str:
 
 def require_priority_clear(path: Path | None, boundary: str) -> None:
     if path is not None and path.exists():
-        raise QualityError(f"TESTGATE priority requested {boundary}")
+        raise QualityError(f"quality-observatory priority requested {boundary}")
 
 
 def final_current_main(repo: Path, head: str, workflow_mode: bool) -> bool:
@@ -414,7 +414,7 @@ def validate_write_set(repo: Path, paths: list[str]) -> None:
         "tools/local_ci/**",
         "tools/release/**",
         "tests/integration/quality_observatory_*",
-        "tests/integration/testgate_*",
+        "tests/integration/advisory_linter_authority_contract.rs",
         "crates/openwepp-runner/tests/**",
         "docs/work-packages/20260724-quality-observatory-merged-coverage-001/**",
         "docs/work-packages/README.md",

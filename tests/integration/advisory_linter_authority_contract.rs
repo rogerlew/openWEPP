@@ -136,7 +136,7 @@ fn historical_policy_identity_resolves_the_frozen_object() {
 
 #[test]
 fn live_impact_map_has_no_planner_admission_rows() {
-    let impact = json("gate-policy/v1/impact-map.json");
+    let impact = json("tools/release/authority-policy/impact-map.json");
     // The v1 schema retains its ADR-0039 identifier until the advisory mapping
     // is replaced in roadmap Order 3. Its live entries carry no planner
     // admission rows.
@@ -179,15 +179,15 @@ fn live_impact_map_has_no_planner_admission_rows() {
         );
     }
 
-    let policy_readme = text("gate-policy/v1/README.md")
+    let policy_readme = text("tools/release/authority-policy/README.md")
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
     for required in [
-        "frozen execution-contract compatibility; nonblocking mapping input",
+        "direct science-contract admission",
         "SCHEMA_ONLY_NONBLOCKING",
-        "They have no prospective effect",
-        "A registry match is information only",
+        "no prospective planner effect",
+        "a registry match is information only",
     ] {
         assert!(
             policy_readme.contains(required),
@@ -195,6 +195,41 @@ fn live_impact_map_has_no_planner_admission_rows() {
         );
     }
     assert!(!policy_readme.contains("Status: blocking normal-increment authority"));
+}
+
+#[test]
+fn direct_authority_definitions_are_compact_and_schema_valid() {
+    let definitions = json("tools/release/authority-policy/gate-definitions.json");
+    let schema = json("tools/release/authority-policy/gate-definitions.schema.json");
+    jsonschema::validator_for(&schema)
+        .expect("compile direct authority schema")
+        .validate(&definitions)
+        .expect("validate direct authority definitions");
+    assert_eq!(
+        definitions["schema_version"],
+        "openwepp-direct-authority-definitions-v1"
+    );
+    assert_eq!(
+        definitions["definitions"]
+            .as_array()
+            .expect("definitions")
+            .len(),
+        6
+    );
+    let encoded = serde_json::to_string(&definitions).expect("encode definitions");
+    for forbidden in [
+        "blocks_transition",
+        "prerequisite_definition_ids",
+        "receipt",
+        "ledger",
+        "artifact_contract",
+        "quality_disposition",
+    ] {
+        assert!(
+            !encoded.contains(forbidden),
+            "legacy field remains: {forbidden}"
+        );
+    }
 }
 
 #[test]

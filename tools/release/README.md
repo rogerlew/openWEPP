@@ -158,21 +158,9 @@ bash tools/release/run_adjudicated_crap_gate.sh \
   --output-dir <package-artifacts>/adjudicated-crap
 ```
 
-For an explicit metric package's bounded measurement:
-
-```bash
-bash tools/release/run_adjudicated_crap_gate.sh \
-  --scope affected \
-  --package openwepp-gate-planner \
-  --nextest-profile affected \
-  --base-ref <frozen-base> \
-  --output-dir target/affected-crap
-```
-
-The metric package, not a human shortcut, must select every repeated package
-and the exact covering-test inventory. Under executor control, the output and
-Cargo target are relocated beneath the external artifact root. Optional
-workspace QA is separate and non-blocking.
+For an explicit metric package's bounded measurement, the package must name its
+current Cargo package, exact covering-test inventory, frozen base, and output
+directory. Optional workspace QA is separate and non-blocking.
 
 To reproduce the completed CQR adjudication against its retained immutable
 CRAP JSON without claiming current-source closure:

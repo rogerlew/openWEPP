@@ -1,8 +1,0 @@
-{
-  "base_fixture": "gate-receipt.json",
-  "operation": "add",
-  "instance_pointer": "/envelope_id",
-  "invalid_value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-  "expected_instance_path": "",
-  "expected_schema_path_contains": "/additionalProperties"
-}

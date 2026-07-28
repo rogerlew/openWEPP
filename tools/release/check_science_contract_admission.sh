@@ -160,12 +160,12 @@ science_tokens = (
     "management", "meteorology", "phenology", "runner", "sim-contract",
     "summary", "topology", "unit-boundary", "watershed",
 )
-impact = json.loads(Path("gate-policy/v1/impact-map.json").read_text())
+impact = json.loads(Path("tools/release/authority-policy/impact-map.json").read_text())
 entries = impact["entries"]
 gate_definitions = {
     definition["gate_definition_id"]: definition
     for definition in json.loads(
-        Path("gate-policy/v1/gate-definitions.json").read_text()
+        Path("tools/release/authority-policy/gate-definitions.json").read_text()
     )["definitions"]
 }
 

@@ -1,8 +1,0 @@
-{
-  "base_fixture": "gate-receipt.json",
-  "operation": "replace",
-  "instance_pointer": "/quality_disposition/trigger",
-  "invalid_value": "AUTOMATIC",
-  "expected_instance_path": "/quality_disposition/trigger",
-  "expected_schema_path_contains": "/const"
-}

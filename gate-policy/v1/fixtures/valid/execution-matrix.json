@@ -1,8 +1,0 @@
-{
-  "schema_version": "openwepp-gate-execution-matrix-v1",
-  "generation": 1,
-  "target_policy": "RUSTC_HOST",
-  "feature_sets": [["default"]],
-  "cargo_configuration": "REPOSITORY_PLUS_CLI_OVERRIDES",
-  "unsupported_projection_action": "FAIL_CLOSED"
-}

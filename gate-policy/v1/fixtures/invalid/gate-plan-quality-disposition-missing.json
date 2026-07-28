@@ -1,7 +1,0 @@
-{
-  "base_fixture": "gate-plan.json",
-  "operation": "remove",
-  "instance_pointer": "/quality_disposition",
-  "expected_instance_path": "",
-  "expected_schema_path_contains": "/required"
-}

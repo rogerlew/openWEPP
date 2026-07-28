@@ -1,4 +1,4 @@
-name: testgate-conservative
+name: conservative-correctness
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: openwepp-conservative-testgate
+  group: openwepp-conservative-correctness
   cancel-in-progress: false
 
 jobs:
@@ -68,17 +68,17 @@ jobs:
               qualification_claim:false, repository:$repository,
               base_commit:$base, head_commit:$head,
               runner_environment:$runner_environment}' \
-            > "${RUNNER_TEMP}/testgate-conservative-smoke.json"
+            > "${RUNNER_TEMP}/conservative-correctness-smoke.json"
           jq -e \
             '.result == "PASS" and .qualification_claim == false
              and .runner_environment == "github-hosted"' \
-            "${RUNNER_TEMP}/testgate-conservative-smoke.json"
+            "${RUNNER_TEMP}/conservative-correctness-smoke.json"
       - name: Upload rollback smoke receipt
         if: ${{ inputs.smoke_only }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: conservative-smoke-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/testgate-conservative-smoke.json
+          path: ${{ runner.temp }}/conservative-correctness-smoke.json
           if-no-files-found: error
           retention-days: 7
       - name: Install pinned conservative toolchain

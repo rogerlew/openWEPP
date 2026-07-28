@@ -11,7 +11,7 @@ readonly SITE_LABEL="${OPENWEPP_RUNNER_SITE_LABEL:-forest1}"
 readonly LABELS="${OPENWEPP_RUNNER_LABELS:-openwepp,${SITE_LABEL},trusted}"
 readonly LEGACY_RUNNER_NAME="omarchy-openwepp-01"
 readonly STATE_VOLUME="openwepp-runner-state"
-readonly HISTORY_VOLUME="openwepp-testgate-history"
+readonly HISTORY_VOLUME="openwepp-quality-history"
 readonly MIN_AVAILABLE_KIB="$((60 * 1024 * 1024))"
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -140,15 +140,15 @@ setup_runner() {
     unset registration_token
   fi
   remote docker run --rm --user root --entrypoint /bin/bash \
-    --mount "type=volume,src=${HISTORY_VOLUME},dst=/testgate-history" \
-    "${IMAGE}" -c 'chown 10001:10001 /testgate-history && chmod 0700 /testgate-history'
+    --mount "type=volume,src=${HISTORY_VOLUME},dst=/quality-history" \
+    "${IMAGE}" -c 'chown 10001:10001 /quality-history && chmod 0700 /quality-history'
   remote docker run --detach --name "${CONTAINER}" --restart unless-stopped \
     --cpus 32 --cpuset-cpus 0-31 --memory 64g --memory-swap 64g --pids-limit 8192 \
     --read-only \
     --security-opt no-new-privileges=true \
     --cap-drop ALL \
     --mount "type=volume,src=${STATE_VOLUME},dst=/runner-state,readonly" \
-    --mount "type=volume,src=${HISTORY_VOLUME},dst=/testgate-history" \
+    --mount "type=volume,src=${HISTORY_VOLUME},dst=/quality-history" \
     --tmpfs "/runner-state/_diag:rw,nosuid,nodev,noexec,size=256m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/runner-work:rw,nosuid,nodev,size=24g,uid=10001,gid=10001,mode=0770" \
     --tmpfs "/cache/cargo:rw,nosuid,nodev,size=8g,uid=10001,gid=10001,mode=0700" \

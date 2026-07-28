@@ -63,6 +63,7 @@ validation authority changes.
 
 - `Cargo.toml`
 - `Cargo.lock`
+- `.config/nextest.toml`
 - `crates/openwepp-gate-planner/**`
 - `gate-policy/v1/**`
 - `gate-policy/history/adr0039-generation17.json`
@@ -76,6 +77,7 @@ validation authority changes.
 - `tools/local_ci/resolve_testgate_comparison_base.py`
 - `tools/local_ci/resolve_testgate_intent_package.py`
 - `tools/local_ci/quality_observatory_workflow.py`
+- `tools/local_ci/quality_observatory.py`
 - `tools/local_ci/run_quality_observatory_child.sh`
 - `tools/ci/omarchy-runner/**`
 - `tools/release/check_science_contract_admission.sh`
@@ -181,8 +183,8 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 ## Progress
 
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 4.
-- [ ] Exact consumer inventory completed.
-- [ ] Direct owners migrated and zero-consumer surfaces deleted.
+- [x] 2026-07-27 — Exact consumer inventory completed.
+- [x] 2026-07-27 — Direct owners migrated and zero-consumer surfaces deleted.
 - [ ] Focused validation passed.
 - [ ] Full-workspace closure passed.
 - [ ] Dual review and finding disposition passed.
@@ -196,6 +198,9 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
   not survive without a named live consumer.
 - 2026-07-27: A nonzero/unknown consumer count prevents deletion of that row but
   does not create a linter or modeling hold.
+- 2026-07-27: A focused Nextest run exposed retired package selectors in
+  `.config/nextest.toml`; the package write set was amended and those selectors
+  were removed before validation continued.
 
 ## Outcomes
 

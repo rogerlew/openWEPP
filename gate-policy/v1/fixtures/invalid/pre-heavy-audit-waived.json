@@ -1,8 +1,0 @@
-{
-  "base_fixture": "pre-heavy-audit.json",
-  "operation": "replace",
-  "instance_pointer": "/status",
-  "invalid_value": "WAIVED",
-  "expected_instance_path": "/status",
-  "expected_schema_path_contains": "/enum"
-}

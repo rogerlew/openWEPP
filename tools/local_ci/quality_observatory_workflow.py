@@ -23,12 +23,7 @@ from typing import Any
 
 SCHEMA = "openwepp-quality-workflow-control-v1"
 OCCUPANCY_SCHEMA = "openwepp-quality-occupancy-v1"
-CURRENT_WORKFLOW = ".github/workflows/testgate-shadow.yml"
-DEFUNCT_OMARCHY_RUNS = {
-    29673299308: "850f7f6f10044c078299718d8e9c46b77d278a86",
-    29672334757: "d4420b2431558dab0619c08a7bdcd7ac497ae229",
-    29672149962: "4ee31784044694f856a2eef855b9864beac9f3cf",
-}
+CURRENT_WORKFLOW = ".github/workflows/quality-observatory.yml"
 PUBLISHED_FILES = {
     "quality-envelope.json",
     "quality-payload.json",
@@ -143,7 +138,6 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
     if not isinstance(runs, list):
         raise WorkflowError("occupancy snapshot runs must be an array")
     live: list[dict[str, Any]] = []
-    ignored_omarchy: list[int] = []
     for item in runs:
         if not isinstance(item, dict):
             raise WorkflowError("occupancy run must be an object")
@@ -199,21 +193,6 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
             and job["status"] in {"queued", "in_progress"}
             for job in jobs
         )
-        if run_id in DEFUNCT_OMARCHY_RUNS:
-            retired_omarchy = (
-                workflow == CURRENT_WORKFLOW
-                and item["head_sha"] == DEFUNCT_OMARCHY_RUNS[run_id]
-                and status == "completed"
-                and item["conclusion"] == "cancelled"
-                and item["event"] == "workflow_dispatch"
-                and item["repository"] == repository
-                and not jobs
-                and item["artifacts"] == 0
-            )
-            if not retired_omarchy:
-                raise WorkflowError("defunct Omarchy record metadata drifted")
-            ignored_omarchy.append(run_id)
-            continue
         if status == "completed":
             if item["conclusion"] is None:
                 raise WorkflowError("completed run lacks a conclusion")
@@ -231,9 +210,9 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
         }:
             live.append({"id": run_id, "status": status})
     return {
-        "status": "LIVE_TESTGATE" if live else "CLEAR",
+        "status": "LIVE_QUALITY_OBSERVATORY" if live else "CLEAR",
         "live_runs": live,
-        "ignored_omarchy_runs": ignored_omarchy,
+        "ignored_runs": [],
     }
 
 
@@ -258,7 +237,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                     "GET",
                     "--paginate",
                     "--slurp",
-                    f"repos/{repository}/actions/workflows/testgate-shadow.yml/runs",
+                    f"repos/{repository}/actions/workflows/quality-observatory.yml/runs",
                     "-f",
                     "event=workflow_dispatch",
                     "-f",
@@ -278,6 +257,8 @@ def live_snapshot(repository: str) -> dict[str, Any]:
             run_status = run.get("status")
             if not isinstance(run_id, int):
                 raise WorkflowError("GitHub run ID is malformed")
+            if str(run_id) == os.environ.get("GITHUB_RUN_ID"):
+                continue
             if run_id in seen:
                 raise WorkflowError("GitHub run ID appeared in multiple pages/states")
             seen.add(run_id)
@@ -400,7 +381,7 @@ class OccupancySource:
                     return {
                         "status": "CLEAR",
                         "live_runs": [],
-                        "ignored_omarchy_runs": [],
+                        "ignored_runs": [],
                     }
                 snapshot = snapshot["snapshot"]
             self.index += 1
@@ -425,8 +406,8 @@ class OccupancySource:
 
 
 def deferral_for(occupancy: dict[str, Any]) -> str | None:
-    if occupancy.get("status") == "LIVE_TESTGATE":
-        return "DEFERRED_TESTGATE_PRIORITY"
+    if occupancy.get("status") == "LIVE_QUALITY_OBSERVATORY":
+        return "DEFERRED_QUALITY_OBSERVATORY_PRIORITY"
     if occupancy.get("status") == "UNKNOWN":
         return "DEFERRED_OCCUPANCY_UNKNOWN"
     if occupancy.get("status") != "CLEAR":
@@ -535,7 +516,7 @@ def validate_control(control: Path) -> dict[str, Any]:
     disposition = receipt.get("disposition")
     allowed_dispositions = {
         "COMPLETE",
-        "DEFERRED_TESTGATE_PRIORITY",
+        "DEFERRED_QUALITY_OBSERVATORY_PRIORITY",
         "DEFERRED_OCCUPANCY_UNKNOWN",
         "DEFERRED_FOREST1_LEASE",
         "EXECUTION_FAILED",
@@ -1128,27 +1109,7 @@ def self_test() -> int:
             }
         ],
     }
-    assert classify_occupancy(live, repository)["status"] == "LIVE_TESTGATE"
-    omarchy = {
-        "schema_version": OCCUPANCY_SCHEMA,
-        "runs": [
-            {
-                "id": 29673299308,
-                "repository": repository,
-                "workflow": CURRENT_WORKFLOW,
-                "event": "workflow_dispatch",
-                "head_sha": DEFUNCT_OMARCHY_RUNS[29673299308],
-                "status": "completed",
-                "conclusion": "cancelled",
-                "jobs": [],
-                "artifacts": 0,
-            }
-        ],
-    }
-    result = classify_occupancy(omarchy, repository)
-    assert result["status"] == "CLEAR" and result["ignored_omarchy_runs"] == [
-        29673299308
-    ]
+    assert classify_occupancy(live, repository)["status"] == "LIVE_QUALITY_OBSERVATORY"
     assert flatten_run_pages(
         [
             {"total_count": 2, "workflow_runs": [{"id": 1}]},
@@ -1254,7 +1215,7 @@ def self_test() -> int:
         except WorkflowError:
             pass
         else:
-            raise WorkflowError("late TESTGATE priority allowed upload")
+            raise WorkflowError("late quality-observatory priority allowed upload")
         deferred_receipt = validate_control(control)
         if (
             deferred_receipt.get("quality_evidence_id") is not None
@@ -1266,12 +1227,12 @@ def self_test() -> int:
         control = Path(raw)
         control_receipt(
             control,
-            disposition="DEFERRED_TESTGATE_PRIORITY",
+            disposition="DEFERRED_QUALITY_OBSERVATORY_PRIORITY",
             source_sha="1" * 40,
             source_tree="2" * 40,
             workflow_revision="1" * 40,
             workflow_sha256="3" * 64,
-            occupancy={"status": "LIVE_TESTGATE"},
+            occupancy={"status": "LIVE_QUALITY_OBSERVATORY"},
         )
         validate_control(control)
         (control / "unexpected").mkdir()

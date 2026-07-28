@@ -1,8 +1,0 @@
-{
-  "base_fixture": "gate-definitions.json",
-  "operation": "replace",
-  "instance_pointer": "/definitions/0/executor/kind",
-  "invalid_value": "SHELL_V1",
-  "expected_instance_path": "/definitions/0/executor/kind",
-  "expected_schema_path_contains": "/properties/kind/enum"
-}

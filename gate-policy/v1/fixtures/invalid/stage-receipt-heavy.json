@@ -1,8 +1,0 @@
-{
-  "base_fixture": "stage-receipt.json",
-  "operation": "replace",
-  "instance_pointer": "/stage",
-  "invalid_value": "HEAVY",
-  "expected_instance_path": "/stage",
-  "expected_schema_path_contains": "/const"
-}

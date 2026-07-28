@@ -1,4 +1,4 @@
-# `forest1` TESTGATE runner
+# `forest1` quality-observatory runner
 
 `manage.sh build-image` builds the pinned Ubuntu 24.04 image on the controller.
 After its exact identity is reviewed, bound, and installed, `manage.sh setup` registers the
@@ -33,7 +33,7 @@ build and transfer files are removed on return.
 ultimately reports one online, idle runner with the exact label set.
 
 One named volume holds registration state and is mounted read-only for jobs. A
-second volume is mounted read-write at `/testgate-history` for the hash-chained
+second volume is mounted read-write at `/quality-history` for the hash-chained
 attempt ledger and per-node recovery mirror; setup fixes ownership for the
 unprivileged runner and ordinary removal deliberately preserves it. Work,
 Cargo downloads, target output, home, diagnostics, and `/tmp` use
@@ -68,5 +68,5 @@ host headroom for co-tenants before the runner is admitted.
 
 `manage.sh remove` deregisters the runner, stops and removes its container, and
 deletes the dedicated registration-state volume. Job surfaces are tmpfs. The
-separate TESTGATE history volume and digest-indexed uploads retain only the
+separate quality-observatory history volume and digest-indexed uploads retain only the
 attempt ledger, checkpoints, and their declared output artifacts.
