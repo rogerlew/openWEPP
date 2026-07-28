@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `RECEIPT VERIFICATION REQUIRED`
+Status: `CANONICAL AUTH11 HOLD`
 
 Evidence class: `Static + Ran`
 
