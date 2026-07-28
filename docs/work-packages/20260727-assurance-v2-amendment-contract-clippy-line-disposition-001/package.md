@@ -159,7 +159,7 @@ exception.
 - [x] Scoped implementation and focused/supporting gates complete.
 - [x] Dual implementation review and finding disposition complete.
 - [x] Full-regression follow-up closed with 2,361/2,361 PASS.
-- [ ] Dual terminal verification complete.
+- [x] Dual terminal verification complete.
 - [ ] Canonical PASS receipt and dual receipt verification complete.
 
 ## Surprises & Discoveries
