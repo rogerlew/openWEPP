@@ -219,7 +219,7 @@ def prohibited_config(root: Path) -> list[str]:
                     section = ""
                     continue
                 section = section_match.group(1).strip().lower()
-                section_root = re.split(r'[ ."]', section, maxsplit=1)[0]
+                section_root = re.split(r'[\s."]', section, maxsplit=1)[0]
                 if section_root in {
                     "include",
                     "includeif",

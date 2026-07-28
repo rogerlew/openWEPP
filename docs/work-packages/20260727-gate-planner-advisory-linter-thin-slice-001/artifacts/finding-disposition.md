@@ -5,7 +5,7 @@ Evidence class: Ran + Static.
 | Finding | Disposition |
 | --- | --- |
 | `core.pager` not refused | Fixed. It is now a prohibited qualified key and is covered before every narrowed argv. |
-| Trailing config-section comments bypassed refusal | Fixed. In-process section parsing accepts Git's trailing `#`/`;` comment form and fails closed on ambiguous headers, keys, and continuations. |
+| Config grammar variants bypassed refusal | Fixed. In-process section parsing accepts Git's trailing `#`/`;` comment form and general whitespace before subsections, and fails closed on ambiguous headers, keys, and continuations. |
 | `core.attributesFile` not refused | Fixed. External attribute selection now refuses before launch. |
 | `.git/info/attributes` not read | Fixed. It is included as a bounded no-follow optional attribute source. |
 | Dirty rename old path omitted | Fixed. Both new and original paths are retained. |
