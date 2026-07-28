@@ -331,6 +331,10 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-gate-planner-cal04b-legacy-integration-removal-001/` -
+  ACTIVE: roadmap Order 2 replaces CAL planner transactions and publication
+  with direct execution, durable primary-failure evidence, and a minimal
+  protected Harvard custody owner. It does not execute CAL or open Harvard.
 - `20260727-gate-planner-governance-authority-alignment-001/` -
   COMPLETE / PASS: roadmap Order 1 applies ADR-0043 to operative guidance,
   source-coupled guards, historical policy identity, and frozen planner-package
