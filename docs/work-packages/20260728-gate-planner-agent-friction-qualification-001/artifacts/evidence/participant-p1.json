@@ -1,0 +1,305 @@
+{
+  "schema_version": "p1-clean2-v1",
+  "participant": "order5",
+  "run_kind": "fresh_same_agent_pair",
+  "generated_at": "2026-07-28",
+  "scratch_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p1-v2",
+  "planner_invocation": {
+    "python": "/home/workdir/openWEPP/.venv/bin/python",
+    "program": "/home/workdir/openWEPP/tools/validation/workplan_lint.py",
+    "arguments": ["--package", "<exact clone package.md>", "--mode", "<case mode>", "--format", "json"],
+    "working_directory": "<standalone clone root>",
+    "repetitions": 2
+  },
+  "root_safety": {
+    "head_before": "3f3ace0deced1a1aee62eb21975f8c2fefd75ee5",
+    "head_after": "3f3ace0deced1a1aee62eb21975f8c2fefd75ee5",
+    "root_head_unchanged": true,
+    "root_checkout_used": false,
+    "clone_git_configs_verified": 12
+  },
+  "warm_up": {
+    "repeated": false,
+    "discarded": true,
+    "note": "This fresh rerun replaced only the six scored pairs; no scored plan was reused."
+  },
+  "cases": [
+    {
+      "sequence": 1,
+      "package_class": "NKR-2",
+      "package_id": "20260727-assurance-v2-amendment-contract-clippy-line-disposition-001",
+      "mode": "terminal",
+      "base_commit": "1eb56a4dfcf2cb91046d053d8562ef67049aacf0",
+      "snapshot_commit": "86f14da61997f1b5d29f2eee5f7f8cf470a4c94e",
+      "order": ["manual", "linter"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "linter_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq1-a",
+        "start_monotonic_ns": 656109351885407,
+        "end_monotonic_ns": 656118763342763,
+        "duration_ns": 9411457356,
+        "interactions": 1,
+        "plan": "# Terminal certification plan\n\nObjective: certify the completed two-line Clippy disposition without changing runtime behavior or weakening assurance obligations.\n\nScope: reconcile the package base-to-terminal diff, the comment and function-level allow in the assurance amendment code, the package evidence set, the work-package catalog, the canopy roadmap, and the declared predecessor artifact. Treat unrelated files as outside scope.\n\nExecution:\n1. Authenticate the package identity, declared purpose, protected boundaries, and owned-path inventory.\n2. Reconstruct the exact terminal diff and prove that removing the two added source lines restores the base source content.\n3. Confirm the allow is attached only to the generated amendment method, is justified by the contract-required generated line, and makes no data-flow or serialization change.\n4. Reconcile every changed path to the package write set and separately identify companion-package paths.\n5. Review the retained implementation, review, receipt, and terminal-disposition artifacts for consistent commit identity and counts.\n6. Run the package-focused tests, warnings-denied Clippy, the applicable full-workspace correctness profile, documentation checks, anti-evasion checks, and exact-diff checks at the candidate commit.\n7. Record pass/fail results with command, commit, counts, and artifact location; close only when all owned claims are supported by current evidence.\n\nDo not edit generated identity members, relax assurance contracts, retarget locks, or broaden the suppression. Any discrepancy in path ownership, commit identity, or behavioral equivalence blocks closure."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq1-b",
+        "start_monotonic_ns": 656125171153503,
+        "end_monotonic_ns": 656132289589332,
+        "duration_ns": 7118435829,
+        "interactions": 1,
+        "plan": "# Exact-diff closure plan\n\nObjective: establish that the terminal amendment-line disposition is a minimal, behavior-preserving closure increment.\n\nScope: the two-line Rust change, all package artifacts, the package catalog and roadmap entries, and the declared companion-package evidence. No assurance identity, transaction, fixture, or result-publication content may change.\n\nExecution:\n1. Read the package contract and terminal disposition, then enumerate the complete base-to-candidate path set.\n2. Reconstruct the Rust source before and after the increment and verify that only one explanatory comment and one narrowly scoped allow were added.\n3. Check that the annotated generated method retains identical operands, ordering, return type, serialization, and error behavior.\n4. Audit the owned-file manifest against the actual path set, classifying each companion-package path under its separately authorized package.\n5. Cross-check line-count, review, receipt, and gate artifacts against the candidate commit and each other.\n6. Run formatting, the owning assurance tests, warnings-denied all-target Clippy, the required workspace correctness profile, source anti-evasion checks, documentation checks, and `git diff --check`.\n7. Produce an exact-head disposition that records commands, counts, hashes, reviewer conclusions, and any remaining blocker.\n\nClosure is prohibited if the allow covers a wider item, generated evidence was rewritten, companion ownership is ambiguous, or any current required gate fails."
+      },
+      "planner_run": {
+        "cold_ms": 1272.491438,
+        "warm_ms": 760.798609,
+        "cold_sha256": "1c3edf3e5dad626f905e8f3285b6d334d900d7a54b8ce1cf7a3214e60d9e613b",
+        "warm_sha256": "1c3edf3e5dad626f905e8f3285b6d334d900d7a54b8ce1cf7a3214e60d9e613b",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 3,
+        "unavailable_analysis_count": 2,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE"]
+      },
+      "deviations": []
+    },
+    {
+      "sequence": 4,
+      "package_class": "NKR-1",
+      "package_id": "20260608-owcmp01-comparator-cli-implementation-001",
+      "mode": "terminal",
+      "base_commit": "ff4f44b9e403f37a6cc1190f2e6ed26f076213a6",
+      "snapshot_commit": "6b6acf77d5fd258cdad71ba111fa75eb3bd87bb5",
+      "order": ["manual", "linter"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "linter_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq4-a",
+        "start_monotonic_ns": 656134963802888,
+        "end_monotonic_ns": 656145973734559,
+        "duration_ns": 11009931671,
+        "interactions": 1,
+        "plan": "# Comparator CLI terminal plan\n\nObjective: certify the completed `owcmp` comparator CLI as a parallel, non-cutover implementation that preserves the legacy comparator.\n\nScope: `tools/owcmp`, its locked dependencies and tolerance configuration, the integration contract test, the work-package artifacts, and catalog entries. Existing legacy suite code and scientific tolerances are protected.\n\nExecution:\n1. Reconcile the complete terminal path list to the package write set and confirm that no legacy comparator file was replaced or redirected.\n2. Trace CLI configuration loading, path handling, semantic WAT comparison, PL14S suite orchestration, summary generation, and exit-code behavior.\n3. Verify schema stability and deterministic ordering for JSON and human-readable results, including malformed input and comparator mismatch cases.\n4. Confirm tolerance identity against the declared source and verify that no scientific threshold was silently changed.\n5. Inspect the dependency lock and launcher for reproducible invocation and explicit missing-dependency failures.\n6. Run the focused unit and integration contracts, representative comparator cases, formatting and lint checks, documentation checks, and the package-required regression profile.\n7. Reconcile current command receipts and review conclusions to the exact candidate commit before recording terminal disposition.\n\nDo not cut over production callers, delete or wrap the legacy suite, change tolerances, or claim comparator parity beyond the cases actually exercised."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq4-b",
+        "start_monotonic_ns": 656150704639106,
+        "end_monotonic_ns": 656158027857631,
+        "duration_ns": 7323218525,
+        "interactions": 1,
+        "plan": "# Delivered CLI contract audit\n\nObjective: prove that the terminal comparator command satisfies its declared interfaces while remaining isolated from production routing.\n\nScope: command entry point, configuration and dependency files, PL14S and semantic-WAT modules, summary output, integration test, package evidence, and catalogs.\n\nExecution:\n1. Build an exact inventory of added and modified paths and match it to the package's ownership record.\n2. Follow one successful comparison and each defined failure class from command arguments through normalized output and process status.\n3. Check that paths are explicit, output order is stable, malformed records fail clearly, and the summary does not hide mismatches.\n4. Establish the provenance and byte identity of the PL14S WAT tolerances and confirm the legacy comparator remains independently runnable.\n5. Verify the locked Python environment, executable wrapper, and README examples agree on invocation and supported inputs.\n6. Run the integration contract, module tests, representative pass/mismatch/error cases, dependency consistency check, documentation checks, and exact-diff hygiene.\n7. Compare every retained receipt and review statement with the candidate commit; amend the disposition if counts, paths, or scope differ.\n\nBlock closure for any production cutover, tolerance drift, silent fallback, nondeterministic result ordering, unowned path, or stale receipt."
+      },
+      "planner_run": {
+        "cold_ms": 513.311454,
+        "warm_ms": 431.965217,
+        "cold_sha256": "824f654eed07362416da31feef7c8377d13176af1e7d88b7866b0eca97d0660c",
+        "warm_sha256": "824f654eed07362416da31feef7c8377d13176af1e7d88b7866b0eca97d0660c",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 4,
+        "unavailable_analysis_count": 3,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-IDENTITY-PACKAGE_ID_MISSING", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE", "MISSING_FILE"]
+      },
+      "deviations": []
+    },
+    {
+      "sequence": 7,
+      "package_class": "NKR-1",
+      "package_id": "20260608-owcmp01-comparator-cli-implementation-001",
+      "mode": "pre-edit",
+      "base_commit": "ff4f44b9e403f37a6cc1190f2e6ed26f076213a6",
+      "snapshot_commit": "ff4f44b9e403f37a6cc1190f2e6ed26f076213a6",
+      "order": ["manual", "linter"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "linter_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq7-a",
+        "start_monotonic_ns": 656163763702791,
+        "end_monotonic_ns": 656173915708276,
+        "duration_ns": 10152005485,
+        "interactions": 1,
+        "plan": "# Comparator CLI implementation plan\n\nObjective: add a reproducible `owcmp` command for comparator workflows without replacing the legacy comparator or changing scientific acceptance criteria.\n\nScope: a new `tools/owcmp` command and modules, locked Python dependencies, explicit configuration, integration contracts, package artifacts, and catalog updates.\n\nExecution:\n1. Freeze the command contract: inputs, path rules, exit statuses, deterministic JSON and text schemas, and explicit error classes.\n2. Map legacy PL14S and semantic-WAT behavior to named interfaces; record which behavior is preserved and which remains outside this increment.\n3. Authenticate the tolerance source and encode it as immutable configuration without recalibration or threshold adjustment.\n4. Implement configuration parsing, semantic record comparison, suite orchestration, summary production, and the executable entry point in small testable modules.\n5. Add contract tests for success, mismatch, malformed data, missing files, deterministic ordering, and invocation from a non-repository working directory.\n6. Pin dependencies and document setup, invocation, outputs, limitations, and the continued availability of the legacy command.\n7. Run focused tests during development, then the package-required integration, formatting, dependency, documentation, and regression gates; reconcile the final path set before closure.\n\nDo not modify legacy suite files, route production callers to the new command, infer tolerances, add silent dependency fallbacks, or claim equivalence outside demonstrated cases."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq7-b",
+        "start_monotonic_ns": 656197226743277,
+        "end_monotonic_ns": 656207726524132,
+        "duration_ns": 10499780855,
+        "interactions": 1,
+        "plan": "# Parallel comparator construction plan\n\nObjective: deliver a standalone comparator interface whose behavior is explicit, testable, and reversible while the existing suite remains authoritative.\n\nScope: CLI parsing, PL14S case execution, WAT semantics, summaries, configuration and dependency locks, integration tests, usage documentation, and package records.\n\nExecution:\n1. Derive an acceptance matrix from the existing legacy suite contract: valid inputs, mismatch classes, malformed inputs, output fields, ordering, and process statuses.\n2. Define module boundaries so path resolution, parsing, comparison, aggregation, and rendering can be tested independently.\n3. Copy only authenticated tolerance values into a named configuration file and include a byte-level or hash-based identity test.\n4. Implement fail-closed parsing and comparison with no automatic path discovery or default substitution for required inputs.\n5. Add end-to-end tests that launch the command from controlled directories and assert stdout, stderr, result schema, and exit status.\n6. Document dependency installation from the lock, supported workflows, limitations, and the absence of production cutover.\n7. Run unit, integration, representative comparator, formatting, dependency-lock, and documentation gates; inspect the exact diff for write-set conformance.\n\nStop if legacy behavior is ambiguous, tolerance authority cannot be authenticated, required dependencies cannot be locked, or implementation would require a production routing change."
+      },
+      "planner_run": {
+        "cold_ms": 518.008124,
+        "warm_ms": 400.289827,
+        "cold_sha256": "2779c6ac131d63af14106a613b343fdcaeb3f454e9baf593ccf423cabdd9b5f7",
+        "warm_sha256": "2779c6ac131d63af14106a613b343fdcaeb3f454e9baf593ccf423cabdd9b5f7",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 4,
+        "unavailable_analysis_count": 3,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-IDENTITY-PACKAGE_ID_MISSING", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE", "MISSING_FILE"]
+      },
+      "deviations": []
+    },
+    {
+      "sequence": 10,
+      "package_class": "NKR-1",
+      "package_id": "20260608-owcmp01-comparator-cli-implementation-001",
+      "mode": "working-tree",
+      "base_commit": "ff4f44b9e403f37a6cc1190f2e6ed26f076213a6",
+      "snapshot_commit": "ff4f44b9e403f37a6cc1190f2e6ed26f076213a6",
+      "order": ["linter", "manual"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "4ddcabe99c2ff3a8611241d4e28fb391159f5bd84c68027f8ed3d7c078f46efe",
+        "linter_signature": "4ddcabe99c2ff3a8611241d4e28fb391159f5bd84c68027f8ed3d7c078f46efe"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq10-b",
+        "start_monotonic_ns": 656223184319833,
+        "end_monotonic_ns": 656232157166264,
+        "duration_ns": 8972846431,
+        "interactions": 1,
+        "plan": "# Working-tree comparator review plan\n\nObjective: turn the current comparator CLI worktree into a reviewable closure candidate without expanding its parallel-only scope.\n\nScope: all modified and untracked package paths, including the `tools/owcmp` implementation, tolerance and dependency files, integration contract, package evidence, and catalog entries.\n\nExecution:\n1. Record the complete tracked and untracked path inventory and reconcile each path to the prospective write set before making further edits.\n2. Review the command entry point and module seams for explicit configuration, stable output, clear exit statuses, and fail-closed input handling.\n3. Verify tolerance identity, dependency locking, and invocation from outside the repository root.\n4. Inspect the integration contract and add only missing cases for pass, mismatch, malformed input, absent dependency, and deterministic ordering.\n5. Confirm the legacy suite is unchanged and no production caller or default route selects the new command.\n6. Run focused module and CLI contracts, representative comparisons, formatting, dependency consistency, documentation checks, and the package-required regression profile.\n7. Update package evidence with exact commands and results, then reconcile the terminal diff, including untracked files, before requesting review.\n\nDo not discard untracked implementation files, normalize scientific differences, change tolerances, add implicit path discovery, or convert this increment into a cutover."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq10-a",
+        "start_monotonic_ns": 656211872922190,
+        "end_monotonic_ns": 656218821144965,
+        "duration_ns": 6948222775,
+        "interactions": 1,
+        "plan": "# Comparator closure-candidate plan\n\nObjective: assess and finish the present `owcmp` worktree as the exact implementation described by its package.\n\nScope: the current tracked edits and new files under `tools/owcmp`, the integration test, work-package artifacts, and repository catalogs; legacy comparator and production routing are excluded.\n\nExecution:\n1. Snapshot the full status and diff, including every untracked path, and compare the resulting inventory with the declared ownership boundary.\n2. Trace command arguments through configuration, PL14S execution, semantic WAT comparison, summary rendering, and exit-code selection.\n3. Audit the README, launcher, dependency lock, and tolerance configuration for one consistent reproducible workflow.\n4. Check tests against the public contract, emphasizing execution from arbitrary working directories, malformed records, mismatch reporting, stable ordering, and missing required inputs.\n5. Resolve only defects within the declared interfaces; document unsupported legacy cases instead of emulating them approximately.\n6. Run module tests, the end-to-end CLI contract, selected real comparator cases, formatting and dependency checks, documentation checks, and exact-diff hygiene.\n7. Reconcile the finished worktree to the package write set and record exact-head results, limitations, and reviewer disposition.\n\nClosure requires the legacy suite to remain intact, tolerance bytes to match authority, all new files to be owned, and every claimed command behavior to have a current test."
+      },
+      "planner_run": {
+        "cold_ms": 454.496154,
+        "warm_ms": 421.571190,
+        "cold_sha256": "fdc72244b1be00c616b5f3f44536245cd3582eaea2d0723afebbd3437095c593",
+        "warm_sha256": "fdc72244b1be00c616b5f3f44536245cd3582eaea2d0723afebbd3437095c593",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 4,
+        "unavailable_analysis_count": 3,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-IDENTITY-PACKAGE_ID_MISSING", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE", "MISSING_FILE"]
+      },
+      "deviations": [
+        "The first explicit patch application form resolved paths outside the clone and failed before changing tracked content. The patch was then applied from each verified clone root."
+      ]
+    },
+    {
+      "sequence": 13,
+      "package_class": "NKR-2",
+      "package_id": "20260727-assurance-v2-amendment-contract-clippy-line-disposition-001",
+      "mode": "working-tree",
+      "base_commit": "1eb56a4dfcf2cb91046d053d8562ef67049aacf0",
+      "snapshot_commit": "1eb56a4dfcf2cb91046d053d8562ef67049aacf0",
+      "order": ["linter", "manual"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "5ea45189fd327fb59854fc90306fa03658258628b1bf724102bb8f63af72b796",
+        "linter_signature": "5ea45189fd327fb59854fc90306fa03658258628b1bf724102bb8f63af72b796"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq13-b",
+        "start_monotonic_ns": 656249954999486,
+        "end_monotonic_ns": 656260134836250,
+        "duration_ns": 10179836764,
+        "interactions": 1,
+        "plan": "# Assurance worktree reconciliation plan\n\nObjective: establish whether the current two-line suppression disposition and its closure artifacts form a complete, behavior-preserving candidate.\n\nScope: the assurance amendment source line, package artifacts and prompts, catalog and roadmap entries, and separately authorized companion-package paths present in the worktree.\n\nExecution:\n1. Inventory every tracked and untracked path and assign it to this package, a named companion package, or an unresolved category.\n2. Reconstruct the source delta from the authenticated base and verify that the code change is limited to an explanatory comment and one function-level allow.\n3. Confirm the affected function's operands, generated members, output, serialization, and failure behavior are byte-for-byte or semantically unchanged.\n4. Reconcile the package's intent, line-count, implementation, review, receipt, and terminal artifacts against the exact worktree.\n5. Review companion-package artifacts under their own declared write sets; do not use their presence to expand this package.\n6. Run the owning tests, warnings-denied Clippy, applicable workspace correctness profile, anti-evasion checks, documentation checks, and diff hygiene on a stable candidate commit.\n7. Record exact commit identity, commands, counts, hashes, and unresolved ownership before closure.\n\nDo not alter generated identity content, silence additional code, weaken contract assertions, edit locks, or accept any unowned path."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq13-a",
+        "start_monotonic_ns": 656237865466519,
+        "end_monotonic_ns": 656246143550292,
+        "duration_ns": 8278083773,
+        "interactions": 1,
+        "plan": "# Narrow suppression disposition plan\n\nObjective: finish the current assurance worktree with a defensible minimal source change and fully reconciled evidence.\n\nScope: the generated-amendment method annotation, its explanation, this package's closure records, required catalog updates, and only those companion records already authorized elsewhere.\n\nExecution:\n1. Capture the exact worktree path set and distinguish source, package evidence, catalog, and companion ownership.\n2. Compare the modified Rust function with the base at statement and control-flow level; prove no executable token, field mapping, order, or error path changed.\n3. Check that the suppression applies to one function only and corresponds to the contract-required generated member named by the package.\n4. Cross-check the acceptance matrix, exact-diff record, implementation receipts, reviews, and final disposition for consistent line counts and commit targets.\n5. Require separate ownership evidence for all test-gate alignment and source-contract companion paths.\n6. Run targeted assurance contracts, warnings-denied all-target Clippy, full correctness as required by package impact, anti-evasion guards, documentation checks, and `git diff --check`.\n7. Commit only after the complete path set is reconciled; repeat terminal checks at that exact commit and preserve their receipts.\n\nAny executable source change, broader suppression, stale receipt, missing companion authority, or failed current gate keeps the package open."
+      },
+      "planner_run": {
+        "cold_ms": 920.261701,
+        "warm_ms": 764.302830,
+        "cold_sha256": "563de1e00a9544b1a85ad037da134488d985a082f92fef3579e0f8661c043a72",
+        "warm_sha256": "563de1e00a9544b1a85ad037da134488d985a082f92fef3579e0f8661c043a72",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 3,
+        "unavailable_analysis_count": 2,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE"]
+      },
+      "deviations": [
+        "The first explicit patch application form resolved paths outside the clone and failed before changing tracked content. The patch was then applied from each verified clone root."
+      ]
+    },
+    {
+      "sequence": 16,
+      "package_class": "KER-1",
+      "package_id": "20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001",
+      "mode": "terminal",
+      "base_commit": "f4b3db6c17f25d9dfe969825c672309443963ac4",
+      "snapshot_commit": "dd3b2a59018bd9a39999f9b263b07351afc34290",
+      "order": ["linter", "manual"],
+      "snapshot_equivalence": {
+        "equivalent": true,
+        "manual_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "linter_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "manual": {
+        "clone": "clean-p1-v2/clones/seq16-b",
+        "start_monotonic_ns": 656331760941971,
+        "end_monotonic_ns": 656352705629911,
+        "duration_ns": 20944687940,
+        "interactions": 1,
+        "plan": "# Native canopy-state closure plan\n\nObjective: certify that the completed generalized-GSI correction publishes one contract-coherent current-day canopy state through every named production consumer while retaining fail-closed guards.\n\nScope: SC-PLANT-001 revision 24 and binding exposure, checked native height projection, orchestrator and runner state transfer, owning regressions, frozen native-proof verifier evidence, package artifacts, and hold-lift records.\n\nExecution:\n1. Reconcile the exact base-to-terminal path set against the authenticated manifest, separating contract, production, tests, replay evidence, and package records.\n2. Verify the authoritative equations `Bt = Bs + Bf` and `Hc = (1 - exp(-bbb * Bt)) * hmax`, their units, baseline anchors, and finite/domain guards.\n3. Trace the same post-phenology height and foliar state through Lane D routing, snow, ET, interception, erosion, residue/litter, and frost consumers.\n4. Confirm zero-to-positive, positive-to-zero, evergreen-floor, boundary, invalid-state, rollback, and legacy erosion regressions exercise production paths and preserve error precedence.\n5. Authenticate the frozen replay inputs and output hash; verify the replay verifier change recognizes typed error wording only and does not change scientific acceptance.\n6. Run contract and binding checks, focused runner/orchestrator suites, the frozen native-proof case set, anti-evasion checks, cargo-deny, formatting, warnings-denied Clippy, and critical full-workspace correctness.\n7. Reconcile exact-head receipts, independent reviews, terminal verifications, and the prerequisite hold-lift statement before closure.\n\nDo not weaken the positive-LAI/positive-height guard, introduce fallback or clamped physics, change calibration inputs or results, select friendlier vectors, or claim consumer closure without direct production-path evidence."
+      },
+      "linter": {
+        "clone": "clean-p1-v2/clones/seq16-a",
+        "start_monotonic_ns": 656264078168380,
+        "end_monotonic_ns": 656321700464327,
+        "duration_ns": 57622295947,
+        "interactions": 1,
+        "plan": "# GSI canopy-height terminal certification\n\nObjective: prove end-to-end closure of the zero-to-positive generalized-GSI canopy-height defect under canonical plant authority.\n\nScope: canopy-height contract amendments, binding identifiers and checker tests, centralized production projection, typed state handoffs, all named downstream consumers, retained reproducer evidence, and package closure records.\n\nExecution:\n1. Authenticate the terminal diff and confirm all production and contract paths are within the prospectively amended write set.\n2. Check that total above-ground biomass supplies the height operand while foliar biomass remains the interception operand; verify checked arithmetic, finite positive parameters, bounded height, and positive-height implication.\n3. Follow one zero-to-positive day from growth projection through publication and each real consumer, ensuring no pre-transition, static, compatibility, or fallback height can enter.\n4. Inspect contract-derived vectors and owning integration tests for transition ordering, invalid operands, transactional rollback, active routing, frost, erosion, and legacy non-regression.\n5. Reconstruct the retained failure case and frozen case-set custody, including trace behavior and output checksum, without changing its domain or expected semantics.\n6. Run the binding and unit checks, focused contract and production suites, native replay, source anti-evasion checks, dependency policy, formatting, warnings-denied Clippy, and the required critical workspace profile.\n7. Compare all receipts and dual-review conclusions to the exact terminal commit; record any external failure separately with base reproduction before disposition.\n\nClosure is blocked by guard weakening, surrogate physics, consumer proof that bypasses production routing, changed frozen inputs, unresolved conservation or ordering error, or any package-owned critical failure."
+      },
+      "planner_run": {
+        "cold_ms": 798.100127,
+        "warm_ms": 756.025818,
+        "cold_sha256": "54d415d4e37e42a5928b8fe832a26ef277d00ac8459c98cddfc9024ee4b9640c",
+        "warm_sha256": "54d415d4e37e42a5928b8fe832a26ef277d00ac8459c98cddfc9024ee4b9640c",
+        "return_codes": [3, 3],
+        "canonical_repeat": true,
+        "analysis_status": "partial",
+        "rule_count": 3,
+        "unavailable_analysis_count": 2,
+        "rule_ids": ["WP-IDENTITY-BASE_MISSING", "WP-IDENTITY-DETACHED-HEAD", "WP-INTENT-001"],
+        "unavailable_reason_codes": ["PROHIBITED_GIT_CONFIGURATION", "MISSING_FILE"]
+      },
+      "deviations": [
+        "The first checkout attempt in the second clone overlapped repository setup and left an index lock. After verifying the clone root and configuration, the explicit checkout completed successfully without touching the workspace root."
+      ]
+    }
+  ],
+  "execution_exclusions": {
+    "suggested_commands_run": false,
+    "validation_commands_run": false,
+    "model_execution_run": false,
+    "calibration_execution_run": false,
+    "harvard_execution_run": false
+  }
+}

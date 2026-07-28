@@ -21,6 +21,13 @@ excluded from qualification:
 5. The final V2 packet passed two independent inferability checks and blind
    adjudication. No labels were inferred before reconciliation closed.
 
+The frozen arm-order file placed all nine manual-first cases before all nine
+linter-first cases. Each participant therefore completed three manual-first
+pairs followed by three linter-first pairs. This is counterbalanced by count
+but not interleaved by sequence, so learning/fatigue is confounded with arm
+order. Timing and interaction results are descriptive; the deletion
+disposition rests independently on reviewer-confirmed linter-arm omissions.
+
 These incidents were protocol/setup failures, not linter-originated holds,
 maintenance time, or scored tool behavior. They did not run validation,
 modeling, CAL, synthetic, population, freeze/open, or Harvard commands. The

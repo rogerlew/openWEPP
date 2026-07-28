@@ -1,0 +1,220 @@
+{
+  "mapping": [
+    {
+      "case_id": "NKR-2-terminal",
+      "token": "V2-5C52512796AA",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-2-terminal",
+      "token": "V2-9699BFD90095",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "CAL-1-working-tree",
+      "token": "V2-C66062F04D7B",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "CAL-1-working-tree",
+      "token": "V2-E7829A9615A6",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "CAL-1-terminal",
+      "token": "V2-7A48195A7E02",
+      "identity": "manual",
+      "participant": "P3"
+    },
+    {
+      "case_id": "CAL-1-terminal",
+      "token": "V2-D5BD987818FF",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "NKR-1-terminal",
+      "token": "V2-0BCFE4641EC8",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-1-terminal",
+      "token": "V2-EE379E21A7E2",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "DOC-2-pre-edit",
+      "token": "V2-9C400B6CE65D",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-2-pre-edit",
+      "token": "V2-EB057C5DCCC8",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-1-pre-edit",
+      "token": "V2-D5F1DF8785F2",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "DOC-1-pre-edit",
+      "token": "V2-2BDB51A6F830",
+      "identity": "manual",
+      "participant": "P3"
+    },
+    {
+      "case_id": "NKR-1-pre-edit",
+      "token": "V2-EC0B60986135",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-1-pre-edit",
+      "token": "V2-7178C96A3191",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "DOC-2-terminal",
+      "token": "V2-B0740E2F286E",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-2-terminal",
+      "token": "V2-96A9315A719A",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "KER-1-pre-edit",
+      "token": "V2-D064D0E18BDE",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "KER-1-pre-edit",
+      "token": "V2-05C66346DB3F",
+      "identity": "manual",
+      "participant": "P3"
+    },
+    {
+      "case_id": "NKR-1-working-tree",
+      "token": "V2-26DFAC63B733",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-1-working-tree",
+      "token": "V2-7A333E5FC3BA",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-2-pre-edit",
+      "token": "V2-3F232D287383",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "NKR-2-pre-edit",
+      "token": "V2-E16367AA1359",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-1-terminal",
+      "token": "V2-E1CDC95B3419",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "DOC-1-terminal",
+      "token": "V2-98DC7AAB4B50",
+      "identity": "manual",
+      "participant": "P3"
+    },
+    {
+      "case_id": "NKR-2-working-tree",
+      "token": "V2-BA97F894F62E",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "NKR-2-working-tree",
+      "token": "V2-696D08CB311C",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "KER-1-working-tree",
+      "token": "V2-77EA003E03BB",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "KER-1-working-tree",
+      "token": "V2-EDDBADCA6A71",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-1-working-tree",
+      "token": "V2-EB75CB76DE43",
+      "identity": "manual",
+      "participant": "P3"
+    },
+    {
+      "case_id": "DOC-1-working-tree",
+      "token": "V2-0A25DE620037",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "KER-1-terminal",
+      "token": "V2-B15DB6164A7D",
+      "identity": "linter",
+      "participant": "P1"
+    },
+    {
+      "case_id": "KER-1-terminal",
+      "token": "V2-39A841F0588D",
+      "identity": "manual",
+      "participant": "P1"
+    },
+    {
+      "case_id": "CAL-1-pre-edit",
+      "token": "V2-A5886828FE33",
+      "identity": "manual",
+      "participant": "P2"
+    },
+    {
+      "case_id": "CAL-1-pre-edit",
+      "token": "V2-AE772EDAB8D2",
+      "identity": "linter",
+      "participant": "P2"
+    },
+    {
+      "case_id": "DOC-2-working-tree",
+      "token": "V2-BE1D637ACB2D",
+      "identity": "linter",
+      "participant": "P3"
+    },
+    {
+      "case_id": "DOC-2-working-tree",
+      "token": "V2-6CEBC505FDD0",
+      "identity": "manual",
+      "participant": "P3"
+    }
+  ]
+}

@@ -238,14 +238,15 @@ validation, CAL, or Harvard commands.
 - 2026-07-28: Added the tool README and registered authority contract to the
   terminal write set because exact-diff reconciliation showed both would become
   stale after deletion.
-- 2026-07-28: Final valid results missed four independent retention thresholds:
-  24 linter-arm critical omissions, 33.3% deterministic noise, 26.8% median
-  planning-time reduction, and 0% interaction reduction.
+- 2026-07-28: Final valid results recorded four retention-threshold failures.
+  The 24 linter-arm critical omissions independently require deletion. The
+  33.3% noise result is dominated by trial-imposed detached HEADs, and timing/
+  interaction results are sequence-confounded because the arm order was not
+  interleaved; those limitations are retained rather than generalized.
 
 ## Outcomes And Retrospective
 
-The stop-loss selected `DELETE_ADVISORY_LINTER`. Cold/warm latency and
-production size passed, and no linter-originated lifecycle/write/execute
-violation occurred. Retention nevertheless required every threshold. The
-manual route remains prospective; no repair package or modeling prerequisite
-was created.
+The stop-loss selected `DELETE_ADVISORY_LINTER` on the independently sufficient
+zero-omission criterion. Cold/warm latency and production size passed, and no
+linter-originated lifecycle/write/execute violation occurred. The manual route
+remains prospective; no repair package or modeling prerequisite was created.

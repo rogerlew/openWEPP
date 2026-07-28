@@ -1,6 +1,6 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `COMPLETE / ORDER 5 STOP-LOSS APPLIED`
+Status: `ACCEPTED / ORDER 5 CLOSING`
 
 Owner: maintainers
 
@@ -157,7 +157,7 @@ authority.
 | 2 | `complete` | `20260727-gate-planner-cal04b-legacy-integration-removal-001` | Removed obsolete planner/external-transaction dependencies from prospective CAL tooling while preserving direct execution, durable primary-failure evidence, Harvard sealing, and the freeze/open barrier. | Completed Order 1 and explicit user authorization |
 | 3 | `complete` | `20260727-gate-planner-advisory-linter-thin-slice-001` | Delivered the read-only lint command and proved representative findings, hostile-input refusal, bounded capture, and no execution or mutation with dual review and verification. | Orders 1-2 and explicit user authorization |
 | 4 | `complete` | `20260727-gate-planner-legacy-execution-ci-retirement-001` | Retired the planner execution/CI/control plane after a 31-row consumer inventory; preserved direct authority, immutable policy identity, optional quality observation, and protected-data ownership without a linter CI role. | Order 3 and explicit user authorization |
-| 5 | `complete` | `20260728-gate-planner-agent-friction-qualification-001` | Applied the stop-loss after the valid 18-case trial found 24 linter-arm critical omissions, 33.3% non-actionable findings, 26.8% planning-time reduction, and 0% interaction reduction. Deleted the advisory implementation; manual planning remains prospective. | Orders 3-4 and explicit user authorization |
+| 5 | `closing` | `20260728-gate-planner-agent-friction-qualification-001` | Applied the stop-loss after both blinded scorers confirmed 24 linter-arm critical omissions. Deleted the advisory implementation; terminal review and verification remain. The noise and efficiency measurements are retained with their trial-design limitations. | Orders 3-4 and explicit user authorization |
 
 CAL-04B direct, package-authored modeling work may resume independently under
 its existing authority and the user's direction. It does not wait for any

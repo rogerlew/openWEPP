@@ -1,0 +1,649 @@
+{
+  "schema_version": "1.0",
+  "participant": "P2-clean2",
+  "repository_full_head": "3f3ace0deced1a1aee62eb21975f8c2fefd75ee5",
+  "warm_up": {
+    "package": "20260727-gate-planner-legacy-execution-ci-retirement-001",
+    "discarded": true,
+    "start_ns": 1785235486818058450,
+    "end_ns": 1785235490711271783,
+    "duration_ns": 3893213333,
+    "interaction_count": 1
+  },
+  "rows": [
+    {
+      "sequence": 2,
+      "case_id": "CAL-1-working-tree",
+      "package_id": "CAL-1",
+      "package": "20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001",
+      "mode": "working-tree",
+      "arm_order": "manual-first",
+      "scaffold_sha": "28d842c445d0e21d21e62b82e6f28762e788e7d9",
+      "terminal_sha": "72e433d16b4f9c35f2bb05cee8c7d92b1e16108d",
+      "checked_out_head": "28d842c445d0e21d21e62b82e6f28762e788e7d9",
+      "working_tree_uncommitted": true,
+      "snapshot_content_hash": "299bdda0688340f6d8d70c31f08ac4f05134529aa7fc69030fa88ce88b2cc354",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "manual": {
+          "arm_token": "P2V2-02-Q7",
+          "plan": "Package state and first barrier\n\nTreat this working tree as an active calibration-readiness package stopped at the synthetic-recovery barrier. Before any correction work, amend package.md to bind the exact base revision and reconcile the 169-path repository state against the narrow writable envelope: the package subtree, work-package catalog, and canopy roadmap. Production sources, contracts, admitted records, predecessor evidence, and protected forcing remain read-only.\n\nRequired sequence\n\n1. Authenticate the retained incident-005 logs and create a fresh empty attempt location. Preserve the prior attempt as immutable evidence.\n2. Obtain explicit science authority for a result-blind repair to the hidden-truth synthetic case. The repaired design must generate the required eligible crossing in every synthetic year and must be recovered independently from retained daily traces. Do not change the empirical domain, scoring equation, acceptance band, saturation rule, or crossing window to make recovery easier.\n3. Reconfirm CAL-03, CAL-04, and CAL-04A identities, Hubbard calibration roles, Daymet custody, plot-year cold starts, yday 60–180 eligibility, the 9,261-vector lexicographic grid, missing-crossing infinity, and the minimum-plus-one-day ensemble rule.\n4. Complete two prospective science reviews, two scaffold checks, and disposition every recorded issue before candidate work.\n5. Only after synthetic recovery passes, run the Hubbard population through the real native GSI consumer. Retain configurations, plot/year/day traces, crossings, record distances, annual components, objectives, typed failures, boundaries, saturation, and complete membership. Reconstruct objectives and membership independently.\n6. Freeze the nonempty accepted ensemble, executable, configuration, inputs, and exact holdout command. Require two independent freeze checks before the one-time holdout transition.\n7. Carry the entire upstream ensemble through Bf,max/Bs, fe, xmxlai, Cs, and bb. Label execution-only axes and retain equifinality.\n\nProposed commands and evidence\n\nPropose the Daymet checksum verification, package scaffold and executor checks, package-local Rust and Python tests, warnings-denied Clippy for owned code, cargo-deny, package Markdown checks, and diff hygiene. Heavy population work belongs to the authorized runner and must return complete inventories with exact identities and durations.\n\nClosure remains blocked by failed synthetic recovery, any incomplete population, an objective reconstruction mismatch, mixed calibration/validation roles, a write outside scope, missing independent review, or any readiness row that is blocked. Sparse data limits claims but does not justify selecting one convenient parameter vector.",
+          "start_ns": 1785235498947908590,
+          "end_ns": 1785235509304631266,
+          "duration_ns": 10356722676,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "linter": {
+          "arm_token": "P2V2-02-R4",
+          "plan": "Disposition\n\nKeep the package on science-design hold. The present state shows that native production traversal and synthetic trace creation advanced, but the required hidden candidate could not be assessed because its synthetic years did not all contain the prescribed crossing. No empirical candidate population has completed, and the independent holdout boundary remains closed.\n\nIdentity, authority, and scope\n\nAdd an exact base-revision declaration to package.md before resumption. Authenticate the package status and every package-owned path within the broad working tree rather than treating unrelated changes as owned work. ADR-0042 governs claim vocabulary; SC-PLANT-001 and SC-INFILE-MANAGEMENT-YAML-001 govern the production seam. Preserve the frozen nine-plot forcing, annual cold starts, real yday 1–180 inputs, yday 60–180 crossing eligibility, 21-by-21-by-21 enumeration, equal-year interval RMSE, infinity for a required missing crossing, one-day ensemble band, no refinement, and exact saturation rule.\n\nRecovery plan\n\n- Preserve incident 005 and its checksummed logs. Start a new attempt location.\n- Specify a result-independent synthetic forcing and hidden truth that produces the promised crossing inventory. Require two separately implemented reconstructions to derive the same objective components and include the hidden truth in the recovered minimum set.\n- Recheck real parameter consumption for default, interior, boundary, saturated, all-operand, one-at-a-time, and invalid configurations without changing production physics or fixtures.\n- Freeze producer and reconstructor interfaces so the producer cannot write scores or accepted flags and reconstructors cannot consume producer-derived crossings or aggregates.\n- Pass prospective reviews and scaffold checks before the complete Hubbard run.\n- Retain every candidate and failure, then independently rebuild accepted membership from immutable daily values and admitted Hubbard intervals.\n- Checksum-freeze membership and all identities before a single durable holdout opening with no refit path.\n- Propagate full accepted membership through later stages, distinguishing empirical support from readiness demonstrations.\n\nProposed verification\n\nThe prospective command set should include source-custody checks, package validators, owned-code tests, strict formatting and warnings checks, dependency policy, documentation checks, and exact scope reconciliation. The population command is deferred until the recovery barrier passes.\n\nDo not alter domains, observations, objectives, acceptance, predecessor artifacts, production code, or holdout state. Closure requires complete candidate/failure ledgers, readiness statuses, equifinality and additional-data records, exact command evidence, dual scientific review, dual terminal verification, and a clean package-owned final diff.",
+          "start_ns": 1785235521904391973,
+          "end_ns": 1785235525220817594,
+          "duration_ns": 3316425621,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq02-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 731.306352,
+        "warm_duration_ms": 775.924109,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "3fdf1b631c6ce4b06458ca293311b925b0fb90b87ce2d2aecaf1ddbf86f18b80",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    },
+    {
+      "sequence": 5,
+      "case_id": "DOC-2-pre-edit",
+      "package_id": "DOC-2",
+      "package": "20260727-gate-planner-governance-authority-alignment-001",
+      "mode": "pre-edit",
+      "arm_order": "manual-first",
+      "scaffold_sha": "d7a6f8aeabc0ecfd737acae46d26ec20b6c9e4be",
+      "terminal_sha": "0f851bc89a82044cc8a5fccef64be912403cceaf",
+      "checked_out_head": "d7a6f8aeabc0ecfd737acae46d26ec20b6c9e4be",
+      "working_tree_uncommitted": false,
+      "snapshot_content_hash": "62c7602092d7be6b396548a0dcbd7caccd0e1f0414ee3bcb004e3471b2f24ee4",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "manual": {
+          "arm_token": "P2V2-05-K3",
+          "plan": "Objective and declarations\n\nImplement the governance-authority migration defined by ADR-0043. Before editing, amend package.md to state the exact base revision and the implementation intent directly; the package header must carry those lifecycle facts. The repository is otherwise a clean scaffold at its recorded commit.\n\nScope\n\nThe change replaces prospective planner and TESTGATE permission, execution, receipt, repair, CI, and closeout authority with direct selection and recording of applicable requirements. It must preserve independent correctness, science, security, assurance, quality, campaign, release, review, and protected-data duties. Work is limited to the declared governance documents, integration guards and Cargo registration, live impact map, immutable history registry, named package status overlays, catalogs, roadmap, and package evidence. The supplemental audit remains read-only and excluded.\n\nImplementation sequence\n\n1. Read ADR-0043, the accepted conflict matrix, migration map, package/test instructions, current guards, and every named status surface.\n2. Inventory every operative phrase and assertion that grants the retired control plane prospective authority. Separately inventory substantive policies that must survive: conservative unknown-impact escalation, exact-diff reconciliation, content-bound evidence reuse, A0/A1/A3 obligations, A2/A4/A5/A6 outcome separation, observational quality, assurance transfer, and protected-data custody.\n3. Record immutable generation-17 identity using source commit 57f5f6f1…, blob ab8fe3e4…, and SHA-256 74203b29…. Historical verification must resolve the old Git object rather than changed live bytes.\n4. Apply the accepted text amendments. Remove the obsolete executor-literal guard and registration. Rewrite the surviving alignment guard around direct governance and preserved obligations. Remove only the three planner-policy authority rows while retaining all independent AUTH11 rows.\n5. Mark incomplete named prerequisites frozen and superseded without rewriting their historical progress; keep the completed ledger package complete.\n6. Reconcile the exact final diff and archive the package prompt only after review and verification.\n\nProposed evidence\n\nRun the focused alignment contract, authority anti-evasion guard, AUTH11 contract, scoped Markdown checks, JSON parsing, historical object reconstruction, deleted-path and registration checks, package-status scans, line counts, and diff hygiene. Do not invoke the retired control plane, CI, full workspace, production, calibration, publication, or protected-data workflows.\n\nClosure is blocked by any stale operative authority, lost substantive requirement, incorrect historical identity, active superseded package, out-of-set path, failed focused check, unresolved review issue, or incomplete prompt/catalog closure.",
+          "start_ns": 1785235530669589933,
+          "end_ns": 1785235533350855187,
+          "duration_ns": 2681265254,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "linter": {
+          "arm_token": "P2V2-05-M8",
+          "plan": "Intent and starting conditions\n\nTreat the ACTIVE scaffold as a focused policy migration. Add the exact base revision and an explicit governance-migration intent to package.md before implementation. Keep the clean scaffold commit as the comparison boundary.\n\nRequired inventory\n\nBuild two independent inventories. The first lists all live guidance, templates, guards, maps, and status records that still assign prospective authority to planner or TESTGATE concepts. The second lists obligations that must remain effective after the migration: direct increment checks, conservative escalation for unknown impact, exact terminal reconciliation, input-bound reuse, contract suites and anti-evasion, scientific outcome separation, quality reporting, assurance approval, release correctness, and protected-data controls. Resolve any missing consumer or write path prospectively.\n\nChange plan\n\n- Apply the Order-1 replacements to root guidance, work-package rules, testing strategy, local command guidance, prompt standards, templates, catalogs, and roadmap.\n- Pin generation-17 history to the recorded commit, path, blob, and SHA-256 before changing the live strategy.\n- Delete the source-literal executor guard and its registration.\n- Convert the remaining governance guard to assertions about direct authority, immutable history, all nine AUTH11 rows, absence of prospective control-plane authority, and consistent frozen statuses.\n- Remove only superseded authority rows from the live map; retain independent external-authority protections.\n- Freeze the four incomplete prerequisite packages and preserve the already completed ledger record.\n- Amend the declared write set before touching any newly discovered coupled surface.\n\nProposed checks\n\nUse the focused governance target, direct anti-evasion and AUTH11 checks, scoped Markdown paths, JSON parsing, live-strategy digest comparison, immutable object reconstruction, deleted-source scans, status/catalog comparison, Rust line counts, and diff hygiene. Record exact commands, inputs, exit status, counts, and evidence paths.\n\nReview and closure\n\nTwo reviewers should independently assess policy substance and enforcement/history. Two verifiers should check the final scope and current evidence. Correct every accepted issue before closure. Stop for any surviving live authority, weakened science/security rule, mismatched immutable identity, stale ACTIVE prerequisite, broadened implementation scope, failed focused evidence, or incomplete review disposition. No full-workspace run or later-roadmap action is warranted by this documentation and guard migration alone.",
+          "start_ns": 1785235552692836135,
+          "end_ns": 1785235555390764325,
+          "duration_ns": 2697928190,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq05-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 784.048854,
+        "warm_duration_ms": 788.17407,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "00d57bb0db75429b7166f6ea0a786a12776ea1ff0f3651caa9bf0d06def2e375",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-gate-planner-governance-authority-alignment-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          },
+          {
+            "action": "amend-declaration",
+            "applicability": "all implementation work packages",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/standards/testing-and-gate-strategy.md",
+            "impact": "medium",
+            "message": "The package does not declare implementation intent.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-gate-planner-governance-authority-alignment-001/package.md"
+            },
+            "reasoning": "Gate selection and terminal reconciliation depend on declared intent.",
+            "rule_id": "WP-INTENT-001",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    },
+    {
+      "sequence": 8,
+      "case_id": "DOC-2-terminal",
+      "package_id": "DOC-2",
+      "package": "20260727-gate-planner-governance-authority-alignment-001",
+      "mode": "terminal",
+      "arm_order": "manual-first",
+      "scaffold_sha": "d7a6f8aeabc0ecfd737acae46d26ec20b6c9e4be",
+      "terminal_sha": "0f851bc89a82044cc8a5fccef64be912403cceaf",
+      "checked_out_head": "0f851bc89a82044cc8a5fccef64be912403cceaf",
+      "working_tree_uncommitted": false,
+      "snapshot_content_hash": "f5304f53884799ab8c043abcee4256b1252db04e016bbd2feb72279d7fa0e9ac",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "manual": {
+          "arm_token": "P2V2-08-B6",
+          "plan": "Terminal assessment\n\nAssess the COMPLETE/PASS claim against the terminal commit rather than relying on checked boxes. Package.md must still be amended to declare its exact base revision and implementation intent directly; those lifecycle declarations are required even though the package contains supporting artifacts.\n\nScope reconstruction\n\nCompare scaffold d7a6f8ae… with terminal 0f851bc8…. Classify every changed path as operative governance, enforcement, historical identity, frozen-status overlay, catalog/roadmap closure, or package evidence. Confirm the expanded write set covers the standards catalog and snow-confinement guard discovered during review. The supplemental untracked audit must remain excluded. Reject changes to production, kernel, science contracts, calibration, publication, workflows, or protected data.\n\nSubstantive checks\n\nVerify that current instructions require agents to select and run applicable requirements directly, conservatively escalate unknown impact, reconcile exact diffs, reuse evidence only when relevant identities match, preserve A0/A1/A3 and anti-evasion duties, separate A2/A4/A5/A6 outcomes, and retain quality and assurance controls. Confirm the compatibility map is nonblocking and cannot authorize work. Resolve generation-17 commit:path to blob ab8fe3e4… and SHA-256 74203b29… without depending on mutable live strategy bytes. Ensure all nine AUTH11 rows remain, obsolete registration/source paths are absent, four incomplete packages are frozen, and the completed ledger package stays complete.\n\nProposed evidence review\n\nAuthenticate retained results for alignment 5/5, AUTH11 3/3, authority anti-evasion, snow confinement 2/2, formatting, JSON parsing, historical reconstruction, scoped Markdown checks, and diff hygiene against this terminal source. Rerun only evidence invalidated by a changed input. Inspect both reviews, both verifications, line-count records, and every issue disposition.\n\nClosure blockers\n\nAny stale prospective authority, missing independent obligation, history mismatch, package/catalog status conflict, out-of-write-set path, unresolved issue, evidence identity mismatch, or failed current requirement forces HOLD. If all checks pass after the declaration amendment, COMPLETE/PASS is supportable. The disposition closes only roadmap Order 1 and does not authorize later work.",
+          "start_ns": 1785235560242276036,
+          "end_ns": 1785235563425013871,
+          "duration_ns": 3182737835,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "linter": {
+          "arm_token": "P2V2-08-H2",
+          "plan": "Closure plan\n\nValidate the terminal governance migration end to end. First correct package.md so the exact base revision and implementation intent are explicit at the authoritative package boundary. Then bind all closure evidence to terminal commit 0f851bc8… and its scaffold parent.\n\nDiff and policy verification\n\nEnumerate the complete commit diff and map each path to the amended write set. Confirm that changes are confined to governance prose, catalogs, templates, status overlays, integration guards, impact/history JSON, and package evidence. Verify that the deleted 1,303-line executor guard and Cargo registration are absent and that the two surviving Rust guards remain below the line-count threshold.\n\nRead operative instructions as a coherent system. They must preserve direct correctness and science duties, unknown-impact escalation, five validation moments, exact-source evidence reuse, contract admissions, external-authority anti-evasion, observational quality, assurance transfer, campaign closure, and release qualification. Positive prospective planner/TESTGATE authority must be absent; explicit negative and historical references are acceptable.\n\nHistory and state\n\nResolve the frozen strategy identity from commit 57f5f6f1…, its recorded path, blob ab8fe3e4…, and digest 74203b29…. Check that live strategy and impact-map digests agree, the map is schema-only and nonblocking, all nine AUTH11 rows survive, four incomplete prerequisites are frozen/superseded, and the ledger bootstrap record remains complete.\n\nProposed checks and evidence\n\nConfirm current-source results for the alignment target, AUTH11 guard, authority anti-evasion, snow-confinement contract, formatting, JSON parsing, scoped documentation, history reconstruction, deleted paths, and diff hygiene. Review both independent policy/enforcement assessments and both verification records. Match every accepted review issue to a concrete correction.\n\nHold closure if any path exceeds scope, any substantive policy was lost, historical identity is mutable or mismatched, a superseded package remains active, an issue lacks disposition, or evidence does not bind this source. With those conditions satisfied, retain COMPLETE/PASS and archive the prompt without initiating the next roadmap order.",
+          "start_ns": 1785235576610902634,
+          "end_ns": 1785235578855131920,
+          "duration_ns": 2244229286,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq08-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 781.109571,
+        "warm_duration_ms": 814.565082,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "5f0ccac4069db069eb7649b82a72045fb805cd67ff082ad6ada6da0d90da3375",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-gate-planner-governance-authority-alignment-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          },
+          {
+            "action": "amend-declaration",
+            "applicability": "all implementation work packages",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/standards/testing-and-gate-strategy.md",
+            "impact": "medium",
+            "message": "The package does not declare implementation intent.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-gate-planner-governance-authority-alignment-001/package.md"
+            },
+            "reasoning": "Gate selection and terminal reconciliation depend on declared intent.",
+            "rule_id": "WP-INTENT-001",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    },
+    {
+      "sequence": 11,
+      "case_id": "NKR-2-pre-edit",
+      "package_id": "NKR-2",
+      "package": "20260727-assurance-v2-amendment-contract-clippy-line-disposition-001",
+      "mode": "pre-edit",
+      "arm_order": "linter-first",
+      "scaffold_sha": "1eb56a4dfcf2cb91046d053d8562ef67049aacf0",
+      "terminal_sha": "86f14da61997f1b5d29f2eee5f7f8cf470a4c94e",
+      "checked_out_head": "1eb56a4dfcf2cb91046d053d8562ef67049aacf0",
+      "working_tree_uncommitted": false,
+      "snapshot_content_hash": "9b22b3a653e51684d6298c43fc7cc979a75a4261f7dd5c75c51cf6a77717a6fc",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "linter": {
+          "arm_token": "P2V2-11-C9",
+          "plan": "Defect boundary and declarations\n\nClose only the retained too-many-lines warning on the named 156-line assurance integration test. Before implementation, amend package.md to declare the scaffold base revision and the behavior-preserving implementation intent. Keep the repository comparison boundary at scaffold commit 1eb56a4d….\n\nAuthorized change\n\nThe sole Rust edit is a function-scoped allow attribute on report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority, with an adjacent rationale explaining why the test is one atomic read-only/check/apply/review-invalidation/idempotence lifecycle. Do not change setup, calls, fixtures, expected identities, assertions, review authority, transaction semantics, or formatting beyond the narrow disposition. Do not add file-, crate-, or workspace-level suppression and do not split or weaken the cohesive test.\n\nThe remaining writable paths are the package subtree, catalog, canopy assurance roadmap, and predecessor canonical-execution record. No gate definition, inventory, executor, ledger, calibration data, or protected-data state may change.\n\nExecution plan\n\n1. Authenticate the exact warning, source function, scaffold identity, and before-image.\n2. Obtain two independent scaffold reviews of the narrow correction and its rationale.\n3. Apply the attribute and comment, then mechanically prove the test body is otherwise byte-identical.\n4. Run the focused assurance integration target.\n5. Through the required heavy runner, run strict workspace Clippy, full-profile Nextest, locked/offline doctests, and a fresh exact-head successor transaction.\n6. Run authority anti-evasion, the AUTH11 contract, formatting, package Markdown checks, and diff hygiene.\n7. Obtain two implementation reviews, two terminal verifications, and two successor-receipt verifications before updating closure state.\n\nEvidence and blockers\n\nRetain exact argv, cwd, source identity, exit status, test counts, and log paths. The successor must show LIGHT PASS, a complete READY audit, and every required HEAVY node passing on a fresh root and ledger.\n\nHOLD is required for any behavioral source change, broad suppression, focused failure, remaining warning, incomplete full/doctest/authority evidence, nonfresh successor, missing required runner, out-of-set path, or unresolved review issue. Only an exact narrow diff with complete independent evidence permits resuming the predecessor chain.",
+          "start_ns": 1785235592969801074,
+          "end_ns": 1785235598565791451,
+          "duration_ns": 5595990377,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "manual": {
+          "arm_token": "P2V2-11-F5",
+          "plan": "Purpose\n\nResolve the single workspace-Clippy line-length failure without altering assurance behavior. Add the package's missing base-revision and implementation-intent declarations before editing so the exact terminal boundary and behavior-preserving purpose are explicit.\n\nSource and scope\n\nThe affected function is report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority in tests/integration/assurance_v2_amendment_contract.rs. It deliberately exercises adoption, source checking, application, review invalidation, and idempotence as one lifecycle. Add one function-local #[allow(clippy::too_many_lines)] and a nearby explanation of that cohesion. Preserve every fixture, call, assertion, identity, and state transition. Reject broader allowances or a test split.\n\nPackage evidence, catalog/roadmap status, and the predecessor execution record may change only to report truthful progress. No other Rust path, gate inventory, executor behavior, ledger implementation, science surface, calibration input, or protected data belongs to this correction.\n\nProposed command sequence\n\nStart with cargo nextest run --test assurance_v2_amendment_contract. Then require cargo clippy --workspace --all-targets -- -D warnings, cargo nextest run --workspace --profile full, locked/offline workspace doctests, the source anti-evasion check, the AUTH11 required-suite target, cargo formatting, scoped package Markdown checks, and git diff --check. The broad regression and successor transaction must be run by the authorized heavy role, using a fresh root and ledger. Record exact source and command identities, durations, counts, and logs.\n\nReview barriers\n\nTwo readers must accept the scaffold and the reason for retaining one cohesive test. After the edit, two implementation reviews must compare the full function against its before-image. Two terminal verifiers must authenticate the diff and direct evidence, and two separate receipt verifiers must confirm LIGHT, READY, and complete HEAVY success.\n\nClosure blockers include any changed test behavior, nonlocal suppression, missing rationale, failed focused or broad requirement, incomplete successor inventory, overwritten prior evidence, scope expansion, or undispositioned review issue. A missing required execution role yields HOLD rather than local substitution.",
+          "start_ns": 1785235604284729427,
+          "end_ns": 1785235606542070224,
+          "duration_ns": 2257340797,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq11-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 785.878916,
+        "warm_duration_ms": 780.364707,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "dffbe18b2c81b5885d85bf7738746d3b0381538fd5dcc2ae764c97fb1c2d78d0",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          },
+          {
+            "action": "amend-declaration",
+            "applicability": "all implementation work packages",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/standards/testing-and-gate-strategy.md",
+            "impact": "medium",
+            "message": "The package does not declare implementation intent.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/package.md"
+            },
+            "reasoning": "Gate selection and terminal reconciliation depend on declared intent.",
+            "rule_id": "WP-INTENT-001",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          },
+          {
+            "analysis_id": "policy:docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "message": "required file is missing: docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "reason_code": "MISSING_FILE"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    },
+    {
+      "sequence": 14,
+      "case_id": "KER-1-working-tree",
+      "package_id": "KER-1",
+      "package": "20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001",
+      "mode": "working-tree",
+      "arm_order": "linter-first",
+      "scaffold_sha": "f4b3db6c17f25d9dfe969825c672309443963ac4",
+      "terminal_sha": "dd3b2a59018bd9a39999f9b263b07351afc34290",
+      "checked_out_head": "f4b3db6c17f25d9dfe969825c672309443963ac4",
+      "working_tree_uncommitted": true,
+      "snapshot_content_hash": "ad2de390dbf431028778c44795e1d9eb4512148763b8fb23cea174d6a52ece40",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "linter": {
+          "arm_token": "P2V2-14-J1",
+          "plan": "Current claim and package boundary\n\nThe working tree claims that CAL04B-NATIVE-001 is closed, but closure must be proved from the scaffold-to-current diff. Amend package.md to state the authenticated base revision and implementation intent directly. Reconcile the 71 changed paths, separating this package's kernel correction from separately owned assurance and historical-root prerequisites.\n\nScience authority\n\nThe admitted native law uses checked total above-ground biomass Bt = Bs + Bf and Hc = (1 - exp(-bbb * Bt)) * hmax, while Bf remains the foliar/interception value. Require finite positive bbb and hmax, checked sum and product, finite Hc within [0,hmax], exact zero at zero biomass, positive height for positive biomass, and typed failure on overflow, nonfinite arithmetic, or positive-product underflow. Preserve the positive-LAI/positive-height guard and error precedence. No clamp, surrogate, cover inversion, foliar-only alias, stale seed, or static fallback is allowed.\n\nPath and consumer proof\n\nMap every owned change to SC-PLANT authority, binding-exposure checks, runner publication, orchestrator growth/erosion/frame/executor/Lane-D surfaces, adjacent tests, package evidence, and the bounded invalid-case recognizer. Verify contract admission preceded tests and production edits. Trace the same post-phenology height into snow, ET, WB15, erosion, residue/litter, frost, and Lane D. Negatively exclude PMET zero fallback, management-seed height, wrapper, shadow, compatibility, and static paths.\n\nProposed evidence\n\nAuthenticate transition, boundary, evergreen, invalid-domain, overflow, underflow, rollback, and consumer tests; SC binding checks; legacy sediment non-regression; the unchanged twelve-case native replay; authority anti-evasion where applicable; formatting; strict Clippy; cargo-deny; documentation; line counts; and diff hygiene. The critical state-publication change requires exact-head full-profile correctness; retained 2,301/2,301 evidence must bind the closure source.\n\nClosure requires closed review issues, two implementation reviews, HOLD audit, renewed dual verification, prompt custody, and exact ownership reconciliation. Any stale consumer, weakened guard, arithmetic gap, altered calibration input, evidence mismatch, or out-of-envelope path forces HOLD. The package may lift only the production prerequisite; it does not perform calibration or holdout work.",
+          "start_ns": 1785235620053370187,
+          "end_ns": 1785235624711067887,
+          "duration_ns": 4657697700,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "manual": {
+          "arm_token": "P2V2-14-N6",
+          "plan": "Assessment target\n\nEvaluate the uncommitted closure candidate for the canopy-height coherence defect. First add explicit base-revision and implementation-intent declarations to package.md. Treat COMPLETE as provisional until the exact owned diff is authenticated and committed.\n\nAuthority and invariant\n\nSC-PLANT-001 and the pinned legacy baseline govern the correction. Native current-day height is derived from checked total biomass Bs+Bf with the admitted exponential projection; foliar biomass remains the separate interception operand. The implementation must validate parameter domains and all intermediate arithmetic, return canonical zero for zero biomass, return a positive bounded height for positive biomass, and fail with typed errors for invalid, overflowing, nonfinite, or underflowing states. The existing downstream coherence guard remains fail-closed.\n\nVerification sequence\n\n1. Reconstruct the scaffold-to-current diff and identify the 44-path native package slice separately from assurance prerequisite corrections.\n2. Verify the contract amendment and Binding Exposure Index, then compare contract-derived tests with the implementation.\n3. Follow the centralized same-day state from runner production through orchestrator handoff to active snow attenuation, ET, WB15 interception, erosion, residue/litter, frost, and Lane D.\n4. Search for stale baseline height, optional-zero PMET fallback, management seed, wrapper, compatibility, and shadow consumption.\n5. Check exact typed failures and transaction rollback after each numerical error.\n6. Authenticate the frozen twelve-case replay without changed inputs, selectors, or expectations.\n7. Bind full-workspace, formatting, dependency, documentation, authority, and line-count evidence to the final source identity.\n\nAllowed paths are the contract and registry, binding-exposure checker/tests, runner and orchestrator surfaces named by the package, directly owning tests, package evidence/catalog/roadmap, and the narrowly bounded invalid-message recognizer. Calibration domains, forcing, observations, objectives, candidate selection, and protected holdout state are excluded.\n\nTwo independent reviews, a legitimacy audit, two renewed verifications, exact write-set reconciliation, and archived prompt are mandatory. Closure fails for any unproven real consumer, weakened guard, invented physics, input change, source/evidence mismatch, unresolved issue, or dirty final identity. A successful disposition lifts only the production prerequisite for a separately authorized fresh attempt.",
+          "start_ns": 1785235632074735261,
+          "end_ns": 1785235634985857925,
+          "duration_ns": 2911122664,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq14-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 785.359288,
+        "warm_duration_ms": 772.425694,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "3be362f39fc63ad594757b24bde73e1264f4a029e89bdd1ee5ce19ab16b33b4a",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          },
+          {
+            "action": "amend-declaration",
+            "applicability": "all implementation work packages",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/standards/testing-and-gate-strategy.md",
+            "impact": "medium",
+            "message": "The package does not declare implementation intent.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/package.md"
+            },
+            "reasoning": "Gate selection and terminal reconciliation depend on declared intent.",
+            "rule_id": "WP-INTENT-001",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          },
+          {
+            "analysis_id": "policy:docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "message": "required file is missing: docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "reason_code": "MISSING_FILE"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    },
+    {
+      "sequence": 17,
+      "case_id": "CAL-1-pre-edit",
+      "package_id": "CAL-1",
+      "package": "20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001",
+      "mode": "pre-edit",
+      "arm_order": "linter-first",
+      "scaffold_sha": "28d842c445d0e21d21e62b82e6f28762e788e7d9",
+      "terminal_sha": "72e433d16b4f9c35f2bb05cee8c7d92b1e16108d",
+      "checked_out_head": "28d842c445d0e21d21e62b82e6f28762e788e7d9",
+      "working_tree_uncommitted": false,
+      "snapshot_content_hash": "bd00b93c4e3c473a0dee7d9b9c3c586b9da551ce083c9be1e1432a93d2e34a74",
+      "byte_equivalent": true,
+      "pair_diff_quiet": true,
+      "arms": {
+        "linter": {
+          "arm_token": "P2V2-17-D4",
+          "plan": "Starting state\n\nKeep the package QUEUED while completing intake. Add an exact base-revision declaration to package.md before any result-bearing work. The implementation intent is already explicit: production-path verification, calibration readiness, empirical timing calibration where supported, and one independent holdout evaluation.\n\nAuthority and writable scope\n\nRead the full required set before execution: ADR-0042, SC-PLANT-001, SC-INFILE-MANAGEMENT-YAML-001, CAL-03 custody and role records, CAL-04 objective/operator authority, CAL-04A Daymet design and evidence, and the CAL-04/05 admission partition. Only the package subtree, catalog, and canopy roadmap are writable. Production Rust, contracts, tests, protected records, source observations, forcing bytes, and predecessor artifacts remain read-only.\n\nProspective freeze\n\nFreeze the 9,261-vector lexicographic grid, no seed/refinement/domain widening, exact saturation threshold, infinity for missing required crossings, and finite-minimum-plus-one-day acceptance. Bind Hubbard intervals as calibration and Harvard intervals as independent validation. Freeze observation operators, units, annual weighting, failure behavior, later-stage axes, and execution-only values before results exist.\n\nPhase plan\n\n1. Authenticate all identities, rebuild the grid byte-identically, and prove parameter configuration reaches the real native consumer.\n2. Require synthetic hidden-truth recovery, independent objective reconstruction, and interior/boundary/saturated/equifinal/invalid cases before empirical scoring.\n3. Obtain two prospective scientific reviews.\n4. Execute every Hubbard candidate in frozen order, retaining raw configurations, crossings, record distances, annual components, aggregate objectives, failures, boundaries, saturation, and profiles.\n5. Independently rebuild the ledger and freeze complete accepted membership.\n6. Freeze membership, source, configuration, input manifest, and exact holdout command; require two independent freeze checks before one durable opening and scoring with no refit path.\n7. Propagate the entire accepted ensemble through later operands and report sensitivity, confounding, equifinality, and additional-data needs.\n\nProposed checks include Daymet custody, package validation, package-local tests, Markdown checks, and diff hygiene, with exact identities and durations for heavy work. Closure requires all named deliverables, three independent status fields per stage, complete inventories, dual terminal scientific review, issue disposition, dual verification, and exact scope reconciliation. A broken native path, failed recovery, objective mismatch, incomplete population, role contamination, or custody breach forces HOLD; sparse data only limits claims.",
+          "start_ns": 1785235645119386814,
+          "end_ns": 1785235647410633826,
+          "duration_ns": 2291247012,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        },
+        "manual": {
+          "arm_token": "P2V2-17-P8",
+          "plan": "Intake objective\n\nPrepare the queued canopy calibration-readiness package for a deterministic, auditable campaign without overclaiming physiological identification. Declare the exact base revision in package.md and keep the current clean scaffold as the comparison boundary.\n\nGoverning requirements\n\nADR-0042 requires separate science-implementation, calibration-evidence, and identifiability statuses. CAL-03, CAL-04, CAL-04A, the timing-admission ledger, SC-PLANT-001, and SC-INFILE-MANAGEMENT-YAML-001 bind the parameter path, source custody, objective, and record roles. Hubbard timing is calibration evidence; Harvard timing is independent validation and cannot influence domain, tolerance, stopping, weights, membership, or refitting. Downstream hydrology and erosion responses are also selection-ineligible.\n\nWork plan\n\n- Complete the 197,083-byte required reading and authenticate predecessor hashes, admitted roles, forcing custody, production trace seam, and the narrow write set.\n- Freeze all 9,261 strictly ordered threshold vectors, lexicographic enumeration, no seed, no refinement, missing-crossing infinity, the one-day accepted band, and exact saturation rule.\n- Define package-local interfaces and result schemas before execution.\n- Demonstrate real parameter consumption and typed invalid behavior. Recover a hidden synthetic truth and independently reconstruct objective components for representative interior, boundary, saturated, and equifinal cases.\n- Obtain two prospective reviews before the empirical population.\n- Retain every Hubbard candidate, raw configuration, crossing, observation distance, yearly component, aggregate objective, failure, boundary, saturation class, and profile. Rebuild membership independently.\n- Checksum-freeze the nonempty ensemble and every relevant identity, then require two freeze verifications before a one-time independent evaluation with no calibration write capability.\n- Carry full upstream uncertainty through Bf,max/Bs, fe, xmxlai, Cs, and bb. Report readiness where quantitative evidence cannot identify an operand.\n\nProposed evidence includes source checksums, package validators, owned-code tests, exact command inventories, documentation checks, and diff hygiene. Heavy execution must return complete manifests and retained metrics. Closure is blocked by missing authority, broken production consumption, failed synthetic recovery, unreconstructable objectives, incomplete inventories, role mixing, missing review, or a blocked readiness row. Data sparsity must appear as equifinality and additional-data needs, not a preferred vector.",
+          "start_ns": 1785235652687794937,
+          "end_ns": 1785235676123558607,
+          "duration_ns": 23435763670,
+          "interaction_count": 1,
+          "clarification_count": 0,
+          "interruption_minutes": 0,
+          "arm_label_inferable_from_plan": false
+        }
+      },
+      "linter": {
+        "repository_root": "/home/workdir/openWEPP/target/order5-qualification/clean-p2-v2/seq17-linter",
+        "repository_root_verified": true,
+        "cold_duration_ms": 834.2749,
+        "warm_duration_ms": 789.327911,
+        "cold_exit_code": 3,
+        "warm_exit_code": 3,
+        "output_digest_sha256": "d58ad4d9bd699c7973d555cbc9dac81d7150e82f6587905fb1d24612f98cb7d2",
+        "canonical_repeat": true,
+        "top_status": "partial",
+        "deterministic_findings": [
+          {
+            "action": "amend-declaration",
+            "applicability": "work-package identity and terminal boundary",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/AGENTS.md",
+            "impact": "high",
+            "message": "The package does not declare one base revision.",
+            "observed_location": {
+              "line": 1,
+              "path": "docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md"
+            },
+            "reasoning": "The linter will not infer or choose package or base identity.",
+            "rule_id": "WP-IDENTITY-BASE_MISSING",
+            "suggested_command": null
+          },
+          {
+            "action": "inspect",
+            "applicability": "repository identity",
+            "category": "declaration-conflict",
+            "confidence": "deterministic",
+            "governing_source": "docs/work-packages/gate-planner-advisory-linter-roadmap.md",
+            "impact": "medium",
+            "message": "Repository HEAD is detached.",
+            "observed_location": {
+              "line": 1,
+              "path": ".git/HEAD"
+            },
+            "reasoning": "Detached HEAD is reported explicitly and is never interpreted as a lifecycle state.",
+            "rule_id": "WP-IDENTITY-DETACHED-HEAD",
+            "suggested_command": null
+          }
+        ],
+        "unavailable_analyses": [
+          {
+            "analysis_id": "git",
+            "message": "Git inspection refused before launch: .gitattributes:10:attribute-driver, .gitattributes:11:attribute-driver, .gitattributes:12:attribute-driver, .gitattributes:13:attribute-driver, .gitattributes:14:attribute-driver, .gitattributes:1:attribute-driver, .gitattributes:7:attribute-driver, .gitattributes:8:attribute-driver, .gitattributes:9:attribute-driver",
+            "reason_code": "PROHIBITED_GIT_CONFIGURATION"
+          },
+          {
+            "analysis_id": "policy:docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "message": "required file is missing: docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md",
+            "reason_code": "MISSING_FILE"
+          }
+        ]
+      },
+      "protocol_deviations": []
+    }
+  ],
+  "participant_protocol_deviations": [
+    "Initial parallel checkout commands continued after their orchestration cell yielded, leaving three transient index locks. No scored exposure had begun. The processes were allowed to finish, remaining checkouts were completed sequentially, and all exact heads plus pair content equivalence were verified before scoring."
+  ]
+}
