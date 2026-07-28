@@ -1,20 +1,20 @@
 # Acceptance Matrix
 
-Status: `TERMINAL VERIFICATION REQUIRED`
+Status: `PASS`
 
 Evidence class: `Static + Ran`
 
 | ID | Obligation | Evidence |
 |---|---|---|
-| AC-01 | Exact canonical failure retained | ledger package `canonical-execution.md` |
-| AC-02 | Function-scoped disposition only | exact implementation diff |
-| AC-03 | Cohesive lifecycle rationale | adjacent source comment and review |
-| AC-04 | Test behavior unchanged | focused assurance target |
-| AC-05 | Workspace Clippy restored | strict workspace Clippy |
-| AC-06 | Full regression restored | successor full 2,361/2,361 and doc tests |
-| AC-07 | Independent closure | dual reviews, verifiers, canonical receipt |
-| AC-08 | Findings explicitly dispositioned | `review-findings.md` |
-| AC-09 | Worker/final handoff complete | `worker-handoff.md` and `final-disposition.md` |
-| AC-10 | Rust line count governed | `line-count-disposition.md`; dual recount |
-| AC-11 | Exact terminal diff reconciled | declared-base-to-head path/diff evidence |
-| AC-12 | Independent reports retained | scaffold/implementation/terminal/receipt A+B artifacts |
+| AC-01 | Exact canonical failure retained | PASS: ledger predecessor evidence |
+| AC-02 | Function-scoped disposition only | PASS: exact implementation diff |
+| AC-03 | Cohesive lifecycle rationale | PASS: adjacent comment and review |
+| AC-04 | Test behavior unchanged | PASS: focused target and byte proof |
+| AC-05 | Workspace Clippy restored | PASS: strict canonical Clippy |
+| AC-06 | Full regression restored | PASS: 2,361/2,361 and doc tests |
+| AC-07 | Independent closure | PASS: dual reviews/verifiers and receipt |
+| AC-08 | Findings explicitly dispositioned | PASS: `review-findings.md` |
+| AC-09 | Worker/final handoff complete | PASS: handoff and disposition |
+| AC-10 | Rust line count governed | PASS: 1,046 below thresholds |
+| AC-11 | Exact terminal diff reconciled | PASS: multi-package authority |
+| AC-12 | Independent reports retained | PASS: scaffold/implementation/terminal/receipt A+B |

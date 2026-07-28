@@ -16,11 +16,11 @@
   bound-text resume API and retained ledger read; focused, strict Clippy, full
   2,361/2,361, dual review/verification, and fresh canonical 12-node /
   2,387-item receipt evidence pass.
-- `20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/` is the
-  active narrow successor to the ledger-bootstrap canonical HOLD. It owns only
-  the function-scoped Clippy line disposition on the cohesive assurance-v2
-  report-source adoption integration test, followed by exact full regression
-  and a fresh comparator-owned canonical receipt.
+- `20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/` is
+  complete. Its function-scoped Clippy disposition preserves the cohesive
+  assurance-v2 lifecycle test byte-for-byte otherwise; strict Clippy, full
+  2,361/2,361, dual review/verification, and a fresh 12-node / 2,387-item
+  canonical receipt pass.
 - `20260727-testgate-assurance-historical-root-decoupling-001/`,
   `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/`,
   and

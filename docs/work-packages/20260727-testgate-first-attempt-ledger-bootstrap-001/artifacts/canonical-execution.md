@@ -70,5 +70,11 @@ before canonical closure.
 | `attempt-index.json` | `ed705dbd2bfe49757736f5bd46e96af861de9f536e487506e04dd8590e00127b` |
 | durable ledger / `attempts.jsonl` | `dcf82f416fd3be95ef60cacc0370c90041462b53621d41b34f315bafe605dbaa` |
 
-No further retry is authorized from this package state. Harvard remained
-sealed and CAL population remained prohibited.
+Successor `ASSURANCE-V2-CLIPPY-LINE-01` corrected the exact function-scoped
+Clippy defect without changing test behavior. Its source-contract follow-up
+then restored full 2,361/2,361, and its own fresh canonical transaction passed
+receipt `29d71a54d2cf38680190885abaf2d2967d547cdedefc0c31af5e00de669aa5d4`,
+12/12 nodes, 2,387/2,387 inventory items, ten-check READY audit, and dual
+receipt verification. This artifact's Clippy `HEAVY HOLD` is `LIFTED`; the
+ledger package may proceed through its own terminal disposition. Harvard
+remained sealed and CAL population remained prohibited.
