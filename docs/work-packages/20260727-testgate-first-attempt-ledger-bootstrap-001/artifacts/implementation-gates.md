@@ -50,9 +50,10 @@ receipt proves the corrected ledger path, while the successor receipt proves
 the unrelated failing/blocked workspace nodes now pass. Neither receipt may be
 relabelled as the other campaign.
 
-## Pending
+## Closure
 
-- two independent terminal verifiers of the combined closure evidence;
-- two independent receipt verifiers and closeout.
+Dual terminal and receipt verifiers pass the combined closure evidence with no
+finding. The five ledger implementation/test paths remain byte-identical from
+the corrected package subject through the passing successor subject.
 
 Harvard remained sealed and CAL population remained prohibited.

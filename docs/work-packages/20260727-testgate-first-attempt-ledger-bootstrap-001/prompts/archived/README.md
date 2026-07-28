@@ -1,3 +1,3 @@
 # Archived Prompts
 
-Archive the active prompt only after terminal closeout.
+`execute.md` is the completed end-to-end kickoff prompt retained for audit.

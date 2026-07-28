@@ -1,6 +1,6 @@
 # Canonical Execution Evidence
 
-Status: `HEAVY HOLD`
+Status: `COMBINED CLOSURE PASS`
 
 Evidence class: `Ran`
 
@@ -75,6 +75,10 @@ Clippy defect without changing test behavior. Its source-contract follow-up
 then restored full 2,361/2,361, and its own fresh canonical transaction passed
 receipt `29d71a54d2cf38680190885abaf2d2967d547cdedefc0c31af5e00de669aa5d4`,
 12/12 nodes, 2,387/2,387 inventory items, ten-check READY audit, and dual
-receipt verification. This artifact's Clippy `HEAVY HOLD` is `LIFTED`; the
-ledger package may proceed through its own terminal disposition. Harvard
-remained sealed and CAL population remained prohibited.
+receipt verification. This artifact's Clippy `HEAVY HOLD` is `LIFTED`; dual
+terminal and receipt verifiers confirmed all five ledger implementation/test
+paths are byte-unchanged into the passing successor subject. The two campaign
+identities and verdicts remain distinct; their combined evidence closes the
+package without relabelling the original failure. No CAL population, Harvard
+calibration workflow, or protected/sealed-state mutation occurred. Required
+read-only Harvard fixture coverage in the successor regression is disclosed.

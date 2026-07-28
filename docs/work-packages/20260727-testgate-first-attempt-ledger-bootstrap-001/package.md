@@ -4,7 +4,7 @@ Package ID: `20260727-testgate-first-attempt-ledger-bootstrap-001`
 
 Queue ID: `TESTGATE-LEDGER-BOOTSTRAP-01`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Authorization: the user's 2026-07-27 direction to complete CAL-04B and resolve
 its assurance/TESTGATE blockers through reviewed work-package corrections.

@@ -30,8 +30,18 @@ Exact implementation commit:
 Harvard remained sealed. No CAL population, LIGHT, audit, ledger, or HEAVY
 execution occurred.
 
-## Pending
+## Closure Successors
 
-- final exact-head canonical admission after terminal-verification evidence is
-  committed;
-- comparator-owned admitted heavy execution and closeout.
+The initial exact-head canonical admission exposed the absent-ledger bootstrap
+defect before LIGHT. `TESTGATE-LEDGER-BOOTSTRAP-01` securely corrected that
+consumer path and proved fresh-ledger creation, inherited-descriptor
+consumption, LIGHT PASS, and ten-check READY audit. Its external Clippy hold and
+stale-source follow-up are closed by distinct successor campaigns.
+
+Fresh `ASSURANCE-V2-CLIPPY-LINE-01` receipt
+`29d71a54d2cf38680190885abaf2d2967d547cdedefc0c31af5e00de669aa5d4`
+passes the admitted AUTH11-containing 12-node DAG, 2,387/2,387 inventory items,
+and full 2,361/2,361. The test-provider implementation path is byte-unchanged
+from its reviewed commit into that passing subject. This package may proceed
+through its own terminal/receipt disposition without relabelling any
+predecessor campaign.

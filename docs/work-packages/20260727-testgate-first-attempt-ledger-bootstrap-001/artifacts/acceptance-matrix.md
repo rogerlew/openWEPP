@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `TERMINAL VERIFICATION REQUIRED`
+Status: `PASS`
 
 Evidence class: `Static + Ran`
 
@@ -18,6 +18,6 @@ Evidence class: `Static + Ran`
 | LB-10 | Invalid/mismatched FD fails before LIGHT | missing/malformed/closed/directory/mismatch tests |
 | LB-11 | Post-admission path swap cannot redirect Rust I/O | final/ancestor race tests; replacement untouched |
 | LB-12 | Original path authority and schema remain exact | path-hash/recovery tests and security review |
-| LB-13 | Full regression | planner 236/236 plus successor full 2,361/2,361 |
-| LB-14 | Independent acceptance | dual review plus queued terminal/receipt verification |
+| LB-13 | Full regression | PASS: planner 236/236 plus successor full 2,361/2,361 |
+| LB-14 | Independent acceptance | PASS: dual review/terminal/receipt verification |
 | LB-15 | Rust line-count governance | `line-count-disposition.md`; 2,762/2,119-line WARNs with split intents |

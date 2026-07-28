@@ -11,6 +11,10 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260727-testgate-first-attempt-ledger-bootstrap-001/` is complete. It
+  securely creates the first durable ledger, binds Python/Rust transition I/O
+  to the admitted inherited descriptor, and closes through combined honest
+  package-path and successor full/canonical evidence with dual verification.
 - `20260727-testgate-bound-ledger-source-contract-alignment-001/` is complete.
   It updated one stale source-level executor assertion to require the
   bound-text resume API and retained ledger read; focused, strict Clippy, full
