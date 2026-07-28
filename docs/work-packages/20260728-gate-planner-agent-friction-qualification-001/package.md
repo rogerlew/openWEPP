@@ -210,7 +210,8 @@ validation, CAL, or Harvard commands.
   manual-route reconciliation implemented.
 - [x] 2026-07-28 — Focused validation passed after refreshing the direct
   authority map's bound strategy digest.
-- [ ] Dual review and finding disposition passed.
+- [x] 2026-07-28 — Dual review and finding disposition passed after durable
+  evidence retention and explicit trial-design limitations.
 - [ ] Dual verification and exact-diff closure passed.
 - [ ] Prompt archived, catalogs closed, and completion committed.
 

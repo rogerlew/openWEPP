@@ -12,6 +12,7 @@ Tracked compact results:
 - `trial-integrity-disposition.md`
 - `deletion-inventory.md`
 - `focused-validation.md`
+- `review-disposition.md`
 - `evidence/` — final participant, blinded packet, scoring, reconciliation,
   unblinding, and metric JSON retained in the repository; `manifest.sha256`
   binds the complete bundle
