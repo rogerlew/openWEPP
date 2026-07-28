@@ -354,12 +354,15 @@ def bounded_communicate(process: subprocess.Popen[bytes]) -> tuple[bytes, bytes]
                 stop_process(process)
                 raise AnalysisUnavailable("git", "GIT_TIMEOUT", "bounded Git read timed out")
             for key, _mask in events:
-                block = os.read(key.fileobj.fileno(), 65536)
+                buffer = buffers[key.data]
+                block = os.read(
+                    key.fileobj.fileno(),
+                    min(65536, MAX_GIT_BYTES - len(buffer) + 1),
+                )
                 if not block:
                     selector.unregister(key.fileobj)
                     key.fileobj.close()
                     continue
-                buffer = buffers[key.data]
                 buffer.extend(block)
                 if len(buffer) > MAX_GIT_BYTES:
                     stop_process(process)
