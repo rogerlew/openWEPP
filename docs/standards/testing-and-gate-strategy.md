@@ -186,8 +186,9 @@ security, selected authority/manual lanes, stability/population cohorts,
 publication, assurance realization/transfer, and downstream vendoring checks
 required by the release process. Release evidence identifies the exact source,
 toolchain, configuration, fixtures, policy, platform when relevant, and other
-bound inputs. Release-only obligations remain release-only. The advisory linter
-and historical TESTGATE do not certify releases.
+bound inputs. Release-only obligations remain release-only. The automated
+planning experiment was deleted, and historical TESTGATE does not certify
+releases.
 
 ## 7. Correctness Authority
 

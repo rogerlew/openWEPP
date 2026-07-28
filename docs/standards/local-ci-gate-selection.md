@@ -3,7 +3,7 @@
 This standard lists direct local validation commands and cost profiles.
 Lifecycle timing, campaign deferral, evidence reuse, and escalation follow
 `testing-and-gate-strategy.md`. Agents choose and record applicable commands;
-advisory-linter suggestions are optional and execute nothing.
+manual validation planning is the only prospective route.
 
 ## Principles
 

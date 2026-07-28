@@ -116,7 +116,7 @@ scope.
   evidence as the justification before running locally.
 - When a critical classification, campaign/release boundary, or explicit
   package requirement applies, name it and execute its direct commands; do not
-  delegate authority to linter output.
+  delegate authority to planning-tool output.
 - If no heavy gate is selected and no other subagents are required, state
   `Subagent requirement: none`.
 

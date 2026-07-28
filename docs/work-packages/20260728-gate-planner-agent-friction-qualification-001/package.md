@@ -87,6 +87,8 @@ The cohort is:
 - `AGENTS.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/standards/testing-and-gate-strategy.md`
+- `docs/standards/local-ci-gate-selection.md`
+- `docs/standards/prompt-wording-guidance.md`
 - `docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md`
 - `docs/ROADMAP.md`
 - `docs/work-packages/README.md`

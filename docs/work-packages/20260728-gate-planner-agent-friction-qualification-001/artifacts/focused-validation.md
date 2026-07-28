@@ -16,7 +16,7 @@ Disposition:
 
 - Added the exact impact-map file to the declared terminal write set.
 - Refreshed only its `policy_sha256` to
-  `af484a7cd399b0574a257912415b749805e822b12885840afea0ccb0c94b0edd`.
+  `7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3`.
 
 Corrected focused execution:
 
