@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `GATE-LINT-ADV-03` agent-friction qualification | Agent tooling | `active` | Execute [roadmap Order 5](work-packages/20260728-gate-planner-agent-friction-qualification-001/package.md): compare the optional linter with the manual route and apply the measured-utility stop-loss without a repair campaign. |
+| `GATE-LINT-ADV-03` agent-friction qualification | Agent tooling | `closing` | Order 5 applied the stop-loss and deleted the advisory implementation after four retention-threshold failures. Complete terminal review and verification; do not open a repair campaign. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `next` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
@@ -40,17 +40,13 @@ state was reached. Execution history lives in the
 
 ### Prospective Redirect
 
-The user directed on 2026-07-27 that the gate planner be treated as a tool and
-re-conceptualized as a non-authoritative, read-only advisory linter. It must
-inform agents without executing validation, suggested, package-declared,
-workflow, remote, or user-controlled commands; only the frozen literal
-read-only Git inspection allowlist may run. It cannot integrate with CI, change
-lifecycle state, or block progress. The planning-only
-[advisory-linter roadmap](work-packages/gate-planner-advisory-linter-roadmap.md)
-is now the controlling prospective queue. Order 0 accepted ADR-0043 and closed
-with three independent `GO` reviews. Existing TESTGATE history remains
-evidence, but no further planner closeout or prerequisite execution is
-prospective work.
+The user directed on 2026-07-27 that the gate planner be treated as a tool, not
+an authority. Orders 0-4 removed its authority/control plane and tested a
+bounded read-only advisory replacement. Order 5 applied the measured stop-loss
+and deleted that replacement. Manual validation planning is now the only
+prospective route. Existing TESTGATE and advisory-trial history remains
+evidence, but no planner closeout, prerequisite execution, tool repair, or
+automated planning surface is prospective work.
 
 ### Historical Pre-Redirect Direction
 

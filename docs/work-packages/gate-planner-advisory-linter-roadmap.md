@@ -1,12 +1,17 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `ACCEPTED / ORDER 5 ACTIVE`
+Status: `COMPLETE / ORDER 5 STOP-LOSS APPLIED`
 
 Owner: maintainers
 
 Direction: user instruction on 2026-07-27. The existing gate planner is a
 tool, not an authority. It must inform agents without permitting, prohibiting,
 or executing their work.
+
+Outcome: Order 5 found that the advisory implementation missed four mandatory
+retention thresholds. The command, source, tests, and prospective usage
+guidance were deleted on 2026-07-28. The manual route is the only prospective
+validation-planning route; reintroduction requires explicit user authorization.
 
 ## Decision Statement
 
@@ -66,9 +71,9 @@ repository governance, a science contract, or a package—not by the linter.
 **finding** is the linter's explanation that a declaration may be missing,
 inconsistent, excessive, or relevant. Findings are not evidence.
 
-## Target Operator Contract
+## Historical Target Operator Contract
 
-The intended interface has one neutral, non-gate invocation:
+The qualification target had one neutral, non-gate invocation:
 
     tools/validation/workplan-lint \
       --package docs/work-packages/<id>/package.md
@@ -152,7 +157,7 @@ authority.
 | 2 | `complete` | `20260727-gate-planner-cal04b-legacy-integration-removal-001` | Removed obsolete planner/external-transaction dependencies from prospective CAL tooling while preserving direct execution, durable primary-failure evidence, Harvard sealing, and the freeze/open barrier. | Completed Order 1 and explicit user authorization |
 | 3 | `complete` | `20260727-gate-planner-advisory-linter-thin-slice-001` | Delivered the read-only lint command and proved representative findings, hostile-input refusal, bounded capture, and no execution or mutation with dual review and verification. | Orders 1-2 and explicit user authorization |
 | 4 | `complete` | `20260727-gate-planner-legacy-execution-ci-retirement-001` | Retired the planner execution/CI/control plane after a 31-row consumer inventory; preserved direct authority, immutable policy identity, optional quality observation, and protected-data ownership without a linter CI role. | Order 3 and explicit user authorization |
-| 5 | `active` | `20260728-gate-planner-agent-friction-qualification-001` | Compare the linter with manual planning on the frozen six-package/18-case cohort and retain it only if every utility and stop-loss threshold passes. No CI qualification. | Orders 3-4 and explicit user authorization |
+| 5 | `complete` | `20260728-gate-planner-agent-friction-qualification-001` | Applied the stop-loss after the valid 18-case trial found 24 linter-arm critical omissions, 33.3% non-actionable findings, 26.8% planning-time reduction, and 0% interaction reduction. Deleted the advisory implementation; manual planning remains prospective. | Orders 3-4 and explicit user authorization |
 
 CAL-04B direct, package-authored modeling work may resume independently under
 its existing authority and the user's direction. It does not wait for any
@@ -180,8 +185,8 @@ scaffolds are allowed:
 
 ## Functional Acceptance
 
-The re-conceptualization succeeds only when all of the following are directly
-demonstrated:
+These were the prospectively frozen qualification criteria. Order 5 failed
+criterion 7 and executed criterion 10:
 
 1. An agent can run one read-only lint command in `pre-edit`, `working-tree`,
    and `terminal` mode and receive useful, cited findings and command
@@ -218,9 +223,7 @@ demonstrated:
 
 ## Manual Route
 
-The manual route is independent of linter output and applies when the binary is
-absent, input is malformed, analysis is partial or unavailable, or a finding
-appears false:
+The manual route is the only prospective route:
 
 1. Run `tools/agents/find-agents --for <intended-write-paths>` and read the
    applicable instruction chain.
@@ -232,24 +235,22 @@ appears false:
 5. Run selected commands directly from the documented working directory.
 6. Record the exact command, source identity, result, evidence class, and any
    unmet governing requirement in package artifacts.
-7. Continue the originating work. Do not open a linter-repair prerequisite.
+7. Continue the originating work. Do not open a validation-tool prerequisite.
 
 A known unmet governing requirement may prevent truthful package closure.
-Neither agent discretion nor linter failure may waive or downgrade a science,
-validation, security, protected-data, or package requirement.
+Agent discretion may not waive or downgrade a science, validation, security,
+protected-data, or package requirement.
 
 ## Stop-Loss And Prohibited Outcomes
 
-Linter implementation stops and returns to the roadmap owner if it introduces
-command execution, persistent lifecycle state, CI integration, remote identity,
-receipts, recovery, publication, protected-data custody, or a new mechanism
-that can block originating work.
+The advisory implementation was deleted because it missed the frozen utility
+and noise thresholds. It created no command execution, persistent lifecycle
+state, CI integration, remote identity, receipt, recovery, publication, or
+protected-data custody.
 
-Two linter-caused work interruptions, failure to beat the manual planning
-baseline, or control-plane changes larger than the retained advisory surface
-disable the linter path. These stop-losses govern linter implementation only;
-they never stop originating modeling. Restart or expansion requires explicit
-user authorization.
+The stop-loss governed the tooling experiment only and never stopped
+originating modeling. Restart or expansion requires explicit user
+authorization.
 
 The following outcomes are explicitly rejected:
 
@@ -264,7 +265,7 @@ The following outcomes are explicitly rejected:
 ## Current-State Disposition
 
 All gate-planner closeout and prerequisite execution remains frozen as
-non-prospective work. Existing code and artifacts remain intact until their
-ordered migration, historical-consumer review, and deletion. The freeze does
-not block direct modeling commands or truthful manual validation. CAL-04B's
+non-prospective work. The legacy control plane and failed advisory
+implementation are deleted; retained historical artifacts keep their original
+meaning. Manual validation and direct modeling remain independent. CAL-04B's
 scientific failure remains owned by CAL-04B, not by this roadmap.

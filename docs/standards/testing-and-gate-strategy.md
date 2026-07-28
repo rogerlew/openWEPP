@@ -13,8 +13,6 @@ written for direct use by agents and maintainers.
 
 This document, applicable science contracts, repository instructions, and
 authorized work packages establish requirements. Agents apply them directly.
-An advisory linter may report cited suggestions, but its findings are optional
-information rather than authority or evidence.
 
 ## 2. Core Terms
 
@@ -22,10 +20,6 @@ A **validation requirement** is a command or evidence obligation established
 by repository governance, a contract, or an authorized package. The historical
 word **gate** means the same thing; it does not imply a planner-owned
 transition.
-
-An **advisory finding** is a read-only tool observation. It cannot create,
-clear, or alter package, campaign, evidence, assurance, or protected-data
-state.
 
 **Evidence** is the retained result of work that actually ran. A suggested
 command is not evidence.
@@ -49,23 +43,11 @@ Agents:
 - reconcile the terminal diff before disposition; and
 - report unmet requirements truthfully.
 
-Agents may reject false advice or decline excessive suggestions. They may not
-silently narrow, waive, or misrepresent an independently applicable
-requirement.
-
-The optional advisory linter:
-
-- may inspect only the read-only boundary ratified by ADR-0043;
-- may emit cited findings and inert suggested argv;
-- never executes validation, suggested, package-declared, workflow, remote, or
-  user-controlled commands;
-- owns no permission, lifecycle, evidence, receipt, ledger, recovery,
-  publication, runner, CI, calibration, or protected-data state; and
-- cannot block originating work when absent, partial, wrong, or unavailable.
-
-Use the manual route in ADR-0043 whenever automated advice is unavailable or
-unhelpful. A known unmet underlying requirement can still prevent truthful
-closure.
+Agents may revise an initial validation plan as exact-diff and authority
+inspection reveals new facts. They may not silently narrow, waive, or
+misrepresent an independently applicable requirement. Manual validation
+planning is the only prospective route. A known unmet underlying requirement
+can still prevent truthful closure.
 
 ## 4. Principles
 
@@ -87,8 +69,8 @@ closure.
    nonconforming.
 10. Record a reason for every deferred, stale, skipped, failed, or escalated
     requirement.
-11. Treat avoidable tool friction as debt and continue through the manual
-    route. Tool repair is not a prerequisite to unrelated modeling.
+11. Treat avoidable tool friction as debt. Tool repair is not a prerequisite
+    to unrelated modeling.
 12. Correct repeated workflow gaps at the simplest maintainable owning layer
     without recreating a planner authority system.
 
@@ -280,9 +262,9 @@ semantically alters:
 - any unknown or ambiguous executable path whose impact cannot be bounded; or
 - another explicitly named critical boundary.
 
-A linter, diagnostic, documentation, test-local provider, or retired
-gate-planner change is not critical merely because it is validation tooling.
-Classify its actual invariant.
+A diagnostic, documentation, test-local provider, or retired gate-planner
+change is not critical merely because it concerns validation tooling. Classify
+its actual invariant.
 
 Unknown or ambiguous production impact receives documented conservative
 escalation or authority clarification. Never silently select narrower
@@ -384,29 +366,27 @@ must resolve at their governing boundary.
 
 ## 14. CI And Operational Posture
 
-The advisory linter has no CI workflow, trusted runner, concurrency,
-attestation, or promotion role. TESTGATE, its forest1 workflow, planner
-transitions, receipts, ledgers, recovery, and publication machinery are frozen
-historical interfaces pending ordered migration/deletion under ADR-0043.
+Validation planning has no executable, CI workflow, trusted runner,
+concurrency, attestation, or promotion role. TESTGATE, its forest1 workflow,
+planner transitions, receipts, ledgers, recovery, and publication machinery
+are frozen historical interfaces under ADR-0043.
 
 Do not dispatch, repair, or extend TESTGATE for prospective work. Existing
 bytes and verdicts remain historical evidence. Defunct Omarchy records do not
 occupy a live queue.
 
 Optional quality observation and separately authorized release workflows
-remain independent of the linter and TESTGATE.
+remain independent of TESTGATE.
 
 ## 15. Tool Friction And Stop-Loss
 
 Tool friction is diagnostic evidence, not an excuse to waive correctness.
-Advisory-linter utility and stop-loss are governed by
-`20260727-gate-planner-advisory-linter-roadmap-001/artifacts/friction-baseline-and-success-metrics.md`.
-
-A linter defect is ordinary tooling debt. It never opens a repair prerequisite
-or stops originating work. If the linter violates its read-only/no-execution
-boundary, misses a critical obligation, exceeds its noise/complexity budget, or
-fails its measured utility target, disable the linter path and continue
-manually. Restart requires explicit user authorization.
+Roadmap Order 5 applied the advisory-linter stop-loss and deleted the
+implementation after it missed critical-obligation, noise, planning-time, and
+interaction thresholds. Manual planning remains the only prospective route.
+Reintroducing an automated planning tool requires explicit user authorization
+and a new package; tool repair never opens a prerequisite or stops originating
+work.
 
 ## 16. Failure, Flakiness, And Nondeterminism
 
@@ -458,7 +438,8 @@ perspective.
 ## 19. Transition
 
 ADR-0043 and
-`docs/work-packages/gate-planner-advisory-linter-roadmap.md` govern removal.
+`docs/work-packages/gate-planner-advisory-linter-roadmap.md` record the
+completed removal.
 Historical evidence keeps its original bytes and meaning. Historical policy
 verification uses the exact frozen policy object named by its registry, never
 the current live standard.

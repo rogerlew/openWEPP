@@ -115,13 +115,12 @@
 - ADR-0024 and ADR-0028 authority-admission routes remain available. Hold for
   missing science authority only when no applicable route has succeeded.
 
-## Advisory Validation Planning And Tool Friction
+## Manual Validation Planning And Tool Friction
 
-- Agents select and execute applicable requirements directly. The advisory
-  linter may help find mappings but creates no permission, hold, lifecycle
-  state, receipt, or repair prerequisite.
-- When the linter is absent, partial, wrong, or unavailable, use the manual
-  route in ADR-0043 and continue the originating work.
+- Agents select and execute applicable requirements directly from this file,
+  the canonical testing strategy, package authority, and affected contracts.
+- Validation planning has no prospective executable, planner, receipt,
+  lifecycle state, or repair prerequisite. Use the manual route in ADR-0043.
 - Record useful tool defects as ordinary debt. A known unmet underlying
   requirement still prevents truthful closure.
 - Run cheap deterministic checks before expensive work: package/write-set

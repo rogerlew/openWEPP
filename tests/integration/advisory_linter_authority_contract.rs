@@ -25,17 +25,14 @@ fn json(path: &str) -> Value {
 }
 
 #[test]
-fn adr0043_is_the_prospective_validation_authority() {
+fn adr0043_records_deleted_advisory_experiment_and_manual_authority() {
     let adr = text("docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md")
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
     for required in [
-        "**advisory linter**. Its only product is cited information",
-        "deterministic, read-only",
-        "never executes validation",
-        "no CI role",
-        "truthful closure; a linter defect cannot",
+        "advisory implementation deleted by Order 5",
+        "Manual validation planning is the only prospective route",
         "A0/A1/A3",
         "Harvard custody remains outside the linter",
     ] {
@@ -44,11 +41,24 @@ fn adr0043_is_the_prospective_validation_authority() {
 
     let root_agents = text("AGENTS.md");
     assert!(root_agents.contains("TESTGATE and the gate planner are frozen historical tooling"));
-    assert!(root_agents.contains("Run every applicable increment requirement directly"));
+    assert!(root_agents.contains("Agents select and"));
+    assert!(root_agents.contains("execute applicable validation directly"));
 
     let package_agents = text("docs/work-packages/AGENTS.md");
-    assert!(package_agents.contains("## Advisory Validation Planning And Tool Friction"));
-    assert!(package_agents.contains("creates no permission, hold, lifecycle"));
+    assert!(package_agents.contains("## Manual Validation Planning And Tool Friction"));
+    assert!(package_agents.contains("Validation planning has no prospective executable"));
+
+    for retired in [
+        "tools/validation/workplan-lint",
+        "tools/validation/workplan_lint.py",
+        "tools/validation/test_workplan_lint.py",
+        "tools/validation/README.md",
+    ] {
+        assert!(
+            !root().join(retired).exists(),
+            "retired advisory implementation remains: {retired}"
+        );
+    }
 }
 
 #[test]
@@ -59,7 +69,7 @@ fn canonical_strategy_requires_direct_execution_without_planner_admission() {
         .join(" ");
     for required in [
         "Agents apply them directly",
-        "advisory finding** is a read-only tool observation",
+        "Manual validation planning is the only prospective route",
         "Unknown or ambiguous production impact receives documented conservative",
         "A0/A1/A3 remain non-deferrable",
         "Evidence may be reused only when source, execution and documentation roots",
@@ -73,6 +83,7 @@ fn canonical_strategy_requires_direct_execution_without_planner_admission() {
         "affected doctests, placeholder/stub scanning",
         "shared numerical primitives, calendars, chronology",
         "deletion, disabling, renaming, filtering, reclassification",
+        "deleted the implementation after it missed critical-obligation",
     ] {
         assert!(strategy.contains(required), "strategy missing: {required}");
     }

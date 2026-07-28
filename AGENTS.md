@@ -74,9 +74,9 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 - `docs/standards/testing-and-gate-strategy.md` is the canonical authority for
   validation requirements, lifecycle timing, campaign deferral, evidence reuse,
   and escalation. Every package declares implementation intent before edits and
-  reconciles the exact terminal diff before disposition. The optional advisory
-  linter may report cited suggestions; it never selects, executes, or authorizes
-  validation.
+  reconciles the exact terminal diff before disposition. Agents select and
+  execute applicable validation directly; no validation-planning executable is
+  prospective.
 - Run every applicable increment requirement directly. Unknown or ambiguous
   production impact receives documented conservative escalation or authority
   clarification and is never silently narrowed. Critical changes retain

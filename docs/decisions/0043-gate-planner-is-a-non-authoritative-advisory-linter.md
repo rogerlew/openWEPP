@@ -1,10 +1,24 @@
 # ADR-0043: Gate Planner Is a Non-Authoritative Advisory Linter
 
-Status: Accepted
+Status: Accepted; advisory implementation deleted by Order 5
 
 Date: 2026-07-27
 
 Decider: Roger Lew
+
+## Outcome Amendment
+
+Order 5 measured the bounded advisory experiment on 18 paired cases. The
+implementation missed the critical-obligation, deterministic-noise,
+planning-time, and interaction thresholds, so the ratified stop-loss deleted
+the command, source, tests, and prospective usage guidance on 2026-07-28.
+Manual validation planning is the only prospective route. Reintroduction
+requires explicit user authorization and a new work package.
+
+Decision clauses below retain the historical constraints that bounded the
+experiment and the still-operative direct-authority, no-control-plane, manual
+execution, science, assurance, and protected-data rules. They do not describe a
+currently installed advisory executable.
 
 ## Context
 
@@ -105,13 +119,14 @@ plan are part of the accepted Order-0 evidence in
 
 ## Consequences
 
-- Agents can receive deterministic validation advice without waiting for a
-  control-plane transaction.
-- A tool failure becomes ordinary tooling debt, not a prerequisite package.
+- Agents plan validation manually from repository instructions, package
+  authority, contracts, and the canonical testing strategy.
+- The failed advisory experiment creates no repair prerequisite or modeling
+  hold.
 - Evidence is again the result of commands actually run, not a planner-owned
   permission or receipt hierarchy.
 - The legacy planner/executor/CI surfaces were retired by roadmap Order 4.
   Historical evidence retains its bytes and immutable policy identity without
   a live verifier executable.
-- The repository must maintain clear canonical requirements because the linter
-  is neither a substitute for readable governance nor an authority.
+- The repository must maintain clear canonical requirements because there is no
+  prospective validation-planning executable.

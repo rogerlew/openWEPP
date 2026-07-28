@@ -81,6 +81,9 @@ The cohort is:
 - `tools/validation/workplan-lint`
 - `tools/validation/workplan_lint.py`
 - `tools/validation/test_workplan_lint.py`
+- `tools/validation/README.md`
+- `tests/integration/advisory_linter_authority_contract.rs`
+- `tools/release/authority-policy/impact-map.json`
 - `AGENTS.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/standards/testing-and-gate-strategy.md`
@@ -199,17 +202,30 @@ validation, CAL, or Harvard commands.
 - [x] 2026-07-28 — Scaffolded from accepted roadmap Order 5.
 - [x] 2026-07-28 — Cohort, snapshots, obligation key, arm order, and schema
   frozen.
-- [ ] Eighteen paired cases completed.
-- [ ] Dual blinded scoring and metric computation completed.
-- [ ] Stop-loss disposition implemented.
-- [ ] Focused validation passed.
+- [x] 2026-07-28 — Eighteen paired cases completed after invalid setup and
+  label-inferable rounds were excluded and rerun.
+- [x] 2026-07-28 — Dual blinded scoring, blind adjudication, unblinding, and
+  metric computation completed.
+- [x] 2026-07-28 — Stop-loss fired; advisory implementation deletion and
+  manual-route reconciliation implemented.
+- [x] 2026-07-28 — Focused validation passed after refreshing the direct
+  authority map's bound strategy digest.
 - [ ] Dual review and finding disposition passed.
 - [ ] Dual verification and exact-diff closure passed.
 - [ ] Prompt archived, catalogs closed, and completion committed.
 
 ## Surprises And Discoveries
 
-Populate during execution.
+- An initial shared-worktree approach escaped to the parent repository. A later
+  malformed standalone clone temporarily detached the root and made the current
+  linter path unavailable to other participants. The root was restored to
+  `main` at the original exact head; every affected arm was discarded.
+- The first blinded packet exposed arm provenance in 12 plans. The rubric
+  invalidated those pairs, so the same agents repeated them from fresh clones
+  with source-neutral plans before final scoring.
+- Historical detached snapshots caused one non-actionable deterministic
+  finding in every case. The linter also missed package-specific obligations
+  that the frozen evaluator key required.
 
 ## Decision Log
 
@@ -219,7 +235,17 @@ Populate during execution.
 - 2026-07-28: A threshold miss causes deletion, not a repair package. This
   preserves the roadmap's measured-utility rule and prevents recursive tooling
   work.
+- 2026-07-28: Added the tool README and registered authority contract to the
+  terminal write set because exact-diff reconciliation showed both would become
+  stale after deletion.
+- 2026-07-28: Final valid results missed four independent retention thresholds:
+  24 linter-arm critical omissions, 33.3% deterministic noise, 26.8% median
+  planning-time reduction, and 0% interaction reduction.
 
 ## Outcomes And Retrospective
 
-Populate after disposition.
+The stop-loss selected `DELETE_ADVISORY_LINTER`. Cold/warm latency and
+production size passed, and no linter-originated lifecycle/write/execute
+violation occurred. Retention nevertheless required every threshold. The
+manual route remains prospective; no repair package or modeling prerequisite
+was created.
