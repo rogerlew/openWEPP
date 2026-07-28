@@ -35,10 +35,24 @@ Evidence class: `Static + Ran`
 
 Both immutable failed-root evidence baselines remain byte-identical.
 
+## Closure Successor
+
+The package-owned canonical transaction reached the exact ledger consumer,
+LIGHT PASS, and ten-check READY audit, then failed only on the unrelated
+assurance integration-test Clippy warning recorded in `canonical-execution.md`.
+That external defect and its stale-source follow-up are now closed.
+
+Fresh successor campaign `ASSURANCE-V2-CLIPPY-LINE-01` at exact head
+`ffe1dd71eec578a621f66fc2939304971653e92b` passes all 12 nodes,
+2,387/2,387 inventory items, and full 2,361/2,361. Terminal and receipt
+verifiers must explicitly verify the combined evidence: the package-owned
+receipt proves the corrected ledger path, while the successor receipt proves
+the unrelated failing/blocked workspace nodes now pass. Neither receipt may be
+relabelled as the other campaign.
+
 ## Pending
 
-- two independent terminal verifiers;
-- one fresh comparator-owned exact-head canonical transaction;
+- two independent terminal verifiers of the combined closure evidence;
 - two independent receipt verifiers and closeout.
 
 Harvard remained sealed and CAL population remained prohibited.
