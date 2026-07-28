@@ -4,7 +4,11 @@ Package ID: `20260727-gate-planner-external-dag-closeout-correction-001`
 
 Queue ID: `GATE-EXTERNAL-DAG-DC-01`
 
-Status: `ACTIVE`
+Status: `FROZEN / SUPERSEDED BY ADR-0043`
+
+ADR-0043 freezes this incomplete planner prerequisite as historical evidence.
+Resuming it requires explicit user authorization; no prospective work may infer
+authority from its former `ACTIVE` status.
 
 Authorization: the user's 2026-07-27 direction to complete CAL-04B, rework the
 work-package scaffold, use delegated review, and disposition findings.

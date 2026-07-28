@@ -195,11 +195,12 @@ complexity, or public behavior changes.
    status. 100% of applicable families bound.
 6. **Re-measure.** Emit `coverage_after.json`; confirm §2 thresholds on the
    eligible affected surface and no per-function floor breach. Run the
-   terminal-plan CRAP gate; confirm every affected eligible function is at most
-   30 or has an exact current adjudication. Unrelated workspace debt remains
-   visible and non-blocking.
-7. **Gate loop.** Execute the exact terminal plan under
-   `testing-and-gate-strategy.md`, including formatting, affected
+   package-local CRAP requirement; confirm every affected eligible function is
+   at most 30 or has an exact current adjudication. Unrelated workspace debt
+   remains visible and non-blocking.
+7. **Validation loop.** Reconcile the exact diff and execute the applicable
+   requirements under `testing-and-gate-strategy.md`, including formatting,
+   affected
    warnings-denied Clippy and tests, doctest/inventory checks, and the obligation
    guard
    (`auth11_required_suite_obligation_guards_contract`) where the module carries

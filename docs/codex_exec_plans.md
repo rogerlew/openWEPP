@@ -16,20 +16,19 @@ must explain why no change is required. Deferred or follow-up findings must be
 linked from the disposition and worker-handoff artifacts. Package closure is
 blocked while any review finding is undispositioned.
 
-Every openWEPP work-package ExecPlan must also enforce the **Gate Evidence
+Every openWEPP work-package ExecPlan must also enforce the **Validation Evidence
 Non-Deferral Rule** (canonical statement: `docs/work-packages/AGENTS.md`).
-Gate lifecycle, selection, campaign deferral, evidence reuse, and escalation
-are governed by `docs/standards/testing-and-gate-strategy.md`.
+Validation lifecycle, direct selection/execution, campaign deferral, evidence
+reuse, and escalation are governed by
+`docs/standards/testing-and-gate-strategy.md`.
 A package, phase, or staged increment may be marked complete only when every
 required increment-scope exit criterion has direct evidence in the current
-artifact set. Gate boundary assignment follows the canonical testing/gate
-strategy. A campaign obligation may remain visibly deferred only when an
-accepted pre-implementation intent plan assigned its owner, trigger, rationale,
-and boundary in the campaign ledger; it is never represented as passed. A
-terminal-plan discovery cannot retroactively become deferred. Before the
-mechanical planner and ledger cut over, packages retain their explicitly
-declared conservative gates. Reviews and verifications must check this rule
-explicitly.
+artifact set. Boundary assignment follows declared pre-implementation intent
+and exact-diff reconciliation under the canonical testing strategy. A campaign
+obligation may remain visibly deferred only when declared before implementation
+with its owner, trigger, rationale, and boundary in the package/campaign record;
+it is never represented as passed. A terminal discovery cannot retroactively
+become deferred. Reviews and verifications must check this rule explicitly.
 
 When an ExecPlan expects delegated reviewers, verifiers, comparator runners, or
 other role agents, it must explicitly authorize subagent spawning/delegation in

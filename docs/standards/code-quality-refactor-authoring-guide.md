@@ -143,8 +143,9 @@ the metric loop.
 4. **Refactor.** Apply §5 (decomposition) or the relevant mechanical pattern, one
    edit at a time, numeric equivalence preserved (§4).
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
-6. **Gate loop.** Mechanical guide §6's exact terminal plan, including the
-   module's package-local coverage/CRAP and no-regression gate. Critical
+6. **Validation loop.** Apply the mechanical guide §6 requirements directly
+   to the exact diff, including the module's package-local coverage/CRAP and
+   no-regression check. Critical
    changes, campaign closure, release, and explicit rollback use full workspace
    correctness evidence; unrelated workspace quality debt remains
    observational.

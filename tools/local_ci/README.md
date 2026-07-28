@@ -77,101 +77,23 @@ complete module list, and intended write set. Duplicate headings/fields,
 non-canonical paths, late bindings, and post-scaffold write-set changes fail
 closed. Retain the PASS JSON before production/test implementation.
 
-## TESTGATE Increment Execution
+## Historical TESTGATE Interface
 
-The protected workflow is agent-dispatch-only. Pushing `main` never starts
-TESTGATE. After pushing one stable increment, confirm no TESTGATE run is queued
-or active, then dispatch the exact current head with the commit where the
-intent package was still active and the exact package path:
+TESTGATE, its controller, planner transitions, receipts, ledgers, recovery, and
+forest1 workflow are frozen historical interfaces pending ordered deletion
+under ADR-0043. Do not invoke, dispatch, repair, or extend them for prospective
+work.
 
-```bash
-gh workflow run testgate-shadow.yml --ref main \
-  -f base_ref=<active-scaffold-commit> \
-  -f intent_package=docs/work-packages/<id>/package.md
-```
+Use the direct commands in
+`docs/standards/local-ci-gate-selection.md` and record exact commands/results in
+the owning package. Historical verification is read-only and confers no
+prospective authority. Defunct Omarchy records are historical metadata, not
+live queue occupancy.
 
-`base_ref` and `intent_package` are required. The base must be a strict
-ancestor of current `main` and must contain the named package in an active
-state. Do not substitute commit trailers or dispatch before the stable head is
-pushed. Ignore permanently queued records from the retired pre-pivot Omarchy
-runner: they are immutable historical metadata, not live queue occupancy, and
-must not be canceled or block a forest1 dispatch. The protected execution still runs on forest1; GitHub-hosted jobs only
-verify and attest the resulting immutable evidence.
+Existing receipts, attempts, and verdicts retain their original bytes and
+meaning. A historical verifier must use the exact frozen policy object bound to
+that evidence, never the current live testing standard.
 
-Build the repository-owned planner/executor, then create one external evidence
-directory for an exact base/head increment:
-
-```bash
-cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-testgate_dir="$(mktemp -d)"
-python tools/local_ci/testgate.py \
-  --binary target/debug/openwepp-gate-plan \
-  --base HEAD^ \
-  --artifact-root "${testgate_dir}" \
-  --intent-package docs/work-packages/<id>/package.md \
-  --dirty \
-  --execute
-```
-
-The helper validates base-commit package authority, writes intent and terminal
-plans, runs policy-owned `LIGHT` nodes, and emits the canonical ten-check
-`pre-heavy-audit.json`. `HEAVY` begins only for that exact `READY` audit. The
-LIGHT receipt, HEAVY claims, executor digest, package admission, plan, and roots
-remain inseparable.
-
-Every node writes a digest-bound checkpoint and declared outputs to the durable
-`/testgate-history/recovery/<run>-<attempt>` mirror. The terminal plan is copied
-there before HEAVY starts. A checkpoint cannot suppress work from its self-hash:
-resume requires a hosted-runner attestation over an exact archive index, verifies
-the prior plan/node/binding and every indexed byte, and additionally verifies an
-aggregate receipt when one exists. Pre-receipt imports record a provenance ID;
-receipt-backed imports record both receipt and provenance lineage.
-
-The always-run finalizer reconciles orphaned `STARTED` admissions, snapshots the
-full ledger and every ledger-referenced recovery root, rejects symlinks and
-unindexed bytes, and uploads the exact archive. A hosted verifier attests its
-index even when execution failed. Every later trusted run verifies the newest
-attestation and refreshes provenance; ledger and recovery bytes themselves are
-restored only into empty durable history. This preserves A→B→C recovery without
-treating a digest chain as authorship.
-
-A tooling failure opens a blocking defect immediately. Infrastructure receives
-at most one declared retry; an unmatched process termination is reconciled to a
-typed infrastructure failure before another admission. Representable audit
-failures still produce the schema-valid ten-check artifact.
-
-Under ADR-0041, TESTGATE plans retain selected full correctness regression for
-critical work and must record coverage/CRAP as `DEFERRED_TO_QUALITY_CI`. The
-retired combined-quality proof/input is not TESTGATE authority. TESTGATE no
-longer probes quality tools, selects quality nodes, or accepts the retired
-proof input. Optional QA executes separately at operator direction.
-
-The helper writes an independently verified unsigned receipt and
-`observation.json`. Forest1 output is `LOCAL_RECEIPT_ACCEPTED`: its unsigned
-receipt remains labeled `LOCAL_UNTRUSTED`, but that label is accepted workflow
-evidence and does not block an increment solely because GitHub attestation is
-absent. Use a fresh external directory for every attempt; output collision fails
-closed.
-
-Retained pre-ADR-0041 receipts remain byte-identical. A receipt with removed
-quality nodes receives a separate `REJECTED_INCOMPATIBLE_RECEIPT` import
-decision; it is never rewritten as deferred, and the new attempt emits a new
-receipt.
-
-The stable black-box follow-up interface is
-`tools/local_ci/testgate_qualification.py`. Its `validate`, `run`, and `verify`
-subcommands freeze the subject, invoke the ordinary helper once per declared
-case, stop on the first mismatch, and independently rehash the resulting
-evidence. Qualification never converts local probe evidence into a live
-provider claim. The retired Q12 combined-proof path is not a qualification
-prerequisite; roadmap Order 6 owns the only prospective changed-head TESTGATE
-qualification.
-
-Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
-`release`. Selection still comes from the terminal plan; a profile name alone
-never authorizes narrowing.
-
-The production helper invokes one binary `transition` for LIGHT, audit construction, and HEAVY admission. The binary persists the LIGHT receipt and `READY` audit, carries that audit in process, and rejects standalone HEAVY use because a self-hash alone cannot authenticate audit provenance. This keeps the two independent inventory enumerations at LIGHT validation and audit construction while eliminating a forged-audit gap and any third local enumeration.
 ## Assurance Amendment Receipts
 
 For a typed report-data-only amendment, build the assurance binary once and run

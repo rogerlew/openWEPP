@@ -30,8 +30,9 @@
 - Fast local loop: `cargo nextest run --workspace --profile quick`.
 - Snow/frost fidelity loop: `cargo nextest run --workspace --profile frost`.
 - Erosion sediment/routing loop: `cargo nextest run --workspace --profile erosion`.
-- Execute affected test, doctest, inventory, coverage, and CRAP gates selected by
-  the exact terminal plan under `docs/standards/testing-and-gate-strategy.md`.
+- Execute affected tests, doctests, inventories, and any explicitly owned
+  metric requirements selected from declared intent and the exact diff under
+  `docs/standards/testing-and-gate-strategy.md`.
   Test deletion, disabling, filtering, reclassification, or unknown coverage
   impact escalates to critical/global measurement.
 - Full workspace Nextest remains required for critical changes, campaign

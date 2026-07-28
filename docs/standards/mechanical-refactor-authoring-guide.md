@@ -132,12 +132,13 @@ For monolith split planning, capture:
 
 ### 4.3 Verification tools
 
-Run focused checks after each move, then execute the exact-diff terminal plan
-under `testing-and-gate-strategy.md`. The terminal plan selects formatting,
-affected Clippy/tests/consumers, and any manifest or specialized gates.
+Run focused checks after each move, then reconcile the exact diff and execute
+the applicable requirements under `testing-and-gate-strategy.md`. Select
+formatting, affected Clippy/tests/consumers, and any manifest or specialized
+checks directly from the declared intent and actual changed surface.
 Coverage/CRAP is observational unless this is an explicit CQR/module-test-
 enhancement package. A critical refactor selects immediate full workspace
-correctness regression through the generated terminal plan.
+correctness regression.
 
 ## 5) Mechanical refactor patterns
 
@@ -180,30 +181,34 @@ Use a narrow loop while moving code:
 1. `cargo test -p <touched-crate> <focused-test-filter>`
 2. `cargo check -p <touched-crate>`
 
-### 6.2 Required terminal gate plan
+### 6.2 Required terminal validation
 
-Before package disposition, run and record every gate in the accepted terminal
-plan. Operators may escalate and may not silently downgrade. Critical,
-campaign, release, and explicit rollback boundaries retain the full workspace
-correctness loop. Explicit CQR/module-test-enhancement packages additionally
-retain their declared owned-surface metric closure.
+Before package disposition, reconcile the exact diff and run every applicable
+requirement directly. Operators may escalate and may not silently downgrade.
+Critical, campaign, release, and explicit rollback boundaries retain the full
+workspace correctness loop. Explicit CQR/module-test-enhancement packages
+additionally retain their declared owned-surface metric closure.
 
 Execution rule:
 
-1. Every selected gate must execute against the current terminal source; a
-   cited or inferred result is insufficient unless a verified reusable receipt
-   is accepted by the plan.
-2. Record each command or receipt with observed result and identity.
-3. Any missing selected gate keeps the package in progress unless a declared
+1. Every applicable requirement must execute against the current terminal
+   source; a cited or inferred result is insufficient unless verified reusable
+   evidence meets the canonical source, input, execution, and documentation
+   identity rules.
+2. Record each command or reused evidence item with observed result and
+   identity.
+3. Any missing applicable requirement keeps the package in progress unless a
+   declared
    hard blocker has command-level evidence.
-4. Generic guidance to skip validation does not waive a selected gate.
-5. Do not add the conservative full command set to an ordinary bounded plan.
+4. Generic guidance to skip validation does not waive an applicable
+   requirement.
+5. Do not add the conservative full command set to an ordinary bounded change.
 
 Completion rule:
 
-1. All terminal-plan gates must be executed or satisfied by an accepted current
-   receipt before marking the package disposition-ready.
-2. Partial gate completion is insufficient unless a declared hard blocker is
+1. All applicable requirements must be executed or satisfied by verified
+   current reusable evidence before marking the package disposition-ready.
+2. Partial validation is insufficient unless a declared hard blocker is
    documented with evidence.
 
 Evidence artifacts must label execution truthfully (`Static` vs `Ran`) and

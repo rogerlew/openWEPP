@@ -60,11 +60,11 @@ requirement, not optional package style guidance.
   statement: `docs/work-packages/AGENTS.md`) and the canonical lifecycle in
   `docs/standards/testing-and-gate-strategy.md`: every increment-scope gate must
   be measurable and evidenced in the current increment. A campaign obligation
-  may remain visibly deferred only when the accepted pre-implementation intent
-  plan assigned its owner, trigger, rationale, and later boundary in the
-  campaign ledger. A terminal discovery cannot be retroactively deferred.
-- Require pre-implementation intent planning and exact-diff terminal
-  reconciliation. Declare the conservative full path only for critical,
+  may remain visibly deferred only when the pre-implementation package or
+  campaign record assigned its owner, trigger, rationale, and later boundary.
+  A terminal discovery cannot be retroactively deferred.
+- Require pre-implementation intent declaration and exact-diff
+  reconciliation. Select the conservative full path only for critical,
   campaign, release, or explicit rollback boundaries.
 - For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
   seven-gate bar, `HOLD`-legitimacy boundaries, required hold legitimacy audit,

@@ -55,7 +55,6 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity07_runtime_opt_in.rs",
         "tests/integration/snowdensity08_gate_rerun.rs",
         "tests/integration/snowdensity09_coupled_wat_rerun.rs",
-        "tests/integration/testgate_ci_executor_contract.rs",
         "tests/integration/snowdensity10_3_11_spring_compaction_densification.rs",
         "tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs",
         "tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs",

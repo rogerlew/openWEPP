@@ -1,81 +1,49 @@
 # openWEPP Gate Policy Contracts v1
 
-Status: blocking normal-increment authority
+Status: frozen execution-contract compatibility; nonblocking mapping input
 
-Decision authority: `docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md`
-as amended by
-`docs/decisions/0041-separate-testgate-from-observational-quality-ci.md`
+Prospective authority:
+`docs/decisions/0043-gate-planner-is-a-non-authoritative-advisory-linter.md`
+and `docs/standards/testing-and-gate-strategy.md`.
 
-Operational authority: `docs/standards/testing-and-gate-strategy.md`
+This directory preserves the v1 machine-readable contract shapes while the
+ADR-0043 roadmap removes or quarantines legacy execution consumers. It creates
+no permission, admission, lifecycle, evidence, receipt, runner, CI, assurance,
+or closeout authority. Agents determine and execute applicable canonical
+requirements directly.
 
-This directory contains the machine-readable contracts for deterministic
-gate planning and evidence. `schemas/` defines strict JSON Schema Draft 2020-12
-documents. `fixtures/valid/` demonstrates admitted payloads;
-`fixtures/invalid/` contains one-mutation descriptors that derive each negative
-case from its positive counterpart and bind the intended instance/schema error
-path. `impact-map.json` seeds non-Cargo ownership for the gate-policy authority
-itself. `gate-definitions.json` supplies the planner's closed typed
-argument-vector registry; it never contains shell source.
+The schemas, valid fixtures, invalid-fixture descriptors, gate definitions,
+execution matrix, and assurance registry retain their historical bytes and
+closed vocabularies for compatibility and migration analysis. Literals such as
+`BLOCKING`, `DEFERRED_TO_QUALITY_CI`, planner ownership, receipt, or attestation
+inside those frozen contracts describe the retired v1 protocol. They have no
+prospective effect and must not be invoked to authorize or block work.
 
-`gate-definitions.json` also owns the exact
-`DEFERRED_TO_QUALITY_CI` disposition. Plans, pre-heavy audits, and receipts
-bind that closed value and reject coverage/CRAP execution nodes. Quality
-measurement is optional operator-directed observatory work, not TESTGATE
-transition authority.
+`impact-map.json` is generation 18 and explicitly
+`SCHEMA_ONLY_NONBLOCKING`. It retains direct mappings that help locate
+independently applicable science and external-authority obligations. It has no
+planner, lifecycle, or gate-policy authority rows. A future advisory mapping
+replaces this compatibility shape in roadmap Order 3; until then, agents treat
+its rows as optional cited input and verify applicability against the governing
+source.
 
-TESTGATE-PLAN-01 consumes these contracts for blocking normal-increment
-selection and verification. TESTGATE-CI-01 executes the selected plan and
-publishes its locally untrusted receipt. Normal increment authority additionally
-requires the trusted GitHub workflow's verifiable artifact-attestation bundle;
-TESTGATE-ASSURE-01 owns assurance planner integration.
+The v1 schema retains `policy_id` `ADR-0039` solely for compatibility until
+Order 3. Generation 18's `policy_sha256` binds the current direct-execution
+`docs/standards/testing-and-gate-strategy.md`.
 
-Identity-bearing JSON uses I-JSON constraints, RFC 8785 canonicalization, and
-SHA-256 as required by the operational standard. Derived ID fields are excluded
-from their own digest payload; referenced predecessor and input identities
-remain included. The v1 schemas constrain shape and closed vocabularies. The
-verifier independently enforces canonicalization, digest equality,
-DAG acyclicity/topological order, transition folds, transitive-root
-reconstruction, exact Nextest and authority-suite inventory reconstruction,
-immutable tool/environment bindings, attestation trust, and hermetic reuse.
+Historical generation 17 is separately frozen in
+`gate-policy/history/adr0039-generation17.json`. Historical verification
+resolves the registry's exact commit, path, Git blob, and SHA-256; it never
+derives old identity from the current live standard. Historical results keep
+their original meaning but confer no prospective authority.
 
-The schemas nevertheless carry every input required for those future checks:
-planner promotion/ownership and execution-context identities, typed assurance
-axes, governed zero-work evidence, complete gate-node receipt snapshots,
-canonical authority outcomes, a single typed receipt attestation subject,
-discriminated campaign events, anchored backstop/certification state, and
-immutable assurance-impact events. Schema conditionals reject locally
-expressible contradictions; the source-level semantic guard additionally
-rejects cross-field inventory, attempt, outcome, mutation-digest,
-certification-head, receipt, and authorization inconsistencies. The verifier
-implements those same semantic checks over arbitrary records.
+`assurance-registry.json` remains structured dependency/watch data. Direct
+assurance governance owns applicability, validity, impact, review, approval,
+publication, campaign transfer, and release transfer. A registry match is
+information only: it cannot create a pending plan, lifecycle transition,
+report mutation, review verdict, or public output.
 
-In v1, `policy_id` is `ADR-0039` and `policy_sha256` binds the exact bytes of
-`docs/standards/testing-and-gate-strategy.md`, the living operational policy
-adopted by that ADR.
-
-The v1 execution matrix is deliberately limited to the exact `rustc` host and
-the default feature set. Any other target or declared non-default feature fails
-closed until a later versioned matrix explicitly admits it.
-
-`assurance-registry.json` is the planner-owned, versioned dependency/watch
-registry for TESTGATE-ASSURE-01. Its report IDs must equal the canonical
-`assurance/v2/catalog.yaml` report set. Loading is structural and fail-closed;
-operators cannot preselect reports. Exact paths, component prefixes,
-repository-rooted globs, contracts, Cargo packages, process/domain tags,
-result procedures, and builder/schema surfaces are closed watch kinds.
-Mechanical matches create pending exact-target plan records only: they do not
-rewrite reports, results, lifecycle state, review authority, or public output.
-When a resolution principal is known, `role_record_sha256` is the RFC 8785
-digest of `principal_id`, `record_version`, and `role_id`; policy loading
-reconstructs it from `assurance/v2/principals.yaml`. A missing principal and
-digest is explicit incomplete ownership and yields `OPEN_UNKNOWN`.
-Each registry report binds the immutable historical `source_root` and
-`assessed_realization_root` used by impact records. Policy loading validates
-those roots and the current generated review lock structurally, requires the
-lock to identify the registered report, and independently validates current
-lifecycle and resolution authority. It does not require the historical roots
-to equal the mutable current DRAFT lock's `science_root` or best available
-realization root (`realization_root`, otherwise
-`preapproval_realization_root`). Ordinary source movement can therefore create
-pending campaign impact without retargeting or invalidating the historical
-assessment.
+Identity-bearing historical JSON continues to use the I-JSON, RFC 8785, and
+SHA-256 conventions encoded by its original protocol. Preserving those
+verification rules is historical integrity, not revival of the retired
+planner.

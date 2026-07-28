@@ -40,15 +40,13 @@
 ## Gate Evidence Non-Deferral Rule
 - A package, phase, or staged increment is complete only when every required
   increment-scope exit criterion and gate has direct evidence in the current
-  artifact set. Gate boundary assignment follows an accepted
-  pre-implementation intent plan and exact-diff terminal reconciliation under
+  artifact set. Boundary assignment follows declared pre-implementation intent
+  and exact-diff terminal reconciliation under
   `docs/standards/testing-and-gate-strategy.md`.
-- A campaign-owned obligation may remain `DEFERRED` only when the accepted
-  pre-implementation intent plan assigned it to a named later boundary and the
-  campaign ledger records its owner, trigger, and rationale. Deferred is not
-  passed, waived, or evidence for the current claim. Before the mechanical
-  planner/ledger is cut over, packages cannot claim this new deferral route and
-  retain their explicitly declared conservative gates.
+- A campaign-owned obligation may remain `DEFERRED` only when declared before
+  implementation with a named later boundary, owner, trigger, and rationale in
+  the package/campaign record. Deferred is not passed, waived, or evidence for
+  the current claim.
 - If an increment-scope required gate can be proven only by a later
   phase/increment, the current phase is not complete. It must be marked `HOLD`
   / `executed-hold` with the later dependency named as the blocker.
@@ -56,17 +54,17 @@
   unmet because implementation, validation, or source reading remains inside
   the declared envelope, continue executing. `HOLD` is valid only after the
   package records why the missing evidence cannot be produced in-envelope.
-- Do not reclassify an unmet current gate as "next increment scope" after
+- Do not reclassify an unmet current requirement as "next increment scope" after
   execution has started. Allowed alternatives are:
   1. execute the missing evidence in the current scope,
   2. amend the package/plan before implementation with explicit review that the
      gate is no longer current-scope acceptance, or
   3. hold with a named blocker and a defect-shaped follow-on.
-- Gate tables must classify each required criterion as `PASS`, `FAIL`,
+- Validation tables must classify each required criterion as `PASS`, `FAIL`,
   `BLOCKED`, or `NOT RUN`; any `FAIL`, `BLOCKED`, or unjustified `NOT RUN`
   prevents `complete` disposition.
 - Review and verification artifacts must check this rule explicitly. A review
-  that verifies artifact presence but not gate legitimacy is incomplete.
+  that verifies artifact presence but not requirement legitimacy is incomplete.
 - Handoff language such as "lands in the next increment" is valid only for work
   that was not a current required gate. If it was a current required gate, that
   phrase must be paired with a hold disposition and blocker rationale.
@@ -117,30 +115,18 @@
 - ADR-0024 and ADR-0028 authority-admission routes remain available. Hold for
   missing science authority only when no applicable route has succeeded.
 
-## Pre-Heavy Closure Audit And Tooling Correction
+## Advisory Validation Planning And Tool Friction
 
-- Before full workspace regression, global coverage/CRAP, broad Clippy/deny,
-  comparator/parity, release, or population/cohort execution, run the canonical
-  pre-heavy closure audit defined by
-  `docs/standards/testing-and-gate-strategy.md` §8.5.
-- Assemble the intended closure diff and evidence artifacts before the audit.
-  Only the report's exact admitted state may proceed to heavy execution.
-- Run cheap deterministic blockers first: package/write-set schema, exact path
+- Agents select and execute applicable requirements directly. The advisory
+  linter may help find mappings but creates no permission, hold, lifecycle
+  state, receipt, or repair prerequisite.
+- When the linter is absent, partial, wrong, or unavailable, use the manual
+  route in ADR-0043 and continue the originating work.
+- Record useful tool defects as ordinary debt. A known unmet underlying
+  requirement still prevents truthful closure.
+- Run cheap deterministic checks before expensive work: package/write-set
   reconciliation, diff hygiene, documentation/schema checks, required artifact
   presence, prompt state, and line-count governance.
-- The audit must bind one admitted inventory and execution DAG for the
-  executor. The verifier must independently enumerate the current inventory
-  and compare it to the admitted inventory; it may not replace, repair, or
-  reorder the execution inventory.
-- Treat a planner, executor, verifier, workflow, cache, evidence-lifecycle, or
-  operator-interface flaw as a tooling defect. Fix it in the active package
-  when authorized; otherwise retain the failed evidence and activate a
-  prerequisite tooling package before repeating expensive work.
-- One infrastructure-only retry may follow the declared retry policy. A second
-  occurrence of the same cause blocks another heavy retry until the tool is
-  corrected or explicit authority accepts a bounded external outage.
-- When a workflow gap is mechanically detectable, closure requires a tooling
-  control or an owned tooling package. A prose reminder alone is insufficient.
 
 ## Consumer-Path Closure Rule
 - A package that claims `endpoint`, `direct`, `cutover`, `publication`,
@@ -247,12 +233,11 @@
 
 ## Mechanical Refactor Requirements
 - Follow `docs/standards/mechanical-refactor-authoring-guide.md` for structural, behavior-preserving work.
-- Required terminal gates come from the accepted intent/terminal plan under
-  `docs/standards/testing-and-gate-strategy.md`. Critical refactors and
-  campaign/release boundaries retain the full workspace correctness loop.
-  Coverage/CRAP is observational unless the package is explicitly CQR or module
-  test enhancement. Focused, quick, frost, or erosion
-  profiles remain edit-loop feedback and do not waive selected terminal gates.
+- Required terminal validation follows the declared intent, exact terminal
+  diff, and canonical testing strategy. Critical refactors and campaign/release
+  boundaries retain full-workspace correctness. Coverage/CRAP is observational
+  unless the package is explicitly CQR or module test enhancement. Focused,
+  quick, frost, and erosion profiles claim only the surfaces they execute.
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
@@ -260,12 +245,9 @@
 ## Observational Quality And Explicit Metric Packages
 
 - Workspace coverage and adjudicated CRAP are observational quality evidence.
-  Their absence, staleness, or debt verdict does not block ordinary TESTGATE,
-  implementation-package, campaign, or release closure.
-- ADR-0041 requires TESTGATE to record `DEFERRED_TO_QUALITY_CI`; executable
-  alignment is pending roadmap Order 2, and no earlier receipt may be
-  represented as carrying that disposition. A valid optional QA report has
-  `closure_eligible=false`.
+  Their absence, staleness, or debt verdict does not block ordinary
+  implementation-package, campaign, or release closure. A valid optional QA
+  report has `closure_eligible=false`.
 - An explicitly authorized CQR/module-test-enhancement package retains binding
   package-local metrics. Its declared eligible coverage/obligation thresholds
   and owned actionable CRAP target must pass or the package holds. Unrelated
@@ -342,9 +324,10 @@
 - Package-specific gates from `package.md`.
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
-- Exact intent/terminal gate plan and current receipts.
-- Exact TESTGATE quality deferral and selected full-workspace correctness
-  regression at critical, campaign, and release boundaries.
+- Declared implementation intent, exact terminal-diff reconciliation, and exact
+  commands/results for every applicable current-scope requirement.
+- Selected full-workspace correctness regression at critical, campaign, and
+  release boundaries; quality remains observational unless explicitly owned.
 - Package-local coverage/CRAP only for explicit CQR/module-test-enhancement
   objectives.
 - Conservation/publication acceptance rule when output magnitude or closure

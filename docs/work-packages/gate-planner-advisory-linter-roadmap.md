@@ -1,6 +1,6 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `ACCEPTED / ORDER 1 NEXT`
+Status: `ACCEPTED / ORDER 2 NEXT`
 
 Owner: maintainers
 
@@ -148,8 +148,8 @@ authority.
 | Order | State | Prospective package | Outcome | Dependency |
 | --- | --- | --- | --- | --- |
 | 0 | `complete` | `20260727-gate-planner-advisory-linter-roadmap-001` | Ratified the philosophy, ADR, conflict inventory, target interface, migration/deletion map, value metrics, and decomposition with three independent `GO` reviews. Documentation only. | User direction |
-| 1 | `active` | `20260727-gate-planner-governance-authority-alignment-001` | Apply the exact amendment plan to operative guidance, guard tests, historical identity, and frozen package statuses while preserving underlying correctness and protected-data obligations. | User authorization |
-| 2 | `queued / not scaffolded` | CAL legacy-integration removal | Remove obsolete planner/external-transaction dependencies from CAL tooling and documentation while preserving direct execution, primary-result recording, Harvard sealing, and the freeze/open barrier. | Order 1 and the existing CAL package authority |
+| 1 | `complete` | `20260727-gate-planner-governance-authority-alignment-001` | Applied ADR-0043 to operative guidance, direct governance guards, historical identity, and frozen package statuses while preserving underlying correctness and protected-data obligations. | User authorization |
+| 2 | `next / not scaffolded` | CAL legacy-integration removal | Remove obsolete planner/external-transaction dependencies from CAL tooling and documentation while preserving direct execution, primary-result recording, Harvard sealing, and the freeze/open barrier. | Completed Order 1, existing CAL package authority, and explicit user authorization to scaffold |
 | 3 | `queued / not scaffolded` | Advisory linter thin slice | Deliver the read-only lint command and prove its findings on representative package/diff fixtures without executing or mutating anything. | Orders 1-2 |
 | 4 | `queued / not scaffolded` | Legacy execution and CI retirement | Remove or quarantine planner execution, CI, receipt, ledger, resume, recovery, external-DAG, and publication surfaces after exact consumer inventory. Preserve only historical evidence verification that still has a named consumer. | Order 3 |
 | 5 | `queued / not scaffolded` | Agent-friction qualification | Compare the linter with manual planning on real modeling packages, verify the nonblocking failure path, and retain or delete features according to measured utility. No CI qualification. | Orders 3-4 |

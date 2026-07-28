@@ -53,11 +53,12 @@ scope.
 - For `REQUIRES-JUSTIFICATION`, include a short rationale for each heavy
   required pre-read and why it cannot move to `On-demand`.
 
-4. Preserve mandatory technical gates in every prompt
-- Bind gate lifecycle, boundary assignment, escalation, and receipt currency to
-  `docs/standards/testing-and-gate-strategy.md`. Require a pre-implementation
-  intent plan and exact-diff terminal reconciliation. Name the conservative
-  full commands only for critical, campaign, release, or rollback boundaries.
+4. Preserve mandatory technical requirements in every prompt
+- Bind governing validation obligations, direct command execution, exact
+  evidence, and escalation rationale to
+  `docs/standards/testing-and-gate-strategy.md`. Require pre-implementation
+  intent and exact-diff terminal reconciliation. Name conservative full
+  commands only for critical, campaign, release, or rollback boundaries.
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
@@ -102,8 +103,8 @@ scope.
   one-time authorization or record the block and run the equivalent gate locally
   only when package governance allows local substitution.
 - **Required, not optional, for selected heavy batch/closure/comparator work.**
-  When a terminal plan, critical classification, campaign/release boundary, or
-  transition fallback selects full workspace tests, broad Clippy/deny,
+  When a critical classification, campaign/release boundary, explicit package
+  requirement, or transition fallback selects full workspace tests, broad Clippy/deny,
   comparator/parity suites, release gates, population/cohort batches, optional
   operator QA, or explicit metric-package coverage/CRAP, the
   prompt MUST *require* — not merely authorize — spawning the
@@ -113,6 +114,9 @@ scope.
   premium model when the subagent is available. If the subagent is genuinely
   unavailable (tool-policy block or spawn failure), record that with command-level
   evidence as the justification before running locally.
+- When a critical classification, campaign/release boundary, or explicit
+  package requirement applies, name it and execute its direct commands; do not
+  delegate authority to linter output.
 - If no heavy gate is selected and no other subagents are required, state
   `Subagent requirement: none`.
 

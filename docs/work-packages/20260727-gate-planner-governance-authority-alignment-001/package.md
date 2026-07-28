@@ -5,7 +5,7 @@ Package ID:
 
 Queue ID: `GATE-LINT-GOV-01`
 
-Status: `ACTIVE`
+Status: `COMPLETE / PASS`
 
 Authorization: the user's 2026-07-27 direction to scaffold and execute
 Governance authority alignment, roadmap Order 1 under ADR-0043.
@@ -24,16 +24,19 @@ and protected-data obligations remain binding from their own authorities.
 
 - [x] 2026-07-27 20:30 PDT — Scaffold Order 1 from the reviewed amendment
       specification.
-- [ ] Apply operative agent, work-package, testing, local-command, prompt, and
-      template amendments.
-- [ ] Reconcile source-coupled guard tests and impact-policy authority rows.
-- [ ] Pin historical generation-17 policy identity independently of the live
-      standard.
-- [ ] Apply frozen/superseded package status overlays.
-- [ ] Run direct focused validation and exact-diff reconciliation.
-- [ ] Complete dual independent review, dual verification, and finding
-      disposition.
-- [ ] Archive the prompt, close catalogs, and commit the package.
+- [x] 2026-07-27 21:01 PDT — Apply operative agent, work-package, testing,
+      local-command, prompt, and template amendments.
+- [x] 2026-07-27 21:01 PDT — Reconcile source-coupled guard tests and
+      impact-policy authority rows.
+- [x] 2026-07-27 21:01 PDT — Pin historical generation-17 policy identity
+      independently of the live standard.
+- [x] 2026-07-27 21:01 PDT — Apply frozen/superseded package status overlays.
+- [x] 2026-07-27 21:30 PDT — Run direct focused validation and exact-diff
+      reconciliation.
+- [x] 2026-07-27 21:30 PDT — Complete dual independent review, dual
+      verification, and finding disposition.
+- [x] 2026-07-27 21:30 PDT — Archive the prompt and close roadmap/catalog
+      status. Commit follows final hygiene checks.
 
 ## Included Scope
 
@@ -68,8 +71,16 @@ and protected-data obligations remain binding from their own authorities.
 - `Cargo.toml`
 - `docs/ROADMAP.md`
 - `docs/standards/testing-and-gate-strategy.md`
+- `docs/standards/AGENTS.md`
+- `docs/standards/README.md`
+- `docs/standards/mechanical-refactor-authoring-guide.md`
+- `docs/standards/code-quality-refactor-authoring-guide.md`
+- `docs/standards/module-test-enhancement-authoring-guide.md`
+- `docs/standards/kernel-work-package-preparation.md`
+- `docs/standards/rust-scientific-coding-standard.md`
 - `docs/standards/local-ci-gate-selection.md`
 - `docs/standards/prompt-wording-guidance.md`
+- `docs/codex_exec_plans.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/work-packages/README.md`
 - `docs/work-packages/gate-planner-advisory-linter-roadmap.md`
@@ -78,7 +89,10 @@ and protected-data obligations remain binding from their own authorities.
 - `tools/local_ci/README.md`
 - `tests/integration/testgate_ci_executor_contract.rs`
 - `tests/integration/testgate_align_authority_contract.rs`
+- `tests/integration/snowdensity03_physics_bulk_offline_contract.rs`
+- `tests/AGENTS.md`
 - `gate-policy/v1/impact-map.json`
+- `gate-policy/v1/README.md`
 - `gate-policy/history/adr0039-generation17.json`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/package.md`
 - `docs/work-packages/20260727-gate-planner-external-dag-closeout-correction-001/package.md`
@@ -186,7 +200,16 @@ access is read-only. No heavy runner or comparator is selected.
 
 ## Surprises And Discoveries
 
-- None yet.
+- The first migrated guard used line-wrap-sensitive Markdown literals; the
+  assertions now normalize whitespace.
+- Independent review found stale planner authority in the v1 policy README,
+  mechanical/module standards, standards catalog, and historical catalog.
+  Those surfaces now state direct or explicitly frozen semantics.
+- Independent review also found that the initial canonical-strategy rewrite
+  removed substantive science/correctness policy along with planner machinery.
+  Principles, suite families and metadata, outcome reduction, lifecycle
+  obligations, and critical triggers were restored in direct-agent language
+  and guarded.
 
 ## Decision Log
 
@@ -197,4 +220,14 @@ access is read-only. No heavy runner or comparator is selected.
 
 ## Outcomes And Retrospective
 
-Populate after implementation, validation, review, and verification.
+ADR-0043 now controls prospective validation governance. Agents run applicable
+requirements directly; planner/TESTGATE artifacts cannot authorize, block,
+execute, or close work. The live compatibility impact map is
+`SCHEMA_ONLY_NONBLOCKING`; historical generation 17 resolves independently.
+Four incomplete prerequisite packages are frozen, the completed ledger package
+remains complete, and no stale local status can resume them.
+
+Focused governance, AUTH11, snow-confinement, formatting, JSON, documentation,
+history, and diff checks pass. Two independent reviews and two independent
+verifications pass after all findings were corrected. No planner, CI, CAL,
+science, publication, or Harvard execution occurred.

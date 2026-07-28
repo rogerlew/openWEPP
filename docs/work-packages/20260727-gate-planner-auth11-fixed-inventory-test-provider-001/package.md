@@ -5,7 +5,11 @@ Package ID:
 
 Queue ID: `GATE-AUTH11-TEST-PROVIDER-01`
 
-Status: `ACTIVE`
+Status: `FROZEN / SUPERSEDED BY ADR-0043`
+
+ADR-0043 freezes this incomplete planner prerequisite as historical evidence.
+Resuming it requires explicit user authorization; no prospective work may infer
+authority from its former `ACTIVE` status.
 
 Authorization: the user's 2026-07-27 direction to complete CAL-04B and resolve
 its assurance/gate-planner blockers through reviewed work-package corrections.

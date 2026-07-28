@@ -1,0 +1,12 @@
+{
+  "schema_version": "openwepp-historical-policy-v1",
+  "policy_id": "ADR-0039",
+  "generation": 17,
+  "subject_path": "docs/standards/testing-and-gate-strategy.md",
+  "policy_sha256": "74203b294dcea4c7f3ecb5fe4110a425d938d2ec75bde60cfc646a54fea3f5e9",
+  "git_blob": "ab8fe3e4db61df6691a96a11fa2034b90036bfb2",
+  "source_commit": "57f5f6f1f1649022d47124de856108c6a11cc483",
+  "verification_rule": "resolve_git_blob_and_sha256_never_live_path",
+  "prospective_authority": false,
+  "historical_bytes_immutable": true
+}

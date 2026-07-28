@@ -1,9 +1,9 @@
 # Local CI Gate Selection
 
-This standard governs local edit-loop command selection. Lifecycle timing,
-terminal gate selection, campaign deferral, receipts, and escalation are owned
-by `testing-and-gate-strategy.md`. Local feedback does not weaken or replace an
-accepted intent/terminal plan, science-contract gate, or release gate.
+This standard lists direct local validation commands and cost profiles.
+Lifecycle timing, campaign deferral, evidence reuse, and escalation follow
+`testing-and-gate-strategy.md`. Agents choose and record applicable commands;
+advisory-linter suggestions are optional and execute nothing.
 
 ## Principles
 
@@ -96,7 +96,7 @@ means two matching fixture tests may run at once.
 
 - Report `Ran:` only for commands executed in the current session.
 - Report `Static:` for timing conclusions derived from existing JUnit/history.
-- Record the terminal plan or explicit rollback authority that selected each
-  closure gate. A focused pass claims only its affected surface.
+- Record the governing requirement and exact command/result for each closure
+  check. A focused pass claims only its affected surface.
 - If `full` is selected, do not replace it with `quick` or a domain profile.
   Operators and agents may escalate but may not silently downgrade.

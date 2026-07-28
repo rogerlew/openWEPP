@@ -337,15 +337,15 @@ would be harder to test externally.
 
 ### 7.2 Required quality gates
 
-Before disposition, execute the exact terminal plan selected under
-`testing-and-gate-strategy.md`. For affected Rust surfaces the plan includes
-formatting, warnings-denied Clippy, placeholder/stub scanning, affected tests
-and doctests, and applicable A0/A1/A3 and specialized gates. TESTGATE records
-coverage/CRAP as `DEFERRED_TO_QUALITY_CI`; explicit CQR/module-test-enhancement
-packages retain their owned metrics. Manifest, lock, dependency-policy, or
-toolchain dependency changes select cargo-deny. Critical changes, campaign
-closure, and release select full workspace correctness regression, full
-doctests, and cargo-deny.
+Before disposition, reconcile the exact diff and execute the applicable
+requirements under `testing-and-gate-strategy.md`. For affected Rust surfaces
+these include formatting, warnings-denied Clippy, placeholder/stub scanning,
+affected tests and doctests, and applicable A0/A1/A3 and specialized checks.
+Coverage/CRAP is observational under ADR-0041; explicit CQR/module-test-
+enhancement packages retain their owned metrics. Manifest, lock,
+dependency-policy, or toolchain dependency changes select cargo-deny. Critical
+changes, campaign closure, and release select full workspace correctness
+regression, full doctests, and cargo-deny.
 
 The conservative full command set is reserved for critical, campaign, release,
 or explicit rollback plans. It is not an implementation-package default.

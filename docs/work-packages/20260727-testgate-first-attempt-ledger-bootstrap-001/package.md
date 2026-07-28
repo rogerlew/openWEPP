@@ -6,6 +6,10 @@ Queue ID: `TESTGATE-LEDGER-BOOTSTRAP-01`
 
 Status: `COMPLETE`
 
+ADR-0043 preserves this completed package as immutable historical evidence. It
+has no prospective planner authority and requires explicit user authorization
+for any follow-on work.
+
 Authorization: the user's 2026-07-27 direction to complete CAL-04B and resolve
 its assurance/TESTGATE blockers through reviewed work-package corrections.
 

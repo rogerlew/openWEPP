@@ -63,9 +63,10 @@ unless a subagent is explicitly assigned a bounded implementation fix in
 `{{target_module_path}}` or package-local artifacts.
 
 Subagent requirement: this package requires spawning `comparator_suite_runner`
-for package-owned metric measurement and for heavy correctness gates selected
-by the terminal plan, critical classification, campaign/release boundary, or
-explicit conservative rollback, including full-profile Nextest, comparator
+for package-owned metric measurement and for heavy correctness requirements
+selected from the declared objective, exact diff, and canonical strategy,
+critical classification, campaign/release boundary, or explicit conservative
+rollback, including full-profile Nextest, comparator
 suites, and population/fixture batches. Campaign/release lifecycle alone does
 not select full-workspace CRAP/coverage. Do not run those heavy gates locally
 on the parent model unless the subagent is unavailable; if unavailable, record
@@ -190,8 +191,9 @@ and report the blocked commit boundary.
 3. Record numeric/API/output identity in `artifacts/numeric-equivalence.md`.
 4. Record `.rs` line-count governance in
    `artifacts/line-count-governance.md`.
-5. Reconcile the exact terminal plan and run every selected correctness gate
-   plus this package's target-module metric gates. At critical, campaign,
+5. Reconcile declared intent against the exact terminal diff and run every
+   selected correctness requirement plus this package's target-module metric
+   requirements. At critical, campaign,
    release, or explicit rollback boundaries, run and record selected
    correctness operations:
    - `git diff --check`

@@ -82,12 +82,11 @@
   correctness from optional observational coverage/CRAP, and predecessor
   quality obligations were explicitly dispositioned. Dual review and terminal
   verification passed.
-- `testgate-quality-observatory-roadmap.md` is the authorized seven-package
-  implementation and qualification sequence that restores TESTGATE to blocking
-  correctness admission, moves workspace coverage/CRAP to optional
-  observational forest1 QA, merges `full` plus `science-manual` coverage,
-  hands exact evidence to CQR Nightly, and requires live functional proof of
-  both workflows before returning priority to science work.
+- `testgate-quality-observatory-roadmap.md` is a completed historical
+  seven-package sequence, superseded prospectively by ADR-0043. Its retained
+  records describe the former TESTGATE correctness-admission design and the
+  still-valid separation of optional observational coverage/CRAP; they do not
+  authorize live workflow execution or delay science work.
 - `20260724-testgate-quality-observatory-roadmap-001/` is the documentation-only
   roadmap authoring package. Its prospective children are the ADR/authority
   pivot, TESTGATE quality deferral, merged measurement, QA workflow, CQR
@@ -333,10 +332,10 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-gate-planner-governance-authority-alignment-001/` -
-  ACTIVE: roadmap Order 1 applies ADR-0043 to operative guidance,
-  source-coupled guards, historical policy identity, and frozen planner package
-  statuses through direct manual validation. It does not modify planner
-  executables, CI, CAL, science, or Harvard state.
+  COMPLETE / PASS: roadmap Order 1 applies ADR-0043 to operative guidance,
+  source-coupled guards, historical policy identity, and frozen planner-package
+  statuses. Direct focused validation, dual review, and dual verification pass;
+  planner executables, CI, CAL, science, and Harvard state are unchanged.
 - `20260727-gate-planner-advisory-linter-roadmap-001/` -
   EXECUTED-COMPLETE / PLANNING ONLY: accepted ADR-0043, the advisory interface,
   manual fallback, exact governance amendment plan, migration/deletion map,
@@ -344,9 +343,9 @@ State as of `2026-07-27 UTC`:
   `GO` reviews. No implementation child was scaffolded.
 - Gate-planner closeout and prerequisite packages listed below are frozen by
   the 2026-07-27 user-directed re-conceptualization. Their code and artifacts
-  remain historical evidence; no further execution advances them. Order 1 owns
-  exact package-local frozen-status overlays so no stale `ACTIVE` file can
-  resume them.
+  remain historical evidence; no further execution advances them. Order 1
+  applied exact package-local frozen-status overlays so no stale `ACTIVE` file
+  can resume them.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
   ACTIVE / SCIENCE INCIDENT RECONCILIATION PENDING: the planner no longer
   blocks direct package-authored modeling under the 2026-07-27 user direction.
@@ -354,25 +353,24 @@ State as of `2026-07-27 UTC`:
   before population. Prior attempts remain evidence only and Harvard remains
   sealed.
 - `20260727-gate-planner-external-dag-transaction-adapter-001/` -
-  HOLD / INVALID / SUPERSEDED: its scaffold authority and independent
-  implementation review failed closed; it cannot authorize heavy execution.
+  FROZEN / SUPERSEDED BY ADR-0043: its scaffold authority and independent
+  implementation review failed closed. Historical evidence remains; explicit
+  user authorization is required to resume it.
 - `20260727-gate-planner-external-dag-closeout-correction-001/` -
-  ACTIVE / PRE-HEAVY BLOCKED: the bounded lifecycle, custody,
-  inventory, ledger, publication-recovery, CSV, and error-taxonomy corrections
-  pass dual implementation review, but canonical planning omitted the separate
-  AUTH11 obligation-guard node.
+  FROZEN / SUPERSEDED BY ADR-0043: its retained corrections and AUTH11 blocker
+  remain historical evidence. Explicit user authorization is required to
+  resume it.
 - `20260727-gate-planner-auth11-terminal-node-selection-001/` -
-  ACTIVE / FOCUSED HOLD: prospectively owns the missing AUTH11 terminal-node
-  selection; production review findings are corrected, but the full planner
-  suite exposed one out-of-scope synthetic inventory-provider defect.
+  FROZEN / SUPERSEDED BY ADR-0043: production review findings and the synthetic
+  inventory-provider failure remain historical evidence. Explicit user
+  authorization is required to resume it.
 - `20260727-gate-planner-auth11-fixed-inventory-test-provider-001/` -
-  ACTIVE / CANONICAL BOOTSTRAP HOLD: the test-only provider correction and
-  terminal verification pass, but its first canonical transition exposed an
-  absent-ledger bootstrap defect before LIGHT.
+  FROZEN / SUPERSEDED BY ADR-0043: the test-only correction, verification, and
+  absent-ledger failure remain historical evidence. Explicit user authorization
+  is required to resume it.
 - `20260727-testgate-first-attempt-ledger-bootstrap-001/` -
-  ACTIVE / SCAFFOLD REVIEW: prospectively owns secure creation/validation of a
-  fresh durable history ledger before Rust transition preflight. The failed
-  roots remain unexecuted evidence.
+  COMPLETE / HISTORICAL UNDER ADR-0043: its completed ledger work retains its
+  original evidence and has no prospective planner authority.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

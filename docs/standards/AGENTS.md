@@ -14,9 +14,9 @@
 - `docs/standards/kernel-work-package-preparation.md` — required kernel work-package preparation procedure.
 - `docs/standards/prompt-wording-guidance.md` — required wording standard for kernel/science execution prompts.
 - `docs/standards/mechanical-refactor-authoring-guide.md` — mechanical refactor authoring and closure loop.
-- `docs/standards/testing-and-gate-strategy.md` — canonical gate selection,
-  lifecycle, receipt, campaign, coverage/CRAP cadence, and assurance-impact
-  authority.
+- `docs/standards/testing-and-gate-strategy.md` — canonical validation
+  selection, lifecycle, campaign deferral, evidence reuse, quality posture, and
+  assurance-impact guidance.
 - Root `AGENTS.md` — concise router that should point here rather than duplicate long procedures.
 
 ## Standard Workflow

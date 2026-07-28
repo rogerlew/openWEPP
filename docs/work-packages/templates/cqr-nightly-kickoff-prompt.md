@@ -34,7 +34,7 @@ Conditional:
 - `docs/specifications/science-contracts/AGENTS.md` and the nearest relevant
   `SC-*` contract only if the target touches contract authority,
   conservation-sensitive outputs, or contract-derived tests.
-- `docs/standards/testing-and-gate-strategy.md` for intent/terminal planning,
+- `docs/standards/testing-and-gate-strategy.md` for intent/diff reconciliation,
   lifecycle assignment, and escalation.
 - `docs/standards/local-ci-gate-selection.md` for focused edit-loop feedback.
 
@@ -106,7 +106,8 @@ Global/process holds stop the nightly batch. Do not revert unrelated user
 changes.
 
 Subagent requirement: REQUIRED: spawn `comparator_suite_runner` for all heavy
-gates selected by the terminal plan, critical classification,
+requirements selected from the declared objective, exact diff, and canonical
+strategy, critical classification,
 campaign/release boundary, or explicit conservative rollback, including
 full-profile Nextest, explicit target metric measurement, comparator suites,
 and population/fixture batches. Do NOT run those heavy gates on the

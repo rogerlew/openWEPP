@@ -40,16 +40,11 @@
 - Do not create or switch git branches unless the user explicitly asks.
 - Keep required scaffold/intermediate commits local and push once per stable
   increment unless an explicit remote checkpoint is necessary.
-- Do not manually dispatch TESTGATE while a run is queued or active; its stable
-  concurrency identity permits one running and only the newest pending run.
-- Exception: permanently queued records from the retired pre-pivot Omarchy
-  runner are defunct historical metadata, not live queue occupancy. Do not
-  block, cancel, or wait on them; preflight only current forest1-runner work.
-- Forest1 is the trusted TESTGATE heavy runner. A receipt labeled
-  `LOCAL_UNTRUSTED` is normal unsigned forest1 evidence, not a hold, failure,
-  or reason to request GitHub-hosted heavy execution. Do not block any workflow
-  solely on that label; use retained forest1 receipt/ledger evidence unless an
-  explicit package requires an additional publication artifact.
+- TESTGATE and the gate planner are frozen historical tooling. Do not dispatch,
+  repair, or extend them for prospective work. Run applicable canonical
+  validation commands directly and record what actually ran. Defunct Omarchy
+  and retained forest1 records remain historical evidence and do not occupy a
+  live queue.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
@@ -77,20 +72,18 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 
 ## Validation Gates
 - `docs/standards/testing-and-gate-strategy.md` is the canonical authority for
-  gate selection, lifecycle timing, campaign deferral, evidence reuse, and
-  escalation. Every package must declare implementation intent before edits
-  (in `package.md` during transition, then as a machine intent plan after
-  cutover) and reconcile the exact terminal diff before disposition.
-- Execute every increment gate selected by the authenticated
-  terminal plan. Critical changes still require immediate campaign-strength
-  full correctness regression. Campaign closure and release qualification
-  retain exact-head full-workspace correctness obligations.
-- ADR-0041 requires TESTGATE to record coverage/CRAP as
-  `DEFERRED_TO_QUALITY_CI`; executable alignment is pending roadmap Order 2,
-  and no earlier receipt may be represented as carrying that disposition.
-  Optional operator-directed QA is observational and non-blocking for
-  increment, campaign, and release transitions. Explicit CQR/module-test-
-  enhancement packages retain their declared owned-surface metric gates.
+  validation requirements, lifecycle timing, campaign deferral, evidence reuse,
+  and escalation. Every package declares implementation intent before edits and
+  reconciles the exact terminal diff before disposition. The optional advisory
+  linter may report cited suggestions; it never selects, executes, or authorizes
+  validation.
+- Run every applicable increment requirement directly. Unknown or ambiguous
+  production impact receives documented conservative escalation or authority
+  clarification and is never silently narrowed. Critical changes retain
+  immediate campaign-strength full correctness regression; campaign closure
+  and release qualification retain exact-head full-workspace correctness.
+- Coverage/CRAP is optional observational QA under ADR-0041 except for an
+  explicitly authorized CQR/module-test-enhancement package's declared metrics.
 - Kernel work always retains touched contract invariants, applicable A0/A1/A3
   authority gates, typed guards, and closure checks. Legacy comparator deltas
   use confidence tiers. Conservation-sensitive output work retains independent
