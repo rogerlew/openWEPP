@@ -26,14 +26,20 @@ The first focused Nextest invocation failed before test execution because
 `.config/nextest.toml` still named retired planner packages. The selectors were
 removed in scope, and the repeated focused run passed 23 of 23 tests.
 
+Review A/B then found that closure prose had reintroduced the retired product
+name into the live runner README. The focused quality workflow contract
+correctly failed 1 of 5 tests. The sentence was removed, the omitted
+zero-consumer Python-ledger fixture was deleted, and the repeated workflow
+contract passed 5 of 5 tests.
+
 ## Exact Diff And Size
 
 The corrected, resolvable package base is
-`c5dc88fc063927f3bbb3941cab07fbdf77758aa9`. The implementation diff currently
-contains 139 paths, 764 insertions, and 49,221 deletions. The only untracked
-path is the excluded, user-owned readiness audit.
+`c5dc88fc063927f3bbb3941cab07fbdf77758aa9`. Exact terminal counts are deferred
+until review findings stop changing the package diff. The only untracked path
+is the excluded, user-owned readiness audit.
 
-New Rust test owners contain 293 and 154 lines. No new or enlarged production
+New Rust test owners contain 286 and 154 lines. No new or enlarged production
 Rust file approaches the 2,000-line governance threshold; the production Rust
 control plane is deleted. The pre-existing quality-observatory Python owners
 remain 2,638 and 1,368 lines and were migrated in place rather than split as
@@ -41,7 +47,14 @@ part of this retirement package.
 
 ## Terminal Requirements
 
-Campaign-strength full-workspace Nextest and strict Clippy are delegated to the
-package-authorized comparator-suite runner. Their retained logs and results
-will be added before closure. Dual review, finding disposition, and dual
+The first delegated broad run overlapped active review edits and is not terminal
+evidence. Strict Clippy passed. Nextest stopped after 192 of 2,137 tests because
+`cqr_quality_evidence_handoff_contract` correctly rejected its no-longer-current
+exact-head fixture; 191 executed tests passed and one failed. Logs are retained
+under `target/order4-heavy-closure/`. No retired planner selector or package
+appeared in either log.
+
+Campaign-strength full-workspace Nextest and strict Clippy must be repeated at
+the stable post-review implementation head through the package-authorized
+comparator-suite runner. Dual review, finding disposition, and dual
 verification also remain required.

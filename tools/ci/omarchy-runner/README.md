@@ -69,5 +69,4 @@ host headroom for co-tenants before the runner is admitted.
 `manage.sh remove` deregisters the runner, stops and removes its container, and
 deletes the dedicated registration-state volume. Job surfaces are tmpfs. The
 separate quality-observatory history volume and digest-indexed uploads
-retain only optional quality evidence and bounded controller records. Retired
-TESTGATE history is neither mounted nor modified.
+retain only optional quality evidence and bounded controller records.

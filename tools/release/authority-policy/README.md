@@ -1,8 +1,9 @@
 # Direct Authority Policy Inputs
 
-These compact JSON inputs belong to direct science-contract admission and
-external-authority anti-evasion checks. They are not planner inputs, execution
-plans, CI admission, or lifecycle authority.
+These compact JSON inputs belong only to direct science-contract admission.
+The external-authority anti-evasion guard and its contract are independent
+direct owners and do not route through this map. These files are not planner
+inputs, execution plans, CI admission, or lifecycle authority.
 
 The retained `ADR-0039` identifiers are historical schema identities. Live
 entries are `SCHEMA_ONLY_NONBLOCKING`: a registry match is information only

@@ -88,6 +88,7 @@ validation authority changes.
 - `tests/python/test_resolve_testgate_comparison_base.py`
 - `tests/python/test_resolve_testgate_intent_package.py`
 - `tests/python/test_quality_observatory_workflow.py`
+- `tests/fixtures/testgate/**`
 - `tests/integration/testgate_align_authority_contract.rs`
 - `tests/integration/testgate_assure_campaign_currency_contract.rs`
 - `tests/integration/advisory_linter_authority_contract.rs`
@@ -203,6 +204,14 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 - 2026-07-27: Exact-diff reconciliation found a transcribed base-SHA suffix in
   the scaffold. The declared base was corrected to the resolvable scaffold
   parent `c5dc88fc063927f3bbb3941cab07fbdf77758aa9`.
+- 2026-07-27: Review A found one zero-consumer Python-ledger fixture omitted
+  from the initial migration map and a historical product token in the live
+  runner README. The write set was expanded, the fixture was deleted, and the
+  live runner description was made product-neutral.
+- 2026-07-27: Review A proved that nine AUTH11 impact-map rows were unreachable
+  from direct science admission and their `NONE` definition had no functional
+  consumer. They were deleted rather than creating a new consumer; the direct
+  anti-evasion script and contract remain unchanged.
 
 ## Outcomes
 

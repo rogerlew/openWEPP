@@ -137,9 +137,14 @@ fn historical_policy_identity_resolves_the_frozen_object() {
 #[test]
 fn live_impact_map_has_no_planner_admission_rows() {
     let impact = json("tools/release/authority-policy/impact-map.json");
-    // The v1 schema retains its ADR-0039 identifier until the advisory mapping
-    // is replaced in roadmap Order 3. Its live entries carry no planner
-    // admission rows.
+    let schema = json("tools/release/authority-policy/impact-map.schema.json");
+    jsonschema::validator_for(&schema)
+        .expect("compile direct impact-map schema")
+        .validate(&impact)
+        .expect("validate direct impact map");
+    // The direct admission map retains its ADR-0039 schema identity for
+    // historical continuity. Its live entries carry no planner admission
+    // rows and do not belong to the advisory linter.
     assert_eq!(impact["policy_id"], "ADR-0039");
     assert_eq!(impact["enforcement_status"], "SCHEMA_ONLY_NONBLOCKING");
     assert_eq!(
@@ -162,22 +167,10 @@ fn live_impact_map_has_no_planner_admission_rows() {
             "retired planner row remains: {retired}"
         );
     }
-    for preserved in [
-        "auth11-registry",
-        "auth11-obligations",
-        "auth11-suite-docs",
-        "auth11-promotion-protocol",
-        "auth11-integration-contracts",
-        "auth11-constitutive-cohorts",
-        "auth11-infile-cohorts",
-        "auth11-antievasion-tool",
-        "auth11-gate-policy",
-    ] {
-        assert!(
-            ids.contains(&preserved),
-            "preserved authority row missing: {preserved}"
-        );
-    }
+    assert!(
+        ids.iter().all(|entry_id| !entry_id.starts_with("auth11-")),
+        "dead anti-evasion routing rows must not survive"
+    );
 
     let policy_readme = text("tools/release/authority-policy/README.md")
         .split_whitespace()
@@ -214,7 +207,7 @@ fn direct_authority_definitions_are_compact_and_schema_valid() {
             .as_array()
             .expect("definitions")
             .len(),
-        6
+        5
     );
     let encoded = serde_json::to_string(&definitions).expect("encode definitions");
     for forbidden in [

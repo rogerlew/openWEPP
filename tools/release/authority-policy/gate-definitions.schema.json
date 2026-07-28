@@ -26,7 +26,7 @@
         ],
         "properties": {
           "gate_definition_id": {"type": "string", "minLength": 1},
-          "authority_class": {"enum": ["A1", "NONE"]},
+          "authority_class": {"const": "A1"},
           "executor": {
             "type": "object",
             "additionalProperties": false,

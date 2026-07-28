@@ -9,12 +9,16 @@ Order 4 removes the tracked legacy planner/TESTGATE control plane:
   Python tests;
 - the TESTGATE workflow and legacy planner/assurance integration tests;
 - obsolete Nextest planner profiles and repository-snapshot overrides; and
-- `gate-policy/v1` schemas, fixtures, registry, and execution matrices.
+- `gate-policy/v1` schemas, fixtures, registry, and execution matrices, plus
+  the final zero-consumer Python-ledger fixture under `tests/fixtures`.
 
 Surviving direct owners were migrated before deletion:
 
 - science-contract admission reads compact authority inputs under
   `tools/release/authority-policy`;
+- unreachable AUTH11 routing rows and their unused non-authority definition
+  were removed; the external-authority anti-evasion guard remains an
+  independent direct owner;
 - the immutable generation-17 registry remains unchanged and is verified
   through Git object identity directly;
 - the optional quality observer accepts one exact current source SHA and
