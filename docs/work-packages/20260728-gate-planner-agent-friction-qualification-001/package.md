@@ -5,7 +5,7 @@ Package ID:
 
 Queue ID: `GATE-LINT-ADV-03`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Authorization: the user's 2026-07-28 instruction to scaffold and execute
 advisory-linter roadmap Order 5.
@@ -214,8 +214,10 @@ validation, CAL, or Harvard commands.
   authority map's bound strategy digest.
 - [x] 2026-07-28 — Dual review and finding disposition passed after durable
   evidence retention and explicit trial-design limitations.
-- [ ] Dual verification and exact-diff closure passed.
-- [ ] Prompt archived, catalogs closed, and completion committed.
+- [x] 2026-07-28 — Dual verification passed at corrected subject
+  `117e43ab1803cbe5d9e3bac8afdd254a7349a044`; exact-diff closure found all 41
+  changed paths inside the declared write set.
+- [x] 2026-07-28 — Prompt archived, catalogs closed, and package completed.
 
 ## Surprises And Discoveries
 
@@ -253,3 +255,7 @@ The stop-loss selected `DELETE_ADVISORY_LINTER` on the independently sufficient
 zero-omission criterion. Cold/warm latency and production size passed, and no
 linter-originated lifecycle/write/execute violation occurred. The manual route
 remains prospective; no repair package or modeling prerequisite was created.
+
+Both independent terminal verifiers passed the corrected implementation
+subject. Closure adds documentation and archival metadata only; no modeling,
+CAL, synthetic-recovery, population, Harvard, or protected-data command ran.

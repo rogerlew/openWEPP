@@ -13,6 +13,8 @@ Tracked compact results:
 - `deletion-inventory.md`
 - `focused-validation.md`
 - `review-disposition.md`
+- `verification-disposition.md`
+- `exact-diff.md`
 - `evidence/` — final participant, blinded packet, scoring, reconciliation,
   unblinding, and metric JSON retained in the repository; `manifest.sha256`
   binds the complete bundle

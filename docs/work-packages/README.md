@@ -332,10 +332,10 @@
 State as of `2026-07-28 UTC`:
 
 - `20260728-gate-planner-agent-friction-qualification-001/` -
-  ACTIVE / CLOSING: roadmap Order 5 measured the advisory linter against the
+  COMPLETE / PASS: roadmap Order 5 measured the advisory linter against the
   independent manual route, fired four stop-loss thresholds, and deleted the
-  command/source/tests. Terminal review and verification remain; no repair
-  prerequisite or CI role exists.
+  command/source/tests. Dual review and verification passed; no repair
+  prerequisite or CI role exists, and the manual route remains prospective.
 - `20260727-gate-planner-legacy-execution-ci-retirement-001/` -
   COMPLETE / PASS: roadmap Order 4 retired the frozen planner/TESTGATE
   execution, CI, receipt, ledger, recovery, and publication control plane after

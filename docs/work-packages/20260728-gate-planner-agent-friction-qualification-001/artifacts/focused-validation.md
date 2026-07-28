@@ -43,3 +43,14 @@ Corrected focused execution:
 
 No full-workspace, modeling, CAL, synthetic, population, freeze/open, or
 Harvard command was run.
+
+Corrected terminal subject
+`117e43ab1803cbe5d9e3bac8afdd254a7349a044`:
+
+- combined advisory-authority, quality-observatory, and AUTH11 contract run:
+  PASS, 14 / 14;
+- science-contract admission from the package base: `A0_ADMITTED`,
+  39 contracts and zero science surfaces;
+- authority anti-evasion: PASS;
+- formatting and diff hygiene: PASS; and
+- retained evidence manifest: PASS, 9 / 9.
