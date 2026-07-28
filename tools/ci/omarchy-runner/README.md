@@ -33,8 +33,8 @@ build and transfer files are removed on return.
 ultimately reports one online, idle runner with the exact label set.
 
 One named volume holds registration state and is mounted read-only for jobs. A
-second volume is mounted read-write at `/quality-history` for the hash-chained
-attempt ledger and per-node recovery mirror; setup fixes ownership for the
+second volume is mounted read-write at `/quality-history` for optional quality
+observations and bounded controller evidence; setup fixes ownership for the
 unprivileged runner and ordinary removal deliberately preserves it. Work,
 Cargo downloads, target output, home, diagnostics, and `/tmp` use
 size-bounded tmpfs mounts. A root-owned completion hook repeatedly terminates
@@ -55,11 +55,11 @@ and the completion hook removes it with the workspace. Runner updates are
 deliberate image revisions so a job cannot replace the persistent control
 plane.
 
-Execution evidence, Cargo output, and planner temporary files share the bounded
+Quality execution evidence, Cargo output, and temporary files share the bounded
 40 GiB executable tmpfs at the short fixed paths `/t/e`, `/t`, and `/t/p`.
 Concurrency is one and the completion hook purges the mount after every job, so
 the fixed names stay fresh while keeping Unix-domain socket fixtures below
-Linux's path limit. Repository-snapshot verifier fixtures are serialized within
+Linux's path limit. Repository-snapshot fixtures are serialized within
 the full profile so their disposable build trees cannot exhaust the mount.
 
 The runtime is capped at 32 of 48 CPUs, 48 GiB memory with swap disabled, and
@@ -68,5 +68,6 @@ host headroom for co-tenants before the runner is admitted.
 
 `manage.sh remove` deregisters the runner, stops and removes its container, and
 deletes the dedicated registration-state volume. Job surfaces are tmpfs. The
-separate quality-observatory history volume and digest-indexed uploads retain only the
-attempt ledger, checkpoints, and their declared output artifacts.
+separate quality-observatory history volume and digest-indexed uploads
+retain only optional quality evidence and bounded controller records. Retired
+TESTGATE history is neither mounted nor modified.

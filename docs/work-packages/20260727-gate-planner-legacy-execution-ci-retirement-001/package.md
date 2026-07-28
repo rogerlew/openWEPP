@@ -10,7 +10,7 @@ Status: `ACTIVE`
 Authorization: the user's 2026-07-27 instruction to scaffold and execute
 advisory-linter roadmap Order 4.
 
-Base commit: `c5dc88fcd08d7c191dd59f4672b7a259e6c394c8`
+Base commit: `c5dc88fc063927f3bbb3941cab07fbdf77758aa9`
 
 Execution mode: `package-end-to-end`.
 
@@ -122,8 +122,7 @@ unchanged, unstaged, and excluded.
 Direct focused requirements:
 
 ```text
-.venv/bin/python -m unittest \
-  tests/python/test_quality_observatory_workflow.py
+.venv/bin/python tools/local_ci/quality_observatory_workflow.py self-test
 cargo nextest run --test advisory_linter_authority_contract
 cargo nextest run --test quality_observatory_workflow_contract
 bash tools/release/check_science_contract_admission.sh \
@@ -185,7 +184,7 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 4.
 - [x] 2026-07-27 — Exact consumer inventory completed.
 - [x] 2026-07-27 — Direct owners migrated and zero-consumer surfaces deleted.
-- [ ] Focused validation passed.
+- [x] 2026-07-27 — Focused validation passed.
 - [ ] Full-workspace closure passed.
 - [ ] Dual review and finding disposition passed.
 - [ ] Dual verification and exact-diff closure passed.
@@ -201,6 +200,9 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 - 2026-07-27: A focused Nextest run exposed retired package selectors in
   `.config/nextest.toml`; the package write set was amended and those selectors
   were removed before validation continued.
+- 2026-07-27: Exact-diff reconciliation found a transcribed base-SHA suffix in
+  the scaffold. The declared base was corrected to the resolvable scaffold
+  parent `c5dc88fc063927f3bbb3941cab07fbdf77758aa9`.
 
 ## Outcomes
 
