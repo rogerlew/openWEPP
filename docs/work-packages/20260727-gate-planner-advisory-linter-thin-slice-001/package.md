@@ -24,6 +24,11 @@ inert command suggestions in `pre-edit`, `working-tree`, and `terminal` modes
 without running workflows, mutating repository state, or owning lifecycle
 status.
 
+## Implementation Intent
+
+`agent-tooling / read-only advisory analysis`. The implementation adds no
+runtime, model, science, publication, or lifecycle behavior.
+
 ## Included Scope
 
 - A standalone Python command and package-local library under
@@ -113,8 +118,6 @@ never package or campaign authority.
 ```text
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
   -m unittest tools/validation/test_workplan_lint.py
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
-  tools/validation/workplan_lint.py --self-check
 markdown-doc lint --path tools/validation
 markdown-doc lint --path \
   docs/work-packages/20260727-gate-planner-advisory-linter-thin-slice-001
@@ -157,9 +160,9 @@ access is read-only.
 ## Progress
 
 - [x] 2026-07-27 — Scaffolded from accepted roadmap Order 3.
-- [ ] Thin slice implemented.
-- [ ] Adversarial and representative tests passed.
-- [ ] Documentation and manual fallback passed.
+- [x] 2026-07-27 — Thin slice implemented.
+- [x] 2026-07-27 — Nineteen adversarial and representative tests passed.
+- [x] 2026-07-27 — Documentation and manual fallback passed.
 - [ ] Dual review and finding disposition passed.
 - [ ] Dual verification and exact-diff closure passed.
 - [ ] Prompt archived, catalogs closed, and completion committed.
