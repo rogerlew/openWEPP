@@ -8,6 +8,7 @@ Evidence class: `Static`
 | Terminal diff command initially used placeholders | `accepted` | literal base and exact Rust diff commands added |
 | Closeout must record post-edit 1,046-line count | `accepted` | recorded in `line-count-disposition.md` |
 | Implementation behavior or lint-scope defect | `rejected` | both implementation reviewers found none |
+| Canonical artifact said no Harvard access despite required read-only fixture tests | `accepted` | narrowed to no CAL population or protected Harvard state mutation; retained fixture reads disclosed |
 
 The full regression later exposed one stale executor source-contract assertion.
 That accepted `follow-up` was closed by

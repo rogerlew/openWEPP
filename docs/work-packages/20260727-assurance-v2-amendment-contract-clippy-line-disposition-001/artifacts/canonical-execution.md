@@ -56,5 +56,7 @@ File SHA-256 values:
 The ledger is balanced and hash-linked: LIGHT `CLOSED`, HEAVY `STARTED`,
 HEAVY `CLOSED` with the exact receipt, and transaction `CLOSED`. Source
 mutation before/after SHA-256 is unchanged. Coverage/CRAP is the canonical
-closure-eligible `DEFERRED_TO_QUALITY_CI` observation. CAL and Harvard were not
-accessed.
+closure-eligible `DEFERRED_TO_QUALITY_CI` observation. No CAL population or
+Harvard calibration workflow occurred, and no protected Harvard or sealed hold
+state was mutated. The full regression did read committed Harvard
+provenance/strata fixtures in its required tests.
