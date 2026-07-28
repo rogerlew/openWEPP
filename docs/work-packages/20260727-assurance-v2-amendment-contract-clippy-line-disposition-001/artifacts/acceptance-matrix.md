@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `FULL REGRESSION HOLD`
+Status: `TERMINAL VERIFICATION REQUIRED`
 
 Evidence class: `Static + Ran`
 
@@ -11,7 +11,7 @@ Evidence class: `Static + Ran`
 | AC-03 | Cohesive lifecycle rationale | adjacent source comment and review |
 | AC-04 | Test behavior unchanged | focused assurance target |
 | AC-05 | Workspace Clippy restored | strict workspace Clippy |
-| AC-06 | Full regression restored | full Nextest and doc tests |
+| AC-06 | Full regression restored | successor full 2,361/2,361 and doc tests |
 | AC-07 | Independent closure | dual reviews, verifiers, canonical receipt |
 | AC-08 | Findings explicitly dispositioned | `review-findings.md` |
 | AC-09 | Worker/final handoff complete | `worker-handoff.md` and `final-disposition.md` |

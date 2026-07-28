@@ -155,9 +155,10 @@ exception.
 
 - [x] Canonical failure reproduced and retained.
 - [x] Prospective scaffold committed.
-- [ ] Corrected scaffold receives dual `GO`.
-- [ ] Scoped implementation and exact gates complete.
-- [ ] Dual implementation review and finding disposition complete.
+- [x] Corrected scaffold received dual `GO`.
+- [x] Scoped implementation and focused/supporting gates complete.
+- [x] Dual implementation review and finding disposition complete.
+- [x] Full-regression follow-up closed with 2,361/2,361 PASS.
 - [ ] Dual terminal verification complete.
 - [ ] Canonical PASS receipt and dual receipt verification complete.
 
@@ -166,6 +167,9 @@ exception.
 - The ledger bootstrap and inherited-FD consumer path passed through LIGHT and
   the ten-check READY audit; the successor is isolated to a pre-existing
   integration-test lint disposition.
+- The first full profile after the lint correction exposed a stale executor
+  source assertion rather than an assurance or lint defect. Its bounded
+  successor closed with full and canonical PASS.
 
 ## Decision Log
 

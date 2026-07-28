@@ -10,5 +10,7 @@ Evidence class: `Static`
 | Implementation behavior or lint-scope defect | `rejected` | both implementation reviewers found none |
 
 The full regression later exposed one stale executor source-contract assertion.
-That defect is outside this package objective/write set and is `follow-up`,
-owned by a prospective successor package.
+That accepted `follow-up` was closed by
+`20260727-testgate-bound-ledger-source-contract-alignment-001`, whose focused,
+full, canonical, dual terminal, and dual receipt evidence all pass. No review
+finding remains undispositioned.
