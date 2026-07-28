@@ -332,11 +332,21 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-gate-planner-advisory-linter-roadmap-001/` -
+  QUEUED / PLANNING ONLY: establishes the binding philosophy, ADR, advisory
+  interface, manual fallback, migration/deletion map, friction criteria, and
+  reviewed downstream decomposition. No implementation child may be
+  scaffolded before this package closes.
+- Gate-planner closeout and prerequisite packages listed below are frozen by
+  the 2026-07-27 user-directed re-conceptualization. Their code and artifacts
+  remain historical evidence; no further execution advances them while the
+  planning-only advisory-linter roadmap is pending.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  ACTIVE / TOOLING HOLD BEFORE HEAVY: the science prerequisite chain is
-  complete, but restart review proved the legacy Python executor cannot satisfy
-  the canonical same-process pre-heavy trust contract. Prior attempts remain
-  evidence only and Harvard remains sealed.
+  ACTIVE / SCIENCE INCIDENT RECONCILIATION PENDING: the planner no longer
+  blocks direct package-authored modeling under the 2026-07-27 user direction.
+  The retained synthetic reconstruction failure must be recorded and resolved
+  before population. Prior attempts remain evidence only and Harvard remains
+  sealed.
 - `20260727-gate-planner-external-dag-transaction-adapter-001/` -
   HOLD / INVALID / SUPERSEDED: its scaffold authority and independent
   implementation review failed closed; it cannot authorize heavy execution.

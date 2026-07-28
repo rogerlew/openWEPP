@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-24
+Last updated: 2026-07-27
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,6 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
+| `GATE-LINT-ROADMAP-01` gate-planner advisory-linter re-conceptualization | Agent tooling | `next` | Complete the planning-only [Order-0 package](work-packages/20260727-gate-planner-advisory-linter-roadmap-001/package.md): ratify the non-authoritative philosophy, target contract, migration/deletion map, value criteria, and downstream decomposition before any implementation child is scaffolded. |
 | `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `complete` | Closed at exact receipt `7b3c199d...`: 15/15 PASS, zero retries, zero actionable global CRAP rows, and dual terminal verification. |
 | `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `complete` | Closed by the same exact transaction: LIGHT 6/6, audit 10/10 READY, HEAVY 9/9, and zero open durable defects. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `next` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
@@ -39,7 +40,24 @@ state was reached. Execution history lives in the
 
 ## Test And Gate Architecture Queue
 
-### Direction
+### Prospective Redirect
+
+The user directed on 2026-07-27 that the gate planner be treated as a tool and
+re-conceptualized as a non-authoritative, read-only advisory linter. It must
+inform agents without executing commands, integrating with CI, changing
+lifecycle state, or blocking progress. The planning-only
+[advisory-linter roadmap](work-packages/gate-planner-advisory-linter-roadmap.md)
+is now the controlling prospective queue. Existing TESTGATE history remains
+evidence, but no further planner closeout or prerequisite execution advances
+while Order 0 is pending.
+
+### Historical Pre-Redirect Direction
+
+The remainder of this test/gate section records the pre-2026-07-27 TESTGATE
+direction. It is retained for clause-level disposition by Order 0 and is not
+prospective authority to run, repair, or extend TESTGATE. Where it conflicts
+with the Prospective Redirect above, the redirect and direct manual execution
+control.
 
 Implement [ADR-0039](decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
 as amended by
@@ -54,7 +72,7 @@ may not silently narrow one.
 The detailed implementation scope, transition inventory, acceptance fixtures,
 and staged-adoption contract live in the
 [implementation handoff](work-packages/20260717-test-gate-authority-001/artifacts/implementation-handoff.md).
-### Adoption Contract
+### Historical Adoption Contract
 
 - TESTGATE is authoritative for ordinary trusted-main increments. Conservative
   broad correctness gates remain callable at critical, campaign, release, and
