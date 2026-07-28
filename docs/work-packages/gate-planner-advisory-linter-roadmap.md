@@ -1,6 +1,6 @@
 # Gate Planner Advisory-Linter Re-conceptualization Roadmap
 
-Status: `ACCEPTED / ORDER 4 COMPLETE`
+Status: `ACCEPTED / ORDER 5 ACTIVE`
 
 Owner: maintainers
 
@@ -152,7 +152,7 @@ authority.
 | 2 | `complete` | `20260727-gate-planner-cal04b-legacy-integration-removal-001` | Removed obsolete planner/external-transaction dependencies from prospective CAL tooling while preserving direct execution, durable primary-failure evidence, Harvard sealing, and the freeze/open barrier. | Completed Order 1 and explicit user authorization |
 | 3 | `complete` | `20260727-gate-planner-advisory-linter-thin-slice-001` | Delivered the read-only lint command and proved representative findings, hostile-input refusal, bounded capture, and no execution or mutation with dual review and verification. | Orders 1-2 and explicit user authorization |
 | 4 | `complete` | `20260727-gate-planner-legacy-execution-ci-retirement-001` | Retired the planner execution/CI/control plane after a 31-row consumer inventory; preserved direct authority, immutable policy identity, optional quality observation, and protected-data ownership without a linter CI role. | Order 3 and explicit user authorization |
-| 5 | `queued / not scaffolded` | Agent-friction qualification | Compare the linter with manual planning on real modeling packages, verify the nonblocking failure path, and retain or delete features according to measured utility. No CI qualification. | Orders 3-4 |
+| 5 | `active` | `20260728-gate-planner-agent-friction-qualification-001` | Compare the linter with manual planning on the frozen six-package/18-case cohort and retain it only if every utility and stop-loss threshold passes. No CI qualification. | Orders 3-4 and explicit user authorization |
 
 CAL-04B direct, package-authored modeling work may resume independently under
 its existing authority and the user's direction. It does not wait for any

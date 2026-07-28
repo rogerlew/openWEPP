@@ -329,8 +329,12 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-27 UTC`:
+State as of `2026-07-28 UTC`:
 
+- `20260728-gate-planner-agent-friction-qualification-001/` -
+  ACTIVE: roadmap Order 5 measures the optional advisory linter against the
+  independent manual route on six real packages and applies the stop-loss
+  without CI or a repair prerequisite.
 - `20260727-gate-planner-legacy-execution-ci-retirement-001/` -
   COMPLETE / PASS: roadmap Order 4 retired the frozen planner/TESTGATE
   execution, CI, receipt, ledger, recovery, and publication control plane after
