@@ -170,9 +170,11 @@ refactor thresholds.
 - [x] (2026-07-27, worker) Exact two-assertion implementation and focused gate
   complete.
 - [x] (2026-07-27, reviewers A/B) Dual implementation review passed.
-- [ ] Exact terminal plan and remaining gates complete.
-- [ ] Dual terminal verification complete.
-- [ ] Canonical PASS and dual receipt verification complete.
+- [x] (2026-07-27, comparator) Exact terminal plan and all remaining gates
+  passed, including full 2,361/2,361.
+- [x] (2026-07-27, verifiers A/B) Dual terminal verification passed.
+- [x] (2026-07-27, comparator) Canonical TESTGATE PASS retained.
+- [ ] Dual receipt verification and final disposition complete.
 
 ## Surprises & Discoveries
 

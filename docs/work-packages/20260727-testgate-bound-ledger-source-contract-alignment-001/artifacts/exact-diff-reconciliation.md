@@ -1,6 +1,6 @@
 # Exact Diff Reconciliation
 
-Status: `TERMINAL PLAN PENDING FINAL EVIDENCE COMMIT`
+Status: `PASS`
 
 Authority base: `f8cba1c9f3e02d241a2bb7fccc3329a0a142ac57`
 
@@ -15,7 +15,16 @@ scaffold/evidence plus the previously declared catalog, roadmap, and named
 predecessor evidence paths. No production Rust path is changed by this
 successor.
 
-After this evidence commit, the executor must record the exact clean HEAD,
-enumerate `git diff --name-only` from the authority base, authenticate the
-terminal plan, and confirm every path is in the prospective package chain
-before heavy execution.
+Authenticated terminal subject:
+`10d2c2004d7c85a72a5cae7d73c2b571f245960f`.
+
+The terminal package admission enumerated 16 changed paths. All 16 are
+authorized by the prospective package chain; `unauthorized_paths` is empty.
+The sole Rust path is the target integration test. Production, CAL, and Harvard
+paths are absent. Source mutation checking remained unchanged through receipt.
+
+Terminal plan ID:
+`2239dc7d4e5db6b463eadcc1e34f85f1069960c4310c1bd8ffe5b31621444a5a`.
+
+Terminal plan SHA-256:
+`2369d79397bcdaab349887574f258b28fbe32992b5ac79667e5e893717518b0f`.
