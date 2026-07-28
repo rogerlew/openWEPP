@@ -1,3 +1,3 @@
 # Archived Prompts
 
-Move the execution prompt here after terminal disposition.
+The execution prompt was archived after terminal disposition.

@@ -31,7 +31,6 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `GATE-LINT-ADV-02` legacy execution and CI retirement | Agent tooling | `active` | Execute [roadmap Order 4](work-packages/20260727-gate-planner-legacy-execution-ci-retirement-001/package.md): migrate remaining direct consumers and delete the frozen planner/TESTGATE control plane. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `next` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |

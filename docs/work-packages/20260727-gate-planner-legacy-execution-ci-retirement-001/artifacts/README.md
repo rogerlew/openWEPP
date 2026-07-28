@@ -4,5 +4,6 @@ This directory records required reading, intent, consumer inventory,
 implementation, validation, review, verification, exact-diff reconciliation,
 and final disposition.
 
-Current implementation evidence is in `live-consumer-inventory.md`,
-`implementation-summary.md`, and `validation.md`.
+Terminal evidence is recorded in the implementation, consumer inventory,
+validation, dual review, finding disposition, dual verification, exact-diff,
+and final-disposition artifacts in this directory.

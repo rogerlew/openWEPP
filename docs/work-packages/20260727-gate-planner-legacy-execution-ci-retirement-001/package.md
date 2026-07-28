@@ -5,7 +5,7 @@ Package ID:
 
 Queue ID: `GATE-LINT-ADV-02`
 
-Status: `ACTIVE`
+Status: `COMPLETE / PASS`
 
 Authorization: the user's 2026-07-27 instruction to scaffold and execute
 advisory-linter roadmap Order 4.
@@ -186,10 +186,10 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 - [x] 2026-07-27 — Exact consumer inventory completed.
 - [x] 2026-07-27 — Direct owners migrated and zero-consumer surfaces deleted.
 - [x] 2026-07-27 — Focused validation passed.
-- [ ] Full-workspace closure passed.
-- [ ] Dual review and finding disposition passed.
-- [ ] Dual verification and exact-diff closure passed.
-- [ ] Prompt archived, catalogs closed, and completion committed.
+- [x] 2026-07-27 — Full-workspace closure passed.
+- [x] 2026-07-27 — Dual review and finding disposition passed.
+- [x] 2026-07-27 — Dual verification and exact-diff closure passed.
+- [x] 2026-07-27 — Prompt archived and catalogs closed.
 
 ## Decision Log
 
@@ -215,4 +215,8 @@ heavy suites locally unless the subagent is unavailable with recorded evidence.
 
 ## Outcomes
 
-Populate after implementation and verification.
+The legacy planner/TESTGATE crate, controller, CI, schemas, fixtures, receipt,
+ledger, resume, recovery, external-DAG, and publication control-plane surfaces
+are retired. Remaining direct science admission, anti-evasion, immutable
+historical identity, optional quality observation, and protected-data owners
+operate independently. Order 5 remains queued and unscaffolded.
