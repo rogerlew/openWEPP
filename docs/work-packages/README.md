@@ -331,6 +331,10 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-gate-planner-legacy-execution-ci-retirement-001/` -
+  ACTIVE: roadmap Order 4 migrates remaining direct consumers and retires the
+  frozen planner/TESTGATE execution, CI, receipt, ledger, recovery, and
+  publication control plane without giving the advisory linter a CI role.
 - `20260727-gate-planner-advisory-linter-thin-slice-001/` -
   COMPLETE / PASS: roadmap Order 3 delivered the neutral read-only advisory
   command, deterministic findings, and adversarial no-execution/no-mutation
