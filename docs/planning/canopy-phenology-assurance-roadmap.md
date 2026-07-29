@@ -1,6 +1,6 @@
 # Canopy Phenology Assurance Roadmap
 
-Status: **active scientific campaign roadmap** (2026-07-28).
+Status: **active scientific campaign roadmap** (2026-07-29).
 
 Evidence mode: **Ran evidence plus static synthesis** of the completed
 `CANOPY-PHENOLOGY-01` GSI kernel, completed `CANOPY-PHENOLOGY-02` native
@@ -15,8 +15,12 @@ authorized work package amends them.
 
 ## 0. Outcome
 
-The canopy-phenology program culminates in `CANOPY-ASSURE-01`, a reviewed,
-reproducible scientific assurance report that explains and demonstrates:
+The canopy-phenology program first produces `CANOPY-DOC-01`, a durable
+end-user model-science narrative explaining why native forest phenology is
+needed, how the process chain works, how users should interpret and calibrate
+its coefficients, and where the model remains limited. It then culminates in
+`CANOPY-ASSURE-01`, a reviewed, reproducible scientific assurance report that
+explains and demonstrates:
 
 1. the complete forcing-to-consumer phenology chain;
 2. deciduous, mixed, and evergreen canopy dynamics;
@@ -30,12 +34,12 @@ reproducible scientific assurance report that explains and demonstrates:
    erosion without using downstream compensation to hide an upstream process
    error.
 
-`CANOPY-PHENOLOGY-02` is mechanically complete, and `CANOPY-CAL-01..02`
-completed the Elliot source/reproduction phase. The remaining work is an
-empirical calibration, adjudication, and assurance campaign. A passing unit
-test, exact mass ledger, legacy match, synthetic hemisphere transform, or
-visually plausible canopy curve is necessary evidence but is not sufficient
-for the final report.
+`CANOPY-PHENOLOGY-02` is mechanically complete, and the CAL-01 through CAL-07F
+research sequence has reached its calibration stop-loss and final limitation
+adjudication. The remaining work is the end-user narrative followed by the
+assurance synthesis and publication lifecycle. A passing unit test, exact mass
+ledger, legacy match, synthetic hemisphere transform, or visually plausible
+canopy curve is necessary evidence but is not sufficient for the final report.
 
 The campaign now explicitly preserves **Elliot's staged methodology rather
 than his numerical outputs**. His useful method is to establish vegetation
@@ -405,7 +409,7 @@ contradiction without selecting a correction; CAL-07E completed the
 literature-authority review and exposed a transition-product inconsistency;
 CAL-07F executed the product-consistent audit, rejected another calibration
 round, and adjudicated the remaining Bezà contradiction as an ecosystem-model
-limitation; Order 8 remains prospective.
+limitation; Orders 8 and 9 remain prospective.
 Every prospective row requires its own declared scope, evidence identity, gate
 plan, and disposition before execution.
 
@@ -415,10 +419,11 @@ plan, and disposition before execution.
 | 2 | [`CANOPY-CAL-02` Elliot reproduction](../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md) — **complete / not reproducible** | Reproduce or truthfully bound the Hubbard and Santee biomass, residue, equilibrium, and downstream comparisons. | Passed: machine-readable runs and figures explain the mismatches; legacy recovery is closed. |
 | 3 | [`CANOPY-CAL-03` observation corpus, native fixtures, and research outputs](../work-packages/20260726-canopy-cal-03-observation-native-research-001/package.md) — **complete; CAL-04/05 authority blockers retained** | Installed provenance-bound phenology/LAI/canopy/litter observations, native YAML counterparts for selected canopy-gradient lanes, and a stable daily research-output surface. | Passed for CAL-03: immutable roles, protected bindings, real production consumers, mass/cohort closure, and deterministic rebuild. CAL-04 timing fitting and affected CAL-05 source/decay claims remain authority-blocked pending new independent evidence. |
 | 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / historical hold retained**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **complete / readiness pass / validation limitation retained** | CAL-04B evaluated all 9,261 frozen Hubbard candidates, independently reconstructed a 37-member accepted ensemble, propagated later-stage uncertainty, passed the freeze and two-verifier barrier, and scored Harvard once without refit. GSI timing and foliar/structural partition are empirically calibrated but partially identifiable; the remaining stages are calibration-ready and data-limited. Harvard aggregate errors span 43.48–72.46 days; 34/37 candidates have zero interval coverage and the maximum positive coverage is 18.81%, so independent transferability is unsupported. | Passed: execution, custody, terminal validation, dual scientific review, and dual verification. Retain the poor Harvard result as contrary evidence; do not refit or claim transferability. |
-| 5 | [`CANOPY-CAL-05` litter-source and decomposition readiness](../work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/package.md) — **complete / readiness pass**; [`CANOPY-LITTER-SOURCE-AUTHORITY-01`](../work-packages/20260728-canopy-litter-source-authority-001/package.md) — **complete / external boundary implemented / predictive authority hold retained** | Raw runtime, reconstruction, recovery, terminal ridge, failures, and Harvard diagnostics pass. The direct-runtime operator is calibration-ready-data-limited and partially identifiable. The successor implemented only authenticated exogenous daily forcing; native predictive source sufficiency remains authority-missing and empirical decomposition remains blocked. | Passed for the authenticated external boundary. Orders 6-8 may use it only with provenance-complete daily inputs; do not infer unavailable predictive source magnitudes or fit decomposition. |
+| 5 | [`CANOPY-CAL-05` litter-source and decomposition readiness](../work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/package.md) — **complete / readiness pass**; [`CANOPY-LITTER-SOURCE-AUTHORITY-01`](../work-packages/20260728-canopy-litter-source-authority-001/package.md) — **complete / external boundary implemented / predictive authority hold retained** | Raw runtime, reconstruction, recovery, terminal ridge, failures, and Harvard diagnostics pass. The direct-runtime operator is calibration-ready-data-limited and partially identifiable. The successor implemented only authenticated exogenous daily forcing; native predictive source sufficiency remains authority-missing and empirical decomposition remains blocked. | Passed for the authenticated external boundary. Orders 6-9 may use it only with provenance-complete daily inputs; do not infer unavailable predictive source magnitudes or fit decomposition. |
 | 6 | [`CANOPY-CAL-06` canopy-gradient congruence](../work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/package.md) — **complete / bounded characterization / downstream advancement withheld** | All 261 prespecified runs passed: the complete 37-member timing ensemble across seven native forest lanes plus two open controls. Within-model winter canopy ordering passes 37/37 at Marcell, Harvard, and Hubbard Brook; snow residuals are quantified; Harvard SWE is excluded for a provider unit/identity contradiction; missing predictive litter sources and unavailable erosion output remain explicit. | Passed for bounded characterization: all prespecified cells are `BOUNDED` or `NOT_EVALUATED`, contrary evidence is retained, and unsupported downstream cells are visibly `NOT ADVANCED`. |
 | 7 | [`CANOPY-CAL-07` Southern Hemisphere robustness](../work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/package.md) — **hold / forcing authority incompatible / no canopy result**; [`CAL-07B` hourly VPD aggregation diagnostic](../work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/package.md) — **complete / diagnostic pass**; [`CAL-07C` hourly VPD forcing reconstruction](../work-packages/20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/package.md) — **complete / bounded execution**; [`CAL-07D` transition chronology attribution](../work-packages/20260729-canopy-cal-07d-transition-chronology-attribution-001/package.md) — **complete / diagnostic attribution**; [`CAL-07E` literature authority review](../work-packages/20260729-canopy-cal-07e-literature-authority-review-001/package.md) — **complete / method audit authorized**; [`CAL-07F` observation product/operator audit](../work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/package.md) — **complete / do not calibrate / ecosystem-model limitation adjudicated** | CAL-07F separates `gcc_mean` and `gcc_90`, retains their uncertainty, and reaches the same no-calibration result under both. No member has all 12 seasonal crossings; the best member hits 1/12 and 0/12 confidence intervals, with penalized errors of 59.12 and 65.87 days. | Not passed. Do not execute another Bezà timing calibration round. Defer acquisition and further canopy phenology work; report the tropical dry-forest chronology mismatch as an ecosystem-model limitation. Reopen only with field-corresponded observations, authoritative process science, or an independently testable alternative formulation. |
-| 8 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
+| 8 | [`CANOPY-DOC-01` native-forest canopy-phenology narrative](../work-packages/20260729-canopy-doc-01-canopy-phenology-usersum-001/package.md) — **queued / scaffolded** | Author the broad end-user explanation of the native forest land-use need, forest seasonal dynamics, hydrologic and sediment coupling, model formulation, coefficient meanings and units, evidence-supported ranges, calibration guidance, and interpretation limits. | The self-contained `usersum` narrative, coefficient-authority ledger, references, catalog entry, documentation checks, dual scientific/editorial review, finding disposition, and dual verification pass without duplicating assurance results or inventing typical ranges. |
+| 9 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
 
 ### 6.1 Completed CANOPY-CAL-03 execution contract
 
@@ -611,7 +616,66 @@ Each material claim receives one of:
 No aggregate pass may erase a contradicted site, class, season, or material
 source term.
 
-## 8. CANOPY-ASSURE-01 Report Contract
+## 8. CANOPY-DOC-01 Narrative Contract
+
+`CANOPY-DOC-01` authors
+`usersum/openwepp-canopy-phenology.md` as a durable model-science narrative,
+not a preliminary assurance report. It must explain:
+
+1. why legacy cropland-encoded forest management cannot directly represent
+   mixed and deciduous forest structure, continuous climate-driven foliage,
+   recurring litter transfer, and seasonal forest-floor state;
+2. what the native `native_forest` land-use type changes and which
+   compatibility behaviors it replaces;
+3. the ecological basis of leaf-on, leaf-off, evergreen retention, persistent
+   woody structure, litterfall, decomposition, residue cover, and residue
+   depth;
+4. the abstract weather-and-latitude to GSI, foliage, LAI, canopy, height,
+   litter, and real-consumer chain;
+5. interactions with interception, evapotranspiration, snow, frost, runoff
+   routing, erosion cover, and sediment delivery;
+6. the current evidence envelope and its supported, bounded, contradicted, and
+   not-evaluated regions in reader-facing language; and
+7. what users may and may not infer when applying native forest inputs.
+
+The narrative must include a user-facing coefficient guide for every
+user-configurable input that directly controls native forest phenology, canopy
+and height realization, leaf transfer, or immediate residue behavior. For each
+coefficient it must provide:
+
+- the exact YAML field name, human-readable name, units, and physical or
+  ecological meaning;
+- the equation or process location it controls and the direction of its
+  expected effect;
+- the hard parser/runtime domain separately from any empirical or typical
+  range;
+- whether a reported value is a required input, shipped default, worked
+  example, literature value, calibrated value, accepted ensemble, or
+  not-established quantity;
+- any evidence-supported starting or typical range, with ecological and
+  geographic scope, or an explicit `not established` result when authority is
+  absent;
+- calibration targets, required observations, recommended sequencing,
+  identifiability or covariance warnings, and downstream compensation risks;
+  and
+- transferability and application guidance.
+
+Range labels are binding: `HARD_DOMAIN`, `SOURCE_RANGE`,
+`CALIBRATION_ENSEMBLE`, `TYPICAL_STARTING_RANGE`, `EXAMPLE_ONLY`, and
+`NOT_ESTABLISHED` must not be conflated. A search domain, one calibrated site,
+or a schema example is not automatically a physiological or typical range.
+The narrative must not recommend changing canopy coefficients to compensate
+for snow, runoff, erosion, litter-source, or decomposition residuals.
+
+The document follows
+`docs/standards/usersum-authoring-style-guide.md`: it is self-contained within
+`usersum`, uses published primary references rather than work packages as
+reader-facing citations, separates software verification from empirical
+evidence and application fitness, carries a version and revision log, and
+closes with interpretation guidance. Claim-bearing quantitative evaluation
+tables and reproduction instructions remain owned by `CANOPY-ASSURE-01`.
+
+## 9. CANOPY-ASSURE-01 Report Contract
 
 The final assurance report is a scientific communication product for
 hydrologists, forest managers, model developers, and WEPP users. It must include:
@@ -663,7 +727,7 @@ Minimum tables:
 - sensitivity/identifiability summary; and
 - supported, bounded, contradicted, and not-evaluated claims.
 
-## 9. Publication And Relationship To Other Assurance Work
+## 10. Publication And Relationship To Other Assurance Work
 
 `CANOPY-ASSURE-01` uses the scientific-assurance v2 lifecycle. Generated
 figures, a valid schema, or internal review do not authorize publication.
@@ -683,7 +747,7 @@ snow/frost synthesis, but neither report inherits the other's conclusions.
 Snow/frost residuals that are demonstrably canopy-independent remain owned by
 the snow/frost campaign.
 
-## 10. Immediate Next Action
+## 11. Immediate Next Action
 
 Order 4 is complete with its poor Harvard transferability result retained and
 no refit.
@@ -697,7 +761,7 @@ package is closed.
 
 Current literature and state still do not authorize predictive needle or
 fine-woody ground-deposition laws. The external interface is a separate
-exogenous input and retains predictive-source incompleteness. Orders 6-8 must
+exogenous input and retains predictive-source incompleteness. Orders 6-9 must
 not infer unavailable source magnitudes, tissue partitions, carbon
 conversions, turnover laws, or fitted decay. No additional article is
 currently needed; lifting the predictive hold requires new species/site
@@ -784,11 +848,10 @@ The method review also found that CAL-07's simplified transition dates are
 `gcc_mean`, while CAL-07D's ancillary daily GCC context is `smooth_gcc_90`.
 The products agree within one day for rising transitions but differ by 12 to
 43 days in material falling cases in the checksum-retained provisional record
-processed 26 July 2026. This does not erase the broad chronology contradiction,
-but falling residual magnitude is not product-invariant. A bounded CAL-07F
-observation-product/operator audit is the next package.
-Production correction, parameter fitting, and the Order 7 hold remain
-unchanged.
+processed 26 July 2026. This did not erase the broad chronology contradiction,
+but established that falling residual magnitude was not product-invariant and
+motivated the subsequently executed CAL-07F observation-product/operator
+audit.
 
 `CANOPY-CAL-07F` executed the product-consistent stop-loss audit. The retained
 daily curves reproduce all 24 product transitions; member ranks are identical
@@ -806,3 +869,9 @@ Bezà contradiction is adjudicated as an ecosystem-model limitation for this
 tropical dry-forest lane. Order 7 remains not passed; reactivation requires
 field-corresponded evidence, authoritative process science, or an independently
 testable alternative ecosystem phenology formulation.
+
+The immediate next package is `CANOPY-DOC-01`. It authors the durable
+native-forest canopy-phenology model narrative and coefficient/calibration
+guide without reopening calibration or duplicating the assurance evidence.
+After that narrative passes review and verification, `CANOPY-ASSURE-01`
+executes as Order 9.
