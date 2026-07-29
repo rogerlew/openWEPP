@@ -1,0 +1,13 @@
+event_id,direction,source_level,source_date,source_doy,window_calendar_days,accepted_raw_gcc90_days,missing_or_rejected_raw_days,source_smooth_gcc90,source_smooth_ci_width,event_day_image_count,event_day_raw_gcc90,event_day_outlier_flag,source_span_is_confidence_interval
+2024-falling,falling,0.10,2024-06-27,179,43,37,6,0.34812,0.00054,18,0.34834,0,False
+2024-falling,falling,0.25,2024-06-13,165,43,40,3,0.35105,0.00052,18,0.35084,0,False
+2024-falling,falling,0.50,2024-05-21,142,43,37,6,0.35646,0.00051,18,0.35639,0,False
+2024-rising,rising,0.10,2024-08-18,231,43,38,5,0.34496,0.00055,19,0.34461,0,False
+2024-rising,rising,0.25,2024-08-20,233,43,38,5,0.34805,0.00054,19,0.34774,0,False
+2024-rising,rising,0.50,2024-08-24,237,43,38,5,0.3561,0.00054,18,0.35487,0,False
+2025-falling,falling,0.10,2025-06-16,167,43,33,10,0.35465,0.00054,17,0.35514,0,False
+2025-falling,falling,0.25,2025-05-23,143,43,33,10,0.35856,0.00051,17,0.35844,0,False
+2025-falling,falling,0.50,2025-05-01,121,43,38,5,0.36192,0.0014,0,NA,0,False
+2025-rising,rising,0.10,2025-08-29,241,43,29,14,0.34858,0.00096,20,0.34869,0,False
+2025-rising,rising,0.25,2025-08-31,243,43,29,14,0.35096,0.0041,0,NA,0,False
+2025-rising,rising,0.50,2025-09-05,248,43,29,14,0.35657,0.01701,0,NA,0,False

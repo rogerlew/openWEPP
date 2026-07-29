@@ -394,6 +394,17 @@ State as of `2026-07-28 UTC`:
   remains held because transition chronology and combined seasonal-direction
   evidence are contradicted, while amplitude/floor/decomposition cells remain
   not evaluated.
+- `20260729-canopy-cal-07d-transition-chronology-attribution-001/` -
+  COMPLETE / DIAGNOSTIC ATTRIBUTION / ORDER 7 HOLD RETAINED: independently
+  reconstructed all 61,642 CAL-07C Beza member-days with zero equation
+  residual and reproduced the same 11/148 absolute transition matches.
+  Source-aligned relative levels recovered 262 previously unmatched rows but
+  did not resolve chronology. Photoperiod and VPD are supported mathematical
+  contributors; observation scale, gridded forcing, ecotype transfer, and a
+  missing tropical dry-forest cue remain assumption-bounded or unresolved.
+  Four accessible SVG plots and Markdown sidecars retain crossings, daily
+  indicators, counterfactual effects, and threshold sensitivity. No parameter,
+  forcing, or process correction is authorized.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

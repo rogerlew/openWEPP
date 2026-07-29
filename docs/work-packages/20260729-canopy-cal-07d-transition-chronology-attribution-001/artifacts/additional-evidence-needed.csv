@@ -1,0 +1,5 @@
+solution_route,minimum_discriminating_evidence,current_status,next_authority_boundary
+FORCING_BIAS,"quality-controlled on-site Tmin, humidity/VPD, and precipitation over complete leaf-off and leaf-on seasons",MISSING,observed-data admission before forcing adjudication
+OBSERVATION_SEMANTICS,"raw image/ROI review, fit metadata and method, transition uncertainty or field phenology corroboration",PARTIAL,source-method and site-observation admission
+PARAMETER_OR_ECOTYPE_TRANSFER,tropical dry-forest threshold authority plus an independently reserved site or held-out years,MISSING,separate calibration/validation package under ADR-0042
+MISSING_PROCESS,"rainfall, soil-water or plant-water-status observations plus site/ecotype literature establishing the cue",MISSING,contract-first process package only after science-authority admission

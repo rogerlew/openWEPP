@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="650" viewBox="0 0 1280 650" role="img" aria-labelledby="title desc">
+<title id="title">CAL-07D model-level threshold sensitivity</title>
+<desc id="desc">Two panels show matched fraction and median residual as the retrospective model-relative level varies.</desc>
+<style>
+        text{font-family:Arial,sans-serif;fill:#17212B}
+        .title{font-size:22px;font-weight:700}
+        .label{font-size:14px;font-weight:700}
+        .small{font-size:11px}
+        .axis{stroke:#65727E;stroke-width:1}
+        .grid{stroke:#D8E0E6;stroke-width:1}
+        .panel{fill:#FBFCFD;stroke:#B9C4CC;stroke-width:1}
+        </style>
+<rect width="1280" height="650" fill="#FFFFFF"/>
+<metadata id="cal07d-data-binding">{&quot;plotted_data_sha256&quot;:&quot;13b38e242e049ef23e09c1122b1fb404a0b233933ec5aa2812ffa1eca5b93e2a&quot;,&quot;plotted_fields&quot;:[&quot;member_or_default&quot;,&quot;event_id&quot;,&quot;model_level&quot;,&quot;matched&quot;,&quot;residual_days&quot;],&quot;plotted_record_count&quot;:1628,&quot;sources&quot;:{&quot;model-level-sensitivity.csv&quot;:{&quot;rows&quot;:1628,&quot;sha256&quot;:&quot;b9e6d6a2839f9c4cb2d6e9c0726a856c397e1ac505432561e6111aa1906fa4d9&quot;}}}</metadata>
+<text x="60.00" y="34.00" class="title" text-anchor="start">Transition conclusions depend strongly on the retrospective model level</text>
+<rect x="70" y="75" width="520" height="470" class="panel"/>
+<text x="80.00" y="97.00" class="label" text-anchor="start">Matched fraction</text>
+<line x1="130.00" y1="115.00" x2="130.00" y2="500.00" class="grid"/>
+<text x="130.00" y="518.00" class="small" text-anchor="middle">0.1</text>
+<line x1="185.00" y1="115.00" x2="185.00" y2="500.00" class="grid"/>
+<text x="185.00" y="518.00" class="small" text-anchor="middle">0.2</text>
+<line x1="212.50" y1="115.00" x2="212.50" y2="500.00" class="grid"/>
+<text x="212.50" y="518.00" class="small" text-anchor="middle">0.25</text>
+<line x1="240.00" y1="115.00" x2="240.00" y2="500.00" class="grid"/>
+<text x="240.00" y="518.00" class="small" text-anchor="middle">0.3</text>
+<line x1="295.00" y1="115.00" x2="295.00" y2="500.00" class="grid"/>
+<text x="295.00" y="518.00" class="small" text-anchor="middle">0.4</text>
+<line x1="350.00" y1="115.00" x2="350.00" y2="500.00" class="grid"/>
+<text x="350.00" y="518.00" class="small" text-anchor="middle">0.5</text>
+<line x1="405.00" y1="115.00" x2="405.00" y2="500.00" class="grid"/>
+<text x="405.00" y="518.00" class="small" text-anchor="middle">0.6</text>
+<line x1="460.00" y1="115.00" x2="460.00" y2="500.00" class="grid"/>
+<text x="460.00" y="518.00" class="small" text-anchor="middle">0.7</text>
+<line x1="487.50" y1="115.00" x2="487.50" y2="500.00" class="grid"/>
+<text x="487.50" y="518.00" class="small" text-anchor="middle">0.75</text>
+<line x1="515.00" y1="115.00" x2="515.00" y2="500.00" class="grid"/>
+<text x="515.00" y="518.00" class="small" text-anchor="middle">0.8</text>
+<line x1="570.00" y1="115.00" x2="570.00" y2="500.00" class="grid"/>
+<text x="570.00" y="518.00" class="small" text-anchor="middle">0.9</text>
+<line x1="130.00" y1="500.00" x2="570.00" y2="500.00" class="grid"/>
+<text x="122.00" y="504.00" class="small" text-anchor="end">0.00</text>
+<line x1="130.00" y1="403.75" x2="570.00" y2="403.75" class="grid"/>
+<text x="122.00" y="407.75" class="small" text-anchor="end">0.25</text>
+<line x1="130.00" y1="307.50" x2="570.00" y2="307.50" class="grid"/>
+<text x="122.00" y="311.50" class="small" text-anchor="end">0.50</text>
+<line x1="130.00" y1="211.25" x2="570.00" y2="211.25" class="grid"/>
+<text x="122.00" y="215.25" class="small" text-anchor="end">0.75</text>
+<line x1="130.00" y1="115.00" x2="570.00" y2="115.00" class="grid"/>
+<text x="122.00" y="119.00" class="small" text-anchor="end">1.00</text>
+<polyline points="130.00,115.00 185.00,115.00 212.50,115.00 240.00,115.00 295.00,219.05 350.00,219.05 405.00,219.05 460.00,323.11 487.50,323.11 515.00,343.92 570.00,447.97" fill="none" stroke="#245B8A" stroke-width="2.0"/>
+<circle cx="130.00" cy="115.00" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="185.00" cy="115.00" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="212.50" cy="115.00" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="240.00" cy="115.00" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="295.00" cy="219.05" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="350.00" cy="219.05" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="405.00" cy="219.05" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="460.00" cy="323.11" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="487.50" cy="323.11" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="515.00" cy="343.92" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="570.00" cy="447.97" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<polyline points="130.00,115.00 185.00,489.59 212.50,489.59 240.00,489.59 295.00,500.00 350.00,500.00 405.00,500.00 460.00,500.00 487.50,500.00 515.00,500.00 570.00,500.00" fill="none" stroke="#D87819" stroke-width="2.0"/>
+<rect x="128.00" y="113.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="183.00" y="487.59" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="210.50" y="487.59" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="238.00" y="487.59" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="293.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="348.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="403.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="458.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="485.50" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="513.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="568.00" y="498.00" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<polyline points="130.00,115.00 185.00,115.00 212.50,115.00 240.00,115.00 295.00,115.00 350.00,115.00 405.00,115.00 460.00,115.00 487.50,115.00 515.00,115.00 570.00,115.00" fill="none" stroke="#25845B" stroke-width="2.0"/>
+<polygon points="130.00,111.00 134.00,115.00 130.00,119.00 126.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="185.00,111.00 189.00,115.00 185.00,119.00 181.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="212.50,111.00 216.50,115.00 212.50,119.00 208.50,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="240.00,111.00 244.00,115.00 240.00,119.00 236.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="295.00,111.00 299.00,115.00 295.00,119.00 291.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="350.00,111.00 354.00,115.00 350.00,119.00 346.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="405.00,111.00 409.00,115.00 405.00,119.00 401.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="460.00,111.00 464.00,115.00 460.00,119.00 456.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="487.50,111.00 491.50,115.00 487.50,119.00 483.50,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="515.00,111.00 519.00,115.00 515.00,119.00 511.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="570.00,111.00 574.00,115.00 570.00,119.00 566.00,115.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polyline points="130.00,115.00 185.00,177.43 212.50,416.76 240.00,500.00 295.00,500.00 350.00,500.00 405.00,500.00 460.00,500.00 487.50,500.00 515.00,500.00 570.00,500.00" fill="none" stroke="#7A5195" stroke-width="2.0"/>
+<path d="M126.00,111.00 L134.00,119.00 M126.00,119.00 L134.00,111.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M181.00,173.43 L189.00,181.43 M181.00,181.43 L189.00,173.43" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M208.50,412.76 L216.50,420.76 M208.50,420.76 L216.50,412.76" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M236.00,496.00 L244.00,504.00 M236.00,504.00 L244.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M291.00,496.00 L299.00,504.00 M291.00,504.00 L299.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M346.00,496.00 L354.00,504.00 M346.00,504.00 L354.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M401.00,496.00 L409.00,504.00 M401.00,504.00 L409.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M456.00,496.00 L464.00,504.00 M456.00,504.00 L464.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M483.50,496.00 L491.50,504.00 M483.50,504.00 L491.50,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M511.00,496.00 L519.00,504.00 M511.00,504.00 L519.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M566.00,496.00 L574.00,504.00 M566.00,504.00 L574.00,496.00" stroke="#7A5195" stroke-width="1.4"/>
+<text x="350.00" y="535.00" class="small" text-anchor="middle">event-year relative model level</text>
+<rect x="670" y="75" width="520" height="470" class="panel"/>
+<text x="680.00" y="97.00" class="label" text-anchor="start">Median residual among matched rows (days)</text>
+<line x1="730.00" y1="115.00" x2="730.00" y2="500.00" class="grid"/>
+<text x="730.00" y="518.00" class="small" text-anchor="middle">0.1</text>
+<line x1="785.00" y1="115.00" x2="785.00" y2="500.00" class="grid"/>
+<text x="785.00" y="518.00" class="small" text-anchor="middle">0.2</text>
+<line x1="812.50" y1="115.00" x2="812.50" y2="500.00" class="grid"/>
+<text x="812.50" y="518.00" class="small" text-anchor="middle">0.25</text>
+<line x1="840.00" y1="115.00" x2="840.00" y2="500.00" class="grid"/>
+<text x="840.00" y="518.00" class="small" text-anchor="middle">0.3</text>
+<line x1="895.00" y1="115.00" x2="895.00" y2="500.00" class="grid"/>
+<text x="895.00" y="518.00" class="small" text-anchor="middle">0.4</text>
+<line x1="950.00" y1="115.00" x2="950.00" y2="500.00" class="grid"/>
+<text x="950.00" y="518.00" class="small" text-anchor="middle">0.5</text>
+<line x1="1005.00" y1="115.00" x2="1005.00" y2="500.00" class="grid"/>
+<text x="1005.00" y="518.00" class="small" text-anchor="middle">0.6</text>
+<line x1="1060.00" y1="115.00" x2="1060.00" y2="500.00" class="grid"/>
+<text x="1060.00" y="518.00" class="small" text-anchor="middle">0.7</text>
+<line x1="1087.50" y1="115.00" x2="1087.50" y2="500.00" class="grid"/>
+<text x="1087.50" y="518.00" class="small" text-anchor="middle">0.75</text>
+<line x1="1115.00" y1="115.00" x2="1115.00" y2="500.00" class="grid"/>
+<text x="1115.00" y="518.00" class="small" text-anchor="middle">0.8</text>
+<line x1="1170.00" y1="115.00" x2="1170.00" y2="500.00" class="grid"/>
+<text x="1170.00" y="518.00" class="small" text-anchor="middle">0.9</text>
+<line x1="730.00" y1="500.00" x2="1170.00" y2="500.00" class="grid"/>
+<text x="722.00" y="504.00" class="small" text-anchor="end">-130</text>
+<line x1="730.00" y1="403.75" x2="1170.00" y2="403.75" class="grid"/>
+<text x="722.00" y="407.75" class="small" text-anchor="end">-65</text>
+<line x1="730.00" y1="307.50" x2="1170.00" y2="307.50" class="grid"/>
+<text x="722.00" y="311.50" class="small" text-anchor="end">0</text>
+<line x1="730.00" y1="211.25" x2="1170.00" y2="211.25" class="grid"/>
+<text x="722.00" y="215.25" class="small" text-anchor="end">65</text>
+<line x1="730.00" y1="115.00" x2="1170.00" y2="115.00" class="grid"/>
+<text x="722.00" y="119.00" class="small" text-anchor="end">130</text>
+<polyline points="730.00,343.71 785.00,359.51 812.50,364.90 840.00,369.22 895.00,368.91 950.00,425.77 1005.00,433.21 1060.00,439.01 1087.50,388.68 1115.00,391.53 1170.00,390.38" fill="none" stroke="#245B8A" stroke-width="2.0"/>
+<circle cx="730.00" cy="343.71" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="785.00" cy="359.51" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="812.50" cy="364.90" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="840.00" cy="369.22" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="895.00" cy="368.91" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="950.00" cy="425.77" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="1005.00" cy="433.21" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="1060.00" cy="439.01" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="1087.50" cy="388.68" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="1115.00" cy="391.53" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<circle cx="1170.00" cy="390.38" r="4.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<polyline points="730.00,248.44 785.00,297.11 812.50,295.47 840.00,293.47" fill="none" stroke="#D87819" stroke-width="2.0"/>
+<rect x="728.00" y="246.44" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="783.00" y="295.11" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="810.50" y="293.47" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<rect x="838.00" y="291.47" width="4.00" height="4.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<polyline points="730.00,330.85 785.00,342.52 812.50,346.69 840.00,350.75 895.00,357.88 950.00,366.44 1005.00,376.68 1060.00,393.41 1087.50,400.32 1115.00,406.88 1170.00,417.29" fill="none" stroke="#25845B" stroke-width="2.0"/>
+<polygon points="730.00,326.85 734.00,330.85 730.00,334.85 726.00,330.85" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="785.00,338.52 789.00,342.52 785.00,346.52 781.00,342.52" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="812.50,342.69 816.50,346.69 812.50,350.69 808.50,346.69" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="840.00,346.75 844.00,350.75 840.00,354.75 836.00,350.75" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="895.00,353.88 899.00,357.88 895.00,361.88 891.00,357.88" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="950.00,362.44 954.00,366.44 950.00,370.44 946.00,366.44" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="1005.00,372.68 1009.00,376.68 1005.00,380.68 1001.00,376.68" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="1060.00,389.41 1064.00,393.41 1060.00,397.41 1056.00,393.41" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="1087.50,396.32 1091.50,400.32 1087.50,404.32 1083.50,400.32" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="1115.00,402.88 1119.00,406.88 1115.00,410.88 1111.00,406.88" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polygon points="1170.00,413.29 1174.00,417.29 1170.00,421.29 1166.00,417.29" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<polyline points="730.00,195.50 785.00,136.54 812.50,137.11" fill="none" stroke="#7A5195" stroke-width="2.0"/>
+<path d="M726.00,191.50 L734.00,199.50 M726.00,199.50 L734.00,191.50" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M781.00,132.54 L789.00,140.54 M781.00,140.54 L789.00,132.54" stroke="#7A5195" stroke-width="1.4"/>
+<path d="M808.50,133.11 L816.50,141.11 M808.50,141.11 L816.50,133.11" stroke="#7A5195" stroke-width="1.4"/>
+<text x="950.00" y="535.00" class="small" text-anchor="middle">event-year relative model level</text>
+<circle cx="220.00" cy="611.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="232.00" y="615.00" class="small" text-anchor="start">2024 falling</text>
+<rect x="437.50" y="608.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="452.00" y="615.00" class="small" text-anchor="start">2024 rising</text>
+<polygon points="660.00,606.00 665.00,611.00 660.00,616.00 655.00,611.00" fill="#25845B" stroke="#fff" stroke-width=".6"/>
+<text x="672.00" y="615.00" class="small" text-anchor="start">2025 falling</text>
+<path d="M875.00,606.00 L885.00,616.00 M875.00,616.00 L885.00,606.00" stroke="#7A5195" stroke-width="1.4"/>
+<text x="892.00" y="615.00" class="small" text-anchor="start">2025 rising</text>
+</svg>

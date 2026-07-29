@@ -1,0 +1,8 @@
+hypothesis,status,predicate_value,predicate,claim_ceiling
+OBSERVATION_SCALE,SUPPORTED_AS_CONTRIBUTOR,262,absolute-unmatched member/events matched by a source-level-aligned BASE operator,scale sensitivity only; GCC and GSI states are not validated as equivalent
+TEMPERATURE_CONSTRAINT,SUPPORTED_AS_MATHEMATICAL_CONTRIBUTOR,98,"member/event/operator rows with changed event state, match availability, or crossing",indicator substitution is attribution-only and does not show biological error
+VPD_CONSTRAINT,SUPPORTED_AS_MATHEMATICAL_CONTRIBUTOR,248,"member/event/operator rows with changed event state, match availability, or crossing",indicator substitution is attribution-only and does not show biological error
+PHOTOPERIOD_CONSTRAINT,SUPPORTED_AS_MATHEMATICAL_CONTRIBUTOR,296,"member/event/operator rows with changed event state, match availability, or crossing",indicator substitution is attribution-only and does not show biological error
+CURRENT_GSI_CONSTRAINT_SENSITIVITY,PLAUSIBLE_UNRESOLVED,1,any single-indicator scenario increases matched rows under the same operator,"does not identify thresholds or separate forcing, physiology, and missing cues"
+FORCING_LIMITATION,PLAUSIBLE_UNRESOLVED,1,Beza forcing is gridded POWER and no on-site meteorology is admitted,no forcing-bias magnitude or correction is identified
+MISSING_PROCESS,PLAUSIBLE_UNRESOLVED,1,source rising date with median instantaneous GSI <0.5 and at least two median indicators <0.5,compatible with forcing bias and current threshold transfer; no new process is authorized

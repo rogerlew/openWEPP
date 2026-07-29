@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="660" viewBox="0 0 1280 660" role="img" aria-labelledby="title desc">
+<title id="title">CAL-07D constraint-removal effect screen</title>
+<desc id="desc">Matched fractions and residual distributions compare the base, constraint-removal, and canonical default scenarios.</desc>
+<style>
+        text{font-family:Arial,sans-serif;fill:#17212B}
+        .title{font-size:22px;font-weight:700}
+        .label{font-size:14px;font-weight:700}
+        .small{font-size:11px}
+        .axis{stroke:#65727E;stroke-width:1}
+        .grid{stroke:#D8E0E6;stroke-width:1}
+        .panel{fill:#FBFCFD;stroke:#B9C4CC;stroke-width:1}
+        </style>
+<rect width="1280" height="660" fill="#FFFFFF"/>
+<metadata id="cal07d-data-binding">{&quot;plotted_data_sha256&quot;:&quot;f7095f49c7f706c7f4318545713790dc547bb381a980266dde77e1f097121ca4&quot;,&quot;plotted_fields&quot;:[&quot;scenario&quot;,&quot;member_or_default&quot;,&quot;event_id&quot;,&quot;operator&quot;,&quot;matched&quot;,&quot;residual_days&quot;],&quot;plotted_record_count&quot;:1488,&quot;sources&quot;:{&quot;decision-screen.csv&quot;:{&quot;rows&quot;:7,&quot;sha256&quot;:&quot;063b9423f51230875d9f8430defa194df4000c45aefb2d26f04a9240659f2c8a&quot;},&quot;scenario-event-screen.csv&quot;:{&quot;rows&quot;:1488,&quot;sha256&quot;:&quot;51b967bdce7aaa8c72c7a1a73ba3b97b72b691279b5dd6db83e50ff952733051&quot;}}}</metadata>
+<text x="60.00" y="34.00" class="title" text-anchor="start">Constraint-removal timing effects are mathematical sensitivity, not solutions</text>
+<rect x="70" y="75" width="520" height="500" class="panel"/>
+<rect x="670" y="75" width="520" height="500" class="panel"/>
+<text x="80.00" y="97.00" class="label" text-anchor="start">Matched member-event fraction</text>
+<text x="680.00" y="97.00" class="label" text-anchor="start">Residual days for matched rows</text>
+<line x1="260.00" y1="115.00" x2="260.00" y2="525.00" class="grid"/>
+<text x="260.00" y="545.00" class="small" text-anchor="middle">0%</text>
+<line x1="332.50" y1="115.00" x2="332.50" y2="525.00" class="grid"/>
+<text x="332.50" y="545.00" class="small" text-anchor="middle">25%</text>
+<line x1="405.00" y1="115.00" x2="405.00" y2="525.00" class="grid"/>
+<text x="405.00" y="545.00" class="small" text-anchor="middle">50%</text>
+<line x1="477.50" y1="115.00" x2="477.50" y2="525.00" class="grid"/>
+<text x="477.50" y="545.00" class="small" text-anchor="middle">75%</text>
+<line x1="550.00" y1="115.00" x2="550.00" y2="525.00" class="grid"/>
+<text x="550.00" y="545.00" class="small" text-anchor="middle">100%</text>
+<line x1="873.18" y1="115.00" x2="873.18" y2="525.00" class="grid"/>
+<text x="873.18" y="545.00" class="small" text-anchor="middle">-100</text>
+<line x1="939.09" y1="115.00" x2="939.09" y2="525.00" class="grid"/>
+<text x="939.09" y="545.00" class="small" text-anchor="middle">-50</text>
+<line x1="1005.00" y1="115.00" x2="1005.00" y2="525.00" class="grid"/>
+<text x="1005.00" y="545.00" class="small" text-anchor="middle">0</text>
+<line x1="1070.91" y1="115.00" x2="1070.91" y2="525.00" class="grid"/>
+<text x="1070.91" y="545.00" class="small" text-anchor="middle">50</text>
+<line x1="1136.82" y1="115.00" x2="1136.82" y2="525.00" class="grid"/>
+<text x="1136.82" y="545.00" class="small" text-anchor="middle">100</text>
+<text x="80.00" y="144.00" class="small" text-anchor="start">Base</text>
+<text x="680.00" y="144.00" class="small" text-anchor="start">Base</text>
+<circle cx="281.55" cy="132.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<line x1="903.55" y1="132.00" x2="981.60" y2="132.00" class="axis"/>
+<circle cx="935.82" cy="132.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="289.55" y="136.00" class="small" text-anchor="start">11/148</text>
+<rect x="382.91" y="145.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="892.55" y1="148.00" x2="981.74" y2="148.00" class="axis"/>
+<rect x="914.72" y="145.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="393.41" y="152.00" class="small" text-anchor="start">64/148</text>
+<text x="80.00" y="209.00" class="small" text-anchor="start">Temperature=1</text>
+<text x="680.00" y="209.00" class="small" text-anchor="start">Temperature=1</text>
+<circle cx="281.55" cy="197.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<line x1="903.65" y1="197.00" x2="981.76" y2="197.00" class="axis"/>
+<circle cx="935.86" cy="197.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="289.55" y="201.00" class="small" text-anchor="start">11/148</text>
+<rect x="382.91" y="210.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="892.54" y1="213.00" x2="981.72" y2="213.00" class="axis"/>
+<rect x="914.72" y="210.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="393.41" y="217.00" class="small" text-anchor="start">64/148</text>
+<text x="80.00" y="274.00" class="small" text-anchor="start">VPD=1</text>
+<text x="680.00" y="274.00" class="small" text-anchor="start">VPD=1</text>
+<circle cx="444.19" cy="262.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<line x1="878.09" y1="262.00" x2="1136.63" y2="262.00" class="axis"/>
+<circle cx="1086.00" cy="262.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="452.19" y="266.00" class="small" text-anchor="start">94/148</text>
+<rect x="547.50" y="275.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="879.37" y1="278.00" x2="1110.81" y2="278.00" class="axis"/>
+<rect x="993.49" y="275.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="558.00" y="282.00" class="small" text-anchor="start">148/148</text>
+<text x="80.00" y="339.00" class="small" text-anchor="start">Photoperiod=1</text>
+<text x="680.00" y="339.00" class="small" text-anchor="start">Photoperiod=1</text>
+<circle cx="467.70" cy="327.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<line x1="942.14" y1="327.00" x2="985.90" y2="327.00" class="axis"/>
+<circle cx="981.61" cy="327.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="475.70" y="331.00" class="small" text-anchor="start">106/148</text>
+<rect x="439.73" y="340.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="892.54" y1="343.00" x2="987.61" y2="343.00" class="axis"/>
+<rect x="946.11" y="340.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="450.23" y="347.00" class="small" text-anchor="start">93/148</text>
+<text x="80.00" y="404.00" class="small" text-anchor="start">Photo+VPD=1</text>
+<text x="680.00" y="404.00" class="small" text-anchor="start">Photo+VPD=1</text>
+<circle cx="260.00" cy="392.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<path d="M856.00,388.00 L864.00,396.00 M856.00,396.00 L864.00,388.00" stroke="#245B8A" stroke-width="1.4"/>
+<text x="268.00" y="396.00" class="small" text-anchor="start">0/148</text>
+<rect x="424.05" y="405.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="966.17" y1="408.00" x2="1057.53" y2="408.00" class="axis"/>
+<rect x="1012.28" y="405.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="434.55" y="412.00" class="small" text-anchor="start">85/148</text>
+<text x="80.00" y="469.00" class="small" text-anchor="start">Canonical default</text>
+<text x="680.00" y="469.00" class="small" text-anchor="start">Canonical default</text>
+<circle cx="550.00" cy="457.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<line x1="941.98" y1="457.00" x2="1061.92" y2="457.00" class="axis"/>
+<circle cx="993.53" cy="457.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="558.00" y="461.00" class="small" text-anchor="start">4/4</text>
+<rect x="547.50" y="470.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<line x1="957.00" y1="473.00" x2="1037.84" y2="473.00" class="axis"/>
+<rect x="992.05" y="470.50" width="5.00" height="5.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="558.00" y="477.00" class="small" text-anchor="start">4/4</text>
+<circle cx="390.00" cy="621.00" r="5.00" fill="#245B8A" stroke="#fff" stroke-width=".6"/>
+<text x="402.00" y="625.00" class="small" text-anchor="start">absolute GSI 0.5</text>
+<rect x="606.00" y="617.00" width="8.00" height="8.00" fill="#D87819" stroke="#fff" stroke-width=".6"/>
+<text x="622.00" y="625.00" class="small" text-anchor="start">event-year relative midpoint</text>
+<path d="M916.00,617.00 L924.00,625.00 M916.00,625.00 L924.00,617.00" stroke="#65727E" stroke-width="1.4"/>
+<text x="932.00" y="625.00" class="small" text-anchor="start">no matched residual</text>
+</svg>
