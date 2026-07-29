@@ -10,15 +10,17 @@ a parameter, or upgrade calibration or predictive-source status.
 
 ## Figures
 
-1. [`cal05-terminal-stock-response.svg`](cal05-terminal-stock-response.svg)
-   shows the 4-by-4 terminal-stock response to the frozen annual-input and
-   decay axes. It makes the joint source/decay control visible.
-2. [`cal05-daily-recovery.svg`](cal05-daily-recovery.svg) shows that the
-   complete daily stock series uniquely recovers `S020-K050` within the frozen
-   grid while every other candidate has positive error.
-3. [`cal05-source-decay-ridge.svg`](cal05-source-decay-ridge.svg) shows the
-   five analytically constructed source/rate pairs and their distinct
-   trajectories to the same year-20 stock.
+| Figure | Markdown sidecar | Interpretation |
+| --- | --- | --- |
+| [`cal05-terminal-stock-response.svg`](cal05-terminal-stock-response.svg) | [`cal05-terminal-stock-response.md`](cal05-terminal-stock-response.md) | The 4×4 terminal-stock response to the frozen annual-input and decay axes. |
+| [`cal05-daily-recovery.svg`](cal05-daily-recovery.svg) | [`cal05-daily-recovery.md`](cal05-daily-recovery.md) | Complete daily stock uniquely recovers `S020-K050` within the frozen grid. |
+| [`cal05-source-decay-ridge.svg`](cal05-source-decay-ridge.svg) | [`cal05-source-decay-ridge.md`](cal05-source-decay-ridge.md) | Five source/rate pairs follow distinct paths to the same year-20 stock. |
+
+Each same-basename sidecar is written for readers who encounter the figure
+outside the work-package narrative. It explains why the figure exists, how to
+read it, the plain-language takeaway, units and quantitative context, exact
+source links, and the interpretation/authority boundaries that must accompany
+the plot.
 
 All quantities are synthetic and retain the package's
 `ASSUMED_FOR_EXECUTION` classification. The figures are explanatory evidence,
@@ -43,4 +45,5 @@ The renderer uses only the Python standard library and reads:
 - `ridge-producer-results.csv`.
 
 The SVG output contains accessible titles and descriptions and has no
-timestamp or environment-dependent metadata.
+timestamp or environment-dependent metadata. The Markdown sidecars are
+authored companion documents and are not rewritten by the renderer.

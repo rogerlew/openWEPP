@@ -499,7 +499,7 @@ def terminal_ridge() -> None:
                         "stroke_width": 2,
                     },
                 ),
-                text_node(x + 10, y - 10, row["ridge_id"].replace("RIDGE-", ""), class_="tick"),
+                text_node(x + 10, y + 5, row["ridge_id"].replace("RIDGE-", ""), class_="tick"),
             ]
         )
     body.extend(
@@ -535,8 +535,33 @@ def terminal_ridge() -> None:
                 text_node(trajectory_left - 12, y + 5, f"{stock:.1f}", class_="tick", text_anchor="end"),
             ]
         )
-    palette = ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#1f78b4"]
-    for color, row in zip(palette, design, strict=True):
+    trajectory_styles = [
+        ("#009e73", ""),
+        ("#e69f00", "10 5"),
+        ("#0072b2", "3 4"),
+        ("#cc79a7", "12 4 3 4"),
+        ("#d55e00", "2 3"),
+    ]
+    legend_x = trajectory_left + trajectory_w - 112
+    legend_y = trajectory_top + trajectory_h - 133
+    body.append(
+        element(
+            "rect",
+            {
+                "x": legend_x,
+                "y": legend_y,
+                "width": 104,
+                "height": 125,
+                "rx": 5,
+                "fill": "#ffffff",
+                "fill_opacity": 0.92,
+                "stroke": COLORS["grid"],
+            },
+        )
+    )
+    for style_index, ((color, dash), row) in enumerate(
+        zip(trajectory_styles, design, strict=True)
+    ):
         series = annual_end[row["ridge_id"]]
         points = [
             (
@@ -553,6 +578,7 @@ def terminal_ridge() -> None:
                     "fill": "none",
                     "stroke": color,
                     "stroke_width": 3,
+                    "stroke_dasharray": dash,
                 },
             )
         )
@@ -563,14 +589,26 @@ def terminal_ridge() -> None:
                 {"cx": end_x, "cy": end_y, "r": 5, "fill": color},
             )
         )
-        body.append(
-            text_node(
-                trajectory_left + 8,
-                trajectory_top + 22 + 24 * palette.index(color),
-                row["ridge_id"].replace("RIDGE-", ""),
-                class_="tick",
-                style=f"fill:{color};font-weight:700",
-            )
+        legend_row_y = legend_y + 25 + 22 * style_index
+        body.extend(
+            [
+                line(
+                    legend_x + 10,
+                    legend_row_y - 4,
+                    legend_x + 42,
+                    legend_row_y - 4,
+                    stroke=color,
+                    stroke_width=3,
+                    stroke_dasharray=dash,
+                ),
+                text_node(
+                    legend_x + 50,
+                    legend_row_y,
+                    row["ridge_id"].replace("RIDGE-", ""),
+                    class_="tick",
+                    style="font-weight:700",
+                ),
+            ]
         )
     body.extend(
         [
@@ -618,7 +656,8 @@ def terminal_ridge() -> None:
         (
             "Two-panel figure. The left panel plots five increasing annual litter "
             "input and decay-rate pairs. The right panel shows their distinct "
-            "annual stock trajectories converging to the same year-twenty stock."
+            "annual stock trajectories converging to the same year-twenty stock. "
+            "Color and dash pattern jointly distinguish the five trajectories."
         ),
         body,
     )

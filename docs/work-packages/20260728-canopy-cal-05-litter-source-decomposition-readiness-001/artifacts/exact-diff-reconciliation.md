@@ -7,6 +7,12 @@ Post-closure note: the operator-directed visualization supplement adds only
 package text. It reads frozen result tables and changes no executor, result,
 contract, fixture, test, or scientific status.
 
+The later figure-documentation follow-on adds three same-basename Markdown
+sidecars, updates the figure index and explanatory package evidence, and
+extends the package validator to require the exact sidecar inventory,
+headings, paired SVGs, source names, and authority labels. It does not modify
+the SVGs or any frozen result table.
+
 The CAL-05 write set contains:
 
 - the complete CAL-05 package subtree;
@@ -17,14 +23,12 @@ The CAL-05 write set contains:
 
 No production crate, canonical science contract, protected fixture,
 management, climate, soil, slope, default, or canonical test was modified by
-CAL-05. The worktree also contains the already completed CAL-04B increment and
-an unrelated user-owned untracked gate-planner audit; CAL-05 neither reverts
-nor claims those files.
+CAL-05.
 
-The package subtree now has 56 retained non-build files after the
-operator-directed five-file visualization supplement. The two large daily CSVs
-are covered by package-local Git LFS attributes. `target/` and Python cache
-directories are ignored build products and are not package evidence.
+The package subtree now has 59 retained non-build files after the visualization
+supplement and three sidecars. The two large daily CSVs are covered by
+package-local Git LFS attributes. `target/` and Python cache directories are
+ignored build products and are not package evidence.
 
 Terminal `git diff --check` passes. The operator's explicit authorization
 lifts the sole retrospective-sensitivity governance hold. The verifier

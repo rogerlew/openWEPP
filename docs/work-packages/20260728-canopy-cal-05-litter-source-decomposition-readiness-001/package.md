@@ -356,6 +356,9 @@ frozen result tables:
 - complete-daily-series recovery across all 16 candidates; and
 - the five-pair source/decay ridge with its distinct annual trajectories.
 
-The figures are indexed in `artifacts/figures/README.md`. They add no result,
+The figures and their same-basename Markdown caption/ancillary-information
+sidecars are indexed in `artifacts/figures/README.md`. They add no result,
 axis, observation, parameter selection, or status change and retain every
-`ASSUMED_FOR_EXECUTION` and predictive-authority limitation.
+`ASSUMED_FOR_EXECUTION` and predictive-authority limitation. Cell values,
+explicit zero labeling, and color-plus-dash trajectory styles keep the
+quantitative distinctions available without relying on color alone.

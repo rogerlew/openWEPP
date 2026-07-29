@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import math
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 
@@ -265,7 +266,61 @@ assert all(
     in {"IDENTIFIED", "PARTIALLY_IDENTIFIABLE", "NONIDENTIFIABLE", "NOT_ASSESSED", "NOT_APPLICABLE"}
     for row in stages
 )
+figure_sidecars = {
+    "cal05-terminal-stock-response.md": (
+        "cal05-terminal-stock-response.svg",
+        "ASSUMED_FOR_EXECUTION",
+        "deterministic-design.csv",
+        "reconstruction-results.csv",
+    ),
+    "cal05-daily-recovery.md": (
+        "cal05-daily-recovery.svg",
+        "S020-K050",
+        "ASSUMED_FOR_EXECUTION",
+        "synthetic-recovery.csv",
+    ),
+    "cal05-source-decay-ridge.md": (
+        "cal05-source-decay-ridge.svg",
+        "ASSUMED_FOR_EXECUTION_ANALYTIC_RIDGE",
+        "terminal-stock-ridge-design.csv",
+        "ridge-producer-results.csv",
+    ),
+}
+figures = A / "figures"
+assert {path.name for path in figures.glob("cal05-*.md")} == set(figure_sidecars)
+for sidecar_name, required_text in figure_sidecars.items():
+    content = (figures / sidecar_name).read_text(encoding="utf-8")
+    assert "# Caption" in content
+    assert "## Why this figure exists" in content
+    assert "## How to read it" in content
+    assert "## Plain-language takeaway" in content
+    assert "## Ancillary information" in content
+    assert "## Source data" in content
+    assert all(value in content for value in required_text)
+    assert (figures / required_text[0]).is_file()
+expected_svgs = {
+    "cal05-terminal-stock-response.svg",
+    "cal05-daily-recovery.svg",
+    "cal05-source-decay-ridge.svg",
+}
+assert {path.name for path in figures.glob("cal05-*.svg")} == expected_svgs
+namespace = "{http://www.w3.org/2000/svg}"
+for svg_name in expected_svgs:
+    root = ET.parse(figures / svg_name).getroot()
+    assert root.get("role") == "img"
+    assert root.get("aria-labelledby") == "title desc"
+    assert root.find(f"{namespace}title") is not None
+    assert root.find(f"{namespace}desc") is not None
+ridge_root = ET.parse(figures / "cal05-source-decay-ridge.svg").getroot()
+trajectory_dashes = [
+    element.get("stroke-dasharray")
+    for element in ridge_root.findall(f".//{namespace}polyline")
+    if element.get("stroke-width") == "3"
+]
+assert len(trajectory_dashes) == 5
+assert len(set(trajectory_dashes)) == 5
 print(
     "PASS: 116800 daily grid rows; 16 reconstructions; one recovered truth; "
-    "5 terminal-ridge members; 16 boundary/failure cases; 28 Harvard rows"
+    "5 terminal-ridge members; 16 boundary/failure cases; 28 Harvard rows; "
+    "3 figure sidecars"
 )

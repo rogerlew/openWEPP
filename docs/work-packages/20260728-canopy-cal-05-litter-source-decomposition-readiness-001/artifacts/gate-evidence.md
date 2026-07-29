@@ -14,13 +14,13 @@ Evidence class: `Ran`
 | terminal-stock ridge | Pass | 5/5 within `1.12e-15 kg m^-2` |
 | typed boundary/failure | Pass | 16/16 prescribed cases match variant and exact field |
 | Harvard diagnostic | Pass | 28/28 plot rows; amended arithmetic guard; no fitting |
-| terminal validator | Pass | 116,800 rows, 16 reconstructions, one truth, five ridge members, 16 failure cases, 28 Harvard rows |
+| terminal validator | Pass | 116,800 rows, 16 reconstructions, one truth, five ridge members, 16 failure cases, 28 Harvard rows, and three exact figure sidecars |
 | Rust format | Pass | package-local executor `cargo fmt --check` after formatting |
 | Rust Clippy | Pass | package-local executor all targets, warnings denied |
 | Rust test harness | Pass, zero tests | package-local binary crate compiled and ran zero unit tests; behavioral evidence comes from execution and validator |
 | dependency policy | Pass with configured unmatched-license/advisory warnings | advisories, bans, licenses, and sources all `ok` after versioning the path dependency |
 | Python compile | Pass | `analyze.py`, `summarize.py`, and `validate.py` |
-| Interpretation figures | Pass | standard-library renderer validates the frozen 16-member grid, sole zero-SSE truth, and five-member ridge before writing three accessible SVGs |
+| Interpretation figures | Pass | standard-library renderer validates the frozen 16-member grid, sole zero-SSE truth, and five-member ridge before writing three accessible SVGs; ridge trajectories use color plus distinct dash patterns and high-contrast labels; three same-basename Markdown sidecars retain captions, scanning context, source links, and authority boundaries |
 | Markdown | Pass | terminal CAL-05 Markdown set plus authority package, roadmap, and catalog; zero errors/warnings |
 | diff hygiene | Pass | `git diff --check` |
 | large-output attributes | Pass | both retained daily CSVs have Git LFS attributes |

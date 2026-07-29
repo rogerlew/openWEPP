@@ -36,5 +36,7 @@ production code, contract, fixture, management, default, or parameter changed.
 
 Three reproducible accessible SVG figures now explain the frozen response
 surface, unique daily-trace recovery, and terminal-stock equifinality ridge.
-See [`figures/README.md`](figures/README.md). This post-closure supplement
-changes no scientific disposition.
+Each has a same-basename Markdown sidecar containing its caption, ancillary
+quantitative context, source links, and scientific boundaries. See
+[`figures/README.md`](figures/README.md). This post-closure supplement changes
+no scientific disposition.
