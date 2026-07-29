@@ -1,0 +1,3 @@
+site_id,members,kernel_days_per_member,admitted_camera_days,observed_gcc90_min,observed_gcc90_max,shape_r_median,shape_rmse_median,transition_residual_median_days,transition_abs_residual_p95_days,maximum_mass_closure_residual_kg_m2
+SH-DB-BEZA,37,1666,934,0.343150,0.378260,0.682151,0.375275,-52.479,76.922,2.0816681711721685e-17
+SH-EN-ALERCE,37,1666,925,0.370800,0.417260,0.478301,0.404096,,,0.0000000000000000e+00

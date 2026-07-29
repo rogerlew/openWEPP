@@ -383,6 +383,17 @@ State as of `2026-07-28 UTC`:
   contract values to the temperature-extrema daily summary operator. This
   narrows the source/operator authority gap but does not resume CAL-07,
   authorize clipping, or replace OBL-PLANT-P-013.
+- `20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/` -
+  COMPLETE / BOUNDED EXECUTION / ORDER 7 HOLD RETAINED: retained the
+  full-period Alerce POWER hourly object, counted 349 negative hourly
+  paired-product components without clipping, and admitted only the
+  nonnegative daily signed mean for package-local execution. The full
+  37-member, two-site CAL-07 rerun produced 123,284 daily rows with exact
+  executor VPD residual `0.000e+00 Pa` and foliar mass closure residual
+  `2.082e-17 kg m-2`. The forcing blocker is lifted for CAL-07C only; Order 7
+  remains held because transition chronology and combined seasonal-direction
+  evidence are contradicted, while amplitude/floor/decomposition cells remain
+  not evaluated.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

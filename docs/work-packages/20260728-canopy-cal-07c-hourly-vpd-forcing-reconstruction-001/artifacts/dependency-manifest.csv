@@ -1,0 +1,12 @@
+path,sha256,bytes
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/forcing.csv,2bf26f4efd16c73485ce9bc7b21b6cd1c9643f8acd9b75e3c0076f2d1e5404b7,195311
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/observations.csv,82c970c334da0fdbd951e762961e5ce055097867658017d32341628f86f4ab36,114119
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/transitions.csv,218a0c337c56a9b15cf7acd198cc4a16c10597a9a4b8a9050bfbc014a6665cec,534
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/artifacts/source-manifest.csv,ccbd14ba27813435ed7d87b2e200f76e9e085c67dfa37d6db2ef16631e77c346,3239
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/artifacts/final-disposition.md,1acce43f7c3d7f988810c1d6244c682c9f2972ded69c248922d70e4527ae637b,941
+docs/work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/artifacts/source-manifest.csv,c8be16b12b92db4180339db98d1b45f420f0ccced56f4fc940bc32bbbbe8a94a,2330
+docs/work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/artifacts/attribution.csv,0794353d8822cfa542a8df771ee0151b6a1d394a17f40f82bf45ad07112b5e02,624
+docs/work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/artifacts/science-summary.md,8ae7b75e53615f23f0b1f7ae9412a06f06b87a422cb8d384eab9a8b46a13a0d5,2607
+docs/work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/artifacts/final-disposition.md,2c969ba8d729a8a5aab89a680e32d7ae0fe847eed0f79f50c50b8d258f054d71,1160
+docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/accepted-calibration-ensemble.csv,83e749a3961604e4592f2a2217db30965c8bbb59f4752d0ff6d85fbac61fd986,3383
+docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/candidate-configurations.csv,a56a07ef1df713a1555afb4098bd4f5e0fbe4b9f324ded0bd370c785fea3190e,1540501

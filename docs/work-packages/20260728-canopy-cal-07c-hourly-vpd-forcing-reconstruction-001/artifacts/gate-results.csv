@@ -1,0 +1,3 @@
+gate,status,command
+producer_phase_transform,PASS,cargo test -p openwepp-plant-phenology --test native_canopy_contract full_wrapped_nh_climate_phase_flip_preserves_sh_canopy_and_limb_order -- --exact --nocapture
+real_consumer_ordering,PASS,cargo test -p openwepp-runner --lib native_forest_yaml_executes_through_the_direct_production_consumer -- --nocapture

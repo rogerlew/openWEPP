@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="780" viewBox="0 0 1240 780" role="img" aria-labelledby="title desc">
+<title id="title">CAL-07C evidence boundaries</title>
+<desc id="desc">A status plot shows which cells are lifted, bounded, supported, contradicted, or not evaluated.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#182026}.title{font-size:24px;font-weight:700}.label{font-size:13px}.small{font-size:11px}.grid{stroke:#d9e2ec;stroke-width:1}.panel{fill:#fff;stroke:#bcccdc}</style>
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="48" y="42" class="title">CAL-07C evidence boundaries</text>
+<text x="430" y="82" text-anchor="middle" class="small">CONTRADICTED</text>
+<text x="585" y="82" text-anchor="middle" class="small">NOT EVALUATED</text>
+<text x="760" y="82" text-anchor="middle" class="small">LIFTED FOR BOUNDED EXECUTION</text>
+<text x="960" y="82" text-anchor="middle" class="small">BOUNDED</text>
+<text x="1110" y="82" text-anchor="middle" class="small">SUPPORTED</text>
+<line x1="400" y1="120" x2="1140" y2="120" class="grid"/>
+<text x="48" y="125" class="label">Alerce forcing-domain blocker</text>
+<circle cx="760" cy="120" r="8.5" fill="#2864A5"/>
+<line x1="400" y1="170" x2="1140" y2="170" class="grid"/>
+<text x="48" y="175" class="label">signed-latitude calendar and seasonal direction</text>
+<circle cx="430" cy="170" r="8.5" fill="#B42318"/>
+<line x1="400" y1="220" x2="1140" y2="220" class="grid"/>
+<text x="48" y="225" class="label">producer-state cyclic phase invariance</text>
+<circle cx="1110" cy="220" r="8.5" fill="#16823A"/>
+<line x1="400" y1="270" x2="1140" y2="270" class="grid"/>
+<text x="48" y="275" class="label">deciduous transition chronology</text>
+<circle cx="430" cy="270" r="8.5" fill="#B42318"/>
+<line x1="400" y1="320" x2="1140" y2="320" class="grid"/>
+<text x="48" y="325" class="label">relative seasonal shape</text>
+<circle cx="960" cy="320" r="8.5" fill="#C25B12"/>
+<line x1="400" y1="370" x2="1140" y2="370" class="grid"/>
+<text x="48" y="375" class="label">persistent evergreen realization</text>
+<circle cx="960" cy="370" r="8.5" fill="#C25B12"/>
+<line x1="400" y1="420" x2="1140" y2="420" class="grid"/>
+<text x="48" y="425" class="label">quantitative evergreen-floor agreement</text>
+<circle cx="585" cy="420" r="8.5" fill="#5B6770"/>
+<line x1="400" y1="470" x2="1140" y2="470" class="grid"/>
+<text x="48" y="475" class="label">daily foliar mass closure</text>
+<circle cx="1110" cy="470" r="8.5" fill="#16823A"/>
+<line x1="400" y1="520" x2="1140" y2="520" class="grid"/>
+<text x="48" y="525" class="label">real downstream consumer ordering and common-state lineage</text>
+<circle cx="1110" cy="520" r="8.5" fill="#16823A"/>
+<line x1="400" y1="570" x2="1140" y2="570" class="grid"/>
+<text x="48" y="575" class="label">phase-transformed real-consumer chronology</text>
+<circle cx="585" cy="570" r="8.5" fill="#5B6770"/>
+<line x1="400" y1="620" x2="1140" y2="620" class="grid"/>
+<text x="48" y="625" class="label">absolute canopy amplitude</text>
+<circle cx="585" cy="620" r="8.5" fill="#5B6770"/>
+<line x1="400" y1="670" x2="1140" y2="670" class="grid"/>
+<text x="48" y="675" class="label">needle/fine-woody/decomposition consequences</text>
+<circle cx="585" cy="670" r="8.5" fill="#5B6770"/>
+<metadata id="source-bindings">verdict-matrix.csv:2b152cbfa922428b2a28e111d31ca8f91206a6174b93647412ae30758b7e8094</metadata>
+</svg>
