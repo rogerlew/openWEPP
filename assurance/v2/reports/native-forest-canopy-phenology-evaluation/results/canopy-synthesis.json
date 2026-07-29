@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "result_id": "CANOPY-RESULT-SYNTHESIS",
+  "values": [
+    {
+      "id": "searched_configuration_count",
+      "value": 9261,
+      "unit_id": "member_count",
+      "precision": "exact retained configuration-row count"
+    },
+    {
+      "id": "accepted_member_count",
+      "value": 37,
+      "unit_id": "member_count",
+      "precision": "exact retained integer"
+    },
+    {
+      "id": "accepted_double_boundary_count",
+      "value": 20,
+      "unit_id": "member_count",
+      "precision": "count reconstructed from retained accepted flags"
+    },
+    {
+      "id": "accepted_upper_boundary_count",
+      "value": 17,
+      "unit_id": "member_count",
+      "precision": "count reconstructed from retained accepted flags"
+    },
+    {
+      "id": "harvard_score_min_days",
+      "value": 43.4758074488943,
+      "unit_id": "day",
+      "precision": "minimum retained aggregate score"
+    },
+    {
+      "id": "harvard_score_max_days",
+      "value": 72.45786131722814,
+      "unit_id": "day",
+      "precision": "maximum retained aggregate score"
+    },
+    {
+      "id": "harvard_zero_coverage_members",
+      "value": 34,
+      "unit_id": "member_count",
+      "precision": "count reconstructed from retained coverage fractions"
+    },
+    {
+      "id": "harvard_max_coverage_percent",
+      "value": 18.808777429467085,
+      "unit_id": "percent",
+      "precision": "scaled maximum retained fraction"
+    },
+    {
+      "id": "litter_ridge_pair_count",
+      "value": 5,
+      "unit_id": "pair_count",
+      "precision": "exact retained row count"
+    },
+    {
+      "id": "litter_ridge_target_stock",
+      "value": 0.8522711968936513,
+      "unit_id": "kg_m2",
+      "precision": "common retained target"
+    },
+    {
+      "id": "litter_ridge_max_difference",
+      "value": 1.1102230246251565e-15,
+      "unit_id": "kg_m2",
+      "precision": "maximum absolute retained difference"
+    },
+    {
+      "id": "gradient_run_count",
+      "value": 261,
+      "unit_id": "run_count",
+      "precision": "sum of retained site/stratum member counts"
+    },
+    {
+      "id": "gradient_ordering_member_count",
+      "value": 37,
+      "unit_id": "member_count",
+      "precision": "minimum retained member count after explicit winter-cover separation checks"
+    },
+    {
+      "id": "beza_complete_member_count",
+      "value": 0,
+      "unit_id": "member_count",
+      "precision": "members complete for all 12 transitions under both products"
+    },
+    {
+      "id": "beza_mean_interval_hits",
+      "value": 1,
+      "unit_id": "transition_count",
+      "precision": "retained best-member count"
+    },
+    {
+      "id": "beza_gcc90_interval_hits",
+      "value": 0,
+      "unit_id": "transition_count",
+      "precision": "retained best-member count"
+    },
+    {
+      "id": "beza_mean_penalized_error_days",
+      "value": 59.12471335983719,
+      "unit_id": "day",
+      "precision": "retained penalized mean absolute residual"
+    },
+    {
+      "id": "beza_gcc90_penalized_error_days",
+      "value": 65.87471335983719,
+      "unit_id": "day",
+      "precision": "retained penalized mean absolute residual"
+    },
+    {
+      "id": "elliot_compared_target_count",
+      "value": 64,
+      "unit_id": "target_count",
+      "precision": "retained comparison-row count"
+    },
+    {
+      "id": "elliot_contradicted_target_count",
+      "value": 53,
+      "unit_id": "target_count",
+      "precision": "count of retained CONTRADICTED rows"
+    },
+    {
+      "id": "minimum_temperature_inactive_c_min",
+      "value": -27.52,
+      "unit_id": "degC",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "minimum_temperature_inactive_c_max",
+      "value": -4.67,
+      "unit_id": "degC",
+      "precision": "maximum among 37 retained correlated configurations"
+    },
+    {
+      "id": "minimum_temperature_unconstrained_c_min",
+      "value": 6.7,
+      "unit_id": "degC",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "minimum_temperature_unconstrained_c_max",
+      "value": 19.91,
+      "unit_id": "degC",
+      "precision": "maximum among 37 retained correlated configurations"
+    },
+    {
+      "id": "vapor_pressure_deficit_unconstrained_pa_min",
+      "value": 655.89577675,
+      "unit_id": "Pa",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "vapor_pressure_deficit_unconstrained_pa_max",
+      "value": 1100.64792755,
+      "unit_id": "Pa",
+      "precision": "maximum among 37 retained correlated configurations"
+    },
+    {
+      "id": "vapor_pressure_deficit_inactive_pa_min",
+      "value": 2155.325437,
+      "unit_id": "Pa",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "vapor_pressure_deficit_inactive_pa_max",
+      "value": 2155.325437,
+      "unit_id": "Pa",
+      "precision": "maximum among 37 retained correlated configurations"
+    },
+    {
+      "id": "photoperiod_inactive_hours_min",
+      "value": 10.935970516,
+      "unit_id": "hour",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "photoperiod_inactive_hours_max",
+      "value": 12.478643418,
+      "unit_id": "hour",
+      "precision": "maximum among 37 retained correlated configurations"
+    },
+    {
+      "id": "photoperiod_unconstrained_hours_min",
+      "value": 11.239373219,
+      "unit_id": "hour",
+      "precision": "minimum among 37 retained correlated configurations"
+    },
+    {
+      "id": "photoperiod_unconstrained_hours_max",
+      "value": 15.29420801,
+      "unit_id": "hour",
+      "precision": "maximum among 37 retained correlated configurations"
+    }
+  ]
+}

@@ -440,7 +440,19 @@ State as of `2026-07-29 UTC`:
   calibration targets and observation needs, identifiability,
   transferability, and compensation warnings. Dual independent reviews,
   correction disposition, verifications, and documentation gates pass. This
-  completes roadmap Order 8; `CANOPY-ASSURE-01` is next as Order 9.
+  completes roadmap Order 8.
+- `20260729-canopy-cal-09-assurance-report-001/` -
+  EXECUTED HOLD / SOURCE COMPLETE / V2 ADMISSION AND HUMAN APPROVAL PENDING:
+  executes roadmap Order 9 and retains `CANOPY-ASSURE-01`, the manuscript-first
+  native-forest canopy-phenology scientific evaluation. The manuscript,
+  supplement, deterministic 32-value result, 39 public-safe research objects,
+  eight SVG figures, sidecars, and source tables pass source-level
+  reproduction, schema, exact-use, accessibility-link, documentation, and
+  internal-review checks. The canopy source is not cataloged because the typed
+  V2 CLI has no new-report admission operation; existing admitted V2 reports
+  still validate. Canonical canopy build, accountable human approval, release
+  transfer, and publication remain unavailable. No new calibration, process
+  physics, or publication of the draft is authorized.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

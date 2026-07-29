@@ -409,7 +409,8 @@ contradiction without selecting a correction; CAL-07E completed the
 literature-authority review and exposed a transition-product inconsistency;
 CAL-07F executed the product-consistent audit, rejected another calibration
 round, and adjudicated the remaining Bezà contradiction as an ecosystem-model
-limitation; Orders 8 and 9 remain prospective.
+limitation; Order 8 is complete and Order 9 has executed to a source-complete
+hold pending typed V2 new-report admission and accountable human approval.
 Every prospective row requires its own declared scope, evidence identity, gate
 plan, and disposition before execution.
 
@@ -423,7 +424,7 @@ plan, and disposition before execution.
 | 6 | [`CANOPY-CAL-06` canopy-gradient congruence](../work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/package.md) — **complete / bounded characterization / downstream advancement withheld** | All 261 prespecified runs passed: the complete 37-member timing ensemble across seven native forest lanes plus two open controls. Within-model winter canopy ordering passes 37/37 at Marcell, Harvard, and Hubbard Brook; snow residuals are quantified; Harvard SWE is excluded for a provider unit/identity contradiction; missing predictive litter sources and unavailable erosion output remain explicit. | Passed for bounded characterization: all prespecified cells are `BOUNDED` or `NOT_EVALUATED`, contrary evidence is retained, and unsupported downstream cells are visibly `NOT ADVANCED`. |
 | 7 | [`CANOPY-CAL-07` Southern Hemisphere robustness](../work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/package.md) — **hold / forcing authority incompatible / no canopy result**; [`CAL-07B` hourly VPD aggregation diagnostic](../work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/package.md) — **complete / diagnostic pass**; [`CAL-07C` hourly VPD forcing reconstruction](../work-packages/20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/package.md) — **complete / bounded execution**; [`CAL-07D` transition chronology attribution](../work-packages/20260729-canopy-cal-07d-transition-chronology-attribution-001/package.md) — **complete / diagnostic attribution**; [`CAL-07E` literature authority review](../work-packages/20260729-canopy-cal-07e-literature-authority-review-001/package.md) — **complete / method audit authorized**; [`CAL-07F` observation product/operator audit](../work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/package.md) — **complete / do not calibrate / ecosystem-model limitation adjudicated** | CAL-07F separates `gcc_mean` and `gcc_90`, retains their uncertainty, and reaches the same no-calibration result under both. No member has all 12 seasonal crossings; the best member hits 1/12 and 0/12 confidence intervals, with penalized errors of 59.12 and 65.87 days. | Not passed. Do not execute another Bezà timing calibration round. Defer acquisition and further canopy phenology work; report the tropical dry-forest chronology mismatch as an ecosystem-model limitation. Reopen only with field-corresponded observations, authoritative process science, or an independently testable alternative formulation. |
 | 8 | [`CANOPY-DOC-01` native-forest canopy-phenology narrative](../work-packages/20260729-canopy-doc-01-canopy-phenology-usersum-001/package.md) — **complete** | Authored the broad end-user explanation of the native forest land-use need, forest seasonal dynamics, hydrologic and sediment coupling, model formulation, coefficient meanings and units, evidence-supported ranges, calibration guidance, and interpretation limits. | The self-contained `usersum` narrative, 21-row coefficient-authority ledger, references, catalog entry, documentation checks, dual scientific/editorial review, finding disposition, and dual verification pass without duplicating assurance results or inventing typical ranges. |
-| 9 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
+| 9 | [`CAL-09 / CANOPY-ASSURE-01` report and supplement](../work-packages/20260729-canopy-cal-09-assurance-report-001/package.md) — **executed hold / source complete / V2 admission and human approval pending** | The manuscript, supplement, strict 32-value result, 39 public-safe research objects, six main time-series figures, two supplemental figures, and caption sidecars are complete and internally reviewed. Existing admitted V2 reports remain valid; the canopy source is not cataloged because the typed CLI has no new-report admission operation. | Source-level schema, reproduction, exact-use, research-object, figure, Markdown, and internal review checks pass. Canonical canopy validation/build, accountable human scientific and reproduction/publication approval, release transfer, and publication remain blocked or not run. |
 
 ### 6.1 Completed CANOPY-CAL-03 execution contract
 
@@ -874,6 +875,12 @@ testable alternative ecosystem phenology formulation.
 canopy-phenology model narrative and coefficient/calibration guide without
 reopening calibration or duplicating assurance evidence.
 
-The immediate next package is `CANOPY-ASSURE-01`, roadmap Order 9. It owns the
-quantitative assurance report, supplement, exact research objects,
-reproduction, review, approval, and release transfer.
+Roadmap Order 9 executed as `CAL-09`; its scientific product remains
+`CANOPY-ASSURE-01`. The report source and retained figures preserve favorable
+and adverse canopy evidence together, including poor Harvard transfer,
+source-decay equifinality, missing predictive nonfoliar litter, and the Bezà
+ecosystem-model limitation. Deterministic source-level reproduction and
+internal reviews pass. The report is not cataloged or public: the first
+actionable dependency is a separately authorized typed V2 new-report admission
+operation, followed by canonical canopy validation/build and accountable human
+scientific and reproduction/publication review.

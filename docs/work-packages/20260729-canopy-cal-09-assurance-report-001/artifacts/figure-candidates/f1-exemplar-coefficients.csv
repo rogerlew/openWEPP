@@ -1,0 +1,4 @@
+candidate_id,temperature_pair_id,vpd_pair_id,photoperiod_pair_id,minimum_temperature_inactive_c,minimum_temperature_unconstrained_c,vapor_pressure_deficit_unconstrained_pa,vapor_pressure_deficit_inactive_pa,photoperiod_inactive_hours,photoperiod_unconstrained_hours,boundary_class,saturation_flags
+GSI-2638,temperature-q00-q100,vpd-q95-q100,photoperiod-q25-q75,-27.52,19.91,1100.64792755,2155.325437,12.478643418,15.020315923,DOUBLE_BOUNDARY,NONE
+GSI-3962,temperature-q05-q75,vpd-q95-q100,photoperiod-q25-q95,-14.2985,6.7,1100.64792755,2155.325437,12.478643418,15.287745094,UPPER_SUPPORT_BOUNDARY,NONE
+GSI-4831,temperature-q05-q100,vpd-q95-q100,photoperiod-q00-q05,-14.2985,19.91,1100.64792755,2155.325437,10.935970516,11.239373219,DOUBLE_BOUNDARY,NONE
