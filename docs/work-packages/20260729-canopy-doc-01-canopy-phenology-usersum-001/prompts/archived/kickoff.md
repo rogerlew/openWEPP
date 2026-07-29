@@ -1,4 +1,4 @@
-# CANOPY-DOC-01 Kickoff
+# CANOPY-DOC-01 Archived Kickoff
 
 Scope: local repository scientific-documentation task; flat-file reads and
 edits only; no external systems or network actions are required.

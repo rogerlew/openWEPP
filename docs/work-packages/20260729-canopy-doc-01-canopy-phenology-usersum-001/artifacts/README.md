@@ -1,9 +1,9 @@
 # CANOPY-DOC-01 Artifacts
 
-Status: `queued`
+Status: `complete`
 
-Evidence mode: `not run`
+Evidence mode: `Static + Ran`
 
-This directory will retain the coefficient authority, source/claim mapping,
+This directory retains the coefficient authority, source/claim mapping,
 calibration-guidance audit, validation, review, verification, and disposition
 evidence for the canopy-phenology usersum narrative.

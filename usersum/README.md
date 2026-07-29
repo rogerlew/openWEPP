@@ -26,6 +26,10 @@ Pre-alpha. Content will be authored as engine capability lands.
 
 ## Model science
 
+- [Native-forest canopy phenology](openwepp-canopy-phenology.md) — why
+  native forest needs an explicit seasonal state; how weather becomes foliage,
+  canopy, litter, and downstream inputs; and how to configure and calibrate the
+  controlling coefficients.
 - [Hillslope hydrology and sediment physics](hillslope-hydrology-and-sediment-physics.md) — how openWEPP represents overland flow routing, erosion, and baseflow, and how that relates to legacy WEPP.
 - [Snow and frost in openWEPP](snow-frost-modeling-and-validation.md) — winter
   physics, scientific rationale, retained field-evaluation design and findings,

@@ -428,16 +428,19 @@ State as of `2026-07-29 UTC`:
   stop-loss; dual independent reviews and verifications pass; Order 7 remains
   not passed.
 - `20260729-canopy-doc-01-canopy-phenology-usersum-001/` -
-  QUEUED / SCAFFOLDED: author the broad
+  COMPLETE / NATIVE-FOREST MODEL-SCIENCE NARRATIVE READY / ASSURANCE HANDOFF:
+  authored the broad
   `usersum/openwepp-canopy-phenology.md` model-science narrative before the
   assurance report. The package explains why forest cannot remain a cropland
   compatibility encoding, introduces leaf-on/off, mixed and evergreen
   structure, litter/residue, and hydrologic/sediment coupling, and hands
-  detailed quantitative evidence to `CANOPY-ASSURE-01`. Its coefficient
-  contract requires exact field names, units, process effects, hard domains,
-  evidence-classified or explicitly not-established ranges, calibration
-  targets and sequencing, identifiability, transferability, and compensation
-  warnings. This is roadmap Order 8; `CANOPY-ASSURE-01` moves to Order 9.
+  detailed quantitative evidence to `CANOPY-ASSURE-01`. Its 21-row coefficient
+  ledger records exact field/derived lineage, units, equations, effects, hard
+  domains, evidence-classified or explicitly not-established ranges,
+  calibration targets and observation needs, identifiability,
+  transferability, and compensation warnings. Dual independent reviews,
+  correction disposition, verifications, and documentation gates pass. This
+  completes roadmap Order 8; `CANOPY-ASSURE-01` is next as Order 9.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

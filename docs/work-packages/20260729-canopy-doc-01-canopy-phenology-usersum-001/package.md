@@ -1,8 +1,8 @@
 # CANOPY-DOC-01 Native-Forest Canopy-Phenology Narrative
 
-Status: `queued / scaffolded`
+Status: `complete`
 
-Evidence mode: `not run`
+Evidence mode: `Static + Ran documentation checks`
 
 Intent: `documentation and scientific communication; no calibration,
 implementation, or assurance publication`

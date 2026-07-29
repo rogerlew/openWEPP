@@ -1,8 +1,10 @@
 # Line-Count Governance
 
-Status: `queued`
+Status: `complete`
 
-Evidence mode: `not run`
+Evidence mode: `Ran`
 
-No Rust source is in the intended write set. Confirm that no `.rs` file changed
-and record `NOT APPLICABLE` for Rust line-count thresholds.
+`git diff --name-only` plus `git status --short` found no changed `.rs` file.
+Rust 2,000-line warning and 3,000-line refactor thresholds are therefore
+`NOT APPLICABLE`. The public narrative is 383 lines; no usersum line-count
+threshold applies.
