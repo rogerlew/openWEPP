@@ -1,0 +1,14 @@
+cell_id,status,quantitative_result,advancement,rationale
+CAL06-CAN-001,BOUNDED,37/37 members preserve deciduous<mixed<conifer winter cover,PASS_MODEL_ORDERING,"Complete ensemble ordering passes, but category seed amplitude operands are not independently calibrated."
+CAL06-CAN-002,BOUNDED,37/37 members preserve deciduous<mixed winter cover,PASS_MODEL_ORDERING,No pure Harvard conifer lane exists and Harvard timing transferability remains poor.
+CAL06-CAN-003,BOUNDED,37/37 members preserve deciduous<mixed winter cover,PASS_MODEL_ORDERING,No source-supplied open or pure-conifer lane exists.
+CAL06-CAN-004,BOUNDED,"37-member summer cover, LAI, and amplitude ranges retained for every forest lane",NO_EMPIRICAL_AMPLITUDE_PROMOTION,"Bf,max, fe, xmxlai, Cs, and bb remain calibration-ready-data-limited."
+CAL06-SNOW-001,BOUNDED,31542 exact-date metric/member matches across bound snow strata,QUANTIFIED_NO_SUPPORT_THRESHOLD,"Bias, MAE, and RMSE are retained; source uncertainty does not authorize a pass threshold."
+CAL06-SNOW-002,BOUNDED,Harvard open/hardwood depth and density scored; SWE excluded; hemlock unbound,QUANTIFIED_NO_SUPPORT_THRESHOLD,SWE metadata/identity conflict is unresolved; the mixed lane is not a pure hemlock counterpart.
+CAL06-SNOW-003,BOUNDED,"Peak SWE, depth, density, and melt-out distributions retained for all lanes",MODEL_RESPONSE_ONLY,Common snow residuals are not attributed to canopy phenology.
+CAL06-LIT-001,NOT_EVALUATED,Leaf transfer emitted; needle and fine-woody predictive sources null in all 259 forest/member runs,AUTHORITY_MISSING,CAL-05 predictive-source hold is preserved; null is not zero.
+CAL06-RES-001,NOT_EVALUATED,Residue mass/depth chronology retained,NOT_ADVANCED,Aggregate residue adequacy cannot advance with incomplete litter sources and unfitted decay.
+CAL06-FROST-001,NOT_EVALUATED,Frost onset/depth/thaw model response retained,NOT_ADVANCED,"The residue/source chain does not pass, so frost consequence is not promoted."
+CAL06-ET-001,NOT_EVALUATED,Interception and ET distributions retained,NOT_ADVANCED,Canopy amplitude and transferability are bounded rather than supported.
+CAL06-RUN-001,NOT_EVALUATED,Runoff distributions retained,NOT_ADVANCED,Snow and residue/frost upstream cells are not supported.
+CAL06-ERO-001,NOT_EVALUATED,Canopy/cover operands reached erosion consumers; no erosion consequence output was emitted,NOT_ADVANCED,Consumer input lineage is not an erosion-result surface and cannot carry a consequence claim.

@@ -365,6 +365,16 @@ State as of `2026-07-28 UTC`:
   remain historical evidence; no further execution advances them. Order 1
   applied exact package-local frozen-status overlays so no stale `ACTIVE` file
   can resume them.
+- `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
+  COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
+  WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B
+  timing ensemble across seven native forest lanes and two open controls.
+  Winter canopy ordering passes 37/37 for each source-supplied within-site
+  forest gradient. Snow residuals and six accessible plot-only figures with
+  paired Markdown caption/ancillary-information sidecars are retained;
+  Harvard SWE is excluded for a provider unit/identity contradiction.
+  Predictive needle/fine-woody sources, residue/frost adequacy, and unsupported
+  downstream consequence claims remain visibly not evaluated or not advanced.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
   COMPLETE / CALIBRATION READINESS PASS / VALIDATION LIMITATION RETAINED:
   all 9,261 Hubbard candidates, dual reconstruction, 37-member freeze, two

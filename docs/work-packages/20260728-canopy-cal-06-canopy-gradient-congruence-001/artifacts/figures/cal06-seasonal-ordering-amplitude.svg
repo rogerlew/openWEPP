@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="820" viewBox="0 0 1240 820" role="img" aria-labelledby="title desc">
+<title id="title">CAL-06 seasonal ordering and amplitude</title>
+<desc id="desc">Bars are ensemble medians; whiskers span all 37 timing members. Open controls are not native canopy lanes.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#1f2933}.title{font-size:24px;font-weight:700}.subtitle{font-size:13px}.axis{stroke:#52616b;stroke-width:1}.grid{stroke:#d9e2ec;stroke-width:1}.label{font-size:12px}.small{font-size:10px}.panel{fill:#fbfcfd;stroke:#bcccdc}.band{opacity:.18}.status{font-size:12px;font-weight:700}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<metadata id="source-bindings">ensemble-summary.csv:5750e9094614d431ca021bd81d39e1eeee4d669706d60602f926bc2516167230</metadata>
+<rect x="42.0" y="100.0" width="565.0" height="320.0" class="panel"/>
+<text x="50.0" y="117.0" class="label">Winter cover</text>
+<line x1="84.0" y1="398.0" x2="597.0" y2="398.0" class="grid"/>
+<text x="46.0" y="402.0" class="small">0</text>
+<line x1="84.0" y1="260.0" x2="597.0" y2="260.0" class="grid"/>
+<text x="46.0" y="264.0" class="small">0.5</text>
+<line x1="84.0" y1="122.0" x2="597.0" y2="122.0" class="grid"/>
+<text x="46.0" y="126.0" class="small">1</text>
+<rect x="97.0" y="154.0" width="25" height="216.0" fill="#2456a6" opacity=".72"/>
+<line x1="109.5" y1="154.0" x2="109.5" y2="154.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(105.0,380.0) rotate(55)" class="small">Marcell conifer</text>
+<rect x="167.0" y="324.0" width="25" height="46.0" fill="#2b7a0b" opacity=".72"/>
+<line x1="179.5" y1="323.4" x2="179.5" y2="324.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(175.0,380.0) rotate(55)" class="small">Marcell deciduous</text>
+<rect x="237.0" y="196.7" width="25" height="173.3" fill="#8b5a2b" opacity=".72"/>
+<line x1="249.5" y1="196.2" x2="249.5" y2="196.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(245.0,380.0) rotate(55)" class="small">Marcell mixed</text>
+<rect x="307.0" y="324.0" width="25" height="46.0" fill="#2b7a0b" opacity=".72"/>
+<line x1="319.5" y1="321.5" x2="319.5" y2="324.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(315.0,380.0) rotate(55)" class="small">Harvard deciduous</text>
+<rect x="377.0" y="196.6" width="25" height="173.4" fill="#8b5a2b" opacity=".72"/>
+<line x1="389.5" y1="195.6" x2="389.5" y2="196.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(385.0,380.0) rotate(55)" class="small">Harvard mixed</text>
+<rect x="447.0" y="324.0" width="25" height="46.0" fill="#2b7a0b" opacity=".72"/>
+<line x1="459.5" y1="322.7" x2="459.5" y2="324.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(455.0,380.0) rotate(55)" class="small">Hubbard Brook deciduous</text>
+<rect x="517.0" y="196.7" width="25" height="173.3" fill="#8b5a2b" opacity=".72"/>
+<line x1="529.5" y1="196.0" x2="529.5" y2="196.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(525.0,380.0) rotate(55)" class="small">Hubbard Brook mixed</text>
+<rect x="637.0" y="100.0" width="565.0" height="320.0" class="panel"/>
+<text x="645.0" y="117.0" class="label">Summer cover</text>
+<line x1="679.0" y1="398.0" x2="1192.0" y2="398.0" class="grid"/>
+<text x="641.0" y="402.0" class="small">0</text>
+<line x1="679.0" y1="260.0" x2="1192.0" y2="260.0" class="grid"/>
+<text x="641.0" y="264.0" class="small">0.5</text>
+<line x1="679.0" y1="122.0" x2="1192.0" y2="122.0" class="grid"/>
+<text x="641.0" y="126.0" class="small">1</text>
+<rect x="692.0" y="154.0" width="25" height="216.0" fill="#2456a6" opacity=".72"/>
+<line x1="704.5" y1="154.0" x2="704.5" y2="154.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(700.0,380.0) rotate(55)" class="small">Marcell conifer</text>
+<rect x="762.0" y="154.9" width="25" height="215.1" fill="#2b7a0b" opacity=".72"/>
+<line x1="774.5" y1="154.0" x2="774.5" y2="162.1" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(770.0,380.0) rotate(55)" class="small">Marcell deciduous</text>
+<rect x="832.0" y="154.4" width="25" height="215.6" fill="#8b5a2b" opacity=".72"/>
+<line x1="844.5" y1="154.0" x2="844.5" y2="157.6" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(840.0,380.0) rotate(55)" class="small">Marcell mixed</text>
+<rect x="902.0" y="156.5" width="25" height="213.5" fill="#2b7a0b" opacity=".72"/>
+<line x1="914.5" y1="154.0" x2="914.5" y2="159.2" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(910.0,380.0) rotate(55)" class="small">Harvard deciduous</text>
+<rect x="972.0" y="155.2" width="25" height="214.8" fill="#8b5a2b" opacity=".72"/>
+<line x1="984.5" y1="154.0" x2="984.5" y2="156.4" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(980.0,380.0) rotate(55)" class="small">Harvard mixed</text>
+<rect x="1042.0" y="154.9" width="25" height="215.1" fill="#2b7a0b" opacity=".72"/>
+<line x1="1054.5" y1="154.0" x2="1054.5" y2="158.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(1050.0,380.0) rotate(55)" class="small">Hubbard Brook deciduous</text>
+<rect x="1112.0" y="154.5" width="25" height="215.5" fill="#8b5a2b" opacity=".72"/>
+<line x1="1124.5" y1="154.0" x2="1124.5" y2="156.5" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(1120.0,380.0) rotate(55)" class="small">Hubbard Brook mixed</text>
+<rect x="42.0" y="450.0" width="565.0" height="320.0" class="panel"/>
+<text x="50.0" y="467.0" class="label">Seasonal amplitude</text>
+<line x1="84.0" y1="748.0" x2="597.0" y2="748.0" class="grid"/>
+<text x="46.0" y="752.0" class="small">0</text>
+<line x1="84.0" y1="610.0" x2="597.0" y2="610.0" class="grid"/>
+<text x="46.0" y="614.0" class="small">0.5</text>
+<line x1="84.0" y1="472.0" x2="597.0" y2="472.0" class="grid"/>
+<text x="46.0" y="476.0" class="small">1</text>
+<rect x="97.0" y="720.0" width="25" height="0.0" fill="#2456a6" opacity=".72"/>
+<line x1="109.5" y1="720.0" x2="109.5" y2="720.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(105.0,730.0) rotate(55)" class="small">Marcell conifer</text>
+<rect x="167.0" y="550.9" width="25" height="169.1" fill="#2b7a0b" opacity=".72"/>
+<line x1="179.5" y1="550.0" x2="179.5" y2="558.1" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(175.0,730.0) rotate(55)" class="small">Marcell deciduous</text>
+<rect x="237.0" y="677.7" width="25" height="42.3" fill="#8b5a2b" opacity=".72"/>
+<line x1="249.5" y1="677.3" x2="249.5" y2="680.9" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(245.0,730.0) rotate(55)" class="small">Marcell mixed</text>
+<rect x="307.0" y="552.5" width="25" height="167.5" fill="#2b7a0b" opacity=".72"/>
+<line x1="319.5" y1="550.0" x2="319.5" y2="555.2" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(315.0,730.0) rotate(55)" class="small">Harvard deciduous</text>
+<rect x="377.0" y="678.5" width="25" height="41.5" fill="#8b5a2b" opacity=".72"/>
+<line x1="389.5" y1="677.3" x2="389.5" y2="679.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(385.0,730.0) rotate(55)" class="small">Harvard mixed</text>
+<rect x="447.0" y="550.9" width="25" height="169.1" fill="#2b7a0b" opacity=".72"/>
+<line x1="459.5" y1="550.0" x2="459.5" y2="554.7" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(455.0,730.0) rotate(55)" class="small">Hubbard Brook deciduous</text>
+<rect x="517.0" y="677.8" width="25" height="42.2" fill="#8b5a2b" opacity=".72"/>
+<line x1="529.5" y1="677.3" x2="529.5" y2="679.8" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(525.0,730.0) rotate(55)" class="small">Hubbard Brook mixed</text>
+<rect x="637.0" y="450.0" width="565.0" height="320.0" class="panel"/>
+<text x="645.0" y="467.0" class="label">Summer LAI</text>
+<line x1="679.0" y1="748.0" x2="1192.0" y2="748.0" class="grid"/>
+<text x="641.0" y="752.0" class="small">0</text>
+<line x1="679.0" y1="610.0" x2="1192.0" y2="610.0" class="grid"/>
+<text x="641.0" y="614.0" class="small">1.1</text>
+<line x1="679.0" y1="472.0" x2="1192.0" y2="472.0" class="grid"/>
+<text x="641.0" y="476.0" class="small">2.1</text>
+<rect x="692.0" y="501.0" width="25" height="219.0" fill="#2456a6" opacity=".72"/>
+<line x1="704.5" y1="501.0" x2="704.5" y2="501.0" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(700.0,730.0) rotate(55)" class="small">Marcell conifer</text>
+<rect x="762.0" y="506.0" width="25" height="214.0" fill="#2b7a0b" opacity=".72"/>
+<line x1="774.5" y1="501.0" x2="774.5" y2="536.9" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(770.0,730.0) rotate(55)" class="small">Marcell deciduous</text>
+<rect x="832.0" y="503.5" width="25" height="216.5" fill="#8b5a2b" opacity=".72"/>
+<line x1="844.5" y1="501.0" x2="844.5" y2="518.9" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(840.0,730.0) rotate(55)" class="small">Marcell mixed</text>
+<rect x="902.0" y="513.8" width="25" height="206.2" fill="#2b7a0b" opacity=".72"/>
+<line x1="914.5" y1="501.0" x2="914.5" y2="525.9" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(910.0,730.0) rotate(55)" class="small">Harvard deciduous</text>
+<rect x="972.0" y="507.6" width="25" height="212.4" fill="#8b5a2b" opacity=".72"/>
+<line x1="984.5" y1="501.0" x2="984.5" y2="513.6" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(980.0,730.0) rotate(55)" class="small">Harvard mixed</text>
+<rect x="1042.0" y="505.8" width="25" height="214.2" fill="#2b7a0b" opacity=".72"/>
+<line x1="1054.5" y1="501.0" x2="1054.5" y2="523.6" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(1050.0,730.0) rotate(55)" class="small">Hubbard Brook deciduous</text>
+<rect x="1112.0" y="503.9" width="25" height="216.1" fill="#8b5a2b" opacity=".72"/>
+<line x1="1124.5" y1="501.0" x2="1124.5" y2="513.9" stroke="#111827" stroke-width="1.5"/>
+<text transform="translate(1120.0,730.0) rotate(55)" class="small">Hubbard Brook mixed</text>
+</svg>

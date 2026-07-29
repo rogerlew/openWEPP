@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="910" viewBox="0 0 1240 910" role="img" aria-labelledby="title desc">
+<title id="title">CAL-06 congruence verdict matrix</title>
+<desc id="desc">Every prespecified cell is shown. Bounded evidence and not-evaluated cells remain distinct from support and measured zero.</desc>
+<style>
+text{font-family:Arial,sans-serif;fill:#1f2933}.title{font-size:24px;font-weight:700}.subtitle{font-size:13px}.axis{stroke:#52616b;stroke-width:1}.grid{stroke:#d9e2ec;stroke-width:1}.label{font-size:12px}.small{font-size:10px}.panel{fill:#fbfcfd;stroke:#bcccdc}.band{opacity:.18}.status{font-size:12px;font-weight:700}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<metadata id="source-bindings">verdict-matrix.csv:4b176c0ab1c7ecd43e35b39e369ddff34b65e54aa9bd8204d401b165b94ae37e</metadata>
+<text x="45" y="95" class="status">Cell</text>
+<text x="250" y="95" class="status">Status</text>
+<text x="520" y="95" class="status">Advancement</text>
+<rect x="38" y="115" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="145" class="label">CAL06-CAN-001</text>
+<text x="195" y="145" class="status">△ BOUNDED</text>
+<text x="520" y="145" class="small">PASS_MODEL_ORDERING</text>
+<rect x="38" y="172" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="202" class="label">CAL06-CAN-002</text>
+<text x="195" y="202" class="status">△ BOUNDED</text>
+<text x="520" y="202" class="small">PASS_MODEL_ORDERING</text>
+<rect x="38" y="229" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="259" class="label">CAL06-CAN-003</text>
+<text x="195" y="259" class="status">△ BOUNDED</text>
+<text x="520" y="259" class="small">PASS_MODEL_ORDERING</text>
+<rect x="38" y="286" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="316" class="label">CAL06-CAN-004</text>
+<text x="195" y="316" class="status">△ BOUNDED</text>
+<text x="520" y="316" class="small">NO_EMPIRICAL_AMPLITUDE_PROMOTION</text>
+<rect x="38" y="343" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="373" class="label">CAL06-SNOW-001</text>
+<text x="195" y="373" class="status">△ BOUNDED</text>
+<text x="520" y="373" class="small">QUANTIFIED_NO_SUPPORT_THRESHOLD</text>
+<rect x="38" y="400" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="430" class="label">CAL06-SNOW-002</text>
+<text x="195" y="430" class="status">△ BOUNDED</text>
+<text x="520" y="430" class="small">QUANTIFIED_NO_SUPPORT_THRESHOLD</text>
+<rect x="38" y="457" width="1160" height="50" fill="#fff7cc" stroke="#cbd5e1"/>
+<text x="45" y="487" class="label">CAL06-SNOW-003</text>
+<text x="195" y="487" class="status">△ BOUNDED</text>
+<text x="520" y="487" class="small">MODEL_RESPONSE_ONLY</text>
+<rect x="38" y="514" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="544" class="label">CAL06-LIT-001</text>
+<text x="195" y="544" class="status">— NOT_EVALUATED</text>
+<text x="520" y="544" class="small">AUTHORITY_MISSING</text>
+<rect x="38" y="571" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="601" class="label">CAL06-RES-001</text>
+<text x="195" y="601" class="status">— NOT_EVALUATED</text>
+<text x="520" y="601" class="small">NOT_ADVANCED</text>
+<rect x="38" y="628" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="658" class="label">CAL06-FROST-001</text>
+<text x="195" y="658" class="status">— NOT_EVALUATED</text>
+<text x="520" y="658" class="small">NOT_ADVANCED</text>
+<rect x="38" y="685" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="715" class="label">CAL06-ET-001</text>
+<text x="195" y="715" class="status">— NOT_EVALUATED</text>
+<text x="520" y="715" class="small">NOT_ADVANCED</text>
+<rect x="38" y="742" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="772" class="label">CAL06-RUN-001</text>
+<text x="195" y="772" class="status">— NOT_EVALUATED</text>
+<text x="520" y="772" class="small">NOT_ADVANCED</text>
+<rect x="38" y="799" width="1160" height="50" fill="#edf2f7" stroke="#cbd5e1"/>
+<text x="45" y="829" class="label">CAL06-ERO-001</text>
+<text x="195" y="829" class="status">— NOT_EVALUATED</text>
+<text x="520" y="829" class="small">NOT_ADVANCED</text>
+</svg>

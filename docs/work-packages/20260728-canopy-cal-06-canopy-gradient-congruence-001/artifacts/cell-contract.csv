@@ -1,0 +1,14 @@
+cell_id,family,site,comparison,quantity,units,observation_role,criterion,downstream_dependencies,missing_rule
+CAL06-CAN-001,canopy,marcell,deciduous<mixed<conifer,winter_cover,fraction,MODEL_RESPONSE,strict median ordering across all 37 members,NONE,null if a source stratum is absent
+CAL06-CAN-002,canopy,harvard,deciduous<mixed,winter_cover,fraction,MODEL_RESPONSE,strict median ordering across all 37 members,NONE,null for unavailable pure conifer
+CAL06-CAN-003,canopy,hubbard_brook,deciduous<mixed,winter_cover,fraction,MODEL_RESPONSE,strict median ordering across all 37 members,NONE,null for unavailable open or pure conifer
+CAL06-CAN-004,canopy,all,within installed forest strata,summer_cover_and_lai,fraction_and_m2_m2,MODEL_RESPONSE,publish ensemble range and amplitude without best-member selection,NONE,null if stratum absent
+CAL06-SNOW-001,snow,marcell,open/deciduous/conifer,depth_swe_density,m_mm_kg_m3,DOWNSTREAM_HOLDOUT,publish exact-date bias MAE and ensemble range; no support verdict without source uncertainty,CAL06-CAN-001,missing observation remains missing
+CAL06-SNOW-002,snow,harvard,open/hardwood,depth_swe_density,m_mm_kg_m3,DOWNSTREAM_HOLDOUT,publish exact-date bias MAE and ensemble range; hemlock remains unbound,CAL06-CAN-002,unbound hemlock is not evaluated
+CAL06-SNOW-003,snow,all,within installed strata,peak_and_meltout,mm_and_day_of_year,MODEL_RESPONSE,publish ensemble distribution and ordering; do not attribute common residuals to canopy,canopy cell for site,no snow is a measured/model zero
+CAL06-LIT-001,litter,all,forest strata,leaf_needle_fine_woody,kg_m2_day,MODEL_RESPONSE,leaf is reported; predictive needle and fine woody remain null,CAL06-CAN-004,null is unavailable not zero
+CAL06-RES-001,residue,all,forest strata,residue_mass_depth,kg_m2_and_m,MODEL_RESPONSE,publish chronology only; no adequacy claim while source is incomplete,CAL06-LIT-001,not advanced if source incomplete
+CAL06-FROST-001,frost,all,within installed strata,onset_thaw_depth,day_of_year_and_mm,MODEL_RESPONSE,publish only with active frost outputs and passed residue source chain,CAL06-RES-001,not advanced if upstream is incomplete
+CAL06-ET-001,downstream,all,within installed strata,interception_and_et,mm,MODEL_RESPONSE,publish only after canopy cell passes,site canopy cell,not advanced after upstream failure
+CAL06-RUN-001,downstream,all,within installed strata,runoff,mm,MODEL_RESPONSE,publish only after canopy snow and residue/frost cells pass,canopy+snow+residue+frost,not advanced after upstream failure
+CAL06-ERO-001,downstream,all,within installed strata,erosion,kg_m2,MODEL_RESPONSE,requires a real erosion output surface and all upstream cells,canopy+snow+residue+frost+runoff,null when production runner does not emit erosion

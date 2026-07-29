@@ -397,7 +397,7 @@ credible.
 
 ## 6. Ordered Work Packages
 
-Orders 1 through 5 are complete; Orders 6 through 8 are prospective. Every
+Orders 1 through 6 are complete; Orders 7 and 8 are prospective. Every
 prospective row requires its own declared scope, evidence identity, gate plan,
 and disposition before execution.
 
@@ -408,7 +408,7 @@ and disposition before execution.
 | 3 | [`CANOPY-CAL-03` observation corpus, native fixtures, and research outputs](../work-packages/20260726-canopy-cal-03-observation-native-research-001/package.md) — **complete; CAL-04/05 authority blockers retained** | Installed provenance-bound phenology/LAI/canopy/litter observations, native YAML counterparts for selected canopy-gradient lanes, and a stable daily research-output surface. | Passed for CAL-03: immutable roles, protected bindings, real production consumers, mass/cohort closure, and deterministic rebuild. CAL-04 timing fitting and affected CAL-05 source/decay claims remain authority-blocked pending new independent evidence. |
 | 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / historical hold retained**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **complete / readiness pass / validation limitation retained** | CAL-04B evaluated all 9,261 frozen Hubbard candidates, independently reconstructed a 37-member accepted ensemble, propagated later-stage uncertainty, passed the freeze and two-verifier barrier, and scored Harvard once without refit. GSI timing and foliar/structural partition are empirically calibrated but partially identifiable; the remaining stages are calibration-ready and data-limited. Harvard aggregate errors span 43.48–72.46 days; 34/37 candidates have zero interval coverage and the maximum positive coverage is 18.81%, so independent transferability is unsupported. | Passed: execution, custody, terminal validation, dual scientific review, and dual verification. Retain the poor Harvard result as contrary evidence; do not refit or claim transferability. |
 | 5 | [`CANOPY-CAL-05` litter-source and decomposition readiness](../work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/package.md) — **complete / readiness pass**; [`CANOPY-LITTER-SOURCE-AUTHORITY-01`](../work-packages/20260728-canopy-litter-source-authority-001/package.md) — **complete / external boundary implemented / predictive authority hold retained** | Raw runtime, reconstruction, recovery, terminal ridge, failures, and Harvard diagnostics pass. The direct-runtime operator is calibration-ready-data-limited and partially identifiable. The successor implemented only authenticated exogenous daily forcing; native predictive source sufficiency remains authority-missing and empirical decomposition remains blocked. | Passed for the authenticated external boundary. Orders 6-8 may use it only with provenance-complete daily inputs; do not infer unavailable predictive source magnitudes or fit decomposition. |
-| 6 | `CANOPY-CAL-06` canopy-gradient congruence | Run conifer-mixed-deciduous-open within-site comparisons through canopy, ET/interception, snow, residue, frost, runoff, and erosion consumers. | Prespecified ordering and quantitative cells pass or are bounded with retained contrary evidence. |
+| 6 | [`CANOPY-CAL-06` canopy-gradient congruence](../work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/package.md) — **complete / bounded characterization / downstream advancement withheld** | All 261 prespecified runs passed: the complete 37-member timing ensemble across seven native forest lanes plus two open controls. Within-model winter canopy ordering passes 37/37 at Marcell, Harvard, and Hubbard Brook; snow residuals are quantified; Harvard SWE is excluded for a provider unit/identity contradiction; missing predictive litter sources and unavailable erosion output remain explicit. | Passed for bounded characterization: all prespecified cells are `BOUNDED` or `NOT_EVALUATED`, contrary evidence is retained, and unsupported downstream cells are visibly `NOT ADVANCED`. |
 | 7 | `CANOPY-CAL-07` Southern Hemisphere robustness | Combine synthetic phase invariance with independent SH observational lanes and real downstream consumers. | Timing, phase, amplitude, mass closure, and consumer chronology pass without fixed dates or NH-only tuning. |
 | 8 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
 
@@ -696,7 +696,23 @@ currently needed; lifting the predictive hold requires new species/site
 process evidence and branch/crown/stand state, not another broad turnover
 citation.
 
-Order 6, `CANOPY-CAL-06`, is the immediate next package. It must freeze the
-within-site gradient design, retain the full CAL-04B ensemble, carry CAL-05
-source completeness explicitly, and bind its result tables to the prospective
-human-interpretation figure contract before execution.
+Order 6, `CANOPY-CAL-06`, is complete. All 261 prespecified runs passed and the
+six required plot-only human-interpretation figures bind retained tidy tables,
+with captions and ancillary scientific information in paired Markdown
+sidecars. Winter
+canopy ordering is stable across all 37 members for every source-supplied
+within-site forest gradient. This is bounded model-response evidence, not
+empirical canopy-amplitude validation. Harvard and Marcell snow residuals are
+retained without canopy retuning; Harvard SWE is excluded because provider
+centimeter metadata contradict the same-row depth-density identity.
+
+Predictive needle and fine-woody sources remain null, residue/frost adequacy
+does not advance, and ET/runoff/erosion consequences remain model-response or
+not-evaluated evidence. No downstream residual selected a canopy parameter.
+
+Order 7, `CANOPY-CAL-07`, is the immediate next package. It must freeze
+independent Southern Hemisphere observational lanes before result-bearing
+execution, preserve the complete accepted timing ensemble, combine those
+observations with the existing cyclic phase-transform gate, and exercise the
+same real consumer and missing-source boundaries without Northern Hemisphere
+retuning.

@@ -1,0 +1,40 @@
+{
+  "accepted_ensemble_sha256": "83e749a3961604e4592f2a2217db30965c8bbb59f4752d0ff6d85fbac61fd986",
+  "accepted_member_count": 37,
+  "forest_member_runs": 259,
+  "observation_operator": {
+    "harvard_bulk_density": "WAT aggregate density versus HF237-01 daily bulk density",
+    "harvard_profile_density": "NOT_EVALUATED_SCALE_MISMATCH",
+    "harvard_swe": "INVALID_SOURCE_UNIT_IDENTITY_CONTRADICTION"
+  },
+  "open_control_runs": 2,
+  "outputs": {
+    "daily-climatology.csv": {
+      "bytes": 22729675,
+      "sha256": "e3b973d51d93b0dc804dc06feb7021cf5e4f39c85fc034da3f615e63a81dc410"
+    },
+    "execution-manifest.csv": {
+      "bytes": 137728,
+      "sha256": "fadd2c8569a59b167567ee1b572e7e76098fe7d43a4bf2d7baba890dc676c616"
+    },
+    "observation-scores.csv": {
+      "bytes": 84491,
+      "sha256": "c6856427cf1a4de96d9b3f1d490547da31870646470164abd95fb621ba913a73"
+    },
+    "run-period-operands.csv": {
+      "bytes": 3703482,
+      "sha256": "a998dddf2971609eb794790c032406393294274fad03fa91a05ed42dd8009a8d"
+    },
+    "run-results.csv": {
+      "bytes": 87310,
+      "sha256": "484fd0d7abfee199d7e30b69292aa17491767df59c9dc0dea3eee7d611571854"
+    }
+  },
+  "passed_runs": 261,
+  "planned_runs": 261,
+  "raw_object_retention": "ephemeral execution objects are digest-bound in execution-manifest.csv; canonical retained result objects are the compact tidy outputs",
+  "runner": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "runner_sha256": "ca4cba2537a7c36a6041fcc6c993904e3f541b4529219cb1493624c1b5e56cf5",
+  "schema": "openwepp-canopy-cal06-result-manifest-v1",
+  "source_head": "d874c16f45caa3da5e4641faff4362b44951db64"
+}
