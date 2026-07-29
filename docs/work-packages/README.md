@@ -405,6 +405,17 @@ State as of `2026-07-28 UTC`:
   Four accessible SVG plots and Markdown sidecars retain crossings, daily
   indicators, counterfactual effects, and threshold sensitivity. No parameter,
   forcing, or process correction is authorized.
+- `20260729-canopy-cal-07e-literature-authority-review-001/` -
+  COMPLETE / METHOD AUDIT AUTHORIZED / SCIENCE CORRECTION NOT AUTHORIZED:
+  15 sources or acquisition leads and 15 claim-level dispositions support
+  rainfall as a Bezà contributor, gallery/xerophytic stratification, and
+  multiple regional or analogue water/seasonal mechanisms without selecting a
+  production equation. The review identifies a `gcc_mean` transition versus
+  `smooth_gcc_90` ancillary-context inconsistency: rising dates differ by at
+  most one day, while material falling cases differ by 12 to 43 days in the
+  checksum-retained provisional record processed 26 July 2026. One accessible
+  SVG authority map and Markdown sidecar are retained. Order 7 remains held;
+  CAL-07F observation-product/operator audit is next.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

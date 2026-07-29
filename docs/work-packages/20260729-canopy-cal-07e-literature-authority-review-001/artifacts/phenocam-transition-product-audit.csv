@@ -1,0 +1,13 @@
+year,direction,threshold,gcc_mean_date,gcc_90_date,gcc_90_minus_mean_days,gcc_mean_ci,gcc_90_ci,interpretation
+2024,rising,10,2024-08-18,2024-08-19,1,2024-08-17..2024-08-20,2024-08-18..2024-08-20,"minor product difference"
+2024,rising,25,2024-08-20,2024-08-21,1,2024-08-19..2024-08-21,2024-08-20..2024-08-22,"minor product difference"
+2024,rising,50,2024-08-24,2024-08-24,0,2024-08-23..2024-08-25,2024-08-23..2024-08-25,"identical date"
+2024,falling,10,2024-06-27,2024-06-29,2,2024-06-23..2024-06-29,2024-06-27..2024-06-30,"minor product difference"
+2024,falling,25,2024-06-13,2024-06-11,-2,2024-06-08..2024-06-18,2024-06-08..2024-06-17,"minor product difference"
+2024,falling,50,2024-05-21,2024-05-09,-12,2024-05-19..2024-05-27,2024-05-05..2024-05-12,"material product difference"
+2025,rising,10,2025-08-29,2025-08-29,0,2025-08-28..2025-09-10,2025-08-28..2025-09-09,"identical nominal date; wide asymmetric uncertainty"
+2025,rising,25,2025-08-31,2025-08-31,0,2025-08-29..2025-09-10,2025-08-30..2025-09-10,"identical nominal date; wide asymmetric uncertainty"
+2025,rising,50,2025-09-05,2025-09-06,1,2025-09-04..2025-09-11,2025-08-31..2025-09-10,"minor product difference"
+2025,falling,10,2025-06-16,2025-07-15,29,2025-05-31..2025-06-19,2025-07-09..2025-07-31,"material product difference"
+2025,falling,25,2025-05-23,2025-07-05,43,2025-05-20..2025-06-11,2025-07-03..2025-07-06,"material product difference"
+2025,falling,50,2025-05-01,2025-05-22,21,2025-04-15..2025-05-03,2025-05-19..2025-05-26,"material product difference"
