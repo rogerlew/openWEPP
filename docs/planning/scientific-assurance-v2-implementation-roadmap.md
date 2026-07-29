@@ -1,6 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: prospective decomposition — ASSURE-05 review-ready and held for human authority
+Status: ASSURE-05 review-ready and held for human authority; ASSURE-MAINT02
+queued for typed admission and complete-catalog preview
 
 ## Sequencing Principle
 
@@ -128,6 +129,32 @@ code-quality, workspace, dual review, and verification gates.
 Rollback: delete the confined fixture root and retain only clearly marked
 test-only snapshot evidence. No synthetic fixture is promoted, withdrawn from,
 or ever written into the tracked public tree or a release snapshot.
+
+## ASSURE-MAINT02 — Queued New-Report Admission And Full-Catalog Rendering
+
+Execution package:
+`docs/work-packages/20260729-assure-maint02-v2-report-admission-and-full-catalog-rendering-001/package.md`.
+
+Outcome: add the missing typed transaction for admitting a complete new V2
+report, extend deterministic assembly to embed content-identified accessible
+SVG research figures, admit the CAL-09 native-forest canopy draft, and render
+the entire three-report catalog through the real all-report consumer.
+
+Primary consumers: the `openwepp-assurance amend`, `validate`, `plan`, `build`,
+and `check` commands; maintainers inspecting the disposable
+`target/assurance-preview/` tree; and readers reviewing the CAL-09 time-series
+figures in their assembled manuscript context.
+
+Required gates: dry-run/apply/no-op/rollback transaction proof; generated
+identity and receipt closure; SVG confinement, identity, active-content,
+accessibility, and deterministic-copy checks; named/all equivalence; two
+unrelated byte-equal full-catalog builds; stable-preview check; actual Markdown
+consumer proof; protected tracked-public baseline; Critical workspace gates;
+dual implementation review and terminal verification.
+
+Boundary: this package produces draft staging only. It does not confer human
+approval, release transfer, snapshot authority, public catalog inclusion, or
+permission to write tracked `usersum/**`.
 
 ## ASSURE-05 — First Production V2 Report
 
