@@ -1,0 +1,10 @@
+[package]
+name = "cal07-executor"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+openwepp-plant-phenology = { path = "../../../../../crates/openwepp-plant-phenology" }
+
+[workspace]

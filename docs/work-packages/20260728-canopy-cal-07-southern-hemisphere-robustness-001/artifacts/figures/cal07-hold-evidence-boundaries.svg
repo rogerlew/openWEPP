@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="780" viewBox="0 0 1240 780" role="img" aria-labelledby="title desc">
+<title id="title">CAL-07 disposition after fail-closed forcing admission</title>
+<desc id="desc">A status plot shows retained source evidence, the failed forcing gate, and the result cells that cannot be evaluated.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#182026}.title{font-size:24px;font-weight:700}.label{font-size:13px}.small{font-size:11px}.grid{stroke:#d9e2ec;stroke-width:1}.panel{fill:#fff;stroke:#bcccdc}</style>
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="50" y="42" class="title">CAL-07 disposition after fail-closed forcing admission</text>
+<line x1="500" y1="115" x2="1160" y2="115" class="grid"/>
+<text x="50" y="120" class="label">Two independent SH site assignments</text>
+<circle cx="1140" cy="115" r="9" fill="#16823A"/>
+<text x="1126" y="101" text-anchor="middle" class="small">RETAINED</text>
+<line x1="500" y1="185" x2="1160" y2="185" class="grid"/>
+<text x="50" y="190" class="label">Provisional camera greenness records</text>
+<circle cx="1140" cy="185" r="9" fill="#16823A"/>
+<text x="1126" y="171" text-anchor="middle" class="small">RETAINED</text>
+<line x1="500" y1="255" x2="1160" y2="255" class="grid"/>
+<text x="50" y="260" class="label">Contract-compatible daily forcing</text>
+<circle cx="620" cy="255" r="9" fill="#B42318"/>
+<text x="606" y="241" text-anchor="middle" class="small">FAILED</text>
+<line x1="500" y1="325" x2="1160" y2="325" class="grid"/>
+<text x="50" y="330" class="label">37-member GSI/canopy execution</text>
+<circle cx="760" cy="325" r="9" fill="#B42318"/>
+<text x="746" y="311" text-anchor="middle" class="small">BLOCKED</text>
+<line x1="500" y1="395" x2="1160" y2="395" class="grid"/>
+<text x="50" y="400" class="label">Timing and relative-shape evaluation</text>
+<circle cx="900" cy="395" r="9" fill="#5B6770"/>
+<text x="886" y="381" text-anchor="middle" class="small">NOT EVALUATED</text>
+<line x1="500" y1="465" x2="1160" y2="465" class="grid"/>
+<text x="50" y="470" class="label">Absolute amplitude / evergreen floor</text>
+<circle cx="900" cy="465" r="9" fill="#5B6770"/>
+<text x="886" y="451" text-anchor="middle" class="small">NOT EVALUATED</text>
+<line x1="500" y1="535" x2="1160" y2="535" class="grid"/>
+<text x="50" y="540" class="label">Phase-transformed real consumers</text>
+<circle cx="900" cy="535" r="9" fill="#5B6770"/>
+<text x="886" y="521" text-anchor="middle" class="small">NOT EVALUATED</text>
+<line x1="500" y1="605" x2="1160" y2="605" class="grid"/>
+<text x="50" y="610" class="label">Roadmap Order 7 advancement</text>
+<circle cx="1040" cy="605" r="9" fill="#C25B12"/>
+<text x="1026" y="591" text-anchor="middle" class="small">WITHHELD</text>
+<metadata id="source-bindings">artifacts/negative-vpd-days.csv:a31a5d078922580a920f469d2cfd0d3d1c911f1016c6f7b75a61b642d060eb17;artifacts/observation-source-summary.csv:aeea1445e32b5f6b32d907fc161d9191e156640e726dc81b2d748208c73a18a6</metadata>
+</svg>

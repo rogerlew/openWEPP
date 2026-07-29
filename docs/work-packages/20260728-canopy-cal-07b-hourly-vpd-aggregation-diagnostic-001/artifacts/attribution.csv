@@ -1,0 +1,4 @@
+date,hour_inventory_valid,response_metadata_valid,upstream_lineage_relation,daily_hourly_lineage_compatible,daily_operands_within_serialized_resolution,any_hourly_product_vpd_negative,reconstructed_contract_daily_vpd_negative,cal07_contract_daily_vpd_negative,contract_daily_signs_agree,attribution
+2022-07-22,true,true,AGGREGATE_OVERLAP_ONLY,true,true,false,true,true,true,DAILY_SUMMARY_OPERATOR_MISMATCH
+2022-09-15,true,true,AGGREGATE_OVERLAP_ONLY,true,true,false,true,true,true,DAILY_SUMMARY_OPERATOR_MISMATCH
+2025-09-09,true,true,AGGREGATE_OVERLAP_ONLY,true,true,false,true,true,true,DAILY_SUMMARY_OPERATOR_MISMATCH

@@ -1,0 +1,18 @@
+#
+# ROI List for alercecosteroforest
+#
+# Site: alercecosteroforest
+# Veg Type: EN
+# ROI ID Number: 1000
+# Owner: oscarz
+# Creation Date: 2023-09-03
+# Creation Time: 16:33:35
+# Update Date: 2024-12-29
+# Update Time: 21:46:34
+# Description: EN tree tops to avoid shadows
+#
+start_date,start_time,end_date,end_time,maskfile,sample_image
+2023-01-24,18:56:51,2023-08-02,23:59:59,alercecosteroforest_EN_1000_01.tif,alercecosteroforest_2023_01_25_120905.jpg
+2023-08-03,00:00:00,2023-09-26,23:59:59,alercecosteroforest_EN_1000_02.tif,alercecosteroforest_2023_08_11_115005.jpg
+2024-01-23,00:00:00,9999-12-31,00:00:00,alercecosteroforest_EN_1000_03.tif,alercecosteroforest_2024_01_24_115007.jpg
+

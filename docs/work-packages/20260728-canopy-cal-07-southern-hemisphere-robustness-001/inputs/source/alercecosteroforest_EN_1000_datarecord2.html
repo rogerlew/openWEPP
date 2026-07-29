@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>PHENOCAM</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="refresh" content="120" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"></link>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <style>
+     #siteinfo {
+       padding: 5px 0 5px 0;
+       width: 80%;
+       margin: 15px 0 0 10px;
+     }
+
+     #roiinfo {
+       margin: 15px 0 0 10px;
+     }
+
+     #roitsimage {
+       border-top: thick solid #cccccc;
+       margin: 15px 0 0 10px;
+     }
+
+     #roitsimage img {
+       border: 1px solid black;
+       margin: 10px;
+     }
+
+     #roimasklist {
+       border-top: thick solid #cccccc;
+       margin: 15px 0px 10px 10px;
+       padding: 0px;
+     }
+
+
+     #roimasklist ul {
+       list-style: none;
+       padding: 10px 0 0 0;
+     }
+
+     .roimaskentry {
+       border-top: thick solid #cccccc;
+       padding: 5px;
+       margin: 0 0 10px 0;
+     }
+
+
+     .roimaskinfo ul {
+       /* border: 1px solid #ff00ff; */
+       width: 400px;
+       height: 250px;
+       padding: 5px;
+     }
+
+     .roimaskinfo li {
+       list-style: none;
+       padding: 2px;
+     }
+
+     .roimaskoverlay img {
+       border: 2px solid black;
+       height: 250px;
+       position: absolute;
+       margin: -248px 0px 5px 470px;
+     }
+
+     .togglemask-button {
+       width: 100px;
+       padding: 2px;
+       text-align: center;
+       border-top: 1px solid #aaaaaa;
+       border-bottom: 3px solid #aaaaaa;
+       border-right: 3px solid #aaaaaa;
+       border-left: 1px solid #aaaaaa;
+       color: blue;
+       background-color: white;
+     }
+
+     .togglemask-button:hover {
+       background-color: #ffff00;
+       cursor: pointer;
+     }
+
+
+     .hidden {
+       display: none;
+     }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+     $(document).ready(function() {
+       $('.togglemask-button').bind('click', function() {
+         $(this).closest('.roimaskentry').find('.overlaymask').toggleClass('hidden');
+       });
+     });
+    </script>
+
+
+  <div id="siteinfo">
+    <h2>PhenoCam Data Record 2</h2>
+    <h3>Site Name: <a href="https://phenocam.nau.edu/webcam/sites/alercecosteroforest/">alercecosteroforest</a></h3>
+    <h4>Location: Alerce Costero National Park Forest</h4>
+    <ul>
+      <li><strong>Lat:</strong> -40.1726</li>
+      <li><strong>Lon:</strong> -73.4439</li>
+      <li><strong>Elev(m):</strong> 840</li>
+      <li><strong>Image Count:</strong> 32742</li>
+      <li><strong>Start Date:</strong> 2023-01-24 </li>
+      <li><strong>Last Date:</strong> 2026-07-25 </li>
+    </ul>
+  </div>
+
+  <div id="roiinfo">
+    <h3>ROI Name: EN_1000 (EN tree tops to avoid shadows)</h3> 
+  </div>
+
+  <div id="roimasklist">
+    <h3>ROI Mask List ( 3 )</h3>
+    (<a href="alercecosteroforest_EN_1000_roi.csv">Mask CSV file</a>)
+    <ul>
+      
+	<li>
+	  <div class="roimaskentry">
+	    <div class="roimaskinfo">
+	      <ul>
+		<li>Mask: 1</li>
+		<li>Start Date: Jan. 24, 2023, 6:56 p.m.</li>
+		<li>End Date: Aug. 2, 2023, 11:59 p.m.</li>
+		<li>Mask File: <a href="alercecosteroforest_EN_1000_01.tif">alercecosteroforest_EN_1000_01.tif</a></li>
+		<li><div class="togglemask-button">Toggle Mask</div></li>
+	      </ul>
+	    </div> <!-- /roimaskinfo -->
+	    <div class="roimaskoverlay">
+	      <img style="z-index: 100;" src="alercecosteroforest_2023_01_25_120905.jpg" alt="ROI sample image"/>
+	      <img class="overlaymask" style="z-index: 1000;" src="alercecosteroforest_EN_1000_01_overlay.png" alt="ROI overlay image" />
+	    </div>
+	  </div>
+	</li>
+      
+	<li>
+	  <div class="roimaskentry">
+	    <div class="roimaskinfo">
+	      <ul>
+		<li>Mask: 2</li>
+		<li>Start Date: Aug. 3, 2023, midnight</li>
+		<li>End Date: Sept. 26, 2023, 11:59 p.m.</li>
+		<li>Mask File: <a href="alercecosteroforest_EN_1000_02.tif">alercecosteroforest_EN_1000_02.tif</a></li>
+		<li><div class="togglemask-button">Toggle Mask</div></li>
+	      </ul>
+	    </div> <!-- /roimaskinfo -->
+	    <div class="roimaskoverlay">
+	      <img style="z-index: 100;" src="alercecosteroforest_2023_08_11_115005.jpg" alt="ROI sample image"/>
+	      <img class="overlaymask" style="z-index: 1000;" src="alercecosteroforest_EN_1000_02_overlay.png" alt="ROI overlay image" />
+	    </div>
+	  </div>
+	</li>
+      
+	<li>
+	  <div class="roimaskentry">
+	    <div class="roimaskinfo">
+	      <ul>
+		<li>Mask: 3</li>
+		<li>Start Date: Jan. 23, 2024, midnight</li>
+		<li>End Date: Dec. 31, 9999, midnight</li>
+		<li>Mask File: <a href="alercecosteroforest_EN_1000_03.tif">alercecosteroforest_EN_1000_03.tif</a></li>
+		<li><div class="togglemask-button">Toggle Mask</div></li>
+	      </ul>
+	    </div> <!-- /roimaskinfo -->
+	    <div class="roimaskoverlay">
+	      <img style="z-index: 100;" src="alercecosteroforest_2024_01_24_115007.jpg" alt="ROI sample image"/>
+	      <img class="overlaymask" style="z-index: 1000;" src="alercecosteroforest_EN_1000_03_overlay.png" alt="ROI overlay image" />
+	    </div>
+	  </div>
+	</li>
+      
+    </ul>
+  </div>
+
+  </body>
+</html>

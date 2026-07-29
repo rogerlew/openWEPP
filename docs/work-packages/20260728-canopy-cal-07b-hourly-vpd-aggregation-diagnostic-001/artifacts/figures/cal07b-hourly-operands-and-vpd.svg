@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="820" viewBox="0 0 1240 820" role="img" aria-labelledby="title desc">
+<title id="title">Published hourly-average POWER operands remain VPD-positive</title>
+<desc id="desc">Three date columns show hourly-average temperature and dew point above paired reconstructed VPD. All 72 hourly-product VPD values remain above zero.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#182026}.title{font-size:24px;font-weight:700}.label{font-size:13px}.small{font-size:11px}.grid{stroke:#d9e2ec;stroke-width:1}.panel{fill:#fff;stroke:#bcccdc}</style>
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="48" y="42" class="title">Published hourly-average POWER operands remain VPD-positive</text>
+<text x="250.0" y="78" text-anchor="middle" class="label">2022-07-22 (LST)</text>
+<rect x="75" y="95" width="350" height="270" class="panel"/>
+<line x1="75" y1="365.0" x2="425" y2="365.0" class="grid"/>
+<text x="68" y="369.0" text-anchor="end" class="small">4.7</text>
+<line x1="75" y1="230.00000000000003" x2="425" y2="230.00000000000003" class="grid"/>
+<text x="68" y="234.00000000000003" text-anchor="end" class="small">8.2</text>
+<line x1="75" y1="95.0" x2="425" y2="95.0" class="grid"/>
+<text x="68" y="99.0" text-anchor="end" class="small">11.6</text>
+<path d="M75.00,319.93 L90.22,289.76 L105.43,262.72 L120.65,238.43 L135.87,228.63 L151.09,210.60 L166.30,192.18 L181.52,171.81 L196.74,150.65 L211.96,139.67 L227.17,130.66 L242.39,121.26 L257.61,114.59 L272.83,117.73 L288.04,121.65 L303.26,122.43 L318.48,121.26 L333.70,119.69 L348.91,120.08 L364.13,121.26 L379.35,122.82 L394.57,123.21 L409.78,123.21 L425.00,122.82" fill="none" stroke="#2864A5" stroke-width="2"/>
+<path d="M75.00,345.41 L90.22,315.62 L105.43,294.07 L120.65,273.69 L135.87,260.76 L151.09,238.43 L166.30,215.30 L181.52,188.27 L196.74,161.62 L211.96,148.29 L227.17,138.89 L242.39,130.66 L257.61,127.92 L272.83,129.88 L288.04,133.01 L303.26,133.80 L318.48,134.19 L333.70,134.58 L348.91,134.97 L364.13,135.75 L379.35,135.75 L394.57,135.36 L409.78,134.58 L425.00,134.58" fill="none" stroke="#16823A" stroke-width="2" stroke-dasharray="5 3"/>
+<rect x="75" y="430" width="350" height="265" class="panel"/>
+<line x1="75" y1="695.0" x2="425" y2="695.0" stroke="#B42318" stroke-width="1.5"/>
+<line x1="75" y1="695.0" x2="425" y2="695.0" class="grid"/>
+<text x="68" y="699.0" text-anchor="end" class="small">0</text>
+<line x1="75" y1="562.5" x2="425" y2="562.5" class="grid"/>
+<text x="68" y="566.5" text-anchor="end" class="small">34</text>
+<line x1="75" y1="430.0" x2="425" y2="430.0" class="grid"/>
+<text x="68" y="434.0" text-anchor="end" class="small">69</text>
+<path d="M75.00,537.64 L90.22,527.58 L105.43,484.28 L120.65,449.63 L135.87,467.51 L151.09,491.86 L166.30,520.77 L181.52,566.44 L196.74,606.15 L211.96,623.91 L227.17,626.19 L242.39,615.32 L257.61,581.33 L272.83,591.75 L288.04,598.92 L303.26,599.03 L318.48,585.73 L333.70,569.06 L348.91,569.14 L364.13,572.63 L379.35,585.99 L394.57,592.59 L409.78,599.14 L425.00,595.81" fill="none" stroke="#C25B12" stroke-width="2.2"/>
+<text x="75.0" y="715" text-anchor="middle" class="small">00</text>
+<text x="166.30434782608694" y="715" text-anchor="middle" class="small">06</text>
+<text x="257.6086956521739" y="715" text-anchor="middle" class="small">12</text>
+<text x="348.9130434782609" y="715" text-anchor="middle" class="small">18</text>
+<text x="425.0" y="715" text-anchor="middle" class="small">23</text>
+<text x="420" y="689.0" text-anchor="end" class="small" fill="#B42318">0 Pa</text>
+<text x="640.0" y="78" text-anchor="middle" class="label">2022-09-15 (LST)</text>
+<rect x="465" y="95" width="350" height="270" class="panel"/>
+<line x1="465" y1="365.0" x2="815" y2="365.0" class="grid"/>
+<text x="458" y="369.0" text-anchor="end" class="small">4.3</text>
+<line x1="465" y1="229.99999999999997" x2="815" y2="229.99999999999997" class="grid"/>
+<text x="458" y="233.99999999999997" text-anchor="end" class="small">7.9</text>
+<line x1="465" y1="95.0" x2="815" y2="95.0" class="grid"/>
+<text x="458" y="99.0" text-anchor="end" class="small">11.5</text>
+<path d="M465.00,129.32 L480.22,125.54 L495.43,125.92 L510.65,126.30 L525.87,127.43 L541.09,128.56 L556.30,127.05 L571.52,122.53 L586.74,118.76 L601.96,116.49 L617.17,114.23 L632.39,113.85 L647.61,117.25 L662.83,122.15 L678.04,127.81 L693.26,134.97 L708.48,144.78 L723.70,159.11 L738.91,182.11 L754.13,203.60 L769.35,226.98 L784.57,266.96 L799.78,297.50 L815.00,326.91" fill="none" stroke="#2864A5" stroke-width="2"/>
+<path d="M465.00,151.19 L480.22,147.42 L495.43,147.42 L510.65,148.17 L525.87,148.55 L541.09,148.17 L556.30,145.91 L571.52,142.14 L586.74,137.23 L601.96,133.46 L617.17,129.32 L632.39,127.81 L647.61,131.20 L662.83,135.73 L678.04,142.51 L693.26,152.70 L708.48,165.14 L723.70,182.49 L738.91,204.73 L754.13,223.97 L769.35,248.85 L784.57,286.94 L799.78,317.49 L815.00,346.15" fill="none" stroke="#16823A" stroke-width="2" stroke-dasharray="5 3"/>
+<rect x="465" y="430" width="350" height="265" class="panel"/>
+<line x1="465" y1="695.0" x2="815" y2="695.0" stroke="#B42318" stroke-width="1.5"/>
+<line x1="465" y1="695.0" x2="815" y2="695.0" class="grid"/>
+<text x="458" y="699.0" text-anchor="end" class="small">0</text>
+<line x1="465" y1="562.5" x2="815" y2="562.5" class="grid"/>
+<text x="458" y="566.5" text-anchor="end" class="small">27</text>
+<line x1="465" y1="430.0" x2="815" y2="430.0" class="grid"/>
+<text x="458" y="434.0" text-anchor="end" class="small">53</text>
+<path d="M465.00,454.23 L480.22,452.81 L495.43,457.05 L510.65,453.09 L525.87,461.71 L541.09,478.50 L556.30,486.22 L571.52,476.46 L586.74,487.67 L601.96,503.70 L617.17,524.11 L632.39,536.70 L647.61,537.53 L662.83,542.90 L678.04,531.82 L693.26,500.98 L708.48,475.92 L723.70,449.63 L738.91,465.85 L754.13,495.31 L769.35,488.59 L784.57,517.81 L799.78,526.34 L815.00,540.19" fill="none" stroke="#C25B12" stroke-width="2.2"/>
+<text x="465.0" y="715" text-anchor="middle" class="small">00</text>
+<text x="556.304347826087" y="715" text-anchor="middle" class="small">06</text>
+<text x="647.6086956521739" y="715" text-anchor="middle" class="small">12</text>
+<text x="738.9130434782609" y="715" text-anchor="middle" class="small">18</text>
+<text x="815.0" y="715" text-anchor="middle" class="small">23</text>
+<text x="810" y="689.0" text-anchor="end" class="small" fill="#B42318">0 Pa</text>
+<text x="1030.0" y="78" text-anchor="middle" class="label">2025-09-09 (LST)</text>
+<rect x="855" y="95" width="350" height="270" class="panel"/>
+<line x1="855" y1="365.0" x2="1205" y2="365.0" class="grid"/>
+<text x="848" y="369.0" text-anchor="end" class="small">8.2</text>
+<line x1="855" y1="230.0" x2="1205" y2="230.0" class="grid"/>
+<text x="848" y="234.0" text-anchor="end" class="small">10.5</text>
+<line x1="855" y1="95.0" x2="1205" y2="95.0" class="grid"/>
+<text x="848" y="99.0" text-anchor="end" class="small">12.8</text>
+<path d="M855.00,278.17 L870.22,221.08 L885.43,182.42 L900.65,155.07 L915.87,146.15 L931.09,144.36 L946.30,143.17 L961.52,132.47 L976.74,124.74 L991.96,131.28 L1007.17,143.77 L1022.39,155.66 L1037.61,158.04 L1052.83,147.33 L1068.04,132.47 L1083.26,127.71 L1098.48,137.22 L1113.70,145.55 L1128.91,153.88 L1144.13,159.82 L1159.35,163.99 L1174.57,169.34 L1189.78,176.48 L1205.00,188.96" fill="none" stroke="#2864A5" stroke-width="2"/>
+<path d="M855.00,335.26 L870.22,273.41 L885.43,221.67 L900.65,182.42 L915.87,169.34 L931.09,164.58 L946.30,161.01 L961.52,153.88 L976.74,150.90 L991.96,159.23 L1007.17,174.69 L1022.39,188.96 L1037.61,194.32 L1052.83,182.42 L1068.04,162.20 L1083.26,162.80 L1098.48,172.91 L1113.70,180.64 L1128.91,193.72 L1144.13,209.78 L1159.35,224.65 L1174.57,237.73 L1189.78,244.27 L1205.00,253.19" fill="none" stroke="#16823A" stroke-width="2" stroke-dasharray="5 3"/>
+<rect x="855" y="430" width="350" height="265" class="panel"/>
+<line x1="855" y1="695.0" x2="1205" y2="695.0" stroke="#B42318" stroke-width="1.5"/>
+<line x1="855" y1="695.0" x2="1205" y2="695.0" class="grid"/>
+<text x="848" y="699.0" text-anchor="end" class="small">0</text>
+<line x1="855" y1="562.5" x2="1205" y2="562.5" class="grid"/>
+<text x="848" y="566.5" text-anchor="end" class="small">54</text>
+<line x1="855" y1="430.0" x2="1205" y2="430.0" class="grid"/>
+<text x="848" y="434.0" text-anchor="end" class="small">108</text>
+<path d="M855.00,510.07 L870.22,515.17 L885.43,553.99 L900.65,593.46 L915.87,607.98 L931.09,618.90 L946.30,627.69 L961.52,613.53 L976.74,594.90 L991.96,588.85 L1007.17,579.14 L1022.39,571.82 L1037.61,561.32 L1052.83,564.27 L1068.04,582.30 L1083.26,561.74 L1098.48,560.77 L1113.70,564.04 L1128.91,547.83 L1144.13,512.46 L1159.35,475.40 L1174.57,449.63 L1189.78,453.39 L1205.00,468.51" fill="none" stroke="#C25B12" stroke-width="2.2"/>
+<text x="855.0" y="715" text-anchor="middle" class="small">00</text>
+<text x="946.304347826087" y="715" text-anchor="middle" class="small">06</text>
+<text x="1037.608695652174" y="715" text-anchor="middle" class="small">12</text>
+<text x="1128.913043478261" y="715" text-anchor="middle" class="small">18</text>
+<text x="1205.0" y="715" text-anchor="middle" class="small">23</text>
+<text x="1200" y="689.0" text-anchor="end" class="small" fill="#B42318">0 Pa</text>
+<line x1="420" y1="770" x2="460" y2="770" stroke="#2864A5" stroke-width="2"/>
+<text x="468" y="775" class="small">T2M hourly average</text>
+<line x1="650" y1="770" x2="690" y2="770" stroke="#16823A" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="698" y="775" class="small">T2MDEW hourly average</text>
+<line x1="900" y1="770" x2="940" y2="770" stroke="#C25B12" stroke-width="2"/>
+<text x="948" y="775" class="small">reconstructed hourly-product VPD</text>
+<metadata id="source-bindings">hourly-reconstruction.csv:ca9bb4c3817fc9c17ce90b101751c79493eaba01ca1fe26bfafbbd9b1da5cf58</metadata>
+</svg>

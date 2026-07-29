@@ -365,6 +365,24 @@ State as of `2026-07-28 UTC`:
   remain historical evidence; no further execution advances them. Order 1
   applied exact package-local frozen-status overlays so no stale `ACTIVE` file
   can resume them.
+- `20260728-canopy-cal-07-southern-hemisphere-robustness-001/` -
+  HOLD / FORCING AUTHORITY INCOMPATIBLE / NO CANOPY RESULT: two independent
+  Southern Hemisphere PhenoCam lanes, NASA POWER forcing, and the complete
+  37-member ensemble were frozen before execution. Contract-defined VPD failed
+  closed on three Alerce days, including one inside the 2025 scoring year.
+  No clipping, deletion, substitution, or partial result was admitted. Four
+  accessible source/forcing diagnostic plots with detailed Markdown sidecars
+  retain the useful evidence. Order 7 requires contract-admissible continuous
+  forcing or new explicit canonicalization authority before retry.
+- `20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/` -
+  COMPLETE / DIAGNOSTIC PASS / CAL-07 HOLD RETAINED: exact POWER hourly LST
+  products for the three CAL-07 Alerce failure dates reconstruct 72/72
+  positive paired hourly-product VPD values. Hourly-derived Tmin/Tmax/mean
+  dew point reproduce the frozen CAL-07 daily operands within serialized
+  resolution, and the additive decomposition attributes the negative daily
+  contract values to the temperature-extrema daily summary operator. This
+  narrows the source/operator authority gap but does not resume CAL-07,
+  authorize clipping, or replace OBL-PLANT-P-013.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

@@ -397,9 +397,10 @@ credible.
 
 ## 6. Ordered Work Packages
 
-Orders 1 through 6 are complete; Orders 7 and 8 are prospective. Every
-prospective row requires its own declared scope, evidence identity, gate plan,
-and disposition before execution.
+Orders 1 through 6 are complete; Order 7 executed and is on scientific hold;
+CAL-07B completed the hourly VPD aggregation diagnostic; Order 8 remains
+prospective. Every prospective row requires its own declared scope, evidence
+identity, gate plan, and disposition before execution.
 
 | Order | Prospective package | Outcome | Advancement gate |
 | --- | --- | --- | --- |
@@ -409,7 +410,7 @@ and disposition before execution.
 | 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / historical hold retained**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **complete / readiness pass / validation limitation retained** | CAL-04B evaluated all 9,261 frozen Hubbard candidates, independently reconstructed a 37-member accepted ensemble, propagated later-stage uncertainty, passed the freeze and two-verifier barrier, and scored Harvard once without refit. GSI timing and foliar/structural partition are empirically calibrated but partially identifiable; the remaining stages are calibration-ready and data-limited. Harvard aggregate errors span 43.48–72.46 days; 34/37 candidates have zero interval coverage and the maximum positive coverage is 18.81%, so independent transferability is unsupported. | Passed: execution, custody, terminal validation, dual scientific review, and dual verification. Retain the poor Harvard result as contrary evidence; do not refit or claim transferability. |
 | 5 | [`CANOPY-CAL-05` litter-source and decomposition readiness](../work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/package.md) — **complete / readiness pass**; [`CANOPY-LITTER-SOURCE-AUTHORITY-01`](../work-packages/20260728-canopy-litter-source-authority-001/package.md) — **complete / external boundary implemented / predictive authority hold retained** | Raw runtime, reconstruction, recovery, terminal ridge, failures, and Harvard diagnostics pass. The direct-runtime operator is calibration-ready-data-limited and partially identifiable. The successor implemented only authenticated exogenous daily forcing; native predictive source sufficiency remains authority-missing and empirical decomposition remains blocked. | Passed for the authenticated external boundary. Orders 6-8 may use it only with provenance-complete daily inputs; do not infer unavailable predictive source magnitudes or fit decomposition. |
 | 6 | [`CANOPY-CAL-06` canopy-gradient congruence](../work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/package.md) — **complete / bounded characterization / downstream advancement withheld** | All 261 prespecified runs passed: the complete 37-member timing ensemble across seven native forest lanes plus two open controls. Within-model winter canopy ordering passes 37/37 at Marcell, Harvard, and Hubbard Brook; snow residuals are quantified; Harvard SWE is excluded for a provider unit/identity contradiction; missing predictive litter sources and unavailable erosion output remain explicit. | Passed for bounded characterization: all prespecified cells are `BOUNDED` or `NOT_EVALUATED`, contrary evidence is retained, and unsupported downstream cells are visibly `NOT ADVANCED`. |
-| 7 | `CANOPY-CAL-07` Southern Hemisphere robustness | Combine synthetic phase invariance with independent SH observational lanes and real downstream consumers. | Timing, phase, amplitude, mass closure, and consumer chronology pass without fixed dates or NH-only tuning. |
+| 7 | [`CANOPY-CAL-07` Southern Hemisphere robustness](../work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/package.md) — **hold / forcing authority incompatible / no canopy result**; [`CAL-07B` hourly VPD aggregation diagnostic](../work-packages/20260728-canopy-cal-07b-hourly-vpd-aggregation-diagnostic-001/package.md) — **complete / diagnostic pass / CAL-07 hold retained** | CAL-07 froze two independent PhenoCam lanes and gridded forcing before execution, then failed closed on three Alerce days, including 2025-09-09 inside a scoring year. CAL-07B retained exact hourly POWER products and found all 72 paired hourly-product VPD reconstructions positive; the negative daily values arise when the OBL-PLANT-P-013 daily summary operator combines Tmin/Tmax with mean dew point. | Not passed. Order 7 remains open. CAL-07B narrows the blocker to source/operator authority: resume still requires contract-admissible continuous site forcing or explicit contract authority for bounded canonicalization or a different admitted VPD product/operator; amplitude/floor and phase-transformed real-consumer chronology also remain unevaluated. |
 | 8 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
 
 ### 6.1 Completed CANOPY-CAL-03 execution contract
@@ -710,9 +711,29 @@ Predictive needle and fine-woody sources remain null, residue/frost adequacy
 does not advance, and ET/runoff/erosion consequences remain model-response or
 not-evaluated evidence. No downstream residual selected a canopy parameter.
 
-Order 7, `CANOPY-CAL-07`, is the immediate next package. It must freeze
-independent Southern Hemisphere observational lanes before result-bearing
-execution, preserve the complete accepted timing ensemble, combine those
-observations with the existing cyclic phase-transform gate, and exercise the
-same real consumer and missing-source boundaries without Northern Hemisphere
-retuning.
+Order 7, `CANOPY-CAL-07`, froze two independent Southern Hemisphere
+observational lanes and the complete accepted ensemble before result-bearing
+execution. Execution then failed closed because the NASA POWER Alerce series
+reconstructs three negative VPD days under OBL-PLANT-P-013: 2022-07-22,
+2022-09-15, and 2025-09-09. The last occurs inside a scoring year. No clipping,
+dew-point correction, day deletion, interpolation, or partial member/site
+result was admitted.
+
+Order 7 remains on scientific hold. Its immediate prerequisite is continuous,
+contract-admissible meteorology for the Alerce lane or explicit science
+authority defining a bounded canonicalization with threshold, units,
+provenance, and tests. An article alone does not fill this data/authority gap.
+Even after forcing admission, quantitative canopy amplitude/evergreen-floor
+evidence and a phase-transformed real-consumer trajectory gate remain open.
+
+`CANOPY-CAL-07B` fills the immediate source/operator diagnostic gap without
+changing that hold. Exact hourly POWER products for the three Alerce failure
+dates reconstruct positive paired hourly-product VPD for all 72 hourly rows,
+while hourly-derived Tmin/Tmax/mean-dew operands reproduce the frozen CAL-07
+daily operands within the prespecified serialized-resolution tolerance. The
+additive decomposition attributes the sign change to the daily temperature
+extrema summary term: -99.14 Pa, -116.89 Pa, and -59.96 Pa. Dew-point
+nonlinearity is positive and smaller: +6.81 Pa, +5.89 Pa, and +1.37 Pa.
+This supports `DAILY_SUMMARY_OPERATOR_MISMATCH` for the published POWER
+product/operator combination, not clipping, canonicalization, production
+operator replacement, or CAL-07 resumption.

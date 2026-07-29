@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="820" viewBox="0 0 1240 820" role="img" aria-labelledby="title desc">
+<title id="title">Hourly products reconstruct the frozen CAL-07 daily operands</title>
+<desc id="desc">Temperature panels show reconstructed minus reported daily minimum, maximum, and mean dew point; the lower panel shows the resulting contract-VPD residual.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#182026}.title{font-size:24px;font-weight:700}.label{font-size:13px}.small{font-size:11px}.grid{stroke:#d9e2ec;stroke-width:1}.panel{fill:#fff;stroke:#bcccdc}</style>
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="48" y="42" class="title">Hourly products reconstruct the frozen CAL-07 daily operands</text>
+<rect x="120" y="105" width="1040" height="390" class="panel"/>
+<line x1="120" y1="462.5" x2="1160" y2="462.5" class="grid"/>
+<text x="110" y="466.5" text-anchor="end" class="small">-0.005</text>
+<line x1="120" y1="300.0" x2="1160" y2="300.0" class="grid"/>
+<text x="110" y="304.0" text-anchor="end" class="small">+0.000</text>
+<line x1="120" y1="137.5" x2="1160" y2="137.5" class="grid"/>
+<text x="110" y="141.5" text-anchor="end" class="small">+0.005</text>
+<rect x="251.33333333333337" y="300.0" width="20" height="0.8" fill="#2864A5"/>
+<rect x="283.33333333333337" y="300.0" width="20" height="0.8" fill="#C25B12"/>
+<rect x="315.33333333333337" y="300.0" width="20" height="136.21666666665897" fill="#16823A"/>
+<text x="293.33333333333337" y="519" text-anchor="middle" class="small">2022-07-22</text>
+<rect x="598.0" y="300.0" width="20" height="0.8" fill="#2864A5"/>
+<rect x="630.0" y="300.0" width="20" height="0.8" fill="#C25B12"/>
+<rect x="662.0" y="300.0" width="20" height="27.883333333366455" fill="#16823A"/>
+<text x="640.0" y="519" text-anchor="middle" class="small">2022-09-15</text>
+<rect x="944.6666666666666" y="300.0" width="20" height="0.8" fill="#2864A5"/>
+<rect x="976.6666666666666" y="300.0" width="20" height="0.8" fill="#C25B12"/>
+<rect x="1008.6666666666666" y="300.0" width="20" height="109.13333333335025" fill="#16823A"/>
+<text x="986.6666666666666" y="519" text-anchor="middle" class="small">2025-09-09</text>
+<rect x="120" y="570" width="1040" height="125" class="panel"/>
+<line x1="120" y1="695.0" x2="1160" y2="695.0" class="grid"/>
+<rect x="275.33333333333337" y="591.3553049586039" width="36" height="103.64469504139606" fill="#B42318"/>
+<text x="293.33333333333337" y="584.3553049586039" text-anchor="middle" class="small">+0.332 Pa</text>
+<rect x="622.0" y="674.4402540566551" width="36" height="20.559745943344865" fill="#B42318"/>
+<text x="640.0" y="667.4402540566551" text-anchor="middle" class="small">+0.066 Pa</text>
+<rect x="968.6666666666666" y="603.7957407378724" width="36" height="91.20425926212761" fill="#B42318"/>
+<text x="986.6666666666666" y="596.7957407378724" text-anchor="middle" class="small">+0.292 Pa</text>
+<text x="32" y="305" transform="rotate(-90 32 305)" class="label">reconstructed − reported (°C)</text>
+<text x="56" y="690" transform="rotate(-90 56 690)" class="small">VPD residual</text>
+<rect x="430" y="760" width="14" height="14" fill="#2864A5"/>
+<text x="451" y="772" class="small">Tmin</text>
+<rect x="575" y="760" width="14" height="14" fill="#C25B12"/>
+<text x="596" y="772" class="small">Tmax</text>
+<rect x="720" y="760" width="14" height="14" fill="#16823A"/>
+<text x="741" y="772" class="small">mean Tdew</text>
+<metadata id="source-bindings">daily-decomposition.csv:7f23d8c904b9b591d42c7d242ff6f47b282c5b1150299e8b5a3e89b0e47f74c5</metadata>
+</svg>

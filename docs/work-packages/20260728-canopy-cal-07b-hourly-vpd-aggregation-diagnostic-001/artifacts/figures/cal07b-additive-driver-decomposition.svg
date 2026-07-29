@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="820" viewBox="0 0 1240 820" role="img" aria-labelledby="title desc">
+<title id="title">Temperature-extrema summarization drives the negative daily VPD</title>
+<desc id="desc">Grouped bars decompose contract daily VPD minus mean hourly-product VPD into a large negative temperature-extrema term and a smaller positive dew-point nonlinearity term.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#182026}.title{font-size:24px;font-weight:700}.label{font-size:13px}.small{font-size:11px}.grid{stroke:#d9e2ec;stroke-width:1}.panel{fill:#fff;stroke:#bcccdc}</style>
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="48" y="42" class="title">Temperature-extrema summarization drives the negative daily VPD</text>
+<rect x="105" y="100" width="1070" height="575" class="panel"/>
+<line x1="105" y1="647.6190476190476" x2="1175" y2="647.6190476190476" class="grid"/>
+<text x="95" y="651.6190476190476" text-anchor="end" class="small">-120</text>
+<line x1="105" y1="538.0952380952381" x2="1175" y2="538.0952380952381" class="grid"/>
+<text x="95" y="542.0952380952381" text-anchor="end" class="small">-80</text>
+<line x1="105" y1="428.57142857142856" x2="1175" y2="428.57142857142856" class="grid"/>
+<text x="95" y="432.57142857142856" text-anchor="end" class="small">-40</text>
+<line x1="105" y1="319.04761904761904" x2="1175" y2="319.04761904761904" class="grid"/>
+<text x="95" y="323.04761904761904" text-anchor="end" class="small">+0</text>
+<line x1="105" y1="209.52380952380952" x2="1175" y2="209.52380952380952" class="grid"/>
+<text x="95" y="213.52380952380952" text-anchor="end" class="small">+40</text>
+<line x1="105" y1="100.0" x2="1175" y2="100.0" class="grid"/>
+<text x="95" y="104.0" text-anchor="end" class="small">+80</text>
+<line x1="105" y1="319.04761904761904" x2="1175" y2="319.04761904761904" stroke="#5B6770" stroke-width="1.5"/>
+<rect x="205.33333333333337" y="226.47676876272197" width="30" height="92.57085028489706" fill="#2864A5"/>
+<text x="220.33333333333337" y="219.47676876272197" text-anchor="middle" class="small">+33.8</text>
+<rect x="247.33333333333337" y="319.04761904761904" width="30" height="271.4646029800506" fill="#C25B12"/>
+<text x="262.33333333333337" y="605.5122220276696" text-anchor="middle" class="small">-99.1</text>
+<rect x="289.33333333333337" y="300.41140250108486" width="30" height="18.636216546534172" fill="#16823A"/>
+<text x="304.33333333333337" y="293.41140250108486" text-anchor="middle" class="small">+6.8</text>
+<rect x="331.33333333333337" y="319.04761904761904" width="30" height="160.25753614861912" fill="#B42318"/>
+<text x="346.33333333333337" y="494.30515519623816" text-anchor="middle" class="small">-58.5</text>
+<text x="283.33333333333337" y="702" text-anchor="middle" class="label">2022-07-22</text>
+<rect x="562.0" y="207.95367910905964" width="30" height="111.0939399385594" fill="#2864A5"/>
+<text x="577.0" y="200.95367910905964" text-anchor="middle" class="small">+40.6</text>
+<rect x="604.0" y="319.04761904761904" width="30" height="320.04773495624977" fill="#C25B12"/>
+<text x="619.0" y="654.0953540038688" text-anchor="middle" class="small">-116.9</text>
+<rect x="646.0" y="302.9286884982876" width="30" height="16.118930549331424" fill="#16823A"/>
+<text x="661.0" y="295.9286884982876" text-anchor="middle" class="small">+5.9</text>
+<rect x="688.0" y="319.04761904761904" width="30" height="192.83486446835894" fill="#B42318"/>
+<text x="703.0" y="526.882483515978" text-anchor="middle" class="small">-70.4</text>
+<text x="640.0" y="702" text-anchor="middle" class="label">2022-09-15</text>
+<rect x="918.6666666666666" y="160.5798556951795" width="30" height="158.46776335243953" fill="#2864A5"/>
+<text x="933.6666666666666" y="153.5798556951795" text-anchor="middle" class="small">+57.9</text>
+<rect x="960.6666666666666" y="319.04761904761904" width="30" height="164.16325514097878" fill="#C25B12"/>
+<text x="975.6666666666666" y="498.2108741885978" text-anchor="middle" class="small">-60.0</text>
+<rect x="1002.6666666666666" y="315.29723866743075" width="30" height="3.7503803801882896" fill="#16823A"/>
+<text x="1017.6666666666666" y="308.29723866743075" text-anchor="middle" class="small">+1.4</text>
+<rect x="1044.6666666666665" y="319.04761904761904" width="30" height="1.945111408350897" fill="#B42318"/>
+<text x="1059.6666666666665" y="335.99273045596993" text-anchor="middle" class="small">-0.7</text>
+<text x="996.6666666666666" y="702" text-anchor="middle" class="label">2025-09-09</text>
+<rect x="275" y="750" width="14" height="14" fill="#2864A5"/>
+<text x="296" y="762" class="small">hourly mean</text>
+<rect x="480" y="750" width="14" height="14" fill="#C25B12"/>
+<text x="501" y="762" class="small">temperature term</text>
+<rect x="685" y="750" width="14" height="14" fill="#16823A"/>
+<text x="706" y="762" class="small">dew-point term</text>
+<rect x="890" y="750" width="14" height="14" fill="#B42318"/>
+<text x="911" y="762" class="small">contract daily</text>
+<text x="28" y="405" transform="rotate(-90 28 405)" class="label">VPD or additive term (Pa)</text>
+<metadata id="source-bindings">daily-decomposition.csv:7f23d8c904b9b591d42c7d242ff6f47b282c5b1150299e8b5a3e89b0e47f74c5</metadata>
+</svg>
