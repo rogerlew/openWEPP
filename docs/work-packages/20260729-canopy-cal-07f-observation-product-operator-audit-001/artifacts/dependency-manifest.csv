@@ -1,0 +1,7 @@
+path,sha256,bytes,role
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/source/bezamahafaly_DB_1000_1day.csv,a490b29758ce0608428c6e794d8c803727b60fddc4e601c875564a26ed514f1f,433148,provisional daily GCC curves
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/source/bezamahafaly_DB_1000_roi.csv,bfb954315e7c39030f16525bf263bd3e9406a3ef0397d608a4e38d23bcb6854f,424,ROI identity and change interval
+docs/work-packages/20260728-canopy-cal-07-southern-hemisphere-robustness-001/inputs/source/bezamahafaly_meta.json,c1895497c46e42e92b7f9449c2e3e63ecf7b81e376a64e3658518ec6cc052ee7,3333,site and camera metadata
+docs/work-packages/20260729-canopy-cal-07e-literature-authority-review-001/inputs/bezamahafaly_DB_1000_2024_2025_gcc_mean_gcc_90_transition_subset.csv,ec9df6cec532d5a8bece7f4849a41bafb3b062a30dac6ca2afbc5203e49ec634,1677,provisional transition rows and confidence intervals
+docs/work-packages/20260729-canopy-cal-07d-transition-chronology-attribution-001/artifacts/all-crossings.csv,7297cbc40a124531a328d72369aa8dc19054ab739c14fbc9f6c6de6adb21788f,4132504,validated CAL-07D crossing inventory
+docs/work-packages/20260729-canopy-cal-07d-transition-chronology-attribution-001/artifacts/scenario-event-screen.csv,51b967bdce7aaa8c72c7a1a73ba3b97b72b691279b5dd6db83e50ff952733051,221617,validated CAL-07D counterfactual event screen

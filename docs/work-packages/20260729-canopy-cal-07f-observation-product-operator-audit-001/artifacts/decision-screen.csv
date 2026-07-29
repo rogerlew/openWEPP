@@ -1,0 +1,8 @@
+criterion,status,metric,reason
+OPERATOR_INDEPENDENCE,PASS,spearman=1.000000;top_quartile_overlap=1.000;joint_candidates=0,same no-calibration disposition in both products; no product selected by fit
+CROSSING_SUFFICIENCY,FAIL,members_complete_in_both=0,requires all 12 same-year crossings in both products
+UNCERTAINTY_FIT,FAIL,members_passing_in_both=0,requires >=8/12 CI hits and median absolute residual <=21 d
+DIRECTION_COHERENCE,FAIL,members_passing_in_both=0,requires rising and falling median signed residual within +/-21 d
+PARAMETER_PLAUSIBILITY,FAIL,qualifying_cal07d_scenarios=none,requires 148/148 matches and both direction medians within +/-21 d
+EMPIRICAL_ROLE,PASS,one fit year plus one diagnostic holdout is mechanically possible,"holdout would be internal only, not external validation"
+CALIBRATION_ROUND,DO_NOT_RECOMMEND,passed_required=2/6,one or more prospective criteria fail

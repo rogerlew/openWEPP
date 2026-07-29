@@ -415,7 +415,18 @@ State as of `2026-07-28 UTC`:
   most one day, while material falling cases differ by 12 to 43 days in the
   checksum-retained provisional record processed 26 July 2026. One accessible
   SVG authority map and Markdown sidecar are retained. Order 7 remains held;
-  CAL-07F observation-product/operator audit is next.
+  CAL-07F subsequently executes the observation-product/operator audit.
+- `20260729-canopy-cal-07f-observation-product-operator-audit-001/` -
+  COMPLETE / DO NOT CALIBRATE / ECOSYSTEM-MODEL LIMITATION ADJUDICATED:
+  separate checksum-bound `gcc_mean` and `gcc_90` lanes produce
+  identical member ranks and the same no-calibration disposition. No member
+  has all 12 seasonal crossings; the best joint member hits 1/12 and 0/12
+  reported confidence intervals, with penalized errors of 59.12 and 65.87
+  days. Three accessible SVG plots and Markdown sidecars retain daily product
+  curves, residual distributions, and the calibration screen. Further
+  acquisition and canopy phenology work are deferred under the user-directed
+  stop-loss; dual independent reviews and verifications pass; Order 7 remains
+  not passed.
 - `20260728-canopy-cal-06-canopy-gradient-congruence-001/` -
   COMPLETE / BOUNDED GRADIENT CHARACTERIZATION / DOWNSTREAM ADVANCEMENT
   WITHHELD: all 261 prespecified runs passed, retaining the 37-member CAL-04B

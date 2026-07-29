@@ -2,11 +2,13 @@
 
 Evidence class: `Static discovery inventory`
 
-The review can close without these materials, but they are the highest-value
-items for resolving the remaining science rather than expanding generic
-analogue coverage.
+Status: `deferred by user direction on 2026-07-29`
 
-## Priority 1: 2014 Bezà phenology thesis
+The review closed without these materials. Further acquisition is deferred to
+avoid an open-ended search. These items remain documented only as possible
+future triggers if a broader ecosystem-phenology effort is authorized.
+
+## Deferred 1: 2014 Bezà phenology thesis
 
 Requested item:
 
@@ -15,12 +17,11 @@ Requested item:
 > climatique*. DEA thesis.
 
 The updated Bezà publication catalog identifies the thesis, but targeted title,
-author, repository, and site searches did not locate public full text. Useful
-delivery would be the complete PDF, including tables, figures, appendices, and
-bibliography. An abstract or citation alone cannot become claim-bearing
-authority.
+author, repository, and site searches did not locate public full text. The
+user also could not locate it. No further search or author/institutional
+contact is planned in the current canopy campaign.
 
-## Priority 2: post-2011 direct-site monitoring
+## Deferred 2: post-2011 direct-site monitoring
 
 The Bezà monitoring program describes roughly 300 phenology individuals across
 about 30 species observed twice monthly, together with local rainfall and
@@ -36,9 +37,10 @@ temperature records. Requested material is:
 
 The most useful interval overlaps the PhenoCam ROI, especially complete 2023
 through 2025 leaf-off and leaf-on seasons. Earlier records remain valuable for
-independent interannual evaluation.
+independent interannual evaluation. Acquisition and institutional contact are
+deferred.
 
-## Priority 3: camera/field correspondence metadata
+## Deferred 3: camera/field correspondence metadata
 
 If maintained separately, request:
 
@@ -49,9 +51,11 @@ If maintained separately, request:
   releases; and
 - any field phenology explicitly paired to the ROI.
 
-## Human assistance
+Acquisition and institutional contact are deferred.
 
-Assistance from the user would be most useful for institutional or author
-contact, not for searching more generic literature. The package should remain
-closed as a bounded review if these records cannot be obtained; absence is not
+## Reactivation trigger
+
+CAL-07F does not support a bounded calibration round. Reactivate only if a
+future ecosystem-model package explicitly accepts ownership of direct-site
+data acquisition under one of CAL-07F's evidence triggers. Absence is not
 permission to invent a surrogate.
