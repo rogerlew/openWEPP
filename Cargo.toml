@@ -121,6 +121,10 @@ name = "infile_management_yaml_contract"
 path = "tests/integration/infile_management_yaml_contract.rs"
 
 [[test]]
+name = "canopy_litter_external_boundary_contract"
+path = "tests/integration/canopy_litter_external_boundary_contract.rs"
+
+[[test]]
 name = "landuse_migration_cli_contract"
 path = "tests/integration/landuse_migration_cli_contract.rs"
 

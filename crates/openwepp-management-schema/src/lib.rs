@@ -8,6 +8,18 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+mod forest_litter;
+
+pub use forest_litter::{
+    ForestLitterAuthority, ForestLitterBarkTreatment, ForestLitterBoundaryMode,
+    ForestLitterCalendar, ForestLitterDailyEntry, ForestLitterDate, ForestLitterDerivation,
+    ForestLitterDryMassBasis, ForestLitterExecutableForcing, ForestLitterFunctionalClass,
+    ForestLitterMassState, ForestLitterOriginalObservation, ForestLitterResolution,
+    ForestLitterSpatialSupport, ForestLitterTissue, ForestLitterTissuePayload,
+    ForestLitterTissueStatus, ForestSurfaceLitterForcing, ForestVegetationAuthority,
+    ForestVegetationClassification,
+};
+
 pub const MANAGEMENT_YAML_FORMAT: &str = "openwepp-management-yaml";
 pub const MANAGEMENT_YAML_SCHEMA_VERSION: u16 = 1;
 pub const OW_LANUSE_1_DATVER: &str = "ow-lanuse-1";
@@ -91,6 +103,8 @@ pub enum PlantScenario {
         diam: f64,
         decomposition: PlantForestDecomposition,
         community: PlantForestCommunity,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        surface_litter_forcing: Option<Box<ForestSurfaceLitterForcing>>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         routing_coefficients: Option<RouteCoefficients>,
     },
@@ -494,19 +508,43 @@ pub fn parse_management_yaml_from_path(
         path: path_ref.to_path_buf(),
         source,
     })?;
-    parse_management_yaml_from_str(&input)
+    let mut document = parse_management_yaml_document(&input)?;
+    validate_management_yaml_document(&document)?;
+    forest_litter::hydrate_document_forcings(&mut document, path_ref)?;
+    Ok(document)
 }
 
 pub fn parse_management_yaml_from_str(
     input: &str,
 ) -> Result<ManagementYamlDocument, ManagementYamlError> {
-    let document = serde_yaml::from_str::<ManagementYamlDocument>(input).map_err(|error| {
+    let document = parse_management_yaml_document(input)?;
+    validate_management_yaml_document(&document)?;
+    if document.plants.iter().any(|plant| {
+        matches!(
+            plant,
+            PlantScenario::NativeForest {
+                surface_litter_forcing: Some(_),
+                ..
+            }
+        )
+    }) {
+        return Err(ManagementYamlError::InvalidField {
+            path: "plants[].surface_litter_forcing".to_string(),
+            detail: "requires path-based parsing so authenticated sidecar bytes can be verified"
+                .to_string(),
+        });
+    }
+    Ok(document)
+}
+
+fn parse_management_yaml_document(
+    input: &str,
+) -> Result<ManagementYamlDocument, ManagementYamlError> {
+    serde_yaml::from_str::<ManagementYamlDocument>(input).map_err(|error| {
         ManagementYamlError::YamlParse {
             detail: error.to_string(),
         }
-    })?;
-    validate_management_yaml_document(&document)?;
-    Ok(document)
+    })
 }
 
 pub fn to_management_yaml_string(
@@ -613,6 +651,7 @@ fn validate_plant(index: usize, plant: &PlantScenario) -> Result<(), ManagementY
             description,
             growth,
             phenology,
+            surface_litter_forcing,
             routing_coefficients,
             ..
         } => {
@@ -620,6 +659,9 @@ fn validate_plant(index: usize, plant: &PlantScenario) -> Result<(), ManagementY
             validate_positive_finite(&format!("plants[{index}].growth.bb"), growth.bb)?;
             validate_positive_finite(&format!("plants[{index}].growth.xmxlai"), growth.xmxlai)?;
             validate_forest_phenology(index, phenology)?;
+            if let Some(forcing) = surface_litter_forcing {
+                forest_litter::validate_forcing_structure(forcing, index)?;
+            }
             validate_route_coefficients(
                 routing_coefficients.as_ref(),
                 &format!("plants[{index}].routing_coefficients"),

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+<title id="title">CAL-05 complete daily trace recovery</title>
+<desc id="desc">Bar chart of daily-stock sum of squared errors for sixteen source and decay candidates. S020 K050 has exact zero error and every other candidate has positive error.</desc>
+<style>
+      text { font-family: Inter, "DejaVu Sans", Arial, sans-serif; fill: #17202a; }
+      .title { font-size: 27px; font-weight: 700; }
+      .subtitle { font-size: 16px; fill: #566573; }
+      .axis { font-size: 15px; font-weight: 600; }
+      .tick { font-size: 13px; fill: #34495e; }
+      .note { font-size: 14px; fill: #566573; }
+      .value { font-size: 15px; font-weight: 700; }
+    </style>
+<rect x="0" y="0" width="1200" height="760" fill="#ffffff"/>
+<text x="70" y="55" class="title">CAL-05 — the complete daily trace recovers the frozen truth</text>
+<text x="70" y="84" class="subtitle">Daily-stock sum of squared errors (SSE); logarithmic scale for nonzero candidates.</text>
+<line x1="105" y1="595.0" x2="1120" y2="595.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="600.0" class="tick" text-anchor="end">10^0</text>
+<line x1="105" y1="520.0" x2="1120" y2="520.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="525.0" class="tick" text-anchor="end">10^1</text>
+<line x1="105" y1="445.0" x2="1120" y2="445.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="450.0" class="tick" text-anchor="end">10^2</text>
+<line x1="105" y1="370.0" x2="1120" y2="370.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="375.0" class="tick" text-anchor="end">10^3</text>
+<line x1="105" y1="295.0" x2="1120" y2="295.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="300.0" class="tick" text-anchor="end">10^4</text>
+<line x1="105" y1="220.0" x2="1120" y2="220.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="225.0" class="tick" text-anchor="end">10^5</text>
+<line x1="105" y1="145.0" x2="1120" y2="145.0" stroke="#d5d8dc" stroke-width="1"/>
+<text x="91" y="150.0" class="tick" text-anchor="end">10^6</text>
+<rect x="115.784375" y="331.2370424078904" width="41.86875" height="263.7629575921096" rx="3" fill="#2166ac"/>
+<text x="136.71875" y="617" class="tick" text-anchor="end" transform="rotate(-55 136.72 617.00)">S010 K000</text>
+<rect x="179.221875" y="376.5086766508314" width="41.86875" height="218.49132334916865" rx="3" fill="#2166ac"/>
+<text x="200.15625" y="617" class="tick" text-anchor="end" transform="rotate(-55 200.16 617.00)">S010 K050</text>
+<rect x="242.659375" y="350.3068273312813" width="41.86875" height="244.69317266871874" rx="3" fill="#2166ac"/>
+<text x="263.59375" y="617" class="tick" text-anchor="end" transform="rotate(-55 263.59 617.00)">S010 K100</text>
+<rect x="306.096875" y="339.1073242192797" width="41.86875" height="255.8926757807203" rx="3" fill="#2166ac"/>
+<text x="327.03125" y="617" class="tick" text-anchor="end" transform="rotate(-55 327.03 617.00)">S010 K200</text>
+<rect x="369.534375" y="267.2466573726104" width="41.86875" height="327.7533426273896" rx="3" fill="#2166ac"/>
+<text x="390.46875" y="617" class="tick" text-anchor="end" transform="rotate(-55 390.47 617.00)">S020 K000</text>
+<circle cx="453.90625" cy="590" r="7" fill="#d95f02"/>
+<text x="453.90625" y="572" class="value" text-anchor="middle" style="fill:#d95f02">exact 0</text>
+<text x="453.90625" y="617" class="tick" text-anchor="end" transform="rotate(-55 453.91 617.00)">S020 K050</text>
+<rect x="496.409375" y="379.9138898864811" width="41.86875" height="215.08611011351888" rx="3" fill="#2166ac"/>
+<text x="517.34375" y="617" class="tick" text-anchor="end" transform="rotate(-55 517.34 617.00)">S020 K100</text>
+<rect x="559.846875" y="350.4690024928346" width="41.86875" height="244.5309975071654" rx="3" fill="#2166ac"/>
+<text x="580.78125" y="617" class="tick" text-anchor="end" transform="rotate(-55 580.78 617.00)">S020 K200</text>
+<rect x="623.284375" y="235.40237339672547" width="41.86875" height="359.59762660327453" rx="3" fill="#2166ac"/>
+<text x="644.21875" y="617" class="tick" text-anchor="end" transform="rotate(-55 644.22 617.00)">S030 K000</text>
+<rect x="686.721875" y="376.5086766508317" width="41.86875" height="218.49132334916828" rx="3" fill="#2166ac"/>
+<text x="707.65625" y="617" class="tick" text-anchor="end" transform="rotate(-55 707.66 617.00)">S030 K050</text>
+<rect x="750.159375" y="431.6817150169949" width="41.86875" height="163.3182849830051" rx="3" fill="#2166ac"/>
+<text x="771.09375" y="617" class="tick" text-anchor="end" transform="rotate(-55 771.09 617.00)">S030 K100</text>
+<rect x="813.596875" y="363.8520914862969" width="41.86875" height="231.14790851370313" rx="3" fill="#2166ac"/>
+<text x="834.53125" y="617" class="tick" text-anchor="end" transform="rotate(-55 834.53 617.00)">S030 K200</text>
+<rect x="877.034375" y="214.08408447279584" width="41.86875" height="380.91591552720416" rx="3" fill="#2166ac"/>
+<text x="897.96875" y="617" class="tick" text-anchor="end" transform="rotate(-55 897.97 617.00)">S040 K000</text>
+<rect x="940.471875" y="331.35417730123436" width="41.86875" height="263.64582269876564" rx="3" fill="#2166ac"/>
+<text x="961.40625" y="617" class="tick" text-anchor="end" transform="rotate(-55 961.41 617.00)">S040 K050</text>
+<rect x="1003.909375" y="456.9458363306388" width="41.86875" height="138.05416366936115" rx="3" fill="#2166ac"/>
+<text x="1024.84375" y="617" class="tick" text-anchor="end" transform="rotate(-55 1024.84 617.00)">S040 K100</text>
+<rect x="1067.346875" y="379.78174083867145" width="41.86875" height="215.21825916132855" rx="3" fill="#2166ac"/>
+<text x="1088.28125" y="617" class="tick" text-anchor="end" transform="rotate(-55 1088.28 617.00)">S040 K200</text>
+<text x="34" y="370.0" class="axis" text-anchor="middle" transform="rotate(-90 34 370.0)">Daily-stock SSE</text>
+<text x="105" y="700" class="axis">Only S020 K050 matches every daily stock exactly; all other grid members diverge.</text>
+<text x="105" y="729" class="note">This proves recoverability with complete daily information, not with one endpoint.</text>
+</svg>

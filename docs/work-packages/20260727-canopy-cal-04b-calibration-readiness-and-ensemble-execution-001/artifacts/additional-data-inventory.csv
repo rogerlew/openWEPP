@@ -1,6 +1,6 @@
 stage,operand_or_combination,missing_observation,units,scale,identifiability_gain,priority
-gsi_timing,gsi_threshold_pairs,additional independent plot-year leaf-on intervals,day-of-year,plot-year,improves transferability and threshold separation after production path closure,MEDIUM
-foliar_structural_partition,Bf_max+Bs,paired live foliar and structural canopy biomass,kg/m2,plot/OFE and date,separates live and structural biomass contributions,HIGH
-evergreen_fraction,fe,winter and summer live foliar activity,fraction,time series by plot/OFE,separates evergreen floor from seasonal GSI response,HIGH
-peak_lai,xmxlai,mature leaf-on leaf area index,m2/m2,plot/OFE and date,separates peak LAI from phenology and evergreen fraction,HIGH
-canopy_floor_closure,Cs+bb,paired live foliar biomass and canopy cover,kg/m2 and fraction,plot/OFE and date,separates structural cover floor from biomass response,HIGH
+gsi_timing,six GSI thresholds,multi-site daily leaf expansion plus local meteorology,fraction;degC;Pa;hours,daily site-year,separate temperature VPD and photoperiod threshold pairs,HIGH
+foliar_structural_partition,Bf_max versus Bs,coincident foliar and woody dry biomass,kg/m2,mature plot,separate components currently constrained only by total,HIGH
+evergreen_fraction,fe,seasonal evergreen and deciduous foliar biomass fractions,fraction,plot-day,identify dormant-season activity floor,HIGH
+peak_lai,xmxlai,coincident mature LAI and foliar activity,m2/m2,plot-day,replace conditional range with direct calibration,MEDIUM
+canopy_floor_closure,Cs and bb,cover response across live foliar biomass gradient,fraction; m2/kg,plot-day,separate structural floor from biomass response,HIGH

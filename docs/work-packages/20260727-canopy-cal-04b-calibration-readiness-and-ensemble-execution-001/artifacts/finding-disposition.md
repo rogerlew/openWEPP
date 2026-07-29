@@ -1,60 +1,36 @@
 # Finding Disposition
 
-Status: `ALL FINDINGS DISPOSITIONED / TERMINAL HOLD`
+Status: `ALL FINDINGS CLOSED`
 
-Evidence class: `Static`
+Evidence class: `Ran + Static`
 
-Both prospective reviews blocked the initial executor before any result-bearing
-run. All findings are `accepted`; none are rejected, deferred, or follow-up.
-Harvard remains sealed. `prospective-finding-ledger.csv` maps every finding to
-an exact control ID. After correction cycles, two scientific reviewers and two
-independent scaffold verifiers passed the exact current scaffold. All rows are
-`CONTROL_ACCEPTED`.
+All prospective and implementation findings remain dispositioned in their
+existing ledgers. Incidents 005–007 record the resumed synthetic, external-path,
+freeze, pre-open arithmetic, and retention-receipt defects. Each failure was
+accepted, corrected inside the package write set, regression-tested, and rerun
+from the applicable fail-closed boundary before Harvard opened.
 
-This disposition closes scaffold-design findings only. It does not claim the
-controls are implemented, executed, or scientifically satisfied by results.
+No failed freeze verifier created a PASS receipt. The final freeze received two
+independent PASS receipts before the barrier. Harvard then opened once and was
+never used to alter configuration, objective, membership, or tolerance.
 
-## Executor Implementation Findings
+Terminal scientific reviewers A and B raised six medium findings. All were
+accepted and corrected in the current tree: boundary-truncated GSI
+identifiability is explicit; Harvard coverage is reported as 34 zero and three
+limited positive candidates; the stale sealed statement is replaced; closure
+remains conditional; and the roadmap now routes to the existing Order 5
+authority boundary instead of completed CAL-03. Rereview remains required.
 
-Status: `DISPOSITIONED BEFORE POPULATION`
+Any open high or medium finding blocks `COMPLETE` disposition.
 
-`executor-implementation-finding-ledger.csv` retains every accepted
-implementation-review finding and its implemented control. Primary correctness,
-QA, and science rereviews passed the final pre-heavy tree.
+Terminal Verifier A found that the frozen validator's four-local-ULP-width
+comparison is broader than four representable steps at binade boundaries. The
+validator is freeze-bound and was not rewritten after Harvard opened. A
+post-freeze exact-rank audit with cross-binade regressions proves the actual
+1,598 finite objectives have step histogram `{0: 986, 1: 576, 2: 35, 3: 1}`.
+Verifier rereview passed.
 
-The first observed attempt exposed and closed `EXEC-014` before population.
-`execution-incident-001.md` retains the incident and non-destructive restart
-disposition.
-
-`execution-incident-002.md` separately retains an orchestration interrupt
-during the corrected native proof. It produced no native-proof receipt and no
-population result. The next attempt must again start from `prepare`.
-
-`execution-incident-003.md` closes a proof-only decimal round-trip defect found
-by the first completed production/direct-kernel comparison. Population again
-remained unexecuted.
-
-`EXEC-016` is accepted and dispositioned
-`FOLLOW_UP_OUT_OF_SCOPE`. Attempt 004 proved a broken real production parameter
-path for the frozen representative interior vector. The package stopped before
-population, preserved the attempt, and kept Harvard sealed. The finding cannot
-be closed inside the declared read-only production boundary;
-`hold-legitimacy-audit.md` and `worker-handoff.md` bind the separate
-`CAL04B-NATIVE-001` defect-closure target.
-
-`EXEC-017` is accepted and `CLOSED`. Terminal review found that the scaffold
-validator understood only pre-heavy pending/frozen state and an active prompt.
-The validator now has a narrow evidence-bound terminal-HOLD branch that
-requires uniformly sealed/not-applicable freeze rows, sealed verifier rows,
-the archived kickoff, and incident/audit/handoff artifacts while preserving
-the original pre-heavy rules. Four focused lifecycle regressions and all 15
-Python control tests pass.
-
-## Terminal Findings
-
-All rows in `terminal-finding-ledger.csv` are accepted and `CLOSED`.
-Corrections cover the terminal validator lifecycle, exact production source
-anchors, post-`EXEC-015` rereview evidence, successor authority/catalog
-linkage, exact terminal Markdown counts, full DC/kernel scaffold structure, the
-required-reading map, and terminal artifact publication. Both terminal reviews,
-both terminal verifications, and terminal QA pass the corrected tree.
+Terminal Verifier B's lifecycle and evidence-count findings were also accepted
+and closed. All current terminal artifacts now describe the successful
+9,261/37/37 execution; historical HOLD, resume, and handoff records are
+explicitly superseded. All terminal finding rows are `CLOSED`.

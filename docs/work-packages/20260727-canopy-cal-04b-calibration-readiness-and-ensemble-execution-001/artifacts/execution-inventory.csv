@@ -1,5 +1,9 @@
 inventory_id,stage,state,command_ids,evidence
-CAL04B-01,prepare,PASS,prepare,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/1-prepare.receipt.csv
-CAL04B-02,build_executor,PASS,build_executor,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/2-build_executor.receipt.csv
-CAL04B-03,build_production_runner,PASS,build_production_runner,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/3-build_production_runner.receipt.csv
-CAL04B-04,native_proof,FAIL,native_proof,/home/workdir/cal04b-objects-native-proof-interior-failure-004/execution-ledger/4-native_proof.receipt.csv
+CAL04B-01,calibration_prefix,PASS,prepare|build_executor|build_production_runner|native_proof|synthetic_gsi|hubbard_producer|hubbard_primary_reconstruct|hubbard_verify_reconstruct|retain_trace|readiness|summarize_pre_freeze,/home/workdir/cal04b-attempt-20260728-pathfix/direct-evidence/calibration-complete.json
+CAL04B-02,freeze,PASS,freeze,/home/workdir/cal04b-custody-20260728-pathfix/freeze.receipt.json
+CAL04B-03,freeze_verifier_a,PASS,freeze_verify_a,/home/workdir/cal04b-custody-20260728-pathfix/freeze-receipts/verifier_a.csv
+CAL04B-04,freeze_verifier_b,PASS,freeze_verify_b,/home/workdir/cal04b-custody-20260728-pathfix/freeze-receipts/verifier_b.csv
+CAL04B-05,freeze_barrier,PASS,freeze_barrier,artifacts/freeze-verifier-receipts.csv
+CAL04B-06,holdout,PASS_SCORED_NO_REFIT,holdout,/home/workdir/cal04b-holdout-20260728-pathfix/artifacts/holdout-execution-receipt.csv
+CAL04B-07,post_holdout_summary,PASS,summarize_post_holdout,artifacts/holdout-validation-summary.md
+CAL04B-08,terminal_validate,PASS,terminal_validate,Ran command recorded in artifacts/gate-evidence.md

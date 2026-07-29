@@ -1,80 +1,32 @@
 # Gate Evidence
 
-Status: `PRE-HEAVY GATES PASS / NATIVE PRODUCTION GATE FAIL`
+Status: `ALL REQUIRED GATES PASS`
 
-Evidence class: `Ran + Static`
-
-Result-bearing gates: `NATIVE PROOF FAILED / HUBBARD NOT RUN`; Harvard remains
-`NOT AUTHORIZED / SEALED`.
+Evidence class: `Ran`
 
 | Gate | Result | Evidence |
 |---|---|---|
 | Daymet custody | `PASS` | `sha256sum -c SHA256SUMS`; 10 entries OK |
-| scaffold validator | `PASS` | `findings=14 holdout=SEALED result_ledgers=empty` |
-| package Markdown | `PASS` | prospective scope; 24 files; 0 errors; 0 warnings |
-| diff whitespace | `PASS` | no findings |
-| scientific review A | `PASS` | `prospective-review-agent-a.md` |
-| scientific review B | `PASS` | `prospective-review-agent-b.md` |
-| scaffold verification A | `PASS` | `scaffold-verification-agent-a.md` |
-| scaffold verification B | `PASS` | `scaffold-verification-agent-b.md` |
+| package Python controls | `PASS` | 38/38 tests |
+| executor validator | `PASS` | 9,261 candidates; 27,783 saturation rows; 18 commands |
+| package Rust tests | `PASS` | 34/34 tests |
+| Rust formatting | `PASS` | `cargo fmt --check` |
+| strict package Clippy | `PASS` | all targets; warnings denied |
+| dependency policy | `PASS` | advisories, bans, licenses, and sources OK; unmatched allowances warned |
+| Markdown | `PASS` | 46 package files plus catalog and roadmap; 0 errors, 0 warnings |
+| diff hygiene | `PASS` | `git diff --check` |
+| large-ledger storage | `PASS` | typed failure ledger uses package-scoped Git LFS |
+| full correctness profile | `PASS` | exact-terminal-tree nextest run `89776593-82b0-42cb-820e-d4c02ed79498`; 2,101 passed, 29 skipped |
+| direct calibration prefix | `PASS` | orders 1–11; `calibration-complete.json` |
+| freeze | `PASS` | digest `6066be76...e7349d`; 177 transitive members |
+| independent freeze verifiers | `PASS` | verifier A and B checksum-bound receipts |
+| formal freeze barrier | `PASS` | receipt summary matches both direct receipts |
+| one-time Harvard execution | `PASS_SCORED_NO_REFIT` | 37 candidates; 12,053 days |
+| terminal result validator | `PASS` | 9,261 calibration, 37 accepted, 37 holdout |
+| terminal exact-rank aggregate audit | `PASS` | 1,598 finite; step histogram `{0: 986, 1: 576, 2: 35, 3: 1}` |
+| dual terminal scientific review | `PASS AFTER CORRECTION` | `review-agent-a.md`; `review-agent-b.md` |
+| dual terminal verification | `PASS AFTER CORRECTION` | `verification-agent-a.md`; `verification-agent-b.md` |
 
-The table above is scaffold-only evidence. The final pre-heavy section below
-supersedes its earlier execution hold for Hubbard work only.
-
-## Final Pre-Heavy Gates
-
-Status: `PASS / HUBBARD EXECUTION AUTHORIZED`
-
-Evidence class: `Static + Ran`
-
-- Primary implementation review: `PASS`.
-- QA implementation review: `PASS`.
-- Science implementation review: `PASS`.
-- Rustfmt, 22 Rust tests, Clippy with warnings denied, and dependency policy:
-  `PASS`.
-- Eleven Python control tests and executor validation: `PASS`.
-- Daymet custody, Markdown lint, diff check, output ownership, and clean
-  external object root: `PASS`.
-- Rust line-count governance: `PASS`; maximum 1,082 lines, no warning or
-  exception.
-- Harvard: `SEALED`; durable opening token absent.
-
-This section authorizes only the observed Hubbard/pre-freeze DAG. It does not
-claim result-bearing completion.
-
-## Observed Execution Gate
-
-Status: `FAIL / TERMINAL HOLD`
-
-Evidence class: `Ran`
-
-- Attempt 004 `prepare`: `PASS`.
-- Attempt 004 `build_executor`: `PASS`.
-- Attempt 004 `build_production_runner`: `PASS`.
-- Attempt 004 native-default real-consumer proof: `PASS`, 16,437 days.
-- Attempt 004 frozen interior `GSI-5557` real-consumer proof: `FAIL` at lane 1,
-  day 11,186 because LAI was positive while post-growth canopy height was
-  missing/non-positive.
-- Synthetic, Hubbard population, reconstruction, readiness, freeze, terminal
-  result validation, and Harvard holdout: `NOT RUN` after the required stop.
-
-The retained observed receipt has exit code 1 and state `FAIL`.
-`execution-incident-004.md` binds its hashes and preserved object root.
-
-## Terminal Closure Gates
-
-Status: `PASS FOR HOLD DISPOSITION`
-
-Evidence class: `Ran`
-
-- Terminal scaffold validator:
-  `PASS ... lifecycle=TERMINAL_HOLD`.
-- Package Python controls: 15 tests `PASS`, including four terminal-HOLD
-  lifecycle regressions.
-- Executor validator: `PASS`.
-- Markdown: 39 CAL-04B files, 25 hold-lift scaffold files, and the two catalog
-  files; 0 errors and 0 warnings.
-- CSV parseability: 25 CAL-04B CSV files `PASS`.
-- Daymet custody and `git diff --check`: `PASS`.
-- Dual terminal scientific review and dual terminal verification: `PASS` after
-  accepted findings were corrected and rerun.
+Harvard execution success is not a scientific fit claim. Its 43.48–72.46 day
+errors, 34/37 zero-coverage candidates, and maximum positive interval coverage
+of 18.81% are retained as an independent-validation limitation.

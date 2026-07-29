@@ -1,0 +1,2 @@
+artifacts/producer-results.csv filter=lfs diff=lfs merge=lfs -text
+artifacts/ridge-producer-results.csv filter=lfs diff=lfs merge=lfs -text

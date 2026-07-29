@@ -1,0 +1,12 @@
+item_id,item_type,role,units,status,claim_boundary
+SC-PLANT-001,science_contract,SCIENCE_AUTHORITY,contract_native,ADMITTED,Native leaf-off transfer only
+SC-RESIDUE-001,science_contract,SCIENCE_AUTHORITY,contract_native,ADMITTED,Implemented decomposition and forest fallback only
+CAL03-REAL-CONSUMER,predecessor_evidence,IMPLEMENTATION_EVIDENCE,kg_m-2,ADMITTED,Native leaf source reaches residue consumer
+CAL04B-FROZEN-ENSEMBLE,predecessor_evidence,UPSTREAM_UNCERTAINTY,mixed,ADMITTED,No preferred canopy vector
+HF324-PLOT-JOINS,observation,PROCESS_EVIDENCE_PARTIAL,g_C_m-2_yr-1_and_kg_C_m-2,ADMITTED_PARTIAL,Descriptive source-native ratios only
+FS-RESPONSE-20260728,operator_response,ACCESS_DISPOSITION,not_applicable,NO_ADDITIONAL_DATA,Does not imply zero source
+EXEC-SOURCE-AXIS,execution_design,ASSUMED_FOR_EXECUTION,kg_m-2_yr-1,FROZEN,Not a bound prior observation or recommendation
+EXEC-RATE-AXIS,execution_design,ASSUMED_FOR_EXECUTION,d-1,FROZEN,Not a fitted value prior or recommendation
+EXEC-FORCING,execution_design,ASSUMED_FOR_EXECUTION,C_and_fraction,FROZEN,Machinery test only
+NEEDLE-SOURCE,production_process,MISSING_OR_UNKNOWN,kg_m-2_d-1,AUTHORITY_MISSING,calibration_evidence_status=NOT_CALIBRATION_READY; identifiability_status=NOT_ASSESSED; no production value assigned
+FINE-WOODY-SOURCE,production_process,MISSING_OR_UNKNOWN,kg_m-2_d-1,AUTHORITY_MISSING,calibration_evidence_status=NOT_CALIBRATION_READY; identifiability_status=NOT_ASSESSED; no production value assigned

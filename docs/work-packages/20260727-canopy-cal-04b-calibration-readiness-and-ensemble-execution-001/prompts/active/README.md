@@ -1,4 +1,4 @@
 # Active Prompts
 
-`kickoff.md` is the active byte-identical restart prompt after the production
-prerequisite lift.
+No active prompt remains. The executed byte-identical restart prompt is
+retained under `../archived/`.

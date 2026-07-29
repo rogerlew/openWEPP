@@ -2,7 +2,7 @@
 
 Package ID: `20260726-canopy-cal-04-05-authority-evidence-admission-001`
 
-Status: `EXECUTED / HOLD — CAL-04 LIFTED; CAL-05 PENDING OPERATOR`
+Status: `EXECUTED / HOLD — CAL-04 LIFTED; CAL-05 AUTHORITY-BLOCKED`
 
 Date opened: `2026-07-26`
 
@@ -49,6 +49,10 @@ plausible source is authoritative merely because it is convenient.
   admissions.
 - [x] (2026-07-26) Completed selected gates, two independent reviews, finding
   disposition, two independent terminal verifications, and final disposition.
+- [x] (2026-07-28) Recorded the operator's report that the Forest Service has
+  no additional tissue-separated data; retired `PENDING_OPERATOR` without
+  treating the unavailable measurements as zero or lifting CAL-05 fitting
+  authority.
 
 ## Surprises & Discoveries
 
@@ -90,6 +94,14 @@ plausible source is authoritative merely because it is convenient.
   Rationale: no retained open object separately weighs fine wood, bark, and
   reproductive material on a basis comparable with the forest-floor stock.
   Date/Author: 2026-07-26 / Codex.
+- Decision: Close the Forest Service assistance route as
+  `AUTHORITY_BLOCKED / NO_ADDITIONAL_DATA` and hand CAL-05 to an ADR-0042
+  calibration-readiness package.
+  Rationale: the operator reported that the Forest Service has no additional
+  data. Data scarcity limits empirical source and decay claims but does not
+  prevent deterministic machinery, sensitivity, synthetic-recovery,
+  equifinality, and additional-data analysis.
+  Date/Author: 2026-07-28 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -98,12 +110,14 @@ Hubbard Brook supplies the calibration observations, Harvard Forest supplies
 the independent holdout, and CAL-04 must use a deterministic prior-free
 identifiability design.
 
-CAL-05 is partially lifted for source-sufficiency analysis but remains
-`PENDING_OPERATOR` and unauthorized for decomposition fitting. The requested
-resource is a lawful tissue-separated annual dry-mass table distinguishing
+CAL-05 is partially lifted for source-sufficiency analysis and remains
+`AUTHORITY_BLOCKED` for decomposition fitting. The Forest Service has no
+additional data. The unresolved resource remains a lawful tissue-separated
+annual dry-mass table distinguishing
 leaves, needles, fine wood under 2 cm, bark, and reproductive material with
-site/plot/year identifiers and reuse terms. Until supplied, the package
-truthfully closes `HOLD`.
+site/plot/year identifiers and reuse terms. Under ADR-0042, scarcity of that
+resource does not stop a separate calibration-readiness package, but it
+continues to prohibit an empirical source-adequacy or fitted-decay claim.
 
 ## Context and Orientation
 

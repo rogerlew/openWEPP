@@ -154,6 +154,8 @@ impl DirectProductionResidueCoverAuthority {
         };
         let surface_litter_projection = direct_production_surface_litter_projection(
             active_crop,
+            day,
+            ofe_index_valid,
             runtime_day,
             state_before,
             plant_state_before,
@@ -197,6 +199,14 @@ impl DirectProductionResidueCoverAuthority {
             state_before,
             state_after,
             surface_litter_input_kg_m2: surface_litter_projection.surface_litter_input_kg_m2,
+            leaf_litter_input_kg_m2: surface_litter_projection.leaf_litter_input_kg_m2,
+            needle_litter_input_kg_m2: surface_litter_projection.needle_litter_input_kg_m2,
+            fine_woody_litter_input_kg_m2: surface_litter_projection
+                .fine_woody_litter_input_kg_m2,
+            needle_litter_status: surface_litter_projection.needle_litter_status,
+            needle_litter_source_mode: surface_litter_projection.needle_litter_source_mode,
+            fine_woody_litter_status: surface_litter_projection.fine_woody_litter_status,
+            fine_woody_litter_source_mode: surface_litter_projection.fine_woody_litter_source_mode,
             pending_surface_litter_after_kg_m2: surface_litter_projection
                 .pending_surface_litter_after_kg_m2,
         })
@@ -280,7 +290,176 @@ impl DirectProductionResidueCoverAuthority {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn direct_production_surface_litter_projection(
+    active_crop: Option<&DirectProductionGrowthCropAuthority>,
+    day: &ClimateDayProjection,
+    ofe_index: usize,
+    runtime_day: usize,
+    residue_state_before: DirectProductionResidueCoverState,
+    state_before: DirectGrowthStateSurface,
+    state_after: DirectGrowthStateSurface,
+    native_leaf_off_litter_kg_m2: Option<f64>,
+) -> Result<DirectProductionSurfaceLitterProjection, HillslopeCliError> {
+    let internal = direct_production_internal_litter_projection(
+        active_crop,
+        runtime_day,
+        residue_state_before,
+        state_before,
+        state_after,
+        native_leaf_off_litter_kg_m2,
+    )?;
+    let external = direct_production_external_litter(active_crop, day, ofe_index)?;
+    let total = internal.surface_litter_input_kg_m2
+        + external.needle_kg_m2
+        + external.fine_woody_kg_m2;
+    if !total.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_residue_cover",
+            detail: format!("{SIMOUT_GUARD_ID} external litter source sum must be finite"),
+        });
+    }
+    Ok(DirectProductionSurfaceLitterProjection {
+        surface_litter_input_kg_m2: total,
+        leaf_litter_input_kg_m2: internal.surface_litter_input_kg_m2,
+        needle_litter_input_kg_m2: external.needle_kg_m2,
+        fine_woody_litter_input_kg_m2: external.fine_woody_kg_m2,
+        needle_litter_status: external.needle_status,
+        needle_litter_source_mode: external.needle_source_mode,
+        fine_woody_litter_status: external.fine_woody_status,
+        fine_woody_litter_source_mode: external.fine_woody_source_mode,
+        pending_surface_litter_after_kg_m2: internal.pending_surface_litter_after_kg_m2,
+    })
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct DirectProductionExternalLitter {
+    needle_kg_m2: f64,
+    fine_woody_kg_m2: f64,
+    needle_status: &'static str,
+    needle_source_mode: &'static str,
+    fine_woody_status: &'static str,
+    fine_woody_source_mode: &'static str,
+}
+
+impl Default for DirectProductionExternalLitter {
+    fn default() -> Self {
+        Self {
+            needle_kg_m2: 0.0,
+            fine_woody_kg_m2: 0.0,
+            needle_status: "not_represented",
+            needle_source_mode: "none",
+            fine_woody_status: "not_represented",
+            fine_woody_source_mode: "none",
+        }
+    }
+}
+
+fn direct_production_external_litter(
+    active_crop: Option<&DirectProductionGrowthCropAuthority>,
+    day: &ClimateDayProjection,
+    ofe_index: usize,
+) -> Result<DirectProductionExternalLitter, HillslopeCliError> {
+    let Some(forcing) = active_crop.and_then(|crop| crop.forest_litter_forcing.as_ref()) else {
+        return Ok(DirectProductionExternalLitter::default());
+    };
+    let month = u8::try_from(day.month).map_err(|_| {
+        direct_growth_failure(format!(
+            "{SIMOUT_GUARD_ID} litter forcing month is out of range: {}",
+            day.month
+        ))
+    })?;
+    let day_of_month = u8::try_from(day.day_of_month).map_err(|_| {
+        direct_growth_failure(format!(
+            "{SIMOUT_GUARD_ID} litter forcing day is out of range: {}",
+            day.day_of_month
+        ))
+    })?;
+    let date = openwepp_input_contract::parsers::management::ForestLitterDate {
+        year: day.year,
+        month,
+        day: day_of_month,
+    };
+    let (needle_kg_m2, needle_status, needle_source_mode) = direct_production_tissue_litter(
+            "needle",
+            &forcing.needle,
+            date,
+            ofe_index,
+        )?;
+    let (fine_woody_kg_m2, fine_woody_status, fine_woody_source_mode) =
+        direct_production_tissue_litter(
+            "fine_woody",
+            &forcing.fine_woody,
+            date,
+            ofe_index,
+        )?;
+    Ok(DirectProductionExternalLitter {
+        needle_kg_m2,
+        fine_woody_kg_m2,
+        needle_status,
+        needle_source_mode,
+        fine_woody_status,
+        fine_woody_source_mode,
+    })
+}
+
+fn direct_production_tissue_litter(
+    tissue_name: &'static str,
+    tissue: &openwepp_input_contract::parsers::management::ForestLitterTissue,
+    date: openwepp_input_contract::parsers::management::ForestLitterDate,
+    ofe_index: usize,
+) -> Result<(f64, &'static str, &'static str), HillslopeCliError> {
+    use openwepp_input_contract::parsers::management::{
+        ForestLitterBoundaryMode, ForestLitterTissueStatus,
+    };
+
+    match tissue.status {
+        ForestLitterTissueStatus::NotRepresented => Ok((0.0, "not_represented", "none")),
+        ForestLitterTissueStatus::NotApplicable => Ok((0.0, "not_applicable", "none")),
+        ForestLitterTissueStatus::Complete => {
+            let payload = tissue.payload.as_ref().ok_or_else(|| {
+                direct_growth_failure(format!(
+                    "{SIMOUT_GUARD_ID} complete {tissue_name} litter forcing is missing its payload"
+                ))
+            })?;
+            if payload.spatial_support.ofe_binding != ofe_index {
+                return Err(direct_growth_failure(format!(
+                    "{SIMOUT_GUARD_ID} {tissue_name} litter OFE binding {} does not match active OFE {ofe_index}",
+                    payload.spatial_support.ofe_binding
+                )));
+            }
+            let (support_start, support_end) = payload.support().map_err(|source| {
+                direct_growth_failure(format!(
+                    "{SIMOUT_GUARD_ID} invalid {tissue_name} litter support: {source}"
+                ))
+            })?;
+            if date < support_start || date > support_end {
+                return Err(direct_growth_failure(format!(
+                    "{SIMOUT_GUARD_ID} {tissue_name} litter date {:04}-{:02}-{:02} is outside authenticated support {}..{}",
+                    date.year,
+                    date.month,
+                    date.day,
+                    payload.support_start,
+                    payload.support_end
+                )));
+            }
+            let value = payload.daily_mass_kg_m2(date).unwrap_or(0.0);
+            let source_mode = match payload.mode {
+                ForestLitterBoundaryMode::PrescribedScenario => "prescribed_scenario",
+                ForestLitterBoundaryMode::MeasuredDaily => "measured_daily",
+            };
+            if value.is_finite() && value >= 0.0 {
+                Ok((value, "complete", source_mode))
+            } else {
+                Err(direct_growth_failure(format!(
+                    "{SIMOUT_GUARD_ID} {tissue_name} litter mass must be finite and nonnegative, observed {value}"
+                )))
+            }
+        }
+    }
+}
+
+fn direct_production_internal_litter_projection(
     active_crop: Option<&DirectProductionGrowthCropAuthority>,
     runtime_day: usize,
     residue_state_before: DirectProductionResidueCoverState,
@@ -306,10 +485,10 @@ fn direct_production_surface_litter_projection(
                 ),
             });
         }
-        return Ok(DirectProductionSurfaceLitterProjection {
-            surface_litter_input_kg_m2: native_litter,
-            pending_surface_litter_after_kg_m2: 0.0,
-        });
+        return Ok(direct_production_internal_litter_result(
+            native_litter,
+            0.0,
+        ));
     }
     let daily_litter_loss_kg_m2 =
         (state_before.live_biomass_kg_m2 - state_after.live_biomass_kg_m2).max(0.0);
@@ -334,21 +513,12 @@ fn direct_production_surface_litter_projection(
                 });
             }
             if crop.fall_litter_drop_window_contains(runtime_day) {
-                DirectProductionSurfaceLitterProjection {
-                    surface_litter_input_kg_m2: pending,
-                    pending_surface_litter_after_kg_m2: 0.0,
-                }
+                direct_production_internal_litter_result(pending, 0.0)
             } else {
-                DirectProductionSurfaceLitterProjection {
-                    surface_litter_input_kg_m2: 0.0,
-                    pending_surface_litter_after_kg_m2: pending,
-                }
+                direct_production_internal_litter_result(0.0, pending)
             }
         }
-        _ => DirectProductionSurfaceLitterProjection {
-            surface_litter_input_kg_m2: daily_litter_loss_kg_m2,
-            pending_surface_litter_after_kg_m2: 0.0,
-        },
+        _ => direct_production_internal_litter_result(daily_litter_loss_kg_m2, 0.0),
     };
     if !projection.surface_litter_input_kg_m2.is_finite()
         || projection.surface_litter_input_kg_m2 < 0.0
@@ -365,6 +535,23 @@ fn direct_production_surface_litter_projection(
         });
     }
     Ok(projection)
+}
+
+fn direct_production_internal_litter_result(
+    leaf_litter_input_kg_m2: f64,
+    pending_surface_litter_after_kg_m2: f64,
+) -> DirectProductionSurfaceLitterProjection {
+    DirectProductionSurfaceLitterProjection {
+        surface_litter_input_kg_m2: leaf_litter_input_kg_m2,
+        leaf_litter_input_kg_m2,
+        needle_litter_input_kg_m2: 0.0,
+        fine_woody_litter_input_kg_m2: 0.0,
+        needle_litter_status: "not_represented",
+        needle_litter_source_mode: "none",
+        fine_woody_litter_status: "not_represented",
+        fine_woody_litter_source_mode: "none",
+        pending_surface_litter_after_kg_m2,
+    }
 }
 
 fn maybe_write_frost_residue_cover_trace(
@@ -1097,7 +1284,7 @@ impl DirectProductionGrowthAuthority {
 }
 
 impl DirectProductionGrowthCropAuthority {
-    fn active_on_day(self, runtime_day: usize) -> bool {
+    fn active_on_day(&self, runtime_day: usize) -> bool {
         if self.schedule_imngmt == 2 {
             if self.jdplt == 0 {
                 self.jdstop == 0 || runtime_day <= usize::from(self.jdstop)
@@ -1123,7 +1310,7 @@ impl DirectProductionGrowthCropAuthority {
         }
     }
 
-    fn surface_decomposition_rate(self) -> f64 {
+    fn surface_decomposition_rate(&self) -> f64 {
         if self.oratea == 0.0 && self.has_seasonal_litter_signal() {
             FOREST_LITTER_FALLBACK_DECAY_RATE_PER_DAY
         } else {
@@ -1131,15 +1318,15 @@ impl DirectProductionGrowthCropAuthority {
         }
     }
 
-    fn has_seasonal_litter_signal(self) -> bool {
+    fn has_seasonal_litter_signal(&self) -> bool {
         self.spriod > 0.0 && (self.dropfc < 1.0 || self.decfct < 1.0)
     }
 
-    fn uses_fall_litter_drop_schedule(self) -> bool {
+    fn uses_fall_litter_drop_schedule(&self) -> bool {
         self.imngmt == 2 && self.jdharv > 0 && self.has_seasonal_litter_signal()
     }
 
-    fn fall_litter_drop_window_contains(self, runtime_day: usize) -> bool {
+    fn fall_litter_drop_window_contains(&self, runtime_day: usize) -> bool {
         if !self.uses_fall_litter_drop_schedule() {
             return false;
         }

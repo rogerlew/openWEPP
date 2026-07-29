@@ -185,8 +185,9 @@ def main(argv: list[str] | None = None) -> int:
         "producer_identity_sha256": sha(IDENTITY),
         "compression_command": " ".join(command),
         "exact_command": (
-            "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python "
-            f"{PACKAGE.relative_to(PACKAGE.parents[2])}/tools/retain.py"
+            f"PYTHONDONTWRITEBYTECODE=1 {ROOT / '.venv/bin/python'} "
+            f"{Path(__file__).resolve()} "
+            f"--execution-root {OBJECTS}"
         ),
         "source_sha256": sha(Path(__file__)),
         "state": "PASS",

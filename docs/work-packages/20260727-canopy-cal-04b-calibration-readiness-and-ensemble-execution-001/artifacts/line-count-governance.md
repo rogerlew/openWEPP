@@ -9,6 +9,6 @@ All 11 package-local Rust files were measured. The largest is
 2,000-line warning threshold or 3,000-line blocking threshold, and no exception
 is required.
 
-The largest package-local Python file is `tools/validate.py` at 1,724 lines;
-this is retained as context and is outside the Rust threshold rule.
-
+The package-local terminal validator is the largest Python file. Python is
+outside the Rust threshold rule; its focused arithmetic and custody controls
+are covered by the 38-test package Python suite and full result execution.

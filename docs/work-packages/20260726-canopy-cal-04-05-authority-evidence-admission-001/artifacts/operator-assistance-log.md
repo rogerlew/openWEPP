@@ -1,6 +1,6 @@
 # Operator Assistance Log
 
-Status: `REQUESTED / AWAITING OPERATOR`
+Status: `CLOSED / NO ADDITIONAL FOREST SERVICE DATA`
 
 On 2026-07-26 the executor delivered an assistance request to the operator in
 the active user-facing conversation for `GAP-CAL05-SOURCE-COMPOSITION`.
@@ -22,7 +22,11 @@ floor tables from `SM.FS.MarcellEF@usda.gov`, and a Santee WS80/WS77
 site-matched material-fraction dataset from its custodian. No credentials,
 private links, or access tokens are retained.
 
-Operator response: pending.
+Operator response: on 2026-07-28 the operator reported that the Forest Service
+does not have additional data. This closes the Forest Service route as
+`NO_ADDITIONAL_DATA`; it does not establish that fine-woody input is zero and
+does not lift decomposition-fitting authority. No claim is made here about a
+separate Harvard custodian response.
 
 Delivery evidence: the request named the Hubbard and Harvard custodians,
 requested annual dry mass for leaves, needles, twigs under 2 cm, bark, and

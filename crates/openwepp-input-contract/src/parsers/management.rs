@@ -7,6 +7,13 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use openwepp_management_schema as management_yaml;
+pub use openwepp_management_schema::{
+    ForestLitterBoundaryMode, ForestLitterDate, ForestLitterTissue, ForestLitterTissueStatus,
+    ForestSurfaceLitterForcing,
+};
+
+mod forest_data;
+pub use forest_data::PlantForestData;
 
 const ALLOWED_DATVERS: &[&str] = &["95.7", "98.4", "2016.3", "2017.1", OW_LANUSE_1_DATVER];
 
@@ -106,26 +113,6 @@ pub struct RoutingCoefficientExtension {
 /// fail-closed); the `(texture × class)` land-soil lookup remains the single
 /// source of truth for the parameters it owns (`LANUSE-AUTH-6`), reconciled
 /// against `forest_class` by the orchestrator reconciliation manifest.
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlantForestData {
-    /// Disturbed/forest class key (e.g. `young_forest`, `high_severity_fire`)
-    /// joining the `.man` scenario to its authoritative lookup row, the
-    /// `openwepp-disturbed.json` binding, and the `.sol` `DisturbedPolicy`.
-    pub forest_class: String,
-    pub growth: PlantForestGrowth,
-    /// Present only for native YAML. Flat forest compatibility inputs cannot
-    /// infer phenology authority and deliberately retain `None`.
-    pub phenology: Option<PlantForestPhenology>,
-    /// Flat residue-cover equation coefficient (m^2/kg) — litter cover→mass
-    /// inversion for the initial residue-depth seed (cropland `cf` analogue).
-    pub cf: f64,
-    /// Mean stem/branch diameter at maturity (m) — residue-depth seed operand.
-    pub diam: f64,
-    pub decomposition: PlantForestDecomposition,
-    pub community: PlantForestCommunity,
-    pub routing: Option<RoutingCoefficientExtension>,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PlantForestPhenology {
     pub summer_foliar_biomass_kg_m2: f64,
@@ -819,6 +806,7 @@ fn yaml_plant_to_management(
             forest_class,
             growth,
             phenology,
+            surface_litter_forcing,
             cf,
             diam,
             decomposition,
@@ -869,6 +857,7 @@ fn yaml_plant_to_management(
                     photoperiod_inactive_hours: phenology.photoperiod_inactive_hours,
                     photoperiod_unconstrained_hours: phenology.photoperiod_unconstrained_hours,
                 }),
+                surface_litter_forcing,
                 cf,
                 diam,
                 decomposition: PlantForestDecomposition {
@@ -1730,6 +1719,7 @@ fn parse_plant_forest(
             dropfc: lookup[3],
         },
         phenology: None,
+        surface_litter_forcing: None,
         cf: residue[0],
         diam: residue[1],
         decomposition: PlantForestDecomposition {

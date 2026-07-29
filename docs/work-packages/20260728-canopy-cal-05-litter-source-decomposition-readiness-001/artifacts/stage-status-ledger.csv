@@ -1,0 +1,7 @@
+stage,science_implementation_status,calibration_evidence_status,identifiability_status,state,evidence
+native_leaf_transfer,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,BOUNDED,CAL03 real-consumer proof; CAL04B member-level source traces unavailable
+recurring_needle_source,AUTHORITY_MISSING,NOT_CALIBRATION_READY,NOT_ASSESSED,BOUNDED,No authoritative turnover law or production value assigned
+fine_woody_source,AUTHORITY_MISSING,NOT_CALIBRATION_READY,NOT_ASSESSED,BOUNDED,Pooled nonfoliar evidence cannot identify a source law
+source_composition_system,AUTHORITY_MISSING,NOT_CALIBRATION_READY,NONIDENTIFIABLE,BOUNDED,Unknown components cannot be zero or hidden in decay
+direct_runtime_surface_decay,IMPLEMENTED,CALIBRATION_READY_DATA_LIMITED,PARTIALLY_IDENTIFIABLE,PASS,Daily recovery and ridge pass; operator authorized the retrospective frozen-grid sensitivity analysis on 2026-07-28
+empirical_decomposition_fit,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,AUTHORITY_BLOCKED,Organic horizon is not modeled surface pool and source composition is unresolved

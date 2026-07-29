@@ -1,0 +1,14 @@
+metric,scope,value,units,state
+local_terminal_sensitivity_to_source,K000,19.999999999999982,yr,NONZERO
+local_terminal_sensitivity_to_source,K050,4.2544323186795179,yr,NONZERO
+local_terminal_sensitivity_to_source,K100,2.2699152294703673,yr,NONZERO
+local_terminal_sensitivity_to_source,K200,1.2554806125305762,yr,NONZERO
+local_terminal_sensitivity_to_rate,S010,-720.63784443493705,kg_m-2_d,NONZERO
+local_terminal_sensitivity_to_rate,S020,-1368.2291906785319,kg_m-2_d,NONZERO
+local_terminal_sensitivity_to_rate,S030,-2015.8205369221257,kg_m-2_d,NONZERO
+local_terminal_sensitivity_to_rate,S040,-2663.4118831657229,kg_m-2_d,NONZERO
+ridge_source_rate_covariance,five_pair_terminal_ridge,0.16261898422070004,kg_m-2_yr-2,POSITIVE_CONFOUNDING
+ridge_source_rate_correlation,five_pair_terminal_ridge,0.99937720235305838,dimensionless,POSITIVE_CONFOUNDING
+temperature_factor,all_synthetic_days,0.4976215945544323,fraction,INTERIOR_LIMITING
+surface_water_factor,all_synthetic_days,1,fraction,SATURATED_NOT_SURFACE_DECAY_CONTROL
+flat_water_factor,all_synthetic_days,1,fraction,SATURATED_NOT_LIMITING

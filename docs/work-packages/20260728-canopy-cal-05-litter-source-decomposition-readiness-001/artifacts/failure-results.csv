@@ -1,0 +1,17 @@
+case_id,state,error
+ZERO-SOURCE,STATE,
+ZERO-STOCK,STATE,
+ZERO-RATE,STATE,
+NEG-SOURCE,ERROR,NegativeDirectValue { field: "decomposition.surface_litter_input_kg_m2" }
+NEG-STOCK,ERROR,NegativeDirectValue { field: "decomposition.surface_residue_seed_kg_m2" }
+NEG-RATE,ERROR,NegativeDirectValue { field: "decomposition.surface_decomposition_rate" }
+NEG-PRECIP,ERROR,NegativeDirectValue { field: "decomposition.precipitation_m" }
+NAN-SOURCE,ERROR,NonFiniteDirectValue { field: "decomposition.surface_litter_input_kg_m2" }
+POSINF-STOCK,ERROR,NonFiniteDirectValue { field: "decomposition.surface_residue_seed_kg_m2" }
+NEGINF-RATE,ERROR,NonFiniteDirectValue { field: "decomposition.surface_decomposition_rate" }
+STRESS-HIGH,ERROR,DirectDomainViolation { field: "decomposition.water_stress_fraction" }
+STRESS-LOW,ERROR,NegativeDirectValue { field: "decomposition.water_stress_fraction" }
+DAY-ZERO,ERROR,DirectDomainViolation { field: "decomposition.runtime_day_of_year" }
+DAY-HIGH,ERROR,DirectDomainViolation { field: "decomposition.runtime_day_of_year" }
+CONTEXT-MISSING,ERROR,DirectDomainViolation { field: "decomposition.active_context" }
+CONTEXT-AMBIGUOUS,ERROR,DirectDomainViolation { field: "decomposition.active_context" }

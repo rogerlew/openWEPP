@@ -255,6 +255,20 @@ def exact_float(observed: str, expected: float) -> bool:
         return False
 
 
+def aggregate_float_within_ulps(
+    observed: str, expected: float, max_ulps: int = 4
+) -> bool:
+    """Bound cross-language aggregate differences after exact operand checks."""
+
+    try:
+        value = float(observed)
+    except (OverflowError, ValueError):
+        return False
+    if not math.isfinite(value) or not math.isfinite(expected):
+        return exact_float(observed, expected)
+    return abs(value - expected) <= max_ulps * max(math.ulp(value), math.ulp(expected))
+
+
 def repository_path(value: str) -> Path:
     path = Path(value)
     legacy_objects = Path("/home/workdir") / "cal04b-objects"
@@ -798,7 +812,9 @@ def validate_calibration_semantics(
                 candidate_row["configuration_id"] == configuration_id
                 and candidate_row["state"]
                 == ("FINITE" if math.isfinite(objective) else "FAILED_REQUIRED_PLOT_YEAR_CROSSING")
-                and exact_float(candidate_row["objective"], objective)
+                and aggregate_float_within_ulps(
+                    candidate_row["objective"], objective
+                )
                 and candidate_row["boundary_flags"] == config["boundary_class"]
                 and candidate_row["saturation_flags"] == config["saturation_flags"]
                 and Path(candidate_row["evidence"])
@@ -857,7 +873,9 @@ def validate_calibration_semantics(
     for row in accepted:
         config = config_by_id[row["candidate_id"]]
         require(
-            exact_float(row["objective"], derived_by_id[row["candidate_id"]])
+            aggregate_float_within_ulps(
+                row["objective"], derived_by_id[row["candidate_id"]]
+            )
             and exact_float(row["acceptance_threshold"], threshold)
             and row["boundary_flags"] == config["boundary_class"]
             and row["saturation_flags"] == config["saturation_flags"]

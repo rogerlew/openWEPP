@@ -2,22 +2,24 @@
 
 Status: `PASS AFTER CORRECTION`
 
-Evidence class: `Ran + Static`
+Evidence class: `Static + read-only reconstruction`
 
-The terminal HOLD is scientifically legitimate. Attempt 004 proves a valid
-frozen interior GSI member cannot traverse the real production consumer because
-positive LAI is paired with non-positive post-growth canopy height. The runtime
-guard is required and must not be bypassed. Native-default success does not
-close the admitted interior-domain claim.
+The reviewer reconstructed the synthetic recovery, 9,261-candidate Hubbard
+inventory, 1,598 finite objectives, 37-member minimum-plus-one-day ensemble,
+stage status fields, freeze chronology, and one-time no-refit Harvard posture.
 
-Finding `TR-A-001` was accepted and corrected: the package validator now
-supports both the original pre-heavy pending/frozen lifecycle and a narrow
-evidence-bound terminal-HOLD lifecycle. It requires uniformly sealed and
-not-applicable freeze rows, sealed verifier rows, the archived prompt, and the
-incident/audit/handoff artifacts. Mixed or unsupported sentinel states fail.
+Three medium findings were accepted and closed:
 
-Ran: terminal-HOLD scaffold validator, executor validator, 15 Python tests,
-Markdown lint, and diff hygiene pass. Retained incident hashes match; Harvard
-remains sealed; no population, freeze, or holdout result is overclaimed. The
-contract-first `CAL04B-NATIVE-001` successor is a legitimate out-of-envelope
-hold lift.
+- all accepted GSI configurations are now explicitly reported as
+  support-boundary members: 20 `DOUBLE_BOUNDARY` and 17
+  `UPPER_SUPPORT_BOUNDARY`;
+- the stale pre-freeze Harvard statement was replaced by the scored/no-refit
+  error and coverage limitation; and
+- the roadmap now routes through CAL-04B closure to the existing Order 5
+  authority boundary.
+
+Final rereview found no scientific blocker. The reviewer independently
+confirmed that 34 Harvard candidates have zero interval coverage and three
+have limited positive coverage, with a maximum of 18.81%. Empirical
+calibration remains limited to the frozen Hubbard support; no interior optimum,
+physiological bound, or transferability claim is made.

@@ -1,20 +1,18 @@
 # Calibration Readiness Matrix
 
-Status: `BLOCKED / NOT CALIBRATION READY`
+Status: `PASS`
 
-Evidence class: `Ran + Static`
+Evidence class: `Ran`
 
 | Obligation | Status | Evidence path | Rationale |
 |---|---|---|---|
-| typed/enumerable parameter surface | `PASS` | `candidate-configurations.csv`; `gsi-domain-grid.csv` | All 9,261 frozen vectors rebuild deterministically. |
-| observation operator with units and scale | `PASS` | `calibration-forcing-authority-resolution.md`; `executor-schema.md` | Plot/year/calendar, interval, unit, and equal-year objective semantics are explicit and prospectively reviewed. |
-| deterministic candidate execution | `BLOCKED` | `execution-incident-005.md` | The twelve-case real production-consumer proof passes, but required hidden-truth synthetic recovery fails before population. |
-| objective reconstruction | `BLOCKED` | `execution-incident-005.md` | Synthetic reconstruction reports that the hidden candidate lacks one crossing per year. |
-| sensitivity analysis | `BLOCKED` | `execution-incident-005.md` | No Hubbard population or later-stage result was generated. |
-| identifiability/confounding analysis | `BLOCKED` | `identifiability-and-equifinality.md` | Result-bearing analysis did not run. |
-| boundary, saturation, and failure reporting | `PASS` | `saturation-evidence.csv`; `execution-incident-005.md` | Prospective saturation inventory and the observed synthetic recovery failure are retained without filtering. |
-| equifinality/uncertainty retention | `BLOCKED` | `execution-incident-005.md` | No accepted ensemble exists to characterize or retain. |
-| synthetic recovery | `BLOCKED` | `execution-incident-005.md` | The hidden truth does not produce the required crossing inventory; recovery cannot be evaluated. |
-| additional-data inventory | `PASS` | `additional-data-inventory.csv` | Prospective measurements needed for stronger separation are explicit; they do not cure the synthetic-design blocker. |
-
-Required terminal values are `PASS`, `BLOCKED`, or `NOT_APPLICABLE`.
+| typed/enumerable parameter surface | `PASS` | `candidate-configurations.csv; later-stage-design.csv` | All axes and complete deterministic levels are retained. |
+| observation operator with units and scale | `PASS` | `executor-schema.md; later-stage-results.csv` | Interval timing, biomass, LAI, activity, and cover operators retain units and evidence roles. |
+| deterministic candidate execution | `PASS` | `/home/workdir/cal04b-attempt-20260728-pathfix/objects/hubbard-gsi-identity.csv` | Native raw trace has exact candidate/calendar/source/binary identity. |
+| objective reconstruction | `PASS` | `/home/workdir/cal04b-attempt-20260728-pathfix/objects/verification/verification-receipt.csv` | Independent reconstruction is byte-identical across all derived ledgers. |
+| sensitivity analysis | `PASS` | `later-stage-results.csv` | Native finite differences include central and boundary schemes. |
+| identifiability/confounding analysis | `PASS` | `identifiability-and-equifinality.md` | GSI ensemble and all downstream equifinal sets remain explicit. |
+| boundary, saturation, and failure reporting | `PASS` | `saturation-evidence.csv; failure-ledger.csv; later-stage-results.csv` | All candidate families, typed failures, and enumeration boundaries are retained. |
+| equifinality/uncertainty retention | `PASS` | `accepted-calibration-ensemble.csv; later-stage-membership.csv` | No convenience point selection replaces accepted membership. |
+| synthetic recovery | `PASS` | `synthetic-recovery-results.csv` | Five native recovery cases pass with limits stated. |
+| additional-data inventory | `PASS` | `additional-data-inventory.csv` | Measurements needed for stronger separation are stage-specific. |

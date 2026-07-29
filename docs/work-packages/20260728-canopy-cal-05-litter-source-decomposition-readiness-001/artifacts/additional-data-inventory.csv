@@ -1,0 +1,7 @@
+need_id,stage,minimum_observation,units,why_needed,priority
+DATA-01,native_leaf_transfer,Member-matched annual dry-mass deciduous leaf litter with canopy state,kg_m-2_yr-1,Assess frozen canopy ensemble source sufficiency,HIGH
+DATA-02,recurring_needle_source,Species-resolved annual needle dry mass plus standing evergreen foliar state,kg_m-2_yr-1_and_kg_m-2,Establish turnover law and calibration operator,HIGH
+DATA-03,fine_woody_source,Fine wood under 2 cm separated from bark cones seeds flowers and fruit,kg_m-2_yr-1,Resolve production material and recurrence authority,HIGH
+DATA-04,surface_decay,Repeated modeled-boundary-equivalent litter stock with source flux and environmental forcing,kg_m-2,Separate source from realized decay,HIGH
+DATA-05,stock_mapping,Carbon fraction and organic-horizon to modeled surface-pool mapping by material class,fraction_and_kg_m-2,Make Harvard carbon stock comparable without invention,HIGH
+DATA-06,validation,Independent site/study repeated source and modeled-pool stock series,kg_m-2,External validation after calibration,MEDIUM

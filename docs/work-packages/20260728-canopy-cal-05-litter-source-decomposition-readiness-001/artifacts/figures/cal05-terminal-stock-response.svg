@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+<title id="title">CAL-05 source and decay response surface</title>
+<desc id="desc">A four by four heatmap showing twenty-year terminal surface residue for synthetic annual litter inputs from 0.10 to 0.40 kilograms per square metre per year and decay rates from zero to two per year.</desc>
+<style>
+      text { font-family: Inter, "DejaVu Sans", Arial, sans-serif; fill: #17202a; }
+      .title { font-size: 27px; font-weight: 700; }
+      .subtitle { font-size: 16px; fill: #566573; }
+      .axis { font-size: 15px; font-weight: 600; }
+      .tick { font-size: 13px; fill: #34495e; }
+      .note { font-size: 14px; fill: #566573; }
+      .value { font-size: 15px; font-weight: 700; }
+    </style>
+<rect x="0" y="0" width="1200" height="760" fill="#ffffff"/>
+<text x="70" y="55" class="title">CAL-05 — terminal stock responds to source and decay</text>
+<text x="70" y="84" class="subtitle">Twenty-year synthetic terminal surface residue; values are kg m⁻².</text>
+<text x="330.0" y="143" class="tick" text-anchor="middle">0</text>
+<text x="520.0" y="143" class="tick" text-anchor="middle">0.5</text>
+<text x="710.0" y="143" class="tick" text-anchor="middle">1</text>
+<text x="900.0" y="143" class="tick" text-anchor="middle">2</text>
+<text x="615" y="107" class="axis" text-anchor="middle">Nominal decay rate (yr⁻¹)</text>
+<text x="213" y="226.0" class="tick" text-anchor="end">0.40</text>
+<rect x="235" y="165" width="186" height="108" rx="5" fill="#08519c" stroke="#ffffff" stroke-width="2"/>
+<text x="328.0" y="227.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">8.200</text>
+<rect x="425" y="165" width="186" height="108" rx="5" fill="#5f8ec1" stroke="#ffffff" stroke-width="2"/>
+<text x="518.0" y="227.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">1.703</text>
+<rect x="615" y="165" width="186" height="108" rx="5" fill="#82a6d0" stroke="#ffffff" stroke-width="2"/>
+<text x="708.0" y="227.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.908</text>
+<rect x="805" y="165" width="186" height="108" rx="5" fill="#a2bdde" stroke="#ffffff" stroke-width="2"/>
+<text x="898.0" y="227.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.502</text>
+<text x="213" y="338.0" class="tick" text-anchor="end">0.30</text>
+<rect x="235" y="277" width="186" height="108" rx="5" fill="#175ca3" stroke="#ffffff" stroke-width="2"/>
+<text x="328.0" y="339.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">6.200</text>
+<rect x="425" y="277" width="186" height="108" rx="5" fill="#6f99c8" stroke="#ffffff" stroke-width="2"/>
+<text x="518.0" y="339.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">1.278</text>
+<rect x="615" y="277" width="186" height="108" rx="5" fill="#92b1d7" stroke="#ffffff" stroke-width="2"/>
+<text x="708.0" y="339.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.681</text>
+<rect x="805" y="277" width="186" height="108" rx="5" fill="#b2c8e5" stroke="#ffffff" stroke-width="2"/>
+<text x="898.0" y="339.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.377</text>
+<text x="213" y="450.0" class="tick" text-anchor="end">0.20</text>
+<rect x="235" y="389" width="186" height="108" rx="5" fill="#2d6bac" stroke="#ffffff" stroke-width="2"/>
+<text x="328.0" y="451.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">4.200</text>
+<rect x="425" y="389" width="186" height="108" rx="5" fill="#85a9d2" stroke="#ffffff" stroke-width="2"/>
+<text x="518.0" y="451.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.852</text>
+<rect x="615" y="389" width="186" height="108" rx="5" fill="#a8c1e1" stroke="#ffffff" stroke-width="2"/>
+<text x="708.0" y="451.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.454</text>
+<rect x="805" y="389" width="186" height="108" rx="5" fill="#c9d8ef" stroke="#ffffff" stroke-width="2"/>
+<text x="898.0" y="451.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.251</text>
+<text x="213" y="562.0" class="tick" text-anchor="end">0.10</text>
+<rect x="235" y="501" width="186" height="108" rx="5" fill="#5184bb" stroke="#ffffff" stroke-width="2"/>
+<text x="328.0" y="563.0" class="value" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">2.200</text>
+<rect x="425" y="501" width="186" height="108" rx="5" fill="#abc4e2" stroke="#ffffff" stroke-width="2"/>
+<text x="518.0" y="563.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.427</text>
+<rect x="615" y="501" width="186" height="108" rx="5" fill="#cedcf1" stroke="#ffffff" stroke-width="2"/>
+<text x="708.0" y="563.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.227</text>
+<rect x="805" y="501" width="186" height="108" rx="5" fill="#eff3ff" stroke="#ffffff" stroke-width="2"/>
+<text x="898.0" y="563.0" class="value" text-anchor="middle" fill="#17202a" style="fill:#17202a">0.126</text>
+<text x="78" y="389" class="axis" text-anchor="middle" transform="rotate(-90 78 389)">Annual synthetic</text>
+<text x="103" y="389" class="axis" text-anchor="middle" transform="rotate(-90 103 389)">input (kg m⁻² yr⁻¹)</text>
+<text x="235" y="640" class="axis">Interpretation: more input raises stock; faster decay lowers it.</text>
+<text x="235" y="670" class="note">A terminal stock does not reveal which combination produced it.</text>
+<text x="235" y="705" class="note">Synthetic execution design—not empirical calibration or a physiological bound.</text>
+</svg>

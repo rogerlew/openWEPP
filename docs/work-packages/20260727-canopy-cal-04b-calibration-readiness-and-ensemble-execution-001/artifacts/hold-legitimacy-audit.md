@@ -1,5 +1,7 @@
 # HOLD Legitimacy Audit
 
+Lifecycle: `HISTORICAL / SUPERSEDED BY CLOSED CAL04B-NATIVE-001`
+
 Status: `PASS / OUT-OF-ENVELOPE PRODUCTION DEFECT`
 
 Evidence class: `Ran + Static`
@@ -59,8 +61,9 @@ class are explicitly outside this package's declared write set. The failure is
 therefore a legitimate out-of-envelope boundary, not deferred in-envelope
 implementation.
 
-The package closes in `HOLD`, with Harvard sealed and no population result.
-The separately scaffolded
+At that historical boundary, the package closed in `HOLD`, with Harvard sealed
+and no population result. The separately scaffolded
 `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001` package
-defines the defect-closure target and acceptance needed before CAL-04B can be
-reopened or superseded.
+subsequently closed the defect and allowed CAL-04B to reopen. This audit is
+retained as historical legitimacy evidence and does not describe current
+package state.

@@ -43,6 +43,21 @@ class FreezeLifecycleTests(unittest.TestCase):
             terminal_hold=True,
         )
 
+    def test_completed_frozen_state_is_accepted(self) -> None:
+        validate_scaffold.validate_freeze_state(
+            freeze_rows(state="FROZEN", digest="a" * 64, path="/external/object"),
+            terminal_hold=False,
+            terminal_complete=True,
+        )
+
+    def test_completed_state_rejects_pending_freeze(self) -> None:
+        with self.assertRaisesRegex(ValueError, "uniformly frozen"):
+            validate_scaffold.validate_freeze_state(
+                freeze_rows(state="SEALED", digest="pending", path="pending"),
+                terminal_hold=False,
+                terminal_complete=True,
+            )
+
     def test_terminal_hold_rejects_mixed_digest(self) -> None:
         rows = freeze_rows(
             state="SEALED",

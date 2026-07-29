@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+<title id="title">CAL-05 source and decay equifinality ridge</title>
+<desc id="desc">Two-panel figure. The left panel plots five increasing annual litter input and decay-rate pairs. The right panel shows their distinct annual stock trajectories converging to the same year-twenty stock.</desc>
+<style>
+      text { font-family: Inter, "DejaVu Sans", Arial, sans-serif; fill: #17202a; }
+      .title { font-size: 27px; font-weight: 700; }
+      .subtitle { font-size: 16px; fill: #566573; }
+      .axis { font-size: 15px; font-weight: 600; }
+      .tick { font-size: 13px; fill: #34495e; }
+      .note { font-size: 14px; fill: #566573; }
+      .value { font-size: 15px; font-weight: 700; }
+    </style>
+<rect x="0" y="0" width="1200" height="760" fill="#ffffff"/>
+<text x="70" y="55" class="title">CAL-05 — one endpoint hides a source–decay ridge</text>
+<text x="70" y="84" class="subtitle">Five synthetic source/rate pairs share the same year-20 stock but follow different paths.</text>
+<rect x="95" y="145" width="470" height="455" rx="6" fill="#f8f9f9"/>
+<rect x="675" y="145" width="470" height="455" rx="6" fill="#f8f9f9"/>
+<text x="330.0" y="128" class="axis" text-anchor="middle">Pairs on the equifinality ridge</text>
+<text x="910.0" y="128" class="axis" text-anchor="middle">Annual-end stock trajectories</text>
+<line x1="165.0" y1="180" x2="165.0" y2="520" stroke="#d5d8dc"/>
+<text x="165.0" y="544" class="tick" text-anchor="middle">0.0</text>
+<line x1="252.5" y1="180" x2="252.5" y2="520" stroke="#d5d8dc"/>
+<text x="252.5" y="544" class="tick" text-anchor="middle">0.5</text>
+<line x1="340.0" y1="180" x2="340.0" y2="520" stroke="#d5d8dc"/>
+<text x="340.0" y="544" class="tick" text-anchor="middle">1.0</text>
+<line x1="427.5" y1="180" x2="427.5" y2="520" stroke="#d5d8dc"/>
+<text x="427.5" y="544" class="tick" text-anchor="middle">1.5</text>
+<line x1="515.0" y1="180" x2="515.0" y2="520" stroke="#d5d8dc"/>
+<text x="515.0" y="544" class="tick" text-anchor="middle">2.0</text>
+<line x1="165" y1="520.0" x2="515" y2="520.0" stroke="#d5d8dc"/>
+<text x="153" y="525.0" class="tick" text-anchor="end">0.0</text>
+<line x1="165" y1="471.42857142857144" x2="515" y2="471.42857142857144" stroke="#d5d8dc"/>
+<text x="153" y="476.42857142857144" class="tick" text-anchor="end">0.1</text>
+<line x1="165" y1="422.85714285714283" x2="515" y2="422.85714285714283" stroke="#d5d8dc"/>
+<text x="153" y="427.85714285714283" class="tick" text-anchor="end">0.2</text>
+<line x1="165" y1="374.2857142857142" x2="515" y2="374.2857142857142" stroke="#d5d8dc"/>
+<text x="153" y="379.2857142857142" class="tick" text-anchor="end">0.3</text>
+<line x1="165" y1="325.71428571428567" x2="515" y2="325.71428571428567" stroke="#d5d8dc"/>
+<text x="153" y="330.71428571428567" class="tick" text-anchor="end">0.4</text>
+<line x1="165" y1="277.1428571428571" x2="515" y2="277.1428571428571" stroke="#d5d8dc"/>
+<text x="153" y="282.1428571428571" class="tick" text-anchor="end">0.5</text>
+<line x1="165" y1="228.5714285714285" x2="515" y2="228.5714285714285" stroke="#d5d8dc"/>
+<text x="153" y="233.5714285714285" class="tick" text-anchor="end">0.6</text>
+<line x1="165" y1="179.99999999999994" x2="515" y2="179.99999999999994" stroke="#d5d8dc"/>
+<text x="153" y="184.99999999999994" class="tick" text-anchor="end">0.7</text>
+<polyline points="165.00,504.16 208.75,466.71 252.50,422.86 340.00,337.63 515.00,190.28" fill="none" stroke="#7b3294" stroke-width="4"/>
+<circle cx="165.0" cy="504.16" r="7" fill="#7b3294" stroke="#ffffff" stroke-width="2"/>
+<text x="175.0" y="494.16" class="tick">K000</text>
+<circle cx="208.75" cy="466.71" r="7" fill="#7b3294" stroke="#ffffff" stroke-width="2"/>
+<text x="218.75" y="456.71" class="tick">K025</text>
+<circle cx="252.5" cy="422.86" r="7" fill="#7b3294" stroke="#ffffff" stroke-width="2"/>
+<text x="262.5" y="412.86" class="tick">K050</text>
+<circle cx="340.0" cy="337.63" r="7" fill="#7b3294" stroke="#ffffff" stroke-width="2"/>
+<text x="350.0" y="327.63" class="tick">K100</text>
+<circle cx="515.0" cy="190.28" r="7" fill="#7b3294" stroke="#ffffff" stroke-width="2"/>
+<text x="525.0" y="180.28" class="tick">K200</text>
+<text x="340.0" y="570" class="axis" text-anchor="middle">Decay rate (yr⁻¹)</text>
+<text x="115" y="350.0" class="axis" text-anchor="middle" transform="rotate(-90 115 350.0)">Annual input (kg m⁻² yr⁻¹)</text>
+<line x1="740.0" y1="180" x2="740.0" y2="520" stroke="#d5d8dc"/>
+<text x="740.0" y="544" class="tick" text-anchor="middle">0</text>
+<line x1="831.25" y1="180" x2="831.25" y2="520" stroke="#d5d8dc"/>
+<text x="831.25" y="544" class="tick" text-anchor="middle">5</text>
+<line x1="922.5" y1="180" x2="922.5" y2="520" stroke="#d5d8dc"/>
+<text x="922.5" y="544" class="tick" text-anchor="middle">10</text>
+<line x1="1013.75" y1="180" x2="1013.75" y2="520" stroke="#d5d8dc"/>
+<text x="1013.75" y="544" class="tick" text-anchor="middle">15</text>
+<line x1="1105.0" y1="180" x2="1105.0" y2="520" stroke="#d5d8dc"/>
+<text x="1105.0" y="544" class="tick" text-anchor="middle">20</text>
+<line x1="740" y1="520.0" x2="1105" y2="520.0" stroke="#d5d8dc"/>
+<text x="728" y="525.0" class="tick" text-anchor="end">0.0</text>
+<line x1="740" y1="452.0" x2="1105" y2="452.0" stroke="#d5d8dc"/>
+<text x="728" y="457.0" class="tick" text-anchor="end">0.2</text>
+<line x1="740" y1="384.0" x2="1105" y2="384.0" stroke="#d5d8dc"/>
+<text x="728" y="389.0" class="tick" text-anchor="end">0.4</text>
+<line x1="740" y1="316.0" x2="1105" y2="316.0" stroke="#d5d8dc"/>
+<text x="728" y="321.0" class="tick" text-anchor="end">0.6</text>
+<line x1="740" y1="248.0" x2="1105" y2="248.0" stroke="#d5d8dc"/>
+<text x="728" y="253.0" class="tick" text-anchor="end">0.8</text>
+<line x1="740" y1="180.0" x2="1105" y2="180.0" stroke="#d5d8dc"/>
+<text x="728" y="185.0" class="tick" text-anchor="end">1.0</text>
+<polyline points="758.25,440.91 776.50,429.82 794.75,418.73 813.00,407.65 831.25,396.56 849.50,385.47 867.75,374.38 886.00,363.29 904.25,352.20 922.50,341.11 940.75,330.03 959.00,318.94 977.25,307.85 995.50,296.76 1013.75,285.67 1032.00,274.58 1050.25,263.49 1068.50,252.41 1086.75,241.32 1105.00,230.23" fill="none" stroke="#1b9e77" stroke-width="3"/>
+<circle cx="1105.0" cy="230.22779305615836" r="5" fill="#1b9e77"/>
+<text x="748" y="202" class="tick" style="fill:#1b9e77;font-weight:700">K000</text>
+<polyline points="758.25,423.72 776.50,398.75 794.75,376.69 813.00,357.22 831.25,340.02 849.50,324.83 867.75,311.42 886.00,299.58 904.25,289.12 922.50,279.88 940.75,271.72 959.00,264.52 977.25,258.16 995.50,252.54 1013.75,247.58 1032.00,243.20 1050.25,239.33 1068.50,235.91 1086.75,232.89 1105.00,230.23" fill="none" stroke="#d95f02" stroke-width="3"/>
+<circle cx="1105.0" cy="230.22779305615825" r="5" fill="#d95f02"/>
+<text x="748" y="226" class="tick" style="fill:#d95f02;font-weight:700">K025</text>
+<polyline points="758.25,402.84 776.50,364.50 794.75,334.60 813.00,311.28 831.25,293.10 849.50,278.92 867.75,267.86 886.00,259.23 904.25,252.51 922.50,247.26 940.75,243.17 959.00,239.98 977.25,237.50 995.50,235.55 1013.75,234.04 1032.00,232.86 1050.25,231.94 1068.50,231.22 1086.75,230.66 1105.00,230.23" fill="none" stroke="#7570b3" stroke-width="3"/>
+<circle cx="1105.0" cy="230.2277930561586" r="5" fill="#7570b3"/>
+<text x="748" y="250" class="tick" style="fill:#7570b3;font-weight:700">K050</text>
+<polyline points="758.25,365.10 776.50,312.25 794.75,280.11 813.00,260.56 831.25,248.67 849.50,241.44 867.75,237.04 886.00,234.37 904.25,232.74 922.50,231.75 940.75,231.15 959.00,230.79 977.25,230.56 995.50,230.43 1013.75,230.34 1032.00,230.29 1050.25,230.26 1068.50,230.25 1086.75,230.23 1105.00,230.23" fill="none" stroke="#e7298a" stroke-width="3"/>
+<circle cx="1105.0" cy="230.22779305615893" r="5" fill="#e7298a"/>
+<text x="748" y="274" class="tick" style="fill:#e7298a;font-weight:700">K100</text>
+<polyline points="758.25,312.26 776.50,260.57 794.75,241.45 813.00,234.38 831.25,231.76 849.50,230.80 867.75,230.44 886.00,230.31 904.25,230.26 922.50,230.24 940.75,230.23 959.00,230.23 977.25,230.23 995.50,230.23 1013.75,230.23 1032.00,230.23 1050.25,230.23 1068.50,230.23 1086.75,230.23 1105.00,230.23" fill="none" stroke="#1f78b4" stroke-width="3"/>
+<circle cx="1105.0" cy="230.22779305615848" r="5" fill="#1f78b4"/>
+<text x="748" y="298" class="tick" style="fill:#1f78b4;font-weight:700">K200</text>
+<text x="922.5" y="570" class="axis" text-anchor="middle">Simulation year</text>
+<text x="695" y="350.0" class="axis" text-anchor="middle" transform="rotate(-90 695 350.0)">Surface stock (kg m⁻²)</text>
+<text x="95" y="650" class="axis">All five endpoints equal 0.852271 kg m⁻² within 1.12×10⁻¹⁵.</text>
+<text x="95" y="680" class="note">Their different trajectories show why a terminal stock cannot identify source and decay.</text>
+<text x="95" y="715" class="note">The ridge is an analytic synthetic construction—not an empirical fit.</text>
+</svg>

@@ -1176,6 +1176,20 @@ impl DirectLaneFrame {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectErosionDailyConsumers {
+    pub canopy_cover_fraction: f64,
+    pub canopy_height_m: f64,
+    pub interrill_cover_fraction: f64,
+    pub rill_cover_fraction: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostDailyConsumers {
+    pub residue_depth_m: f64,
+    pub canopy_height_m: f64,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectDayFrame {
     pub identity: DirectRunIdentity,
@@ -1317,14 +1331,10 @@ pub struct DirectDayFrame {
     pub erosion: DirectErosionState,
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub erosion_shadow_projection: Option<DirectErosionShadowProjection>,
-    /// Exact canopy value read by the active erosion daily-state assembly.
-    pub erosion_canopy_cover_fraction_consumed: Option<f64>,
-    /// Exact canopy height read by the active erosion daily-state assembly.
-    pub erosion_canopy_height_m_consumed: Option<f64>,
-    /// Exact residue-depth value read by the active frost thermal compute.
-    pub frost_residue_depth_m_consumed: Option<f64>,
-    /// Exact canopy height read by the active frost thermal compute.
-    pub frost_canopy_height_m_consumed: Option<f64>,
+    /// Exact values read by the active erosion daily-state assembly.
+    pub erosion_daily_consumers: Option<DirectErosionDailyConsumers>,
+    /// Exact values read by the active frost thermal compute.
+    pub frost_daily_consumers: Option<DirectFrostDailyConsumers>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
@@ -1476,10 +1486,8 @@ impl DirectDayFrame {
             erosion: DirectErosionState::inactive(),
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             erosion_shadow_projection: None,
-            erosion_canopy_cover_fraction_consumed: None,
-            erosion_canopy_height_m_consumed: None,
-            frost_residue_depth_m_consumed: None,
-            frost_canopy_height_m_consumed: None,
+            erosion_daily_consumers: None,
+            frost_daily_consumers: None,
             frost_layer_carry_projection: None,
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,

@@ -599,9 +599,32 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
         .expect("compatibility aggregate-loss branch");
     assert!(native_litter_position < aggregate_loss_position);
     assert!(
-        residue[native_litter_position..aggregate_loss_position]
-            .contains("surface_litter_input_kg_m2: native_litter"),
+        residue[native_litter_position..aggregate_loss_position].contains(
+            "return Ok(direct_production_internal_litter_result(\n            native_litter",
+        ),
         "native litter must return directly before aggregate biomass loss and jdharv logic"
+    );
+    assert!(
+        residue.contains(
+            "let total = internal.surface_litter_input_kg_m2\n        + external.needle_kg_m2\n        + external.fine_woody_kg_m2;",
+        ) && residue.contains(
+            "surface_litter_projection.surface_litter_input_kg_m2,\n            water_stress,",
+        ),
+        "the three-source sum must enter the real decomposition input once"
+    );
+    assert_eq!(
+        residue
+            .matches("+ external.needle_kg_m2")
+            .count(),
+        1,
+        "external needle influx must not have a downstream re-addition path"
+    );
+    assert_eq!(
+        residue
+            .matches("+ external.fine_woody_kg_m2")
+            .count(),
+        1,
+        "external fine-woody influx must not have a downstream re-addition path"
     );
     assert!(
         builder.contains("ForestCanopyState::new_uninitialized"),

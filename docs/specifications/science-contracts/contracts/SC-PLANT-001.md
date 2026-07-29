@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 24
+contract_version: 25
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-27
+last_reviewed: 2026-07-28
 supersedes: []
 superseded_by: []
 ---
@@ -496,6 +496,7 @@ algorithm.
 | `INV-PLANT-036` | runtime + integration | Direct-production day builder and downstream consumer calls | Package `HOLD` if any real consumer reads pre-phenology/static/fixed-date state | CP-GSI02 consumer gate | `[INFERENCE][Static]` |
 | `INV-PLANT-037` | contract test | Phase-shifted forcing at negated latitude | Test failure on phase/order mismatch; no empirical verdict | CP-GSI02 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-038` | runtime + integration | Native canopy realization, direct-production state builder, and real-consumer handoff | Typed hard failure on missing/non-finite/non-positive `bbb` or `hmax`, checked-sum/product overflow, non-finite/negative `Bt` or `Hc`, or `Bt>0` with `Hc<=0`; package `HOLD` if a consumer reads stale/static/compatibility height | CP-GSI02 height-coherence gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-039` | YAML/path parser + runtime + integration | Authenticated external native-forest litter boundary | Typed hard failure on invalid material/applicability/support/digest/CSV/spatial binding, interval-as-daily use, or outside-support access; package `HOLD` if external material is portrayed as predictive canopy output | CANOPY-LITTER-SOURCE-AUTHORITY-01 gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -962,6 +963,76 @@ There is no hidden generalized fallback at the parser/runtime boundary.
 |---|---|---|---|---|---|---|
 | `BEI-PLANT-GSI01` | `CP-GSI01` generalized GSI equation, history, hemisphere, scope, and chronology addendum | `active` | `maps-to-existing-INV` | `INV-PLANT-028, INV-PLANT-029, INV-PLANT-030, INV-PLANT-031, INV-PLANT-032, OBL-PLANT-P-013, OBL-PLANT-P-014` | `none` | Existing CP-GSI01 runtime and contract-test gates carry these bindings. |
 | `BEI-PLANT-GSI02` | `CP-GSI02` native forest canopy, height, litter, chronology, and real-consumer integration addendum | `active` | `maps-to-existing-INV` | `INV-PLANT-033, INV-PLANT-034, INV-PLANT-035, INV-PLANT-036, INV-PLANT-037, INV-PLANT-038, OBL-PLANT-P-012, OBL-PLANT-P-014, OBL-PLANT-P-015, OBL-PLANT-C-007` | `flagged-binding-addition` | Revision 24 adds the explicit native `Bt/Hc` binding and requires independent science review. |
+| `BEI-PLANT-LITTER-BOUNDARY-01` | Authenticated external forest-litter boundary addendum | `active` | `maps-to-new-INV` | `INV-PLANT-039, SC-RESIDUE-001#INV-RESIDUE-022` | `flagged-binding-addition` | Exact-day external dry mass only; predictive needle and fine-wood deposition remain authority-missing. |
+
+## Authenticated External Forest-litter Boundary Addendum
+
+The admitted source ledger is in
+`docs/work-packages/20260728-canopy-litter-source-authority-001/artifacts/`.
+Keane (2008; DOI `10.1139/X08-003` and `10.2737/RMRS-RP-70`) authorizes
+tissue-separated ground-collected dry mass only at its observed interval. Lim
+et al. (2024; DOI `10.1073/pnas.2401035121`) requires branch turnover,
+attached-dead storage, in-canopy loss, and ground litterfall to remain
+distinct. Predictive evergreen needle and fine-woody deposition therefore
+remain `AUTHORITY_MISSING / NOT_CALIBRATION_READY / NOT_ASSESSED`.
+
+Needle and fine-woody materials independently declare `complete`,
+`not_represented`, or authority-backed `not_applicable`. Only `complete`
+carries a forcing. `not_represented` is disclosed incompleteness, never
+numeric zero. `not_applicable` is valid only from typed vegetation/material
+classification; evergreen fraction and aggregate structural biomass are not
+applicability proxies.
+
+A complete forcing is either `prescribed_scenario` or genuinely exhaustive
+`measured_daily`. It binds vegetation/material class, fine-wood diameter and
+bark treatment, dry-mass method, horizontal area, site/plot/OFE,
+proleptic-Gregorian support, original resolution/units, immutable source
+bytes, and executable CSV bytes. SHA-256 is verified
+before parsing. The exact UTF-8 CSV grammar is:
+
+```text
+date,deposited_kg_m2\n
+YYYY-MM-DD,<finite nonnegative base-10 decimal>\n
+```
+
+The object has no BOM, uses LF including a final LF, and contains strictly
+increasing unique dates. Interval observations cannot be assigned to a
+collection date, divided, interpolated, repeated, extrapolated, or wrapped
+without separately admitted temporal authority. Outside-support access,
+calendar/leap ambiguity, material/vegetation/site/plot/lane/OFE mismatch, and
+undocumented carbon/wet/dry/area transformations hard-fail.
+
+The initial executable boundary is identity-only: original and executable
+objects must be the same confined relative file with the same SHA-256 digest,
+exact-daily resolution, and identical inclusive support. Derived or interval
+objects fail closed until a successor contract admits typed transformation
+inputs/digests and temporal-disaggregation authority. Inline functional
+classes must exactly match a separately SHA-256-authenticated classification
+CSV; needle payloads require a needleleaf class and fine-woody payloads
+require a woody class.
+
+Research publication carries a number only for a `complete` tissue.
+`not_represented` and `not_applicable` publish null source operands plus their
+explicit status; aggregate `source_completeness` is `incomplete` whenever any
+applicable tissue is `not_represented`.
+
+For date `d`, `N_ext(d)` and `W_ext(d)` are external ground depositions in
+`kg dry mass m^-2 d^-1` and have no modeled canopy debit. Existing
+`L_leaf(d)` retains its internal CP-GSI02 debit:
+
+```text
+Q_litter(d) = L_leaf(d) + N_ext(d) + W_ext(d)
+```
+
+All operands are separately published and flow through
+`SC-RESIDUE-001#INV-RESIDUE-022`.
+
+Contract-derived vectors must accept identity-hashed prescribed and
+exhaustive measured-daily objects; reject wrong digests, malformed bytes/
+dates/mass, incomplete or contradictory metadata, interval-as-daily use,
+outside-support and spatial/material mismatches; distinguish missing,
+inapplicable, measured-zero, and scenario-zero states; reconstruct the source
+sum independently; and prove the real residue/depth/frost/erosion consumers.
 
 ## Gap Register
 
@@ -982,6 +1053,7 @@ There is no hidden generalized fallback at the parser/runtime boundary.
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-07-27` | `24` | `Codex` | CAL04B-NATIVE-001 contract-first amendment: defined checked native total above-ground biomass `Bt=Bs+Bf`, bound Chapter 8 Eq. 8.2.8 and the pinned source expression to same-day native `Hc`, required positive `bbb/hmax`, added `INV-PLANT-038`, explicit native branch/checked-arithmetic/producer/guard/alias/unit obligations, six height vectors, and the missing GSI Binding Exposure Index. |
+| `2026-07-28` | `25` | `Codex` | CANOPY-LITTER-SOURCE-AUTHORITY-01 amendment: added `INV-PLANT-039`, the authenticated prescribed/exhaustive-daily needle/fine-wood external boundary, digest/material/support/spatial guards, separate source operands, test vectors, and the predictive-physics hold. |
 | `2026-07-20` | `23` | `Codex` | Review amendment: defined no-transfer first realization without aggregate-`vdmt` aliasing, continuous native schedules, strict positive `bb`, fail-on-any-negative VPD, full wrapped NH-to-SH phase evidence, and bit-identical repeated-cycle totals. |
 | `2026-07-19` | `22` | `Codex` | CP-GSI02 contract-first amendment: authorized explicit native GSI operands, evergreen/deciduous/structural state, baseline canopy relation, exact leaf-on/leaf-off mass ledger, same-day litter handoff, real-consumer ordering, and operator-selected phase-shifted SH symmetry validation. |
 | `2026-07-17` | `21` | `Codex` | CP-GSI01 amendment: added Jolly GSI and FAO-56 daylight authority, `INV-PLANT-028..032`, exact indicator/window/hemisphere/chronology laws, contract vectors, explicit cold-start inference, and a hold on canopy/biomass/litter and downstream integration. |

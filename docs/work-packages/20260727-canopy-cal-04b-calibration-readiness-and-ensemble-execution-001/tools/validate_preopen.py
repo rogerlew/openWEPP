@@ -48,7 +48,6 @@ def main(argv: list[str] | None = None) -> int:
         == sha256_file(PACKAGE / "artifacts/direct-execution-plan.json"),
         "direct calibration completion differs",
     )
-    authority = ARTIFACTS / "calibration-forcing-authority-resolution.md"
     authority_rows = terminal.rows("input-and-authority-manifest.csv")
     authority_entry = [
         row
@@ -56,8 +55,18 @@ def main(argv: list[str] | None = None) -> int:
         if row["input_id"] == "calibration_forcing_authority_resolution"
     ]
     require(
-        len(authority_entry) == 1
-        and authority_entry[0]["role"] == "RESULT_BLIND_BINDING_AUTHORITY"
+        len(authority_entry) == 1,
+        "calibration forcing authority resolution entry differs",
+    )
+    authority = (terminal.ROOT / authority_entry[0]["path"]).resolve(strict=True)
+    try:
+        authority.relative_to(terminal.ROOT.resolve())
+    except ValueError:
+        raise ValueError(
+            "calibration forcing authority resolution escapes repository"
+        ) from None
+    require(
+        authority_entry[0]["role"] == "RESULT_BLIND_BINDING_AUTHORITY"
         and authority_entry[0]["state"] == "PASS"
         and authority_entry[0]["expected_sha256"] == sha256_file(authority)
         and authority_entry[0]["observed_sha256"] == sha256_file(authority),

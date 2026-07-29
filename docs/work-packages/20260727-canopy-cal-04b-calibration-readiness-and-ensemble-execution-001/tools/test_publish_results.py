@@ -61,6 +61,34 @@ class PublishResultsTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     MODULE.publish(execution, apply=True, replace=False)
 
+    def test_holdout_publication_is_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repository, package, execution = self.fixture(root)
+            holdout = root / "holdout"
+            (holdout / "artifacts").mkdir(parents=True)
+            with patch.object(MODULE, "ROOT", repository), patch.object(
+                MODULE, "PACKAGE", package
+            ):
+                source = MODULE.source_artifacts(execution)
+                (source / "candidate-ledger.csv").write_text("id\n1\n")
+                (holdout / "artifacts/harvard-holdout-results.csv").write_text(
+                    "candidate_id\nGSI-0001\n"
+                )
+                actions = MODULE.publish(
+                    execution,
+                    holdout_output_root=holdout,
+                    apply=False,
+                    replace=False,
+                )
+                self.assertEqual(
+                    actions,
+                    [
+                        "CREATE candidate-ledger.csv",
+                        "CREATE harvard-holdout-results.csv",
+                    ],
+                )
+
     def test_primary_failure_directory_is_outside_publication_scope(self) -> None:
         source = (TOOLS / "publish-results.py").read_text(encoding="utf-8")
         self.assertNotIn("direct-evidence", source)

@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -16,7 +16,7 @@ consumer_scope:
   - Soil and erosion consumers using residue placement/cover effects on erodibility and transport
   - Plant-management and snow/freeze consumers requiring residue boundary continuity
 evidence_level: Static
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-28
 supersedes: []
 superseded_by: []
 ---
@@ -282,6 +282,7 @@ delegated to kernel handlers consuming the typed contexts.
 | INV-RESIDUE-019 | Dynamic frost-residue boundary invariant: when residue state is consumed by snow/freeze frost surface resistance, the published residue depth must be derived from the current surface-residue mass after same-day senescence/litter input and decomposition, using an authority-backed mass-to-depth conversion. Live above-ground biomass lost through deciduous/perennial senescence must be transferred to the surface-residue pool before the frost boundary is published; decomposition/removal/grazing are the only authorized losses. Compatibility perennial inputs without CP-GSI02 authority may retain the management-date pending bucket, but native `generalized_gsi_v1` forest litter is deposited on the physical GSI decline day and must never enter the `jdharv` window. The t0 `resdep` seed is conversion provenance, not a static later boundary. Zero `oratea` remains valid for inert/no-senescence residue; active recurring forest litter with zero `oratea` uses the authority-backed `k=0.5 yr^-1` fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-LEGACY-RESDEP-CONVERSION, REF-RESIDUE-FOREST-LITTER-DECAY, REF-RESIDUE-FROST-COVER-20260629, REF-RESIDUE-PHYS-BOUNDS, SC-PLANT-001#INV-PLANT-035 | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | INV-RESIDUE-020 | Ground-cover authority invariant (GAP-SED-009 closure, 2026-07-05): the interrill and rill ground-residue pools are runtime state — seeded at day 0 by the `init1.for:295-297` inverse from the management IC's DECLARED `inrcov`/`rilcov` and the residue plant's cover factor `cf` (`canopy_line[4]`; zero declared cover or zero `cf` seeds zero pools), evolved daily by the SAME decay factor as the surface pool with surface-litter input added to both (`decomp.for` applies the identical law to `rigrm`/`rilrm`; Burn/Remove/Grazing fractions apply to the ground pools; **Cut ADDS the cut material to both ground pools** (`decomp.for:689-693` — the cut standing-mat mass joins `rilrm`/`rigrm`/`rmogt`; our pool topology has no standing mat, so the cut-mass basis is the surface-pool transfer `surface·cut_transfer_fraction`, a labeled mapping with the source-true addition rule)). The erosion interrill/rill covers are RE-DERIVED from the pools each day by the `covcal.for:160-176` forward form `1 − exp(−cf·mass)` clamped `[0, 0.999]` — the seed/derive round trip reproduces the declared covers exactly. The standing-mat `strcov` term is 0 (the standing pool is not modeled; the term is additive-only, so its absence is conservative in the fail-direction of the closed defect — a labeled limitation). A no-decay, no-litter scenario holds the pools and covers constant (the forest no-decomp IC behavior legacy exhibits). The ground-pool seeds and `cf` fail closed at the decomposition input boundary (nonnegative-finite). The published composite `cover_fraction` is the `covcal.for:176` `rescov` area-weighted blend (`w·inrcov + (1−w)·rilcov`, `w = (rspace − width)/rspace`). | hard-fail | REF-RESIDUE-CH8-COUPLING, INV-RESIDUE-019, SC-SED-001#INV-SED-017 | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | INV-RESIDUE-021 | CP-GSI02 native leaf-off closure: after the no-transfer first realization, the residue-domain litter input for a native GSI forest equals the same day's `L_leaf` from `SC-PLANT-001#INV-PLANT-035`; it is added once to surface and ground litter pools before decomposition, residue-cover derivation, residue-depth conversion, and frost consumption. Cold-start aggregate-live-biomass loss, pending-date accumulation, duplicate transfer, and delayed publication are invalid. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS, SC-PLANT-001#INV-PLANT-035 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-022 | Authenticated external forest-litter closure: same-day `Q=L_leaf+N_ext+W_ext` is projected exactly once into each parallel surface/interrill/rill areal recurrence before common decay and actions; the states are never summed as independent global masses. Surface drives depth/frost, interrill/rill drive cover/erosion, and external `N_ext+W_ext` remains labeled open-system influx without canopy debit. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS, SC-PLANT-001#INV-PLANT-039 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -307,6 +308,7 @@ delegated to kernel handlers consuming the typed contexts.
 | `INV-RESIDUE-018` | runtime | Decomposition equation/event input validator before payload update execution | Typed hard error on missing/non-finite/negative required decomposition symbols; zero-valued `oratea/orater` are valid no-decay constants | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-019` | runtime | Dynamic residue-depth publisher consumed by snow/freeze frost surface resistance | Typed hard error on stale static-depth reuse after mass changes, invalid litter input, invalid mass-to-depth conversion, or non-conserved plant-to-residue transfer | Frost-residue coupling gate | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | `INV-RESIDUE-021` | runtime | Native phenology-to-litter handoff before decomposition | Typed hard error on non-finite/negative/duplicate/delayed transfer; package `HOLD` if the fixed-date bridge carries native litter | CP-GSI02 conservation/consumer gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-022` | runtime + integration | External needle/fine-wood source ledger and parallel residue recurrences | Typed hard error on missing/duplicate source projection, downstream re-addition, external/internal mislabeling, parallel-state summation, or stale depth/cover/frost/erosion consumer | CANOPY-LITTER-SOURCE-AUTHORITY-01 conservation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -498,6 +500,36 @@ Minimum required scenario families for contract conformance:
 3. Failure migration vectors: missing/non-finite/domain-invalid residue-coupled
    symbols still emit typed hard-fail boundary classifications and IDs.
 
+## Authenticated External Forest-litter Boundary Addendum
+
+Let `L` be internally debited CP-GSI02 leaf-off and `N`/`W` authenticated
+external needle/fine-woody ground deposition from
+`SC-PLANT-001#INV-PLANT-039`. Define `Q=L+N+W`, all in
+`kg dry mass m^-2 d^-1`.
+
+For prior surface, interrill-ground, and rill-ground areal states `S`, `I`,
+and `R`, same-day other authorized additions `O_*`, common surface decay
+factor `f`, and typed management/action operators `A_*`:
+
+```text
+S_pre = S + Q + O_s       S_next = A_s(S_pre * f)
+I_pre = I + Q + O_i       I_next = A_i(I_pre * f)
+R_pre = R + Q + O_r       R_next = A_r(R_pre * f)
+```
+
+These are parallel per-unit-area representations. They are not summed as
+three global source masses. `Q` appears exactly once inside each recurrence.
+`S_next` drives mass-to-depth and frost; `I_next` and `R_next` drive
+interrill/rill cover and erosion, with
+`G_next=w*I_next+(1-w)*R_next`.
+
+Independent reconstruction must recover each pre-state, decay/action loss,
+post-state, weighted ground state, cover, depth, frost input, and erosion
+input. Plant-plus-residue open-system closure cancels internal `-L/+L`;
+`N+W` remains external influx. Missing or duplicate projection, downstream
+re-addition, parallel-state summation, or portrayal of external input as
+generated canopy mass hard-fails.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -512,6 +544,7 @@ Minimum required scenario families for contract conformance:
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-07-20` | `15` | `Codex` | CP-GSI02 review amendment: the first native realization has no fabricated litter and aggregate PL live biomass cannot seed a cold-start leaf-off transfer. |
+| `2026-07-28` | `16` | `Codex` | CANOPY-LITTER-SOURCE-AUTHORITY-01 amendment: added `INV-RESIDUE-022` for authenticated external needle/fine-wood influx, exact source-before-decay surface/interrill/rill parallel recurrences, open-system closure, and real depth/frost/cover/erosion consumers. |
 | `2026-07-19` | `14` | `Codex` | CP-GSI02 amendment: native GSI leaf-off litter is a same-day exact plant-to-residue transfer before decomposition, cover, depth, and frost; the `jdharv` pending window remains compatibility-only. |
 | `2026-07-05` | `13` | `Claude Code` | Codex round-1 corrections: the Cut ground-pool rule fixed to the source-true ADDITION (`decomp.for:689-693`; the rev-12 "Cut does not apply" was source-inaccurate — cut mass joins both ground pools; cut-mass basis labeled as the surface transfer in our standing-mat-free topology); ground-pool seeds + `cf` validated at the decomposition input boundary; the composite `cover_fraction` computed as the `rescov` blend (was still zero-hardcoded despite the package claim). |
 | `2026-07-05` | `12` | `Claude Code` | GAP-SED-009 closure amendment: added `INV-RESIDUE-020` — interrill/rill ground-residue pools seeded from the DECLARED IC covers (`init1.for` inverse), evolved by the surface decay law + litter input (+ Burn/Remove/Grazing), covers re-derived daily via the `covcal.for` forward form; `strcov` labeled unmodeled (additive-only). Closes the pathway where erosion covers were hardcoded zero. |

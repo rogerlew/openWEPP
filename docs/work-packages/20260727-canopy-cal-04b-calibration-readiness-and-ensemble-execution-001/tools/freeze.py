@@ -292,7 +292,6 @@ def main(argv: list[str] | None = None) -> int:
         ("verifier_script", PACKAGE / "tools/freeze-verify.py"),
         ("holdout_script", PACKAGE / "tools/holdout.py"),
         ("direct_executor", PACKAGE / "tools/execute-prefix.py"),
-        ("direct_execution_plan", SOURCE_ARTIFACTS / "direct-execution-plan.json"),
         (
             "calibration_forcing_authority_resolution",
             SOURCE_ARTIFACTS / "calibration-forcing-authority-resolution.md",

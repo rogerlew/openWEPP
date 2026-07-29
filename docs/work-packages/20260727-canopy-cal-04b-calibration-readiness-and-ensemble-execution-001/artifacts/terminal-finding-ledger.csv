@@ -1,9 +1,11 @@
 finding_id,reviewer,severity,finding,disposition,control,status
-TR-A-001,terminal_review_a,HIGH,scaffold validator rejected truthful terminal-HOLD freeze and prompt lifecycle,accepted,evidence-bound terminal-HOLD validator branch plus four regressions,CLOSED
-TR-B-001,terminal_review_b,MEDIUM,root-cause artifacts lacked exact source and function anchors,accepted,incident and HOLD audit name exact builder functions growth module and current lines,CLOSED
-TR-B-002,terminal_review_b,MEDIUM,post-EXEC-015 rereview claim lacked corrected test counts and explicit coverage,accepted,primary and QA artifacts record post-EXEC-015 PASS with 22 Rust and 11 Python tests,CLOSED
-TR-B-003,terminal_review_b,LOW,successor authority-map claim and roadmap link were incomplete,accepted,authority-map artifact added and roadmap links concrete successor,CLOSED
-TV-A-001,terminal_verifier_a,LOW,terminal Markdown evidence retained the earlier 24-file count,accepted,terminal gate section records exact current 39 CAL04B plus 25 successor plus two catalog files,CLOSED
-TV-B-001,terminal_verifier_b,HIGH,successor lacked complete mandatory DC and kernel scaffold wording,accepted,package and kickoff expanded with seven-gate bar phases dependencies scope non-deferral and numeric budget,CLOSED
-QA-T-001,terminal_qa,HIGH,terminal review and verification artifacts remained queued,accepted,populate four terminal artifacts and cite them before final disposition,CLOSED
-QA-T-002,terminal_qa,HIGH,successor required-reading map omitted science-contract instructions and stale byte count,accepted,add exact science-contract and crate instruction paths and recompute budget,CLOSED
+TSRA-001,terminal_science_a,MEDIUM,all accepted GSI candidates are support-boundary members but the identifiability summary omitted the boundary-truncation limitation,accepted,report 20 DOUBLE_BOUNDARY and 17 UPPER_SUPPORT_BOUNDARY members and forbid interior-optimum physiological-bound domain-widening or transfer claims,CLOSED
+TSRA-002,terminal_science_a,MEDIUM,identifiability summary retained stale pre-freeze Harvard sealed state,accepted,replace with one-time scored-no-refit results and external-validity limitation,CLOSED
+TSRA-003,terminal_science_a,MEDIUM,roadmap immediate action still directed authors to completed CAL-03,accepted,route next action to CAL-04B terminal closure then existing Order 5 authority boundary,CLOSED
+TSRB-001,terminal_science_b,MEDIUM,current narratives incorrectly claimed zero Harvard interval coverage for every candidate,accepted,report 34 zero-coverage candidates and three limited positive values with 18.81 percent maximum,CLOSED
+TSRB-002,terminal_science_b,MEDIUM,published identifiability artifact contradicted durable one-time opening state,accepted,replace sealed statement with terminal scored-no-refit limitation,CLOSED
+TSRB-003,terminal_science_b,MEDIUM,package outcome was unconditional during pending gates and roadmap next action was stale,accepted,make closure conditional until gates pass and route roadmap to Order 5 authority state,CLOSED
+TVA-001,terminal_verifier_a,MEDIUM,frozen four-local-ULP-width aggregate guard can admit more than four representable steps across binade boundaries,accepted,preserve frozen validator identity and add post-freeze exact-rank audit proving all 1598 finite results have step histogram 0:986 1:576 2:35 3:1,CLOSED
+TVA-002,terminal_verifier_a,LOW,package Markdown evidence count was stale at 45,accepted,update exact count after terminal artifact additions,CLOSED
+TVB-001,terminal_verifier_b,MEDIUM,current verification artifacts and lifecycle narratives retained contradictory pre-resume terminal-HOLD state,accepted,replace four terminal artifacts mark HOLD resume and handoff records historical and require closeout lifecycle controls,CLOSED
+TVB-002,terminal_verifier_b,LOW,Rust and Python gate counts were stale,accepted,record 34 Rust and 38 Python tests,CLOSED

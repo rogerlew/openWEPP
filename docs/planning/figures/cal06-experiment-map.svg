@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760"
+  viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">CAL-06 canopy-gradient experiment map</title>
+  <desc id="desc">A design diagram showing available canopy strata at Marcell,
+    Harvard, and Hubbard Brook and the gated sequence from canopy state through
+    snow, residue, frost, runoff, and erosion. This is not a result.</desc>
+  <style>
+    text { font-family: Inter, "DejaVu Sans", Arial, sans-serif; fill: #17202a; }
+    .title { font-size: 27px; font-weight: 700; }
+    .subtitle { font-size: 16px; fill: #566573; }
+    .heading { font-size: 18px; font-weight: 700; }
+    .label { font-size: 15px; font-weight: 600; }
+    .small { font-size: 13px; fill: #566573; }
+    .available { fill: #d8f3dc; stroke: #2d6a4f; stroke-width: 2; }
+    .absent { fill: #f2f3f4; stroke: #aeb6bf; stroke-width: 1.5; }
+    .process { fill: #e8f1fa; stroke: #2166ac; stroke-width: 2; }
+    .gate { fill: #fff3cd; stroke: #b9770e; stroke-width: 2; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3"
+      orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#566573"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="#ffffff"/>
+  <text x="65" y="55" class="title">CAL-06 — canopy-gradient congruence design</text>
+  <text x="65" y="84" class="subtitle">Prospective experiment map; no CAL-06 result is represented.</text>
+
+  <text x="65" y="132" class="heading">Matched within-site strata</text>
+  <text x="260" y="170" class="label" text-anchor="middle">Open</text>
+  <text x="430" y="170" class="label" text-anchor="middle">Deciduous</text>
+  <text x="600" y="170" class="label" text-anchor="middle">Mixed</text>
+  <text x="770" y="170" class="label" text-anchor="middle">Conifer</text>
+
+  <text x="65" y="223" class="label">Marcell</text>
+  <text x="65" y="303" class="label">Harvard</text>
+  <text x="65" y="383" class="label">Hubbard Brook</text>
+
+  <g aria-label="Available fixture matrix">
+    <rect x="190" y="190" width="140" height="52" rx="7" class="available"/>
+    <rect x="360" y="190" width="140" height="52" rx="7" class="available"/>
+    <rect x="530" y="190" width="140" height="52" rx="7" class="available"/>
+    <rect x="700" y="190" width="140" height="52" rx="7" class="available"/>
+
+    <rect x="190" y="270" width="140" height="52" rx="7" class="available"/>
+    <rect x="360" y="270" width="140" height="52" rx="7" class="available"/>
+    <rect x="530" y="270" width="140" height="52" rx="7" class="available"/>
+    <rect x="700" y="270" width="140" height="52" rx="7" class="absent"/>
+
+    <rect x="190" y="350" width="140" height="52" rx="7" class="absent"/>
+    <rect x="360" y="350" width="140" height="52" rx="7" class="available"/>
+    <rect x="530" y="350" width="140" height="52" rx="7" class="available"/>
+    <rect x="700" y="350" width="140" height="52" rx="7" class="absent"/>
+
+    <text x="260" y="223" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="430" y="223" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="600" y="223" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="770" y="223" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="260" y="303" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="430" y="303" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="600" y="303" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="770" y="303" class="small" text-anchor="middle">NOT LISTED</text>
+    <text x="260" y="383" class="small" text-anchor="middle">NOT LISTED</text>
+    <text x="430" y="383" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="600" y="383" class="label" text-anchor="middle">AVAILABLE</text>
+    <text x="770" y="383" class="small" text-anchor="middle">NOT LISTED</text>
+  </g>
+
+  <rect x="870" y="190" width="275" height="212" rx="8" class="gate"/>
+  <text x="1007" y="225" class="heading" text-anchor="middle">Inputs carried forward</text>
+  <text x="892" y="262" class="label">• CAL-04B ensemble: 37 members</text>
+  <text x="892" y="294" class="label">• Fixed climate, soil, slope</text>
+  <text x="892" y="326" class="label">• Typed CAL-05 source status</text>
+  <text x="892" y="358" class="label">• No inferred litter physics</text>
+  <text x="892" y="385" class="small">Missing source stays incomplete.</text>
+
+  <text x="65" y="462" class="heading">Gated interpretation sequence</text>
+
+  <rect x="65" y="500" width="180" height="74" rx="8" class="process"/>
+  <text x="155" y="529" class="label" text-anchor="middle">Canopy state</text>
+  <text x="155" y="552" class="small" text-anchor="middle">GSI · LAI · cover</text>
+
+  <line x1="245" y1="537" x2="292" y2="537" stroke="#566573"
+    stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="300" y="500" width="180" height="74" rx="8" class="process"/>
+  <text x="390" y="529" class="label" text-anchor="middle">Atmosphere &amp; snow</text>
+  <text x="390" y="552" class="small" text-anchor="middle">ET · interception · SWE</text>
+
+  <line x1="480" y1="537" x2="527" y2="537" stroke="#566573"
+    stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="535" y="500" width="180" height="74" rx="8" class="process"/>
+  <text x="625" y="529" class="label" text-anchor="middle">Residue &amp; frost</text>
+  <text x="625" y="552" class="small" text-anchor="middle">source · depth · thaw</text>
+
+  <line x1="715" y1="537" x2="762" y2="537" stroke="#566573"
+    stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="770" y="500" width="180" height="74" rx="8" class="process"/>
+  <text x="860" y="529" class="label" text-anchor="middle">Runoff &amp; erosion</text>
+  <text x="860" y="552" class="small" text-anchor="middle">advance only after pass</text>
+
+  <line x1="950" y1="537" x2="997" y2="537" stroke="#566573"
+    stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1005" y="500" width="140" height="74" rx="8" class="gate"/>
+  <text x="1075" y="529" class="label" text-anchor="middle">Congruence</text>
+  <text x="1075" y="552" class="small" text-anchor="middle">verdict matrix</text>
+
+  <text x="65" y="630" class="heading">Prespecified interpretation</text>
+  <text x="65" y="665" class="label">Expected winter ordering: deciduous &lt; mixed &lt; evergreen, where represented.</text>
+  <text x="65" y="697" class="small">Ordering is necessary but insufficient: seasonal amplitudes, observations, uncertainty, and contrary evidence remain quantitative.</text>
+  <text x="65" y="729" class="small">A failed upstream cell is shown as NOT ADVANCED; it is never plotted as a downstream zero.</text>
+</svg>

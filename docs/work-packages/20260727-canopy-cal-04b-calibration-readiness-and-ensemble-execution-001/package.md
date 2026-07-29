@@ -3,7 +3,7 @@
 Package ID:
 `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
 
-Status: `ACTIVE / SCIENCE-DESIGN HOLD AT SYNTHETIC RECOVERY`
+Status: `COMPLETE / CALIBRATION READINESS PASS / VALIDATION LIMITATION RETAINED`
 
 Date opened: `2026-07-27`
 
@@ -16,12 +16,16 @@ holdout evaluation.
 This ExecPlan is a living document maintained under
 `docs/codex_exec_plans.md`.
 
-Current execution truth: the production-consumer defect from incident 004 is
-fixed and its twelve native cases pass in retained evidence. The next command
-failed at the required synthetic hidden-truth recovery check; see
-`artifacts/execution-incident-005.md`. No candidate population has run and
-Harvard remains sealed. Gate-planner and external-transaction machinery are no
-longer CAL prerequisites.
+Current execution truth: the corrected synthetic design, twelve-case native
+consumer proof, full 9,261-candidate Hubbard ensemble, dual reconstruction,
+later-stage readiness, 177-member transitive freeze, two independent
+freeze-verifier receipts, one-time Harvard scoring, and terminal validator all
+pass. The frozen accepted ensemble contains 37 candidates. Harvard scored all
+37 without refit. Thirty-four candidates have zero interval coverage; three
+have limited positive coverage, with a maximum of 18.81%. Together with
+43.48–72.46 day aggregate errors, this shows poor independent transferability.
+The limitation is retained and did not alter calibration membership. Incidents
+005–007 preserve every fail-closed correction before the one-time opening.
 
 ## Purpose
 
@@ -332,11 +336,12 @@ Resume progress:
 
 - [x] production, assurance, and TESTGATE prerequisite chain closed;
 - [x] package and byte-identical kickoff prompt reactivated;
-- [ ] fresh attempt root and identities reviewed;
-- [ ] observed pre-freeze prefix passed from `prepare`;
-- [ ] freeze and dual verifier barrier passed;
-- [ ] one-time Harvard holdout and post-holdout summary completed;
-- [ ] terminal validation, review, verification, and closeout passed.
+- [x] fresh attempt root and identities reviewed;
+- [x] observed pre-freeze prefix passed from `prepare`;
+- [x] freeze and dual verifier barrier passed;
+- [x] one-time Harvard holdout and post-holdout summary completed;
+- [x] terminal validation passed;
+- [x] dual review, dual verification, and closeout passed.
 
 ## Minimum Gates
 
@@ -365,17 +370,32 @@ whitespace checking.
 
 ## Outcome
 
-The reworked scaffold and executor passed their prospective reviews and
-pre-heavy gates. Four bounded, append-only attempts then stopped before
-population execution. The first and third exposed package-local proof defects
-that were corrected and regression-tested; the second was an orchestration
-interrupt. Attempt 004 passed the corrected native-default real-consumer proof
-and then exposed `CAL04B-NATIVE-001`: the frozen interior `GSI-5557` vector
-publishes positive LAI before the production post-growth path provides positive
-canopy height, so the required rev-21/rev-36 guard fails closed.
+This result closes roadmap Order 4. The corrected fresh attempt evaluated all
+9,261 frozen GSI candidates and independently reconstructed the same candidate,
+failure, and accepted-membership ledgers. Of 1,598 finite candidates, 37 are in
+the frozen minimum-plus-one-day ensemble; the best Hubbard objective is
+4.020496520239 days. Required synthetic recovery, native production-consumer
+proof, later-stage propagation, readiness, freeze, dual review, dual
+verification, and terminal validation pass.
 
-That broken real parameter path was a legitimate historical hold boundary.
-The separately authorized native, assurance, and TESTGATE packages closed it
-without changing this package's frozen calibration design. This package is now
-reopened for a fresh empty-root restart. The prior four attempts remain
-historical evidence; their outputs cannot seed the resumed population.
+Stage dispositions are:
+
+- GSI timing: `IMPLEMENTED / EMPIRICALLY_CALIBRATED /
+  PARTIALLY_IDENTIFIABLE`;
+- foliar/structural partition: `IMPLEMENTED / EMPIRICALLY_CALIBRATED /
+  PARTIALLY_IDENTIFIABLE`;
+- evergreen fraction: `IMPLEMENTED / CALIBRATION_READY_DATA_LIMITED /
+  NONIDENTIFIABLE`;
+- peak LAI: `IMPLEMENTED / CALIBRATION_READY_DATA_LIMITED /
+  PARTIALLY_IDENTIFIABLE`;
+- canopy floor/closure: `IMPLEMENTED / CALIBRATION_READY_DATA_LIMITED /
+  NONIDENTIFIABLE`.
+
+The one-time Harvard evaluation scored every frozen candidate without refit or
+failure. Thirty-four candidates have zero interval coverage. `GSI-4831`,
+`GSI-4832`, and `GSI-4837` have limited positive coverage of 18.81%, 3.76%,
+and 3.13%, respectively. Aggregate errors span
+43.475807448894–72.457861317228 days. This is contrary
+independent-validation evidence: it limits external validity and
+transferability and cannot trigger refitting. It does not invalidate the
+Hubbard empirical-calibration or data-limited readiness evidence.

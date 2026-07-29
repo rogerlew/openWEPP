@@ -1,6 +1,6 @@
 stage,science_implementation_status,calibration_evidence_status,identifiability_status,state,evidence
-gsi_timing,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,BLOCKED,execution-incident-005.md
-foliar_structural_partition,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,NOT_REACHED,execution-incident-005.md
-evergreen_fraction,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,NOT_REACHED,execution-incident-005.md
-peak_lai,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,NOT_REACHED,execution-incident-005.md
-canopy_floor_closure,IMPLEMENTED,NOT_CALIBRATION_READY,NOT_ASSESSED,NOT_REACHED,execution-incident-005.md
+gsi_timing,IMPLEMENTED,EMPIRICALLY_CALIBRATED,PARTIALLY_IDENTIFIABLE,PASS,accepted-calibration-ensemble.csv
+foliar_structural_partition,IMPLEMENTED,EMPIRICALLY_CALIBRATED,PARTIALLY_IDENTIFIABLE,PASS,later-stage-results.csv; later-stage-membership.csv
+evergreen_fraction,IMPLEMENTED,CALIBRATION_READY_DATA_LIMITED,NONIDENTIFIABLE,PASS,later-stage-recovery.csv
+peak_lai,IMPLEMENTED,CALIBRATION_READY_DATA_LIMITED,PARTIALLY_IDENTIFIABLE,PASS,later-stage-results.csv
+canopy_floor_closure,IMPLEMENTED,CALIBRATION_READY_DATA_LIMITED,NONIDENTIFIABLE,PASS,later-stage-recovery.csv

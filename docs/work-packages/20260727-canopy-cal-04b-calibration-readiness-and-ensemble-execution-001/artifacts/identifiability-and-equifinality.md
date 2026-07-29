@@ -1,13 +1,19 @@
 # Identifiability and Equifinality
 
-Status: `NOT ASSESSED / SYNTHETIC RECOVERY BLOCKED`
+Status: `PASS`
 
-Evidence class: `Ran + Static`
+Evidence class: `Ran`
 
-The real production-consumer proof now passes all twelve retained cases. The
-required hidden-truth synthetic reconstruction then failed because the hidden
-candidate lacks one crossing per year. Hubbard population, objective
-reconstruction, and later-stage execution therefore did not run. No accepted
-ensemble, profile, equifinal set, or empirical identifiability result exists.
-The prospective candidate and later-stage designs remain execution
-specifications only and are not represented as results.
+- Complete GSI configurations: 9,261.
+- Finite objectives: 1598.
+- Accepted `minimum + 1 day` ensemble: 37.
+- Objective range: 4.020496520239 to 63.274932753282 days.
+- GSI identifiability: `PARTIALLY_IDENTIFIABLE`; every accepted configuration remains frozen.
+- All 37 accepted configurations are support-boundary members: 20 are `DOUBLE_BOUNDARY` and 17 are `UPPER_SUPPORT_BOUNDARY`; the minimum `GSI-4394` is `DOUBLE_BOUNDARY`.
+- Calibration is therefore limited to the frozen empirical support. No interior optimum, physiological bound, domain-widening result, or out-of-domain transfer claim was established.
+- `Bf_max + Bs` is empirically constrained only as a combination.
+- `fe` and `Cs`/`bb` remain nonidentifiable from admitted empirical data.
+- Mature LAI is conditionally range-constrained, not uniquely calibrated.
+- Native synthetic recovery demonstrates machinery only and is not empirical evidence.
+- Harvard was scored once after the freeze: 37/37 finite scores, 43.475807448894–72.457861317228 day aggregate error, 34/37 zero-coverage candidates, and maximum positive interval coverage 18.81%.
+- Harvard caused no refit or membership change. Its poor performance limits external validity and leaves transferability unsupported.

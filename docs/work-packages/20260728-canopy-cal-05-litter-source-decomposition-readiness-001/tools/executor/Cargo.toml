@@ -1,0 +1,11 @@
+[package]
+name = "cal05-readiness-executor"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+openwepp-hillslope-orchestrator = { version = "0.1.0", path = "../../../../../crates/openwepp-hillslope-orchestrator" }
+
+[workspace]

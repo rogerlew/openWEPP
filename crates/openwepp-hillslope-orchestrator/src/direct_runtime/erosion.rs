@@ -2,15 +2,15 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectErosionConsolidationCarry, DirectErosionInflowIntake, DirectErosionRuntimeCarry,
-    DirectGrowthAction, DirectPublicationErosionOperands, DirectRuntimeError,
-    DirectWave1ContinuityInputs, DirectWave1ContinuityState, DirectWave1DailyState,
-    DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime,
-    ErosionParticleClass, ErosionRfcumInputs, Wave1InflowOperands, advance_erosion_consolidation,
-    assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
-    compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
-    resolve_erosion_frost_regime, validate_finite, validate_nonnegative_direct_m,
-    wave1_day_routes_sediment,
+    DirectErosionConsolidationCarry, DirectErosionDailyConsumers, DirectErosionInflowIntake,
+    DirectErosionRuntimeCarry, DirectGrowthAction, DirectPublicationErosionOperands,
+    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
+    DirectWave1DailyState, DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs,
+    ErosionFrostRegime, ErosionParticleClass, ErosionRfcumInputs, Wave1InflowOperands,
+    advance_erosion_consolidation, assemble_wave1_continuity_inputs,
+    assemble_wave1_continuity_inputs_quantum, compute_direct_wave1_continuity,
+    compute_direct_wave1_continuity_quantum, resolve_erosion_frost_regime, validate_finite,
+    validate_nonnegative_direct_m, wave1_day_routes_sediment,
 };
 
 // SC-SED-001 1b-C: one hourly bin (`DC01_HOUR_BIN_COUNT` × 1 h).
@@ -566,9 +566,6 @@ impl DirectDayFrame {
             strldn: 0.0,
         };
 
-        self.erosion_canopy_cover_fraction_consumed = Some(daily.canopy_cover_fraction);
-        self.erosion_canopy_height_m_consumed = Some(daily.canopy_height_m);
-
         let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
 
         // ADR-0036 / INV-SED-013: the hydrograph-resolved hourly plan. The
@@ -613,7 +610,17 @@ impl DirectDayFrame {
             *self.erosion_inputs.wave1_continuity = continuity;
         }
         self.erosion_runtime_carry = carry;
+        self.record_erosion_daily_consumers(&daily);
         Ok(())
+    }
+
+    fn record_erosion_daily_consumers(&mut self, daily: &DirectWave1DailyState) {
+        self.erosion_daily_consumers = Some(DirectErosionDailyConsumers {
+            canopy_cover_fraction: daily.canopy_cover_fraction,
+            canopy_height_m: daily.canopy_height_m,
+            interrill_cover_fraction: daily.interrill_cover_fraction,
+            rill_cover_fraction: daily.rill_cover_fraction,
+        });
     }
 
     fn compute_r7d6_erosion(&self) -> Result<DirectErosionState, DirectRuntimeError> {

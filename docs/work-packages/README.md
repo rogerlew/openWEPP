@@ -33,9 +33,8 @@
   the current canopy README and invalidates stale review authority; TESTGATE
   preserves immutable historical assessment roots while validating current
   identity-bound locks; the native canopy-height correction passes its 12-case
-  frozen replay and the exact 2,301-test full profile. No calibration
-  population or Harvard run occurred. The historical CAL-04B HOLD is retained,
-  and a fresh reviewed empty-root rerun is next.
+  frozen replay and the exact 2,301-test full profile. CAL-04B subsequently
+  completed its fresh deterministic ensemble and one-time holdout run.
 - `20260726-canopy-cal-03-observation-native-research-001/` completed the
   pre-calibration canopy evidence package. It installs immutable observation
   roles, source-supplied Marcell/Harvard/Hubbard native pairs, a default-off
@@ -367,11 +366,13 @@ State as of `2026-07-28 UTC`:
   applied exact package-local frozen-status overlays so no stale `ACTIVE` file
   can resume them.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  ACTIVE / SCIENCE-DESIGN HOLD AT SYNTHETIC RECOVERY: direct package-authored
-  execution is available without planner authority. Incident 005 records that
-  the hidden candidate lacks one crossing per year; this must be scientifically
-  resolved before population. Prior attempts remain evidence only and Harvard
-  remains sealed.
+  COMPLETE / CALIBRATION READINESS PASS / VALIDATION LIMITATION RETAINED:
+  all 9,261 Hubbard candidates, dual reconstruction, 37-member freeze, two
+  independent verifier receipts, one-time 37-candidate Harvard scoring, and
+  terminal validation, dual review, and dual verification pass. Harvard timing
+  errors are large; 34/37 candidates have zero interval coverage and the best
+  positive coverage is only 18.81%, so external transferability remains
+  unsupported and no refit is allowed.
 - `20260727-gate-planner-external-dag-transaction-adapter-001/` -
   FROZEN / SUPERSEDED BY ADR-0043: its scaffold authority and independent
   implementation review failed closed. Historical evidence remains; explicit
@@ -412,10 +413,27 @@ State as of `2026-07-28 UTC`:
 - `20260726-canopy-cal-04-05-authority-evidence-admission-001/` -
   EXECUTED / HOLD: CAL-04 timing authority is lifted with Hubbard Brook
   calibration and an independent Harvard Forest holdout, and CAL-04 adopts a
-  prior-free deterministic identifiability design. CAL-05 is partially lifted
-  but remains pending operator assistance for tissue-separated fine-wood,
-  bark, and reproductive litter mass on a stock-compatible basis. No
-  calibration or production-physics change was made.
+  prior-free deterministic identifiability design. The operator reports that
+  the Forest Service has no additional tissue-separated CAL-05 data, so the
+  wait state is retired while empirical source/decay fitting remains
+  authority-blocked. No calibration or production-physics change was made.
+- `20260728-canopy-cal-05-litter-source-decomposition-readiness-001/` -
+  COMPLETE / READINESS PASS / SOURCE AUTHORITY SUCCESSOR REQUIRED: raw
+  runtime, complete-state reconstruction, synthetic recovery, typed failure,
+  Harvard, and terminal-ridge evidence pass. The operator authorized the
+  retrospective frozen-grid sensitivity analysis, lifting its sole governance
+  hold. The direct-runtime operator is calibration-ready-data-limited and
+  partially identifiable. Native source sufficiency remains unassessed;
+  source authority and empirical fitting remain blocked.
+- `20260728-canopy-litter-source-authority-001/` -
+  COMPLETE / EXTERNAL-BOUNDARY IMPLEMENTED / PREDICTIVE AUTHORITY HOLD:
+  authenticated literature still does not authorize predictive needle or
+  fine-woody ground-deposition laws. Under explicit operator direction, the
+  package implemented a provenance-bound identity-only prescribed or
+  exhaustive measured-daily interface through real residue/frost/erosion
+  consumers. All initial terminal findings were corrected; both independent
+  re-reviews and both re-verifications pass. No operator article acquisition
+  is currently required.
 - `20260726-canopy-cal-01-source-target-ledger-001/` -
   COMPLETE / PASS: canopy assurance roadmap Order 1
   preserves 19 hash-bound sources and a 140-row typed ledger, preserves the

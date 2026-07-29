@@ -15,6 +15,8 @@ pub struct HillslopePlRuntimeSurfaces {
     pub pl_schedule_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
     pub pl_growth_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
     pub pl_decomp_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub forest_litter_forcing:
+        BTreeMap<(usize, usize), openwepp_input_contract::parsers::management::ForestSurfaceLitterForcing>,
 }
 
 impl HillslopePlRuntimeSurfaces {
@@ -51,6 +53,8 @@ struct PlRuntimeSurfaceBuilder {
     schedule: BTreeMap<BoundarySymbol, BoundaryValue>,
     growth: BTreeMap<BoundarySymbol, BoundaryValue>,
     decomp: BTreeMap<BoundarySymbol, BoundaryValue>,
+    forest_litter_forcing:
+        BTreeMap<(usize, usize), openwepp_input_contract::parsers::management::ForestSurfaceLitterForcing>,
 }
 
 impl PlRuntimeSurfaceBuilder {
@@ -59,6 +63,7 @@ impl PlRuntimeSurfaceBuilder {
             pl_schedule_surface: self.schedule,
             pl_growth_surface: self.growth,
             pl_decomp_surface: self.decomp,
+            forest_litter_forcing: self.forest_litter_forcing,
         }
     }
 }
@@ -982,6 +987,11 @@ fn project_yearly_forest_slot(
         crop_slot_index,
         plant_forest,
     )?;
+    if let Some(forcing) = &plant_forest.surface_litter_forcing {
+        surfaces
+            .forest_litter_forcing
+            .insert((slot_index, crop_slot_index), forcing.as_ref().clone());
+    }
     project_decomposition_equation_symbols_forest(
         &mut surfaces.decomp,
         slot_index,

@@ -1,0 +1,8 @@
+claim_id,evidence_class,state,evidence
+NATIVE-LEAF-TRANSFER,Ran predecessor real-consumer,PASS,CAL03 rebuild-evidence.md sha256=68b3635c238488ab784abf54c021ca101bad22f6c8e1936d4afa03cb53054fb9
+NATIVE-LEAF-ANNUAL,Ran predecessor trace,PASS,CAL03 annual-diagnostics.csv sha256=e21a917c8e0c3c7dc37512a8c997ea0be1b55f8b0e5b12a5f8c5c2f199cd90b3
+RUNNER-RATE-PROJECTION,Ran focused runner test,PASS,nextest aad41808-006c-49fc-b2a4-2a81ac13278c; 1 passed
+DIRECT-RUNTIME-RESPONSE,Ran CAL05 producer,PASS,116800 daily candidate rows through R5C decomposition and residue partition
+DOWNSTREAM-PUBLICATION,Ran CAL05 reconstruction,PASS,all daily surface state equals downstream and flat-partition consumer value
+NATIVE-ENSEMBLE-CUSTODY,Static,PASS,37-member accepted ensemble sha256=83e749a3961604e4592f2a2217db30965c8bbb59f4752d0ff6d85fbac61fd986
+NATIVE-SOURCE-ENSEMBLE,Ran availability adjudication,NOT_ASSESSED,retained CAL04B membership does not contain authenticated member-level native litter traces; no synthetic substitution

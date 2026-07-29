@@ -271,14 +271,10 @@ fn csv_rows(path: &Path) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
 
 fn authority_digest(
     authority_path: &Path,
+    repository_root: &Path,
     input_id: &str,
     expected_path: &Path,
 ) -> Result<String, Box<dyn Error>> {
-    let authority_canonical = fs::canonicalize(authority_path)?;
-    let repository_root = authority_canonical
-        .parent()
-        .and_then(|parent| parent.ancestors().nth(4))
-        .ok_or("authority manifest is not under a repository docs/work-packages package")?;
     let rows = csv_rows(authority_path)?;
     if rows.first().map(Vec::as_slice)
         != Some(
@@ -317,7 +313,12 @@ fn authority_digest(
     } else {
         repository_root.join(recorded_path)
     };
-    if fs::canonicalize(recorded_path)? != fs::canonicalize(expected_path)? {
+    let recorded_canonical = fs::canonicalize(recorded_path)?;
+    let expected_canonical = fs::canonicalize(expected_path)?;
+    if !recorded_canonical.starts_with(repository_root)
+        || !expected_canonical.starts_with(repository_root)
+        || recorded_canonical != expected_canonical
+    {
         return Err(format!("authority manifest path differs for {input_id}").into());
     }
     let observed = sha256(expected_path)?;
@@ -346,20 +347,37 @@ pub fn read_authenticated_daymet(
     authority_path: &Path,
     authority_resolution_path: &Path,
 ) -> Result<Vec<DaymetLane>, Box<dyn Error>> {
-    let authority_canonical = fs::canonicalize(authority_path)?;
-    let repository_root = authority_canonical
+    let source_manifest_canonical = fs::canonicalize(source_manifest_path)?;
+    let repository_root = source_manifest_canonical
         .parent()
         .and_then(|parent| parent.ancestors().nth(4))
-        .ok_or("authority manifest is not under a repository docs/work-packages package")?;
-    authority_digest(authority_path, "daymet_derived", forcing_path)?;
+        .ok_or("source manifest is not under a repository docs/work-packages package")?;
+    if !repository_root.join("docs/work-packages").is_dir()
+        || !source_manifest_canonical.starts_with(repository_root)
+    {
+        return Err("source manifest repository root is invalid".into());
+    }
     authority_digest(
         authority_path,
+        repository_root,
+        "daymet_derived",
+        forcing_path,
+    )?;
+    authority_digest(
+        authority_path,
+        repository_root,
         "daymet_source_request_manifest",
         source_manifest_path,
     )?;
-    authority_digest(authority_path, "hubbard_plot_geometry", geometry_path)?;
     authority_digest(
         authority_path,
+        repository_root,
+        "hubbard_plot_geometry",
+        geometry_path,
+    )?;
+    authority_digest(
+        authority_path,
+        repository_root,
         "calibration_forcing_authority_resolution",
         authority_resolution_path,
     )?;
@@ -394,7 +412,10 @@ pub fn read_authenticated_daymet(
             || row[7] != "tmax|tmin|vp|dayl"
             || row[8] != "Daymet V4 R1"
             || row[12] != "VERIFIED"
-            || sha256(&repository_root.join(&row[10]))? != row[11]
+            || {
+                let source_path = fs::canonicalize(repository_root.join(&row[10]))?;
+                !source_path.starts_with(repository_root) || sha256(&source_path)? != row[11]
+            }
         {
             return Err(format!("invalid Daymet source row for {:?}", row.get(1)).into());
         }
@@ -604,10 +625,12 @@ pub fn arg_value(args: &[String], name: &str) -> Result<String, Box<dyn Error>> 
 mod tests {
     use super::{
         days_in_year, es, leap, ordinal, read_authenticated_daymet, require_calendar_extent,
-        validate_hubbard_lane_ids, Climate, CALIBRATION_MAGIC, DAYMET_SOURCE_DAYS_PER_LANE,
-        HOLDOUT_MAGIC,
+        validate_hubbard_lane_ids, Climate, CALIBRATION_MAGIC, DAYMET_LANE_COUNT,
+        DAYMET_SOURCE_DAYS_PER_LANE, HOLDOUT_MAGIC,
     };
+    use std::fs;
     use std::path::Path;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
     fn gregorian_leap_rules_and_ordinals_are_exact() {
@@ -705,5 +728,58 @@ mod tests {
         assert!(lanes
             .iter()
             .all(|lane| lane.forcing.len() == DAYMET_SOURCE_DAYS_PER_LANE));
+    }
+
+    #[test]
+    fn source_manifest_anchors_repository_when_authority_is_externally_published() {
+        let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let root = manifest_dir.ancestors().nth(5).expect("repository root");
+        let package = manifest_dir.ancestors().nth(2).expect("package root");
+        let predecessor = root.join(
+            "docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts",
+        );
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let external_root =
+            std::env::temp_dir().join(format!("cal04b-external-authority-{unique}"));
+        let external_artifacts =
+            external_root.join("publication/docs/work-packages/cal04b/artifacts");
+        fs::create_dir_all(&external_artifacts).expect("external authority directory");
+        let external_authority = external_artifacts.join("input-and-authority-manifest.csv");
+        fs::copy(
+            package.join("artifacts/input-and-authority-manifest.csv"),
+            &external_authority,
+        )
+        .expect("copy authority manifest");
+
+        let lanes = read_authenticated_daymet(
+            &predecessor.join("daymet-daily-derived.csv"),
+            &predecessor.join("hubbard-plot-geometry.csv"),
+            &predecessor.join("source-and-request-manifest.csv"),
+            &external_authority,
+            &package.join("artifacts/calibration-forcing-authority-resolution.md"),
+        )
+        .expect("external authority ledger must resolve repository inputs");
+        assert_eq!(lanes.len(), DAYMET_LANE_COUNT);
+
+        let authority_text =
+            fs::read_to_string(&external_authority).expect("read external authority");
+        let escaped = authority_text.replacen(
+            "docs/work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/artifacts/daymet-daily-derived.csv",
+            "../../../../etc/passwd",
+            1,
+        );
+        fs::write(&external_authority, escaped).expect("write traversal mutation");
+        assert!(read_authenticated_daymet(
+            &predecessor.join("daymet-daily-derived.csv"),
+            &predecessor.join("hubbard-plot-geometry.csv"),
+            &predecessor.join("source-and-request-manifest.csv"),
+            &external_authority,
+            &package.join("artifacts/calibration-forcing-authority-resolution.md"),
+        )
+        .is_err());
+        fs::remove_dir_all(&external_root).expect("remove bounded test directory");
     }
 }

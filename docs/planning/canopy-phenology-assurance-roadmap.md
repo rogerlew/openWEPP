@@ -1,6 +1,6 @@
 # Canopy Phenology Assurance Roadmap
 
-Status: **active scientific campaign roadmap** (2026-07-26).
+Status: **active scientific campaign roadmap** (2026-07-28).
 
 Evidence mode: **Ran evidence plus static synthesis** of the completed
 `CANOPY-PHENOLOGY-01` GSI kernel, completed `CANOPY-PHENOLOGY-02` native
@@ -397,27 +397,26 @@ credible.
 
 ## 6. Ordered Work Packages
 
-Orders 1 and 2 are complete; later rows are prospective. Every prospective row
-requires its own declared scope, evidence identity, gate plan, and disposition
-before execution.
+Orders 1 through 5 are complete; Orders 6 through 8 are prospective. Every
+prospective row requires its own declared scope, evidence identity, gate plan,
+and disposition before execution.
 
 | Order | Prospective package | Outcome | Advancement gate |
 | --- | --- | --- | --- |
 | 1 | [`CANOPY-CAL-01` source and target ledger](../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md) — **complete** | Bind Bill's exact sources, primary literature targets, units, uncertainties, comparison scales, and the 92/95 discrepancy. | Passed: no unsourced or cross-scale target carries calibration or validation. |
 | 2 | [`CANOPY-CAL-02` Elliot reproduction](../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md) — **complete / not reproducible** | Reproduce or truthfully bound the Hubbard and Santee biomass, residue, equilibrium, and downstream comparisons. | Passed: machine-readable runs and figures explain the mismatches; legacy recovery is closed. |
 | 3 | [`CANOPY-CAL-03` observation corpus, native fixtures, and research outputs](../work-packages/20260726-canopy-cal-03-observation-native-research-001/package.md) — **complete; CAL-04/05 authority blockers retained** | Installed provenance-bound phenology/LAI/canopy/litter observations, native YAML counterparts for selected canopy-gradient lanes, and a stable daily research-output surface. | Passed for CAL-03: immutable roles, protected bindings, real production consumers, mass/cohort closure, and deterministic rebuild. CAL-04 timing fitting and affected CAL-05 source/decay claims remain authority-blocked pending new independent evidence. |
-| 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / executed hold**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **active / tooling chain PASS; closeout resuming** | CAL-04 preserves the historical pre-candidate authority hold. CAL-04A admits checksum-bound Daymet forcing and the model-result-blind 9,261-vector GSI design. [`CAL04B-NATIVE-001`](../work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/package.md) and its assurance/TESTGATE correction chain pass. [`GATE-EXTERNAL-DAG-01`](../work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/package.md) failed closed; [`GATE-EXTERNAL-DAG-DC-01`](../work-packages/20260727-gate-planner-external-dag-closeout-correction-001/package.md) passes dual implementation review but its canonical plan omitted AUTH11. [`GATE-AUTH11-NODE-01`](../work-packages/20260727-gate-planner-auth11-terminal-node-selection-001/package.md) corrects selection/prerequisites and [`GATE-AUTH11-TEST-PROVIDER-01`](../work-packages/20260727-gate-planner-auth11-fixed-inventory-test-provider-001/package.md) restores its full planner suite. [`TESTGATE-LEDGER-BOOTSTRAP-01`](../work-packages/20260727-testgate-first-attempt-ledger-bootstrap-001/package.md) proves secure fresh-ledger creation, inherited-FD consumption, LIGHT PASS, and ten-check READY audit. [`ASSURANCE-V2-CLIPPY-LINE-01`](../work-packages/20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/package.md) restores strict workspace Clippy. [`TESTGATE-BOUND-LEDGER-CONTRACT-01`](../work-packages/20260727-testgate-bound-ledger-source-contract-alignment-001/package.md) closes the last stale source assertion with full 2,361/2,361 and canonical 12-node / 2,387-item PASS. Harvard remains sealed. | Close the assurance and ledger predecessors under their own write sets, complete AUTH11 and external-DAG closeout, restart the deterministic ensemble, independent reconstruction, readiness stages, freeze, two-verifier barrier, and one-time Harvard evaluation without changing the frozen design. |
-| 5 | `CANOPY-CAL-05` litter-source and decomposition adjudication — [authority package on hold](../work-packages/20260726-canopy-cal-04-05-authority-evidence-admission-001/package.md) | Retained Harvard and Hubbard Brook objects support source-sufficiency analysis, but decomposition fitting waits for tissue-separated fine-wood, bark, and reproductive litter mass on a stock-compatible basis. | Operator-supplied evidence resolves the pooled-material blocker; no unknown source is treated as zero or hidden in decay. |
+| 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / historical hold retained**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **complete / readiness pass / validation limitation retained** | CAL-04B evaluated all 9,261 frozen Hubbard candidates, independently reconstructed a 37-member accepted ensemble, propagated later-stage uncertainty, passed the freeze and two-verifier barrier, and scored Harvard once without refit. GSI timing and foliar/structural partition are empirically calibrated but partially identifiable; the remaining stages are calibration-ready and data-limited. Harvard aggregate errors span 43.48–72.46 days; 34/37 candidates have zero interval coverage and the maximum positive coverage is 18.81%, so independent transferability is unsupported. | Passed: execution, custody, terminal validation, dual scientific review, and dual verification. Retain the poor Harvard result as contrary evidence; do not refit or claim transferability. |
+| 5 | [`CANOPY-CAL-05` litter-source and decomposition readiness](../work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/package.md) — **complete / readiness pass**; [`CANOPY-LITTER-SOURCE-AUTHORITY-01`](../work-packages/20260728-canopy-litter-source-authority-001/package.md) — **complete / external boundary implemented / predictive authority hold retained** | Raw runtime, reconstruction, recovery, terminal ridge, failures, and Harvard diagnostics pass. The direct-runtime operator is calibration-ready-data-limited and partially identifiable. The successor implemented only authenticated exogenous daily forcing; native predictive source sufficiency remains authority-missing and empirical decomposition remains blocked. | Passed for the authenticated external boundary. Orders 6-8 may use it only with provenance-complete daily inputs; do not infer unavailable predictive source magnitudes or fit decomposition. |
 | 6 | `CANOPY-CAL-06` canopy-gradient congruence | Run conifer-mixed-deciduous-open within-site comparisons through canopy, ET/interception, snow, residue, frost, runoff, and erosion consumers. | Prespecified ordering and quantitative cells pass or are bounded with retained contrary evidence. |
 | 7 | `CANOPY-CAL-07` Southern Hemisphere robustness | Combine synthetic phase invariance with independent SH observational lanes and real downstream consumers. | Timing, phase, amplitude, mass closure, and consumer chronology pass without fixed dates or NH-only tuning. |
 | 8 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
 
-### 6.1 CANOPY-CAL-03 execution contract
+### 6.1 Completed CANOPY-CAL-03 execution contract
 
-CAL-03 is the immediate next package. It is an evidence and observability
-package, not a calibration package. A fresh executor must be able to complete
-it without reopening CAL-02 or inferring requirements from conversation
-history.
+At Order 3, CAL-03 was the evidence and observability package, not a calibration
+package. Its retained contract required a fresh executor to complete it without
+reopening CAL-02 or inferring requirements from conversation history.
 
 CAL-03 must deliver all of the following:
 
@@ -524,9 +523,10 @@ composition can reproduce both annual litter inputs and equilibrium storage,
 CAL-05 must recommend a contract package rather than compensate with
 unrealistic foliar mass or decay.
 
-If `CANOPY-CAL-05` identifies missing production physics, insert a bounded
-contract-and-implementation package before Orders 6-8. The roadmap does not
-pre-authorize that change or presume its outcome.
+`CANOPY-CAL-05` identified missing predictive source physics. The bounded
+`CANOPY-LITTER-SOURCE-AUTHORITY-01` successor subsequently implemented only
+the supported authenticated external boundary and retained the predictive
+authority hold.
 
 ## 7. Acceptance Rubric
 
@@ -571,6 +571,11 @@ pre-authorize that change or presume its outcome.
   canopy/litter state.
 - ET, interception, runoff, and erosion consequences are reported only after
   their upstream process cells pass.
+
+CAL-06 must publish the human-interpretation artifacts specified in the
+[`CANOPY-CAL-06 figure contract`](canopy-cal-06-figure-contract.md). The
+prospective [`experiment map`](figures/cal06-experiment-map.svg) shows the
+current site/stratum matrix and gated consumer sequence; it is not a result.
 
 ### 7.4 Southern Hemisphere cells
 
@@ -672,33 +677,26 @@ the snow/frost campaign.
 
 ## 10. Immediate Next Action
 
-Scaffold `CANOPY-CAL-03` as the observation-corpus, paired-fixture, and
-research-output package defined in Section 6.1. Its first increment must remain
-pre-calibration and make no parameter or physics change.
+Order 4 is complete with its poor Harvard transferability result retained and
+no refit.
 
-A fresh package author must begin from:
+Order 5, `CANOPY-CAL-05`, is complete. Under explicit operator direction,
+`CANOPY-LITTER-SOURCE-AUTHORITY-01` completed authority synthesis and
+implemented the supported identity-only prescribed/exhaustive-measured-daily
+external boundary on 2026-07-28. Initial terminal findings were corrected;
+both final independent re-reviews and both re-verifications passed, and the
+package is closed.
 
-- this roadmap;
-- completed
-  `../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md`;
-- completed
-  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md`;
-- CAL-02
-  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/cal03-handoff.md`,
-  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/reproduction-verdict.md`,
-  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/result-schema.md`,
-  and
-  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/litter-transfer-provenance.md`;
-- `tests/fixtures/cancov_forest/` and its nearest agent guidance;
-- the native management YAML and daily consumer implementations governed by
-  `SC-PLANT-001`, `SC-RESIDUE-001`, and
-  `SC-INFILE-MANAGEMENT-YAML-001`; and
-- the scientific-assurance v2 lifecycle and current testing/gate strategy.
+Current literature and state still do not authorize predictive needle or
+fine-woody ground-deposition laws. The external interface is a separate
+exogenous input and retains predictive-source incompleteness. Orders 6-8 must
+not infer unavailable source magnitudes, tissue partitions, carbon
+conversions, turnover laws, or fitted decay. No additional article is
+currently needed; lifting the predictive hold requires new species/site
+process evidence and branch/crown/stand state, not another broad turnover
+citation.
 
-Before implementation, CAL-03 must inventory candidate observations and
-fixtures, propose immutable calibration/holdout assignments, choose a
-campaign-confined versus public research-output surface, declare its complete
-write set, and authenticate its gate plan. The package is complete only when
-another agent can run the retained native fixtures, regenerate the tidy daily
-records and Bill-method diagnostics, trace every accepted target to authority,
-and reproduce the pre-calibration evidence without conversational context.
+Order 6, `CANOPY-CAL-06`, is the immediate next package. It must freeze the
+within-site gradient design, retain the full CAL-04B ensemble, carry CAL-05
+source completeness explicitly, and bind its result tables to the prospective
+human-interpretation figure contract before execution.

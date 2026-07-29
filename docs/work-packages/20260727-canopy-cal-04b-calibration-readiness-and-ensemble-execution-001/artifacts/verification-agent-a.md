@@ -1,23 +1,33 @@
 # Terminal Verification A
 
-Status: `PASS`
+Status: `PASS AFTER CORRECTION`
 
-Evidence class: `Ran`
+Evidence class: `Ran + Static`
 
-Reconstructed checks:
+The verifier independently checked the exact diff, package-local Rust/Python
+corrections, published hashes, external evidence roots, freeze chronology,
+retention identity, Git LFS object, and full-workspace evidence.
 
-- exactly four observed receipts exist; commands 1–3 are `PASS/0` and
-  native-proof is `FAIL/1`;
-- receipt/log/manifest hashes and all five incident-004 published hashes match;
-- native-default has 16,437 rows and 131,496 bit-exact compared values;
-  interior has 11,185 rows before the day-11,186 typed guard;
-- no later population, synthetic, reconstruction, readiness, freeze, holdout,
-  token, or digest artifact exists;
-- all 25 CAL-04B CSV files parse with consistent widths;
-- terminal-HOLD scaffold and executor validators, 15 Python tests, Markdown
-  lint for 39 CAL-04B + 25 successor + 2 catalog files, and diff hygiene pass;
-- the active CAL-04B kickoff is absent and its archived SHA-256 is
-  `102f5a6dc7dc3bf2ed0c71a563fdc0914a2b7d23eebc0a3f8a9a90429faff9c4`.
+One medium finding was accepted and closed. The frozen terminal validator's
+four-local-ULP-width comparison can admit more than four representable steps at
+a binade boundary. The freeze-bound source was preserved byte-for-byte:
+`validate.py` SHA-256
+`bfe5cc855f00d3c9b8e948429eb39415e43557dedf0db9fc22b3d7b81432c0c1`
+matches `freeze-custody-controls.csv`. A separate post-freeze exact-rank audit
+and cross-binade regressions prove all 1,598 finite objectives have step
+histogram `{0: 986, 1: 576, 2: 35, 3: 1}`.
 
-`TV-A-001` is closed by the exact current Markdown evidence. Harvard is sealed
-and the successor scaffold is complete. No blocker remains.
+Final verification confirms:
+
+- terminal validation passes for 9,261 calibration candidates, 37 accepted
+  members, 37 holdout rows, and 177 freeze members;
+- rejected pre-open freezes have no passing barrier, token, or holdout output;
+- the accepted digest has two distinct receipts before the durable token;
+- retention reconstructs raw SHA-256 `30d24d96...714620` and records the exact
+  absolute command;
+- package gates, 38 Python tests, 34 Rust tests, and the 2,101-test full profile
+  pass; and
+- no production, contract, protected fixture, or unrelated user-owned file is
+  in the package diff.
+
+No correctness or custody blocker remains. Harvard was not rerun.

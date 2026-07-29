@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -75,19 +76,52 @@ def main(argv: list[str] | None = None) -> int:
     if not configs.is_file() or not design.is_file():
         raise ValueError("synthetic inputs are absent")
     with design.open(newline="", encoding="utf-8") as stream:
-        rows = list(csv.DictReader(stream))
+        reader = csv.DictReader(stream)
+        design_fieldnames = reader.fieldnames
+        rows = list(reader)
     if len(rows) != 1:
         raise ValueError("synthetic design must contain exactly one case")
     row = rows[0]
     expected = {
         "case_id": "SYN-GSI-01",
+        "design_class": "ASSUMED_FOR_EXECUTION",
         "hidden_candidate": "GSI-5557",
-        "candidate_set": "GSI-0001|GSI-5557|GSI-9261",
+        "candidate_set": "GSI-0001|GSI-0064|GSI-5557|GSI-9261",
+        "finite_challenger_rule": (
+            "lexicographically first non-hidden grid candidate with exactly one eligible "
+            "crossing per year outside the hidden +/-2-day interval under the frozen "
+            "corrected forcing"
+        ),
         "start_date": "2001-01-01",
         "end_date": "2003-12-31",
         "latitude_degrees": "44.27",
+        "tmin_formula_c": "-2.0+12.0*sin(2*pi*(ordinal_day-80)/365)",
+        "vpd_formula_pa": "600.0-350.0*sin(2*pi*(ordinal_day-100)/365)",
+        "state_calendar_rule": (
+            "each candidate-year is a separate native GsiState cold start; admit ordinal "
+            "days 1-365 in order; no synthetic prefill or cross-year carry"
+        ),
+        "crossing_rule": (
+            "count every upward previous<0.5 and current>=0.5 crossing only on ordinal "
+            "days 60-180; hidden truth requires exactly one eligible crossing per year; "
+            "competitors use their first eligible crossing and retain the full count"
+        ),
+        "observation_operator": (
+            "for each of 3 complete calendar years: closed interval [hidden sole eligible "
+            "spring crossing-2 days;hidden sole eligible spring crossing+2 days]"
+        ),
+        "acceptance": "minimum equal-year interval RMSE set",
+        "required_result": (
+            "both independent reconstructors emit 4 candidate x 3 year completeness and "
+            "crossing counts; identical components/counts/minimum set; GSI-5557 has "
+            "exactly one eligible crossing per year, objective=0, and is included; "
+            "GSI-0064 has exactly one eligible crossing per year and finite objective>0; "
+            "boundary competitors retain missing-crossing failures"
+        ),
         "stage": "PRE_HUBBARD",
     }
+    if design_fieldnames != list(expected):
+        raise ValueError("synthetic design schema differs")
     for field, value in expected.items():
         if row.get(field) != value:
             raise ValueError(f"synthetic design {field} differs")
@@ -97,6 +131,8 @@ def main(argv: list[str] | None = None) -> int:
             str(BIN / "synthetic-trace"),
             "--configs",
             str(configs),
+            "--design",
+            str(design),
             "--trace",
             str(TRACE),
             "--identity",
@@ -112,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
             str(IDENTITY),
             "--configs",
             str(configs),
+            "--design",
+            str(design),
             "--out",
             str(PRIMARY),
         ]
@@ -125,6 +163,8 @@ def main(argv: list[str] | None = None) -> int:
             str(IDENTITY),
             "--configs",
             str(configs),
+            "--design",
+            str(design),
             "--primary",
             str(PRIMARY),
             "--out",
@@ -137,12 +177,17 @@ def main(argv: list[str] | None = None) -> int:
     verification = receipt(verification_path)
     common = (
         "state",
+        "schema",
         "case_id",
+        "design_sha256",
         "trace_sha256",
         "hidden_candidate",
         "hidden_objective",
+        "finite_challenger",
+        "finite_challenger_objective",
         "recovered_set",
         "nonvacuous_competitor",
+        "crossing_counts_sha256",
         "components_sha256",
         "annual_sha256",
         "candidate_ledger_sha256",
@@ -150,10 +195,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     if any(primary.get(field) != verification.get(field) for field in common):
         raise ValueError("synthetic reconstruction receipts differ")
+    challenger_objective = float(primary.get("finite_challenger_objective", "nan"))
     if (
         primary.get("state") != "PASS"
+        or primary.get("schema") != "SYN04B03"
+        or primary.get("design_sha256") != digest(design)
         or primary.get("hidden_candidate") != "GSI-5557"
         or primary.get("hidden_objective") != "0.000000000000"
+        or primary.get("finite_challenger") != "GSI-0064"
+        or not math.isfinite(challenger_objective)
+        or challenger_objective <= 0.0
         or "GSI-5557" not in primary.get("recovered_set", "").split("|")
         or primary.get("nonvacuous_competitor") != "TRUE"
         or verification.get("exact_primary_match") != "TRUE"

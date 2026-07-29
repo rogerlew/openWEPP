@@ -248,6 +248,27 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 month: day.month,
                 day_of_month: day.day_of_month,
                 daily,
+                leaf_litter_input_kg_m2: residue_cover_projection.leaf_litter_input_kg_m2,
+                needle_litter_input_kg_m2: (residue_cover_projection.needle_litter_status
+                    == "complete")
+                    .then_some(residue_cover_projection.needle_litter_input_kg_m2),
+                fine_woody_litter_input_kg_m2: (residue_cover_projection
+                    .fine_woody_litter_status
+                    == "complete")
+                    .then_some(residue_cover_projection.fine_woody_litter_input_kg_m2),
+                needle_litter_status: residue_cover_projection.needle_litter_status,
+                needle_litter_source_mode: residue_cover_projection.needle_litter_source_mode,
+                fine_woody_litter_status: residue_cover_projection.fine_woody_litter_status,
+                fine_woody_litter_source_mode: residue_cover_projection
+                    .fine_woody_litter_source_mode,
+                litter_source_completeness: if residue_cover_projection.needle_litter_status
+                    == "not_represented"
+                    || residue_cover_projection.fine_woody_litter_status == "not_represented"
+                {
+                    "incomplete"
+                } else {
+                    "complete"
+                },
                 #[cfg(test)]
                 canopy: daily.canopy,
                 snow_canopy_cover_fraction: growth_state_for_publication.canopy_cover_fraction,
@@ -680,20 +701,12 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 "et_leaf_area_index_m2_m2": day_frame.evapotranspiration_compute_inputs.leaf_area_index,
                 "et_canopy_cover_fraction": day_frame.evapotranspiration_compute_inputs.canopy_cover_fraction,
                 "runoff_m": day_frame.water.runoff_m,
-                "erosion_canopy_cover_fraction": day_frame.erosion_canopy_cover_fraction_consumed,
-                "frost_residue_depth_m": day_frame.frost_residue_depth_m_consumed
+                "erosion_canopy_cover_fraction": day_frame.erosion_daily_consumers.map(|consumers| consumers.canopy_cover_fraction),
+                "erosion_interrill_cover_fraction": day_frame.erosion_daily_consumers.map(|consumers| consumers.interrill_cover_fraction),
+                "erosion_rill_cover_fraction": day_frame.erosion_daily_consumers.map(|consumers| consumers.rill_cover_fraction),
+                "frost_residue_depth_m": day_frame.frost_daily_consumers.map(|consumers| consumers.residue_depth_m)
             },
-            "residue": {
-                "leaf_litter_input_kg_m2": day_frame.decomposition.surface_litter_input_kg_m2,
-                "needle_litter_input_kg_m2": serde_json::Value::Null,
-                "fine_woody_litter_input_kg_m2": serde_json::Value::Null,
-                "total_litter_input_kg_m2": day_frame.decomposition.surface_litter_input_kg_m2,
-                "surface_residue_before_kg_m2": day_frame.decomposition.surface_residue_seed_kg_m2,
-                "surface_residue_after_kg_m2": day_frame.decomposition.surface_residue_kg_m2,
-                "decomposition_loss_kg_m2": decomposition_loss_kg_m2,
-                "surface_decay_factor": day_frame.decomposition.surface_decay_factor,
-                "residue_depth_m": day_frame.decomposition.residue_depth_m
-            }
+            "residue": canopy_research_residue_value(day_frame, &builder, decomposition_loss_kg_m2)
         });
         validate_canopy_research_trace_value(&value)?;
         let mut line = serde_json::to_string(&value).map_err(|error| {
@@ -758,14 +771,70 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     }
 }
 
+fn canopy_research_residue_value(
+    day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
+    builder: &NativeCanopyBuilderTrace,
+    decomposition_loss_kg_m2: f64,
+) -> serde_json::Value {
+    let weight = day_frame
+        .residue_partition_inputs
+        .rescov_interrill_weight;
+    serde_json::json!({
+        "leaf_litter_input_kg_m2": builder.leaf_litter_input_kg_m2,
+        "needle_litter_input_kg_m2": builder.needle_litter_input_kg_m2,
+        "fine_woody_litter_input_kg_m2": builder.fine_woody_litter_input_kg_m2,
+        "needle_litter_status": builder.needle_litter_status,
+        "needle_litter_source_mode": builder.needle_litter_source_mode,
+        "fine_woody_litter_status": builder.fine_woody_litter_status,
+        "fine_woody_litter_source_mode": builder.fine_woody_litter_source_mode,
+        "source_completeness": builder.litter_source_completeness,
+        "total_litter_input_kg_m2": day_frame.decomposition.surface_litter_input_kg_m2,
+        "surface_residue_before_kg_m2": day_frame.decomposition.surface_residue_seed_kg_m2,
+        "surface_residue_after_kg_m2": day_frame.decomposition.surface_residue_kg_m2,
+        "interrill_ground_residue_before_kg_m2":
+            day_frame.decomposition_inputs.interrill_ground_seed_kg_m2,
+        "interrill_ground_residue_after_kg_m2":
+            day_frame.decomposition.interrill_ground_residue_kg_m2,
+        "rill_ground_residue_before_kg_m2":
+            day_frame.decomposition_inputs.rill_ground_seed_kg_m2,
+        "rill_ground_residue_after_kg_m2":
+            day_frame.decomposition.rill_ground_residue_kg_m2,
+        "weighted_ground_residue_after_kg_m2":
+            weight * day_frame.decomposition.interrill_ground_residue_kg_m2
+                + (1.0 - weight) * day_frame.decomposition.rill_ground_residue_kg_m2,
+        "residue_cover_factor_m2_kg": day_frame.decomposition.residue_cover_factor,
+        "rescov_interrill_weight": weight,
+        "interrill_cover_fraction": day_frame.residue_partition.interrill_cover_fraction,
+        "rill_cover_fraction": day_frame.residue_partition.rill_cover_fraction,
+        "composite_cover_fraction": day_frame.residue_partition.cover_fraction,
+        "residue_depth_conversion_m_per_kg_m2":
+            day_frame.decomposition.residue_depth_conversion_m_per_kg_m2,
+        "decomposition_loss_kg_m2": decomposition_loss_kg_m2,
+        "surface_decay_factor": day_frame.decomposition.surface_decay_factor,
+        "residue_depth_m": day_frame.decomposition.residue_depth_m
+    })
+}
+
 #[allow(clippy::items_after_statements, clippy::too_many_lines)]
 fn validate_canopy_research_trace_value(
     value: &serde_json::Value,
 ) -> Result<(), HillslopeCliError> {
-    const REQUIRED_STRINGS: &[&str] = &["/schema", "/date", "/site_id", "/arm_id"];
+    const REQUIRED_STRINGS: &[&str] = &[
+        "/schema",
+        "/date",
+        "/site_id",
+        "/arm_id",
+        "/residue/needle_litter_status",
+        "/residue/needle_litter_source_mode",
+        "/residue/fine_woody_litter_status",
+        "/residue/fine_woody_litter_source_mode",
+        "/residue/source_completeness",
+    ];
     const REQUIRED_NULLABLE_NUMBERS: &[&str] = &[
         "/consumers/erosion_canopy_cover_fraction",
         "/consumers/frost_residue_depth_m",
+        "/consumers/erosion_interrill_cover_fraction",
+        "/consumers/erosion_rill_cover_fraction",
         "/residue/needle_litter_input_kg_m2",
         "/residue/fine_woody_litter_input_kg_m2",
     ];
@@ -803,6 +872,17 @@ fn validate_canopy_research_trace_value(
         "/residue/total_litter_input_kg_m2",
         "/residue/surface_residue_before_kg_m2",
         "/residue/surface_residue_after_kg_m2",
+        "/residue/interrill_ground_residue_before_kg_m2",
+        "/residue/interrill_ground_residue_after_kg_m2",
+        "/residue/rill_ground_residue_before_kg_m2",
+        "/residue/rill_ground_residue_after_kg_m2",
+        "/residue/weighted_ground_residue_after_kg_m2",
+        "/residue/residue_cover_factor_m2_kg",
+        "/residue/rescov_interrill_weight",
+        "/residue/interrill_cover_fraction",
+        "/residue/rill_cover_fraction",
+        "/residue/composite_cover_fraction",
+        "/residue/residue_depth_conversion_m_per_kg_m2",
         "/residue/decomposition_loss_kg_m2",
         "/residue/surface_decay_factor",
         "/residue/residue_depth_m",
@@ -835,6 +915,61 @@ fn validate_canopy_research_trace_value(
             });
         }
     }
+    for (status_path, mode_path) in [
+        (
+            "/residue/needle_litter_status",
+            "/residue/needle_litter_source_mode",
+        ),
+        (
+            "/residue/fine_woody_litter_status",
+            "/residue/fine_woody_litter_source_mode",
+        ),
+    ] {
+        let status = value
+            .pointer(status_path)
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default();
+        let mode = value
+            .pointer(mode_path)
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default();
+        let valid = matches!(
+            (status, mode),
+            ("complete", "prescribed_scenario" | "measured_daily")
+                | ("not_represented" | "not_applicable", "none")
+        );
+        if !valid {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} invalid litter authority disclosure: {status_path}={status}, {mode_path}={mode}"
+                ),
+            });
+        }
+    }
+    let expected_completeness = if [
+        "/residue/needle_litter_status",
+        "/residue/fine_woody_litter_status",
+    ]
+    .iter()
+    .any(|path| value.pointer(path).and_then(serde_json::Value::as_str) == Some("not_represented"))
+    {
+        "incomplete"
+    } else {
+        "complete"
+    };
+    if value
+        .pointer("/residue/source_completeness")
+        .and_then(serde_json::Value::as_str)
+        != Some(expected_completeness)
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "canopy_research_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} litter source completeness does not match tissue status"
+            ),
+        });
+    }
     for path in REQUIRED_NULLABLE_NUMBERS {
         match value.pointer(path) {
             Some(serde_json::Value::Null) => {}
@@ -850,12 +985,50 @@ fn validate_canopy_research_trace_value(
             }
         }
     }
+    let leaf = value["residue"]["leaf_litter_input_kg_m2"]
+        .as_f64()
+        .unwrap_or(f64::NAN);
+    let tissue_mass = |name: &str| {
+        let status = value["residue"][format!("{name}_litter_status")]
+            .as_str()
+            .unwrap_or_default();
+        match (
+            status,
+            &value["residue"][format!("{name}_litter_input_kg_m2")],
+        ) {
+            ("complete", serde_json::Value::Number(number)) => number.as_f64(),
+            ("not_represented" | "not_applicable", serde_json::Value::Null) => Some(0.0),
+            _ => None,
+        }
+    };
+    let needle = tissue_mass("needle").unwrap_or(f64::NAN);
+    let fine_woody = tissue_mass("fine_woody").unwrap_or(f64::NAN);
+    let total = value["residue"]["total_litter_input_kg_m2"]
+        .as_f64()
+        .unwrap_or(f64::NAN);
+    let reconstructed = leaf + needle + fine_woody;
+    let tolerance = 32.0 * f64::EPSILON * total.abs().max(1.0);
+    if leaf < 0.0
+        || needle < 0.0
+        || fine_woody < 0.0
+        || total < 0.0
+        || (reconstructed - total).abs() > tolerance
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "canopy_research_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} litter source closure failed: leaf={leaf} needle={needle} fine_woody={fine_woody} total={total}"
+            ),
+        });
+    }
     fn visit(value: &serde_json::Value, path: &str) -> Result<(), HillslopeCliError> {
         match value {
             serde_json::Value::Null
                 if matches!(
                     path,
                     "/consumers/erosion_canopy_cover_fraction"
+                        | "/consumers/erosion_interrill_cover_fraction"
+                        | "/consumers/erosion_rill_cover_fraction"
                         | "/consumers/frost_residue_depth_m"
                         | "/residue/needle_litter_input_kg_m2"
                         | "/residue/fine_woody_litter_input_kg_m2"

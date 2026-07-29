@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
 
-PUBLISHABLE = frozenset(
+CALIBRATION_PUBLISHABLE = frozenset(
     {
         "accepted-calibration-ensemble.csv",
         "additional-data-inventory.csv",
@@ -22,7 +22,11 @@ PUBLISHABLE = frozenset(
         "candidate-configurations.csv",
         "candidate-ledger.csv",
         "failure-ledger.csv",
+        "freeze-verifier-receipts.csv",
         "gsi-domain-grid.csv",
+        "harvard-expected-input-manifest.csv",
+        "holdout-freeze-digest.txt",
+        "holdout-freeze-manifest.csv",
         "identifiability-and-equifinality.md",
         "input-and-authority-manifest.csv",
         "later-stage-membership.csv",
@@ -35,6 +39,15 @@ PUBLISHABLE = frozenset(
         "stage-status-ledger.csv",
         "synthetic-recovery-results.csv",
         "trace-retention.csv",
+    }
+)
+
+HOLDOUT_PUBLISHABLE = frozenset(
+    {
+        "harvard-holdout-results.csv",
+        "holdout-execution-receipt.csv",
+        "holdout-opening-record.md",
+        "holdout-validation-summary.md",
     }
 )
 
@@ -56,11 +69,11 @@ def source_artifacts(execution_root: Path) -> Path:
     )
 
 
-def inventory(source: Path) -> list[Path]:
+def inventory(source: Path, publishable: frozenset[str]) -> list[Path]:
     if not source.is_dir():
         raise ValueError(f"publication source is missing: {source}")
     paths: list[Path] = []
-    for name in sorted(PUBLISHABLE):
+    for name in sorted(publishable):
         path = source / name
         if path.exists():
             metadata = path.lstat()
@@ -70,7 +83,7 @@ def inventory(source: Path) -> list[Path]:
     unexpected = [
         path.name
         for path in source.iterdir()
-        if path.is_file() and path.name not in PUBLISHABLE
+        if path.is_file() and path.name not in publishable
     ]
     if unexpected:
         raise ValueError(f"unrecognized package result files: {sorted(unexpected)}")
@@ -100,30 +113,42 @@ def atomic_copy(source: Path, destination: Path) -> None:
             temporary.unlink()
 
 
-def publish(execution_root: Path, *, apply: bool, replace: bool) -> list[str]:
-    source = source_artifacts(execution_root)
+def publish(
+    execution_root: Path,
+    *,
+    holdout_output_root: Path | None = None,
+    apply: bool,
+    replace: bool,
+) -> list[str]:
+    sources = [(source_artifacts(execution_root), CALIBRATION_PUBLISHABLE)]
+    if holdout_output_root is not None:
+        sources.append(
+            (holdout_output_root.resolve(strict=True) / "artifacts", HOLDOUT_PUBLISHABLE)
+        )
     destination_root = PACKAGE / "artifacts"
     actions: list[str] = []
-    for item in inventory(source):
-        destination = destination_root / item.name
-        if destination.exists() and destination.is_symlink():
-            raise ValueError(f"publication destination is a symlink: {destination}")
-        if destination.is_file() and sha256_file(destination) == sha256_file(item):
-            actions.append(f"UNCHANGED {item.name}")
-            continue
-        if destination.exists() and not replace:
-            raise ValueError(
-                f"publication would replace differing result without --replace: {destination}"
-            )
-        actions.append(f"{'REPLACE' if destination.exists() else 'CREATE'} {item.name}")
-        if apply:
-            atomic_copy(item, destination)
+    for source, publishable in sources:
+        for item in inventory(source, publishable):
+            destination = destination_root / item.name
+            if destination.exists() and destination.is_symlink():
+                raise ValueError(f"publication destination is a symlink: {destination}")
+            if destination.is_file() and sha256_file(destination) == sha256_file(item):
+                actions.append(f"UNCHANGED {item.name}")
+                continue
+            if destination.exists() and not replace:
+                raise ValueError(
+                    f"publication would replace differing result without --replace: {destination}"
+                )
+            actions.append(f"{'REPLACE' if destination.exists() else 'CREATE'} {item.name}")
+            if apply:
+                atomic_copy(item, destination)
     return actions
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--execution-root", type=Path, required=True)
+    parser.add_argument("--holdout-output-root", type=Path)
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--replace", action="store_true")
     options = parser.parse_args(argv)
@@ -131,7 +156,10 @@ def main(argv: list[str] | None = None) -> int:
     if not execution_root.is_dir():
         raise ValueError("execution root must be an existing directory")
     actions = publish(
-        execution_root, apply=options.apply, replace=options.replace
+        execution_root,
+        holdout_output_root=options.holdout_output_root,
+        apply=options.apply,
+        replace=options.replace,
     )
     mode = "APPLIED" if options.apply else "PLAN"
     print(f"{mode} bounded CAL-04B publication files={len(actions)}")

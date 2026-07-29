@@ -54,6 +54,25 @@ class CalibrationValidationTests(unittest.TestCase):
         self.assertTrue(validate.exact_float("+infinity", math.inf))
         self.assertFalse(validate.exact_float("0.3", value))
 
+    def test_aggregate_float_tolerance_is_bounded_to_four_ulps(self) -> None:
+        expected = 60.0
+        within = expected
+        for _ in range(4):
+            within = math.nextafter(within, math.inf)
+        outside = math.nextafter(within, math.inf)
+        self.assertTrue(
+            validate.aggregate_float_within_ulps(format(within, ".17"), expected)
+        )
+        self.assertFalse(
+            validate.aggregate_float_within_ulps(format(outside, ".17"), expected)
+        )
+        self.assertTrue(
+            validate.aggregate_float_within_ulps("+infinity", math.inf)
+        )
+        self.assertFalse(
+            validate.aggregate_float_within_ulps("+infinity", expected)
+        )
+
     def test_authenticated_calibration_projection_is_complete(self) -> None:
         configs, observations, path = validate._load_calibration_inputs()
         self.assertEqual(len(configs), validate.CANDIDATE_COUNT)

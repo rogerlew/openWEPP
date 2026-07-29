@@ -1,5 +1,7 @@
 # Resume Intent
 
+Lifecycle: `HISTORICAL / EXECUTED / SUPERSEDED BY SUCCESSFUL FRESH ATTEMPT`
+
 Status: `PRE-HEAVY HOLD / TOOLING CORRECTION IN PROGRESS`
 
 Evidence class: `Static`
@@ -58,7 +60,9 @@ remain independent and read-only.
   advisories, bans, licenses, and sources all `ok`.
 - Markdown lint and diff hygiene: `PASS`.
 
-Harvard remains `SEALED`. No Hubbard population command has run.
+At this historical checkpoint Harvard remained `SEALED` and no Hubbard
+population command had run. The later fresh attempt, freeze, and one-time
+holdout supersede this checkpoint without erasing it.
 
 ## Resume Review Disposition
 

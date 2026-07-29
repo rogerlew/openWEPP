@@ -1,5 +1,7 @@
 # Worker Handoff
 
+Lifecycle: `HISTORICAL / EXECUTED / SUPERSEDED`
+
 Status: `FOLLOW-UP REQUIRES EXPLICIT SCIENCE AUTHORITY`
 
 Evidence class: `Static`
@@ -17,4 +19,6 @@ Evidence class: `Static`
    reconstruction, nonempty freeze, and two distinct verifier invocations pass.
 
 The production canopy-height defect from incident 004 is closed and is no
-longer the current prerequisite.
+longer the current prerequisite. The synthetic correction and fresh execution
+described above also completed; these instructions are retained only as the
+historical handoff that governed the resume.

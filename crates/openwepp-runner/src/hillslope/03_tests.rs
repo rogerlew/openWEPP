@@ -41,6 +41,7 @@ mod tests {
         include!("tests03/cqr_laned_active_outputs.rs");
     }
     include!("tests03/direct_publication_source_guards.rs");
+    include!("tests03/canopy_litter_boundary_helpers.rs");
 
     fn canonical_calendar_day_probe() -> ClimateDayProjection {
         ClimateDayProjection {
@@ -398,6 +399,7 @@ mod tests {
         );
         fs::copy(&management_source, temp_run_dir.join("case.man.yaml"))
             .expect("native forest management should copy into the run directory");
+        install_authenticated_litter_forcing(&temp_run_dir);
         let run_path = temp_run_dir.join("case.run");
         let run_text = fs::read_to_string(&run_path).expect("run file should be readable");
         fs::write(
@@ -483,6 +485,114 @@ mod tests {
             Some("native_forest")
         );
         assert_eq!(
+            first_research
+                .pointer("/residue/needle_litter_status")
+                .and_then(serde_json::Value::as_str),
+            Some("complete")
+        );
+        assert_eq!(
+            first_research
+                .pointer("/residue/needle_litter_source_mode")
+                .and_then(serde_json::Value::as_str),
+            Some("prescribed_scenario")
+        );
+        assert_eq!(
+            first_research
+                .pointer("/residue/fine_woody_litter_status")
+                .and_then(serde_json::Value::as_str),
+            Some("complete")
+        );
+        let research_number = |path: &str| {
+            first_research
+                .pointer(path)
+                .and_then(serde_json::Value::as_f64)
+                .unwrap_or_else(|| panic!("research trace must expose numeric {path}"))
+        };
+        assert_eq!(
+            research_number("/residue/needle_litter_input_kg_m2").to_bits(),
+            0.002_f64.to_bits()
+        );
+        assert_eq!(
+            research_number("/residue/fine_woody_litter_input_kg_m2").to_bits(),
+            0.003_f64.to_bits()
+        );
+        let total_litter = research_number("/residue/total_litter_input_kg_m2");
+        let reconstructed_sources =
+            research_number("/residue/leaf_litter_input_kg_m2") + 0.002 + 0.003;
+        assert!((total_litter - reconstructed_sources).abs() <= 1.0e-15);
+        let decay = research_number("/residue/surface_decay_factor");
+        for (before, after) in [
+            (
+                "/residue/surface_residue_before_kg_m2",
+                "/residue/surface_residue_after_kg_m2",
+            ),
+            (
+                "/residue/interrill_ground_residue_before_kg_m2",
+                "/residue/interrill_ground_residue_after_kg_m2",
+            ),
+            (
+                "/residue/rill_ground_residue_before_kg_m2",
+                "/residue/rill_ground_residue_after_kg_m2",
+            ),
+        ] {
+            let independently_reconstructed = (research_number(before) + total_litter) * decay;
+            assert!(
+                (research_number(after) - independently_reconstructed).abs() <= 1.0e-12,
+                "{after} must consume the same independently reconstructed daily source"
+            );
+        }
+        let interrill_mass =
+            research_number("/residue/interrill_ground_residue_after_kg_m2");
+        let rill_mass = research_number("/residue/rill_ground_residue_after_kg_m2");
+        let weight = research_number("/residue/rescov_interrill_weight");
+        let cover_factor = research_number("/residue/residue_cover_factor_m2_kg");
+        let expected_interrill_cover = (1.0 - (-cover_factor * interrill_mass).exp()).min(0.999);
+        let expected_rill_cover = (1.0 - (-cover_factor * rill_mass).exp()).min(0.999);
+        let expected_weighted_mass = weight * interrill_mass + (1.0 - weight) * rill_mass;
+        let expected_composite_cover =
+            weight * expected_interrill_cover + (1.0 - weight) * expected_rill_cover;
+        for (label, actual, expected) in [
+            (
+                "interrill cover reconstruction",
+                research_number("/residue/interrill_cover_fraction"),
+                expected_interrill_cover,
+            ),
+            (
+                "rill cover reconstruction",
+                research_number("/residue/rill_cover_fraction"),
+                expected_rill_cover,
+            ),
+            (
+                "weighted ground-mass reconstruction",
+                research_number("/residue/weighted_ground_residue_after_kg_m2"),
+                expected_weighted_mass,
+            ),
+            (
+                "composite cover reconstruction",
+                research_number("/residue/composite_cover_fraction"),
+                expected_composite_cover,
+            ),
+            (
+                "residue-depth conversion",
+                research_number("/residue/residue_depth_m"),
+                research_number("/residue/surface_residue_after_kg_m2")
+                    * research_number("/residue/residue_depth_conversion_m_per_kg_m2"),
+            ),
+        ] {
+            assert!(
+                (actual - expected).abs() <= 1.0e-12,
+                "{label}: expected {expected:.17}, observed {actual:.17}"
+            );
+        }
+        assert_eq!(
+            first_research.pointer("/consumers/erosion_interrill_cover_fraction"),
+            first_research.pointer("/residue/interrill_cover_fraction")
+        );
+        assert_eq!(
+            first_research.pointer("/consumers/erosion_rill_cover_fraction"),
+            first_research.pointer("/residue/rill_cover_fraction")
+        );
+        assert_eq!(
             first_research.pointer("/canopy/total_foliar_biomass_kg_m2"),
             first_research.pointer("/consumers/growth_live_foliar_biomass_kg_m2")
         );
@@ -510,6 +620,13 @@ mod tests {
             );
         };
         let first = traces[0];
+        assert_eq!(first.builder.needle_litter_status, "complete");
+        assert_eq!(first.builder.needle_litter_source_mode, "prescribed_scenario");
+        assert_eq!(first.builder.fine_woody_litter_status, "complete");
+        assert_eq!(
+            first.builder.fine_woody_litter_source_mode,
+            "prescribed_scenario"
+        );
         assert_close(
             "cold-start leaf-on allocation",
             first.builder.canopy.leaf_on_allocation_kg_m2,
@@ -625,9 +742,17 @@ mod tests {
                 );
             }
             assert_close(
-                "leaf-off litter decomposition handoff",
+                "three-source litter decomposition handoff",
                 trace.decomposition_litter_kg_m2,
-                canopy.leaf_off_litter_kg_m2,
+                canopy.leaf_off_litter_kg_m2
+                    + trace
+                        .builder
+                        .needle_litter_input_kg_m2
+                        .expect("complete needle forcing publishes a number")
+                    + trace
+                        .builder
+                        .fine_woody_litter_input_kg_m2
+                        .expect("complete fine-woody forcing publishes a number"),
             );
             assert_close(
                 "surface residue consumer",
@@ -703,6 +828,96 @@ mod tests {
                 .any(|trace| trace.builder.canopy.leaf_off_litter_kg_m2 > 1.0e-12),
             "the real direct run must exercise a nonzero leaf-off residue handoff"
         );
+
+        fs::copy(&management_source, temp_run_dir.join("case.man.yaml"))
+            .expect("unrepresented-source management should restore");
+        let incomplete_trace_path = temp_run_dir.join("canopy-research-incomplete.jsonl");
+        set_canopy_research_trace_test_config(Some(CanopyResearchTraceConfig {
+            path: incomplete_trace_path.clone().into_os_string(),
+            site_id: "test_site".to_string(),
+            arm_id: "native_forest_incomplete_sources".to_string(),
+        }));
+        execute_hillslope_run_with_runtime_policy(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir.clone(),
+                run_file: PathBuf::from("case.run"),
+                output_dir: temp_run_dir.join("output-incomplete"),
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelectionPolicy::default(),
+        )
+        .expect("explicit unrepresented litter sources should remain executable and disclosed");
+        set_canopy_research_trace_test_config(None);
+        let incomplete_text =
+            fs::read_to_string(incomplete_trace_path).expect("incomplete trace should exist");
+        let incomplete: serde_json::Value = serde_json::from_str(
+            incomplete_text
+                .lines()
+                .next()
+                .expect("incomplete trace should contain a record"),
+        )
+        .expect("incomplete trace should be JSON");
+        for tissue in ["needle", "fine_woody"] {
+            assert_eq!(
+                incomplete
+                    .pointer(&format!("/residue/{tissue}_litter_status"))
+                    .and_then(serde_json::Value::as_str),
+                Some("not_represented")
+            );
+            assert_eq!(
+                incomplete.pointer(&format!("/residue/{tissue}_litter_input_kg_m2")),
+                Some(&serde_json::Value::Null),
+                "unrepresented tissue must not publish a numeric zero"
+            );
+        }
+        assert_eq!(
+            incomplete
+                .pointer("/residue/source_completeness")
+                .and_then(serde_json::Value::as_str),
+            Some("incomplete")
+        );
+
+        install_authenticated_litter_forcing(&temp_run_dir);
+        let boundary_path = temp_run_dir.join("case.man.yaml");
+        let boundary = fs::read_to_string(&boundary_path)
+            .expect("authenticated boundary management should read")
+            .replace("support_end: \"2000-01-02\"", "support_end: \"2000-01-01\"")
+            .replace(
+                "ca265fed6835ac2edd0ef88dcf306999820cf8ffbaec83c6da7428a71c5b1e1a",
+                "3143a1e140f0e45046aad80cbd94c54dafa60699a20504052d1d0c33514d6b73",
+            )
+            .replace(
+                "b3a5cef1814e4b2729e7e2ee534f2144b50dce03504e973d080830fdfd1ce23c",
+                "3ec7442078217509fa5c91642dc6f874456c16bc324592215bd678ab848bbc47",
+            );
+        fs::write(&boundary_path, boundary).expect("narrow support management should write");
+        fs::write(
+            temp_run_dir.join("needle.csv"),
+            "date,deposited_kg_m2\n2000-01-01,0.002\n",
+        )
+        .expect("narrow needle forcing should write");
+        fs::write(
+            temp_run_dir.join("fine-woody.csv"),
+            "date,deposited_kg_m2\n2000-01-01,0.003\n",
+        )
+        .expect("narrow fine-woody forcing should write");
+        let outside_error = execute_hillslope_run_with_runtime_policy(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir.clone(),
+                run_file: PathBuf::from("case.run"),
+                output_dir: temp_run_dir.join("output-outside-support"),
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelectionPolicy::default(),
+        )
+        .expect_err("runtime access outside authenticated support must fail");
+        assert!(outside_error.to_string().contains("outside authenticated support"));
     }
 
     fn r5c_day_span_run_count() -> u64 {
@@ -1310,6 +1525,7 @@ mod tests {
             oratea: 0.0,
             orater: 0.0,
             forest_phenology: None,
+            forest_litter_forcing: None,
         }
     }
 
@@ -2081,6 +2297,7 @@ mod tests {
                 pl_schedule_surface: BTreeMap::new(),
                 pl_growth_surface: BTreeMap::new(),
                 pl_decomp_surface: BTreeMap::new(),
+                forest_litter_forcing: BTreeMap::new(),
             };
         cqr_row7_insert_projection_scalar(
             &mut projection.pl_schedule_surface,
@@ -2254,9 +2471,12 @@ mod tests {
         };
         let before = cqr_row7_growth_surface(2.0);
         let after = cqr_row7_growth_surface(1.5);
+        let calendar_day = canonical_calendar_day_probe();
 
         let in_window = direct_production_surface_litter_projection(
             Some(&crop),
+            &calendar_day,
+            1,
             100,
             residue,
             before,
@@ -2275,6 +2495,8 @@ mod tests {
 
         let out_of_window = direct_production_surface_litter_projection(
             Some(&crop),
+            &calendar_day,
+            1,
             1,
             residue,
             before,
@@ -2291,15 +2513,25 @@ mod tests {
             0.7_f64.to_bits()
         );
 
-        let no_crop =
-            direct_production_surface_litter_projection(None, 1, residue, before, after, None)
-                .expect("non-scheduled crop should emit daily litter directly");
+        let no_crop = direct_production_surface_litter_projection(
+            None,
+            &calendar_day,
+            1,
+            1,
+            residue,
+            before,
+            after,
+            None,
+        )
+        .expect("non-scheduled crop should emit daily litter directly");
         let native_residue = DirectProductionResidueCoverState {
             pending_surface_litter_kg_m2: 0.0,
             ..residue
         };
         let native = direct_production_surface_litter_projection(
             Some(&crop),
+            &calendar_day,
+            1,
             1,
             native_residue,
             before,
@@ -2318,6 +2550,8 @@ mod tests {
         assert!(
             direct_production_surface_litter_projection(
                 Some(&crop),
+                &calendar_day,
+                1,
                 1,
                 residue,
                 before,
