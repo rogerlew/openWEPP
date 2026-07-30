@@ -330,6 +330,18 @@
 
 State as of `2026-07-30 UTC`:
 
+- `20260730-snow-surface-eb-01a-longwave-authority-research-001/` -
+  COMPLETE / PASS: selected the authoritative two-component, stand-scale
+  sub-canopy longwave formulation; resolved atmospheric-longwave and
+  canopy-temperature source routes; excluded explicit trunks from the first
+  hillslope candidate; and admitted an FSM2-based diffuse-transmission route
+  for deriving radiometric sky view from existing canopy state. EB-02 is
+  admitted for canonical-contract research, while runtime implementation
+  remains held on the exact canopy-state mapping, contract-matched cloud
+  mapping, and an active snow-surface-temperature provider. The mapping may
+  use existing canopy cover, LAI, structural cover, and scientifically
+  relevant height, but may not directly alias canopy cover to hemispherical
+  sky view. It requires no new user coefficient or remote-sensing dataset.
 - `20260729-snow-surface-eb-01-reconciliation-factorial-design-001/` -
   COMPLETE / PASS: reconciled snow surface-energy, sublimation, selectors,
   observations, and authority; derived evidence from retained inputs; and

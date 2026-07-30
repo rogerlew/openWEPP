@@ -1,0 +1,10 @@
+source_id,citation,source_bytes,load_bearing_use,evidence_scope,disposition
+ESSERY2008,Essery et al. 2008 10.1002/hyp.6930,official author manuscript,view-factor integral and two-component equation,Scottish conifer sites including gap and slope,ADMIT
+SICART2004,Sicart et al. 2004 10.1175/1525-7541(2004)005<0774:ASSODN>2.0.CO;2,official author manuscript,net-radiation composition and emissivity context,dense spruce and lodgepole pine during melt,ADMIT_SUPPORTING
+FLERCHINGER2009,Flerchinger et al. 2009 10.1029/2008WR007394,repository copy plus corrected version-of-record HTML,atmospheric longwave estimator selection and error,21 development sites plus independent sites across climates,ADMIT
+LUNDQUIST2013,Lundquist et al. 2013 10.1002/wrcr.20504,local full paper,forest-snow composition and proxy caveat,global plot framework with operational simplifying assumptions,ADMIT_SUPPORTING
+WEBSTER2016,Webster et al. 2016 10.1002/2015JD024099,official publisher manuscript,three-component trunk alternative and insolation failure mode,three Swiss Alpine forest sites,ADMIT_SCOPE
+MUSSELMAN2017,Musselman and Pomeroy 2017 10.1175/JHM-D-16-0111.1,official institutional full paper,process canopy/trunk temperatures and spatial view influence,single sun-exposed Engelmann spruce edge for five spring days,ADMIT_SCOPE
+RUTTER2023,Rutter et al. 2023 10.1029/2022JD037980,open publisher version,stand-scale formulation and canopy-temperature regime,continuous leaf-off birch and conifer stands in Sweden and Finland,ADMIT_PRIMARY
+ESSERY2025,Essery et al. 2025 10.5194/gmd-18-3583-2025,open publisher HTML,diffuse canopy transmission from effective vegetation area index,FSM2 stand-scale one- and two-layer forest canopy model,ADMIT_MAPPING_BASE
+POMEROY2009,Pomeroy et al. 2009 10.1002/hyp.7325,official abstract only,sunlit trunk warning,Canadian conifer forest,NON_LOAD_BEARING_CORROBORATION
