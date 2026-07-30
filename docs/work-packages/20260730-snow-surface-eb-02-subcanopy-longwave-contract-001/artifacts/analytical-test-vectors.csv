@@ -1,0 +1,39 @@
+case_id,category,inputs,expected,observed,units,status
+sky_view_c0,sky_view,C=0.000000,1.000000000000,1.000000000000,fraction,PASS
+sky_view_c0.2,sky_view,C=0.200000,0.699751727324,0.699751727324,fraction,PASS
+sky_view_c0.5,sky_view,C=0.500000,0.329876977693,0.329876977693,fraction,PASS
+sky_view_c0.9,sky_view,C=0.900000,0.025118864315,0.025118864315,fraction,PASS
+sky_view_c0.999,sky_view,C=0.999000,0.000015848932,0.000015848932,fraction,PASS
+cloud_kt1.1,cloud_mapping,k_t=1.100000,0.000000000000,0.000000000000,fraction,PASS
+cloud_kt0.8,cloud_mapping,k_t=0.800000,0.000000000000,0.000000000000,fraction,PASS
+cloud_kt0.475,cloud_mapping,k_t=0.475000,0.500000000000,0.500000000000,fraction,PASS
+cloud_kt0.15,cloud_mapping,k_t=0.150000,1.000000000000,1.000000000000,fraction,PASS
+cloud_kt0,cloud_mapping,k_t=0.000000,1.000000000000,1.000000000000,fraction,PASS
+water_reference,atmospheric,hour_T_a=273.15;daily_e_a=0.611,10.401427786930,10.401427786930,kg m^-2,PASS
+clear_reference,atmospheric,hour_T_a=273.15;daily_e_a=0.611,235.596641453254,235.596641453254,W m^-2,PASS
+cloud_reference,atmospheric,daily_k_t=0.475,0.500000000000,0.500000000000,fraction,PASS
+all_sky_reference,atmospheric,hour_T_a=273.15;daily_e_a=0.611;daily_k_t=0.475,269.222337409225,269.222337409225,W m^-2,PASS
+all_sky_cold_hour,atmospheric_cadence,hour_T_a=263.15;daily_e_a=0.611;daily_k_t=0.475,238.311138592317,238.311138592317,W m^-2,PASS
+all_sky_warm_hour,atmospheric_cadence,hour_T_a=283.15;daily_e_a=0.611;daily_k_t=0.475,304.957360458777,304.957360458777,W m^-2,PASS
+daily_mean_temperature_substitution_bias,atmospheric_cadence,mean(hour_T_a)=273.15;compare mean(hour_L) against L(mean_T),2.411912116322,2.411912116322,W m^-2,PASS
+subcanopy_c0,longwave_mixture,C=0.000000;L_atm=269.222337409;T_c=271.15,269.222337409225,269.222337409225,W m^-2,PASS
+net_c0,net_longwave,C=0.000000;T_s=268.15,-23.949967759869,-23.949967759869,W m^-2,PASS
+subcanopy_c0.5,longwave_mixture,C=0.500000;L_atm=269.222337409;T_c=271.15,294.212270964908,294.212270964908,W m^-2,PASS
+net_c0.5,net_longwave,C=0.500000;T_s=268.15,1.039965795814,1.039965795814,W m^-2,PASS
+subcanopy_c0.9,longwave_mixture,C=0.900000;L_atm=269.222337409;T_c=271.15,305.577176736476,305.577176736476,W m^-2,PASS
+net_c0.9,net_longwave,C=0.900000;T_s=268.15,12.404871567381,12.404871567381,W m^-2,PASS
+invalid_cover_negative,guard,C=-0.01,ValueError,ValueError,not applicable,PASS
+invalid_cover_closed,guard,C=1.0,ValueError,ValueError,not applicable,PASS
+invalid_cover_nan,guard,C=NaN,ValueError,ValueError,not applicable,PASS
+invalid_air_temperature_zero,guard,hour_T_a=0,ValueError,ValueError,not applicable,PASS
+invalid_air_temperature_nan,guard,hour_T_a=NaN,ValueError,ValueError,not applicable,PASS
+invalid_vapor_pressure,guard,daily_e_a=-0.1,ValueError,ValueError,not applicable,PASS
+atmospheric_out_of_authority,guard,hour_T_a=100;daily_e_a=0,AtmosphericStateOutOfAuthority,AtmosphericStateOutOfAuthority,not applicable,PASS
+invalid_solar_radiation,guard,R_s=-0.1;R_a=10,ValueError,ValueError,not applicable,PASS
+invalid_extraterrestrial_radiation,guard,R_s=0;R_a=-0.1,ValueError,ValueError,not applicable,PASS
+invalid_clearness_nan,guard,k_t=NaN,ValueError,ValueError,not applicable,PASS
+polar_night_cloud,guard,daylight=false;R_a=0;R_a_min=1e-9_ASSUMED_FOR_EXECUTION,CloudForcingUnavailable,CloudForcingUnavailable,not applicable,PASS
+invalid_canopy_temperature,guard,T_c=0,ValueError,ValueError,not applicable,PASS
+invalid_snow_temperature,guard,T_s=0,ValueError,ValueError,not applicable,PASS
+invalid_atmospheric_flux,guard,L_atm=NaN,ValueError,ValueError,not applicable,PASS
+missing_thermal_provider,governance,T_s unavailable,no production L_net,RUNTIME_HOLD,not applicable,HOLD

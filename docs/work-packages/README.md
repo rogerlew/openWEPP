@@ -330,6 +330,14 @@
 
 State as of `2026-07-30 UTC`:
 
+- `20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` -
+  COMPLETE / CONTRACT PASS / RUNTIME HOLD: registered
+  `SC-SNOWENERGY-001`, binding hourly Dilley-Unsworth atmospheric longwave,
+  existing-cover-derived diffuse sky view, complementary canopy emission,
+  units, guards, cadence, and approximation limits. Thirty-eight analytical
+  vectors and two figures with sidecars pass corrected dual review and dual
+  terminal verification. Production wiring remains excluded until EB-03 binds
+  the shared thermal/cloud provider.
 - `20260730-snow-surface-eb-01a-longwave-authority-research-001/` -
   COMPLETE / PASS: selected the authoritative two-component, stand-scale
   sub-canopy longwave formulation; resolved atmospheric-longwave and

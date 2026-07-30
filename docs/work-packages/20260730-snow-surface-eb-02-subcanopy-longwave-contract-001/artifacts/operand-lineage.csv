@@ -1,0 +1,18 @@
+operand,units,basis,source,authority_status,consumer_status
+air_temperature_k,K,hourly above-canopy air temperature,climate forcing,BOUND,RUNTIME_PREREQUISITE
+vapor_pressure_kpa,kPa,daily actual vapor pressure held across hourly evaluations,climate forcing or typed psychrometric derivation,BOUND,RUNTIME_PREREQUISITE
+solar_radiation_mj_m2_day,MJ m^-2 d^-1,daily incident shortwave,climate forcing,BOUND,RUNTIME_PREREQUISITE
+extraterrestrial_radiation_mj_m2_day,MJ m^-2 d^-1,daily solar geometry,solar geometry provider,BOUND,RUNTIME_PREREQUISITE
+clearness_index,dimensionless,incident divided by extraterrestrial radiation under valid daylight,derived,BOUND,RUNTIME_PREREQUISITE
+cloud_fraction,fraction,bounded daily Flerchinger mapping from clearness index,derived,BOUND,RUNTIME_PREREQUISITE
+atmospheric_effective_emissivity,dimensionless,variable corrected Dilley-O'Brien plus Unsworth-Monteith result,derived,BOUND,RUNTIME_PREREQUISITE
+atmospheric_longwave_w_m2,W m^-2,hourly corrected Dilley-O'Brien plus Unsworth-Monteith using daily cloud and vapor state,derived,BOUND,RUNTIME_PREREQUISITE
+canopy_cover_fraction,fraction,effective overhead canopy interception with structural floor,native canopy realization and SC-PLANT-001,BOUND,AVAILABLE
+leaf_area_index,m^2 m^-2,seasonal foliage state,native canopy realization,DIAGNOSTIC_ONLY,AVAILABLE
+structural_canopy_cover_fraction,fraction,leaf-off effective cover floor,native canopy parameters,ALREADY_IN_EFFECTIVE_COVER,AVAILABLE
+canopy_height_m,m,descriptive canopy height,native canopy state,DIAGNOSTIC_ONLY,AVAILABLE
+subcanopy_sky_view_fraction,fraction,(1-C)^1.6 derived diffuse transmission,SC-SNOWENERGY-001,BOUND,NOT_IMPLEMENTED
+canopy_temperature_k,K,effective radiating canopy temperature,EB-03 selected provider,BOUNDARY_ONLY,UNRESOLVED_PROVIDER
+snow_surface_temperature_k,K,radiating snow-surface temperature,EB-03 selected provider,BOUNDARY_ONLY,UNRESOLVED_PROVIDER
+subcanopy_longwave_w_m2,W m^-2,complementary sky and canopy exchange,SC-SNOWENERGY-001,BOUND,NOT_IMPLEMENTED
+net_longwave_w_m2,W m^-2,subcanopy incoming minus snow outgoing,SC-SNOWENERGY-001,BOUND,NOT_IMPLEMENTED
