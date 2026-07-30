@@ -70,7 +70,9 @@ def load_receipt(path: Path) -> tuple[dict[str, object], bytes, str]:
         "gate_ids",
         "gate_argv",
     }
-    if set(value) != required or value["schema_version"] != 1:
+    if value.get("schema_version") == 2:
+        required |= {"old_roots", "new_roots"}
+    if set(value) != required or value["schema_version"] not in {1, 2}:
         raise ValueError("receipt field set or schema version is invalid")
     if not value["changed"]:
         raise ValueError("no-op receipts do not require a focused gate")

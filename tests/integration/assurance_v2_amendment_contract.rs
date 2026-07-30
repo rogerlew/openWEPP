@@ -4,14 +4,245 @@ use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use openwepp_assurance::{
-    V2AmendMode, adopt_report_source, adopt_report_source_at_generation, amend_attribution,
-    amend_attribution_at_generation, amend_lifecycle, amend_principal, amend_role, inspect_report,
-    rebind_implementation, recover_amendment, sha256_bytes, verify_generation,
+    V2AmendMode, admit_report_at_generation, adopt_report_source,
+    adopt_report_source_at_generation, amend_attribution, amend_attribution_at_generation,
+    amend_lifecycle, amend_principal, amend_role, inspect_report, rebind_implementation,
+    recover_amendment, sha256_bytes, verify_generation,
 };
 
+const CANOPY: &str = "native-forest-canopy-phenology-evaluation";
 const GROUNDWATER: &str = "linear-groundwater-reservoir-recurrence";
 const SNOW: &str = "snow-and-frozen-soil-process-evaluation";
 const BASE_REF: &str = "15763d7f6d5d4125333d9b7583424c714f5f5ea4";
+
+#[test]
+fn new_report_admission_checks_applies_and_repeats_as_no_op() {
+    let (fixture, manifest) = admission_fixture();
+    assert_admission_rejects_invalid_sources(&fixture, &manifest);
+    assert_admission_transaction(&fixture, &manifest);
+}
+
+fn admission_fixture() -> (Scratch, PathBuf) {
+    let fixture = fixture("assurance-admit-report");
+    let catalog_path = fixture.path.join("assurance/v2/catalog.yaml");
+    let mut catalog: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&catalog_path).unwrap()).unwrap();
+    catalog["reports"]
+        .as_sequence_mut()
+        .unwrap()
+        .retain(|entry| entry["id"].as_str() != Some(CANOPY));
+    fs::write(&catalog_path, serde_yaml::to_string(&catalog).unwrap()).unwrap();
+    fs::remove_file(
+        fixture
+            .path
+            .join(format!("assurance/v2/reports/{CANOPY}/review.lock.json")),
+    )
+    .unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(&fixture.path).unwrap();
+
+    let manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));
+    (fixture, manifest)
+}
+
+fn assert_admission_rejects_invalid_sources(fixture: &Scratch, manifest: &Path) {
+    let manifest_on_disk = fixture.path.join(manifest);
+    let original_manifest = fs::read(&manifest_on_disk).unwrap();
+    let mut non_draft: serde_yaml::Value = serde_yaml::from_slice(&original_manifest).unwrap();
+    non_draft["lifecycle"] = serde_yaml::Value::String("IN_REVIEW".to_owned());
+    fs::write(
+        &manifest_on_disk,
+        serde_yaml::to_string(&non_draft).unwrap(),
+    )
+    .unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(&fixture.path).unwrap();
+    assert!(
+        admit_report_at_generation(&fixture.path, CANOPY, manifest, V2AmendMode::Check, None,)
+            .unwrap_err()
+            .to_string()
+            .contains("lifecycle")
+    );
+    fs::write(&manifest_on_disk, b"not: [valid\n").unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(&fixture.path).unwrap();
+    assert!(
+        admit_report_at_generation(&fixture.path, CANOPY, manifest, V2AmendMode::Check, None,)
+            .is_err(),
+        "admission must reject malformed YAML"
+    );
+    fs::write(&manifest_on_disk, &original_manifest).unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(&fixture.path).unwrap();
+
+    let review_lock = fixture
+        .path
+        .join(format!("assurance/v2/reports/{CANOPY}/review.lock.json"));
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink("missing-review-lock", &review_lock).unwrap();
+        assert!(
+            admit_report_at_generation(&fixture.path, CANOPY, manifest, V2AmendMode::Check, None,)
+                .unwrap_err()
+                .to_string()
+                .contains("preexisting review lock")
+        );
+        fs::remove_file(&review_lock).unwrap();
+
+        let manuscript = fixture
+            .path
+            .join("assurance/v2/reports/native-forest-canopy-phenology-evaluation/manuscript.md");
+        let manuscript_bytes = fs::read(&manuscript).unwrap();
+        fs::remove_file(&manuscript).unwrap();
+        std::os::unix::fs::symlink("report.yaml", &manuscript).unwrap();
+        assert!(
+            admit_report_at_generation(&fixture.path, CANOPY, manifest, V2AmendMode::Check, None,)
+                .is_err(),
+            "admission must reject a symlinked declared source"
+        );
+        fs::remove_file(&manuscript).unwrap();
+        fs::write(&manuscript, manuscript_bytes).unwrap();
+    }
+    for (id, path) in [
+        (
+            "wrong-canopy-id",
+            "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml",
+        ),
+        (
+            CANOPY,
+            "/assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml",
+        ),
+        (
+            CANOPY,
+            "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml/",
+        ),
+    ] {
+        assert!(
+            admit_report_at_generation(
+                &fixture.path,
+                id,
+                Path::new(path),
+                V2AmendMode::Check,
+                None,
+            )
+            .is_err(),
+            "admission must reject mismatched or unconfined manifest {path}"
+        );
+    }
+    assert!(
+        admit_report_at_generation(
+            &fixture.path,
+            CANOPY,
+            Path::new(
+                "assurance/v2/reports//native-forest-canopy-phenology-evaluation/./report.yaml"
+            ),
+            V2AmendMode::Check,
+            None,
+        )
+        .is_err(),
+        "admission must reject a normalized manifest-path alias"
+    );
+}
+
+fn assert_admission_transaction(fixture: &Scratch, manifest: &Path) {
+    let before = capture_tree(&fixture.path.join("assurance/v2"));
+    let protected_locks = [GROUNDWATER, SNOW].map(|report| {
+        fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{report}/review.lock.json")),
+        )
+        .unwrap()
+    });
+    let generation = current_generation(&fixture.path);
+    let checked = admit_report_at_generation(
+        &fixture.path,
+        CANOPY,
+        manifest,
+        V2AmendMode::Check,
+        Some(&generation),
+    )
+    .unwrap();
+    assert!(checked.changed);
+    assert!(checked.old_roots.as_ref().unwrap().is_empty());
+    assert_eq!(checked.new_roots.as_ref().unwrap().len(), 1);
+    assert!(checked.new_roots.as_ref().unwrap().contains_key(CANOPY));
+    assert_eq!(before, capture_tree(&fixture.path.join("assurance/v2")));
+
+    let stale = admit_report_at_generation(
+        &fixture.path,
+        CANOPY,
+        manifest,
+        V2AmendMode::Apply,
+        Some(&"0".repeat(64)),
+    )
+    .unwrap_err();
+    assert!(stale.to_string().contains("stale generation"));
+
+    let applied = admit_report_at_generation(
+        &fixture.path,
+        CANOPY,
+        manifest,
+        V2AmendMode::Apply,
+        Some(&generation),
+    )
+    .unwrap();
+    assert_eq!(checked, applied);
+    let receipt_path = fixture
+        .path
+        .join("assurance/v2/transactions")
+        .read_dir()
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| {
+            serde_json::from_slice::<serde_json::Value>(&fs::read(path).unwrap()).unwrap()
+                ["new_generation_id"]
+                .as_str()
+                == Some(applied.new_generation_id.as_str())
+        })
+        .unwrap();
+    assert_schema_accepts(
+        &fixture
+            .path
+            .join("assurance/v2/schemas/transaction-receipt.schema.json"),
+        &receipt_path,
+    );
+    assert_eq!(applied.operation, "admit-report");
+    assert_eq!(applied.affected_reports, vec![CANOPY]);
+    assert!(
+        fixture
+            .path
+            .join(format!("assurance/v2/reports/{CANOPY}/review.lock.json"))
+            .is_file()
+    );
+    let summary = openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_all()
+        .unwrap();
+    assert_eq!(summary.reports.len(), 3);
+    for (report, expected) in [GROUNDWATER, SNOW].into_iter().zip(protected_locks) {
+        assert_eq!(
+            fs::read(
+                fixture
+                    .path
+                    .join(format!("assurance/v2/reports/{report}/review.lock.json"))
+            )
+            .unwrap(),
+            expected
+        );
+    }
+
+    let repeated = admit_report_at_generation(
+        &fixture.path,
+        CANOPY,
+        manifest,
+        V2AmendMode::Apply,
+        Some(&applied.new_generation_id),
+    )
+    .unwrap();
+    assert!(!repeated.changed);
+    assert_eq!(repeated.new_generation_id, applied.new_generation_id);
+    assert_eq!(repeated.old_roots.as_ref().unwrap().len(), 1);
+    assert_eq!(repeated.new_roots.as_ref().unwrap().len(), 1);
+    assert!(repeated.old_roots.as_ref().unwrap().contains_key(CANOPY));
+    assert!(repeated.new_roots.as_ref().unwrap().contains_key(CANOPY));
+}
 
 #[test]
 fn inspect_exposes_layered_identity_without_mutation() {
@@ -318,7 +549,7 @@ fn report_source_adoption_is_read_only_deterministic_and_invalidates_review_auth
     assert!(first.changed);
     assert_eq!(first.operation, "adopt-report-source");
     assert_eq!(first.impact_class, "scientific-full");
-    assert_eq!(first.affected_reports, [GROUNDWATER, SNOW]);
+    assert_eq!(first.affected_reports, [GROUNDWATER, CANOPY, SNOW]);
     assert!(first.affected_paths.contains(&source.display().to_string()));
     assert!(first.affected_paths.contains(&format!(
         "assurance/v2/reports/{GROUNDWATER}/review.lock.json"
@@ -570,7 +801,7 @@ fn generated_identity_event_and_receipt_schemas_accept_current_artifacts() {
         &root.join("assurance/v2/schemas/identity-lock.schema.json"),
         &root.join("assurance/v2/identity.lock.json"),
     );
-    for report in [GROUNDWATER, SNOW] {
+    for report in [GROUNDWATER, CANOPY, SNOW] {
         assert_schema_accepts(
             &root.join("assurance/v2/schemas/review-lock.schema.json"),
             &root.join(format!("assurance/v2/reports/{report}/review.lock.json")),
@@ -591,6 +822,41 @@ fn generated_identity_event_and_receipt_schemas_accept_current_artifacts() {
             &receipt.unwrap().path(),
         );
     }
+}
+
+#[test]
+fn receipt_schema_discriminates_legacy_and_root_bound_versions() {
+    let root = repository_root();
+    let schema: serde_json::Value = serde_json::from_slice(
+        &fs::read(root.join("assurance/v2/schemas/transaction-receipt.schema.json")).unwrap(),
+    )
+    .unwrap();
+    let validator = jsonschema::draft202012::new(&schema).unwrap();
+    let receipts = fs::read_dir(root.join("assurance/v2/transactions"))
+        .unwrap()
+        .map(|entry| {
+            serde_json::from_slice::<serde_json::Value>(&fs::read(entry.unwrap().path()).unwrap())
+                .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let mut legacy = receipts
+        .iter()
+        .find(|receipt| receipt["schema_version"] == 1)
+        .unwrap()
+        .clone();
+    assert!(validator.is_valid(&legacy));
+    legacy["old_roots"] = serde_json::json!({});
+    legacy["new_roots"] = serde_json::json!({});
+    assert!(!validator.is_valid(&legacy));
+
+    let mut current = receipts
+        .iter()
+        .find(|receipt| receipt["schema_version"] == 2)
+        .unwrap()
+        .clone();
+    assert!(validator.is_valid(&current));
+    current.as_object_mut().unwrap().remove("old_roots");
+    assert!(!validator.is_valid(&current));
 }
 
 #[test]
@@ -762,7 +1028,7 @@ fn generate_current_performance_fixture_when_requested() {
     openwepp_assurance::copy_v2_test_fixture(&repository_root(), &target).unwrap();
     openwepp_assurance::rebind_v2_test_fixture(&target).unwrap();
     let repository = openwepp_assurance::V2Repository::open(&target).unwrap();
-    assert_eq!(repository.validate_all().unwrap().reports.len(), 2);
+    assert_eq!(repository.validate_all().unwrap().reports.len(), 3);
 }
 
 fn assert_schema_accepts(schema_path: &Path, instance_path: &Path) {
@@ -808,6 +1074,16 @@ fn canonical_receipt_bytes(receipt: &serde_json::Value) -> Vec<u8> {
     let mut bytes = serde_json::to_vec_pretty(receipt).unwrap();
     bytes.push(b'\n');
     bytes
+}
+
+fn current_generation(root: &Path) -> String {
+    serde_json::from_slice::<serde_json::Value>(
+        &fs::read(root.join("assurance/v2/identity.lock.json")).unwrap(),
+    )
+    .unwrap()["generation_id"]
+        .as_str()
+        .unwrap()
+        .to_owned()
 }
 
 fn receipt_path(root: &Path, bytes: &[u8]) -> PathBuf {

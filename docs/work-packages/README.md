@@ -331,12 +331,12 @@
 State as of `2026-07-29 UTC`:
 
 - `20260729-assure-maint02-v2-report-admission-and-full-catalog-rendering-001/` -
-  SCAFFOLDED / QUEUED: implements typed atomic new-report admission, secure
-  retained-SVG assembly, and deterministic full-catalog rendering. It will
-  admit the completed CAL-09 draft and build/check all three V2 reports into
-  unrelated disposable roots plus `target/assurance-preview/`. The package
-  does not authorize human approval, release transfer, or tracked-public
-  publication.
+  COMPLETE / PASS: implemented typed atomic new-report admission, root-bound
+  receipts, secure retained-SVG assembly, and deterministic full-catalog
+  rendering. It admitted the completed CAL-09 draft, produced byte-identical
+  91-file builds in two unrelated roots, and checked the complete stable preview
+  at `target/assurance-preview/`. CAL-09 remains draft; no human approval,
+  release transfer, or tracked-public publication was created.
 - `20260728-gate-planner-agent-friction-qualification-001/` -
   COMPLETE / PASS: roadmap Order 5 measured the advisory linter against the
   independent manual route, fired four stop-loss thresholds, and deleted the

@@ -80,8 +80,8 @@ raindrop shielding, runoff, and erosion.
 
 The native-forest formulation addresses this representation gap. The broader
 scientific basis and user coefficient guide are given in the
-{{link:research-object:CANOPY-OBJECT-NARRATIVE|native-forest canopy-phenology
-model narrative}}. This study asks: does openWEPP produce internally correct
+{{link:usersum:openwepp-canopy-phenology.md|native-forest canopy-phenology model narrative}}.
+This study asks: does openWEPP produce internally correct
 seasonal forest states, and where is that behavior corroborated, bounded, or
 contradicted by available evidence?
 
@@ -178,15 +178,19 @@ coverage, and the maximum coverage was only
 independent evidence: it does not erase the Hubbard calibration, but it does
 not support transferability.
 
+{{figure:CANOPY-FIGURE-F1}}
+
+{{figure:CANOPY-FIGURE-F4}}
+
 The retained
 {{link:research-object:CANOPY-OBJECT-F1|coefficient-response time series}}
 shows how accepted correlated coefficient combinations shift GSI21, canopy
 cover, and LAI. The
-{{link:research-object:CANOPY-OBJECT-F4|temperate observed-versus-modeled
-chronology figure}} shows the calibration and holdout together.
-See the F1 {{link:research-object:CANOPY-OBJECT-F1-SIDECAR|caption, data, and
-limitations}} and F4 {{link:research-object:CANOPY-OBJECT-F4-SIDECAR|caption,
-data, and limitations}}.
+{{link:research-object:CANOPY-OBJECT-F4|temperate observed-versus-modeled chronology figure}}
+shows the calibration and holdout together. See the F1
+{{link:research-object:CANOPY-OBJECT-F1-SIDECAR|caption, data, and limitations}}
+and F4
+{{link:research-object:CANOPY-OBJECT-F4-SIDECAR|caption, data, and limitations}}.
 
 ## 6. Litter Sources, Decomposition, And Forest-Floor State
 
@@ -204,16 +208,21 @@ pairs reproduced {{quantity:CANOPY-V-RIDGE-STOCK}} within
 {{link:research-object:CANOPY-OBJECT-F5|source-decay time series}} makes this
 equifinality visible. Repeated material-specific inputs and stock measurements
 are needed before interpreting decay.
-The {{link:research-object:CANOPY-OBJECT-F5-SIDECAR|caption, data, and
-limitations}} defines the synthetic boundary.
+
+{{figure:CANOPY-FIGURE-F5}}
+
+The {{link:research-object:CANOPY-OBJECT-F5-SIDECAR|caption, data, and limitations}}
+defines the synthetic boundary.
+
+{{figure:CANOPY-FIGURE-F3}}
 
 The
 {{link:research-object:CANOPY-OBJECT-F3|litter, residue, and frost time series}}
 shows how leaf-off propagates through the modeled forest floor. It is a
 process-chain result, not proof that total litter or residue is adequate at a
 site.
-The {{link:research-object:CANOPY-OBJECT-F3-SIDECAR|caption, data, and
-limitations}} identifies the modeled quantities and exclusions.
+The {{link:research-object:CANOPY-OBJECT-F3-SIDECAR|caption, data, and limitations}}
+identifies the modeled quantities and exclusions.
 
 ## 7. Canopy Gradient And Downstream Response
 
@@ -231,13 +240,15 @@ Those observation medians are not paired-date validation series. Exact-date
 snow-depth and density residuals were retained without canopy retuning.
 Harvard SWE was excluded because provider units conflicted with the same-row
 depth-density identity.
-The {{link:research-object:CANOPY-OBJECT-F6-SIDECAR|caption, data, and
-limitations}} distinguishes observations from modeled responses.
+The {{link:research-object:CANOPY-OBJECT-F6-SIDECAR|caption, data, and limitations}}
+distinguishes observations from modeled responses.
 
 Interception, ET, runoff, frost, and erosion-facing inputs consumed the real
 daily state. Their changes are model responses with competing causes, not
 empirical validation of canopy phenology. No erosion consequence output was
 available, and no zero or proxy was substituted.
+
+{{figure:CANOPY-FIGURE-F6}}
 
 ## 8. Southern Hemisphere Robustness
 
@@ -260,14 +271,17 @@ penalized mean absolute residuals were
 {{quantity:CANOPY-V-BEZA-GCC90-ERROR}}, respectively. Falling transitions
 were generally early; higher rising transitions were late or absent.
 
-The {{link:research-object:CANOPY-OBJECT-F8|Bezà product-consistent time
-series}} shows the contradiction directly. It is robust to product choice and
+The {{link:research-object:CANOPY-OBJECT-F8|Bezà product-consistent time series}}
+shows the contradiction directly. It is robust to product choice and
 to a permissive crossing sensitivity. Another threshold round was therefore
 rejected. The evidence cannot distinguish rainfall response, rooting-zone or
 stored-water access, species composition, another seasonal cue, or their
 interaction, so it cannot authorize a replacement equation.
-The {{link:research-object:CANOPY-OBJECT-F8-SIDECAR|caption, data, and
-limitations}} records the product/operator boundary.
+
+{{figure:CANOPY-FIGURE-F8}}
+
+The {{link:research-object:CANOPY-OBJECT-F8-SIDECAR|caption, data, and limitations}}
+records the product/operator boundary.
 
 ## 9. Elliot Comparative Evidence
 

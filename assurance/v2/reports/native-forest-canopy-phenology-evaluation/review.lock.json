@@ -1,0 +1,21 @@
+{
+  "machine_owned": true,
+  "format_version": 1,
+  "identity_algorithm_version": "openwepp-assurance-generated-identity-v2",
+  "report_id": "native-forest-canopy-phenology-evaluation",
+  "lifecycle": "DRAFT",
+  "legacy_subject_root": null,
+  "science_root": "f27e3ca547bf55f286b7497d9d3d37c5819662e1df35023e9240fa8cc734ed2d",
+  "communication_root": "114d45355eeccc91dad690c35b8e84887106c206950b6e8b45efd0c4ad4db2af",
+  "attribution_root": "e6357a5eff61f1e58fb37b505be958076c1d648df376d590a9b135e0d04d2133",
+  "review_governance_root": "636695b8c615ae13dab99720ff344c86ec0aaa51ab2b0bbef9d5455069d38c62",
+  "content_review_subject_root": "7bbc5b5abd4926525e318626079889a6a6740c761f799f59a0d97938b1d4b2d8",
+  "finding_ledger_root": null,
+  "preapproval_realization_root": "24e12a5f4b3861f60d781759bae268dc8b90579fee980fde501d765cf24ee378",
+  "pre_steward_approval_root": null,
+  "approval_lock_root": null,
+  "realization_root": null,
+  "release_transfer_root": null,
+  "event_ids": [],
+  "invalidated_event_ids": []
+}

@@ -112,6 +112,10 @@ events or locks, stable gate IDs, and resolved executable/argument arrays. Its
 ID and filename are calculated after the body is final; the body contains
 neither its own ID nor path.
 
+Changed transactions emit schema-version 2 receipts whose `old_roots` and
+`new_roots` maps expose every affected report's calculated projection roots.
+Schema-version 1 receipts remain valid immutable archive members.
+
 Generated files use canonical JSON, stable lexical ordering, and no hostname,
 absolute path, random value, or implicit wall-clock content. Human-supplied
 decision dates remain explicit event inputs. Repeating an identical request on
@@ -251,6 +255,20 @@ authored source for attribution or lifecycle facts.
 `amend` accepts only versioned typed operations. It never accepts hashes, a
 generic source patch, or a “bless,” “sync,” “refresh,” or “adopt” request.
 
+### New-report admission
+
+`admit-report` adds one complete, conventionally located production-domain
+`DRAFT`. The request supplies only report ID and manifest path. The transaction
+derives catalog metadata, rejects duplicate IDs and paths, identifies all
+declared regular sources, generates an initial review lock with no events,
+validates the real report and assembly consumer in an isolated candidate, and
+atomically updates catalog, generated identity, review lock, and receipt.
+
+The operation cannot accept a preexisting review lock, import approval, assign
+review roles, alter report content, or admit a test fixture. A repeated exact
+binding is a no-op after full current-generation validation. This class is
+`scientific-full`; admission does not qualify for a proportional receipt gate.
+
 ### Attribution correction
 
 An attribution correction changes display name, affiliation, or another
@@ -310,6 +328,11 @@ cannot authorize the proportional receipt runner. Rebinding generated identity
 does not reduce the full closure required for the implementation change that
 made the locks stale.
 
+`adopt-report-source` may select the exact conventional manifest path only for
+a `DRAFT` report. It may otherwise select exactly one declared external
+local-content source. Manifest aliases, non-DRAFT manifest adoption, internal
+dependencies, and undeclared paths fail closed.
+
 ## Lifecycle State Matrix
 
 The initial implementation is deliberately narrow:
@@ -317,6 +340,7 @@ The initial implementation is deliberately narrow:
 | Operation | `DRAFT` | `IN_REVIEW` | `APPROVED` | `PUBLISHED`, `SUPERSEDED`, or `WITHDRAWN` |
 | --- | --- | --- | --- | --- |
 | inspect or verify | allow, read-only | allow, read-only | allow, read-only | allow, read-only |
+| new-report admission | allow initial custody only | reject | reject | reject |
 | attribution correction | allow | allow; preserve the content review subject, ledger, and scientific/reproduction approvals; invalidate steward approval and every downstream lock, realization, or transfer that binds `attribution_root` | reject; require typed reentry or new version | reject mutation; require new patch version and supersession workflow |
 | role assignment | allow | allow only through governance event; create a new content review subject and invalidate downstream review authority | reject; require typed reentry | reject mutation; require new version |
 | normalization | allow | allow; preserve `science_root`, create a new communication/content-review subject and ledger, and invalidate every approval that binds `communication_root`, including scientific, reproduction/publication, and steward approval | reject; require typed reentry or new version | reject mutation; require new patch version |
@@ -346,6 +370,7 @@ The required command surface is:
 
 ```text
 openwepp-assurance inspect --report <id> [--format human|json]
+openwepp-assurance amend admit-report --report <id> --path <manifest> [--if-generation <id>] (--check|--apply)
 openwepp-assurance amend attribution --report <id> <typed flags> (--check|--apply)
 openwepp-assurance amend principal --request <yaml> (--check|--apply)
 openwepp-assurance amend role --report <id> --request <yaml> (--check|--apply)

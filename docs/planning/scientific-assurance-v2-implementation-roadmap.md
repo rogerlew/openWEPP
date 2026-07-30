@@ -1,7 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: ASSURE-05 review-ready and held for human authority; ASSURE-MAINT02
-queued for typed admission and complete-catalog preview
+Status: ASSURE-MAINT02 complete; ASSURE-05 review-ready and held for human
+authority
 
 ## Sequencing Principle
 
@@ -130,15 +130,17 @@ Rollback: delete the confined fixture root and retain only clearly marked
 test-only snapshot evidence. No synthetic fixture is promoted, withdrawn from,
 or ever written into the tracked public tree or a release snapshot.
 
-## ASSURE-MAINT02 — Queued New-Report Admission And Full-Catalog Rendering
+## ASSURE-MAINT02 — Completed New-Report Admission And Full-Catalog Rendering
 
 Execution package:
 `docs/work-packages/20260729-assure-maint02-v2-report-admission-and-full-catalog-rendering-001/package.md`.
 
-Outcome: add the missing typed transaction for admitting a complete new V2
-report, extend deterministic assembly to embed content-identified accessible
-SVG research figures, admit the CAL-09 native-forest canopy draft, and render
-the entire three-report catalog through the real all-report consumer.
+Outcome: added the missing typed transaction for admitting a complete new V2
+report, extended deterministic assembly to embed content-identified accessible
+SVG research figures, admitted the CAL-09 native-forest canopy draft, and
+rendered the entire three-report catalog through the real all-report consumer.
+Two unrelated 91-file builds were byte-identical, and the stable preview at
+`target/assurance-preview/` passes the real catalog check.
 
 Primary consumers: the `openwepp-assurance amend`, `validate`, `plan`, `build`,
 and `check` commands; maintainers inspecting the disposable

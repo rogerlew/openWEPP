@@ -28,3 +28,10 @@ reports:
   trust_domain: production
   fixture_only: false
   manifest_path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml
+- id: native-forest-canopy-phenology-evaluation
+  version: 1.0.0
+  title: Evaluation of Native-Forest Canopy Phenology in openWEPP
+  owner: openWEPP scientific assurance maintainers
+  trust_domain: production
+  fixture_only: false
+  manifest_path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml

@@ -203,7 +203,7 @@ proved zero executor residual without clipping.
 
 CAL-07F retained all 24 Bezà product/year/direction/threshold transition
 records. Member ranks were identical for `gcc_mean` and `gcc_90`, and their
-top-quartile overlap was 100%. {{quantity:CANOPY-V-BEZA-COMPLETE}} members
+top-quartile sets overlapped completely. {{quantity:CANOPY-V-BEZA-COMPLETE}} members
 completed all 12 crossings under both products. Best member `GSI-4831` hit
 {{quantity:CANOPY-V-BEZA-MEAN-HITS}} of 12 `gcc_mean` confidence intervals and
 {{quantity:CANOPY-V-BEZA-GCC90-HITS}} of 12 `gcc_90` intervals. Penalized
@@ -230,6 +230,10 @@ unavailable. The `NOT_REPRODUCIBLE` verdict is therefore bounded to the
 authorized reconstructions and does not establish a defect in openWEPP.
 
 ## S11. Figure And Table Inventory
+
+{{figure:CANOPY-FIGURE-F2}}
+
+{{figure:CANOPY-FIGURE-F7}}
 
 Main-report time-series research objects are F1, F3, F4, F5, F6, and F8.
 F2 and F7 are supplement objects because their broader context is useful but
@@ -262,7 +266,7 @@ replace the reviewed time-series research objects.
 The complete public-safe object set is linked here so a reader can inspect the
 strict result, its inputs, the figure sources, and every caption:
 
-- {{link:research-object:CANOPY-OBJECT-NARRATIVE|model narrative}}
+- {{link:usersum:openwepp-canopy-phenology.md|model narrative}}
 - {{link:research-object:CANOPY-OBJECT-RESULT|strict synthesis result}}
 - {{link:research-object:CANOPY-OBJECT-REPRODUCER|synthesis reproducer}}
 - {{link:research-object:CANOPY-OBJECT-ACCEPTED|accepted calibration ensemble}}

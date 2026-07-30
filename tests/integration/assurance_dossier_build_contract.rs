@@ -38,7 +38,7 @@ fn public_builder_stays_zero_report_while_validation_admits_internal_v2() {
         .expect("run public and internal-source validate CLI");
     assert!(validation.contains("validation: PASS"));
     assert!(validation.contains("public_reports: 0"));
-    assert!(validation.contains("v2_reports_total: 2"));
+    assert!(validation.contains("v2_reports_total: 3"));
     let rendered_plan = openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--all"])
         .expect("run public plan CLI");
     assert!(rendered_plan.contains("publication_state: v1_retired_zero_reports"));

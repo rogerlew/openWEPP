@@ -120,6 +120,56 @@ pub(super) fn apply_candidate(
     Ok(receipt)
 }
 
+pub(super) fn check_candidate(
+    root: &Path,
+    candidate: &MigrationCandidate,
+) -> Result<V2AmendmentReceipt> {
+    let root = root
+        .canonicalize()
+        .map_err(|error| AssuranceError::io(root, error))?;
+    let transaction = ConfinedDirectory::open_ambient(&root, false)?;
+    transaction.lock_exclusive(&root)?;
+    verify_compare_and_swap(&root, candidate)?;
+    if transaction.directory_exists(Path::new(NEXT_ROOT))? {
+        return Err(AssuranceError::Invalid(format!(
+            "amendment recovery state requires explicit disposition: {NEXT_ROOT}"
+        )));
+    }
+    let held = capture_tree(&transaction, Path::new(V2_ROOT))?;
+    let external = capture_external_read_set(&root, candidate)?;
+    let check_root = create_owned_temporary("amend-check", &candidate.receipt.new_generation_id)?;
+    let validation = (|| {
+        copy_confined_tree(
+            &transaction,
+            Path::new(V2_ROOT),
+            &check_root.join(NEXT_ROOT),
+        )?;
+        let checked = ConfinedDirectory::open_ambient(&check_root, false)?;
+        apply_replacements(&checked, &candidate.replacements, &held)?;
+        checked.sync_filesystem()?;
+        let staged = capture_tree(&checked, Path::new(NEXT_ROOT))?;
+        validate_isolated_candidate(&root, &checked, candidate)?;
+        if capture_tree(&checked, Path::new(NEXT_ROOT))? != staged {
+            return Err(AssuranceError::Drift(
+                "checked assurance generation changed during candidate validation".to_owned(),
+            ));
+        }
+        if capture_tree(&transaction, Path::new(V2_ROOT))? != held {
+            return Err(AssuranceError::Drift(
+                "active assurance generation changed during candidate check".to_owned(),
+            ));
+        }
+        verify_external_read_set(&root, &external)?;
+        verify_compare_and_swap(&root, candidate)
+    })();
+    let cleanup = remove_temporary(&check_root);
+    match (validation, cleanup) {
+        (Ok(()), Ok(())) => Ok(candidate.receipt.clone()),
+        (Err(error), cleanup) => Err(combine_recovery(error, cleanup)),
+        (Ok(()), Err(error)) => Err(error),
+    }
+}
+
 pub(super) fn verify_generation_tree(root: &Path, tree: &Path) -> Result<String> {
     let root = root
         .canonicalize()
@@ -338,20 +388,9 @@ fn validate_isolated_candidate(
     transaction: &ConfinedDirectory,
     candidate: &MigrationCandidate,
 ) -> Result<()> {
-    let serial = CANDIDATE_SERIAL.fetch_add(1, Ordering::Relaxed);
-    let candidate_root = std::env::temp_dir().join(format!(
-        "openwepp-assurance-amend-candidate-{}-{serial}-{}",
-        std::process::id(),
-        &candidate.receipt.new_generation_id[..16]
-    ));
-    let staging = candidate_root.with_extension("staging");
-    if candidate_root.exists() {
-        fs::remove_dir_all(&candidate_root)
-            .map_err(|error| AssuranceError::io(&candidate_root, error))?;
-    }
-    if staging.exists() {
-        fs::remove_dir_all(&staging).map_err(|error| AssuranceError::io(&staging, error))?;
-    }
+    let candidate_root =
+        create_owned_temporary("amend-candidate", &candidate.receipt.new_generation_id)?;
+    let staging = create_owned_temporary("amend-staging", &candidate.receipt.new_generation_id)?;
     let result = (|| {
         copy_confined_tree(
             transaction,
@@ -397,6 +436,25 @@ fn remove_temporary(path: &Path) -> Result<()> {
     Ok(())
 }
 
+fn create_owned_temporary(label: &str, generation: &str) -> Result<PathBuf> {
+    for _ in 0..1024 {
+        let serial = CANDIDATE_SERIAL.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-assurance-{label}-{}-{serial}-{}",
+            std::process::id(),
+            &generation[..16]
+        ));
+        match fs::create_dir(&path) {
+            Ok(()) => return Ok(path),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(AssuranceError::io(path, error)),
+        }
+    }
+    Err(AssuranceError::Invalid(format!(
+        "could not allocate an owned assurance {label} temporary directory"
+    )))
+}
+
 fn copy_external_sources(
     root: &ConfinedDirectory,
     candidate_root: &Path,
@@ -404,7 +462,7 @@ fn copy_external_sources(
 ) -> Result<()> {
     let target = ConfinedDirectory::open_ambient(candidate_root, false)?;
     for source in lock.sources.keys() {
-        if source.starts_with("assurance/v2/") {
+        if source.starts_with("assurance/v2/") || source.starts_with("usersum/") {
             continue;
         }
         let relative = Path::new(source);

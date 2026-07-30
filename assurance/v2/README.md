@@ -99,8 +99,29 @@ calculates complete consumers and invalidation, validates an isolated candidate,
 atomically exchanges the generation, and writes one deterministic receipt. No
 operator or agent edits hashes or copies roots.
 
-When one already-declared external `local_content` dependency has changed, use
-the source-adoption transaction:
+Admit a complete new production-domain DRAFT only through:
+
+```bash
+target/release/openwepp-assurance amend admit-report \
+  --report <report-id> \
+  --path assurance/v2/reports/<report-id>/report.yaml \
+  --check
+```
+
+Review the complete candidate receipt, then repeat with `--apply` and the
+current optional `--if-generation` guard. Admission derives catalog metadata
+from the report, validates every declared regular source in an isolated
+candidate, generates the initial empty-event review lock and successor
+identity, and writes one receipt. Conflicting IDs/paths, non-DRAFT state,
+preexisting review locks, stale generations, symlinks, or invalid builds fail
+closed. Repeating an exact admitted binding is a no-op.
+
+Changed transactions emit schema-version 2 receipts with old and new
+per-report projection roots. Historical schema-version 1 receipts remain valid
+archive members.
+
+When one DRAFT manifest or already-declared external `local_content` dependency
+has changed, use the source-adoption transaction:
 
 ```bash
 target/release/openwepp-assurance amend adopt-report-source \
@@ -110,12 +131,13 @@ target/release/openwepp-assurance amend adopt-report-source \
 ```
 
 Apply the same command with `--apply` only after reviewing the complete
-candidate. Adoption accepts exactly one drifted dependency, refuses internal or
-undeclared paths, returns an `IN_REVIEW` report to `DRAFT`, clears its review
-authority, and invalidates its active review events. It does not create a human
-decision or edit the external source. This is a `scientific-full` transition;
-run the package-selected implementation and full gates rather than the focused
-report-data receipt runner.
+candidate. Manifest adoption accepts only the exact conventional path of a
+`DRAFT` report. Dependency adoption accepts exactly one drifted dependency,
+refuses internal or undeclared paths, returns an `IN_REVIEW` report to `DRAFT`,
+clears its review authority, and invalidates its active review events. Neither
+form creates a human decision or edits the selected source. This is a
+`scientific-full` transition; run the package-selected implementation and full
+gates rather than the focused report-data receipt runner.
 
 After an applied report-data-only transaction, run its receipt-authorized gate:
 
@@ -219,7 +241,7 @@ link without writing during the check:
 ```bash
 stage="$(mktemp -d)"
 mkdir -p "$stage/usersum"
-cp usersum/hillslope-hydrology-and-sediment-physics.md "$stage/usersum/"
+cp -a usersum/. "$stage/usersum/"
 cargo run --quiet -p openwepp-assurance -- build --all \
   --staging-root "$stage"
 cargo run --quiet -p openwepp-assurance -- check --all \
@@ -233,6 +255,17 @@ figures from identified result objects, copies public-safe research objects,
 and emits portable links. Unit disagreement, unsupported display precision,
 unused content, noncurrent inputs, unresolved links, output drift, unsafe
 staging paths, or symlink traversal fail closed.
+
+The `retained_svg` figure variant binds an identified public-safe SVG and
+Markdown ancillary object. Assembly removes the source XML declaration,
+external DOCTYPE, and non-rendering metadata, injects accessible title,
+description, and image role, converts only Matplotlib's exact inert default
+line-cap/join style into equivalent inherited presentation attributes, and
+parses the resulting SVG before staging it. All other style elements, CSS
+escapes, unsupported presentation declarations, scripts, event handlers,
+external references, nonfragment links, unsafe CSS, and malformed XML fail
+closed. Generated `linear_magnitude_bars` figures retain their existing
+contract.
 
 The staging result is build evidence, not a reviewed or published
 scientific report. It grants no review lock, public route, snapshot, export,

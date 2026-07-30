@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use openwepp_assurance::{AssuranceError, V2Repository};
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
+const CANOPY_REPORT_ID: &str = "native-forest-canopy-phenology-evaluation";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
 const RESULT_PATH: &str =
@@ -83,6 +84,49 @@ fn real_named_and_all_builds_are_deterministic_equivalent_and_checkable() {
                 .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md"),
         ),
         &supplement,
+    );
+}
+
+#[test]
+fn canopy_named_and_all_builds_are_byte_equivalent_and_complete() {
+    let root = repository_root();
+    let repository = V2Repository::open(&root).expect("open repository");
+    let named_stage = prepared_stage("assure-maint02-canopy-named");
+    let all_stage = prepared_stage("assure-maint02-canopy-all");
+    let named = repository
+        .build_report(CANOPY_REPORT_ID, &named_stage.path)
+        .expect("build named canopy report");
+    repository
+        .build_all(&all_stage.path)
+        .expect("build complete catalog");
+    let relative = PathBuf::from(format!(
+        "usersum/assurance/reports/{CANOPY_REPORT_ID}/1.0.0"
+    ));
+    assert_eq!(
+        collect_files(&named_stage.path.join(&relative)),
+        collect_files(&all_stage.path.join(&relative))
+    );
+    assert_eq!(
+        named
+            .outputs
+            .iter()
+            .filter(|(path, _)| {
+                path.extension().is_some_and(|value| value == "svg")
+                    && path
+                        .components()
+                        .any(|component| component.as_os_str() == "figures")
+            })
+            .count(),
+        9
+    );
+    for required in ["index.md", "supplement.md", "build-manifest.json"] {
+        assert!(named_stage.path.join(&relative).join(required).is_file());
+    }
+    assert_eq!(
+        repository
+            .check_report(CANOPY_REPORT_ID, &named_stage.path)
+            .expect("check named canopy report"),
+        named
     );
 }
 
@@ -498,7 +542,7 @@ fn real_cli_selects_v2_staging_without_weakening_zero_public_operations() {
         all_stage.path.as_os_str().to_owned(),
     ])
     .expect("build all reports through real CLI");
-    assert!(all_build.starts_with("build: PASS\nreports: 2\n"));
+    assert!(all_build.starts_with("build: PASS\nreports: 3\n"));
     let all_check = openwepp_assurance::cli::run(vec![
         std::ffi::OsString::from("openwepp-assurance"),
         std::ffi::OsString::from("check"),
@@ -605,12 +649,15 @@ fn markdown_destinations(text: &str) -> Vec<&str> {
 
 fn prepared_stage(label: &str) -> Scratch {
     let stage = Scratch::new(label);
-    let source = repository_root().join("usersum/hillslope-hydrology-and-sediment-physics.md");
-    let target = stage
-        .path
-        .join("usersum/hillslope-hydrology-and-sediment-physics.md");
-    fs::create_dir_all(target.parent().unwrap()).unwrap();
-    fs::copy(source, target).unwrap();
+    for relative in [
+        "usersum/hillslope-hydrology-and-sediment-physics.md",
+        "usersum/openwepp-canopy-phenology.md",
+    ] {
+        let source = repository_root().join(relative);
+        let target = stage.path.join(relative);
+        fs::create_dir_all(target.parent().unwrap()).unwrap();
+        fs::copy(source, target).unwrap();
+    }
     stage
 }
 

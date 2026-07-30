@@ -6,14 +6,14 @@ use std::path::PathBuf;
 use crate::{
     Assurance, AssuranceError, BuildOptions, Result, V2AmendMode, V2AssemblyResult,
     V2NormalizationMode, V2PublicationOptions, V2PublicationResult, V2RecoveryAction,
-    V2ReleaseIdentity, V2ReleaseVerification, V2Repository, adopt_report_source_at_generation,
-    amend_attribution_at_generation, amend_lifecycle_at_generation, amend_normalize,
-    amend_normalize_at_generation, amend_principal_at_generation, amend_role_at_generation,
-    inspect_report, rebind_implementation, recover_amendment, verify_generation,
-    verify_v2_release_snapshot,
+    V2ReleaseIdentity, V2ReleaseVerification, V2Repository, admit_report_at_generation,
+    adopt_report_source_at_generation, amend_attribution_at_generation,
+    amend_lifecycle_at_generation, amend_normalize, amend_normalize_at_generation,
+    amend_principal_at_generation, amend_role_at_generation, inspect_report, rebind_implementation,
+    recover_amendment, verify_generation, verify_v2_release_snapshot,
 };
 
-const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance inspect --report <id> [--format human|json]\n  openwepp-assurance amend adopt-report-source --report <id> --path <path> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend attribution --principal <id> [--display-name <name>] [--affiliation <text>]... [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend principal --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend role --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend normalize --report <id> --language en-US [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend recover (--inspect | --finish-cleanup | --restore-old)\n  openwepp-assurance amend rebind-implementation --all (--check | --apply)\n  openwepp-assurance lifecycle --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance verify-generation --base-ref <commit>\n  openwepp-assurance normalize --report <id> --language en-US (--check | --apply)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
+const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance inspect --report <id> [--format human|json]\n  openwepp-assurance amend admit-report --report <id> --path <path> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend adopt-report-source --report <id> --path <path> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend attribution --principal <id> [--display-name <name>] [--affiliation <text>]... [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend principal --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend role --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend normalize --report <id> --language en-US [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend recover (--inspect | --finish-cleanup | --restore-old)\n  openwepp-assurance amend rebind-implementation --all (--check | --apply)\n  openwepp-assurance lifecycle --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance verify-generation --base-ref <commit>\n  openwepp-assurance normalize --report <id> --language en-US (--check | --apply)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
 
 /// Parses process arguments and executes one assurance operation.
 ///
@@ -69,6 +69,7 @@ where
 {
     let operation = utf8(args.next(), "amend operation")?;
     match operation.as_str() {
+        "admit-report" => execute_admit_report(root, args),
         "adopt-report-source" => execute_adopt_report_source(root, args),
         "attribution" => execute_amend_attribution(root, args),
         "principal" => execute_amend_principal(root, args),
@@ -80,6 +81,47 @@ where
             "unknown amend operation '{operation}'\n{USAGE}"
         ))),
     }
+}
+
+fn execute_admit_report<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut report = None;
+    let mut path = None;
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("admit-report argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--report" if report.is_none() => {
+                report = Some(next_string(&mut args, "--report")?);
+            }
+            "--path" if path.is_none() => {
+                path = Some(PathBuf::from(next_string(&mut args, "--path")?));
+            }
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate admit-report argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    admit_report_at_generation(
+        root,
+        required_option(report.as_ref(), "--report")?,
+        required_option(path.as_ref(), "--path")?,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
 }
 
 fn execute_adopt_report_source<I>(root: &std::path::Path, mut args: I) -> Result<String>

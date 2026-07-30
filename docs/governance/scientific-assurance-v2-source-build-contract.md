@@ -100,6 +100,17 @@ identified generation procedure, accessible text or tabular alternatives, and
 a caption that explains the scientific point. Hand-drawn conceptual diagrams
 declare that they are explanatory rather than result-bearing.
 
+Two typed SVG paths are admitted. `linear_magnitude_bars` is generated from
+strict result bindings. `retained_svg` binds an identified public-safe SVG and
+identified Markdown ancillary object. The latter is deterministically stripped
+of XML/external-DOCTYPE/non-rendering metadata, supplied escaped authored
+`title`, `desc`, and `role="img"` accessibility markup, parsed without resource
+loading, and allowed to convert only Matplotlib's exact inert default
+line-cap/join style into equivalent inherited presentation attributes. All
+other style elements, CSS escapes, unsupported presentation declarations,
+scripts, event handlers, external references, nonfragment links, unsafe CSS,
+malformed XML, or output collisions are rejected.
+
 Every safely redistributable project-owned claim-bearing value, table/figure
 source, analysis procedure, configuration identity, and reproduction
 instruction is copied or durably linked through the version-bound public
@@ -165,6 +176,23 @@ and cause the operation to fail closed when they do not admit the current
 implementation identity. Only the enumerated v2 README and schema files are
 admissible implementation-contract drift; report, evidence, principal,
 catalog, and event drift remains rejected.
+
+A complete new report enters the catalog only through
+`amend admit-report --report <id> --path <manifest> (--check|--apply)`.
+The typed transaction accepts one conventionally located production-domain
+`DRAFT`, derives its catalog row from the manifest, identifies every declared
+regular source, generates its initial empty-event review lock, validates the
+real report and assembly consumer in an isolated candidate, and atomically
+installs the catalog, identity, review lock, and canonical receipt. It rejects
+preexisting generated authority, duplicate IDs or paths, stale generations,
+and partial candidates. Admission establishes internal source custody only; it
+does not enter review, approve, publish, snapshot, or transfer a release.
+
+Changed amendment receipts use schema version 2 and bind old and new
+per-report projection roots. Historical schema-version 1 receipts remain valid
+archive evidence. A DRAFT report descriptor may subsequently be adopted only
+through its exact conventional manifest path; dependency adoption remains
+limited to a declared external local-content source.
 
 ## Incremental Rebuilds
 

@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: scaffolded and measured
+Status: complete / pass
 
 Evidence class: Ran
 
@@ -23,3 +23,6 @@ Core set measured on 2026-07-29:
 Threshold outcome: `OK` (`<=400000` bytes). The kickoff prompt defines the
 Conditional and On-demand sets. Recompute this ledger if Core membership or
 any Core file changes materially before execution.
+
+The mapped Core set was read before implementation. No additional instruction
+authority became applicable during execution.

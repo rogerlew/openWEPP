@@ -387,6 +387,12 @@
       }
     },
     "figure": {
+      "oneOf": [
+        { "$ref": "#/$defs/generatedFigure" },
+        { "$ref": "#/$defs/retainedFigure" }
+      ]
+    },
+    "generatedFigure": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -402,6 +408,30 @@
         "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "value_binding_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "visualization": { "const": "linear_magnitude_bars" },
+        "generation_procedure": { "$ref": "#/$defs/text" },
+        "alternative_text": { "$ref": "#/$defs/text" },
+        "caption": { "$ref": "#/$defs/text" }
+      }
+    },
+    "retainedFigure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "kind", "result_ids",
+        "value_binding_ids", "visualization",
+        "research_object_id", "ancillary_object_id",
+        "generation_procedure", "alternative_text", "caption"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "kind": { "const": "retained_evidence" },
+        "result_ids": { "type": "array", "maxItems": 0 },
+        "value_binding_ids": { "type": "array", "maxItems": 0 },
+        "visualization": { "const": "retained_svg" },
+        "research_object_id": { "$ref": "#/$defs/id" },
+        "ancillary_object_id": { "$ref": "#/$defs/id" },
         "generation_procedure": { "$ref": "#/$defs/text" },
         "alternative_text": { "$ref": "#/$defs/text" },
         "caption": { "$ref": "#/$defs/text" }

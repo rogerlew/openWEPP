@@ -29,9 +29,9 @@ fn current_one_and_all_plans_are_equivalent_stable_and_cli_consumed() {
 
     assert_eq!(named.reports, vec![report(&all, REPORT_ID).clone()]);
     assert_eq!(named.selected_report_count, 1);
-    assert_eq!(named.total_report_count, 2);
-    assert_eq!(all.selected_report_count, 2);
-    assert_eq!(all.total_report_count, 2);
+    assert_eq!(named.total_report_count, 3);
+    assert_eq!(all.selected_report_count, 3);
+    assert_eq!(all.total_report_count, 3);
     assert_eq!(all.public_report_count, 0);
     let groundwater = report(&all, REPORT_ID);
     assert_eq!(groundwater.state, V2PlanState::Current);

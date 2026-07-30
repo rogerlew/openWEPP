@@ -8,6 +8,9 @@ use openwepp_assurance::{AssuranceError, V2Repository, sha256_bytes};
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
+const CANOPY_REPORT_ID: &str = "native-forest-canopy-phenology-evaluation";
+const CANOPY_REPORT_PATH: &str =
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml";
 const SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const SNOW_REPORT_PATH: &str =
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml";
@@ -30,23 +33,27 @@ fn real_source_and_cli_validate_named_and_all_deterministically() {
         .expect("validate named source");
     let all = repository.validate_all().expect("validate all sources");
     assert_eq!(named.selected_report_count, 1);
-    assert_eq!(named.total_report_count, 2);
+    assert_eq!(named.total_report_count, 3);
     assert_eq!(named.reports, vec![all.reports[0].clone()]);
-    assert_eq!(all.selected_report_count, 2);
-    assert_eq!(all.total_report_count, 2);
+    assert_eq!(all.selected_report_count, 3);
+    assert_eq!(all.total_report_count, 3);
     assert_eq!(all.public_report_count, 0);
     assert_eq!(all.reports[0].id, REPORT_ID);
     assert_eq!(all.reports[0].version, "1.0.0");
     assert_eq!(all.reports[0].lifecycle, "DRAFT");
     assert!(!all.reports[0].fixture_only);
-    assert_eq!(all.reports[1].id, SNOW_REPORT_ID);
+    assert_eq!(all.reports[1].id, CANOPY_REPORT_ID);
     assert_eq!(all.reports[1].version, "1.0.0");
     assert_eq!(all.reports[1].lifecycle, "DRAFT");
     assert!(!all.reports[1].fixture_only);
+    assert_eq!(all.reports[2].id, SNOW_REPORT_ID);
+    assert_eq!(all.reports[2].version, "1.0.0");
+    assert_eq!(all.reports[2].lifecycle, "DRAFT");
+    assert!(!all.reports[2].fixture_only);
 
     let rendered = all.render();
     assert!(rendered.contains("validation: PASS"));
-    assert!(rendered.contains("v2_reports_selected: 2"));
+    assert!(rendered.contains("v2_reports_selected: 3"));
     assert!(named.render().contains("v2_reports_selected: 1"));
     assert!(rendered.contains("public_reports: 0"));
     assert!(rendered.contains("source_root_sha256:"));
@@ -130,6 +137,35 @@ fn executable_schemas_reject_practical_identity_and_lifecycle_defects() {
         &report_schema,
         &report,
         "restricted dependency with local path",
+    );
+
+    let mut retained = yaml_value(&root.join(CANOPY_REPORT_PATH));
+    let retained_index = retained["figures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .position(|figure| figure["visualization"] == "retained_svg")
+        .expect("retained figure");
+    retained["figures"][retained_index]["kind"] = serde_json::json!("result_bearing");
+    assert_schema_rejects(
+        &report_schema,
+        &retained,
+        "retained SVG with generated kind",
+    );
+    retained["figures"][retained_index]["kind"] = serde_json::json!("retained_evidence");
+    retained["figures"][retained_index]["result_ids"] =
+        serde_json::json!(["CANOPY-RESULT-TRANSFER"]);
+    assert_schema_rejects(
+        &report_schema,
+        &retained,
+        "retained SVG with strict-result binding",
+    );
+    retained["figures"][retained_index]["result_ids"] = serde_json::json!([]);
+    retained["figures"][retained_index]["ancillary_object_id"] = serde_json::Value::Null;
+    assert_schema_rejects(
+        &report_schema,
+        &retained,
+        "retained SVG without ancillary sidecar",
     );
 
     let mut result = json_value(&root.join(TWO_DAY_PATH));

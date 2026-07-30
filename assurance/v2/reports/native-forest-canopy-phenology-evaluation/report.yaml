@@ -113,6 +113,12 @@ manuscript:
   - CANOPY-TABLE-TRANSFER
   figure_ids:
   - CANOPY-FIGURE-TRANSFER
+  - CANOPY-FIGURE-F1
+  - CANOPY-FIGURE-F3
+  - CANOPY-FIGURE-F4
+  - CANOPY-FIGURE-F5
+  - CANOPY-FIGURE-F6
+  - CANOPY-FIGURE-F8
   reference_ids:
   - CANOPY-REF-JOLLY
   - CANOPY-REF-ALLEN
@@ -127,7 +133,6 @@ manuscript:
   - CANOPY-REF-OLSON
   - CANOPY-REF-QUALLS
   research_object_ids:
-  - CANOPY-OBJECT-NARRATIVE
   - CANOPY-OBJECT-RESULT
   - CANOPY-OBJECT-REPRODUCER
   - CANOPY-OBJECT-ACCEPTED
@@ -228,7 +233,8 @@ supplement:
   - CANOPY-V-PHOTOPERIOD-UNCONSTRAINED-MAX
   table_ids: []
   figure_ids:
-  - CANOPY-FIGURE-TRANSFER
+  - CANOPY-FIGURE-F2
+  - CANOPY-FIGURE-F7
   reference_ids:
   - CANOPY-REF-JOLLY
   - CANOPY-REF-ALLEN
@@ -243,7 +249,6 @@ supplement:
   - CANOPY-REF-OLSON
   - CANOPY-REF-QUALLS
   research_object_ids:
-  - CANOPY-OBJECT-NARRATIVE
   - CANOPY-OBJECT-RESULT
   - CANOPY-OBJECT-REPRODUCER
   - CANOPY-OBJECT-ACCEPTED
@@ -1061,8 +1066,8 @@ value_bindings:
 - {id: CANOPY-V-ACCEPTED-MEMBERS, title: Accepted timing members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_member_count, unit_id: member_count, transform: identity, display: integer}
 - {id: CANOPY-V-DOUBLE-BOUNDARY, title: Double-boundary accepted members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_double_boundary_count, unit_id: member_count, transform: identity, display: integer}
 - {id: CANOPY-V-UPPER-BOUNDARY, title: Upper-support-boundary accepted members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_upper_boundary_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-HARVARD-MIN, title: Minimum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_min_days, unit_id: day, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-HARVARD-MAX, title: Maximum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_max_days, unit_id: day, transform: identity, display: "fixed:2"}
+- {id: CANOPY-V-HARVARD-MIN, title: Minimum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_min_days, unit_id: day, transform: absolute, display: "fixed:2"}
+- {id: CANOPY-V-HARVARD-MAX, title: Maximum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_max_days, unit_id: day, transform: absolute, display: "fixed:2"}
 - {id: CANOPY-V-HARVARD-ZERO-COVERAGE, title: Harvard zero-coverage members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_zero_coverage_members, unit_id: member_count, transform: identity, display: integer}
 - {id: CANOPY-V-HARVARD-MAX-COVERAGE, title: Maximum Harvard interval coverage, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_max_coverage_percent, unit_id: percent, transform: identity, display: "fixed:2"}
 - {id: CANOPY-V-RIDGE-PAIRS, title: Litter ridge pairs, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: litter_ridge_pair_count, unit_id: pair_count, transform: identity, display: integer}
@@ -1118,6 +1123,102 @@ figures:
   generation_procedure: The deterministic V2 assembler renders the minimum and maximum Harvard aggregate errors from the strict synthesis result.
   alternative_text: Two bars show minimum Harvard aggregate error of 43.48 days and maximum error of 72.46 days.
   caption: Range endpoints for aggregate timing error across 37 frozen Hubbard members scored at Harvard without refit; these bars summarize adverse transfer evidence and are not uncertainty bounds.
+- id: CANOPY-FIGURE-F1
+  title: Coefficient response
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F1
+  ancillary_object_id: CANOPY-OBJECT-F1-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Accepted coefficient combinations and modeled seasonal GSI21, canopy-cover, and LAI trajectories.
+  caption: Three accepted Hubbard calibration members spanning early, middle, and late Harvard leaf-on responses illustrate ensemble covariance in annual GSI21, canopy-cover, and LAI dynamics.
+- id: CANOPY-FIGURE-F2
+  title: Forest-class seasonality
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F2
+  ancillary_object_id: CANOPY-OBJECT-F2-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Modeled canopy cover and LAI by site and forest stratum through the seasonal cycle.
+  caption: Daily modeled canopy cover and LAI distinguish source-supplied deciduous, mixed, conifer, and open strata across Marcell, Harvard, and Hubbard Brook.
+- id: CANOPY-FIGURE-F3
+  title: Litter residue and frost
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F3
+  ancillary_object_id: CANOPY-OBJECT-F3-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Modeled seasonal litter transfer, aggregate surface residue, and frost depth for Harvard deciduous and mixed forest.
+  caption: Harvard simulations show the modeled seasonal sequence from leaf-off litter transfer to aggregate surface-residue state and frost depth.
+- id: CANOPY-FIGURE-F4
+  title: Temperate observed and modeled timing
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F4
+  ancillary_object_id: CANOPY-OBJECT-F4-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Observed intervals and modeled ensemble crossings for Hubbard Brook spring calibration and Harvard autumn holdout.
+  caption: Observed phenology intervals and modeled accepted-ensemble crossings expose both the Hubbard Brook calibration relationship and poor Harvard transfer.
+- id: CANOPY-FIGURE-F5
+  title: Source and decay trajectories
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F5
+  ancillary_object_id: CANOPY-OBJECT-F5-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Five synthetic litter-source and decomposition-rate pairs converge on the same terminal surface-residue stock.
+  caption: Different 20-year source-decay trajectories converge on the same terminal stock, demonstrating that the endpoint does not identify source and decay independently.
+- id: CANOPY-FIGURE-F6
+  title: Canopy-gradient snow response
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F6
+  ancillary_object_id: CANOPY-OBJECT-F6-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Modeled canopy and snow gradients with observed seasonal snow depth at Harvard and Marcell.
+  caption: Harvard and Marcell climatologies show modeled snow-depth response and canopy-cover gradients together with admitted observed snow-depth medians.
+- id: CANOPY-FIGURE-F7
+  title: Southern Hemisphere seasonality
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F7
+  ancillary_object_id: CANOPY-OBJECT-F7-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Accepted-ensemble GSI and observed GCC90 seasonal activity for Alerce and Bezà during 2024 and 2025.
+  caption: Accepted-ensemble GSI is compared with observed GCC90 seasonal activity for Alerce evergreen and Bezà tropical dry forest.
+- id: CANOPY-FIGURE-F8
+  title: Bezà observed and modeled chronology
+  owner: CAL-09 report lead
+  kind: retained_evidence
+  result_ids: []
+  value_binding_ids: []
+  visualization: retained_svg
+  research_object_id: CANOPY-OBJECT-F8
+  ancillary_object_id: CANOPY-OBJECT-F8-SIDECAR
+  generation_procedure: Preserve the identified CAL-09 SVG and sidecar as exact research objects; render a deterministic, accessibility-labeled SVG after removing prohibited metadata and active-content surfaces.
+  alternative_text: Bezà accepted-ensemble GSI compared with normalized gcc_mean and gcc_90 observations for two evaluation years.
+  caption: The two Bezà observation products closely agree with each other but not with modeled seasonal chronology, supporting the product-consistent no-calibration decision.
 references:
 - id: CANOPY-REF-JOLLY
   title: Generalized growing season index
@@ -1216,7 +1317,6 @@ references:
   license: publisher_terms
   dependency_id: CANOPY-DEP-QUALLS
 research_objects:
-- {id: CANOPY-OBJECT-NARRATIVE, title: Native-forest canopy model narrative, owner: openWEPP plant-process maintainers, access: public_safe, license: repository_license, path: usersum/openwepp-canopy-phenology.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-VERIFICATION], dependency_ids: [CANOPY-DEP-NARRATIVE], reproduction_instructions: Read the versioned narrative with this report.}
 - {id: CANOPY-OBJECT-RESULT, title: Strict canopy synthesis result, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-SYNTHESIS], dependency_ids: [CANOPY-DEP-RESULT], reproduction_instructions: Run CANOPY-OBJECT-REPRODUCER and compare bytes.}
 - {id: CANOPY-OBJECT-REPRODUCER, title: Canopy synthesis reproduction procedure, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/procedures/reproduce_canopy_synthesis.py, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-SYNTHESIS], dependency_ids: [CANOPY-DEP-REPRODUCER], reproduction_instructions: Execute with the seven declared CSV dependencies as documented in the supplement.}
 - {id: CANOPY-OBJECT-ACCEPTED, title: Frozen accepted ensemble rows, owner: CAL-04B evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/accepted-calibration-ensemble.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-ACCEPTED], reproduction_instructions: Supply unchanged to the synthesis procedure.}
@@ -1263,9 +1363,8 @@ review:
   decision: not_started
   review_charge: null
   build_maintainer_id: null
-  material_producer_ids:
-  - Codex
-  independence_assessment: Internal package review does not supply accountable human scientific or reproduction/publication approval.
+  material_producer_ids: []
+  independence_assessment: not_assessed
 publication:
   id: CANOPY-PUBLICATION
   title: Native-forest canopy evaluation publication state

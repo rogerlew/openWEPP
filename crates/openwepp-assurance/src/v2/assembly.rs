@@ -853,7 +853,7 @@ fn render_directive(
                 .find(|figure| figure.id == id)
                 .ok_or_else(|| AssuranceError::Invalid(format!("unknown figure '{id}'")))?;
             usage.figures.insert(id.to_owned());
-            let (markdown, svg) = render_figure(figure, bindings, usage)?;
+            let (markdown, svg) = render_figure(root, report, figure, bindings, usage)?;
             if figure_outputs.insert(id.to_owned(), svg).is_some() {
                 return Err(AssuranceError::Invalid(format!(
                     "figure '{id}' is rendered more than once"
@@ -1068,6 +1068,8 @@ fn markdown_escape(value: &str) -> String {
 }
 
 fn render_figure(
+    root: &Path,
+    report: &Report,
     figure: &super::Figure,
     bindings: &BTreeMap<String, ResolvedValue>,
     usage: &mut Usage,
@@ -1075,6 +1077,9 @@ fn render_figure(
     validate_metadata_text(&figure.title)?;
     validate_metadata_text(&figure.caption)?;
     validate_metadata_text(&figure.alternative_text)?;
+    if figure.visualization == "retained_svg" {
+        return render_retained_figure(root, report, figure, usage);
+    }
     let values = figure
         .value_binding_ids
         .iter()
@@ -1115,6 +1120,46 @@ fn render_figure(
         markdown_escape(&figure.alternative_text)
     );
     Ok((markdown, svg.into_bytes()))
+}
+
+fn render_retained_figure(
+    root: &Path,
+    report: &Report,
+    figure: &super::Figure,
+    usage: &mut Usage,
+) -> Result<(String, Vec<u8>)> {
+    let source_id = super::svg::required_figure_object(
+        &figure.research_object_id,
+        &figure.id,
+        "research_object_id",
+    )?;
+    let ancillary_id = super::svg::required_figure_object(
+        &figure.ancillary_object_id,
+        &figure.id,
+        "ancillary_object_id",
+    )?;
+    let source = find_public_research_object(report, source_id)?;
+    let ancillary = find_public_research_object(report, ancillary_id)?;
+    let source_path = source.path.as_deref().ok_or_else(|| {
+        AssuranceError::Invalid(format!("research object '{source_id}' has no path"))
+    })?;
+    let source_digest = source.sha256.as_deref().ok_or_else(|| {
+        AssuranceError::Invalid(format!("research object '{source_id}' has no digest"))
+    })?;
+    let retained = identified_bytes(root, source_path, source_digest)?;
+    let svg =
+        super::svg::sanitize_retained_svg(&retained, &figure.title, &figure.alternative_text)?;
+    let ancillary_basename = research_object_basename(ancillary)?;
+    usage.research_objects.insert(source_id.to_owned());
+    usage.research_objects.insert(ancillary_id.to_owned());
+    let markdown = format!(
+        "![{}](figures/{}.svg)\n\n*Figure: {}*\n\n[Caption, source data, and ancillary information](research-objects/{})\n",
+        markdown_escape(&figure.alternative_text),
+        figure.id,
+        markdown_escape(&figure.caption),
+        ancillary_basename
+    );
+    Ok((markdown, svg))
 }
 
 fn render_svg(figure: &super::Figure, values: &[&ResolvedValue]) -> Result<String> {

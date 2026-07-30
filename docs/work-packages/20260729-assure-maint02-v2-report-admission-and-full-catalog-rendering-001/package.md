@@ -1,6 +1,6 @@
 # ASSURE-MAINT02 V2 Report Admission And Full-Catalog Rendering
 
-Status: `scaffolded / queued`
+Status: `complete / pass`
 
 Evidence mode: `prospective implementation + deterministic local verification`
 
@@ -155,9 +155,13 @@ faithfully assemble the already reviewed draft source.
 - `crates/openwepp-assurance/Cargo.toml` only if an already unavailable
   dependency is demonstrably required
 - `crates/openwepp-assurance/src/cli.rs`
+- `crates/openwepp-assurance/src/lib.rs` (terminal reconciliation: necessary
+  public re-export wiring, but omitted from the prospective path list)
 - `crates/openwepp-assurance/src/v2.rs`
 - relevant `crates/openwepp-assurance/src/v2/**`
 - relevant focused integration tests under `tests/integration/**`
+- `tools/local_ci/run_assurance_amendment.py` for receipt schema-version
+  compatibility
 - `Cargo.lock` only if the authorized dependency change is required
 
 Runtime-only outputs under `target/assurance-preview/**` and independently
@@ -402,13 +406,19 @@ unexpected dirty overlap, stop, preserve it, and reconcile before proceeding.
   complete assurance-report catalog.
 - [x] (2026-07-29) Scoped the missing typed admission transaction, retained-SVG
   assembly, three-report build, stable preview root, and public boundary.
-- [ ] Freeze implementation intent, baselines, and exact gate plan.
-- [ ] Implement and verify typed new-report admission.
-- [ ] Implement and verify retained-SVG deterministic assembly.
-- [ ] Admit CAL-09 through the typed transaction.
-- [ ] Build/check all three reports in disposable and stable preview roots.
-- [ ] Complete Critical gates, reviews, finding disposition, and verifications.
-- [ ] Reconcile the exact diff and close the package.
+- [x] (2026-07-29) Froze implementation intent, protected baselines, admission
+  and SVG contracts, and direct Critical gate selection.
+- [x] (2026-07-29) Implemented typed check/apply/no-op admission with atomic
+  recovery and root-bound schema-v2 receipts.
+- [x] (2026-07-29) Implemented secure deterministic retained-SVG assembly and
+  adversarial parser coverage.
+- [x] (2026-07-29) Admitted CAL-09 through the typed transaction and verified
+  the anchored 22-transition identity chain.
+- [x] (2026-07-29) Built and checked all three reports in two unrelated,
+  byte-equal disposable roots and the stable preview root.
+- [x] (2026-07-29) Completed Critical gates, dual implementation review,
+  finding disposition, and dual fresh terminal verification.
+- [x] (2026-07-29) Reconciled the exact diff and closed the package.
 
 ## Surprises & Discoveries
 
@@ -417,6 +427,16 @@ unexpected dirty overlap, stop, preserve it, and reconcile before proceeding.
 - The existing native figure schema generates one bar-chart kind. CAL-09's
   eight already-reviewed SVG time-series figures currently exist only as
   public-safe research objects and need a secure inline assembly path.
+- Matplotlib emits a document-level default CSS rule. Safe assembly required
+  recognizing only that exact inert rule and translating it to equivalent
+  inherited presentation attributes while rejecting all other style elements.
+- The initially selected `quick-xml` release carried published advisories.
+  Upgrading to `0.41.0` closed them before disposition.
+- Admission was first exercised before schema-v2 root binding existed.
+  Reconstructing the uncommitted transition from the scaffold baseline produced
+  a clean two-receipt v2 chronology instead of preserving weaker evidence.
+- Full report assembly needs the complete `usersum` prerequisite tree in a
+  staging root, even though only the assurance report subtree is emitted.
 
 ## Decision Log
 
@@ -429,8 +449,32 @@ unexpected dirty overlap, stop, preserve it, and reconcile before proceeding.
 - Decision: classify the work as Critical.
   Rationale: it changes trust-root generation, schemas, transactional mutation,
   assembly security, and a broadly consumed CLI.
+- Decision: require schema-v2 receipts to bind exact old and new report roots
+  while continuing to decode archived schema-v1 receipts byte-identically.
+  Rationale: admission introduces a report that has no old root, which cannot
+  be represented honestly by the earlier implicit-root contract.
+- Decision: isolate check-mode candidates in atomically created,
+  invocation-owned operating-system temporary directories.
+  Rationale: dry runs must never create state that recovery could activate.
+- Decision: preserve exact retained SVG bytes as identified research objects
+  and stage a separately sanitized inline representation.
+  Rationale: custody and safe reader rendering are distinct obligations.
 
 ## Outcomes & Retrospective
 
-Queued. Replace this text with evidence-backed outcomes, limitations, residual
-risks, and follow-on recommendations after terminal verification.
+ASSURE-MAINT02 completed. The V2 tool now admits a complete draft report through
+one typed atomic transaction, emits root-bound canonical evidence, sanitizes
+and embeds retained accessible SVG figures, and renders the complete
+three-report catalog through the real all-report path.
+
+The two unrelated terminal builds each contained 91 byte-identical files. The
+stable preview passes `check --all`, and the repository Markdown consumer
+accepts all six top-level report and supplement documents. CAL-09 remains
+`DRAFT`; the public catalog and tracked `usersum/**` remain unchanged.
+
+Dual implementation review, dual terminal verification, focused and
+full-workspace correctness, strict Clippy, dependency policy, documentation,
+security, generation-chain, and exact-diff gates passed. Residual maintenance
+debt is bounded: `v2.rs` and `v2/amendment.rs` remain close to the mandatory
+3,000-line decomposition threshold, and full-tree transaction fixtures are
+slow. Neither debt weakens the admitted draft or publication boundary.

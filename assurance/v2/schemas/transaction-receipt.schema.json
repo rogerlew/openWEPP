@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:transaction-receipt:1",
+  "$id": "openwepp:assurance:v2:transaction-receipt:2",
   "title": "openWEPP assurance amendment transaction receipt",
   "type": "object",
   "additionalProperties": false,
@@ -18,7 +18,7 @@
     "gate_argv"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "enum": [1, 2] },
     "operation": { "$ref": "#/$defs/text" },
     "impact_class": {
       "enum": ["metadata-fast", "editorial-fast", "governance-focused", "scientific-full", "release-full"]
@@ -34,6 +34,8 @@
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/path" }
     },
+    "old_roots": { "$ref": "#/$defs/reportRoots" },
+    "new_roots": { "$ref": "#/$defs/reportRoots" },
     "invalidated_authority": {
       "type": "array",
       "uniqueItems": true,
@@ -49,6 +51,26 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": { "const": 2 }
+        }
+      },
+      "then": {
+        "required": ["old_roots", "new_roots"]
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            { "required": ["old_roots"] },
+            { "required": ["new_roots"] }
+          ]
+        }
+      }
+    }
+  ],
   "$defs": {
     "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
     "text": { "type": "string", "pattern": "\\S" },
@@ -62,6 +84,43 @@
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/id" }
+    },
+    "reportRoots": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/rootSet" }
+    },
+    "rootSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "science_root",
+        "communication_root",
+        "attribution_root",
+        "review_governance_root",
+        "content_review_subject_root",
+        "finding_ledger_root",
+        "preapproval_realization_root",
+        "pre_steward_approval_root",
+        "approval_lock_root",
+        "realization_root",
+        "release_transfer_root"
+      ],
+      "properties": {
+        "science_root": { "$ref": "#/$defs/digest" },
+        "communication_root": { "$ref": "#/$defs/digest" },
+        "attribution_root": { "$ref": "#/$defs/digest" },
+        "review_governance_root": { "$ref": "#/$defs/digest" },
+        "content_review_subject_root": { "$ref": "#/$defs/digest" },
+        "finding_ledger_root": { "$ref": "#/$defs/nullableDigest" },
+        "preapproval_realization_root": { "$ref": "#/$defs/digest" },
+        "pre_steward_approval_root": { "$ref": "#/$defs/nullableDigest" },
+        "approval_lock_root": { "$ref": "#/$defs/nullableDigest" },
+        "realization_root": { "$ref": "#/$defs/nullableDigest" },
+        "release_transfer_root": { "$ref": "#/$defs/nullableDigest" }
+      }
+    },
+    "nullableDigest": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
     }
   }
 }

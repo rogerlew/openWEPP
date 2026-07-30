@@ -11,6 +11,7 @@ use super::confined::{ConfinedDirectory, validate_relative};
 use super::identity::{
     IDENTITY_LOCK_PATH, IdentityLock, ReviewEvent, ReviewLock, calculate_review_lock,
 };
+use super::receipt::{V2ReceiptReportRoots, receipt_roots, validate_receipt_contract};
 use crate::{AssuranceError, Result, sha256_bytes};
 
 pub(super) const V2_ROOT: &str = "assurance/v2";
@@ -51,6 +52,10 @@ pub struct V2AmendmentReceipt {
     pub new_generation_id: String,
     pub affected_reports: Vec<String>,
     pub affected_paths: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub old_roots: Option<BTreeMap<String, V2ReceiptReportRoots>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub new_roots: Option<BTreeMap<String, V2ReceiptReportRoots>>,
     pub invalidated_authority: Vec<String>,
     pub gate_ids: Vec<String>,
     pub gate_argv: Vec<Vec<String>>,
@@ -301,6 +306,7 @@ pub fn rebind_implementation(root: &Path, mode: V2AmendMode) -> Result<V2Amendme
             .map(|path| (*path).to_owned())
             .collect(),
         BTreeMap::new(),
+        false,
     )
 }
 
@@ -314,7 +320,8 @@ fn implementation_contract_replacements(root: &Path) -> Result<BTreeMap<PathBuf,
         .collect()
 }
 
-/// Adopts one report-declared external local-content source.
+/// Adopts a report manifest or one report-declared external local-content
+/// source.
 ///
 /// An in-review report is returned to draft custody and all active review
 /// events are invalidated because their authority remains bound to the prior
@@ -354,10 +361,26 @@ pub fn adopt_report_source_at_generation(
         ))
     })?;
     let report_path = report_path(root, report_id)?;
+    let selected_is_manifest = path == report_path;
+    if path == report_path && path.to_str() != report_path.to_str() {
+        return Err(AssuranceError::Invalid(format!(
+            "report manifest source must use exact path '{}'",
+            report_path.display()
+        )));
+    }
     let report_bytes = read_regular(root, &report_path)?;
     let mut report: serde_yaml::Value = parse_yaml(&report_path, &report_bytes)?;
     require_report_lifecycle(&report, report_id, "report source adoption")?;
-    require_declared_external_local_content(&report, report_id, selected)?;
+    if selected_is_manifest
+        && report.get("lifecycle").and_then(serde_yaml::Value::as_str) != Some("DRAFT")
+    {
+        return Err(AssuranceError::Invalid(
+            "report manifest source adoption is limited to DRAFT reports".to_owned(),
+        ));
+    }
+    if !selected_is_manifest {
+        require_declared_external_local_content(&report, report_id, selected)?;
+    }
 
     let previous = IdentityLock::load(root)?;
     require_expected_generation(&previous, if_generation)?;
@@ -397,18 +420,272 @@ pub fn adopt_report_source_at_generation(
         )])
     };
     let affected_reports = all_report_ids(root)?;
+    let report_replacement = if selected_is_manifest {
+        report_bytes
+    } else {
+        render_yaml(&report)?
+    };
     prepare_or_apply_successor_with_drift(
         root,
         "adopt-report-source",
         "scientific-full",
         affected_reports,
-        BTreeMap::from([(report_path, render_yaml(&report)?)]),
+        BTreeMap::from([(report_path, report_replacement)]),
         event_updates,
         mode,
         if_generation,
         BTreeSet::from([selected.to_owned()]),
         BTreeMap::from([(selected.to_owned(), observed)]),
+        false,
     )
+}
+
+/// Admits one complete unadmitted DRAFT report through the generated-identity
+/// transaction.
+///
+/// # Errors
+///
+/// Returns an error for an invalid or duplicate report, source drift, a stale
+/// generation, or transaction failure.
+pub fn admit_report(
+    root: &Path,
+    report_id: &str,
+    manifest_path: &Path,
+    mode: V2AmendMode,
+) -> Result<V2AmendmentReceipt> {
+    admit_report_at_generation(root, report_id, manifest_path, mode, None)
+}
+
+/// Admits one report only when the supplied generation remains current.
+///
+/// # Errors
+///
+/// Returns an error for an invalid or duplicate report, source drift, a stale
+/// generation, or transaction failure.
+pub fn admit_report_at_generation(
+    root: &Path,
+    report_id: &str,
+    manifest_path: &Path,
+    mode: V2AmendMode,
+    if_generation: Option<&str>,
+) -> Result<V2AmendmentReceipt> {
+    super::validate_id(report_id, "admitted report")?;
+    validate_relative(manifest_path)?;
+    let expected_path = PathBuf::from(format!("assurance/v2/reports/{report_id}/report.yaml"));
+    if manifest_path.to_str() != expected_path.to_str() {
+        return Err(AssuranceError::Invalid(format!(
+            "report '{report_id}' must use manifest path '{}'",
+            expected_path.display()
+        )));
+    }
+
+    let previous = IdentityLock::load(root)?;
+    previous.verify_files(root)?;
+    require_expected_generation(&previous, if_generation)?;
+    let catalog_path = PathBuf::from(CATALOG_PATH);
+    let mut catalog: serde_yaml::Value =
+        parse_yaml(&catalog_path, &read_regular(root, &catalog_path)?)?;
+    let existing = report_paths(&catalog)?;
+    if let Some((_, path)) = existing.iter().find(|(id, _)| id == report_id) {
+        if path == manifest_path {
+            super::V2Repository::open(root)?.validate_report(report_id)?;
+            return no_op_receipt(
+                root,
+                "admit-report",
+                "scientific-full",
+                vec![report_id.to_owned()],
+                if_generation,
+            );
+        }
+        return Err(AssuranceError::Invalid(format!(
+            "catalog report ID '{report_id}' is already bound to '{}'",
+            path.display()
+        )));
+    }
+    if let Some((id, _)) = existing.iter().find(|(_, path)| path == manifest_path) {
+        return Err(AssuranceError::Invalid(format!(
+            "manifest path '{}' is already bound to report '{id}'",
+            manifest_path.display()
+        )));
+    }
+    let review_path = PathBuf::from(format!("assurance/v2/reports/{report_id}/review.lock.json"));
+    match std::fs::symlink_metadata(root.join(&review_path)) {
+        Ok(_) => {
+            return Err(AssuranceError::Invalid(format!(
+                "unadmitted report '{report_id}' cannot have a preexisting review lock"
+            )));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(AssuranceError::io(root.join(&review_path), error)),
+    }
+
+    let report_bytes = read_regular(root, manifest_path)?;
+    let report: serde_yaml::Value = parse_yaml(manifest_path, &report_bytes)?;
+    require_admission_header(&report, report_id)?;
+    append_catalog_report(&mut catalog, &report, manifest_path)?;
+    let source_digests = collect_admission_sources(root, manifest_path, &report)?;
+    prepare_or_apply_successor_with_drift(
+        root,
+        "admit-report",
+        "scientific-full",
+        vec![report_id.to_owned()],
+        BTreeMap::from([(catalog_path, render_yaml(&catalog)?)]),
+        BTreeMap::new(),
+        mode,
+        if_generation,
+        BTreeSet::new(),
+        source_digests,
+        true,
+    )
+}
+
+fn require_admission_header(report: &serde_yaml::Value, report_id: &str) -> Result<()> {
+    for (field, expected) in [
+        ("id", report_id),
+        ("lifecycle", "DRAFT"),
+        ("trust_domain", "production"),
+    ] {
+        let observed = report
+            .get(field)
+            .and_then(serde_yaml::Value::as_str)
+            .ok_or_else(|| {
+                AssuranceError::Invalid(format!("admitted report field '{field}' is missing"))
+            })?;
+        if observed != expected {
+            return Err(AssuranceError::Invalid(format!(
+                "admitted report field '{field}' must be '{expected}'"
+            )));
+        }
+    }
+    if report
+        .get("fixture_only")
+        .and_then(serde_yaml::Value::as_bool)
+        != Some(false)
+    {
+        return Err(AssuranceError::Invalid(
+            "admitted production report must set fixture_only false".to_owned(),
+        ));
+    }
+    for field in ["version", "title", "owner"] {
+        let value = report
+            .get(field)
+            .and_then(serde_yaml::Value::as_str)
+            .ok_or_else(|| {
+                AssuranceError::Invalid(format!("admitted report field '{field}' is missing"))
+            })?;
+        require_text(value, field)?;
+    }
+    Ok(())
+}
+
+fn append_catalog_report(
+    catalog: &mut serde_yaml::Value,
+    report: &serde_yaml::Value,
+    manifest_path: &Path,
+) -> Result<()> {
+    let text = |field: &str| {
+        report
+            .get(field)
+            .and_then(serde_yaml::Value::as_str)
+            .map(ToOwned::to_owned)
+            .ok_or_else(|| {
+                AssuranceError::Invalid(format!("admitted report field '{field}' is missing"))
+            })
+    };
+    let mut entry = serde_yaml::Mapping::new();
+    for (field, value) in [
+        ("id", text("id")?),
+        ("version", text("version")?),
+        ("title", text("title")?),
+        ("owner", text("owner")?),
+        ("trust_domain", text("trust_domain")?),
+    ] {
+        entry.insert(yaml_key(field), serde_yaml::Value::String(value));
+    }
+    entry.insert(yaml_key("fixture_only"), serde_yaml::Value::Bool(false));
+    entry.insert(
+        yaml_key("manifest_path"),
+        serde_yaml::Value::String(
+            manifest_path
+                .to_str()
+                .ok_or_else(|| {
+                    AssuranceError::Invalid("report manifest path is not UTF-8".to_owned())
+                })?
+                .to_owned(),
+        ),
+    );
+    catalog
+        .get_mut("reports")
+        .and_then(serde_yaml::Value::as_sequence_mut)
+        .ok_or_else(|| AssuranceError::Invalid("catalog reports are missing".to_owned()))?
+        .push(serde_yaml::Value::Mapping(entry));
+    Ok(())
+}
+
+fn collect_admission_sources(
+    root: &Path,
+    manifest_path: &Path,
+    report: &serde_yaml::Value,
+) -> Result<BTreeMap<String, String>> {
+    let mut paths = BTreeSet::from([manifest_path.to_path_buf()]);
+    collect_yaml_paths(report, &mut paths)?;
+    paths
+        .into_iter()
+        .map(|path| {
+            let text = path
+                .to_str()
+                .ok_or_else(|| {
+                    AssuranceError::Invalid(format!(
+                        "admitted source path is not UTF-8: {}",
+                        path.display()
+                    ))
+                })?
+                .to_owned();
+            read_regular(root, &path).map(|bytes| (text, sha256_bytes(&bytes)))
+        })
+        .collect()
+}
+
+fn collect_yaml_paths(value: &serde_yaml::Value, output: &mut BTreeSet<PathBuf>) -> Result<()> {
+    match value {
+        serde_yaml::Value::Mapping(mapping) => {
+            if let Some(path) = mapping
+                .get(yaml_key("path"))
+                .and_then(serde_yaml::Value::as_str)
+            {
+                let path = exact_relative_path(path)?;
+                output.insert(path);
+            }
+            for child in mapping.values() {
+                collect_yaml_paths(child, output)?;
+            }
+        }
+        serde_yaml::Value::Sequence(values) => {
+            for child in values {
+                collect_yaml_paths(child, output)?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn exact_relative_path(value: &str) -> Result<PathBuf> {
+    let path = PathBuf::from(value);
+    validate_relative(&path)?;
+    let canonical = path
+        .components()
+        .filter_map(|component| match component {
+            std::path::Component::Normal(value) => Some(value),
+            _ => None,
+        })
+        .collect::<PathBuf>();
+    if canonical.to_str() != Some(value) {
+        return Err(AssuranceError::Invalid(format!(
+            "source path must use exact repository-relative spelling: '{value}'"
+        )));
+    }
+    Ok(path)
 }
 
 fn requires_adoption_reset_repair(
@@ -1859,6 +2136,7 @@ fn load_generation_receipt(entry: &std::fs::DirEntry) -> Result<V2AmendmentRecei
             path: path.clone(),
             message: error.to_string(),
         })?;
+    validate_receipt_contract(&receipt)?;
     let canonical = receipt_bytes(&receipt)?;
     if canonical != bytes {
         return Err(AssuranceError::Invalid(format!(
@@ -2014,6 +2292,7 @@ fn prepare_or_apply_successor(
         if_generation,
         BTreeSet::new(),
         BTreeMap::new(),
+        false,
     )
 }
 
@@ -2028,7 +2307,8 @@ fn prepare_or_apply_successor_with_drift(
     mode: V2AmendMode,
     if_generation: Option<&str>,
     allowed_preexisting_drift: BTreeSet<String>,
-    adopted_source_digests: BTreeMap<String, String>,
+    source_digest_updates: BTreeMap<String, String>,
+    allow_new_sources: bool,
 ) -> Result<V2AmendmentReceipt> {
     let previous = IdentityLock::load(root)?;
     let exceptions = allowed_preexisting_drift
@@ -2050,8 +2330,8 @@ fn prepare_or_apply_successor_with_drift(
             sources.insert(text.to_owned(), sha256_bytes(bytes));
         }
     }
-    for (path, digest) in &adopted_source_digests {
-        if !sources.contains_key(path) {
+    for (path, digest) in &source_digest_updates {
+        if !allow_new_sources && !sources.contains_key(path) {
             return Err(AssuranceError::Invalid(format!(
                 "source adoption cannot add undeclared identity member '{path}'"
             )));
@@ -2066,7 +2346,7 @@ fn prepare_or_apply_successor_with_drift(
         .keys()
         .map(|path| path.to_string_lossy().into_owned())
         .collect::<Vec<_>>();
-    paths.extend(adopted_source_digests.keys().cloned());
+    paths.extend(source_digest_updates.keys().cloned());
     paths.sort();
     paths.dedup();
     let invalidated = event_updates
@@ -2075,8 +2355,10 @@ fn prepare_or_apply_successor_with_drift(
         .map(|(report, _)| report)
         .map(|report| format!("prior_review_events:{report}"))
         .collect::<Vec<_>>();
+    let old_roots = receipt_roots(root, &affected_reports, &BTreeMap::new(), true)?;
+    let new_roots = receipt_roots(root, &affected_reports, &replacements, false)?;
     let receipt = V2AmendmentReceipt {
-        schema_version: 1,
+        schema_version: 2,
         operation: operation.to_owned(),
         impact_class: impact_class.to_owned(),
         changed: true,
@@ -2084,6 +2366,8 @@ fn prepare_or_apply_successor_with_drift(
         new_generation_id: next.generation_id,
         affected_reports,
         affected_paths: paths,
+        old_roots: Some(old_roots),
+        new_roots: Some(new_roots),
         invalidated_authority: invalidated,
         gate_ids: vec![gate_id(impact_class).to_owned()],
         gate_argv: gate_argv(impact_class),
@@ -2091,7 +2375,7 @@ fn prepare_or_apply_successor_with_drift(
     let mut candidate = with_receipt(replacements, receipt)?;
     candidate.allowed_preexisting_drift = allowed_preexisting_drift;
     if mode == V2AmendMode::Check {
-        Ok(candidate.receipt)
+        super::transaction::check_candidate(root, &candidate)
     } else {
         apply_candidate(root, candidate)
     }
@@ -2115,23 +2399,36 @@ fn regenerate_review_locks(
         }
         let report_bytes = candidate_bytes(root, replacements, &path)?;
         let report: serde_yaml::Value = parse_yaml(&path, &report_bytes)?;
-        let existing = load_review_lock(root, &report_id)?;
+        let existing = load_optional_review_lock(root, &report_id)?;
         let (events, invalidated) = match event_updates.get(&report_id) {
             Some(update) if update.invalidate_existing => {
+                let existing = existing.as_ref().ok_or_else(|| {
+                    AssuranceError::Invalid(format!(
+                        "new report '{report_id}' cannot invalidate prior review events"
+                    ))
+                })?;
                 let mut invalidated = existing.invalidated_event_ids.clone();
-                invalidated.extend(existing.event_ids);
+                invalidated.extend(existing.event_ids.clone());
                 invalidated.sort();
                 invalidated.dedup();
                 (update.event_ids.clone(), invalidated)
             }
             Some(update) => {
-                let mut events = existing.event_ids;
+                let existing = existing.as_ref().ok_or_else(|| {
+                    AssuranceError::Invalid(format!(
+                        "new report '{report_id}' cannot append prior review events"
+                    ))
+                })?;
+                let mut events = existing.event_ids.clone();
                 events.extend(update.event_ids.clone());
                 events.sort();
                 events.dedup();
-                (events, existing.invalidated_event_ids)
+                (events, existing.invalidated_event_ids.clone())
             }
-            None => (existing.event_ids, existing.invalidated_event_ids),
+            None => existing.as_ref().map_or_else(
+                || (Vec::new(), Vec::new()),
+                |lock| (lock.event_ids.clone(), lock.invalidated_event_ids.clone()),
+            ),
         };
         let mut lock = calculate_review_lock(
             root,
@@ -2139,7 +2436,7 @@ fn regenerate_review_locks(
             &report,
             &principals,
             replacements,
-            existing.legacy_subject_root,
+            existing.and_then(|lock| lock.legacy_subject_root),
             events,
         )?;
         lock.invalidated_event_ids = invalidated;
@@ -2180,6 +2477,18 @@ fn load_review_lock(root: &Path, report_id: &str) -> Result<ReviewLock> {
         path,
         message: error.to_string(),
     })
+}
+
+fn load_optional_review_lock(root: &Path, report_id: &str) -> Result<Option<ReviewLock>> {
+    let path = PathBuf::from(format!("assurance/v2/reports/{report_id}/review.lock.json"));
+    if !root
+        .join(&path)
+        .try_exists()
+        .map_err(|error| AssuranceError::io(root.join(&path), error))?
+    {
+        return Ok(None);
+    }
+    load_review_lock(root, report_id).map(Some)
 }
 
 fn candidate_bytes(
@@ -2630,8 +2939,9 @@ fn no_op_receipt(
     let lock = IdentityLock::load(root)?;
     lock.verify_files(root)?;
     require_expected_generation(&lock, if_generation)?;
+    let roots = receipt_roots(root, &affected_reports, &BTreeMap::new(), false)?;
     Ok(V2AmendmentReceipt {
-        schema_version: 1,
+        schema_version: 2,
         operation: operation.to_owned(),
         impact_class: impact_class.to_owned(),
         changed: false,
@@ -2639,6 +2949,8 @@ fn no_op_receipt(
         new_generation_id: lock.generation_id,
         affected_reports,
         affected_paths: Vec::new(),
+        old_roots: Some(roots.clone()),
+        new_roots: Some(roots),
         invalidated_authority: Vec::new(),
         gate_ids: Vec::new(),
         gate_argv: Vec::new(),
@@ -2654,4 +2966,23 @@ fn require_expected_generation(lock: &IdentityLock, expected: Option<&str>) -> R
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::exact_relative_path;
+
+    #[test]
+    fn source_paths_require_exact_repository_relative_spelling() {
+        assert!(exact_relative_path("assurance/evidence.json").is_ok());
+        for alias in [
+            "assurance//evidence.json",
+            "assurance/./evidence.json",
+            "assurance/evidence.json/",
+            "../evidence.json",
+            "/assurance/evidence.json",
+        ] {
+            assert!(exact_relative_path(alias).is_err(), "must reject {alias}");
+        }
+    }
 }

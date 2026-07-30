@@ -16,14 +16,17 @@ mod lifecycle;
 mod normalization;
 mod planner;
 mod publication;
+mod receipt;
+mod svg;
 mod transaction;
 
 pub use amendment::{
-    V2AmendMode, V2AmendmentReceipt, V2Inspection, V2RecoveryAction, adopt_report_source,
-    adopt_report_source_at_generation, amend_attribution, amend_attribution_at_generation,
-    amend_lifecycle, amend_lifecycle_at_generation, amend_normalize, amend_normalize_at_generation,
-    amend_principal, amend_principal_at_generation, amend_role, amend_role_at_generation,
-    inspect_report, rebind_implementation, recover_amendment, verify_generation,
+    V2AmendMode, V2AmendmentReceipt, V2Inspection, V2RecoveryAction, admit_report,
+    admit_report_at_generation, adopt_report_source, adopt_report_source_at_generation,
+    amend_attribution, amend_attribution_at_generation, amend_lifecycle,
+    amend_lifecycle_at_generation, amend_normalize, amend_normalize_at_generation, amend_principal,
+    amend_principal_at_generation, amend_role, amend_role_at_generation, inspect_report,
+    rebind_implementation, recover_amendment, verify_generation,
 };
 pub use assembly::{V2AssemblyResult, V2AssemblySummary};
 pub use fixture::{
@@ -38,6 +41,7 @@ pub use publication::{
     V2PublicationFault, V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity,
     V2ReleaseVerification, V2ReviewRoots, V2TrustDomain, verify_v2_release_snapshot,
 };
+pub use receipt::V2ReceiptReportRoots;
 
 pub(crate) use confined::read_regular_confined;
 use confined::validate_relative;
@@ -190,6 +194,20 @@ const FIGURE_FIELDS: &[&str] = &[
     "result_ids",
     "value_binding_ids",
     "visualization",
+    "generation_procedure",
+    "alternative_text",
+    "caption",
+];
+const RETAINED_FIGURE_FIELDS: &[&str] = &[
+    "id",
+    "title",
+    "owner",
+    "kind",
+    "result_ids",
+    "value_binding_ids",
+    "visualization",
+    "research_object_id",
+    "ancillary_object_id",
     "generation_procedure",
     "alternative_text",
     "caption",
@@ -349,7 +367,8 @@ const REPORT_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[
     ("table", TABLE_FIELDS),
     ("tableColumn", TABLE_COLUMN_FIELDS),
     ("tableRow", TABLE_ROW_FIELDS),
-    ("figure", FIGURE_FIELDS),
+    ("generatedFigure", FIGURE_FIELDS),
+    ("retainedFigure", RETAINED_FIGURE_FIELDS),
     ("reference", REFERENCE_FIELDS),
     ("researchObject", RESEARCH_OBJECT_FIELDS),
     ("review", REVIEW_FIELDS),
@@ -1422,6 +1441,10 @@ struct Figure {
     result_ids: Vec<String>,
     value_binding_ids: Vec<String>,
     visualization: String,
+    #[serde(default)]
+    research_object_id: RequiredNullable<String>,
+    #[serde(default)]
+    ancillary_object_id: RequiredNullable<String>,
     generation_procedure: String,
     alternative_text: String,
     caption: String,
@@ -1649,7 +1672,7 @@ fn validate_report_sections(report: &Report, ids: &ReportIds) -> Result<()> {
         validate_table(table, ids)?;
     }
     for figure in &report.figures {
-        validate_figure(figure, ids)?;
+        validate_figure(figure, report, ids)?;
     }
     for reference in &report.references {
         validate_reference(reference, ids)?;
@@ -2271,35 +2294,8 @@ fn validate_table_rows(table: &Table, ids: &ReportIds) -> Result<()> {
     Ok(())
 }
 
-fn validate_figure(figure: &Figure, ids: &ReportIds) -> Result<()> {
-    if figure.kind != "result_bearing" {
-        return Err(AssuranceError::Invalid(format!(
-            "figure '{}' has unsupported kind",
-            figure.id
-        )));
-    }
-    if figure.result_ids.is_empty() || figure.value_binding_ids.is_empty() {
-        return Err(AssuranceError::Invalid(format!(
-            "result-bearing figure '{}' requires result and value bindings",
-            figure.id
-        )));
-    }
-    if figure.visualization != "linear_magnitude_bars" {
-        return Err(AssuranceError::Invalid(format!(
-            "figure '{}' has unsupported visualization",
-            figure.id
-        )));
-    }
-    validate_reference_list(&figure.result_ids, &ids.results, "result", false)?;
-    validate_reference_list(
-        &figure.value_binding_ids,
-        &ids.value_bindings,
-        "value binding",
-        true,
-    )?;
-    require_nonempty(&figure.generation_procedure, "figure generation_procedure")?;
-    require_nonempty(&figure.alternative_text, "figure alternative_text")?;
-    require_nonempty(&figure.caption, "figure caption")
+fn validate_figure(figure: &Figure, report: &Report, ids: &ReportIds) -> Result<()> {
+    svg::validate_figure_contract(figure, report, ids)
 }
 
 fn validate_reference(reference: &Reference, ids: &ReportIds) -> Result<()> {
