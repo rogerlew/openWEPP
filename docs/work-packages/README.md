@@ -330,6 +330,15 @@
 
 State as of `2026-07-29 UTC`:
 
+- `20260729-snow-surface-eb-01-reconciliation-factorial-design-001/` -
+  SCAFFOLDED / QUEUED: opens the `SNOW-SURFACE-EB` campaign by reconciling the
+  current snow surface-energy, multilayer, sublimation, selector, observation,
+  and authority surfaces before new physics. It pre-registers orthogonal
+  baseline, sub-canopy-longwave-only, sublimation-only, and combined cells so
+  later work must quantify both marginal effects and the
+  `Y(LS) - Y(L) - Y(S) + Y(B)` interaction. The package also requires one
+  independently reconstructed mass/energy ledger that prevents sublimated mass
+  or latent energy from being counted twice.
 - `20260729-assure-maint03-tracked-human-review-rendering-001/` -
   COMPLETE / PASS: created a deterministic tracked review-draft lane under
   `usersum/assurance/review-drafts/`, corrected rendering-visible CAL-09 prose,
