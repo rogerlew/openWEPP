@@ -7,9 +7,9 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "bc236bfef4018b88378a41b87156cd76720fe9aa4fa1d5acaf2b746411ec2612",
+  "previous_generation_id": "5b03818eb2db9a8827cd0900c6ad1e33bf33c3087a7bb3edb1a2887dd2fe57bc",
   "sources": {
-    "assurance/v2/README.md": "bfad16c2ae5558ca60a48e5f03cdd654e6fdbf2d84b36df1546098dcc82c6fd5",
+    "assurance/v2/README.md": "e5729db578edd6ca83a1fc59ae9ac2fb989b8095e6c5a2dd32e8ae0524b468e8",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
     "assurance/v2/principals.yaml": "3cf97c15f0c0cbd50d514caf95de2a79daa4ad096598b652236cced4add48ba5",
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/agent-assistance-packet.json": "bbe0a0734975c095ef0477d84955376f5a7d2fff013dc5fe065f48039449f974",
@@ -27,11 +27,11 @@
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json": "8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8",
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md": "fcf1fc8bed30c9b8bf084fc4951ee3830907903038ce0716a76c8b003b598270",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/evidence/agent-assistance-packet.json": "0948d2e2703a242ba4261b7b1a0289ca169240c4acd8441196f48d1c55e8dad7",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/manuscript.md": "3822d2ea24324fe28815c6c66a3a632e76b8111f8136bcfe516fc439b5878f3f",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/manuscript.md": "30e3167417bcd027bf0b89fde4247708e628bdc58f50a327e9b3c93377b2958f",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/procedures/reproduce_canopy_synthesis.py": "80c9af19d4aac382ca8019726b2aef93caa4b9d14afd26cfd9ea3e7bbb35a110",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml": "ea550ed929fb35f097715ff747b070f4b158d07fcae746adb5947d95b3bea5d0",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml": "8cf763adae6dc81fabecaed569afc88233d333ef15e61a666e0190e1d9b3d480",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json": "515344ded0cc73b344cc40f7972439a2036adef39401443c432f79f72d605dba",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/supplement.md": "a428f2457a534210ebaa40a4167129ec4e9ce092044a5e44f2361e563e26d8c5",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/supplement.md": "b5ae941a0513225f00f8e67cced8392dfff18b58c216296389b34250d2be06f6",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json": "7facef9067ae59b908903fa684d33b5299f4e5010776cbacdb8428d3f6587286",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/dataset-provenance.md": "8f84fc9f6328509798c103a5b8499d06358e4bcf6840d2bb017846edcc470298",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/inputs/conservation-operands.json": "bc58d72901fd6967a82067a0aee1df71bfd2962475f978bcfd5fa8e358012f18",
@@ -121,9 +121,9 @@
     "usersum/openwepp-canopy-phenology.md": "31026d56d39abd393bd9a4af7e700c91c243229db4b63b892db8768b2638a48d"
   },
   "review_locks": {
-    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "351d0476e30b57fcd86e00d2672d02d575556e51a8eefacb7d0bb7668fa6abb6",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "27386fff8801c06d70a42daeb20a39a592e9d44243421cb9b74adcf58cd2a44f",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "ef652e3f6b9ac9d5bb6df055c2c02aa3176151703e572be6dc4dbbb9bc7ffb2e"
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "042e655e01115f6bf300f50a54ffc54e5745490091c52b5c9cc40800eaf4c65c",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "969c62f567511de574d03fe8133b93f0281d89205390bb39f2ce386b02eca941",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "2bfc1fa7a84db9f735061a027b5d1da4ce912bdaf7067cc7c991fc31c8b24d12"
   },
-  "generation_id": "30db4a7e6a691601426428b7772e28143ff9fa1bf10dd9d1ae80062d7f0002a2"
+  "generation_id": "b85b2ea962e7a9cf1461d187b8751b70043d1e6aa4f937c648ffb2b8ff49fffc"
 }

@@ -718,6 +718,59 @@ fn report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation()
 }
 
 #[test]
+fn manifest_adoption_accepts_complete_owned_internal_source_set() {
+    let fixture = fixture("assurance-adopt-owned-source-set");
+    let manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));
+    let manuscript = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/manuscript.md"));
+    let supplement = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/supplement.md"));
+    for path in [&manuscript, &supplement] {
+        let mut bytes = fs::read(fixture.path.join(path)).unwrap();
+        bytes.extend_from_slice(b"\nReview rendering source-set test.\n");
+        fs::write(fixture.path.join(path), bytes).unwrap();
+    }
+    let before = capture_tree(&fixture.path.join("assurance/v2"));
+    let checked =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Check).unwrap();
+    assert!(checked.changed);
+    for path in [&manifest, &manuscript, &supplement] {
+        assert!(checked.affected_paths.contains(&path.display().to_string()));
+    }
+    assert_eq!(before, capture_tree(&fixture.path.join("assurance/v2")));
+
+    let applied =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Apply).unwrap();
+    assert_eq!(checked, applied);
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_report(CANOPY)
+        .unwrap();
+    let repeated =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Apply).unwrap();
+    assert!(!repeated.changed);
+}
+
+#[test]
+fn manifest_adoption_rejects_drift_owned_by_another_report() {
+    let fixture = fixture("assurance-adopt-owned-source-set-unrelated");
+    let canopy_manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));
+    for report in [CANOPY, GROUNDWATER] {
+        let manuscript = PathBuf::from(format!("assurance/v2/reports/{report}/manuscript.md"));
+        let mut bytes = fs::read(fixture.path.join(&manuscript)).unwrap();
+        bytes.extend_from_slice(b"\nUnrelated drift test.\n");
+        fs::write(fixture.path.join(manuscript), bytes).unwrap();
+    }
+    let before = capture_tree(&fixture.path);
+    let error = adopt_report_source(&fixture.path, CANOPY, &canopy_manifest, V2AmendMode::Apply)
+        .unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("generated identity member changed")
+    );
+    assert_eq!(before, capture_tree(&fixture.path));
+}
+
+#[test]
 fn report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies() {
     let source = Path::new("tests/fixtures/cancov_forest/README.md");
     let wrong_kind = current_unverified_fixture("assurance-adopt-report-source-kind");

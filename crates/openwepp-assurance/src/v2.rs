@@ -10,6 +10,7 @@ mod amendment;
 mod amendment_support;
 mod assembly;
 mod confined;
+mod draft_adoption;
 mod fixture;
 mod identity;
 mod lifecycle;

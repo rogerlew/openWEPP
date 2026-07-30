@@ -1,0 +1,12 @@
+{
+  "result_id": "GW-RESULT-FOCUSED-TESTS",
+  "schema_version": 1,
+  "values": [
+    {
+      "id": "focused_test_count",
+      "precision": "exact preregistered passing-test count",
+      "unit_id": "test_count",
+      "value": 7.0
+    }
+  ]
+}

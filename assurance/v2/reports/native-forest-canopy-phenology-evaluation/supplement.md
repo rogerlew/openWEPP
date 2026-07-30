@@ -114,19 +114,19 @@ cmp /tmp/canopy-synthesis.json \
 ```
 
 The procedure asserts the accepted/holdout count, exact CAL-06 site/stratum
-inventory, {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members in every forest
+inventory, {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} in every forest
 gradient, and presence of the best Bezà member under both products. It
 calculates minima, maxima, counts, percentages, and ridge differences from
 retained rows.
 
 ## S6. Timing Search And Identifiability
 
-CAL-04B evaluated {{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}} complete timing
-configurations. The minimum-plus-one-day rule retained
-{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members. All accepted members lie on the
-admitted support boundary: {{quantity:CANOPY-V-DOUBLE-BOUNDARY}} are
-double-boundary and {{quantity:CANOPY-V-UPPER-BOUNDARY}} upper-support-boundary
-members. Timing is therefore `PARTIALLY_IDENTIFIABLE`.
+CAL-04B evaluated {{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}}. The
+minimum-plus-one-day rule retained {{quantity:CANOPY-V-ACCEPTED-MEMBERS}}. All
+accepted members lie on the admitted support boundary:
+{{quantity:CANOPY-V-DOUBLE-BOUNDARY}} are double-boundary cases and
+{{quantity:CANOPY-V-UPPER-BOUNDARY}} are upper-support-boundary cases. Timing
+is therefore `PARTIALLY_IDENTIFIABLE`.
 
 The admitted Hubbard-only marginal ranges are:
 
@@ -142,12 +142,11 @@ The admitted Hubbard-only marginal ranges are:
 These ranges are an accepted correlated ensemble, not independent priors,
 physiological bounds, or universal calibration guidance.
 
-Harvard scores were finite for
-{{quantity:CANOPY-V-ACCEPTED-MEMBERS}}/{{quantity:CANOPY-V-ACCEPTED-MEMBERS}}
-members and ranged from
+Harvard scores were finite for {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} out of
+{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} and ranged from
 {{quantity:CANOPY-V-HARVARD-MIN}} to
 {{quantity:CANOPY-V-HARVARD-MAX}}. Interval coverage was zero for
-{{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}} members and reached at most
+{{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}} and reached at most
 {{quantity:CANOPY-V-HARVARD-MAX-COVERAGE}}.
 
 ## S7. Litter And Decomposition
@@ -171,9 +170,9 @@ constant is fitted.
 ## S8. Canopy Gradient And Downstream Cells
 
 The prespecified matrix comprised seven forest lanes crossed with
-{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members
-plus two open controls: {{quantity:CANOPY-V-GRADIENT-RUNS}} runs. Winter cover
-ordering held for every member:
+{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} plus two open controls:
+{{quantity:CANOPY-V-GRADIENT-RUNS}}. Winter cover ordering held for every
+member:
 
 - Marcell: deciduous < mixed < conifer;
 - Harvard: deciduous < mixed; and
@@ -203,10 +202,17 @@ proved zero executor residual without clipping.
 
 CAL-07F retained all 24 Bezà product/year/direction/threshold transition
 records. Member ranks were identical for `gcc_mean` and `gcc_90`, and their
-top-quartile sets overlapped completely. {{quantity:CANOPY-V-BEZA-COMPLETE}} members
-completed all 12 crossings under both products. Best member `GSI-4831` hit
-{{quantity:CANOPY-V-BEZA-MEAN-HITS}} of 12 `gcc_mean` confidence intervals and
-{{quantity:CANOPY-V-BEZA-GCC90-HITS}} of 12 `gcc_90` intervals. Penalized
+top-quartile sets overlapped completely. {{quantity:CANOPY-V-BEZA-COMPLETE}}
+completed all 12 crossings under both products. Best member `GSI-4831`
+intersected one of 12 `gcc_mean` confidence intervals and none of the 12
+`gcc_90` intervals:
+
+| Observation product | Interval-hit total |
+| --- | ---: |
+| `gcc_mean` | {{quantity:CANOPY-V-BEZA-MEAN-HITS}} |
+| `gcc_90` | {{quantity:CANOPY-V-BEZA-GCC90-HITS}} |
+
+Penalized
 errors were {{quantity:CANOPY-V-BEZA-MEAN-ERROR}} and
 {{quantity:CANOPY-V-BEZA-GCC90-ERROR}}.
 
@@ -218,8 +224,8 @@ uncertainty or direction-coherence passer.
 
 ## S10. Elliot Scorecard
 
-The retained comparison contains {{quantity:CANOPY-V-ELLIOT-TARGETS}} target
-rows, of which {{quantity:CANOPY-V-ELLIOT-CONTRADICTED}} are classified
+The retained comparison contains {{quantity:CANOPY-V-ELLIOT-TARGETS}}, of
+which {{quantity:CANOPY-V-ELLIOT-CONTRADICTED}} are classified
 `CONTRADICTED`. Hubbard `dropfc=0.95` reproduced live biomass within the frozen
 tolerance, but old and total residue were high. Hubbard `dropfc=0.92` produced
 substantially lower live biomass. Santee live biomass, residue, hydrology, and

@@ -11,13 +11,13 @@
   verification. This establishes implementation behavior, not general
   predictive accuracy.
 - Hubbard Brook timing calibration retained
-  {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} correlated coefficient combinations.
+  a correlated set of {{quantity:CANOPY-V-ACCEPTED-MEMBERS}}.
   Independent Harvard errors ranged from
   {{quantity:CANOPY-V-HARVARD-MIN}} to
   {{quantity:CANOPY-V-HARVARD-MAX}}, and
-  {{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}} members had no interval
+  {{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}} had no interval
   coverage. Transferability is unsupported for that holdout.
-- At Bezà, {{quantity:CANOPY-V-BEZA-COMPLETE}} retained members reproduced all
+- At Bezà, {{quantity:CANOPY-V-BEZA-COMPLETE}} reproduced all
   12 seasonal transitions under
   both camera-greenness products. The best joint member's penalized error was
   {{quantity:CANOPY-V-BEZA-MEAN-ERROR}} for `gcc_mean` and
@@ -50,18 +50,18 @@ We evaluated openWEPP's native-forest canopy formulation from daily forcing
 through generalized growing season index (GSI), foliage, leaf area index
 (LAI), canopy cover and height, litter transfer, surface residue, and
 downstream hydrologic and erosion consumers. Evidence combined analytical and
-software verification, daily and annual mass closure, a
-{{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}}-member Hubbard Brook timing
-search, independent Harvard scoring without refit, litter-source and
-decomposition recovery, {{quantity:CANOPY-V-GRADIENT-RUNS}} canopy-gradient
-runs, Southern Hemisphere phase tests, two years of Bezà camera greenness, and
-a bounded legacy comparison. The Hubbard calibration retained
-{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} partially identifiable members; Harvard
+software verification, daily and annual mass closure, a Hubbard Brook timing
+search over {{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}}, independent Harvard
+scoring without refit, litter-source and decomposition recovery,
+{{quantity:CANOPY-V-GRADIENT-RUNS}} in the canopy-gradient experiment, Southern
+Hemisphere phase tests, two years of Bezà camera greenness, and a bounded
+legacy comparison. The Hubbard calibration retained
+{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} that were partially identifiable; Harvard
 aggregate timing errors were {{quantity:CANOPY-V-HARVARD-MIN}} to
 {{quantity:CANOPY-V-HARVARD-MAX}}. Five source-decay pairs reproduced the same
 year-20 stock within {{quantity:CANOPY-V-RIDGE-MAX-DIFF}}, showing that a
 single terminal stock does not identify both operands. Winter canopy ordering
-held for all {{quantity:CANOPY-V-GRADIENT-ORDERING}} members in every available
+held for all {{quantity:CANOPY-V-GRADIENT-ORDERING}} in every available
 within-site forest gradient. In contrast, no member completed all Bezà
 transitions, and the best member hit only one `gcc_mean` uncertainty interval
 and no `gcc_90` interval. We conclude that the implementation and temperate
@@ -120,8 +120,8 @@ and diagnostic evidence. The core empirical timing calibration used Hubbard
 Brook observations. Harvard was opened once after the accepted ensemble was
 frozen and caused no refit. CAL-05 used synthetic source-decay recovery and
 ridge calculations to assess identifiability, not empirical calibration.
-CAL-06 crossed all {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} accepted timing
-members with source-supplied forest strata at Marcell, Harvard, and Hubbard
+CAL-06 crossed all {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} with source-supplied
+forest strata at Marcell, Harvard, and Hubbard
 Brook. Southern Hemisphere evaluation
 separated synthetic phase mechanics from Alerce forcing diagnostics and the
 independent Bezà camera products.
@@ -157,10 +157,10 @@ accuracy outside the tested evidence.
 ## 5. Temperate Calibration And Independent Transfer
 
 The Hubbard search evaluated
-{{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}} complete GSI configurations. It
-retained {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members within one day of the minimum
-objective. Every retained member lay on the admitted support boundary, so the
-six thresholds are partially identifiable rather than uniquely estimated.
+{{quantity:CANOPY-V-SEARCHED-CONFIGURATIONS}}. It retained
+{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} within one day of the minimum objective.
+Every retained member lay on the admitted support boundary, so the six
+thresholds are partially identifiable rather than uniquely estimated.
 The accepted combinations should remain intact; their marginal ranges are not
 independent physiological bounds.
 
@@ -172,7 +172,7 @@ Harvard scoring produced finite results for all retained members without
 refit. Aggregate error ranged from {{quantity:CANOPY-V-HARVARD-MIN}} to
 {{quantity:CANOPY-V-HARVARD-MAX}}.
 {{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}} of
-{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members had zero observation-interval
+{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} had zero observation-interval
 coverage, and the maximum coverage was only
 {{quantity:CANOPY-V-HARVARD-MAX-COVERAGE}}. The Harvard result is adverse
 independent evidence: it does not erase the Hubbard calibration, but it does
@@ -202,8 +202,8 @@ sources from evergreen fraction or structural biomass.
 Complete daily synthetic stock recovered its frozen source-rate truth within
 the tested grid, showing that information can pass through the calibration
 operator when the input record is informative. A single
-year-20 stock was nonidentifying: {{quantity:CANOPY-V-RIDGE-PAIRS}} source-rate
-pairs reproduced {{quantity:CANOPY-V-RIDGE-STOCK}} within
+year-20 stock was nonidentifying: {{quantity:CANOPY-V-RIDGE-PAIRS}} reproduced
+{{quantity:CANOPY-V-RIDGE-STOCK}} within
 {{quantity:CANOPY-V-RIDGE-MAX-DIFF}}. The
 {{link:research-object:CANOPY-OBJECT-F5|source-decay time series}} makes this
 equifinality visible. Repeated material-specific inputs and stock measurements
@@ -226,10 +226,10 @@ identifies the modeled quantities and exclusions.
 
 ## 7. Canopy Gradient And Downstream Response
 
-CAL-06 completed {{quantity:CANOPY-V-GRADIENT-RUNS}} prespecified runs. Winter
+CAL-06 completed {{quantity:CANOPY-V-GRADIENT-RUNS}}. Winter
 cover retained deciduous below mixed below conifer at Marcell, and deciduous
 below mixed at Harvard and Hubbard Brook, for all
-{{quantity:CANOPY-V-GRADIENT-ORDERING}} accepted members. This coherent
+{{quantity:CANOPY-V-GRADIENT-ORDERING}}. This coherent
 within-model ordering is `BOUNDED`: no independent canopy-amplitude
 observations established an accuracy tolerance.
 
@@ -262,10 +262,17 @@ finite nonnegative daily VPD and allowed bounded research execution without
 clipping.
 
 At Bezà, `gcc_mean` and `gcc_90` daily camera products agreed on the diagnosis.
-{{quantity:CANOPY-V-BEZA-COMPLETE}} members completed all 12 seasonal
-transitions under both products.
-The best member hit {{quantity:CANOPY-V-BEZA-MEAN-HITS}} `gcc_mean` confidence
-interval and {{quantity:CANOPY-V-BEZA-GCC90-HITS}} `gcc_90` intervals. Its
+Complete 12-transition chronologies were achieved by
+{{quantity:CANOPY-V-BEZA-COMPLETE}} under both products.
+The best member intersected one `gcc_mean` confidence interval and no `gcc_90`
+interval. The typed interval-hit totals are retained below.
+
+| Observation product | Interval-hit total |
+| --- | ---: |
+| `gcc_mean` | {{quantity:CANOPY-V-BEZA-MEAN-HITS}} |
+| `gcc_90` | {{quantity:CANOPY-V-BEZA-GCC90-HITS}} |
+
+Its
 penalized mean absolute residuals were
 {{quantity:CANOPY-V-BEZA-MEAN-ERROR}} and
 {{quantity:CANOPY-V-BEZA-GCC90-ERROR}}, respectively. Falling transitions
@@ -285,8 +292,8 @@ records the product/operator boundary.
 
 ## 9. Elliot Comparative Evidence
 
-The authorized reconstruction compared
-{{quantity:CANOPY-V-ELLIOT-TARGETS}} retained targets;
+The authorized reconstruction retained
+{{quantity:CANOPY-V-ELLIOT-TARGETS}} for comparison;
 {{quantity:CANOPY-V-ELLIOT-CONTRADICTED}} were contradicted. The delivered
 Hubbard `dropfc=0.95` branch reproduced reported live biomass approximately,
 whereas the report-described `0.92` branch did not. Santee biomass, residue,
@@ -303,12 +310,12 @@ openWEPP.
 | Claim | Evidence role | Result | Verdict | Boundary |
 | --- | --- | --- | --- | --- |
 | Daily GSI, foliar state, mass ledger, and real consumers | Verification | Independent equations, closure, chronology, and production consumers agree | `SUPPORTED` | Tested contracts, fixtures, and realization |
-| Hubbard timing | Calibration | {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} correlated boundary members accepted | `BOUNDED` | Hubbard support only |
+| Hubbard timing | Calibration | {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} with correlated boundary solutions accepted | `BOUNDED` | Hubbard support only |
 | Harvard timing transfer | Independent evaluation | {{quantity:CANOPY-V-HARVARD-MIN}}–{{quantity:CANOPY-V-HARVARD-MAX}} aggregate error; {{quantity:CANOPY-V-HARVARD-ZERO-COVERAGE}}/{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} zero coverage | `CONTRADICTED` | Tested Harvard observations |
 | Source-decay identifiability | Synthetic readiness | Five equifinal terminal-stock pairs | `BOUNDED` | Operator readiness, not empirical fit |
 | Predictive needle and fine-woody source | Science authority | No authorized predictive law | `NOT_EVALUATED` | External observed forcing only |
-| Winter canopy ordering | Model response | Ordering held for {{quantity:CANOPY-V-GRADIENT-ORDERING}}/{{quantity:CANOPY-V-ACCEPTED-MEMBERS}} members at each available gradient | `BOUNDED` | Configured strata; no amplitude tolerance |
-| Bezà chronology | Independent evaluation | {{quantity:CANOPY-V-BEZA-COMPLETE}} complete members; large residuals under both GCC products | `CONTRADICTED` | Provisional 2024–2025 ROI record |
+| Winter canopy ordering | Model response | Ordering held for {{quantity:CANOPY-V-GRADIENT-ORDERING}} out of {{quantity:CANOPY-V-ACCEPTED-MEMBERS}} at each available gradient | `BOUNDED` | Configured strata; no amplitude tolerance |
+| Bezà chronology | Independent evaluation | {{quantity:CANOPY-V-BEZA-COMPLETE}} achieved a complete chronology; large residuals under both GCC products | `CONTRADICTED` | Provisional 2024–2025 ROI record |
 | Erosion consequences | Consumer availability | Inputs present; consequence output absent | `NOT_EVALUATED` | No proxy admitted |
 
 ## 11. Discussion

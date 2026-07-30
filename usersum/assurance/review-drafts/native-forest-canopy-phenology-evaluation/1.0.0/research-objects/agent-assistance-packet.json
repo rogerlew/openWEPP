@@ -1,0 +1,32 @@
+{
+  "current_governance": {
+    "accountable_report_lead": null,
+    "generated": true,
+    "lifecycle": "DRAFT",
+    "material_producers": [],
+    "public_export_authorized": false,
+    "scientific_approval_complete": false
+  },
+  "human_disposition": "The operator authorized execution and reviewed candidate figures. No accountable human scientific approval, reproduction/publication approval, assurance-steward approval, or release transfer has been supplied for the completed draft.",
+  "independent_review": "Package-required internal coding-agent reviews are retained separately and are not external scientific peer review.",
+  "input_scope": [
+    "Canonical native-forest canopy model narrative and science contracts",
+    "Content-retained CAL-01 through CAL-07F package evidence",
+    "CAL-09 operator-reviewed figure candidates and sidecars",
+    "Scientific-assurance v2 report, lifecycle, and source/build standards"
+  ],
+  "known_nondeterminism": "Agent-assisted prose may vary across executions. The exact retained source is the review subject; all quantitative values are reconstructed deterministically from identified evidence.",
+  "limitations": "Agent assistance cannot provide human authorship accountability, external peer review, scientific approval, release authority, or application fitness.",
+  "material_output": [
+    "manuscript.md",
+    "supplement.md",
+    "report.yaml",
+    "procedures/reproduce_canopy_synthesis.py",
+    "results/canopy-synthesis.json"
+  ],
+  "objective": "Synthesize the completed native-forest canopy implementation and CAL-01 through CAL-07F evidence into a bounded scientific model-evaluation report.",
+  "procedure_version": "canopy-assure-01-drafting-v1",
+  "review_entry_authorized": false,
+  "schema_version": 1,
+  "tool_model_identity": "OpenAI Codex based on GPT-5; hidden runtime and sampling configuration are not exposed to the repository."
+}

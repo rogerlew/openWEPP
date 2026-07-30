@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "report_id": "linear-groundwater-reservoir-recurrence",
+  "report_version": "1.0.0",
+  "source_root_sha256": "7c46d9d8a301ada4ff37076602d1eddd02d983a1e283798c4cb7de1c1b64a585",
+  "assembly_tool": "openwepp-assurance-assembly:1",
+  "files": [
+    {
+      "path": "figures/GW-FIGURE-H2637.svg",
+      "sha256": "62791c01265f4580020a32f0ce91b749802ae339f9b2e113e34a0298a62e5201"
+    },
+    {
+      "path": "figures/GW-FIGURE-TWO-DAY.svg",
+      "sha256": "a44f9b84371e2588914adc253c1f982bcc9d6fcbd478a0501a79e1fb9b3c5024"
+    },
+    {
+      "path": "index.md",
+      "sha256": "49909730edd83556bed01776ad466d12180f11ca5a57359c199157aae8245e17"
+    },
+    {
+      "path": "research-objects/20260716-codex-execute-assure05_prompt.md",
+      "sha256": "5a740e7f3fa2d4415cc4a82c1f42771a0aa3df6c7f10af09b534e2940fdcf9d8"
+    },
+    {
+      "path": "research-objects/H2637.hbp",
+      "sha256": "378a8c1d80a22c9452fb256cf9a95eab09035f3a6cd387c6d626ab26c426c453"
+    },
+    {
+      "path": "research-objects/H2637.pass.parquet",
+      "sha256": "915f3b99c2ff20e3e0632b4e90a6ceb1cb8e7fee58f0d3e29b41de10c540f550"
+    },
+    {
+      "path": "research-objects/SC-GWBASEFLOW-001.md",
+      "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60"
+    },
+    {
+      "path": "research-objects/agent-assistance-packet.json",
+      "sha256": "6ad32f2272ba3b58a80a0750ff2ff0b838397c045f270236b92bcb102fd69fa8"
+    },
+    {
+      "path": "research-objects/assure05-focused-tests.json",
+      "sha256": "c8c68c0cf0ef294c85e5e10c9996a285a0719a0fd93af2a126b716d61f9b92f0"
+    },
+    {
+      "path": "research-objects/assure05-path-currency.json",
+      "sha256": "5352d8fe5ec37da4eddcba85f1387f8ed58bd63a4b40b828b99b49485b6ec509"
+    },
+    {
+      "path": "research-objects/assure05-production-evidence.json",
+      "sha256": "4618a1491ecaf3e473564f7efc8f4df2250cb1068969b4984f80a6f297996e14"
+    },
+    {
+      "path": "research-objects/h2637-ledger.json",
+      "sha256": "95e7bbbce3f4a1c8b7f67a9189b0c02f010658d9539c2b3a77811ecc48ff1a56"
+    },
+    {
+      "path": "research-objects/manifest.json",
+      "sha256": "756e324e5b4f055ea45c33b0d5f679ab2fc9f4b958e853dc0b70f17aeb592208"
+    },
+    {
+      "path": "research-objects/realization-freeze.md",
+      "sha256": "31c8ccdc878b7013f088f7af29e3983261ca01abc8a620bc6afa5b3fc9ed93c3"
+    },
+    {
+      "path": "research-objects/reproduce_groundwater_report.py",
+      "sha256": "d589c12b9fda515ad2695966f454cbce06c4802f1f85175ff65d8bf149528a78"
+    },
+    {
+      "path": "research-objects/study-protocol.md",
+      "sha256": "ec747399ea66b868b03fbac5ec003ded94129f5d7e7393fcc9b3fbf484557491"
+    },
+    {
+      "path": "research-objects/two-day-recurrence-input.json",
+      "sha256": "f4ed845bc9138985dbaac8545333e10ab64d0deeb06b81ac196c955cf12cef4e"
+    },
+    {
+      "path": "research-objects/two-day-recurrence.json",
+      "sha256": "8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8"
+    },
+    {
+      "path": "supplement.md",
+      "sha256": "5812a76ab74a2c4dd8e581f3054351c73ab1fd5912cd7820a66f52df648bcf2d"
+    }
+  ]
+}

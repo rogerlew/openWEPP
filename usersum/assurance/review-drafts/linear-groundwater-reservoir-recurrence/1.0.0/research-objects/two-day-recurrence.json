@@ -1,0 +1,24 @@
+{
+  "result_id": "GW-RESULT-TWO-DAY",
+  "schema_version": 1,
+  "values": [
+    {"id": "area", "precision": "exact declared analytical input", "unit_id": "m2", "value": 1000.0},
+    {"id": "initial_storage_depth", "precision": "exact declared analytical input", "unit_id": "m", "value": 0.01},
+    {"id": "initial_storage", "precision": "independently reconstructed input", "unit_id": "m3", "value": 10.0},
+    {"id": "interval_days", "precision": "exact recurrence interval", "unit_id": "d", "value": 1.0},
+    {"id": "baseflow_coefficient", "precision": "exact declared analytical input", "unit_id": "d_inv", "value": 0.1},
+    {"id": "deep_seepage_coefficient", "precision": "exact declared analytical input", "unit_id": "d_inv", "value": 0.05},
+    {"id": "guard_baseflow_coefficient", "precision": "exact negative-test input", "unit_id": "d_inv", "value": 0.8},
+    {"id": "guard_deep_seepage_coefficient", "precision": "exact negative-test input", "unit_id": "d_inv", "value": 0.3},
+    {"id": "day_1_recharge", "precision": "exact declared analytical input", "unit_id": "m3", "value": 2.0},
+    {"id": "day_1_storage", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 12.0},
+    {"id": "day_1_baseflow", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 1.2000000000000002},
+    {"id": "day_1_deep_seepage", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 0.6000000000000001},
+    {"id": "day_2_recharge", "precision": "exact declared analytical input", "unit_id": "m3", "value": 4.0},
+    {"id": "day_2_storage", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 14.200000000000001},
+    {"id": "day_2_baseflow", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 1.4200000000000002},
+    {"id": "day_2_deep_seepage", "precision": "independent binary64 reconstruction", "unit_id": "m3", "value": 0.7100000000000001},
+    {"id": "maximum_absolute_residual", "precision": "binary64 versus decimal reconstruction", "unit_id": "m3", "value": 1.7763568394002505e-15},
+    {"id": "acceptance_allowance", "precision": "preregistered absolute allowance", "unit_id": "m3", "value": 1e-12}
+  ]
+}

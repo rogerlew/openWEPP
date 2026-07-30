@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "report_id": "native-forest-canopy-phenology-evaluation",
+  "report_version": "1.0.0",
+  "source_root_sha256": "b90730a73b0c04260039c57b23c3cd96e93cba2b6511648f6eb47be05fe417df",
+  "assembly_tool": "openwepp-assurance-assembly:1",
+  "files": [
+    {
+      "path": "figures/CANOPY-FIGURE-F1.svg",
+      "sha256": "a1fa26049db2dbbf6043b70ab0710f4511bb440b8521c9f2de6a41ca887e7f45"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F2.svg",
+      "sha256": "54c0529490e382ffc91bfaebdfd5b279cc62696617ae1d02c912c3f3e909c389"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F3.svg",
+      "sha256": "229a952dfdd471f14653b3bc494b9763fe461dbabcddcbf9ee14a3680033631d"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F4.svg",
+      "sha256": "93e1ba775e45b74651e7ebb96928667e3444d306aca502263020a671c629cc0a"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F5.svg",
+      "sha256": "cfa0db4ed6c5935220c32911c29a9aef12337f8111eae294b90a560565a718b5"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F6.svg",
+      "sha256": "fe982cbfea83ba467b7361a28ca7a0d0fd20d5ae5c77c1fed7c51e2d8a721d2a"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F7.svg",
+      "sha256": "8b7aa3b9bbb3f4f9f8ab6df2368c7128c9e9870fe2dfed80350ff3454daffa2d"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-F8.svg",
+      "sha256": "0329141aa71d6c656a70462335a9b7dcfc40e69edca2b9d23f431d1dc076cdb7"
+    },
+    {
+      "path": "figures/CANOPY-FIGURE-TRANSFER.svg",
+      "sha256": "8f38fdff3f40f074f689d0ed5da6464cfa39e9b6ee097f41add9c6eae9e4dc40"
+    },
+    {
+      "path": "index.md",
+      "sha256": "265a4a24da911d8f58beea117090f88f1be059e54303c577dd95d5c48ce56e57"
+    },
+    {
+      "path": "research-objects/accepted-calibration-ensemble.csv",
+      "sha256": "83e749a3961604e4592f2a2217db30965c8bbb59f4752d0ff6d85fbac61fd986"
+    },
+    {
+      "path": "research-objects/agent-assistance-packet.json",
+      "sha256": "dc818e7c7d6a393b5275312e3405521b1646764b83af044da1a03f94e2c230da"
+    },
+    {
+      "path": "research-objects/build_candidate_figures.py",
+      "sha256": "3d496b898b13f19673af284d565ffeedf4c8fb7dc084a0106c453e5143068f1f"
+    },
+    {
+      "path": "research-objects/candidate-configurations.csv",
+      "sha256": "a56a07ef1df713a1555afb4098bd4f5e0fbe4b9f324ded0bd370c785fea3190e"
+    },
+    {
+      "path": "research-objects/canopy-synthesis.json",
+      "sha256": "515344ded0cc73b344cc40f7972439a2036adef39401443c432f79f72d605dba"
+    },
+    {
+      "path": "research-objects/daily-climatology.csv",
+      "sha256": "e3b973d51d93b0dc804dc06feb7021cf5e4f39c85fc034da3f615e63a81dc410"
+    },
+    {
+      "path": "research-objects/daily-product-curves.csv",
+      "sha256": "5733a9c920219b4121b018be1c8abbff2f9e9da8f7a9075a1417db203eb6d979"
+    },
+    {
+      "path": "research-objects/ensemble-daily.csv",
+      "sha256": "6e166463681fea4bc0ea8a0347745cf1b59863816dd7be920937a957ca7f805b"
+    },
+    {
+      "path": "research-objects/ensemble-summary.csv",
+      "sha256": "5750e9094614d431ca021bd81d39e1eeee4d669706d60602f926bc2516167230"
+    },
+    {
+      "path": "research-objects/f1-coefficient-response.md",
+      "sha256": "9f72161397ee757a1ed6be2171abe7afc2f83dd07589ae99b021a835b15d287d"
+    },
+    {
+      "path": "research-objects/f1-coefficient-response.svg",
+      "sha256": "a1fa26049db2dbbf6043b70ab0710f4511bb440b8521c9f2de6a41ca887e7f45"
+    },
+    {
+      "path": "research-objects/f1-exemplar-coefficients.csv",
+      "sha256": "a155c62a394c1b6181c04a57e3fc2012caeb6e38b75932833bb46d3ac226eaac"
+    },
+    {
+      "path": "research-objects/f2-forest-class-seasonality.md",
+      "sha256": "5b7fc93d8e3fa3c5c9a9d8821416b141675afdb6a92d24bae81092648969a093"
+    },
+    {
+      "path": "research-objects/f2-forest-class-seasonality.svg",
+      "sha256": "54c0529490e382ffc91bfaebdfd5b279cc62696617ae1d02c912c3f3e909c389"
+    },
+    {
+      "path": "research-objects/f3-litter-residue-frost.md",
+      "sha256": "6d1de7546f15105d6cfc6ec076aea8d445734e16284bb64c199568a784dcbf98"
+    },
+    {
+      "path": "research-objects/f3-litter-residue-frost.svg",
+      "sha256": "229a952dfdd471f14653b3bc494b9763fe461dbabcddcbf9ee14a3680033631d"
+    },
+    {
+      "path": "research-objects/f4-temperate-observed-modeled-timing.md",
+      "sha256": "b2e38899b2faff65d7085c1562ea86bdb2b392e9006b1cb8200be776aaf1e1c4"
+    },
+    {
+      "path": "research-objects/f4-temperate-observed-modeled-timing.svg",
+      "sha256": "93e1ba775e45b74651e7ebb96928667e3444d306aca502263020a671c629cc0a"
+    },
+    {
+      "path": "research-objects/f4-temperate-timing-summary.csv",
+      "sha256": "b95918aa38762db115c76cb29af4b4c8019a6b3094a68ac0297d1eaba8b74a55"
+    },
+    {
+      "path": "research-objects/f5-source-decay-trajectories.md",
+      "sha256": "7c668426c4657c1600677e5829d21f3236f4721bad7f7591c7c22da42081364a"
+    },
+    {
+      "path": "research-objects/f5-source-decay-trajectories.svg",
+      "sha256": "cfa0db4ed6c5935220c32911c29a9aef12337f8111eae294b90a560565a718b5"
+    },
+    {
+      "path": "research-objects/f6-canopy-gradient-snow-response.md",
+      "sha256": "5f93ffb52d0489438e2a0029d5b593501c121fb97d7ae1b15e3cf534b049e801"
+    },
+    {
+      "path": "research-objects/f6-canopy-gradient-snow-response.svg",
+      "sha256": "fe982cbfea83ba467b7361a28ca7a0d0fd20d5ae5c77c1fed7c51e2d8a721d2a"
+    },
+    {
+      "path": "research-objects/f6-observed-snow-climatology.csv",
+      "sha256": "5aa35040ae0d2030450015742ce28006be17d67e7db28f12760a726b79a5b89a"
+    },
+    {
+      "path": "research-objects/f7-hemisphere-seasonality.md",
+      "sha256": "b1bec1da92b7736aec31d8bb129dea8cda33cd34a1d2a748f5d34d56d84dec80"
+    },
+    {
+      "path": "research-objects/f7-hemisphere-seasonality.svg",
+      "sha256": "8b7aa3b9bbb3f4f9f8ab6df2368c7128c9e9870fe2dfed80350ff3454daffa2d"
+    },
+    {
+      "path": "research-objects/f7-relative-seasonality.csv",
+      "sha256": "ba9022b9b67f5d60da417390c68f2f7a0efb18def0e319dae070e36b2269d1ba"
+    },
+    {
+      "path": "research-objects/f8-beza-observed-modeled.md",
+      "sha256": "1aaf6f4308b0790e385427fac3a6b299caa88ffffd5432825ff2bef7422f87c3"
+    },
+    {
+      "path": "research-objects/f8-beza-observed-modeled.svg",
+      "sha256": "0329141aa71d6c656a70462335a9b7dcfc40e69edca2b9d23f431d1dc076cdb7"
+    },
+    {
+      "path": "research-objects/harvard-holdout-results.csv",
+      "sha256": "68614adfc226f401982d9b774f22c2f0da81b194450709d1f1f1a6a6eb821123"
+    },
+    {
+      "path": "research-objects/harvard_hf237_strata.csv",
+      "sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea"
+    },
+    {
+      "path": "research-objects/marcell_rds_2021_0016_stratum_means.csv",
+      "sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365"
+    },
+    {
+      "path": "research-objects/member-summary.csv",
+      "sha256": "ff099274e586a997f86fe115de2e4bb97b7df18bbfceb605d1c74e75adbb82f4"
+    },
+    {
+      "path": "research-objects/report-comparison.csv",
+      "sha256": "4e0964382c3ae657107b8d0ebcd3d0b82fa38c9254faa4c6fddbab9f7fbcc620"
+    },
+    {
+      "path": "research-objects/reproduce_canopy_synthesis.py",
+      "sha256": "80c9af19d4aac382ca8019726b2aef93caa4b9d14afd26cfd9ea3e7bbb35a110"
+    },
+    {
+      "path": "research-objects/source-manifest.csv",
+      "sha256": "5a1bdb17a3c4c5da70951fa6bbbf24bda80344c57f32137a7ca716b30d0ba21a"
+    },
+    {
+      "path": "research-objects/terminal-stock-equifinality.csv",
+      "sha256": "1386ee435331770a9075f7e861f9b8a66b840d40833007163b52766cb7b9373d"
+    },
+    {
+      "path": "research-objects/terminal-stock-ridge-design.csv",
+      "sha256": "84938793700f0f4ea1ebfa38c98ab6fbc917b51c16c3628ec069afc0efa64255"
+    },
+    {
+      "path": "supplement.md",
+      "sha256": "a3943ae9e33aa9a7116843db053f15b12ad2a2db0a4b5e551b12a6b2ed15a231"
+    }
+  ]
+}

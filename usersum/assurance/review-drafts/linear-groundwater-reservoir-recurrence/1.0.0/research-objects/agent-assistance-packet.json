@@ -1,0 +1,48 @@
+{
+  "current_governance": {
+    "accountable_report_lead": null,
+    "generated": true,
+    "lifecycle": "DRAFT",
+    "material_producers": [],
+    "public_export_authorized": false,
+    "scientific_approval_complete": false
+  },
+  "draft_outputs": [
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/manuscript.md"
+    },
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md"
+    }
+  ],
+  "material_inputs": [
+    {
+      "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+      "sha256": "ec747399ea66b868b03fbac5ec003ded94129f5d7e7393fcc9b3fbf484557491"
+    },
+    {
+      "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+      "sha256": "31c8ccdc878b7013f088f7af29e3983261ca01abc8a620bc6afa5b3fc9ed93c3"
+    },
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/inputs/two-day-recurrence-input.json",
+      "sha256": "f4ed845bc9138985dbaac8545333e10ab64d0deeb06b81ac196c955cf12cef4e"
+    },
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/assure05-production-evidence.json",
+      "sha256": "4618a1491ecaf3e473564f7efc8f4df2250cb1068969b4984f80a6f297996e14"
+    }
+  ],
+  "model_disclosure": "Codex based on GPT-5; hidden runtime and sampling configuration are unavailable to the repository",
+  "packet_id": "GW-AGENT-PACKET-ASSURE05-DRAFT",
+  "procedure_version": "assure05-groundwater-report-drafting-v1",
+  "prompt": {
+    "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
+    "portable_research_object": "GW-OBJECT-EXECUTION-PROMPT",
+    "sha256": "5a740e7f3fa2d4415cc4a82c1f42771a0aa3df6c7f10af09b534e2940fdcf9d8"
+  },
+  "repeatability_boundary": "The retained prompt, inputs, and exact outputs permit source audit and human disposition. Hidden model/runtime configuration prevents a claim that independently sampled prose will be byte-identical. Quantitative result regeneration does not depend on the agent and is separately executable.",
+  "role": "draft author and mechanical analysis implementer; not a human scientific or publication approver",
+  "schema_version": 1,
+  "tool": "OpenAI Codex"
+}

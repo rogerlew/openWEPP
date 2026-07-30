@@ -1,8 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: ASSURE-MAINT02 complete; ASSURE-MAINT03 queued to create durable
-rendered human-review drafts; ASSURE-05 review-ready and held for human
-authority
+Status: ASSURE-MAINT02 and ASSURE-MAINT03 complete; ASSURE-05 review-ready and
+held for human authority
 
 ## Sequencing Principle
 
@@ -159,16 +158,19 @@ Boundary: this package produces draft staging only. It does not confer human
 approval, release transfer, snapshot authority, public catalog inclusion, or
 permission to write tracked `usersum/**`.
 
-## ASSURE-MAINT03 — Queued Tracked Human-Review Rendering
+## ASSURE-MAINT03 — Completed Tracked Human-Review Rendering
 
 Execution package:
 `docs/work-packages/20260729-assure-maint03-tracked-human-review-rendering-001/package.md`.
 
-Outcome: render all admitted reports into a committed, explicitly nonapproved
+Outcome: all admitted reports are rendered into a committed, explicitly
+nonapproved
 `usersum/assurance/review-drafts/` lane so accountable humans can read the
 resolved prose, figures, supplement, and evidence links before entering review.
-The package also corrects rendering-visible count/unit duplication and adds a
-deterministic refresh/check workflow.
+The package corrected rendering-visible count/unit prose, added a deterministic
+refresh/check workflow, and applies the same accessibility sanitization to
+displayed and linked retained-SVG consumers. The 92-file lane, exact generation,
+full workspace, dual review, and dual terminal verification passed.
 
 Boundary: tracked review drafts are durable review inputs, not approved public
 catalog entries, publication snapshots, release transfers, exports, or

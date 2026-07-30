@@ -10,7 +10,7 @@ bindings, tables, result-bearing figures, references, research objects, review
 state, and publication state. They do not generate conclusions or substitute
 lifecycle labels for evidence.
 
-Two production-domain sources are currently held as internal drafts:
+Three production-domain sources are currently held as internal drafts:
 
 - `linear-groundwater-reservoir-recurrence` is a manuscript-first
   software-verification study with preregistered methods, fresh execution
@@ -20,6 +20,10 @@ Two production-domain sources are currently held as internal drafts:
   frozen-soil, production-path, and conservation evidence. Its manuscript
   keeps the four claim envelopes separate and does not turn the diagnostic snow
   profile into a universal accuracy grade.
+- `native-forest-canopy-phenology-evaluation` evaluates the daily native-forest
+  canopy formulation, temperate calibration transfer, litter and residue
+  readiness, downstream consumers, Southern Hemisphere robustness, and the
+  retained tropical dry-forest limitation.
 
 `DRAFT` and `IN_REVIEW` record lifecycle, not scientific merit. Both sources
 disclose agent assistance and have no public route, approval lock, export
@@ -120,8 +124,8 @@ Changed transactions emit schema-version 2 receipts with old and new
 per-report projection roots. Historical schema-version 1 receipts remain valid
 archive members.
 
-When one DRAFT manifest or already-declared external `local_content` dependency
-has changed, use the source-adoption transaction:
+When one DRAFT report-owned source set or already-declared external
+`local_content` dependency has changed, use the source-adoption transaction:
 
 ```bash
 target/release/openwepp-assurance amend adopt-report-source \
@@ -131,13 +135,15 @@ target/release/openwepp-assurance amend adopt-report-source \
 ```
 
 Apply the same command with `--apply` only after reviewing the complete
-candidate. Manifest adoption accepts only the exact conventional path of a
-`DRAFT` report. Dependency adoption accepts exactly one drifted dependency,
-refuses internal or undeclared paths, returns an `IN_REVIEW` report to `DRAFT`,
-clears its review authority, and invalidates its active review events. Neither
-form creates a human decision or edits the selected source. This is a
-`scientific-full` transition; run the package-selected implementation and full
-gates rather than the focused report-data receipt runner.
+candidate. Selecting the exact conventional manifest path of a `DRAFT` report
+adopts every drifted internal source already owned by that report in one
+transaction. Unrelated report drift still fails closed. Dependency adoption
+accepts exactly one drifted external dependency, refuses internal or undeclared
+paths, returns an `IN_REVIEW` report to `DRAFT`, clears its review authority,
+and invalidates its active review events. Neither form creates a human decision
+or edits a source. This is a `scientific-full` transition; run the
+package-selected implementation and full gates rather than the focused
+report-data receipt runner.
 
 After an applied report-data-only transaction, run its receipt-authorized gate:
 
@@ -255,6 +261,35 @@ figures from identified result objects, copies public-safe research objects,
 and emits portable links. Unit disagreement, unsupported display precision,
 unused content, noncurrent inputs, unresolved links, output drift, unsafe
 staging paths, or symlink traversal fail closed.
+
+## Synchronize Tracked Human-Review Drafts
+
+Accountable humans review resolved reports, not YAML descriptors and unresolved
+Markdown directives. Build the assurance binary, then synchronize the full
+admitted catalog into the committed review-only lane:
+
+```bash
+cargo build -p openwepp-assurance
+.venv/bin/python tools/local_ci/render_assurance_review_drafts.py \
+  --root . \
+  --binary target/debug/openwepp-assurance \
+  --apply
+.venv/bin/python tools/local_ci/render_assurance_review_drafts.py \
+  --root . \
+  --binary target/debug/openwepp-assurance \
+  --check
+```
+
+The command invokes the real `build --all` and `check --all` consumers in an
+owned temporary root, then compares exact paths and bytes. `--apply` replaces
+only `usersum/assurance/review-drafts/`; `--check` writes nothing and rejects
+missing, extra, drifted, symlinked, or special files. The review index and every
+report state explicitly say `DRAFT`.
+
+Tracked review drafts are durable review inputs. They are not the approved
+public catalog, a publication snapshot, a release transfer, an export, or a
+vendored report. Only the governed human-review and release workflow may write
+approved reports to `usersum/assurance/reports/`.
 
 The `retained_svg` figure variant binds an identified public-safe SVG and
 Markdown ancillary object. Assembly removes the source XML declaration,

@@ -331,10 +331,12 @@
 State as of `2026-07-29 UTC`:
 
 - `20260729-assure-maint03-tracked-human-review-rendering-001/` -
-  SCAFFOLDED / QUEUED: creates a deterministic tracked review-draft lane under
-  `usersum/assurance/review-drafts/`, corrects rendering-visible CAL-09 prose
-  duplication, and renders all three complete reports for human review without
-  creating approval or public-catalog state.
+  COMPLETE / PASS: created a deterministic tracked review-draft lane under
+  `usersum/assurance/review-drafts/`, corrected rendering-visible CAL-09 prose,
+  and materialized all three complete reports for human review without creating
+  approval or public-catalog state. The exact 92-file lane, Markdown, links,
+  21 SVG consumers, anchored generation, 2,163-test full workspace, dual
+  review, and dual terminal verification pass.
 - `20260729-assure-maint02-v2-report-admission-and-full-catalog-rendering-001/` -
   COMPLETE / PASS: implemented typed atomic new-report admission, root-bound
   receipts, secure retained-SVG assembly, and deterministic full-catalog

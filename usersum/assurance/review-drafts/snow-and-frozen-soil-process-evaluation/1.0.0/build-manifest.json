@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "report_version": "1.0.0",
+  "source_root_sha256": "e298eb698ed66e1af5a9313723c5fe1373dd3547050f3aba1a1062bb06193294",
+  "assembly_tool": "openwepp-assurance-assembly:1",
+  "files": [
+    {
+      "path": "figures/SF-FIGURE-PARTITION.svg",
+      "sha256": "ca87a52247ba18c3d5d60cb20c662806cf97d513be0b584d4f60523d0917d5ae"
+    },
+    {
+      "path": "figures/SF-FIGURE-PHASE.svg",
+      "sha256": "2658e5310b61a61bb72cb16e77b93f4b12ceda802992a5420e902a4d7379c4aa"
+    },
+    {
+      "path": "index.md",
+      "sha256": "13edd054825705cb717b4049c0912043ee0e19803faad9bc6d538f13c154750b"
+    },
+    {
+      "path": "research-objects/20260716-codex-execute-assure06_prompt.md",
+      "sha256": "ebf194982ddc6b65eff3f1e30499f74ca03dc121820267ddc2a17aef5d8f99e2"
+    },
+    {
+      "path": "research-objects/SC-SNOWFREEZE-001.md",
+      "sha256": "f7364f33ab446479b9160c5cf0bafef13826fd2637e140c823dfde2204cb1a16"
+    },
+    {
+      "path": "research-objects/agent-assistance-packet.json",
+      "sha256": "06092920a2ab1a4306d7f89ca2fe7c76d4854fcd9c64e3421fc4117c8644af9b"
+    },
+    {
+      "path": "research-objects/conservation-operands.json",
+      "sha256": "bc58d72901fd6967a82067a0aee1df71bfd2962475f978bcfd5fa8e358012f18"
+    },
+    {
+      "path": "research-objects/dataset-provenance.md",
+      "sha256": "8f84fc9f6328509798c103a5b8499d06358e4bcf6840d2bb017846edcc470298"
+    },
+    {
+      "path": "research-objects/evidence-inventory.md",
+      "sha256": "71556569fa3fe84cec6db0ce06ed94876b4fbac6bf657a62e0bb539c6ebfd7d2"
+    },
+    {
+      "path": "research-objects/final-conservation-and-consumer-evidence.md",
+      "sha256": "306b96a1d45fca85d5604b16fe8ce4b814df48d2fc15ecb910e198085ee81f18"
+    },
+    {
+      "path": "research-objects/final-reconstruction-arithmetic.log",
+      "sha256": "4f2675a0fe57f4153f002a7051ae99971811af84c430ead68395d4205c52468e"
+    },
+    {
+      "path": "research-objects/harder-pomeroy-default-activation.json",
+      "sha256": "f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a"
+    },
+    {
+      "path": "research-objects/jennings-validation-report.json",
+      "sha256": "f5d261379f2aaed862a4ad6734e76e3d8123f56df46ca7739fa2fab86c2d6ef8"
+    },
+    {
+      "path": "research-objects/non_snotel_rubric_baseline.json",
+      "sha256": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930"
+    },
+    {
+      "path": "research-objects/post-partition-residual-decomposition.json",
+      "sha256": "0225ff80580ef352b2b91720da947f7f16f909a48827fb47e6c207da5b4e8875"
+    },
+    {
+      "path": "research-objects/reproduce_snow_frost_synthesis.py",
+      "sha256": "63fd14f184a8784382e78ab395e1cad6ec97da4bde37b85d01b7d97b9c5e1080"
+    },
+    {
+      "path": "research-objects/snow-frost-synthesis.json",
+      "sha256": "90cc97ff4893cc45fd478d16358c660a86eb20db3c989088b95758d697c7c0dd"
+    },
+    {
+      "path": "research-objects/snowbench_jennings_phase.rs",
+      "sha256": "fde95cdc7bb56f244c40f61af098d618e45dcf8215ec795f5676b097b35ea1f3"
+    },
+    {
+      "path": "research-objects/study-protocol.md",
+      "sha256": "13703973d2d5c65977e2c536225bf79b8f6cac7569ed3e0c8f7ab2e758cfd08a"
+    },
+    {
+      "path": "supplement.md",
+      "sha256": "dfa9ac071b89107fb8c136f79129e71c19a91baffd8445d2feceb56a33101d2a"
+    }
+  ]
+}

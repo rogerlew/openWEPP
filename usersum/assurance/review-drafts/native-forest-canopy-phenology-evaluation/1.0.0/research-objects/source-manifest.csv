@@ -1,0 +1,10 @@
+path,sha256,role
+docs/work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/artifacts/daily-climatology.csv,e3b973d51d93b0dc804dc06feb7021cf5e4f39c85fc034da3f615e63a81dc410,CAL-06 retained model daily climatology
+docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/candidate-configurations.csv,a56a07ef1df713a1555afb4098bd4f5e0fbe4b9f324ded0bd370c785fea3190e,CAL-04B candidate coefficient definitions
+docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/accepted-calibration-ensemble.csv,83e749a3961604e4592f2a2217db30965c8bbb59f4752d0ff6d85fbac61fd986,CAL-04B accepted frozen ensemble
+docs/work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/artifacts/terminal-stock-ridge-design.csv,84938793700f0f4ea1ebfa38c98ab6fbc917b51c16c3628ec069afc0efa64255,CAL-05 synthetic source-decay design
+docs/work-packages/20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/artifacts/ensemble-daily.csv,6e166463681fea4bc0ea8a0347745cf1b59863816dd7be920937a957ca7f805b,CAL-07C retained Southern Hemisphere ensemble daily series
+docs/work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/artifacts/daily-product-curves.csv,5733a9c920219b4121b018be1c8abbff2f9e9da8f7a9075a1417db203eb6d979,CAL-07F retained Bezà observation products
+tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv,63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea,CAL-06 admitted Harvard snow observations
+tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv,17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365,CAL-06 admitted Marcell snow observations
+docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-timing-summary.csv,b95918aa38762db115c76cb29af4b4c8019a6b3094a68ac0297d1eaba8b74a55,CAL-09 retained temperate timing figure rows

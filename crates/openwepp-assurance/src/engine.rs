@@ -344,6 +344,7 @@ fn require_exact_public_files(root: &Path) -> Result<()> {
     let public_root = root.join(EXPECTED_GENERATED_ROOT);
     let mut files = BTreeSet::new();
     collect_files(&public_root, &public_root, &mut files)?;
+    files.retain(|path| !path.starts_with("review-drafts"));
     let expected = BTreeSet::from([PathBuf::from("README.md")]);
     if files != expected {
         return Err(AssuranceError::Drift(format!(

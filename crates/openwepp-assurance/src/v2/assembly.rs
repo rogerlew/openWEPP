@@ -1379,6 +1379,17 @@ fn stage_research_objects(
         if path.file_name().and_then(|name| name.to_str()) == Some("agent-assistance-packet.json") {
             bytes = render_agent_packet_governance(&bytes, report, principals, review_lock, path)?;
         }
+        if path.extension().and_then(|extension| extension.to_str()) == Some("svg") {
+            let figure = report
+                .figures
+                .iter()
+                .find(|figure| figure.research_object_id.as_deref() == Some(id.as_str()));
+            let title = figure.map_or(object.title.as_str(), |figure| figure.title.as_str());
+            let description = figure.map_or(object.reproduction_instructions.as_str(), |figure| {
+                figure.alternative_text.as_str()
+            });
+            bytes = super::svg::sanitize_retained_svg(&bytes, title, description)?;
+        }
         insert_output(
             files,
             version_root.join("research-objects").join(basename),

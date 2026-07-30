@@ -122,6 +122,20 @@ fn canopy_named_and_all_builds_are_byte_equivalent_and_complete() {
     for required in ["index.md", "supplement.md", "build-manifest.json"] {
         assert!(named_stage.path.join(&relative).join(required).is_file());
     }
+    let research_objects = named_stage.path.join(&relative).join("research-objects");
+    let mut retained_svg_count = 0;
+    for entry in fs::read_dir(research_objects).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|extension| extension.to_str()) != Some("svg") {
+            continue;
+        }
+        retained_svg_count += 1;
+        let svg = read_text(&path);
+        assert!(svg.contains("role=\"img\""));
+        assert!(svg.contains("<title>"));
+        assert!(svg.contains("<desc>"));
+    }
+    assert_eq!(retained_svg_count, 8);
     assert_eq!(
         repository
             .check_report(CANOPY_REPORT_ID, &named_stage.path)

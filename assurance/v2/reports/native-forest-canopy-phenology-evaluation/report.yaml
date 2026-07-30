@@ -770,7 +770,7 @@ units:
   quantity: Executed model runs
   definition: Exact count of prespecified executions.
 - id: transition_count
-  symbol: transitions
+  symbol: transition(s)
   quantity: Seasonal transition events
   definition: Count of same-direction threshold transitions.
 - id: target_count
