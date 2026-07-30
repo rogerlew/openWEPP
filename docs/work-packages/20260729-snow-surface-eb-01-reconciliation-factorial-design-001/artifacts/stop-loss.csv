@@ -1,0 +1,7 @@
+trigger,operational_condition,outcome
+authority_exhausted,EB-02 acquisition priorities 1 and 2 exhausted without admitted formulation,CLOSE_AS_MODEL_LIMITATION
+coupling_impossible,EB-03 cannot express one independently reconstructable latent/mass transfer,CLOSE_AS_MODEL_LIMITATION
+physical_gate_failure,"Any candidate fails trace, mass, energy, or latent/mass equivalence gate",REJECT_CANDIDATE
+inadmissible_compensation,"Improvement requires tuning, forcing correction, unbounded parameter, or noncomparable cells",REJECT_CANDIDATE
+one_round_no_win,One preregistered EB-04 round yields no admissible improvement without protected regression,CLOSE_NONPROMOTION
+no_new_information,"Another round lacks new authority, identifying data, or falsifiable attribution",DO_NOT_OPEN_ROUND

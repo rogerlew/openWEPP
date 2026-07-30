@@ -1,0 +1,16 @@
+site,stratum,role,freeze_basis,limitation
+Marcell,conifer,INDEPENDENT_VALIDATION,frozen_before_result_execution,Spatial snow-course mean; forcing limited
+Marcell,deciduous,INDEPENDENT_VALIDATION,frozen_before_result_execution,Spatial snow-course mean; forcing limited
+Marcell,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Spatial snow-course mean; forcing limited
+Harvard,hardwood,INDEPENDENT_VALIDATION,frozen_before_result_execution,Intermittent non-null observations; forcing limited
+Harvard,hemlock,DIAGNOSTIC_ONLY,frozen_before_result_execution,SWE uses observed/interpolated density; hemlock has no pure-conifer fixture
+Harvard,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Intermittent non-null observations; forcing limited
+snotel_mica_creek_st_joe_id,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Open control; cannot identify canopy longwave
+snotel_paradise_wa,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Open control; cannot identify canopy longwave
+snotel_css_lab_ca,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Open control; cannot identify canopy longwave
+snotel_snowbird_ut,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Open control; cannot identify canopy longwave
+snotel_niwot_co,open,INDEPENDENT_VALIDATION,frozen_before_result_execution,Open control; cannot identify canopy longwave
+Sleepers South Field,open,DIAGNOSTIC_ONLY,frozen_before_result_execution,No SWE
+Sleepers W9,hardwood,DIAGNOSTIC_ONLY,frozen_before_result_execution,No SWE; source periods are not fully coincident
+HJ Andrews,conifer,DIAGNOSTIC_ONLY,frozen_before_result_execution,Required for decisive warm-maritime conifer transfer claim
+Hubbard Brook,hardwood,DIAGNOSTIC_ONLY,frozen_before_result_execution,No installed normalized observation

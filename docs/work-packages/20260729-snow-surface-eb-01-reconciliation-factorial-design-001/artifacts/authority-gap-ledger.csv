@@ -1,0 +1,9 @@
+item,classification,owner,closure_evidence,disposition
+incoming_atmospheric_longwave,AUTHORITY_MISSING,EB-02,Forcing source or admitted estimator with uncertainty,HOLD_FOR_AUTHORITY
+canopy_sky_view_partition,AUTHORITY_MISSING,EB-02,Authoritative sky-view/canopy-view composition,HOLD_FOR_AUTHORITY
+canopy_emissivity_temperature,AUTHORITY_MISSING,EB-02,Emissivity and canopy radiometric-temperature rule,HOLD_FOR_AUTHORITY
+net_longwave_arithmetic,AUTHORITATIVE_CURRENT,EB-02,Typed shared helper,READY
+turbulent_vapor_transfer,AUTHORITY_ADMISSIBLE,EB-03,Marks/SNOBAL lineage plus contract amendment,READY_FOR_CONTRACT_WORK
+latent_mass_equivalence,AUTHORITATIVE_CURRENT,EB-03,Shared conversions and exact-one coupling invariant,READY_FOR_CONTRACT_WORK
+surface_temperature_state,AUTHORITY_ADMISSIBLE,EB-03,One shared temperature/cold-content state,READY_FOR_CONTRACT_WORK
+warm_maritime_conifer_validation,AUTHORITY_MISSING,EB-04,Paired under-canopy/open observations and meteorology,HOLD_FOR_DATA

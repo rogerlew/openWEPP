@@ -1,9 +1,19 @@
 # Artifacts
 
-Status: `queued`.
+Status: `complete`.
 
-Execution must populate the deliverables listed in `package.md`. Machine-readable
-ledgers use stable column names, explicit units, and deterministic ordering.
-Figures contain plots only and have same-stem Markdown sidecars.
+The CSV ledgers and SVG figures are deterministic outputs of
+`../tools/generate.py`. Run `../tools/validate.py` from the repository-local
+Python environment to check generation, CSV shape, SVG accessibility,
+figure/sidecar pairing, and package-local links.
 
-Scaffold-time artifacts are placeholders and are not result evidence.
+Start with:
+
+- [science-summary.md](science-summary.md) for the scientific finding;
+- [successor-admission-decision.md](successor-admission-decision.md) for the
+  campaign decision;
+- [factorial-design.md](factorial-design.md) for the future experiment; and
+- [stop-loss.md](stop-loss.md) for the boundary against an open-ended campaign.
+
+Figures contain plots only. Their same-stem Markdown sidecars supply captions,
+processing, interpretation, and limitations.

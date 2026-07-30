@@ -1,0 +1,5 @@
+cell,longwave,sublimation,estimand,admission_condition
+B,off,off,reference,All frozen shared settings
+L,on,off,longwave_effect=Y(L)-Y(B),Requires EB-02 authority and orthogonal selector
+S,off,on,sublimation_effect=Y(S)-Y(B),Requires EB-03 exact-one mass/energy coupling
+LS,on,on,combined_effect=Y(LS)-Y(B); interaction=Y(LS)-Y(L)-Y(S)+Y(B),Requires both mechanisms on one carrier

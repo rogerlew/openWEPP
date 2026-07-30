@@ -1,0 +1,4 @@
+priority,source_or_data,minimum_content,owner,necessity,action
+1,sub-canopy longwave process formulation,"Peer-reviewed formulation for sky/canopy view partition, emissivity, and outgoing snow longwave",EB-02,required,Search/acquire before contract amendment
+2,canopy radiometric temperature rule,Measured or authoritative diagnostic operator under snow-season conditions,EB-02,required unless item 1 supplies rule,Search/acquire; do not substitute air temperature without authority
+3,HJ Andrews paired canopy/open snow observations,SWE or depth plus meteorology and stratum metadata,EB-04 warm-maritime conifer claim,required for transfer claim only,Acquire if campaign seeks that promotion claim

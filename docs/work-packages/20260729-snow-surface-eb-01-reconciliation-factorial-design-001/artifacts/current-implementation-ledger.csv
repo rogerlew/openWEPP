@@ -1,0 +1,13 @@
+operand,implementation_state,units,consumer,classification,finding
+absorbed_shortwave,implemented_opt_in,W m^-2,Opt-in Stage 3 surface sum,AUTHORITATIVE_CURRENT,Available operand; production default has Stage 3 disabled
+atmospheric_longwave,helper_only,W m^-2,No snow runtime consumer,AUTHORITY_MISSING,No admitted incoming forcing/runtime operand
+canopy_longwave,absent,W m^-2,None,AUTHORITY_MISSING,No admitted view-factor/emission formulation
+sensible_heat,helper_only,W m^-2,Stage 3 passes zero,AUTHORITY_ADMISSIBLE,Typed turbulent helper exists
+latent_heat,missing_runtime,W m^-2,None; Stage A/B produces mass only,AUTHORITY_ADMISSIBLE,No latent-energy flux is produced or debited
+vapor_mass,opt_in_candidate,m SWE step^-1,Stage A/B mass path,REJECTED_PRIOR,Mass removal is bounded and conserved; candidate not promoted
+ground_conduction,partial,W m^-2,Interlayer only,AUTHORITY_ADMISSIBLE,No explicit surface-ground term in Stage 3 sum
+advected_precipitation_heat,helper_only,W m^-2,Stage 3 passes zero,AUTHORITATIVE_CURRENT,Typed helper exists
+surface_temperature,candidate_approximation,degC,Stage A/B,AUTHORITY_ADMISSIBLE,"Stage A fixes 0 C; Stage B uses min(Tair,0)"
+cold_content,implemented_opt_in,J m^-2,Stage 3 multilayer,AUTHORITATIVE_CURRENT,Internal diagnostic closure retained
+melt_refreeze_liquid,implemented,m SWE step^-1,Bulk and Stage 3,AUTHORITATIVE_CURRENT,Current default liquid holding remains active
+canopy_projection,implemented,fraction,Snow/canopy runtime,AUTHORITATIVE_CURRENT,Seasonal projection available

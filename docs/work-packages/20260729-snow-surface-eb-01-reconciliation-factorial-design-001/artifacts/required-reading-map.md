@@ -1,7 +1,6 @@
 # Required Reading Map
 
-Status: `scaffolded`; Core total `425660` bytes (`WARN`). Refresh the count at
-execution intake because the catalog and living package may change.
+Status: `executed`; Core total `426376` bytes (`WARN`) at execution intake.
 
 | Path | Tier | Rationale | Trigger |
 | --- | --- | --- | --- |
@@ -20,7 +19,8 @@ execution intake because the catalog and living package may change.
 | Stage 0, Stage 3, Stage A/B, canopy-stratum, and cross-SNOTEL packages | On-demand | Retained implementation and result evidence | Relevant phase only |
 | Relevant Rust source, tests, tools, and fixtures | On-demand | Current implementation truth | Named during source trace |
 
-The core set is expected to exceed 400,000 bytes because the work-package
-catalog is itself 347,000+ bytes. Keep the 472,000+ byte snow contract and the
-122,000+ byte snow strategy on demand rather than mandatory pre-read. Record the
-exact refreshed total and `WARN` disposition in the kickoff before execution.
+The core set exceeded 400,000 bytes because the work-package catalog was
+`347974` bytes. The large snow contract and snow strategy remained on demand
+and were read by relevant section during reconciliation. The `WARN` is accepted:
+catalog authority could not truthfully be narrowed, while loading the complete
+snow authorities up front would have defeated progressive disclosure.

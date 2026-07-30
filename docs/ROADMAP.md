@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `active` | Execute `SNOW-SURFACE-EB-01` to reconcile current authority and implementation, freeze observation roles, and pre-register the baseline/longwave/sublimation/combined factorial before any new process-physics edit. |
+| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `active` | Scaffold contract-first `SNOW-SURFACE-EB-03` to compose signed vapor mass and latent energy exactly once behind an orthogonal selector and freeze closure tolerances. Keep EB-02/EB-04 held for longwave authority. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 

@@ -1,6 +1,6 @@
 # SNOW-SURFACE-EB-01 Reconciliation And Factorial Design
 
-Status: `queued`
+Status: `complete`
 
 Package ID:
 `20260729-snow-surface-eb-01-reconciliation-factorial-design-001`
@@ -35,15 +35,22 @@ The human-visible result is a compact science dossier explaining:
 ## Progress
 
 - [x] (2026-07-29) Package scaffolded and linked from the campaign roadmap.
-- [ ] Record pre-execution intent, exact base commit, and current write set.
-- [ ] Reconcile authority, implementation, selectors, and prior dispositions.
-- [ ] Freeze observation roles and modeled-to-observed stratum correspondence.
-- [ ] Freeze the four-cell experiment, response operands, and reconstruction.
-- [ ] Complete readiness, stop-loss, and successor admission decisions.
-- [ ] Produce figures and Markdown sidecars.
-- [ ] Run applicable validation and reconcile the terminal diff.
-- [ ] Complete dual independent review, finding disposition, dual verification,
-  and final disposition.
+- [x] (2026-07-30) Recorded pre-execution intent, exact base commit, required
+  reading, and current write set.
+- [x] (2026-07-30) Reconciled authority, implementation, selectors, and prior
+  dispositions.
+- [x] (2026-07-30) Froze observation roles and modeled-to-observed stratum
+  correspondence.
+- [x] (2026-07-30) Froze the four-cell experiment, response operands, and
+  independent reconstruction.
+- [x] (2026-07-30) Completed readiness, stop-loss, and successor admission
+  decisions.
+- [x] (2026-07-30) Produced three accessible figures and Markdown sidecars.
+- [x] (2026-07-30) Ran applicable terminal validation and reconciled the exact
+  diff.
+- [x] (2026-07-30) Completed dual independent review, finding disposition,
+  corrected terminal findings, dual exact-tree verification, and final
+  disposition.
 
 ## Context
 
@@ -435,11 +442,43 @@ scope amendment and additional validation before the edit.
 
 ## Surprises And Discoveries
 
-Populate during execution. The scaffold-time source inspection indicates that
-the multilayer Stage 3 surface-energy sum currently passes shortwave with other
-surface terms zero, while Stage A/B sublimation is applied in a separate
-mass-loss path. Execution must verify this against the exact base commit.
+- Observation: the scaffold-time source finding is confirmed at base
+  `31e14bdf`. The multilayer Stage 3 surface-energy sum passes absorbed
+  shortwave and zeroes the other surface terms, while Stage A/B sublimation is
+  applied in the bulk active-snow mass path.
+  Evidence: `runoff_reconciliation.rs:770-845` and
+  `infiltration_reconciliation.rs:1546-1661`.
+- Observation: the current melt selector is a single enum. It can select
+  liquid holding or liquid holding plus Stage A/B sublimation, but it has no
+  orthogonal longwave switch.
+  Evidence: `08_snow_albedo.rs:20-27` and
+  `00c_day_input_builder_impl.rs:1457-1475`.
+- Observation: the shared meteorology crate already has typed net-longwave,
+  turbulent sensible/latent/mass, latent-to-mass conversion, conduction, and
+  advected-heat primitives. The gap is runtime operands and authoritative
+  canopy/sky composition, not arithmetic helper availability.
+  Evidence: `openwepp-meteorology/src/surface_energy.rs`.
+- Observation: the installed Marcell data bind conifer, deciduous, and open
+  strata, while Harvard binds hardwood and open but not hemlock. Five SNOTEL
+  lanes provide open controls; no installed observation closes a
+  warm-maritime conifer transfer claim.
+  Evidence: `observation-fixture-ledger.csv` and the fixture manifests.
+- Observation: the missing longwave work is not a shared-arithmetic gap.
+  Load-bearing atmospheric forcing, displaced-sky/canopy view composition, and
+  canopy radiometric-temperature/emissivity authority remain absent.
+  Evidence: `authority-gap-ledger.csv`.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+Execution froze an orthogonal `B/L/S/LS` experiment and a single physical
+mass/energy reconstruction. EB-03 is admitted for contract-first
+energy-consistent sublimation work without promoting Stage A or B. EB-02 is
+held for longwave authority, and EB-04 is consequently held until both
+mechanisms can execute through the same carrier. The missing warm-maritime
+conifer lane limits that transfer claim but does not block authoritative
+contract work under ADR-0042.
+
+Both independent reviews passed after correction. Terminal verification found
+and corrected latent-implementation, signed-response, and dimensional-label
+inconsistencies. Both exact-tree verifiers then passed the corrected tree. The
+package changes no executable behavior.

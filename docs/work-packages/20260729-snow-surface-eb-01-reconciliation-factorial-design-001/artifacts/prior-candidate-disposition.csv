@@ -1,0 +1,5 @@
+candidate,robust_fail_count,robust_ordinal_score,cohort_sublimation_m,max_daily_sublimation_m,disposition,basis
+current_default,15,179,,,RETAINED_DEFAULT,Reference; no candidate promotion
+partition_sublimation_stage_a,19,168,17.521858543414357,0.00713185891449648,REJECTED_PRIOR,Worse robust score; eight worse robust cells
+stage_a_legacy_phase_10_3_16,20,153,,,REJECTED_PRIOR,Worse robust score
+stage_b_surface_layer,15,178,7.980802132555099,0.00298271559640258,REJECTED_PRIOR,Conserved mass but scored one point below default

@@ -1,0 +1,19 @@
+operand,units,sign,control_volume,area_basis,time_basis,producer,consumer,authority,source_path,visibility
+total_water_storage_before,kg m^-2,state,whole snowpack over one ground-area column,1 m2 snow column per 1 m2 ground,step start,snow ice + retained liquid state,independent mass reconstruction,successor diagnostic,EB-03 successor contract/runtime operand,diagnostic
+solid_input_to_pack,kg m^-2,+,same,same,amount integrated over exact step,phase-partitioned forcing,snow state,current contract,SC-SNOWFREEZE-001; infiltration_reconciliation.rs,diagnostic
+liquid_input_to_pack,kg m^-2,+,same,same,amount integrated over exact step,rain admitted to pack after bypass,snow liquid state,current contract,SC-SNOWFREEZE-001; infiltration_reconciliation.rs,diagnostic
+vapor_mass_exchange,kg m^-2,+ deposition / - sublimation,same,same,amount integrated over exact step,same turbulent exchange as latent_heat,snow mass state,EB-03 contract required,surface_energy.rs; EB-03 successor contract/runtime operand,diagnostic
+liquid_outflow,kg m^-2,-,same,same,amount integrated over exact step,liquid routing,runoff/infiltration,current contract,SC-SNOWFREEZE-001; infiltration_reconciliation.rs,public+diagnostic
+total_water_storage_after,kg m^-2,state,same,same,step end after vapor and liquid routing,snow ice + retained liquid state,independent mass reconstruction,successor diagnostic,EB-03 successor contract/runtime operand,diagnostic
+step_duration,s,multiplier,surface/phase solve,same,exact runtime step,runtime clock,all W m^-2 operands,current runtime,runner hourly runtime clock,diagnostic
+thermal_energy_before,J m^-2,state,surface/phase solve before routing,same,step start,signed internal thermal energy relative to admitted 0 C ice reference,independent energy reconstruction,EB-03 contract required,SC-SNOWFREEZE-001 cold-content state; EB-03 successor operand,diagnostic
+net_shortwave,W m^-2,+ toward snow,same,same,step mean,radiation,surface energy sum,current contract,runoff_reconciliation.rs; surface_energy.rs,diagnostic
+net_longwave,W m^-2,+ toward snow,same,same,step mean,future canopy/sky radiation,surface energy sum,EB-02 authority required,surface_energy.rs; EB-02 successor authority/runtime operand,diagnostic
+sensible_heat,W m^-2,+ toward snow,same,same,step mean,turbulent exchange,surface energy sum,admissible helper,surface_energy.rs,diagnostic
+latent_heat,W m^-2,+ toward snow,same,same,step mean,same turbulent exchange as vapor_mass_exchange,surface energy sum,EB-03 contract required,surface_energy.rs; EB-03 successor runtime operand,diagnostic
+ground_conduction,W m^-2,+ toward snow,same,same,step mean,snow/ground exchange,surface energy sum,admissible helper,surface_energy.rs,diagnostic
+advected_precipitation_heat,W m^-2,+ toward snow,same,same,step mean,precipitation,surface energy sum,authoritative helper,surface_energy.rs,diagnostic
+thermal_energy_after,J m^-2,state,same,same,after warming/cooling before liquid routing,same reference as thermal_energy_before,independent energy reconstruction,EB-03 contract required,SC-SNOWFREEZE-001 cold-content state; EB-03 successor operand,diagnostic
+net_phase_change_mass,kg m^-2,+ melt / - refreeze,same,same,amount integrated over surface/phase solve step,melt/refreeze operator,snow phase state,current contract,SC-SNOWFREEZE-001; runoff_reconciliation.rs,diagnostic
+latent_heat_fusion,J kg^-1,multiplier,same,same,constant for step,canonical physical constant,independent energy reconstruction,current contract,openwepp-meteorology physical constants,diagnostic
+latent_heat_exchange,J kg^-1,multiplier,same,same,temperature/phase appropriate,shared meteorology conversion,latent/mass equivalence reconstruction,EB-03 contract required,surface_energy.rs::latent_heat_for_surface_temperature,diagnostic

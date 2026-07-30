@@ -1,0 +1,4 @@
+successor,decision,basis
+SNOW-SURFACE-EB-02,HOLD_FOR_AUTHORITY,Canopy/sky longwave composition and temperature/emissivity authority absent
+SNOW-SURFACE-EB-03,GO,Contract-first exact-one latent-energy/vapor-mass composition; no prior promotion
+SNOW-SURFACE-EB-04,HOLD_FOR_AUTHORITY,"Requires EB-02 authority, EB-03 coupling, and frozen decision thresholds"

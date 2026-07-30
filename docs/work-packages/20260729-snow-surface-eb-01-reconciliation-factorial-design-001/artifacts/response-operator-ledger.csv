@@ -1,0 +1,11 @@
+response,units,operator,cells,ledger
+surface_energy_component,W m^-2,direct signed hourly step-mean component,B/L/S/LS,energy
+vapor_mass_exchange,kg m^-2,"direct signed amount integrated over hourly step: positive deposition / negative sublimation; loss-positive view is max(0,-exchange)",S/LS,mass
+swe,mm,same-time modeled minus observed,all,state
+snow_depth,m,same-time modeled minus observed,all,state
+cold_content,J m^-2,direct state and daily change,all,energy
+melt_refreeze,kg m^-2,direct amounts integrated over hourly step,all,mass_energy
+retained_routed_liquid,kg m^-2,direct amounts integrated over hourly step and retained state,all,mass
+snow_disappearance,day of water year,first snow-free day; threshold/window authority owned by EB-03/04 and blocks EB-04 until frozen,all,timing
+runoff_timing,day of water year,centroid and peak within identical water-year snow-season window frozen before results,all,downstream
+frost_depth,m,same-date paired difference where supported,all,downstream

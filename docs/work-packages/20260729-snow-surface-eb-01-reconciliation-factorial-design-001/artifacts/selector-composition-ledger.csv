@@ -1,0 +1,8 @@
+selector,state,production_default,available_opt_in,factorial_requirement
+phase_model,independent,Harder-Pomeroy hourly,legacy options retained,Freeze across B/L/S/LS
+density_model,independent,bulk compaction,legacy/options retained,Freeze across B/L/S/LS
+liquid_model,entangled_with_sublimation,CoeLiquidHoldingCapacityV1,Stage A/B melt-enum variants,Split sublimation into independent typed selector
+longwave_model,missing,off,none,Add independent typed selector only after authority admission
+sublimation_model,entangled_with_melt_enum,off,Stage A/B nonpromoted variants,Move behind independent typed selector; no default change
+surface_energy_carrier,partial_opt_in,bulk CoE path; Stage 3 disabled,shortwave-only Stage 3,Prospectively choose one identical carrier for all cells; do not relabel opt-in as baseline
+canopy_projection,independent,current seasonal projection,same projection available to opt-ins,Freeze input trace across cells

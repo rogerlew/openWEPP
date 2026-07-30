@@ -1,0 +1,10 @@
+rule,class,operator,threshold_or_window,failure_condition,outcome,owner
+trace_identity,hard_gate,all frozen non-target inputs byte/equality identical across cells,exact,any mismatch,REJECT_CELL_SET,EB-04
+mass_closure,hard_gate,independent residual from named raw operands,tolerance must be admitted by EB-03 before execution,outside tolerance,REJECT_CANDIDATE,EB-03
+energy_closure,hard_gate,independent residual from named raw operands,tolerance must be admitted by EB-03 before execution,outside tolerance,REJECT_CANDIDATE,EB-03
+latent_mass_equivalence,hard_gate,Qlatent*dt equals L_exchange*vapor_mass_exchange,tolerance must be admitted by EB-03 before execution,outside tolerance or wrong sign,REJECT_CANDIDATE,EB-03
+snow_disappearance,operator,first snow-free day followed by persistence window,snow-free threshold and window must be admitted before EB-04,operator unresolved,HOLD_EB04,EB-03/EB-04
+runoff_timing,operator,centroid and peak within common water-year snow season,window frozen before results,window unresolved,HOLD_EB04,EB-04
+primary_scientific_improvement,decision,"forcing-robust rubric cells, direct operands first",accepted SC-SNOWFREEZE rubric plus prospectively frozen tie rule,no net improvement or tradeoff,NONPROMOTION,EB-04
+protected_lanes,decision,"current default, open controls, canopy strata, conservation",no worse forcing-robust failure count and no hard-gate failure,regression,NONPROMOTION,EB-04
+warm_maritime_conifer,claim_limit,HJ Andrews or equivalent bound lane,required only for this transfer claim,data absent,WITHHOLD_TRANSFER_CLAIM,EB-04
