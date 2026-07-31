@@ -71,6 +71,9 @@ pub struct DirectWinterHourlyForcing {
     pub radiation_mj_m2: f64,
     pub air_temperature_c: f64,
     pub cloud_fraction: f64,
+    pub daily_solar_radiation_mj_m2: f64,
+    pub daily_extraterrestrial_radiation_mj_m2: f64,
+    pub daylight: bool,
     pub phase_model: SnowPhasePartitionModel,
     pub rain_fraction: f64,
     pub snow_fraction: f64,
@@ -87,6 +90,9 @@ impl DirectWinterHourlyForcing {
             radiation_mj_m2: 0.0,
             air_temperature_c: 0.0,
             cloud_fraction: 0.0,
+            daily_solar_radiation_mj_m2: 0.0,
+            daily_extraterrestrial_radiation_mj_m2: 0.0,
+            daylight: false,
             phase_model: SnowPhasePartitionModel::LegacyRst,
             rain_fraction: 0.0,
             snow_fraction: 0.0,
@@ -274,6 +280,9 @@ fn build_simimpl28_hourly_winter_forcing_typed(
             radiation_mj_m2: hrrad_mj_m2,
             air_temperature_c: hrtemp_c,
             cloud_fraction: sunmap.cloud_fraction,
+            daily_solar_radiation_mj_m2: radmj,
+            daily_extraterrestrial_radiation_mj_m2: sunmap.rpoth_mj_m2,
+            daylight: sunmap.rpoth_mj_m2 > SIMIMPL28_DOMAIN_EPS,
             phase_model: partition.phase_model,
             rain_fraction: partition.rain_fraction,
             snow_fraction: partition.snow_fraction,
@@ -504,7 +513,19 @@ fn simimpl28_sunmap(
     let r3 = r1
         * ((d.sin() * geometry.radlat.sin() * (t1 - t0) * 12.0 / SIMIMPL28_PI)
             + (d.cos() * geometry.radlat.cos() * (t1.sin() - t0.sin()) * 12.0 / SIMIMPL28_PI));
+    let hourly_radiation_upper_bound_mj_m2 =
+        simimpl28_hourly_extraterrestrial_radiation_upper_bound(sdate)?;
     if !r3.is_finite() || r3 <= SIMIMPL28_DOMAIN_EPS {
+        if r3.is_finite() && radly <= SIMIMPL28_DOMAIN_EPS {
+            return Ok(Simimpl28SunmapResult {
+                halfdy: 0.0,
+                dsunmp: d,
+                estrad_mj_m2: 0.0,
+                rpoth_mj_m2: 0.0,
+                hourly_radiation_upper_bound_mj_m2,
+                cloud_fraction: 0.0,
+            });
+        }
         return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
             symbol: "sunmap.r3".to_string(),
             value: r3,
@@ -518,9 +539,6 @@ fn simimpl28_sunmap(
             allowed: SIMIMPL28_DAILY_RADIATION_BOUND_ALLOWED,
         });
     }
-
-    let hourly_radiation_upper_bound_mj_m2 =
-        simimpl28_hourly_extraterrestrial_radiation_upper_bound(sdate)?;
 
     let sindlt = 0.39785
         * ((SIMIMPL28_PI / 180.0)
@@ -675,7 +693,9 @@ fn simimpl28_hr_tmp_hour(
     tmax: f64,
     tmin: f64,
 ) -> Result<(f64, f64), ClimateRuntimeInputError> {
-    let (hrrad_mj_m2, hrtemp_c) = if itflag {
+    let (hrrad_mj_m2, hrtemp_c) = if sunmap.rpoth_mj_m2 <= SIMIMPL28_DOMAIN_EPS {
+        (0.0, f64::midpoint(tmax, tmin))
+    } else if itflag {
         (
             openwepp_unit_boundary::conversions::megajoules_per_square_meter_per_day_to_uniform_hourly(
                 radmj,
@@ -1206,6 +1226,16 @@ mod cqr_row4_simimpl28_hourly_forcing_tests {
         let error = simimpl28_sunmap(100_000.0, 15, geometry)
             .expect_err("excess daily radiation should fail closed");
         assert!(format!("{error:?}").contains("radly"));
+    }
+
+    #[test]
+    fn eb03_polar_night_publishes_explicit_unavailable_solar_state() {
+        let geometry =
+            simimpl28_aspect_geometry(89.0, 0.1, 180.0).expect("geometry should be valid");
+        let sunmap = simimpl28_sunmap(0.0, 355, geometry).expect("polar night is a valid state");
+        assert!(sunmap.rpoth_mj_m2.abs() <= f64::EPSILON);
+        assert!(sunmap.estrad_mj_m2.abs() <= f64::EPSILON);
+        assert!(sunmap.halfdy.abs() <= f64::EPSILON);
     }
 
     #[test]

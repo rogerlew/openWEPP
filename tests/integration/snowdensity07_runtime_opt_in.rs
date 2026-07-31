@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -81,6 +81,8 @@ fn cold_pack_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs 
         snow_density_model: model,
         stage3_liquid_routing_model:
             openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,

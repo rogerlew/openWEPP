@@ -275,6 +275,7 @@ impl Wb11HydrologyKernel {
             dewpoint_c,
             snow_depth_m,
             0.0,
+            false,
         )
     }
 
@@ -335,10 +336,15 @@ impl Wb11HydrologyKernel {
             dewpoint_c,
             snow_depth_m,
             surface_temperature_c,
+            false,
         )
     }
 
-    fn coe_open_sublimation_hour_m(
+    // This boundary mirrors the contract's complete hourly forcing tuple. Keeping
+    // those operands explicit makes the legacy-water and EB-03 ice-saturation
+    // branches visible at each call site.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn coe_open_sublimation_hour_m(
         phase_class: HillslopeKernelPhaseClass,
         canopy_cover_fraction: f64,
         wind_m_s: f64,
@@ -346,6 +352,7 @@ impl Wb11HydrologyKernel {
         dewpoint_c: f64,
         snow_depth_m: f64,
         surface_temperature_c: f64,
+        surface_uses_ice_saturation: bool,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         Self::require_direct_typed_snow_value_with(
             phase_class,
@@ -398,9 +405,11 @@ impl Wb11HydrologyKernel {
             SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M / SNOW_SUBLIMATION_ROUGHNESS_LENGTH_M;
         let neutral_transfer_coefficient =
             (SNOW_SUBLIMATION_VON_KARMAN / roughness_ratio.ln()).powi(2);
-        let surface_vapor_pressure_pa = Self::saturation_vapor_pressure_water_kpa(
+        let surface_vapor_pressure_pa = Self::surface_vapor_pressure_pa(
+            phase_class,
             surface_temperature_c,
-        ) * SNOW_SUBLIMATION_KPA_TO_PA;
+            surface_uses_ice_saturation,
+        )?;
         let air_vapor_pressure_pa =
             Self::saturation_vapor_pressure_water_kpa(dewpoint_c) * SNOW_SUBLIMATION_KPA_TO_PA;
         let vapor_pressure_deficit_pa = (surface_vapor_pressure_pa - air_vapor_pressure_pa).max(0.0);
@@ -429,6 +438,38 @@ impl Wb11HydrologyKernel {
             None,
         )?;
         Ok(sublimation_m)
+    }
+
+    fn surface_vapor_pressure_pa(
+        phase_class: HillslopeKernelPhaseClass,
+        surface_temperature_c: f64,
+        surface_uses_ice_saturation: bool,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if !surface_uses_ice_saturation {
+            return Ok(
+                Self::saturation_vapor_pressure_water_kpa(surface_temperature_c)
+                    * SNOW_SUBLIMATION_KPA_TO_PA,
+            );
+        }
+        openwepp_meteorology::surface_energy::saturation_vapor_pressure_snobal_pa(
+            TemperatureCelsius::try_new(surface_temperature_c).map_err(|_| {
+                Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
+                    value: surface_temperature_c,
+                }
+            })?,
+        )
+        .map_err(
+            |_| Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("snow_sublimation.surface_temperature_k"),
+                value: surface_temperature_c + SNOW_SUBLIMATION_SURFACE_TEMP_K,
+                minimum: Some(f64::MIN_POSITIVE),
+                maximum: Some(SNOW_SUBLIMATION_SURFACE_TEMP_K),
+            },
+        )
+        .map(openwepp_meteorology::surface_energy::PressurePascals::as_pascals)
     }
 
     fn saturation_vapor_pressure_water_kpa(temperature_c: f64) -> f64 {

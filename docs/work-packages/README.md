@@ -330,6 +330,30 @@
 
 State as of `2026-07-30 UTC`:
 
+- `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
+  EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
+  synthetic CQR handoff self-test and decomposes two oversized assurance
+  negative matrices without changing snow physics, assurance authority,
+  timeouts, or quality thresholds. CQR 4/4, assurance publication 37/37, quick
+  2109/2109, frost 324/324, and Critical full 2158/2158 pass. EB-04 is admitted.
+- `20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` -
+  EXECUTED / COMPLETE / PASS: closed the science defect
+  `GAP-SNOWENERGY-007` using the authoritative
+  Marks/SNOBAL active thermal control volume, coupled lower-pack conduction,
+  and mass-dependent stability substeps. Real B/L/S/LS, independent
+  same-substep conduction reconstruction, mass/energy closure, and protected
+  rollback identity pass without a temperature clamp, fitted limiter, or new
+  user coefficient. EB-03B lifted the unrelated validation hold with complete
+  passing quick, frost, and Critical full profiles.
+- `20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` -
+  EXECUTED / HOLD / MODEL LIMITATION: implemented typed longwave,
+  exact-one vapor/latent composition, shared Stage 3 state, default-off
+  diagnostic selectors, and absent/empty/disabled equivalence. Focused
+  closure, B, and L pass, but the real S consumer reaches the provider's
+  absolute-zero cold-content bound after 18 days with material SWE remaining.
+  At EB-03 closure, EB-04 was not admitted and a clamp, tuning round, or new
+  user coefficient was prohibited. EB-03A subsequently corrected the provider
+  with authoritative physics, and EB-03B closed terminal validation.
 - `20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` -
   COMPLETE / CONTRACT PASS / RUNTIME HOLD: registered
   `SC-SNOWENERGY-001`, binding hourly Dilley-Unsworth atmospheric longwave,
@@ -5030,6 +5054,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` —
+  EXECUTED / HOLD / MODEL LIMITATION: B/L and local closure pass, but real S/LS
+  execution reaches the Stage 3 absolute-zero cold-content bound with material
+  SWE remaining. The selectors remain default-off diagnostic/reproduction
+  seams. EB-03A subsequently resolved the provider limitation, and EB-03B
+  closed terminal validation before EB-04.
 - `20260627-snowdensity-10-3-16-open-surface-ablation-stage-a-001/` —
   executed non-promotion for the Stage A opt-in open-surface sublimation /
   latent mass-loss candidate; cap-limited tail improved `30 -> 27`, but

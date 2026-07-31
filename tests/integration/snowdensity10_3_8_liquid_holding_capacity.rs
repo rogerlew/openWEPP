@@ -38,7 +38,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_liquid_holding_capacity_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY",
         "REF-SNOWFREEZE-ANDERSON1976-LIQUID",
         "REF-SNOWFREEZE-SNOW17-PLWHC",
@@ -98,6 +98,8 @@ fn low_density_capacity_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitio
         snow_density_model: SnowDensityModel::LegacyWepp,
         stage3_liquid_routing_model:
             openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,

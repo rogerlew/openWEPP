@@ -445,6 +445,9 @@ struct DirectProductionSnowFrostAuthority {
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
     stage3_liquid_routing_model: openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
+    snow_surface_longwave_model: openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel,
+    snow_surface_sublimation_model: openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel,
+    snow_atmospheric_pressure_pa: f64,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
@@ -2158,6 +2161,11 @@ fn direct_production_typed_snow_frost_authority(
         snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?,
         snow_melt_model: snowdensity1015_default_snow_melt_model()?,
         stage3_liquid_routing_model: paradigm2_stage3_liquid_routing_model()?,
+        snow_surface_longwave_model: snow_surface_longwave_model()?,
+        snow_surface_sublimation_model: snow_surface_sublimation_model()?,
+        snow_atmospheric_pressure_pa: direct_snow_atmospheric_pressure_pa(
+            climate_request.direct_elevation_m(),
+        )?,
         snow_rst_c: snow_projection.rst_c,
         snow_newsnw_kg_m3: snow_projection.newsnw_kg_m3,
         snow_ssd_kg_m3: snow_projection.ssd_kg_m3,
@@ -2169,6 +2177,22 @@ fn direct_production_typed_snow_frost_authority(
         frost_runtime_frozen_water_m,
         frost_active: frost_runtime_depth_m > 1.0e-12 || frost_runtime_frozen_water_m > 1.0e-12,
     })
+}
+
+fn direct_snow_atmospheric_pressure_pa(elevation_m: f64) -> Result<f64, HillslopeCliError> {
+    let pressure_base = 1.0 - 0.0065 * elevation_m / 293.0;
+    if !pressure_base.is_finite() || pressure_base <= 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "snow atmospheric-pressure base must be finite and > 0, observed {pressure_base}"
+        )));
+    }
+    let pressure_pa = 101_300.0 * pressure_base.powf(5.26);
+    if !pressure_pa.is_finite() || pressure_pa <= 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "snow atmospheric pressure must be finite and > 0 Pa, observed {pressure_pa}"
+        )));
+    }
+    Ok(pressure_pa)
 }
 
 fn direct_production_typed_frost_authority(

@@ -1,0 +1,159 @@
+{
+  "binary": "target/debug/openwepp-cli-hill",
+  "cells": {
+    "B": {
+      "active_snow_coupling_row_count": 2067,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B/eb03-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 0,
+      "failure": null,
+      "final_runtime_swe_m": -0.0,
+      "longwave_selector": "disabled",
+      "sublimation_m_sum": 0.0,
+      "sublimation_selector": "disabled",
+      "trace_row_count": 16437,
+      "trace_sha256": "0d33c9196020c7fa3a72aa4036a1c94f75de41a4df4def06d80589f78bf5c610",
+      "wat_sha256": "6b19319c1300dfcc4e84659869a58d08281522998c64f30603aaa1f15e7a43c3"
+    },
+    "B_absent": {
+      "active_snow_coupling_row_count": 2067,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B_absent/eb03-B_absent.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B_absent",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 0,
+      "failure": null,
+      "final_runtime_swe_m": -0.0,
+      "longwave_selector": null,
+      "sublimation_m_sum": 0.0,
+      "sublimation_selector": null,
+      "trace_row_count": 16437,
+      "trace_sha256": "0d33c9196020c7fa3a72aa4036a1c94f75de41a4df4def06d80589f78bf5c610",
+      "wat_sha256": "6b19319c1300dfcc4e84659869a58d08281522998c64f30603aaa1f15e7a43c3"
+    },
+    "B_empty": {
+      "active_snow_coupling_row_count": 2067,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B_empty/eb03-B_empty.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/B_empty",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 0,
+      "failure": null,
+      "final_runtime_swe_m": -0.0,
+      "longwave_selector": "",
+      "sublimation_m_sum": 0.0,
+      "sublimation_selector": "",
+      "trace_row_count": 16437,
+      "trace_sha256": "0d33c9196020c7fa3a72aa4036a1c94f75de41a4df4def06d80589f78bf5c610",
+      "wat_sha256": "6b19319c1300dfcc4e84659869a58d08281522998c64f30603aaa1f15e7a43c3"
+    },
+    "L": {
+      "active_snow_coupling_row_count": 2067,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/L/eb03-L.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/L",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 0,
+      "failure": null,
+      "final_runtime_swe_m": -0.0,
+      "longwave_selector": "dilley_unsworth_subcanopy_v1",
+      "sublimation_m_sum": 0.0,
+      "sublimation_selector": "disabled",
+      "trace_row_count": 16437,
+      "trace_sha256": "0d33c9196020c7fa3a72aa4036a1c94f75de41a4df4def06d80589f78bf5c610",
+      "wat_sha256": "353336325e2c5a285847b6354286d2c5a14688122660cdf1e2b042554124fc37"
+    },
+    "LS": {
+      "active_snow_coupling_row_count": 8,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/LS/eb03-LS.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/LS",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 1,
+      "failure": "CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct publication day-input builder failed: CLIHILL-E-011 runtime surface failure for direct_publication_frame: HS-SIMOUT-E-001 direct production typed snow partition failed: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow_sublimation.surface_temperature_k=0 outside [Some(2.2250738585072014e-308), Some(273.15)]",
+      "final_runtime_swe_m": 0.04880071264155171,
+      "longwave_selector": "dilley_unsworth_subcanopy_v1",
+      "sublimation_m_sum": 0.00090661422798516,
+      "sublimation_selector": "neutral_bulk_stage3_v1",
+      "trace_row_count": 14,
+      "trace_sha256": "d5cabf083659c91569d806ee9336dc8391efa57c5c8e018d76d5eccbedefad34",
+      "wat_sha256": "fbc62d3b511368ee275ddc74117d8689b430e1427220e25d30816201d89ca7b6"
+    },
+    "S": {
+      "active_snow_coupling_row_count": 12,
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/S/eb03-S.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_surface_eb03_consumer_cells/S",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "exit_code": 1,
+      "failure": "CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct publication day-input builder failed: CLIHILL-E-011 runtime surface failure for direct_publication_frame: HS-SIMOUT-E-001 direct production typed snow partition failed: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow_sublimation.surface_temperature_k=0 outside [Some(2.2250738585072014e-308), Some(273.15)]",
+      "final_runtime_swe_m": 0.03606543916417242,
+      "longwave_selector": "disabled",
+      "sublimation_m_sum": 0.0013524165226325299,
+      "sublimation_selector": "neutral_bulk_stage3_v1",
+      "trace_row_count": 18,
+      "trace_sha256": "8e4330557f8b386bae10ad0efe35129bee86e96480a28fd5301e982ff95bc3e3",
+      "wat_sha256": "fbc62d3b511368ee275ddc74117d8689b430e1427220e25d30816201d89ca7b6"
+    }
+  },
+  "disposition": "HOLD",
+  "evidence_class": "Ran",
+  "fixture": "tests/fixtures/cancov_forest/hjandrews_conifer_or",
+  "protected_controls": {
+    "default_activation_changed": false,
+    "density_model": "physics_bulk_multilayer_density_v1",
+    "fixture_inputs_changed": false,
+    "stage3_liquid_model": "layered_thermal_liquid_v1"
+  },
+  "rollback_identity": {
+    "absent_matches_explicit_disabled_trace": true,
+    "absent_matches_explicit_disabled_wat": true,
+    "empty_matches_explicit_disabled_trace": true,
+    "empty_matches_explicit_disabled_wat": true
+  },
+  "schema": "snow-surface-eb03-real-consumer-cells-v1"
+}

@@ -6,6 +6,7 @@ const PACKAGE: &str =
 const PROVENANCE: &str = "docs/work-packages/20260628-paradigm-2-stage-0-surface-energy-balance-001/artifacts/clean-room-provenance.md";
 const NO_WIRING: &str = "docs/work-packages/20260628-paradigm-2-stage-0-surface-energy-balance-001/artifacts/no-production-wiring-scan.md";
 const STAGE3_PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/package.md";
+const EB03_PACKAGE: &str = "docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/package.md";
 const SNOWFREEZE_CONTRACT: &str =
     "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const METEOROLOGY_LIB: &str = "crates/openwepp-meteorology/src/lib.rs";
@@ -29,7 +30,11 @@ const SURFACE_ENERGY_RUNTIME_TOKENS: &[&str] = &[
 
 const STAGE3_ALLOWED_RUNTIME_FILES: &[&str] = &[
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs",
     "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs",
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",
+    "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
 ];
 
 fn repo_path(relative_path: &str) -> PathBuf {
@@ -132,7 +137,14 @@ fn production_runtime_sources_only_wire_stage0_flux_primitives_through_stage3_op
     let stage3_package = repo_text(STAGE3_PACKAGE);
     assert!(
         stage3_package.contains("OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1"),
-        "Stage 3 package must bind the only allowed runtime use of Stage 0 primitives"
+        "Stage 3 package must bind the thermal-provider opt-in use of Stage 0 primitives"
+    );
+    let eb03_package = repo_text(EB03_PACKAGE);
+    assert!(
+        eb03_package.contains("Dilley-Unsworth atmospheric longwave")
+            && eb03_package.contains("existing Stage 3 hourly carrier")
+            && eb03_package.contains("absent/empty selectors remain disabled"),
+        "EB-03 package must bind the only additional runtime use of Stage 0 primitives"
     );
     let snowfreeze_contract = repo_text(SNOWFREEZE_CONTRACT);
     assert!(

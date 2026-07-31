@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 117
+contract_version: 119
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -89,6 +89,8 @@ Out of scope:
 | REF-SNOWFREEZE-PARADIGM2-STAGE3 | `docs/work-packages/20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/`, ADR-0029, `docs/planning/paradigm2-multilayer-snow-specification.md` §4 reqs. 3/4 and §6 Stage 3, Stage 0 `openwepp-meteorology` surface-energy primitives, REF-SNOWFREEZE-LIBSNOBAL-CC0, Marks 1999, Crocus R-40, and the Stage 1/2 package outcomes | Paradigm 2 Stage 3 authority: reserves an opt-in diagnostic per-layer thermal/liquid-routing candidate that uses the Stage 1 layer stack and Stage 0 energy primitives to compute layer temperature, cold content, refreeze, liquid routing, and typed meltwater-flux temperature while preserving the existing CoE SWE/melt mass path, no-env defaults, rollback, public schemas, and deferring full stream-temperature routing. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE | `docs/work-packages/20260629-paradigm-2-stage-3-decouple-water-temperature-001/`, `docs/planning/snow-frost-fidelity-strategy.md` §10.3 step 10, ADR-0029, ADR-0028, ADR-0026, and the Stage 3 package outcome | Paradigm 2 Stage 3-Decouple authority: supersedes the Stage 3 requirement to compose with `physics_bulk_multilayer_density_v1` for the water-temperature arm. The opt-in thermal/liquid solver may run on a bulk-equivalent layer stack whose per-layer densities all equal the selected bulk density outcome, so public snow-density/frost behavior remains the current bulk default while typed meltwater-flux temperature remains available for the stream-temperature program. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-PARADIGM2-PROMOTION | `docs/work-packages/20260629-paradigm-2-multilayer-promotion-001/`, `docs/work-packages/20260629-paradigm-2-stage-3-decouple-water-temperature-001/`, `docs/planning/snow-frost-fidelity-strategy.md` §10.3 step 10, ADR-0029, ADR-0028, and the stream-water-temperature backlog | Paradigm 2 multilayer promotion authority: ratifies the Stage 3-Decouple arm as a production-supported opt-in capability rather than a package-local diagnostic. The selector remains default-off and supported-internal; the supported hillslope output is nullable WAT parquet `MeltwaterTemperature` in `degC`; HBP/watershed serialization and full in-stream routing remain deferred. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-EB03 | `SC-SNOWENERGY-001` v2, `docs/planning/snow-surface-energy-balance-roadmap.md`, and `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | Shared Stage 3 snow-surface temperature/cold-content provider, orthogonal longwave/sublimation selectors, and exact-one vapor/latent composition. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-EB03A | `SC-SNOWENERGY-001` v3, Marks et al. (1999), Lute et al. (2022) section 2.2.7, CC0 libsnobal commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6`, and `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | Active thermal control-volume construction, active/lower conductive coupling, conservative projection, and mass-dependent stability substeps that close `GAP-SNOWENERGY-007`. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-STURM2010-DENSITY | `references/copyrighted/sturm2010_swe_climate_classes.pdf` Eq. 6 and Table 4 | Sturm 2010 density trajectory authority for class-specific `rho_max`, `rho_0`, `k1`, and `k2` parameters for alpine, maritime, prairie, tundra, and taiga snow. The same paper states ephemeral snow measurements were excluded, so no ephemeral density parameter row is available from this local authority. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-STURM1995-CLASSIFICATION | `references/copyrighted/sturm1995.pdf` pp. 1273-1276, Figs. 8-9 and Table 7 | Required authority for forcing-derived class assignment from the run's own air-temperature, precipitation, and wind climate. The original tree uses CDM with `Tc=10 degC`, high/low temperature threshold `125 degC-month`, ephemeral threshold `30 degC-month`, precipitation threshold `2 mm d^-1`, and wind low/high evidence bounded by `0.5-2.0 m s^-1`; the original map used vegetation as wind proxy, so direct-runtime wind classification must fail closed for the unresolved `0.5 < wind < 2.0 m s^-1` interval rather than inventing a fitted cutoff. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-STURM2021-CLASSIFICATION-CROSSCHECK | `references/copyrighted/hydr-JHM-D-21-0070.1.pdf` Fig. 2 and §2a; NSIDC-0768 user guide §Documentation | Cross-check for the Sturm classification update, not replacement authority for 1995-named classes. Sturm and Liston 2021 preserve the tree structure but update the ephemeral CDM threshold from `30` to `61 degC-month`, update the precipitation threshold from `2` to `4 mm d^-1`, and rename Taiga to Boreal Forest and Alpine to Montane Forest. Runtime pairing with Sturm 2010 density parameters must map names back to Sturm 1995 labels and must not silently inherit 2021 thresholds. | `[DIRECT][Static]` |
@@ -162,6 +164,14 @@ Out of scope:
 | `watbtm` | `m` | Frost/thaw excess liquid routed below the active profile when fine-layer storage cannot retain it. | frost routine | water-balance publication and closure identity (`Dp` loss lineage) |
 | `Snow-Water` | `mm` | WB13/hydout snow-water storage publication surface converted from runtime SWE at the output boundary. | winter runtime state publication | WB13/hillslope WAT output |
 | `Snow-Depth` | `mm` | Diagnostic hillslope WAT physical snowpack-depth publication converted from `snow.runtime_depth_m`; distinct from SWE and invalid as water-storage evidence. | winter runtime state publication | snow/frost observed-site correspondence and snow-insulation confound control |
+| `MeltwaterTemperature` | `degC` | Nullable hillslope WAT temperature of liquid exported from the layered Stage 3 snow column. | layered snow thermal/liquid runtime and WAT publication adapter | stream-temperature handoff and snow thermal diagnostics |
+| `frdp` | `mm` | Hillslope WAT active frost-front depth publication converted from the runtime metre-valued state. | frost runtime state publication | frost-depth observation correspondence |
+| `frost_hourly_surface_temp` | `degC` | Hourly adjusted surface temperature consumed by the frost heat-flow path. | hourly frost forcing adapter | frost top-boundary heat-flow calculation |
+| `snow_hourly_stmtim_phase_model` | `dimensionless` | Unit-interval diagnostic flag identifying the hourly precipitation-phase selector. | hourly snow partition diagnostics | trace and comparator consumers |
+| `snow_hourly_stmtim_rain_fraction` | `dimensionless` | Unit-interval hourly rain fraction produced by the precipitation-phase selector. | hourly snow partition diagnostics | trace and comparator consumers |
+| `snow_hourly_stmtim_snow_fraction` | `dimensionless` | Unit-interval hourly snow fraction complementary to the rain fraction. | hourly snow partition diagnostics | trace and comparator consumers |
+| `snow_hourly_stmtim_relative_humidity` | `dimensionless` | Unit-interval relative humidity used by the hourly precipitation-phase selector. | hourly meteorology adapter | trace and comparator consumers |
+| `snow_hourly_stmtim_hydrometeor_temperature` | `degC` | Hourly hydrometeor temperature used by the Harder-Pomeroy phase selector. | hourly meteorology adapter | trace and comparator consumers |
 | `winter_shortwave_daily_radly` | `Ly d^-1` | Canonical daily shortwave source accepted by openWEPP for winter shortwave/melt modernization; this is the existing climate `rad`/`radly` parser/runtime field, not a separate snow forcing column. | climate parser/runtime daily forcing seam | `SC-CLIMATE-001#INV-CLIMATE-013`, ET forcing, and opt-in melt diagnostics |
 | `winter_rad_hourly` | `MJ m^-2 h^-1` | Registry-owned hourly winter radiation forcing surface. | hourly radiation adapter | melt-forcing diagnostics |
 | `winter_air_temp_hourly` | `degC` | Registry-owned hourly winter air-temperature forcing surface. | hourly temperature adapter | melt/frost branch diagnostics |
@@ -313,6 +323,8 @@ Out of scope:
 | INV-SNOWFREEZE-082 | Paradigm 2 multilayer promotion: `snow_stage3_liquid_routing_model = layered_thermal_liquid_v1` is a production-supported opt-in water-temperature capability when composed with the current no-env bulk snow default. Absent, empty, or `disabled` selector values must retain the bulk default and disabled Stage 3 path; unknown values must fail closed. The selector remains supported-internal only: parser/runfile/user CLI/WEPPpy wiring is deferred until the stream-temperature program has a downstream consumer. The promoted arm must publish nullable hillslope WAT parquet `MeltwaterTemperature` in `degC` from `snow_meltwater_flux_temperature` when routed meltwater temperature exists, with field metadata and unit-registry validation; null is required when the arm is disabled or no routed meltwater temperature is produced. HBP binary/watershed serialization and full in-stream routing are not authorized by this promotion. Acceptance requires a real cross-SNOTEL/cancov direct-production rerun showing the opt-in arm exactly matches the current bulk default (`15` robust fails / `179` score) with no worse robust cells, mass/liquid/energy conservation closure, physically reasonable finite meltwater temperatures `<= 0 degC`, ADR-0025 H2637 performance within budget, default-path public-schema regression proof, release notes, and rollback evidence. Default activation, Stage 1 density dependence, CoE melt/rain mass replacement, density/frost changes, public snow-rubric regression, fixture/schema changes outside the supported WAT temperature field, HBP/watershed serialization, full stream-temperature routing, untyped or unbounded temperature publication, liquid/energy non-closure, or performance failure must close `HOLD`. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-075, INV-SNOWFREEZE-081, REF-SNOWFREEZE-PARADIGM2-PROMOTION, REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE, ADR-0011, ADR-0025, ADR-0026, ADR-0028, ADR-0029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-083 | Dynamic frost residue-cover coupling: when frost thermal inputs are constructed from a production residue/decomposition path that publishes dynamic `residue_depth_m`, the frost surface heat path must consume that current dynamic depth as the residue resistance term in `residue_depth_m / residue_conductivity_w_m_k`. The t0 `frost.runtime_residue_depth_m` seed remains valid only as the initial residue-depth value and conversion provenance; it must not be silently reused for later frost days after surface-residue mass changes. Missing, negative, non-finite, or stale dynamic residue-depth payloads are typed hard failures. The amendment changes only the residue-cover boundary consumed by frost; it does not authorize snow-model changes, Qwet changes, canopy leaf-on/leaf-off changes, frost default activation, fixture fitting, public schema changes, or legacy-comparator targeting. Acceptance requires a real downstream frost trace showing `DirectFrostThermalInputs.residue_depth_m` follows current residue mass, an inert/no-senescence identity-stability check, residue mass/depth conservation, and the Sleepers A-vs-B timing re-score requested by the residue-cover work package. | hard-fail | INV-SNOWFREEZE-006, INV-SNOWFREEZE-047, INV-SNOWFREEZE-050, REF-SNOWFREEZE-LEGACY-WINTER-RESDEP, REF-SNOWFREEZE-FROST-RESIDUE-COVER-20260629, SC-RESIDUE-001#INV-RESIDUE-019, ADR-0011, ADR-0017, ADR-0028 | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-084 | Frost direct-production default activation and direct cutover: the no-env hillslope `DefaultCandidate` runtime policy must select `DirectProductionExecutor` after `INV-SNOWFREEZE-047/048/050` ratification and the `GAP-SNOWFREEZE-002` attributed/bounded disposition. Multi-OFE/Wave-2 public-output runs and legacy sidecar-discovery runs are not allowed to fall back to the compatibility runtime as a default behavior; a direct-runtime failure on those surfaces is a named blocker to fix or hold, not a compatibility escape hatch. Explicit `DirectProductionExecutor` remains available and fail-closed for callers that deliberately request direct execution. Explicit `Compatibility` selection, if still present in code during staged deletion, is a deprecated comparator/deletion seam only and must not be used to satisfy default-activation gates. Unknown or conflicting runtime selector values must fail closed. Activation is authorized by the frost Policy B analog in `INV-SNOWFREEZE-050`: bounded residuals plus full-surface no-regression and conservation evidence, not zero paired observation failures. The activation does not authorize Qwet, new frost physics, observation-fixture edits, public output-schema changes, or reinterpretation of legacy as an acceptance target. Acceptance requires current full gates (`cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace` or ratified nextest equivalent, `cargo deny check`), source-level anti-evasion guards when authority-suite posture changes, and runtime evidence that no-env runs use direct production without compatibility fallback. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-050, REF-SNOWFREEZE-FROST-RATIFICATION-20260629, REF-SNOWFREEZE-FROST-DIRECT-CUTOVER-CORRECTION-20260629, ADR-0011, ADR-0017 | `[DIRECT][Ran] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-085 | SNOW-SURFACE-EB-03 shared thermal and energy composition: `layered_thermal_liquid_v1` top-layer temperature and cold content are the sole candidate snow thermal provider for the internal `B/L/S/LS` campaign cells. `snow_surface_longwave_model` and `snow_sublimation_model` are orthogonal held diagnostic/reproduction selectors that default to disabled and do not alter `snow_melt_model`, phase, density, albedo, or liquid-routing selection. Longwave consumes `SC-SNOWENERGY-001` v2. Sublimation uses the same pre-exchange surface temperature to produce one bounded signed vapor exchange and derives latent heat from that exchange using temperature-appropriate latent heat of sublimation. Vapor loss mutates layer and aggregate ice storage only and never enters routed melt, retained/released liquid, or refreeze. Enabling either mechanism without Stage 3, combining the new sublimation selector with legacy Stage A/B melt variants, unavailable polar-night cloud state, invalid derived emissivity, or nonclosing vapor/latent/cold-content ledgers fails closed. The CoE melt/rain mass path remains authoritative; positive surface-energy excess is not converted to energy-balance melt. Acceptance requires real direct-production `B/L/S/LS` consumer proof, independent longwave/mass/energy reconstruction, unchanged absent-selector default behavior, and no default/user/public-schema/frost/fixture activation. EB-03 did not satisfy that acceptance: S/LS reached the absolute-zero provider bound with material SWE remaining, so the selectors are not supported runtime science and EB-04 is held. | hard-fail | INV-SNOWFREEZE-073, INV-SNOWFREEZE-076, INV-SNOWFREEZE-080, INV-SNOWFREEZE-082, SC-SNOWENERGY-001#INV-SNOWENERGY-015, SC-SNOWENERGY-001#INV-SNOWENERGY-017, REF-SNOWFREEZE-EB03, ADR-0011, ADR-0026 | `[DIRECT][Static] + [INFERENCE][Ran]` |
+| INV-SNOWFREEZE-086 | SNOW-SURFACE-EB-03A active-layer thermal correction: the `layered_thermal_liquid_v1` radiating/turbulent state must be constructed over the upper `min(total snow depth, 0.25 m)` independently of snowfall-event boundaries. When lower snow exists, the active and lower control volumes retain distinct shared temperatures across substeps and exchange the same harmonic conductive flux `G_0` with equal-and-opposite energy operands inside every selected stability substep. Conductivity must use the libsnobal Yen/Anderson `KTS+efcon` formulation with elevation-derived atmospheric pressure, not the Sturm frost-insulation relation. The provider must use the fixed Marks/SNOBAL `60/10/1 kg m^-2` thresholds and `60/15/1 minute` levels, conservatively reconstruct persistent-layer mass/depth/cold-content/liquid state, and reevaluate radiation, vapor/latent exchange, and conduction from the current substep state. The CoE path remains authoritative for snow existence and melt, so the SNOBAL `1 kg m^-2` no-snow collapse is not imported and positive energy excess is not converted to melt. Temperature clamps, air-temperature replacement, cold-content taxes, fitted limiters, new user coefficients, density/phase/frost/default changes, and nonclosing projection or energy ledgers are prohibited. Acceptance requires physical real S/LS completion, published production active/lower/`G_0`/cadence operands, active/lower and whole-pack reconstruction, exact vapor/latent identity, protected default/B/L behavior, and no public activation. | hard-fail | INV-SNOWFREEZE-080, INV-SNOWFREEZE-082, INV-SNOWFREEZE-085, SC-SNOWENERGY-001#INV-SNOWENERGY-020, SC-SNOWENERGY-001#INV-SNOWENERGY-022, SC-SNOWENERGY-001#INV-SNOWENERGY-023, SC-SNOWENERGY-001#INV-SNOWENERGY-025, REF-SNOWFREEZE-EB03A, ADR-0011, ADR-0026 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -472,15 +484,18 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | `rain(iplane)` after winter processing | `snow.post_winter_rain_m` | daily direct-rain depth remaining after winter clearing/restoration, rain retention, and rain-on-snow promotion into routed `wmelt` | `m` -> `m`, finite and non-negative | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Thr` | `winter.hourly.air_temp_c` | hourly thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Thra`/`surtmp(hour)` | `frost.hourly.surface_temp_c_{idx4}` | hourly adjusted surface-temperature forcing consumed by frost top heat flow after legacy `hr_tmp`/`tmpadj` synthesis | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `frost_hourly_surface_temp` | `frost.hourly.surface_temp_c_{idx4}` | registry canonical name for the hourly frost top-boundary temperature | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Tmax`, `Tmin` | `tmax`, `tmin` (`HillslopeProductionStateSymbol::{Wb14Tmax,Wb14Tmin}`) | daily thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `hrrad` | `winter.hourly.rad_mj_m2`, `winter.hourly.rad_mj_m2_{idx4}` | hourly radiation surface | `MJ m^-2 h^-1` preserved at registry boundary; legacy term-level conversion remains explicit | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `cancov`, `clouds` | `cancov` (`HillslopeProductionStateSymbol::Wb15PlantCancov`), `winter.hourly.cloud_fraction` | melt and surface-temperature modifiers | `fraction` -> `fraction` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qsrf`, `Quf`, `Ksrf` | `frost.hourly.qsrf_w_m2`, `frost.hourly.quf_w_m2`, `frost.hourly.ksrf_w_m_k` | frost heat-flow bookkeeping surface | `W m^-2` / `W m^-1 degC^-1` unchanged | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Snowd`, `Resd`, `Tilld`, `Utilld` | `frost.hourly.snow_depth_m`, `frost.hourly.residue_depth_m`, `frost.hourly.tilled_frozen_depth_m`, `frost.hourly.untilled_frozen_depth_m` | layered conductivity state inputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Dfrost`, `Dthaw` | `frost.runtime_dfrost`, `frost.runtime_dthaw` (`HillslopeProductionStateSymbol::{Wb14FrostRuntimeDfrost,Wb14FrostRuntimeDthaw}`) | hourly frost/thaw depth boundary outputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `frdp` | `frost.runtime_frdp_m`, `hillslope_wat.frdp` | active frost-front depth runtime state and WAT publication surface | runtime `m`; WAT publication `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `frdp` | `frdp`, `hillslope_wat.frdp`, `hillslope_wat.frdp:mm` | active frost-front depth runtime state and WAT publication surface | runtime `m`; WAT publication `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `S` | `S` (`HillslopeProductionFluxSymbol::Wb12SnowCouplingS`) | daily snow-water term in water-balance closure | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Snow-Water` (WB13/hydout publication surface) | `hillslope_wat.Snow-Water`, `hillslope_wat.Snow-Water:mm`; derived alias from `snow.runtime_swe` at publication boundary | replay/output storage-state publication | runtime SWE (`m`) is converted to published snow-water storage units `mm` at boundary without sidecar-control substitution | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Snow-Depth` | `Snow-Depth`, `hillslope_wat.Snow-Depth`, `hillslope_wat.Snow-Depth:mm` | physical snow-depth WAT publication surface | `mm` -> `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `MeltwaterTemperature` | `MeltwaterTemperature`, `hillslope_wat.MeltwaterTemperature`, `snow_meltwater_flux_temperature`, `hillslope_wat.MeltwaterTemperature:degC` | nullable layered-snow meltwater-temperature publication surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` | identity (`HillslopeProductionStateSymbol::{Wb14SnowRst,Wb14SnowNewsnw,Wb14SnowSsd,Wb14SnowFilePresent}`) | parsed snow sidecar controls projected to runtime seam | scalar controls preserved; `snow_file_present` in `{0,1}` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_runtime_swe` | `snow.runtime_swe` identity (`HillslopeProductionStateSymbol::Wb14SnowRuntimeSwe`) | runtime snow-water-equivalent storage state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_routed_melt`, `snow_post_winter_rain` | `snow.routed_melt_m`, `snow.post_winter_rain_m` | daily snow/liquid coupling publication surfaces | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -488,6 +503,11 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | `winter_air_temp_hourly`, `winter_dewpoint_hourly`, `winter_wind_hourly`, `winter_cloud_fraction_hourly` | `winter.hourly.air_temp_c_{idx4}`, `winter.hourly.dewpoint_c_{idx4}`, `winter.hourly.wind_m_s_{idx4}`, `winter.hourly.cloud_fraction_{idx4}` | registry-owned hourly winter forcing surfaces | `degC`, `degC`, `m s^-1`, and `dimensionless` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_hourly_rain`, `snow_hourly_rain_retained`, `snow_hourly_snowfall` | `snow.hourly.rain_m_{idx4}`, `snow.hourly.rain_retained_m_{idx4}`, `snow.hourly.snowfall_m_{idx4}` | registry-owned hourly precipitation/snowpack forcing surfaces | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_hourly_stmtim_control_surfaces` | `snow.hourly.stmtim.{rain_m,stmdur_s,wntdur_h,wnttim_h,hrtemp_c,rst_c,hrrain_m,hrsnow_m,active_interval,rain_branch,snow_branch}_{idx4}` | HPHYS0318 trace-grade OpenWEPP SIMIMPL28 precipitation partition control surfaces | depths `m`, durations `s`/`h`, temperatures `degC`, flags `0/1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_hourly_stmtim_phase_model` | `snow.hourly.stmtim.phase_model_{idx4}` | phase-selector trace surface | `dimensionless` -> `dimensionless` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_hourly_stmtim_rain_fraction` | `snow.hourly.stmtim.rain_fraction_{idx4}` | rain-fraction trace surface | `dimensionless` -> `dimensionless` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_hourly_stmtim_snow_fraction` | `snow.hourly.stmtim.snow_fraction_{idx4}` | snow-fraction trace surface | `dimensionless` -> `dimensionless` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_hourly_stmtim_relative_humidity` | `snow.hourly.stmtim.relative_humidity_{idx4}` | relative-humidity trace surface | `dimensionless` -> `dimensionless` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_hourly_stmtim_hydrometeor_temperature` | `snow.hourly.stmtim.hydrometeor_temperature_c_{idx4}` | hydrometeor-temperature trace surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_hourly_depth`, `snow_hourly_density` | `snow.hourly.depth_before_m_{idx4}`, `snow.hourly.depth_available_m_{idx4}`, `snow.hourly.depth_after_m_{idx4}`, `snow.hourly.density_before_kg_m3_{idx4}`, `snow.hourly.density_after_kg_m3_{idx4}` | registry-owned hourly snow state families | `m` and `kg m^-3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `snow_hourly_melt`, `snow_hourly_melt_raw`, `snow_hourly_melt_branch_active`, `snow_hourly_melt_terms` | `snow.hourly.melt_m_{idx4}`, `snow.hourly.melt_raw_m_{idx4}`, `snow.hourly.melt_branch_active_{idx4}`, `snow.hourly.melt_amelt_in_{idx4}`, `snow.hourly.melt_bmelt_in_{idx4}`, `snow.hourly.melt_cmelt_in_{idx4}`, `snow.hourly.melt_dmelt_in_{idx4}` | registry-owned hourly melt term/state families | `m`, signed `m`, `dimensionless`, and `in` preserved at diagnostic boundary | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0268/HPHYS0269 snowpack diagnostics | `snow_runtime_swe_m`, `snow_runtime_depth_m`, `snow_runtime_density_kg_m3`, `snow_runtime_settle_day_count`, `snow_s_m`, `snow_hourly_rain_sum_m`, `snow_hourly_rain_retained_sum_m`, `snow_hourly_snowfall_water_equiv_sum_m`, `snow_hourly_melt_raw_sum_m`, `snow_hourly_melt_sum_m`, `snow_runtime_swe_closure_error_m`, `wb13_rm_mm`, `wb13_snow_water_mm` | Opt-in run-trace evidence for classifying H1/H7/H39 spring snowpack/SWE/`RM` lineage and winter melt/rain-retention migration before assigning material `Ep` residual ownership | runtime state `m`/`kg m^-3`/`count`, daily coupling `m`, WB13 publication `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1103,6 +1123,29 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   public-schema drift, fixture fitting, or frost-default activation must close
   `HOLD`.
   `[DIRECT][Ran] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-059: Any SNOW-SURFACE-EB-03 producer must amend this
+  contract and `SC-SNOWENERGY-001` before production edits; retain the
+  supported internal Stage 3 selector as the shared thermal carrier; add
+  independent default-off internal longwave and sublimation selectors; and
+  preserve the existing melt, phase, density, albedo, liquid, frost, fixture,
+  and public-output defaults. Evidence must reconstruct the direct-production
+  `B/L/S/LS` cells, prove the same top-layer temperature/cold-content provider
+  is consumed in every cell, prove signed vapor mass and latent energy derive
+  from one bounded exchange, show vapor does not alias liquid/melt/refreeze,
+  and close cold-content energy including exported cold content. Missing
+  provider state, legacy/new sublimation double selection, polar-night cloud
+  unavailability, nonclosing ledgers, or default/user/public-boundary drift
+  must fail closed or keep the campaign in `HOLD`.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-060: Any SNOW-SURFACE-EB-03A producer must construct the
+  upper-`0.25 m` active thermal volume independently of depositional
+  boundaries, publish active/lower reconstruction and `G_0` operands, apply
+  the exact libsnobal `KTS+efcon` conductivity with elevation-derived
+  pressure, retain distinct active/lower temperatures across substeps, apply
+  the fixed mass-dependent stability hierarchy, and prove real S/LS physical
+  completion without a clamp, fitted limiter, new coefficient, CoE-melt
+  replacement, or protected-path regression.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -2374,6 +2417,66 @@ It does not authorize default activation.
    HBP/watershed serialization, or full stream-temperature routing. If evidence
    is missing or gates fail, the package closes `HOLD`.
 
+## SNOW-SURFACE-EB-03 Shared Thermal and Energy Composition Addendum
+
+Status: implementation attempted / runtime `HOLD`; no default promotion.
+
+Real direct-production EB-03 execution established that the selected Stage 3
+provider is not sufficient for the admitted composition: the S cell reaches
+the provider's absolute-zero cold-content bound after 18 days while material
+SWE remains. This is a hard provider/energy-composition failure, not authority
+for a temperature clamp. Items 1-8 below remain the acceptance contract for
+any future reopening; EB-04 is not admitted on the current implementation.
+
+1. The thermal provider is the top layer of
+   `layered_thermal_liquid_v1`. Longwave and sublimation cannot activate
+   without that provider.
+2. `snow_surface_longwave_model` and `snow_sublimation_model` are independent
+   axes. Absent, empty, or `disabled` values retain the current behavior;
+   unknown values fail closed.
+3. The longwave axis consumes the exact equations, units, cadence, sky-view
+   translation, `T_c=T_a` identity, derived-emissivity guards,
+   `R_a,min=1e-9 MJ m^-2 d^-1`, and polar-night unavailable branch in
+   `SC-SNOWENERGY-001` v2.
+4. The sublimation axis reuses the admitted Marks/SNOBAL neutral exchange but
+   replaces the Stage B `min(T_a,0)` reconstruction with the shared Stage 3
+   `T_s`. One bounded signed vapor mass flux produces both vapor loss and
+   latent heat of sublimation. The legacy Stage A/B melt variants cannot be
+   selected with the new axis.
+5. Stage 3 sums absorbed shortwave, optional net longwave, and optional latent
+   heat before updating cold content. It retains the existing protected
+   boundary that positive excess does not replace CoE melt.
+6. Sublimated ice is removed from layer and aggregate snow storage. Its
+   associated cold-content export is explicit; vapor never enters melt,
+   retained/released liquid, routed liquid, or refreeze.
+7. The implementation must publish enough internal hourly diagnostics to
+   reconstruct atmospheric/sub-canopy/outgoing/net longwave, vapor mass,
+   latent heat, potential/applied surface energy, cold-content export, and
+   closure residuals.
+8. EB-03 is implementation/campaign-readiness only. EB-04 owns scientific
+   factorial execution and EB-05 owns any promotion decision.
+
+## SNOW-SURFACE-EB-03A Active-Layer Thermal Coupling Addendum
+
+`INV-SNOWFREEZE-086` supersedes only EB-03's failed identification of the
+first snowfall-event layer as the thermal surface control volume. Persistent
+depositional layers remain valid density/history state, but the energy
+provider integrates them into the Marks/SNOBAL upper-`0.25 m` active volume,
+splitting a boundary-crossing layer conservatively when required. A pack
+shallower than `0.25 m` is wholly active.
+
+The coupled substep uses `SC-SNOWENERGY-001` v3 `G_0`, with positive transfer
+into the active volume and the identical negative transfer in the lower
+volume. The complete pack ledger excludes internal `G_0` after cancellation.
+Mass thresholds choose `60`, `15`, or `1 minute` evaluation, and all enabled
+surface fluxes are recomputed from the updated active state. These constants
+are implementation authority, not user calibration controls.
+
+The package retains EB-03's exact-one vapor/latent rule and CoE melt boundary.
+It may not use the SnowClim temperature replacement or cold-content tax,
+absolute-zero clamping, observation-derived coefficients, or a user-supplied
+thermal depth.
+
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
 ## HPHYS0247 Winter Activation Trigger Addendum
@@ -3105,6 +3208,13 @@ observation corpora. They are evaluation bands, not calibration objectives; the
 Policy B analog only when residuals are attributed and bounded and full
 no-regression/conservation gates pass; zero residual closure is not required.
 
+## Binding Exposure Index
+
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `SNOWFREEZE-EB03-COMPOSITION` | SNOW-SURFACE-EB-03 shared thermal and energy composition addendum | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-085, OBL-SNOWFREEZE-P-059` | `none` | The addendum is consolidated into the normative contract body and introduces no free-standing binding outside these identifiers. |
+| `SNOWFREEZE-EB03A-COUPLING` | SNOW-SURFACE-EB-03A active-layer thermal coupling addendum | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-086, OBL-SNOWFREEZE-P-060` | `none` | The addendum binds the active thermal control volume, coupled conduction, stability hierarchy, and prohibited limiter alternatives. |
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -3119,6 +3229,8 @@ no-regression/conservation gates pass; zero residual closure is not required.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-30` | `119` | `Codex` | SNOW-SURFACE-EB-03A amendment: added `REF-SNOWFREEZE-EB03A`, `INV-SNOWFREEZE-086`, `OBL-SNOWFREEZE-P-060`, and the active-layer thermal coupling addendum. The amendment replaces the failed snowfall-event thermal provider with the Marks/SNOBAL upper-`0.25 m` active volume, equal-and-opposite `G_0`, conservative projection, and fixed mass-dependent substeps while retaining CoE existence/melt authority and prohibiting clamps or fitted limiters. |
+| `2026-07-30` | `118` | `Codex` | SNOW-SURFACE-EB-03 amendment: added `REF-SNOWFREEZE-EB03`, `INV-SNOWFREEZE-085`, `OBL-SNOWFREEZE-P-059`, and the shared thermal/energy composition addendum. The amendment selects the Stage 3 top layer as the sole snow thermal provider for orthogonal default-off longwave/sublimation cells, binds exact-one signed vapor/latent composition and snow-state mutation, preserves CoE melt and all defaults/public boundaries, and requires direct-consumer plus independent mass/energy closure evidence. |
 | `2026-07-13` | `117` | `Codex` | INTVAL-FROST-THAW-CLEAR-001 amendment: added pinned `frostn`/`frwatc(0)` egress authority and tightened `INV-SNOWFREEZE-012` so material thaw-complete outcomes retain their original coarse layer basis until the authoritative layer projection and post-`frwatc` scalar apply together exactly once. Pre-ingress synthetic zero-frost clearing against the pre-exchange scalar is prohibited; nonmaterial stale clearing remains permitted. Added the corresponding contract-derived test obligation and runtime gate posture. |
 | `2026-06-29` | `115` | `Codex` | FROST DIRECT CUTOVER CORRECTION amendment: superseded the v114 compatibility-fallback carve-out for multi-OFE/Wave-2 and legacy sidecar-discovery no-env runs. `DefaultCandidate` must select direct production for current hillslope runs; direct failures are blockers to fix or hold, not accepted compatibility fallbacks. Explicit compatibility selection, if still present during staged deletion, is only a deprecated comparator/deletion seam and cannot satisfy default-activation gates. |
 | `2026-07-02` | `116` | `Claude Code` | MOFEFID-B03 reconciliation: `INV-SNOWFREEZE-015` net-melt-scaling text now explicitly defers to `INV-SNOWFREEZE-019` (SNOWSCI-S1 single-source store) for the positive+negative hourly-melt COEXIST case — routed melt = authoritative storage loss (positive-parts-consistent), not legacy net-scaling; grounded in the `INV-SNOWFREEZE-002` density gate (sub-350 refreeze is in-pack, not netted against exported melt). Resolves B01 finding B10: not a defect and not a live contract conflict — INV-019 already superseded INV-015 for this branch; the text lacked the cross-reference. No production change. |

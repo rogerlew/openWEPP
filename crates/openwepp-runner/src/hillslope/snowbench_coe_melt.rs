@@ -712,6 +712,8 @@ fn simulate_coe_melt(
             snow_density_model: SnowDensityModel::LegacyWepp,
             stage3_liquid_routing_model:
                 openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
+            surface_energy_options:
+                openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
             sturm_climate_class: None,
             sturm_day_of_year: None,
             coe_boundary_depth_m: runtime_depth_m,

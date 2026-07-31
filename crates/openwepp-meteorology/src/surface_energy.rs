@@ -27,6 +27,19 @@ const BETA_UNSTABLE: f64 = 16.0;
 const DEFAULT_TURBULENT_MAX_ITERATIONS: usize = 50;
 const DEFAULT_TURBULENT_CONVERGENCE_TOLERANCE: f64 = 1.0e-5;
 const CALORIE_TO_JOULE: f64 = 4.186_798_188;
+const SNOWENERGY_DILLEY_INTERCEPT_W_M2: f64 = 59.38;
+const SNOWENERGY_DILLEY_TEMPERATURE_COEFFICIENT_W_M2: f64 = 113.7;
+const SNOWENERGY_DILLEY_TEMPERATURE_REFERENCE_K: f64 = 273.16;
+const SNOWENERGY_DILLEY_WATER_COEFFICIENT_W_M2: f64 = 96.96;
+const SNOWENERGY_DILLEY_WATER_REFERENCE_KG_M2: f64 = 25.0;
+const SNOWENERGY_PRECIPITABLE_WATER_FACTOR: f64 = 4_650.0;
+const SNOWENERGY_UNSWORTH_CLOUD_WEIGHT: f64 = 0.84;
+const SNOWENERGY_CLEAR_CLOUD_INDEX: f64 = 0.80;
+const SNOWENERGY_OVERCAST_CLOUD_INDEX: f64 = 0.15;
+const SNOWENERGY_DIFFUSE_EXTINCTION_FACTOR: f64 = 1.6;
+const SNOWENERGY_EXTRATERRESTRIAL_MIN_MJ_M2_DAY: f64 = 1.0e-9;
+const SNOBAL_SNOW_CONDUCTIVITY_COEFFICIENT_CAL_M_S_K: f64 = 0.0077;
+const SNOBAL_POROUS_LAYER_DIFFUSIVITY_SCALE_M2_S: f64 = 0.0001;
 
 /// Signed energy flux in watts per square meter.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -94,6 +107,7 @@ impl PressurePascals {
     /// Returns a typed error when the converted pressure is invalid.
     pub fn from_kilopascals(value_kpa: f64) -> Result<Self, MeteorologyError> {
         validate_finite("pressure_kpa", value_kpa)?;
+        // UNIT-CONVERSION-ALLOW: mm_m_scale named Pa/kPa boundary conversion.
         Self::try_new(value_kpa * 1_000.0)
     }
 
@@ -101,6 +115,13 @@ impl PressurePascals {
     #[must_use]
     pub const fn as_pascals(self) -> f64 {
         self.0
+    }
+
+    /// Raw value converted to kilopascals.
+    #[must_use]
+    pub const fn as_kilopascals(self) -> f64 {
+        // UNIT-CONVERSION-ALLOW: mm_m_scale named Pa/kPa boundary conversion.
+        self.0 / 1_000.0
     }
 }
 
@@ -249,6 +270,116 @@ pub struct AllWaveRadiationInputs {
     pub emissivity: FractionUnitInterval,
     /// Surface temperature.
     pub surface_temperature: TemperatureCelsius,
+}
+
+/// Canonical SC-SNOWENERGY-001 inputs for one hourly snow longwave evaluation.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SnowLongwaveInputs {
+    pub air_temperature: TemperatureCelsius,
+    pub surface_temperature: TemperatureCelsius,
+    pub actual_vapor_pressure: PressurePascals,
+    pub daily_solar_radiation_mj_m2: f64,
+    pub daily_extraterrestrial_radiation_mj_m2: f64,
+    pub daylight: bool,
+    pub canopy_cover: FractionUnitInterval,
+}
+
+/// Reconstruction operands for canonical atmospheric and sub-canopy longwave.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SnowLongwaveFluxes {
+    pub cloud_fraction: FractionUnitInterval,
+    pub sky_view_fraction: FractionUnitInterval,
+    pub atmospheric_longwave: RadiativeFluxWattsPerSquareMeter,
+    pub subcanopy_longwave: RadiativeFluxWattsPerSquareMeter,
+    pub canopy_longwave: RadiativeFluxWattsPerSquareMeter,
+    pub outgoing_longwave: RadiativeFluxWattsPerSquareMeter,
+    pub net_longwave: EnergyFluxWattsPerSquareMeter,
+}
+
+/// Evaluate the Dilley-Unsworth atmospheric and FSM2-derived sub-canopy
+/// longwave route selected by SC-SNOWENERGY-001.
+///
+/// # Errors
+///
+/// Returns a typed error for invalid radiation, polar night, a closed canopy,
+/// or a derived emissivity outside the admitted physical domain.
+pub fn snow_longwave_dilley_unsworth(
+    inputs: SnowLongwaveInputs,
+) -> Result<SnowLongwaveFluxes, MeteorologyError> {
+    validate_non_negative(
+        "daily_solar_radiation_mj_m2",
+        inputs.daily_solar_radiation_mj_m2,
+    )?;
+    validate_non_negative(
+        "daily_extraterrestrial_radiation_mj_m2",
+        inputs.daily_extraterrestrial_radiation_mj_m2,
+    )?;
+    if !inputs.daylight
+        || inputs.daily_extraterrestrial_radiation_mj_m2
+            <= SNOWENERGY_EXTRATERRESTRIAL_MIN_MJ_M2_DAY
+    {
+        return Err(MeteorologyError::CloudForcingUnavailable);
+    }
+    let air_temperature_k = libsnobal_kelvin(inputs.air_temperature)?;
+    let surface_temperature_k = libsnobal_kelvin(inputs.surface_temperature)?;
+    let vapor_pressure_kpa = inputs.actual_vapor_pressure.as_kilopascals();
+    let precipitable_water =
+        SNOWENERGY_PRECIPITABLE_WATER_FACTOR * vapor_pressure_kpa / air_temperature_k;
+    let clear_longwave = SNOWENERGY_DILLEY_INTERCEPT_W_M2
+        + SNOWENERGY_DILLEY_TEMPERATURE_COEFFICIENT_W_M2
+            * (air_temperature_k / SNOWENERGY_DILLEY_TEMPERATURE_REFERENCE_K).powi(6)
+        + SNOWENERGY_DILLEY_WATER_COEFFICIENT_W_M2
+            * (precipitable_water / SNOWENERGY_DILLEY_WATER_REFERENCE_KG_M2).sqrt();
+    let blackbody_air = STEFAN_BOLTZMANN_W_M2_K4 * air_temperature_k.powi(4);
+    let clear_emissivity = clear_longwave / blackbody_air;
+    require_unit_interval_authority("clear_sky_emissivity", clear_emissivity)?;
+    let clearness =
+        inputs.daily_solar_radiation_mj_m2 / inputs.daily_extraterrestrial_radiation_mj_m2;
+    let cloud = ((SNOWENERGY_CLEAR_CLOUD_INDEX - clearness)
+        / (SNOWENERGY_CLEAR_CLOUD_INDEX - SNOWENERGY_OVERCAST_CLOUD_INDEX))
+        .clamp(0.0, 1.0);
+    let all_sky_emissivity = (1.0 - SNOWENERGY_UNSWORTH_CLOUD_WEIGHT * cloud) * clear_emissivity
+        + SNOWENERGY_UNSWORTH_CLOUD_WEIGHT * cloud;
+    require_unit_interval_authority("all_sky_emissivity", all_sky_emissivity)?;
+    let atmospheric = all_sky_emissivity * blackbody_air;
+    let cover = inputs.canopy_cover.as_fraction();
+    if cover >= 1.0 {
+        return Err(MeteorologyError::OutOfAuthority {
+            quantity: "canopy_cover_fraction",
+            value: cover,
+            minimum: 0.0,
+            maximum: 1.0,
+        });
+    }
+    let sky_view = (1.0 - cover).powf(SNOWENERGY_DIFFUSE_EXTINCTION_FACTOR);
+    let canopy_longwave = STEFAN_BOLTZMANN_W_M2_K4 * air_temperature_k.powi(4);
+    let subcanopy = sky_view * atmospheric + (1.0 - sky_view) * canopy_longwave;
+    let outgoing = STEFAN_BOLTZMANN_W_M2_K4 * surface_temperature_k.powi(4);
+    Ok(SnowLongwaveFluxes {
+        cloud_fraction: FractionUnitInterval::try_new(cloud)?,
+        sky_view_fraction: FractionUnitInterval::try_new(sky_view)?,
+        atmospheric_longwave: RadiativeFluxWattsPerSquareMeter::try_new(atmospheric)?,
+        subcanopy_longwave: RadiativeFluxWattsPerSquareMeter::try_new(subcanopy)?,
+        canopy_longwave: RadiativeFluxWattsPerSquareMeter::try_new(canopy_longwave)?,
+        outgoing_longwave: RadiativeFluxWattsPerSquareMeter::try_new(outgoing)?,
+        net_longwave: EnergyFluxWattsPerSquareMeter::try_new(subcanopy - outgoing)?,
+    })
+}
+
+fn require_unit_interval_authority(
+    quantity: &'static str,
+    value: f64,
+) -> Result<(), MeteorologyError> {
+    validate_finite(quantity, value)?;
+    if !(0.0..=1.0).contains(&value) {
+        return Err(MeteorologyError::OutOfAuthority {
+            quantity,
+            value,
+            minimum: 0.0,
+            maximum: 1.0,
+        });
+    }
+    Ok(())
 }
 
 /// Monin-Obukhov turbulent-transfer solver controls.
@@ -450,6 +581,55 @@ pub fn conductive_heat_flux(
     EnergyFluxWattsPerSquareMeter::try_new(numerator / denominator)
 }
 
+/// SNOBAL effective snow conductivity after Yen (1965) and Anderson (1976).
+///
+/// This is the exact `KTS` plus `efcon` formulation used by libsnobal:
+/// dry snow conduction is augmented by saturated pore-vapor diffusion at the
+/// supplied layer temperature and atmospheric pressure.
+///
+/// # Errors
+///
+/// Returns a typed error for non-positive density, invalid temperature or
+/// pressure, saturation pressure at/above atmospheric pressure, or a
+/// non-finite/non-positive effective conductivity.
+pub fn snow_effective_thermal_conductivity_snobal(
+    snow_density_kg_m3: f64,
+    snow_temperature: TemperatureCelsius,
+    air_pressure: PressurePascals,
+) -> Result<ThermalConductivityWattsPerMeterKelvin, MeteorologyError> {
+    validate_positive("snow_density_kg_m3", snow_density_kg_m3)?;
+    let temperature_kelvin = libsnobal_kelvin(snow_temperature)?;
+    let pressure_pa = air_pressure.as_pascals();
+    let saturation_pressure_pa =
+        saturation_vapor_pressure_snobal_pa(snow_temperature)?.as_pascals();
+    if saturation_pressure_pa >= pressure_pa {
+        return Err(MeteorologyError::OutOfAuthority {
+            quantity: "snow_saturation_pressure_pa",
+            value: saturation_pressure_pa,
+            minimum: 0.0,
+            maximum: pressure_pa,
+        });
+    }
+    // UNIT-CONVERSION-ALLOW: mm_m_scale exact libsnobal KTS density ratio.
+    let relative_density = snow_density_kg_m3 / 1_000.0;
+    let dry_conductivity_w_m_k = CALORIE_TO_JOULE
+        * SNOBAL_SNOW_CONDUCTIVITY_COEFFICIENT_CAL_M_S_K
+        * relative_density
+        * relative_density;
+    let diffusivity_m2_s = 0.65
+        * (SEA_LEVEL_PRESSURE_PA / pressure_pa)
+        * (temperature_kelvin / LIBSNOBAL_FREEZE_K).powf(14.0)
+        * SNOBAL_POROUS_LAYER_DIFFUSIVITY_SCALE_M2_S;
+    let latent_heat_j_kg =
+        latent_heat_for_surface_temperature(snow_temperature)?.as_joules_per_kilogram();
+    let mixing_ratio = (MOLAR_MASS_WATER_KG_PER_KMOL / MOLAR_MASS_DRY_AIR_KG_PER_KMOL)
+        * saturation_pressure_pa
+        / (pressure_pa - saturation_pressure_pa);
+    ThermalConductivityWattsPerMeterKelvin::try_new(
+        dry_conductivity_w_m_k + latent_heat_j_kg * diffusivity_m2_s * mixing_ratio,
+    )
+}
+
 /// Monin-Obukhov bulk-aerodynamic sensible, latent, and vapor mass fluxes.
 ///
 /// # Errors
@@ -603,6 +783,7 @@ pub fn specific_heat_ice(
 ) -> Result<SpecificHeatCapacityJoulesPerKilogramKelvin, MeteorologyError> {
     let temperature_kelvin = libsnobal_kelvin(temperature)?;
     SpecificHeatCapacityJoulesPerKilogramKelvin::try_new(
+        // UNIT-CONVERSION-ALLOW: mm_m_scale retained SNOBAL calorie-to-kilogram conversion.
         CALORIE_TO_JOULE * (0.024_928 + 0.001_76 * temperature_kelvin) / 0.001,
     )
 }
@@ -901,6 +1082,7 @@ fn saturation_vapor_pressure_ice_pa(
         - 3.56654 * (LIBSNOBAL_FREEZE_K / temperature_kelvin).ln() / log_10
         + 0.876_793 * (1.0 - (temperature_kelvin / LIBSNOBAL_FREEZE_K))
         + 6.1071_f64.log10();
+    // UNIT-CONVERSION-ALLOW: cm_m_scale retained SNOBAL millibar-to-pascal conversion.
     PressurePascals::try_new(10.0_f64.powf(exponent) * 100.0)
 }
 
@@ -1035,6 +1217,36 @@ mod tests {
         .expect("valid conduction");
 
         assert_close(flux.as_watts_per_square_meter(), 13.2, 1.0e-12);
+    }
+
+    #[test]
+    fn snobal_snow_conductivity_uses_density_temperature_and_pressure() {
+        let sea_level = snow_effective_thermal_conductivity_snobal(
+            300.0,
+            temp(-5.0),
+            PressurePascals::try_new(SEA_LEVEL_PRESSURE_PA).expect("valid pressure"),
+        )
+        .expect("valid effective snow conductivity")
+        .as_watts_per_meter_kelvin();
+        let high_elevation = snow_effective_thermal_conductivity_snobal(
+            300.0,
+            temp(-5.0),
+            PressurePascals::try_new(80_000.0).expect("valid pressure"),
+        )
+        .expect("valid high-elevation effective conductivity")
+        .as_watts_per_meter_kelvin();
+        let denser = snow_effective_thermal_conductivity_snobal(
+            500.0,
+            temp(-5.0),
+            PressurePascals::try_new(SEA_LEVEL_PRESSURE_PA).expect("valid pressure"),
+        )
+        .expect("valid dense-snow effective conductivity")
+        .as_watts_per_meter_kelvin();
+
+        assert!(sea_level > 0.0);
+        assert_close(sea_level, 0.356_693_429_416_186_5, 1.0e-12);
+        assert!(high_elevation > sea_level);
+        assert!(denser > sea_level);
     }
 
     #[test]
@@ -1186,6 +1398,75 @@ mod tests {
         assert!(matches!(
             error,
             MeteorologyError::Boundary(BoundaryError::BelowMinimum { .. })
+        ));
+    }
+
+    #[test]
+    fn canonical_snow_longwave_preserves_complementary_view_factors() {
+        let inputs = SnowLongwaveInputs {
+            air_temperature: temp(-2.0),
+            surface_temperature: temp(-8.0),
+            actual_vapor_pressure: PressurePascals::from_kilopascals(0.5)
+                .expect("valid vapor pressure"),
+            daily_solar_radiation_mj_m2: 5.0,
+            daily_extraterrestrial_radiation_mj_m2: 10.0,
+            daylight: true,
+            canopy_cover: FractionUnitInterval::try_new(0.5).expect("valid cover"),
+        };
+        let fluxes = snow_longwave_dilley_unsworth(inputs).expect("canonical longwave");
+        let rejected_air_temperature_emission = snow_longwave_dilley_unsworth(SnowLongwaveInputs {
+            surface_temperature: inputs.air_temperature,
+            ..inputs
+        })
+        .expect("air-temperature rejection candidate");
+        assert_close(
+            fluxes.sky_view_fraction.as_fraction(),
+            0.5_f64.powf(1.6),
+            1.0e-12,
+        );
+        assert!(fluxes.atmospheric_longwave.as_watts_per_square_meter() > 0.0);
+        assert!(fluxes.subcanopy_longwave.as_watts_per_square_meter() > 0.0);
+        assert!(fluxes.net_longwave.as_watts_per_square_meter().is_finite());
+        assert!(
+            (fluxes.outgoing_longwave.as_watts_per_square_meter()
+                - rejected_air_temperature_emission
+                    .outgoing_longwave
+                    .as_watts_per_square_meter())
+            .abs()
+                > 1.0
+        );
+    }
+
+    #[test]
+    fn frozen_surface_saturation_rejects_the_water_surface_candidate() {
+        let temperature = temp(-8.0);
+        let ice_pressure = saturation_vapor_pressure_snobal_pa(temperature)
+            .expect("ice saturation")
+            .as_pascals();
+        let water_pressure = saturation_vapor_pressure_water_pa(
+            libsnobal_kelvin(temperature).expect("kelvin conversion"),
+        )
+        .expect("water saturation rejection candidate")
+        .as_pascals();
+
+        assert!((ice_pressure - water_pressure).abs() > 1.0);
+    }
+
+    #[test]
+    fn canonical_snow_longwave_fails_closed_at_polar_night() {
+        let result = snow_longwave_dilley_unsworth(SnowLongwaveInputs {
+            air_temperature: temp(-15.0),
+            surface_temperature: temp(-15.0),
+            actual_vapor_pressure: PressurePascals::from_kilopascals(0.2)
+                .expect("valid vapor pressure"),
+            daily_solar_radiation_mj_m2: 0.0,
+            daily_extraterrestrial_radiation_mj_m2: 0.0,
+            daylight: false,
+            canopy_cover: FractionUnitInterval::try_new(0.2).expect("valid cover"),
+        });
+        assert!(matches!(
+            result,
+            Err(MeteorologyError::CloudForcingUnavailable)
         ));
     }
 }

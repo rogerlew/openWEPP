@@ -370,6 +370,21 @@ def stale_reasons(
 
 def intake(args: argparse.Namespace) -> int:
     repo = args.repo.resolve()
+    return _intake(
+        args,
+        load_module(
+            repo / "tools/local_ci/quality_observatory.py",
+            "openwepp_quality_observatory",
+        ),
+        load_module(
+            repo / "tools/local_ci/quality_observatory_workflow.py",
+            "openwepp_quality_observatory_workflow",
+        ),
+    )
+
+
+def _intake(args: argparse.Namespace, quality: Any, workflow: Any) -> int:
+    repo = args.repo.resolve()
     output = ensure_safe_new_output(
         args.output,
         (args.published_dir.absolute(), args.control_receipt.absolute().parent),
@@ -387,14 +402,6 @@ def intake(args: argparse.Namespace) -> int:
     try:
         if not SHA256.fullmatch(args.expected_id):
             raise IntakeError("expected quality evidence ID is not one SHA-256")
-        quality = load_module(
-            repo / "tools/local_ci/quality_observatory.py",
-            "openwepp_quality_observatory",
-        )
-        workflow = load_module(
-            repo / "tools/local_ci/quality_observatory_workflow.py",
-            "openwepp_quality_observatory_workflow",
-        )
         quality.ensure_no_symlink_path(args.control_receipt.absolute())
         control_path = args.control_receipt.resolve()
         control = workflow.validate_control(control_path.parent)
@@ -1023,57 +1030,76 @@ def self_test() -> int:
     inventories = quality.independent_inventory_partition(repo)
     with tempfile.TemporaryDirectory(prefix="cqr-current-fixture-") as raw:
         root = Path(raw)
-        current_root = root / "current"
-        published, control_receipt, evidence_id = build_intake_fixture(
-            repo,
-            current_root,
-            quality,
-            workflow,
-            subject_head=current_head,
-            inventories=inventories,
-        )
-        current_receipt_path = root / "current-intake.json"
-        if (
-            intake(
-                argparse.Namespace(
-                    repo=repo,
-                    published_dir=published,
-                    control_receipt=control_receipt,
-                    expected_id=evidence_id,
-                    limit=1,
-                    output=current_receipt_path,
-                )
+        crap_module = quality.load_crap_module(repo)
+        original_adjudication_loader = crap_module._load_adjudications
+        original_quality_crap_loader = quality.load_crap_module
+        try:
+            # This is a handoff-mechanics fixture, not a live quality
+            # observation. Production edits can legitimately invalidate a
+            # current CRAP adjudication while this self-test runs in the dirty
+            # implementation tree. Keep the synthetic report independent of
+            # that ambient optional-QA state; real `inspect` calls still use
+            # the unmodified registry loader and fail closed.
+            crap_module._load_adjudications = lambda _registry, _repo: ([], [])
+            quality.load_crap_module = lambda _repo: crap_module
+            current_root = root / "current"
+            published, control_receipt, evidence_id = build_intake_fixture(
+                repo,
+                current_root,
+                quality,
+                workflow,
+                subject_head=current_head,
+                inventories=inventories,
             )
-            != 0
-        ):
-            raise IntakeError("valid exact-head fixture was not CURRENT")
-        current_receipt = read_object(current_receipt_path)
-        if (
-            current_receipt["selection"]["candidate_selection"][0]["module"]
-            != "crates/openwepp-sim-contract/src/lib.rs"
-            or current_receipt["selection"]["selection_review_status"]
-            != "REQUIRED"
-            or current_receipt["collection_launched"] is not False
-        ):
-            raise IntakeError("CURRENT fixture selection parity failed")
+            current_receipt_path = root / "current-intake.json"
+            if (
+                _intake(
+                    argparse.Namespace(
+                        repo=repo,
+                        published_dir=published,
+                        control_receipt=control_receipt,
+                        expected_id=evidence_id,
+                        limit=1,
+                        output=current_receipt_path,
+                    ),
+                    quality,
+                    workflow,
+                )
+                != 0
+            ):
+                raise IntakeError("valid exact-head fixture was not CURRENT")
+            current_receipt = read_object(current_receipt_path)
+            if (
+                current_receipt["selection"]["candidate_selection"][0]["module"]
+                != "crates/openwepp-sim-contract/src/lib.rs"
+                or current_receipt["selection"]["selection_review_status"]
+                != "REQUIRED"
+                or current_receipt["collection_launched"] is not False
+            ):
+                raise IntakeError("CURRENT fixture selection parity failed")
 
-        invalid_receipt_path = root / "invalid-intake.json"
-        (published / "coverage-summary.json").write_text("{}\n", encoding="utf-8")
-        if (
-            intake(
-                argparse.Namespace(
-                    repo=repo,
-                    published_dir=published,
-                    control_receipt=control_receipt,
-                    expected_id=evidence_id,
-                    limit=1,
-                    output=invalid_receipt_path,
+            invalid_receipt_path = root / "invalid-intake.json"
+            (published / "coverage-summary.json").write_text("{}\n", encoding="utf-8")
+            if (
+                _intake(
+                    argparse.Namespace(
+                        repo=repo,
+                        published_dir=published,
+                        control_receipt=control_receipt,
+                        expected_id=evidence_id,
+                        limit=1,
+                        output=invalid_receipt_path,
+                    ),
+                    quality,
+                    workflow,
                 )
-            )
-            == 0
-            or read_object(invalid_receipt_path)["disposition"] != "INVALID"
-        ):
-            raise IntakeError("artifact digest corruption was not INVALID")
+                == 0
+                or read_object(invalid_receipt_path)["disposition"] != "INVALID"
+            ):
+                raise IntakeError("artifact digest corruption was not INVALID")
+        finally:
+            quality.load_crap_module = original_quality_crap_loader
+            crap_module._load_adjudications = original_adjudication_loader
 
         stale_root = root / "stale"
         stale_published, stale_control, stale_id = build_intake_fixture(

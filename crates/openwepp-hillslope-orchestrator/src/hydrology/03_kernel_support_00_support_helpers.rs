@@ -129,12 +129,179 @@ pub enum SnowStage3LiquidRoutingModel {
     LayeredThermalLiquidV1,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SnowSurfaceLongwaveModel {
+    #[default]
+    Disabled,
+    DilleyUnsworthSubcanopyV1,
+}
+
+impl SnowSurfaceLongwaveModel {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::DilleyUnsworthSubcanopyV1 => "dilley_unsworth_subcanopy_v1",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SnowSurfaceSublimationModel {
+    #[default]
+    Disabled,
+    NeutralBulkStage3V1,
+}
+
+impl SnowSurfaceSublimationModel {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::NeutralBulkStage3V1 => "neutral_bulk_stage3_v1",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowSurfaceEnergyOptions {
+    pub longwave_model: SnowSurfaceLongwaveModel,
+    pub sublimation_model: SnowSurfaceSublimationModel,
+    pub daily_solar_radiation_mj_m2: f64,
+    pub daily_extraterrestrial_radiation_mj_m2: f64,
+    pub daylight: bool,
+    pub atmospheric_pressure_pa: f64,
+}
+
+impl Default for DirectSnowSurfaceEnergyOptions {
+    fn default() -> Self {
+        Self {
+            longwave_model: SnowSurfaceLongwaveModel::Disabled,
+            sublimation_model: SnowSurfaceSublimationModel::Disabled,
+            daily_solar_radiation_mj_m2: 0.0,
+            daily_extraterrestrial_radiation_mj_m2: 0.0,
+            daylight: false,
+            atmospheric_pressure_pa: 101_324.6,
+        }
+    }
+}
+
 impl SnowStage3LiquidRoutingModel {
     #[must_use]
     pub const fn id(self) -> &'static str {
         match self {
             Self::Disabled => "disabled",
             Self::LayeredThermalLiquidV1 => "layered_thermal_liquid_v1",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowSurfaceEnergyHourDiagnostics {
+    pub surface_temperature_c: f64,
+    pub canopy_temperature_equals_air: bool,
+    pub atmospheric_longwave_w_m2: f64,
+    pub canopy_longwave_w_m2: f64,
+    pub sky_view_fraction: f64,
+    pub subcanopy_longwave_w_m2: f64,
+    pub outgoing_longwave_w_m2: f64,
+    pub net_longwave_w_m2: f64,
+    pub net_shortwave_w_m2: f64,
+    pub vapor_mass_exchange_kg_m2: f64,
+    pub latent_heat_j_kg: f64,
+    pub latent_flux_w_m2: f64,
+    pub potential_surface_energy_j_m2: f64,
+    pub applied_surface_energy_j_m2: f64,
+    pub unused_positive_energy_j_m2: f64,
+    pub active_layer_mass_kg_m2: f64,
+    pub active_layer_depth_m: f64,
+    pub active_layer_temperature_c: f64,
+    pub active_layer_cold_content_j_m2: f64,
+    pub active_layer_effective_conductivity_w_m_k: f64,
+    pub active_layer_thermal_resistance_m2_k_w: f64,
+    pub lower_layer_present_fraction: f64,
+    pub lower_layer_mass_kg_m2: f64,
+    pub lower_layer_depth_m: f64,
+    pub lower_layer_temperature_c: f64,
+    pub lower_layer_cold_content_j_m2: f64,
+    pub lower_layer_effective_conductivity_w_m_k: f64,
+    pub lower_layer_thermal_resistance_m2_k_w: f64,
+    pub atmospheric_pressure_pa: f64,
+    pub active_lower_conduction_w_m2: f64,
+    pub requested_active_lower_conduction_w_m2: f64,
+    pub rejected_active_lower_conduction_w_m2: f64,
+    pub peak_substep_applied_g0_w_m2: f64,
+    pub peak_substep_requested_g0_w_m2: f64,
+    pub peak_substep_rejected_g0_w_m2: f64,
+    pub peak_substep_pressure_pa: f64,
+    pub peak_substep_active_temperature_c: f64,
+    pub peak_substep_lower_temperature_c: f64,
+    pub peak_substep_active_depth_m: f64,
+    pub peak_substep_lower_depth_m: f64,
+    pub peak_substep_active_conductivity_w_m_k: f64,
+    pub peak_substep_lower_conductivity_w_m_k: f64,
+    pub peak_substep_active_resistance_m2_k_w: f64,
+    pub peak_substep_lower_resistance_m2_k_w: f64,
+    pub substep_count: u16,
+    pub minimum_substep_seconds: f64,
+    pub maximum_active_energy_closure_residual_j_m2: f64,
+    pub maximum_lower_energy_closure_residual_j_m2: f64,
+    pub maximum_conduction_cancellation_residual_j_m2: f64,
+}
+
+impl DirectSnowSurfaceEnergyHourDiagnostics {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            surface_temperature_c: 0.0,
+            canopy_temperature_equals_air: true,
+            atmospheric_longwave_w_m2: 0.0,
+            canopy_longwave_w_m2: 0.0,
+            sky_view_fraction: 0.0,
+            subcanopy_longwave_w_m2: 0.0,
+            outgoing_longwave_w_m2: 0.0,
+            net_longwave_w_m2: 0.0,
+            net_shortwave_w_m2: 0.0,
+            vapor_mass_exchange_kg_m2: 0.0,
+            latent_heat_j_kg: 0.0,
+            latent_flux_w_m2: 0.0,
+            potential_surface_energy_j_m2: 0.0,
+            applied_surface_energy_j_m2: 0.0,
+            unused_positive_energy_j_m2: 0.0,
+            active_layer_mass_kg_m2: 0.0,
+            active_layer_depth_m: 0.0,
+            active_layer_temperature_c: 0.0,
+            active_layer_cold_content_j_m2: 0.0,
+            active_layer_effective_conductivity_w_m_k: 0.0,
+            active_layer_thermal_resistance_m2_k_w: 0.0,
+            lower_layer_present_fraction: 0.0,
+            lower_layer_mass_kg_m2: 0.0,
+            lower_layer_depth_m: 0.0,
+            lower_layer_temperature_c: 0.0,
+            lower_layer_cold_content_j_m2: 0.0,
+            lower_layer_effective_conductivity_w_m_k: 0.0,
+            lower_layer_thermal_resistance_m2_k_w: 0.0,
+            atmospheric_pressure_pa: 0.0,
+            active_lower_conduction_w_m2: 0.0,
+            requested_active_lower_conduction_w_m2: 0.0,
+            rejected_active_lower_conduction_w_m2: 0.0,
+            peak_substep_applied_g0_w_m2: 0.0,
+            peak_substep_requested_g0_w_m2: 0.0,
+            peak_substep_rejected_g0_w_m2: 0.0,
+            peak_substep_pressure_pa: 0.0,
+            peak_substep_active_temperature_c: 0.0,
+            peak_substep_lower_temperature_c: 0.0,
+            peak_substep_active_depth_m: 0.0,
+            peak_substep_lower_depth_m: 0.0,
+            peak_substep_active_conductivity_w_m_k: 0.0,
+            peak_substep_lower_conductivity_w_m_k: 0.0,
+            peak_substep_active_resistance_m2_k_w: 0.0,
+            peak_substep_lower_resistance_m2_k_w: 0.0,
+            substep_count: 0,
+            minimum_substep_seconds: 0.0,
+            maximum_active_energy_closure_residual_j_m2: 0.0,
+            maximum_lower_energy_closure_residual_j_m2: 0.0,
+            maximum_conduction_cancellation_residual_j_m2: 0.0,
         }
     }
 }
@@ -154,6 +321,13 @@ pub struct DirectSnowStage3Diagnostics {
     pub conduction_energy_j_m2: f64,
     pub latent_refreeze_energy_j_m2: f64,
     pub energy_closure_residual_j_m2: f64,
+    pub longwave_energy_j_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub sublimation_m: f64,
+    pub cold_content_export_j_m2: f64,
+    pub mass_latent_identity_residual_j_m2: f64,
+    pub unused_positive_energy_j_m2: f64,
+    pub hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics; 24],
 }
 
 impl DirectSnowStage3Diagnostics {
@@ -173,6 +347,13 @@ impl DirectSnowStage3Diagnostics {
             conduction_energy_j_m2: 0.0,
             latent_refreeze_energy_j_m2: 0.0,
             energy_closure_residual_j_m2: 0.0,
+            longwave_energy_j_m2: 0.0,
+            latent_energy_j_m2: 0.0,
+            sublimation_m: 0.0,
+            cold_content_export_j_m2: 0.0,
+            mass_latent_identity_residual_j_m2: 0.0,
+            unused_positive_energy_j_m2: 0.0,
+            hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
         }
     }
 
@@ -227,6 +408,7 @@ pub struct DirectActiveSnowPartitionInputs {
     pub snow_melt_model: SnowMeltModel,
     pub snow_density_model: SnowDensityModel,
     pub stage3_liquid_routing_model: SnowStage3LiquidRoutingModel,
+    pub surface_energy_options: DirectSnowSurfaceEnergyOptions,
     pub sturm_climate_class: Option<SnowClimateClass>,
     pub sturm_day_of_year: Option<f64>,
     pub coe_boundary_depth_m: f64,

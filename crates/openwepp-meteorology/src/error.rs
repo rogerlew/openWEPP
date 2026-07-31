@@ -29,6 +29,15 @@ pub enum MeteorologyError {
         last_obukhov_length_m: f64,
         last_delta_m: f64,
     },
+    /// Daily solar geometry cannot provide the clearness-derived cloud state.
+    CloudForcingUnavailable,
+    /// A derived empirical quantity is finite but outside its authority domain.
+    OutOfAuthority {
+        quantity: &'static str,
+        value: f64,
+        minimum: f64,
+        maximum: f64,
+    },
 }
 
 impl fmt::Display for MeteorologyError {
@@ -65,6 +74,18 @@ impl fmt::Display for MeteorologyError {
             } => write!(
                 f,
                 "turbulent-transfer solver did not converge after {iterations} iterations; last Obukhov length {last_obukhov_length_m} m, delta {last_delta_m} m"
+            ),
+            Self::CloudForcingUnavailable => {
+                write!(f, "clearness-derived cloud forcing is unavailable")
+            }
+            Self::OutOfAuthority {
+                quantity,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "{quantity} is outside the authoritative range [{minimum}, {maximum}]; received {value}"
             ),
         }
     }

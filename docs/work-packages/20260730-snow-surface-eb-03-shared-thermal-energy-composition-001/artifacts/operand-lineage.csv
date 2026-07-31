@@ -1,0 +1,15 @@
+operand,units,sign,time_basis,area_basis,authority,producer,consumer,status
+snow_ice_before,kg m^-2,state,step_start,ground_area,SC-SNOWFREEZE-001,Stage3 layer carrier,mass reconstruction,IMPLEMENTED_DIAGNOSTIC
+vapor_mass_exchange,kg m^-2,positive deposition negative sublimation,integrated_hour,ground_area,SC-SNOWFREEZE-001,shared turbulent exchange,snow state and latent reconstruction,IMPLEMENTED_DIAGNOSTIC
+snow_ice_after,kg m^-2,state,step_end,ground_area,SC-SNOWFREEZE-001,Stage3 layer carrier,mass reconstruction,IMPLEMENTED_DIAGNOSTIC
+net_shortwave,W m^-2,positive toward snow,hour_mean,ground_area,SC-SNOWFREEZE-001,meteorology,shared energy carrier,IMPLEMENTED_DIAGNOSTIC
+atmospheric_longwave,W m^-2,positive downward,hour_mean,ground_area,SC-SNOWENERGY-001,meteorology,subcanopy mixture,IMPLEMENTED_DIAGNOSTIC
+subcanopy_longwave,W m^-2,positive downward,hour_mean,ground_area,SC-SNOWENERGY-001,meteorology,net longwave,IMPLEMENTED_DIAGNOSTIC
+outgoing_longwave,W m^-2,positive upward,hour_mean,ground_area,SC-SNOWENERGY-001,snow thermal provider,net longwave,IMPLEMENTED_DIAGNOSTIC
+net_longwave,W m^-2,positive toward snow,hour_mean,ground_area,SC-SNOWENERGY-001,longwave evaluator,shared energy carrier,IMPLEMENTED_DIAGNOSTIC
+latent_heat,W m^-2,positive toward snow,hour_mean,ground_area,SC-SNOWFREEZE-001,shared turbulent exchange,shared energy carrier,IMPLEMENTED_DIAGNOSTIC
+latent_heat_of_sublimation,J kg^-1,positive multiplier,hour,ground_area,SC-SNOWFREEZE-001,meteorology,latent mass reconstruction,IMPLEMENTED_DIAGNOSTIC
+cold_content_before,J m^-2,positive energy deficit,step_start,ground_area,SC-SNOWFREEZE-001,Stage3 layers,energy reconstruction,IMPLEMENTED_DIAGNOSTIC
+applied_surface_energy,J m^-2,positive toward snow,integrated_hour,ground_area,SC-SNOWFREEZE-001,shared energy carrier,cold content,IMPLEMENTED_DIAGNOSTIC
+cold_content_export,J m^-2,positive exported deficit,integrated_hour,ground_area,SC-SNOWFREEZE-001,vapor mass mutation,energy reconstruction,IMPLEMENTED_DIAGNOSTIC
+cold_content_after,J m^-2,positive energy deficit,step_end,ground_area,SC-SNOWFREEZE-001,Stage3 layers,energy reconstruction,IMPLEMENTED_DIAGNOSTIC

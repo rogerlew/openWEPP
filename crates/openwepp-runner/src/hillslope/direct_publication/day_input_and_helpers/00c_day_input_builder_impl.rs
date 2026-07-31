@@ -3,6 +3,8 @@ const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MO
 const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL";
 const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
 const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str = "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
+const SNOW_SURFACE_LONGWAVE_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL";
+const SNOW_SURFACE_SUBLIMATION_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL";
 
 #[derive(Clone, Debug)]
 struct CanopyResearchTraceConfig {
@@ -1161,6 +1163,7 @@ fn r7h_direct_production_snow_trace_line(
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
 ) -> String {
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
+    let thermal = direct_snow_trace_thermal_diagnostics(snow_liquid);
     let line = format!(
         "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
 \"day_index\":{day_index},\
@@ -1202,7 +1205,13 @@ fn r7h_direct_production_snow_trace_line(
 \"snow_layer_depth_sum_after_m\":{},\
 \"snow_layer_surface_density_after_kg_m3\":{},\
 \"snow_layer_basal_density_after_kg_m3\":{},\
-\"snow_layer_density_gradient_after_kg_m3\":{}}}",
+\"snow_layer_density_gradient_after_kg_m3\":{},\
+\"snow_layer_minimum_temperature_after_c\":{},\
+\"snow_layer_maximum_temperature_after_c\":{},\
+\"stage3_energy_enabled\":{},\
+\"stage3_cold_content_before_j_m2\":{},\
+\"stage3_cold_content_after_j_m2\":{},\
+\"stage3_energy_closure_residual_j_m2\":{}",
         direct_production_trace_number(hyetograph_rainfall_m),
         direct_production_trace_number(snow_lane_state.runtime_swe_m),
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
@@ -1241,8 +1250,154 @@ fn r7h_direct_production_snow_trace_line(
         direct_production_trace_number(layer.surface_density_after_kg_m3),
         direct_production_trace_number(layer.basal_density_after_kg_m3),
         direct_production_trace_number(layer.density_gradient_after_kg_m3),
+        direct_production_trace_number(layer.minimum_temperature_after_c),
+        direct_production_trace_number(layer.maximum_temperature_after_c),
+        snow_liquid.stage3_diagnostics.enabled,
+        direct_production_trace_number(snow_liquid.stage3_diagnostics.cold_content_before_j_m2),
+        direct_production_trace_number(snow_liquid.stage3_diagnostics.cold_content_after_j_m2),
+        direct_production_trace_number(snow_liquid.stage3_diagnostics.energy_closure_residual_j_m2),
     );
-    format!("{line}\n")
+    format!(
+        "{line},{}\n",
+        direct_snow_trace_thermal_fields(&thermal)
+    )
+}
+
+#[derive(Default)]
+struct DirectSnowTraceThermalDiagnostics {
+    maximum_active_depth_m: f64,
+    maximum_lower_depth_m: f64,
+    maximum_active_mass_kg_m2: f64,
+    maximum_lower_mass_kg_m2: f64,
+    maximum_abs_g0_w_m2: f64,
+    peak_g0_w_m2: f64,
+    peak_g0_requested_w_m2: f64,
+    peak_g0_rejected_w_m2: f64,
+    peak_g0_pressure_pa: f64,
+    peak_g0_active_temperature_c: f64,
+    peak_g0_lower_temperature_c: f64,
+    peak_g0_active_depth_m: f64,
+    peak_g0_lower_depth_m: f64,
+    peak_g0_active_conductivity_w_m_k: f64,
+    peak_g0_lower_conductivity_w_m_k: f64,
+    peak_g0_active_resistance_m2_k_w: f64,
+    peak_g0_lower_resistance_m2_k_w: f64,
+    minimum_substep_seconds: f64,
+    maximum_active_energy_residual_j_m2: f64,
+    maximum_lower_energy_residual_j_m2: f64,
+    maximum_conduction_cancellation_residual_j_m2: f64,
+}
+
+fn direct_snow_trace_thermal_fields(thermal: &DirectSnowTraceThermalDiagnostics) -> String {
+    format!(
+        "\"stage3_maximum_active_depth_m\":{},\
+\"stage3_maximum_lower_depth_m\":{},\
+\"stage3_maximum_active_mass_kg_m2\":{},\
+\"stage3_maximum_lower_mass_kg_m2\":{},\
+\"stage3_maximum_abs_g0_w_m2\":{},\
+\"stage3_peak_g0_w_m2\":{},\
+\"stage3_peak_g0_requested_w_m2\":{},\
+\"stage3_peak_g0_rejected_w_m2\":{},\
+\"stage3_peak_g0_pressure_pa\":{},\
+\"stage3_peak_g0_active_temperature_c\":{},\
+\"stage3_peak_g0_lower_temperature_c\":{},\
+\"stage3_peak_g0_active_depth_m\":{},\
+\"stage3_peak_g0_lower_depth_m\":{},\
+\"stage3_peak_g0_active_conductivity_w_m_k\":{},\
+\"stage3_peak_g0_lower_conductivity_w_m_k\":{},\
+\"stage3_peak_g0_active_resistance_m2_k_w\":{},\
+\"stage3_peak_g0_lower_resistance_m2_k_w\":{},\
+\"stage3_minimum_substep_seconds\":{},\
+\"stage3_maximum_active_energy_residual_j_m2\":{},\
+\"stage3_maximum_lower_energy_residual_j_m2\":{},\
+\"stage3_maximum_conduction_cancellation_residual_j_m2\":{}}}",
+        direct_production_trace_number(thermal.maximum_active_depth_m),
+        direct_production_trace_number(thermal.maximum_lower_depth_m),
+        direct_production_trace_number(thermal.maximum_active_mass_kg_m2),
+        direct_production_trace_number(thermal.maximum_lower_mass_kg_m2),
+        direct_production_trace_number(thermal.maximum_abs_g0_w_m2),
+        direct_production_trace_number(thermal.peak_g0_w_m2),
+        direct_production_trace_number(thermal.peak_g0_requested_w_m2),
+        direct_production_trace_number(thermal.peak_g0_rejected_w_m2),
+        direct_production_trace_number(thermal.peak_g0_pressure_pa),
+        direct_production_trace_number(thermal.peak_g0_active_temperature_c),
+        direct_production_trace_number(thermal.peak_g0_lower_temperature_c),
+        direct_production_trace_number(thermal.peak_g0_active_depth_m),
+        direct_production_trace_number(thermal.peak_g0_lower_depth_m),
+        direct_production_trace_number(thermal.peak_g0_active_conductivity_w_m_k),
+        direct_production_trace_number(thermal.peak_g0_lower_conductivity_w_m_k),
+        direct_production_trace_number(thermal.peak_g0_active_resistance_m2_k_w),
+        direct_production_trace_number(thermal.peak_g0_lower_resistance_m2_k_w),
+        direct_production_trace_number(thermal.minimum_substep_seconds),
+        direct_production_trace_number(thermal.maximum_active_energy_residual_j_m2),
+        direct_production_trace_number(thermal.maximum_lower_energy_residual_j_m2),
+        direct_production_trace_number(
+            thermal.maximum_conduction_cancellation_residual_j_m2
+        ),
+    )
+}
+
+fn direct_snow_trace_thermal_diagnostics(
+    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+) -> DirectSnowTraceThermalDiagnostics {
+    let mut diagnostics = DirectSnowTraceThermalDiagnostics::default();
+    for hour in snow_liquid.stage3_diagnostics.hourly_surface_energy {
+        diagnostics.maximum_active_depth_m =
+            diagnostics.maximum_active_depth_m.max(hour.active_layer_depth_m);
+        diagnostics.maximum_lower_depth_m =
+            diagnostics.maximum_lower_depth_m.max(hour.lower_layer_depth_m);
+        diagnostics.maximum_active_mass_kg_m2 = diagnostics
+            .maximum_active_mass_kg_m2
+            .max(hour.active_layer_mass_kg_m2);
+        diagnostics.maximum_lower_mass_kg_m2 = diagnostics
+            .maximum_lower_mass_kg_m2
+            .max(hour.lower_layer_mass_kg_m2);
+        diagnostics.maximum_abs_g0_w_m2 = diagnostics
+            .maximum_abs_g0_w_m2
+            .max(hour.peak_substep_applied_g0_w_m2.abs());
+        if hour.peak_substep_requested_g0_w_m2.abs()
+            > diagnostics.peak_g0_requested_w_m2.abs()
+        {
+            diagnostics.peak_g0_w_m2 = hour.peak_substep_applied_g0_w_m2;
+            diagnostics.peak_g0_requested_w_m2 =
+                hour.peak_substep_requested_g0_w_m2;
+            diagnostics.peak_g0_rejected_w_m2 =
+                hour.peak_substep_rejected_g0_w_m2;
+            diagnostics.peak_g0_pressure_pa = hour.peak_substep_pressure_pa;
+            diagnostics.peak_g0_active_temperature_c =
+                hour.peak_substep_active_temperature_c;
+            diagnostics.peak_g0_lower_temperature_c =
+                hour.peak_substep_lower_temperature_c;
+            diagnostics.peak_g0_active_depth_m =
+                hour.peak_substep_active_depth_m;
+            diagnostics.peak_g0_lower_depth_m =
+                hour.peak_substep_lower_depth_m;
+            diagnostics.peak_g0_active_conductivity_w_m_k =
+                hour.peak_substep_active_conductivity_w_m_k;
+            diagnostics.peak_g0_lower_conductivity_w_m_k =
+                hour.peak_substep_lower_conductivity_w_m_k;
+            diagnostics.peak_g0_active_resistance_m2_k_w =
+                hour.peak_substep_active_resistance_m2_k_w;
+            diagnostics.peak_g0_lower_resistance_m2_k_w =
+                hour.peak_substep_lower_resistance_m2_k_w;
+        }
+        if hour.minimum_substep_seconds > 0.0
+            && (diagnostics.minimum_substep_seconds == 0.0
+                || hour.minimum_substep_seconds < diagnostics.minimum_substep_seconds)
+        {
+            diagnostics.minimum_substep_seconds = hour.minimum_substep_seconds;
+        }
+        diagnostics.maximum_active_energy_residual_j_m2 = diagnostics
+            .maximum_active_energy_residual_j_m2
+            .max(hour.maximum_active_energy_closure_residual_j_m2);
+        diagnostics.maximum_lower_energy_residual_j_m2 = diagnostics
+            .maximum_lower_energy_residual_j_m2
+            .max(hour.maximum_lower_energy_closure_residual_j_m2);
+        diagnostics.maximum_conduction_cancellation_residual_j_m2 = diagnostics
+            .maximum_conduction_cancellation_residual_j_m2
+            .max(hour.maximum_conduction_cancellation_residual_j_m2);
+    }
+    diagnostics
 }
 
 struct DirectSnowTraceLayerDiagnostics {
@@ -1258,6 +1413,8 @@ struct DirectSnowTraceLayerDiagnostics {
     surface_density_after_kg_m3: f64,
     basal_density_after_kg_m3: f64,
     density_gradient_after_kg_m3: f64,
+    minimum_temperature_after_c: f64,
+    maximum_temperature_after_c: f64,
 }
 
 fn direct_snow_trace_layer_diagnostics(
@@ -1268,6 +1425,8 @@ fn direct_snow_trace_layer_diagnostics(
         snow_layer_density_profile(&snow_lane_state.layers);
     let (surface_after, basal_after, gradient_after) =
         snow_layer_density_profile(&snow_liquid.snow_layers_after);
+    let (minimum_temperature_after_c, maximum_temperature_after_c) =
+        snow_layer_temperature_range(&snow_liquid.snow_layers_after);
     DirectSnowTraceLayerDiagnostics {
         count_before: snow_lane_state.layers.len(),
         count_after: snow_liquid.snow_layers_after.len(),
@@ -1281,6 +1440,8 @@ fn direct_snow_trace_layer_diagnostics(
         surface_density_after_kg_m3: surface_after,
         basal_density_after_kg_m3: basal_after,
         density_gradient_after_kg_m3: gradient_after,
+        minimum_temperature_after_c,
+        maximum_temperature_after_c,
     }
 }
 
@@ -1305,6 +1466,23 @@ fn snow_layer_density_profile(
         surface_density,
         basal_density,
         basal_density - surface_density,
+    )
+}
+
+fn snow_layer_temperature_range(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> (f64, f64) {
+    if layers.is_empty() {
+        return (f64::NAN, f64::NAN);
+    }
+    layers.iter().fold(
+        (f64::INFINITY, f64::NEG_INFINITY),
+        |(minimum, maximum), layer| {
+            (
+                minimum.min(layer.temperature_c),
+                maximum.max(layer.temperature_c),
+            )
+        },
     )
 }
 
@@ -1536,6 +1714,58 @@ fn paradigm2_stage3_liquid_routing_model()
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_stage3_liquid_routing_model",
             detail: format!("{SIMOUT_GUARD_ID} {PARADIGM2_STAGE3_LIQUID_MODEL_ENV} must be UTF-8"),
+        }),
+    }
+}
+
+fn snow_surface_longwave_model()
+-> Result<openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel, HillslopeCliError> {
+    match std::env::var(SNOW_SURFACE_LONGWAVE_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "disabled" => Ok(openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::Disabled),
+            "dilley_unsworth_subcanopy_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+            ),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_surface_longwave_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOW_SURFACE_LONGWAVE_MODEL_ENV} must be disabled, dilley_unsworth_subcanopy_v1, or empty default, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => Ok(
+            openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::Disabled,
+        ),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_surface_longwave_model",
+            detail: format!("{SIMOUT_GUARD_ID} {SNOW_SURFACE_LONGWAVE_MODEL_ENV} must be UTF-8"),
+        }),
+    }
+}
+
+fn snow_surface_sublimation_model()
+-> Result<openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel, HillslopeCliError> {
+    match std::env::var(SNOW_SURFACE_SUBLIMATION_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "disabled" => Ok(
+                openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::Disabled,
+            ),
+            "neutral_bulk_stage3_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+            ),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_surface_sublimation_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOW_SURFACE_SUBLIMATION_MODEL_ENV} must be disabled, neutral_bulk_stage3_v1, or empty default, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => Ok(
+            openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::Disabled,
+        ),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_surface_sublimation_model",
+            detail: format!("{SIMOUT_GUARD_ID} {SNOW_SURFACE_SUBLIMATION_MODEL_ENV} must be UTF-8"),
         }),
     }
 }

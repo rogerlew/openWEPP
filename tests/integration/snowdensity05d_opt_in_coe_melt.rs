@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -75,6 +75,8 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         snow_density_model: SnowDensityModel::LegacyWepp,
         stage3_liquid_routing_model:
             openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,

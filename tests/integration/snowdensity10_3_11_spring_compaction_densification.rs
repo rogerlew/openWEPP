@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",
@@ -178,6 +178,8 @@ fn wet_spring_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs
         snow_density_model: model,
         stage3_liquid_routing_model:
             openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.20,

@@ -1,0 +1,10 @@
+operand,units,sign,time_basis,area_basis,authority,producer,consumer,status
+active_layer_depth,m,positive,substep,ground-plan,Marks1999/libsnobal,thermal partition,surface provider,verified
+active_layer_mass,kg m^-2,positive,substep,ground-plan,Marks1999/libsnobal,thermal partition,heat capacity,verified
+active_layer_cold_content,J m^-2,deficit-positive,substep,ground-plan,Anderson1976/Marks1999,layer state,thermal update,verified
+lower_layer_cold_content,J m^-2,deficit-positive,substep,ground-plan,Anderson1976/Marks1999,layer state,thermal update,verified
+interface_conduction_G0,W m^-2,positive-into-active,substep,ground-plan,Marks1999/libsnobal,conductive coupling,active/lower balance,verified
+surface_net_radiation,W m^-2,positive-into-snow,substep,ground-plan,SC-SNOWENERGY-001,surface carrier,active balance,verified
+vapor_mass_exchange,kg m^-2,positive-deposition,substep,ground-plan,Marks1998/SC-SNOWENERGY-001,turbulent exchange,mass state,verified
+latent_energy,J m^-2,positive-into-snow,substep,ground-plan,Marks1998/SC-SNOWENERGY-001,turbulent exchange,active balance,verified
+cold_content_export,J m^-2,positive-export,substep,ground-plan,physical conservation,mass removal,whole-pack ledger,verified

@@ -413,6 +413,10 @@ impl DirectProductionSnowFrostAuthority {
                     day_index + 1
                 ))
             })?;
+        let daily_solar_radiation_mj_m2 = hourly[0].daily_solar_radiation_mj_m2;
+        let daily_extraterrestrial_radiation_mj_m2 =
+            hourly[0].daily_extraterrestrial_radiation_mj_m2;
+        let daylight = hourly[0].daylight;
         let mut snow_hourly =
             [DirectSnowHourlyForcing::zero(); openwepp_hillslope_orchestrator::runtime_inputs::DIRECT_WINTER_HOURLY_FORCING_COUNT];
         for (index, hourly) in hourly.into_iter().enumerate() {
@@ -442,6 +446,14 @@ impl DirectProductionSnowFrostAuthority {
             snow_melt_model: self.snow_melt_model,
             snow_density_model: self.snow_density_model,
             stage3_liquid_routing_model: self.stage3_liquid_routing_model,
+            surface_energy_options: openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
+                longwave_model: self.snow_surface_longwave_model,
+                sublimation_model: self.snow_surface_sublimation_model,
+                daily_solar_radiation_mj_m2,
+                daily_extraterrestrial_radiation_mj_m2,
+                daylight,
+                atmospheric_pressure_pa: self.snow_atmospheric_pressure_pa,
+            },
             sturm_climate_class,
             sturm_day_of_year,
             coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,

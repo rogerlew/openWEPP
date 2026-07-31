@@ -20,7 +20,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",
@@ -176,20 +176,20 @@ fn stage3_accepts_bulk_density_model_after_decouple() {
 }
 
 #[test]
-fn stage3_caps_persisted_cold_content_to_current_layer_mass() {
+fn stage3_rejects_persisted_cold_content_below_absolute_zero() {
     let mut inputs = warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_layers[0].cold_content_j_m2 = 1.0e12;
     inputs.snow_layers[1].cold_content_j_m2 = 1.0e12;
 
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect("physically capped Stage 3 cold-content carry should compute");
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect_err("an impossible cold-content state must fail instead of being clamped");
 
-    assert!(partition.stage3_diagnostics.enabled);
-    assert!(partition.snow_layers_after.iter().all(|layer| {
-        (-273.15..=0.0).contains(&layer.temperature_c)
-            && layer.cold_content_j_m2.is_finite()
-            && layer.cold_content_j_m2 >= 0.0
-    }));
+    assert!(
+        error
+            .to_string()
+            .contains("snow.stage3_effective_snow_conductivity_w_m_k"),
+        "unexpected typed error: {error}"
+    );
 }
 
 fn warm_layered_inputs(
@@ -232,6 +232,8 @@ fn warm_layered_inputs(
         snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
         snow_density_model: SnowDensityModel::PhysicsBulkMultilayerDensityV1,
         stage3_liquid_routing_model,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 0.40,

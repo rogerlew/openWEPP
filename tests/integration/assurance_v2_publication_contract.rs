@@ -1263,7 +1263,7 @@ fn named_publication_rejects_unreceipted_prior_catalog_entries() {
 }
 
 #[test]
-fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
+fn bootstrap_unowned_readme_fails_closed() {
     let readme = approved_fixture("assure04d-bootstrap-readme");
     fs::write(
         readme.usersum.path.join("assurance/README.md"),
@@ -1277,7 +1277,10 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
             .is_err()
     );
     assert!(!readme.usersum.path.join("assurance/catalog.json").exists());
+}
 
+#[test]
+fn bootstrap_empty_directory_fails_closed() {
     let empty = approved_fixture("assure04d-bootstrap-empty-dir");
     fs::create_dir_all(empty.usersum.path.join("assurance/reports/unknown/empty")).unwrap();
     assert!(
@@ -1287,7 +1290,10 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
             .is_err()
     );
     assert!(!empty.usersum.path.join("assurance/catalog.json").exists());
+}
 
+#[test]
+fn narrative_drift_fails_closed() {
     let narrative = approved_fixture("assure04d-narrative-drift");
     fs::write(
         narrative
@@ -1310,64 +1316,75 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
             .join("assurance/catalog.json")
             .exists()
     );
+}
 
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::symlink;
+#[cfg(unix)]
+#[test]
+fn staging_symlink_fails_closed() {
+    use std::os::unix::fs::symlink;
 
-        let staging = approved_fixture("assure04d-staging-symlink");
-        symlink(
-            "/etc/passwd",
-            staging.stage.path.join(format!(
-                "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-link"
-            )),
-        )
-        .unwrap();
-        assert!(
-            V2Repository::open(&staging.source.path)
-                .unwrap()
-                .publish_test_fixture_report(REPORT_ID, &staging.options())
-                .is_err()
-        );
-        assert!(!staging.usersum.path.join("assurance/catalog.json").exists());
+    let staging = approved_fixture("assure04d-staging-symlink");
+    symlink(
+        "/etc/passwd",
+        staging.stage.path.join(format!(
+            "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-link"
+        )),
+    )
+    .unwrap();
+    assert!(
+        V2Repository::open(&staging.source.path)
+            .unwrap()
+            .publish_test_fixture_report(REPORT_ID, &staging.options())
+            .is_err()
+    );
+    assert!(!staging.usersum.path.join("assurance/catalog.json").exists());
+}
 
-        let aliased = approved_fixture("assure04d-usersum-alias");
-        let alias_parent = Scratch::new("assure04d-alias-parent");
-        let alias = alias_parent.path.join("usersum-link");
-        symlink(&aliased.usersum.path, &alias).unwrap();
-        let options = V2PublicationOptions::new(
-            aliased.stage.path.clone(),
-            alias,
-            aliased.snapshots.path.clone(),
-            aliased.release.clone(),
-        );
-        assert!(
-            V2Repository::open(&aliased.source.path)
-                .unwrap()
-                .publish_test_fixture_report(REPORT_ID, &options)
-                .is_err()
-        );
-        assert!(!aliased.usersum.path.join("assurance/catalog.json").exists());
+#[cfg(unix)]
+#[test]
+fn aliased_usersum_root_fails_closed() {
+    use std::os::unix::fs::symlink;
 
-        let fifo = approved_fixture("assure04d-staging-fifo");
-        let fifo_path = fifo.stage.path.join(format!(
-            "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-fifo"
-        ));
-        assert!(
-            Command::new("mkfifo")
-                .arg(&fifo_path)
-                .status()
-                .unwrap()
-                .success()
-        );
-        assert!(
-            V2Repository::open(&fifo.source.path)
-                .unwrap()
-                .publish_test_fixture_report(REPORT_ID, &fifo.options())
-                .is_err()
-        );
-        assert!(!fifo.usersum.path.join("assurance/catalog.json").exists());
-    }
+    let aliased = approved_fixture("assure04d-usersum-alias");
+    let alias_parent = Scratch::new("assure04d-alias-parent");
+    let alias = alias_parent.path.join("usersum-link");
+    symlink(&aliased.usersum.path, &alias).unwrap();
+    let options = V2PublicationOptions::new(
+        aliased.stage.path.clone(),
+        alias,
+        aliased.snapshots.path.clone(),
+        aliased.release.clone(),
+    );
+    assert!(
+        V2Repository::open(&aliased.source.path)
+            .unwrap()
+            .publish_test_fixture_report(REPORT_ID, &options)
+            .is_err()
+    );
+    assert!(!aliased.usersum.path.join("assurance/catalog.json").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn staging_fifo_fails_closed() {
+    let fifo = approved_fixture("assure04d-staging-fifo");
+    let fifo_path = fifo.stage.path.join(format!(
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-fifo"
+    ));
+    assert!(
+        Command::new("mkfifo")
+            .arg(&fifo_path)
+            .status()
+            .unwrap()
+            .success()
+    );
+    assert!(
+        V2Repository::open(&fifo.source.path)
+            .unwrap()
+            .publish_test_fixture_report(REPORT_ID, &fifo.options())
+            .is_err()
+    );
+    assert!(!fifo.usersum.path.join("assurance/catalog.json").exists());
 }
 
 #[test]
@@ -1501,7 +1518,7 @@ fn approval_conflicts_and_release_mismatch_fail_before_publication() {
 }
 
 #[test]
-fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
+fn wrong_principal_kind_fails_closed() {
     let wrong_kind = approved_fixture("assure04d-wrong-principal-kind");
     replace_in(
         &wrong_kind.source.path.join("assurance/v2/principals.yaml"),
@@ -1510,7 +1527,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     );
     openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_kind.source.path).unwrap();
     assert_unpublished(&wrong_kind, "wrong principal kind");
+}
 
+#[test]
+fn wrong_principal_role_fails_closed() {
     let wrong_role = approved_fixture("assure04d-wrong-principal-role");
     replace_in(
         &wrong_role.source.path.join("assurance/v2/principals.yaml"),
@@ -1519,7 +1539,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     );
     openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_role.source.path).unwrap();
     assert_unpublished(&wrong_role, "wrong principal role");
+}
 
+#[test]
+fn wrong_principal_trust_domain_fails_closed() {
     let wrong_domain = approved_fixture("assure04d-wrong-principal-domain");
     replace_in(
         &wrong_domain
@@ -1531,7 +1554,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     );
     openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_domain.source.path).unwrap();
     assert_unpublished(&wrong_domain, "wrong principal trust domain");
+}
 
+#[test]
+fn missing_competence_fails_closed() {
     let competence = in_review_fixture("assure04d-missing-competence");
     let error = amend_lifecycle(
         &competence.source.path,
@@ -1541,7 +1567,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     )
     .unwrap_err();
     assert!(error.to_string().contains("competence"));
+}
 
+#[test]
+fn missing_independence_fails_closed() {
     let independence = in_review_fixture("assure04d-missing-independence");
     let error = amend_lifecycle(
         &independence.source.path,
@@ -1551,7 +1580,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     )
     .unwrap_err();
     assert!(error.to_string().contains("independence"));
+}
 
+#[test]
+fn withdrawn_report_fails_closed() {
     let withdrawn = approved_fixture("assure04d-withdrawn");
     replace_in(
         &withdrawn.source.path.join(REPORT_PATH),
@@ -1560,7 +1592,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     );
     openwepp_assurance::rebind_invalid_v2_test_fixture(&withdrawn.source.path).unwrap();
     assert_unpublished_with_message(&withdrawn, "withdrawn publication", "withdrawn");
+}
 
+#[test]
+fn superseded_report_fails_closed() {
     let superseded = approved_fixture("assure04d-superseded");
     replace_in(
         &superseded.source.path.join(REPORT_PATH),
@@ -1569,7 +1604,10 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     );
     openwepp_assurance::rebind_invalid_v2_test_fixture(&superseded.source.path).unwrap();
     assert_unpublished_with_message(&superseded, "superseded publication", "supersedes");
+}
 
+#[test]
+fn missing_release_transfer_fails_closed() {
     let missing_transfer = approved_fixture("assure04d-missing-release-transfer");
     let transfer = event_id(&missing_transfer.source.path, "release_transfer");
     fs::remove_file(missing_transfer.source.path.join(format!(

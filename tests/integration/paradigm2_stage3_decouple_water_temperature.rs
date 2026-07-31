@@ -17,7 +17,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_decouple_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE",
         "INV-SNOWFREEZE-081",
         "OBL-SNOWFREEZE-P-056",
@@ -183,6 +183,8 @@ fn warm_inputs(
         snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
         snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
         stage3_liquid_routing_model,
+        surface_energy_options:
+            openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 0.40,

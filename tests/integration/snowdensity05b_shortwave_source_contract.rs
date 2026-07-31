@@ -12,7 +12,7 @@ const LEDGER: &str = "docs/work-packages/20260626-snowdensity-05b-shortwave-sour
 fn snowdensity05b_contract_binds_shortwave_source_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 117",
+        "contract_version: 119",
         "INV-SNOWFREEZE-053",
         "SNOWDENSITY-05B shortwave source/provenance binding",
         "canonical openWEPP shortwave source is the daily climate `rad`/`radly` field",

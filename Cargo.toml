@@ -685,6 +685,14 @@ name = "snowdensity10_3_22_climate_class_density_specialization"
 path = "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs"
 
 [[test]]
+name = "snow_surface_eb03_contract"
+path = "tests/integration/snow_surface_eb03_contract.rs"
+
+[[test]]
+name = "snow_surface_eb03_runtime"
+path = "tests/integration/snow_surface_eb03_runtime.rs"
+
+[[test]]
 name = "assurance_dossier_build_contract"
 path = "tests/integration/assurance_dossier_build_contract.rs"
 
