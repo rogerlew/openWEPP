@@ -26,6 +26,28 @@ const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
 const STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_BULK_EQUIVALENT_MAX_LAYERS: usize = 16;
 
+impl SnowStage3ConductivityError {
+    /// Replay the exact rejected SNOBAL conductivity primitive.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed meteorology error when the captured inputs remain
+    /// outside the primitive's domain.
+    pub fn replay(
+        &self,
+    ) -> Result<
+        ThermalConductivityWattsPerMeterKelvin,
+        openwepp_meteorology::MeteorologyError,
+    > {
+        let pressure = PressurePascals::try_new(self.atmospheric_pressure_pa)?;
+        snow_effective_thermal_conductivity_snobal(
+            self.layer.density_kg_m3,
+            self.control_volume_temperature,
+            pressure,
+        )
+    }
+}
+
 #[derive(Clone, Copy)]
 struct Stage3AggregateState {
     swe_after_m: f64,
@@ -37,8 +59,11 @@ struct Stage3AggregateState {
 #[derive(Clone, Copy)]
 struct Stage3HourlySurfaceEnergy {
     total_j_m2: f64,
+    shortwave_j_m2: f64,
     longwave_j_m2: f64,
     latent_j_m2: f64,
+    vapor_mass_exchange_kg_m2: f64,
+    latent_mass_energy_j_m2: f64,
     sublimation_m: f64,
     mass_latent_identity_residual_j_m2: f64,
     diagnostics: DirectSnowSurfaceEnergyHourDiagnostics,
@@ -458,8 +483,11 @@ impl Wb11HydrologyKernel {
 
         let mut surface_energy_j_m2 = 0.0;
         let mut conduction_energy_j_m2 = 0.0;
+        let mut shortwave_energy_j_m2 = 0.0;
         let mut longwave_energy_j_m2 = 0.0;
         let mut latent_energy_j_m2 = 0.0;
+        let mut vapor_mass_exchange_kg_m2 = 0.0;
+        let mut latent_mass_energy_j_m2 = 0.0;
         let mut sublimation_m = 0.0;
         let mut cold_content_export_j_m2 = 0.0;
         let mut mass_latent_identity_residual_j_m2 = 0.0;
@@ -472,6 +500,7 @@ impl Wb11HydrologyKernel {
             let mut elapsed_seconds = 0.0;
             let mut hour_diagnostics = DirectSnowSurfaceEnergyHourDiagnostics::zero();
             let mut hour_latent_energy_j_m2 = 0.0;
+            let mut hour_latent_mass_energy_j_m2 = 0.0;
             while elapsed_seconds < STAGE3_SECONDS_PER_HOUR && !layers.is_empty() {
                 active_layer_count =
                     Self::align_stage3_active_layer_boundary(layers, &mut cold_content_by_layer);
@@ -522,9 +551,13 @@ impl Wb11HydrologyKernel {
                     active_state.density_kg_m3,
                     substep_seconds,
                 )?;
+                shortwave_energy_j_m2 += carrier.shortwave_j_m2;
                 longwave_energy_j_m2 += carrier.longwave_j_m2;
                 latent_energy_j_m2 += carrier.latent_j_m2;
+                vapor_mass_exchange_kg_m2 += carrier.vapor_mass_exchange_kg_m2;
+                latent_mass_energy_j_m2 += carrier.latent_mass_energy_j_m2;
                 hour_latent_energy_j_m2 += carrier.latent_j_m2;
+                hour_latent_mass_energy_j_m2 += carrier.latent_mass_energy_j_m2;
                 mass_latent_identity_residual_j_m2 +=
                     carrier.mass_latent_identity_residual_j_m2;
                 let conduction = Self::apply_stage3_active_lower_conduction(
@@ -609,6 +642,7 @@ impl Wb11HydrologyKernel {
             Self::finish_stage3_hour_diagnostics(
                 &mut hour_diagnostics,
                 hour_latent_energy_j_m2,
+                hour_latent_mass_energy_j_m2,
             );
             hourly_surface_energy[hour_index] = hour_diagnostics;
         }
@@ -673,8 +707,11 @@ impl Wb11HydrologyKernel {
             conduction_energy_j_m2,
             latent_refreeze_energy_j_m2,
             energy_closure_residual_j_m2,
+            shortwave_energy_j_m2,
             longwave_energy_j_m2,
             latent_energy_j_m2,
+            vapor_mass_exchange_kg_m2,
+            latent_mass_energy_j_m2,
             sublimation_m,
             cold_content_export_j_m2,
             mass_latent_identity_residual_j_m2,
@@ -1278,8 +1315,12 @@ impl Wb11HydrologyKernel {
         })?;
         Ok(Stage3HourlySurfaceEnergy {
             total_j_m2: balance.as_watts_per_square_meter() * duration_seconds,
+            shortwave_j_m2: shortwave.as_watts_per_square_meter() * duration_seconds,
             longwave_j_m2: longwave_w_m2 * duration_seconds,
             latent_j_m2: latent_w_m2 * duration_seconds,
+            vapor_mass_exchange_kg_m2: diagnostics.vapor_mass_exchange_kg_m2,
+            latent_mass_energy_j_m2: diagnostics.vapor_mass_exchange_kg_m2
+                * latent_heat_j_kg,
             sublimation_m,
             mass_latent_identity_residual_j_m2: latent_w_m2 * duration_seconds
                 - diagnostics.vapor_mass_exchange_kg_m2 * latent_heat_j_kg,
@@ -1440,20 +1481,24 @@ impl Wb11HydrologyKernel {
             )
         })?;
         let mut resistance_m2_k_w = 0.0;
-        for layer in layers {
+        for (layer_index, layer) in layers.iter().enumerate() {
             let conductivity = snow_effective_thermal_conductivity_snobal(
                 layer.density_kg_m3,
                 temperature,
                 pressure,
             )
-            .map_err(|_| {
-                Self::stage3_domain_error(
+            .map_err(|source| {
+                Wb11HydrologyKernelGuardError::SnowStage3Conductivity(Box::new(
+                    SnowStage3ConductivityError {
                     phase_class,
-                    "snow.stage3_effective_snow_conductivity_w_m_k",
-                    layer.density_kg_m3,
-                    Some(0.0),
-                    None,
-                )
+                    source,
+                    layer_index,
+                    layer: *layer,
+                    control_volume_layers: layers.to_vec(),
+                    control_volume_temperature: temperature,
+                    atmospheric_pressure_pa,
+                    },
+                ))
             })?;
             resistance_m2_k_w +=
                 layer.thickness_m / conductivity.as_watts_per_meter_kelvin();
@@ -1863,11 +1908,12 @@ impl Wb11HydrologyKernel {
     fn finish_stage3_hour_diagnostics(
         hourly: &mut DirectSnowSurfaceEnergyHourDiagnostics,
         latent_energy_j_m2: f64,
+        latent_mass_energy_j_m2: f64,
     ) {
         hourly.latent_flux_w_m2 = latent_energy_j_m2 / STAGE3_SECONDS_PER_HOUR;
-        if hourly.vapor_mass_exchange_kg_m2.abs() > WB11_ZERO_THRESHOLD {
+        if hourly.vapor_mass_exchange_kg_m2 != 0.0 {
             hourly.latent_heat_j_kg =
-                latent_energy_j_m2 / hourly.vapor_mass_exchange_kg_m2;
+                latent_mass_energy_j_m2 / hourly.vapor_mass_exchange_kg_m2;
         }
     }
 
@@ -1964,12 +2010,23 @@ impl Wb11HydrologyKernel {
             sturm_climate_class: inputs.sturm_climate_class,
             sturm_day_of_year: inputs.sturm_day_of_year,
         })
-        .map_err(|error| Self::snow_density_guard_error(phase_class, &error))
+        .map_err(|error| {
+            Self::snow_density_guard_error(
+                phase_class,
+                &error,
+                inputs.runtime_swe_m,
+                inputs.runtime_depth_m,
+                &inputs.snow_layers,
+            )
+        })
     }
 
     fn snow_density_guard_error(
         phase_class: HillslopeKernelPhaseClass,
         error: &SnowDensityError,
+        prior_swe_m: f64,
+        prior_depth_m: f64,
+        prior_layers: &[DirectSnowLayerState],
     ) -> Wb11HydrologyKernelGuardError {
         match error {
             SnowDensityError::NonFiniteInput { symbol, value } => {
@@ -2013,13 +2070,17 @@ impl Wb11HydrologyKernel {
                 symbol,
                 value,
                 expected,
-            } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(*symbol),
-                value: *value,
-                minimum: Some(*expected),
-                maximum: Some(*expected),
-            },
+            } => Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(Box::new(
+                SnowLayerAggregateMismatchError {
+                    phase_class,
+                    symbol,
+                    value: *value,
+                    expected: *expected,
+                    prior_swe_m,
+                    prior_depth_m,
+                    prior_layers: prior_layers.to_vec(),
+                },
+            )),
         }
     }
 
@@ -2088,6 +2149,7 @@ mod cqr_row5_tests {
     #[test]
     fn snow_density_guard_error_maps_all_error_variants() {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        let replay_layers = [DirectSnowLayerState::new(0.2, 0.4, 500.0, 2.0)];
         let cases = [
             SnowDensityError::NonFiniteInput {
                 symbol: "row5.nonfinite",
@@ -2107,7 +2169,7 @@ mod cqr_row5_tests {
             },
             SnowDensityError::MissingClimateClassDensityParameters { class: "alpine" },
             SnowDensityError::LayerAggregateMismatch {
-                symbol: "row5.layers",
+                symbol: "prior_layers.thickness_m",
                 value: 0.4,
                 expected: 0.5,
             },
@@ -2115,7 +2177,15 @@ mod cqr_row5_tests {
 
         let mapped = cases
             .iter()
-            .map(|error| Wb11HydrologyKernel::snow_density_guard_error(phase_class, error))
+            .map(|error| {
+                Wb11HydrologyKernel::snow_density_guard_error(
+                    phase_class,
+                    error,
+                    0.2,
+                    0.5,
+                    &replay_layers,
+                )
+            })
             .collect::<Vec<_>>();
 
         assert!(matches!(
@@ -2137,6 +2207,23 @@ mod cqr_row5_tests {
         assert!(mapped[4]
             .to_string()
             .contains("sturm2010_density_parameters"));
-        assert!(mapped[5].to_string().contains("row5.layers=0.4 outside"));
+        assert!(matches!(
+            mapped[5],
+            Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(_)
+        ));
+        if let Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(snapshot) = &mapped[5] {
+            assert!((snapshot.replay_value() - snapshot.value).abs() <= f64::EPSILON);
+            assert!((snapshot.replay_value() - snapshot.expected).abs() > f64::EPSILON);
+            assert!((snapshot.expected - snapshot.prior_depth_m).abs() <= f64::EPSILON);
+            let replay_swe_m = snapshot
+                .prior_layers
+                .iter()
+                .map(|layer| layer.mass_swe_m)
+                .sum::<f64>();
+            assert!((replay_swe_m - snapshot.prior_swe_m).abs() <= f64::EPSILON);
+        }
+        assert!(mapped[5]
+            .to_string()
+            .contains("prior_layers.thickness_m=0.4 does not match expected 0.5"));
     }
 }

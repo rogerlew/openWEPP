@@ -4,7 +4,7 @@ use std::path::Path;
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLayerState,
     DirectSnowStage3Diagnostics, SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel,
-    Wb11HydrologyKernel,
+    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
 };
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -184,12 +184,29 @@ fn stage3_rejects_persisted_cold_content_below_absolute_zero() {
     let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect_err("an impossible cold-content state must fail instead of being clamped");
 
+    let rendered = error.to_string();
     assert!(
-        error
-            .to_string()
-            .contains("snow.stage3_effective_snow_conductivity_w_m_k"),
-        "unexpected typed error: {error}"
+        rendered.contains("temperature_c must be above absolute zero"),
+        "underlying meteorology cause was lost: {error}"
     );
+    assert!(
+        rendered.contains("layer_density_kg_m3=")
+            && rendered.contains("control_volume_temperature_c=")
+            && rendered.contains("atmospheric_pressure_pa="),
+        "replay operands were not published: {error}"
+    );
+    assert!(matches!(
+        error,
+        Wb11HydrologyKernelGuardError::SnowStage3Conductivity(_)
+    ));
+    if let Wb11HydrologyKernelGuardError::SnowStage3Conductivity(snapshot) = &error {
+        let replayed = snapshot
+            .replay()
+            .expect_err("captured invalid conductivity inputs must fail on replay");
+        assert_eq!(replayed, snapshot.source);
+        assert_eq!(snapshot.control_volume_layers.len(), 1);
+        assert_eq!(snapshot.control_volume_layers[0], snapshot.layer);
+    }
 }
 
 fn warm_layered_inputs(

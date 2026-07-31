@@ -1259,6 +1259,18 @@ fn r7h_direct_production_snow_trace_line(
 fn direct_snow_trace_stage3_fields(
     diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
 ) -> String {
+    let hourly_shortwave = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.net_shortwave_w_m2
+    });
+    let hourly_longwave =
+        direct_snow_trace_hourly_values(diagnostics, |hour| hour.net_longwave_w_m2);
+    let hourly_vapor_mass = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.vapor_mass_exchange_kg_m2
+    });
+    let hourly_latent_heat =
+        direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_heat_j_kg);
+    let hourly_latent_flux =
+        direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_flux_w_m2);
     format!(
         "\
 \"stage3_energy_enabled\":{},\
@@ -1267,8 +1279,16 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_energy_closure_residual_j_m2\":{},\
 \"stage3_surface_energy_j_m2\":{},\
 \"stage3_conduction_energy_j_m2\":{},\
+\"stage3_shortwave_energy_j_m2\":{},\
 \"stage3_longwave_energy_j_m2\":{},\
 \"stage3_latent_energy_j_m2\":{},\
+\"stage3_vapor_mass_exchange_kg_m2\":{},\
+\"stage3_latent_mass_energy_j_m2\":{},\
+\"stage3_hourly_net_shortwave_w_m2\":{},\
+\"stage3_hourly_net_longwave_w_m2\":{},\
+\"stage3_hourly_vapor_mass_exchange_kg_m2\":{},\
+\"stage3_hourly_latent_heat_j_kg\":{},\
+\"stage3_hourly_latent_flux_w_m2\":{},\
 \"stage3_latent_refreeze_energy_j_m2\":{},\
 \"stage3_cold_content_export_j_m2\":{},\
 \"stage3_mass_latent_identity_residual_j_m2\":{},\
@@ -1280,8 +1300,16 @@ fn direct_snow_trace_stage3_fields(
         direct_production_trace_number(diagnostics.energy_closure_residual_j_m2),
         direct_production_trace_number(diagnostics.surface_energy_j_m2),
         direct_production_trace_number(diagnostics.conduction_energy_j_m2),
+        direct_production_trace_number(diagnostics.shortwave_energy_j_m2),
         direct_production_trace_number(diagnostics.longwave_energy_j_m2),
         direct_production_trace_number(diagnostics.latent_energy_j_m2),
+        direct_production_trace_number(diagnostics.vapor_mass_exchange_kg_m2),
+        direct_production_trace_number(diagnostics.latent_mass_energy_j_m2),
+        hourly_shortwave,
+        hourly_longwave,
+        hourly_vapor_mass,
+        hourly_latent_heat,
+        hourly_latent_flux,
         direct_production_trace_number(diagnostics.latent_refreeze_energy_j_m2),
         direct_production_trace_number(diagnostics.cold_content_export_j_m2),
         direct_production_trace_number(
@@ -1290,6 +1318,21 @@ fn direct_snow_trace_stage3_fields(
         direct_production_trace_number(diagnostics.unused_positive_energy_j_m2),
         direct_production_trace_number(diagnostics.refrozen_liquid_m),
     )
+}
+
+fn direct_snow_trace_hourly_values(
+    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
+    value: impl Fn(
+        &openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyHourDiagnostics,
+    ) -> f64,
+) -> String {
+    let values = diagnostics
+        .hourly_surface_energy
+        .iter()
+        .map(|hour| direct_production_trace_number(value(hour)))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!("[{values}]")
 }
 
 #[derive(Default)]

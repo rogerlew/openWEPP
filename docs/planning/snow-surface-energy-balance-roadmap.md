@@ -1,6 +1,6 @@
 # Snow Surface-Energy-Balance Campaign Roadmap
 
-Status: **active scientific campaign roadmap** (2026-07-29).
+Status: **active scientific campaign roadmap** (2026-07-30).
 
 Campaign ID: `SNOW-SURFACE-EB`.
 
@@ -140,12 +140,46 @@ calibrated ranges.
 | 5 | [`SNOW-SURFACE-EB-03A`](../work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/package.md) active-layer thermal coupling — **complete / pass** | Closed the science defect `GAP-SNOWENERGY-007` by replacing the snowfall-event top-layer heat capacity with the Marks/SNOBAL active thermal control volume, coupling it to the lower pack within each energy substep, and applying authority-defined shallow-pack timestep subdivision. | Real B/L/S/LS, rollback, conservation, snow-domain, quick, frost, and Critical full gates pass after EB-03B lifted the unrelated validation hold. |
 | 6 | [`SNOW-SURFACE-EB-03B`](../work-packages/20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/package.md) terminal validation hold lift — **complete / pass** | Isolated optional-QA state from the synthetic CQR self-test and decomposed two assurance negative matrices without changing snow physics, assurance authority, timeout limits, or quality thresholds. | CQR 4/4, assurance publication 37/37, quick 2109/2109, frost 324/324, and Critical full 2158/2158 pass. |
 | 7 | [`SNOW-SURFACE-EB-04`](../work-packages/20260730-snow-surface-eb-04-factorial-execution-adjudication-001/package.md) factorial execution and adjudication — **executed / hold / nonpromotion** | Executed the frozen 48-cell design once and published the complete inventory, partial/completed trajectories, and sidecars. | B completed 12/12 lanes, L 10/12, S 2/12, and LS 0/12. Failures comprise 22 masked Stage 3 effective-conductivity-path errors and two prior-layer thickness reconciliation errors. No LS observation score or interaction is admissible. Physical-gate and one-round stop-losses close promotion; retained output lacks shortwave and the signed latent/mass operands needed for the package's anti-tautological reconstruction gates, so package closure holds. |
-| 8 | `SNOW-SURFACE-EB-05` bounded campaign closeout — **admitted / nonpromotion only** | Record the negative result and EB-04 evidence limitation in `ASSURE-06`, preserve default-off selectors, and close the campaign without another tuning round. | Do not promote, recalibrate, or reinterpret EB-04 as a completed validation. Reopen science only with new authoritative process science, new discriminating observations, or an independently testable formulation. Diagnostic defects may be investigated separately but do not authorize another EB-04 round. |
+| 8 | [`SNOW-SURFACE-EB-04A`](../work-packages/20260730-snow-surface-eb-04a-failure-observability-state-capture-001/package.md) failure observability and failing-state capture — **complete / pass** | Preserved exact typed causes and complete rejected thermal/prior-layer state; published shortwave, signed vapor mass, and latent conversion operands; targeted all 24 frozen failures. | All failures reproduced on the original day: 17 below-absolute-zero projections, five saturation-vapor-pressure underflows at extreme cold, and two approximately `1.0e-9 m` layer-depth mismatches. Independent mass, surface-energy, and latent/mass reconstruction pass without a physics change. |
+| 9 | [`SNOW-SURFACE-EB-04B`](../work-packages/20260731-snow-surface-eb-04b-coupled-dynamics-characterization-001/package.md) coupled-dynamics characterization — **complete / pass** | Retained and classified the complete 83,232-row chronology for all 24 exact EB-04A failures without rerunning the factorial or changing physics. | Seventeen failures enter impossible below-absolute-zero states from positive cold content on vanishing mass; five remain valid Kelvin states but underflow in the SNOBAL saturation-vapor-pressure dependency. Sublimation is strongly associated and mechanistically contributory in 20/22 cases but is not necessary, and the unpublished crossing substep prevents a terminal-amplification claim. The two geometry failures exactly equal one SWE fragment filtered below `1e-9 m` while its physical depth remains above the independent depth tolerance. |
+| 10 | `SNOW-SURFACE-EB-04C` thin-pack thermal-state and vapor-pressure-domain defect closure — **admitted** | Resolve the 17 impossible thin-pack states and the separate five valid-Kelvin saturation-vapor-pressure underflows. Determine the authoritative control-volume extinction/energy transfer at vanishing mass and the supported constitutive/numerical domain for the SNOBAL vapor-pressure dependency; do not tune sublimation coefficients. | Contract-first correction must preserve typed causes, mass and energy closure, and protected B/L behavior. Every captured thermal state and boundary test must pass, with the 17 upstream invalid states distinguished from the five downstream valid-Kelvin underflows. Insert a bounded authority-research predecessor if the canonical rule cannot be resolved from existing authority. |
+| 11 | `SNOW-SURFACE-EB-04D` layer-thickness reconciliation defect closure — **admitted** | Correct the dimensionally inconsistent fragment filter/closure boundary exposed by `harvard_open/S` and `marcell_open/LS`: one approximately `5.26e-10 m` SWE fragment is omitted by `mass_swe_m > 1e-9`, while its density-derived physical depth is approximately `1.01e-9` to `1.09e-9 m` and exceeds the independently equal-valued depth tolerance. | Any normalization or tolerance requires units, an explicit bound, numerical provenance, conservation proof, and regression tests. Both captured states and protected layer transitions must pass; exact checks may not be weakened merely to continue execution. |
+| 12 | `SNOW-SURFACE-EB-04E` corrected-population runtime qualification — **planned after 04C/04D** | Execute the corrected candidate across every formerly failing lane/cell with the complete 04A trace and independently reconstructed ledgers. Characterize remaining runtime and process-boundary behavior before observation scoring. | All 48 prescribed cells must be attempted; all S/LS cells must complete their physical, trace-identity, mass, energy, latent/mass, thermal, and layer-reconciliation gates. No empirical score, interaction, calibration, or promotion claim is admissible in this package. |
+| 13 | `SNOW-SURFACE-EB-04R` fresh factorial execution and adjudication — **conditional on 04E pass** | Freeze a new exact executable and prospective protocol, then rerun the B/L/S/LS population as a second scientific experiment. Compare the corrected round with the frozen EB-04 failed baseline while retaining the original observation roles and protected signatures unless prospectively amended. | Run the new 48-cell matrix once. Score marginal, combined, interaction, protected-group, and compensation-error criteria only after every physical and anti-tautological gate passes. Promotion remains default-off and requires the complete preregistered rule. |
+| 14 | `SNOW-SURFACE-EB-05` campaign assurance closeout — **deferred pending 04R or proven limitation** | Refresh `ASSURE-06` with the complete iteration history, corrected result or defensible model limitation, uncertainty, and default disposition. | Close after 04R adjudication, or after a predecessor proves that further correction requires missing/contradictory authority or an independently unavailable process formulation. A failed EB-04 first round alone is not sufficient campaign-retirement evidence. |
 
-Orders 3 and 4 may complete their contract work in parallel after EB-01A, but
-EB-02 runtime wiring depends on the EB-03 temperature/cold-content decision.
-Neither is a result-bearing substitute for Order 5. Order 5 starts only when
-the same runtime can express all four orthogonal cells.
+EB-04B has assigned all captured failures and correction authority. EB-04C and
+EB-04D are now independently admitted; EB-04C is the recommended first package
+because it owns 22 thermal failures, while EB-04D owns two isolated geometry
+failures. EB-04E waits for both applicable defect closures, and EB-04R waits for
+EB-04E to prove population-wide runtime and anti-tautological admissibility.
+
+### 6.1 Iteration Discipline After EB-04
+
+EB-04 remains immutable evidence of the first preregistered experiment. Its
+one-round stop-loss forbids editing that package's result rule, tuning against
+its observations, or replacing its failed cells with post-result reruns. It
+does not retire sub-canopy longwave, sublimation, or their coupled dynamics.
+
+Successor iteration is defect- and information-driven:
+
+1. expose the exact rejected state and independently reconstruct the ledgers;
+2. characterize chronology and coupling before selecting a correction;
+3. separate conductivity and layer-geometry correction authority;
+4. qualify corrected runtime behavior without empirical scoring; then
+5. run one new prospectively frozen factorial.
+
+Targeted diagnostic executions in 04A–04D are not factorial retries and may not
+produce promotion evidence. Each defect-closure package must diagnose and
+correct within its declared authority envelope rather than stopping at the
+first reproducible error. If 04B exposes a missing science authority, insert a
+bounded research package before the affected correction; do not install proxy
+physics.
+
+The sequence may loop only through a newly authorized defect-shaped package
+with a named finding, write set, authority, and acceptance test. It may not loop
+through coefficient search, guard relaxation, observation rescaling, or
+result-aware metric changes.
 
 ## 7. Stop-Loss
 
@@ -163,13 +197,16 @@ Stop without promotion when any of the following is true:
   signatures reveal compensating longwave/sublimation errors;
 - the candidate does not improve its prespecified target contrasts, or causes
   material protected-site regression; or
-- EB-04 reaches its declared bounded candidate/experiment budget without a
-  promotable result.
+- a result-bearing factorial reaches its declared candidate/experiment budget
+  without a promotable result.
 
-After stop-loss, do not open another calibration round from the same evidence.
-Adjudicate the limitation, update `ASSURE-06`, and reopen only with new
-authoritative process science, new discriminating observations, or an
-independently testable formulation.
+After stop-loss, do not tune, promote, or repeat the same result-bearing
+experiment from the same executable and evidence. Preserve the failed
+experiment, enter the diagnostic/correction sequence above, and admit a new
+factorial only after its physical and anti-tautological prerequisites pass.
+Close as a model limitation only when a predecessor proves a named
+authority/formulation boundary after the in-envelope diagnostic and correction
+routes are exhausted.
 
 ## 8. Required Human-Interpretation Artifacts
 
@@ -190,7 +227,7 @@ for a reader who finds the figure outside the package narrative.
 ## 9. Protected Boundaries
 
 - No surrogate, provisional, proxy, or heuristic process physics in production.
-- No default activation before the Order 5 promotion gate.
+- No default activation before the EB-04R promotion gate.
 - No tuning of shared meteorological radiation to improve snow.
 - No reuse of validation observations for fitting.
 - No replacement of the current snow-density, phase, liquid-routing, frost, or

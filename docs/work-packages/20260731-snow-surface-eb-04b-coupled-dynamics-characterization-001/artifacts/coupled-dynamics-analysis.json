@@ -1,0 +1,177 @@
+{
+  "acceptance": {
+    "all_24_classified": true,
+    "all_B_companions_bound_and_reach_pre_failure_day": true,
+    "all_signatures_dispositioned": true,
+    "all_thermal_temperatures_reconstructed": true,
+    "both_geometry_residuals_reconstructed": true,
+    "complete_chronology_retained": true,
+    "passes": true,
+    "source_ordering_proved": true
+  },
+  "case_dynamics": {
+    "case_count": 24,
+    "lower_present_case_count": 21,
+    "maximum_abs_applied_g0_w_m2": 32.721164601053594,
+    "maximum_abs_rejected_g0_w_m2": 721.5020303678514,
+    "maximum_abs_requested_g0_w_m2": 730.795403333192,
+    "minimum_substep_seconds": 60.0
+  },
+  "companions": {
+    "B_traces_reaching_pre_failure_day": 22,
+    "thermal_cell_counts": {
+      "L": 2,
+      "LS": 11,
+      "S": 9
+    },
+    "thermal_targets_with_completed_B_cell": 22
+  },
+  "complete_chronology": {
+    "expected_row_count": 83232,
+    "fields": [
+      "lane_id",
+      "cell",
+      "classification",
+      "failure_day_index",
+      "day_index",
+      "days_to_failure",
+      "terminal",
+      "terminal_kind",
+      "swe_before_m",
+      "swe_after_m",
+      "depth_after_m",
+      "density_after_kg_m3",
+      "layer_count_after",
+      "minimum_layer_temperature_c",
+      "maximum_layer_temperature_c",
+      "cold_content_before_j_m2",
+      "cold_content_after_j_m2",
+      "cold_content_export_j_m2",
+      "reconstructed_temperature_c",
+      "sublimation_m",
+      "snowpack_swe_loss_m",
+      "shortwave_j_m2",
+      "longwave_j_m2",
+      "latent_j_m2",
+      "surface_j_m2",
+      "conduction_j_m2",
+      "refrozen_liquid_m",
+      "routed_melt_m",
+      "maximum_active_mass_kg_m2",
+      "maximum_lower_mass_kg_m2",
+      "maximum_active_depth_m",
+      "maximum_lower_depth_m",
+      "maximum_abs_g0_w_m2",
+      "peak_requested_g0_w_m2",
+      "peak_applied_g0_w_m2",
+      "peak_rejected_g0_w_m2",
+      "peak_active_temperature_c",
+      "peak_lower_temperature_c",
+      "peak_active_conductivity_w_m_k",
+      "peak_lower_conductivity_w_m_k",
+      "peak_active_resistance_m2_k_w",
+      "peak_lower_resistance_m2_k_w",
+      "minimum_substep_seconds",
+      "snapshot_mass_swe_m",
+      "snapshot_depth_m",
+      "snapshot_density_kg_m3",
+      "snapshot_temperature_c",
+      "snapshot_cold_content_j_m2",
+      "geometry_reported_depth_m",
+      "geometry_expected_depth_m",
+      "geometry_signed_residual_m"
+    ],
+    "path": "docs/work-packages/20260731-snow-surface-eb-04b-coupled-dynamics-characterization-001/artifacts/complete-chronology.csv.gz",
+    "row_count": 83232,
+    "sha256": "c409185255bd0a79ac6e0644d6b967c7c5c0449c6a1f3c8b167bada1552b08ef"
+  },
+  "evidence_class": "Ran",
+  "geometry_summary": {
+    "excluded_fragment_count": 2,
+    "maximum_abs_depth_residual_m": 1.0881626155700985e-09,
+    "minimum_abs_depth_residual_m": 1.0077748080483673e-09
+  },
+  "git_head": "7ea4e942a135373f8b8fc25aa311203b7d72c831",
+  "input_identity": {
+    "binary_sha256": "8296dc2a9b46ecd015ba9f5bfd37bbdbccff4e238bd575bf90900e1b8119567e",
+    "eb04_results_sha256": "56f38bb6696b682f77d47c492759417d8e28975c45497d9280a566fedc6831d2",
+    "eb04a_results_sha256": "8208c12e608a47e57c0f9d1c47d10e95ffd01c6b649e119cba3448abeb7f3657",
+    "executable_source_diff_sha256": "471f207b2fa808da6d7b13b7c714f78d48ea0c817326524ba4f5c8fe9b6ac269",
+    "frozen_input_manifest_sha256": "641544e187b345a0c8f2d3c37858e0dd04c06ab776bb9a616983b4838aba6f19"
+  },
+  "population": {
+    "cell_counts": {
+      "L": 2,
+      "LS": 12,
+      "S": 10
+    },
+    "classification_counts": {
+      "CONDUCTIVITY_TEMPERATURE_BELOW_ABSOLUTE_ZERO": 17,
+      "PRIOR_LAYER_THICKNESS_AGGREGATE_MISMATCH": 2,
+      "SATURATION_VAPOR_PRESSURE_UNDERFLOW": 5
+    },
+    "geometry_count": 2,
+    "target_count": 24,
+    "thermal_count": 22
+  },
+  "prospective_signatures": [
+    {
+      "evidence": "22/22 reconstruct; maximum temperature residual 0.000e+00 degC",
+      "signature": "VANISHING_MASS_RETAINED_COLD_CONTENT",
+      "status": "SUPPORTED"
+    },
+    {
+      "evidence": "20/22 are S/LS and 20/20 have prior-day mass export plus negative latent energy; 2/22 L-only failures prove sublimation is not necessary; the unpublished boundary-crossing substep prevents an amplification claim",
+      "signature": "SUBLIMATION_AMPLIFIED_THIN_PACK_COOLING",
+      "status": "INCONCLUSIVE_FOR_TERMINAL_AMPLIFICATION"
+    },
+    {
+      "evidence": "22/22 rejected slices contain one layer and maximum slice depth is 8.072e-05 m, but the error does not label active versus lower; 19/22 complete chronologies contain a lower volume",
+      "signature": "LOWER_LAYER_DECOUPLED_AT_FAILURE",
+      "status": "INCONCLUSIVE_SNAPSHOT_ROLE_UNLABELED"
+    },
+    {
+      "evidence": "17 impossible-temperature states reject upstream of conductivity; five valid-Kelvin states underflow inside the SNOBAL vapor-pressure conductivity dependency",
+      "signature": "NOT_CONDUCTIVITY_CONSTITUTIVE",
+      "status": "REJECTED"
+    },
+    {
+      "evidence": "2/2 residuals equal the depth of one layer excluded by the SWE filter",
+      "signature": "GEOMETRY_ROUNDOFF_SCALE",
+      "status": "SUPPORTED"
+    },
+    {
+      "evidence": "control-volume conductivity rejects before the current carrier is evaluated or a successful daily row is published",
+      "signature": "CURRENT_SUBSTEP_FLUX_IDENTIFIABLE_FROM_RETAINED_FAILURE",
+      "status": "REJECTED"
+    }
+  ],
+  "root_cause_assignment": {
+    "conductivity": "downstream sentinel for 17; numerical/constitutive underflow site for five",
+    "geometry_2": "dimensionally inconsistent fragment filter/closure boundary; EB-04D",
+    "impossible_temperature_17": "positive cold content on vanishing mass; boundary-crossing driver unresolved; EB-04C",
+    "sublimation_role": "strong prior association and mechanistic contributor in 20/22, not necessary cause; terminal amplification unproven",
+    "vapor_pressure_underflow_5": "valid-Kelvin extreme-cold input reaches SNOBAL numerical/constitutive domain limit; EB-04C"
+  },
+  "schema": "snow-surface-eb04b-coupled-dynamics-v1",
+  "source_ordering": {
+    "current_failing_substep_carrier_not_evaluated_before_state_rejection": true,
+    "negative_energy_has_no_domain_bound_before_typed_temperature_guard": true,
+    "source": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+    "source_sha256": "3b03d282a4f805a7c31116dbe4a51868021f1e0de34ce64b402a0b6396502de2",
+    "state_guard_before_carrier_before_conduction_before_energy_before_mass_removal": true
+  },
+  "thermal_summary": {
+    "maximum_absolute_zero_boundary_ratio": 11.355157123333235,
+    "maximum_rejected_slice_to_last_success_pack_mass_ratio": 0.05957301046512095,
+    "maximum_temperature_reconstruction_residual_c": 0.0,
+    "maximum_terminal_cold_content_j_m2": 6056.356022313865,
+    "maximum_terminal_mass_swe_m": 1.0142595423003564e-05,
+    "median_rejected_slice_to_last_success_pack_mass_ratio": 2.7692715968451242e-05,
+    "minimum_absolute_zero_boundary_ratio": 0.9751303461605266,
+    "minimum_rejected_slice_to_last_success_pack_mass_ratio": 1.0224114006709426e-06,
+    "minimum_terminal_cold_content_j_m2": 79.13069253878945,
+    "minimum_terminal_mass_swe_m": 1.200332613000013e-07,
+    "terminal_one_layer_count": 22
+  }
+}

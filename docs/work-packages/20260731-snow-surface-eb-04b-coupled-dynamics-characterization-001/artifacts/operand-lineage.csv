@@ -1,0 +1,15 @@
+field,units,basis,source,role
+runtime_swe_after_m,m,water-equivalent depth,EB-04A daily trace,authoritative state
+stage3_cold_content_after_j_m2,J m^-2,hillslope area,EB-04A daily trace,authoritative state
+snow_layer_minimum_temperature_after_c,degC,layer state,EB-04A daily trace,authoritative state
+sublimation_m,m,water-equivalent depth,EB-04A daily trace,authoritative mass flux
+stage3_latent_energy_j_m2,J m^-2,hillslope area,EB-04A daily trace,authoritative energy flux
+stage3_shortwave_energy_j_m2,J m^-2,hillslope area,EB-04A daily trace,authoritative energy flux
+stage3_longwave_energy_j_m2,J m^-2,hillslope area,EB-04A daily trace,authoritative energy flux
+stage3_conduction_energy_j_m2,J m^-2,whole pack,EB-04A daily trace,diagnostic cancellation
+stage3_refrozen_liquid_m,m,water-equivalent depth,EB-04A daily trace,authoritative state change
+snow_layer_depth_sum_after_m,m,physical depth,EB-04A daily trace,authoritative aggregate
+typed_snapshot_temperature_c,degC,rejected control volume,EB-04A error snapshot,authoritative rejected state
+typed_snapshot_mass_swe_m,m,water-equivalent depth,EB-04A error snapshot,authoritative rejected state
+typed_snapshot_cold_content_j_m2,J m^-2,hillslope area,EB-04A error snapshot,authoritative rejected state
+reconstructed_temperature_c,degC,rejected control volume,independent EB-04B calculation,diagnostic reconstruction

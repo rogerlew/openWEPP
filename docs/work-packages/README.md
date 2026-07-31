@@ -340,8 +340,10 @@ State as of `2026-07-30 UTC`:
   promotion are inadmissible. Seven figures with Markdown sidecars retain the
   completed and partial evidence. Missing retained shortwave and signed
   latent/mass operands prevent the declared anti-tautological reconstructions,
-  so the package holds while the stop-loss admits only bounded EB-05 assurance
-  closeout.
+  so the package holds. The campaign has completed 04A observability/state
+  capture and 04B dynamics characterization. Independently admitted 04C/04D
+  defect closure and 04E runtime qualification precede a freshly preregistered
+  04R factorial; EB-05 assurance closeout is deferred.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5066,13 +5068,38 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260731-snow-surface-eb-04b-coupled-dynamics-characterization-001/` —
+  EXECUTED / COMPLETE / PASS: retained an exact 83,232-row chronology across all
+  24 EB-04A failures without rerunning EB-04 or changing production physics.
+  Seventeen cases cross below absolute zero from positive cold content on
+  vanishing mass; five valid-Kelvin states underflow in the SNOBAL
+  saturation-vapor-pressure dependency. Sublimation contributes in 20/22
+  thermal cases but is not necessary, and the unpublished crossing substep
+  leaves terminal amplification inconclusive. The two geometry failures equal
+  an SWE fragment filtered below `1e-9 m` whose density-derived depth remains
+  above the independent depth tolerance. Five accessible figures with Markdown
+  sidecars support the assignment. EB-04C and EB-04D are independently
+  admitted, with EB-04C recommended first.
+- `20260730-snow-surface-eb-04a-failure-observability-state-capture-001/` —
+  COMPLETE / PASS: all 24 frozen EB-04 failures reproduced on the same day
+  with exact typed state. The former masked conductivity family decomposes
+  into 17 below-absolute-zero projections and five extreme-cold
+  saturation-vapor-pressure underflows; two approximately `1e-9 m`
+  prior-layer depth mismatches remain separate. Published shortwave, signed
+  vapor mass, and latent conversion operands independently close mass,
+  surface-energy, and latent/mass ledgers. No physics changed. EB-04B
+  subsequently completed the coupled chronology and causal characterization.
 - `20260730-snow-surface-eb-04-factorial-execution-adjudication-001/` —
   EXECUTED / HOLD / NONPROMOTION: the single frozen round completed B 12/12, L
   10/12, S 2/12, and LS 0/12 lanes. Twenty-two masked conductivity-path and two
   prior-layer thickness rejections prevent scientific LS scoring. The retained
   trace lacks shortwave and the signed latent/mass operands required by the
-  package's anti-tautological reconstruction gates; no rerun, tuning, or
-  promotion is authorized.
+  package's anti-tautological reconstruction gates. EB-04 remains frozen; the
+  04A observability/state capture and 04B dynamics characterization are
+  complete. EB-04C thermal-state/vapor-pressure and EB-04D layer-geometry
+  defect closure are independently admitted, followed by runtime qualification
+  and a new preregistered 04R experiment. No tuning, promotion, or rewriting of
+  EB-04 is authorized.
 - `20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` —
   EXECUTED / HOLD / MODEL LIMITATION: B/L and local closure pass, but real S/LS
   execution reaches the Stage 3 absolute-zero cold-content bound with material

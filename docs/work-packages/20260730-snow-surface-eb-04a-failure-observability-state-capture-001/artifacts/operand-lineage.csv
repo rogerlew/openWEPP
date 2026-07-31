@@ -1,0 +1,13 @@
+field,unit,basis,producer,authority,role
+stage3_shortwave_energy_j_m2,J m^-2,daily sum of substeps,Stage 3 hourly surface-energy carrier,SC-SNOWENERGY-001,authoritative diagnostic operand
+stage3_vapor_mass_exchange_kg_m2,kg m^-2,daily signed sum of substeps,Stage 3 turbulent exchange,SC-SNOWENERGY-001,authoritative diagnostic operand
+stage3_latent_mass_energy_j_m2,J m^-2,daily sum of signed mass times temperature-specific latent heat,Stage 3 shared vapor-latent carrier,SC-SNOWENERGY-001,independent-reconstruction operand
+stage3_hourly_net_shortwave_w_m2,W m^-2,24 hourly duration-weighted means,Stage 3 hourly surface-energy diagnostics,SC-SNOWENERGY-001,independent aggregation operand
+stage3_hourly_net_longwave_w_m2,W m^-2,24 hourly duration-weighted means,Stage 3 hourly surface-energy diagnostics,SC-SNOWENERGY-001,independent aggregation operand
+stage3_hourly_vapor_mass_exchange_kg_m2,kg m^-2,24 signed hourly totals,Stage 3 turbulent exchange,SC-SNOWENERGY-001,independent mass operand
+stage3_hourly_latent_heat_j_kg,J kg^-1,24 mass-weighted effective hourly values,Stage 3 shared vapor-latent carrier,SC-SNOWENERGY-001,independent latent conversion operand
+stage3_hourly_latent_flux_w_m2,W m^-2,24 hourly means,Stage 3 shared vapor-latent carrier,SC-SNOWENERGY-001,independent latent-energy operand
+conductivity_density_kg_m3,kg m^-3,rejected layer,snow layer state,SC-SNOWENERGY-001,replay input
+conductivity_temperature_c,degree C,rejected control volume,Stage 3 cold-content projection,SC-SNOWENERGY-001,replay input
+conductivity_pressure_pa,Pa,rejected substep,elevation-derived pressure,SC-SNOWENERGY-001,replay input
+prior_layers,m SWE and m thickness,failed density handoff,persistent snow layer vector,SC-SNOWFREEZE-001,replay state

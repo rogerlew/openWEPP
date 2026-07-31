@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `EB-04 executed / hold / nonpromotion; EB-05 closeout admitted` | The single frozen 48-cell round completed B 12/12, L 10/12, S 2/12, and LS 0/12. Twenty-two masked conductivity-path and two prior-layer thickness rejections prevent LS scoring and invoke the stop-loss. EB-04 also lacks retained shortwave and the signed latent/mass operands required by its anti-tautological reconstruction gates. Execute bounded EB-05 assurance closeout only; no promotion, tuning, or EB-04 rerun is authorized. |
+| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `EB-04B complete; EB-04C/04D admitted` | EB-04B assigns 17 impossible vanishing-mass thermal states and five valid-Kelvin vapor-pressure underflows to 04C, and two dimensionally inconsistent fragment-filter geometry failures to 04D. The packages may proceed independently; 04C is recommended first. Then run 04E corrected-population qualification before a fresh preregistered 04R factorial. EB-05 assurance remains deferred; no coefficient tuning, guard relaxation, promotion, or rewriting of EB-04 is authorized. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 

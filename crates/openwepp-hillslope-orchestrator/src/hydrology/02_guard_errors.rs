@@ -1,9 +1,50 @@
 use std::error::Error;
 use std::fmt;
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct SnowStage3ConductivityError {
+    pub phase_class: HillslopeKernelPhaseClass,
+    pub source: openwepp_meteorology::MeteorologyError,
+    pub layer_index: usize,
+    pub layer: DirectSnowLayerState,
+    pub control_volume_layers: Vec<DirectSnowLayerState>,
+    pub control_volume_temperature: openwepp_unit_boundary::TemperatureCelsius,
+    pub atmospheric_pressure_pa: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SnowLayerAggregateMismatchError {
+    pub phase_class: HillslopeKernelPhaseClass,
+    pub symbol: &'static str,
+    pub value: f64,
+    pub expected: f64,
+    pub prior_swe_m: f64,
+    pub prior_depth_m: f64,
+    pub prior_layers: Vec<DirectSnowLayerState>,
+}
+
+impl SnowLayerAggregateMismatchError {
+    #[must_use]
+    pub fn replay_value(&self) -> f64 {
+        let retained_layers = self
+            .prior_layers
+            .iter()
+            .filter(|layer| layer.mass_swe_m > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M);
+        match self.symbol {
+            "prior_layers.mass_swe_m" => retained_layers.map(|layer| layer.mass_swe_m).sum(),
+            "prior_layers.thickness_m" => {
+                retained_layers.map(|layer| layer.thickness_m).sum()
+            }
+            _ => f64::NAN,
+        }
+    }
+}
+
 /// Typed guard failures for WB11 hydrology production kernels.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Wb11HydrologyKernelGuardError {
+    SnowStage3Conductivity(Box<SnowStage3ConductivityError>),
+    SnowLayerAggregateMismatch(Box<SnowLayerAggregateMismatchError>),
     MissingRequiredStateSymbol {
         phase_class: HillslopeKernelPhaseClass,
         symbol: BoundarySymbol,
@@ -93,6 +134,8 @@ impl Wb11HydrologyKernelGuardError {
             | Self::Erod18NonFiniteSymbol { .. } => BoundaryClass::NonFinite,
             Self::StateSymbolOutOfRange { .. }
             | Self::FluxSymbolOutOfRange { .. }
+            | Self::SnowStage3Conductivity(_)
+            | Self::SnowLayerAggregateMismatch(_)
             | Self::Erod13DomainViolation { .. }
             | Self::Erod14DomainViolation { .. }
             | Self::Erod18DomainViolation { .. } => BoundaryClass::DomainViolation,
@@ -102,6 +145,9 @@ impl Wb11HydrologyKernelGuardError {
     #[must_use]
     pub fn code(&self) -> String {
         match self {
+            Self::SnowStage3Conductivity(_) | Self::SnowLayerAggregateMismatch(_) => {
+                return String::from("HKERNEL-WB14-RUNOFF-E-003");
+            }
             Self::Erod13MissingRequiredSymbol { .. } => {
                 return String::from("HKERNEL-EROD13-CORE-E-001");
             }
@@ -138,7 +184,9 @@ impl Wb11HydrologyKernelGuardError {
             | Self::NonFiniteFluxSymbol { phase_class, .. } => (phase_class, "002"),
             Self::StateSymbolOutOfRange { phase_class, .. }
             | Self::FluxSymbolOutOfRange { phase_class, .. } => (phase_class, "003"),
-            Self::Erod13MissingRequiredSymbol { .. }
+            Self::SnowStage3Conductivity(_)
+            | Self::SnowLayerAggregateMismatch(_)
+            | Self::Erod13MissingRequiredSymbol { .. }
             | Self::Erod13NonFiniteSymbol { .. }
             | Self::Erod13DomainViolation { .. }
             | Self::Erod14MissingRequiredSymbol { .. }
@@ -166,6 +214,9 @@ impl Wb11HydrologyKernelGuardError {
 
     fn display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
         match self {
+            Self::SnowStage3Conductivity(_) | Self::SnowLayerAggregateMismatch(_) => {
+                unreachable!("snow diagnostic errors use their typed display")
+            }
             Self::MissingRequiredStateSymbol { .. }
             | Self::MissingRequiredFluxSymbol { .. }
             | Self::NonFiniteStateSymbol { .. }
@@ -379,11 +430,66 @@ impl HydrologyGuardErrorDisplayParts<'_> {
 
 impl fmt::Display for Wb11HydrologyKernelGuardError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.display_parts().fmt_with_code(&self.code(), f)
+        let code = self.code();
+        match self {
+            Self::SnowStage3Conductivity(snapshot) => {
+                let SnowStage3ConductivityError {
+                phase_class,
+                source,
+                layer_index,
+                layer,
+                control_volume_layers,
+                control_volume_temperature,
+                atmospheric_pressure_pa,
+            } = snapshot.as_ref();
+                write!(
+                f,
+                "{code}: phase class {} snow Stage 3 conductivity evaluation failed: {source}; \
+                 layer_index={layer_index}, layer_mass_swe_m={}, layer_thickness_m={}, \
+                 layer_density_kg_m3={}, layer_temperature_c={}, layer_cold_content_j_m2={}, \
+                 control_volume_temperature_c={}, atmospheric_pressure_pa={}, \
+                 control_volume_layers={control_volume_layers:?}",
+                phase_class.as_str(),
+                layer.mass_swe_m,
+                layer.thickness_m,
+                layer.density_kg_m3,
+                layer.temperature_c,
+                layer.cold_content_j_m2,
+                control_volume_temperature.as_celsius(),
+                atmospheric_pressure_pa,
+            )
+            }
+            Self::SnowLayerAggregateMismatch(snapshot) => {
+                let SnowLayerAggregateMismatchError {
+                phase_class,
+                symbol,
+                value,
+                expected,
+                prior_swe_m,
+                prior_depth_m,
+                prior_layers,
+                } = snapshot.as_ref();
+                write!(
+                f,
+                "{code}: phase class {} snow layer aggregate {symbol}={value} does not match \
+                 expected {expected}; prior_swe_m={prior_swe_m}, \
+                 prior_depth_m={prior_depth_m}, prior_layers={prior_layers:?}",
+                phase_class.as_str(),
+                )
+            }
+            _ => self.display_parts().fmt_with_code(&code, f),
+        }
     }
 }
 
-impl Error for Wb11HydrologyKernelGuardError {}
+impl Error for Wb11HydrologyKernelGuardError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::SnowStage3Conductivity(snapshot) => Some(&snapshot.source),
+            _ => None,
+        }
+    }
+}
 
 #[cfg(test)]
 mod cqr_row5_guard_error_tests {
