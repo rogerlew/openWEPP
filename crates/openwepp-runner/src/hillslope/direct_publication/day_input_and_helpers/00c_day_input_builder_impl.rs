@@ -1293,6 +1293,10 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_cold_content_export_j_m2\":{},\
 \"stage3_mass_latent_identity_residual_j_m2\":{},\
 \"stage3_unused_positive_energy_j_m2\":{},\
+\"stage3_thermal_domain_suspended_seconds\":{},\
+\"stage3_minimum_unresolved_thermal_mass_kg_m2\":{},\
+\"stage3_lower_thermal_volume_collapsed_seconds\":{},\
+\"stage3_minimum_collapsed_lower_mass_kg_m2\":{},\
 \"stage3_refrozen_liquid_m\":{}",
         diagnostics.enabled,
         direct_production_trace_number(diagnostics.cold_content_before_j_m2),
@@ -1316,6 +1320,10 @@ fn direct_snow_trace_stage3_fields(
             diagnostics.mass_latent_identity_residual_j_m2
         ),
         direct_production_trace_number(diagnostics.unused_positive_energy_j_m2),
+        direct_production_trace_number(diagnostics.thermal_domain_suspended_seconds),
+        direct_production_trace_number(diagnostics.minimum_unresolved_thermal_mass_kg_m2),
+        direct_production_trace_number(diagnostics.lower_thermal_volume_collapsed_seconds),
+        direct_production_trace_number(diagnostics.minimum_collapsed_lower_mass_kg_m2),
         direct_production_trace_number(diagnostics.refrozen_liquid_m),
     )
 }

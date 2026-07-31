@@ -17,7 +17,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     let freeze = read(SNOW_FREEZE_CONTRACT);
 
     for required in [
-        "contract_version: 3",
+        "contract_version: 4",
         "INV-SNOWENERGY-015",
         "INV-SNOWENERGY-016",
         "INV-SNOWENERGY-017",
@@ -29,6 +29,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
         "INV-SNOWENERGY-023",
         "INV-SNOWENERGY-024",
         "INV-SNOWENERGY-025",
+        "INV-SNOWENERGY-026",
         "KTS+efcon",
         "snow_active_lower_conduction_w_m2",
         "layered_thermal_liquid_v1",
@@ -56,6 +57,35 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
         assert!(
             freeze.contains(required),
             "{SNOW_FREEZE_CONTRACT} missing {required}"
+        );
+    }
+}
+
+#[test]
+fn eb04c_contract_binds_exact_minimum_resolved_thermal_domain() {
+    let energy = read(SNOW_ENERGY_CONTRACT);
+    let producer = read(DIRECT_TRACE_PRODUCER);
+    for required in [
+        "m_s <= m_res = 1 kg m^-2",
+        "0 < m_l < m_res",
+        "m_l = 1 kg m^-2",
+        "Q_shortwave = Q_longwave = Q_latent = 0",
+        "m_v = m_sub = 0",
+        "G_0 = Q_E = 0",
+        "INV-SNOWENERGY-026",
+        "CoE remains authoritative",
+    ] {
+        assert!(energy.contains(required), "contract missing {required}");
+    }
+    for required in [
+        "stage3_thermal_domain_suspended_seconds",
+        "stage3_minimum_unresolved_thermal_mass_kg_m2",
+        "stage3_lower_thermal_volume_collapsed_seconds",
+        "stage3_minimum_collapsed_lower_mass_kg_m2",
+    ] {
+        assert!(
+            producer.contains(required),
+            "trace producer missing {required}"
         );
     }
 }

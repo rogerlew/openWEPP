@@ -19,6 +19,7 @@ const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
 const STAGE3_ACTIVE_LAYER_MAX_DEPTH_M: f64 = 0.25;
 const STAGE3_NORMAL_TIMESTEP_MASS_KG_M2: f64 = 60.0;
 const STAGE3_MEDIUM_TIMESTEP_MASS_KG_M2: f64 = 10.0;
+const STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M: f64 = 0.001;
 const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
 const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
 const STAGE3_LIQUID_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
@@ -473,9 +474,15 @@ impl Wb11HydrologyKernel {
 
         let mut cold_content_by_layer = Vec::with_capacity(layers.len());
         let mut cold_content_before_j_m2 = 0.0;
+        let initially_unresolved = Self::stage3_total_ice_mass_swe_m(layers)
+            <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
         for layer in layers.iter() {
             Self::validate_stage3_layer(phase_class, layer)?;
-            let cold_content = Self::stage3_layer_cold_content_j_m2(layer);
+            let cold_content = if initially_unresolved {
+                layer.cold_content_j_m2
+            } else {
+                Self::stage3_layer_cold_content_j_m2(layer)
+            };
             cold_content_by_layer.push(cold_content);
             cold_content_before_j_m2 += cold_content;
         }
@@ -492,6 +499,10 @@ impl Wb11HydrologyKernel {
         let mut cold_content_export_j_m2 = 0.0;
         let mut mass_latent_identity_residual_j_m2 = 0.0;
         let mut unused_positive_energy_j_m2 = 0.0;
+        let mut thermal_domain_suspended_seconds = 0.0;
+        let mut minimum_unresolved_thermal_mass_kg_m2: f64 = 0.0;
+        let mut lower_thermal_volume_collapsed_seconds = 0.0;
+        let mut minimum_collapsed_lower_mass_kg_m2: f64 = 0.0;
         let mut hourly_surface_energy = [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24];
         for (hour_index, hourly) in inputs.hourly.iter().enumerate() {
             if layers.is_empty() {
@@ -502,8 +513,31 @@ impl Wb11HydrologyKernel {
             let mut hour_latent_energy_j_m2 = 0.0;
             let mut hour_latent_mass_energy_j_m2 = 0.0;
             while elapsed_seconds < STAGE3_SECONDS_PER_HOUR && !layers.is_empty() {
+                let total_mass_swe_m = Self::stage3_total_ice_mass_swe_m(layers);
+                if total_mass_swe_m <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M {
+                    let total_mass_kg_m2 = total_mass_swe_m * STAGE3_RHO_WATER_KG_M3;
+                    thermal_domain_suspended_seconds +=
+                        STAGE3_SECONDS_PER_HOUR - elapsed_seconds;
+                    minimum_unresolved_thermal_mass_kg_m2 =
+                        if minimum_unresolved_thermal_mass_kg_m2 > 0.0 {
+                            minimum_unresolved_thermal_mass_kg_m2.min(total_mass_kg_m2)
+                        } else {
+                            total_mass_kg_m2
+                        };
+                    break;
+                }
                 active_layer_count =
                     Self::align_stage3_active_layer_boundary(layers, &mut cold_content_by_layer);
+                let (_, lower_mass_swe_m) =
+                    Self::stage3_control_volume_masses_swe_m(layers, active_layer_count);
+                let collapsed_lower_mass_kg_m2 = if Self::
+                    stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m)
+                {
+                    active_layer_count = layers.len();
+                    Some(lower_mass_swe_m * STAGE3_RHO_WATER_KG_M3)
+                } else {
+                    None
+                };
                 Self::normalize_stage3_control_volume_temperature(
                     &mut layers[..active_layer_count],
                     &mut cold_content_by_layer[..active_layer_count],
@@ -521,6 +555,15 @@ impl Wb11HydrologyKernel {
                     Self::stage3_substep_seconds(layers, active_layer_count);
                 let substep_seconds =
                     requested_substep_seconds.min(STAGE3_SECONDS_PER_HOUR - elapsed_seconds);
+                if let Some(collapsed_mass_kg_m2) = collapsed_lower_mass_kg_m2 {
+                    lower_thermal_volume_collapsed_seconds += substep_seconds;
+                    minimum_collapsed_lower_mass_kg_m2 =
+                        if minimum_collapsed_lower_mass_kg_m2 > 0.0 {
+                            minimum_collapsed_lower_mass_kg_m2.min(collapsed_mass_kg_m2)
+                        } else {
+                            collapsed_mass_kg_m2
+                        };
+                }
                 let active_state = Self::stage3_control_volume_state(
                     phase_class,
                     &layers[..active_layer_count],
@@ -646,11 +689,13 @@ impl Wb11HydrologyKernel {
             );
             hourly_surface_energy[hour_index] = hour_diagnostics;
         }
+        let reconstruct_liquid_temperature = thermal_domain_suspended_seconds == 0.0;
         let (routed_liquid_m, retained_delta_m, refrozen_liquid_m) =
             Self::route_stage3_liquid_through_layers(
                 incoming_liquid_m,
                 layers,
                 &mut cold_content_by_layer,
+                reconstruct_liquid_temperature,
             );
 
         let cold_content_after_j_m2 = cold_content_by_layer.iter().sum::<f64>();
@@ -716,6 +761,10 @@ impl Wb11HydrologyKernel {
             cold_content_export_j_m2,
             mass_latent_identity_residual_j_m2,
             unused_positive_energy_j_m2,
+            thermal_domain_suspended_seconds,
+            minimum_unresolved_thermal_mass_kg_m2,
+            lower_thermal_volume_collapsed_seconds,
+            minimum_collapsed_lower_mass_kg_m2,
             hourly_surface_energy,
         })
     }
@@ -948,8 +997,9 @@ impl Wb11HydrologyKernel {
             layer.density_kg_m3 = aggregate.density_after_kg_m3;
             layer.thickness_m = layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3
                 / aggregate.density_after_kg_m3;
-            layer.cold_content_j_m2 = Self::stage3_layer_cold_content_j_m2(layer);
-            layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
+            if aggregate.swe_after_m > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M {
+                layer.cold_content_j_m2 = Self::stage3_layer_cold_content_j_m2(layer);
+            }
             layer.refrozen_liquid_m = layer.refrozen_liquid_m.max(0.0);
             layer.liquid_water_m = layer.liquid_water_m.max(0.0);
         }
@@ -976,6 +1026,7 @@ impl Wb11HydrologyKernel {
         incoming_liquid_m: f64,
         layers: &mut [DirectSnowLayerState],
         cold_content_by_layer: &mut [f64],
+        reconstruct_temperature: bool,
     ) -> (f64, f64, f64) {
         let mut liquid_to_route_m = incoming_liquid_m;
         let mut retained_delta_m = 0.0;
@@ -998,9 +1049,11 @@ impl Wb11HydrologyKernel {
             retained_delta_m += retained_here_m;
 
             layer.liquid_water_m += retained_here_m;
-            layer.refrozen_liquid_m = refrozen_here_m;
+            layer.refrozen_liquid_m += refrozen_here_m;
             layer.cold_content_j_m2 = (*cold_content).max(0.0);
-            layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
+            if reconstruct_temperature {
+                layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
+            }
         }
         (liquid_to_route_m.max(0.0), retained_delta_m, refrozen_liquid_m)
     }
@@ -1058,6 +1111,28 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )
+    }
+
+    fn stage3_total_ice_mass_swe_m(layers: &[DirectSnowLayerState]) -> f64 {
+        layers.iter().map(|layer| layer.mass_swe_m).sum()
+    }
+
+    fn stage3_control_volume_masses_swe_m(
+        layers: &[DirectSnowLayerState],
+        active_layer_count: usize,
+    ) -> (f64, f64) {
+        let active_mass_swe_m = Self::stage3_total_ice_mass_swe_m(&layers[..active_layer_count]);
+        let lower_mass_swe_m = if active_layer_count < layers.len() {
+            Self::stage3_total_ice_mass_swe_m(&layers[active_layer_count..])
+        } else {
+            0.0
+        };
+        (active_mass_swe_m, lower_mass_swe_m)
+    }
+
+    fn stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m: f64) -> bool {
+        lower_mass_swe_m > 0.0
+            && lower_mass_swe_m < STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
     }
 
     fn stage3_layer_cold_content_j_m2(layer: &DirectSnowLayerState) -> f64 {
@@ -2145,6 +2220,23 @@ impl Wb11HydrologyKernel {
 #[cfg(test)]
 mod cqr_row5_tests {
     use super::*;
+
+    #[test]
+    fn eb04c_lower_volume_threshold_is_strict_on_native_swe() {
+        let threshold = STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
+        let just_below = f64::from_bits(threshold.to_bits() - 1);
+        let just_above = f64::from_bits(threshold.to_bits() + 1);
+
+        assert!(Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
+            just_below
+        ));
+        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
+            threshold
+        ));
+        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
+            just_above
+        ));
+    }
 
     #[test]
     fn snow_density_guard_error_maps_all_error_variants() {

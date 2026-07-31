@@ -56,6 +56,321 @@ fn inputs(
     }
 }
 
+fn set_single_layer_mass(
+    inputs: &mut DirectActiveSnowPartitionInputs,
+    mass_swe_m: f64,
+    temperature_c: f64,
+) {
+    let density_kg_m3 = 500.0;
+    let depth_m = mass_swe_m * 1_000.0 / density_kg_m3;
+    let cold_content_j_m2 = -mass_swe_m * 1_000.0 * 2_100.0 * temperature_c;
+    let mut layer = DirectSnowLayerState::new(mass_swe_m, depth_m, density_kg_m3, 12.0);
+    layer.temperature_c = temperature_c;
+    layer.cold_content_j_m2 = cold_content_j_m2;
+    inputs.runtime_swe_m = mass_swe_m;
+    inputs.runtime_depth_m = depth_m;
+    inputs.runtime_density_kg_m3 = density_kg_m3;
+    inputs.coe_boundary_depth_m = depth_m;
+    inputs.coe_boundary_density_kg_m3 = density_kg_m3;
+    inputs.snow_layers = vec![layer];
+}
+
+#[test]
+fn minimum_resolved_thermal_mass_preserves_state_and_suspends_exchange() {
+    for mass_swe_m in [0.000_999_f64, 0.001_f64] {
+        let mut candidate = inputs(
+            SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+            SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+        );
+        set_single_layer_mass(&mut candidate, mass_swe_m, -20.0);
+        candidate.snow_layers[0].refrozen_liquid_m = mass_swe_m * 0.1;
+        let expected = candidate.snow_layers[0];
+
+        let result =
+            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+                .expect("sub-resolution Stage 3 domain");
+        let diagnostics = result.stage3_diagnostics;
+
+        assert!((diagnostics.thermal_domain_suspended_seconds - 86_400.0).abs() <= f64::EPSILON);
+        assert!(
+            (diagnostics.minimum_unresolved_thermal_mass_kg_m2 - mass_swe_m * 1_000.0).abs()
+                <= 1.0e-12
+        );
+        assert!(diagnostics.shortwave_energy_j_m2.abs() <= f64::EPSILON);
+        assert!(diagnostics.longwave_energy_j_m2.abs() <= f64::EPSILON);
+        assert!(diagnostics.latent_energy_j_m2.abs() <= f64::EPSILON);
+        assert!(diagnostics.vapor_mass_exchange_kg_m2.abs() <= f64::EPSILON);
+        assert!(diagnostics.sublimation_m.abs() <= f64::EPSILON);
+        assert!(diagnostics.conduction_energy_j_m2.abs() <= f64::EPSILON);
+        assert!(diagnostics.surface_energy_j_m2.abs() <= f64::EPSILON);
+        assert!(result.routed_melt_m.abs() <= f64::EPSILON);
+        assert_eq!(result.snow_layers_after.len(), 1);
+        assert!((result.snow_layers_after[0].mass_swe_m - expected.mass_swe_m).abs() <= 1.0e-12);
+        assert!(
+            (result.snow_layers_after[0].cold_content_j_m2 - expected.cold_content_j_m2).abs()
+                <= 1.0e-9
+        );
+        assert!(
+            (result.snow_layers_after[0].temperature_c - expected.temperature_c).abs()
+                <= f64::EPSILON
+        );
+        assert!(
+            (result.snow_layers_after[0].refrozen_liquid_m - expected.refrozen_liquid_m).abs()
+                <= f64::EPSILON
+        );
+    }
+}
+
+#[test]
+fn mass_above_resolved_boundary_resumes_existing_stage3_exchange() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    set_single_layer_mass(&mut candidate, 0.001_001, -20.0);
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("resolved Stage 3 domain");
+    let diagnostics = result.stage3_diagnostics;
+
+    assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
+    assert!(diagnostics.minimum_unresolved_thermal_mass_kg_m2.abs() <= f64::EPSILON);
+    assert!(diagnostics.longwave_energy_j_m2.abs() > f64::EPSILON);
+    assert!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .any(|hour| hour.substep_count > 0)
+    );
+}
+
+#[test]
+fn authoritative_mass_increase_resumes_from_retained_unresolved_state() {
+    let mut unresolved = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    unresolved.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    set_single_layer_mass(&mut unresolved, 0.001, -20.0);
+    let suspended =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&unresolved)
+            .expect("exact-boundary state must suspend");
+    let retained_cold_content_j_m2 = suspended.snow_layers_after[0].cold_content_j_m2;
+
+    let mut resumed = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    resumed.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    let added = DirectSnowLayerState::new(0.000_1, 0.000_2, 500.0, 1.0);
+    resumed.snow_layers = suspended.snow_layers_after;
+    resumed.snow_layers.insert(0, added);
+    resumed.runtime_swe_m = resumed
+        .snow_layers
+        .iter()
+        .map(|layer| layer.mass_swe_m)
+        .sum();
+    resumed.runtime_depth_m = resumed
+        .snow_layers
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .sum();
+    resumed.runtime_density_kg_m3 = resumed.runtime_swe_m * 1_000.0 / resumed.runtime_depth_m;
+    resumed.coe_boundary_depth_m = resumed.runtime_depth_m;
+    resumed.coe_boundary_density_kg_m3 = resumed.runtime_density_kg_m3;
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&resumed)
+        .expect("authoritative mass increase must resume the retained state");
+    let diagnostics = result.stage3_diagnostics;
+
+    assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
+    assert!((diagnostics.cold_content_before_j_m2 - retained_cold_content_j_m2).abs() <= 1.0e-9);
+    assert!(diagnostics.longwave_energy_j_m2.abs() > f64::EPSILON);
+    assert!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .any(|hour| hour.substep_count > 0)
+    );
+}
+
+#[test]
+fn invalid_temperature_guard_remains_fail_closed_above_total_mass_boundary() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    set_single_layer_mass(&mut candidate, 0.001_001, -300.0);
+
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect_err("resolved mass must retain the absolute-zero guard");
+
+    assert!(error.to_string().contains("must be above absolute zero"));
+}
+
+#[test]
+fn sub_resolution_lower_control_volume_collapses_to_one_resolved_volume() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    let mut active = DirectSnowLayerState::new(0.130_5, 0.25, 522.0, 12.0);
+    active.temperature_c = -8.0;
+    active.cold_content_j_m2 = active.mass_swe_m * 1_000.0 * 2_100.0 * 8.0;
+    active.liquid_water_m = 0.000_1;
+    active.refrozen_liquid_m = 0.000_2;
+    let mut lower = DirectSnowLayerState::new(0.000_5, 0.000_5 * 1_000.0 / 522.0, 522.0, 12.0);
+    lower.temperature_c = -8.0;
+    lower.cold_content_j_m2 = lower.mass_swe_m * 1_000.0 * 2_100.0 * 8.0;
+    lower.liquid_water_m = 0.000_000_1;
+    lower.refrozen_liquid_m = 0.000_000_2;
+    candidate.runtime_swe_m = active.mass_swe_m + lower.mass_swe_m;
+    candidate.runtime_depth_m = active.thickness_m + lower.thickness_m;
+    candidate.runtime_density_kg_m3 = 522.0;
+    candidate.coe_boundary_depth_m = candidate.runtime_depth_m;
+    candidate.coe_boundary_density_kg_m3 = candidate.runtime_density_kg_m3;
+    candidate.snow_layers = vec![active, lower];
+    let expected_mass_m = candidate
+        .snow_layers
+        .iter()
+        .map(|layer| layer.mass_swe_m)
+        .sum::<f64>();
+    let expected_liquid_m = candidate
+        .snow_layers
+        .iter()
+        .map(|layer| layer.liquid_water_m)
+        .sum::<f64>();
+    let expected_refrozen_m = candidate
+        .snow_layers
+        .iter()
+        .map(|layer| layer.refrozen_liquid_m)
+        .sum::<f64>();
+    let expected_cold_content_j_m2 = candidate
+        .snow_layers
+        .iter()
+        .map(|layer| layer.cold_content_j_m2)
+        .sum::<f64>();
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("a sub-resolution lower thermal volume must collapse to one volume");
+    let diagnostics = result.stage3_diagnostics;
+
+    assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
+    assert!((diagnostics.lower_thermal_volume_collapsed_seconds - 86_400.0).abs() <= f64::EPSILON);
+    assert!((diagnostics.minimum_collapsed_lower_mass_kg_m2 - 0.5).abs() <= 1.0e-6);
+    assert!(diagnostics.surface_energy_j_m2.abs() > f64::EPSILON);
+    assert!(diagnostics.conduction_energy_j_m2.abs() <= f64::EPSILON);
+    assert!((diagnostics.cold_content_before_j_m2 - expected_cold_content_j_m2).abs() <= 1.0e-9);
+    assert!(
+        (result
+            .snow_layers_after
+            .iter()
+            .map(|layer| layer.mass_swe_m)
+            .sum::<f64>()
+            - expected_mass_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(
+        (result
+            .snow_layers_after
+            .iter()
+            .map(|layer| layer.liquid_water_m)
+            .sum::<f64>()
+            - expected_liquid_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(
+        (result
+            .snow_layers_after
+            .iter()
+            .map(|layer| layer.refrozen_liquid_m)
+            .sum::<f64>()
+            - expected_refrozen_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .all(|hour| hour.lower_layer_present_fraction.abs() <= f64::EPSILON)
+    );
+    assert_stage3_energy_reconstructs(&result);
+}
+
+#[test]
+fn one_kg_m2_lower_control_volume_remains_a_two_volume_solve() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    let mut active = DirectSnowLayerState::new(0.130_5, 0.25, 522.0, 12.0);
+    active.temperature_c = -8.0;
+    active.cold_content_j_m2 = active.mass_swe_m * 1_000.0 * 2_100.0 * 8.0;
+    let mut lower = DirectSnowLayerState::new(0.001, 0.001 * 1_000.0 / 522.0, 522.0, 12.0);
+    lower.temperature_c = -8.0;
+    lower.cold_content_j_m2 = lower.mass_swe_m * 1_000.0 * 2_100.0 * 8.0;
+    candidate.runtime_swe_m = active.mass_swe_m + lower.mass_swe_m;
+    candidate.runtime_depth_m = active.thickness_m + lower.thickness_m;
+    candidate.runtime_density_kg_m3 = 522.0;
+    candidate.coe_boundary_depth_m = candidate.runtime_depth_m;
+    candidate.coe_boundary_density_kg_m3 = candidate.runtime_density_kg_m3;
+    candidate.snow_layers = vec![active, lower];
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("an exact 1 kg m-2 lower volume remains resolved");
+    let diagnostics = result.stage3_diagnostics;
+
+    assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
+    assert!(diagnostics.lower_thermal_volume_collapsed_seconds.abs() <= f64::EPSILON);
+    assert!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .any(|hour| hour.lower_layer_present_fraction > 0.0)
+    );
+}
+
+#[test]
+fn deep_unresolved_pack_preserves_topology_and_stored_state_before_partition() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+    );
+    candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    let mut layer = DirectSnowLayerState::new(0.001, 0.5, 2.0, 12.0);
+    layer.temperature_c = -5.0;
+    layer.cold_content_j_m2 = 0.0;
+    layer.liquid_water_m = 0.000_01;
+    layer.refrozen_liquid_m = 0.000_02;
+    candidate.runtime_swe_m = layer.mass_swe_m;
+    candidate.runtime_depth_m = layer.thickness_m;
+    candidate.runtime_density_kg_m3 = layer.density_kg_m3;
+    candidate.coe_boundary_depth_m = layer.thickness_m;
+    candidate.coe_boundary_density_kg_m3 = layer.density_kg_m3;
+    candidate.snow_layers = vec![layer];
+
+    let mut baseline = candidate.clone();
+    baseline.stage3_liquid_routing_model = SnowStage3LiquidRoutingModel::Disabled;
+    baseline.surface_energy_options.longwave_model = SnowSurfaceLongwaveModel::Disabled;
+    baseline.surface_energy_options.sublimation_model = SnowSurfaceSublimationModel::Disabled;
+    let projected = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&baseline)
+        .expect("CoE projection baseline");
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("unresolved total mass must branch before thermal partition");
+
+    assert_eq!(result.snow_layers_after, projected.snow_layers_after);
+    assert!(
+        (result.stage3_diagnostics.thermal_domain_suspended_seconds - 86_400.0).abs()
+            <= f64::EPSILON
+    );
+}
+
 fn assert_stage3_energy_reconstructs(result: &DirectSnowLiquidPartition) {
     let diagnostics = result.stage3_diagnostics;
     let independently_reconstructed_energy_residual = diagnostics.surface_energy_j_m2
@@ -84,7 +399,11 @@ fn assert_stage3_energy_reconstructs(result: &DirectSnowLiquidPartition) {
         assert!(hour.canopy_temperature_equals_air);
         if hour.substep_count > 0 {
             assert!(hour.active_layer_depth_m > 0.0);
-            assert!(hour.active_layer_depth_m <= 0.25 + 1.0e-12);
+            if diagnostics.lower_thermal_volume_collapsed_seconds > 0.0 {
+                assert!(hour.lower_layer_present_fraction.abs() <= f64::EPSILON);
+            } else {
+                assert!(hour.active_layer_depth_m <= 0.25 + 1.0e-12);
+            }
             assert!([60.0, 900.0, 3_600.0].contains(&hour.minimum_substep_seconds));
             assert!(hour.maximum_active_energy_closure_residual_j_m2 <= 1.0e-6);
             assert!(hour.maximum_lower_energy_closure_residual_j_m2 <= 1.0e-6);

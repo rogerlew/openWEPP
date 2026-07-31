@@ -330,6 +330,10 @@ pub struct DirectSnowStage3Diagnostics {
     pub cold_content_export_j_m2: f64,
     pub mass_latent_identity_residual_j_m2: f64,
     pub unused_positive_energy_j_m2: f64,
+    pub thermal_domain_suspended_seconds: f64,
+    pub minimum_unresolved_thermal_mass_kg_m2: f64,
+    pub lower_thermal_volume_collapsed_seconds: f64,
+    pub minimum_collapsed_lower_mass_kg_m2: f64,
     pub hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics; 24],
 }
 
@@ -359,6 +363,10 @@ impl DirectSnowStage3Diagnostics {
             cold_content_export_j_m2: 0.0,
             mass_latent_identity_residual_j_m2: 0.0,
             unused_positive_energy_j_m2: 0.0,
+            thermal_domain_suspended_seconds: 0.0,
+            minimum_unresolved_thermal_mass_kg_m2: 0.0,
+            lower_thermal_volume_collapsed_seconds: 0.0,
+            minimum_collapsed_lower_mass_kg_m2: 0.0,
             hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
         }
     }

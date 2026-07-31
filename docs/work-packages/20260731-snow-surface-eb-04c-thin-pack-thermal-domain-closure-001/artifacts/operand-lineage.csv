@@ -1,0 +1,13 @@
+operand,units,owner,subresolution_behavior,rejected_alias
+snow_layer_mass,m_SWE,CoE/persistent snow layers,preserved,no deletion or forced liquid conversion
+snow_layer_cold_content,J m^-2,Stage 3 persistent layers,preserved with existing mass-proportional projection,no clamp or reset
+shortwave_energy,J m^-2,Stage 3 carrier,zero,no one-more-substep debit
+longwave_energy,J m^-2,Stage 3 carrier,zero,no air-temperature surrogate
+latent_energy,J m^-2,shared vapor/latent exchange,zero,no independent latent debit
+vapor_mass_exchange,kg m^-2,shared vapor/latent exchange,zero,no epsilon vapor pressure
+sublimation,m SWE,Stage 3 surface removal,zero,no coefficient tuning
+conduction_energy,J m^-2,active/lower solver,zero,no fabricated substrate flux
+thermal_domain_suspended,s,Stage 3 diagnostics,published branch duration,no inference from missing temperature
+thermal_domain_mass,kg m^-2,Stage 3 diagnostics,published retained mass,no depth or water-volume alias
+lower_volume_collapsed,s,Stage 3 diagnostics,published one-volume duration,no suspension alias
+collapsed_lower_mass,kg m^-2,Stage 3 diagnostics,published lower-volume mass,no total-mass alias
