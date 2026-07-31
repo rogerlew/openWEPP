@@ -1,0 +1,21 @@
+field,units,basis,source,consumer,authority,status
+runtime_swe_before_m,m water,whole pack per m2 ground,direct snow trace,independent package reconstruction,SC-SNOWFREEZE-001,authoritative
+accumulation_m,m water,daily amount per m2 ground,direct snow trace,independent package reconstruction,SC-SNOWFREEZE-001,authoritative
+rain_retained_m,m water,daily amount per m2 ground,direct snow trace,independent package reconstruction,SC-SNOWFREEZE-001,authoritative
+sublimation_m,m water,loss-positive daily amount per m2 ground,direct snow trace,independent package reconstruction,SC-SNOWFREEZE-001 INV-085/086,authoritative
+snowpack_swe_loss_m,m water,daily amount per m2 ground,direct snow trace,independent package mass reconstruction,SC-SNOWFREEZE-001,authoritative
+routed_melt_m,m water,daily amount per m2 ground,direct snow trace,runoff-timing diagnostic only,SC-SNOWFREEZE-001,authoritative
+runtime_swe_after_m,m water,whole pack per m2 ground,direct snow trace,independent package reconstruction,SC-SNOWFREEZE-001,authoritative
+stage3_energy_closure_residual_j_m2,J m^-2,daily Stage 3 solve,direct snow trace,threshold audit,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_surface_energy_j_m2,J m^-2,daily Stage 3 solve,direct snow trace,cold-content closure and component time series; not independently reconstructable without shortwave,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_conduction_energy_j_m2,J m^-2,daily internal transfer,direct snow trace,component time series and reconstruction,SC-SNOWFREEZE-001 INV-086,diagnostic
+stage3_longwave_energy_j_m2,J m^-2,daily Stage 3 solve,direct snow trace,component time series and factorial attribution,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_latent_energy_j_m2,J m^-2,daily Stage 3 solve,direct snow trace,component time series; insufficient alone for independent latent/mass reconstruction,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_latent_refreeze_energy_j_m2,J m^-2,daily phase transfer,direct snow trace,energy reconstruction,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_cold_content_export_j_m2,J m^-2,daily vapor-linked export,direct snow trace,energy reconstruction,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_mass_latent_identity_residual_j_m2,J m^-2,daily Stage 3 solve,direct snow trace,producer-carried latent/mass residual threshold audit,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_unused_positive_energy_j_m2,J m^-2,daily unapplied positive energy,direct snow trace,protected-signature and model-limit audit,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+stage3_refrozen_liquid_m,m water,daily phase transfer,direct snow trace,cumulative refreeze trajectory,SC-SNOWFREEZE-001 INV-085/086,diagnostic
+snow_water,mm water,daily state,WAT parquet,observation pairing and figures,public WAT contract,authoritative
+snow_depth,mm,daily state,WAT parquet,observation pairing and figures,public WAT contract,authoritative
+liquid_outflow,mm water,daily amount,WAT parquet,centroid and peak timing,public WAT contract,authoritative

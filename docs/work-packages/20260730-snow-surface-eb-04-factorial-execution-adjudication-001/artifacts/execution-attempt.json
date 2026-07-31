@@ -1,0 +1,18 @@
+{
+  "bounded_round": 1,
+  "command": [
+    ".venv/bin/python",
+    "docs/work-packages/20260730-snow-surface-eb-04-factorial-execution-adjudication-001/tools/run_factorial.py",
+    "--workers",
+    "4"
+  ],
+  "completed_local": "2026-07-30T18:24:08-07:00",
+  "executed_binary_sha256": "9b004d8f4434e227a232e58f5594d1cf0fb61b5a43bf94ff0f667e92e362b4a5",
+  "operator_attestation": "Original fixed round only; failed cells were not retried. Later tool invocations used retained outputs for analysis and figure regeneration only.",
+  "protocol_sha256": "dd6d8c673045d546aefe27ef107cc96f230ef633612ff88eca43eaa3cefce7ee",
+  "retry_policy": "NO_RETRY",
+  "schema": "snow-surface-eb04-execution-attempt-v1",
+  "source_binding_limitation": "The exact executed binary is hash-bound and was built after the diagnostic-field test passed, but the pre-run dirty-tree source-file hash was not retained. Git HEAD records the clean base, not the complete dirty source identity.",
+  "started_local": "2026-07-30T18:19:35-07:00",
+  "status": "COMPLETED_WITH_TYPED_REJECTIONS"
+}

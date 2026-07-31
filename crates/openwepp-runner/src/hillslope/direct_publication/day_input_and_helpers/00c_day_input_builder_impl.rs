@@ -1207,11 +1207,7 @@ fn r7h_direct_production_snow_trace_line(
 \"snow_layer_basal_density_after_kg_m3\":{},\
 \"snow_layer_density_gradient_after_kg_m3\":{},\
 \"snow_layer_minimum_temperature_after_c\":{},\
-\"snow_layer_maximum_temperature_after_c\":{},\
-\"stage3_energy_enabled\":{},\
-\"stage3_cold_content_before_j_m2\":{},\
-\"stage3_cold_content_after_j_m2\":{},\
-\"stage3_energy_closure_residual_j_m2\":{}",
+\"snow_layer_maximum_temperature_after_c\":{}",
         direct_production_trace_number(hyetograph_rainfall_m),
         direct_production_trace_number(snow_lane_state.runtime_swe_m),
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
@@ -1252,14 +1248,47 @@ fn r7h_direct_production_snow_trace_line(
         direct_production_trace_number(layer.density_gradient_after_kg_m3),
         direct_production_trace_number(layer.minimum_temperature_after_c),
         direct_production_trace_number(layer.maximum_temperature_after_c),
-        snow_liquid.stage3_diagnostics.enabled,
-        direct_production_trace_number(snow_liquid.stage3_diagnostics.cold_content_before_j_m2),
-        direct_production_trace_number(snow_liquid.stage3_diagnostics.cold_content_after_j_m2),
-        direct_production_trace_number(snow_liquid.stage3_diagnostics.energy_closure_residual_j_m2),
     );
     format!(
-        "{line},{}\n",
+        "{line},{},{}\n",
+        direct_snow_trace_stage3_fields(&snow_liquid.stage3_diagnostics),
         direct_snow_trace_thermal_fields(&thermal)
+    )
+}
+
+fn direct_snow_trace_stage3_fields(
+    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
+) -> String {
+    format!(
+        "\
+\"stage3_energy_enabled\":{},\
+\"stage3_cold_content_before_j_m2\":{},\
+\"stage3_cold_content_after_j_m2\":{},\
+\"stage3_energy_closure_residual_j_m2\":{},\
+\"stage3_surface_energy_j_m2\":{},\
+\"stage3_conduction_energy_j_m2\":{},\
+\"stage3_longwave_energy_j_m2\":{},\
+\"stage3_latent_energy_j_m2\":{},\
+\"stage3_latent_refreeze_energy_j_m2\":{},\
+\"stage3_cold_content_export_j_m2\":{},\
+\"stage3_mass_latent_identity_residual_j_m2\":{},\
+\"stage3_unused_positive_energy_j_m2\":{},\
+\"stage3_refrozen_liquid_m\":{}",
+        diagnostics.enabled,
+        direct_production_trace_number(diagnostics.cold_content_before_j_m2),
+        direct_production_trace_number(diagnostics.cold_content_after_j_m2),
+        direct_production_trace_number(diagnostics.energy_closure_residual_j_m2),
+        direct_production_trace_number(diagnostics.surface_energy_j_m2),
+        direct_production_trace_number(diagnostics.conduction_energy_j_m2),
+        direct_production_trace_number(diagnostics.longwave_energy_j_m2),
+        direct_production_trace_number(diagnostics.latent_energy_j_m2),
+        direct_production_trace_number(diagnostics.latent_refreeze_energy_j_m2),
+        direct_production_trace_number(diagnostics.cold_content_export_j_m2),
+        direct_production_trace_number(
+            diagnostics.mass_latent_identity_residual_j_m2
+        ),
+        direct_production_trace_number(diagnostics.unused_positive_energy_j_m2),
+        direct_production_trace_number(diagnostics.refrozen_liquid_m),
     )
 }
 

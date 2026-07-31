@@ -1,0 +1,3 @@
+# Generated evidence preserves CSV dialect and Matplotlib SVG path formatting.
+artifacts/factorial-effects.csv -whitespace
+artifacts/figures/*.svg -whitespace

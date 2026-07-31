@@ -330,6 +330,18 @@
 
 State as of `2026-07-30 UTC`:
 
+- `20260730-snow-surface-eb-04-factorial-execution-adjudication-001/` -
+  EXECUTED / HOLD / NONPROMOTION: froze result operators before execution,
+  added already-computed Stage 3 component operands to the opt-in research
+  trace, and ran the original 48-cell matrix once. B completed 12/12 lanes, L
+  10/12, S 2/12, and LS 0/12. Failures comprise 22 masked
+  effective-conductivity-path errors and two prior-layer thickness
+  reconciliation errors, so LS observation scores, interactions, and
+  promotion are inadmissible. Seven figures with Markdown sidecars retain the
+  completed and partial evidence. Missing retained shortwave and signed
+  latent/mass operands prevent the declared anti-tautological reconstructions,
+  so the package holds while the stop-loss admits only bounded EB-05 assurance
+  closeout.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5054,6 +5066,13 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260730-snow-surface-eb-04-factorial-execution-adjudication-001/` —
+  EXECUTED / HOLD / NONPROMOTION: the single frozen round completed B 12/12, L
+  10/12, S 2/12, and LS 0/12 lanes. Twenty-two masked conductivity-path and two
+  prior-layer thickness rejections prevent scientific LS scoring. The retained
+  trace lacks shortwave and the signed latent/mass operands required by the
+  package's anti-tautological reconstruction gates; no rerun, tuning, or
+  promotion is authorized.
 - `20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` —
   EXECUTED / HOLD / MODEL LIMITATION: B/L and local closure pass, but real S/LS
   execution reaches the Stage 3 absolute-zero cold-content bound with material

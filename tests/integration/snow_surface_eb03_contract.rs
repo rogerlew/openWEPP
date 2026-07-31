@@ -5,6 +5,7 @@ const SNOW_ENERGY_CONTRACT: &str =
 const SNOW_FREEZE_CONTRACT: &str =
     "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const ROADMAP: &str = "docs/planning/snow-surface-energy-balance-roadmap.md";
+const DIRECT_TRACE_PRODUCER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -72,7 +73,7 @@ fn eb03_roadmap_requires_four_orthogonal_cells() {
     }
     assert!(roadmap.contains("SNOW-SURFACE-EB-03A"));
     assert!(roadmap.contains("Marks/SNOBAL active thermal control volume"));
-    assert!(roadmap.contains("without a clamp or fitted limiter"));
+    assert!(roadmap.contains("No surrogate, provisional, proxy, or heuristic process physics"));
 }
 
 #[test]
@@ -177,4 +178,25 @@ fn marks_mass_thresholds_select_authoritative_substeps() {
     assert_eq!(substep_seconds(9.999), 60);
     assert_eq!(substep_seconds(1.0), 60);
     assert_eq!(substep_seconds(0.34), 60);
+}
+
+#[test]
+fn eb04_trace_publishes_component_and_closure_operands() {
+    let producer = read(DIRECT_TRACE_PRODUCER);
+    for field in [
+        "stage3_surface_energy_j_m2",
+        "stage3_conduction_energy_j_m2",
+        "stage3_longwave_energy_j_m2",
+        "stage3_latent_energy_j_m2",
+        "stage3_latent_refreeze_energy_j_m2",
+        "stage3_cold_content_export_j_m2",
+        "stage3_mass_latent_identity_residual_j_m2",
+        "stage3_unused_positive_energy_j_m2",
+        "stage3_refrozen_liquid_m",
+    ] {
+        assert!(
+            producer.contains(field),
+            "{DIRECT_TRACE_PRODUCER} missing {field}"
+        );
+    }
 }
