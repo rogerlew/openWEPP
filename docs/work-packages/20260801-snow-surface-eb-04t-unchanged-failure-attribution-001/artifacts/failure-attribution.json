@@ -1,0 +1,776 @@
+{
+  "default_activation_authorized": false,
+  "diagnostic_only": true,
+  "eb04s_outcome_changed": false,
+  "evidence_class": "Static + Reused Ran",
+  "failures": [
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "humid_new_england_hardwood",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.14005372707291452,
+        "interaction": -0.08741467455516383,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.22746840162807835
+      },
+      "error_magnitudes": {
+        "B": 1.2311836721542762,
+        "L": 1.2311836721542762,
+        "LS": 1.3712373992271907,
+        "S": 1.4586520737823545
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "harvard_hardwood",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.23118367215427615,
+        "L": -0.23118367215427615,
+        "LS": -0.3712373992271907,
+        "S": -0.4586520737823545
+      },
+      "stratum": "hardwood",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "laurentian_continental_conifer",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.08750626220836799,
+        "interaction": -0.29372925681521056,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.38123551902357833
+      },
+      "error_magnitudes": {
+        "B": 1.7181169023673155,
+        "L": 1.7181169023673155,
+        "LS": 1.8056231645756835,
+        "S": 2.099352421390894
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "marcell_conifer",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.7181169023673155,
+        "L": -0.7181169023673155,
+        "LS": -0.8056231645756835,
+        "S": -1.0993524213908938
+      },
+      "stratum": "conifer",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "laurentian_continental_deciduous",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.24844289589232815,
+        "interaction": -0.26818647597818046,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.5166293718705086
+      },
+      "error_magnitudes": {
+        "B": 2.217198711271701,
+        "L": 2.217198711271701,
+        "LS": 2.465641607164029,
+        "S": 2.7338280831422095
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "marcell_deciduous",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -1.2171987112717009,
+        "L": -1.2171987112717009,
+        "LS": -1.465641607164029,
+        "S": -1.7338280831422095
+      },
+      "stratum": "deciduous",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "laurentian_continental_open",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.004552364692097299,
+        "interaction": -0.004571052459059866,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.009123417151157165
+      },
+      "error_magnitudes": {
+        "B": 1.5825499102887595,
+        "L": 1.5825499102887595,
+        "LS": 1.5871022749808568,
+        "S": 1.5916733274399166
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "marcell_open",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.5825499102887595,
+        "L": -0.5825499102887595,
+        "LS": -0.5871022749808568,
+        "S": -0.5916733274399166
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "sierra_maritime",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.03398750383332816,
+        "interaction": -0.0037473360376008014,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.03773483987092896
+      },
+      "error_magnitudes": {
+        "B": 1.900762227113155,
+        "L": 1.900762227113155,
+        "LS": 1.9347497309464832,
+        "S": 1.938497066984084
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_css_lab_ca",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.900762227113155,
+        "L": -0.900762227113155,
+        "LS": -0.9347497309464832,
+        "S": -0.938497066984084
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "northern_rockies_intermountain",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.028596335579156307,
+        "interaction": -0.009925229438741745,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.03852156501789805
+      },
+      "error_magnitudes": {
+        "B": 2.180008398941396,
+        "L": 2.180008398941396,
+        "LS": 2.208604734520552,
+        "S": 2.218529963959294
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -1.1800083989413959,
+        "L": -1.1800083989413959,
+        "LS": -1.2086047345205522,
+        "S": -1.218529963959294
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "front_range_continental",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.07530449609403922,
+        "interaction": -0.01766785775180324,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.09297235384584246
+      },
+      "error_magnitudes": {
+        "B": 2.00120633334902,
+        "L": 2.00120633334902,
+        "LS": 2.0765108294430594,
+        "S": 2.0941786871948627
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_niwot_co",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -1.0012063333490202,
+        "L": -1.0012063333490202,
+        "LS": -1.0765108294430594,
+        "S": -1.0941786871948627
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "cascades_maritime",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.002001476023715476,
+        "interaction": -0.00028456441923219167,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.0022860404429476677
+      },
+      "error_magnitudes": {
+        "B": 1.4416794095997554,
+        "L": 1.4416794095997554,
+        "LS": 1.4436808856234709,
+        "S": 1.443965450042703
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_paradise_wa",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.4416794095997554,
+        "L": -0.4416794095997554,
+        "LS": -0.44368088562347086,
+        "S": -0.44396545004270305
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050/#INV-SNOWFREEZE-058; prior post-partition density_trajectory_diffuse cluster",
+      "cell_id": "seasonal_densification_trajectory",
+      "climate": "wasatch_intermountain",
+      "criterion_role": "adjacent-process collateral",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.018767378557237535,
+        "interaction": -0.011443683691598094,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.03021106224883563
+      },
+      "error_magnitudes": {
+        "B": 1.5966528092448415,
+        "L": 1.5966528092448415,
+        "LS": 1.615420187802079,
+        "S": 1.6268638714936772
+      },
+      "family": "density_trajectory",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_snowbird_ut",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "kge",
+      "primary_process_owner": "snow density / compaction structure",
+      "primary_values": {
+        "B": -0.5966528092448415,
+        "L": -0.5966528092448415,
+        "LS": -0.6154201878020791,
+        "S": -0.6268638714936772
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "indirect"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; prior cancov_depth_swe_slope_geometry cluster",
+      "cell_id": "seasonal_depth_swe_slope",
+      "climate": "humid_new_england_hardwood",
+      "criterion_role": "mixed density/interception geometry guard",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.4400188436658041,
+        "interaction": -0.2734783494980295,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.7134971931638336
+      },
+      "error_magnitudes": {
+        "B": 10.146175900613038,
+        "L": 10.146175900613038,
+        "LS": 10.586194744278842,
+        "S": 10.859673093776872
+      },
+      "family": "depth_swe_geometry",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "harvard_hardwood",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "slope_ratio",
+      "primary_process_owner": "density/layer geometry with canopy interception ambiguity",
+      "primary_values": {
+        "B": 11.146175900613038,
+        "L": 11.146175900613038,
+        "LS": 11.586194744278842,
+        "S": 11.859673093776872
+      },
+      "stratum": "hardwood",
+      "target": 1.0,
+      "target_sensitivity": "mixed_ambiguous"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; prior cancov_depth_swe_slope_geometry cluster",
+      "cell_id": "seasonal_depth_swe_slope",
+      "climate": "humid_new_england_open",
+      "criterion_role": "mixed density/interception geometry guard",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.16454897222451592,
+        "interaction": -0.001665290198102909,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.16621426242261883
+      },
+      "error_magnitudes": {
+        "B": 8.934277587660706,
+        "L": 8.934277587660706,
+        "LS": 9.098826559885222,
+        "S": 9.100491850083325
+      },
+      "family": "depth_swe_geometry",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "harvard_open",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "slope_ratio",
+      "primary_process_owner": "density/layer geometry with canopy interception ambiguity",
+      "primary_values": {
+        "B": 9.934277587660706,
+        "L": 9.934277587660706,
+        "LS": 10.098826559885222,
+        "S": 10.100491850083325
+      },
+      "stratum": "open",
+      "target": 1.0,
+      "target_sensitivity": "mixed_ambiguous"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; SC-SNOWENERGY-001#INV-SNOWENERGY-017/#INV-SNOWENERGY-018/#INV-SNOWENERGY-019",
+      "cell_id": "seasonal_ablation_meltout_date",
+      "climate": "northern_rockies_intermountain",
+      "criterion_role": "LS-blocking open-control timing; does not identify canopy longwave",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 1.0,
+        "interaction": 0.0,
+        "longwave_main": 0.0,
+        "sublimation_main": 1.0
+      },
+      "error_magnitudes": {
+        "B": 35.0,
+        "L": 35.0,
+        "LS": 36.0,
+        "S": 36.0
+      },
+      "family": "meltout_timing",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "median_offset_days",
+      "primary_process_owner": "snow energy/mass loss plus forcing representativeness",
+      "primary_values": {
+        "B": -35.0,
+        "L": -35.0,
+        "LS": -36.0,
+        "S": -36.0
+      },
+      "stratum": "open",
+      "target": 0.0,
+      "target_sensitivity": "sublimation_sensitive_open_control"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; SC-SNOWENERGY-001#INV-SNOWENERGY-017/#INV-SNOWENERGY-018/#INV-SNOWENERGY-019",
+      "cell_id": "seasonal_ablation_meltout_date",
+      "climate": "cascades_maritime",
+      "criterion_role": "LS-blocking open-control timing; does not identify canopy longwave",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 1.0,
+        "interaction": 0.0,
+        "longwave_main": 0.0,
+        "sublimation_main": 1.0
+      },
+      "error_magnitudes": {
+        "B": 37.0,
+        "L": 37.0,
+        "LS": 38.0,
+        "S": 38.0
+      },
+      "family": "meltout_timing",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_paradise_wa",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "median_offset_days",
+      "primary_process_owner": "snow energy/mass loss plus forcing representativeness",
+      "primary_values": {
+        "B": -37.0,
+        "L": -37.0,
+        "LS": -38.0,
+        "S": -38.0
+      },
+      "stratum": "open",
+      "target": 0.0,
+      "target_sensitivity": "sublimation_sensitive_open_control"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; SC-SNOWENERGY-001#INV-SNOWENERGY-019",
+      "cell_id": "seasonal_peak_depth_date",
+      "climate": "front_range_continental",
+      "criterion_role": "LS-blocking open-control timing with density coupling; does not identify canopy longwave",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "unchanged",
+        "S": "toward_observation"
+      },
+      "error_effects": {
+        "combined": 0.0,
+        "interaction": 4.0,
+        "longwave_main": 0.0,
+        "sublimation_main": -4.0
+      },
+      "error_magnitudes": {
+        "B": 46.5,
+        "L": 46.5,
+        "LS": 46.5,
+        "S": 42.5
+      },
+      "family": "peak_timing",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_niwot_co",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "median_offset_days",
+      "primary_process_owner": "density/geometry plus accumulation and snow energy timing",
+      "primary_values": {
+        "B": -46.5,
+        "L": -46.5,
+        "LS": -46.5,
+        "S": -42.5
+      },
+      "stratum": "open",
+      "target": 0.0,
+      "target_sensitivity": "sublimation_sensitive_open_control_mixed"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; SC-SNOWENERGY-001#INV-SNOWENERGY-017/#INV-SNOWENERGY-019",
+      "cell_id": "seasonal_peak_swe_date",
+      "climate": "front_range_continental",
+      "criterion_role": "LS-blocking open-control timing; does not identify canopy longwave",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.5,
+        "interaction": -2.0,
+        "longwave_main": 0.0,
+        "sublimation_main": 2.5
+      },
+      "error_magnitudes": {
+        "B": 31.0,
+        "L": 31.0,
+        "LS": 31.5,
+        "S": 33.5
+      },
+      "family": "peak_timing",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_niwot_co",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "median_offset_days",
+      "primary_process_owner": "accumulation/phase/redistribution and snow energy timing",
+      "primary_values": {
+        "B": -31.0,
+        "L": -31.0,
+        "LS": -31.5,
+        "S": -33.5
+      },
+      "stratum": "open",
+      "target": 0.0,
+      "target_sensitivity": "sublimation_sensitive_open_control_mixed"
+    },
+    {
+      "authority": "SC-SNOWFREEZE-001#INV-SNOWFREEZE-050; SC-SNOWENERGY-001#INV-SNOWENERGY-017/#INV-SNOWENERGY-019",
+      "cell_id": "seasonal_peak_swe_date",
+      "climate": "wasatch_intermountain",
+      "criterion_role": "LS-blocking open-control timing; does not identify canopy longwave",
+      "directions_vs_b": {
+        "L": "unchanged",
+        "LS": "away_from_observation",
+        "S": "away_from_observation"
+      },
+      "error_effects": {
+        "combined": 0.5,
+        "interaction": 0.0,
+        "longwave_main": 0.0,
+        "sublimation_main": 0.5
+      },
+      "error_magnitudes": {
+        "B": 44.5,
+        "L": 44.5,
+        "LS": 45.0,
+        "S": 45.0
+      },
+      "family": "peak_timing",
+      "labels": {
+        "B": "fail",
+        "L": "fail",
+        "LS": "fail",
+        "S": "fail"
+      },
+      "lane_id": "snotel_snowbird_ut",
+      "metric_objects_exact_b_to_ls": false,
+      "primary_metric": "median_offset_days",
+      "primary_process_owner": "accumulation/phase/redistribution and snow energy timing",
+      "primary_values": {
+        "B": -44.5,
+        "L": -44.5,
+        "LS": -45.0,
+        "S": -45.0
+      },
+      "stratum": "open",
+      "target": 0.0,
+      "target_sensitivity": "sublimation_sensitive_open_control_mixed"
+    }
+  ],
+  "inputs": {
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "364a2bad34235c105cc4b47be50e12ca34e0b9e27b2aa2fd0c6842681670ab72",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "609fade604b4caf5d91fea7fd371d7b9436fc26b7568d5a8d865a0a1b2ae1fdd",
+    "docs/work-packages/20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/artifacts/post-partition-residual-decomposition.json": "0225ff80580ef352b2b91720da947f7f16f909a48827fb47e6c207da5b4e8875",
+    "docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/artifacts/prospective-decision-protocol.md": "1ea8734e43f4802f9fc94fc801655b13a38ae230a86e894f3c919dfff4055218",
+    "docs/work-packages/20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/artifacts/retained-adjudication.json": "0e21a25108a79afbe4dc63411b9d36d51d4fed52a16282f15e050fcf6463b043",
+    "tools/snowfreeze_observed/post_partition_residual_decomposition.py": "f5a4f855b9f9243ed75b75f75830cf7cc4748ace3eefc93299b2734f090fe0dc"
+  },
+  "model_subprocesses_launched": 0,
+  "schema": "snow-surface-eb04t-unchanged-failure-attribution-v1",
+  "summary": {
+    "adjacent_process_count": 11,
+    "adjacent_process_ls_direction_counts": {
+      "away_from_observation": 11
+    },
+    "by_family": {
+      "density_trajectory": {
+        "count": 9,
+        "ls_direction_counts": {
+          "away_from_observation": 9
+        },
+        "mean_combined_error_change": 0.07102360443924274
+      },
+      "depth_swe_geometry": {
+        "count": 2,
+        "ls_direction_counts": {
+          "away_from_observation": 2
+        },
+        "mean_combined_error_change": 0.30228390794516
+      },
+      "meltout_timing": {
+        "count": 2,
+        "ls_direction_counts": {
+          "away_from_observation": 2
+        },
+        "mean_combined_error_change": 1.0
+      },
+      "peak_timing": {
+        "count": 3,
+        "ls_direction_counts": {
+          "away_from_observation": 2,
+          "unchanged": 1
+        },
+        "mean_combined_error_change": 0.3333333333333333
+      }
+    },
+    "canopy_longwave_identifying_failure_count": 0,
+    "counts_by_signature": {
+      "seasonal_ablation_meltout_date": 2,
+      "seasonal_densification_trajectory": 9,
+      "seasonal_depth_swe_slope": 2,
+      "seasonal_peak_depth_date": 1,
+      "seasonal_peak_swe_date": 2
+    },
+    "criterion_fitness": {
+      "prospective_rule_recommendation": "Separate canopy-longwave efficacy, sublimation efficacy, and adjacent-process noninferiority; require no ordinal regression; and validate on independent evidence before default activation.",
+      "reason": "Eleven failures test density/geometry or mixed interception geometry. Five open-control timing failures are sensitive to sublimation and block promotion of the combined LS bundle, but cannot identify canopy-longwave efficacy. None of those five errors moved toward observation under LS.",
+      "retroactive_promotion_supported": false,
+      "supported_opt_in_science_status": "IMPLEMENTED_AND_PHYSICALLY_QUALIFIED_EMPIRICAL_BENEFIT_NARROW",
+      "total_failure_reduction": "CONSERVATIVE_BUT_MIXED_ALIGNMENT"
+    },
+    "failure_count": 16,
+    "interaction_counts": {
+      "amplifying_additive_error": 1,
+      "mitigating_additive_error": 12,
+      "zero": 3
+    },
+    "ls_direction_counts": {
+      "away_from_observation": 15,
+      "unchanged": 1
+    },
+    "metric_objects_exact_b_to_ls_count": 0,
+    "nonzero_interaction_count": 13,
+    "primary_errors_unchanged_b_to_ls_count": 1,
+    "sublimation_sensitive_open_control_count": 5,
+    "sublimation_sensitive_open_control_ls_direction_counts": {
+      "away_from_observation": 4,
+      "unchanged": 1
+    }
+  }
+}

@@ -346,8 +346,8 @@ State as of `2026-07-30 UTC`:
   04R factorial. EB-04R completed all 48 runtime cells but holds because its
   frozen vapor-to-sublimation tolerance contradicts the consumer. EB-04S then
   reconciled the units without result access and separately admitted the sealed
-  outputs; the unchanged empirical rule closes nonpromotion. EB-04T failure
-  attribution is next, followed by EB-05 assurance.
+  outputs; the unchanged empirical rule closes nonpromotion. EB-04T attributes
+  the unchanged failures and leaves EB-05 assurance next.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5072,6 +5072,14 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260801-snow-surface-eb-04t-unchanged-failure-attribution-001/` — EXECUTED /
+  DIAGNOSTIC COMPLETE: retained-only analysis reconstructs all 16 EB-04S
+  failures across B/L/S/LS. Eleven measure density/geometry or mixed
+  interception debt. Five open-control timing failures test sublimation and
+  block combined-LS promotion but cannot identify canopy-longwave efficacy. LS
+  moves 15 exact primary errors away and leaves one unchanged; 13/16 factorial
+  interactions are nonzero. The result makes no materiality claim and preserves
+  EB-04S nonpromotion/default-off. EB-05 assurance is next.
 - `20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/` —
   EXECUTED / CLOSE NONPROMOTION: froze result-blind authority establishing
   `1e-9 m SWE == 1e-6 kg m^-2` for vapor-to-sublimation transfer closure,
@@ -5080,9 +5088,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   retained file identities pass. LS changes robust score/failures from
   `177/16` to `180/16`; because failures do not decrease, the frozen rule
   invokes the stop-loss and authorizes no further factorial/calibration round.
-  EB-04R remains an unchanged historical HOLD. EB-04T next determines why all
-  16 failures were invariant and whether total-failure reduction was aligned
-  with the target mechanisms; EB-05 assurance follows.
+  EB-04R remains an unchanged historical HOLD. EB-04T subsequently attributes
+  the unchanged failures and confirms no basis for retroactive promotion.
 - `20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/` —
   EXECUTED / HOLD: the fresh frozen 12-lane/48-cell
   B/L/S/LS factorial completed with all sanitized-environment, provenance,

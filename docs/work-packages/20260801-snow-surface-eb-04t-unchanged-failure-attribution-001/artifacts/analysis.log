@@ -1,0 +1,70 @@
+{
+  "adjacent_process_count": 11,
+  "adjacent_process_ls_direction_counts": {
+    "away_from_observation": 11
+  },
+  "by_family": {
+    "density_trajectory": {
+      "count": 9,
+      "ls_direction_counts": {
+        "away_from_observation": 9
+      },
+      "mean_combined_error_change": 0.07102360443924274
+    },
+    "depth_swe_geometry": {
+      "count": 2,
+      "ls_direction_counts": {
+        "away_from_observation": 2
+      },
+      "mean_combined_error_change": 0.30228390794516
+    },
+    "meltout_timing": {
+      "count": 2,
+      "ls_direction_counts": {
+        "away_from_observation": 2
+      },
+      "mean_combined_error_change": 1.0
+    },
+    "peak_timing": {
+      "count": 3,
+      "ls_direction_counts": {
+        "away_from_observation": 2,
+        "unchanged": 1
+      },
+      "mean_combined_error_change": 0.3333333333333333
+    }
+  },
+  "canopy_longwave_identifying_failure_count": 0,
+  "counts_by_signature": {
+    "seasonal_ablation_meltout_date": 2,
+    "seasonal_densification_trajectory": 9,
+    "seasonal_depth_swe_slope": 2,
+    "seasonal_peak_depth_date": 1,
+    "seasonal_peak_swe_date": 2
+  },
+  "criterion_fitness": {
+    "prospective_rule_recommendation": "Separate canopy-longwave efficacy, sublimation efficacy, and adjacent-process noninferiority; require no ordinal regression; and validate on independent evidence before default activation.",
+    "reason": "Eleven failures test density/geometry or mixed interception geometry. Five open-control timing failures are sensitive to sublimation and block promotion of the combined LS bundle, but cannot identify canopy-longwave efficacy. None of those five errors moved toward observation under LS.",
+    "retroactive_promotion_supported": false,
+    "supported_opt_in_science_status": "IMPLEMENTED_AND_PHYSICALLY_QUALIFIED_EMPIRICAL_BENEFIT_NARROW",
+    "total_failure_reduction": "CONSERVATIVE_BUT_MIXED_ALIGNMENT"
+  },
+  "failure_count": 16,
+  "interaction_counts": {
+    "amplifying_additive_error": 1,
+    "mitigating_additive_error": 12,
+    "zero": 3
+  },
+  "ls_direction_counts": {
+    "away_from_observation": 15,
+    "unchanged": 1
+  },
+  "metric_objects_exact_b_to_ls_count": 0,
+  "nonzero_interaction_count": 13,
+  "primary_errors_unchanged_b_to_ls_count": 1,
+  "sublimation_sensitive_open_control_count": 5,
+  "sublimation_sensitive_open_control_ls_direction_counts": {
+    "away_from_observation": 4,
+    "unchanged": 1
+  }
+}
