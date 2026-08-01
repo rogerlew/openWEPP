@@ -5068,13 +5068,23 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260731-snow-surface-eb-04e-corrected-population-runtime-qualification-001/` —
+  COMPLETE / PASS: hash-bound, characterization-only qualification of the
+  corrected 12-lane/48-cell B/L/S/LS population. All 48 cells and all 24 former
+  failures complete across 761,212 rows with independently reconstructed
+  WAT/trace, mass, energy, latent/mass, thermal, and layer ledgers. Longwave and
+  sublimation each reach all 24 enabled cells; focused/Critical full, dual
+  review, and dual verification pass. No observation scoring, calibration,
+  interaction, or promotion was performed. EB-04R is next after
+  promotion-grade selector/environment provenance is frozen.
 - `20260731-snow-surface-eb-04d-layer-thickness-reconciliation-001/` —
   COMPLETE / PASS: contract-first closure of two cross-unit layer-geometry failures.
   The package separates the existing `1e-9 kg m^-2` represented-mass lifecycle
   boundary from the independent `1e-9 m` aggregate residual tolerance, with no
   tolerance inflation, state deletion, or weakening of typed guards. Both
   complete 16,437-day replays, independent conservation, all selected gates,
-  dual review, and dual terminal verification pass; EB-04E is next.
+  dual review, and dual terminal verification pass; EB-04E subsequently
+  qualified the complete corrected population.
 - `20260731-snow-surface-eb-04c-thin-pack-thermal-domain-closure-001/` —
   COMPLETE / PASS: contract-first closure of the 17 impossible thin-pack thermal
   states and five valid-Kelvin vapor-pressure underflows using libsnobal's

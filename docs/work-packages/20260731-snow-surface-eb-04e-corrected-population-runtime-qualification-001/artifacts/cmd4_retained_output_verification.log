@@ -1,0 +1,34 @@
+{
+  "anti_alias": {
+    "cross_output_audit_rejects_aggregate_only_substitution": true,
+    "layer_count_audit_rejects_fragment_deletion": true,
+    "negative_selector_control_rejects_wrong_latent_path": true,
+    "sealed_trace_rejects_fragment_deletion": true
+  },
+  "attempt_pins_match": true,
+  "cell_count": 48,
+  "evidence_class": "Ran",
+  "exact_inventory_passes": true,
+  "finite_operands_pass": true,
+  "hourly_vector_length_passes": true,
+  "layer_state_coupling_passes": true,
+  "longwave_enabled_nonzero_cells": 24,
+  "manifest_identity_passes": true,
+  "maximum_abs_layer_cold_content_residual_j_m2": 1.862645149230957e-09,
+  "maximum_abs_layer_cold_sum_residual_j_m2": 1.862645149230957e-09,
+  "maximum_abs_layer_density_residual_kg_m3": 1.324886011389026e-05,
+  "maximum_abs_wat_trace_depth_residual_m": 8.881784197001252e-16,
+  "maximum_abs_wat_trace_swe_residual_m": 5.079270337660091e-15,
+  "non_target_trace_identity_passes": true,
+  "passes": true,
+  "schema": "snow-surface-eb04e-retained-output-verification-v1",
+  "selector_behavior_passes": true,
+  "source_exclusion": {
+    "no_empirical_result_payload": true,
+    "no_observation_or_rubric_call": true,
+    "no_production_or_test_diff": true
+  },
+  "sublimation_enabled_nonzero_cells": 24,
+  "verifier_sha256": "ab1218d97ca2f02df976cd1e7404783bcc4a29da2571ddb9137fa9c6db85f936",
+  "wat_trace_cross_output_passes": true
+}

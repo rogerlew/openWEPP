@@ -1,0 +1,16 @@
+field,unit,basis,producer,authority,role
+runtime_swe_before_m,m,daily pre-step snow state,CoE/direct snow state,SC-SNOWENERGY-001,authoritative mass operand
+accumulation_m,m,daily snow input,phase partition,SC-SNOWFREEZE-001,authoritative mass operand
+rain_retained_m,m,daily retained liquid input,CoE liquid routing,SC-SNOWENERGY-001,authoritative mass operand
+sublimation_m,m,daily external vapor loss,Stage 3 vapor exchange,SC-SNOWENERGY-001,authoritative mass operand
+snowpack_swe_loss_m,m,daily CoE snow-state loss,CoE melt/state update,SC-SNOWENERGY-001,authoritative mass operand
+runtime_swe_after_m,m,daily post-step snow state,CoE/direct snow state,SC-SNOWENERGY-001,authoritative mass operand
+stage3_shortwave_energy_j_m2,J m^-2,daily substep sum,Stage 3 surface carrier,SC-SNOWENERGY-001,independent energy operand
+stage3_longwave_energy_j_m2,J m^-2,daily substep sum,Stage 3 surface carrier,SC-SNOWENERGY-001,independent energy operand
+stage3_latent_energy_j_m2,J m^-2,daily substep sum,Stage 3 vapor carrier,SC-SNOWENERGY-001,independent energy operand
+stage3_surface_energy_j_m2,J m^-2,daily applied surface energy,Stage 3 thermal projection,SC-SNOWENERGY-001,authoritative applied operand
+stage3_unused_positive_energy_j_m2,J m^-2,daily unapplied positive energy,Stage 3 thermal projection,SC-SNOWENERGY-001,authoritative remainder operand
+stage3_hourly_vapor_mass_exchange_kg_m2,kg m^-2,24 signed hourly totals,Stage 3 vapor exchange,SC-SNOWENERGY-001,independent mass operand
+stage3_hourly_latent_heat_j_kg,J kg^-1,24 effective hourly values,Stage 3 vapor exchange,SC-SNOWENERGY-001,independent conversion operand
+stage3_hourly_latent_flux_w_m2,W m^-2,24 hourly means,Stage 3 vapor exchange,SC-SNOWENERGY-001,independent energy operand
+snow_layers_after,m;kg m^-3;J m^-2,complete post-step layer vector,direct snow state,SC-SNOWENERGY-001,independent aggregate operands

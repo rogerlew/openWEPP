@@ -1,0 +1,17 @@
+{
+  "binary_sha256": "0242c39fa26e9cbbd9461a36a4d6843b8adf0600fb72c215c349a454cbf66a50",
+  "binary_size_bytes": 166978104,
+  "completed_unix_seconds": 1785562414.1005063,
+  "frozen_harness_sha256": "e84a1732a847b978cc529ba95bb276b4f47ff37e991d06798d158523f2bace17",
+  "frozen_report_sha256": "56f38bb6696b682f77d47c492759417d8e28975c45497d9280a566fedc6831d2",
+  "git_head": "44c6c9cc2e4447064fbbbf70935cf581d60d49b0",
+  "protocol_sha256": "216db53b5e389cc069202055e48b920e254cd88a52aaeb9a9c57de41b1a51440",
+  "result_count": 48,
+  "retry_policy": "NO_SEMANTIC_RETRY",
+  "schema": "snow-surface-eb04e-execution-attempt-v1",
+  "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "started_unix_seconds": 1785561805.863101,
+  "status": "COMPLETE",
+  "tool_sha256": "1e6a054839997d685b25c665d79768e34482652235fe09325416c89be5e0558e",
+  "workers": 4
+}
