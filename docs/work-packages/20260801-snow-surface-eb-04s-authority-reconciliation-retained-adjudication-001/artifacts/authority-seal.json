@@ -1,0 +1,15 @@
+{
+  "authority_freeze_sha256": "20c227029ccc876209cd81cdc830c9c68811307ee055d300836a769aa388798f",
+  "canonical_contract_path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+  "canonical_contract_sha256": "364a2bad34235c105cc4b47be50e12ca34e0b9e27b2aa2fd0c6842681670ab72",
+  "canonical_contract_version": 6,
+  "decision": "1e-9 m SWE == 1e-6 kg m^-2 for the same residual and vapor-to-sublimation transfer closure",
+  "distinct_predicates": {
+    "hourly_daily_vapor_aggregation_kg_m2": 1e-09,
+    "represented_layer_lifecycle_kg_m2": 1e-09,
+    "same_residual_and_vapor_to_sublimation_kg_m2": 1e-06
+  },
+  "phase_b_authorized": true,
+  "schema": "snow-surface-eb04s-authority-seal-v1",
+  "status": "FROZEN_DUAL_VERIFIED"
+}

@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/tools/run_experiment.py", line 1321, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/tools/run_experiment.py", line 122, in main
+    execute_once(args.workers)
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/tools/run_experiment.py", line 274, in execute_once
+    freeze = validate_freeze_receipt()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/tools/run_experiment.py", line 1286, in validate_freeze_receipt
+    raise RuntimeError("pre-execution freeze receipt does not match current identities")
+RuntimeError: pre-execution freeze receipt does not match current identities

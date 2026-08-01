@@ -1,0 +1,517 @@
+{
+  "binary_sha256": "0242c39fa26e9cbbd9461a36a4d6843b8adf0600fb72c215c349a454cbf66a50",
+  "completed_unix_seconds": 1785571764.5776653,
+  "decision_dependency_sha256": {
+    "cross_snotel_mechanism_rubric": "2e76c69e2e87dbd7035abd3bf25cf806071bf9951aa7f7aca669727a014ae62d",
+    "eb04_tool": "e84a1732a847b978cc529ba95bb276b4f47ff37e991d06798d158523f2bace17",
+    "eb04e_audit_tool": "1e6a054839997d685b25c665d79768e34482652235fe09325416c89be5e0558e",
+    "eb04e_retained_output_seal": "a9222ae1baad6c693441de12af00650b9c753df73505ac92b47fe909b2e71216",
+    "eb04e_retained_verifier": "ab1218d97ca2f02df976cd1e7404783bcc4a29da2571ddb9137fa9c6db85f936",
+    "observed_harness": "c91f01780c871a3ecc28f0ef4833fb13ef1e552e56eb582bfd256b58a0785fa9",
+    "operand_lineage": "8316cd22fc2747403c4e9701fbdf2fbc07e3914700a6d735e53bd3b2d8020800",
+    "snotel_density_three_way": "6a87ebd67e5ad572a3aafc46a4d440c47d23ca911f432dc469e6f0efead277f9"
+  },
+  "eb04_protocol_sha256": "dd6d8c673045d546aefe27ef107cc96f230ef633612ff88eca43eaa3cefce7ee",
+  "eb04_report_sha256": "56f38bb6696b682f77d47c492759417d8e28975c45497d9280a566fedc6831d2",
+  "eb04_tool_sha256": "e84a1732a847b978cc529ba95bb276b4f47ff37e991d06798d158523f2bace17",
+  "eb04e_report_sha256": "1686bc66d705e313fe0000289e870ada7aad0435f83a8696057ffd497969772b",
+  "executed_binary_sha256": "0242c39fa26e9cbbd9461a36a4d6843b8adf0600fb72c215c349a454cbf66a50",
+  "freeze_id": "SNOW-SURFACE-EB-04R-20260801-001",
+  "freeze_receipt_sha256": "2672660ad371bdbcb789b6bd5e89430958037bfba26480546df16f79f787c58b",
+  "frozen_cells": {
+    "B": [
+      "disabled",
+      "disabled"
+    ],
+    "L": [
+      "dilley_unsworth_subcanopy_v1",
+      "disabled"
+    ],
+    "LS": [
+      "dilley_unsworth_subcanopy_v1",
+      "neutral_bulk_stage3_v1"
+    ],
+    "S": [
+      "disabled",
+      "neutral_bulk_stage3_v1"
+    ]
+  },
+  "frozen_non_target_environment": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1"
+  },
+  "population": [
+    {
+      "climate": "northern_rockies_intermountain",
+      "corpus": "snotel_observed",
+      "fixture": "tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id",
+      "fixture_sha256": "e5e16d3cfc86cf46c33cea2e4fc8493c79d6534adbf85369af504d8891f69268",
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "observation_file": "tests/fixtures/snotel_observed/observations/sites/snotel_mica_creek_st_joe_id.csv",
+      "observation_filter": {},
+      "observation_sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "cascades_maritime",
+      "corpus": "snotel_observed",
+      "fixture": "tests/fixtures/snotel_observed/snotel_paradise_wa",
+      "fixture_sha256": "3d8e1093020486c4143b61ed1f047175fcdeb902581805cc609bcaf60943ebb3",
+      "lane_id": "snotel_paradise_wa",
+      "observation_file": "tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+      "observation_filter": {},
+      "observation_sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "sierra_maritime",
+      "corpus": "snotel_observed",
+      "fixture": "tests/fixtures/snotel_observed/snotel_css_lab_ca",
+      "fixture_sha256": "f3f9d2f3c3993ba6932719d6feca363b7d970d8dc7f94aa109ecf5121bd4d092",
+      "lane_id": "snotel_css_lab_ca",
+      "observation_file": "tests/fixtures/snotel_observed/observations/sites/snotel_css_lab_ca.csv",
+      "observation_filter": {},
+      "observation_sha256": "c145be9ca6222b8c5ed521b5a11e837f3d213882f0969ab85a53e5d4975eb538",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "wasatch_intermountain",
+      "corpus": "snotel_observed",
+      "fixture": "tests/fixtures/snotel_observed/snotel_snowbird_ut",
+      "fixture_sha256": "c8bec46c526d0bd576c51d80d119af4308432cc426729076485901735c13a9cb",
+      "lane_id": "snotel_snowbird_ut",
+      "observation_file": "tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+      "observation_filter": {},
+      "observation_sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "front_range_continental",
+      "corpus": "snotel_observed",
+      "fixture": "tests/fixtures/snotel_observed/snotel_niwot_co",
+      "fixture_sha256": "0dca44f6ca7f7131d322f89745c3dbebbfbaadf7795d600fe0f129d2be6822e6",
+      "lane_id": "snotel_niwot_co",
+      "observation_file": "tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+      "observation_filter": {},
+      "observation_sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "humid_new_england_open",
+      "corpus": "cancov_forest",
+      "fixture": "tests/fixtures/cancov_forest/harvard_open_ma",
+      "fixture_sha256": "85a1c5a04b51862af6ecdbf8648a0a2b395bbdff6055cca489dffdd4620ca956",
+      "lane_id": "harvard_open",
+      "observation_file": "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv",
+      "observation_filter": {
+        "binding_status": "bound",
+        "model_fixture": "harvard_open_ma",
+        "observed_stratum": "open"
+      },
+      "observation_sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "humid_new_england_hardwood",
+      "corpus": "cancov_forest",
+      "fixture": "tests/fixtures/cancov_forest/harvard_deciduous_ma",
+      "fixture_sha256": "8c79ec435de7e1c4d9761d1bc95860c6af586cc23e54175f975c34a67f77f941",
+      "lane_id": "harvard_hardwood",
+      "observation_file": "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv",
+      "observation_filter": {
+        "binding_status": "bound",
+        "model_fixture": "harvard_deciduous_ma",
+        "observed_stratum": "hardwood"
+      },
+      "observation_sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "hardwood"
+    },
+    {
+      "climate": "laurentian_continental_conifer",
+      "corpus": "cancov_forest",
+      "fixture": "tests/fixtures/cancov_forest/marcell_conifer_mn",
+      "fixture_sha256": "fe8e20fbbb391a9defa40bf37465cb5cfe22eea8ea402e87b81dc12e98764232",
+      "lane_id": "marcell_conifer",
+      "observation_file": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv",
+      "observation_filter": {
+        "binding_status": "bound",
+        "model_fixture": "marcell_conifer_mn",
+        "observed_stratum": "conifer"
+      },
+      "observation_sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "conifer"
+    },
+    {
+      "climate": "laurentian_continental_deciduous",
+      "corpus": "cancov_forest",
+      "fixture": "tests/fixtures/cancov_forest/marcell_deciduous_mn",
+      "fixture_sha256": "caa9fa9d90771b8baf40ab14b9511048839a6fa6a00eba94440f17a2b115e1d0",
+      "lane_id": "marcell_deciduous",
+      "observation_file": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv",
+      "observation_filter": {
+        "binding_status": "bound",
+        "model_fixture": "marcell_deciduous_mn",
+        "observed_stratum": "deciduous"
+      },
+      "observation_sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "deciduous"
+    },
+    {
+      "climate": "laurentian_continental_open",
+      "corpus": "cancov_forest",
+      "fixture": "tests/fixtures/cancov_forest/marcell_open_mn",
+      "fixture_sha256": "7396749ffe7277aecd7be05ee10791e0002e202191ca4d1b37c2adc544bb4bb1",
+      "lane_id": "marcell_open",
+      "observation_file": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv",
+      "observation_filter": {
+        "binding_status": "bound",
+        "model_fixture": "marcell_open_mn",
+        "observed_stratum": "open"
+      },
+      "observation_sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365",
+      "role": "INDEPENDENT_VALIDATION",
+      "stratum": "open"
+    },
+    {
+      "climate": "humid_cold",
+      "corpus": "snowfreeze_observed",
+      "fixture": "tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt",
+      "fixture_sha256": "58fe0a883971812b4ee3cd74327ac09a9a7565d639aa2ad5e04bfbca5a04bb02",
+      "lane_id": "sleepers_south_open",
+      "observation_file": "tests/fixtures/snowfreeze_observed/observations/sites/site1_sleepers_south_field_vt.csv",
+      "observation_filter": {},
+      "observation_sha256": "22e2404c8cd41d9f1af4d3db88345074afac005cafeb9966b1f12141b85f563b",
+      "role": "DIAGNOSTIC_ONLY",
+      "stratum": "open"
+    },
+    {
+      "climate": "humid_cold",
+      "corpus": "snowfreeze_observed",
+      "fixture": "tests/fixtures/snowfreeze_observed/site2_sleepers_w9_hardwood_vt",
+      "fixture_sha256": "5960627612a62da07994888caaec8615b4d87e2c0d6c08c291f2eaed03173c17",
+      "lane_id": "sleepers_w9_hardwood",
+      "observation_file": "tests/fixtures/snowfreeze_observed/observations/sites/site2_sleepers_w9_hardwood_vt.csv",
+      "observation_filter": {},
+      "observation_sha256": "9b522c0bb423a21e7766fb46fb0dd8c2751cb9932c88454079d6fea3f4c9e251",
+      "role": "DIAGNOSTIC_ONLY",
+      "stratum": "hardwood"
+    }
+  ],
+  "population_keys": [
+    "harvard_hardwood/B",
+    "harvard_hardwood/L",
+    "harvard_hardwood/LS",
+    "harvard_hardwood/S",
+    "harvard_open/B",
+    "harvard_open/L",
+    "harvard_open/LS",
+    "harvard_open/S",
+    "marcell_conifer/B",
+    "marcell_conifer/L",
+    "marcell_conifer/LS",
+    "marcell_conifer/S",
+    "marcell_deciduous/B",
+    "marcell_deciduous/L",
+    "marcell_deciduous/LS",
+    "marcell_deciduous/S",
+    "marcell_open/B",
+    "marcell_open/L",
+    "marcell_open/LS",
+    "marcell_open/S",
+    "sleepers_south_open/B",
+    "sleepers_south_open/L",
+    "sleepers_south_open/LS",
+    "sleepers_south_open/S",
+    "sleepers_w9_hardwood/B",
+    "sleepers_w9_hardwood/L",
+    "sleepers_w9_hardwood/LS",
+    "sleepers_w9_hardwood/S",
+    "snotel_css_lab_ca/B",
+    "snotel_css_lab_ca/L",
+    "snotel_css_lab_ca/LS",
+    "snotel_css_lab_ca/S",
+    "snotel_mica_creek_st_joe_id/B",
+    "snotel_mica_creek_st_joe_id/L",
+    "snotel_mica_creek_st_joe_id/LS",
+    "snotel_mica_creek_st_joe_id/S",
+    "snotel_niwot_co/B",
+    "snotel_niwot_co/L",
+    "snotel_niwot_co/LS",
+    "snotel_niwot_co/S",
+    "snotel_paradise_wa/B",
+    "snotel_paradise_wa/L",
+    "snotel_paradise_wa/LS",
+    "snotel_paradise_wa/S",
+    "snotel_snowbird_ut/B",
+    "snotel_snowbird_ut/L",
+    "snotel_snowbird_ut/LS",
+    "snotel_snowbird_ut/S"
+  ],
+  "protocol_sha256": "1ea8734e43f4802f9fc94fc801655b13a38ae230a86e894f3c919dfff4055218",
+  "result_count": 48,
+  "results": {
+    "harvard_hardwood/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_hardwood/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "6a0084e1717ebae0c64b8acc516494779aa74b90f526d9859d1ffe5f51f0cfa8",
+      "returncode": 0
+    },
+    "harvard_hardwood/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_hardwood/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "b2c3e3100a770d355e7230f046ff5b4118c00aef34efb81fca705c6e8451bb87",
+      "returncode": 0
+    },
+    "harvard_hardwood/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_hardwood/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "a2b374b5a1206bd585a37b5caf2e99374c8f7a5c7b6b6c31f0d0500a130832e6",
+      "returncode": 0
+    },
+    "harvard_hardwood/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_hardwood/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "8170a70ad45a1f4297d9a51c14f09df982a7baa4683723372477168f440c50fa",
+      "returncode": 0
+    },
+    "harvard_open/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_open/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "a61d2feff62c810bcb6d1127ed212cb090fdd369a970d20069f56429a855f8bc",
+      "returncode": 0
+    },
+    "harvard_open/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_open/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "0ea55dde0907a3c8bf4c2e1ec08a05a8080a542737b7a12d2dd63deb45935971",
+      "returncode": 0
+    },
+    "harvard_open/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_open/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "e89bd9dd5669204e436b89f14960d84ea463f62cdda3a022d97a90734596ac45",
+      "returncode": 0
+    },
+    "harvard_open/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/harvard_open/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "2f0fd3282468ad72b30e9e931fba06e08f435a42958720ec3da002dcc096a7c0",
+      "returncode": 0
+    },
+    "marcell_conifer/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_conifer/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "3131514768f9f0cd0e511596792f4b30f5bf6e60e92bbe0fb4ce77d44b601140",
+      "returncode": 0
+    },
+    "marcell_conifer/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_conifer/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "e1898b2459f01256753c964c0241c275ca6ac060b815b054238184d9f44d535c",
+      "returncode": 0
+    },
+    "marcell_conifer/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_conifer/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "671ef376046859b2768124b8e85d4de3ef83bd6436ce828d1dc6e21eeef033a6",
+      "returncode": 0
+    },
+    "marcell_conifer/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_conifer/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "4119d7f32e0e88d050c497d565e407ef8a7d259dab47185f14ecf307f4ffb053",
+      "returncode": 0
+    },
+    "marcell_deciduous/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_deciduous/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "67c3a92a8c3ef32ac01c41c900322e183cc6cab56a0996b496c39dc8a075db0e",
+      "returncode": 0
+    },
+    "marcell_deciduous/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_deciduous/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "ee10818b4feed5417d0e25a57c9ef453240b443689c89ed0c85d3559da7e5091",
+      "returncode": 0
+    },
+    "marcell_deciduous/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_deciduous/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "cb792a1c19155c9bad833396ac8dbe6d4ea6eb989eaf12933530be939fd12fb7",
+      "returncode": 0
+    },
+    "marcell_deciduous/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_deciduous/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "aad83e016f837b4f9fb3bb6c1872d55f5903365febee9970f33cac051db8858b",
+      "returncode": 0
+    },
+    "marcell_open/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_open/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "63be4e51e2e87f16d47eb33bf06db2954379385ac8e28404da23443f5667926c",
+      "returncode": 0
+    },
+    "marcell_open/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_open/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "e20670ad5a8abc1106cd3648f1d4fb703eaeed3e7560b8d02e5ecbe51734962b",
+      "returncode": 0
+    },
+    "marcell_open/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_open/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "bf4c2299d3669508f16029147528e88a0d991c867cff277b878a6bcc34470611",
+      "returncode": 0
+    },
+    "marcell_open/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/marcell_open/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "a2062df76a0cccaf489f94f6b0da911e21860a5114a4440095d799238bed1aa3",
+      "returncode": 0
+    },
+    "sleepers_south_open/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_south_open/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "8ff4a2160d0f88a761b05e28fc25d1a8dcbbfe5b42b2e8acdfc551dc2143ea34",
+      "returncode": 0
+    },
+    "sleepers_south_open/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_south_open/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "ec4c7da2b31cb178ff93ca9fbb84a96e47325b1de45b453c6966871810740baa",
+      "returncode": 0
+    },
+    "sleepers_south_open/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_south_open/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "6921cb8735218cf3a60957ab05c2ce0ccdfdc2865d78191af56040dd707a5eda",
+      "returncode": 0
+    },
+    "sleepers_south_open/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_south_open/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "6353d11f4eb1339535799341f7e426db2c26fdd2fd5b1a65dc73ed16734f3d5b",
+      "returncode": 0
+    },
+    "sleepers_w9_hardwood/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_w9_hardwood/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "5d47f1b1b2ba805d71f168efa77cc4e9995d29e06abaad3633e6a7fc3c25763c",
+      "returncode": 0
+    },
+    "sleepers_w9_hardwood/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_w9_hardwood/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "5f048ab65c49b42572437196a1928f1de2dd60de116889388a412382ab9c15c0",
+      "returncode": 0
+    },
+    "sleepers_w9_hardwood/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_w9_hardwood/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "5d326301ab9ebbfa5dfd4cca33d5b9710cb0aedffbbd8df3b9595242086b1b95",
+      "returncode": 0
+    },
+    "sleepers_w9_hardwood/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/sleepers_w9_hardwood/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "4dbad07abb5bdb4994f66bb6f6ac1cdfd5ed93d3fdc0ca0e7abfd913f82969ac",
+      "returncode": 0
+    },
+    "snotel_css_lab_ca/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_css_lab_ca/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "bf1eb134c8655c49e3117deeb143f8c2306528556d5f1c8a61343105f267bc97",
+      "returncode": 0
+    },
+    "snotel_css_lab_ca/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_css_lab_ca/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "1862f502cbeb653cc84bc5355f0a4c957d622f00bdc482cf0ae6624f34be5a01",
+      "returncode": 0
+    },
+    "snotel_css_lab_ca/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_css_lab_ca/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "dd6cf93b1e8631243fde9e538d8d49f45807f618fd44a49836afc3c4d5add6ee",
+      "returncode": 0
+    },
+    "snotel_css_lab_ca/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_css_lab_ca/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "f1b558e015df729a7150febeb3e0477d8e78593f66fc2f5459aeb7ed82b0d0c6",
+      "returncode": 0
+    },
+    "snotel_mica_creek_st_joe_id/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_mica_creek_st_joe_id/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "501216f057633a7b78555ef56d28c38adab8d50fdfc8661bd84c8b9b5558f0cf",
+      "returncode": 0
+    },
+    "snotel_mica_creek_st_joe_id/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_mica_creek_st_joe_id/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "4624da575df9d9269102fb54487621fd5bd88c6316eeb889afb3099628873e18",
+      "returncode": 0
+    },
+    "snotel_mica_creek_st_joe_id/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_mica_creek_st_joe_id/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "b2a5209f13b74410dc39b33b8d1f22b1ac8353a7b7f64826406d67f938541e3e",
+      "returncode": 0
+    },
+    "snotel_mica_creek_st_joe_id/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_mica_creek_st_joe_id/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "ea73e68742a91bf9f1166efcd1891694b4caac4f35cc62797812c56526634cf3",
+      "returncode": 0
+    },
+    "snotel_niwot_co/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_niwot_co/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "927e9480c9f696eb8876ccfb83be02917f2873cb406e809d6ce3b902069205db",
+      "returncode": 0
+    },
+    "snotel_niwot_co/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_niwot_co/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "7cc9f4bc3b670e14a31cd01f1df54b33fa4de231f955f4f62280b3006b72132d",
+      "returncode": 0
+    },
+    "snotel_niwot_co/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_niwot_co/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "4e1cf9f164bd7663a3f2ba6b29e0d2bdcf30479923c1419a96367cc6ee43e699",
+      "returncode": 0
+    },
+    "snotel_niwot_co/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_niwot_co/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "4ed8b16f2f618d89491b4093ddac2fd4b96cbc5306ee04fb41c21f5d189aa9e1",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_paradise_wa/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "7859c93de94d5fc15700c52d09f6be69a3f1d8193ca2d9510a8bd91d3bf7c7ca",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_paradise_wa/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "8f03c8579374dfbaf3ea2c7505caca2548cffed57b6a85749ab33c49f56732e2",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_paradise_wa/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "d6eaa498bc7a6154264d10d75471e93ff8c6851814de2ad699050809b5c0e592",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_paradise_wa/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "bce0f9f5d58042ffb9fbe45d3c1d4bfee92dbb331eb4c433f860650f4439f470",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/B": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_snowbird_ut/B/eb04r-experiment-provenance.json",
+      "provenance_sha256": "11f45975123a9adebc1cbeecbc69539facd45c519d6b0cf4fe57012317b9eaae",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/L": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_snowbird_ut/L/eb04r-experiment-provenance.json",
+      "provenance_sha256": "236c67c7c19ac75c85ea624288f1d8da2fab5113d9adadff3db930a99d57c7c3",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/LS": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_snowbird_ut/LS/eb04r-experiment-provenance.json",
+      "provenance_sha256": "91e318b6b18de91f5166091e46c38685a0cbcd38ecf58a25d9559ccab33420f5",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/S": {
+      "provenance": "target/snow_surface_eb04r_factorial/runs/snotel_snowbird_ut/S/eb04r-experiment-provenance.json",
+      "provenance_sha256": "9a110fccd41c7a31bd9dc9a05e1feae4ccf69c4cc993ccfcda8cb59e8997e63a",
+      "returncode": 0
+    }
+  },
+  "retry_policy": "NO_RETRY",
+  "schema": "snow-surface-eb04r-execution-attempt-v1",
+  "source_commit": "1b9a4ae3485d6083aa5015cc3f443b53bd6bcd15",
+  "source_input_tree_sha256": {
+    "crates": "57ef7efebfa263bf2b880cb2852a373d604a332ba87773f6527cd070d0074b82",
+    "tests": "a910c9b60bc54268b390dbb03dad3845a654d72bc3483e6d259269a4b3cf6134"
+  },
+  "source_test_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "started_unix_seconds": 1785570927.8043299,
+  "status": "COMPLETE",
+  "tool_sha256": "c4c2f07f3e1ce0d5a629e9f9413233f7768904e1ebc591404cd5b0ac8fb1be2b",
+  "workers": 4
+}

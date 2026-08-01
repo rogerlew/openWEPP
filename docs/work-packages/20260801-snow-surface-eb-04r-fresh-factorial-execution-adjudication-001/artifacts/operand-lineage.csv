@@ -1,0 +1,37 @@
+field,units,basis,authority,role
+runtime_swe_before_m,m,per unit hillslope area,SC-SNOWENERGY-001,mass state before
+accumulation_m,m,per unit hillslope area,SC-SNOWENERGY-001,solid input
+rain_retained_m,m,per unit hillslope area,SC-SNOWENERGY-001,retained liquid input
+sublimation_m,m,nonnegative loss per unit hillslope area,SC-SNOWENERGY-001,vapor loss and signed-domain check
+snowpack_swe_loss_m,m,per unit hillslope area,SC-SNOWENERGY-001,snow-state loss
+runtime_swe_after_m,m,per unit hillslope area,SC-SNOWENERGY-001,mass state after
+stage3_shortwave_energy_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,surface-energy input
+stage3_longwave_energy_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,surface-energy input and reach
+stage3_latent_energy_j_m2,J m^-2,nonpositive for sublimation,SC-SNOWENERGY-001,surface-energy input and signed-domain check
+stage3_surface_energy_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,applied surface energy
+stage3_unused_positive_energy_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,unapplied positive energy
+stage3_conduction_energy_j_m2,J m^-2,signed layer exchange,SC-SNOWENERGY-001,cold-content ledger
+stage3_latent_refreeze_energy_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,cold-content ledger
+stage3_cold_content_export_j_m2,J m^-2,per unit snow surface area,SC-SNOWENERGY-001,cold-content ledger
+stage3_cold_content_before_j_m2,J m^-2,complete represented snowpack,SC-SNOWENERGY-001,cold-content state before
+stage3_cold_content_after_j_m2,J m^-2,complete represented snowpack,SC-SNOWENERGY-001,cold-content state after and layer-sum check
+stage3_hourly_vapor_mass_exchange_kg_m2,kg m^-2 h^-1 equivalent,24-hour vector,SC-SNOWENERGY-001,vapor aggregation and nonpositive sign check
+stage3_hourly_latent_heat_j_kg,J kg^-1,24-hour vector,SC-SNOWENERGY-001,latent mass-to-energy conversion
+stage3_hourly_latent_flux_w_m2,W m^-2,24-hour vector,SC-SNOWENERGY-001,latent energy aggregation and nonpositive sign check
+stage3_hourly_net_shortwave_w_m2,W m^-2,24-hour vector,SC-SNOWENERGY-001,shortwave aggregation
+stage3_hourly_net_longwave_w_m2,W m^-2,24-hour vector,SC-SNOWENERGY-001,longwave aggregation
+stage3_vapor_mass_exchange_kg_m2,kg m^-2,daily signed exchange,SC-SNOWENERGY-001,m_v=-1000 m_sub identity
+snow_layers_after,typed layer vector,complete represented vector,SC-SNOWENERGY-001,layer count and aggregate publication
+snow_layers_after.mass_swe_m,m,per unit hillslope area,SC-SNOWENERGY-001,layer mass sum
+snow_layers_after.thickness_m,m,layer thickness,SC-SNOWENERGY-001,layer depth sum
+snow_layers_after.density_kg_m3,kg m^-3,layer bulk density,SC-SNOWENERGY-001,density=m/depth reconstruction
+snow_layers_after.temperature_c,deg C,layer temperature,SC-SNOWENERGY-001,finite physical-domain check
+snow_layers_after.cold_content_j_m2,J m^-2,layer cold content,SC-SNOWENERGY-001,temperature/mass and aggregate coupling
+Snow-Water,m after mm-to-m conversion,daily WAT consumer,SC-SNOWFREEZE-001,scored SWE state and trace cross-check
+Snow-Depth,m after mm-to-m conversion,daily WAT consumer,SC-SNOWFREEZE-001,scored depth state and trace cross-check
+observation rows,installed native units,frozen lane filter and exact bytes,SC-SNOWFREEZE-001 INV-SNOWFREEZE-050,independent-validation reference only after physical gate
+rubric_profile.cells.forcing_robust,boolean,frozen EB-04 classification,SC-SNOWFREEZE-001 INV-SNOWFREEZE-050,select forcing-robust scores
+rubric_profile.cells.ordinal_label,ordinal,fail=0 marginal=1 pass=2 strong=3,SC-SNOWFREEZE-001 INV-SNOWFREEZE-050,ordinal sum and fail count
+state.mean_swe_m,m,daily modeled mean,prospective EB-04 protocol,factorial response and compensation audit
+state.median_disappearance_dowy,day of water year,1-mm threshold plus 7-day persistence,SC-SNOWFREEZE-001,factorial response and compensation audit
+lane.stratum,category,frozen EB-04 population,prospective EB-04 protocol,open-control/canopy protected groups

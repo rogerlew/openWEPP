@@ -1,0 +1,27 @@
+{
+  "diagnostic_empirical_result": "CLOSE_NONPROMOTION_EMPIRICAL_RULE",
+  "failed_cell_count": 12,
+  "failed_cells": [
+    {"cell": "S", "lane_id": "harvard_hardwood", "maximum_abs_residual_kg_m2": 5.945946068841579e-08},
+    {"cell": "LS", "lane_id": "harvard_open", "maximum_abs_residual_kg_m2": 3.3145755299788474e-09},
+    {"cell": "S", "lane_id": "harvard_open", "maximum_abs_residual_kg_m2": 4.732297141651909e-08},
+    {"cell": "S", "lane_id": "marcell_conifer", "maximum_abs_residual_kg_m2": 6.907580706733141e-08},
+    {"cell": "S", "lane_id": "marcell_deciduous", "maximum_abs_residual_kg_m2": 6.664562046676537e-08},
+    {"cell": "LS", "lane_id": "marcell_open", "maximum_abs_residual_kg_m2": 1.4792943009976113e-08},
+    {"cell": "S", "lane_id": "marcell_open", "maximum_abs_residual_kg_m2": 5.52223438921029e-08},
+    {"cell": "S", "lane_id": "sleepers_south_open", "maximum_abs_residual_kg_m2": 3.540025578230299e-08},
+    {"cell": "S", "lane_id": "sleepers_w9_hardwood", "maximum_abs_residual_kg_m2": 5.8302605951410236e-08},
+    {"cell": "S", "lane_id": "snotel_css_lab_ca", "maximum_abs_residual_kg_m2": 2.433461868036474e-08},
+    {"cell": "S", "lane_id": "snotel_mica_creek_st_joe_id", "maximum_abs_residual_kg_m2": 6.142184662272232e-08},
+    {"cell": "S", "lane_id": "snotel_niwot_co", "maximum_abs_residual_kg_m2": 8.109983287707401e-08}
+  ],
+  "frozen_protocol_tolerance_kg_m2": 1e-09,
+  "implemented_consumer_tolerance_kg_m2": 1e-06,
+  "maximum_abs_residual_kg_m2": 8.109983287707401e-08,
+  "observation_scores_admissible": false,
+  "outcome": "HOLD_PHYSICAL_OR_PROVENANCE_GATE",
+  "rerun_authorized": false,
+  "schema": "snow-surface-eb04r-terminal-frozen-protocol-audit-v1",
+  "suspected_cause": "frozen protocol transcribed the 1e-9 m SWE tolerance as 1e-9 kg m^-2 instead of the density-converted 1e-6 kg m^-2 used by the consumer",
+  "supersedes_generated_decision_claim": true
+}

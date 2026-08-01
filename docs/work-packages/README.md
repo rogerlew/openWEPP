@@ -343,7 +343,11 @@ State as of `2026-07-30 UTC`:
   so the package holds. The campaign has completed 04A observability/state
   capture and 04B dynamics characterization. Independently admitted 04C/04D
   defect closure and 04E runtime qualification precede a freshly preregistered
-  04R factorial; EB-05 assurance closeout is deferred.
+  04R factorial. EB-04R completed all 48 runtime cells but holds because its
+  frozen vapor-to-sublimation tolerance contradicts the consumer. EB-04S then
+  reconciled the units without result access and separately admitted the sealed
+  outputs; the unchanged empirical rule closes nonpromotion. EB-04T failure
+  attribution is next, followed by EB-05 assurance.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5068,6 +5072,29 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/` —
+  EXECUTED / CLOSE NONPROMOTION: froze result-blind authority establishing
+  `1e-9 m SWE == 1e-6 kg m^-2` for vapor-to-sublimation transfer closure,
+  amended `SC-SNOWENERGY-001` version 6, and re-adjudicated all 48 immutable
+  EB-04R cells without a model rerun. All physical/provenance gates and 288
+  retained file identities pass. LS changes robust score/failures from
+  `177/16` to `180/16`; because failures do not decrease, the frozen rule
+  invokes the stop-loss and authorizes no further factorial/calibration round.
+  EB-04R remains an unchanged historical HOLD. EB-04T next determines why all
+  16 failures were invariant and whether total-failure reduction was aligned
+  with the target mechanisms; EB-05 assurance follows.
+- `20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/` —
+  EXECUTED / HOLD: the fresh frozen 12-lane/48-cell
+  B/L/S/LS factorial completed with all sanitized-environment, provenance,
+  WAT/trace/layer, conservation, finiteness, and selector evidence retained.
+  Terminal review found that the consumer used `1e-6 kg m^-2` for
+  vapor-to-sublimation closure while the frozen protocol stated
+  `1e-9 kg m^-2`; 12 cells fail the frozen bound. Observations were therefore
+  loaded inadmissibly, and the generated score/nonpromotion result is diagnostic
+  only. Terminal outcome is `HOLD_PHYSICAL_OR_PROVENANCE_GATE`; no EB-04R rerun
+  is authorized within EB-04R. EB-04S subsequently resolved the authority
+  contradiction prospectively to its retained analysis phase and closed the
+  separate successor adjudication as nonpromotion.
 - `20260731-snow-surface-eb-04e-corrected-population-runtime-qualification-001/` —
   COMPLETE / PASS: hash-bound, characterization-only qualification of the
   corrected 12-lane/48-cell B/L/S/LS population. All 48 cells and all 24 former
@@ -5075,8 +5102,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   WAT/trace, mass, energy, latent/mass, thermal, and layer ledgers. Longwave and
   sublimation each reach all 24 enabled cells; focused/Critical full, dual
   review, and dual verification pass. No observation scoring, calibration,
-  interaction, or promotion was performed. EB-04R is next after
-  promotion-grade selector/environment provenance is frozen.
+  interaction, or promotion was performed. EB-04R subsequently executed but
+  held on a frozen-protocol/consumer tolerance contradiction.
 - `20260731-snow-surface-eb-04d-layer-thickness-reconciliation-001/` —
   COMPLETE / PASS: contract-first closure of two cross-unit layer-geometry failures.
   The package separates the existing `1e-9 kg m^-2` represented-mass lifecycle

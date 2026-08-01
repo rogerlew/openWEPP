@@ -1,0 +1,26 @@
+{
+  "another_round_authorized": false,
+  "criteria": {
+    "all_ls_physical_and_trace_gates_pass": true,
+    "mechanism_operands_nonzero": true,
+    "no_compensating_error_pattern": true,
+    "no_forcing_or_input_mutation": true,
+    "no_new_lane_robust_fail": true,
+    "protected_group_scores_not_worse": true,
+    "robust_fail_count_decreases": false,
+    "robust_ordinal_score_increases": true
+  },
+  "criterion_status": {
+    "all_ls_physical_and_trace_gates_pass": "PASS",
+    "mechanism_operands_nonzero": "PASS",
+    "no_compensating_error_pattern": "PASS",
+    "no_forcing_or_input_mutation": "PASS",
+    "no_new_lane_robust_fail": "PASS",
+    "protected_group_scores_not_worse": "PASS",
+    "robust_fail_count_decreases": "FAIL",
+    "robust_ordinal_score_increases": "PASS"
+  },
+  "outcome": "CLOSE_NONPROMOTION_EMPIRICAL_RULE",
+  "stop_loss_invoked": true,
+  "warm_maritime_conifer_transfer_claim": "WITHHELD_DATA_LIMITED"
+}

@@ -1,0 +1,43 @@
+{
+  "anchors": {
+    "contract_swe_tolerance": "Runtime mass closure uses `1e-9 m` water equivalent",
+    "conversion_formula": "water_equivalent_m * LIQUID_WATER_DENSITY_KG_M3",
+    "density_constant": "LIQUID_WATER_DENSITY_KG_M3: f64 = 1_000.0",
+    "eb04e_swe_tolerance": "snow mass: maximum daily reconstruction `<=1e-9 m`",
+    "eb04e_vapor_sublimation": "vapor/sublimation: `<=1e-6 kg m^-2`",
+    "named_conversion": "snow_water_equivalent_meters_to_area_mass_kg_m2",
+    "unit_policy": "Dimensional conversions must be named, directional, provenance-backed, and"
+  },
+  "decision": {
+    "boundaries_are_distinct": true,
+    "classification": "CROSS_UNIT_PROTOCOL_TRANSCRIPTION_ERROR",
+    "represented_layer_lifecycle_boundary_kg_m2": 1e-09,
+    "vapor_to_sublimation_closure_tolerance_kg_m2": 1.0000000000000002e-06
+  },
+  "derivation": {
+    "area_mass_tolerance_kg_m2": 1.0000000000000002e-06,
+    "formula": "area_mass_tolerance_kg_m2 = water_equivalent_tolerance_m * liquid_water_density_kg_m3",
+    "identity": "1e-9 m SWE == 1e-6 kg m^-2 at rho_w = 1000 kg m^-3",
+    "liquid_water_density_kg_m3": 1000.0,
+    "water_equivalent_tolerance_m": 1e-09
+  },
+  "evidence_class": "Static",
+  "forbidden_path_tokens": [
+    "20260801-snow-surface-eb-04r",
+    "snow_surface_eb04r_factorial",
+    "factorial-results",
+    "execution-attempt",
+    "terminal-frozen-protocol-audit",
+    "/observations/"
+  ],
+  "input_policy": "EXACT_FOUR_FILE_RESULT_BLIND_WHITELIST",
+  "inputs": {
+    "crates/openwepp-unit-boundary/src/lib.rs": "8e68aa9ca2c4e83852a4db2b422c24b08bd2f4aa4870159e9a10e784e972eee8",
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "907255f11ff4778a3cf5374dfc66b869594db6b92876e22494a1066cdd12112a",
+    "docs/specifications/unit-governance.md": "ef1f976cdd2bf50f7579ace7ef45bece18360bf434df20566980776f3da4374d",
+    "docs/work-packages/20260731-snow-surface-eb-04e-corrected-population-runtime-qualification-001/artifacts/prospective-qualification-protocol.md": "216db53b5e389cc069202055e48b920e254cd88a52aaeb9a9c57de41b1a51440"
+  },
+  "result_bearing_inputs_read": false,
+  "schema": "snow-surface-eb04s-authority-freeze-v1",
+  "status": "FROZEN_AUTHORITY_ONLY"
+}
