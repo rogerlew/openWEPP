@@ -1,0 +1,28 @@
+{
+  "all_current_data_roles": {
+    "DIAGNOSTIC_ONLY": 16
+  },
+  "canopy_longwave_identifying_failure_count": 0,
+  "cohort_counts": {
+    "density_structure": 9,
+    "harvard_geometry_interception": 2,
+    "mountain_under_persistence": 5
+  },
+  "disposition": "PROSPECTIVE_DIAGNOSTIC_DESIGN_COMPLETE",
+  "failure_count": 16,
+  "model_subprocesses_launched": 0,
+  "new_candidate_results_inspected": 0,
+  "observability_counts": {
+    "AVAILABLE_DERIVED": 1,
+    "AVAILABLE_DIRECT": 16,
+    "AVAILABLE_SEMANTIC_PROOF_REQUIRED": 1,
+    "MISSING_REQUIRED": 7,
+    "PARTIAL_AMBIGUOUS": 1
+  },
+  "promotion_authorized": false,
+  "successor_counts": {
+    "EB-04V": 9,
+    "EB-04W": 5,
+    "EB-04X": 2
+  }
+}

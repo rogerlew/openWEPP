@@ -148,7 +148,11 @@ calibrated ranges.
 | 13 | [`SNOW-SURFACE-EB-04R`](../work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/package.md) fresh factorial execution and adjudication — **executed / hold** | Ran the newly frozen B/L/S/LS population once with sanitized environment and promotion-grade provenance. | Runtime completes 48/48, but the consumer applies `1e-6 kg m^-2` to vapor-to-sublimation closure while the frozen protocol states `1e-9 kg m^-2`; 12 cells exceed the frozen bound. Observation scores and the generated nonpromotion result are inadmissible. Terminal disposition is `HOLD_PHYSICAL_OR_PROVENANCE_GATE`; no EB-04R rerun is authorized. |
 | 14 | [`SNOW-SURFACE-EB-04S`](../work-packages/20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/package.md) result-blind authority reconciliation and retained-output adjudication — **executed / close nonpromotion** | Froze dimensional authority before reading results, amended `SC-SNOWENERGY-001` version 6, and re-adjudicated the immutable EB-04R outputs without launching the model. | `1e-9 m` SWE is `1e-6 kg m^-2` for the same transfer residual; all 48 cells and 288 retained file identities pass. LS changes robust score/failures `177/16 -> 180/16`, so the unchanged rule invokes the stop-loss and authorizes no further calibration/factorial round. EB-04R remains an unchanged HOLD. |
 | 15 | [`SNOW-SURFACE-EB-04T`](../work-packages/20260801-snow-surface-eb-04t-unchanged-failure-attribution-001/package.md) unchanged-failure attribution and promotion-criterion fitness — **executed / diagnostic complete** | Reconstructed all 16 baseline failures across B/L/S/LS and mapped primary metrics, process ownership, control role, exact error direction, and interactions without rerunning the model or changing thresholds. | Eleven failures measure density/geometry or mixed interception debt. The five timing failures are open controls: they test sublimation and block combined-LS promotion but cannot identify canopy-longwave efficacy. LS moves 15 exact primary errors away and leaves one unchanged; 13/16 interactions are nonzero. EB-04S nonpromotion remains valid without a materiality or retroactive-promotion claim. |
-| 16 | `SNOW-SURFACE-EB-05` campaign assurance closeout — **next** | Refresh `ASSURE-06` with the complete iteration, authority reconciliation, admissible retained adjudication, EB-04T failure attribution, uncertainty, narrow canopy benefit, and default-off disposition. | Distinguish implemented/physically qualified mechanisms from empirical efficacy. Route density/geometry and mountain under-persistence to their owning process/forcing investigations; any future promotion rule must be prospective and independently validated. Warm-maritime conifer transfer remains withheld. |
+| 16 | [`SNOW-SURFACE-EB-04U`](../work-packages/20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/package.md) mechanistic failure partition and prospective-study design — **executed / diagnostic design complete** | Froze the exact `9/2/5` cohorts, observed-anchored primary operators, evidence roles, trace/ledger requirements, materiality/noninferiority/interaction rules, candidate-identity seal, and successor prerequisites before new candidate results. | All existing observations are diagnostic-only. Forty retained B/L/S/LS cells expose substantial state/mass/energy evidence but lack seven mechanism-critical operands, including authoritative CoE melt drivers and separate rain/sensible heat. EB-04V/04W/04X are admitted only for bounded operator/observability diagnostics; numeric replication/site-spread rules and independent data must be sealed before result-bearing efficacy work. |
+| 17 | `SNOW-SURFACE-EB-04V` density-structure mechanics investigation — **next** | Partition density KGE into correlation, bias, and variability across accumulation, dry settling, wet compaction, and ablation; test dependence on new-snow density, load, temperature, liquid water, snow age, and layer operations. | First publish process-specific density tendencies and disambiguate fresh-snow density from same-day compaction/merge. Admit an amendment only when authoritative missing physics or an incorrect existing-process application is identified. Mixed high/low density bias forbids a single-coefficient repair or site fitting. |
+| 18 | `SNOW-SURFACE-EB-04W` accumulation and mountain under-persistence investigation — **planned after 04U** | Reconstruct event/day snowfall input, phase partition, SWE increments, cumulative sublimation, melt/runoff, energy exchange, peak timing, and ablation onset for the five open controls. | Assign each failure to pre-peak forcing/phase/redistribution, post-deposition mass loss, or ablation energetics. Respect the openWEPP/wepppy ownership boundary. Admit only authority-backed process work; do not tune physics to compensate for deficient forcing. |
+| 19 | `SNOW-SURFACE-EB-04X` Harvard depth–SWE geometry/interception investigation — **planned after 04U** | Use paired hardwood/open evidence to test algebraic SWE–density–depth closure, bulk-density trajectory, snowfall-input differences, interception storage/unloading/drip/sublimation, and the residual forest/open energy contrast. | The open lane anchors density/geometry. Only a residual paired forest/open contrast may identify interception or canopy energy. Freeze component-specific longwave, sublimation, and combined-interaction promotion gates before any successor candidate run. |
+| 20 | `SNOW-SURFACE-EB-05` campaign assurance closeout — **deferred pending 04U–04X and admitted successors** | Refresh `ASSURE-06` after the prospective partition sequence and any authority-backed process amendments or component-specific promotion studies reach disposition. | Distinguish implemented physics, empirical efficacy, noninferiority, unresolved forcing/process ownership, and default status. Warm-maritime conifer transfer remains withheld. |
 
 EB-04B assigned all captured failures and correction authority. EB-04C closes
 the 22 thermal failures, and EB-04D closes both isolated geometry failures.
@@ -160,8 +164,11 @@ because failures did not decrease. EB-04T shows the requirement was mixed but
 not merely technical: 11 failures emphasize density/geometry or mixed
 interception debt, while five open-control timing failures test sublimation and
 block combined-LS promotion without identifying canopy-longwave efficacy. It
-does not authorize another calibration/factorial round or change EB-04S. EB-05
-assurance is next.
+does not authorize another calibration/factorial round or change EB-04S.
+EB-04U freezes the prospective mechanistic partition and admits EB-04V–04X for
+bounded diagnostics with prerequisites. EB-04V is next; a new result-bearing
+promotion factorial remains inadmissible until the relevant successor closes
+its authority, observability, ownership, and independent-data gates.
 
 ### 6.1 Iteration Discipline After EB-04
 
@@ -185,10 +192,11 @@ first reproducible error. If 04B exposes a missing science authority, insert a
 bounded research package before the affected correction; do not install proxy
 physics.
 
-The sequence may loop only through a newly authorized defect-shaped package
-with a named finding, write set, authority, and acceptance test. It may not loop
-through coefficient search, guard relaxation, observation rescaling, or
-result-aware metric changes.
+The sequence may loop only through a newly authorized defect- or process-shaped
+package with a named finding, write set, authority, and acceptance test. The
+EB-04U–04X sequence is a new prospective study cycle, not a rerun of EB-04R or
+EB-04S. It may not loop through coefficient search, guard relaxation,
+observation rescaling, or result-aware metric changes.
 
 ## 7. Stop-Loss
 

@@ -347,7 +347,8 @@ State as of `2026-07-30 UTC`:
   frozen vapor-to-sublimation tolerance contradicts the consumer. EB-04S then
   reconciled the units without result access and separately admitted the sealed
   outputs; the unchanged empirical rule closes nonpromotion. EB-04T attributes
-  the unchanged failures and leaves EB-05 assurance next.
+  the unchanged failures. EB-04U freezes the prospective partition and leaves
+  EB-04V next, followed by EB-04W/04X and then EB-05 assurance.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5072,6 +5073,17 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/` —
+  EXECUTED / PROSPECTIVE DIAGNOSTIC DESIGN COMPLETE: partitions the exact 16 EB-04T
+  failures into nine density-structure, two Harvard depth–SWE
+  geometry/interception, and five open-control mountain under-persistence
+  cases. All existing observations are diagnostic-only. Across 40 retained
+  B/L/S/LS cells, 16 required operands are direct, one derived, one needs
+  semantic proof, one is partial, and seven are missing. EB-04V/04W/04X are
+  admitted for bounded operator/observability diagnostics with named
+  prerequisites; numeric efficacy replication/site-spread rules and new
+  independent evidence remain pre-result gates. No model run, fitting, physics
+  amendment, promotion, or default change occurred.
 - `20260801-snow-surface-eb-04t-unchanged-failure-attribution-001/` — EXECUTED /
   DIAGNOSTIC COMPLETE: retained-only analysis reconstructs all 16 EB-04S
   failures across B/L/S/LS. Eleven measure density/geometry or mixed
@@ -5079,7 +5091,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   block combined-LS promotion but cannot identify canopy-longwave efficacy. LS
   moves 15 exact primary errors away and leaves one unchanged; 13/16 factorial
   interactions are nonzero. The result makes no materiality claim and preserves
-  EB-04S nonpromotion/default-off. EB-05 assurance is next.
+  EB-04S nonpromotion/default-off. EB-04U–04X continue the prospective science
+  campaign before EB-05 assurance.
 - `20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/` —
   EXECUTED / CLOSE NONPROMOTION: froze result-blind authority establishing
   `1e-9 m SWE == 1e-6 kg m^-2` for vapor-to-sublimation transfer closure,
