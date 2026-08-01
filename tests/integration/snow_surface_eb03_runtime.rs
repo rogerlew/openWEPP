@@ -2,8 +2,42 @@ use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLayerState,
     DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions, SnowDensityModel, SnowMeltModel,
     SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel,
-    Wb11HydrologyKernel,
+    Wb11HydrologyKernel, snow_density_compaction_v1_constants,
 };
+
+fn independently_compacted_density_after_day(
+    initial_density_kg_m3: f64,
+    overburden_kg_m2: f64,
+    snow_temperature_c: f64,
+) -> f64 {
+    let constants = snow_density_compaction_v1_constants();
+    let mut density_kg_m3 = initial_density_kg_m3;
+    for _ in 0..24 {
+        let rate = constants.compaction_rate_cos_amplitude
+            * (std::f64::consts::PI * overburden_kg_m2 / constants.dry_compaction_swe_max_kg_m2)
+                .cos()
+            + constants.compaction_rate_offset;
+        let c11 = (-constants.ptm_density_decay_m3_per_kg
+            * (density_kg_m3 - constants.ptm_density_threshold_kg_m3))
+            .exp();
+        let freeze_minus_snow_temp = -snow_temperature_c.min(0.0);
+        let destructive_metamorphism = constants.ptm_rate_per_hour
+            * c11
+            * (-constants.ptm_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+            / rate;
+        let overburden_compaction = constants.poc_rate_per_hour
+            * (-constants.poc_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+            * overburden_kg_m2
+            * (-constants.poc_density_decay * (density_kg_m3 / 1_000.0)).exp()
+            / rate;
+        density_kg_m3 = (density_kg_m3
+            + constants.dry_compaction_multiplier
+                * (destructive_metamorphism + overburden_compaction)
+                * density_kg_m3)
+            .min(constants.dry_compaction_max_density_kg_m3);
+    }
+    density_kg_m3
+}
 
 fn inputs(
     longwave_model: SnowSurfaceLongwaveModel,
@@ -206,6 +240,160 @@ fn invalid_temperature_guard_remains_fail_closed_above_total_mass_boundary() {
         .expect_err("resolved mass must retain the absolute-zero guard");
 
     assert!(error.to_string().contains("must be above absolute zero"));
+}
+
+#[test]
+fn production_density_handoff_obeys_exact_mass_lifecycle_sides() {
+    let boundary_swe_m = 1.0e-12_f64;
+    for (fragment_mass_swe_m, expected_retained) in [
+        (boundary_swe_m.next_down(), false),
+        (boundary_swe_m, false),
+        (boundary_swe_m.next_up(), true),
+    ] {
+        let mut candidate = inputs(
+            SnowSurfaceLongwaveModel::Disabled,
+            SnowSurfaceSublimationModel::Disabled,
+        );
+        candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+        let established = DirectSnowLayerState::new(0.18, 0.40, 450.0, 12.0);
+        let fragment = DirectSnowLayerState::new(
+            fragment_mass_swe_m,
+            fragment_mass_swe_m * 1_000.0 / 500.0,
+            500.0,
+            7.0,
+        );
+        candidate.snow_layers = vec![established, fragment];
+        candidate.runtime_swe_m = 0.18 + fragment_mass_swe_m;
+        candidate.runtime_depth_m = 0.40 + fragment.thickness_m;
+        candidate.runtime_density_kg_m3 =
+            candidate.runtime_swe_m * 1_000.0 / candidate.runtime_depth_m;
+        candidate.coe_boundary_depth_m = candidate.runtime_depth_m;
+        candidate.coe_boundary_density_kg_m3 = candidate.runtime_density_kg_m3;
+
+        let result =
+            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+                .expect("exact lifecycle sides must remain valid production states");
+
+        assert_eq!(
+            result
+                .snow_layers_after
+                .iter()
+                .any(|layer| layer.mass_swe_m.to_bits() == fragment_mass_swe_m.to_bits()),
+            expected_retained,
+            "fragment SWE {fragment_mass_swe_m:e} around boundary {boundary_swe_m:e}: {:?}",
+            result.snow_layers_after,
+        );
+    }
+}
+
+#[test]
+fn density_handoff_retains_captured_subnanometer_swe_fragments_and_state() {
+    for (fragment_mass_swe_m, fragment_depth_m, fragment_density_kg_m3) in [
+        (
+            5.260_584_353_128_359e-10,
+            1.007_774_780_292_791_7e-9,
+            521.999_999_999_998_6,
+        ),
+        (
+            5.267_347_169_024_66e-10,
+            1.088_162_587_814_523e-9,
+            484.058_837_163_631_5,
+        ),
+    ] {
+        let mut candidate = inputs(
+            SnowSurfaceLongwaveModel::Disabled,
+            SnowSurfaceSublimationModel::Disabled,
+        );
+        candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+
+        let mut established = DirectSnowLayerState::new(0.13, 0.25, 520.0, 12.0);
+        established.temperature_c = -5.0;
+        established.cold_content_j_m2 = established.mass_swe_m * 1_000.0 * 2_100.0 * 5.0;
+
+        let mut fragment = DirectSnowLayerState::new(
+            fragment_mass_swe_m,
+            fragment_depth_m,
+            fragment_density_kg_m3,
+            7.0,
+        );
+        fragment.temperature_c = -5.0;
+        fragment.liquid_water_m = fragment_mass_swe_m * 0.1;
+        fragment.refrozen_liquid_m = fragment_mass_swe_m * 0.2;
+        fragment.cold_content_j_m2 = fragment_mass_swe_m * 1_000.0 * 2_100.0 * 5.0;
+
+        candidate.snow_layers = vec![established, fragment];
+        candidate.runtime_swe_m = candidate
+            .snow_layers
+            .iter()
+            .map(|layer| layer.mass_swe_m)
+            .sum();
+        candidate.runtime_depth_m = candidate
+            .snow_layers
+            .iter()
+            .map(|layer| layer.thickness_m)
+            .sum();
+        candidate.runtime_density_kg_m3 =
+            candidate.runtime_swe_m * 1_000.0 / candidate.runtime_depth_m;
+        candidate.coe_boundary_depth_m = candidate.runtime_depth_m;
+        candidate.coe_boundary_density_kg_m3 = candidate.runtime_density_kg_m3;
+
+        let result =
+            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+                .expect("represented fragment must survive density handoff");
+
+        assert_eq!(result.snow_layers_after.len(), 2);
+        let retained = result.snow_layers_after[1];
+        let expected_density_kg_m3 = independently_compacted_density_after_day(
+            fragment_density_kg_m3,
+            established.mass_swe_m * 1_000.0,
+            -5.0,
+        )
+        .min(522.0);
+        let expected_depth_m = fragment_mass_swe_m * 1_000.0 / expected_density_kg_m3;
+        assert!((retained.mass_swe_m - fragment_mass_swe_m).abs() <= 1.0e-15);
+        assert!(
+            (retained.thickness_m - expected_depth_m).abs() <= 1.0e-15,
+            "retained depth {} != independently reconstructed {expected_depth_m}; density {} vs {expected_density_kg_m3}",
+            retained.thickness_m,
+            retained.density_kg_m3,
+        );
+        assert!((retained.density_kg_m3 - expected_density_kg_m3).abs() <= 1.0e-12);
+        assert!((retained.liquid_water_m - fragment.liquid_water_m).abs() <= 1.0e-15);
+        assert!((retained.refrozen_liquid_m - fragment.refrozen_liquid_m).abs() <= 1.0e-15);
+        assert!((retained.cold_content_j_m2 - fragment.cold_content_j_m2).abs() <= 1.0e-15);
+        assert!(
+            (retained.settle_day_count - (fragment.settle_day_count + 1.0)).abs() <= f64::EPSILON
+        );
+        let mass_sum_m = result
+            .snow_layers_after
+            .iter()
+            .map(|layer| layer.mass_swe_m)
+            .sum::<f64>();
+        let depth_sum_m = result
+            .snow_layers_after
+            .iter()
+            .map(|layer| layer.thickness_m)
+            .sum::<f64>();
+        assert!((mass_sum_m - result.runtime_swe_after_m).abs() <= 1.0e-9);
+        assert!((depth_sum_m - result.runtime_depth_after_m).abs() <= 1.0e-9);
+    }
+}
+
+#[test]
+fn density_handoff_still_rejects_material_depth_aggregate_mismatch() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::Disabled,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.snow_density_model = SnowDensityModel::PhysicsBulkMultilayerDensityV1;
+    candidate.runtime_depth_m += 1.0e-9_f64.next_up();
+    candidate.coe_boundary_depth_m = candidate.runtime_depth_m;
+
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect_err("material physical-depth mismatch must remain typed");
+
+    assert!(error.to_string().contains("prior_layers.thickness_m"));
+    assert!(error.to_string().contains("does not match expected"));
 }
 
 #[test]

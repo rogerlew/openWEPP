@@ -82,6 +82,19 @@ pub mod conversions {
     pub const LEGACY_METERS_PER_MILE: f64 = 1_609.0;
     /// Density scale for `kg m^-3 -> g cm^-3`.
     pub const KILOGRAMS_PER_CUBIC_METER_PER_GRAM_PER_CUBIC_CENTIMETER: f64 = 1_000.0;
+    /// Exact liquid-water density used to convert SWE depth to areal mass.
+    pub const LIQUID_WATER_DENSITY_KG_M3: f64 = 1_000.0;
+
+    /// Convert snow water-equivalent depth to areal water mass.
+    ///
+    /// This scalar helper is for already-validated kernel state. Finite,
+    /// non-negative SWE produces finite, non-negative areal mass over the
+    /// representable domain; IEEE non-finite values propagate so the caller's
+    /// typed domain guard remains authoritative.
+    #[must_use]
+    pub fn snow_water_equivalent_meters_to_area_mass_kg_m2(water_equivalent_m: f64) -> f64 {
+        water_equivalent_m * LIQUID_WATER_DENSITY_KG_M3
+    }
 
     /// Convert meters to millimeters.
     ///
@@ -1300,6 +1313,15 @@ mod tests {
             conversions::kilograms_per_cubic_meter_to_grams_per_cubic_centimeter(350.0)
                 .expect("valid snow density");
         assert_close(density_g_cm3, 0.35);
+    }
+
+    #[test]
+    fn snow_water_equivalent_to_area_mass_is_directional() {
+        assert_close(
+            conversions::snow_water_equivalent_meters_to_area_mass_kg_m2(0.125),
+            125.0,
+        );
+        assert!(conversions::snow_water_equivalent_meters_to_area_mass_kg_m2(f64::NAN).is_nan());
     }
 
     #[test]

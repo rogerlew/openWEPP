@@ -5068,6 +5068,13 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260731-snow-surface-eb-04d-layer-thickness-reconciliation-001/` —
+  COMPLETE / PASS: contract-first closure of two cross-unit layer-geometry failures.
+  The package separates the existing `1e-9 kg m^-2` represented-mass lifecycle
+  boundary from the independent `1e-9 m` aggregate residual tolerance, with no
+  tolerance inflation, state deletion, or weakening of typed guards. Both
+  complete 16,437-day replays, independent conservation, all selected gates,
+  dual review, and dual terminal verification pass; EB-04E is next.
 - `20260731-snow-surface-eb-04c-thin-pack-thermal-domain-closure-001/` —
   COMPLETE / PASS: contract-first closure of the 17 impossible thin-pack thermal
   states and five valid-Kelvin vapor-pressure underflows using libsnobal's
@@ -5088,8 +5095,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   leaves terminal amplification inconclusive. The two geometry failures equal
   an SWE fragment filtered below `1e-9 m` whose density-derived depth remains
   above the independent depth tolerance. Five accessible figures with Markdown
-  sidecars support the assignment. EB-04C now closes the thermal family;
-  EB-04D is next for the independently assigned geometry family.
+  sidecars support the assignment. EB-04C closes the thermal family, and
+  EB-04D now closes the independently assigned geometry family.
 - `20260730-snow-surface-eb-04a-failure-observability-state-capture-001/` —
   COMPLETE / PASS: all 24 frozen EB-04 failures reproduced on the same day
   with exact typed state. The former masked conductivity family decomposes

@@ -1164,6 +1164,8 @@ fn r7h_direct_production_snow_trace_line(
 ) -> String {
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
     let thermal = direct_snow_trace_thermal_diagnostics(snow_liquid);
+    let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
+    let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
     let line = format!(
         "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
 \"day_index\":{day_index},\
@@ -1207,7 +1209,9 @@ fn r7h_direct_production_snow_trace_line(
 \"snow_layer_basal_density_after_kg_m3\":{},\
 \"snow_layer_density_gradient_after_kg_m3\":{},\
 \"snow_layer_minimum_temperature_after_c\":{},\
-\"snow_layer_maximum_temperature_after_c\":{}",
+\"snow_layer_maximum_temperature_after_c\":{},\
+\"snow_layers_before\":{},\
+\"snow_layers_after\":{}",
         direct_production_trace_number(hyetograph_rainfall_m),
         direct_production_trace_number(snow_lane_state.runtime_swe_m),
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
@@ -1248,12 +1252,37 @@ fn r7h_direct_production_snow_trace_line(
         direct_production_trace_number(layer.density_gradient_after_kg_m3),
         direct_production_trace_number(layer.minimum_temperature_after_c),
         direct_production_trace_number(layer.maximum_temperature_after_c),
+        layers_before,
+        layers_after,
     );
     format!(
         "{line},{},{}\n",
         direct_snow_trace_stage3_fields(&snow_liquid.stage3_diagnostics),
         direct_snow_trace_thermal_fields(&thermal)
     )
+}
+
+fn direct_snow_trace_layers(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> String {
+    let rows = layers
+        .iter()
+        .map(|layer| {
+            format!(
+                "{{\"mass_swe_m\":{},\"thickness_m\":{},\"density_kg_m3\":{},\"settle_day_count\":{},\"temperature_c\":{},\"liquid_water_m\":{},\"cold_content_j_m2\":{},\"refrozen_liquid_m\":{}}}",
+                direct_production_trace_number(layer.mass_swe_m),
+                direct_production_trace_number(layer.thickness_m),
+                direct_production_trace_number(layer.density_kg_m3),
+                direct_production_trace_number(layer.settle_day_count),
+                direct_production_trace_number(layer.temperature_c),
+                direct_production_trace_number(layer.liquid_water_m),
+                direct_production_trace_number(layer.cold_content_j_m2),
+                direct_production_trace_number(layer.refrozen_liquid_m),
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",");
+    format!("[{rows}]")
 }
 
 fn direct_snow_trace_stage3_fields(

@@ -17,6 +17,12 @@ pub const STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY: f64 = 2.0;
 pub const STURM1995_LOW_WIND_MAX_M_S: f64 = 0.5;
 pub const STURM1995_HIGH_WIND_MIN_M_S: f64 = 2.0;
 
+fn snow_density_layer_has_resolved_mass(mass_swe_m: f64) -> bool {
+    openwepp_unit_boundary::conversions::snow_water_equivalent_meters_to_area_mass_kg_m2(
+        mass_swe_m,
+    ) > SNOW_DENSITY_ZERO_MASS_KG_M2
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SnowDensityModel {
     LegacyWepp,
@@ -709,7 +715,7 @@ fn initialize_multilayer_density_state(
             density_validate_nonnegative("prior_layers.thickness_m", layer.thickness_m)?;
             density_validate_nonnegative("prior_layers.density_kg_m3", layer.density_kg_m3)?;
             density_validate_nonnegative("prior_layers.settle_day_count", layer.settle_day_count)?;
-            if layer.mass_swe_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+            if !snow_density_layer_has_resolved_mass(layer.mass_swe_m) {
                 continue;
             }
             let density = if layer.density_kg_m3 > 0.0 {
@@ -1246,6 +1252,21 @@ mod cqr_row5_snow_density_tests {
             (actual - expected).abs() <= 1.0e-12,
             "actual={actual} expected={expected}"
         );
+    }
+
+    #[test]
+    fn eb04d_layer_lifecycle_uses_mass_units_not_meter_residual_tolerance() {
+        let mass_boundary_swe_m =
+            SNOW_DENSITY_ZERO_MASS_KG_M2 / SNOW_DENSITY_RHO_WATER_KG_M3;
+        let just_below = f64::from_bits(mass_boundary_swe_m.to_bits() - 1);
+        let just_above = f64::from_bits(mass_boundary_swe_m.to_bits() + 1);
+
+        assert!(!snow_density_layer_has_resolved_mass(just_below));
+        assert!(!snow_density_layer_has_resolved_mass(mass_boundary_swe_m));
+        assert!(snow_density_layer_has_resolved_mass(just_above));
+        let captured_fragment_swe_m = 5.260_584_353_128_359e-10;
+        assert!(snow_density_layer_has_resolved_mass(captured_fragment_swe_m));
+        assert!(captured_fragment_swe_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M);
     }
 
     #[test]

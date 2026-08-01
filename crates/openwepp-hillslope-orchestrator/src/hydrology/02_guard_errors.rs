@@ -29,7 +29,7 @@ impl SnowLayerAggregateMismatchError {
         let retained_layers = self
             .prior_layers
             .iter()
-            .filter(|layer| layer.mass_swe_m > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M);
+            .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
         match self.symbol {
             "prior_layers.mass_swe_m" => retained_layers.map(|layer| layer.mass_swe_m).sum(),
             "prior_layers.thickness_m" => {

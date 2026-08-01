@@ -1,0 +1,10 @@
+operand,units,basis,owner,authority,status
+layer_mass_swe,m,SWE per represented layer,Stage 3 persistent state,SC-SNOWENERGY-001 INV-021,authoritative
+layer_ice_mass,kg m^-2,area-normalized ice mass,density handoff,rho_w conversion,derived_authoritative
+layer_thickness,m,physical depth per layer,Stage 3 persistent state,SC-SNOWENERGY-001 INV-021,authoritative
+layer_density,kg m^-3,bulk layer density,density handoff,mass/depth identity,authoritative
+liquid_water,m,SWE per layer,CoE/Stage 3 state,SC-SNOWENERGY-001 INV-017 through 021,authoritative
+refrozen_liquid,m,SWE per layer,CoE/Stage 3 state,SC-SNOWENERGY-001 INV-017 through 021,authoritative
+cold_content,J m^-2,area-normalized energy deficit,Stage 3 thermal state,SC-SNOWENERGY-001 INV-019 through 021,authoritative
+settle_day_count,d,layer age state,density model,multilayer density contract,authoritative
+aggregate_residual,m,SWE or physical-depth residual,density handoff,SC-SNOWENERGY-001 INV-021,guard_only

@@ -329,7 +329,8 @@ impl Wb11HydrologyKernel {
             },
             &mut snow_layers_after,
         )?;
-        snow_layers_after.retain(|layer| layer.mass_swe_m > WB11_ZERO_THRESHOLD);
+        snow_layers_after
+            .retain(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
         let runtime_swe_after_m =
             (density_outcome.runtime_swe_after_m - stage3_diagnostics.sublimation_m).max(0.0);
         let runtime_depth_after_m = if stage3_diagnostics.enabled {
@@ -899,7 +900,7 @@ impl Wb11HydrologyKernel {
         target_density_kg_m3: f64,
         settle_day_count: f64,
     ) {
-        layers.retain(|layer| layer.mass_swe_m > WB11_ZERO_THRESHOLD);
+        layers.retain(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
         let mut current_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
         if current_swe_m <= WB11_ZERO_THRESHOLD {
             layers.push(DirectSnowLayerState::new(
@@ -913,13 +914,13 @@ impl Wb11HydrologyKernel {
 
         if current_swe_m > target_swe_m + STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M {
             let mut remaining_removal_m = current_swe_m - target_swe_m;
-            while remaining_removal_m > STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M
-                && !layers.is_empty()
-            {
-                if layers[0].mass_swe_m <= remaining_removal_m
-                    + STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M
+            while remaining_removal_m > 0.0 && !layers.is_empty() {
+                let residual_mass_swe_m = layers[0].mass_swe_m - remaining_removal_m;
+                if remaining_removal_m >= layers[0].mass_swe_m
+                    || !snow_density_layer_has_resolved_mass(residual_mass_swe_m)
                 {
-                    remaining_removal_m -= layers[0].mass_swe_m;
+                    remaining_removal_m =
+                        (remaining_removal_m - layers[0].mass_swe_m).max(0.0);
                     layers.remove(0);
                 } else {
                     let original_mass_m = layers[0].mass_swe_m;
@@ -949,7 +950,21 @@ impl Wb11HydrologyKernel {
 
         current_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
         if let Some(surface) = layers.first_mut() {
-            surface.mass_swe_m += target_swe_m - current_swe_m;
+            let correction_m = target_swe_m - current_swe_m;
+            if correction_m < 0.0 {
+                let original_mass_m = surface.mass_swe_m;
+                surface.mass_swe_m = (surface.mass_swe_m + correction_m).max(0.0);
+                let retained_fraction = if original_mass_m > 0.0 {
+                    surface.mass_swe_m / original_mass_m
+                } else {
+                    0.0
+                };
+                surface.liquid_water_m *= retained_fraction;
+                surface.cold_content_j_m2 *= retained_fraction;
+                surface.refrozen_liquid_m *= retained_fraction;
+            } else {
+                surface.mass_swe_m += correction_m;
+            }
         }
     }
 
@@ -1836,7 +1851,7 @@ impl Wb11HydrologyKernel {
             layers[0].refrozen_liquid_m *= 1.0 - fraction_removed;
             layers[0].thickness_m =
                 layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3 / layers[0].density_kg_m3;
-            if layers[0].mass_swe_m <= WB11_ZERO_THRESHOLD {
+            if !snow_density_layer_has_resolved_mass(layers[0].mass_swe_m) {
                 layers.remove(0);
                 cold_content_by_layer.remove(0);
                 *active_layer_count -= 1;
@@ -2236,6 +2251,113 @@ mod cqr_row5_tests {
         assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
             just_above
         ));
+    }
+
+    #[test]
+    fn partial_sublimation_retains_mass_resolved_subnanometer_swe_remainder() {
+        let original_mass_swe_m = 1.0e-6;
+        let represented_remainder_swe_m = 5.0e-10;
+        let requested_m = original_mass_swe_m - represented_remainder_swe_m;
+        let mut layer = DirectSnowLayerState::new(original_mass_swe_m, 2.0e-6, 500.0, 8.0);
+        layer.liquid_water_m = 2.0e-7;
+        layer.refrozen_liquid_m = 1.0e-7;
+        let mut layers = vec![layer];
+        let original_cold_content_j_m2 = 2.1;
+        let mut cold_content_by_layer = vec![original_cold_content_j_m2];
+        let mut active_layer_count = 1;
+
+        let (removed_m, exported_j_m2, removed_layer_count) =
+            Wb11HydrologyKernel::remove_stage3_active_sublimation(
+                requested_m,
+                &mut layers,
+                &mut cold_content_by_layer,
+                &mut active_layer_count,
+            );
+
+        assert_eq!(layers.len(), 1);
+        assert_eq!(active_layer_count, 1);
+        assert_eq!(removed_layer_count, 0);
+        assert!(snow_density_layer_has_resolved_mass(layers[0].mass_swe_m));
+        assert!((layers[0].mass_swe_m - represented_remainder_swe_m).abs() <= 1.0e-18);
+        assert!((removed_m + layers[0].mass_swe_m - original_mass_swe_m).abs() <= 1.0e-18);
+        assert!(
+            (exported_j_m2 + cold_content_by_layer[0] - original_cold_content_j_m2).abs()
+                <= 1.0e-12
+        );
+        assert!((layers[0].liquid_water_m - 1.0e-10).abs() <= 1.0e-18);
+        assert!((layers[0].refrozen_liquid_m - 5.0e-11).abs() <= 1.0e-18);
+    }
+
+    #[test]
+    fn stage3_target_trim_preserves_coupled_mass_resolved_remainder() {
+        let original_mass_swe_m = 2.0e-6;
+        let represented_remainder_swe_m = 5.0e-10;
+        let removal_m = original_mass_swe_m - represented_remainder_swe_m;
+        let mut surface = DirectSnowLayerState::new(original_mass_swe_m, 4.0e-6, 500.0, 9.0);
+        surface.temperature_c = -4.0;
+        surface.liquid_water_m = 4.0e-7;
+        surface.cold_content_j_m2 = 16.8;
+        surface.refrozen_liquid_m = 2.0e-7;
+        let lower = DirectSnowLayerState::new(0.1, 0.2, 500.0, 20.0);
+        let target_swe_m = surface.mass_swe_m + lower.mass_swe_m - removal_m;
+        let mut layers = vec![surface, lower];
+
+        Wb11HydrologyKernel::adjust_stage3_layer_swe_to_target(
+            &mut layers,
+            target_swe_m,
+            0.2,
+            500.0,
+            20.0,
+        );
+
+        assert_eq!(layers.len(), 2);
+        let retained = layers[0];
+        let retained_fraction = retained.mass_swe_m / original_mass_swe_m;
+        assert!((retained.mass_swe_m - represented_remainder_swe_m).abs() <= 1.0e-15);
+        assert!(snow_density_layer_has_resolved_mass(retained.mass_swe_m));
+        assert!((retained.liquid_water_m - surface.liquid_water_m * retained_fraction).abs() <= 1.0e-18);
+        assert!((retained.refrozen_liquid_m - surface.refrozen_liquid_m * retained_fraction).abs() <= 1.0e-18);
+        assert!((retained.cold_content_j_m2 - surface.cold_content_j_m2 * retained_fraction).abs() <= 1.0e-15);
+        assert_eq!(retained.density_kg_m3.to_bits(), surface.density_kg_m3.to_bits());
+        assert_eq!(retained.temperature_c.to_bits(), surface.temperature_c.to_bits());
+        assert_eq!(retained.settle_day_count.to_bits(), surface.settle_day_count.to_bits());
+        let reconstructed_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
+        assert!((reconstructed_swe_m - target_swe_m).abs() <= 1.0e-15);
+    }
+
+    #[test]
+    fn stage3_target_trim_continues_below_residual_tolerance_across_layers() {
+        let mut removed = DirectSnowLayerState::new(2.0e-6, 4.0e-6, 500.0, 9.0);
+        removed.liquid_water_m = 4.0e-7;
+        removed.cold_content_j_m2 = 16.8;
+        removed.refrozen_liquid_m = 2.0e-7;
+        let mut retained = DirectSnowLayerState::new(2.0e-9, 4.0e-9, 500.0, 12.0);
+        retained.temperature_c = -3.0;
+        retained.liquid_water_m = 8.0e-10;
+        retained.cold_content_j_m2 = 4.2e-3;
+        retained.refrozen_liquid_m = 4.0e-10;
+        let target_swe_m = 1.5e-9;
+        let mut layers = vec![removed, retained];
+
+        Wb11HydrologyKernel::adjust_stage3_layer_swe_to_target(
+            &mut layers,
+            target_swe_m,
+            3.0e-9,
+            500.0,
+            12.0,
+        );
+
+        assert_eq!(layers.len(), 1);
+        let result = layers[0];
+        let retained_fraction = 0.75;
+        assert!((result.mass_swe_m - target_swe_m).abs() <= 1.0e-18);
+        assert!(snow_density_layer_has_resolved_mass(result.mass_swe_m));
+        assert!((result.liquid_water_m - retained.liquid_water_m * retained_fraction).abs() <= 1.0e-18);
+        assert!((result.refrozen_liquid_m - retained.refrozen_liquid_m * retained_fraction).abs() <= 1.0e-18);
+        assert!((result.cold_content_j_m2 - retained.cold_content_j_m2 * retained_fraction).abs() <= 1.0e-15);
+        assert_eq!(result.density_kg_m3.to_bits(), retained.density_kg_m3.to_bits());
+        assert_eq!(result.temperature_c.to_bits(), retained.temperature_c.to_bits());
+        assert_eq!(result.settle_day_count.to_bits(), retained.settle_day_count.to_bits());
     }
 
     #[test]

@@ -17,7 +17,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     let freeze = read(SNOW_FREEZE_CONTRACT);
 
     for required in [
-        "contract_version: 4",
+        "contract_version: 5",
         "INV-SNOWENERGY-015",
         "INV-SNOWENERGY-016",
         "INV-SNOWENERGY-017",
@@ -30,6 +30,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
         "INV-SNOWENERGY-024",
         "INV-SNOWENERGY-025",
         "INV-SNOWENERGY-026",
+        "INV-SNOWENERGY-027",
         "KTS+efcon",
         "snow_active_lower_conduction_w_m2",
         "layered_thermal_liquid_v1",
@@ -58,6 +59,21 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
             freeze.contains(required),
             "{SNOW_FREEZE_CONTRACT} missing {required}"
         );
+    }
+}
+
+#[test]
+fn eb04d_contract_separates_layer_mass_lifecycle_from_residual_tolerance() {
+    let energy = read(SNOW_ENERGY_CONTRACT);
+    for required in [
+        "m_layer = rho_w * SWE_layer > 1e-9 kg m^-2",
+        "mass_swe_m > 1e-12 m",
+        "neither may delete a represented layer",
+        "OBL-SNOWENERGY-C-012",
+        "SNOWENERGY-EB04D-LAYER-RECONCILIATION",
+        "GAP-SNOWENERGY-009",
+    ] {
+        assert!(energy.contains(required), "contract missing {required}");
     }
 }
 

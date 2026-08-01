@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -41,8 +41,7 @@ collapse, crosses depositional-layer boundaries
 conservatively, and exchanges conductive heat with the remaining lower pack
 inside each stability substep. Marks/SNOBAL mass-dependent timestep
 subdivision is required. The production default remains unchanged. EB-03A
-real-consumer evidence passes, but EB-04 remains blocked until EB-03A's
-declared full-workspace quick and ADR-0043 Critical full profiles can pass.
+real-consumer and terminal workspace evidence pass.
 
 Version 4 defines the terminal resolved thermal-layer domain. The exact
 libsnobal `1 kg m^-2` threshold suspends Stage 3 exchange only when total pack
@@ -51,6 +50,13 @@ volume strictly below the same threshold collapses into a one-volume thermal
 solve; equality remains a two-volume solve. CoE remains authoritative for snow
 existence and mass, so persistent layer state is retained rather than
 converted to water.
+
+Version 5 separates represented-layer lifecycle from aggregate residual
+acceptance. A density-layer fragment is represented when its converted ice
+mass is greater than the existing `1e-9 kg m^-2` zero-mass boundary; with
+`rho_w = 1000 kg m^-3`, this is `mass_swe_m > 1e-12 m`. The independent
+`1e-9 m` SWE and physical-depth aggregate closure tolerances remain residual
+guards and are not layer-deletion thresholds.
 
 ## Scientific Scope
 
@@ -137,6 +143,9 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `t_unres` | `s` | Duration for which CoE snow exists below the resolved Stage 3 thermal domain. | Stage 3 domain branch | diagnostics and runtime evidence |
 | `m_l` | `kg m^-2` | Ice mass in the selected lower thermal volume. | Stage 3 thermal partition | one/two-volume branch |
 | `t_collapse` | `s` | Duration for which a resolved pack uses one thermal volume because `0 < m_l < m_res`. | Stage 3 layer branch | diagnostics and runtime evidence |
+| `SWE_layer` | `m` | Persistent layer water-equivalent mass depth. | typed `DirectSnowLayerState` | named lifecycle conversion |
+| `m_layer` | `kg m^-2` | Persistent layer areal water mass used for lifecycle selection. | named SWE-to-area-mass conversion | density lifecycle |
+| `z_layer` | `m` | Persistent layer physical thickness. | typed `DirectSnowLayerState` | density closure and Stage 3 |
 | `sigma` | `W m^-2 K^-4` | Stefan-Boltzmann constant. | fixed constant | emission equations |
 
 ## Algorithm State Surfaces
@@ -546,6 +555,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-024` | No active/lower update may use an absolute-zero clamp, air-temperature replacement, fitted cold-content tax, or user limiter. | `REF-SNOWENERGY-PHYSICAL`, EB-03A authority envelope | `[INFERENCE][Static]` | source scan and physical-domain tests | hard `HOLD` |
 | `INV-SNOWENERGY-025` | Active and lower partitions retain distinct shared temperatures across substeps, and `G_0` uses libsnobal `KTS+efcon` effective conductivity with elevation-derived pressure; the Sturm frost-insulation relation is not an admissible substitute. | `REF-SNOWENERGY-LIBSNOBAL`, `REF-SNOWENERGY-MARKS1999`, `REF-SNOWENERGY-ANDERSON1976` | `[DIRECT][Static]` | unequal-temperature persistence and conductivity vectors | typed conductivity/projection failure |
 | `INV-SNOWENERGY-026` | At total represented ice mass `m_s <= 1 kg m^-2`, the Stage 3 thermal/exchange domain is unresolved before partition: CoE and persistent-layer mass, liquid, refrozen mass, cold content, and topology are preserved; no temperature, conductivity, surface energy, conduction, vapor exchange, sublimation, or melt alias is produced. For `m_s > 1`, `0 < m_l < 1 kg m^-2` collapses to one whole-pack thermal volume and continues exchange, while `m_l = 1` remains two-volume. | `REF-SNOWENERGY-LIBSNOBAL`, CoE ownership, physical conservation | `[DIRECT][Static] + [INFERENCE][Static]` | exact total-mass threshold sides, strict lower-layer collapse/equality, state-preservation, resume, and real-consumer trace tests | typed closure failure above boundary / blocked campaign on alias or mutation |
+| `INV-SNOWENERGY-027` | Persistent density layers are retained or removed by the density model's mass-unit lifecycle boundary: `m_layer = rho_w * SWE_layer > 1e-9 kg m^-2` is represented and `m_layer <= 1e-9 kg m^-2` is zero mass. The independent `1e-9 m` SWE and physical-depth aggregate tolerances test residual closure only; neither may delete a represented layer. Retained mass, depth, liquid, refrozen mass, cold content, density, and settle state remain coupled. | `INV-SNOWENERGY-021`, physical conservation, dimensional consistency | `[DIRECT][Static] + [INFERENCE][Static]` | named SWE-to-mass predicate, exact-side tests, independent aggregate reconstruction, typed mismatch outside tolerance | typed aggregate mismatch / blocked campaign on cross-unit filtering or state deletion |
 
 ### Guard Map
 
@@ -577,6 +587,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-024` | production-source scan and invalid-state vectors | governance/test | hard `HOLD` | EB-03A review and verification |
 | `INV-SNOWENERGY-025` | SNOBAL effective-conductivity primitive and persistent unequal-temperature runtime vector | runtime/test | typed conductivity/projection failure | EB-03A conservation evidence |
 | `INV-SNOWENERGY-026` | pre-temperature total-ice-mass branch plus unresolved-domain trace diagnostics | runtime/test/profile | preserve state and emit zero exchange below boundary; typed guards remain above boundary | EB-04C contract, replay, and conservation evidence |
+| `INV-SNOWENERGY-027` | multilayer density initialization and typed aggregate replay | runtime/test/profile | retain mass-resolved layers; independently reject mass/depth residual beyond tolerance | EB-04D contract, exact-side tests, replay, and conservation evidence |
 
 ## Producer and Consumer Obligations
 
@@ -598,6 +609,7 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-C-009` | coupled solver | Apply equal-and-opposite `G_0` within each selected stability substep and close active/lower and whole-pack energy. |
 | `OBL-SNOWENERGY-C-010` | stability scheduler | Select `60/15/1 minute` substeps from the fixed mass thresholds and reevaluate fluxes from current substep state. |
 | `OBL-SNOWENERGY-C-011` | conductive provider | Publish current active/lower state, applied `G_0`, cadence, and separate active/lower/cancellation residuals from the production solve. |
+| `OBL-SNOWENERGY-C-012` | density-layer handoff | Convert layer SWE to `kg m^-2` before applying the density model's zero-mass lifecycle boundary; preserve all coupled state for retained layers and keep aggregate residual tolerances independent. |
 
 ## Symbol Alias Map
 
@@ -618,6 +630,8 @@ divide/branch threshold.
 | `Q_cc` | `cold_content_j_m2` | Stage 3 layer to shared energy carrier | `J m^-2` -> same | `SC-SNOWFREEZE-001` | Positive energy deficit relative to `0 degC` ice. |
 | `m_v` | `vapor_mass_exchange_kg_m2` | turbulent exchange to snow state | `kg m^-2` -> same | `SC-SNOWFREEZE-001` / `SC-SNOWENERGY-001` | Signed exchange; sublimation negative. |
 | `Q_E` | `applied_surface_energy_j_m2` | shared carrier to cold content | `J m^-2` -> same | `SC-SNOWFREEZE-001` | Positive toward snow. |
+| `SWE_layer` | `snow.layer.mass_swe_m` | persistent snow layer to density lifecycle | `m` -> `m` | `SC-SNOWENERGY-001` | Typed vector element converted to `m_layer`; strict mass-unit lifecycle boundary. |
+| `z_layer` | `snow.layer.thickness_m` | persistent snow layer to density closure | `m` -> `m` | `SC-SNOWENERGY-001` | Typed vector element; physical-depth aggregate only. |
 
 ## Constants and Parameters
 
@@ -643,6 +657,8 @@ divide/branch threshold.
 | normal mass threshold | `60` | `kg m^-2` | fixed Marks/SNOBAL timestep threshold |
 | medium mass threshold | `10` | `kg m^-2` | fixed Marks/SNOBAL timestep threshold |
 | minimum resolved thermal mass, `m_res` | `1` | `kg m^-2` | exact libsnobal threshold: total mass `<=` suspends; lower-volume mass `<` collapses to one volume; lower-volume equality remains two-volume |
+| density-layer zero mass | `1e-9` | `kg m^-2` | existing density-model lifecycle boundary; equivalent to `1e-12 m` SWE through `rho_w`, not the aggregate closure tolerance |
+| layer aggregate closure tolerance | `1e-9` | `m` | existing independent SWE and physical-depth residual bound; never a layer-deletion threshold |
 | medium duration | `900` | `s` | fixed `15 minute` Marks/SNOBAL level |
 | small duration | `60` | `s` | fixed `1 minute` Marks/SNOBAL level |
 
@@ -666,6 +682,8 @@ model.
 | `Q_cc`, `Q_E` | `J m^-2` | Stage 3 scalar with contract-bound guard | no conversion | retained scalar exception: internal area-normalized energy ledger | internal diagnostic only |
 | `m_v` | `kg m^-2` | Stage 3 scalar with contract-bound guard | named mass-flux hourly integration | retained scalar exception: internal area-normalized mass ledger | internal diagnostic only |
 | `m_res` | `kg m^-2` | fixed internal model-domain constant | named SWE-to-mass conversion using `rho_w` | no user boundary or scalar exception | contract and environment-gated trace metadata |
+| `m_layer` | `m` SWE at the typed state seam; `kg m^-2` for lifecycle comparison | `SWE_layer` (`snow.layer.mass_swe_m`) | `snow_water_equivalent_meters_to_area_mass_kg_m2` | typed `DirectSnowLayerState` vector-element scalar exception | internal state only |
+| `z_layer` | `m` | `z_layer` (`snow.layer.thickness_m`) | identity | typed `DirectSnowLayerState` vector-element scalar exception | internal state only |
 | `t_unres` | `s` | Stage 3 diagnostic scalar | accumulated explicit substep duration | internal scalar exception with contract-bound non-negative guard | environment-gated research trace |
 | `m_l` | `kg m^-2` | Stage 3 lower-volume diagnostic scalar | named SWE-to-mass conversion using `rho_w` | internal scalar exception with contract-bound non-negative guard | environment-gated research trace |
 | `t_collapse` | `s` | Stage 3 diagnostic scalar | accumulated explicit substep duration | internal scalar exception with contract-bound non-negative guard | environment-gated research trace |
@@ -763,6 +781,11 @@ The implementation increment must reproduce package artifact
     equality, normal evaluation/resume, explicit runner diagnostics, and
     rejection of forced melt, deletion, temperature clamp, epsilon vapor
     pressure, and one-more-flux aliases.
+23. exact density-layer mass-boundary vectors below, at, and above
+    `1e-9 kg m^-2`; captured fragment vectors proving state retention and
+    independent mass/depth reconstruction; and negative vectors proving
+    cross-unit filtering, tolerance inflation, fragment deletion, and a
+    material aggregate mismatch are rejected.
 
 Producer-only analytical vectors cannot close runtime activation. EB-03 must
 prove the real shared Stage 3 snow-energy consumer reads the contracted
@@ -780,6 +803,7 @@ the originating evidence to authority promoted into this canonical core.
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
 | `SNOWENERGY-EB04C-THERMAL-DOMAIN` | `docs/work-packages/20260731-snow-surface-eb-04c-thin-pack-thermal-domain-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-026` | `dual review and verification required` | Package evidence must implement and verify the exact minimum-resolved-mass branch without importing libsnobal's phase conversion or weakening typed guards. |
+| `SNOWENERGY-EB04D-LAYER-RECONCILIATION` | `docs/work-packages/20260731-snow-surface-eb-04d-layer-thickness-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-021, INV-SNOWENERGY-027` | `dual review and verification required` | Package evidence must separate mass-unit lifecycle selection from meter-unit aggregate residual tolerances and preserve coupled layer state. |
 
 ## Gap Register
 
@@ -793,11 +817,13 @@ the originating evidence to authority promoted into this canonical core.
 | `GAP-SNOWENERGY-006` | The Dilley-Unsworth review does not establish a transferable numeric meteorological input envelope for every openWEPP climate. | future validation | Enforce the no-clamp derived-emissivity guard; report extrapolation diagnostics and evaluate climate-envelope adequacy. | implemented guard / validation gap |
 | `GAP-SNOWENERGY-007` | The Stage 3 cold-content carrier used a snowfall-event top layer instead of the Marks/SNOBAL active thermal control volume and applied hourly surface energy outside a mass-dependent coupled active/lower substep. | `SNOW-SURFACE-EB-03A` | Implement and independently test version-3 active-volume construction, `G_0`, conservative projection, and stability substeps without a clamp, fitted limiter, new user coefficient, or changed frozen controls. | resolved in version 3; real B/L/S/LS and rollback cells pass |
 | `GAP-SNOWENERGY-008` | Stage 3 continued thermal/exchange evaluation below libsnobal's minimum resolved layer mass, producing 17 impossible temperatures and five valid-Kelvin vapor-pressure underflows. | `SNOW-SURFACE-EB-04C` | Apply the exact fixed resolved-layer boundary before temperature/conductivity evaluation while preserving CoE mass and persistent cold content; prove all 22 captured thermal failures pass their original boundary. | resolved in version 4; 22/22 captured failures pass their formerly rejected processing day with zero forbidden thermal errors |
+| `GAP-SNOWENERGY-009` | Multilayer density initialization used the `1e-9 m` aggregate SWE tolerance as a layer-deletion threshold, omitting represented fragments whose physical depth remained in the expected aggregate. | `SNOW-SURFACE-EB-04D` | Apply the existing `1e-9 kg m^-2` density-model zero-mass boundary after named SWE-to-mass conversion; preserve coupled state and prove both captured geometry failures pass. | resolved in version 5; both 16,437-day trajectories complete with independently reconstructed layer mass/depth closure |
 
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 5 | 2026-07-31 | Separated represented density-layer mass lifecycle from aggregate SWE/depth residual tolerances. Layers above `1e-9 kg m^-2` after named SWE conversion remain represented with all coupled state; the independent `1e-9 m` closure guards remain unchanged. | `SNOW-SURFACE-EB-04D` authority reconciliation and required runtime replay |
 | 4 | 2026-07-31 | Defined the exact libsnobal `1 kg m^-2` branches. Total mass `<=1` suspends before partition while CoE retains snow state; in a resolved pack, lower mass `<1` collapses to one thermal volume and continues, while lower equality remains two-volume. Both branches publish explicit diagnostics. | `SNOW-SURFACE-EB-04C` authority reconciliation and required runtime replay |
 | 3 | 2026-07-30 | Replaced the failed snowfall-event top-layer provider with the Marks/SNOBAL upper-`0.25 m` active thermal control volume, harmonic active/lower `G_0`, conservative depositional-layer projection, and mass-dependent `60/15/1 minute` substeps. The amendment retains CoE snow existence/melt authority and prohibits shallow-pack temperature replacement, cold-content tax, fitted limiter, or new user coefficient. | `SNOW-SURFACE-EB-03A` contract-first authority trace |
 | 2 | 2026-07-30 | Selected the Stage 3 top-layer thermal provider; bound `T_c=T_a`, polar-night typed unavailability, `R_a,min`, orthogonal default-off selectors, exact-one vapor/latent composition, snow-state mutation, and mass/energy closure obligations. Real S/LS execution then retained the seam as diagnostic/reproduction-only and opened `GAP-SNOWENERGY-007` because the common provider reaches `0 K` with material SWE remaining. | `SNOW-SURFACE-EB-03` contract-first implementation and terminal consumer evidence |
