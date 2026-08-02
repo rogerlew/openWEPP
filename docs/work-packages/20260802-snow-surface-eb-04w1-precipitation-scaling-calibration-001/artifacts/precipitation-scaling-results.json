@@ -1,0 +1,1140 @@
+{
+  "evidence_role": "CALIBRATION",
+  "freeze_sha256": "910e115445c383398dc54aac4bdf39103e19ff82fe4e66e6b130fa22b1eef892",
+  "independent_validation": false,
+  "lanes": {
+    "snotel_mica_creek_st_joe_id": {
+      "baseline_replay": {
+        "maximum_operator_residual": 0.0,
+        "passes": true
+      },
+      "candidates": [
+        {
+          "chronology_abs_error_days": 40.0,
+          "maximum_closure_m": 3.3306690738754696e-16,
+          "multiplier": 0.8,
+          "operators": [
+            {
+              "executed_offset_days": -40.0,
+              "maximum_mass_closure_m": 3.3306690738754696e-16,
+              "median_effective_input_ratio": 0.7567996791585303,
+              "median_peak_ratio": 0.45858502820373004,
+              "median_prepeak_coe_melt_m": 0.18361272908433524,
+              "median_prepeak_loss_m": 0.24873521127635156,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.2748941780566895,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.45858502820373004,
+          "totals": {
+            "coe_melt_amelt_m": 3.017295820317303,
+            "coe_melt_applied_m": 15.60073521051813,
+            "coe_melt_bmelt_m": 5.042433848239669,
+            "coe_melt_cap_adjustment_m": -0.1093319106468178,
+            "coe_melt_cmelt_m": 7.483363770968814,
+            "coe_melt_dmelt_m": 0.16697368163919268,
+            "snowfall_swe_m": 19.196621932409805,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 36.0,
+          "maximum_closure_m": 8.326672684688674e-16,
+          "multiplier": 0.9,
+          "operators": [
+            {
+              "executed_offset_days": -36.0,
+              "maximum_mass_closure_m": 8.326672684688674e-16,
+              "median_effective_input_ratio": 0.8626083791849153,
+              "median_peak_ratio": 0.5430137478866758,
+              "median_prepeak_coe_melt_m": 0.19485015830042507,
+              "median_prepeak_loss_m": 0.27696892588215916,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.3650880147256577,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.5430137478866758,
+          "totals": {
+            "coe_melt_amelt_m": 3.347426252740399,
+            "coe_melt_applied_m": 18.04700893056983,
+            "coe_melt_bmelt_m": 5.817744925967568,
+            "coe_melt_cap_adjustment_m": -0.1205894773325322,
+            "coe_melt_cmelt_m": 8.800069934438193,
+            "coe_melt_dmelt_m": 0.2023572947562517,
+            "snowfall_swe_m": 21.782515821201585,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 35.0,
+          "maximum_closure_m": 4.996003610813204e-16,
+          "multiplier": 1.0,
+          "operators": [
+            {
+              "executed_offset_days": -35.0,
+              "maximum_mass_closure_m": 4.996003610813204e-16,
+              "median_effective_input_ratio": 0.9661452025913729,
+              "median_peak_ratio": 0.6191533199355197,
+              "median_prepeak_coe_melt_m": 0.2149188069277013,
+              "median_prepeak_loss_m": 0.2817351300306607,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.45527302809437675,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.6191533199355197,
+          "totals": {
+            "coe_melt_amelt_m": 3.6595187561287257,
+            "coe_melt_applied_m": 20.44789471229011,
+            "coe_melt_bmelt_m": 6.567088746060928,
+            "coe_melt_cap_adjustment_m": -0.11478216816478667,
+            "coe_melt_cmelt_m": 10.096619803189913,
+            "coe_melt_dmelt_m": 0.23944957507540146,
+            "snowfall_swe_m": 24.29700172712858,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 30.0,
+          "maximum_closure_m": 7.771561172376096e-16,
+          "multiplier": 1.1,
+          "operators": [
+            {
+              "executed_offset_days": -30.0,
+              "maximum_mass_closure_m": 7.771561172376096e-16,
+              "median_effective_input_ratio": 1.0668442309049277,
+              "median_peak_ratio": 0.7118253564474041,
+              "median_prepeak_coe_melt_m": 0.22061800258114087,
+              "median_prepeak_loss_m": 0.2868666087088139,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.5535271140971287,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.7118253564474041,
+          "totals": {
+            "coe_melt_amelt_m": 3.984757813566908,
+            "coe_melt_applied_m": 22.92552406251755,
+            "coe_melt_bmelt_m": 7.334971668951961,
+            "coe_melt_cap_adjustment_m": -0.10313825178673475,
+            "coe_melt_cmelt_m": 11.431393541971442,
+            "coe_melt_dmelt_m": 0.2775392898140497,
+            "snowfall_swe_m": 26.864669660760832,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 25.0,
+          "maximum_closure_m": 6.661338147750939e-16,
+          "multiplier": 1.2,
+          "operators": [
+            {
+              "executed_offset_days": -25.0,
+              "maximum_mass_closure_m": 6.661338147750939e-16,
+              "median_effective_input_ratio": 1.1645149602554625,
+              "median_peak_ratio": 0.7961880528369087,
+              "median_prepeak_coe_melt_m": 0.22310649529617094,
+              "median_prepeak_loss_m": 0.29302009206511553,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.6602739694749465,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.7961880528369087,
+          "totals": {
+            "coe_melt_amelt_m": 4.275610649478686,
+            "coe_melt_applied_m": 25.439647151191433,
+            "coe_melt_bmelt_m": 8.129341551417829,
+            "coe_melt_cap_adjustment_m": -0.1206067173402789,
+            "coe_melt_cmelt_m": 12.835874201685959,
+            "coe_melt_dmelt_m": 0.31942746594924337,
+            "snowfall_swe_m": 29.424264253569337,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 24.0,
+          "maximum_closure_m": 1.1102230246251565e-15,
+          "multiplier": 1.3,
+          "operators": [
+            {
+              "executed_offset_days": -24.0,
+              "maximum_mass_closure_m": 1.1102230246251565e-15,
+              "median_effective_input_ratio": 1.2673404680196734,
+              "median_peak_ratio": 0.8805404453466845,
+              "median_prepeak_coe_melt_m": 0.2274259489572419,
+              "median_prepeak_loss_m": 0.2970790786312563,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.76712458884513,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.8805404453466845,
+          "totals": {
+            "coe_melt_amelt_m": 4.569260509815705,
+            "coe_melt_applied_m": 28.005899240117866,
+            "coe_melt_bmelt_m": 8.925700864628265,
+            "coe_melt_cap_adjustment_m": -0.10557693034254825,
+            "coe_melt_cmelt_m": 14.250232316362295,
+            "coe_melt_dmelt_m": 0.3662824796541873,
+            "snowfall_swe_m": 32.04043917143817,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 21.0,
+          "maximum_closure_m": 4.440892098500626e-16,
+          "multiplier": 1.4,
+          "operators": [
+            {
+              "executed_offset_days": -21.0,
+              "maximum_mass_closure_m": 3.3306690738754696e-16,
+              "median_effective_input_ratio": 1.3908309722558596,
+              "median_peak_ratio": 0.967546895502858,
+              "median_prepeak_coe_melt_m": 0.23589133446550428,
+              "median_prepeak_loss_m": 0.3164937329274443,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.8738783082613022,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 0.967546895502858,
+          "totals": {
+            "coe_melt_amelt_m": 4.860421571237401,
+            "coe_melt_applied_m": 30.532666349761282,
+            "coe_melt_bmelt_m": 9.718276739019204,
+            "coe_melt_cap_adjustment_m": -0.10882669003510882,
+            "coe_melt_cmelt_m": 15.651798094236552,
+            "coe_melt_dmelt_m": 0.4109966353032463,
+            "snowfall_swe_m": 34.63106993155862,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 20.0,
+          "maximum_closure_m": 1.1102230246251565e-15,
+          "multiplier": 1.5,
+          "operators": [
+            {
+              "executed_offset_days": -20.0,
+              "maximum_mass_closure_m": 1.1102230246251565e-15,
+              "median_effective_input_ratio": 1.4903242396440766,
+              "median_peak_ratio": 1.0594222449835722,
+              "median_prepeak_coe_melt_m": 0.24159406923796028,
+              "median_prepeak_loss_m": 0.31852278430759967,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.9806708276497217,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -35.0
+            }
+          ],
+          "primary_peak_ratio": 1.0594222449835722,
+          "totals": {
+            "coe_melt_amelt_m": 5.125557696046554,
+            "coe_melt_applied_m": 32.99809024812401,
+            "coe_melt_bmelt_m": 10.468391749356712,
+            "coe_melt_cap_adjustment_m": -0.0844051007577572,
+            "coe_melt_cmelt_m": 17.030663843495713,
+            "coe_melt_dmelt_m": 0.457882059982734,
+            "snowfall_swe_m": 37.14865578081302,
+            "sublimation_m": 0.0
+          }
+        }
+      ],
+      "label": "Mica Creek",
+      "selection": {
+        "baseline_chronology_abs_error_days": 35.0,
+        "baseline_primary_peak_ratio": 0.6191533199355197,
+        "classification": "GRID_BOUNDARY",
+        "joint_improver_count": 5,
+        "selected_chronology_abs_error_days": 20.0,
+        "selected_multiplier": 1.5,
+        "selected_primary_peak_ratio": 1.0594222449835722
+      }
+    },
+    "snotel_niwot_co": {
+      "baseline_replay": {
+        "maximum_operator_residual": 0.0,
+        "passes": true
+      },
+      "candidates": [
+        {
+          "chronology_abs_error_days": 46.5,
+          "maximum_closure_m": 1.2750217548429532e-16,
+          "multiplier": 0.8,
+          "operators": [
+            {
+              "executed_offset_days": -46.5,
+              "maximum_mass_closure_m": 1.2750217548429532e-16,
+              "median_effective_input_ratio": 0.8260249541526303,
+              "median_peak_ratio": 0.3687752503232288,
+              "median_prepeak_coe_melt_m": 0.12043720352308315,
+              "median_prepeak_loss_m": 0.2555832587788365,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.11937639551406429,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -33.5,
+              "maximum_mass_closure_m": 1.2750217548429532e-16,
+              "median_effective_input_ratio": 0.8260249541526303,
+              "median_peak_ratio": 0.35568746873808604,
+              "median_prepeak_coe_melt_m": 0.12043720352308315,
+              "median_prepeak_loss_m": 0.2555832587788365,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.11937639551406429,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.35568746873808604,
+          "totals": {
+            "coe_melt_amelt_m": 5.415354388351169,
+            "coe_melt_applied_m": 7.975628039400192,
+            "coe_melt_bmelt_m": 1.759192379731061,
+            "coe_melt_cap_adjustment_m": -0.2188398867107659,
+            "coe_melt_cmelt_m": 0.9704799437511562,
+            "coe_melt_dmelt_m": 0.04944121427758839,
+            "snowfall_swe_m": 15.747848637592318,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 46.5,
+          "maximum_closure_m": 2.220446049250313e-16,
+          "multiplier": 0.9,
+          "operators": [
+            {
+              "executed_offset_days": -46.5,
+              "maximum_mass_closure_m": 2.220446049250313e-16,
+              "median_effective_input_ratio": 0.9312958188522319,
+              "median_peak_ratio": 0.4166683328478606,
+              "median_prepeak_coe_melt_m": 0.14526641523681605,
+              "median_prepeak_loss_m": 0.2864657934296324,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.15118969856398462,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -30.5,
+              "maximum_mass_closure_m": 2.220446049250313e-16,
+              "median_effective_input_ratio": 0.9312958188522319,
+              "median_peak_ratio": 0.42389838457878914,
+              "median_prepeak_coe_melt_m": 0.14526641523681605,
+              "median_prepeak_loss_m": 0.2864657934296324,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.15118969856398462,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.42389838457878914,
+          "totals": {
+            "coe_melt_amelt_m": 5.91626923067946,
+            "coe_melt_applied_m": 9.67275287938492,
+            "coe_melt_bmelt_m": 2.198527490964996,
+            "coe_melt_cap_adjustment_m": -0.21350386323582482,
+            "coe_melt_cmelt_m": 1.7079511184966516,
+            "coe_melt_dmelt_m": 0.0635089024796023,
+            "snowfall_swe_m": 17.763328789530803,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 46.5,
+          "maximum_closure_m": 2.220446049250313e-16,
+          "multiplier": 1.0,
+          "operators": [
+            {
+              "executed_offset_days": -46.5,
+              "maximum_mass_closure_m": 1.6653345369377348e-16,
+              "median_effective_input_ratio": 1.0379454329863764,
+              "median_peak_ratio": 0.47191210270260325,
+              "median_prepeak_coe_melt_m": 0.15116870948089636,
+              "median_prepeak_loss_m": 0.30222481692650555,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.2258696592733312,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -31.0,
+              "maximum_mass_closure_m": 1.6653345369377348e-16,
+              "median_effective_input_ratio": 1.0379454329863764,
+              "median_peak_ratio": 0.4953842559051843,
+              "median_prepeak_coe_melt_m": 0.15116870948089636,
+              "median_prepeak_loss_m": 0.30222481692650555,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.2258696592733312,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.4953842559051843,
+          "totals": {
+            "coe_melt_amelt_m": 6.440871601007783,
+            "coe_melt_applied_m": 11.358544792103979,
+            "coe_melt_bmelt_m": 2.638401801840815,
+            "coe_melt_cap_adjustment_m": -0.19944927987175878,
+            "coe_melt_cmelt_m": 2.4020294243296076,
+            "coe_melt_dmelt_m": 0.07669124479752937,
+            "snowfall_swe_m": 19.823734815264604,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 46.5,
+          "maximum_closure_m": 3.3306690738754696e-16,
+          "multiplier": 1.1,
+          "operators": [
+            {
+              "executed_offset_days": -46.5,
+              "maximum_mass_closure_m": 3.3306690738754696e-16,
+              "median_effective_input_ratio": 1.141739976285014,
+              "median_peak_ratio": 0.5363901852452055,
+              "median_prepeak_coe_melt_m": 0.16754931851827118,
+              "median_prepeak_loss_m": 0.3133095379436022,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.3245644939771374,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -24.5,
+              "maximum_mass_closure_m": 3.3306690738754696e-16,
+              "median_effective_input_ratio": 1.141739976285014,
+              "median_peak_ratio": 0.5766489791967356,
+              "median_prepeak_coe_melt_m": 0.16754931851827118,
+              "median_prepeak_loss_m": 0.3133095379436022,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.3245644939771374,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.5766489791967356,
+          "totals": {
+            "coe_melt_amelt_m": 6.917866108836352,
+            "coe_melt_applied_m": 13.227164078048053,
+            "coe_melt_bmelt_m": 3.1309890043800075,
+            "coe_melt_cap_adjustment_m": -0.1676842857322285,
+            "coe_melt_cmelt_m": 3.2540865067921665,
+            "coe_melt_dmelt_m": 0.09190674377174993,
+            "snowfall_swe_m": 21.946831675511817,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 26.0,
+          "maximum_closure_m": 2.498001805406602e-16,
+          "multiplier": 1.2,
+          "operators": [
+            {
+              "executed_offset_days": -26.0,
+              "maximum_mass_closure_m": 2.498001805406602e-16,
+              "median_effective_input_ratio": 1.2471902285702774,
+              "median_peak_ratio": 0.5958701605307,
+              "median_prepeak_coe_melt_m": 0.18084728655678195,
+              "median_prepeak_loss_m": 0.32497674974704516,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.3961726187433765,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -24.5,
+              "maximum_mass_closure_m": 2.498001805406602e-16,
+              "median_effective_input_ratio": 1.2471902285702774,
+              "median_peak_ratio": 0.6531279427626488,
+              "median_prepeak_coe_melt_m": 0.18084728655678195,
+              "median_prepeak_loss_m": 0.32497674974704516,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.3961726187433765,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.6531279427626488,
+          "totals": {
+            "coe_melt_amelt_m": 7.401050019453766,
+            "coe_melt_applied_m": 15.08333259700841,
+            "coe_melt_bmelt_m": 3.6162166600857417,
+            "coe_melt_cap_adjustment_m": -0.15744636884276322,
+            "coe_melt_cmelt_m": 4.114674175933651,
+            "coe_melt_dmelt_m": 0.10883811037799994,
+            "snowfall_swe_m": 24.05002411564474,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 19.5,
+          "maximum_closure_m": 3.5388358909926865e-16,
+          "multiplier": 1.3,
+          "operators": [
+            {
+              "executed_offset_days": -9.0,
+              "maximum_mass_closure_m": 3.5388358909926865e-16,
+              "median_effective_input_ratio": 1.3511247632315015,
+              "median_peak_ratio": 0.658974460708848,
+              "median_prepeak_coe_melt_m": 0.19087573775246705,
+              "median_prepeak_loss_m": 0.33413707185363034,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.467779172176956,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -19.5,
+              "maximum_mass_closure_m": 3.5388358909926865e-16,
+              "median_effective_input_ratio": 1.3511247632315015,
+              "median_peak_ratio": 0.722692242207315,
+              "median_prepeak_coe_melt_m": 0.19087573775246705,
+              "median_prepeak_loss_m": 0.33413707185363034,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.467779172176956,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.722692242207315,
+          "totals": {
+            "coe_melt_amelt_m": 7.873276896552343,
+            "coe_melt_applied_m": 17.00106504126421,
+            "coe_melt_bmelt_m": 4.1193645574133795,
+            "coe_melt_cap_adjustment_m": -0.1384909490554624,
+            "coe_melt_cmelt_m": 5.016787873602153,
+            "coe_melt_dmelt_m": 0.1301266627518044,
+            "snowfall_swe_m": 26.173725294178507,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 19.5,
+          "maximum_closure_m": 2.7755575615628914e-16,
+          "multiplier": 1.4,
+          "operators": [
+            {
+              "executed_offset_days": -9.0,
+              "maximum_mass_closure_m": 2.7755575615628914e-16,
+              "median_effective_input_ratio": 1.4553596784430454,
+              "median_peak_ratio": 0.7133939533536793,
+              "median_prepeak_coe_melt_m": 0.19940734114394013,
+              "median_prepeak_loss_m": 0.3397541191890655,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.5393803803998931,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -19.5,
+              "maximum_mass_closure_m": 2.7755575615628914e-16,
+              "median_effective_input_ratio": 1.4553596784430454,
+              "median_peak_ratio": 0.7922885006541716,
+              "median_prepeak_coe_melt_m": 0.19940734114394013,
+              "median_prepeak_loss_m": 0.3397541191890655,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.5393803803998931,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.7922885006541716,
+          "totals": {
+            "coe_melt_amelt_m": 8.364863221745836,
+            "coe_melt_applied_m": 18.956359907145874,
+            "coe_melt_bmelt_m": 4.640699506439166,
+            "coe_melt_cap_adjustment_m": -0.14469120304128633,
+            "coe_melt_cmelt_m": 5.940105828059883,
+            "coe_melt_dmelt_m": 0.15538255394228234,
+            "snowfall_swe_m": 28.343612300283187,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 19.5,
+          "maximum_closure_m": 3.0531133177191805e-16,
+          "multiplier": 1.5,
+          "operators": [
+            {
+              "executed_offset_days": -9.0,
+              "maximum_mass_closure_m": 3.0531133177191805e-16,
+              "median_effective_input_ratio": 1.559317570330753,
+              "median_peak_ratio": 0.7737850697712008,
+              "median_prepeak_coe_melt_m": 0.2056001078147825,
+              "median_prepeak_loss_m": 0.3458586628298064,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.6126805381377989,
+              "operator": "seasonal_peak_depth_date",
+              "retained_baseline_offset_days": -46.5
+            },
+            {
+              "executed_offset_days": -19.5,
+              "maximum_mass_closure_m": 3.0531133177191805e-16,
+              "median_effective_input_ratio": 1.559317570330753,
+              "median_peak_ratio": 0.8704565114541561,
+              "median_prepeak_coe_melt_m": 0.2056001078147825,
+              "median_prepeak_loss_m": 0.3458586628298064,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.6126805381377989,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -31.0
+            }
+          ],
+          "primary_peak_ratio": 0.8704565114541561,
+          "totals": {
+            "coe_melt_amelt_m": 8.851077454333806,
+            "coe_melt_applied_m": 20.93630968453784,
+            "coe_melt_bmelt_m": 5.163669368201916,
+            "coe_melt_cap_adjustment_m": -0.13486660505806944,
+            "coe_melt_cmelt_m": 6.878612853936842,
+            "coe_melt_dmelt_m": 0.1778166131233229,
+            "snowfall_swe_m": 30.532827328924213,
+            "sublimation_m": 0.0
+          }
+        }
+      ],
+      "label": "Niwot",
+      "selection": {
+        "baseline_chronology_abs_error_days": 46.5,
+        "baseline_primary_peak_ratio": 0.4953842559051843,
+        "classification": "PRECIPITATION_RESPONSIVE",
+        "joint_improver_count": 4,
+        "selected_chronology_abs_error_days": 19.5,
+        "selected_multiplier": 1.3,
+        "selected_primary_peak_ratio": 0.722692242207315
+      }
+    },
+    "snotel_paradise_wa": {
+      "baseline_replay": {
+        "maximum_operator_residual": 0.0,
+        "passes": true
+      },
+      "candidates": [
+        {
+          "chronology_abs_error_days": 48.0,
+          "maximum_closure_m": 1.887379141862766e-15,
+          "multiplier": 0.8,
+          "operators": [
+            {
+              "executed_offset_days": -48.0,
+              "maximum_mass_closure_m": 1.887379141862766e-15,
+              "median_effective_input_ratio": 0.5693285178190672,
+              "median_peak_ratio": 0.33338995523866444,
+              "median_prepeak_coe_melt_m": 0.5201890398042812,
+              "median_prepeak_loss_m": 0.6631412710189765,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.208683853233542,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.33338995523866444,
+          "totals": {
+            "coe_melt_amelt_m": 9.997438277320152,
+            "coe_melt_applied_m": 49.616422463808064,
+            "coe_melt_bmelt_m": 14.16098562645407,
+            "coe_melt_cap_adjustment_m": -0.222288992660911,
+            "coe_melt_cmelt_m": 25.098645657831295,
+            "coe_melt_dmelt_m": 0.581641894863471,
+            "snowfall_swe_m": 56.51089713648418,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 42.0,
+          "maximum_closure_m": 8.881784197001252e-16,
+          "multiplier": 0.9,
+          "operators": [
+            {
+              "executed_offset_days": -42.0,
+              "maximum_mass_closure_m": 8.881784197001252e-16,
+              "median_effective_input_ratio": 0.640917289764343,
+              "median_peak_ratio": 0.3995871827990492,
+              "median_prepeak_coe_melt_m": 0.5209593141461898,
+              "median_prepeak_loss_m": 0.663885561324096,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.2895772971035304,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.3995871827990492,
+          "totals": {
+            "coe_melt_amelt_m": 10.983152747589731,
+            "coe_melt_applied_m": 56.77063294947373,
+            "coe_melt_bmelt_m": 16.28159186439223,
+            "coe_melt_cap_adjustment_m": -0.2243790249436455,
+            "coe_melt_cmelt_m": 29.026805085263266,
+            "coe_melt_dmelt_m": 0.7034622771721317,
+            "snowfall_swe_m": 63.7714421451993,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 37.0,
+          "maximum_closure_m": 1.5543122344752192e-15,
+          "multiplier": 1.0,
+          "operators": [
+            {
+              "executed_offset_days": -37.0,
+              "maximum_mass_closure_m": 1.5543122344752192e-15,
+              "median_effective_input_ratio": 0.7125107992744109,
+              "median_peak_ratio": 0.4734826857635193,
+              "median_prepeak_coe_melt_m": 0.5217295884880985,
+              "median_prepeak_loss_m": 0.6639558738267378,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.37049930874867654,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.4734826857635193,
+          "totals": {
+            "coe_melt_amelt_m": 11.877037733749944,
+            "coe_melt_applied_m": 64.02718780325688,
+            "coe_melt_bmelt_m": 18.427579110138065,
+            "coe_melt_cap_adjustment_m": -0.1316265499849442,
+            "coe_melt_cmelt_m": 33.033305895421094,
+            "coe_melt_dmelt_m": 0.820891613932604,
+            "snowfall_swe_m": 71.07666383449879,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 31.0,
+          "maximum_closure_m": 1.27675647831893e-15,
+          "multiplier": 1.1,
+          "operators": [
+            {
+              "executed_offset_days": -31.0,
+              "maximum_mass_closure_m": 1.27675647831893e-15,
+              "median_effective_input_ratio": 0.7841106722322829,
+              "median_peak_ratio": 0.5357873788891457,
+              "median_prepeak_coe_melt_m": 0.5224998628300072,
+              "median_prepeak_loss_m": 0.6640515342432898,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.44326927817297873,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.5357873788891457,
+          "totals": {
+            "coe_melt_amelt_m": 12.809383214813614,
+            "coe_melt_applied_m": 71.25518614453928,
+            "coe_melt_bmelt_m": 20.574611401594993,
+            "coe_melt_cap_adjustment_m": -0.12800850430156457,
+            "coe_melt_cmelt_m": 37.05091847370267,
+            "coe_melt_dmelt_m": 0.9482815587292506,
+            "snowfall_swe_m": 78.35513115109163,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 26.0,
+          "maximum_closure_m": 1.9984014443252818e-15,
+          "multiplier": 1.2,
+          "operators": [
+            {
+              "executed_offset_days": -26.0,
+              "maximum_mass_closure_m": 1.9984014443252818e-15,
+              "median_effective_input_ratio": 0.855945314506185,
+              "median_peak_ratio": 0.5980540764946489,
+              "median_prepeak_coe_melt_m": 0.5269149520114746,
+              "median_prepeak_loss_m": 0.6642856788218817,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.5075468760718991,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.5980540764946489,
+          "totals": {
+            "coe_melt_amelt_m": 13.67901331459112,
+            "coe_melt_applied_m": 78.4273923349276,
+            "coe_melt_bmelt_m": 22.741942516672633,
+            "coe_melt_cap_adjustment_m": -0.15282654845407231,
+            "coe_melt_cmelt_m": 41.094120490134195,
+            "coe_melt_dmelt_m": 1.0651425619833117,
+            "snowfall_swe_m": 85.56407713739523,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 20.0,
+          "maximum_closure_m": 2.4424906541753444e-15,
+          "multiplier": 1.3,
+          "operators": [
+            {
+              "executed_offset_days": -20.0,
+              "maximum_mass_closure_m": 2.4424906541753444e-15,
+              "median_effective_input_ratio": 0.927702070356047,
+              "median_peak_ratio": 0.6605836037571913,
+              "median_prepeak_coe_melt_m": 0.5993782638344042,
+              "median_prepeak_loss_m": 0.6933062418541167,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.5782929296275586,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.6605836037571913,
+          "totals": {
+            "coe_melt_amelt_m": 14.559776650984004,
+            "coe_melt_applied_m": 85.71288323102817,
+            "coe_melt_bmelt_m": 24.925476065107464,
+            "coe_melt_cap_adjustment_m": -0.14043560363665786,
+            "coe_melt_cmelt_m": 45.16603763080354,
+            "coe_melt_dmelt_m": 1.2020284877691467,
+            "snowfall_swe_m": 92.90237258078817,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 16.0,
+          "maximum_closure_m": 3.3306690738754696e-15,
+          "multiplier": 1.4,
+          "operators": [
+            {
+              "executed_offset_days": -16.0,
+              "maximum_mass_closure_m": 3.3306690738754696e-15,
+              "median_effective_input_ratio": 0.9993051604716425,
+              "median_peak_ratio": 0.7339590339736778,
+              "median_prepeak_coe_melt_m": 0.6714521483074207,
+              "median_prepeak_loss_m": 0.7739735854523231,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.655015741412969,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.7339590339736778,
+          "totals": {
+            "coe_melt_amelt_m": 15.350480148421292,
+            "coe_melt_applied_m": 92.92116705527788,
+            "coe_melt_bmelt_m": 27.121832582092214,
+            "coe_melt_cap_adjustment_m": -0.11056954564802654,
+            "coe_melt_cmelt_m": 49.233198010715505,
+            "coe_melt_dmelt_m": 1.3262258596964196,
+            "snowfall_swe_m": 100.16790299686876,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 12.0,
+          "maximum_closure_m": 1.7763568394002505e-15,
+          "multiplier": 1.5,
+          "operators": [
+            {
+              "executed_offset_days": -12.0,
+              "maximum_mass_closure_m": 1.7763568394002505e-15,
+              "median_effective_input_ratio": 1.1005352500871102,
+              "median_peak_ratio": 0.7971600611403442,
+              "median_prepeak_coe_melt_m": 0.6874104736008505,
+              "median_prepeak_loss_m": 0.7897231998941834,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.7316652486787182,
+              "operator": "seasonal_ablation_meltout_date",
+              "retained_baseline_offset_days": -37.0
+            }
+          ],
+          "primary_peak_ratio": 0.7971600611403442,
+          "totals": {
+            "coe_melt_amelt_m": 16.087705266741203,
+            "coe_melt_applied_m": 100.19672929149723,
+            "coe_melt_bmelt_m": 29.37132221643958,
+            "coe_melt_cap_adjustment_m": -0.08571701755259425,
+            "coe_melt_cmelt_m": 53.35729673106743,
+            "coe_melt_dmelt_m": 1.4661220948012539,
+            "snowfall_swe_m": 107.492344144244,
+            "sublimation_m": 0.0
+          }
+        }
+      ],
+      "label": "Paradise",
+      "selection": {
+        "baseline_chronology_abs_error_days": 37.0,
+        "baseline_primary_peak_ratio": 0.4734826857635193,
+        "classification": "GRID_BOUNDARY",
+        "joint_improver_count": 5,
+        "selected_chronology_abs_error_days": 12.0,
+        "selected_multiplier": 1.5,
+        "selected_primary_peak_ratio": 0.7971600611403442
+      }
+    },
+    "snotel_snowbird_ut": {
+      "baseline_replay": {
+        "maximum_operator_residual": 0.0,
+        "passes": true
+      },
+      "candidates": [
+        {
+          "chronology_abs_error_days": 50.0,
+          "maximum_closure_m": 6.661338147750939e-16,
+          "multiplier": 0.8,
+          "operators": [
+            {
+              "executed_offset_days": -50.0,
+              "maximum_mass_closure_m": 6.661338147750939e-16,
+              "median_effective_input_ratio": 0.5569275044739068,
+              "median_peak_ratio": 0.2851504248836365,
+              "median_prepeak_coe_melt_m": 0.33109750265540827,
+              "median_prepeak_loss_m": 0.4332954000722179,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.11184978900796015,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.2851504248836365,
+          "totals": {
+            "coe_melt_amelt_m": 4.244414818290448,
+            "coe_melt_applied_m": 19.40038979445639,
+            "coe_melt_bmelt_m": 6.097263876762958,
+            "coe_melt_cap_adjustment_m": -0.1395847204551042,
+            "coe_melt_cmelt_m": 9.077870206859735,
+            "coe_melt_dmelt_m": 0.12042561299838392,
+            "snowfall_swe_m": 24.186754883904793,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 45.0,
+          "maximum_closure_m": 7.216449660063518e-16,
+          "multiplier": 0.9,
+          "operators": [
+            {
+              "executed_offset_days": -45.0,
+              "maximum_mass_closure_m": 7.216449660063518e-16,
+              "median_effective_input_ratio": 0.6271357376691704,
+              "median_peak_ratio": 0.3383370891303389,
+              "median_prepeak_coe_melt_m": 0.34015457588030984,
+              "median_prepeak_loss_m": 0.4542193020935282,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.16778992558312827,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.3383370891303389,
+          "totals": {
+            "coe_melt_amelt_m": 4.751584032693512,
+            "coe_melt_applied_m": 22.471013561532345,
+            "coe_melt_bmelt_m": 7.016722918402366,
+            "coe_melt_cap_adjustment_m": -0.12282156672254886,
+            "coe_melt_cmelt_m": 10.675733643681085,
+            "coe_melt_dmelt_m": 0.14979453347789284,
+            "snowfall_swe_m": 27.430143142868708,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 44.5,
+          "maximum_closure_m": 1.2212453270876722e-15,
+          "multiplier": 1.0,
+          "operators": [
+            {
+              "executed_offset_days": -44.5,
+              "maximum_mass_closure_m": 1.2212453270876722e-15,
+              "median_effective_input_ratio": 0.6969282699678451,
+              "median_peak_ratio": 0.3899826506038172,
+              "median_prepeak_coe_melt_m": 0.3619182077587946,
+              "median_prepeak_loss_m": 0.4590067651215318,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.21051355860535897,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.3899826506038172,
+          "totals": {
+            "coe_melt_amelt_m": 5.192546185240957,
+            "coe_melt_applied_m": 25.4818596040117,
+            "coe_melt_bmelt_m": 7.904688669865252,
+            "coe_melt_cap_adjustment_m": -0.08789702392946294,
+            "coe_melt_cmelt_m": 12.295684981503314,
+            "coe_melt_dmelt_m": 0.17683679133153857,
+            "snowfall_swe_m": 30.504102235478395,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 45.0,
+          "maximum_closure_m": 9.992007221626409e-16,
+          "multiplier": 1.1,
+          "operators": [
+            {
+              "executed_offset_days": -45.0,
+              "maximum_mass_closure_m": 9.992007221626409e-16,
+              "median_effective_input_ratio": 0.766765046321867,
+              "median_peak_ratio": 0.44701715849446866,
+              "median_prepeak_coe_melt_m": 0.395060441784694,
+              "median_prepeak_loss_m": 0.4954137885940031,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.2813372252719791,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.44701715849446866,
+          "totals": {
+            "coe_melt_amelt_m": 5.673383801062727,
+            "coe_melt_applied_m": 28.4827920193675,
+            "coe_melt_bmelt_m": 8.796557777307948,
+            "coe_melt_cap_adjustment_m": -0.10656128883826119,
+            "coe_melt_cmelt_m": 13.914591788710197,
+            "coe_melt_dmelt_m": 0.2048199411247887,
+            "snowfall_swe_m": 33.620845463084294,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 45.0,
+          "maximum_closure_m": 1.2212453270876722e-15,
+          "multiplier": 1.2,
+          "operators": [
+            {
+              "executed_offset_days": -45.0,
+              "maximum_mass_closure_m": 1.2212453270876722e-15,
+              "median_effective_input_ratio": 0.8364102285074435,
+              "median_peak_ratio": 0.5096537024731289,
+              "median_prepeak_coe_melt_m": 0.4192923382334159,
+              "median_prepeak_loss_m": 0.5137010907777149,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.35215181427389386,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.5096537024731289,
+          "totals": {
+            "coe_melt_amelt_m": 6.087809469911074,
+            "coe_melt_applied_m": 31.519165888388954,
+            "coe_melt_bmelt_m": 9.700116234572963,
+            "coe_melt_cap_adjustment_m": -0.10658664683547375,
+            "coe_melt_cmelt_m": 15.605513314045549,
+            "coe_melt_dmelt_m": 0.23231351669479341,
+            "snowfall_swe_m": 36.7133784847367,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 45.0,
+          "maximum_closure_m": 1.1102230246251565e-15,
+          "multiplier": 1.3,
+          "operators": [
+            {
+              "executed_offset_days": -45.0,
+              "maximum_mass_closure_m": 1.1102230246251565e-15,
+              "median_effective_input_ratio": 0.9062333265522984,
+              "median_peak_ratio": 0.5664145444046862,
+              "median_prepeak_coe_melt_m": 0.42607401266957146,
+              "median_prepeak_loss_m": 0.5184966248497653,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.42303535029071837,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.5664145444046862,
+          "totals": {
+            "coe_melt_amelt_m": 6.505552755665794,
+            "coe_melt_applied_m": 34.64538284736876,
+            "coe_melt_bmelt_m": 10.643161639493847,
+            "coe_melt_cap_adjustment_m": -0.11301756217773339,
+            "coe_melt_cmelt_m": 17.34790256964615,
+            "coe_melt_dmelt_m": 0.2617834447406433,
+            "snowfall_swe_m": 39.88997844934815,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 40.0,
+          "maximum_closure_m": 1.6653345369377348e-15,
+          "multiplier": 1.4,
+          "operators": [
+            {
+              "executed_offset_days": -40.0,
+              "maximum_mass_closure_m": 1.6653345369377348e-15,
+              "median_effective_input_ratio": 0.97614678750595,
+              "median_peak_ratio": 0.6185121906318949,
+              "median_prepeak_coe_melt_m": 0.4366079036738954,
+              "median_prepeak_loss_m": 0.5234979704448062,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.4881292975237126,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.6185121906318949,
+          "totals": {
+            "coe_melt_amelt_m": 6.945180700869478,
+            "coe_melt_applied_m": 37.87333007386837,
+            "coe_melt_bmelt_m": 11.60749760119146,
+            "coe_melt_cap_adjustment_m": -0.1038581613020881,
+            "coe_melt_cmelt_m": 19.127772538779528,
+            "coe_melt_dmelt_m": 0.296737394329884,
+            "snowfall_swe_m": 43.19804476465205,
+            "sublimation_m": 0.0
+          }
+        },
+        {
+          "chronology_abs_error_days": 35.5,
+          "maximum_closure_m": 8.881784197001252e-16,
+          "multiplier": 1.5,
+          "operators": [
+            {
+              "executed_offset_days": -35.5,
+              "maximum_mass_closure_m": 7.771561172376096e-16,
+              "median_effective_input_ratio": 1.0461208148084522,
+              "median_peak_ratio": 0.6762789717281439,
+              "median_prepeak_coe_melt_m": 0.4506072119150782,
+              "median_prepeak_loss_m": 0.5297332320935824,
+              "median_prepeak_sublimation_m": 0.0,
+              "median_storage_ratio": 0.546315493592227,
+              "operator": "seasonal_peak_swe_date",
+              "retained_baseline_offset_days": -44.5
+            }
+          ],
+          "primary_peak_ratio": 0.6762789717281439,
+          "totals": {
+            "coe_melt_amelt_m": 7.355416839042654,
+            "coe_melt_applied_m": 41.04396662579677,
+            "coe_melt_bmelt_m": 12.539187225822438,
+            "coe_melt_cap_adjustment_m": -0.09603234989861198,
+            "coe_melt_cmelt_m": 20.918428786238568,
+            "coe_melt_dmelt_m": 0.32696612459169583,
+            "snowfall_swe_m": 46.43163749612831,
+            "sublimation_m": 0.0
+          }
+        }
+      ],
+      "label": "Snowbird",
+      "selection": {
+        "baseline_chronology_abs_error_days": 44.5,
+        "baseline_primary_peak_ratio": 0.3899826506038172,
+        "classification": "GRID_BOUNDARY",
+        "joint_improver_count": 2,
+        "selected_chronology_abs_error_days": 35.5,
+        "selected_multiplier": 1.5,
+        "selected_primary_peak_ratio": 0.6762789717281439
+      }
+    }
+  },
+  "maximum_closure_m": 3.3306690738754696e-15,
+  "receipt_sha256": "47847f98b83d63a4e278ecb3de2488f03c1040af8f22d55fd34986aa755d6f95",
+  "run_count": 32,
+  "schema": "snow-surface-eb04w1-precipitation-scaling-results-v1",
+  "tool_sha256": "5926c5ea8383bd9ff57fb03945f4cba71b76f8fbc11cbe7cfaa7dbdc02780346"
+}

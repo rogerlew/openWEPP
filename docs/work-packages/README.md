@@ -5077,6 +5077,18 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260802-snow-surface-eb-04w1-precipitation-scaling-calibration-001/` —
+  COMPLETE / CALIBRATION LEVER CONFIRMED: all 32 cells in the frozen
+  `0.8-1.5` total-precipitation grid pass with exact `1.0` replay and maximum
+  diagnostic closure `3.331e-15 m`. Scaling improves magnitude and chronology
+  jointly, but Mica Creek, Paradise, and Snowbird select the `1.5` upper
+  boundary; Niwot selects `1.3` while retaining a material peak-SWE deficit.
+  Final multipliers are not identified. The SNOTEL observations remain
+  calibration data, production physics and fixtures are unchanged, and no
+  independent-validation, transferability, or promotion claim is made.
+  Dual review and dual terminal verification pass after correcting the Mica
+  magnitude/chronology interpretation. EB-04W2 is next to bracket
+  Paradise/Snowbird joint response, Niwot magnitude, and Mica Creek's tradeoff.
 - `20260801-snow-surface-eb-04w-accumulation-under-persistence-001/` — EXECUTED /
   DIAGNOSTIC COMPLETE / CALIBRATION HOLD: adds behavior-neutral hourly phase,
   accumulation, and exact CoE empirical melt-component diagnostics through the
