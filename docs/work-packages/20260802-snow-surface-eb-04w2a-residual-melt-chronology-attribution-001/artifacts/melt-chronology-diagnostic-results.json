@@ -1,0 +1,95 @@
+{
+  "schema": "snow-surface-eb04w2a-adjudicated-results-v1",
+  "status": "HOLD_PARTIAL_ADMISSION",
+  "raw_frozen_results": {
+    "path": "melt-chronology-diagnostic-results.raw.json",
+    "sha256": "96e0b40a879bdb47404fc48bdce66e3d9904f1f0974b9b257fdd90cce800365c"
+  },
+  "raw_frozen_summary": {
+    "path": "melt-chronology-diagnostic-summary.raw.csv.gz",
+    "archive_sha256": "dcfebaa34f5932d1d8dc848c19c16f649bcfbd2070c6267898808a27f232802e",
+    "uncompressed_sha256": "f82c72f6aded10216fcea9966c8398a6cc8828ad7bbab7ccafdab308e5fa71b9"
+  },
+  "harness": {
+    "status": "WITHDRAWN",
+    "chronology_values": null,
+    "seasonal_swe_trajectories": null,
+    "albedo_response_material": null,
+    "maximum_swe_nonclosure_m": 0.0708,
+    "reason": "Warm-mean, zero-prior-pack snowfall bypasses active snow coupling in all four lane/model pairs."
+  },
+  "activation_diagnosis": {
+    "status": "PROVEN_FOR_SNOWBENCH_TYPED_FORCING_ONLY",
+    "direct_production_population_status": "UNRESOLVED_PHASE_INPUT_AUTHORITY",
+    "next_package": "SNOW-SURFACE-EB-04W2B"
+  },
+  "direct_production": {
+    "status": "ADMITTED_DESCRIPTIVE_CALIBRATION_ONLY",
+    "maximum_mass_closure_m": 2.220446049250313e-15,
+    "maximum_energy_closure_j_m2": 6.094342097640038e-8,
+    "lanes": [
+      {
+        "lane_id": "snotel_mica_creek_st_joe_id",
+        "label": "Mica Creek, ID",
+        "selected_precipitation_factor": 1.4,
+        "peak_ratio": 0.967546895502858,
+        "chronology_abs_error_days": 21.0,
+        "operator_window_count": 23,
+        "cold_content_threshold_hit_count": 8,
+        "cold_content_site_flag_separately_medianed": false,
+        "empirical_b_plus_c_exceeds_a_plus_d": true,
+        "early_peak_gap_count": 0,
+        "late_input_deficit_hit_count": null,
+        "late_input_deficit_supported": null
+      },
+      {
+        "lane_id": "snotel_niwot_co",
+        "label": "Niwot, CO",
+        "selected_precipitation_factor": 1.7,
+        "peak_ratio": 1.0286813436028517,
+        "chronology_abs_error_days": 13.5,
+        "operator_window_count": 40,
+        "cold_content_threshold_hit_count": 16,
+        "cold_content_site_flag_separately_medianed": false,
+        "empirical_b_plus_c_exceeds_a_plus_d": false,
+        "early_peak_gap_count": 27,
+        "late_input_deficit_hit_count": 0,
+        "late_input_deficit_supported": false
+      },
+      {
+        "lane_id": "snotel_paradise_wa",
+        "label": "Paradise, WA",
+        "selected_precipitation_factor": 1.8,
+        "peak_ratio": 0.9885452477714344,
+        "chronology_abs_error_days": 0.0,
+        "operator_window_count": 19,
+        "cold_content_threshold_hit_count": 0,
+        "cold_content_site_flag_separately_medianed": false,
+        "empirical_b_plus_c_exceeds_a_plus_d": true,
+        "early_peak_gap_count": 0,
+        "late_input_deficit_hit_count": null,
+        "late_input_deficit_supported": null
+      },
+      {
+        "lane_id": "snotel_snowbird_ut",
+        "label": "Snowbird, UT",
+        "selected_precipitation_factor": 2.0,
+        "peak_ratio": 0.9767364142055928,
+        "chronology_abs_error_days": 23.0,
+        "operator_window_count": 22,
+        "cold_content_threshold_hit_count": 12,
+        "cold_content_site_flag_separately_medianed": false,
+        "empirical_b_plus_c_exceeds_a_plus_d": true,
+        "early_peak_gap_count": 16,
+        "late_input_deficit_hit_count": 5,
+        "late_input_deficit_supported": true
+      }
+    ]
+  },
+  "claim_limits": [
+    "No unique causality",
+    "No independent validation or transferability",
+    "No coefficient fitting or precipitation extension",
+    "No albedo conclusion, default change, or promotion"
+  ]
+}

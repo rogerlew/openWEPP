@@ -1,0 +1,5 @@
+lane_id,direct_status,direct_peak_ratio,direct_chronology_days,operator_window_count,cold_content_threshold_hit_count,cold_content_site_flag_separately_medianed,empirical_b_plus_c_exceeds_a_plus_d,early_peak_gap_count,late_input_deficit_hit_count,late_input_deficit_supported,harness_status,harness_chronology_days,albedo_response_material
+snotel_mica_creek_st_joe_id,ADMITTED_DESCRIPTIVE_CALIBRATION_ONLY,0.967546895502858,21.0,23,8,False,True,0,,,WITHDRAWN,,
+snotel_niwot_co,ADMITTED_DESCRIPTIVE_CALIBRATION_ONLY,1.0286813436028517,13.5,40,16,False,False,27,0,False,WITHDRAWN,,
+snotel_paradise_wa,ADMITTED_DESCRIPTIVE_CALIBRATION_ONLY,0.9885452477714344,0.0,19,0,False,True,0,,,WITHDRAWN,,
+snotel_snowbird_ut,ADMITTED_DESCRIPTIVE_CALIBRATION_ONLY,0.9767364142055928,23.0,22,12,False,True,16,5,True,WITHDRAWN,,

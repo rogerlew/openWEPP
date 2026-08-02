@@ -5077,6 +5077,18 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260802-snow-surface-eb-04w2a-residual-melt-chronology-attribution-001/` —
+  EXECUTED / HOLD / PARTIAL ADMISSION: all eight frozen snowbench cells ran and
+  the retained direct-production ledgers close within `2.221e-15 m` and
+  `6.094e-08 J m^-2`. Cold-content threshold hits remain interannual (`8/23`,
+  `16/40`, `0/19`, and `12/22` by lane). Empirical `b + c` exceeds `a + d` at
+  Mica, Paradise, and Snowbird but not Niwot; corrected early-gap late-input
+  hits are Niwot `0/27` and Snowbird `5/16`. The albedo comparison is withdrawn
+  because the public snow-partition
+  entry predicate loses one warm-mean, zero-pack snowfall event in each lane,
+  yielding `0.0377-0.0708 m` SWE non-closure. EB-04W2B must reconcile and close
+  that path before an unchanged rerun. No W3, fit, albedo conclusion, or
+  promotion is admitted.
 - `20260802-snow-surface-eb-04w2-precipitation-scaling-grid-extension-001/` —
   COMPLETE / SITE-SPECIFIC CALIBRATION: all 20 new `1.6-2.0` runs and
   24 immutable EB-04W1 anchors pass. The frozen rule selects Mica Creek `1.4`
