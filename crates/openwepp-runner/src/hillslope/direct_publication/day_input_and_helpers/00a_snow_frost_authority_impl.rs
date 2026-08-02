@@ -421,11 +421,16 @@ impl DirectProductionSnowFrostAuthority {
             [DirectSnowHourlyForcing::zero(); openwepp_hillslope_orchestrator::runtime_inputs::DIRECT_WINTER_HOURLY_FORCING_COUNT];
         for (index, hourly) in hourly.into_iter().enumerate() {
             snow_hourly[index] = DirectSnowHourlyForcing {
+                active_precipitation_m: hourly.active_precipitation_m,
                 rain_m: hourly.rain_m,
                 snowfall_m: hourly.snowfall_m,
                 radiation_mj_m2: hourly.radiation_mj_m2,
                 air_temperature_c: hourly.air_temperature_c,
                 cloud_fraction: hourly.cloud_fraction,
+                phase_model: hourly.phase_model,
+                rain_fraction: hourly.rain_fraction,
+                snow_fraction: hourly.snow_fraction,
+                hydrometeor_temperature_c: hourly.hydrometeor_temperature_c,
             };
         }
         let partition_inputs = DirectActiveSnowPartitionInputs {
@@ -506,6 +511,8 @@ fn inactive_direct_snow_liquid_partition(
         density_unbounded_swe_residual_m: 0.0,
         density_process_diagnostics:
             openwepp_hillslope_orchestrator::SnowDensityProcessDiagnostics::default(),
+        accumulation_melt_diagnostics:
+            openwepp_hillslope_orchestrator::DirectSnowAccumulationMeltDiagnostics::default(),
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
         snow_layers_after: snow_lane_state.layers.clone(),
         stage3_diagnostics: openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled(),

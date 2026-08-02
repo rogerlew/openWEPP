@@ -1,0 +1,13 @@
+run=eb04w-frost-3
+command=cargo nextest run --workspace --profile frost
+start=2026-08-02T06:56:23Z
+cwd=/home/workdir/openWEPP
+head=045cac9475738b0306a89a934702c479803f0935
+dirty=59
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+────────────
+ Nextest run ID 48827898-ee6e-44ca-8312-30ba4d457835 with nextest profile: frost
+    Starting 341 tests across 202 binaries (1893 tests skipped, including 1888 tests via profile.frost.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 529.018s] 341 tests run: 341 passed (1 slow), 1893 skipped

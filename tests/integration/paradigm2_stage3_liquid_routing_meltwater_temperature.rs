@@ -20,7 +20,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 120",
+        "contract_version: 121",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",
@@ -223,6 +223,8 @@ fn warm_layered_inputs(
         hour.radiation_mj_m2 = 0.0;
     }
     hourly[2].rain_m = 0.05;
+    hourly[2].active_precipitation_m = 0.05;
+    hourly[2].rain_fraction = 1.0;
     hourly[2].air_temperature_c = 4.0;
 
     let layers = vec![

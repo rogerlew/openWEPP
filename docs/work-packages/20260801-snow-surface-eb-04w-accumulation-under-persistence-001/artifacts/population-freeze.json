@@ -1,0 +1,26 @@
+{
+  "schema": "openwepp-snow-surface-eb04w-population-v1",
+  "date_utc": "2026-08-01",
+  "source_manifest": "docs/work-packages/20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/artifacts/failure-cohort-manifest.json",
+  "source_manifest_sha256": "969527cecfa36f42a62a3cb5119a9ef5aae961dfc370a1fe9c0b87c56e9ea50e",
+  "evidence_role_manifest_sha256": "65fb0036aa80537a68db1da65e5ca76e889031f6cbcb63337620a277550fbdca",
+  "seasonal_phase_protocol_sha256": "e03d0b9faf77bc481c6bf58b0f334baed214c970ae67e1e5f35d234bef75a3c0",
+  "data_role": "DIAGNOSTIC_ONLY",
+  "promotion_authorized": false,
+  "unique_lanes": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa",
+    "snotel_snowbird_ut"
+  ],
+  "cells": ["B", "L", "S", "LS"],
+  "model_cell_count": 16,
+  "operator_count": 5,
+  "operators": [
+    ["snotel_mica_creek_st_joe_id", "seasonal_ablation_meltout_date", -35.0],
+    ["snotel_niwot_co", "seasonal_peak_depth_date", -46.5],
+    ["snotel_niwot_co", "seasonal_peak_swe_date", -31.0],
+    ["snotel_paradise_wa", "seasonal_ablation_meltout_date", -37.0],
+    ["snotel_snowbird_ut", "seasonal_peak_swe_date", -44.5]
+  ]
+}

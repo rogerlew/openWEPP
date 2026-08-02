@@ -1,0 +1,51 @@
+{
+  "package": "docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001",
+  "suite": "terminal-suite",
+  "cwd": "/home/workdir/openWEPP",
+  "head": "045cac9475738b0306a89a934702c479803f0935",
+  "dirty": 59,
+  "runs": [
+    {
+      "profile": "quick",
+      "run_id": "c2dcae3b-93b8-42b8-8522-8f3cd2d64384",
+      "command": "cargo nextest run --workspace --profile quick",
+      "start_utc": "2026-08-02T06:19:06Z",
+      "duration_seconds": 2208.697,
+      "tests": 2143,
+      "passed": 2143,
+      "skipped": 37,
+      "slow": 55,
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-quick-3.log"
+    },
+    {
+      "profile": "frost",
+      "run_id": "48827898-ee6e-44ca-8312-30ba4d457835",
+      "command": "cargo nextest run --workspace --profile frost",
+      "start_utc": "2026-08-02T06:56:23Z",
+      "duration_seconds": 529.018,
+      "tests": 341,
+      "passed": 341,
+      "skipped": 1893,
+      "slow": 1,
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-frost-3.log"
+    },
+    {
+      "profile": "full",
+      "run_id": "803132f9-663e-439c-9055-7a921d45bc49",
+      "command": "cargo nextest run --workspace --profile full",
+      "start_utc": "2026-08-02T07:05:39Z",
+      "duration_seconds": 2216.531,
+      "tests": 2192,
+      "passed": 2192,
+      "skipped": 30,
+      "slow": 31,
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-full-3.log"
+    }
+  ]
+}

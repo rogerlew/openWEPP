@@ -38,6 +38,7 @@ struct Simimpl28SunmapResult {
 
 #[derive(Debug, Clone, Copy)]
 struct Simimpl28StmtimHourlyPartition {
+    active_precipitation_m: f64,
     hrrain_m: f64,
     hrsnow_m: f64,
     rain_fraction: f64,
@@ -66,6 +67,7 @@ impl SnowPhasePartitionModel {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectWinterHourlyForcing {
+    pub active_precipitation_m: f64,
     pub rain_m: f64,
     pub snowfall_m: f64,
     pub radiation_mj_m2: f64,
@@ -85,6 +87,7 @@ impl DirectWinterHourlyForcing {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
+            active_precipitation_m: 0.0,
             rain_m: 0.0,
             snowfall_m: 0.0,
             radiation_mj_m2: 0.0,
@@ -275,6 +278,7 @@ fn build_simimpl28_hourly_winter_forcing_typed(
             context.snow_phase_model,
         )?;
         hourly[hour - 1] = DirectWinterHourlyForcing {
+            active_precipitation_m: partition.active_precipitation_m,
             rain_m: partition.hrrain_m,
             snowfall_m: partition.hrsnow_m,
             radiation_mj_m2: hrrad_mj_m2,
@@ -777,6 +781,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
             0.0,
             0.0,
             0.0,
+            0.0,
             phase_model,
             None,
             None,
@@ -787,6 +792,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
     let active_interval = (hour >= wnttim) && (hour < (wnttim + wntdur));
     if !active_interval {
         return Ok(simimpl28_partition_result(
+            0.0,
             0.0,
             0.0,
             0.0,
@@ -848,6 +854,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
     }
 
     Ok(simimpl28_partition_result(
+        active_precip_m,
         hrrain_m,
         hrsnow_m,
         rain_fraction,
@@ -909,6 +916,7 @@ fn simimpl28_legacy_stmtim_snowfall_depth_m(rain_m: f64, wntdur: f64) -> f64 {
 
 #[allow(clippy::too_many_arguments)]
 const fn simimpl28_partition_result(
+    active_precipitation_m: f64,
     hrrain_m: f64,
     hrsnow_m: f64,
     rain_fraction: f64,
@@ -918,6 +926,7 @@ const fn simimpl28_partition_result(
     relative_humidity: Option<f64>,
 ) -> Simimpl28StmtimHourlyPartition {
     Simimpl28StmtimHourlyPartition {
+        active_precipitation_m,
         hrrain_m,
         hrsnow_m,
         rain_fraction,

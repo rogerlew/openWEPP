@@ -1,0 +1,471 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 4e572a82-7b45-4c1b-bc30-8905fb6eaa78 with nextest profile: frost
+    Starting 339 tests across 202 binaries (1892 tests skipped, including 1887 tests via profile.frost.default-filter)
+        FAIL [   0.007s] ( 83/339) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_carries_geometry_but_removes_density_gradient
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_carries_geometry_but_removes_density_gradient ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_carries_geometry_but_removes_density_gradient
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_decouple_carries_geometry_but_removes_density_gradient' (433096) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:113:10:
+    decoupled Stage 3 should preserve geometry with bulk density: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 85/339) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density' (433100) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:72:14:
+    bulk-density disabled partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 86/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_accepts_bulk_density_model_after_decouple
+  stdout ───
+
+    running 1 test
+    test stage3_accepts_bulk_density_model_after_decouple ... FAILED
+
+    failures:
+
+    failures:
+        stage3_accepts_bulk_density_model_after_decouple
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_accepts_bulk_density_model_after_decouple' (433102) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:162:14:
+    bulk-density disabled Stage 3 partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 88/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_disabled_default_leaves_diagnostics_off
+  stdout ───
+
+    running 1 test
+    test stage3_disabled_default_leaves_diagnostics_off ... FAILED
+
+    failures:
+
+    failures:
+        stage3_disabled_default_leaves_diagnostics_off
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_disabled_default_leaves_diagnostics_off' (433106) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:113:6:
+    disabled Stage 3 partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 90/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_rejects_persisted_cold_content_below_absolute_zero
+  stdout ───
+
+    running 1 test
+    test stage3_rejects_persisted_cold_content_below_absolute_zero ... FAILED
+
+    failures:
+
+    failures:
+        stage3_rejects_persisted_cold_content_below_absolute_zero
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_rejects_persisted_cold_content_below_absolute_zero' (433110) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:188:5:
+    underlying meteorology cause was lost: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0003=0 outside [Some(1.0), Some(1.0)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 91/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_routes_liquid_closes_energy_and_produces_typed_temperature
+  stdout ───
+
+    running 1 test
+    test stage3_routes_liquid_closes_energy_and_produces_typed_temperature ... FAILED
+
+    failures:
+
+    failures:
+        stage3_routes_liquid_closes_energy_and_produces_typed_temperature
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_routes_liquid_closes_energy_and_produces_typed_temperature' (433112) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:129:6:
+    Stage 3 opt-in partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (119/339) openwepp::snowdensity07_runtime_opt_in snowdensity07_opt_in_changes_only_runtime_density_depth_surface
+  stdout ───
+
+    running 1 test
+    test snowdensity07_opt_in_changes_only_runtime_density_depth_surface ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_opt_in_changes_only_runtime_density_depth_surface
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'snowdensity07_opt_in_changes_only_runtime_density_depth_surface' (433262) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:104:6:
+    legacy density path should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0001"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (120/339) openwepp::snowdensity07_runtime_opt_in snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge
+  stdout ───
+
+    running 1 test
+    test snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge' (433264) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:154:6:
+    opt-in density path should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0001"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  71.153s] (302/339) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+  stdout ───
+
+    running 1 test
+    test coe_melt_snowbench_runs_both_models_as_diagnostic_only has been running for over 60 seconds
+    test coe_melt_snowbench_runs_both_models_as_diagnostic_only ... FAILED
+
+    failures:
+
+    failures:
+        coe_melt_snowbench_runs_both_models_as_diagnostic_only
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 71.14s
+
+  stderr ───
+
+    thread 'coe_melt_snowbench_runs_both_models_as_diagnostic_only' (436563) panicked at tests/integration/snowdensity05e_melt_adjudication.rs:32:10:
+    failed to run diagnostic CoE melt snowbench: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  70.232s] (303/339) openwepp::snowdensity05g_harness_fidelity_rerun snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave
+  stdout ───
+
+    running 1 test
+    test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave has been running for over 60 seconds
+    test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 70.22s
+
+  stderr ───
+
+    thread 'snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave' (439282) panicked at tests/integration/snowdensity05g_harness_fidelity_rerun.rs:48:6:
+    failed to run representative diagnostic CoE melt snowbench: InvalidForcing { detail: "CoE melt diagnostic replay failed for coe_shortwave_albedo_v1 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  68.216s] (310/339) openwepp::snowdensity06b_coe_bound_density_replay coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface
+  stdout ───
+
+    running 1 test
+    test coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface has been running for over 60 seconds
+    test coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface ... FAILED
+
+    failures:
+
+    failures:
+        coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 68.21s
+
+  stderr ───
+
+    thread 'coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface' (444922) panicked at tests/integration/snowdensity06b_coe_bound_density_replay.rs:49:6:
+    offline CoE-bound density replay should run: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  67.055s] (313/339) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+  stdout ───
+
+    running 1 test
+    test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar has been running for over 60 seconds
+    test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 67.05s
+
+  stderr ───
+
+    thread 'snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar' (447456) panicked at tests/integration/snowdensity10_3_1a_per_day_cancov.rs:49:6:
+    CoE melt replay should consume direct-runtime canopy series: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [ 466.466s] 339 tests run: 327 passed, 12 failed, 1892 skipped
+        FAIL [   0.007s] ( 83/339) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_carries_geometry_but_removes_density_gradient
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_carries_geometry_but_removes_density_gradient ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_carries_geometry_but_removes_density_gradient
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_decouple_carries_geometry_but_removes_density_gradient' (433096) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:113:10:
+    decoupled Stage 3 should preserve geometry with bulk density: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 85/339) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density' (433100) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:72:14:
+    bulk-density disabled partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 86/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_accepts_bulk_density_model_after_decouple
+  stdout ───
+
+    running 1 test
+    test stage3_accepts_bulk_density_model_after_decouple ... FAILED
+
+    failures:
+
+    failures:
+        stage3_accepts_bulk_density_model_after_decouple
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_accepts_bulk_density_model_after_decouple' (433102) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:162:14:
+    bulk-density disabled Stage 3 partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 88/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_disabled_default_leaves_diagnostics_off
+  stdout ───
+
+    running 1 test
+    test stage3_disabled_default_leaves_diagnostics_off ... FAILED
+
+    failures:
+
+    failures:
+        stage3_disabled_default_leaves_diagnostics_off
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_disabled_default_leaves_diagnostics_off' (433106) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:113:6:
+    disabled Stage 3 partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 90/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_rejects_persisted_cold_content_below_absolute_zero
+  stdout ───
+
+    running 1 test
+    test stage3_rejects_persisted_cold_content_below_absolute_zero ... FAILED
+
+    failures:
+
+    failures:
+        stage3_rejects_persisted_cold_content_below_absolute_zero
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_rejects_persisted_cold_content_below_absolute_zero' (433110) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:188:5:
+    underlying meteorology cause was lost: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0003=0 outside [Some(1.0), Some(1.0)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 91/339) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_routes_liquid_closes_energy_and_produces_typed_temperature
+  stdout ───
+
+    running 1 test
+    test stage3_routes_liquid_closes_energy_and_produces_typed_temperature ... FAILED
+
+    failures:
+
+    failures:
+        stage3_routes_liquid_closes_energy_and_produces_typed_temperature
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'stage3_routes_liquid_closes_energy_and_produces_typed_temperature' (433112) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:129:6:
+    Stage 3 opt-in partition should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0003"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (119/339) openwepp::snowdensity07_runtime_opt_in snowdensity07_opt_in_changes_only_runtime_density_depth_surface
+  stdout ───
+
+    running 1 test
+    test snowdensity07_opt_in_changes_only_runtime_density_depth_surface ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_opt_in_changes_only_runtime_density_depth_surface
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'snowdensity07_opt_in_changes_only_runtime_density_depth_surface' (433262) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:104:6:
+    legacy density path should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0001"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (120/339) openwepp::snowdensity07_runtime_opt_in snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge
+  stdout ───
+
+    running 1 test
+    test snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge' (433264) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:154:6:
+    opt-in density path should compute: StateSymbolOutOfRange { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.hourly.phase_fraction_sum_0001"), value: 0.0, minimum: Some(1.0), maximum: Some(1.0) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  71.153s] (302/339) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+  stdout ───
+
+    running 1 test
+    test coe_melt_snowbench_runs_both_models_as_diagnostic_only has been running for over 60 seconds
+    test coe_melt_snowbench_runs_both_models_as_diagnostic_only ... FAILED
+
+    failures:
+
+    failures:
+        coe_melt_snowbench_runs_both_models_as_diagnostic_only
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 71.14s
+
+  stderr ───
+
+    thread 'coe_melt_snowbench_runs_both_models_as_diagnostic_only' (436563) panicked at tests/integration/snowdensity05e_melt_adjudication.rs:32:10:
+    failed to run diagnostic CoE melt snowbench: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  70.232s] (303/339) openwepp::snowdensity05g_harness_fidelity_rerun snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave
+  stdout ───
+
+    running 1 test
+    test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave has been running for over 60 seconds
+    test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 70.22s
+
+  stderr ───
+
+    thread 'snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave' (439282) panicked at tests/integration/snowdensity05g_harness_fidelity_rerun.rs:48:6:
+    failed to run representative diagnostic CoE melt snowbench: InvalidForcing { detail: "CoE melt diagnostic replay failed for coe_shortwave_albedo_v1 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  68.216s] (310/339) openwepp::snowdensity06b_coe_bound_density_replay coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface
+  stdout ───
+
+    running 1 test
+    test coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface has been running for over 60 seconds
+    test coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface ... FAILED
+
+    failures:
+
+    failures:
+        coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 68.21s
+
+  stderr ───
+
+    thread 'coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface' (444922) panicked at tests/integration/snowdensity06b_coe_bound_density_replay.rs:49:6:
+    offline CoE-bound density replay should run: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  67.055s] (313/339) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+  stdout ───
+
+    running 1 test
+    test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar has been running for over 60 seconds
+    test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 67.05s
+
+  stderr ───
+
+    thread 'snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar' (447456) panicked at tests/integration/snowdensity10_3_1a_per_day_cancov.rs:49:6:
+    CoE melt replay should consume direct-runtime canopy series: InvalidForcing { detail: "CoE melt diagnostic replay failed for legacy_coe 1980-01-09: HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation state symbol snow.hourly.phase_fraction_sum_0008=0 outside [Some(1.0), Some(1.0)]" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

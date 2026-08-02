@@ -732,6 +732,10 @@ path = "tests/integration/cqr_quality_evidence_handoff_contract.rs"
 name = "snow_surface_eb04v_density_process_diagnostics_contract"
 path = "tests/integration/snow_surface_eb04v_density_process_diagnostics_contract.rs"
 
+[[test]]
+name = "snow_surface_eb04w_accumulation_melt_diagnostics_contract"
+path = "tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

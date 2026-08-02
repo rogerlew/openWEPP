@@ -17,7 +17,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_decouple_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 120",
+        "contract_version: 121",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE",
         "INV-SNOWFREEZE-081",
         "OBL-SNOWFREEZE-P-056",
@@ -163,6 +163,8 @@ fn warm_inputs(
         hour.radiation_mj_m2 = 0.0;
     }
     hourly[2].rain_m = 0.05;
+    hourly[2].active_precipitation_m = 0.05;
+    hourly[2].rain_fraction = 1.0;
     hourly[2].air_temperature_c = 4.0;
 
     DirectActiveSnowPartitionInputs {

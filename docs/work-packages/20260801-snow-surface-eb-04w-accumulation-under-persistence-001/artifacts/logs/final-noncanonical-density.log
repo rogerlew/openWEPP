@@ -1,0 +1,89 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.02s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_runner-e6a7bd813b2f9466)
+
+running 1 test
+test hillslope::snowbench_coe_melt::tests::noncanonical_new_snow_density_preserves_runtime_phase_closure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 137 filtered out; finished in 0.00s
+
+     Running unittests src/bin/open_wepp_runner.rs (target/debug/deps/open_wepp_runner-0d66d3425cd7b694)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-cli-hill.rs (target/debug/deps/openwepp_cli_hill-195c8f4fc4161bc3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-cli-totalwatsed3.rs (target/debug/deps/openwepp_cli_totalwatsed3-eb514bd42468062c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-cli-watershed.rs (target/debug/deps/openwepp_cli_watershed-541d7aa6a5762307)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-snowbench.rs (target/debug/deps/openwepp_snowbench-b4332d2697668fbf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+     Running tests/mt3_hbp_hourly_consumer_contract.rs (target/debug/deps/mt3_hbp_hourly_consumer_contract-f0287b1f7cb171c5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_runner_kernel_execution_contract.rs (target/debug/deps/simimpl04_runner_kernel_execution_contract-837f923c242439a0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_wb13_publication_contract.rs (target/debug/deps/simimpl04_wb13_publication_contract-3057623a099fa261)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_wepp_ui_mode_closure_contract.rs (target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-61d2f3ea09a2878b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/snowbench_error_contract.rs (target/debug/deps/snowbench_error_contract-1d2fcf68441ae286)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/totalwatsed3_cli_contract.rs (target/debug/deps/totalwatsed3_cli_contract-934196a2c9e2125d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
+     Running tests/watershed_cli_behavior_contract.rs (target/debug/deps/watershed_cli_behavior_contract-fdea62b529d46c76)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 29 filtered out; finished in 0.00s
+
+     Running tests/wshedw10_chaninp_absent_default_contract.rs (target/debug/deps/wshedw10_chaninp_absent_default_contract-101a11c53ad36ac7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s

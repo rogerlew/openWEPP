@@ -1167,7 +1167,7 @@ fn r7h_direct_production_snow_trace_line(
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
     let line = format!(
-        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v2\",\
+        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v3\",\
 \"day_index\":{day_index},\
 \"lane_index\":{lane_index},\
 \"hyetograph_rainfall_m\":{},\
@@ -1256,10 +1256,8 @@ fn r7h_direct_production_snow_trace_line(
         layers_after,
     );
     format!(
-        "{line},{},{},{}\n",
-        direct_snow_trace_density_process_fields(&snow_liquid.density_process_diagnostics),
-        direct_snow_trace_stage3_fields(&snow_liquid.stage3_diagnostics),
-        direct_snow_trace_thermal_fields(&thermal)
+        "{line},{}\n",
+        direct_snow_trace_diagnostic_suffix(snow_liquid, &thermal)
     )
 }
 

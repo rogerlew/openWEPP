@@ -2,6 +2,49 @@
 use openwepp_unit_boundary::TemperatureCelsius;
 
 use crate::winter_column::DirectSnowLayerState;
+use crate::runtime_inputs::SnowPhasePartitionModel;
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct DirectSnowMeltHourDiagnostics {
+    pub coe_melt_amelt_m: f64,
+    pub coe_melt_bmelt_m: f64,
+    pub coe_melt_cmelt_m: f64,
+    pub coe_melt_dmelt_m: f64,
+    pub coe_melt_uncapped_m: f64,
+    pub coe_melt_cap_adjustment_m: f64,
+    pub coe_melt_applied_m: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectSnowAccumulationMeltDiagnostics {
+    pub hourly_active_precipitation_m: [f64; 24],
+    pub hourly_rain_m: [f64; 24],
+    pub hourly_snowfall_depth_m: [f64; 24],
+    pub hourly_snowfall_swe_m: [f64; 24],
+    pub hourly_rain_fraction: [f64; 24],
+    pub hourly_snow_fraction: [f64; 24],
+    pub hourly_phase_model: [SnowPhasePartitionModel; 24],
+    pub hourly_hydrometeor_temperature_c: [Option<f64>; 24],
+    pub hourly_melt: [DirectSnowMeltHourDiagnostics; 24],
+    pub modeled_wind_redistribution_m: [f64; 24],
+}
+
+impl Default for DirectSnowAccumulationMeltDiagnostics {
+    fn default() -> Self {
+        Self {
+            hourly_active_precipitation_m: [0.0; 24],
+            hourly_rain_m: [0.0; 24],
+            hourly_snowfall_depth_m: [0.0; 24],
+            hourly_snowfall_swe_m: [0.0; 24],
+            hourly_rain_fraction: [0.0; 24],
+            hourly_snow_fraction: [0.0; 24],
+            hourly_phase_model: [SnowPhasePartitionModel::LegacyRst; 24],
+            hourly_hydrometeor_temperature_c: [None; 24],
+            hourly_melt: [DirectSnowMeltHourDiagnostics::default(); 24],
+            modeled_wind_redistribution_m: [0.0; 24],
+        }
+    }
+}
 
 /// WB11 hydrology production kernel for ET/perc/lateral/drain lanes.
 #[derive(Debug, Clone, Default)]
@@ -18,11 +61,13 @@ pub(crate) struct SnowHourlyState {
     sublimation_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
+    melt_diagnostics: DirectSnowMeltHourDiagnostics,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct SnowMeltComputation {
     wmelt_m: f64,
+    diagnostics: DirectSnowMeltHourDiagnostics,
 }
 
 #[cfg(test)]
@@ -39,6 +84,10 @@ mod tests {
             sublimation_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
+            melt_diagnostics: DirectSnowMeltHourDiagnostics {
+                coe_melt_applied_m: melt_m,
+                ..DirectSnowMeltHourDiagnostics::default()
+            },
         }
     }
 
@@ -83,6 +132,7 @@ pub(crate) struct SnowCouplingOutcome {
     raw_melt: f64,
     redistributed_melt: f64,
     hourly_routed_melt: [f64; 24],
+    hourly_melt_diagnostics: [DirectSnowMeltHourDiagnostics; 24],
     snowpack_state_loss: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
@@ -119,6 +169,7 @@ pub struct DirectSnowLiquidPartition {
     pub density_swe_identity_residual_m: f64,
     pub density_unbounded_swe_residual_m: f64,
     pub density_process_diagnostics: SnowDensityProcessDiagnostics,
+    pub accumulation_melt_diagnostics: DirectSnowAccumulationMeltDiagnostics,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
     pub stage3_diagnostics: DirectSnowStage3Diagnostics,
@@ -384,22 +435,32 @@ impl DirectSnowStage3Diagnostics {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowHourlyForcing {
+    pub active_precipitation_m: f64,
     pub rain_m: f64,
     pub snowfall_m: f64,
     pub radiation_mj_m2: f64,
     pub air_temperature_c: f64,
     pub cloud_fraction: f64,
+    pub phase_model: SnowPhasePartitionModel,
+    pub rain_fraction: f64,
+    pub snow_fraction: f64,
+    pub hydrometeor_temperature_c: Option<f64>,
 }
 
 impl DirectSnowHourlyForcing {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
+            active_precipitation_m: 0.0,
             rain_m: 0.0,
             snowfall_m: 0.0,
             radiation_mj_m2: 0.0,
             air_temperature_c: 0.0,
             cloud_fraction: 0.0,
+            phase_model: SnowPhasePartitionModel::LegacyRst,
+            rain_fraction: 0.0,
+            snow_fraction: 0.0,
+            hydrometeor_temperature_c: None,
         }
     }
 }

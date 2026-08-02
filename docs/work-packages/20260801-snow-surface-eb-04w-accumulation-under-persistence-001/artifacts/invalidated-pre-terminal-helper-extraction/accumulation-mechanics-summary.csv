@@ -1,0 +1,6 @@
+lane_id,operator,retained_offset_days,recomputed_median_offset_days,median_modeled_to_observed_peak_ratio,diagnostic_attribution
+snotel_mica_creek_st_joe_id,seasonal_ablation_meltout_date,-35.0,-38,0.6487538869893656,pre-peak mass/forcing boundary dominant
+snotel_niwot_co,seasonal_peak_depth_date,-46.5,-46.5,0.47191210270260325,pre-peak mass/forcing boundary dominant
+snotel_niwot_co,seasonal_peak_swe_date,-31.0,-31,0.4855566494959412,pre-peak mass/forcing boundary dominant
+snotel_paradise_wa,seasonal_ablation_meltout_date,-37.0,-60.0,0.5114815355286422,pre-peak mass/forcing boundary dominant
+snotel_snowbird_ut,seasonal_peak_swe_date,-44.5,-46.5,0.3767796654285547,pre-peak mass/forcing boundary dominant

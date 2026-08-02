@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 120",
+        "contract_version: 121",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -60,6 +60,8 @@ fn cold_pack_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs 
         ..DirectSnowHourlyForcing::zero()
     }; HOUR_COUNT];
     hourly[0].snowfall_m = 0.02;
+    hourly[0].active_precipitation_m = 0.002;
+    hourly[0].snow_fraction = 1.0;
     hourly[0].air_temperature_c = -4.0;
 
     DirectActiveSnowPartitionInputs {

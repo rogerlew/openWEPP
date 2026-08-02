@@ -5,3 +5,4 @@ include!("day_input_and_helpers/00d_authority_runtime_impl.rs");
 include!("day_input_and_helpers/01_frost_and_layer_helpers.rs");
 include!("day_input_and_helpers/02_publication_and_manifest_helpers.rs");
 include!("day_input_and_helpers/00b_ksatadj_authority_impl.rs");
+include!("day_input_and_helpers/00f_snow_accumulation_melt_trace.rs");

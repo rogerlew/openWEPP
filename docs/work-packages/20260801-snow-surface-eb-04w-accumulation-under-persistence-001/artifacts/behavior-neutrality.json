@@ -1,0 +1,187 @@
+{
+  "cells": {
+    "snotel_mica_creek_st_joe_id/B": {
+      "current_trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+      "current_wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40",
+      "reference_trace_sha256": "bc5f4e37c204feddfd8bd6deb945b6e7e9fd72f26d1165761acdb93262d2c740",
+      "reference_wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40",
+      "trace_numeric_values": 4021102,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_mica_creek_st_joe_id/L": {
+      "current_trace_sha256": "b536ed901aca6d0e79bded0cce40dbee60374b8a55918f8118d270116be42595",
+      "current_wat_sha256": "6a918d9d209930a5c2bcf160d6e0cbaeae75fa7f02f3fe120be850972df174b7",
+      "reference_trace_sha256": "61936d0f531c56efbfbc8582c10bf0a18ee347bf32a48c1221df4aa5e29c452c",
+      "reference_wat_sha256": "6a918d9d209930a5c2bcf160d6e0cbaeae75fa7f02f3fe120be850972df174b7",
+      "trace_numeric_values": 4021102,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_mica_creek_st_joe_id/LS": {
+      "current_trace_sha256": "379e020c7478fdebd25c51d48f950a22fced3c4b3555758ed706c55c6ecf7e37",
+      "current_wat_sha256": "2a863bfa476fc1deb4dc6a565fc27e997df45a9a65ad48dca5ca4c962cc9848f",
+      "reference_trace_sha256": "588a449d6861bf38f080a69c326548784c3a434d64c455c5a3b3e2965671eaba",
+      "reference_wat_sha256": "2a863bfa476fc1deb4dc6a565fc27e997df45a9a65ad48dca5ca4c962cc9848f",
+      "trace_numeric_values": 4006740,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_mica_creek_st_joe_id/S": {
+      "current_trace_sha256": "9867472abd1e087fc6dfebb3e1bb09004870e37b3b534ed661c5d4783692b52d",
+      "current_wat_sha256": "ecc4351f0f72392a8ef09e7e36ab1e7e91daa3db01a806163b5c1467d4dda6a5",
+      "reference_trace_sha256": "8dc9f5e6f40b57173eec3fa5d5a0b621410d8f656e975a79afda15c632554a65",
+      "reference_wat_sha256": "ecc4351f0f72392a8ef09e7e36ab1e7e91daa3db01a806163b5c1467d4dda6a5",
+      "trace_numeric_values": 4002830,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_niwot_co/B": {
+      "current_trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+      "current_wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3",
+      "reference_trace_sha256": "952275d4061cb4f0ed48c55794101132f05fbbd2817a81f70ea600d53360505b",
+      "reference_wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3",
+      "trace_numeric_values": 4699510,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_niwot_co/L": {
+      "current_trace_sha256": "5c93527b1efc64dd7d82ec5d89046dc752e5f4059fb527e78f39cb475eef3bce",
+      "current_wat_sha256": "873bdd979e194a81d6bb3a147856186ac67659e49832d58537f622f24db05426",
+      "reference_trace_sha256": "df3a6e8c90313bc5dcae0f1da5b1525a1e3696c3c466b641a68382fee2e37be4",
+      "reference_wat_sha256": "873bdd979e194a81d6bb3a147856186ac67659e49832d58537f622f24db05426",
+      "trace_numeric_values": 4699510,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_niwot_co/LS": {
+      "current_trace_sha256": "b3c78913dee0e47b2d705ae98aa2f3c9d48183f9f19c5d5894591c815161dff6",
+      "current_wat_sha256": "0b3dc790e0b7f97061d4f84645a356d7d67c47ba802626624a842705161951d7",
+      "reference_trace_sha256": "dbb60f641ee017d0ea9be2707140855359c13f5801409479675e1ee8bece3fce",
+      "reference_wat_sha256": "0b3dc790e0b7f97061d4f84645a356d7d67c47ba802626624a842705161951d7",
+      "trace_numeric_values": 4634162,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_niwot_co/S": {
+      "current_trace_sha256": "cd7273693beb6dc01380061e4b2b277d05fb2e70f8721b774f5f2b9c42ec876a",
+      "current_wat_sha256": "8ca8e87464e7ecc05f5150cf1a9d5a01f8ef4636b1585f66207fe0470f5ed2e2",
+      "reference_trace_sha256": "d541c2c4caa5dfe2ccda30d1b7a6b0d85c5b4cbd791b6d79137b1bb10ed0f890",
+      "reference_wat_sha256": "8ca8e87464e7ecc05f5150cf1a9d5a01f8ef4636b1585f66207fe0470f5ed2e2",
+      "trace_numeric_values": 4610492,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_paradise_wa/B": {
+      "current_trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+      "current_wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f",
+      "reference_trace_sha256": "375cb7431cdd3b7f25a1c95bd71bdbe9e788b27f33f2dea32cf7008a3b687366",
+      "reference_wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f",
+      "trace_numeric_values": 5171458,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_paradise_wa/L": {
+      "current_trace_sha256": "c2e784569ff039f4266c3de0ab1cf59e705a99f27d5b550fa34a322eb5d70032",
+      "current_wat_sha256": "b843d19db7caaae1055d15772c42779817d16445327c6e14e8b0af38d9cb5c66",
+      "reference_trace_sha256": "1e6b76cabe4326142a0932ad67399635392abf93250da90f12c7e86af4002812",
+      "reference_wat_sha256": "b843d19db7caaae1055d15772c42779817d16445327c6e14e8b0af38d9cb5c66",
+      "trace_numeric_values": 5171458,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_paradise_wa/LS": {
+      "current_trace_sha256": "3cb8b17de9d4c61771f45e257449c4d0d4c745fe1e4352f6ef167e1db66ec061",
+      "current_wat_sha256": "cb433e26433136a28d95a678e7d4a7a3fcb0aee17265e3755c51d0f0fcb1feb2",
+      "reference_trace_sha256": "71f09988498177b68a482e941769090bcb002e6f9e1d8e0711cf0fc895388723",
+      "reference_wat_sha256": "cb433e26433136a28d95a678e7d4a7a3fcb0aee17265e3755c51d0f0fcb1feb2",
+      "trace_numeric_values": 5154812,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_paradise_wa/S": {
+      "current_trace_sha256": "d943cec1a34453d438b298bef8e6a486aac3cdb32376878b266480bce0f3b204",
+      "current_wat_sha256": "d7028035b39208334985acb45fee8b982bf6b5eab3b859493c820ffc2635e311",
+      "reference_trace_sha256": "e6544ad21aa04c7034ce798e79a50d9d2dae79bf875d9ef4d274948937c938f9",
+      "reference_wat_sha256": "d7028035b39208334985acb45fee8b982bf6b5eab3b859493c820ffc2635e311",
+      "trace_numeric_values": 5153698,
+      "trace_rows": 16437,
+      "wat_numeric_values": 49311,
+      "wat_rows": 16437
+    },
+    "snotel_snowbird_ut/B": {
+      "current_trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+      "current_wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6",
+      "reference_trace_sha256": "a9b809c69c75b514d4acb7285ba792a188c85d91500ad9d87643bfa0f60ca36d",
+      "reference_wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6",
+      "trace_numeric_values": 4201802,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_snowbird_ut/L": {
+      "current_trace_sha256": "9f4cafcfc6d585a6c8555c86de786a53d4be47c390600878a07377a189a4e087",
+      "current_wat_sha256": "c3d4e6255b4fccaee6d5cf3cefd1da7959c2c614039cdb18b5eaf1475f5b0a69",
+      "reference_trace_sha256": "5ea622abd54702939777e997f9af2344d140da683bc24ab507b2bc506d6c98df",
+      "reference_wat_sha256": "c3d4e6255b4fccaee6d5cf3cefd1da7959c2c614039cdb18b5eaf1475f5b0a69",
+      "trace_numeric_values": 4201802,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_snowbird_ut/LS": {
+      "current_trace_sha256": "d554f9f8bd33facef1dfc9387f352842ed68bc468d2b69993e66c2030f2cf061",
+      "current_wat_sha256": "e72459624c9210a8ad92c506076ad414e7b2436a3288c20b78ee02e0e7748b2c",
+      "reference_trace_sha256": "56f59f94e3a2608b1e26be99abf3598ec4fb32b8cf10bd543f5681e73227e9a9",
+      "reference_wat_sha256": "e72459624c9210a8ad92c506076ad414e7b2436a3288c20b78ee02e0e7748b2c",
+      "trace_numeric_values": 4174870,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    },
+    "snotel_snowbird_ut/S": {
+      "current_trace_sha256": "ffe18e6fb752daac30fbb8ffeab9c9daf2f14af61b2ad8ad1532f53a5f84a76a",
+      "current_wat_sha256": "7e6e7ba4f7e3e2a142f86f918b0a813df274f972be0754a86477d6e1699df907",
+      "reference_trace_sha256": "6218fec2092496b2df0f1a9bc11b32bf9d9d34ff011c8227ad27c617de204c51",
+      "reference_wat_sha256": "7e6e7ba4f7e3e2a142f86f918b0a813df274f972be0754a86477d6e1699df907",
+      "trace_numeric_values": 4168396,
+      "trace_rows": 14245,
+      "wat_numeric_values": 42735,
+      "wat_rows": 14245
+    }
+  },
+  "comparison": "decoded exact EB-04W v3 versus retained exact EB-04V v2",
+  "comparison_tool_sha256": "1b3f331d3c298d1a6b7f9a220efccc7dc788fecf13ca77aa7217a502a9ce7b35",
+  "current_binary_sha256": "b50dd71cb00f24806193b98d73fc5444e836efac84ad5a4e0465d1e67c81fec9",
+  "current_receipt": "docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/execution-receipt.json",
+  "current_receipt_sha256": "6f6bfe361c5b0aa155de1cfba61306e6d20fd570e68f67521eed12a3154dfbf7",
+  "execution_command": ".venv/bin/python docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/tools/compare_terminal_behavior.py",
+  "generated_utc": "2026-08-02T06:17:52.006732+00:00",
+  "observed_harness_sha256": "c91f01780c871a3ecc28f0ef4833fb13ef1e552e56eb582bfd256b58a0785fa9",
+  "reference_receipt": "docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/artifacts/execution-receipt.json",
+  "reference_receipt_sha256": "f2cc806de485cdbc00bc4c5b9e0e778ccb62fd6e1582d511fe5ea2b47f7fb1be",
+  "schema": "snow-surface-eb04w-terminal-behavior-neutrality-v1",
+  "status": "PASS",
+  "totals": {
+    "cell_count": 16,
+    "maximum_prior_v2_trace_numeric_difference": 0.0,
+    "maximum_wat_numeric_difference": 0.0,
+    "prior_v2_top_level_field_count": 111,
+    "trace_numeric_value_count": 72093744,
+    "trace_row_count": 245456,
+    "wat_numeric_value_count": 736368,
+    "wat_row_count": 245456
+  },
+  "working_directory": "/home/workdir/openWEPP"
+}

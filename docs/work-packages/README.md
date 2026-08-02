@@ -349,8 +349,10 @@ State as of `2026-07-30 UTC`:
   outputs; the unchanged empirical rule closes nonpromotion. EB-04T attributes
   the unchanged failures. EB-04U freezes the prospective partition and leaves
   EB-04V then completed the density-process observability prerequisite without
-  an efficacy claim. EB-04W is next, followed by EB-04X and then EB-05
-  assurance.
+  an efficacy claim. EB-04W completed the open-mountain accumulation diagnostic
+  and retained mixed ownership among realized input, liquid retention, and
+  pre-peak modeled loss without identifying a calibration target. EB-04X is
+  next, followed by EB-05 assurance.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5075,6 +5077,16 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260801-snow-surface-eb-04w-accumulation-under-persistence-001/` — EXECUTED /
+  DIAGNOSTIC COMPLETE / CALIBRATION HOLD: adds behavior-neutral hourly phase,
+  accumulation, and exact CoE empirical melt-component diagnostics through the
+  real direct-production trace. All 16 B/L/S/LS cells and five frozen operators
+  complete with closed ledgers. Baseline seasonal modeled peaks are about
+  `0.39-0.62` of observed peaks; observed-date retained-SWE lane medians are
+  about `0.21-0.46`. Causal ownership remains mixed among realized snowpack input, endogenous liquid
+  retention, external input causes, and phase-conditioned pre-peak modeled
+  loss; no fitting, forcing compensation, physics/default change, efficacy
+  claim, or promotion occurred. EB-04X is next.
 - `20260801-snow-surface-eb-04v-density-structure-mechanics-001/` — EXECUTED /
   DIAGNOSTIC COMPLETE / EFFICACY HOLD: adds a canonical, behavior-neutral
   density-process ledger through the real direct-production JSONL consumer.
@@ -5084,7 +5096,7 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   while fresh mixing, structure, and caps oppose it. The package closes
   observability but does not identify one coefficient, fit observations, amend
   physics, make an efficacy claim, promote a candidate, or change observation
-  roles. EB-04W is next.
+  roles. EB-04W is diagnostically complete with calibration held; EB-04X is next.
 - `20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/` —
   EXECUTED / PROSPECTIVE DIAGNOSTIC DESIGN COMPLETE: partitions the exact 16 EB-04T
   failures into nine density-structure, two Harvard depth–SWE

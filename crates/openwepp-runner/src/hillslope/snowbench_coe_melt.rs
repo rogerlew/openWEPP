@@ -634,12 +634,26 @@ fn group_daily_forcing(
                 });
             }
             occupied[row.hour_index] = true;
+            let runtime_snowfall_swe_m = row.snowfall_depth_m * 0.1;
+            let active_precipitation_m = row.rain_m + runtime_snowfall_swe_m;
+            let (rain_fraction, snow_fraction) = if active_precipitation_m > 0.0 {
+                (
+                    row.rain_m / active_precipitation_m,
+                    runtime_snowfall_swe_m / active_precipitation_m,
+                )
+            } else {
+                (0.0, 0.0)
+            };
             hourly[row.hour_index] = DirectSnowHourlyForcing {
+                active_precipitation_m,
                 rain_m: row.rain_m,
                 snowfall_m: row.snowfall_depth_m,
                 radiation_mj_m2: row.radiation_mj_m2,
                 air_temperature_c: row.air_temperature_c,
                 cloud_fraction: row.cloud_fraction,
+                rain_fraction,
+                snow_fraction,
+                ..DirectSnowHourlyForcing::zero()
             };
             tmax_c = tmax_c.max(row.air_temperature_c);
             tmin_c = tmin_c.min(row.air_temperature_c);
@@ -1121,5 +1135,34 @@ mod tests {
         assert!((0.0..=1.0).contains(&row.cloud_fraction));
         assert!(row.dewpoint_c.is_finite());
         assert!((row.wind_m_s - 2.0).abs() <= f64::EPSILON);
+    }
+
+    #[test]
+    fn noncanonical_new_snow_density_preserves_runtime_phase_closure() {
+        let rows = (0..24)
+            .map(|hour| {
+                let timestamp = format!("2020-01-01T{hour:02}:00:00");
+                parse_forcing_line(
+                    Path::new("forcing.csv"),
+                    hour + 2,
+                    &forcing_line(&timestamp, &[(10, "200")]),
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()
+            .expect("noncanonical snow density forcing must parse");
+        let canopy = BTreeMap::from([("2020-01-01".to_string(), 0.5)]);
+        let days = group_daily_forcing(rows, &canopy)
+            .expect("runtime phase operands must close for noncanonical density");
+        let hour = days[0].hourly[0];
+        let runtime_snowfall_swe_m = hour.snowfall_m * 0.1;
+
+        assert!((hour.active_precipitation_m - hour.rain_m - runtime_snowfall_swe_m).abs() < 1e-12);
+        assert!((hour.rain_m - hour.active_precipitation_m * hour.rain_fraction).abs() < 1e-12);
+        assert!(
+            (runtime_snowfall_swe_m - hour.active_precipitation_m * hour.snow_fraction).abs()
+                < 1e-12
+        );
+        simulate_coe_melt(&days, CoeMeltModel::LegacyCoe, 0.0, 200.0, 350.0)
+            .expect("noncanonical density replay must remain executable");
     }
 }

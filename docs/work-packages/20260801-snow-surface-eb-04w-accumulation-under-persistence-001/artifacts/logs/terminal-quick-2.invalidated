@@ -1,0 +1,5 @@
+invalidated: true
+reason: halted per Review A hard blocker (snowbench non-100-density runtime regression)
+source_blocker: review-a
+exit_code: 143 (SIGTERM)
+handoff: keep for trace only, do not use for campaign closure

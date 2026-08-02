@@ -370,6 +370,32 @@ impl Wb11HydrologyKernel {
                     &inputs.snow_layers,
                 )
             })?;
+        let accumulation_melt_diagnostics = DirectSnowAccumulationMeltDiagnostics {
+            hourly_active_precipitation_m: std::array::from_fn(|index| {
+                inputs.hourly[index].active_precipitation_m
+            }),
+            hourly_rain_m: std::array::from_fn(|index| inputs.hourly[index].rain_m),
+            hourly_snowfall_depth_m: std::array::from_fn(|index| {
+                inputs.hourly[index].snowfall_m
+            }),
+            hourly_snowfall_swe_m: std::array::from_fn(|index| {
+                inputs.hourly[index].snowfall_m * 0.1
+            }),
+            hourly_rain_fraction: std::array::from_fn(|index| {
+                inputs.hourly[index].rain_fraction
+            }),
+            hourly_snow_fraction: std::array::from_fn(|index| {
+                inputs.hourly[index].snow_fraction
+            }),
+            hourly_phase_model: std::array::from_fn(|index| {
+                inputs.hourly[index].phase_model
+            }),
+            hourly_hydrometeor_temperature_c: std::array::from_fn(|index| {
+                inputs.hourly[index].hydrometeor_temperature_c
+            }),
+            hourly_melt: snow_coupling.hourly_melt_diagnostics,
+            modeled_wind_redistribution_m: [0.0; 24],
+        };
 
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
@@ -398,6 +424,7 @@ impl Wb11HydrologyKernel {
             density_swe_identity_residual_m: density_outcome.max_abs_swe_identity_residual_m,
             density_unbounded_swe_residual_m: density_outcome.max_abs_unbounded_swe_residual_m,
             density_process_diagnostics,
+            accumulation_melt_diagnostics,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
             snow_layers_after,
             stage3_diagnostics,
@@ -448,6 +475,7 @@ impl Wb11HydrologyKernel {
             raw_melt: 0.0,
             redistributed_melt: 0.0,
             hourly_routed_melt: [0.0; 24],
+            hourly_melt_diagnostics: [DirectSnowMeltHourDiagnostics::default(); 24],
             snowpack_state_loss: 0.0,
             runtime_swe: inputs.runtime_swe_m,
             runtime_depth_m: inputs.runtime_depth_m,

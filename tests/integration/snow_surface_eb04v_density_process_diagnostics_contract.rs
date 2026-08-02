@@ -59,5 +59,5 @@ fn runtime_and_real_consumer_expose_non_aliased_process_fields() {
         );
     }
     assert!(partition.contains("density_process_diagnostics"));
-    assert!(consumer.contains("openwepp-r7h-direct-production-snow-trace-v2"));
+    assert!(consumer.contains("openwepp-r7h-direct-production-snow-trace-v3"));
 }

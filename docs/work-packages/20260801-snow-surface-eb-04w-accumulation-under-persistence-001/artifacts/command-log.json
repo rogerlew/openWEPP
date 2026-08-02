@@ -1,0 +1,32 @@
+[
+  {
+    "command": "cargo nextest run --workspace --profile quick",
+    "exit_code": 0,
+    "status": "PASS",
+    "run_id": "c2dcae3b-93b8-42b8-8522-8f3cd2d64384",
+    "artifacts": [
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-quick-3.log",
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-quick-3.exit"
+    ]
+  },
+  {
+    "command": "cargo nextest run --workspace --profile frost",
+    "exit_code": 0,
+    "status": "PASS",
+    "run_id": "48827898-ee6e-44ca-8312-30ba4d457835",
+    "artifacts": [
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-frost-3.log",
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-frost-3.exit"
+    ]
+  },
+  {
+    "command": "cargo nextest run --workspace --profile full",
+    "exit_code": 0,
+    "status": "PASS",
+    "run_id": "803132f9-663e-439c-9055-7a921d45bc49",
+    "artifacts": [
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-full-3.log",
+      "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/artifacts/logs/terminal-full-3.exit"
+    ]
+  }
+]

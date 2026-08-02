@@ -1,0 +1,358 @@
+{
+  "cell_count": 16,
+  "cells": {
+    "snotel_mica_creek_st_joe_id/B": {
+      "cell": "B",
+      "day_count": 14245,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "maximum_accumulation_closure_m": 3.9898639947466563e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 3.6595187561287257,
+        "coe_melt_applied_m": 20.44789471229011,
+        "coe_melt_bmelt_m": 6.567088746060928,
+        "coe_melt_cap_adjustment_m": -0.11478216816478667,
+        "coe_melt_cmelt_m": 10.096619803189913,
+        "coe_melt_dmelt_m": 0.23944957507540146,
+        "snowfall_swe_m": 24.29700172712858,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_mica_creek_st_joe_id/L": {
+      "cell": "L",
+      "day_count": 14245,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "maximum_accumulation_closure_m": 3.9898639947466563e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 3.6595187561287257,
+        "coe_melt_applied_m": 20.44789471229011,
+        "coe_melt_bmelt_m": 6.567088746060928,
+        "coe_melt_cap_adjustment_m": -0.11478216816478667,
+        "coe_melt_cmelt_m": 10.096619803189913,
+        "coe_melt_dmelt_m": 0.23944957507540146,
+        "snowfall_swe_m": 24.29700172712858,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_mica_creek_st_joe_id/LS": {
+      "cell": "LS",
+      "day_count": 14245,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "maximum_accumulation_closure_m": 3.9898639947466563e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 3.5899211769798183,
+        "coe_melt_applied_m": 19.912020689140274,
+        "coe_melt_bmelt_m": 6.399202179563085,
+        "coe_melt_cap_adjustment_m": -0.11645890319179514,
+        "coe_melt_cmelt_m": 9.803285459428047,
+        "coe_melt_dmelt_m": 0.23607077636118495,
+        "snowfall_swe_m": 24.285173320102196,
+        "sublimation_m": 0.4591567411780272
+      }
+    },
+    "snotel_mica_creek_st_joe_id/S": {
+      "cell": "S",
+      "day_count": 14245,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "maximum_accumulation_closure_m": 3.9898639947466563e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 3.5661298871064027,
+        "coe_melt_applied_m": 19.74351094979491,
+        "coe_melt_bmelt_m": 6.347528135943397,
+        "coe_melt_cap_adjustment_m": -0.12339076046498709,
+        "coe_melt_cmelt_m": 9.718022333067845,
+        "coe_melt_dmelt_m": 0.23522135414233997,
+        "snowfall_swe_m": 24.276070771835027,
+        "sublimation_m": 0.6257050539809893
+      }
+    },
+    "snotel_niwot_co/B": {
+      "cell": "B",
+      "day_count": 16437,
+      "lane_id": "snotel_niwot_co",
+      "maximum_accumulation_closure_m": 2.992397996059992e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 6.440871601007783,
+        "coe_melt_applied_m": 11.358544792103979,
+        "coe_melt_bmelt_m": 2.638401801840815,
+        "coe_melt_cap_adjustment_m": -0.19944927987175878,
+        "coe_melt_cmelt_m": 2.4020294243296076,
+        "coe_melt_dmelt_m": 0.07669124479752937,
+        "snowfall_swe_m": 19.823734815264604,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_niwot_co/L": {
+      "cell": "L",
+      "day_count": 16437,
+      "lane_id": "snotel_niwot_co",
+      "maximum_accumulation_closure_m": 2.992397996059992e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 6.440871601007783,
+        "coe_melt_applied_m": 11.358544792103979,
+        "coe_melt_bmelt_m": 2.638401801840815,
+        "coe_melt_cap_adjustment_m": -0.19944927987175878,
+        "coe_melt_cmelt_m": 2.4020294243296076,
+        "coe_melt_dmelt_m": 0.07669124479752937,
+        "snowfall_swe_m": 19.823734815264604,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_niwot_co/LS": {
+      "cell": "LS",
+      "day_count": 16437,
+      "lane_id": "snotel_niwot_co",
+      "maximum_accumulation_closure_m": 2.992397996059992e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 6.104273051669149,
+        "coe_melt_applied_m": 10.236460495439424,
+        "coe_melt_bmelt_m": 2.3357608177920004,
+        "coe_melt_cap_adjustment_m": -0.18876631945205347,
+        "coe_melt_cmelt_m": 1.9129741610293831,
+        "coe_melt_dmelt_m": 0.07221878440092826,
+        "snowfall_swe_m": 19.783047159719946,
+        "sublimation_m": 1.3002382033016473
+      }
+    },
+    "snotel_niwot_co/S": {
+      "cell": "S",
+      "day_count": 16437,
+      "lane_id": "snotel_niwot_co",
+      "maximum_accumulation_closure_m": 2.992397996059992e-17,
+      "maximum_melt_component_closure_m": 2.0057740190981832e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 5.995539156529701,
+        "coe_melt_applied_m": 9.831159938248883,
+        "coe_melt_bmelt_m": 2.232956547891792,
+        "coe_melt_cap_adjustment_m": -0.21983040899160974,
+        "coe_melt_cmelt_m": 1.7513320009932412,
+        "coe_melt_dmelt_m": 0.07116264182573483,
+        "snowfall_swe_m": 19.769881326616005,
+        "sublimation_m": 1.7506990791090018
+      }
+    },
+    "snotel_paradise_wa/B": {
+      "cell": "B",
+      "day_count": 16437,
+      "lane_id": "snotel_paradise_wa",
+      "maximum_accumulation_closure_m": 5.551115123125783e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 11.877037733749944,
+        "coe_melt_applied_m": 64.02718780325688,
+        "coe_melt_bmelt_m": 18.427579110138065,
+        "coe_melt_cap_adjustment_m": -0.1316265499849442,
+        "coe_melt_cmelt_m": 33.033305895421094,
+        "coe_melt_dmelt_m": 0.820891613932604,
+        "snowfall_swe_m": 71.07666383449879,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_paradise_wa/L": {
+      "cell": "L",
+      "day_count": 16437,
+      "lane_id": "snotel_paradise_wa",
+      "maximum_accumulation_closure_m": 5.551115123125783e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 11.877037733749944,
+        "coe_melt_applied_m": 64.02718780325688,
+        "coe_melt_bmelt_m": 18.427579110138065,
+        "coe_melt_cap_adjustment_m": -0.1316265499849442,
+        "coe_melt_cmelt_m": 33.033305895421094,
+        "coe_melt_dmelt_m": 0.820891613932604,
+        "snowfall_swe_m": 71.07666383449879,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_paradise_wa/LS": {
+      "cell": "LS",
+      "day_count": 16437,
+      "lane_id": "snotel_paradise_wa",
+      "maximum_accumulation_closure_m": 5.551115123125783e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 11.74780352115251,
+        "coe_melt_applied_m": 62.985729164986616,
+        "coe_melt_bmelt_m": 18.120837160815462,
+        "coe_melt_cap_adjustment_m": -0.14639327385111062,
+        "coe_melt_cmelt_m": 32.44534925447526,
+        "coe_melt_dmelt_m": 0.8181325023943625,
+        "snowfall_swe_m": 71.06579549144726,
+        "sublimation_m": 0.7681327383852684
+      }
+    },
+    "snotel_paradise_wa/S": {
+      "cell": "S",
+      "day_count": 16437,
+      "lane_id": "snotel_paradise_wa",
+      "maximum_accumulation_closure_m": 5.551115123125783e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 11.72318569492477,
+        "coe_melt_applied_m": 62.79237741740828,
+        "coe_melt_bmelt_m": 18.060565089849757,
+        "coe_melt_cap_adjustment_m": -0.14092058329309465,
+        "coe_melt_cmelt_m": 32.33255342788862,
+        "coe_melt_dmelt_m": 0.8169937880380976,
+        "snowfall_swe_m": 71.06572268453037,
+        "sublimation_m": 0.9611033629323085
+      }
+    },
+    "snotel_snowbird_ut/B": {
+      "cell": "B",
+      "day_count": 14245,
+      "lane_id": "snotel_snowbird_ut",
+      "maximum_accumulation_closure_m": 7.979727989493313e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 5.192546185240957,
+        "coe_melt_applied_m": 25.4818596040117,
+        "coe_melt_bmelt_m": 7.904688669865252,
+        "coe_melt_cap_adjustment_m": -0.08789702392946294,
+        "coe_melt_cmelt_m": 12.295684981503314,
+        "coe_melt_dmelt_m": 0.17683679133153857,
+        "snowfall_swe_m": 30.504102235478395,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_snowbird_ut/L": {
+      "cell": "L",
+      "day_count": 14245,
+      "lane_id": "snotel_snowbird_ut",
+      "maximum_accumulation_closure_m": 7.979727989493313e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 5.192546185240957,
+        "coe_melt_applied_m": 25.4818596040117,
+        "coe_melt_bmelt_m": 7.904688669865252,
+        "coe_melt_cap_adjustment_m": -0.08789702392946294,
+        "coe_melt_cmelt_m": 12.295684981503314,
+        "coe_melt_dmelt_m": 0.17683679133153857,
+        "snowfall_swe_m": 30.504102235478395,
+        "sublimation_m": 0.0
+      }
+    },
+    "snotel_snowbird_ut/LS": {
+      "cell": "LS",
+      "day_count": 14245,
+      "lane_id": "snotel_snowbird_ut",
+      "maximum_accumulation_closure_m": 7.979727989493313e-17,
+      "maximum_melt_component_closure_m": 2.0274580625478933e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 5.097728771075108,
+        "coe_melt_applied_m": 24.813781535433893,
+        "coe_melt_bmelt_m": 7.707187639821312,
+        "coe_melt_cap_adjustment_m": -0.10772468104776231,
+        "coe_melt_cmelt_m": 11.941205782426675,
+        "coe_melt_dmelt_m": 0.175384023158463,
+        "snowfall_swe_m": 30.49835202489572,
+        "sublimation_m": 0.6172861984272873
+      }
+    },
+    "snotel_snowbird_ut/S": {
+      "cell": "S",
+      "day_count": 14245,
+      "lane_id": "snotel_snowbird_ut",
+      "maximum_accumulation_closure_m": 7.979727989493313e-17,
+      "maximum_melt_component_closure_m": 2.0166160408230382e-17,
+      "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+      "modeled_wind_redistribution_abs_sum_m": 0.0,
+      "totals": {
+        "coe_melt_amelt_m": 5.070779407932361,
+        "coe_melt_applied_m": 24.566599312510576,
+        "coe_melt_bmelt_m": 7.6348916692609725,
+        "coe_melt_cap_adjustment_m": -0.12250264859999974,
+        "coe_melt_cmelt_m": 11.809002355086875,
+        "coe_melt_dmelt_m": 0.1744285288302841,
+        "snowfall_swe_m": 30.496096067409635,
+        "sublimation_m": 0.8633648090023012
+      }
+    }
+  },
+  "evidence_role": "DIAGNOSTIC_ONLY",
+  "maximum_accumulation_closure_m": 7.979727989493313e-17,
+  "maximum_melt_component_closure_m": 2.0274580625478933e-17,
+  "maximum_modeled_wind_redistribution_abs_sum_m": 0.0,
+  "maximum_phase_fraction_closure": 1.1102230246251565e-16,
+  "operator_count": 5,
+  "operators": [
+    {
+      "diagnostic_attribution": "pre-peak mass/forcing boundary dominant",
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "median_modeled_to_observed_peak_ratio": 0.6487538869893656,
+      "operator": "seasonal_ablation_meltout_date",
+      "recomputed_median_offset_days": -38,
+      "retained_offset_days": -35.0
+    },
+    {
+      "diagnostic_attribution": "pre-peak mass/forcing boundary dominant",
+      "lane_id": "snotel_niwot_co",
+      "median_modeled_to_observed_peak_ratio": 0.47191210270260325,
+      "operator": "seasonal_peak_depth_date",
+      "recomputed_median_offset_days": -46.5,
+      "retained_offset_days": -46.5
+    },
+    {
+      "diagnostic_attribution": "pre-peak mass/forcing boundary dominant",
+      "lane_id": "snotel_niwot_co",
+      "median_modeled_to_observed_peak_ratio": 0.4855566494959412,
+      "operator": "seasonal_peak_swe_date",
+      "recomputed_median_offset_days": -31,
+      "retained_offset_days": -31.0
+    },
+    {
+      "diagnostic_attribution": "pre-peak mass/forcing boundary dominant",
+      "lane_id": "snotel_paradise_wa",
+      "median_modeled_to_observed_peak_ratio": 0.5114815355286422,
+      "operator": "seasonal_ablation_meltout_date",
+      "recomputed_median_offset_days": -60.0,
+      "retained_offset_days": -37.0
+    },
+    {
+      "diagnostic_attribution": "pre-peak mass/forcing boundary dominant",
+      "lane_id": "snotel_snowbird_ut",
+      "median_modeled_to_observed_peak_ratio": 0.3767796654285547,
+      "operator": "seasonal_peak_swe_date",
+      "recomputed_median_offset_days": -46.5,
+      "retained_offset_days": -44.5
+    }
+  ],
+  "schema": "snow-surface-eb04w-accumulation-results-v1"
+}
