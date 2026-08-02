@@ -1,0 +1,1239 @@
+{
+  "binary_sha256": "b52d3141fe00a2d7a41b1c1ad6c61983077ab066faecefd11ce82d44d74308fd",
+  "cell_count": 36,
+  "evidence_role": "DIAGNOSTIC_ONLY",
+  "fresh_density_anti_alias_row_count": 100824,
+  "lane_count": 9,
+  "maximum_abs_closure_residual_kg_m3": 3.410605131648481e-13,
+  "maximum_emitted_closure_difference_kg_m3": 6.039341886080801e-14,
+  "maximum_omitted_overburden_residual_kg_m3": 22.331546186189016,
+  "phase_means": [
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.873437342258702,
+      "phase": "observed peak anchor",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "observed peak anchor",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.30415137550375343,
+      "phase": "observed peak anchor",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -3.7174558921047414,
+      "phase": "observed peak anchor",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -1.626601891534793,
+      "phase": "observed peak anchor",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 1.1464190860039658,
+      "phase": "observed peak anchor",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -3.0835828235703584,
+      "phase": "observed peak anchor",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -10.922607717051557,
+      "phase": "observed peak anchor",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 476,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 30.266591070467932,
+      "phase": "observed peak anchor",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.5132955993547104,
+      "phase": "outside observed frame",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "outside observed frame",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.3514203916069647,
+      "phase": "outside observed frame",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -4.074863697682109,
+      "phase": "outside observed frame",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -5.383463855991483,
+      "phase": "outside observed frame",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 1.0217024606227991,
+      "phase": "outside observed frame",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -1.6914608068851826,
+      "phase": "outside observed frame",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -13.176738166506018,
+      "phase": "outside observed frame",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 78067,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 23.143287747512627,
+      "phase": "outside observed frame",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.6012433928807696,
+      "phase": "post-peak ablation",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "post-peak ablation",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.18264931529177345,
+      "phase": "post-peak ablation",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -4.365567225743038,
+      "phase": "post-peak ablation",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -6.240124433764785,
+      "phase": "post-peak ablation",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.3971623903867183,
+      "phase": "post-peak ablation",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -6.261235565257169,
+      "phase": "post-peak ablation",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -26.756617402723727,
+      "phase": "post-peak ablation",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 8347,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 33.71556077028544,
+      "phase": "post-peak ablation",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.897000492116814,
+      "phase": "pre-peak accumulation",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "pre-peak accumulation",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 0.29816070072941153,
+      "phase": "pre-peak accumulation",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -8.709377773793223,
+      "phase": "pre-peak accumulation",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -0.7518495460553142,
+      "phase": "pre-peak accumulation",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 1.2240364587088939,
+      "phase": "pre-peak accumulation",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -1.1686762337964283,
+      "phase": "pre-peak accumulation",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": -0.9490681841123007,
+      "phase": "pre-peak accumulation",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 9675,
+      "bias_partition": "density_shape_over_beta",
+      "mean_daily_kg_m3": 11.01095135029546,
+      "phase": "pre-peak accumulation",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.19165103495963667,
+      "phase": "observed peak anchor",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "observed peak anchor",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.11119045735680191,
+      "phase": "observed peak anchor",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -19.71495355441011,
+      "phase": "observed peak anchor",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -2.140333252742521,
+      "phase": "observed peak anchor",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 1.253681956508976,
+      "phase": "observed peak anchor",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -4.454885326303495,
+      "phase": "observed peak anchor",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -6.63357761719242,
+      "phase": "observed peak anchor",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 770,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 25.303101323845397,
+      "phase": "observed peak anchor",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.09743838943043062,
+      "phase": "outside observed frame",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "outside observed frame",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.09259425046583646,
+      "phase": "outside observed frame",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -5.914198797666815,
+      "phase": "outside observed frame",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -4.408134390479623,
+      "phase": "outside observed frame",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 1.4950240655829654,
+      "phase": "outside observed frame",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -4.118511318768662,
+      "phase": "outside observed frame",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -13.56786749602006,
+      "phase": "outside observed frame",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 15425,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 27.24158753373912,
+      "phase": "outside observed frame",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.03808672307847756,
+      "phase": "post-peak ablation",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "post-peak ablation",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.025438801886804394,
+      "phase": "post-peak ablation",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -2.5101735184386404,
+      "phase": "post-peak ablation",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -7.264184984633022,
+      "phase": "post-peak ablation",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.19975053529474993,
+      "phase": "post-peak ablation",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -11.54704245709468,
+      "phase": "post-peak ablation",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -31.788759069764723,
+      "phase": "post-peak ablation",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 20816,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 38.561495945184504,
+      "phase": "post-peak ablation",
+      "process": "wet compaction"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.1761751789527229,
+      "phase": "pre-peak accumulation",
+      "process": "Stage 3 adjustment"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.0,
+      "phase": "pre-peak accumulation",
+      "process": "climate fallback"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 0.16254084873961586,
+      "phase": "pre-peak accumulation",
+      "process": "destructive metamorphism"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -10.82311409236572,
+      "phase": "pre-peak accumulation",
+      "process": "fresh mixing"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -3.4242086094192303,
+      "phase": "pre-peak accumulation",
+      "process": "internal cap"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 1.7347430564042348,
+      "phase": "pre-peak accumulation",
+      "process": "overburden compaction"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -3.0040290848605307,
+      "phase": "pre-peak accumulation",
+      "process": "runtime cap"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": -7.964952091706331,
+      "phase": "pre-peak accumulation",
+      "process": "structural projection"
+    },
+    {
+      "applicable_process_rows": 112426,
+      "bias_partition": "density_shape_under_beta",
+      "mean_daily_kg_m3": 25.759814460188696,
+      "phase": "pre-peak accumulation",
+      "process": "wet compaction"
+    }
+  ],
+  "schema": "snow-surface-eb04v-density-process-results-v1",
+  "summaries": [
+    {
+      "applicable_day_count": 5127,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 5093,
+      "cell": "B",
+      "fresh_snow_day_count": 1923,
+      "lane_id": "harvard_hardwood",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.21204790166239704,
+        "fresh mixing": -9.87564710130961,
+        "internal cap": -6.9007499651400375,
+        "overburden compaction": 1.2085785150555908,
+        "runtime cap": -4.057605059557585,
+        "structural projection": -17.022027351698643,
+        "wet compaction": 36.43540306098779
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 5127,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 5093,
+      "cell": "L",
+      "fresh_snow_day_count": 1923,
+      "lane_id": "harvard_hardwood",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.21204790166239704,
+        "fresh mixing": -9.87564710130961,
+        "internal cap": -6.9007499651400375,
+        "overburden compaction": 1.2085785150555908,
+        "runtime cap": -4.057605059557585,
+        "structural projection": -17.022027351698643,
+        "wet compaction": 36.43540306098779
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 4992,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 4968,
+      "cell": "S",
+      "fresh_snow_day_count": 1879,
+      "lane_id": "harvard_hardwood",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 1.5585894243453142,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.2316011039516151,
+        "fresh mixing": -11.135093420855727,
+        "internal cap": -7.92481811047036,
+        "overburden compaction": 1.104536801296239,
+        "runtime cap": -3.98424943026234,
+        "structural projection": -19.122508227451483,
+        "wet compaction": 39.271941859446684
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 5039,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 5021,
+      "cell": "LS",
+      "fresh_snow_day_count": 1893,
+      "lane_id": "harvard_hardwood",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.7999513102140209,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.23247190145199864,
+        "fresh mixing": -10.677577140814172,
+        "internal cap": -7.478337144810095,
+        "overburden compaction": 1.1622097765787416,
+        "runtime cap": -4.060516058610612,
+        "structural projection": -18.2621624280496,
+        "wet compaction": 38.283959784039574
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6436,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6366,
+      "cell": "B",
+      "fresh_snow_day_count": 1781,
+      "lane_id": "marcell_conifer",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3512604931425615,
+        "fresh mixing": -2.7681214259891225,
+        "internal cap": -3.866824205637147,
+        "overburden compaction": 0.9867250566774295,
+        "runtime cap": -1.6021774248321534,
+        "structural projection": -11.002309514291099,
+        "wet compaction": 17.982553298120365
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6436,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6366,
+      "cell": "L",
+      "fresh_snow_day_count": 1781,
+      "lane_id": "marcell_conifer",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3512604931425615,
+        "fresh mixing": -2.7681214259891225,
+        "internal cap": -3.866824205637147,
+        "overburden compaction": 0.9867250566774295,
+        "runtime cap": -1.6021774248321534,
+        "structural projection": -11.002309514291099,
+        "wet compaction": 17.982553298120365
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6314,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6278,
+      "cell": "S",
+      "fresh_snow_day_count": 1747,
+      "lane_id": "marcell_conifer",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 1.5728532209880648,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3626287425978329,
+        "fresh mixing": -3.6995724493946236,
+        "internal cap": -4.590263941559888,
+        "overburden compaction": 0.8099736911994709,
+        "runtime cap": -1.5047605667330108,
+        "structural projection": -12.48530677299412,
+        "wet compaction": 19.617121500033065
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6377,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6328,
+      "cell": "LS",
+      "fresh_snow_day_count": 1768,
+      "lane_id": "marcell_conifer",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.7259640636388812,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3683448140671299,
+        "fresh mixing": -3.434318904501629,
+        "internal cap": -4.234880212922995,
+        "overburden compaction": 0.9155494814522643,
+        "runtime cap": -1.5932824777434436,
+        "structural projection": -11.645344137820977,
+        "wet compaction": 18.979824046247227
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6277,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6234,
+      "cell": "B",
+      "fresh_snow_day_count": 1738,
+      "lane_id": "marcell_deciduous",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3612048903756082,
+        "fresh mixing": -2.1611523418314573,
+        "internal cap": -4.602287223862789,
+        "overburden compaction": 1.010436378687654,
+        "runtime cap": -1.3357531915551653,
+        "structural projection": -12.491849517797739,
+        "wet compaction": 19.302561751562994
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6277,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6234,
+      "cell": "L",
+      "fresh_snow_day_count": 1738,
+      "lane_id": "marcell_deciduous",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3612048903756082,
+        "fresh mixing": -2.1611523418314573,
+        "internal cap": -4.602287223862789,
+        "overburden compaction": 1.010436378687654,
+        "runtime cap": -1.3357531915551653,
+        "structural projection": -12.491849517797739,
+        "wet compaction": 19.302561751562994
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6121,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6087,
+      "cell": "S",
+      "fresh_snow_day_count": 1707,
+      "lane_id": "marcell_deciduous",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 3.2901194502240974,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3561429147456926,
+        "fresh mixing": -4.6207787506452425,
+        "internal cap": -5.892395430479497,
+        "overburden compaction": 0.7406747827252183,
+        "runtime cap": -1.162743740236091,
+        "structural projection": -14.20971463234109,
+        "wet compaction": 21.58397558898352
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6214,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6160,
+      "cell": "LS",
+      "fresh_snow_day_count": 1718,
+      "lane_id": "marcell_deciduous",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 1.1448666769117284,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3762582890882969,
+        "fresh mixing": -3.1730771112208527,
+        "internal cap": -5.058621764279952,
+        "overburden compaction": 0.8903595201215833,
+        "runtime cap": -1.305051533831196,
+        "structural projection": -12.999982760695026,
+        "wet compaction": 20.20925254615198
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6459,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6415,
+      "cell": "B",
+      "fresh_snow_day_count": 1787,
+      "lane_id": "marcell_open",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3510622130677212,
+        "fresh mixing": -2.731430403744388,
+        "internal cap": -3.906595449895233,
+        "overburden compaction": 0.9793517968799569,
+        "runtime cap": -1.6269582170005643,
+        "structural projection": -11.036269792815496,
+        "wet compaction": 18.0516573175117
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6459,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6415,
+      "cell": "L",
+      "fresh_snow_day_count": 1787,
+      "lane_id": "marcell_open",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3510622130677212,
+        "fresh mixing": -2.731430403744388,
+        "internal cap": -3.906595449895233,
+        "overburden compaction": 0.9793517968799569,
+        "runtime cap": -1.6269582170005643,
+        "structural projection": -11.036269792815496,
+        "wet compaction": 18.0516573175117
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6452,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6405,
+      "cell": "S",
+      "fresh_snow_day_count": 1787,
+      "lane_id": "marcell_open",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.05991154784975995,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.36709397923004194,
+        "fresh mixing": -3.0280303740316716,
+        "internal cap": -3.9645907598682593,
+        "overburden compaction": 0.9760786404701149,
+        "runtime cap": -1.6863942182985914,
+        "structural projection": -11.043459845022705,
+        "wet compaction": 18.400296175362516
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6458,
+      "bias_partition": "density_shape_over_beta",
+      "cap_day_count": 6400,
+      "cell": "LS",
+      "fresh_snow_day_count": 1787,
+      "lane_id": "marcell_open",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.02675580207851432,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.36704502030026237,
+        "fresh mixing": -2.9551028979873992,
+        "internal cap": -3.919955872451512,
+        "overburden compaction": 0.982898011575901,
+        "runtime cap": -1.6954840256056025,
+        "structural projection": -11.031797485276075,
+        "wet compaction": 18.306471425687327
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6679,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 6650,
+      "cell": "B",
+      "fresh_snow_day_count": 2681,
+      "lane_id": "snotel_css_lab_ca",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.06274212727900762,
+        "fresh mixing": -8.903960118845417,
+        "internal cap": -4.082232809404514,
+        "overburden compaction": 1.5250810840607731,
+        "runtime cap": -5.763747957033467,
+        "structural projection": -14.268732328594615,
+        "wet compaction": 31.506290206562564
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6679,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 6650,
+      "cell": "L",
+      "fresh_snow_day_count": 2681,
+      "lane_id": "snotel_css_lab_ca",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.06274212727900762,
+        "fresh mixing": -8.903960118845417,
+        "internal cap": -4.082232809404514,
+        "overburden compaction": 1.5250810840607731,
+        "runtime cap": -5.763747957033467,
+        "structural projection": -14.268732328594615,
+        "wet compaction": 31.506290206562564
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6639,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 6609,
+      "cell": "S",
+      "fresh_snow_day_count": 2672,
+      "lane_id": "snotel_css_lab_ca",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.1397573707754731,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.06467032640658199,
+        "fresh mixing": -9.186584453535271,
+        "internal cap": -4.2344844807115605,
+        "overburden compaction": 1.4896515645394532,
+        "runtime cap": -5.943579527190172,
+        "structural projection": -14.81649271417956,
+        "wet compaction": 32.563895147598686
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 6646,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 6620,
+      "cell": "LS",
+      "fresh_snow_day_count": 2673,
+      "lane_id": "snotel_css_lab_ca",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.11018147055173422,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.06468315691392008,
+        "fresh mixing": -9.125517573297458,
+        "internal cap": -4.215120432392925,
+        "overburden compaction": 1.492278140283204,
+        "runtime cap": -5.935140897726622,
+        "structural projection": -14.798871158283642,
+        "wet compaction": 32.484249511877046
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 5978,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 5949,
+      "cell": "B",
+      "fresh_snow_day_count": 3186,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.05648461941297149,
+        "fresh mixing": -10.19669337798821,
+        "internal cap": -3.0980607038958934,
+        "overburden compaction": 1.177262658586389,
+        "runtime cap": -4.379451525979163,
+        "structural projection": -8.101849677244244,
+        "wet compaction": 24.59843263434296
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 5978,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 5949,
+      "cell": "L",
+      "fresh_snow_day_count": 3186,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.05648461941297149,
+        "fresh mixing": -10.19669337798821,
+        "internal cap": -3.0980607038958934,
+        "overburden compaction": 1.177262658586389,
+        "runtime cap": -4.379451525979163,
+        "structural projection": -8.101849677244244,
+        "wet compaction": 24.59843263434296
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 5940,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 5918,
+      "cell": "S",
+      "fresh_snow_day_count": 3170,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.22503263989422012,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.05956220386014474,
+        "fresh mixing": -11.151239912977141,
+        "internal cap": -3.2884296193474896,
+        "overburden compaction": 1.1587348952039598,
+        "runtime cap": -4.532434671346611,
+        "structural projection": -8.269233235924228,
+        "wet compaction": 25.854445458474974
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 5951,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 5926,
+      "cell": "LS",
+      "fresh_snow_day_count": 3176,
+      "lane_id": "snotel_mica_creek_st_joe_id",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.1483541318263786,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.05930617173965714,
+        "fresh mixing": -11.076357516639556,
+        "internal cap": -3.317853692187852,
+        "overburden compaction": 1.1675329810248134,
+        "runtime cap": -4.5281963878378,
+        "structural projection": -8.25237831740414,
+        "wet compaction": 25.855941394267518
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 8028,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7988,
+      "cell": "B",
+      "fresh_snow_day_count": 3026,
+      "lane_id": "snotel_niwot_co",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.330222500872724,
+        "fresh mixing": -8.99715043822124,
+        "internal cap": -6.955380888536517,
+        "overburden compaction": 1.3369495199373371,
+        "runtime cap": -3.6849916758791745,
+        "structural projection": -18.49740923325308,
+        "wet compaction": 36.4943414402613
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 8028,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7988,
+      "cell": "L",
+      "fresh_snow_day_count": 3026,
+      "lane_id": "snotel_niwot_co",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.330222500872724,
+        "fresh mixing": -8.99715043822124,
+        "internal cap": -6.955380888536517,
+        "overburden compaction": 1.3369495199373371,
+        "runtime cap": -3.6849916758791745,
+        "structural projection": -18.49740923325308,
+        "wet compaction": 36.4943414402613
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 7906,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7866,
+      "cell": "S",
+      "fresh_snow_day_count": 3007,
+      "lane_id": "snotel_niwot_co",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.9991059148778144,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3511197661270505,
+        "fresh mixing": -10.125503649493723,
+        "internal cap": -7.7934645559618705,
+        "overburden compaction": 1.2193811967952106,
+        "runtime cap": -3.7910928121644876,
+        "structural projection": -20.415495110214373,
+        "wet compaction": 39.58189481641858
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 7921,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7877,
+      "cell": "LS",
+      "fresh_snow_day_count": 3011,
+      "lane_id": "snotel_niwot_co",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.6495859861288282,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.3489032049447921,
+        "fresh mixing": -9.653952199428144,
+        "internal cap": -7.493350760655435,
+        "overburden compaction": 1.2712108665777446,
+        "runtime cap": -3.72713425196695,
+        "structural projection": -20.075384172428244,
+        "wet compaction": 38.706089371402314
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 9618,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 9568,
+      "cell": "B",
+      "fresh_snow_day_count": 6006,
+      "lane_id": "snotel_paradise_wa",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.037417620252356704,
+        "fresh mixing": -8.75314760385299,
+        "internal cap": -1.51279215408864,
+        "overburden compaction": 1.7014169150703773,
+        "runtime cap": -3.9440599430675256,
+        "structural projection": -4.827898635891429,
+        "wet compaction": 17.33312270544647
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 9618,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 9568,
+      "cell": "L",
+      "fresh_snow_day_count": 6006,
+      "lane_id": "snotel_paradise_wa",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.037417620252356704,
+        "fresh mixing": -8.75314760385299,
+        "internal cap": -1.51279215408864,
+        "overburden compaction": 1.7014169150703773,
+        "runtime cap": -3.9440599430675256,
+        "structural projection": -4.827898635891429,
+        "wet compaction": 17.33312270544647
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 9570,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 9520,
+      "cell": "S",
+      "fresh_snow_day_count": 5992,
+      "lane_id": "snotel_paradise_wa",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.10860651479429037,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.038241863890532676,
+        "fresh mixing": -9.571875419774031,
+        "internal cap": -1.5386376494843204,
+        "overburden compaction": 1.6764078975500318,
+        "runtime cap": -4.064788840523312,
+        "structural projection": -4.757125382281944,
+        "wet compaction": 18.14293275856315
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 9575,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 9529,
+      "cell": "LS",
+      "fresh_snow_day_count": 5994,
+      "lane_id": "snotel_paradise_wa",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.08108633804085871,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.03827745734649886,
+        "fresh mixing": -9.516854350466629,
+        "internal cap": -1.5326254099041514,
+        "overburden compaction": 1.6808986211698764,
+        "runtime cap": -4.055229584218555,
+        "structural projection": -4.754949799178883,
+        "wet compaction": 18.093145591603015
+      },
+      "trace_row_count": 16437
+    },
+    {
+      "applicable_day_count": 7185,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7129,
+      "cell": "B",
+      "fresh_snow_day_count": 3150,
+      "lane_id": "snotel_snowbird_ut",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.1700440224212074,
+        "fresh mixing": -7.631633540028398,
+        "internal cap": -4.3419971223259335,
+        "overburden compaction": 1.7263409392940656,
+        "runtime cap": -3.788695986339859,
+        "structural projection": -13.354686644397562,
+        "wet compaction": 27.245280423037435
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 7185,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7129,
+      "cell": "L",
+      "fresh_snow_day_count": 3150,
+      "lane_id": "snotel_snowbird_ut",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.0,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.1700440224212074,
+        "fresh mixing": -7.631633540028398,
+        "internal cap": -4.3419971223259335,
+        "overburden compaction": 1.7263409392940656,
+        "runtime cap": -3.788695986339859,
+        "structural projection": -13.354686644397562,
+        "wet compaction": 27.245280423037435
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 7150,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7094,
+      "cell": "S",
+      "fresh_snow_day_count": 3142,
+      "lane_id": "snotel_snowbird_ut",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.3018905780334345,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.174853664426158,
+        "fresh mixing": -8.426302007363853,
+        "internal cap": -4.585425402375791,
+        "overburden compaction": 1.6891563533810507,
+        "runtime cap": -3.933302818906146,
+        "structural projection": -13.702642114369176,
+        "wet compaction": 28.51411809870391
+      },
+      "trace_row_count": 14245
+    },
+    {
+      "applicable_day_count": 7163,
+      "bias_partition": "density_shape_under_beta",
+      "cap_day_count": 7103,
+      "cell": "LS",
+      "fresh_snow_day_count": 3145,
+      "lane_id": "snotel_snowbird_ut",
+      "process_mean_daily_kg_m3": {
+        "Stage 3 adjustment": 0.18871871669352425,
+        "climate fallback": 0.0,
+        "destructive metamorphism": 0.1745334963627747,
+        "fresh mixing": -8.211563059658282,
+        "internal cap": -4.540580918217322,
+        "overburden compaction": 1.703413815479068,
+        "runtime cap": -3.923022299837767,
+        "structural projection": -13.672649045651532,
+        "wet compaction": 28.313417113838668
+      },
+      "trace_row_count": 14245
+    }
+  ]
+}

@@ -9,6 +9,7 @@ const SNOW_DENSITY_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_DENSITY_ZERO_MASS_KG_M2: f64 = 1.0e-9;
 const SNOW_DENSITY_DAILY_COMPACTION_STEPS: u8 = 24;
 const SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+const SNOW_DENSITY_DIAGNOSTIC_CLOSURE_TOLERANCE_KG_M3: f64 = 1.0e-9;
 const SNOW_DENSITY_MULTILAYER_MAX_LAYERS: usize = 16;
 pub const STURM1995_CDM_CRITICAL_TEMPERATURE_C: f64 = 10.0;
 pub const STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH: f64 = 30.0;
@@ -379,7 +380,118 @@ pub struct SnowDensityRuntimeOutcome {
     pub max_abs_swe_identity_residual_m: f64,
     pub max_abs_unbounded_swe_residual_m: f64,
     pub sturm_density_form_fallback_used: bool,
+    pub density_process_diagnostics: SnowDensityProcessDiagnostics,
     pub layers_after: Vec<DirectSnowLayerState>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct SnowDensityProcessDiagnostics {
+    pub applicable: bool,
+    pub fresh_snow_density_available: bool,
+    pub initial_density_kg_m3: f64,
+    pub initial_snow_mass_kg_m2: f64,
+    pub liquid_for_compaction_mass_kg_m2: f64,
+    pub compaction_temperature_c: f64,
+    pub snow_input_mass_kg_m2: f64,
+    pub snow_input_depth_m: f64,
+    pub fresh_snow_density_kg_m3: f64,
+    pub fresh_snow_mixing_delta_kg_m3: f64,
+    pub wet_compaction_delta_kg_m3: f64,
+    pub destructive_metamorphism_delta_kg_m3: f64,
+    pub overburden_compaction_delta_kg_m3: f64,
+    pub structural_projection_delta_kg_m3: f64,
+    pub climate_fallback_used: bool,
+    pub climate_fallback_delta_kg_m3: f64,
+    pub internal_cap_delta_kg_m3: f64,
+    pub runtime_cap_delta_kg_m3: f64,
+    pub downstream_stage3_delta_kg_m3: f64,
+    pub final_density_kg_m3: f64,
+    pub closure_residual_kg_m3: f64,
+}
+
+impl SnowDensityProcessDiagnostics {
+    fn close_at_density(&mut self, final_density_kg_m3: f64) -> Result<(), SnowDensityError> {
+        self.final_density_kg_m3 = final_density_kg_m3;
+        self.closure_residual_kg_m3 = final_density_kg_m3
+            - self.initial_density_kg_m3
+            - self.fresh_snow_mixing_delta_kg_m3
+            - self.wet_compaction_delta_kg_m3
+            - self.destructive_metamorphism_delta_kg_m3
+            - self.overburden_compaction_delta_kg_m3
+            - self.structural_projection_delta_kg_m3
+            - self.climate_fallback_delta_kg_m3
+            - self.internal_cap_delta_kg_m3
+            - self.runtime_cap_delta_kg_m3
+            - self.downstream_stage3_delta_kg_m3;
+        self.validate_closure()
+    }
+
+    fn validate_closure(&self) -> Result<(), SnowDensityError> {
+        for (symbol, value) in [
+            ("density_process_initial_density_kg_m3", self.initial_density_kg_m3),
+            ("density_process_initial_snow_mass_kg_m2", self.initial_snow_mass_kg_m2),
+            (
+                "density_process_liquid_for_compaction_mass_kg_m2",
+                self.liquid_for_compaction_mass_kg_m2,
+            ),
+            ("density_process_compaction_temperature_c", self.compaction_temperature_c),
+            ("density_process_snow_input_mass_kg_m2", self.snow_input_mass_kg_m2),
+            ("density_process_snow_input_depth_m", self.snow_input_depth_m),
+            ("density_process_fresh_snow_density_kg_m3", self.fresh_snow_density_kg_m3),
+            (
+                "density_process_fresh_snow_mixing_delta_kg_m3",
+                self.fresh_snow_mixing_delta_kg_m3,
+            ),
+            ("density_process_wet_compaction_delta_kg_m3", self.wet_compaction_delta_kg_m3),
+            (
+                "density_process_destructive_metamorphism_delta_kg_m3",
+                self.destructive_metamorphism_delta_kg_m3,
+            ),
+            (
+                "density_process_overburden_compaction_delta_kg_m3",
+                self.overburden_compaction_delta_kg_m3,
+            ),
+            (
+                "density_process_structural_projection_delta_kg_m3",
+                self.structural_projection_delta_kg_m3,
+            ),
+            ("density_process_climate_fallback_delta_kg_m3", self.climate_fallback_delta_kg_m3),
+            ("density_process_internal_cap_delta_kg_m3", self.internal_cap_delta_kg_m3),
+            ("density_process_runtime_cap_delta_kg_m3", self.runtime_cap_delta_kg_m3),
+            (
+                "density_process_downstream_stage3_delta_kg_m3",
+                self.downstream_stage3_delta_kg_m3,
+            ),
+            ("density_process_final_density_kg_m3", self.final_density_kg_m3),
+            (
+                "snow_density_process_closure_residual_kg_m3",
+                self.closure_residual_kg_m3,
+            ),
+        ] {
+            density_validate_finite(symbol, value)?;
+        }
+        if self.closure_residual_kg_m3.abs()
+            > SNOW_DENSITY_DIAGNOSTIC_CLOSURE_TOLERANCE_KG_M3
+        {
+            return Err(SnowDensityError::DiagnosticClosureViolation {
+                residual_kg_m3: self.closure_residual_kg_m3,
+                tolerance_kg_m3: SNOW_DENSITY_DIAGNOSTIC_CLOSURE_TOLERANCE_KG_M3,
+            });
+        }
+        Ok(())
+    }
+
+    pub(crate) fn apply_downstream_stage3_density(
+        &mut self,
+        density_kg_m3: f64,
+    ) -> Result<(), SnowDensityError> {
+        if !self.applicable {
+            return Ok(());
+        }
+        density_validate_finite("downstream_stage3_density_kg_m3", density_kg_m3)?;
+        self.downstream_stage3_delta_kg_m3 = density_kg_m3 - self.final_density_kg_m3;
+        self.close_at_density(density_kg_m3)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -407,6 +519,10 @@ pub enum SnowDensityError {
         symbol: &'static str,
         value: f64,
         expected: f64,
+    },
+    DiagnosticClosureViolation {
+        residual_kg_m3: f64,
+        tolerance_kg_m3: f64,
     },
 }
 
@@ -445,6 +561,13 @@ impl std::fmt::Display for SnowDensityError {
                 f,
                 "snow-density layer aggregate {symbol}={value} does not match expected {expected}"
             ),
+            Self::DiagnosticClosureViolation {
+                residual_kg_m3,
+                tolerance_kg_m3,
+            } => write!(
+                f,
+                "snow-density diagnostic closure residual {residual_kg_m3} kg m^-3 exceeds {tolerance_kg_m3} kg m^-3"
+            ),
         }
     }
 }
@@ -454,6 +577,169 @@ impl std::error::Error for SnowDensityError {}
 pub fn update_snow_density_runtime_state(
     inputs: &SnowDensityRuntimeInputs,
 ) -> Result<SnowDensityRuntimeOutcome, SnowDensityError> {
+    validate_snow_density_runtime_inputs(inputs)?;
+
+    if inputs.model == SnowDensityModel::LegacyWepp {
+        return Ok(SnowDensityRuntimeOutcome {
+            model: inputs.model,
+            runtime_swe_after_m: inputs.boundary_swe_after_m,
+            runtime_depth_after_m: inputs.boundary_depth_after_m,
+            runtime_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
+            coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
+            max_abs_swe_identity_residual_m: 0.0,
+            max_abs_unbounded_swe_residual_m: 0.0,
+            sturm_density_form_fallback_used: false,
+            density_process_diagnostics: SnowDensityProcessDiagnostics::default(),
+            layers_after: Vec::new(),
+        });
+    }
+
+    if inputs.model == SnowDensityModel::PhysicsBulkMultilayerDensityV1 {
+        return update_multilayer_snow_density_runtime_state(inputs);
+    }
+
+    let constants = snow_density_constants_for_model(inputs.model);
+    let (mut state, mut diagnostics) =
+        apply_bulk_accumulation_and_compaction(inputs, constants)?;
+    if !diagnostics.applicable {
+        return Ok(snow_free_density_outcome(inputs));
+    }
+    let density_before_fallback = state.density_kg_m3;
+    let sturm_density_form_fallback_used = apply_sturm2010_density_form_fallback(
+        &mut state,
+        inputs.model,
+        inputs.sturm_climate_class,
+        inputs.sturm_day_of_year,
+    )?;
+    diagnostics.climate_fallback_used = sturm_density_form_fallback_used;
+    diagnostics.climate_fallback_delta_kg_m3 = state.density_kg_m3 - density_before_fallback;
+
+    let unbounded_swe_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
+    let density_before_structure = state.density_kg_m3;
+    state.mass_kg_m2 = inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3;
+    if state.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        state = CoeBoundDensityState::default();
+    } else if state.density_kg_m3 <= 0.0 {
+        state.density_kg_m3 = constants.new_snow_density_min_kg_m3;
+    }
+    diagnostics.structural_projection_delta_kg_m3 =
+        state.density_kg_m3 - density_before_structure;
+    let density_before_runtime_cap = state.density_kg_m3;
+    state.density_kg_m3 = state.density_kg_m3.min(inputs.runtime_density_cap_kg_m3);
+    diagnostics.runtime_cap_delta_kg_m3 = state.density_kg_m3 - density_before_runtime_cap;
+    let runtime_swe_after_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
+    let identity_residual_m = runtime_swe_after_m - inputs.boundary_swe_after_m;
+    diagnostics.close_at_density(state.density_kg_m3)?;
+
+    Ok(SnowDensityRuntimeOutcome {
+        model: inputs.model,
+        runtime_swe_after_m,
+        runtime_depth_after_m: state.depth_m(),
+        runtime_density_after_kg_m3: state.density_kg_m3,
+        coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
+        coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
+        max_abs_swe_identity_residual_m: identity_residual_m.abs(),
+        max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
+        sturm_density_form_fallback_used,
+        density_process_diagnostics: diagnostics,
+        layers_after: Vec::new(),
+    })
+}
+
+fn snow_free_density_outcome(inputs: &SnowDensityRuntimeInputs) -> SnowDensityRuntimeOutcome {
+    SnowDensityRuntimeOutcome {
+        model: inputs.model,
+        runtime_swe_after_m: 0.0,
+        runtime_depth_after_m: 0.0,
+        runtime_density_after_kg_m3: 0.0,
+        coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
+        coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
+        max_abs_swe_identity_residual_m: inputs.boundary_swe_after_m.abs(),
+        max_abs_unbounded_swe_residual_m: inputs.boundary_swe_after_m.abs(),
+        sturm_density_form_fallback_used: false,
+        density_process_diagnostics: SnowDensityProcessDiagnostics::default(),
+        layers_after: Vec::new(),
+    }
+}
+
+fn apply_bulk_accumulation_and_compaction(
+    inputs: &SnowDensityRuntimeInputs,
+    constants: SnowDensityCompactionConstants,
+) -> Result<(CoeBoundDensityState, SnowDensityProcessDiagnostics), SnowDensityError> {
+    let mut state = initialize_bulk_density_state(inputs, constants);
+    let mut diagnostics = SnowDensityProcessDiagnostics {
+        applicable: state.mass_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2
+            || inputs.snow_input_m > 0.0
+            || inputs.boundary_swe_after_m > 0.0,
+        initial_density_kg_m3: state.density_kg_m3,
+        initial_snow_mass_kg_m2: state.mass_kg_m2,
+        liquid_for_compaction_mass_kg_m2: inputs.liquid_for_compaction_m
+            * SNOW_DENSITY_RHO_WATER_KG_M3,
+        compaction_temperature_c: inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
+        ..SnowDensityProcessDiagnostics::default()
+    };
+    if !diagnostics.applicable {
+        return Ok((state, SnowDensityProcessDiagnostics::default()));
+    }
+    apply_bulk_fresh_snow(&mut state, &mut diagnostics, inputs, constants)?;
+    let compaction = apply_daily_compaction(
+        &mut state,
+        inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
+        constants,
+    );
+    apply_compaction_attribution(&mut diagnostics, compaction);
+    Ok((state, diagnostics))
+}
+
+fn initialize_bulk_density_state(
+    inputs: &SnowDensityRuntimeInputs,
+    constants: SnowDensityCompactionConstants,
+) -> CoeBoundDensityState {
+    let mut state = CoeBoundDensityState {
+        mass_kg_m2: inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        density_kg_m3: inputs.prior_density_kg_m3,
+    };
+    if state.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        state = CoeBoundDensityState::default();
+    } else if state.density_kg_m3 <= 0.0 && inputs.prior_depth_m > 0.0 {
+        state.density_kg_m3 = state.mass_kg_m2 / inputs.prior_depth_m;
+    } else if state.density_kg_m3 <= 0.0 {
+        state.density_kg_m3 = constants.new_snow_density_min_kg_m3;
+    }
+    state
+}
+
+fn apply_bulk_fresh_snow(
+    state: &mut CoeBoundDensityState,
+    diagnostics: &mut SnowDensityProcessDiagnostics,
+    inputs: &SnowDensityRuntimeInputs,
+    constants: SnowDensityCompactionConstants,
+) -> Result<(), SnowDensityError> {
+    let snow_input_kg_m2 = inputs.snow_input_m * SNOW_DENSITY_RHO_WATER_KG_M3;
+    diagnostics.snow_input_mass_kg_m2 = snow_input_kg_m2;
+    if snow_input_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        return Ok(());
+    }
+    diagnostics.fresh_snow_density_available = true;
+    diagnostics.fresh_snow_density_kg_m3 =
+        fresh_snow_density_kg_m3(inputs.mean_air_temperature_c, constants)?;
+    diagnostics.snow_input_depth_m = snow_input_kg_m2 / diagnostics.fresh_snow_density_kg_m3;
+    let density_before_fresh = state.density_kg_m3;
+    add_fresh_snow(
+        state,
+        snow_input_kg_m2,
+        inputs.mean_air_temperature_c,
+        constants,
+    )?;
+    diagnostics.fresh_snow_mixing_delta_kg_m3 = state.density_kg_m3 - density_before_fresh;
+    Ok(())
+}
+
+fn validate_snow_density_runtime_inputs(
+    inputs: &SnowDensityRuntimeInputs,
+) -> Result<(), SnowDensityError> {
     density_validate_nonnegative("prior_swe_m", inputs.prior_swe_m)?;
     density_validate_nonnegative("prior_depth_m", inputs.prior_depth_m)?;
     density_validate_nonnegative("prior_density_kg_m3", inputs.prior_density_kg_m3)?;
@@ -467,86 +753,7 @@ pub fn update_snow_density_runtime_state(
     density_validate_nonnegative("snow_input_m", inputs.snow_input_m)?;
     density_validate_nonnegative("liquid_for_compaction_m", inputs.liquid_for_compaction_m)?;
     density_validate_finite("mean_air_temperature_c", inputs.mean_air_temperature_c)?;
-    density_validate_positive("runtime_density_cap_kg_m3", inputs.runtime_density_cap_kg_m3)?;
-
-    if inputs.model == SnowDensityModel::LegacyWepp {
-        return Ok(SnowDensityRuntimeOutcome {
-            model: inputs.model,
-            runtime_swe_after_m: inputs.boundary_swe_after_m,
-            runtime_depth_after_m: inputs.boundary_depth_after_m,
-            runtime_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
-            coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
-            coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
-            max_abs_swe_identity_residual_m: 0.0,
-            max_abs_unbounded_swe_residual_m: 0.0,
-            sturm_density_form_fallback_used: false,
-            layers_after: Vec::new(),
-        });
-    }
-
-    if inputs.model == SnowDensityModel::PhysicsBulkMultilayerDensityV1 {
-        return update_multilayer_snow_density_runtime_state(inputs);
-    }
-
-    let constants = snow_density_constants_for_model(inputs.model);
-    let mut state = CoeBoundDensityState {
-        mass_kg_m2: inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
-        density_kg_m3: inputs.prior_density_kg_m3,
-    };
-    if state.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        state = CoeBoundDensityState::default();
-    } else if state.density_kg_m3 <= 0.0 && inputs.prior_depth_m > 0.0 {
-        state.density_kg_m3 = state.mass_kg_m2 / inputs.prior_depth_m;
-    } else if state.density_kg_m3 <= 0.0 {
-        state.density_kg_m3 = constants.new_snow_density_min_kg_m3;
-    }
-
-    let snow_input_kg_m2 = inputs.snow_input_m * SNOW_DENSITY_RHO_WATER_KG_M3;
-    if snow_input_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        add_fresh_snow(
-            &mut state,
-            snow_input_kg_m2,
-            inputs.mean_air_temperature_c,
-            constants,
-        )?;
-    }
-
-    apply_daily_compaction(
-        &mut state,
-        inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3,
-        inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
-        constants,
-    );
-    let sturm_density_form_fallback_used = apply_sturm2010_density_form_fallback(
-        &mut state,
-        inputs.model,
-        inputs.sturm_climate_class,
-        inputs.sturm_day_of_year,
-    )?;
-
-    let unbounded_swe_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
-    state.mass_kg_m2 = inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3;
-    if state.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        state = CoeBoundDensityState::default();
-    } else if state.density_kg_m3 <= 0.0 {
-        state.density_kg_m3 = constants.new_snow_density_min_kg_m3;
-    }
-    state.density_kg_m3 = state.density_kg_m3.min(inputs.runtime_density_cap_kg_m3);
-    let runtime_swe_after_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
-    let identity_residual_m = runtime_swe_after_m - inputs.boundary_swe_after_m;
-
-    Ok(SnowDensityRuntimeOutcome {
-        model: inputs.model,
-        runtime_swe_after_m,
-        runtime_depth_after_m: state.depth_m(),
-        runtime_density_after_kg_m3: state.density_kg_m3,
-        coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
-        coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
-        max_abs_swe_identity_residual_m: identity_residual_m.abs(),
-        max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
-        sturm_density_form_fallback_used,
-        layers_after: Vec::new(),
-    })
+    density_validate_positive("runtime_density_cap_kg_m3", inputs.runtime_density_cap_kg_m3)
 }
 
 const fn snow_density_constants_for_model(
@@ -595,15 +802,36 @@ fn update_multilayer_snow_density_runtime_state(
 ) -> Result<SnowDensityRuntimeOutcome, SnowDensityError> {
     let constants = snow_density_constants_for_model(inputs.model);
     let mut layers = initialize_multilayer_density_state(inputs, constants)?;
+    let mut diagnostics = SnowDensityProcessDiagnostics {
+        applicable: !layers.is_empty()
+            || inputs.snow_input_m > 0.0
+            || inputs.boundary_swe_after_m > 0.0,
+        initial_density_kg_m3: multilayer_bulk_density_kg_m3(&layers),
+        initial_snow_mass_kg_m2: multilayer_mass_kg_m2(&layers),
+        liquid_for_compaction_mass_kg_m2: inputs.liquid_for_compaction_m
+            * SNOW_DENSITY_RHO_WATER_KG_M3,
+        compaction_temperature_c: inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
+        ..SnowDensityProcessDiagnostics::default()
+    };
+    if !diagnostics.applicable {
+        return Ok(snow_free_density_outcome(inputs));
+    }
     increment_multilayer_settle_clock(&mut layers);
 
     let snow_input_kg_m2 = inputs.snow_input_m * SNOW_DENSITY_RHO_WATER_KG_M3;
+    diagnostics.snow_input_mass_kg_m2 = snow_input_kg_m2;
     if snow_input_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        diagnostics.fresh_snow_density_available = true;
+        diagnostics.fresh_snow_density_kg_m3 =
+            fresh_snow_density_kg_m3(inputs.mean_air_temperature_c, constants)?;
+        diagnostics.snow_input_depth_m =
+            snow_input_kg_m2 / diagnostics.fresh_snow_density_kg_m3;
+        let density_before_fresh = multilayer_bulk_density_kg_m3(&layers);
         layers.insert(
             0,
             SnowDensityLayerWorkState {
                 mass_kg_m2: snow_input_kg_m2,
-                density_kg_m3: fresh_snow_density_kg_m3(inputs.mean_air_temperature_c, constants)?,
+                density_kg_m3: diagnostics.fresh_snow_density_kg_m3,
                 settle_day_count: 1.0,
                 temperature_c: inputs.mean_air_temperature_c.min(0.0),
                 liquid_water_m: 0.0,
@@ -611,15 +839,19 @@ fn update_multilayer_snow_density_runtime_state(
                 refrozen_liquid_m: 0.0,
             },
         );
+        diagnostics.fresh_snow_mixing_delta_kg_m3 =
+            multilayer_bulk_density_kg_m3(&layers) - density_before_fresh;
     }
 
-    apply_multilayer_daily_compaction(
+    let compaction = apply_multilayer_daily_compaction(
         &mut layers,
         inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3,
         inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
         constants,
     );
+    apply_compaction_attribution(&mut diagnostics, compaction);
     let unbounded_swe_m = multilayer_mass_kg_m2(&layers) / SNOW_DENSITY_RHO_WATER_KG_M3;
+    let density_before_structure = multilayer_bulk_density_kg_m3(&layers);
     apply_multilayer_boundary_mass(
         &mut layers,
         inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3,
@@ -627,7 +859,12 @@ fn update_multilayer_snow_density_runtime_state(
         constants,
     );
     merge_multilayer_bottom_layers(&mut layers);
+    diagnostics.structural_projection_delta_kg_m3 =
+        multilayer_bulk_density_kg_m3(&layers) - density_before_structure;
+    let density_before_runtime_cap = multilayer_bulk_density_kg_m3(&layers);
     cap_multilayer_density(&mut layers, inputs.runtime_density_cap_kg_m3);
+    diagnostics.runtime_cap_delta_kg_m3 =
+        multilayer_bulk_density_kg_m3(&layers) - density_before_runtime_cap;
 
     let runtime_swe_after_m = multilayer_mass_kg_m2(&layers) / SNOW_DENSITY_RHO_WATER_KG_M3;
     let runtime_depth_after_m = multilayer_depth_m(&layers);
@@ -642,6 +879,7 @@ fn update_multilayer_snow_density_runtime_state(
     runtime_density_after_kg_m3 =
         runtime_density_after_kg_m3.min(inputs.runtime_density_cap_kg_m3);
     let identity_residual_m = runtime_swe_after_m - inputs.boundary_swe_after_m;
+    diagnostics.close_at_density(runtime_density_after_kg_m3)?;
 
     Ok(SnowDensityRuntimeOutcome {
         model: inputs.model,
@@ -653,6 +891,7 @@ fn update_multilayer_snow_density_runtime_state(
         max_abs_swe_identity_residual_m: identity_residual_m.abs(),
         max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
         sturm_density_form_fallback_used: false,
+        density_process_diagnostics: diagnostics,
         layers_after: layers
             .into_iter()
             .map(SnowDensityLayerWorkState::into_direct_state)
@@ -786,38 +1025,68 @@ fn apply_multilayer_daily_compaction(
     liquid_for_compaction_kg_m2: f64,
     snow_temperature_c: f64,
     constants: SnowDensityCompactionConstants,
-) {
+) -> DailyCompactionDiagnostics {
+    let mut diagnostics = DailyCompactionDiagnostics::default();
     if layers.is_empty() {
-        return;
+        return diagnostics;
     }
     let total_mass_kg_m2 = multilayer_mass_kg_m2(layers);
     if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2
         && total_mass_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2
     {
-        for layer in layers.iter_mut() {
+        for layer_index in 0..layers.len() {
             let liquid_for_layer_kg_m2 =
-                liquid_for_compaction_kg_m2 * layer.mass_kg_m2 / total_mass_kg_m2;
-            let mut state = layer.as_coe_bound_state();
-            apply_wet_compaction(&mut state, liquid_for_layer_kg_m2, constants, 1.0);
-            layer.density_kg_m3 = state.density_kg_m3;
+                liquid_for_compaction_kg_m2 * layers[layer_index].mass_kg_m2 / total_mass_kg_m2;
+            let bulk_before = multilayer_bulk_density_kg_m3(layers);
+            let density_before = layers[layer_index].density_kg_m3;
+            let wet = {
+                let layer = &mut layers[layer_index];
+                let mut state = layer.as_coe_bound_state();
+                let increment =
+                    apply_wet_compaction(&mut state, liquid_for_layer_kg_m2, constants, 1.0);
+                layer.density_kg_m3 = state.density_kg_m3;
+                increment
+            };
+            let bulk_after = multilayer_bulk_density_kg_m3(layers);
+            let bulk_uncapped = multilayer_bulk_density_with_layer_density(
+                layers,
+                layer_index,
+                density_before + wet.destructive_raw,
+            );
+            diagnostics.wet_raw += bulk_uncapped - bulk_before;
+            diagnostics.wet_applied += bulk_after - bulk_before;
         }
     }
-
     for _ in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
         let mut overburden_kg_m2 = 0.0;
-        for layer in layers.iter_mut() {
-            let mut state = layer.as_coe_bound_state();
-            apply_time_compaction_scaled_with_overburden(
-                &mut state,
-                overburden_kg_m2,
-                snow_temperature_c,
-                constants,
-                1.0,
+        for layer_index in 0..layers.len() {
+            let bulk_before = multilayer_bulk_density_kg_m3(layers);
+            let density_before = layers[layer_index].density_kg_m3;
+            let dry = {
+                let layer = &mut layers[layer_index];
+                let mut state = layer.as_coe_bound_state();
+                let increment = apply_time_compaction_scaled_with_overburden(
+                    &mut state,
+                    overburden_kg_m2,
+                    snow_temperature_c,
+                    constants,
+                    1.0,
+                );
+                layer.density_kg_m3 = state.density_kg_m3;
+                increment
+            };
+            let bulk_after = multilayer_bulk_density_kg_m3(layers);
+            let raw_total = dry.destructive_raw + dry.overburden_raw;
+            let bulk_uncapped = multilayer_bulk_density_with_layer_density(
+                layers,
+                layer_index,
+                density_before + raw_total,
             );
-            layer.density_kg_m3 = state.density_kg_m3;
-            overburden_kg_m2 += layer.mass_kg_m2;
+            diagnostics.accumulate_dry_bulk(dry, bulk_before, bulk_after, bulk_uncapped);
+            overburden_kg_m2 += layers[layer_index].mass_kg_m2;
         }
     }
+    diagnostics
 }
 
 impl SnowDensityLayerWorkState {
@@ -955,6 +1224,44 @@ fn multilayer_depth_m(layers: &[SnowDensityLayerWorkState]) -> f64 {
     layers.iter().map(|layer| layer.depth_m()).sum()
 }
 
+fn multilayer_bulk_density_kg_m3(layers: &[SnowDensityLayerWorkState]) -> f64 {
+    let mass_kg_m2 = multilayer_mass_kg_m2(layers);
+    let depth_m = multilayer_depth_m(layers);
+    if mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2
+        || depth_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M
+    {
+        0.0
+    } else {
+        mass_kg_m2 / depth_m
+    }
+}
+
+fn multilayer_bulk_density_with_layer_density(
+    layers: &[SnowDensityLayerWorkState],
+    layer_index: usize,
+    replacement_density_kg_m3: f64,
+) -> f64 {
+    let mass_kg_m2 = multilayer_mass_kg_m2(layers);
+    let depth_m = layers
+        .iter()
+        .enumerate()
+        .map(|(index, layer)| {
+            if index == layer_index && replacement_density_kg_m3 > 0.0 {
+                layer.mass_kg_m2 / replacement_density_kg_m3
+            } else {
+                layer.depth_m()
+            }
+        })
+        .sum::<f64>();
+    if mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2
+        || depth_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M
+    {
+        0.0
+    } else {
+        mass_kg_m2 / depth_m
+    }
+}
+
 
 fn add_fresh_snow(
     state: &mut CoeBoundDensityState,
@@ -991,46 +1298,59 @@ fn fresh_snow_density_kg_m3(
     ))
 }
 
-fn apply_time_compaction(
-    state: &mut CoeBoundDensityState,
-    snow_temperature_c: f64,
-    constants: SnowDensityCompactionConstants,
-    shallow_guard_factor: f64,
-) {
-    let density = state.observed_density_kg_m3();
-    if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
-        return;
+#[derive(Debug, Clone, Copy, Default)]
+struct DensityCompactionIncrement {
+    destructive_raw: f64,
+    overburden_raw: f64,
+    applied: f64,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct DailyCompactionDiagnostics {
+    wet_raw: f64,
+    wet_applied: f64,
+    destructive_raw: f64,
+    overburden_raw: f64,
+    dry_applied: f64,
+}
+
+impl DailyCompactionDiagnostics {
+    fn accumulate_dry(&mut self, increment: DensityCompactionIncrement) {
+        self.destructive_raw += increment.destructive_raw;
+        self.overburden_raw += increment.overburden_raw;
+        self.dry_applied += increment.applied;
     }
-    let swe = state.mass_kg_m2;
-    let rate = if swe >= constants.dry_compaction_swe_max_kg_m2 {
-        1.0
-    } else {
-        constants.compaction_rate_cos_amplitude
-            * (std::f64::consts::PI * swe / constants.dry_compaction_swe_max_kg_m2).cos()
-            + constants.compaction_rate_offset
-    };
-    let c11 = if density < constants.ptm_density_threshold_kg_m3 {
-        1.0
-    } else {
-        (-constants.ptm_density_decay_m3_per_kg * (density - constants.ptm_density_threshold_kg_m3))
-            .exp()
-    };
-    let freeze_minus_snow_temp = -snow_temperature_c.min(0.0);
-    let destructive_metamorphism = constants.ptm_rate_per_hour
-        * c11
-        * (-constants.ptm_temperature_decay_per_c * freeze_minus_snow_temp).exp()
-        / rate;
-    let overburden_compaction = constants.poc_rate_per_hour
-        * (-constants.poc_temperature_decay_per_c * freeze_minus_snow_temp).exp()
-        * swe
-        * (-constants.poc_density_decay * (density / SNOW_DENSITY_RHO_WATER_KG_M3)).exp()
-        / rate;
-    state.density_kg_m3 = (density
-        + constants.dry_compaction_multiplier
-            * shallow_guard_factor
-            * (destructive_metamorphism + overburden_compaction)
-            * density)
-        .min(constants.dry_compaction_max_density_kg_m3);
+
+    fn accumulate_dry_bulk(
+        &mut self,
+        increment: DensityCompactionIncrement,
+        bulk_before_kg_m3: f64,
+        bulk_after_kg_m3: f64,
+        bulk_uncapped_kg_m3: f64,
+    ) {
+        let raw_total = increment.destructive_raw + increment.overburden_raw;
+        let uncapped_bulk_delta = bulk_uncapped_kg_m3 - bulk_before_kg_m3;
+        if raw_total > 0.0 {
+            self.destructive_raw +=
+                uncapped_bulk_delta * increment.destructive_raw / raw_total;
+            self.overburden_raw +=
+                uncapped_bulk_delta * increment.overburden_raw / raw_total;
+        }
+        self.dry_applied += bulk_after_kg_m3 - bulk_before_kg_m3;
+    }
+}
+
+fn apply_compaction_attribution(
+    diagnostics: &mut SnowDensityProcessDiagnostics,
+    compaction: DailyCompactionDiagnostics,
+) {
+    diagnostics.wet_compaction_delta_kg_m3 = compaction.wet_raw;
+    diagnostics.destructive_metamorphism_delta_kg_m3 = compaction.destructive_raw;
+    diagnostics.overburden_compaction_delta_kg_m3 = compaction.overburden_raw;
+    diagnostics.internal_cap_delta_kg_m3 += compaction.wet_applied - compaction.wet_raw
+        + compaction.dry_applied
+        - compaction.destructive_raw
+        - compaction.overburden_raw;
 }
 
 fn apply_daily_compaction(
@@ -1038,36 +1358,48 @@ fn apply_daily_compaction(
     liquid_for_compaction_kg_m2: f64,
     snow_temperature_c: f64,
     constants: SnowDensityCompactionConstants,
-) {
+) -> DailyCompactionDiagnostics {
+    let mut diagnostics = DailyCompactionDiagnostics::default();
     let shallow_guard_factor = shallow_compaction_guard_factor(state.depth_m(), constants);
     let wet_substeps = constants.wet_compaction_substeps_per_day.max(1);
     if wet_substeps == 1 {
         if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
-            apply_wet_compaction(
+            let wet = apply_wet_compaction(
                 state,
                 liquid_for_compaction_kg_m2,
                 constants,
                 shallow_guard_factor,
             );
+            diagnostics.wet_raw += wet.destructive_raw;
+            diagnostics.wet_applied += wet.applied;
         }
         for _ in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
-            apply_time_compaction(state, snow_temperature_c, constants, shallow_guard_factor);
+            let dry = apply_time_compaction_scaled_with_overburden(
+                state,
+                state.mass_kg_m2,
+                snow_temperature_c,
+                constants,
+                shallow_guard_factor,
+            );
+            diagnostics.accumulate_dry(dry);
         }
-        return;
+        return diagnostics;
     }
 
     let liquid_per_step = liquid_for_compaction_kg_m2 / f64::from(wet_substeps);
     if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        apply_wet_compaction(
+        let wet = apply_wet_compaction(
             state,
             liquid_for_compaction_kg_m2,
             constants,
             shallow_guard_factor,
         );
+        diagnostics.wet_raw += wet.destructive_raw;
+        diagnostics.wet_applied += wet.applied;
     }
     for step in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
         let wet_step = step < wet_substeps && liquid_per_step > SNOW_DENSITY_ZERO_MASS_KG_M2;
-        apply_time_compaction_scaled(
+        let dry = apply_time_compaction_scaled(
             state,
             snow_temperature_c,
             constants,
@@ -1077,7 +1409,9 @@ fn apply_daily_compaction(
                 1.0
             } * shallow_guard_factor,
         );
+        diagnostics.accumulate_dry(dry);
     }
+    diagnostics
 }
 
 fn shallow_compaction_guard_factor(
@@ -1096,14 +1430,14 @@ fn apply_time_compaction_scaled(
     snow_temperature_c: f64,
     constants: SnowDensityCompactionConstants,
     multiplier_scale: f64,
-) {
+) -> DensityCompactionIncrement {
     apply_time_compaction_scaled_with_overburden(
         state,
         state.mass_kg_m2,
         snow_temperature_c,
         constants,
         multiplier_scale,
-    );
+    )
 }
 
 fn apply_time_compaction_scaled_with_overburden(
@@ -1112,10 +1446,10 @@ fn apply_time_compaction_scaled_with_overburden(
     snow_temperature_c: f64,
     constants: SnowDensityCompactionConstants,
     multiplier_scale: f64,
-) {
+) -> DensityCompactionIncrement {
     let density = state.observed_density_kg_m3();
     if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
-        return;
+        return DensityCompactionIncrement::default();
     }
     let overburden = overburden_kg_m2.max(0.0);
     let rate = if overburden >= constants.dry_compaction_swe_max_kg_m2 {
@@ -1141,12 +1475,25 @@ fn apply_time_compaction_scaled_with_overburden(
         * overburden
         * (-constants.poc_density_decay * (density / SNOW_DENSITY_RHO_WATER_KG_M3)).exp()
         / rate;
-    state.density_kg_m3 = (density
-        + constants.dry_compaction_multiplier
-            * multiplier_scale
-            * (destructive_metamorphism + overburden_compaction)
-            * density)
-        .min(constants.dry_compaction_max_density_kg_m3);
+    let destructive_raw_delta = constants.dry_compaction_multiplier
+        * multiplier_scale
+        * destructive_metamorphism
+        * density;
+    let overburden_raw_delta = constants.dry_compaction_multiplier
+        * multiplier_scale
+        * overburden_compaction
+        * density;
+    let combined_raw_delta = constants.dry_compaction_multiplier
+        * multiplier_scale
+        * (destructive_metamorphism + overburden_compaction)
+        * density;
+    state.density_kg_m3 =
+        (density + combined_raw_delta).min(constants.dry_compaction_max_density_kg_m3);
+    DensityCompactionIncrement {
+        destructive_raw: destructive_raw_delta,
+        overburden_raw: overburden_raw_delta,
+        applied: state.density_kg_m3 - density,
+    }
 }
 
 fn apply_wet_compaction(
@@ -1154,23 +1501,28 @@ fn apply_wet_compaction(
     liquid_added_kg_m2: f64,
     constants: SnowDensityCompactionConstants,
     shallow_guard_factor: f64,
-) {
+) -> DensityCompactionIncrement {
     let density = state.observed_density_kg_m3();
     if density <= 0.0 || density >= constants.wet_compaction_max_density_kg_m3 {
-        return;
+        return DensityCompactionIncrement::default();
     }
     if state.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        return;
+        return DensityCompactionIncrement::default();
     }
     let h2o_added_ratio = liquid_added_kg_m2 / state.mass_kg_m2;
     if h2o_added_ratio <= 1.0e-6 {
-        return;
+        return DensityCompactionIncrement::default();
     }
     let density_delta = constants.wet_compaction_multiplier
         * shallow_guard_factor
         * (constants.wet_compaction_max_density_kg_m3 - density)
         / (1.0 + constants.wet_compaction_half_saturation_ratio / h2o_added_ratio);
     state.density_kg_m3 = (density + density_delta).min(constants.wet_compaction_max_density_kg_m3);
+    DensityCompactionIncrement {
+        destructive_raw: density_delta,
+        overburden_raw: 0.0,
+        applied: state.density_kg_m3 - density,
+    }
 }
 
 impl CoeBoundDensityState {
@@ -1251,6 +1603,336 @@ mod cqr_row5_snow_density_tests {
         assert!(
             (actual - expected).abs() <= 1.0e-12,
             "actual={actual} expected={expected}"
+        );
+    }
+
+    fn density_inputs(model: SnowDensityModel) -> SnowDensityRuntimeInputs {
+        SnowDensityRuntimeInputs {
+            model,
+            prior_swe_m: 0.12,
+            prior_depth_m: 0.6,
+            prior_density_kg_m3: 200.0,
+            prior_settle_day_count: 8.0,
+            prior_layers: Vec::new(),
+            boundary_swe_after_m: 0.14,
+            boundary_depth_after_m: 0.7,
+            boundary_density_after_kg_m3: 200.0,
+            snow_input_m: 0.02,
+            liquid_for_compaction_m: 0.004,
+            mean_air_temperature_c: -5.0,
+            runtime_density_cap_kg_m3: 522.0,
+            sturm_climate_class: None,
+            sturm_day_of_year: None,
+        }
+    }
+
+    #[test]
+    fn eb04v_isolated_fresh_and_wet_vectors_match_independent_equations() {
+        let constants = snow_density_compaction_v1_constants();
+        let mut fresh_state = CoeBoundDensityState {
+            mass_kg_m2: 100.0,
+            density_kg_m3: 200.0,
+        };
+        let air_temperature_c: f64 = -5.0;
+        let fresh_density = 75.0 + 1.7 * (air_temperature_c + 15.0).powf(1.5);
+        let expected_mixed_density = 120.0 / (100.0 / 200.0 + 20.0 / fresh_density);
+        add_fresh_snow(&mut fresh_state, 20.0, air_temperature_c, constants)
+            .unwrap_or_else(|error| panic!("fresh-snow update failed: {error}"));
+        assert_close(fresh_state.density_kg_m3, expected_mixed_density);
+
+        let mut wet_state = CoeBoundDensityState {
+            mass_kg_m2: 100.0,
+            density_kg_m3: 200.0,
+        };
+        let expected_wet_delta = 2.0 * (550.0 - 200.0) / (1.0 + 0.4 / 0.1);
+        let wet = apply_wet_compaction(&mut wet_state, 10.0, constants, 1.0);
+        assert_close(wet.destructive_raw, expected_wet_delta);
+        assert_close(wet.applied, expected_wet_delta);
+        assert_close(wet_state.density_kg_m3, 200.0 + expected_wet_delta);
+    }
+
+    #[test]
+    fn eb04v_isolated_dry_vectors_separate_ptm_and_poc() {
+        let mut destructive_constants = snow_density_compaction_v1_constants();
+        destructive_constants.poc_rate_per_hour = 0.0;
+        let mut destructive_state = CoeBoundDensityState {
+            mass_kg_m2: 100.0,
+            density_kg_m3: 200.0,
+        };
+        let destructive = apply_time_compaction_scaled_with_overburden(
+            &mut destructive_state,
+            100.0,
+            -5.0,
+            destructive_constants,
+            1.0,
+        );
+        assert!(destructive.destructive_raw > 0.0);
+        assert_close(destructive.overburden_raw, 0.0);
+        assert_close(destructive.applied, destructive.destructive_raw);
+
+        let mut overburden_constants = snow_density_compaction_v1_constants();
+        overburden_constants.ptm_rate_per_hour = 0.0;
+        let mut overburden_state = CoeBoundDensityState {
+            mass_kg_m2: 100.0,
+            density_kg_m3: 200.0,
+        };
+        let overburden = apply_time_compaction_scaled_with_overburden(
+            &mut overburden_state,
+            100.0,
+            -5.0,
+            overburden_constants,
+            1.0,
+        );
+        assert_close(overburden.destructive_raw, 0.0);
+        assert!(overburden.overburden_raw > 0.0);
+        assert_close(overburden.applied, overburden.overburden_raw);
+    }
+
+    #[test]
+    fn eb04v_multilayer_internal_cap_is_exact_in_bulk_density_space() {
+        let mut constants = snow_density_compaction_v1_constants();
+        constants.ptm_rate_per_hour = 0.0;
+        constants.poc_rate_per_hour = 0.0;
+        let mut layers = vec![layer(25.0, 500.0), layer(75.0, 450.0)];
+        let initial = multilayer_bulk_density_kg_m3(&layers);
+        let compaction =
+            apply_multilayer_daily_compaction(&mut layers, 100.0, -1.0, constants);
+        let final_density = multilayer_bulk_density_kg_m3(&layers);
+
+        let bulk_density = |surface_density: f64, lower_density: f64| {
+            100.0 / (25.0 / surface_density + 75.0 / lower_density)
+        };
+        let wet_ratio = 1.0;
+        let surface_raw_density = 500.0
+            + constants.wet_compaction_multiplier
+                * (constants.wet_compaction_max_density_kg_m3 - 500.0)
+                / (1.0 + constants.wet_compaction_half_saturation_ratio / wet_ratio);
+        let lower_raw_density = 450.0
+            + constants.wet_compaction_multiplier
+                * (constants.wet_compaction_max_density_kg_m3 - 450.0)
+                / (1.0 + constants.wet_compaction_half_saturation_ratio / wet_ratio);
+        let after_surface_cap = bulk_density(constants.wet_compaction_max_density_kg_m3, 450.0);
+        let expected_uncapped_wet_delta = bulk_density(surface_raw_density, 450.0) - initial
+            + bulk_density(constants.wet_compaction_max_density_kg_m3, lower_raw_density)
+            - after_surface_cap;
+        let expected_final = bulk_density(
+            constants.wet_compaction_max_density_kg_m3,
+            constants.wet_compaction_max_density_kg_m3,
+        );
+        let expected_internal_cap = expected_final - initial - expected_uncapped_wet_delta;
+
+        let mut ledger = SnowDensityProcessDiagnostics::default();
+        apply_compaction_attribution(&mut ledger, compaction);
+        let reconstructed_delta = ledger.wet_compaction_delta_kg_m3
+            + ledger.destructive_metamorphism_delta_kg_m3
+            + ledger.overburden_compaction_delta_kg_m3
+            + ledger.internal_cap_delta_kg_m3;
+        assert!(ledger.internal_cap_delta_kg_m3 < 0.0);
+        assert!((final_density - initial - reconstructed_delta).abs() <= 1.0e-9);
+        assert_close(ledger.wet_compaction_delta_kg_m3, expected_uncapped_wet_delta);
+        assert_close(final_density, expected_final);
+        assert_close(ledger.internal_cap_delta_kg_m3, expected_internal_cap);
+        assert_close(ledger.destructive_metamorphism_delta_kg_m3, 0.0);
+        assert_close(ledger.overburden_compaction_delta_kg_m3, 0.0);
+    }
+
+    #[test]
+    fn eb04v_isolated_structural_fallback_and_stage3_vectors_are_explicit() {
+        let mut structural = density_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1);
+        structural.prior_swe_m = 0.275;
+        structural.prior_depth_m = 0.5;
+        structural.prior_density_kg_m3 = 550.0;
+        structural.boundary_swe_after_m = 0.0;
+        structural.snow_input_m = 0.0;
+        structural.liquid_for_compaction_m = 0.0;
+        let structural_outcome = update_snow_density_runtime_state(&structural)
+            .unwrap_or_else(|error| panic!("structural update failed: {error}"));
+        let structural_ledger = structural_outcome.density_process_diagnostics;
+        assert_close(structural_ledger.structural_projection_delta_kg_m3, -550.0);
+        assert_close(structural_ledger.final_density_kg_m3, 0.0);
+
+        let mut fallback = density_inputs(SnowDensityModel::PhysicsBulkClimateClassDensityV1);
+        fallback.snow_input_m = 0.0;
+        fallback.liquid_for_compaction_m = 0.0;
+        fallback.sturm_climate_class = Some(SnowClimateClass::Alpine);
+        fallback.sturm_day_of_year = Some(120.0);
+        let fallback_outcome = update_snow_density_runtime_state(&fallback)
+            .unwrap_or_else(|error| panic!("fallback update failed: {error}"));
+        assert!(fallback_outcome.density_process_diagnostics.climate_fallback_used);
+        assert!(
+            fallback_outcome
+                .density_process_diagnostics
+                .climate_fallback_delta_kg_m3
+                .abs()
+                > 1.0e-9
+        );
+
+        let mut stage3 = SnowDensityProcessDiagnostics {
+            applicable: true,
+            initial_density_kg_m3: 100.0,
+            fresh_snow_mixing_delta_kg_m3: 30.0,
+            ..SnowDensityProcessDiagnostics::default()
+        };
+        stage3
+            .close_at_density(130.0)
+            .unwrap_or_else(|error| panic!("initial close failed: {error}"));
+        stage3
+            .apply_downstream_stage3_density(120.0)
+            .unwrap_or_else(|error| panic!("Stage-3 close failed: {error}"));
+        assert_close(stage3.downstream_stage3_delta_kg_m3, -10.0);
+        assert_close(stage3.final_density_kg_m3, 120.0);
+    }
+
+    #[test]
+    fn eb04v_inapplicable_and_invalid_ledgers_fail_closed_without_aliasing() {
+        let legacy = update_snow_density_runtime_state(&density_inputs(SnowDensityModel::LegacyWepp))
+            .unwrap_or_else(|error| panic!("legacy update failed: {error}"));
+        let mut legacy_ledger = legacy.density_process_diagnostics;
+        legacy_ledger
+            .apply_downstream_stage3_density(300.0)
+            .unwrap_or_else(|error| panic!("legacy Stage-3 adjustment failed: {error}"));
+        assert_eq!(legacy_ledger, SnowDensityProcessDiagnostics::default());
+
+        let invalid = SnowDensityProcessDiagnostics {
+            applicable: true,
+            closure_residual_kg_m3: 2.0e-9,
+            ..SnowDensityProcessDiagnostics::default()
+        };
+        assert!(matches!(
+            invalid.validate_closure(),
+            Err(SnowDensityError::DiagnosticClosureViolation { .. })
+        ));
+
+        let mut nonfinite = SnowDensityProcessDiagnostics {
+            applicable: true,
+            ..SnowDensityProcessDiagnostics::default()
+        };
+        assert!(matches!(
+            nonfinite.apply_downstream_stage3_density(f64::NAN),
+            Err(SnowDensityError::NonFiniteInput { .. })
+        ));
+
+        let nonfinite_driver = SnowDensityProcessDiagnostics {
+            applicable: true,
+            liquid_for_compaction_mass_kg_m2: f64::INFINITY,
+            ..SnowDensityProcessDiagnostics::default()
+        };
+        assert!(matches!(
+            nonfinite_driver.validate_closure(),
+            Err(SnowDensityError::NonFiniteInput {
+                symbol: "density_process_liquid_for_compaction_mass_kg_m2",
+                ..
+            })
+        ));
+
+        let mut overflow = density_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1);
+        overflow.liquid_for_compaction_m = 1.0e308;
+        assert!(matches!(
+            update_snow_density_runtime_state(&overflow),
+            Err(SnowDensityError::NonFiniteInput {
+                symbol: "density_process_liquid_for_compaction_mass_kg_m2",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn eb04v_omitted_process_aliases_fail_the_closure_tolerance() {
+        let increments = [3.0, 5.0, 7.0, 11.0, -2.0, 13.0, -17.0, -19.0, 23.0];
+        let final_density = 100.0 + increments.iter().sum::<f64>();
+        for omitted in 0..increments.len() {
+            let wrong_residual = final_density
+                - 100.0
+                - increments
+                    .iter()
+                    .enumerate()
+                    .filter(|(index, _)| *index != omitted)
+                    .map(|(_, value)| value)
+                    .sum::<f64>();
+            assert!(
+                wrong_residual.abs() > SNOW_DENSITY_DIAGNOSTIC_CLOSURE_TOLERANCE_KG_M3
+            );
+        }
+    }
+
+    #[test]
+    fn eb04v_bulk_ledger_closes_and_keeps_fresh_density_direct() {
+        let outcome = update_snow_density_runtime_state(&density_inputs(
+            SnowDensityModel::PhysicsBulkDensityCompactionV1,
+        ))
+        .unwrap_or_else(|error| panic!("density update failed: {error}"));
+        let ledger = outcome.density_process_diagnostics;
+
+        assert!(ledger.applicable);
+        assert!(ledger.fresh_snow_density_available);
+        assert!(ledger.snow_input_depth_m > 0.0);
+        assert!(ledger.wet_compaction_delta_kg_m3 > 0.0);
+        assert!(ledger.destructive_metamorphism_delta_kg_m3 > 0.0);
+        assert!(ledger.overburden_compaction_delta_kg_m3 > 0.0);
+        assert!(
+            (ledger.fresh_snow_density_kg_m3 - ledger.final_density_kg_m3).abs() > 1.0e-6
+        );
+        assert!(ledger.closure_residual_kg_m3.abs() <= 1.0e-9);
+    }
+
+    #[test]
+    fn eb04v_multilayer_ledger_separates_surface_metamorphism_and_loaded_overburden() {
+        let mut inputs = density_inputs(SnowDensityModel::PhysicsBulkMultilayerDensityV1);
+        inputs.prior_layers = vec![
+            DirectSnowLayerState::new(0.04, 0.25, 160.0, 2.0),
+            DirectSnowLayerState::new(0.08, 0.32, 250.0, 12.0),
+        ];
+        inputs.prior_depth_m = 0.57;
+        let outcome = update_snow_density_runtime_state(&inputs)
+            .unwrap_or_else(|error| panic!("density update failed: {error}"));
+        let ledger = outcome.density_process_diagnostics;
+
+        assert!(ledger.destructive_metamorphism_delta_kg_m3 > 0.0);
+        assert!(ledger.overburden_compaction_delta_kg_m3 > 0.0);
+        assert!(ledger.wet_compaction_delta_kg_m3 > 0.0);
+        assert!(ledger.closure_residual_kg_m3.abs() <= 1.0e-9);
+    }
+
+    #[test]
+    fn eb04v_runtime_cap_and_snow_free_inapplicability_are_explicit() {
+        let mut capped = density_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1);
+        capped.prior_swe_m = 0.27;
+        capped.prior_depth_m = 0.5;
+        capped.prior_density_kg_m3 = 540.0;
+        capped.boundary_swe_after_m = 0.27;
+        capped.snow_input_m = 0.0;
+        capped.liquid_for_compaction_m = 0.0;
+        let capped_outcome = update_snow_density_runtime_state(&capped)
+            .unwrap_or_else(|error| panic!("density update failed: {error}"));
+        assert!(capped_outcome.density_process_diagnostics.runtime_cap_delta_kg_m3 < 0.0);
+        assert!(capped_outcome.density_process_diagnostics.closure_residual_kg_m3.abs() <= 1.0e-9);
+
+        let mut empty = density_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1);
+        empty.prior_swe_m = 0.0;
+        empty.prior_depth_m = 0.0;
+        empty.prior_density_kg_m3 = 0.0;
+        empty.boundary_swe_after_m = 0.0;
+        empty.boundary_depth_after_m = 0.0;
+        empty.boundary_density_after_kg_m3 = 0.0;
+        empty.snow_input_m = 0.0;
+        empty.liquid_for_compaction_m = 0.0;
+        let empty_outcome = update_snow_density_runtime_state(&empty)
+            .unwrap_or_else(|error| panic!("density update failed: {error}"));
+        assert!(!empty_outcome.density_process_diagnostics.applicable);
+        assert!(!empty_outcome
+            .density_process_diagnostics
+            .fresh_snow_density_available);
+        assert_eq!(empty_outcome.density_process_diagnostics, SnowDensityProcessDiagnostics::default());
+
+        empty.model = SnowDensityModel::PhysicsBulkClimateClassDensityV1;
+        empty.sturm_climate_class = None;
+        empty.sturm_day_of_year = None;
+        let empty_climate_outcome = update_snow_density_runtime_state(&empty)
+            .unwrap_or_else(|error| panic!("snow-free climate update failed: {error}"));
+        assert!(!empty_climate_outcome.sturm_density_form_fallback_used);
+        assert_eq!(
+            empty_climate_outcome.density_process_diagnostics,
+            SnowDensityProcessDiagnostics::default()
         );
     }
 

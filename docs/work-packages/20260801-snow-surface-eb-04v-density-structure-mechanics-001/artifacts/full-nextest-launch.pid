@@ -1,0 +1,4 @@
+full_launcher_pid=4101661
+full_time_profile=full
+full_cmd=/usr/bin/time -p cargo nextest run --workspace --profile full --no-fail-fast
+full_run_log=artifacts/full-nextest.log

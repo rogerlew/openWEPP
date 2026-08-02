@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+────────────
+ Nextest run ID 79301982-08a9-46bb-be69-bc567d633b99 with nextest profile: frost
+    Starting 338 tests across 201 binaries (1891 tests skipped, including 1886 tests via profile.frost.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 525.965s] 338 tests run: 338 passed (1 slow), 1891 skipped
+real 527.52
+user 302.31
+sys 259.03
+FROST_EXIT=0

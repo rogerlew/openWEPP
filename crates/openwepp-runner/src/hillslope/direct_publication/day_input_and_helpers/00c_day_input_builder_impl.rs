@@ -1167,7 +1167,7 @@ fn r7h_direct_production_snow_trace_line(
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
     let line = format!(
-        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
+        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v2\",\
 \"day_index\":{day_index},\
 \"lane_index\":{lane_index},\
 \"hyetograph_rainfall_m\":{},\
@@ -1256,9 +1256,59 @@ fn r7h_direct_production_snow_trace_line(
         layers_after,
     );
     format!(
-        "{line},{},{}\n",
+        "{line},{},{},{}\n",
+        direct_snow_trace_density_process_fields(&snow_liquid.density_process_diagnostics),
         direct_snow_trace_stage3_fields(&snow_liquid.stage3_diagnostics),
         direct_snow_trace_thermal_fields(&thermal)
+    )
+}
+
+fn direct_snow_trace_density_process_fields(
+    diagnostics: &openwepp_hillslope_orchestrator::SnowDensityProcessDiagnostics,
+) -> String {
+    format!(
+        "\"density_process_applicable\":{},\
+\"density_process_fresh_snow_density_available\":{},\
+\"density_process_initial_density_kg_m3\":{},\
+\"density_process_initial_snow_mass_kg_m2\":{},\
+\"density_process_liquid_for_compaction_mass_kg_m2\":{},\
+\"density_process_compaction_temperature_c\":{},\
+\"density_process_snow_input_mass_kg_m2\":{},\
+\"density_process_snow_input_depth_m\":{},\
+\"density_process_fresh_snow_density_kg_m3\":{},\
+\"density_process_fresh_snow_mixing_delta_kg_m3\":{},\
+\"density_process_wet_compaction_delta_kg_m3\":{},\
+\"density_process_destructive_metamorphism_delta_kg_m3\":{},\
+\"density_process_overburden_compaction_delta_kg_m3\":{},\
+\"density_process_structural_projection_delta_kg_m3\":{},\
+\"density_process_climate_fallback_used\":{},\
+\"density_process_climate_fallback_delta_kg_m3\":{},\
+\"density_process_internal_cap_delta_kg_m3\":{},\
+\"density_process_runtime_cap_delta_kg_m3\":{},\
+\"density_process_downstream_stage3_delta_kg_m3\":{},\
+\"density_process_final_density_kg_m3\":{},\
+\"density_process_closure_residual_kg_m3\":{}",
+        diagnostics.applicable,
+        diagnostics.fresh_snow_density_available,
+        direct_production_trace_number(diagnostics.initial_density_kg_m3),
+        direct_production_trace_number(diagnostics.initial_snow_mass_kg_m2),
+        direct_production_trace_number(diagnostics.liquid_for_compaction_mass_kg_m2),
+        direct_production_trace_number(diagnostics.compaction_temperature_c),
+        direct_production_trace_number(diagnostics.snow_input_mass_kg_m2),
+        direct_production_trace_number(diagnostics.snow_input_depth_m),
+        direct_production_trace_number(diagnostics.fresh_snow_density_kg_m3),
+        direct_production_trace_number(diagnostics.fresh_snow_mixing_delta_kg_m3),
+        direct_production_trace_number(diagnostics.wet_compaction_delta_kg_m3),
+        direct_production_trace_number(diagnostics.destructive_metamorphism_delta_kg_m3),
+        direct_production_trace_number(diagnostics.overburden_compaction_delta_kg_m3),
+        direct_production_trace_number(diagnostics.structural_projection_delta_kg_m3),
+        diagnostics.climate_fallback_used,
+        direct_production_trace_number(diagnostics.climate_fallback_delta_kg_m3),
+        direct_production_trace_number(diagnostics.internal_cap_delta_kg_m3),
+        direct_production_trace_number(diagnostics.runtime_cap_delta_kg_m3),
+        direct_production_trace_number(diagnostics.downstream_stage3_delta_kg_m3),
+        direct_production_trace_number(diagnostics.final_density_kg_m3),
+        direct_production_trace_number(diagnostics.closure_residual_kg_m3),
     )
 }
 

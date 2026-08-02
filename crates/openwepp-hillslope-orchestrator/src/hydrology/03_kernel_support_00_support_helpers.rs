@@ -118,6 +118,7 @@ pub struct DirectSnowLiquidPartition {
     pub coe_boundary_settle_day_count_after: f64,
     pub density_swe_identity_residual_m: f64,
     pub density_unbounded_swe_residual_m: f64,
+    pub density_process_diagnostics: SnowDensityProcessDiagnostics,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
     pub stage3_diagnostics: DirectSnowStage3Diagnostics,

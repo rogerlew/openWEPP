@@ -17,7 +17,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     let freeze = read(SNOW_FREEZE_CONTRACT);
 
     for required in [
-        "contract_version: 5",
+        "contract_version: 6",
         "INV-SNOWENERGY-015",
         "INV-SNOWENERGY-016",
         "INV-SNOWENERGY-017",
@@ -46,7 +46,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     }
 
     for required in [
-        "contract_version: 119",
+        "contract_version: 120",
         "INV-SNOWFREEZE-085",
         "INV-SNOWFREEZE-086",
         "OBL-SNOWFREEZE-P-059",

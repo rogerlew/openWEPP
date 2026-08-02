@@ -10,7 +10,7 @@ const HANDOFF: &str = "docs/work-packages/20260625-snowdensity-05-melt-moderniza
 fn snowdensity05a_contract_ratifies_melt_modernization_envelope() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 119",
+        "contract_version: 120",
         "INV-SNOWFREEZE-052",
         "SNOWDENSITY-05A CoE melt-modernization contract and sign-convention envelope",
         "snow_melt_model = legacy_coe | coe_shortwave_albedo_v1",

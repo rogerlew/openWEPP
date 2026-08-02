@@ -1,0 +1,30 @@
+{
+  "schema": "snow-surface-eb04v-population-freeze-v1",
+  "evidence_role": "DIAGNOSTIC_ONLY",
+  "source_manifest": "docs/work-packages/20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/artifacts/failure-cohort-manifest.json",
+  "source_manifest_sha256": "969527cecfa36f42a62a3cb5119a9ef5aae961dfc370a1fe9c0b87c56e9ea50e",
+  "observation_operator_authority": {
+    "path": "docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/artifacts/factorial-results.json",
+    "sha256": "2f2ef71075222fec68620c41ff4a523622a58d4098be9e9953a24c95efe7b5df"
+  },
+  "cells": ["B", "L", "S", "LS"],
+  "lanes": [
+    {"lane_id": "harvard_hardwood", "bias_partition": "density_shape_over_beta"},
+    {"lane_id": "marcell_conifer", "bias_partition": "density_shape_over_beta"},
+    {"lane_id": "marcell_deciduous", "bias_partition": "density_shape_over_beta"},
+    {"lane_id": "marcell_open", "bias_partition": "density_shape_over_beta"},
+    {"lane_id": "snotel_css_lab_ca", "bias_partition": "density_shape_under_beta"},
+    {"lane_id": "snotel_mica_creek_st_joe_id", "bias_partition": "density_shape_under_beta"},
+    {"lane_id": "snotel_niwot_co", "bias_partition": "density_shape_under_beta"},
+    {"lane_id": "snotel_paradise_wa", "bias_partition": "density_shape_under_beta"},
+    {"lane_id": "snotel_snowbird_ut", "bias_partition": "density_shape_under_beta"}
+  ],
+  "lane_count": 9,
+  "cell_count": 36,
+  "prohibitions": [
+    "coefficient fitting",
+    "observation or fixture edits",
+    "efficacy or promotion verdict",
+    "population substitution"
+  ]
+}

@@ -14,7 +14,7 @@ const DAY_INPUT_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_pub
 fn snowdensity10_3_1a_contract_and_package_bind_daily_cancov() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 119",
+        "contract_version: 120",
         "cancov_daily_series",
         "INV-SNOWFREEZE-063",
         "OBL-SNOWFREEZE-P-038",

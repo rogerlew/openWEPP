@@ -316,6 +316,7 @@ impl Wb11HydrologyKernel {
             &snow_coupling,
             routed_melt_m,
         )?;
+        let mut density_process_diagnostics = density_outcome.density_process_diagnostics;
         let mut snow_layers_after = density_outcome.layers_after;
         let stage3_diagnostics = Self::resolve_stage3_liquid_routing(
             phase_class,
@@ -358,6 +359,17 @@ impl Wb11HydrologyKernel {
                     density_outcome.coe_boundary_density_after_kg_m3,
                 )
             };
+        density_process_diagnostics
+            .apply_downstream_stage3_density(runtime_density_after_kg_m3)
+            .map_err(|error| {
+                Self::snow_density_guard_error(
+                    phase_class,
+                    &error,
+                    inputs.runtime_swe_m,
+                    inputs.runtime_depth_m,
+                    &inputs.snow_layers,
+                )
+            })?;
 
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
@@ -385,6 +397,7 @@ impl Wb11HydrologyKernel {
             coe_boundary_settle_day_count_after: snow_coupling.runtime_settle_day_count,
             density_swe_identity_residual_m: density_outcome.max_abs_swe_identity_residual_m,
             density_unbounded_swe_residual_m: density_outcome.max_abs_unbounded_swe_residual_m,
+            density_process_diagnostics,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
             snow_layers_after,
             stage3_diagnostics,
@@ -2171,6 +2184,18 @@ impl Wb11HydrologyKernel {
                     prior_layers: prior_layers.to_vec(),
                 },
             )),
+            SnowDensityError::DiagnosticClosureViolation {
+                residual_kg_m3,
+                tolerance_kg_m3,
+            } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(
+                    "snow_density_process_closure_residual_kg_m3",
+                ),
+                value: *residual_kg_m3,
+                minimum: Some(-*tolerance_kg_m3),
+                maximum: Some(*tolerance_kg_m3),
+            },
         }
     }
 
@@ -2387,6 +2412,10 @@ mod cqr_row5_tests {
                 value: 0.4,
                 expected: 0.5,
             },
+            SnowDensityError::DiagnosticClosureViolation {
+                residual_kg_m3: 2.0e-9,
+                tolerance_kg_m3: 1.0e-9,
+            },
         ];
 
         let mapped = cases
@@ -2424,6 +2453,10 @@ mod cqr_row5_tests {
         assert!(matches!(
             mapped[5],
             Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(_)
+        ));
+        assert!(matches!(
+            mapped[6],
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
         ));
         if let Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(snapshot) = &mapped[5] {
             assert!((snapshot.replay_value() - snapshot.value).abs() <= f64::EPSILON);

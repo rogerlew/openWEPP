@@ -1,0 +1,53 @@
+snotel_mica_creek_st_joe_id/L: PASS
+snotel_mica_creek_st_joe_id/B: PASS
+snotel_mica_creek_st_joe_id/S: PASS
+snotel_mica_creek_st_joe_id/LS: PASS
+snotel_paradise_wa/B: PASS
+snotel_paradise_wa/L: PASS
+snotel_paradise_wa/S: PASS
+snotel_paradise_wa/LS: PASS
+snotel_css_lab_ca/B: PASS
+snotel_css_lab_ca/L: PASS
+snotel_css_lab_ca/S: PASS
+snotel_css_lab_ca/LS: PASS
+snotel_snowbird_ut/B: PASS
+snotel_snowbird_ut/L: PASS
+snotel_snowbird_ut/S: PASS
+snotel_snowbird_ut/LS: PASS
+snotel_niwot_co/B: PASS
+snotel_niwot_co/L: PASS
+snotel_niwot_co/S: PASS
+snotel_niwot_co/LS: PASS
+harvard_hardwood/B: PASS
+harvard_hardwood/L: PASS
+harvard_hardwood/S: PASS
+harvard_hardwood/LS: PASS
+marcell_conifer/B: PASS
+marcell_conifer/S: PASS
+marcell_conifer/L: PASS
+marcell_conifer/LS: PASS
+marcell_deciduous/B: PASS
+marcell_deciduous/S: PASS
+marcell_deciduous/L: PASS
+marcell_deciduous/LS: PASS
+marcell_open/B: PASS
+marcell_open/L: PASS
+marcell_open/S: PASS
+marcell_open/LS: PASS
+Traceback (most recent call last):
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/tools/run_density_diagnostics.py", line 922, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/tools/run_density_diagnostics.py", line 912, in main
+    result = analyze()
+             ^^^^^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/tools/run_density_diagnostics.py", line 343, in analyze
+    retained_anchors = retained_density_anchors(frozen)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/tools/run_density_diagnostics.py", line 227, in retained_density_anchors
+    density_cell = next(
+                   ^^^^^
+  File "/home/workdir/openWEPP/docs/work-packages/20260801-snow-surface-eb-04v-density-structure-mechanics-001/tools/run_density_diagnostics.py", line 230, in <genexpr>
+    if row["cell_id"] == "seasonal_densification_trajectory"
+       ~~~^^^^^^^^^^^
+TypeError: string indices must be integers, not 'str'

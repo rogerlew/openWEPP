@@ -348,7 +348,9 @@ State as of `2026-07-30 UTC`:
   reconciled the units without result access and separately admitted the sealed
   outputs; the unchanged empirical rule closes nonpromotion. EB-04T attributes
   the unchanged failures. EB-04U freezes the prospective partition and leaves
-  EB-04V next, followed by EB-04W/04X and then EB-05 assurance.
+  EB-04V then completed the density-process observability prerequisite without
+  an efficacy claim. EB-04W is next, followed by EB-04X and then EB-05
+  assurance.
 - `20260730-snow-surface-eb-03b-terminal-validation-hold-lift-001/` -
   EXECUTED / PASS: isolates ambient optional-QA adjudication debt from the
   synthetic CQR handoff self-test and decomposes two oversized assurance
@@ -5073,6 +5075,16 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260801-snow-surface-eb-04v-density-structure-mechanics-001/` — EXECUTED /
+  DIAGNOSTIC COMPLETE / EFFICACY HOLD: adds a canonical, behavior-neutral
+  density-process ledger through the real direct-production JSONL consumer.
+  All nine EB-04U density lanes and 36 B/L/S/LS cells pass with maximum closure
+  `3.411e-13 kg m^-3`; all WAT and existing trace values remain identical to
+  EB-04R. Wet compaction is active and largest in both retained bias groups,
+  while fresh mixing, structure, and caps oppose it. The package closes
+  observability but does not identify one coefficient, fit observations, amend
+  physics, make an efficacy claim, promote a candidate, or change observation
+  roles. EB-04W is next.
 - `20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/` —
   EXECUTED / PROSPECTIVE DIAGNOSTIC DESIGN COMPLETE: partitions the exact 16 EB-04T
   failures into nine density-structure, two Harvard depth–SWE

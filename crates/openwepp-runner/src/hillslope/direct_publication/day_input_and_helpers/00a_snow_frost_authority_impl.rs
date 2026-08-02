@@ -504,6 +504,8 @@ fn inactive_direct_snow_liquid_partition(
         coe_boundary_settle_day_count_after: snow_lane_state.coe_boundary_settle_day_count,
         density_swe_identity_residual_m: 0.0,
         density_unbounded_swe_residual_m: 0.0,
+        density_process_diagnostics:
+            openwepp_hillslope_orchestrator::SnowDensityProcessDiagnostics::default(),
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
         snow_layers_after: snow_lane_state.layers.clone(),
         stage3_diagnostics: openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled(),

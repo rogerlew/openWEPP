@@ -30,7 +30,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_harder_pomeroy_default_activation() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 119",
+        "contract_version: 120",
         "REF-SNOWFREEZE-SNOWDENSITY1019",
         "INV-SNOWFREEZE-075",
         "OBL-SNOWFREEZE-P-050",

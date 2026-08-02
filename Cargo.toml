@@ -728,6 +728,10 @@ path = "tests/integration/assurance_v2_groundwater_report_contract.rs"
 name = "cqr_quality_evidence_handoff_contract"
 path = "tests/integration/cqr_quality_evidence_handoff_contract.rs"
 
+[[test]]
+name = "snow_surface_eb04v_density_process_diagnostics_contract"
+path = "tests/integration/snow_surface_eb04v_density_process_diagnostics_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
