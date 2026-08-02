@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `EB-04W2 next` | Prospectively bound the precipitation-scaling responses identified by EB-04W1: Paradise/Snowbird joint response, Niwot magnitude, and Mica Creek's chronology-versus-magnitude tradeoff. Preserve calibration-only roles and admit no promotion, validation, or transferable-default claim. |
+| [`SNOW-SURFACE-EB`](planning/snow-surface-energy-balance-roadmap.md) additive sublimation and sub-canopy longwave | Snow/frost science | `EB-04X next` | EB-04W2 closed with site candidates at Mica `1.4`, Niwot `1.7`, and Paradise `1.8`; Snowbird reached near-parity only at the final `2.0` budget boundary and remained 23 days early. The forcing branch is closed without W3; proceed to paired Harvard geometry/interception in EB-04X. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 

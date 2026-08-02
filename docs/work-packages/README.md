@@ -5077,6 +5077,15 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260802-snow-surface-eb-04w2-precipitation-scaling-grid-extension-001/` —
+  COMPLETE / SITE-SPECIFIC CALIBRATION: all 20 new `1.6-2.0` runs and
+  24 immutable EB-04W1 anchors pass. The frozen rule selects Mica Creek `1.4`
+  (peak ratio `0.968`, 21 days), Niwot `1.7` (`1.029`, 13.5 days), and Paradise
+  `1.8` (`0.989`, 0 days). Snowbird reaches `0.977` at the final `2.0` budget
+  boundary but remains 23 days early. Maximum 44-cell closure is
+  `4.441e-15 m`. The forcing branch closes without W3; observations are
+  calibration-only and no validation, transferability, default, or promotion
+  is admitted. Dual review and dual terminal verification pass. EB-04X is next.
 - `20260802-snow-surface-eb-04w1-precipitation-scaling-calibration-001/` —
   COMPLETE / CALIBRATION LEVER CONFIRMED: all 32 cells in the frozen
   `0.8-1.5` total-precipitation grid pass with exact `1.0` replay and maximum

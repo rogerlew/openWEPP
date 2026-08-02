@@ -1,0 +1,209 @@
+{
+  "audits": {
+    "snotel_mica_creek_st_joe_id/p160": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 83101.60000000011,
+      "scaled_sha256": "2e8161996518e19ca4d1645f1b2d20b00faa1896e0924c678803dac375e6ee6e",
+      "source_precipitation_total_mm": 51938.49999999981,
+      "source_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63"
+    },
+    "snotel_mica_creek_st_joe_id/p170": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 2.842170943040401e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 88295.45000000045,
+      "scaled_sha256": "87a3dea8a8c5a3cdbdc69108b36cb1efd32eeed322405924ca7b4a58d687893d",
+      "source_precipitation_total_mm": 51938.49999999981,
+      "source_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63"
+    },
+    "snotel_mica_creek_st_joe_id/p180": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 93489.29999999961,
+      "scaled_sha256": "7b70e50d95af47b3dbf0e37bd1630540643f5d3f83d091e9d8a8e86f48386bed",
+      "source_precipitation_total_mm": 51938.49999999981,
+      "source_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63"
+    },
+    "snotel_mica_creek_st_joe_id/p190": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 2.842170943040401e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 98683.14999999937,
+      "scaled_sha256": "7657f83d4e0eebd832d99d0feee0b4be62517313fd0d10888a01984d20b295ad",
+      "source_precipitation_total_mm": 51938.49999999981,
+      "source_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63"
+    },
+    "snotel_mica_creek_st_joe_id/p200": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 0.0,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 103876.99999999962,
+      "scaled_sha256": "5fb39544db52cd2ecac3a5af5885171b152e2be0a1fb5386574a2a4e3a5e6fdf",
+      "source_precipitation_total_mm": 51938.49999999981,
+      "source_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63"
+    },
+    "snotel_niwot_co/p160": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 57595.36000000059,
+      "scaled_sha256": "ee8a0fd115e7abfad025784908fbfe1fc19f3ee4135d179fc27db482902a37d3",
+      "source_precipitation_total_mm": 35997.09999999906,
+      "source_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead"
+    },
+    "snotel_niwot_co/p170": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 61195.07000000105,
+      "scaled_sha256": "90f8c06c9a9b0a4eb3243c04d0eada2602ced7aee60c48e954af29f3ec2e2bce",
+      "source_precipitation_total_mm": 35997.09999999906,
+      "source_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead"
+    },
+    "snotel_niwot_co/p180": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 64794.77999999949,
+      "scaled_sha256": "cc7b4b8950781a609bb194dee39bbf0babf2ddb20bc233d275cc0b4ed06fda1e",
+      "source_precipitation_total_mm": 35997.09999999906,
+      "source_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead"
+    },
+    "snotel_niwot_co/p190": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 68394.48999999961,
+      "scaled_sha256": "34a6aa323842fe6293c65c95ab5084063c954719fad9b9cc5d4416f58d583373",
+      "source_precipitation_total_mm": 35997.09999999906,
+      "source_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead"
+    },
+    "snotel_niwot_co/p200": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 0.0,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 71994.19999999812,
+      "scaled_sha256": "3fc686381def2aad4a245c1df3e5de374cd7eae67e1f618ad248e9caa5cb35f4",
+      "source_precipitation_total_mm": 35997.09999999906,
+      "source_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead"
+    },
+    "snotel_paradise_wa/p160": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 5.684341886080802e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 195811.19999999838,
+      "scaled_sha256": "c3475639cfc4bb339270b4e2036f52c99bb2e48885faa4f90d29ceb4093bfd69",
+      "source_precipitation_total_mm": 122382.00000000483,
+      "source_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "snotel_paradise_wa/p170": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 2.842170943040401e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 208049.4000000009,
+      "scaled_sha256": "aa6fe7966e4b1f42037b3334fe2b5a9559ecb428de6e903697af8432860dff34",
+      "source_precipitation_total_mm": 122382.00000000483,
+      "source_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "snotel_paradise_wa/p180": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 5.684341886080802e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 220287.60000000117,
+      "scaled_sha256": "7ce3fff0baa31a17bff75b897bbff9d5eb2278b91822d3123f11864401130631",
+      "source_precipitation_total_mm": 122382.00000000483,
+      "source_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "snotel_paradise_wa/p190": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 5.684341886080802e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 232525.8000000017,
+      "scaled_sha256": "eb863f5b9d8da7dc2dfec8074b5e6a3ea38db8112099fa1000137f334c65283c",
+      "source_precipitation_total_mm": 122382.00000000483,
+      "source_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "snotel_paradise_wa/p200": {
+      "daily_row_count": 16437,
+      "maximum_precipitation_scaling_residual_mm": 0.0,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 244764.00000000966,
+      "scaled_sha256": "968d4197cd13b8dd3405197d4fcac2e8f25eb694b47909f9793c749bef0c7757",
+      "source_precipitation_total_mm": 122382.00000000483,
+      "source_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "snotel_snowbird_ut/p160": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 74386.8800000001,
+      "scaled_sha256": "5e10438807b0d866c4bd34be0bcfcf1938673ab49e0fe063336ea1e97eaf73a9",
+      "source_precipitation_total_mm": 46491.79999999991,
+      "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    },
+    "snotel_snowbird_ut/p170": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 79036.05999999991,
+      "scaled_sha256": "4706652fd9db3bf6dc02723a8a94468c85f318baf82ec3d7ca8a50c0cc3292f6",
+      "source_precipitation_total_mm": 46491.79999999991,
+      "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    },
+    "snotel_snowbird_ut/p180": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 83685.2400000001,
+      "scaled_sha256": "2c370872ca1cf11ab6c5008af65a661c558e42225564d8f1448a2261d506e427",
+      "source_precipitation_total_mm": 46491.79999999991,
+      "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    },
+    "snotel_snowbird_ut/p190": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 1.4210854715202004e-14,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 88334.41999999998,
+      "scaled_sha256": "0af7d52fead1cd1456bb722b6070a35df6e135e5a0f125d866d28a42a18b667d",
+      "source_precipitation_total_mm": 46491.79999999991,
+      "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    },
+    "snotel_snowbird_ut/p200": {
+      "daily_row_count": 14245,
+      "maximum_precipitation_scaling_residual_mm": 0.0,
+      "non_daily_line_mismatches": 0,
+      "protected_daily_token_mismatches": 0,
+      "scaled_precipitation_total_mm": 92983.59999999982,
+      "scaled_sha256": "6f13cfcb96990dc67881ecc1956b0b586b300d1212053d26b920324199af5e20",
+      "source_precipitation_total_mm": 46491.79999999991,
+      "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    }
+  },
+  "cell_count": 20,
+  "maximum_precipitation_scaling_residual_mm": 5.684341886080802e-14,
+  "non_daily_line_mismatches": 0,
+  "protected_daily_token_mismatches": 0,
+  "schema": "snow-surface-eb04w2-transformation-preflight-v1"
+}

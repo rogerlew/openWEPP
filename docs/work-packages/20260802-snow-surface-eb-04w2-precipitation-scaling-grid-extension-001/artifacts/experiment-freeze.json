@@ -1,0 +1,175 @@
+{
+  "binary_sha256": "b50dd71cb00f24806193b98d73fc5444e836efac84ad5a4e0465d1e67c81fec9",
+  "combined_cell_count": 44,
+  "compensation_warning": {
+    "effective_input_ratio_greater_than": 1.25,
+    "retained_storage_ratio_less_than": 0.8,
+    "role": "ASSUMED_FOR_EXECUTION reporting threshold"
+  },
+  "evidence_role": "CALIBRATION",
+  "experiment_budget_stop": "2.0 is final; any unresolved or boundary outcome closes this forcing branch without EB-04W3",
+  "extension_multipliers": [
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    2.0
+  ],
+  "frozen_utc": "2026-08-02T16:30:01.345163+00:00",
+  "full_analysis_multipliers": [
+    1.0,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5,
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    2.0
+  ],
+  "grid_role": "ASSUMED_FOR_EXECUTION",
+  "independent_validation_role_count": 0,
+  "lanes": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa",
+    "snotel_snowbird_ut"
+  ],
+  "magnitude_band": [
+    0.9,
+    1.1
+  ],
+  "multiplier_semantics": "uniform daily total CLIGEN prcp depth",
+  "multiplier_units": "dimensionless",
+  "new_run_count": 20,
+  "niwot_rule": "SWE magnitude plus worst absolute depth/SWE peak-date offset",
+  "observation_files": {
+    "snotel_mica_creek_st_joe_id": {
+      "path": "tests/fixtures/snotel_observed/observations/sites/snotel_mica_creek_st_joe_id.csv",
+      "role": "CALIBRATION",
+      "sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce"
+    },
+    "snotel_niwot_co": {
+      "path": "tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+      "role": "CALIBRATION",
+      "sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c"
+    },
+    "snotel_paradise_wa": {
+      "path": "tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+      "role": "CALIBRATION",
+      "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
+    },
+    "snotel_snowbird_ut": {
+      "path": "tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+      "role": "CALIBRATION",
+      "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+    }
+  },
+  "operators": [
+    [
+      "snotel_mica_creek_st_joe_id",
+      "seasonal_ablation_meltout_date",
+      -35.0
+    ],
+    [
+      "snotel_niwot_co",
+      "seasonal_peak_depth_date",
+      -46.5
+    ],
+    [
+      "snotel_niwot_co",
+      "seasonal_peak_swe_date",
+      -31.0
+    ],
+    [
+      "snotel_paradise_wa",
+      "seasonal_ablation_meltout_date",
+      -37.0
+    ],
+    [
+      "snotel_snowbird_ut",
+      "seasonal_peak_swe_date",
+      -44.5
+    ]
+  ],
+  "preflight_sha256": "9a797461bf03baf27cc7ebebd4e187b64af9bf88b897fdb638d104e306891a05",
+  "promotion_authorized": false,
+  "protected_fields": "all climate tokens except daily prcp; all source fixtures, observations, production code, contracts, selectors, defaults, schemas, and W1 evidence",
+  "retained_cell_count": 24,
+  "retained_multipliers": [
+    1.0,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5
+  ],
+  "schema": "snow-surface-eb04w2-experiment-freeze-v1",
+  "selection_rule": "eligible peak ratio in [0.9,1.1] with strict chronology improvement versus 1.0; rank abs(log peak ratio), chronology error, distance from 1.0",
+  "source_fixtures": {
+    "snotel_mica_creek_st_joe_id": {
+      "path": "tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id",
+      "tree": {
+        "gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+        "manifest.md": "2083d4324d6acba4c981d11b2661fbcca8892be0672a5734b610c7fafd7f0238",
+        "p1.cli": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63",
+        "p1.man": "e32690e88466b80d2abc45dae35bca8f8ec2d8213645c77a24208cc989c0d20c",
+        "p1.run": "08d798e4b294f6221166cbde60417fe519d29f648945486dc9faf4396be06be1",
+        "p1.slp": "b5eceaddaf95fa8776ee0154fef5b3405cc8a37e9d6c6cf0ce0581cecc86e63f",
+        "p1.sol": "0005b9266f500991a02d0786e8da032e0c4aa351c88017682cffc2524b60ec9b",
+        "pmetpara.txt": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+        "snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+      }
+    },
+    "snotel_niwot_co": {
+      "path": "tests/fixtures/snotel_observed/snotel_niwot_co",
+      "tree": {
+        "gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+        "manifest.md": "8fd63646804f31a7a6c7be8225c6010dbcb8617c003d2d5e750b859ad7579db2",
+        "p2.cli": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead",
+        "p2.man": "e12fe947598ae9fd4353b27fbc4274d8e479791059aa6a92d6c7af4a80acf1a6",
+        "p2.run": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+        "p2.slp": "197be010d9c839baa29b5fb7e55a8e3211d6a8213b9a498e3a3f16d3c282084f",
+        "p2.sol": "77c39a4ebbd78640608c08d071f92ef3ae7e9a53e7dd6838bdb67709f61c90af",
+        "pmetpara.txt": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+        "snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+      }
+    },
+    "snotel_paradise_wa": {
+      "path": "tests/fixtures/snotel_observed/snotel_paradise_wa",
+      "tree": {
+        "gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+        "manifest.md": "b136a0db72db3dec72d59a68ec1fcff4cc7c0c2d7926519fc42c90025f63bd6f",
+        "p2.cli": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c",
+        "p2.man": "dbdff638d59bc19cb9c2a8a19098500948abe080e23687220ce66846c0b3a923",
+        "p2.run": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+        "p2.slp": "56990f7b9efd28e342602d8147c8991fa1ac672c47ec2ff3542319629dbd20ac",
+        "p2.sol": "f47010ade9762d8a0982942bd416932b2f1944aa45dea786dd74c47932bffd71",
+        "pmetpara.txt": "27a59cffbb0a7dd0c6f303233fd1a2537ff90d458b0a9295f98111e17df404a7",
+        "snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+      }
+    },
+    "snotel_snowbird_ut": {
+      "path": "tests/fixtures/snotel_observed/snotel_snowbird_ut",
+      "tree": {
+        "gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+        "manifest.md": "f50c6b2ffb73208a0df4e09472a37955c63e1a3318d85c6dd7a090f5cf139e09",
+        "p8.cli": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+        "p8.man": "21c435275d13d9ce8faccd3f807b34c941175446cf3add8e4532c2024fe2e9c5",
+        "p8.run": "4017f8f4644760e973d02f0ad715e1e6825204207bf2af7b9cf57b7863af9ba4",
+        "p8.slp": "f8e11413f6a9ac23adfee608a02354a6217129e21f51397c41d8d05585ef89e6",
+        "p8.sol": "e53a8e58d23ee452a3979ffc7fa55f3aa8c528b15aedb3316057eff8716fd18a",
+        "pmetpara.txt": "57cce528f58530463e6606613c47122f44065d2e64e88bb5bb071b1736e498a6",
+        "snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+      }
+    }
+  },
+  "source_head": "5037ff35278f6c07f5f7b824a503cab467ffe0cc",
+  "tool_sha256": "760a410c84726cd64d75531d7de5e2808c68ee5439c5866f4310a49a7b250b55",
+  "w1_freeze_sha256": "910e115445c383398dc54aac4bdf39103e19ff82fe4e66e6b130fa22b1eef892",
+  "w1_receipt_sha256": "47847f98b83d63a4e278ecb3de2488f03c1040af8f22d55fd34986aa755d6f95",
+  "w1_results_sha256": "f4f38e5ee2af1d1ef677bd17e414da2da740ecc4cc380123539896e241618ea8",
+  "w1_tool_sha256": "5926c5ea8383bd9ff57fb03945f4cba71b76f8fbc11cbe7cfaa7dbdc02780346"
+}
