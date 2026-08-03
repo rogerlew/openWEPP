@@ -46,7 +46,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     }
 
     for required in [
-        "contract_version: 121",
+        "contract_version: 122",
         "INV-SNOWFREEZE-085",
         "INV-SNOWFREEZE-086",
         "OBL-SNOWFREEZE-P-059",

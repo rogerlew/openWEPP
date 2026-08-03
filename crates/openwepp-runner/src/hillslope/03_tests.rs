@@ -42,6 +42,7 @@ mod tests {
     }
     include!("tests03/direct_publication_source_guards.rs");
     include!("tests03/canopy_litter_boundary_helpers.rs");
+    include!("tests03/eb04w2b_warm_snow.rs");
 
     fn canonical_calendar_day_probe() -> ClimateDayProjection {
         ClimateDayProjection {

@@ -50,8 +50,6 @@ impl DirectProductionSnowFrostAuthority {
     }
 
     fn active_forcing(
-        &self,
-        forcing: &HillslopeDirectClimateDayForcing,
         hyetograph_rainfall_m: f64,
         runtime_swe_m: f64,
     ) -> Result<bool, HillslopeCliError> {
@@ -63,23 +61,15 @@ impl DirectProductionSnowFrostAuthority {
                 ),
             });
         }
-        if hyetograph_rainfall_m <= 1.0e-12 && runtime_swe_m <= 1.0e-12 {
-            return Ok(false);
-        }
-        if runtime_swe_m > 1.0e-12 {
-            return Ok(true);
-        }
-        let average_temperature_c = f64::midpoint(forcing.tmax_c, forcing.tmin_c);
-        if !average_temperature_c.is_finite() {
+        if !runtime_swe_m.is_finite() || runtime_swe_m < 0.0 {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production active snow guard requires finite tmax/tmin, observed tmax={} tmin={}",
-                    forcing.tmax_c, forcing.tmin_c
+                    "{SIMOUT_GUARD_ID} direct production active snow guard requires finite nonnegative SWE, observed {runtime_swe_m}"
                 ),
             });
         }
-        Ok(self.snow_controls_projected && average_temperature_c < 0.0)
+        Ok(hyetograph_rainfall_m > 1.0e-12 || runtime_swe_m > 1.0e-12)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -379,7 +369,7 @@ impl DirectProductionSnowFrostAuthority {
         sturm_day_of_year: Option<f64>,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
-        if !self.active_forcing(forcing, hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
+        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(inactive_direct_snow_liquid_partition(
                 self.snow_density_model,
                 hyetograph_rainfall_m,

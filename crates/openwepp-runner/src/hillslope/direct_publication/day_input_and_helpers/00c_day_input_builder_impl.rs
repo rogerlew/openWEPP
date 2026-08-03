@@ -191,9 +191,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         )?;
         maybe_write_frost_residue_cover_trace(day_index, lane_index, &residue_cover_projection)?;
         Self::validate_active_snow_forcing(
-            authority,
             lane_index,
-            &forcing,
             rainfall_input_m,
             snow_lane_state.runtime_swe_m,
         )?;
@@ -758,16 +756,14 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     }
 
     fn validate_active_snow_forcing(
-        authority: &DirectProductionLaneDayInputAuthority,
         lane_index: usize,
-        forcing: &HillslopeDirectClimateDayForcing,
         hyetograph_rainfall_m: f64,
         runtime_swe_m: f64,
     ) -> Result<(), HillslopeCliError> {
-        let _active_snow =
-            authority
-                .snow_frost
-                .active_forcing(forcing, hyetograph_rainfall_m, runtime_swe_m)?;
+        let _active_snow = DirectProductionSnowFrostAuthority::active_forcing(
+            hyetograph_rainfall_m,
+            runtime_swe_m,
+        )?;
         let _ = lane_index;
         Ok(())
     }

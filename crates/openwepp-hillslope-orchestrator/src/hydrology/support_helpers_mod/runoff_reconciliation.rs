@@ -26,6 +26,7 @@ const STAGE3_LIQUID_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
 const STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_BULK_EQUIVALENT_MAX_LAYERS: usize = 16;
+const SNOW_STORAGE_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 
 impl SnowStage3ConductivityError {
     /// Replay the exact rejected SNOBAL conductivity primitive.
@@ -294,15 +295,14 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
-        let active_snow_coupling =
-            if inputs.hyetograph_rainfall_m <= WB11_ZERO_THRESHOLD
-                && inputs.runtime_swe_m <= WB11_ZERO_THRESHOLD
-            {
-                false
-            } else {
-                inputs.runtime_swe_m > WB11_ZERO_THRESHOLD
-                    || f64::midpoint(inputs.tmax_c, inputs.tmin_c) < 0.0
-            };
+        let typed_hourly_snowfall_present = inputs
+            .hourly
+            .iter()
+            .any(|hour| hour.snowfall_m > WB11_ZERO_THRESHOLD);
+        let active_snow_coupling = inputs.runtime_swe_m > WB11_ZERO_THRESHOLD
+            || typed_hourly_snowfall_present
+            || (inputs.hyetograph_rainfall_m > WB11_ZERO_THRESHOLD
+                && f64::midpoint(inputs.tmax_c, inputs.tmin_c) < 0.0);
         let snow_coupling = if active_snow_coupling {
             Self::compute_active_snow_coupling_from_typed(phase_class, inputs)?
         } else {
@@ -397,7 +397,7 @@ impl Wb11HydrologyKernel {
             modeled_wind_redistribution_m: [0.0; 24],
         };
 
-        Ok(DirectSnowLiquidPartition {
+        let partition = DirectSnowLiquidPartition {
             active_snow_coupling,
             snow_density_model: inputs.snow_density_model,
             snow_coupling_signed_s_m: snow_coupling.signed_s,
@@ -428,7 +428,52 @@ impl Wb11HydrologyKernel {
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
             snow_layers_after,
             stage3_diagnostics,
-        })
+        };
+        Self::validate_direct_snow_storage_closure(phase_class, inputs, &partition)?;
+        Ok(partition)
+    }
+
+    fn validate_direct_snow_storage_closure(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        partition: &DirectSnowLiquidPartition,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let typed_snowfall_swe_m = inputs
+            .hourly
+            .iter()
+            .map(|hour| hour.snowfall_m * 0.1)
+            .sum::<f64>();
+        let residual_m = inputs.runtime_swe_m
+            + typed_snowfall_swe_m
+            + partition.rain_retained_m
+            - partition.snowpack_swe_loss_m
+            - partition.sublimation_m
+            - partition.runtime_swe_after_m;
+        Self::validate_direct_snow_storage_residual(phase_class, residual_m)
+    }
+
+    fn validate_direct_snow_storage_residual(
+        phase_class: HillslopeKernelPhaseClass,
+        residual_m: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let symbol = || BoundarySymbol::from("snow.daily_storage_closure_residual_m");
+        if !residual_m.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: symbol(),
+                value: residual_m,
+            });
+        }
+        if residual_m.abs() > SNOW_STORAGE_CLOSURE_TOLERANCE_M {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol(),
+                value: residual_m,
+                minimum: Some(-SNOW_STORAGE_CLOSURE_TOLERANCE_M),
+                maximum: Some(SNOW_STORAGE_CLOSURE_TOLERANCE_M),
+            });
+        }
+        Ok(())
     }
 
     fn inactive_snow_coupling_from_typed(
@@ -2288,6 +2333,55 @@ impl Wb11HydrologyKernel {
 #[cfg(test)]
 mod cqr_row5_tests {
     use super::*;
+
+    #[test]
+    fn eb04w2b_storage_guard_enforces_exact_tolerance_and_nonfinite_rejection() {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        for residual_m in [
+            -SNOW_STORAGE_CLOSURE_TOLERANCE_M,
+            0.0,
+            SNOW_STORAGE_CLOSURE_TOLERANCE_M,
+        ] {
+            Wb11HydrologyKernel::validate_direct_snow_storage_residual(
+                phase_class,
+                residual_m,
+            )
+            .expect("exact-tolerance daily snow closure residual must be accepted");
+        }
+
+        for residual_m in [
+            f64::from_bits(SNOW_STORAGE_CLOSURE_TOLERANCE_M.to_bits() + 1),
+            -f64::from_bits(SNOW_STORAGE_CLOSURE_TOLERANCE_M.to_bits() + 1),
+        ] {
+            let error = Wb11HydrologyKernel::validate_direct_snow_storage_residual(
+                phase_class,
+                residual_m,
+            )
+            .expect_err("over-tolerance daily snow closure residual must fail closed");
+            assert!(matches!(
+                error,
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
+            ));
+            assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-003");
+            assert!(error
+                .to_string()
+                .contains("snow.daily_storage_closure_residual_m"));
+        }
+
+        let error = Wb11HydrologyKernel::validate_direct_snow_storage_residual(
+            phase_class,
+            f64::NAN,
+        )
+        .expect_err("non-finite daily snow closure residual must fail closed");
+        assert!(matches!(
+            error,
+            Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { .. }
+        ));
+        assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-002");
+        assert!(error
+            .to_string()
+            .contains("snow.daily_storage_closure_residual_m"));
+    }
 
     #[test]
     fn eb04c_lower_volume_threshold_is_strict_on_native_swe() {

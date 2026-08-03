@@ -1,0 +1,49 @@
+{
+  "freeze_sha256": "cf94ce670f09cfd59a7e09ca3d156a54ba17d75088c411160a937da200616e0e",
+  "result_count": 8,
+  "results": {
+    "snotel_mica_creek_st_joe_id/coe_shortwave_albedo_v1": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_mica_creek_st_joe_id/coe_shortwave_albedo_v1/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "686d452d5b44431af1679e59ab644208a053b305d84bde632fe7e1709a8cd871",
+      "returncode": 0
+    },
+    "snotel_mica_creek_st_joe_id/legacy_coe": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_mica_creek_st_joe_id/legacy_coe/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "58abe3b0218de2e064d9e5724ab543eeadcc41d4682bde00591d0b013d3a8792",
+      "returncode": 0
+    },
+    "snotel_niwot_co/coe_shortwave_albedo_v1": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_niwot_co/coe_shortwave_albedo_v1/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "8068cee9bd2d03789210bd32d98c1b1ecbe978f54f406b1ba6ea878ba03ca655",
+      "returncode": 0
+    },
+    "snotel_niwot_co/legacy_coe": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_niwot_co/legacy_coe/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "3b524fc6e020935b01900e7d6ef919b71e5f4d89a84bc56f5d310a850132d8ea",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/coe_shortwave_albedo_v1": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_paradise_wa/coe_shortwave_albedo_v1/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "682c0c9465d93c500fb1e67668951b1d75991f2661fec87b73f441ef8dbb5f8e",
+      "returncode": 0
+    },
+    "snotel_paradise_wa/legacy_coe": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_paradise_wa/legacy_coe/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "9c20bf5ee5021a92e6a7ba6396deb5012e0b1ca899e9b31fd24a5bd3ecab918f",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/coe_shortwave_albedo_v1": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_snowbird_ut/coe_shortwave_albedo_v1/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "c166bffbfeca7b1a8694b428e7d11ea3c9c0ae64f99c3f67ae6db1774bcfa6f2",
+      "returncode": 0
+    },
+    "snotel_snowbird_ut/legacy_coe": {
+      "provenance": "target/snow_surface_eb04w2b_frozen_w2a_rerun/runs/snotel_snowbird_ut/legacy_coe/eb04w2a-cell-provenance.json",
+      "provenance_sha256": "073583333bb308a2b3320f91429b74faf729fdf82ea4688841f4a255003a4ad1",
+      "returncode": 0
+    }
+  },
+  "schema": "snow-surface-eb04w2a-execution-receipt-v1",
+  "snowbench_binary_sha256": "79a8a00a21436e67893b8d8edc1ceed6a2bdfb5c7caa9c25d11b409580bff258",
+  "tool_sha256": "fa5399db4a6c94e9d8bc1820828d9e7d82898a9493f9ca899b1ccc8eeaf70ad2"
+}

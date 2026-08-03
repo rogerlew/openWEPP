@@ -235,6 +235,7 @@ fn build_simimpl28_hourly_winter_forcing_typed(
         || context.frost_runtime_frozen_water_m > SIMIMPL28_DOMAIN_EPS
         || context.frost_file_present
         || context.frost_wint_red_enabled
+        || rain_m > SIMIMPL28_DOMAIN_EPS
         || f64::midpoint(tmax, tmin) < 0.0;
     if !winter_trigger_active
         && export_mode == Simimpl28WinterExportMode::ProductionTrigger
@@ -1141,15 +1142,30 @@ mod cqr_row4_simimpl28_hourly_forcing_tests {
     }
 
     #[test]
-    fn cqr_row4_build_forcing_suppresses_production_and_forces_diagnostic_rows() {
+    fn cqr_row4_build_forcing_resolves_warm_precip_and_suppresses_warm_dry_days() {
         let forcing = no_breakpoint_forcing(10.0, 4.0);
-        let suppressed = build_simimpl28_hourly_winter_forcing_typed(
+        let production = build_simimpl28_hourly_winter_forcing_typed(
             &forcing,
             &metadata(),
             warm_context(),
             Simimpl28WinterExportMode::ProductionTrigger,
         )
-        .expect("warm no-snow production day should evaluate trigger");
+        .expect("warm precipitation day should evaluate trigger")
+        .expect("warm precipitation must resolve typed phase rows");
+        assert_eq!(production.len(), SIMIMPL28_WINTER_HOURS_PER_DAY);
+
+        let mut dry_forcing = forcing.clone();
+        let HillslopeClimateDailyForcing::NoBreakpoint(day) = &mut dry_forcing else {
+            panic!("test fixture must be no-breakpoint forcing");
+        };
+        day.prcp = 0.0;
+        let suppressed = build_simimpl28_hourly_winter_forcing_typed(
+            &dry_forcing,
+            &metadata(),
+            warm_context(),
+            Simimpl28WinterExportMode::ProductionTrigger,
+        )
+        .expect("warm dry production day should evaluate trigger");
         assert!(suppressed.is_none());
 
         let diagnostic = build_simimpl28_hourly_winter_forcing_typed(

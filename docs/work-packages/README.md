@@ -5077,6 +5077,14 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260802-snow-surface-eb-04w2b-warm-day-new-snow-activation-closure-001/` —
+  EXECUTED / HOLD_CROSS_DOMAIN_CORRECTNESS_GATE: the in-envelope warm-snow,
+  direct-provider, shared-closure, typed-error, and boundary corrections pass
+  focused, owning-crate, frost, lint, and assurance gates. Renewed quick
+  validation deterministically fails the hard EROD16 concave continuity
+  instrument (`61/231` refusals; bound `<=20%`). Earlier W2A rerun output is
+  prerequisite-ineligible, no terminal
+  rerun/full-profile closure occurred, and EB-04X remains held.
 - `20260802-snow-surface-eb-04w2a-residual-melt-chronology-attribution-001/` —
   EXECUTED / HOLD / PARTIAL ADMISSION: all eight frozen snowbench cells ran and
   the retained direct-production ledgers close within `2.221e-15 m` and
@@ -5097,7 +5105,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   boundary but remains 23 days early. Maximum 44-cell closure is
   `4.441e-15 m`. The forcing branch closes without W3; observations are
   calibration-only and no validation, transferability, default, or promotion
-  is admitted. Dual review and dual terminal verification pass. EB-04X is next.
+  is admitted. Dual review and dual terminal verification pass. EB-04X was the
+  planned campaign successor but is now held by EB-04W2B's cross-domain gate.
 - `20260802-snow-surface-eb-04w1-precipitation-scaling-calibration-001/` —
   COMPLETE / CALIBRATION LEVER CONFIRMED: all 32 cells in the frozen
   `0.8-1.5` total-precipitation grid pass with exact `1.0` replay and maximum
@@ -5119,7 +5128,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   about `0.21-0.46`. Causal ownership remains mixed among realized snowpack input, endogenous liquid
   retention, external input causes, and phase-conditioned pre-peak modeled
   loss; no fitting, forcing compensation, physics/default change, efficacy
-  claim, or promotion occurred. EB-04X is next.
+  claim, or promotion occurred. EB-04X was the planned successor and is now
+  held by EB-04W2B's cross-domain gate.
 - `20260801-snow-surface-eb-04v-density-structure-mechanics-001/` — EXECUTED /
   DIAGNOSTIC COMPLETE / EFFICACY HOLD: adds a canonical, behavior-neutral
   density-process ledger through the real direct-production JSONL consumer.
@@ -5129,7 +5139,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   while fresh mixing, structure, and caps oppose it. The package closes
   observability but does not identify one coefficient, fit observations, amend
   physics, make an efficacy claim, promote a candidate, or change observation
-  roles. EB-04W is diagnostically complete with calibration held; EB-04X is next.
+  roles. EB-04W is diagnostically complete with calibration held; EB-04X is
+  now held by EB-04W2B's cross-domain gate.
 - `20260801-snow-surface-eb-04u-mechanistic-failure-partition-001/` —
   EXECUTED / PROSPECTIVE DIAGNOSTIC DESIGN COMPLETE: partitions the exact 16 EB-04T
   failures into nine density-structure, two Harvard depth–SWE

@@ -29,7 +29,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_shallow_guard_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 121",
+        "contract_version: 122",
         "physics_bulk_shallow_guard_v1",
         "snow_shallow_compaction_guard_depth_threshold",
         "INV-SNOWFREEZE-074",

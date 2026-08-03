@@ -36,7 +36,7 @@ fn assert_contains(text: &str, marker: &str, path: &str) {
 fn contract_and_package_bind_stage_a_without_activation() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 121",
+        "contract_version: 122",
         "REF-SNOWFREEZE-MARKS1998-TURBULENT",
         "REF-SNOWFREEZE-MARKS1999-SUBLIMATION",
         "snow_sublimation",

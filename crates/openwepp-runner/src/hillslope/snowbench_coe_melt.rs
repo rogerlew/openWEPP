@@ -21,6 +21,7 @@ const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 
 const RADIATION_BRIDGE_NET_SHORTWAVE_FACTOR: f64 = 0.80;
 const STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.670_374_419e-8;
 const DEFAULT_UNDERLYING_SURFACE_ALBEDO: f64 = 0.2;
+const DAILY_SWE_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 
 #[derive(Debug, Clone)]
 pub struct CoeMeltRequest {
@@ -739,21 +740,15 @@ fn simulate_coe_melt(
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,
             hourly: day.hourly,
         };
-        let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-            &inputs,
-        )
-        .map_err(|error| SnowbenchError::InvalidForcing {
-            detail: format!(
-                "CoE melt diagnostic replay failed for {} {}: {error}",
-                model.name(),
-                day.date
-            ),
-        })?;
+        let partition =
+            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+                .map_err(|source| SnowbenchError::SnowKernel { source })?;
         let snowpack_swe_balance_residual_m =
             snow_water_before_m + day.snow_input_m + partition.rain_retained_m
                 - partition.snowpack_swe_loss_m
                 - partition.sublimation_m
                 - partition.runtime_swe_after_m;
+        require_coe_melt_swe_closure(&day.date, snowpack_swe_balance_residual_m)?;
         let routed_state_loss_residual_m =
             partition.routed_melt_m - partition.rain_released_m - partition.snowpack_swe_loss_m;
         let state_loss_available_storage_margin_m =
@@ -829,6 +824,17 @@ fn simulate_coe_melt(
             diagnostic_initial_albedo_seed_count: ledger.diagnostic_initial_albedo_seed_count,
         },
     })
+}
+
+fn require_coe_melt_swe_closure(date: &str, residual_m: f64) -> Result<(), SnowbenchError> {
+    if !residual_m.is_finite() || residual_m.abs() > DAILY_SWE_CLOSURE_TOLERANCE_M {
+        return Err(SnowbenchError::SnowStorageClosure {
+            date: date.to_string(),
+            residual_m,
+            tolerance_m: DAILY_SWE_CLOSURE_TOLERANCE_M,
+        });
+    }
+    Ok(())
 }
 
 fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), SnowbenchError> {
@@ -1138,7 +1144,7 @@ mod tests {
     }
 
     #[test]
-    fn noncanonical_new_snow_density_preserves_runtime_phase_closure() {
+    fn noncanonical_new_snow_density_fails_closed_at_consumer_storage_boundary() {
         let rows = (0..24)
             .map(|hour| {
                 let timestamp = format!("2020-01-01T{hour:02}:00:00");
@@ -1162,7 +1168,21 @@ mod tests {
             (runtime_snowfall_swe_m - hour.active_precipitation_m * hour.snow_fraction).abs()
                 < 1e-12
         );
-        simulate_coe_melt(&days, CoeMeltModel::LegacyCoe, 0.0, 200.0, 350.0)
-            .expect("noncanonical density replay must remain executable");
+        let error = simulate_coe_melt(&days, CoeMeltModel::LegacyCoe, 0.0, 200.0, 350.0)
+            .expect_err("source-mass versus fixed-density runtime mismatch must fail closed");
+        assert!(matches!(error, SnowbenchError::SnowStorageClosure { .. }));
+    }
+
+    #[test]
+    fn coe_melt_consumer_fails_closed_on_material_daily_swe_residual() {
+        let error = require_coe_melt_swe_closure("2020-01-01", 1.1e-9)
+            .expect_err("material daily SWE residual must fail closed");
+        assert!(matches!(error, SnowbenchError::SnowStorageClosure { .. }));
+        require_coe_melt_swe_closure("2020-01-01", -1.0e-9)
+            .expect("residual at the canonical tolerance is accepted");
+        assert!(matches!(
+            require_coe_melt_swe_closure("2020-01-01", f64::NAN),
+            Err(SnowbenchError::SnowStorageClosure { .. })
+        ));
     }
 }

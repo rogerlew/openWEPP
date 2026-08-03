@@ -27,7 +27,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_stage_b_unlock_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 121",
+        "contract_version: 122",
         "REF-SNOWFREEZE-SNOWDENSITY1020",
         "REF-SNOWFREEZE-LIBSNOBAL-CC0",
         "INV-SNOWFREEZE-076",

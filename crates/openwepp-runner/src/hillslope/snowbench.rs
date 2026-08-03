@@ -12,7 +12,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
 };
 use openwepp_hillslope_orchestrator::{
     DirectExecutorMode, DirectFrameExecutor, DirectPublicationRunMetadata, DirectRuntimeError,
-    DirectWinterHourlyContext,
+    DirectWinterHourlyContext, Wb11HydrologyKernelGuardError,
 };
 use openwepp_input_contract::parsers::climate::ClimateDailyRecord;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
@@ -123,6 +123,14 @@ pub enum SnowbenchError {
     OpenweppSnow {
         detail: String,
     },
+    SnowKernel {
+        source: Wb11HydrologyKernelGuardError,
+    },
+    SnowStorageClosure {
+        date: String,
+        residual_m: f64,
+        tolerance_m: f64,
+    },
 }
 
 impl SnowbenchError {
@@ -163,6 +171,17 @@ impl fmt::Display for SnowbenchError {
                     "SNOWBENCH-E-007 openWEPP snow diagnostic error: {detail}"
                 )
             }
+            Self::SnowKernel { source } => {
+                write!(f, "SNOWBENCH-E-008 snow kernel error: {source}")
+            }
+            Self::SnowStorageClosure {
+                date,
+                residual_m,
+                tolerance_m,
+            } => write!(
+                f,
+                "SNOWBENCH-E-009 daily SWE closure failed for {date}: residual={residual_m:.12e} m, tolerance={tolerance_m:.1e} m"
+            ),
         }
     }
 }
@@ -173,10 +192,12 @@ impl Error for SnowbenchError {
             Self::Io { source, .. } => Some(source),
             Self::Json { source, .. } => Some(source),
             Self::Runner { source } => Some(source),
+            Self::SnowKernel { source } => Some(source),
             Self::ClimateRuntime { .. }
             | Self::InvalidInput { .. }
             | Self::InvalidForcing { .. }
-            | Self::OpenweppSnow { .. } => None,
+            | Self::OpenweppSnow { .. }
+            | Self::SnowStorageClosure { .. } => None,
         }
     }
 }
