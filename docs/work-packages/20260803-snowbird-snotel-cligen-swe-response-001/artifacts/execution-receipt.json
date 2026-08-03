@@ -1,0 +1,270 @@
+{
+  "executed": {
+    "cligen_control": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/fixtures/cligen_control/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/cligen_control/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/cligen_control/snotel_snowbird_ut/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/cligen_control/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "removed_openwepp_keys": [],
+      "returncode": 0,
+      "trace_sha256": "7515d37ec0f35a82d4056cf6ca934c02fe89b26190e6a5f604a8492e442f0168",
+      "wat_sha256": "41db2b2b174c29889f742bdefa947c022cbab3d9abeda8d6c2ea3460bc9b978b"
+    },
+    "original_fixture": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/fixtures/original_fixture/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/original_fixture/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/original_fixture/snotel_snowbird_ut/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/original_fixture/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "removed_openwepp_keys": [],
+      "returncode": 0,
+      "trace_sha256": "359ca4fe3b0d2253a9b30e6de5f8003cec69f42344930675252ef94f61f1db53",
+      "wat_sha256": "77dab7dc4a98b65fc1b1d588cbd327f24b7f176c93c5548a29b1cb8cf1579415"
+    },
+    "snotel_p": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/fixtures/snotel_p/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_p/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_p/snotel_snowbird_ut/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_p/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "removed_openwepp_keys": [],
+      "returncode": 0,
+      "trace_sha256": "5ff0ad8bc3fbf05eb6644e3e63da7db5464d85a10ac4c858256565e4c33d8461",
+      "wat_sha256": "42798772665f12c1c4878cd474b963df25f8fc945508c883ac9ac8473dad8f5b"
+    },
+    "snotel_pt": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/fixtures/snotel_pt/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_pt/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_pt/snotel_snowbird_ut/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_pt/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "removed_openwepp_keys": [],
+      "returncode": 0,
+      "trace_sha256": "602a4e134d40cb05544fb023fff52efb808e72b9951c0d4731f9d51d0f5634c8",
+      "wat_sha256": "6c2146beb5d625131043472f0f3807d18a16c0ececc77e450721c979afcdcbc3"
+    },
+    "snotel_t": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/fixtures/snotel_t/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_t/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_t/snotel_snowbird_ut/B",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_snotel_cligen_swe_response/runs/snotel_t/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "removed_openwepp_keys": [],
+      "returncode": 0,
+      "trace_sha256": "e938253bfbf1c51d317e8b89f35edd8625861da99e6a7f9b3a0962cff17fb97a",
+      "wat_sha256": "15bf55a67a7483e7ba8a84760905b1c0829fe84a36adb969faa7a54570e2781d"
+    }
+  },
+  "freeze_sha256": "dc11e7356b36b32afec86156227bb68785f5a0db70ecf751e4e8f0e53eb9e695",
+  "generated": {
+    "cligen_control": {
+      "cli_path": "target/snowbird_snotel_cligen_swe_response/generated/cligen_control.cli",
+      "cli_sha256": "4604b2a12a3c991477407e3ff397cb30c38240a4c0cb4ef4d8feaa7f2b8c0a78",
+      "prn": {
+        "path": "target/snowbird_snotel_cligen_swe_response/generated/cligen_control.prn",
+        "precipitation_substitutions": 0,
+        "rows": 12784,
+        "sha256": "297d0d6e07f15525d2a8450d1da292b01bac4c27c1217c1ca8ab0053e3d582da",
+        "temperature_substitutions": 0
+      },
+      "quality_sha256": "7adcf953ea936c40c87c3004e25c401dc9a2a59eda853bdb22dabbd88609337b",
+      "runspec_sha256": "72c772442614b5a867f3229caf93ab229121d1b0045e585da13168ed38a24820"
+    },
+    "original_fixture": {
+      "cli_path": "target/snowbird_snotel_cligen_swe_response/generated/original_fixture.cli",
+      "cli_sha256": "5370f236246c6c4878d82507e8f249feb703ddd1aafb2423488586bf1b0b6118",
+      "prn": null
+    },
+    "snotel_p": {
+      "cli_path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_p.cli",
+      "cli_sha256": "c0a2f385089ebe35556d001a05c29a0d80fc5ccbbb8bd47ba9167d037f5fc8ac",
+      "effective_prn_changed_columns": [
+        0,
+        0,
+        0,
+        2672,
+        0,
+        0
+      ],
+      "prn": {
+        "path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_p.prn",
+        "precipitation_substitutions": 5164,
+        "rows": 12784,
+        "sha256": "5bcb0b5e27a415e49686a955dcbb63572d7c6a6264880022eee3f7bf4e84ac0f",
+        "temperature_substitutions": 0
+      },
+      "quality_sha256": "cc1276ca913d2b65df21844630e9d5d52109ca44693e54e3d65d87f3ed020022",
+      "realized_cli_changed_columns": [
+        0,
+        0,
+        0,
+        2672,
+        4568,
+        4334,
+        2336,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "runspec_sha256": "49d7d5bbcb7eb33538b0c8107ca27262222501577996ad2eb093067724b1a790"
+    },
+    "snotel_pt": {
+      "cli_path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_pt.cli",
+      "cli_sha256": "6af7cd9e549d133cb56f16050223f8350f1d57369986b2782dadf4190ad8db21",
+      "effective_prn_changed_columns": [
+        0,
+        0,
+        0,
+        2672,
+        7483,
+        6310
+      ],
+      "prn": {
+        "path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_pt.prn",
+        "precipitation_substitutions": 5164,
+        "rows": 12784,
+        "sha256": "f655e16faeacd31f5987a54006619dbbec591462173f5d125d131d8248608023",
+        "temperature_substitutions": 8103
+      },
+      "quality_sha256": "3218dab3090f99688360e9d29f9c66fa0447d5df1bbf376234552cda188920ec",
+      "realized_cli_changed_columns": [
+        0,
+        0,
+        0,
+        2672,
+        4568,
+        4334,
+        2349,
+        7483,
+        6310,
+        0,
+        0,
+        0,
+        6818
+      ],
+      "runspec_sha256": "e9ac90fa38c11537e3535661429d3f04ff6463251339bf80278ef6dd8d0bef03"
+    },
+    "snotel_t": {
+      "cli_path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_t.cli",
+      "cli_sha256": "a1844444832a8afeba08a28b8fad8e22be1dc279610bfe281a97917d01183e04",
+      "effective_prn_changed_columns": [
+        0,
+        0,
+        0,
+        0,
+        7483,
+        6310
+      ],
+      "prn": {
+        "path": "target/snowbird_snotel_cligen_swe_response/generated/snotel_t.prn",
+        "precipitation_substitutions": 0,
+        "rows": 12784,
+        "sha256": "fb4e27238ecb04a1d9cd981977ecb578fdb3ec07ed41b350ddfb218f4fbe3f63",
+        "temperature_substitutions": 8103
+      },
+      "quality_sha256": "1c796d782990632f044a6473c40946c27de6b9c71bf449d9008ef7173ac2828e",
+      "realized_cli_changed_columns": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        129,
+        7483,
+        6310,
+        0,
+        0,
+        0,
+        6818
+      ],
+      "runspec_sha256": "ad936289b6a0465b0df0004475e96eb7decce1306990935baf563635c65a6ce4"
+    }
+  },
+  "schema_version": 2,
+  "tool_chain_hashes": {
+    "docs/work-packages/20260801-snow-surface-eb-04r-fresh-factorial-execution-adjudication-001/tools/run_experiment.py": "c4c2f07f3e1ce0d5a629e9f9413233f7768904e1ebc591404cd5b0ac8fb1be2b",
+    "docs/work-packages/20260801-snow-surface-eb-04w-accumulation-under-persistence-001/tools/run_accumulation_diagnostics.py": "22c7e53f29d6bc0350cff946e112839a5582389d2a5c85d919228951285437c3",
+    "docs/work-packages/20260802-snow-surface-eb-04w1-precipitation-scaling-calibration-001/tools/run_precipitation_scaling.py": "5926c5ea8383bd9ff57fb03945f4cba71b76f8fbc11cbe7cfaa7dbdc02780346",
+    "docs/work-packages/20260803-snowbird-snotel-cligen-swe-response-001/tools/run_experiment.py": "43513f984f26e380361207481408ef9d64411c718c90d48e2da1da96c1b46cdb"
+  }
+}

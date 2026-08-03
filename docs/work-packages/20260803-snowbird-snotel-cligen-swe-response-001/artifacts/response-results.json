@@ -1,0 +1,57 @@
+{
+  "freeze_sha256": "dc11e7356b36b32afec86156227bb68785f5a0db70ecf751e4e8f0e53eb9e695",
+  "receipt_sha256": "3d0cb61de17d97633d3a2ba1faa1339851e9b592396a5ce5f64bed3493f6c498",
+  "schema_version": 1,
+  "variants": {
+    "cligen_control": {
+      "maximum_closure_m": 5.551115123125783e-16,
+      "median_effective_input_ratio": 0.6470400213290584,
+      "median_meltout_offset_days": -27.0,
+      "median_peak_date_offset_days": -50.0,
+      "median_peak_swe_ratio": 0.3133699057354372,
+      "median_prepeak_coe_melt_m": 0.4521147448623211,
+      "median_prepeak_loss_m": 0.5152761591635742,
+      "median_storage_ratio": 0.10156543285582981
+    },
+    "original_fixture": {
+      "maximum_closure_m": 1.2212453270876722e-15,
+      "median_effective_input_ratio": 0.6969282699678451,
+      "median_meltout_offset_days": -20.0,
+      "median_peak_date_offset_days": -44.5,
+      "median_peak_swe_ratio": 0.3899826506038172,
+      "median_prepeak_coe_melt_m": 0.3619182077587946,
+      "median_prepeak_loss_m": 0.4590067651215318,
+      "median_storage_ratio": 0.21051355860535897
+    },
+    "snotel_p": {
+      "maximum_closure_m": 4.440892098500626e-16,
+      "median_effective_input_ratio": 0.6673426766587767,
+      "median_meltout_offset_days": -27.5,
+      "median_peak_date_offset_days": -50.0,
+      "median_peak_swe_ratio": 0.32421133112211686,
+      "median_prepeak_coe_melt_m": 0.4594446932335516,
+      "median_prepeak_loss_m": 0.538583665811668,
+      "median_storage_ratio": 0.09934259499153003
+    },
+    "snotel_pt": {
+      "maximum_closure_m": 7.771561172376096e-16,
+      "median_effective_input_ratio": 0.6986892204622369,
+      "median_meltout_offset_days": -22.0,
+      "median_peak_date_offset_days": -45.0,
+      "median_peak_swe_ratio": 0.3602234530987673,
+      "median_prepeak_coe_melt_m": 0.4907357354840811,
+      "median_prepeak_loss_m": 0.5272100743930883,
+      "median_storage_ratio": 0.1617899833621091
+    },
+    "snotel_t": {
+      "maximum_closure_m": 6.106226635438361e-16,
+      "median_effective_input_ratio": 0.6762988460799955,
+      "median_meltout_offset_days": -25.5,
+      "median_peak_date_offset_days": -45.0,
+      "median_peak_swe_ratio": 0.3301880785306845,
+      "median_prepeak_coe_melt_m": 0.4677200759134187,
+      "median_prepeak_loss_m": 0.5154786281591337,
+      "median_storage_ratio": 0.16860058266760403
+    }
+  }
+}

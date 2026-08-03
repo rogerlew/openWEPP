@@ -11,6 +11,14 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snowbird-snotel-cligen-swe-response-001/` — COMPLETE / MEDIATED
+  RESPONSE IMPROVES BUT REMAINS INSUFFICIENT / NO CORRECTION: controlled original,
+  CLIGEN-control, SNOTEL-P, SNOTEL-T, and
+  SNOTEL-P+T Snowbird experiment. Joint substitution improves the like-for-like
+  CLIGEN result but does not resolve low peak SWE or early melt; the generator
+  control effect is itself material. Terminal-v2 dual review and verification
+  pass after rejecting the incomplete initial evidence.
+
 - `20260803-snowbird-snotel-climate-forcing-diagnostic-001/` — COMPLETE /
   BOUNDED DRY-FORCING EVIDENCE / NO CORRECTION: compares the `barred-pro` Snowbird climate fixture
   with colocated NRCS SNOTEL precipitation and temperature. Guarded common-day
