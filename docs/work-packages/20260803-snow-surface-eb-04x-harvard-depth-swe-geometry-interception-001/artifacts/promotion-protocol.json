@@ -1,0 +1,28 @@
+{
+  "schema": "snow-surface-eb04x-promotion-protocol-v1",
+  "status": "frozen_before_terminal_v2_results",
+  "observation_geometry_admission": {
+    "formula": "abs(supplied_density_kg_m3 - observed_swe_mm / observed_depth_m) <= 1 kg m^-3",
+    "requirement": "every complete nonzero open and hardwood row closes"
+  },
+  "longwave": {
+    "admission": "observation geometry admitted and B/L full-duration paired",
+    "hardwood_efficacy": "L hardwood mean absolute observed depth error < B hardwood",
+    "open_noninferiority": "L open mean absolute observed depth error <= B open",
+    "result": "PASS only when all predicates hold; otherwise FAIL; failed admission is NOT_EVALUABLE"
+  },
+  "sublimation": {
+    "admission": "observation geometry admitted and B/S full-duration paired",
+    "hardwood_efficacy": "S hardwood mean absolute observed depth error < B hardwood",
+    "open_noninferiority": "S open mean absolute observed depth error <= B open",
+    "closure": "maximum latent identity residual <= 1e-6 J m^-2 and mass residual <= 1e-12 m",
+    "result": "PASS only when all predicates hold; otherwise FAIL; failed admission is NOT_EVALUABLE"
+  },
+  "combined_interaction": {
+    "admission": "observation geometry admitted; all four models full-duration paired; longwave and sublimation PASS",
+    "noncompensation": "LS hardwood mean absolute observed depth error <= min(L hardwood, S hardwood) and LS open <= B open",
+    "result": "PASS only when all predicates hold; otherwise FAIL; failed admission is NOT_EVALUABLE"
+  },
+  "promotion_authorized": false,
+  "note": "These are diagnostic admission screens only; a PASS would still require a separately authorized promotion package."
+}

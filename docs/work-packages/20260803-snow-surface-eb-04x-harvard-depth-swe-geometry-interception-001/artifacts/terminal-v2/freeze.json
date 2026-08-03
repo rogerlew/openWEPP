@@ -1,0 +1,24 @@
+{
+  "inputs": {
+    "docs/work-packages/20260730-snow-surface-eb-04-factorial-execution-adjudication-001/artifacts/factorial-results.json": "56f38bb6696b682f77d47c492759417d8e28975c45497d9280a566fedc6831d2",
+    "docs/work-packages/20260803-snow-surface-eb-04x-harvard-depth-swe-geometry-interception-001/artifacts/promotion-protocol.json": "8bdaa35eb93a295eafa6b0fb359090acf31999d68c08c0e82b585f960553d4d0",
+    "docs/work-packages/20260803-snow-surface-eb-04x-harvard-depth-swe-geometry-interception-001/tools/analyze_harvard_pair.py": "cd7456594983238eae5351b6556391df7f30ecf9fc1288c54572a38606970bc9",
+    "docs/work-packages/20260803-snow-surface-eb-04x-harvard-depth-swe-geometry-interception-001/tools/analyze_harvard_pair_v2.py": "c082f6571b995d74043340bd12dcb7be33c98ec804c959efcf3041715a495f9b",
+    "target/snow_surface_eb04_factorial/runs/harvard_hardwood/B/harvard_hardwood-B.snow.jsonl": "f100e6542d90f3f523f483a46350926b0ba9dbbc6def2d6f8e898132ecf1a6b7",
+    "target/snow_surface_eb04_factorial/runs/harvard_hardwood/L/harvard_hardwood-L.snow.jsonl": "fa1a24d57c2f5baffbce07c9cea03182a312c9f897f61444be711a6ab91e636e",
+    "target/snow_surface_eb04_factorial/runs/harvard_hardwood/LS/harvard_hardwood-LS.snow.jsonl": "af828d03d2da5ae51eb5e21f62af095e9c6d4a2287306d8952f0a3534efbb421",
+    "target/snow_surface_eb04_factorial/runs/harvard_hardwood/S/harvard_hardwood-S.snow.jsonl": "4d985eb8fdc5be2fe15266f13dde0a99f100f96da813eba2b33171414e786e1d",
+    "target/snow_surface_eb04_factorial/runs/harvard_open/B/harvard_open-B.snow.jsonl": "3d6965b0433c09038498b2fdd69bb1555434932f7150f0b0dbb9702fa9b5637d",
+    "target/snow_surface_eb04_factorial/runs/harvard_open/L/harvard_open-L.snow.jsonl": "acd016f166dbccaf66dd6c093c1bd5333b17c1e54767edd6dc7cc433a7029703",
+    "target/snow_surface_eb04_factorial/runs/harvard_open/LS/harvard_open-LS.snow.jsonl": "b2cdd4ad1371d4a41e8f2a0a844a9020d644365f38386653a47070d9e255097a",
+    "target/snow_surface_eb04_factorial/runs/harvard_open/S/harvard_open-S.snow.jsonl": "53d1a2eefc6511186c72a98b9b342b3e78d5026e516a5c0adf01c9c4efa0da1c",
+    "tests/fixtures/cancov_forest/observations/profiles/harvard_hf237_density_profiles.csv": "ba98edb548736037b7f010fd37a35419e6cf5b810748b60676c1c9aa50814892",
+    "tests/fixtures/cancov_forest/observations/provenance/harvard_hf237.json": "b7a4be2c161c6f5aa076d3d3cb225fdb339f364e563c46673b0036fb35258a5c",
+    "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea"
+  },
+  "model_execution_authorized": false,
+  "pairing_rule": "unique monotonic zero-based day_index; common contiguous prefix",
+  "protocol_sha256": "8bdaa35eb93a295eafa6b0fb359090acf31999d68c08c0e82b585f960553d4d0",
+  "schema": "snow-surface-eb04x-terminal-v2-freeze-v1",
+  "source_head": "9fc9745baf9b21fead8b8bb47b8e36ee09b4be5f"
+}

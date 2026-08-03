@@ -1,0 +1,311 @@
+{
+  "canopy_snow_operands_available": false,
+  "conclusion": "no component promotion; canopy snow interception remains unidentifiable",
+  "modeled_geometry_valid": true,
+  "observed_geometry": {
+    "hardwood": {
+      "closing_row_count": 0,
+      "complete_nonzero_row_count": 410,
+      "maximum_abs_density_residual_kg_m3": 4296.727272727273,
+      "median_abs_density_residual_kg_m3": 3095.393939393939,
+      "nonclosing_row_count": 410
+    },
+    "open": {
+      "closing_row_count": 0,
+      "complete_nonzero_row_count": 336,
+      "maximum_abs_density_residual_kg_m3": 5417.0,
+      "median_abs_density_residual_kg_m3": 2977.6923076923076,
+      "nonclosing_row_count": 336
+    }
+  },
+  "observed_geometry_valid": false,
+  "paired_state_extrema": [
+    [
+      "B",
+      "swe_m",
+      "minimum",
+      831,
+      -0.22869312473996417
+    ],
+    [
+      "B",
+      "swe_m",
+      "maximum",
+      9552,
+      0.039814541524366975
+    ],
+    [
+      "B",
+      "depth_m",
+      "minimum",
+      830,
+      -0.5325315129725672
+    ],
+    [
+      "B",
+      "depth_m",
+      "maximum",
+      2209,
+      0.26800535556748406
+    ],
+    [
+      "B",
+      "density_kg_m3",
+      "minimum",
+      17,
+      -522.0
+    ],
+    [
+      "B",
+      "density_kg_m3",
+      "maximum",
+      336,
+      522.0
+    ],
+    [
+      "L",
+      "swe_m",
+      "minimum",
+      831,
+      -0.22869312473996417
+    ],
+    [
+      "L",
+      "swe_m",
+      "maximum",
+      9552,
+      0.039814541524366975
+    ],
+    [
+      "L",
+      "depth_m",
+      "minimum",
+      830,
+      -0.5325315129725672
+    ],
+    [
+      "L",
+      "depth_m",
+      "maximum",
+      2209,
+      0.26800535556748406
+    ],
+    [
+      "L",
+      "density_kg_m3",
+      "minimum",
+      17,
+      -522.0
+    ],
+    [
+      "L",
+      "density_kg_m3",
+      "maximum",
+      336,
+      522.0
+    ],
+    [
+      "S",
+      "swe_m",
+      "minimum",
+      66,
+      -0.00780564370743296
+    ],
+    [
+      "S",
+      "swe_m",
+      "maximum",
+      69,
+      0.00047361649057863983
+    ],
+    [
+      "S",
+      "depth_m",
+      "minimum",
+      65,
+      -0.01938973685317226
+    ],
+    [
+      "S",
+      "depth_m",
+      "maximum",
+      69,
+      0.059391504435641285
+    ],
+    [
+      "S",
+      "density_kg_m3",
+      "minimum",
+      17,
+      -522.0
+    ],
+    [
+      "S",
+      "density_kg_m3",
+      "maximum",
+      14,
+      5.5706550483591855e-12
+    ],
+    [
+      "LS",
+      "swe_m",
+      "minimum",
+      0,
+      0.0
+    ],
+    [
+      "LS",
+      "swe_m",
+      "maximum",
+      13,
+      0.0011375362706801898
+    ],
+    [
+      "LS",
+      "depth_m",
+      "minimum",
+      0,
+      0.0
+    ],
+    [
+      "LS",
+      "depth_m",
+      "maximum",
+      28,
+      0.00726165544351951
+    ],
+    [
+      "LS",
+      "density_kg_m3",
+      "minimum",
+      21,
+      -0.7316018739045802
+    ],
+    [
+      "LS",
+      "density_kg_m3",
+      "maximum",
+      14,
+      7.73070496506989e-12
+    ]
+  ],
+  "pairing": {
+    "B": {
+      "common_days_are_contiguous_prefix": true,
+      "full_duration_paired": true,
+      "hardwood_row_count": 16437,
+      "open_row_count": 16437,
+      "paired_day_count": 16437
+    },
+    "L": {
+      "common_days_are_contiguous_prefix": true,
+      "full_duration_paired": true,
+      "hardwood_row_count": 16437,
+      "open_row_count": 16437,
+      "paired_day_count": 16437
+    },
+    "LS": {
+      "common_days_are_contiguous_prefix": true,
+      "full_duration_paired": false,
+      "hardwood_row_count": 33,
+      "open_row_count": 29,
+      "paired_day_count": 29
+    },
+    "S": {
+      "common_days_are_contiguous_prefix": true,
+      "full_duration_paired": false,
+      "hardwood_row_count": 75,
+      "open_row_count": 2643,
+      "paired_day_count": 75
+    }
+  },
+  "phase_identity": {
+    "B": {
+      "equal_accumulation_day_count": 14686,
+      "equal_phase_model_day_count": 16437,
+      "equal_precipitation_day_count": 16074,
+      "equal_precipitation_different_accumulation_day_count": 1606,
+      "paired_day_count": 16437
+    },
+    "L": {
+      "equal_accumulation_day_count": 14686,
+      "equal_phase_model_day_count": 16437,
+      "equal_precipitation_day_count": 16074,
+      "equal_precipitation_different_accumulation_day_count": null,
+      "paired_day_count": 16437
+    },
+    "LS": {
+      "equal_accumulation_day_count": 27,
+      "equal_phase_model_day_count": 29,
+      "equal_precipitation_day_count": 29,
+      "equal_precipitation_different_accumulation_day_count": 2,
+      "paired_day_count": 29
+    },
+    "S": {
+      "equal_accumulation_day_count": 63,
+      "equal_phase_model_day_count": 75,
+      "equal_precipitation_day_count": 74,
+      "equal_precipitation_different_accumulation_day_count": null,
+      "paired_day_count": 75
+    }
+  },
+  "profile_date_group_count": 65,
+  "profile_row_count": 260,
+  "promotion_screens": {
+    "combined_interaction": {
+      "reason": "HF237 supplied SWE geometry is not admitted",
+      "status": "NOT_EVALUABLE"
+    },
+    "longwave": {
+      "reason": "HF237 supplied SWE geometry is not admitted",
+      "status": "NOT_EVALUABLE"
+    },
+    "sublimation": {
+      "reason": "HF237 supplied SWE geometry is not admitted",
+      "status": "NOT_EVALUABLE"
+    }
+  },
+  "schema": "snow-surface-eb04x-terminal-v2-results-v1",
+  "trajectory_metrics": {
+    "harvard_hardwood/B": {
+      "mean_abs_density_error_kg_m3": 116.85772817816124,
+      "mean_abs_depth_error_m": 0.16114035568779436,
+      "paired_observation_count": 20,
+      "status": "AVAILABLE"
+    },
+    "harvard_hardwood/L": {
+      "mean_abs_density_error_kg_m3": 116.85772817816124,
+      "mean_abs_depth_error_m": 0.16114035568779436,
+      "paired_observation_count": 20,
+      "status": "AVAILABLE"
+    },
+    "harvard_hardwood/LS": {
+      "paired_observation_count": 0,
+      "status": "UNAVAILABLE_INCOMPLETE_CELL"
+    },
+    "harvard_hardwood/S": {
+      "paired_observation_count": 0,
+      "status": "UNAVAILABLE_INCOMPLETE_CELL"
+    },
+    "harvard_open/B": {
+      "mean_abs_density_error_kg_m3": 126.28448820023581,
+      "mean_abs_depth_error_m": 0.11444630023653576,
+      "paired_observation_count": 20,
+      "status": "AVAILABLE"
+    },
+    "harvard_open/L": {
+      "mean_abs_density_error_kg_m3": 126.28448820023581,
+      "mean_abs_depth_error_m": 0.11444630023653576,
+      "paired_observation_count": 20,
+      "status": "AVAILABLE"
+    },
+    "harvard_open/LS": {
+      "paired_observation_count": 0,
+      "status": "UNAVAILABLE_INCOMPLETE_CELL"
+    },
+    "harvard_open/S": {
+      "paired_observation_count": 0,
+      "status": "UNAVAILABLE_INCOMPLETE_CELL"
+    }
+  }
+}

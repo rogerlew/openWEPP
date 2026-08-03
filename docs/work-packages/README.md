@@ -5077,6 +5077,16 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260803-snow-surface-eb-04x-harvard-depth-swe-geometry-interception-001/` —
+  COMPLETE / TECHNICAL, REVIEW, AND VERIFICATION PASS / NO PROMOTION: all eight retained
+  Harvard model traces close SWE-depth-density geometry, while all 746 complete
+  nonzero HF237 open/hardwood rows fail the supplied SWE identity. B/L have full
+  paired duration; S/LS are common-prefix only. No canopy load, intercepted
+  snowfall, canopy sublimation, unloading, or drip operand exists, so longwave,
+  sublimation, and combined promotion screens are `NOT_EVALUABLE`. Terminal-v2
+  adds profile/trajectory evidence, 16,466 daily B/LS phase-input rows, guarded
+  contiguous pairing, and true same-day extrema. Dual review and verification
+  pass; no model/default change.
 - `20260802-snow-surface-eb-04w2c-corrected-winter-erosion-continuity-001/` —
   COMPLETE / TECHNICAL, REVIEW, AND VERIFICATION PASS: reproduced and
   partitioned the corrected `61/231` EROD16 refusals. `SC-SED-001` revisions 56–60

@@ -1,0 +1,239 @@
+{
+  "canopy_snow_state_available": false,
+  "conclusion": "model geometry closes, HF237 SWE identity does not; paired residuals cannot identify canopy interception and no component is promotable",
+  "freeze_sha256": "fac0554ee19eaa1c35f8453ff0d29cd00ae36f5be6cd7028149c01d4581e43ce",
+  "hardwood_minus_open": {
+    "B": {
+      "peak_depth_m": 0.02010647884692074,
+      "peak_swe_m": 0.010019739956565687,
+      "total_ground_snow_accumulation_m": 0.1497647801465014,
+      "total_hyetograph_precipitation_m": -0.031299999999994554,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": 0.19136658711241772,
+      "total_sublimation_m": 0.0
+    },
+    "L": {
+      "peak_depth_m": 0.02010647884692074,
+      "peak_swe_m": 0.010019739956565687,
+      "total_ground_snow_accumulation_m": 0.1497647801465014,
+      "total_hyetograph_precipitation_m": -0.031299999999994554,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": -4330069750.637779,
+      "total_snowpack_swe_loss_m": 0.19136658711241772,
+      "total_sublimation_m": 0.0
+    },
+    "LS": {
+      "peak_depth_m": 0.0013559269931914184,
+      "peak_swe_m": 0.0007077938904459288,
+      "total_ground_snow_accumulation_m": 0.0003781452344717405,
+      "total_hyetograph_precipitation_m": 0.0,
+      "total_latent_energy_j_m2": 5136527.396767406,
+      "total_longwave_energy_j_m2": -8997313.29001661,
+      "total_snowpack_swe_loss_m": 0.0013001409876575408,
+      "total_sublimation_m": -0.0018154632225330799
+    },
+    "S": {
+      "peak_depth_m": 0.05202865785549013,
+      "peak_swe_m": 2.8003298330289694e-05,
+      "total_ground_snow_accumulation_m": 0.0027102787192194028,
+      "total_hyetograph_precipitation_m": -0.00010000000000001674,
+      "total_latent_energy_j_m2": -16280353.990673892,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": -0.002971998354828878,
+      "total_sublimation_m": 0.005707487465998782
+    }
+  },
+  "interception_operands": {
+    "canopy_snow_load": "NOT_OBSERVED",
+    "canopy_snow_sublimation": "NOT_OBSERVED",
+    "drip": "NOT_OBSERVED",
+    "intercepted_snow": "NOT_OBSERVED",
+    "unloading": "NOT_OBSERVED"
+  },
+  "modeled_geometry_valid": true,
+  "observed_geometry": {
+    "hardwood": {
+      "closing_row_count": 0,
+      "complete_nonzero_row_count": 410,
+      "maximum_abs_density_residual_kg_m3": 4296.727272727273,
+      "median_abs_density_residual_kg_m3": 3095.393939393939,
+      "nonclosing_row_count": 410
+    },
+    "open": {
+      "closing_row_count": 0,
+      "complete_nonzero_row_count": 336,
+      "maximum_abs_density_residual_kg_m3": 5417.0,
+      "median_abs_density_residual_kg_m3": 2977.6923076923076,
+      "nonclosing_row_count": 336
+    }
+  },
+  "observed_geometry_valid": false,
+  "paired_inventory": {
+    "B": {
+      "hardwood_row_count": 16437,
+      "hardwood_unpaired_day_count": 0,
+      "open_row_count": 16437,
+      "open_unpaired_day_count": 0,
+      "paired_day_count": 16437
+    },
+    "L": {
+      "hardwood_row_count": 16437,
+      "hardwood_unpaired_day_count": 0,
+      "open_row_count": 16437,
+      "open_unpaired_day_count": 0,
+      "paired_day_count": 16437
+    },
+    "LS": {
+      "hardwood_row_count": 33,
+      "hardwood_unpaired_day_count": 4,
+      "open_row_count": 29,
+      "open_unpaired_day_count": 0,
+      "paired_day_count": 29
+    },
+    "S": {
+      "hardwood_row_count": 75,
+      "hardwood_unpaired_day_count": 0,
+      "open_row_count": 2643,
+      "open_unpaired_day_count": 2568,
+      "paired_day_count": 75
+    }
+  },
+  "promotion_gates": {
+    "combined_interaction": {
+      "reason": "HF237 supplied SWE, depth, and density do not close algebraically",
+      "status": "NOT_EVALUABLE"
+    },
+    "longwave": {
+      "reason": "HF237 supplied SWE, depth, and density do not close algebraically",
+      "status": "NOT_EVALUABLE"
+    },
+    "sublimation": {
+      "reason": "HF237 supplied SWE, depth, and density do not close algebraically",
+      "status": "NOT_EVALUABLE"
+    }
+  },
+  "schema": "snow-surface-eb04x-results-v1",
+  "trace_summaries": {
+    "harvard_hardwood/B": {
+      "maximum_abs_energy_residual_j_m2": 1.472653821e-08,
+      "maximum_abs_geometry_residual_kg_m3": 3.077502697124146e-10,
+      "maximum_abs_latent_identity_residual_j_m2": 0.0,
+      "maximum_abs_mass_residual_m": 1.1102230246251565e-16,
+      "peak_depth_m": 1.5626982593007077,
+      "peak_swe_m": 0.41692186585763574,
+      "row_count": 16437,
+      "total_ground_snow_accumulation_m": 14.724206057419032,
+      "total_hyetograph_precipitation_m": 60.9177,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": 14.932109718167823,
+      "total_sublimation_m": 0.0
+    },
+    "harvard_hardwood/L": {
+      "maximum_abs_energy_residual_j_m2": 3.2901880331e-07,
+      "maximum_abs_geometry_residual_kg_m3": 3.077502697124146e-10,
+      "maximum_abs_latent_identity_residual_j_m2": 0.0,
+      "maximum_abs_mass_residual_m": 1.1102230246251565e-16,
+      "peak_depth_m": 1.5626982593007077,
+      "peak_swe_m": 0.41692186585763574,
+      "row_count": 16437,
+      "total_ground_snow_accumulation_m": 14.724206057419032,
+      "total_hyetograph_precipitation_m": 60.9177,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": -5629502909.957208,
+      "total_snowpack_swe_loss_m": 14.932109718167823,
+      "total_sublimation_m": 0.0
+    },
+    "harvard_hardwood/LS": {
+      "maximum_abs_energy_residual_j_m2": 7.7852746e-10,
+      "maximum_abs_geometry_residual_kg_m3": 5.5706550483591855e-12,
+      "maximum_abs_latent_identity_residual_j_m2": 1.25695e-11,
+      "maximum_abs_mass_residual_m": 6.938893903907228e-17,
+      "peak_depth_m": 0.02763664078364922,
+      "peak_swe_m": 0.0144263264890649,
+      "row_count": 33,
+      "total_ground_snow_accumulation_m": 0.01753515297896389,
+      "total_hyetograph_precipitation_m": 0.02819999999999999,
+      "total_latent_energy_j_m2": -11215525.241510278,
+      "total_longwave_energy_j_m2": -18518749.94538474,
+      "total_snowpack_swe_loss_m": 0.01343553306080144,
+      "total_sublimation_m": 0.00392936504361744
+    },
+    "harvard_hardwood/S": {
+      "maximum_abs_energy_residual_j_m2": 2.980232239e-08,
+      "maximum_abs_geometry_residual_kg_m3": 8.753886504564434e-12,
+      "maximum_abs_latent_identity_residual_j_m2": 1.0345502e-10,
+      "maximum_abs_mass_residual_m": 7.979727989493313e-17,
+      "peak_depth_m": 0.269226815714549,
+      "peak_swe_m": 0.0427807298620303,
+      "row_count": 75,
+      "total_ground_snow_accumulation_m": 0.107730190388683,
+      "total_hyetograph_precipitation_m": 0.13449999999999998,
+      "total_latent_energy_j_m2": -72407253.12621754,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": 0.04074969310840431,
+      "total_sublimation_m": 0.025468698159406892
+    },
+    "harvard_open/B": {
+      "maximum_abs_energy_residual_j_m2": 3.952300176e-08,
+      "maximum_abs_geometry_residual_kg_m3": 5.4569682106375694e-12,
+      "maximum_abs_latent_identity_residual_j_m2": 0.0,
+      "maximum_abs_mass_residual_m": 1.1102230246251565e-16,
+      "peak_depth_m": 1.542591780453787,
+      "peak_swe_m": 0.40690212590107006,
+      "row_count": 16437,
+      "total_ground_snow_accumulation_m": 14.57444127727253,
+      "total_hyetograph_precipitation_m": 60.949,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": 14.740743131055405,
+      "total_sublimation_m": 0.0
+    },
+    "harvard_open/L": {
+      "maximum_abs_energy_residual_j_m2": 4.501780495e-07,
+      "maximum_abs_geometry_residual_kg_m3": 5.4569682106375694e-12,
+      "maximum_abs_latent_identity_residual_j_m2": 0.0,
+      "maximum_abs_mass_residual_m": 1.1102230246251565e-16,
+      "peak_depth_m": 1.542591780453787,
+      "peak_swe_m": 0.40690212590107006,
+      "row_count": 16437,
+      "total_ground_snow_accumulation_m": 14.57444127727253,
+      "total_hyetograph_precipitation_m": 60.949,
+      "total_latent_energy_j_m2": 0.0,
+      "total_longwave_energy_j_m2": -1299433159.3194282,
+      "total_snowpack_swe_loss_m": 14.740743131055405,
+      "total_sublimation_m": 0.0
+    },
+    "harvard_open/LS": {
+      "maximum_abs_energy_residual_j_m2": 3.3469405e-10,
+      "maximum_abs_geometry_residual_kg_m3": 3.822719918389339e-12,
+      "maximum_abs_latent_identity_residual_j_m2": 7.639755e-11,
+      "maximum_abs_mass_residual_m": 8.933825901280557e-17,
+      "peak_depth_m": 0.0262807137904578,
+      "peak_swe_m": 0.01371853259861897,
+      "row_count": 29,
+      "total_ground_snow_accumulation_m": 0.01715700774449215,
+      "total_hyetograph_precipitation_m": 0.02819999999999999,
+      "total_latent_energy_j_m2": -13894792.708682911,
+      "total_longwave_energy_j_m2": -4650732.107781479,
+      "total_snowpack_swe_loss_m": 0.012135392073143899,
+      "total_sublimation_m": 0.00488800919152295
+    },
+    "harvard_open/S": {
+      "maximum_abs_energy_residual_j_m2": 1.41444616e-08,
+      "maximum_abs_geometry_residual_kg_m3": 5.843503458891064e-11,
+      "maximum_abs_latent_identity_residual_j_m2": 8.799361e-11,
+      "maximum_abs_mass_residual_m": 2.7755575615628914e-16,
+      "peak_depth_m": 1.519633335654814,
+      "peak_swe_m": 0.38713758340799553,
+      "row_count": 2643,
+      "total_ground_snow_accumulation_m": 2.5731878339291905,
+      "total_hyetograph_precipitation_m": 8.7814,
+      "total_latent_energy_j_m2": -142756289.32791564,
+      "total_longwave_energy_j_m2": 0.0,
+      "total_snowpack_swe_loss_m": 2.4053165138147707,
+      "total_sublimation_m": 0.050276082690901946
+    }
+  }
+}
