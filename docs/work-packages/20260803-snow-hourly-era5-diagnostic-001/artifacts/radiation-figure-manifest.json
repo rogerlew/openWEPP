@@ -1,0 +1,46 @@
+{
+  "comparison_manifest_sha256": "0b9a07bd0363faa2935f30e38f1785244f97ad902dc9f18f73651307a3d54ae3",
+  "figure_count": 4,
+  "files": [
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-horizontal-daily-bias.md",
+      "sha256": "c3a487d7371ea898ac083d5dd7474e661896c8f378b2b2755183693c421bd57c"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-horizontal-daily-bias.svg",
+      "sha256": "f4356c9c417d498f334dc8fa64690291b915f17bd227120ed30e620c1de5a9c8"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-hourly-shortwave-chronology.md",
+      "sha256": "2715fa7d9c33c0577d15eb808e4ab410e04441f1eab479f0af185deb247aad04"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-hourly-shortwave-chronology.svg",
+      "sha256": "99c5d3da85589c8bc71f79be0038ef420210784f1458d6abed28842b362f1223"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-longwave-diagnostic-bias.md",
+      "sha256": "ba0202d95f0c32ec7ef5c418b0400347fe87908abb24204fcd763bd35c299924"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-longwave-diagnostic-bias.svg",
+      "sha256": "0ba8c0be5dffb6c36a5950ed1f3df86252a378354cc3c11459b4f7702f453b21"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-winter-correlation-bias.md",
+      "sha256": "d2a808fffcf0b4e84b0492777f1705918dd9f3cf9f138c406db63a504b79f82b"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/figures/radiation-winter-correlation-bias.svg",
+      "sha256": "b347420c9239693ce64760a80abc02e66dd604fc29910563823c01eb75f18927"
+    },
+    {
+      "path": "/home/workdir/openWEPP/docs/work-packages/20260803-snow-hourly-era5-diagnostic-001/artifacts/radiation-figure-data.json",
+      "sha256": "f7d31d7ef1f63c7745d9457b6ab3e7689bd27fd9b73383b8da959b16fa765924"
+    }
+  ],
+  "radiation_results_sha256": "8e2168b68f7e3ae2abddaef6af7c0d7d1eb73c549d2c12d9fec4be7790035063",
+  "schema": "snow-hourly-era5-radiation-figure-manifest-v1",
+  "sidecar_count": 4,
+  "status": "FIGURES_COMPLETE"
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "snow-hourly-era5-cloud-proxy-comparison-v1",
+  "status": "operators frozen before execution; aggregation roles corrected after independent review",
+  "era_field": "ERA5 total_cloud_cover (tcc), instantaneous at valid_time",
+  "simimpl_proxy_inverse": "(downwelling_thermal_Wm-2 / (5.670374419e-8 * (temp_air_degC + 273.15)^4) - 0.72) / 0.28",
+  "time_basis": "fixed local standard time; no interval-start shift for instantaneous tcc",
+  "daily_requirements": "24 complete ERA5 hours and 24 complete comparator hours",
+  "primary_era_daily_operator": "24-hour arithmetic mean tcc; independent of realized shortwave",
+  "sensitivity_era_daily_operator": "valid-time-associated preceding-hour realized-ssrd-weighted tcc; outcome-dependent and mathematically coupled to the shortwave residual, never independent sanity evidence",
+  "ssrd_boundary_rule": "the realized-ssrd sensitivity groups weights on tcc valid-time date and requires every local-midnight preceding-hour ssrd value to be zero; the primary tcc lane has no radiation weighting",
+  "cloud_categories": {
+    "clear": "[0,0.25)",
+    "mixed": "[0.25,0.75)",
+    "overcast": "[0.75,1]"
+  },
+  "winter_event_rule": "complete November-March local-standard day with retained comparator precipitation > 0",
+  "residual_rule": "ERA minus retained proxy; shortwave residual is ERA horizontal daily energy minus retained .cli horizontal daily rad",
+  "claim_limit": "sanity/association only; no observation validation, causation, provider admission, or snow-model improvement"
+}

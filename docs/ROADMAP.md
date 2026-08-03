@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,7 +31,6 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `SNOW-HOURLY-ERA5-DIAGNOSTIC` historical hourly forcing attribution | Snow/frost science | `next; EB-04X complete without promotion` | Compare ERA5/ERA5-Land hourly downward shortwave and longwave, cloud diagnostics, dewpoint, wind, and elevation-reconciled temperature against the Daymet/gridMET-derived forcing at the retained calibration sites. Isolate radiation before temperature, preserve calibrated precipitation and observation roles, and treat ERA5 as an optional historical provider rather than required runtime data. Advancement to an input provider requires improved chronology without compensation or closure loss, explicit hourly units/time alignment and mountain-elevation treatment, and a separate stochastic-climate path calibrated to observations that reproduces the needed hourly joint structure when ERA5 is unavailable. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 

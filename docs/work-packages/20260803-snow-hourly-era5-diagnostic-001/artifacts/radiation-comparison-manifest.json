@@ -1,0 +1,31 @@
+{
+  "schema": "snow-hourly-era5-radiation-comparison-v1",
+  "status": "operators frozen before comparison execution; UTC/local-standard boundary intersection clarified after the first fail-closed alignment attempt; peak operator renamed from local-solar to fixed-local-standard after independent review found source-grid longitude corrections do not cancel",
+  "retained_shortwave_operator": "net_solar_Wm-2 / 0.80",
+  "retained_longwave_role": "diagnostic SIMIMPL28 temperature/cloud emissivity estimate; not an observation",
+  "era_radiation_operator": "normalize checksum-bound ssrd [-4,0) J m-2 to zero; divide ssrd and strd once by 3600 to W m-2; label each de-accumulated preceding-hour interval by its start (valid_time minus one hour)",
+  "shortwave_plane_rule": "ERA ssrd and retained daily climate rad are horizontal-plane fields and form the primary daily-magnitude lane; SIMIMPL hourly radiation is hillslope slope/aspect transformed and is retained only as a geometry-confounded chronology lane",
+  "fixed_local_standard_utc_offsets_hours": {
+    "snotel_mica_creek_st_joe_id": -8,
+    "snotel_paradise_wa": -8,
+    "snotel_snowbird_ut": -7,
+    "snotel_niwot_co": -7
+  },
+  "daily_grouping": "fixed local standard date; no daylight-saving shift; daily energy and peak metrics require all 24 paired hours",
+  "period_boundary_rule": "compare the exact timestamp intersection after preceding-interval start labeling and UTC-to-fixed-local conversion; report excluded boundary hours",
+  "peak_hour_rule": "fixed-local-standard daily argmax; first maximum; include complete days where both series have positive daily energy; signed circular ERA-minus-retained offset in [-12,12] integer hours; no local-solar claim",
+  "winter_event_rule": "November through March local-standard days with retained comparator daily precipitation greater than zero",
+  "metrics": [
+    "hourly Pearson correlation",
+    "hourly mean signed error W m-2",
+    "hourly MAE W m-2",
+    "daily energy Pearson correlation",
+    "daily energy mean signed error MJ m-2 day-1",
+    "daily energy MAE MJ m-2 day-1",
+    "daily energy relative bias percent",
+    "daily peak signed circular offset hours",
+    "daily peak mean absolute circular offset hours",
+    "daily peak exact-hour fraction"
+  ],
+  "protected": "precipitation bytes and calibrated multipliers are read-only; precipitation is used only to select frozen winter-event days"
+}

@@ -1,0 +1,294 @@
+{
+  "figures": {
+    "radiation-horizontal-daily-bias": [
+      {
+        "full_bias_percent": 11.832884686640545,
+        "full_days": 14244,
+        "product": "ERA5",
+        "site": "Mica",
+        "winter_bias_percent": 12.78936482713752,
+        "winter_days": 3120
+      },
+      {
+        "full_bias_percent": -4.956302984076661,
+        "full_days": 16436,
+        "product": "ERA5",
+        "site": "Paradise",
+        "winter_bias_percent": -5.970917155357952,
+        "winter_days": 4517
+      },
+      {
+        "full_bias_percent": 12.75655034416075,
+        "full_days": 14244,
+        "product": "ERA5",
+        "site": "Snowbird",
+        "winter_bias_percent": 28.532121246636933,
+        "winter_days": 2464
+      },
+      {
+        "full_bias_percent": 1.490886971018108,
+        "full_days": 16436,
+        "product": "ERA5",
+        "site": "Niwot",
+        "winter_bias_percent": 23.077116564390593,
+        "winter_days": 2247
+      },
+      {
+        "full_bias_percent": 12.448701776986754,
+        "full_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Mica",
+        "winter_bias_percent": 12.908313108022298,
+        "winter_days": 3120
+      },
+      {
+        "full_bias_percent": -4.312725562114801,
+        "full_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Paradise",
+        "winter_bias_percent": -3.791111577531476,
+        "winter_days": 4517
+      },
+      {
+        "full_bias_percent": 13.002422502962691,
+        "full_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Snowbird",
+        "winter_bias_percent": 28.391891606479373,
+        "winter_days": 2464
+      },
+      {
+        "full_bias_percent": 1.4919897938208855,
+        "full_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Niwot",
+        "winter_bias_percent": 23.023275063565826,
+        "winter_days": 2247
+      }
+    ],
+    "radiation-hourly-shortwave-chronology": [
+      {
+        "full_correlation": 0.9589685807575672,
+        "full_hours": 341871,
+        "full_peak_abs_h": 0.6277028924459421,
+        "full_peak_days": 14244,
+        "product": "ERA5",
+        "site": "Mica",
+        "winter_correlation": 0.8886303367844911,
+        "winter_hours": 74880,
+        "winter_peak_abs_h": 0.8150641025641026,
+        "winter_peak_days": 3120
+      },
+      {
+        "full_correlation": 0.9246134997186592,
+        "full_hours": 394479,
+        "full_peak_abs_h": 0.9058165003650523,
+        "full_peak_days": 16436,
+        "product": "ERA5",
+        "site": "Paradise",
+        "winter_correlation": 0.8592781835654789,
+        "winter_hours": 108408,
+        "winter_peak_abs_h": 0.9462032322337834,
+        "winter_peak_days": 4517
+      },
+      {
+        "full_correlation": 0.8955064611964842,
+        "full_hours": 341872,
+        "full_peak_abs_h": 0.9471356360572872,
+        "full_peak_days": 14244,
+        "product": "ERA5",
+        "site": "Snowbird",
+        "winter_correlation": 0.8722257428246696,
+        "winter_hours": 59136,
+        "winter_peak_abs_h": 1.0397727272727273,
+        "winter_peak_days": 2464
+      },
+      {
+        "full_correlation": 0.9481693767729977,
+        "full_hours": 394480,
+        "full_peak_abs_h": 0.5619980530542711,
+        "full_peak_days": 16436,
+        "product": "ERA5",
+        "site": "Niwot",
+        "winter_correlation": 0.9198331941211136,
+        "winter_hours": 53928,
+        "winter_peak_abs_h": 0.6252781486426346,
+        "winter_peak_days": 2247
+      },
+      {
+        "full_correlation": 0.9594115969006245,
+        "full_hours": 341871,
+        "full_peak_abs_h": 0.6342319573153609,
+        "full_peak_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Mica",
+        "winter_correlation": 0.8851189685530229,
+        "winter_hours": 74880,
+        "winter_peak_abs_h": 0.8375,
+        "winter_peak_days": 3120
+      },
+      {
+        "full_correlation": 0.9254990381363432,
+        "full_hours": 394479,
+        "full_peak_abs_h": 0.8901800924799221,
+        "full_peak_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Paradise",
+        "winter_correlation": 0.8628253295713285,
+        "winter_hours": 108408,
+        "winter_peak_abs_h": 0.9267212751826434,
+        "winter_peak_days": 4517
+      },
+      {
+        "full_correlation": 0.8959326039496412,
+        "full_hours": 341872,
+        "full_peak_abs_h": 0.95787700084246,
+        "full_peak_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Snowbird",
+        "winter_correlation": 0.8721125231330514,
+        "winter_hours": 59136,
+        "winter_peak_abs_h": 1.047077922077922,
+        "winter_peak_days": 2464
+      },
+      {
+        "full_correlation": 0.9482245128437333,
+        "full_hours": 394480,
+        "full_peak_abs_h": 0.5609028960817717,
+        "full_peak_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Niwot",
+        "winter_correlation": 0.9199298197037787,
+        "winter_hours": 53928,
+        "winter_peak_abs_h": 0.62572318647085,
+        "winter_peak_days": 2247
+      }
+    ],
+    "radiation-longwave-diagnostic-bias": [
+      {
+        "full_bias_percent": -13.440470219354193,
+        "full_days": 14244,
+        "product": "ERA5",
+        "site": "Mica",
+        "winter_bias_percent": -9.848630659967943,
+        "winter_days": 3120
+      },
+      {
+        "full_bias_percent": -5.051039217207599,
+        "full_days": 16436,
+        "product": "ERA5",
+        "site": "Paradise",
+        "winter_bias_percent": -4.569004624087523,
+        "winter_days": 4517
+      },
+      {
+        "full_bias_percent": -13.591463700132834,
+        "full_days": 14244,
+        "product": "ERA5",
+        "site": "Snowbird",
+        "winter_bias_percent": -12.495173765506186,
+        "winter_days": 2464
+      },
+      {
+        "full_bias_percent": -13.070162428036635,
+        "full_days": 16436,
+        "product": "ERA5",
+        "site": "Niwot",
+        "winter_bias_percent": -15.331902353851575,
+        "winter_days": 2247
+      },
+      {
+        "full_bias_percent": -12.940607823357603,
+        "full_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Mica",
+        "winter_bias_percent": -9.522614315213735,
+        "winter_days": 3120
+      },
+      {
+        "full_bias_percent": -5.401458931208247,
+        "full_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Paradise",
+        "winter_bias_percent": -5.058609529649914,
+        "winter_days": 4517
+      },
+      {
+        "full_bias_percent": -13.801246064193263,
+        "full_days": 14244,
+        "product": "ERA5-Land",
+        "site": "Snowbird",
+        "winter_bias_percent": -12.349668522225567,
+        "winter_days": 2464
+      },
+      {
+        "full_bias_percent": -13.035264548518093,
+        "full_days": 16436,
+        "product": "ERA5-Land",
+        "site": "Niwot",
+        "winter_bias_percent": -15.292666155641433,
+        "winter_days": 2247
+      }
+    ],
+    "radiation-winter-correlation-bias": [
+      {
+        "bias_percent": 12.78936482713752,
+        "correlation": 0.8101999698857308,
+        "days": 3120,
+        "product": "ERA5",
+        "site": "Mica"
+      },
+      {
+        "bias_percent": -5.970917155357952,
+        "correlation": 0.7598470061796766,
+        "days": 4517,
+        "product": "ERA5",
+        "site": "Paradise"
+      },
+      {
+        "bias_percent": 28.532121246636933,
+        "correlation": 0.7953518815284231,
+        "days": 2464,
+        "product": "ERA5",
+        "site": "Snowbird"
+      },
+      {
+        "bias_percent": 23.077116564390593,
+        "correlation": 0.7603162093968279,
+        "days": 2247,
+        "product": "ERA5",
+        "site": "Niwot"
+      },
+      {
+        "bias_percent": 12.908313108022298,
+        "correlation": 0.8034033104218725,
+        "days": 3120,
+        "product": "ERA5-Land",
+        "site": "Mica"
+      },
+      {
+        "bias_percent": -3.791111577531476,
+        "correlation": 0.7618380820050332,
+        "days": 4517,
+        "product": "ERA5-Land",
+        "site": "Paradise"
+      },
+      {
+        "bias_percent": 28.391891606479373,
+        "correlation": 0.7967237739480633,
+        "days": 2464,
+        "product": "ERA5-Land",
+        "site": "Snowbird"
+      },
+      {
+        "bias_percent": 23.023275063565826,
+        "correlation": 0.7607912535726165,
+        "days": 2247,
+        "product": "ERA5-Land",
+        "site": "Niwot"
+      }
+    ]
+  },
+  "radiation_results_sha256": "8e2168b68f7e3ae2abddaef6af7c0d7d1eb73c549d2c12d9fec4be7790035063",
+  "schema": "snow-hourly-era5-radiation-figure-data-v1"
+}

@@ -1,0 +1,495 @@
+{
+  "acquisition_manifest_sha256": "38b8d247d0b5edc5d17da02ad86a6e8b1387abeec3a26dc0be86721cdf8f6745",
+  "comparison_manifest_sha256": "f710ff170962c5cfe43324c6876a069be681163798f10a86013bf4edd2b0e394",
+  "precipitation_modified": false,
+  "primary_cloud_operator": "24-hour arithmetic mean ERA5 tcc",
+  "radiation_first_results_sha256": "8e2168b68f7e3ae2abddaef6af7c0d7d1eb73c549d2c12d9fec4be7790035063",
+  "realized_ssrd_weighted_operator_role": "outcome-dependent sensitivity; mathematically coupled to shortwave residual",
+  "result_count": 4,
+  "results": [
+    {
+      "all_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 266,
+            "mixed": 512,
+            "overcast": 179
+          },
+          "mixed": {
+            "clear": 1955,
+            "mixed": 2082,
+            "overcast": 750
+          },
+          "overcast": {
+            "clear": 728,
+            "mixed": 2881,
+            "overcast": 4891
+          }
+        },
+        "category_exact_agreement_fraction": 0.5082139848357203,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.6231160580459492,
+        "correlation": 0.4603950064148994,
+        "day_count": 14244,
+        "era_mean_cloud_fraction": 0.5887558385471742,
+        "era_minus_proxy_mean_signed_error": -0.17590507949063122,
+        "mae": 0.2800870639018357,
+        "simimpl_mean_cloud_fraction": 0.7646609180378056
+      },
+      "all_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 307,
+            "mixed": 396,
+            "overcast": 254
+          },
+          "mixed": {
+            "clear": 2000,
+            "mixed": 1661,
+            "overcast": 1126
+          },
+          "overcast": {
+            "clear": 753,
+            "mixed": 2407,
+            "overcast": 5340
+          }
+        },
+        "category_exact_agreement_fraction": 0.5130581297388374,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.652254927347884,
+        "correlation": 0.428106690178932,
+        "day_count": 14244,
+        "era_mean_cloud_fraction": 0.6172883983521952,
+        "era_minus_proxy_mean_signed_error": -0.14737251968561033,
+        "mae": 0.27899412166595955,
+        "simimpl_mean_cloud_fraction": 0.7646609180378056
+      },
+      "climate_path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id/p1.cli",
+      "climate_sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63",
+      "comparator_path": "/home/workdir/openWEPP/target/snow_surface_eb04w2b_terminal_frozen_w2a_rerun/runs/snotel_mica_creek_st_joe_id/legacy_coe/forcing_bridge/tg_neg2p5c_zg0p10m/forcing.csv",
+      "comparator_sha256": "d819d1b6dae54d06cec0165f440add0fd8b61e3a3b81822f08304629cc5de47f",
+      "complete_day_count": 14244,
+      "era5_path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1986-2024.nc",
+      "era5_sha256": "6d8a00ddf0b1200702de2c6ef51f884177435815b78555cb6eb11bcf9f6200cc",
+      "proxy_daily_max_range": 6.306066779870889e-14,
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "winter_wet_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1,
+            "mixed": 4,
+            "overcast": 1
+          },
+          "mixed": {
+            "clear": 10,
+            "mixed": 74,
+            "overcast": 116
+          },
+          "overcast": {
+            "clear": 6,
+            "mixed": 382,
+            "overcast": 2526
+          }
+        },
+        "category_exact_agreement_fraction": 0.8336538461538462,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.510234316942546,
+        "correlation": 0.32066686749635676,
+        "day_count": 3120,
+        "era_mean_cloud_fraction": 0.8794912864000369,
+        "era_minus_proxy_mean_signed_error": -0.0803944563780457,
+        "mae": 0.11329377538093585,
+        "simimpl_mean_cloud_fraction": 0.9598857427780827
+      },
+      "winter_wet_day_count": 3120,
+      "winter_wet_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1,
+            "mixed": 3,
+            "overcast": 2
+          },
+          "mixed": {
+            "clear": 16,
+            "mixed": 41,
+            "overcast": 143
+          },
+          "overcast": {
+            "clear": 16,
+            "mixed": 409,
+            "overcast": 2489
+          }
+        },
+        "category_exact_agreement_fraction": 0.8112179487179487,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.5472545404896407,
+        "correlation": 0.24663347635043045,
+        "day_count": 3120,
+        "era_mean_cloud_fraction": 0.8919283199067466,
+        "era_minus_proxy_mean_signed_error": -0.06795742287133602,
+        "mae": 0.11290394598847261,
+        "simimpl_mean_cloud_fraction": 0.9598857427780827
+      }
+    },
+    {
+      "all_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1004,
+            "mixed": 1777,
+            "overcast": 870
+          },
+          "mixed": {
+            "clear": 1152,
+            "mixed": 1579,
+            "overcast": 1301
+          },
+          "overcast": {
+            "clear": 356,
+            "mixed": 1520,
+            "overcast": 6877
+          }
+        },
+        "category_exact_agreement_fraction": 0.5755658311024581,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.661451418768706,
+        "correlation": 0.5060803308391704,
+        "day_count": 16436,
+        "era_mean_cloud_fraction": 0.6757238330347477,
+        "era_minus_proxy_mean_signed_error": 0.025613322335194987,
+        "mae": 0.2564931040863396,
+        "simimpl_mean_cloud_fraction": 0.6501105106995528
+      },
+      "all_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1349,
+            "mixed": 1285,
+            "overcast": 1017
+          },
+          "mixed": {
+            "clear": 1474,
+            "mixed": 1249,
+            "overcast": 1309
+          },
+          "overcast": {
+            "clear": 550,
+            "mixed": 1823,
+            "overcast": 6380
+          }
+        },
+        "category_exact_agreement_fraction": 0.5462399610610854,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.6539057121633667,
+        "correlation": 0.46591017482618974,
+        "day_count": 16436,
+        "era_mean_cloud_fraction": 0.6477889247590332,
+        "era_minus_proxy_mean_signed_error": -0.0023215859405196853,
+        "mae": 0.27472525117591534,
+        "simimpl_mean_cloud_fraction": 0.6501105106995528
+      },
+      "climate_path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/snotel_paradise_wa/p2.cli",
+      "climate_sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c",
+      "comparator_path": "/home/workdir/openWEPP/target/snow_surface_eb04w2b_terminal_frozen_w2a_rerun/runs/snotel_paradise_wa/legacy_coe/forcing_bridge/tg_neg2p5c_zg0p10m/forcing.csv",
+      "comparator_sha256": "1b3f7a6a14568b59bd07540a80be3ed7300f87eb75d6927f3a0cf444bad2423d",
+      "complete_day_count": 16436,
+      "era5_path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_paradise_wa__1980-2024.nc",
+      "era5_sha256": "9a43da9ce6de331ed9f6d52e1710800ca0683240eed1bcca67bea8df281b75d9",
+      "proxy_daily_max_range": 6.417089082333405e-14,
+      "site_id": "snotel_paradise_wa",
+      "winter_wet_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 4,
+            "mixed": 37,
+            "overcast": 103
+          },
+          "mixed": {
+            "clear": 14,
+            "mixed": 153,
+            "overcast": 593
+          },
+          "overcast": {
+            "clear": 3,
+            "mixed": 239,
+            "overcast": 3371
+          }
+        },
+        "category_exact_agreement_fraction": 0.7810493690502546,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.5626794186610128,
+        "correlation": 0.26838471052632756,
+        "day_count": 4517,
+        "era_mean_cloud_fraction": 0.9032977759182722,
+        "era_minus_proxy_mean_signed_error": 0.03012354296352518,
+        "mae": 0.14491908259822814,
+        "simimpl_mean_cloud_fraction": 0.8731742329547468
+      },
+      "winter_wet_day_count": 4517,
+      "winter_wet_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 13,
+            "mixed": 30,
+            "overcast": 101
+          },
+          "mixed": {
+            "clear": 33,
+            "mixed": 158,
+            "overcast": 569
+          },
+          "overcast": {
+            "clear": 23,
+            "mixed": 473,
+            "overcast": 3117
+          }
+        },
+        "category_exact_agreement_fraction": 0.7279167589107814,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.6042890175592289,
+        "correlation": 0.19080494314767052,
+        "day_count": 4517,
+        "era_mean_cloud_fraction": 0.8841974401364279,
+        "era_minus_proxy_mean_signed_error": 0.011023207181680924,
+        "mae": 0.16447904797059926,
+        "simimpl_mean_cloud_fraction": 0.8731742329547468
+      }
+    },
+    {
+      "all_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1223,
+            "mixed": 1394,
+            "overcast": 242
+          },
+          "mixed": {
+            "clear": 1171,
+            "mixed": 2075,
+            "overcast": 675
+          },
+          "overcast": {
+            "clear": 1585,
+            "mixed": 3414,
+            "overcast": 2465
+          }
+        },
+        "category_exact_agreement_fraction": 0.40459140690817186,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.7738963446430976,
+        "correlation": 0.30500502493457055,
+        "day_count": 14244,
+        "era_mean_cloud_fraction": 0.4798485513908703,
+        "era_minus_proxy_mean_signed_error": -0.17680855018412847,
+        "mae": 0.34581295699975423,
+        "simimpl_mean_cloud_fraction": 0.6566571015749987
+      },
+      "all_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 1214,
+            "mixed": 1216,
+            "overcast": 429
+          },
+          "mixed": {
+            "clear": 1383,
+            "mixed": 1633,
+            "overcast": 905
+          },
+          "overcast": {
+            "clear": 1570,
+            "mixed": 3151,
+            "overcast": 2743
+          }
+        },
+        "category_exact_agreement_fraction": 0.39244594215108114,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.7660095620476113,
+        "correlation": 0.2717735681793885,
+        "day_count": 14244,
+        "era_mean_cloud_fraction": 0.492883448509391,
+        "era_minus_proxy_mean_signed_error": -0.1637736530656078,
+        "mae": 0.35772793830080335,
+        "simimpl_mean_cloud_fraction": 0.6566571015749987
+      },
+      "climate_path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/snotel_snowbird_ut/p8.cli",
+      "climate_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+      "comparator_path": "/home/workdir/openWEPP/target/snow_surface_eb04w2b_terminal_frozen_w2a_rerun/runs/snotel_snowbird_ut/legacy_coe/forcing_bridge/tg_neg2p5c_zg0p10m/forcing.csv",
+      "comparator_sha256": "d925715d6e14ea3899a24fd64452d8a3fedc0334a6c8dba2b38b2d9a952539be",
+      "complete_day_count": 14244,
+      "era5_path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_snowbird_ut__1986-2024.nc",
+      "era5_sha256": "b8b665d22eb3389613dfc497a6786cedf96d6bc6625e0a707e4b0ec04b08adbc",
+      "proxy_daily_max_range": 6.428191312579656e-14,
+      "site_id": "snotel_snowbird_ut",
+      "winter_wet_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 0,
+            "mixed": 5,
+            "overcast": 0
+          },
+          "mixed": {
+            "clear": 5,
+            "mixed": 195,
+            "overcast": 153
+          },
+          "overcast": {
+            "clear": 12,
+            "mixed": 749,
+            "overcast": 1345
+          }
+        },
+        "category_exact_agreement_fraction": 0.625,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.5725482200582279,
+        "correlation": 0.22974142643029608,
+        "day_count": 2464,
+        "era_mean_cloud_fraction": 0.7685967327712419,
+        "era_minus_proxy_mean_signed_error": -0.14462290835655142,
+        "mae": 0.19446277815862525,
+        "simimpl_mean_cloud_fraction": 0.9132196411277932
+      },
+      "winter_wet_day_count": 2464,
+      "winter_wet_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 0,
+            "mixed": 4,
+            "overcast": 1
+          },
+          "mixed": {
+            "clear": 22,
+            "mixed": 154,
+            "overcast": 177
+          },
+          "overcast": {
+            "clear": 46,
+            "mixed": 732,
+            "overcast": 1328
+          }
+        },
+        "category_exact_agreement_fraction": 0.601461038961039,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.60980229557832,
+        "correlation": 0.1769774832594921,
+        "day_count": 2464,
+        "era_mean_cloud_fraction": 0.7747345406441871,
+        "era_minus_proxy_mean_signed_error": -0.1384851004836061,
+        "mae": 0.20366077495489346,
+        "simimpl_mean_cloud_fraction": 0.9132196411277932
+      }
+    },
+    {
+      "all_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 2193,
+            "mixed": 3381,
+            "overcast": 532
+          },
+          "mixed": {
+            "clear": 1546,
+            "mixed": 2793,
+            "overcast": 649
+          },
+          "overcast": {
+            "clear": 451,
+            "mixed": 3077,
+            "overcast": 1814
+          }
+        },
+        "category_exact_agreement_fraction": 0.413725967388659,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.7265855298123128,
+        "correlation": 0.38808864693108736,
+        "day_count": 16436,
+        "era_mean_cloud_fraction": 0.46605612860888745,
+        "era_minus_proxy_mean_signed_error": -0.009969611304877389,
+        "mae": 0.31289256713220587,
+        "simimpl_mean_cloud_fraction": 0.47602573991376473
+      },
+      "all_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 2100,
+            "mixed": 2897,
+            "overcast": 1109
+          },
+          "mixed": {
+            "clear": 1249,
+            "mixed": 2697,
+            "overcast": 1042
+          },
+          "overcast": {
+            "clear": 414,
+            "mixed": 2572,
+            "overcast": 2356
+          }
+        },
+        "category_exact_agreement_fraction": 0.4352032124604527,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.7393481143561285,
+        "correlation": 0.3465467249537481,
+        "day_count": 16436,
+        "era_mean_cloud_fraction": 0.5136690754464911,
+        "era_minus_proxy_mean_signed_error": 0.0376433355327262,
+        "mae": 0.3225704879248606,
+        "simimpl_mean_cloud_fraction": 0.47602573991376473
+      },
+      "climate_path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/snotel_niwot_co/p2.cli",
+      "climate_sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead",
+      "comparator_path": "/home/workdir/openWEPP/target/snow_surface_eb04w2b_terminal_frozen_w2a_rerun/runs/snotel_niwot_co/legacy_coe/forcing_bridge/tg_neg2p5c_zg0p10m/forcing.csv",
+      "comparator_sha256": "b58fae64584eb29feba8e00eda013747631d861b041dc87db46dce9fdbf1cd6b",
+      "complete_day_count": 16436,
+      "era5_path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_niwot_co__1980-2024.nc",
+      "era5_sha256": "97709b9f7d3c231f50e5bc07a62776421ffe313a01f1a420d08efd88c5058582",
+      "proxy_daily_max_range": 6.539213615042172e-14,
+      "site_id": "snotel_niwot_co",
+      "winter_wet_24h_mean": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 30,
+            "mixed": 126,
+            "overcast": 71
+          },
+          "mixed": {
+            "clear": 38,
+            "mixed": 432,
+            "overcast": 284
+          },
+          "overcast": {
+            "clear": 50,
+            "mixed": 716,
+            "overcast": 500
+          }
+        },
+        "category_exact_agreement_fraction": 0.4281263907432132,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.7635937342620766,
+        "correlation": 0.12123828689570454,
+        "day_count": 2247,
+        "era_mean_cloud_fraction": 0.6541237021178701,
+        "era_minus_proxy_mean_signed_error": -0.06836583996535589,
+        "mae": 0.29508977809732834,
+        "simimpl_mean_cloud_fraction": 0.722489542083226
+      },
+      "winter_wet_day_count": 2247,
+      "winter_wet_shortwave_weighted": {
+        "category_confusion_proxy_rows_era_columns": {
+          "clear": {
+            "clear": 52,
+            "mixed": 77,
+            "overcast": 98
+          },
+          "mixed": {
+            "clear": 81,
+            "mixed": 286,
+            "overcast": 387
+          },
+          "overcast": {
+            "clear": 84,
+            "mixed": 515,
+            "overcast": 667
+          }
+        },
+        "category_exact_agreement_fraction": 0.4472630173564753,
+        "cloud_residual_vs_shortwave_residual_correlation": -0.76539959291573,
+        "correlation": 0.11524896898989817,
+        "day_count": 2247,
+        "era_mean_cloud_fraction": 0.692114399508044,
+        "era_minus_proxy_mean_signed_error": -0.030375142575182142,
+        "mae": 0.30594762667462433,
+        "simimpl_mean_cloud_fraction": 0.722489542083226
+      }
+    }
+  ],
+  "schema": "snow-hourly-era5-cloud-proxy-results-v1",
+  "scientific_outcome": "DIVERGES",
+  "status": "CLOUD_PROXY_SANITY_COMPLETE",
+  "validated_source_inventory_sha256": "24d6fd88429d062fb5c913bf1198a61089b2ef094b00197ec33a6281d2f519a3"
+}

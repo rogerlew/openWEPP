@@ -1,0 +1,155 @@
+{
+  "schema": "snow-hourly-era5-diagnostic-acquisition-v1",
+  "status": "acquisition fields frozen before access; amended after access for reviewed shortwave-negative disposition, explicit empirical checksum-bound dewpoint tolerance, and project/grid elevation source execution fields",
+  "datasets": [
+    {
+      "dataset": "reanalysis-era5-single-levels-timeseries",
+      "provider": "Copernicus Climate Data Store",
+      "grid": "0.25 degree regular latitude-longitude",
+      "role": "atmospheric radiation/cloud/meteorology diagnostic",
+      "format": "netcdf",
+      "grid_selection": "nearest native 0.25-degree cell to the frozen site coordinate",
+      "grid_elevation_requirement": "separate compatible grid-orography/geopotential ancillary required; not offered by this point time-series product",
+      "variables": [
+        "surface_solar_radiation_downwards",
+        "surface_thermal_radiation_downwards",
+        "total_cloud_cover",
+        "2m_temperature",
+        "2m_dewpoint_temperature",
+        "10m_u_component_of_wind",
+        "10m_v_component_of_wind",
+        "surface_pressure"
+      ],
+      "radiation_semantics": "time-series product supplies de-accumulated hourly J m-2; divide once by 1e6 and do not difference"
+    },
+    {
+      "dataset": "reanalysis-era5-land-timeseries",
+      "provider": "Copernicus Climate Data Store",
+      "grid": "0.1 degree regular latitude-longitude",
+      "role": "higher-resolution land-forcing diagnostic",
+      "format": "netcdf",
+      "grid_selection": "nearest native 0.1-degree cell to the frozen site coordinate",
+      "grid_elevation_requirement": "source grid-orography elevation metadata required for every site series; absence blocks elevation reconciliation",
+      "variables": [
+        "surface_solar_radiation_downwards",
+        "surface_thermal_radiation_downwards",
+        "2m_temperature",
+        "2m_dewpoint_temperature",
+        "10m_u_component_of_wind",
+        "10m_v_component_of_wind",
+        "surface_pressure"
+      ],
+      "radiation_semantics": "time-series product supplies de-accumulated hourly J m-2; divide once by 1e6 and do not apply the gridded-product 00 UTC differencing convention"
+    }
+  ],
+  "sites": [
+    {
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "latitude": 47.14867,
+      "longitude": -116.26324,
+      "fixture_elevation_m": 1455.0,
+      "start": "1986-01-01",
+      "end": "2024-12-31",
+      "precipitation_multiplier": 1.4,
+      "observation_role": "CALIBRATION_RETAINED"
+    },
+    {
+      "site_id": "snotel_paradise_wa",
+      "latitude": 46.78357,
+      "longitude": -121.74879,
+      "fixture_elevation_m": 1575.4,
+      "start": "1980-01-01",
+      "end": "2024-12-31",
+      "precipitation_multiplier": 1.8,
+      "observation_role": "CALIBRATION_RETAINED"
+    },
+    {
+      "site_id": "snotel_snowbird_ut",
+      "latitude": 40.57124,
+      "longitude": -111.66052,
+      "fixture_elevation_m": 2968.9,
+      "start": "1986-01-01",
+      "end": "2024-12-31",
+      "precipitation_multiplier": 2.0,
+      "observation_role": "CALIBRATION_RETAINED_BOUNDARY"
+    },
+    {
+      "site_id": "snotel_niwot_co",
+      "latitude": 40.03686,
+      "longitude": -105.54218,
+      "fixture_elevation_m": 3086.6,
+      "start": "1980-01-01",
+      "end": "2024-12-31",
+      "precipitation_multiplier": 1.7,
+      "observation_role": "CALIBRATION_RETAINED"
+    }
+  ],
+  "project_elevation_sources": [
+    {
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "run_root": "/wc1/runs/li/listed-scar",
+      "fixture_manifest": "tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id/manifest.md",
+      "topaz_id": 21,
+      "wepp_id": 1
+    },
+    {
+      "site_id": "snotel_paradise_wa",
+      "run_root": "/wc1/runs/op/open-source-thirtieth",
+      "fixture_manifest": "tests/fixtures/snotel_observed/snotel_paradise_wa/manifest.md",
+      "topaz_id": 22,
+      "wepp_id": 2
+    },
+    {
+      "site_id": "snotel_snowbird_ut",
+      "run_root": "/wc1/runs/ba/barred-pro",
+      "fixture_manifest": "tests/fixtures/snotel_observed/snotel_snowbird_ut/manifest.md",
+      "topaz_id": 53,
+      "wepp_id": 8
+    },
+    {
+      "site_id": "snotel_niwot_co",
+      "run_root": "/wc1/runs/de/deathless-wangle",
+      "fixture_manifest": "tests/fixtures/snotel_observed/snotel_niwot_co/manifest.md",
+      "topaz_id": 22,
+      "wepp_id": 2
+    }
+  ],
+  "canonical_hourly_variable_union_count": 8,
+  "ancillary_required": {
+    "variable": "grid elevation or geopotential",
+    "role": "elevation reconciliation only",
+    "acquisition_rule": "use an official compatible gridded/static product selected and reviewed against its live CDS form; never add geopotential to an unsupported time-series request"
+  },
+  "shortwave_negative_policy": {
+    "scope": "authenticated checksum-bound ERA5 and ERA5-Land point-series diagnostic ingress only",
+    "normalize_interval_j_m2": "[-4.0, 0.0)",
+    "normalized_value_j_m2": 0.0,
+    "reject_below_j_m2": -4.0,
+    "threshold_provenance": "complete checksum-bound four-site 1980/1986-2024 cohort characterization plus physical nonnegativity; exact encoding/conversion cause unresolved"
+  },
+  "dewpoint_temperature_policy": {
+    "scope": "checksum-bound ERA5 and ERA5-Land point-series diagnostic ingress only",
+    "accept_excess_through_k": 0.003,
+    "reject_above_k": 0.003,
+    "disposition": "retain values unchanged; bounded exceedances through 0.003 K are an empirical checksum-bound tolerance with exact cause unresolved",
+    "threshold_provenance": "complete eight-file cohort maximum 0.002838134765625 K; physical invariant remains dewpoint no greater than temperature outside this bounded tolerance"
+  },
+  "hours_utc": [
+    "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
+    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+    "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
+  ],
+  "format_preference": "NetCDF time series with retained provider metadata",
+  "protected_fields": [
+    "precipitation",
+    "precipitation_multiplier",
+    "observations",
+    "calibration_membership",
+    "snow_model_coefficients"
+  ],
+  "assumed_for_execution": {
+    "temperature_lapse_rate_k_per_km": -6.5,
+    "role": "diagnostic sensitivity only, never calibrated or promoted"
+  }
+}

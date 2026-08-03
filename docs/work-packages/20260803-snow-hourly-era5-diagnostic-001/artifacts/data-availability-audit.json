@@ -1,0 +1,133 @@
+{
+  "acquisition_ready": false,
+  "authenticated_credential_proven": false,
+  "candidate_data_present": true,
+  "credential_locator_present": true,
+  "credential_values_inspected_or_recorded": false,
+  "local_data_files": [
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-land-timeseries__snotel_mica_creek_st_joe_id.nc",
+      "sha256": "646dd40589240d79b120eede1f3711b7e9a185b5ff139f82fe16f607517c6b3f",
+      "size_bytes": 10066
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-land-timeseries__snotel_snowbird_ut__1986-2024.nc",
+      "sha256": "5147f27b0e8e0a52b2309cb5181fa877040fc36994bb4c03ce47d7da6327e8cf",
+      "size_bytes": 12360363
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_snowbird_ut__1986-2024.nc",
+      "sha256": "b8b665d22eb3389613dfc497a6786cedf96d6bc6625e0a707e4b0ec04b08adbc",
+      "size_bytes": 13734414
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1987.nc",
+      "sha256": "9ae3b775edd977cc032fcc657f79d1f7ab34f2bce026e39ed1469dffb92bb07a",
+      "size_bytes": 409614
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-single-levels-timeseries__snotel_niwot_co.nc",
+      "sha256": "3f6dfc4a68d0ef000a56eb1c2e1f43cbece2a2251e23a2f1029f0abff9ee95d5",
+      "size_bytes": 25615
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-land-timeseries__snotel_mica_creek_st_joe_id__1986-2024.nc",
+      "sha256": "f7189f11280359c3450191421d469c88d51994ec504c097c7d95f0c6d6bd4233",
+      "size_bytes": 12360363
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1986.nc",
+      "sha256": "c8b5dc52af6c73f55839180daab1d9fd80d1df631773f481c799774231474834",
+      "size_bytes": 409614
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-land-timeseries__snotel_paradise_wa__1980-2024.nc",
+      "sha256": "0c4d3701b2e33b88b3e11cac84d4001f6c7e2171c99a6f8e26dffb547c0ced24",
+      "size_bytes": 14254251
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-land-timeseries__snotel_paradise_wa.nc",
+      "sha256": "596a7148bfe837d9e285d0502dcaabdde04e656a23e767883a79ddbc65e1275d",
+      "size_bytes": 10066
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_niwot_co__1980-2024.nc",
+      "sha256": "97709b9f7d3c231f50e5bc07a62776421ffe313a01f1a420d08efd88c5058582",
+      "size_bytes": 15838734
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1989.nc",
+      "sha256": "f915ad7bbebbf053db0a72c2c08b4336bb28c2202ece196a4dc7c3cd5eca4828",
+      "size_bytes": 409614
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-single-levels-timeseries__snotel_paradise_wa.nc",
+      "sha256": "ed8d3d736ed83d322c33f838fabf35554b3992d4b165aa4f8d45d5285f0ed890",
+      "size_bytes": 25615
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1990.nc",
+      "sha256": "a8fa580c5247dc821817b285b29ccc415787a89ae3b85b171a325abbce224190",
+      "size_bytes": 409614
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1988.nc",
+      "sha256": "248d142dbd984aafd28b466cdd28164db1b0b0f57073324d02b432fff30ad659",
+      "size_bytes": 410574
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_paradise_wa__1980-2024.nc",
+      "sha256": "9a43da9ce6de331ed9f6d52e1710800ca0683240eed1bcca67bea8df281b75d9",
+      "size_bytes": 15838734
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id.nc",
+      "sha256": "f557d95a8678df107bcf2b578690161a307f0fcf5d75fc117c2ff53adae7f493",
+      "size_bytes": 25615
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-single-levels-timeseries__snotel_snowbird_ut.nc",
+      "sha256": "048fb6240f0a6a7bb86b862f8133f208aaac40f6ee80ad52c149584a711146f4",
+      "size_bytes": 25615
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-land-timeseries__snotel_snowbird_ut.nc",
+      "sha256": "bbbab7fc6d53ef7a75dd25d28d020778e980c6db7a2fd6e5f55cc54f269d0b80",
+      "size_bytes": 10066
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-land-timeseries__snotel_niwot_co__1980-2024.nc",
+      "sha256": "47ba7b499f41c1fa58e4f26423551a579926358ea8a07ef279e4a3c8ac1e9329",
+      "size_bytes": 14254251
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/grid-elevation__reanalysis-era5-land-timeseries__snotel_niwot_co.nc",
+      "sha256": "3e29b5ba20bc0fe8c794482df20e308a37d4556ae3c977e309b77cc90a7de011",
+      "size_bytes": 10066
+    },
+    {
+      "path": "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic/reanalysis-era5-single-levels-timeseries__snotel_mica_creek_st_joe_id__1986-2024.nc",
+      "sha256": "6d8a00ddf0b1200702de2c6ef51f884177435815b78555cb6eb11bcf9f6200cc",
+      "size_bytes": 13734414
+    }
+  ],
+  "manifest_sha256": "38b8d247d0b5edc5d17da02ad86a6e8b1387abeec3a26dc0be86721cdf8f6745",
+  "missing": [
+    "authenticated_cds_credential"
+  ],
+  "reader_capability": {
+    "cdsapi": true,
+    "cfgrib": false,
+    "netCDF4": true,
+    "xarray": true
+  },
+  "result_bearing_ready": false,
+  "schema": "snow-hourly-era5-data-availability-audit-v1",
+  "searched_roots": [
+    "/home/workdir/openWEPP/target/snow_hourly_era5_diagnostic",
+    "/home/workdir/openWEPP/data/era5",
+    "/workdir/era5"
+  ],
+  "status": "CANDIDATE_DATA_PRESENT_VALIDATION_REQUIRED",
+  "validated_source_inventory_present": true
+}

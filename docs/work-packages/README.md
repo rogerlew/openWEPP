@@ -11,6 +11,26 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snow-hourly-era5-cloud-proxy-sanity-001/` — COMPLETE / SANITY
+  ASSOCIATION PASSES / NO PROMOTION: separate ERA5 total-cloud versus SIMIMPL
+  transmissivity-proxy sanity check. Primary 24-hour residual signs are
+  coherent with the predecessor shortwave comparison, while wet-winter daily
+  correlations remain weak. Dual review and terminal verification pass; no
+  cloud correction, provider admission, or snow-model improvement is claimed.
+
+- `20260803-snow-hourly-era5-diagnostic-001/` — COMPLETE / RADIATION-FIRST
+  DIVERGES / NO PROMOTION: froze the four-site, eight-field ERA5/ERA5-Land hourly acquisition
+  contract, separate grid-elevation ancillary, source-backed time-series rules,
+  protected precipitation and observation roles, and radiation-first
+  comparison protocol. Authenticated retrieval produced eight complete
+  long-range NetCDFs; the bounded shortwave-negative source policy is
+  dispositioned. Direct content and official grid-geopotential validation pass,
+  with target elevations bound to local source projects. The eight radiation
+  comparisons report site/season divergence; the comparable horizontal daily
+  lane ranges from about -6% at Paradise to +28.5% wet-winter shortwave at
+  Snowbird, while hourly synthesis is geometry-confounded. Both terminal
+  verifications pass; no snow result or provider claim has been produced.
+
 - `20260727-testgate-first-attempt-ledger-bootstrap-001/` is complete. It
   securely creates the first durable ledger, binds Python/Rust transition I/O
   to the admitted inherited descriptor, and closes through combined honest
