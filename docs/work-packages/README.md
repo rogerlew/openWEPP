@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snowbird-snotel-climate-forcing-diagnostic-001/` — COMPLETE /
+  BOUNDED DRY-FORCING EVIDENCE / NO CORRECTION: compares the `barred-pro` Snowbird climate fixture
+  with colocated NRCS SNOTEL precipitation and temperature. Guarded common-day
+  precipitation is about 84% of SNOTEL with strong chronology; the result
+  supports a bounded dry-forcing finding but not a twofold gauge deficit in the
+  admitted samples. Dual review and terminal verification pass.
+
 - `20260803-snow-hourly-era5-cloud-proxy-sanity-001/` — COMPLETE / SANITY
   ASSOCIATION PASSES / NO PROMOTION: separate ERA5 total-cloud versus SIMIMPL
   transmissivity-proxy sanity check. Primary 24-hour residual signs are

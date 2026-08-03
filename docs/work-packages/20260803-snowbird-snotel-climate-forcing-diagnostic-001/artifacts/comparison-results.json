@@ -1,0 +1,214 @@
+{
+  "boundary_interval_summary": {
+    "intervals_below_0_75": 0,
+    "mean_fixture_to_snotel_ratio": 0.8496237024061396,
+    "median_fixture_to_snotel_ratio": 0.8565467848127656,
+    "n": 8
+  },
+  "claim_limits": [
+    "no forcing correction",
+    "no gauge-undercatch attribution",
+    "no provider admission",
+    "no snow-model improvement claim"
+  ],
+  "common_date_count": 11946,
+  "common_period": [
+    "1989-08-24",
+    "2024-12-31"
+  ],
+  "manifest_sha256": "edd5f4c2cc664e41cfae6dd43417000bbae3483ce4507231585bfd2fbc0002e5",
+  "october1_to_september30_boundary_intervals": [
+    {
+      "fixture_to_snotel_ratio": 0.9114823484902225,
+      "fixture_total_mm": 1541.9,
+      "snotel_total_mm": 1691.64,
+      "water_year": 1993
+    },
+    {
+      "fixture_to_snotel_ratio": 0.8344070627535194,
+      "fixture_total_mm": 1398.8,
+      "snotel_total_mm": 1676.4,
+      "water_year": 1997
+    },
+    {
+      "fixture_to_snotel_ratio": 0.8326009362724875,
+      "fixture_total_mm": 928.4,
+      "snotel_total_mm": 1115.06,
+      "water_year": 2001
+    },
+    {
+      "fixture_to_snotel_ratio": 0.7612068293443517,
+      "fixture_total_mm": 976.4,
+      "snotel_total_mm": 1282.7,
+      "water_year": 2004
+    },
+    {
+      "fixture_to_snotel_ratio": 0.7769553056937784,
+      "fixture_total_mm": 1383.4,
+      "snotel_total_mm": 1780.54,
+      "water_year": 2005
+    },
+    {
+      "fixture_to_snotel_ratio": 0.9101863586312925,
+      "fixture_total_mm": 876.2,
+      "snotel_total_mm": 962.66,
+      "water_year": 2018
+    },
+    {
+      "fixture_to_snotel_ratio": 0.8914642711914532,
+      "fixture_total_mm": 964.6,
+      "snotel_total_mm": 1082.04,
+      "water_year": 2021
+    },
+    {
+      "fixture_to_snotel_ratio": 0.8786865068720118,
+      "fixture_total_mm": 1113.7,
+      "snotel_total_mm": 1267.46,
+      "water_year": 2022
+    }
+  ],
+  "results": {
+    "all": {
+      "precipitation": {
+        "correlation": 0.9026699172258648,
+        "fixture_mean": 4.219498069498069,
+        "fixture_minus_snotel_bias": -0.7545868725868727,
+        "fixture_to_snotel_total_ratio": 0.8482963436747062,
+        "fixture_total_mm": 21857.0,
+        "fixture_wet_days": 2228,
+        "mae": 1.8618687258687272,
+        "n": 5180,
+        "positive_event_quantiles_mm": {
+          "fixture": {
+            "0.5": 7.95,
+            "0.9": 19.1,
+            "0.99": 37.019000000000005
+          },
+          "snotel": {
+            "0.5": 5.080000000000155,
+            "0.9": 20.320000000000164,
+            "0.99": 48.25999999999999
+          }
+        },
+        "snotel_mean": 4.974084942084943,
+        "snotel_total_mm": 25765.760000000002,
+        "snotel_wet_days": 2632,
+        "wet_day_agreement_fraction": 0.871042471042471,
+        "wet_day_threshold_mm": 0.254
+      },
+      "tmax_c": {
+        "correlation": 0.9935246348229738,
+        "fixture_mean": 10.064084246828427,
+        "fixture_minus_snotel_bias": 1.206438942603769,
+        "mae": 1.4275854978445621,
+        "n": 8119,
+        "snotel_mean": 8.85764530422466
+      },
+      "tmin_c": {
+        "correlation": 0.9846435486069641,
+        "fixture_mean": 0.9367024558805381,
+        "fixture_minus_snotel_bias": -0.14388498025422683,
+        "mae": 1.0405898981858572,
+        "n": 8103,
+        "snotel_mean": 1.080587436134765
+      }
+    },
+    "snow_season": {
+      "precipitation": {
+        "correlation": 0.9037545016313284,
+        "fixture_mean": 4.533551515151515,
+        "fixture_minus_snotel_bias": -0.8777260606060606,
+        "fixture_to_snotel_total_ratio": 0.8377968883839453,
+        "fixture_total_mm": 18700.9,
+        "fixture_wet_days": 1906,
+        "mae": 1.9644557575757584,
+        "n": 4125,
+        "positive_event_quantiles_mm": {
+          "fixture": {
+            "0.5": 8.0,
+            "0.9": 19.05,
+            "0.99": 36.58000000000002
+          },
+          "snotel": {
+            "0.5": 7.619999999999891,
+            "0.9": 22.8599999999999,
+            "0.99": 46.659799999999734
+          }
+        },
+        "snotel_mean": 5.411277575757576,
+        "snotel_total_mm": 22321.52,
+        "snotel_wet_days": 2264,
+        "wet_day_agreement_fraction": 0.8686060606060606,
+        "wet_day_threshold_mm": 0.254
+      },
+      "tmax_c": {
+        "correlation": 0.9887705764894719,
+        "fixture_mean": 6.461215030624069,
+        "fixture_minus_snotel_bias": 1.0553035725873199,
+        "mae": 1.3482020983280913,
+        "n": 6041,
+        "snotel_mean": 5.405911458036749
+      },
+      "tmin_c": {
+        "correlation": 0.975257818939042,
+        "fixture_mean": -2.419316296050448,
+        "fixture_minus_snotel_bias": -0.10663421291072021,
+        "mae": 1.0940959483903085,
+        "n": 6026,
+        "snotel_mean": -2.312682083139728
+      }
+    },
+    "wet_winter": {
+      "precipitation": {
+        "correlation": 0.9129386311484435,
+        "fixture_mean": 4.657723577235773,
+        "fixture_minus_snotel_bias": -0.8928883183568679,
+        "fixture_to_snotel_total_ratio": 0.8391369573026987,
+        "fixture_total_mm": 10885.1,
+        "fixture_wet_days": 1120,
+        "mae": 1.9898673513050926,
+        "n": 2337,
+        "positive_event_quantiles_mm": {
+          "fixture": {
+            "0.5": 7.9,
+            "0.9": 19.1,
+            "0.99": 37.042999999999985
+          },
+          "snotel": {
+            "0.5": 5.080000000000041,
+            "0.9": 22.860000000000014,
+            "0.99": 50.87619999999994
+          }
+        },
+        "snotel_mean": 5.55061189559264,
+        "snotel_total_mm": 12971.78,
+        "snotel_wet_days": 1298,
+        "wet_day_agreement_fraction": 0.8784766795036372,
+        "wet_day_threshold_mm": 0.254
+      },
+      "tmax_c": {
+        "correlation": 0.9751852119193933,
+        "fixture_mean": 1.9047748564521003,
+        "fixture_minus_snotel_bias": 0.6168563862194016,
+        "mae": 1.0760149072227259,
+        "n": 3309,
+        "snotel_mean": 1.2879184702326987
+      },
+      "tmin_c": {
+        "correlation": 0.9486667922605867,
+        "fixture_mean": -6.511638452237001,
+        "fixture_minus_snotel_bias": -0.3754366493349456,
+        "mae": 1.2255306928657799,
+        "n": 3308,
+        "snotel_mean": -6.136201802902055
+      }
+    }
+  },
+  "schema_version": 1,
+  "source_hashes": {
+    "climate": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+    "observation": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992",
+    "provenance": "4bb2f6da682f3d85805058142b4500c2c79f88e430d32611f6461d99038e2946"
+  },
+  "status": "SNOTEL_CLIMATE_COMPARISON_COMPLETE"
+}
