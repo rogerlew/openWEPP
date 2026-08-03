@@ -8,6 +8,11 @@ Evidence mode: **Ran**
   threshold, below the mandatory 3,000-line pre-closure refactor threshold.
 - runner `03_tests.rs`: 2,891 lines after the new EB-04W2B real-path test was
   extracted to `tests03/eb04w2b_warm_snow.rs` — `WARN`, below 3,000.
+- direct-publication `00c_day_input_builder_impl.rs`: 2,450 lines — `WARN`,
+  below 3,000. Its W2B edit is a bounded real-consumer regression fixture;
+  splitting the production builder during this critical correction would mix
+  mechanical refactoring into the science diff. Follow-up intent is to extract
+  cohesive day-input builder stages before the next substantive edit.
 - `snowbench.rs`: 1,662 lines; `snowbench_coe_melt.rs`: 1,188 lines.
 - SIMIMPL28 hourly forcing: 1,344 lines; EB-04W integration target: 217 lines.
 

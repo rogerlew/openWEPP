@@ -1,196 +1,227 @@
-# Independent QA Review — Agent B
+# Independent QA Review B — Resumed Terminal Closure
 
-Status: **findings / HOLD before complete disposition**
+Latest status: **PASS — terminal-v2 corrections accepted; terminal verification pending**
 
-Evidence mode: **Static + Ran (read-only integrity checks)**
+Evidence mode: **Static + Ran**
 
-Static: reviewed the terminal tracked/untracked diff, governing contracts,
-production call sites, tests, package plan, and package evidence. Ran: checked
-`git diff --check`, compared the frozen W2A scientific-rule projection, verified
-the freeze/receipt/results/adjudication hashes and release-binary hashes, and
-inspected retained Nextest JUnit metadata. I did not rerun Rust test or lint
-suites; the retained full profile reports `2195/2195` passed.
+Review point: current worktree at HEAD
+`a74af48b8e98f91b5d5acdebc0e2da0bf988ba36`. This resumed review replaces
+Agent B's operative historical text. The original review and re-review HOLD
+dispositions remain relevant as commit history and are summarized below; they
+are not rewritten as passes.
 
 ## Findings
 
-1. **HIGH — The result-bearing W2A rerun did not satisfy its prospective
-   prerequisite order.** `package.md:108-112` requires criteria 1-6, including
-   every critical validation plus dual review/disposition and dual verification,
-   to pass before the frozen contrast reruns. The retained freeze records
-   `2026-08-02T19:09:57Z`, while `target/nextest/quick/junit.xml` completed at
-   13:19 local and `target/nextest/full/junit.xml` started at 14:06 local; both
-   were after the 12:09 local freeze. Reviews/verifications also remain pending
-   at `package.md:146`. This is additionally inconsistent with the phase order
-   at `package.md:90-94`, which schedules the rerun before review. The frozen
-   cells, models, operators, thresholds, artifact hashes, and binary hashes do
-   match W2A, so the defect is sequencing rather than rule mutation. Treat the
-   existing run as prerequisite-ineligible and perform/retain an exact frozen
-   rerun only after all stated prerequisites pass; do not weaken criterion 7
-   after seeing the result.
+### HIGH — RB-01: the terminal rerun reused the rejected first run's release binary
 
-2. **HIGH — Repository-facing disposition is prematurely `complete`.** The
-   package is still `active / executing` (`package.md:3`) with review,
-   verification, and disposition unfinished (`package.md:146`,
-   `artifacts/disposition.md:3-7`, `artifacts/review-disposition.md:3-7`), and
-   documentation lint is explicitly still pending
-   (`artifacts/gate-results.md:21-25`). Nevertheless `docs/ROADMAP.md:34`,
-   `docs/planning/snow-surface-energy-balance-roadmap.md:157`, and
-   `docs/work-packages/README.md:5080-5087` publish the package as complete and
-   advance EB-04X. Keep those surfaces in executing/review-pending state until
-   all current-scope gates and finding dispositions actually pass.
+The terminal freeze records `target/release/openwepp-snowbench` SHA-256
+`79a8a00a...f258`, exactly the same binary hash recorded by the
+prerequisite-ineligible first freeze. The binary mtime is
+`2026-08-02 12:09:43 -0700`, immediately before the first freeze at
+`2026-08-02T19:09:57Z`; the resumed freeze is almost twelve hours later at
+`2026-08-03T07:00:33Z`. No exact release build command, post-build metadata, or
+new binary identity appears in `artifacts/gate-results.md` before the resumed
+run.
 
-3. **MEDIUM — The critical shared fail-closed guard and tolerance edges are not
-   contract-derived regression tests.** The public-partition vectors at
-   `tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs:122-156`
-   prove successful warm snow, mixed, and all-rain behavior, but only assert a
-   reconstructed residual on successful outputs. They never force the shared
-   validator at `runoff_reconciliation.rs:436-458` to reject a material or
-   non-finite residual. The runner-only helper test at
-   `snowbench_coe_melt.rs:1183-1189` covers `+1.1e-9` rejection and `-1.0e-9`
-   acceptance, not the shared boundary. It also omits the strict activation
-   edge implemented at `runoff_reconciliation.rs:298-305` (exactly `1e-12 m`
-   snowfall depth versus the next representable value above it). Add direct
-   negative shared-boundary coverage and exact/just-over activation and closure
-   threshold cases. Also clarify `SC-SNOWFREEZE-001.md:333`: it cites
-   `TOL-SNOWFREEZE-013`, whose definition at line 1255 is a group of diagnostic
-   residual tolerances, not an explicitly named snowfall-presence threshold.
+`tools/run_frozen_w2a_rerun.py:65-89` hashes current source and the existing
+binary but never builds the executable. The explicit source manifest reproduces
+against the current W2B files, but it does not prove that those sources produced
+the executable that actually ran. This violates the release-binary provenance
+rule in `docs/work-packages/AGENTS.md` and makes the new JSON/CSV result
+ineligible for terminal scientific adjudication.
 
-4. **MEDIUM — Terminal gate evidence is too lossy for the claims it makes.** The
-   table at `artifacts/gate-results.md:7-19` records counts but omits exact argv,
-   working directory, source/diff identity, exit status, and log/receipt paths
-   for the focused tests, owning-crate run, targeted warnings-denied Clippy,
-   assurance validation, formatting, and most workspace profiles. The full
-   `2195`-test JUnit is present and passing, but the artifact does not meet the
-   exact-command/result requirement in `docs/work-packages/AGENTS.md:322-329`.
-   The freeze's `source_dirty_diff_sha256` is also no longer the current tracked
-   diff hash (`cc25fc...` retained versus `0ae3dd...` observed), with later
-   roadmap/assurance edits not reconciled in a terminal exact-diff artifact.
-   Record exact commands and identities, finish documentation lint after the
-   review artifacts land, explicitly disposition `cargo deny check` as
-   not-applicable because no manifest/lock/resolution input changed, and perform
-   final exact-diff reconciliation before closure.
+Required correction: build the exact release binary target, retain command,
+path, mtime/size and hash, then execute a newly named immutable rerun set. Do not
+overwrite either existing rerun generation.
 
-5. **LOW — Line-count governance suppresses the required warning.** The checklist
-   calls the 2,531-line `runoff_reconciliation.rs` below a “3,000-line review
-   trigger” and marks the gate passed
-   (`artifacts/line-count-governance-checklist.md:3-12`). Repository policy makes
-   every 2,000+ line Rust file `WARN` and requires both a decomposition rationale
-   and follow-up split intent (`crates/AGENTS.md:57-60`). Record the warning and
-   follow-up intent even if this bounded change does not justify an in-package
-   extraction.
+### HIGH — RB-02: the purported immutable rerun overwrote historical result-bearing artifacts
 
-## Non-blocking debt / residual risks
+The wrapper gives freeze, receipt, results, summary, output directory, and
+adjudication new terminal names, but it leaves `w2a.ARTIFACTS` and
+`w2a.FIGURES` pointed at the original W2B artifact locations
+(`tools/run_frozen_w2a_rerun.py:52-64`). The imported analyzer writes four SVGs
+to that shared figure directory and rewrites `artifacts/scientific-synthesis.md`.
 
-- The production edit is localized and readable; static inspection found no
-  altered phase equation, selector, coefficient, default, or melt formula.
-- The shared and snowbench reconstructions use independent typed/source snowfall
-  operands rather than reported `accumulation_m`; warm snow, mixed, and all-rain
-  nominal coverage is present.
-- The exact W2A cells/models/operators/thresholds compare equal, all eight receipt
-  return codes are zero, artifact hashes close, and both retained release-binary
-  hashes match. The current source-diff drift appears documentation/assurance
-  related, but it still needs explicit terminal reconciliation.
+The current diff proves all four historical SVGs were overwritten. The
+historical synthesis headed `Scientific Synthesis — Prerequisite-Ineligible
+Screen`, including its withdrawn-status warning, was replaced by an unlabeled
+terminal synthesis. This contradicts the wrapper comment, `package.md:171-174`,
+and `artifacts/disposition.md:20-24`, all of which claim the rejected first-run
+evidence was preserved without overwrite. The original JSON/CSV chain remains,
+but the complete result-bearing record does not.
 
-QA disposition: **HOLD** pending the findings above. No production-formula
-correctness defect was identified in this review.
+Required correction: restore or separately retain the historical
+prerequisite-ineligible synthesis and figures, route the next terminal
+generation to terminal-specific figure/synthesis paths, and make every output
+fail closed if its destination already exists.
+
+### HIGH — RB-03: repository-facing completion and EB-04X admission are premature
+
+`package.md:3` and `artifacts/disposition.md:3-28` acknowledge that resumed
+dual review, finding disposition, and dual terminal verification are pending.
+This review is a HOLD, and RB-01/RB-02 invalidate the asserted terminal rerun.
+Nevertheless `docs/ROADMAP.md:34`, the campaign roadmap at lines 157, 159 and
+189-191, and `docs/work-packages/README.md:5097-5105` already publish W2B as
+complete and admit EB-04X.
+
+These surfaces must remain terminal-review HOLD and keep EB-04X held until a
+valid newly built immutable rerun, accepted dual review disposition, dual
+terminal verification, and final exact-diff reconciliation all pass.
+
+### MEDIUM — RB-04: terminal provenance is not reconciled to the resumed tree
+
+The resumed section of `artifacts/gate-results.md:77-96` gives outcomes for
+W2C reuse, three W2B focused rows, formatting, lint, and the rerun, but the
+focused rows omit exact argv, timing and retained log paths. The package's
+`artifacts/terminal-diff-reconciliation.md` remains the historical cross-domain
+HOLD record rather than an exact reconciliation of the resumed W2C source,
+new terminal artifacts, overwritten figures/synthesis, wrapper change,
+roadmaps, catalog, prompt state, and final review artifacts. The freeze's dirty
+diff hash is necessarily pre-analysis and no longer identifies the terminal
+tree.
+
+The terminal JSON hash chain itself is internally consistent, and every W2B
+source-file hash in the freeze currently reproduces. Those narrower facts do
+not close the package-wide exact-diff requirement.
+
+### MEDIUM — RB-05: W2C's prerequisite release retains contradictory terminal wording
+
+The W2C disposition and verification disposition say formal completion and
+dual terminal verification PASS, and the current real fixture confirms the
+technical release. However W2C's `package.md` outcome still says W2B may not
+resume until revision-60 review/reverification completes, and
+`artifacts/review-disposition.md:45-48` still says terminal reverification is
+pending. Reconcile these stale statements to the retained completed history so
+the prerequisite has one unambiguous lifecycle state.
+
+### LOW — RB-06: line-count governance omits a touched 2,000-line warning
+
+`artifacts/line-count-governance-checklist.md` correctly warns on the 2,598-line
+`runoff_reconciliation.rs` and 2,891-line runner test aggregate, but omits the
+W2B-touched
+`direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`, which
+is 2,450 lines and therefore also requires a `WARN`, decomposition rationale,
+and follow-up split intent. No touched W2B Rust file reaches the 3,000-line hard
+boundary.
+
+## Retained Historical Disposition
+
+The original Agent B review held the first W2A rerun for prospective-order,
+premature-completion, guard-test, evidence-provenance, and line-count defects.
+The subsequent re-review accepted the corrected W2B production/test behavior
+for `HOLD_CROSS_DOMAIN_CORRECTNESS_GATE` while requiring W2C. Those historical
+HOLD conclusions remain valid evidence for why the first rerun is ineligible;
+they do not qualify the resumed result as terminal.
+
+## Non-blocking Debt / Follow-ups
+
+- Test adequacy is acceptable on the current source. Independently ran the two
+  orchestrator W2B tests (`2/2`), three runner consumer tests (`3/3`), six
+  contract/integration tests (`6/6`), and the real EROD16 fixture (`1/1`,
+  `4/231` explicit refusals and 227 clean/depositing solves); all passed.
+- `cargo fmt --all -- --check` and `git diff --check` passed independently.
+- The frozen cells, models, operators, thresholds, observation role, and
+  promotion prohibition compare exactly between the first and resumed freezes.
+  Scientific result content also compares exactly after removing provenance:
+  all four albedo-materiality flags remain false, maximum mass closure is
+  `2.220e-15 m`, and maximum energy closure is `6.094e-08 J m^-2`. This supports
+  rule integrity but cannot cure RB-01/RB-02.
+- Security/dependency disposition is acceptable: no manifest, lockfile,
+  dependency-resolution, nextest-policy, unsafe, or production unwrap/expect
+  change was found. `cargo deny check` is therefore correctly not applicable.
+
+QA disposition: **HOLD**. The current W2B implementation and W2C technical
+prerequisite pass focused QA, but terminal rerun provenance, non-overwrite,
+exact-diff, and completion-truthfulness obligations do not.
 
 ---
 
-## Terminal Re-review — Corrected Diff and Proposed Cross-Domain HOLD
+## Fresh Terminal-V2 Re-review
 
-Status: **HOLD disposition accepted / documentation and evidence findings
-remain**
+Status: **HOLD — RB-03 remains partially open**
 
-Evidence mode: **Static + Ran (read-only integrity checks)**
+Evidence mode: **Static + Ran**
 
-Static: independently re-reviewed the corrected production paths, typed error
-surfaces, boundary and real-consumer tests, amended contracts, assurance
-adoption chain, rerun source-manifest changes, roadmap/catalog disposition, and
-the EROD16 coverage instrument. Ran: `git diff --check` passed; inspected the
-retained quick and isolated Nextest JUnit receipts. I did not rerun Rust suites.
+This section is the operative Agent B disposition for terminal-v2. The initial
+resumed HOLD above remains retained as the finding record.
 
-### Findings
+### Finding
 
-1. **HIGH — B2 is not fully corrected: the campaign narrative still publishes
-   the withdrawn scientific result and advances EB-04X.** The milestone table
-   correctly records `HOLD_CROSS_DOMAIN_CORRECTNESS_GATE`, the
-   prerequisite-ineligible rerun, W2C authorization, and EB-04X hold
-   (`docs/planning/snow-surface-energy-balance-roadmap.md:157-159`). However,
-   the narrative at lines 182-185 still says the unchanged rerun found no
-   material albedo response and that EB-04X follows. That directly contradicts
-   the table, `scientific-synthesis.md`, and the corrected B1 disposition. It
-   also makes `review-disposition.md:14` ("all repository-facing surfaces")
-   false. Replace that narrative with the cross-domain HOLD, state that the
-   first rerun is inadmissible, and keep EB-04X held behind an authorized W2C
-   diagnosis.
+#### HIGH — RB-V2-01: two lifecycle narratives still admit EB-04X during terminal-review HOLD
 
-2. **MEDIUM — B4 is improved but remains incomplete; the `37/227` causal
-   reversal is not reproducible from retained evidence.**
-   `artifacts/gate-results.md:33-40` now records exact argv and exit results for
-   the corrected focused, owning-crate, frost, Clippy, assurance, and quick
-   gates, and lines 46-48 correctly withhold full/rerun and disposition
-   `cargo deny check` as N/A. Lines 41-42 are descriptions rather than exact
-   argv, though, and retain neither the temporary old-trigger patch/diff
-   identity nor its machine-readable output. The current default JUnit has been
-   overwritten by a later corrected-trigger run, so it proves a second
-   `61/231` failure but cannot substantiate `37/227`. The quick JUnit and
-   corrected isolated JUnit are sufficient for the HOLD; the stronger claim
-   that changing only the old trigger restores `37/227` must either be labeled
-   an unretained diagnostic observation or backed by the exact command,
-   temporary source identity/patch digest, and retained log/receipt.
+The primary lifecycle surfaces are corrected: `artifacts/disposition.md` is
+`HOLD_TERMINAL_REVIEW`, `docs/ROADMAP.md` keeps W2B as the next review-closure
+item, the campaign milestone table keeps EB-04X held, and the catalog records
+terminal-v2 review pending. However:
 
-3. **LOW — Package-local evidence indexes have minor terminal-state drift.**
-   `artifacts/owned-file-manifest.md:19` says "one transaction," while the
-   final assurance chain contains both `9ad8f170...` and `d18e6602...`; line 20
-   calls the roadmap update an EB-04X handoff despite the hold.
-   `artifacts/contract-test-evidence.md:3-10` also remains a pre-implementation
-   red-only status even though the corrected target is retained as `6/6`
-   elsewhere. Reconcile these summaries so future readers do not have to infer
-   terminal state across conflicting artifacts.
+- `package.md:227` still concludes `EB-04X may advance`; and
+- `docs/planning/snow-surface-energy-balance-roadmap.md:191` still says
+  `EB-04X may now advance`.
 
-### B1-B5 terminal disposition
+Those statements contradict the same package's pending dual review,
+verification, and exact-diff gates. RB-03 is therefore only partially
+corrected. Replace both with the terminal-review HOLD and keep EB-04X blocked
+until accepted dual review disposition and dual terminal verification complete.
 
-| Finding | Re-review result |
+### RB-01 Through RB-06 Recheck
+
+| Prior finding | Terminal-v2 result |
 |---|---|
-| B1 prospective rerun order | **Closed for HOLD.** The first rerun is explicitly prerequisite-ineligible and withdrawn; no replacement rerun was attempted after the renewed quick failure. |
-| B2 premature completion/roadmap | **Open.** Root roadmap, package catalog, and milestone table are corrected, but the campaign narrative at lines 182-185 is stale and materially contradictory. |
-| B3 guard/tolerance tests | **Closed.** Shared-boundary tests cover exact tolerance, both next-representable signs, and non-finite rejection; integration coverage binds exact/just-over activation to named `TOL-SNOWFREEZE-014`. |
-| B4 exact terminal evidence | **Partially closed.** Corrected primary gate argv/results and `cargo deny` disposition are present; exact source/diff identity and a reproducible old-trigger reversal receipt are not. |
-| B5 line-count governance | **Closed.** Both 2,000+ Rust files are WARN with a bounded-change rationale and explicit follow-up split intent. |
+| `RB-01` stale release binary | **Closed.** `release-build-receipt.json` records `cargo build --release -p openwepp-runner --bin openwepp-snowbench`, HEAD `a74af48b...`, dirty-source identity `890e4ab1...07aa`, path, size, mtime, and new binary SHA-256 `d6b2e824...9a54`. The freeze, execution receipt, and live binary all carry that same hash. |
+| `RB-02` overwritten historical outputs | **Closed.** The wrapper routes every generated surface beneath `artifacts/terminal-v2/`, refuses pre-existing artifact or result directories before build/execution, and the shared synthesis/figure paths have no diff from HEAD. |
+| `RB-03` premature lifecycle | **Open only as `RB-V2-01`.** Primary status/table/catalog surfaces are held, but the two narratives above remain contradictory. |
+| `RB-04` exact provenance/reconciliation | **Closed for re-review.** The terminal-v2 reconciliation identifies the pre-review tracked/untracked/package tree, wrapper, source manifest, rebuilt binary, and freeze/receipt hashes; it explicitly reserves the self-referential final inventory for terminal verification. |
+| `RB-05` W2C lifecycle contradiction | **Closed.** W2C's package outcome and review disposition now state revision-60 review and dual terminal reverification passed. |
+| `RB-06` omitted line-count warning | **Closed.** The 2,450-line day-input builder is WARNed with decomposition rationale and follow-up intent; all other 2,000-line warnings remain and no touched nonexempt Rust file reaches 3,000 lines. |
 
-### Non-blocking debt / follow-ups
+### Independent Integrity Checks
 
-- The corrected implementation is cohesive and readable: provider availability
-  is separated from phase/activation authority, structured kernel errors retain
-  their source, and consumer-only closure failure has a distinct typed variant.
-  No equation, coefficient, selector, melt formulation, or silent numerical
-  fallback was introduced.
-- The new direct-production test exercises the real warm-mean/zero-pack path,
-  while shared-boundary and snowbench tests cover positive, negative,
-  next-representable, non-finite, and noncanonical-density cases. This closes
-  the substantive test-quality concern from B3.
-- The rerun wrapper's prospective source manifest is materially improved: it
-  hashes all W2B result-affecting touched source/contract/test files (including
-  the untracked direct-consumer test), a sorted manifest digest, the tracked
-  dirty diff, and the wrapper. No new rerun used it, which is correct while the
-  prerequisite gate is red.
-- The assurance adoption is internally consistent despite the stale owned-file
-  summary: the two checked `scientific-full` transactions form
-  `4d83e2a9... -> a26a0352... -> f2b8a335...`; the identity lock binds the
-  current `SC-SNOWFREEZE-001` hash `4eccdd17...` and snow-report review-lock
-  hash `002e8c5e...`, with no invalidated authority reported.
-- The EROD16 failure is a genuine hard correctness/coverage failure, not an
-  optional metric: the pre-existing instrument requires refusals `<=20%` of
-  real storm days. Retained quick and isolated corrected-trigger receipts both
-  report `61/231` with `170` clean, conserving/depositing solves. The production
-  fixture completing does not waive the failed coverage assertion.
-- Withholding the terminal full profile and frozen W2A rerun is correct after a
-  deterministic required quick-gate failure. Erosion solver mechanics and any
-  prospective amendment of the `<=20%` authority are outside this package and
-  require the bounded W2C authorization described in the corrected milestone
-  table.
+- Recomputed terminal-v2 SHA-256 values: freeze
+  `943561dc...d44dbb`, receipt `02461508...a0ed`, and results
+  `65b308db...d4cb`; all exactly match `adjudication.json`.
+- The adjudication/result chain retains eight successful executions, maximum
+  mass closure `2.220e-15 m`, energy closure `6.094e-08 J m^-2`, and no
+  promotion. Every explicit W2B source hash in the freeze matches the current
+  file, and the scientific projection is unchanged from the frozen historical
+  screen after removing provenance fields.
+- Executed the wrapper against the existing terminal-v2 tree: it failed before
+  build or execution with `terminal-v2 evidence or result-bearing output already
+  exists`, confirming the non-overwrite guard.
+- `git diff --exit-code` passes for the shared historical synthesis and figure
+  tree. `git diff --check` also passes.
 
-QA disposition: **PASS for `HOLD_CROSS_DOMAIN_CORRECTNESS_GATE` only.** Do not
-claim package completion, a terminal albedo result, or EB-04X admission. Correct
-the stale roadmap narrative and qualify or retain the old-trigger diagnostic
-evidence before treating this re-review ledger as fully reconciled.
+### Non-blocking Debt / Follow-up
+
+- The release-build receipt does not store a separate numeric exit field or
+  duration, but it is written only after `subprocess.run(..., check=True)`
+  succeeds; `gate-results.md` records exit `0` and the 66-second duration. This
+  is adequate provenance, though an explicit receipt field would improve
+  ergonomics.
+- Final exact-diff inventory is correctly deferred only to the package-required
+  terminal verifiers because review artifacts change the self-referential
+  package manifest. Result-affecting source and binary identities must remain
+  unchanged through that verification.
+
+Terminal-v2 QA disposition: **HOLD** solely for `RB-V2-01`. The technical
+terminal-v2 evidence is acceptable; correct the two stale EB-04X admissions,
+disposition this finding, and obtain dual terminal verification before package
+completion.
+
+### RB-03 Narrow Final Recheck
+
+Status: **PASS — RB-V2-01 corrected; no remaining QA finding**
+
+Evidence mode: **Static**
+
+- `package.md:227-228` now keeps EB-04X held until terminal-v2 review,
+  verification, and exact-diff closure pass.
+- `docs/planning/snow-surface-energy-balance-roadmap.md:191-192` now states the
+  same hold. No remaining `EB-04X may advance`, `may now advance`, or equivalent
+  admission appears in either corrected surface.
+- These statements agree with the already reviewed package disposition, root
+  roadmap, campaign milestone table, and catalog hold posture.
+
+`RB-03` and `RB-V2-01` are closed. All `RB-01` through `RB-06` corrections now
+pass fresh Agent B re-review. **QA PASS** for terminal-v2 review; package
+completion remains pending its separately required finding disposition, dual
+terminal verification, and final exact-diff reconciliation.

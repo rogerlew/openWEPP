@@ -1,0 +1,18 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.30s
+────────────
+ Nextest run ID ee171b39-8e73-4587-a049-b492ceff4b56 with nextest profile: default
+    Starting 1 test across 1 binary
+       START [         ] (1/1) openwepp::erod16_wave1_continuity_fixture_conservation erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing
+
+running 1 test
+concave depositing instrument: storms=231 clean=227 flux_refusals=4 depositing=227 tdet=978601.7 kg tdep=124192.6 kg
+test erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.30s
+
+        PASS [  25.306s] (1/1) openwepp::erod16_wave1_continuity_fixture_conservation erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing
+────────────
+     Summary [  25.307s] 1 test run: 1 passed, 0 skipped

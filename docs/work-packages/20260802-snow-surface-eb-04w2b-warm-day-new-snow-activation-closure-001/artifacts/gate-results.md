@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `HOLD` — renewed quick correctness gate failed
+Status: `COMPLETE / ALL REQUIRED GATES PASS`
 
 Evidence mode: **Ran**
 
@@ -72,3 +72,40 @@ then ran from `/home/workdir/openWEPP`:
 These clarification/test-only changes do not affect the retained corrected
 EROD16 failure. No quick/full rerun or W2A result rerun is admitted while that
 hard prerequisite remains red.
+
+## Resumed Terminal Evidence
+
+EB-04W2C released the cross-domain prerequisite on the current production diff.
+Its retained terminal evidence records quick `2156/2156`, frost `345/345`,
+erosion `377/377`, Critical full `2243/2243`, owning-crate `435/435`, Clippy,
+formatting, doctest, assurance, dual-review, and dual-verification passes.
+
+| Exact argv | Exit/result |
+|---|---|
+| `cargo nextest run --test erod16_wave1_continuity_fixture_conservation -E 'test(erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing)'` | `0`; 1/1 passed in 13.663 s |
+| focused orchestrator EB-04W2B selector | `0`; 2/2 passed |
+| focused runner EB-04W2B selector | `0`; 3/3 passed |
+| `cargo nextest run --test snow_surface_eb04w_accumulation_melt_diagnostics_contract` | `0`; 6/6 passed |
+| `cargo fmt --check` | `0` |
+| `cargo clippy -p openwepp-hillslope-orchestrator -p openwepp-runner --all-targets -- -D warnings` | `0` |
+| `.venv/bin/python .../tools/run_frozen_w2a_rerun.py` | `0`; 8/8 cells passed; mass closure `2.220e-15 m` |
+
+The first rerun attempt failed closed before execution because historical
+result-bearing artifacts already existed. The following terminal generation
+was rejected by dual review because it still reused the old release binary and
+overwrote shared renderings; its JSON chain is retained but ineligible.
+
+## Terminal-V2 Review Corrections
+
+| Exact argv/evidence | Exit/result |
+|---|---|
+| `cargo build --release -p openwepp-runner --bin openwepp-snowbench` | `0`; exact current-source rebuild in 66 s |
+| `artifacts/terminal-v2/release-build-receipt.json` | binary SHA-256 `d6b2e824fc1e5e6042492d6f87f85e39d599e0cfa3ef03db57303fcec4599a54`; 13,122,640 bytes |
+| `.venv/bin/python .../tools/run_frozen_w2a_rerun.py` | `0`; 8/8 exact-source cells passed |
+| `artifacts/terminal-v2/adjudication.json` | mass closure `2.220e-15 m`; energy closure `6.094e-08 J m^-2`; no promotion |
+
+The wrapper now fails closed if either its terminal-v2 artifact directory or
+result directory exists. Freeze, receipt, results, summary, adjudication,
+scientific synthesis, figures, and figure sidecars all live beneath
+`artifacts/terminal-v2/`; historical shared synthesis/figures reproduce the
+tracked prerequisite-ineligible versions exactly.

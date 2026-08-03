@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "build",
+    "--release",
+    "-p",
+    "openwepp-runner",
+    "--bin",
+    "openwepp-snowbench"
+  ],
+  "binary_mtime_ns": 1785741406652493292,
+  "binary_path": "target/release/openwepp-snowbench",
+  "binary_sha256": "d6b2e824fc1e5e6042492d6f87f85e39d599e0cfa3ef03db57303fcec4599a54",
+  "binary_size_bytes": 13122640,
+  "source_dirty_diff_sha256": "890e4ab1a9fc07f20f505131bd6fbc70ec7d526b0d76a79aa1941213530507aa",
+  "source_head": "a74af48b8e98f91b5d5acdebc0e2da0bf988ba36",
+  "working_directory": "/home/workdir/openWEPP"
+}

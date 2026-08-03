@@ -1,95 +1,85 @@
-# Independent Terminal Verification — Agent A
+# Verification Agent A — Terminal-V2 Verification
 
-Status: **PASS / HOLD_CROSS_DOMAIN_CORRECTNESS_GATE**
+Status: **PASS — terminal-v2 verification gate**
 
-Evidence mode: **Static + Ran**
+Evidence mode: **Ran + Static**
 
-## Verdict
+This PASS verifies the terminal-v2 correction and retained package evidence. It
+does not itself advance EB-04X: the current roadmap HOLD remains truthful until
+both named terminal verifiers and the package owner complete final finding,
+exact-diff, prompt, and disposition reconciliation.
 
-The terminal disposition is truthful. The snow-scoped activation and daily
-storage-closure corrections are contract-backed, typed, exercised through the
-real production day-input/frame consumer and the snowbench consumer, and pass
-the focused current-diff gates. Closure remains prohibited because the required
-quick correctness surface exposes the independently reproducible EROD16
-continuity-instrument failure. Neither reverting the snow correction nor
-weakening the erosion bound is admissible in this package.
+## Acceptance Criteria
 
-The earlier W2A result is correctly retained only as prerequisite-ineligible
-audit material. No terminal W2A rerun, corrected-diff full profile, promotion,
-or EB-04X admission is claimed.
+| Criterion | Result | Independent verification |
+|---|---|---|
+| 1. Warm, zero-prior-SWE typed snowfall activates and conserves exact input | **PASS** | Static contract/implementation/test trace and retained focused green evidence cover the sufficient `>1e-12 m` typed-snow trigger and `snowfall_depth * 0.1` reconstruction. |
+| 2. Mixed event closes; warm all-rain/no-pack remains inactive | **PASS** | Retained six-test contract target and focused shared/consumer tests cover mixed rain/snow closure, warm rain-only inactivity, exact threshold, and just-over threshold behavior. |
+| 3. Independent daily SWE reconstruction fails closed | **PASS** | Shared partition and snowbench consumer independently use `SWE_before + typed_snowfall_SWE + rain_retained - snowpack_loss - sublimation - SWE_after`; retained exact/over/non-finite boundary tests pass with typed errors. |
+| 4. Direct runtime and snowbench use the corrected public API | **PASS** | Real-consumer evidence reaches the production fixture, seed/frame, `DirectProductionDayInputBuilder`, shared partition, published storage, after-day SWE, and hydrology projection. No wrapper, shadow, skeleton, or compatibility-only path carries the claim. |
+| 5. Protected phase/forcing/coefficient/selector/default/melt equations unchanged | **PASS** | Static exact-diff and source-manifest reconciliation finds only the contract-backed availability trigger and conservation/control work in W2B; terminal resumption changed no result-affecting W2B source. W2C is separately authorized and reviewed. |
+| 6. Required validation/review/governance gates | **PASS** | Focused 11/11, owning-crate, frost, warnings-denied Clippy, formatting, assurance, documentation, and W2C quick/frost/erosion/Critical-full evidence are retained. Fresh Review Agents A and B both end in PASS with no open finding. Line-count, security, prompt, and exact-source checks pass as detailed below. |
+| 7. Frozen rerun ordering and unchanged adjudication | **PASS** | W2C first released the prerequisite (`4/231` refusals); the isolated exact-source terminal-v2 run then executed 8/8 cells. Maximum mass closure is `2.220446049250313e-15 m`, maximum energy closure is `6.094342098e-08 J m^-2`, and no albedo promotion is admitted. Earlier generations remain ineligible historical evidence. |
 
-## Static Verification
+## Ran Evidence
 
-- **Contract and tolerance:** `INV-SNOWFREEZE-089` makes material typed hourly
-  snowfall independently sufficient for activation after an authorized phase
-  provider while retaining the existing snow/frost/cold provider triggers.
-  `TOL-SNOWFREEZE-014` uses strict `> 1e-12 m` presence thresholds and says
-  equality is sub-resolution. Daily closure binds to
-  `TOL-SNOWFREEZE-006 = 1e-9 m` water equivalent and the independently
-  reconstructed signed equation. `INV-RUNOFFPART-033` carries the same
-  fail-closed shared-consumer obligation. The wording is sufficient rather
-  than exclusive and does not change phase equations or values.
-- **Real direct consumer:** the regression loads the production fixture,
-  constructs `DirectProductionSeedAuthority` and the production run frame,
-  invokes `DirectProductionDayInputBuilder::build`, and asserts active coupling,
-  a published storage-gain handoff, positive after-day SWE, and positive
-  hydrology-projection SWE. Production SIMIMPL28 resolves typed phase rows for
-  material precipitation; warm dry/no-pack suppression and warm all-rain/no-pack
-  inactivity remain covered. No wrapper, skeleton, shadow, or compatibility-only
-  path carries this claim.
-- **Closure and typed errors:** the shared partition reconstructs
-  `SWE_before + sum(hourly snowfall_m * 0.1) + rain_retained - snowpack_loss -
-  sublimation - SWE_after` without trusting `accumulation_m`. Exact
-  `+/-1e-9 m` is accepted, both next-representable magnitudes are rejected with
-  `HKERNEL-WB14-RUNOFF-E-003`, and non-finite residuals are rejected with
-  `HKERNEL-WB14-RUNOFF-E-002`. Snowbench maps kernel failures to
-  `SnowKernel { source }` and uses the distinct `SnowStorageClosure` variant for
-  its independent consumer reconstruction.
-- **Assurance:** three checked `scientific-full` transactions form the exact
-  generation chain `4d83e2a9... -> a26a0352... -> f2b8a335... ->
-  9e64c4c7...`; each records zero invalidated authority, and the identity lock
-  names terminal generation `9e64c4c7...`.
-- **Disposition surfaces:** `package.md`, both roadmaps, the package catalog,
-  scientific synthesis, disposition, and prompt lifecycle consistently state
-  the cross-domain HOLD, withdraw the first rerun from terminal adjudication,
-  withhold full/rerun closure, and keep EB-04X held. The kickoff is archived and
-  `prompts/active/` contains no active kickoff.
-- **Line count and write set:** the two files above 2,000 lines are correctly
-  marked `WARN` (`runoff_reconciliation.rs` 2,598; runner `03_tests.rs` 2,891),
-  both remain below 3,000, and decomposition intent is recorded. Production,
-  contract, mechanically version-pinned tests, assurance locks/transactions,
-  roadmap/catalog, new runner test, and package paths match the declared
-  authority envelope.
+- Recomputed SHA-256 links independently: freeze -> receipt, freeze ->
+  results, receipt -> results, and adjudication -> freeze/receipt/results all
+  match. Actual hashes are freeze `943561dc...d44dbb`, receipt
+  `02461508...a0ed`, and results `65b308db...d4cb`.
+- Rehashed all 11 explicit result-affecting source files in `freeze.json`;
+  every current file matches its frozen identity and the aggregate manifest is
+  `e980170e...a4f938`.
+- Rehashed the live `target/release/openwepp-snowbench`; it matches the release
+  build receipt and freeze at `d6b2e824...9a54` (13,122,640 bytes). The receipt
+  records the exact command, HEAD, dirty-source identity, path, size, and mtime.
+- Parsed the execution receipt: exactly eight results are retained. Parsed the
+  adjudication: the reported mass/energy maxima reproduce and all four frozen
+  albedo-materiality decisions remain nonpromotion decisions.
+- `git diff --quiet HEAD --` passed for the shared historical synthesis and all
+  eight shared figure/sidecar files. Terminal-v2 has its own freeze, receipt,
+  results, summary, adjudication, synthesis, four SVGs, and four sidecars.
+- `git diff --check` passed on the terminal worktree.
+- Current line count independently confirms `runoff_reconciliation.rs` is
+  2,598 lines. The checklist also dispositions the 2,450-line day-input builder
+  and 2,891-line runner test aggregate as WARN with split intent; no reviewed
+  nonexempt Rust file reaches 3,000 lines.
 
-## Commands Run Independently
+## Static Lifecycle And Scope Checks
 
-From `/home/workdir/openWEPP` on the current working diff:
+- EB-04W2C is unambiguously `COMPLETE / TECHNICAL_PASS / REVIEW_PASS /
+  VERIFICATION_PASS`; its terminal evidence retains `4/231`, exact erosion
+  mass closure, the `5e-3` diagnostic bound, quick `2156/2156`, frost
+  `345/345`, erosion `377/377`, Critical full `2243/2243`, and review and
+  verification PASS.
+- Review findings `A-RT-001` through `A-RT-003`, `RB-01` through `RB-06`, and
+  `RB-V2-01` are all accepted/corrected and closed. Neither fresh reviewer has
+  a remaining finding; no finding was silently rejected, deferred, or waived.
+- The combined tracked/untracked inventory is explained by W2B's declared
+  package/evidence/tool/lifecycle set plus W2C's separately authorized
+  production, contract, test, and package set. Result-bearing W2B identities
+  have not changed since terminal-v2 generation. Review/verification artifacts
+  are correctly recognized as self-referential terminal metadata.
+- Historical prerequisite-ineligible JSON/CSV and shared synthesis/figures are
+  preserved. The rejected terminal-v1 JSON chain is also retained without a
+  closure claim. The wrapper's isolated terminal-v2 namespace and pre-existing
+  destination guard prevent another overwrite.
+- No manifest, lockfile, dependency-resolution, nextest-policy, `unsafe`, or
+  production unwrap/expect change is present; `cargo deny check` is correctly
+  not applicable. Required assurance adoption and current source locks pass.
+- Prompt lifecycle is coherent: the kickoff is archived, there is no active
+  prompt, and the active README says verification is in progress. The package
+  contains the explicit delegation authorization used for this bounded report.
+- `docs/ROADMAP.md`, the snow campaign roadmap, package catalog, package, and
+  disposition keep EB-04X held. No stale `EB-04X may advance` statement remains
+  in the two previously defective narratives.
 
-| Command | Result |
-|---|---|
-| orchestrator exact two-test filter from `gate-results.md` | **PASS**, 2/2 |
-| runner exact three-test filter from `gate-results.md` | **PASS**, 3/3 |
-| `cargo nextest run --test snow_surface_eb04w_accumulation_melt_diagnostics_contract` | **PASS**, 6/6 |
-| `cargo run --quiet -p openwepp-assurance -- validate --all` | **PASS**, 3/3 reports; terminal generation retained |
-| `cargo fmt --check` | **PASS** |
-| `git diff --check` | **PASS** |
-| `cargo nextest run --test erod16_wave1_continuity_fixture_conservation` | **EXPECTED BLOCKER**, exit 100; 231 storms, 170 clean, 61 `flux_closure` refusals (`26.4% > 20%`) |
+## Blocking Findings And Verdict
 
-The isolated failure exactly matches the retained quick-profile failure. The
-historical `37/227` old-trigger reversal remains explicitly labeled an
-unretained supporting observation and carries no closure claim.
+No terminal-v2 technical, source-identity, evidence-integrity, acceptance, or
+review-finding blocker remains. **PASS** for Verification Agent A.
 
-## Exact Finding
-
-- **LOW — terminal manifest wording:** `owned-file-manifest.md` calls
-  tracked-only `git diff --name-only` the authoritative exact expansion, but
-  the package, three assurance transactions, and new runner test are currently
-  untracked. Use `git status --short --untracked-files=all` for final write-set
-  reconciliation or qualify that sentence before commit. The local generated
-  `tools/__pycache__/run_frozen_w2a_rerun.cpython-312.pyc` is correctly ignored
-  by `.gitignore` and cannot enter the change normally. This evidence-wording
-  cleanup does not alter the verified HOLD or either science authority.
-
-Final verification: **PASS for the HOLD disposition only.** Resume terminal
-full validation and the exact frozen W2A rerun only after a separately
-authorized erosion-governed hold-lift restores the quick correctness gate.
+Administrative package completion and EB-04X advancement remain **HOLD** until
+Verification Agent B is freshly recorded and the owner performs the final
+dual-verification disposition and exact-diff/lifecycle update. This is the
+required current roadmap posture, not a technical failure of terminal-v2.

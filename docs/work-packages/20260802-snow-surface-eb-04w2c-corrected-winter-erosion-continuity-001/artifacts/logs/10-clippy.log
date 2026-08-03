@@ -1,0 +1,17 @@
+    Checking openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+    Checking openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error: this expression creates a reference which is immediately dereferenced by the compiler
+    --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_continuity.rs:2255:58
+     |
+2255 |     let (flux_residual, flux_scale) = wave1_flux_closure(&grid, drivers.theta);
+     |                                                          ^^^^^ help: change this to: `grid`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_borrow
+     = note: `-D clippy::needless-borrow` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

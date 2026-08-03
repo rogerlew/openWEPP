@@ -1,0 +1,283 @@
+{
+  "chronology_gap_window": "modeled-to-observed peak date for peak operators; final 60 days ending modeled melt-out for melt-out operators",
+  "direct_binary_sha256": "b50dd71cb00f24806193b98d73fc5444e836efac84ad5a4e0465d1e67c81fec9",
+  "energy_tolerance_j_m2": 1e-06,
+  "frozen_utc": "2026-08-03T07:17:02.049872+00:00",
+  "harness_boundary": "within-snowbench contrast only; not direct-production parity, validation, or promotion",
+  "hypothesis_thresholds": {
+    "albedo_days": 5.0,
+    "cold_melt_depth_m": 0.01,
+    "cold_melt_fraction": 0.1,
+    "peak_absolute_log_error_worsening": 0.1,
+    "role": "ASSUMED_FOR_EXECUTION diagnostic flags"
+  },
+  "independent_validation_count": 0,
+  "inherited_rules": "exact EB-04W2A cells, models, operators, and thresholds",
+  "mass_tolerance_m": 1e-12,
+  "models": [
+    "legacy_coe",
+    "coe_shortwave_albedo_v1"
+  ],
+  "new_harness_run_count": 8,
+  "observation_role": "CALIBRATION",
+  "operators": [
+    [
+      "snotel_mica_creek_st_joe_id",
+      "seasonal_ablation_meltout_date",
+      -35.0
+    ],
+    [
+      "snotel_niwot_co",
+      "seasonal_peak_depth_date",
+      -46.5
+    ],
+    [
+      "snotel_niwot_co",
+      "seasonal_peak_swe_date",
+      -31.0
+    ],
+    [
+      "snotel_paradise_wa",
+      "seasonal_ablation_meltout_date",
+      -37.0
+    ],
+    [
+      "snotel_snowbird_ut",
+      "seasonal_peak_swe_date",
+      -44.5
+    ]
+  ],
+  "promotion_authorized": false,
+  "protected_paths": "all production, contracts, tests, fixtures, observations, selectors, defaults, assurance authority, and historical package evidence",
+  "retained": {
+    "records": {
+      "snotel_mica_creek_st_joe_id": {
+        "anchor_files": {
+          "manifest": {
+            "path": "target/snow_surface_eb04w1_precipitation_scaling/runs/p140/snotel_mica_creek_st_joe_id/B/openwepp_hillslope_run_manifest.json",
+            "sha256": "9c8a65eea9c00ace4e04eaeff35d8c72df13cd8f195dd25338660bb7e9342426"
+          },
+          "runfile": {
+            "path": "target/snow_surface_eb04w1_precipitation_scaling/runs/p140/snotel_mica_creek_st_joe_id/B/snotel_mica_creek_st_joe_id-B.run",
+            "sha256": "e4ad3ba1420dc9b36d9cb42fb89c8a395fb97032cb9ac9d5c7931c1685b34219"
+          },
+          "trace": {
+            "path": "target/snow_surface_eb04w1_precipitation_scaling/runs/p140/snotel_mica_creek_st_joe_id/B/snotel_mica_creek_st_joe_id-B.snow.jsonl",
+            "sha256": "7ea233b9773dfce09b451330c0a5ca7d4bc9f4cdc696f267df72c6b332a8e224"
+          },
+          "wat": {
+            "path": "target/snow_surface_eb04w1_precipitation_scaling/runs/p140/snotel_mica_creek_st_joe_id/B/snotel_mica_creek_st_joe_id-B.wat.parquet",
+            "sha256": "e0541aac698aadd8f7ff0cfcd0bde2e6cc76982be13c9e30b4e36c95c1f86068"
+          }
+        },
+        "diagnostic_runfile": {
+          "path": "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.run",
+          "sha256": "08d798e4b294f6221166cbde60417fe519d29f648945486dc9faf4396be06be1"
+        },
+        "fixture": "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id",
+        "fixture_files": {
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/manifest.md": "2083d4324d6acba4c981d11b2661fbcca8892be0672a5734b610c7fafd7f0238",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.cli": "0a700f5d12843b73b0a82520654bac4f19abec63fb08bd840aefa76500be2bdf",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.man": "e32690e88466b80d2abc45dae35bca8f8ec2d8213645c77a24208cc989c0d20c",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.run": "08d798e4b294f6221166cbde60417fe519d29f648945486dc9faf4396be06be1",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.slp": "b5eceaddaf95fa8776ee0154fef5b3405cc8a37e9d6c6cf0ce0581cecc86e63f",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/p1.sol": "0005b9266f500991a02d0786e8da032e0c4aa351c88017682cffc2524b60ec9b",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/pmetpara.txt": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+          "target/snow_surface_eb04w1_precipitation_scaling/fixtures/p140/snotel_mica_creek_st_joe_id/snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+        },
+        "multiplier": 1.4,
+        "observation": {
+          "path": "tests/fixtures/snotel_observed/observations/sites/snotel_mica_creek_st_joe_id.csv",
+          "role": "CALIBRATION",
+          "sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce"
+        },
+        "provenance": "target/snow_surface_eb04w1_precipitation_scaling/runs/p140/snotel_mica_creek_st_joe_id/B/eb04w1-cell-provenance.json",
+        "provenance_sha256": "739e1297295d130cff43ee6f59f381130a4e6fc03f4641d0345a3a4e09383415",
+        "source": "retained"
+      },
+      "snotel_niwot_co": {
+        "anchor_files": {
+          "manifest": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p170/snotel_niwot_co/B/openwepp_hillslope_run_manifest.json",
+            "sha256": "d46edfc8f900679a7d7b97ca6449ecedc3a6f6947e0ea4173f30c01ae08efac2"
+          },
+          "runfile": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p170/snotel_niwot_co/B/snotel_niwot_co-B.run",
+            "sha256": "e2a9300cc6327913ab12b8771b57c19eb3f9abe96cb1b7f2b463c07162ca05ee"
+          },
+          "trace": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p170/snotel_niwot_co/B/snotel_niwot_co-B.snow.jsonl",
+            "sha256": "d5e698101d398ccc80d57de55899d1a832d0a03f02ed1da1c01c6608f1d393b4"
+          },
+          "wat": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p170/snotel_niwot_co/B/snotel_niwot_co-B.wat.parquet",
+            "sha256": "98cff694e0947904106d3b2ab6fc86d4225d81f84a1dffa5ca5f01485bb23f5b"
+          }
+        },
+        "diagnostic_runfile": {
+          "path": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.run",
+          "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9"
+        },
+        "fixture": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co",
+        "fixture_files": {
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/manifest.md": "8fd63646804f31a7a6c7be8225c6010dbcb8617c003d2d5e750b859ad7579db2",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.cli": "90f8c06c9a9b0a4eb3243c04d0eada2602ced7aee60c48e954af29f3ec2e2bce",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.man": "e12fe947598ae9fd4353b27fbc4274d8e479791059aa6a92d6c7af4a80acf1a6",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.run": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.slp": "197be010d9c839baa29b5fb7e55a8e3211d6a8213b9a498e3a3f16d3c282084f",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/p2.sol": "77c39a4ebbd78640608c08d071f92ef3ae7e9a53e7dd6838bdb67709f61c90af",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/pmetpara.txt": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p170/snotel_niwot_co/snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+        },
+        "multiplier": 1.7,
+        "observation": {
+          "path": "tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+          "role": "CALIBRATION",
+          "sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c"
+        },
+        "provenance": "target/snow_surface_eb04w2_precipitation_scaling/runs/p170/snotel_niwot_co/B/eb04w2-cell-provenance.json",
+        "provenance_sha256": "f0e3b1b0fea867b5447f5cd43abf7d97e763de1318df21057183ab82e0f11f89",
+        "source": "extension"
+      },
+      "snotel_paradise_wa": {
+        "anchor_files": {
+          "manifest": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p180/snotel_paradise_wa/B/openwepp_hillslope_run_manifest.json",
+            "sha256": "4e189418c9429b758c4cede27b31e0c33fc057e9a84b06f30cd2336352ea5769"
+          },
+          "runfile": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p180/snotel_paradise_wa/B/snotel_paradise_wa-B.run",
+            "sha256": "c35b96b951a7d4cb818953069b09b8e1811db2f1fd46f9888118f04fe64ee6d2"
+          },
+          "trace": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p180/snotel_paradise_wa/B/snotel_paradise_wa-B.snow.jsonl",
+            "sha256": "b0af7c8b32b50cb20001936f4ae25ced7777ad6960537e5c83130eaee7fd2efc"
+          },
+          "wat": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p180/snotel_paradise_wa/B/snotel_paradise_wa-B.wat.parquet",
+            "sha256": "eea223c9e4bc34c31c06957d53b114aa49aed11cd4dc05d21313a81ecea3b5b6"
+          }
+        },
+        "diagnostic_runfile": {
+          "path": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.run",
+          "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9"
+        },
+        "fixture": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa",
+        "fixture_files": {
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/manifest.md": "b136a0db72db3dec72d59a68ec1fcff4cc7c0c2d7926519fc42c90025f63bd6f",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.cli": "7ce3fff0baa31a17bff75b897bbff9d5eb2278b91822d3123f11864401130631",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.man": "dbdff638d59bc19cb9c2a8a19098500948abe080e23687220ce66846c0b3a923",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.run": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.slp": "56990f7b9efd28e342602d8147c8991fa1ac672c47ec2ff3542319629dbd20ac",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/p2.sol": "f47010ade9762d8a0982942bd416932b2f1944aa45dea786dd74c47932bffd71",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/pmetpara.txt": "27a59cffbb0a7dd0c6f303233fd1a2537ff90d458b0a9295f98111e17df404a7",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p180/snotel_paradise_wa/snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+        },
+        "multiplier": 1.8,
+        "observation": {
+          "path": "tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+          "role": "CALIBRATION",
+          "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
+        },
+        "provenance": "target/snow_surface_eb04w2_precipitation_scaling/runs/p180/snotel_paradise_wa/B/eb04w2-cell-provenance.json",
+        "provenance_sha256": "506919627d001331f2f78b5475d31e2fbcadac5baf5bc030e396cfcc247a0a3c",
+        "source": "extension"
+      },
+      "snotel_snowbird_ut": {
+        "anchor_files": {
+          "manifest": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p200/snotel_snowbird_ut/B/openwepp_hillslope_run_manifest.json",
+            "sha256": "c0235568083e587f68e3ea030b0fac5ce27873ff74168fd829500dafa060baa3"
+          },
+          "runfile": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p200/snotel_snowbird_ut/B/snotel_snowbird_ut-B.run",
+            "sha256": "8b7e04465747710bf105adcf4cd67b8b8b9e08567b878dd5594ff588fa92ab66"
+          },
+          "trace": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p200/snotel_snowbird_ut/B/snotel_snowbird_ut-B.snow.jsonl",
+            "sha256": "bb1f46cca4893e8a2eca53c0851aa05970b76cb63c77101c63fbca264a4f9ed7"
+          },
+          "wat": {
+            "path": "target/snow_surface_eb04w2_precipitation_scaling/runs/p200/snotel_snowbird_ut/B/snotel_snowbird_ut-B.wat.parquet",
+            "sha256": "c87243586b529f67ab512ea18d4174b6a63c65412b26d64db32da3416faa112b"
+          }
+        },
+        "diagnostic_runfile": {
+          "path": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.run",
+          "sha256": "4017f8f4644760e973d02f0ad715e1e6825204207bf2af7b9cf57b7863af9ba4"
+        },
+        "fixture": "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut",
+        "fixture_files": {
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/manifest.md": "f50c6b2ffb73208a0df4e09472a37955c63e1a3318d85c6dd7a090f5cf139e09",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.cli": "6f13cfcb96990dc67881ecc1956b0b586b300d1212053d26b920324199af5e20",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.man": "21c435275d13d9ce8faccd3f807b34c941175446cf3add8e4532c2024fe2e9c5",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.run": "4017f8f4644760e973d02f0ad715e1e6825204207bf2af7b9cf57b7863af9ba4",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.slp": "f8e11413f6a9ac23adfee608a02354a6217129e21f51397c41d8d05585ef89e6",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/p8.sol": "e53a8e58d23ee452a3979ffc7fa55f3aa8c528b15aedb3316057eff8716fd18a",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/pmetpara.txt": "57cce528f58530463e6606613c47122f44065d2e64e88bb5bb071b1736e498a6",
+          "target/snow_surface_eb04w2_precipitation_scaling/fixtures/p200/snotel_snowbird_ut/snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba"
+        },
+        "multiplier": 2.0,
+        "observation": {
+          "path": "tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+          "role": "CALIBRATION",
+          "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+        },
+        "provenance": "target/snow_surface_eb04w2_precipitation_scaling/runs/p200/snotel_snowbird_ut/B/eb04w2-cell-provenance.json",
+        "provenance_sha256": "e1d28279a74289cebc0b49cdfb28690f4c497d11ce00f741105e39a3f02abd48",
+        "source": "extension"
+      }
+    },
+    "retained_cell_count": 4,
+    "retained_output_identity_count": 24
+  },
+  "schema": "snow-surface-eb04w2a-experiment-freeze-v1",
+  "selected": {
+    "snotel_mica_creek_st_joe_id": {
+      "multiplier": 1.4,
+      "source": "retained"
+    },
+    "snotel_niwot_co": {
+      "multiplier": 1.7,
+      "source": "extension"
+    },
+    "snotel_paradise_wa": {
+      "multiplier": 1.8,
+      "source": "extension"
+    },
+    "snotel_snowbird_ut": {
+      "multiplier": 2.0,
+      "source": "extension"
+    }
+  },
+  "snowbench_binary_sha256": "d6b2e824fc1e5e6042492d6f87f85e39d599e0cfa3ef03db57303fcec4599a54",
+  "source_dirty_diff_sha256": "890e4ab1a9fc07f20f505131bd6fbc70ec7d526b0d76a79aa1941213530507aa",
+  "source_file_manifest_sha256": "e980170e65f3c1f5aa80b76f417963d81b592068d9f1ef093731738a52a4f938",
+  "source_file_sha256": {
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs": "29afcaa2b0b7d71859dfe003ba91b006825d2dbb08aa1064afa02c08ea3f693a",
+    "crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs": "011f3195149c133a021821637e1cf2daf3bcd1df1f2e630daa76bd72fd3e068b",
+    "crates/openwepp-runner/src/hillslope/03_tests.rs": "bffde85e96244d7940dfdb77c40f26b29d1a4fef5fc63e228d8b143d332fa9ad",
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs": "170d21bf55b236b388430ce3a821660f21fc0922e1da72394c0b80a3092fc7e3",
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs": "9e4ee67c2a253cc33e3c0606ae42cbdea4a2c95926d6aadc5771e1927645eb60",
+    "crates/openwepp-runner/src/hillslope/snowbench.rs": "033b9c30e27904e5f8c69e674b1c69bdbbcbd71cd03f778f4cfb39a59ca93293",
+    "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs": "b237086a1f54a8a345631a430b209bae1eaa782825ac7b71c0d3238ae511ba7e",
+    "crates/openwepp-runner/src/hillslope/tests03/eb04w2b_warm_snow.rs": "9bb2a4fda9a7393d1c4dcc67273ed1d8975e540d33dc749603b68b8714cf76b5",
+    "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md": "d39f5201901f8663d9e5c1ad1ccbdee4ab7c1fc2be41ed4adf4414e7cfa0cb2a",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "cb3eb6eadca72d522ff742d4476af102e98d83351e110710f11c4041b92991dc",
+    "tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs": "7575f43e87221994feccf17d6254e83ddd00e0225a961ae2eae70cb1214fcb34"
+  },
+  "source_head": "a74af48b8e98f91b5d5acdebc0e2da0bf988ba36",
+  "source_identity_note": "HEAD plus the dirty tracked diff and an explicit hash manifest covering every result-affecting EB-04W2B source, including untracked files",
+  "stop_condition": "complete attribution after one 4x2 harness matrix; no coefficient fit, precipitation extension, or result-aware model variant",
+  "tool_sha256": "fa5399db4a6c94e9d8bc1820828d9e7d82898a9493f9ca899b1ccc8eeaf70ad2",
+  "w2_freeze_sha256": "c8dee2c37dc9c16257d04f4a673f123f26b2d42b7858923c33855d61971084b5",
+  "w2_receipt_sha256": "9e78582cd756058b875a1fc8c38c70972030ffedbbd85b5d8ae3d00e76d0cc24",
+  "w2_results_sha256": "70fca8bca53cc8672324aab6a318df1dda1c5bc7fd41f9dd4f8207b964261bb8",
+  "w2_tool_sha256": "760a410c84726cd64d75531d7de5e2808c68ee5439c5866f4310a49a7b250b55",
+  "w2b_package": "docs/work-packages/20260802-snow-surface-eb-04w2b-warm-day-new-snow-activation-closure-001",
+  "w2b_wrapper_sha256": "ff5639c7a74352d4ef60ea782576f372984df76d2fb60aa2c22f6d5efff0b89f"
+}

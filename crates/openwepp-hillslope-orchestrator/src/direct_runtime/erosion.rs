@@ -836,6 +836,23 @@ impl DirectDayFrame {
         day_inputs: &DirectWave1ContinuityInputs,
         field_width_m: f64,
     ) -> Result<(DirectWave1ContinuityState, [f64; 24]), DirectRuntimeError> {
+        self.solve_wave1_hourly_plan_with(day_inputs, field_width_m, |hour_inputs| {
+            compute_direct_wave1_continuity_quantum(hour_inputs, true)
+        })
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn solve_wave1_hourly_plan_with<F>(
+        &self,
+        day_inputs: &DirectWave1ContinuityInputs,
+        field_width_m: f64,
+        mut solve_quantum: F,
+    ) -> Result<(DirectWave1ContinuityState, [f64; 24]), DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectWave1ContinuityInputs,
+        ) -> Result<DirectWave1ContinuityState, DirectRuntimeError>,
+    {
         let mut hourly_sediment_kg = [0.0_f64; 24];
         let mut aggregate: Option<DirectWave1ContinuityState> = None;
         let mut exported_kg_m_sum = 0.0_f64;
@@ -853,9 +870,10 @@ impl DirectDayFrame {
         let mut enrichment_weight = 0.0_f64;
         let mut flux_refused_quanta = 0_u32;
         for (hour, hour_inputs) in &self.wave1_hourly_plan {
-            let state = match compute_direct_wave1_continuity_quantum(hour_inputs, true) {
+            let state = match solve_quantum(hour_inputs) {
                 Ok(state) => state,
-                // The flux-consistency DIAGNOSTIC (trapezoid-vs-RK4) can
+                // The flux-consistency DIAGNOSTIC (matched-order quadrature)
+                // can
                 // refuse a stiff quantum on real substrates (extreme
                 // continuity-guarded coefficient ratios); production skips
                 // that quantum's sediment with a surfaced count — the

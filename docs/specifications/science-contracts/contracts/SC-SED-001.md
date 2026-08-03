@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 55
+contract_version: 60
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-07-13
+last_reviewed: 2026-08-02
 supersedes: []
 superseded_by: []
 ---
@@ -113,6 +113,94 @@ Out of scope:
 | `hourly_runoff_fraction[h]` | `fraction` | Unit-normalized hourly water-hydrograph shape used by Wave-1 and serialized as `V_h = runvol · w_h`; DC01 is the default/off authority, and the Lane D routed hydrograph is required when routing owns the surface-water path. | runoff-partition default path or Lane D routed-water producer | erosion hourly solve and HBP EVENT surface |
 | `hourly_sediment_mass_kg[h]` | `kg` | Hour-integrated exported sediment mass on the same hourly basis as `hourly_runoff_fraction[h]`; `Σ_h S_h` equals the day's exported sediment mass. | erosion hourly solve | HBP EVENT surface and inter-OFE erosion handoff |
 
+## EB-04W2C Kernel-Process Profile Conformance
+
+This section records the mandatory kernel-process-contract profile for the
+Wave-1 discretization diagnostic changed by EB-04W2C. It supplements the full
+sediment-process surfaces below; it does not redefine erosion physics.
+
+### Algorithm State Surfaces
+
+| Class | Surface | Units / domain | Disposition |
+|---|---|---|---|
+| required input | normalized grid position, committed normalized load, normalized erosion rate, region, clamp flag, and numerical-sub-march zone for each grid point | positions/load/rate are dimensionless and finite; zones are non-negative identities | consumed only by the private diagnostic after the exact publication ledger is evaluated |
+| required input | denormalized boundary loads and signed per-cell load changes | `kg m^-1`; finite | authoritative operands for `TOL-SED-007` |
+| required output | exact publication residual plus detachment, deposition, inflow, and export totals | `kg m^-1`; finite | authoritative conservation/publication surfaces |
+| required output | eligible diagnostic residual and scale | dimensionless; finite and non-negative | diagnostic-only operands for `TOL-SED-008` |
+| mutated state | numerical-sub-march zone tag assigned while the RK4 or analytic-deposition march commits grid points | integer identity; zero means ineligible | private provenance only; no serialized or user-facing state changes |
+
+### Algorithm And Branch/Guard Map
+
+1. Evaluate the denormalized, signed per-cell and boundary-load identity and
+   hard-fail under `TOL-SED-007` before any diagnostic refusal is considered.
+2. Assign a new nonzero zone to every RK4 or analytic-deposition sub-march. If
+   its first interval begins off the prior grid point by more than the
+   dimensionless alignment allowance, tag that straddling interval zero.
+3. Form only contiguous, same-nonzero-zone, same-region, unclamped eligible
+   blocks. Excluded intervals enter neither diagnostic numerator nor scale.
+4. Integrate eligible rate blocks with nonoverlapping Simpson `1/3` pairs and
+   one final Simpson `3/8` triple when required; use trapezoid only for an
+   unavoidable single eligible interval.
+5. Compare committed load change with the matched-order integral under
+   `TOL-SED-008`. Only that typed exceedance becomes a surfaced refused
+   quantum; all exact-closure and other typed errors propagate.
+
+| Step | Preconditions | Postconditions / degenerate behavior | Code owner |
+|---|---|---|---|
+| 1 exact ledger | finite denormalized endpoint loads and signed cell changes are available | totals and residual are finite; an exceedance returns `erosion.wave1.publication_closure` before diagnostic evaluation | `wave1_totals` |
+| 2 zone assignment | a finite normalized sub-march start and prior grid point exist; the march has a nonzero allocated zone | each committed interval is tagged with its sub-march zone, except an off-grid first straddling interval is zero | `wave1_diagnostic_interval_zone` plus RK4/analytic-deposition commit paths |
+| 3 eligible blocks | grid arrays have equal cardinality and finite values | blocks contain only contiguous nonzero-zone, same-region, unclamped intervals; no eligible interval returns diagnostic `(residual, scale) = (0, 0)` and is accepted | `wave1_flux_closure` |
+| 4 block integral | an eligible block contains at least one uniform normalized-grid interval | one interval returns its trapezoid; two or more return nonoverlapping Simpson `1/3`/`3/8` coverage with every interval consumed once | `wave1_integrate_rate_block` |
+| 5 diagnostic decision | eligible residual and scale are finite and non-negative | within tolerance returns totals; exceedance returns only `erosion.wave1.flux_closure` for explicit hourly refusal | `wave1_totals` and `solve_wave1_hourly_plan_with` |
+
+| Trigger | Guard class | Branch / priority | Typed behavior |
+|---|---|---|---|
+| exact publication residual exceeds `TOL-SED-007` | conservation hard-fail | evaluated first | `erosion.wave1.publication_closure`; never swallowed |
+| first interval of a sub-march begins outside the alignment allowance | diagnostic eligibility | before block formation | zone zero; interval excluded from numerator and scale |
+| zone, region, or clamp status changes | diagnostic eligibility | split before quadrature selection | terminate the current eligible block; no cross-boundary quadrature |
+| eligible block has one interval | numerical branch | after block formation | one trapezoid fallback |
+| eligible block has two or more intervals | numerical branch | after block formation | nonoverlapping Simpson `1/3`, with terminal `3/8` for an odd tail |
+| diagnostic residual exceeds `TOL-SED-008` | diagnostic refusal | after exact closure | `erosion.wave1.flux_closure`; hourly consumer emits zero sediment and increments `flux_refused_quanta` |
+
+### Constants And Parameters
+
+| Name | Value | Units | Class | Provenance / disposition |
+|---|---:|---|---|---|
+| grid-alignment allowance | `32 * f64::EPSILON` | dimensionless normalized position | fixed numerical constant | bounded f64 roundoff allowance; not a physical or calibratable coefficient |
+| `TOL-SED-007` relative factor | `1e-9` | dimensionless multiplier over `kg m^-1` operands | fixed invariant tolerance | existing exact publication-closure authority; unchanged by EB-04W2C |
+| `TOL-SED-008` relative factor | `5e-3` | dimensionless | fixed diagnostic tolerance | existing flux-consistency authority; unchanged by EB-04W2C |
+| Simpson weights | `1/3`, `4/3`, `2/3`, `3/8`, `9/8` as applicable | dimensionless | fixed mathematical constants | closed Newton–Cotes rules on a uniform normalized grid |
+
+### Unit-Governance Map
+
+| Symbol | Declared units | Boundary registry entry | Conversion helper | Scalar exception | Publication metadata |
+|---|---|---|---|---|---|
+| normalized `x`, `load`, `rate`, diagnostic residual, diagnostic scale | dimensionless | not applicable: private `Wave1RouteGrid`/diagnostic scalars | no boundary conversion; `wave1_flux_closure` and `wave1_integrate_rate_block` consume the existing normalized grid directly | private f64 arithmetic; raw literals are only the fixed Newton–Cotes/alignment constants listed above | none; diagnostic operands are not serialized |
+| boundary `G` and signed cell load changes | `kg s^-1 m^-1` before event projection; `kg m^-1` in the event-width ledger | existing erosion publication totals and load trajectory | `wave1_totals` owns normalization-factor application and endpoint/cell denormalization; EROD16 independently applies the returned input denormalization | internal scalar kernel is retained; no new wrapper is introduced by W2C | existing total detachment/deposition/export units remain unchanged |
+| numerical-sub-march zone | dimensionless integer identity | not applicable: private `Wave1RouteGrid::diagnostic_zone` | no conversion | zero is the explicit ineligible sentinel; positive values are opaque identities | none; not serialized or user-facing |
+
+### Calibration And Identifiability Posture
+
+`CALIBRATION_NOT_APPLICABLE`. EB-04W2C changes diagnostic integration order and
+boundary eligibility, not a sediment-process parameterization. The alignment
+allowance, Newton–Cotes weights, `TOL-SED-007`, and `TOL-SED-008` are fixed
+numerical/governance constants and MUST NOT be exposed as user calibration
+coefficients or fitted to EROD16. Therefore there is no observation operator,
+empirical calibration range, identifiable parameter combination, synthetic-
+recovery obligation, or independent-validation claim for this amendment.
+
+- `science_implementation_status = IMPLEMENTED`;
+- `calibration_evidence_status = NOT_APPLICABLE`;
+- `identifiability_status = NOT_APPLICABLE`;
+- validity domain: finite uniform normalized Wave-1 grid intervals contained
+  within one recorded numerical sub-march and one unclamped region; and
+- execution assumption: IEEE-754 binary64 arithmetic with the fixed alignment
+  allowance above.
+
+The package readiness disposition is
+`artifacts/calibration-readiness-matrix.md`; EROD16 supplies diagnostic and
+produced-operand accounting evidence only.
+
 ## Invariants
 
 | Invariant ID | Statement | Severity | Authority | Evidence |
@@ -132,8 +220,36 @@ Out of scope:
 | INV-SED-013 | Hydrograph-resolved solve-basis invariant (ADR-0036 D1): when the hydrograph-resolved form is the publication authority, the Wave-1 continuity solve must run per **hydraulically-active hour** (`w_h > 0 ∨ qin_h > 0`) on the hourly water-shape authority selected by surface-water ownership. Default/off and pre-active runs use `REF-SED-DC01-SHAPE`; when Lane D routing owns the surface-water path, the erosion substrate MUST use `REF-SED-LANED-ROUTED-HYDROGRAPH` and MUST NOT silently fall back to DC01 source weights. For positive runoff, the selected shape is finite, non-negative, and unit-normalized before use; for no-runoff days it is all-zero. Missing, malformed, or non-closing active-routed-water shapes are typed hard failures. The hour operands remain: hour depth `q_runoff_m · w_h`, hour mean depth-rate `q_runoff_m · w_h / 3600 s` in the peak-rate operand slot, `effdrn_h = 3600 s`, `effint`/`effdrr` from the hour's excess/rainfall intervals, `beta_h` per-hour (`0.5` rainfall hour / `1.0` otherwise), rill width grown sequentially in hour order with end-of-day persistence, and daily erodibility/consolidation/frost/cover operands shared across the day's hours. The legacy day-level `passby` event-size gate precedes hour activation. Excess-only activation is invalid (it skips the full-reinfiltration `qout_h = 0 / qin_h > 0` deposition hour). | hard-fail | REF-SED-ADR0036, REF-SED-DC01-SHAPE, REF-SED-LANED-ROUTED-HYDROGRAPH, REF-SED-LEGACY-CONTIN-ROUTE, INV-SED-001, INV-SED-011 | `[DIRECT][Static]` |
 | INV-SED-014 | Hydrograph-resolved closure invariant (ADR-0036 D4): each active hour's solve must satisfy the existing in-solve conservation gates (INV-SED-001/INV-SED-010 machinery per hour); the published daily aggregates must be the hour sums (`tdet/tdep/exported = Σ_h`) to f64-rounding; the serialized hourly surfaces must satisfy the integral closures `Σ_h V_h = runvol` and `Σ_h S_h =` the day's exported sediment mass. WB16 `peakro` remains a separate analytical estimator: `max(V_h/3600) ≠ peakro` is not an error and no rescaling of the hourly profile toward `peakro` is permitted. | hard-fail | REF-SED-ADR0036, INV-SED-001, INV-SED-010, SC-WATBAL-001#INV-WATBAL-099 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SED-015 | Peak-form comparator-arm invariant (ADR-0036 D1/D5): after the hydrograph-resolved flip, the retained daily peak-based solve is a comparator/diagnostic arm only — it must never be the publication authority, its deltas against the hourly form are Investigation-tier (ADR-0017), and it is deleted at the end of the transition window. Publishing peak-form sediment as production output after the flip is an invariant violation. | governance-fail | REF-SED-ADR0036, INV-SED-011 | `[DIRECT][Static]` |
-| INV-SED-016 | Multi-OFE Wave-1 chaining invariant (E.3 / Increment 2c): (a) each lane's operand seed derives from ITS OWN OFE's sliced soil/slope/management — the 5-class particle distribution per-OFE by construction (`prtcmp` per-element lineage; a hillslope-global particle-size override is rejected fail-closed, the legacy single-global `partsize.dat` `usr_partsize` being a flagged legacy-MOFE gap not to be inherited); (b) the inter-OFE handoff carries EROSION-lineage surfaces only — the prior lane's per-hour outflow discharge `qout_h`, per-hour exported sediment discharge `qsout_h = S_h / (fwidth · 3600)` (`REF-SED-LEGACY-SLOSS-QSOUT`), exiting class fractions, static end slopes, and solve-final shear/transport coefficient sets — never water-transfer substitutes; (c) all receiver-side derivations follow the legacy order: `strldn = qsout · rspace / (tcend · width)` on the RECEIVER's scale after its own hydraulics/transport (`param.for:243`), the boundary shears via the no-growth `sheart` basis at the inflow discharge on the PRIOR lane's slopes (`param.for:184-196`), and the Eq. [11.4.x] shear/transport coefficient-continuity rewrite (`param.for:249-390`, `INV-SED-008` family) behind the legacy `iplane > 1 ∧ qout > 0 ∧ qin > 0` guard with every documented singular guard preserved; (d) a locally-dry lane with positive upstream inflow still solves (deposition of routed load), and an hour without a rainfall-excess period is theta-suppressed (no interrill supply, `REF-SED-LEGACY-REID` basis); (e) the hillslope HBP EVENT is EXIT-scoped: the exit lane's hourly pair and per-class surfaces with CHAIN-AGGREGATED `tdet`/`tdep` (Σ across lanes, same day), so the `INV-SED-014` sediment closure holds in its telescoped chain form `Σ S_h(exit) = Σ_lanes(tdet − tdep)` under the legacy equal-field-width chain assumption; (f) a quantum refused by the FLUX-consistency diagnostic (the trapezoid-vs-RK4 discretization check, NOT the mass-balance law) contributes zero sediment with a surfaced `flux_refused_quanta` count — the `TOL-SED-005` telescoping mass gate remains hard-fail on every solved quantum; (g) the day toe concentration is a defined 0 when the local volume basis (`runoff · efflen`) or `peakro` is non-positive (inflow-only exit days; the exported mass remains fully published via `S_h`/`tdet`/`tdep`). EROD14/Wave-2 is retired as publication authority (comparator arm only until its deletion; publishing Wave-2 sediment as production output is an invariant violation, the `INV-SED-015` pattern). | hard-fail | REF-SED-CH11-DOWNVAR, REF-SED-LEGACY-MOFE-QIN, REF-SED-ADR0036, INV-SED-008, INV-SED-012, INV-SED-013, INV-SED-014 | `[DIRECT][Static]` |
+| INV-SED-016 | Multi-OFE Wave-1 chaining invariant (E.3 / Increment 2c): (a) each lane's operand seed derives from ITS OWN OFE's sliced soil/slope/management — the 5-class particle distribution per-OFE by construction (`prtcmp` per-element lineage; a hillslope-global particle-size override is rejected fail-closed, the legacy single-global `partsize.dat` `usr_partsize` being a flagged legacy-MOFE gap not to be inherited); (b) the inter-OFE handoff carries EROSION-lineage surfaces only — the prior lane's per-hour outflow discharge `qout_h`, per-hour exported sediment discharge `qsout_h = S_h / (fwidth · 3600)` (`REF-SED-LEGACY-SLOSS-QSOUT`), exiting class fractions, static end slopes, and solve-final shear/transport coefficient sets — never water-transfer substitutes; (c) all receiver-side derivations follow the legacy order: `strldn = qsout · rspace / (tcend · width)` on the RECEIVER's scale after its own hydraulics/transport (`param.for:243`), the boundary shears via the no-growth `sheart` basis at the inflow discharge on the PRIOR lane's slopes (`param.for:184-196`), and the Eq. [11.4.x] shear/transport coefficient-continuity rewrite (`param.for:249-390`, `INV-SED-008` family) behind the legacy `iplane > 1 ∧ qout > 0 ∧ qin > 0` guard with every documented singular guard preserved; (d) a locally-dry lane with positive upstream inflow still solves (deposition of routed load), and an hour without a rainfall-excess period is theta-suppressed (no interrill supply, `REF-SED-LEGACY-REID` basis); (e) the hillslope HBP EVENT is EXIT-scoped: the exit lane's hourly pair and per-class surfaces with CHAIN-AGGREGATED `tdet`/`tdep` (Σ across lanes, same day), so the `INV-SED-014` sediment closure holds in its telescoped chain form `Σ S_h(exit) = Σ_lanes(tdet − tdep)` under the legacy equal-field-width chain assumption; (f) a quantum refused by the `TOL-SED-008` FLUX-consistency diagnostic contributes zero sediment with a surfaced `flux_refused_quanta` count; the diagnostic compares committed load change against non-overlapping Simpson `1/3` and `3/8` blocks only within one recorded numerical sub-march (same coefficient set, shear-critical branch, solution family, region, and unclamped interval), uses trapezoid only for an unavoidable single interval, and never spans an unrecorded solver boundary; the separate `TOL-SED-007` telescoping mass gate remains hard-fail on every solved quantum and may not be swallowed by the refusal consumer; (g) the day toe concentration is a defined 0 when the local volume basis (`runoff · efflen`) or `peakro` is non-positive (inflow-only exit days; the exported mass remains fully published via `S_h`/`tdet`/`tdep`). EROD14/Wave-2 is retired as publication authority (comparator arm only until its deletion; publishing Wave-2 sediment as production output is an invariant violation, the `INV-SED-015` pattern). | hard-fail | REF-SED-CH11-DOWNVAR, REF-SED-LEGACY-MOFE-QIN, REF-SED-ADR0036, INV-SED-008, INV-SED-012, INV-SED-013, INV-SED-014 | `[DIRECT][Static]` |
 | INV-SED-017 | Particle-class enrichment invariant (E.4 / Increment 3, `REF-SED-LEGACY-ENRICH`): (a) the flow composition `frcflw` is per-quantum solver state — initialized per `route.for:142-160` (upstream exit composition when inflow exists, local detached `frac` otherwise, zeroed without outflow), blended at every enrichment call point (do-10), re-proportioned through every deposition region (do-30 + the label-50 `sedmax` loop, BOUNDED at 64 iterations as a documented deviation — exceeding the bound is a typed error, never a spin), and summarized at the OFE end (`iendfg`); (b) the TOTAL routed load remains the mass authority — the class solve normalizes to it (do-40) and can never change `tdet`/`tdep`/exported mass or the `INV-SED-014` closures. The pinned baseline then raises every normalized class below the dimensionless `1e-15` `gend` floor before label 50; when those absolute floors inflate their sum above `ldbot`, openWEPP MUST renormalize the nonnegative floored vector back to `ldbot` before applying any `sedmax` cap. This bounded correction retains the baseline floor as a composition stabilizer but supersedes its trace-load defect: label 50 MUST redistribute only a nonnegative remaining mass and MUST NOT manufacture negative class mass from a negative shortfall; (c) every per-class mass and every published fraction is finite and nonnegative; the composition is unit-sum while flow exists (`TOL-SED-006`; the publication split keeps its own `TOL-SED-005` closure) and zero without outflow; (d) the directional law: a depositing region depletes fast-falling classes first (`φ_i` grows with fall velocity) — the exit composition on a depositing profile is finer than the detached composition and the SSA enrichment ratio exceeds the detached-composition ratio; a zero-deposition profile exits with EXACTLY the detached composition; (e) per-class operands are per-OFE (`tcf1` at the kt2 shear from that OFE's classes; mineralogy from that OFE's soil; the entry-gate §4a authority); (f) the interrill-delivery branch selects by the SCHEDULE-scoped parsed lanuse (WS1 tie-in, 2026-07-05): Cropland yearlies run the legacy `drinti` branch (`param.for:412-450` — the branch legacy production actually exercised, since legacy ran every landuse as `lanuse = 1`), Forest yearlies run the `lanuse != 1` branch (`intdr = 1`); a mixed-lanuse schedule fails closed. Non-cropland `fidel = frac` remains exact on the forest branch; cropland `fidel` from `drinti` is now live on masquerade managements. FLAGGED SCIENCE ITEM (identity-doc adjudication, not decided here): whether roughness-driven interrill delivery is universal physics — making legacy's non-cropland `intdr = 1` a symptom-partition of the unfinished non-cropland paths — is an open question for external authority; the port stays source-true per branch; (g) `enrato` is an INTERNAL published diagnostic (the direct-runtime publication operands) with no routing feedback; it is NOT serialized to the pass/HBP interchange — adding it there is a future additive schema extension, not an E.4 obligation. The published per-class exit surfaces (`sedcon` split, HBP `frcflw`, the E.3 intake `exit_fractions`) carry the ENRICHED composition. | hard-fail | REF-SED-LEGACY-ENRICH, REF-SED-CH11-DOWNVAR, INV-SED-008, INV-SED-013, INV-SED-014, INV-SED-016 | `[DIRECT][Static]` |
+
+### EB-04W2C Wave-1 discretization-diagnostic amendment
+
+Revisions 56–58 correct `INV-SED-016` clause (f)'s diagnostic and its mistaken
+reference to `TOL-SED-005` as a mass gate. A refused quantum still contributes
+zero sediment and increments the surfaced `flux_refused_quanta` count. The
+independent diagnostic compares committed load change against non-overlapping
+Simpson `1/3` and `3/8` blocks over contiguous, unclamped detachment or
+deposition intervals that share one recorded numerical sub-march. A sub-march
+has one coefficient set, shear-critical branch, and RK4 or analytic-deposition
+solution family. Quadrature never crosses a segment, critical-shear, solution-
+family, region, or clamp boundary; a trapezoid is used only for an unavoidable
+single interval within one sub-march. `TOL-SED-007` is the separate hard
+telescoping sediment mass gate and `TOL-SED-008` is the discretization gate.
+Neither may substitute for the other. `[INFERENCE][Static] + [Ran]`
+
+Numerical authority: Simpson `1/3` and `3/8` are closed Newton–Cotes rules that
+integrate cubic rate variation exactly on a uniform grid and are therefore
+commensurate with an RK4 march without reusing its stage-weighted increment.
+They are diagnostic numerics, not new erosion process physics. The
+sub-march-provenance restriction is binding because a quadrature rule has no
+claimed order across coefficient or solver-branch discontinuities.
+A sub-march boundary is grid-aligned only when its normalized position differs
+from the preceding grid point by at most `32 * f64::EPSILON`; otherwise the
+straddling interval receives no diagnostic zone and is excluded from both the
+`TOL-SED-008` numerator and denominator. This threshold is dimensionless f64
+roundoff allowance on the normalized `[0,1]` profile, not a physical or
+calibration coefficient.
 
 ## Invariant Guard Map
 
@@ -151,6 +267,9 @@ Out of scope:
 | `INV-SED-010` | runtime | Hillslope-to-routing boundary payload validator | Typed hard error on missing/malformed sediment payload fields | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SED-011` | governance | Review/disposition/verification checklist | Promotion `HOLD` on unlabeled scope-limit or over-claim conditions | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SED-012` | runtime + governance | EROD14 downstream `qin`/prior-OFE sediment handoff validator plus manifest acceptance gate | Explicit `HOLD` when downstream `erod14_qin` is accepted from water-transfer operands alone, prior-OFE erosion `qout` or particle-fraction handoff lineage is absent, or manifests claim sediment-coupled `qin` closure while the source policy remains water-transfer-only | MOFE01 M-G erosion `qin`/sediment coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SED-016(f)` | runtime + consumer | Wave-1 numerical-sub-march provenance, matched-order diagnostic, and hourly refusal fold | Only `erosion.wave1.flux_closure` may become an explicit zero-sediment refused quantum with incremented `flux_refused_quanta`; every other error remains hard-fail | Tier-A gate | `[INFERENCE][Static] + [Ran]` |
+| `TOL-SED-007` | runtime | `wave1_totals` publication closure before flux diagnosis | Typed `erosion.wave1.publication_closure` hard failure; consumer may not swallow it | Tier-A conservation gate | `[INFERENCE][Static] + [Ran]` |
+| `TOL-SED-008` | runtime | `wave1_flux_closure` over same-zone eligible blocks | Typed `erosion.wave1.flux_closure` refusal; explicit counter and zero sediment for that quantum | Tier-A diagnostic/coverage gate | `[INFERENCE][Static] + [Ran]` |
 
 ## Symbol Alias Map
 
@@ -249,6 +368,9 @@ bit-for-bit parity).
 | TOL-SED-005 | Class-fraction closure tolerance at the PUBLICATION split (the normalize-then-split surface: the per-class `sedcon` division by the validated fraction sum) | `abs(sum(sed_frac_i) - 1.0) <= 1e-9` | The publication split normalizes immediately before dividing, so its closure is division-rounding-tight. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-SED-006 | Flow-composition CORRUPTION envelope for the IN-ROUTE enrichment state (`INV-SED-017` (c), the final `frcflw` after the route's blend/re-proportion sequence) | `sum(frcflw_i) ∈ [0.5, 1.5]` while flow exists (or exactly 0 without outflow) | Legacy NEVER re-normalizes after a do-10 blend: when `rillod` floors at 0 (`enrich.for:134` — a transport-capacity-limited stretch gains less load than the interrill term) the blend sum legitimately exceeds 1 by PERCENT scale, and the legacy ER consumes that raw sum (`enrich.for` has no gate at all). Only a do-30 re-proportion normalizes exactly. The envelope is therefore a corruption sanity bound, not a closure law; the PUBLISHED per-class split re-normalizes at the publication boundary, preserving `TOL-SED-005`. (Supersedes the rev-47 `1e-6` bound, which encoded a stricter law than legacy has and false-failed real transport-limited profiles — caught by the G0 fixture at full-suite scope.) | `[DIRECT][Static] + [Ran]` |
 
+| TOL-SED-007 | Wave-1 publication telescoping closure: `(exported - inflow) - (detachment - deposition)` | `abs(residual) <= 1e-9 * max(abs(exported), abs(inflow), abs(detachment), abs(deposition), 1e-9)` in denormalized `kg m^-1` operands | Exact conservation identity evaluated from boundary loads and signed per-cell changes; this is the mass-balance law and is never replaced by the flux diagnostic. | `[INFERENCE][Static] + [Ran]` |
+| TOL-SED-008 | Wave-1 flux discretization consistency over eligible same-sub-march, same-region, unclamped blocks | `sum(abs(delta_G_block - quadrature(rate_block))) <= 5e-3 * max(sum(abs(delta_G_cell)) over those same eligible blocks, 1e-9)` in nondimensional load space | Quadrature uses non-overlapping Simpson `1/3` pairs and Simpson `3/8` triples; only a one-interval block uses trapezoid. The numerator and denominator cover the identical eligible interval population, so excluded seams/clamps cannot dilute the diagnostic. Exceedance is a typed refusal, contributes zero sediment, and increments `flux_refused_quanta`; it is not a mass residual. | `[INFERENCE][Static] + [Ran]` |
+
 ## WB16 Hydrologic Peak/Duration Intake Addendum
 
 ### WB16 Required Hydrology Inputs
@@ -336,6 +458,18 @@ bit-for-bit parity).
      `Df = 0`.
 7. Enforce continuity (`INV-SED-001`):
    - `abs(dGdx - (Df + Di)) <= TOL-SED-001`.
+8. Enforce Wave-1 publication and discretization closure:
+   - apply `TOL-SED-007` to boundary loads and independently accumulated
+     signed cell changes before any recoverable diagnostic refusal;
+   - record a new numerical sub-march whenever the coefficient set,
+     shear-critical branch, or RK4/analytic solution family changes;
+   - partition eligible intervals by sub-march, region, and clamp provenance;
+   - integrate non-overlapping two-interval Simpson `1/3` blocks and a final
+     three-interval Simpson `3/8` block when needed, using trapezoid only for a
+     one-interval remainder; and
+   - apply `TOL-SED-008`; only its named typed error is recoverable by the
+     hourly consumer, which publishes zero sediment and increments the refusal
+     count for that quantum.
 
 ### EROD13 Typed Guard Codes
 
@@ -359,6 +493,19 @@ Minimum vectors required by EROD13 contract-derived tests:
 6. Non-finite-symbol vector fails with `HKERNEL-EROD13-CORE-E-002`.
 7. Continuity residual violation (`dGdx != Df + Di`) fails with
    `HKERNEL-EROD13-CORE-E-003`.
+8. Curved-rate vectors distinguish Simpson `1/3` and `3/8` from trapezoid and
+   cover one, two, three, four, five, longer even, and longer odd intervals.
+9. Synthetic-grid vectors prove non-overlap and splitting at numerical
+   sub-march, region, and clamp boundaries, including non-grid-aligned segment
+   and shear-critical crossings; a deliberately large straddling delta must be
+   absent from both residual and returned scale.
+10. A perturbed committed-load vector passes the separate telescoping-accounting
+    identity but fails exactly as `erosion.wave1.flux_closure`.
+11. The hourly consumer converts only that named diagnostic error into zero
+    sediment plus a refusal count; `erosion.wave1.publication_closure` remains
+    a hard error.
+12. Actual closure-builder vectors cover a one-interval run and a seven-
+    interval run, including the returned eligible scale.
 
 ## EROD14 Wave-2 Multi-OFE and Enrichment Runtime Addendum
 
@@ -611,6 +758,17 @@ must include a parser-compatible terminal station below the declared physical
 length and must prove a normalized toe of `1.0` within floating-point
 tolerance.
 
+## Binding Exposure Index
+
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `EROD12-CROSS-DOMAIN-OWNERSHIP-AND-GUARD-CLOSURE-ADDENDUM` | `SC-SED-001.md#EROD12-Cross-Domain-Ownership-and-Guard-Closure-Addendum` | `active` | `maps-to-existing-INV` | `INV-SED-004, INV-SED-005, INV-SED-006, INV-SED-007, INV-SED-010` | `none` | Required producer/consumer ownership is retained in core and mapped to existing guards. |
+| `WB16-HYDROLOGIC-PEAK-DURATION-INTAKE-ADDENDUM` | `SC-SED-001.md#WB16-Hydrologic-PeakDuration-Intake-Addendum` | `active` | `maps-to-existing-INV` | `INV-SED-004` | `none` | Hydrologic peak/duration intake remains active canonical erosion forcing authority. |
+| `EROD13-WAVE1-CORE-RUNTIME-ADDENDUM` | `SC-SED-001.md#EROD13-Wave-1-Core-Runtime-Addendum` | `active` | `maps-to-existing-INV` | `INV-SED-001, INV-SED-002, INV-SED-003, INV-SED-004, INV-SED-005, INV-SED-006, INV-SED-007, INV-SED-013, INV-SED-014, INV-SED-016` | `none` | Wave-1 core runtime and its active `TOL-SED-007/008` sub-march/refusal behavior remain consolidated in the mapped invariants. |
+| `EROD14-WAVE2-MULTI-OFE-AND-ENRICHMENT-RUNTIME-ADDENDUM` | `SC-SED-001.md#EROD14-Wave-2-Multi-OFE-and-Enrichment-Runtime-Addendum` | `historical` | `historical-or-superseded` | `none` | `none` | Deleted Wave-2 arm retained only as historical specification; `INV-SED-016/017` own active behavior. |
+| `EROD15-WAVE3-HBP-ROUTING-BOUNDARY-EXPORT-ADDENDUM` | `SC-SED-001.md#EROD15-Wave-3-HBP-Routing-Boundary-Export-Addendum` | `historical` | `historical-or-superseded` | `none` | `none` | Deleted Wave-3 projection retained only as historical specification; `INV-SED-010/016` own active publication. |
+| `EROD16-HILLSLOPE-ROUTE-BRANCH-AUTHORITY-ADDENDUM` | `SC-SED-001.md#EROD16-Hillslope-ROUTE-Branch-Authority-Addendum` | `active` | `maps-to-existing-INV` | `INV-SED-001, INV-SED-008, INV-SED-009, INV-SED-016, INV-SED-017` | `none` | Active ROUTE lineage, branch, closure, and enrichment obligations remain mapped in core. |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -629,6 +787,11 @@ tolerance.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-02` | `60` | `Codex` | EB-04W2C revision-59 review correction: mapped the active EROD13 Wave-1 diagnostic/refusal residue to `INV-SED-016` in the Binding Exposure Index; no runtime/output schema or behavior changed. |
+| `2026-08-02` | `59` | `Codex` | EB-04W2C revision-58 review correction: added step-local pre/postconditions and zero-eligible behavior, exact unit-governance schema/code ownership, canonical ADR-0042 fields, and the six-row Binding Exposure Index; no runtime behavior changed. |
+| `2026-08-02` | `58` | `Codex` | EB-04W2C terminal-governance correction: added the mandatory algorithm-state, branch/guard, constants/provenance, unit-governance, and explicit `CALIBRATION_NOT_APPLICABLE` profile surfaces without changing runtime behavior or tolerances. |
+| `2026-08-02` | `57` | `Codex` | EB-04W2C review correction: incorporated the diagnostic directly into `INV-SED-016(f)`, required numerical-sub-march provenance so Simpson blocks cannot cross coefficient/critical-shear/solution-family seams, completed the guard/consumer map, and bound curved, boundary, anti-evasion, and consumer test vectors. |
+| `2026-08-02` | `56` | `Codex` | EB-04W2C discretization-diagnostic correction: separated the previously implicit Wave-1 publication mass gate (`TOL-SED-007`) from the `5e-3` flux diagnostic (`TOL-SED-008`) and replaced the lower-order cellwise trapezoid comparison with non-overlapping Simpson `1/3`/`3/8` blocks commensurate with the RK4 march while retaining typed refusal, explicit counter, and exact mass-closure behavior. |
 | `2026-07-13` | `55` | `Codex` | INTVAL trace-load enrichment correction: `INV-SED-017` now requires the pinned do-40 `1e-15` class floor to be renormalized back to the routed `ldbot` mass authority before label-50 caps, forbids negative shortfall redistribution and negative class mass, and records this as a bounded correction of the pinned baseline's degenerate absolute-floor behavior. |
 | `2026-07-13` | `54` | `Codex` | INTVAL terminal-station normalization amendment: added pinned `profil.for` authority and made the EROD16 Wave-1 `xstar` denominator the actual terminal profile station, preserving declared physical length while requiring a normalized toe of `1.0` for parser-accepted compatibility endpoints. |
 | `2026-07-06` | `53` | `Codex` | D13 routed-hydrograph erosion-shape amendment: `REF-SED-DC01-SHAPE` is narrowed to default/off authority; new `REF-SED-LANED-ROUTED-HYDROGRAPH` binds active-routed-water Wave-1 erosion to finite non-negative unit-normalized routed hydrograph weights and typed fail-closed behavior for missing/malformed shapes; `INV-SED-013` now selects the hourly water shape by surface-water ownership without changing the `INV-SED-014` integral closures or authorizing production/default activation. |

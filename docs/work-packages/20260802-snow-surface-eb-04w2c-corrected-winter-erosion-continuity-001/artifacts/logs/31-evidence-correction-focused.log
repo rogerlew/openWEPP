@@ -1,0 +1,7 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.43s
+────────────
+ Nextest run ID f9629033-ecf9-423b-a621-4e11b410f781 with nextest profile: default
+    Starting 7 tests across 1 binary (428 tests skipped)
+────────────
+     Summary [   0.014s] 7 tests run: 7 passed, 428 skipped

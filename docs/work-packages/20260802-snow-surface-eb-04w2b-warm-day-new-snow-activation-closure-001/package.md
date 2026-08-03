@@ -1,6 +1,6 @@
 # SNOW-SURFACE-EB-04W2B Warm-Day New-Snow Activation And Closure
 
-Status: `executed / HOLD_CROSS_DOMAIN_CORRECTNESS_GATE`
+Status: `complete / technical, review, and verification pass`
 
 Date: `2026-08-02`
 
@@ -167,6 +167,26 @@ must exclude wrapper, skeleton, shadow, and compatibility-only claims.
   corrected snow diff for `HOLD_CROSS_DOMAIN_CORRECTNESS_GATE`; both verifiers
   independently reproduce EROD16 at `61/231` and reject terminal rerun/full
   closure or EB-04X advancement.
+- [x] (2026-08-02) EB-04W2C corrected the downstream matched-order continuity
+  diagnostic and released W2B's prerequisite with `4/231` explicit refusals.
+- [x] (2026-08-02) Reproduced the released EROD16 fixture, renewed all focused
+  W2B tests, formatting, and warnings-denied lint, then executed the distinct
+  immutable terminal W2A rerun without overwriting the ineligible first run.
+- [x] (2026-08-02) All eight terminal cells passed; maximum reconstructed mass
+  closure was `2.220e-15 m` and maximum Stage-3 energy closure was
+  `6.094e-08 J m^-2`. The frozen albedo response remained immaterial.
+- [x] (2026-08-02) First resumed dual review held terminal disposition because
+  the runner reused a stale release binary and overwrote shared historical
+  renderings; completion and EB-04X advancement were withdrawn.
+- [x] (2026-08-02) Restored historical synthesis/figures, rebuilt the release
+  snowbench from the exact current source, and reran all eight cells into a
+  fail-closed, isolated `terminal-v2/` evidence tree. Terminal-v2 passes with
+  the same closure and nonpromotion result.
+- [x] (2026-08-02) Fresh dual re-review accepts every terminal-v2 correction
+  and reports no remaining finding; dual terminal verification is in progress.
+- [x] (2026-08-02) Dual terminal verification passes after narrow lifecycle
+  reconciliation; final exact-diff, prompt, roadmap, and disposition closure
+  admit EB-04X as the next campaign package.
 
 ## Surprises & Discoveries
 
@@ -198,16 +218,16 @@ must exclude wrapper, skeleton, shadow, and compatibility-only claims.
 
 ## Outcomes & Retrospective
 
-The warm-day snowfall loss and shared/consumer closure defects are corrected in
-the working diff, including the previously hidden direct-production provider
-bypass. Nominal and boundary tests pass, and W2A's earlier diagnostic result is
-scientifically suggestive but prerequisite-ineligible.
+The warm-day snowfall loss and shared/consumer closure defects are corrected,
+including the previously hidden direct-production provider bypass. Nominal,
+boundary, real-consumer, and conservation tests pass. EB-04W2C resolved the
+separate lower-order erosion continuity diagnostic without weakening snow,
+erosion mass closure, or the retained diagnostic bound; its exact production
+diff passed quick, frost, erosion, and Critical full-workspace correctness.
 
-Promotion/closure is held because corrected winter hydrology exposes a hard
-downstream EROD16 continuity-instrument failure. The terminal W2A rerun was not
-performed, the critical full profile was not repeated after this deterministic
-quick-profile failure, and EB-04X must not start. A separately authorized
-cross-domain package should partition the 24 added refusals, determine whether
-the concave solver needs a numerical/process correction or the fixture gate
-requires authority-backed rebaselining, and return a clean full-workspace gate
-before EB-04W2B can resume.
+The resumed, hash-bound terminal W2A rerun preserves the original eight cells,
+forcing, coefficients, operators, and hypothesis rules. All cells close, but
+the albedo response remains immaterial and does not qualify for promotion.
+EB-04W2B therefore closes its defects and diagnostic obligation without making
+an empirical-validation or production-promotion claim. Terminal-v2 review,
+verification, and exact-diff closure pass, so EB-04X may advance.

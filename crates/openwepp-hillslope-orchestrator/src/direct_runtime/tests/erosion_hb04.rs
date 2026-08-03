@@ -1,4 +1,5 @@
 use super::*;
+use crate::{DirectDayFrame, DirectRunIdentity};
 
 fn enrichment_inputs() -> super::super::Wave1EnrichmentInputs {
     let class = crate::ErosionParticleClass {
@@ -56,6 +57,280 @@ fn continuity_inputs() -> DirectWave1ContinuityInputs {
         surface_frozen: false,
         theta_suppressed: false,
     }
+}
+
+#[test]
+fn eb04w2c_matched_order_flux_quadrature_covers_even_and_odd_blocks() {
+    let one_interval = wave1_integrate_rate_block(&[0.0, 1.0]);
+    assert!((one_interval - 0.005).abs() <= f64::EPSILON);
+
+    // Curved vectors distinguish Simpson integration from the removed
+    // trapezoid implementation.
+    let simpson_pair = wave1_integrate_rate_block(&[0.0, 1.0, 4.0]);
+    assert!((simpson_pair - 0.026_666_666_666_666_67).abs() <= 1.0e-15);
+
+    let simpson_three_eighths = wave1_integrate_rate_block(&[0.0, 1.0, 4.0, 9.0]);
+    assert!((simpson_three_eighths - 0.09).abs() <= 1.0e-15);
+
+    let four_intervals = wave1_integrate_rate_block(&[0.0, 1.0, 4.0, 9.0, 16.0]);
+    assert!((four_intervals - 0.213_333_333_333_333_35).abs() <= 1.0e-15);
+
+    let mixed_odd_interval_block = wave1_integrate_rate_block(&[0.0, 1.0, 4.0, 9.0, 16.0, 25.0]);
+    assert!((mixed_odd_interval_block - 0.416_666_666_666_666_7).abs() <= 1.0e-15);
+
+    let six_intervals = wave1_integrate_rate_block(&[0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0]);
+    assert!((six_intervals - 0.72).abs() <= 1.0e-15);
+    let seven_intervals = wave1_integrate_rate_block(&[0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]);
+    assert!((seven_intervals - 1.143_333_333_333_333_3).abs() <= 1.0e-15);
+}
+
+#[test]
+fn eb04w2c_flux_closure_splits_numerical_zones_regions_and_clamps() {
+    let mut grid = Wave1RouteGrid::new();
+    for (index, rate) in [0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0]
+        .into_iter()
+        .enumerate()
+    {
+        grid.region[index] = Wave1PointRegion::Detachment;
+        grid.detach[index] = rate;
+    }
+    grid.diagnostic_zone[1] = 1;
+    grid.diagnostic_zone[2] = 1;
+    grid.load[1] = 0.01;
+    grid.load[2] = wave1_integrate_rate_block(&grid.detach[0..=2]);
+
+    // Interval 2->3 represents a non-grid-aligned sub-march seam. Its large
+    // delta is excluded from both residual and scale.
+    grid.diagnostic_zone[3] = 0;
+    grid.diagnostic_zone[4] = 2;
+    grid.diagnostic_zone[5] = 2;
+    let second_block = wave1_integrate_rate_block(&grid.detach[3..=5]);
+    grid.load[3] = grid.load[2] + 10.0;
+    grid.load[4] = grid.load[3] + 0.08;
+    grid.load[5] = grid.load[3] + second_block;
+
+    // A clamped endpoint and a region transition are both excluded even when
+    // they reuse the preceding numerical zone.
+    grid.diagnostic_zone[6] = 2;
+    grid.load[6] = grid.load[5] + 10.0;
+    grid.clamped[6] = true;
+    let expected_scale = grid.load[2] + second_block;
+    let (residual, scale) = wave1_flux_closure(&grid, 0.0);
+    assert!(residual.abs() <= 1.0e-15);
+    assert!((scale - expected_scale).abs() <= 1.0e-15);
+
+    grid.clamped[6] = false;
+    grid.region[6] = Wave1PointRegion::Deposition;
+    let (residual, scale) = wave1_flux_closure(&grid, 0.0);
+    assert!(residual.abs() <= 1.0e-15);
+    assert!((scale - expected_scale).abs() <= 1.0e-15);
+}
+
+#[test]
+fn eb04w2c_grid_alignment_tolerance_has_inside_and_outside_edges() {
+    let zone = 7;
+    assert_eq!(
+        wave1_diagnostic_interval_zone(zone, WAVE1_GRID_ALIGNMENT_ABS_TOL, 0.0, true),
+        zone
+    );
+    assert_eq!(
+        wave1_diagnostic_interval_zone(zone, 2.0 * WAVE1_GRID_ALIGNMENT_ABS_TOL, 0.0, true),
+        0
+    );
+    assert_eq!(
+        wave1_diagnostic_interval_zone(zone, 2.0 * WAVE1_GRID_ALIGNMENT_ABS_TOL, 0.0, false),
+        zone
+    );
+}
+
+#[test]
+fn eb04w2c_flux_closure_reports_single_and_long_run_scale() {
+    let mut single = Wave1RouteGrid::new();
+    single.region[0] = Wave1PointRegion::Detachment;
+    single.region[1] = Wave1PointRegion::Detachment;
+    single.diagnostic_zone[1] = 1;
+    single.detach[0] = 2.0;
+    single.detach[1] = 4.0;
+    single.load[1] = 0.03;
+    let (residual, scale) = wave1_flux_closure(&single, 0.0);
+    assert!(residual.abs() <= 1.0e-15);
+    assert!((scale - 0.03).abs() <= 1.0e-15);
+
+    let mut long = Wave1RouteGrid::new();
+    for (index, rate) in [0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]
+        .into_iter()
+        .enumerate()
+    {
+        long.region[index] = Wave1PointRegion::Detachment;
+        long.detach[index] = rate;
+        if index > 0 {
+            long.diagnostic_zone[index] = 1;
+        }
+    }
+    long.load[1] = 0.005;
+    long.load[2] = wave1_integrate_rate_block(&long.detach[0..=2]);
+    long.load[3] = 0.08;
+    long.load[4] = long.load[2] + wave1_integrate_rate_block(&long.detach[2..=4]);
+    long.load[5] = 0.4;
+    long.load[6] = 0.7;
+    long.load[7] = long.load[4] + wave1_integrate_rate_block(&long.detach[4..=7]);
+    let (residual, scale) = wave1_flux_closure(&long, 0.0);
+    assert!(residual.abs() <= 1.0e-15);
+    assert!((scale - long.load[7]).abs() <= 1.0e-15);
+}
+
+#[test]
+fn eb04w2c_flux_gate_rejects_a_perturbed_committed_load() {
+    let inputs = continuity_inputs();
+    let drivers = drivers(0.0, 1.0);
+    let coefficients = [segment(0.0, 1.0, 0.0, 0.0, 1.0, 0.0)];
+    let mut grid = Wave1RouteGrid::new();
+    for (index, load) in [0.0, 0.01, 0.02, 0.03, 0.04].into_iter().enumerate() {
+        grid.region[index] = Wave1PointRegion::Detachment;
+        grid.detach[index] = 0.0;
+        grid.load[index] = load;
+        if index > 0 {
+            grid.diagnostic_zone[index] = 1;
+        }
+    }
+    grid.ilast = 4;
+
+    let error = wave1_totals(&inputs, &drivers, &grid, &coefficients, None)
+        .expect_err("material load/rate inconsistency must fail closed");
+    assert_eq!(
+        error,
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "erosion.wave1.flux_closure"
+        }
+    );
+}
+
+#[test]
+fn eb04w2c_non_grid_solver_boundaries_start_new_diagnostic_zones() {
+    let first = Wave1SegmentCoefficients {
+        xu: 0.0,
+        xl: 0.015,
+        a: 0.0,
+        b: 0.0,
+        c: 1.0,
+        atc: 0.0,
+        btc: 0.0,
+        ctc: 1.0,
+    };
+    let second = Wave1SegmentCoefficients {
+        xu: 0.015,
+        xl: 1.0,
+        ..first
+    };
+    let grid = wave1_route(&[first, second], &drivers(0.0, 1.0e-3), 0.0, None)
+        .expect("non-grid segment boundary must route");
+    assert_ne!(grid.diagnostic_zone[1], 0);
+    assert_eq!(grid.diagnostic_zone[2], 0);
+    assert_ne!(grid.diagnostic_zone[3], 0);
+    assert_ne!(grid.diagnostic_zone[1], grid.diagnostic_zone[3]);
+
+    let crossing = Wave1SegmentCoefficients {
+        xu: 0.0,
+        xl: 1.0,
+        a: 0.0,
+        b: 1.0,
+        c: 0.0,
+        atc: 0.0,
+        btc: 0.0,
+        ctc: 1.0,
+    };
+    let classification = Wave1ShearClassification {
+        regime: Wave1ShearRegime::RisingCross,
+        xc1: 0.015,
+        xc2: 1.0,
+    };
+    let mut grid = Wave1RouteGrid::new();
+    let mut dl = 0.0;
+    let mut load = 0.0;
+    let outcome = wave1_dispatch_detachment(
+        &mut grid,
+        &crossing,
+        &classification,
+        1.0,
+        &drivers(0.0, 1.0e-3),
+        0.0,
+        &mut dl,
+        &mut load,
+    );
+    assert!(!outcome.ndep);
+    assert_ne!(grid.diagnostic_zone[1], 0);
+    assert_eq!(grid.diagnostic_zone[2], 0);
+    assert_ne!(grid.diagnostic_zone[3], 0);
+    assert_ne!(grid.diagnostic_zone[1], grid.diagnostic_zone[3]);
+
+    let mut deposition = Wave1RouteGrid::new();
+    deposition.region[0] = Wave1PointRegion::Deposition;
+    let deposition_drivers = Wave1Drivers {
+        phi: 0.5,
+        theta: 0.0,
+        ktrato: 1.0,
+        qostar: 0.0,
+        ..drivers(0.0, 1.0e-3)
+    };
+    let mut dl = 0.0;
+    let mut load = 0.0;
+    wave1_depos(
+        &mut deposition,
+        0.0,
+        0.015,
+        0.0,
+        &first,
+        &deposition_drivers,
+        &mut dl,
+        &mut load,
+    );
+    wave1_depos(
+        &mut deposition,
+        0.015,
+        0.05,
+        0.0,
+        &second,
+        &deposition_drivers,
+        &mut dl,
+        &mut load,
+    );
+    assert_ne!(deposition.diagnostic_zone[1], 0);
+    assert_eq!(deposition.diagnostic_zone[2], 0);
+    assert_ne!(deposition.diagnostic_zone[3], 0);
+    assert_ne!(deposition.diagnostic_zone[1], deposition.diagnostic_zone[3]);
+}
+
+#[test]
+fn eb04w2c_hourly_consumer_surfaces_only_flux_refusals() {
+    let identity = DirectRunIdentity::new(1, 1, 1, 1).expect("valid identity");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid day frame");
+    let inputs = continuity_inputs();
+    day.wave1_hourly_plan.push((7, inputs.clone()));
+
+    let (state, hourly) = day
+        .solve_wave1_hourly_plan_with(&inputs, inputs.field_width_m, |_| {
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "erosion.wave1.flux_closure",
+            })
+        })
+        .expect("the named diagnostic refusal must be surfaced, not hard-failed");
+    assert!(!state.active);
+    assert_eq!(state.flux_refused_quanta, 1);
+    assert!(hourly.iter().all(|sediment| *sediment == 0.0));
+
+    let error = day
+        .solve_wave1_hourly_plan_with(&inputs, inputs.field_width_m, |_| {
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "erosion.wave1.publication_closure",
+            })
+        })
+        .expect_err("the exact publication mass gate must remain hard-fail");
+    assert_eq!(
+        error,
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "erosion.wave1.publication_closure"
+        }
+    );
 }
 
 fn segment(a: f64, b: f64, c: f64, atc: f64, btc: f64, ctc: f64) -> Wave1SegmentCoefficients {
@@ -159,7 +434,7 @@ fn erod_march_characterizes_flow_end_zero_capacity_and_grid_end() {
     flow_end.load[19] = 0.2;
     let flow_drv = drivers(-0.19, 0.0);
     let seg = segment(0.0, 1.0, 0.0, 0.0, 1.0, 0.0);
-    let marched = wave1_erod_march(&mut flow_end, &seg, 1.0, &flow_drv, 0.19, 1.0, 20, 0.2);
+    let marched = wave1_erod_march(&mut flow_end, &seg, 1.0, &flow_drv, 0.19, 1.0, 20, 0.2, 1);
     assert_eq!(marched.kflag, 4);
     assert_eq!(flow_end.region[20], Wave1PointRegion::FlowEnd);
     assert!(flow_end.load[20].abs() <= f64::EPSILON);
@@ -179,6 +454,7 @@ fn erod_march_characterizes_flow_end_zero_capacity_and_grid_end() {
         0.02,
         1,
         0.0,
+        1,
     );
     assert_eq!(marched.kflag, 3);
     assert!(zero_capacity.load[1].abs() <= f64::EPSILON);
@@ -195,6 +471,7 @@ fn erod_march_characterizes_flow_end_zero_capacity_and_grid_end() {
         1.0,
         100,
         0.1,
+        1,
     );
     assert_eq!(marched.currpt, DIRECT_WAVE1_GRID_POINTS - 1);
     assert!(at_end.load[100].is_finite());

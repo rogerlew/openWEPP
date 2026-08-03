@@ -1,0 +1,9 @@
+validation: PASS
+public_reports: 0
+v2_reports_total: 3
+v2_reports_selected: 3
+source_root_sha256: f8a9ba4c449a0230bc7a9c271b658adf57238b1b46e095139a6ed3a13a3cf7f6
+reports:
+  - id=linear-groundwater-reservoir-recurrence version=1.0.0 lifecycle=DRAFT fixture_only=false source_root_sha256=cc3e97511b3f122452d80f20d28dfc8347bec1c39437b30f82ce61f81e1da7ad
+  - id=native-forest-canopy-phenology-evaluation version=1.0.0 lifecycle=DRAFT fixture_only=false source_root_sha256=3e06a4d31c4b56d4b4e64ac8079d1e1f0a350fbc4658b57bfefa98f23f72121e
+  - id=snow-and-frozen-soil-process-evaluation version=1.0.0 lifecycle=DRAFT fixture_only=false source_root_sha256=b73b7b2512eef1edcddfe3bd18cac6fb0c3c78f28af4069ea636d2382c1a8659

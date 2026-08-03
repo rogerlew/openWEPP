@@ -5077,14 +5077,34 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Active / Recent Snow-Density Packages
 
+- `20260802-snow-surface-eb-04w2c-corrected-winter-erosion-continuity-001/` —
+  COMPLETE / TECHNICAL, REVIEW, AND VERIFICATION PASS: reproduced and
+  partitioned the corrected `61/231` EROD16 refusals. `SC-SED-001` revisions 56–60
+  separate the exact `1e-9` mass identity from the retained `5e-3`
+  discretization gate and replaces the lower-order cellwise trapezoid
+  comparison with nonoverlapping, same-numerical-sub-march matched-order
+  Simpson blocks. The corrected
+  population has `4/231` explicit refusals and `227` clean/depositing storms;
+  focused, owning-crate, quick, frost, erosion, Critical full, doctest, and
+  assurance gates pass. Snow
+  physics, erosion solution equations/grid, diagnostic tolerance, exact mass
+  closure, and refusal behavior are unchanged. Revision-57 findings and fresh
+  reviews are closed. Initial terminal verifiers accepted the technical result
+  and held profile/history/diff evidence; revisions 58–60 correct those
+  surfaces. Fresh revision-60 review and dual terminal re-verification pass
+  with no remaining findings. W2B is admitted to resume its terminal
+  correctness and frozen-rerun sequence; EB-04X remains held behind W2B.
 - `20260802-snow-surface-eb-04w2b-warm-day-new-snow-activation-closure-001/` —
-  EXECUTED / HOLD_CROSS_DOMAIN_CORRECTNESS_GATE: the in-envelope warm-snow,
+  COMPLETE / TECHNICAL, REVIEW, AND VERIFICATION PASS: the in-envelope warm-snow,
   direct-provider, shared-closure, typed-error, and boundary corrections pass
-  focused, owning-crate, frost, lint, and assurance gates. Renewed quick
-  validation deterministically fails the hard EROD16 concave continuity
-  instrument (`61/231` refusals; bound `<=20%`). Earlier W2A rerun output is
-  prerequisite-ineligible, no terminal
-  rerun/full-profile closure occurred, and EB-04X remains held.
+  focused, owning-crate, frost, lint, and assurance gates. W2C corrects the
+  lower-order EROD16 continuity diagnostic and passes at `4/231`, with quick,
+  frost, erosion, and Critical full-workspace correctness. W2B's distinct
+  first resumed rerun was rejected for stale-binary and overwrite defects.
+  Terminal-v2 rebuilds the exact release binary, isolates every output, and
+  passes all eight frozen cells with maximum mass closure `2.220e-15 m`; the
+  albedo response remains immaterial. Fresh dual re-review and dual terminal
+  verification pass; EB-04X may advance.
 - `20260802-snow-surface-eb-04w2a-residual-melt-chronology-attribution-001/` —
   EXECUTED / HOLD / PARTIAL ADMISSION: all eight frozen snowbench cells ran and
   the retained direct-production ledgers close within `2.221e-15 m` and

@@ -447,6 +447,10 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
                      instrument profile, got {detail}",
                     storm.sim_day_index
                 );
+                println!(
+                    "concave flux refusal: day={} runoff={:.6e} m peakro={:.6e} m/s",
+                    storm.sim_day_index, storm.runoff_depth_m, storm.peakro_m_s
+                );
                 concave_flux_refusals += 1;
                 continue;
             }
@@ -454,19 +458,56 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
         assert!(state.active);
         concave_clean_days += 1;
 
-        // The same hard conservation identity on the depositing profile.
-        let detach_kg_m = state.total_detachment_kg / fwidth_m;
-        let depos_kg_m = state.total_deposition_kg / fwidth_m;
-        let residual = (state.exported_sediment_kg_m - state.inflow_sediment_kg_m)
-            - (detach_kg_m - depos_kg_m);
+        // Independently reconstruct the signed cell ledger from the published
+        // normalized load trajectory rather than recombining the producer's
+        // aggregate detachment/deposition fields.
+        let denorm_kg_m = inputs.effdrn_s * inputs.tcend_kg_s_m * inputs.width_m / inputs.rspace_m;
+        let mut reconstructed_detach_kg_m = 0.0;
+        let mut reconstructed_depos_kg_m = 0.0;
+        for pair in state.load.windows(2) {
+            let delta_kg_m = (pair[1] - pair[0]) * denorm_kg_m;
+            if delta_kg_m >= 0.0 {
+                reconstructed_detach_kg_m += delta_kg_m;
+            } else {
+                reconstructed_depos_kg_m -= delta_kg_m;
+            }
+        }
+        let reconstructed_boundary_kg_m =
+            (state.load.last().expect("toe load") - state.load[0]) * denorm_kg_m;
+        let reconstructed_inflow_kg_m = state.load[0] * denorm_kg_m;
+        let reconstructed_exported_kg_m = state.load.last().expect("toe load") * denorm_kg_m;
+        let residual =
+            reconstructed_boundary_kg_m - (reconstructed_detach_kg_m - reconstructed_depos_kg_m);
         let scale = state
             .exported_sediment_kg_m
             .abs()
-            .max(detach_kg_m.abs())
+            .max(reconstructed_detach_kg_m.abs())
             .max(1.0e-9);
         assert!(
             residual.abs() <= 1.0e-9 * scale,
             "concave storm day {} conservation residual {residual} exceeds gate",
+            storm.sim_day_index
+        );
+        assert!(
+            (state.inflow_sediment_kg_m - reconstructed_inflow_kg_m).abs() <= 1.0e-9 * scale,
+            "concave storm day {} inflow boundary must match independent load projection",
+            storm.sim_day_index
+        );
+        assert!(
+            (state.exported_sediment_kg_m - reconstructed_exported_kg_m).abs() <= 1.0e-9 * scale,
+            "concave storm day {} export boundary must match independent load projection",
+            storm.sim_day_index
+        );
+        assert!(
+            (state.total_detachment_kg / fwidth_m - reconstructed_detach_kg_m).abs()
+                <= 1.0e-9 * scale,
+            "concave storm day {} detachment aggregate must match independent cell ledger",
+            storm.sim_day_index
+        );
+        assert!(
+            (state.total_deposition_kg / fwidth_m - reconstructed_depos_kg_m).abs()
+                <= 1.0e-9 * scale,
+            "concave storm day {} deposition aggregate must match independent cell ledger",
             storm.sim_day_index
         );
 
@@ -476,8 +517,14 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
             // exceed what detachment supplied minus what deposited (the
             // telescoping identity, restated as an export bound).
             assert!(
-                state.exported_sediment_kg_m <= detach_kg_m - depos_kg_m + 1.0e-9 * scale,
+                state.exported_sediment_kg_m
+                    <= reconstructed_detach_kg_m - reconstructed_depos_kg_m + 1.0e-9 * scale,
                 "concave storm day {} export must respect the deposition debit",
+                storm.sim_day_index
+            );
+            assert!(
+                (state.exported_sediment_kg_m - reconstructed_detach_kg_m).abs() > 1.0e-9 * scale,
+                "concave storm day {} detachment-only alias must be rejected",
                 storm.sim_day_index
             );
         }

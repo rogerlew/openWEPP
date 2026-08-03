@@ -1,0 +1,22 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.55s
+────────────
+ Nextest run ID 2bad5ef0-3675-4045-a4dd-4b972b4a85e6 with nextest profile: default
+    Starting 1 test across 1 binary
+       START [         ] (1/1) openwepp::erod16_wave1_continuity_fixture_conservation erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing
+
+running 1 test
+concave flux refusal: day=376 runoff=1.509415e-2 m peakro=3.473097e-7 m/s
+concave flux refusal: day=715 runoff=1.618310e-2 m peakro=3.485707e-7 m/s
+concave flux refusal: day=1036 runoff=1.181173e-2 m peakro=3.475127e-7 m/s
+concave flux refusal: day=1810 runoff=1.726019e-2 m peakro=2.629733e-7 m/s
+concave depositing instrument: storms=231 clean=227 flux_refusals=4 depositing=227 tdet=978601.7 kg tdep=124192.6 kg
+test erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.02s
+
+        PASS [  26.032s] (1/1) openwepp::erod16_wave1_continuity_fixture_conservation erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing
+────────────
+     Summary [  26.033s] 1 test run: 1 passed, 0 skipped

@@ -29,6 +29,9 @@ use super::{DirectRuntimeError, validate_finite, validate_nonnegative_direct_m};
 pub const DIRECT_WAVE1_GRID_POINTS: usize = 101;
 /// Default nondimensional march step (`runge.for` interior step).
 const WAVE1_GRID_DX: f64 = 0.01;
+/// Normalized-position tolerance used only to decide whether a numerical
+/// sub-march begins exactly on the preceding diagnostic grid point.
+const WAVE1_GRID_ALIGNMENT_ABS_TOL: f64 = 32.0 * f64::EPSILON;
 /// Shear exponent used by the RK4 march (`runge.for`/`erod.for`
 /// `exp(0.666667*log(xterm))`).
 const WAVE1_MARCH_SHEAR_EXPONENT: f64 = 0.666_667;
@@ -87,17 +90,10 @@ const WAVE1_MIN_TCADJF: f64 = 0.30;
 /// this bound only absorbs floating-point accumulation order.
 const WAVE1_PUBLICATION_CLOSURE_REL_TOL: f64 = 1.0e-9;
 /// Continuity flux-closure tolerance (relative to total |dG|): bounds the
-/// trapezoid-vs-RK4 discretization gap on interior unclamped cells
-/// (INV-SED-001 residual gate; the residual itself is always reported).
-/// This is a **discretization-consistency** bound, NOT the mass-balance
-/// law — that is the separate `WAVE1_PUBLICATION_CLOSURE_REL_TOL` (1e-9)
-/// telescoping-identity gate, which holds independently. The trapezoid is
-/// a 2nd-order quadrature of the 4th-order RK4 march, so their gap is
-/// inherently `O(dx²)` and grows with rate curvature; on sharp-rate days
-/// (e.g. high interrill `theta` over a steep detachment gradient) the
-/// relative gap reaches a few ×1e-3 while mass still conserves to 1e-9. Set
-/// to 5e-3 (still ~100× below the `O(1)` gap a real flux bug would produce)
-/// after a marginal 1.0016e-3 overrun on a snow/frost single-OFE fixture.
+/// matched-order quadrature-vs-solution gap on contiguous, unclamped,
+/// same-region blocks (SC-SED-001 TOL-SED-008). This is a
+/// **discretization-consistency** bound, NOT the mass-balance law — that is
+/// the separate `WAVE1_PUBLICATION_CLOSURE_REL_TOL` (TOL-SED-007).
 const WAVE1_FLUX_CLOSURE_REL_TOL: f64 = 5.0e-3;
 /// Absolute floor for both closure gates in nondimensional load units.
 const WAVE1_CLOSURE_ABS_FLOOR: f64 = 1.0e-9;
@@ -266,8 +262,8 @@ pub struct DirectWave1ContinuityState {
     /// E.4: the specific-surface-area enrichment ratio (diagnostic).
     pub enrichment_ratio: Option<f64>,
     /// Hour quanta refused by the FLUX-consistency diagnostic gate
-    /// (`erosion.wave1.flux_closure`, the trapezoid-vs-RK4 discretization
-    /// check — NOT the 1e-9 mass-balance law, which stays hard). Refused
+    /// (`erosion.wave1.flux_closure`, the matched-order quadrature
+    /// discretization check — NOT the 1e-9 mass-balance law, which stays hard). Refused
     /// quanta contribute zero sediment (a surfaced under-estimate, the
     /// GAP-SED-THAW pattern), never fabricated values.
     pub flux_refused_quanta: u32,
@@ -302,7 +298,7 @@ pub struct DirectWave1ContinuityState {
     pub publication_closure_residual_kg_m: f64,
     /// Nondimensional continuity flux residual (INV-SED-001 reporting).
     pub flux_closure_residual: f64,
-    /// Total |dG| over the grid backing the relative flux gate.
+    /// Total |dG| over eligible diagnostic blocks backing the relative gate.
     pub flux_closure_scale: f64,
 }
 
@@ -397,6 +393,12 @@ struct Wave1RouteGrid {
     /// trapezoid flux-residual accounting; the exact telescoping gate
     /// still covers them).
     clamped: Vec<bool>,
+    /// Provenance of the numerical sub-march that committed each interval
+    /// ending at this point. Zero means no eligible numerical step. Distinct
+    /// zones prevent diagnostic quadrature from spanning coefficient,
+    /// critical-shear, or analytic/RK4 branch boundaries.
+    diagnostic_zone: Vec<u32>,
+    next_diagnostic_zone: u32,
     /// Index of the last grid point with a committed load (0-based).
     ilast: usize,
 }
@@ -409,9 +411,116 @@ impl Wave1RouteGrid {
             detach: vec![0.0; DIRECT_WAVE1_GRID_POINTS],
             region: vec![Wave1PointRegion::Untouched; DIRECT_WAVE1_GRID_POINTS],
             clamped: vec![false; DIRECT_WAVE1_GRID_POINTS],
+            diagnostic_zone: vec![0; DIRECT_WAVE1_GRID_POINTS],
+            next_diagnostic_zone: 1,
             ilast: 0,
         }
     }
+
+    fn begin_diagnostic_zone(&mut self) -> u32 {
+        let zone = self.next_diagnostic_zone;
+        self.next_diagnostic_zone = self.next_diagnostic_zone.saturating_add(1);
+        zone
+    }
+}
+
+/// Integrate point rates on a uniform Wave-1 grid block using quadrature
+/// commensurate with the RK4 detachment march. Even interval counts use
+/// Simpson 1/3 pairs; odd counts of at least three reserve the final three
+/// intervals for Simpson 3/8. A one-interval region necessarily uses the
+/// trapezoid rule.
+fn wave1_integrate_rate_block(rates: &[f64]) -> f64 {
+    let intervals = rates.len().saturating_sub(1);
+    if intervals == 0 {
+        return 0.0;
+    }
+    if intervals == 1 {
+        return 0.5 * WAVE1_GRID_DX * (rates[0] + rates[1]);
+    }
+
+    let simpson_intervals = if intervals % 2 == 0 {
+        intervals
+    } else {
+        intervals - 3
+    };
+    let mut integral = 0.0;
+    let mut start = 0;
+    while start < simpson_intervals {
+        integral +=
+            WAVE1_GRID_DX / 3.0 * (rates[start] + 4.0 * rates[start + 1] + rates[start + 2]);
+        start += 2;
+    }
+    if simpson_intervals < intervals {
+        integral += 3.0 * WAVE1_GRID_DX / 8.0
+            * (rates[start] + 3.0 * rates[start + 1] + 3.0 * rates[start + 2] + rates[start + 3]);
+    }
+    integral
+}
+
+fn wave1_flux_run_residual(grid: &Wave1RouteGrid, theta: f64, start: usize, end: usize) -> f64 {
+    let rates: Vec<f64> = (start..=end)
+        .map(|index| grid.detach[index] + theta)
+        .collect();
+    let intervals = end - start;
+    let mut offset = 0;
+    let mut residual = 0.0;
+    while offset < intervals {
+        let remaining = intervals - offset;
+        let block_intervals = if remaining == 3 {
+            3
+        } else if remaining >= 2 {
+            2
+        } else {
+            1
+        };
+        let next = offset + block_intervals;
+        let load_change = grid.load[start + next] - grid.load[start + offset];
+        let quadrature = wave1_integrate_rate_block(&rates[offset..=next]);
+        residual += (load_change - quadrature).abs();
+        offset = next;
+    }
+    residual
+}
+
+fn wave1_flux_closure(grid: &Wave1RouteGrid, theta: f64) -> (f64, f64) {
+    let mut flux_scale = 0.0;
+    let mut residual = 0.0;
+    let mut interval = 1;
+    while interval < DIRECT_WAVE1_GRID_POINTS {
+        let region = grid.region[interval];
+        let zone = grid.diagnostic_zone[interval];
+        let eligible = zone != 0
+            && region == grid.region[interval - 1]
+            && matches!(
+                region,
+                Wave1PointRegion::Detachment | Wave1PointRegion::Deposition
+            )
+            && !grid.clamped[interval - 1]
+            && !grid.clamped[interval];
+        if !eligible {
+            interval += 1;
+            continue;
+        }
+
+        let start = interval - 1;
+        let mut end_interval = interval;
+        while end_interval + 1 < DIRECT_WAVE1_GRID_POINTS
+            && grid.diagnostic_zone[end_interval + 1] == zone
+            && grid.region[end_interval + 1] == region
+            && grid.region[end_interval] == region
+            && !grid.clamped[end_interval]
+            && !grid.clamped[end_interval + 1]
+        {
+            end_interval += 1;
+        }
+        residual += wave1_flux_run_residual(grid, theta, start, end_interval);
+        flux_scale += grid.load[start..=end_interval]
+            .windows(2)
+            .map(|pair| (pair[1] - pair[0]).abs())
+            .sum::<f64>();
+        interval = end_interval + 1;
+    }
+    (residual, flux_scale)
 }
 
 #[inline]
@@ -420,6 +529,20 @@ fn wave1_grid_x(index: usize) -> f64 {
     #[allow(clippy::cast_precision_loss)]
     {
         index as f64 * WAVE1_GRID_DX
+    }
+}
+
+fn wave1_diagnostic_interval_zone(
+    diagnostic_zone: u32,
+    sub_march_start: f64,
+    prior_grid_point: f64,
+    first_interval: bool,
+) -> u32 {
+    if !first_interval || (sub_march_start - prior_grid_point).abs() <= WAVE1_GRID_ALIGNMENT_ABS_TOL
+    {
+        diagnostic_zone
+    } else {
+        0
     }
 }
 
@@ -944,6 +1067,7 @@ fn wave1_depos(
     dl: &mut f64,
     ldlast: &mut f64,
 ) {
+    let diagnostic_zone = grid.begin_diagnostic_zone();
     let phi = drivers.phi;
     let theta = drivers.theta;
     let ktrato = drivers.ktrato;
@@ -1002,6 +1126,12 @@ fn wave1_depos(
                     grid.clamped[i] = true;
                 }
                 grid.region[i] = Wave1PointRegion::Deposition;
+                grid.diagnostic_zone[i] = wave1_diagnostic_interval_zone(
+                    diagnostic_zone,
+                    xb,
+                    wave1_grid_x(i - 1),
+                    i == ibeg,
+                );
             } else {
                 grid.load[i] = 0.0;
                 grid.tcap[i] = 0.0;
@@ -1070,6 +1200,7 @@ fn wave1_erod_march(
     xe: f64,
     ibeg: usize,
     ldlast: f64,
+    diagnostic_zone: u32,
 ) -> Wave1ErodMarchOutcome {
     let mut outcome = Wave1ErodOutcome {
         ndep: false,
@@ -1122,6 +1253,8 @@ fn wave1_erod_march(
             grid.load[i] = ldnew;
             grid.clamped[i] = floored;
             grid.region[i] = Wave1PointRegion::Detachment;
+            grid.diagnostic_zone[i] =
+                wave1_diagnostic_interval_zone(diagnostic_zone, xb, wave1_grid_x(i - 1), i == ibeg);
             if tcap > 0.0 {
                 ldrat = 1.0 - grid.load[i] / tcap;
                 kflag = 1;
@@ -1195,7 +1328,18 @@ fn wave1_erod(
         return outcome;
     }
 
-    let march = wave1_erod_march(grid, seg, eata, drivers, xb, xe, ibeg, *ldlast);
+    let diagnostic_zone = grid.begin_diagnostic_zone();
+    let march = wave1_erod_march(
+        grid,
+        seg,
+        eata,
+        drivers,
+        xb,
+        xe,
+        ibeg,
+        *ldlast,
+        diagnostic_zone,
+    );
     let preparation = wave1_erod_prepare(grid, seg, eata, drivers, xb, xe, ibeg, march, dl, ldlast);
     let (mut outcome, bracket) = match preparation {
         Wave1ErodPreparation::Complete(outcome) => return outcome,
@@ -2165,28 +2309,9 @@ fn wave1_totals(
         });
     }
 
-    // Continuity flux residual (INV-SED-001): per-cell |dG - trapz(rate)|
-    // over cells whose endpoints share a computed region and carry no
-    // clamp; reported always, hard-gated at the named discretization
-    // tolerance.
-    let mut flux_residual = 0.0;
-    let mut flux_scale = 0.0;
-    for j in 1..DIRECT_WAVE1_GRID_POINTS {
-        let delta = grid.load[j] - grid.load[j - 1];
-        flux_scale += delta.abs();
-        if grid.region[j] != grid.region[j - 1] || grid.clamped[j] || grid.clamped[j - 1] {
-            continue;
-        }
-        match grid.region[j] {
-            Wave1PointRegion::Detachment | Wave1PointRegion::Deposition => {
-                let rate_prev = grid.detach[j - 1] + drivers.theta;
-                let rate_here = grid.detach[j] + drivers.theta;
-                let trapezoid = 0.5 * (rate_prev + rate_here) * WAVE1_GRID_DX;
-                flux_residual += (delta - trapezoid).abs();
-            }
-            Wave1PointRegion::FlowEnd | Wave1PointRegion::Untouched => {}
-        }
-    }
+    // Independent matched-order discretization diagnostic (TOL-SED-008).
+    // This remains separate from the exact publication mass identity above.
+    let (flux_residual, flux_scale) = wave1_flux_closure(grid, drivers.theta);
     let flux_gate_scale = flux_scale.max(WAVE1_CLOSURE_ABS_FLOOR);
     if flux_residual > WAVE1_FLUX_CLOSURE_REL_TOL * flux_gate_scale {
         return Err(DirectRuntimeError::DirectClosureToleranceExceeded {

@@ -17,7 +17,8 @@ W2A_TOOL = REPO / (
     "docs/work-packages/20260802-snow-surface-eb-04w2a-"
     "residual-melt-chronology-attribution-001/tools/run_melt_chronology_diagnostic.py"
 )
-OUTPUT = REPO / "target/snow_surface_eb04w2b_frozen_w2a_rerun"
+OUTPUT = REPO / "target/snow_surface_eb04w2b_terminal_v2_frozen_w2a_rerun"
+TERMINAL_ARTIFACTS = PACKAGE / "artifacts/terminal-v2"
 SOURCE_PATHS = (
     "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
     "crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs",
@@ -50,14 +51,47 @@ def load_w2a():
 def main() -> int:
     w2a = load_w2a()
     w2a.PACKAGE = PACKAGE
-    w2a.ARTIFACTS = PACKAGE / "artifacts"
-    w2a.FIGURES = w2a.ARTIFACTS / "figures"
+    w2a.ARTIFACTS = TERMINAL_ARTIFACTS
+    w2a.FIGURES = TERMINAL_ARTIFACTS / "figures"
     w2a.OUTPUT = OUTPUT
     w2a.RUNS = OUTPUT / "runs"
-    w2a.FREEZE = w2a.ARTIFACTS / "frozen-w2a-rerun-freeze.json"
-    w2a.RECEIPT = w2a.ARTIFACTS / "frozen-w2a-rerun-receipt.json"
-    w2a.RESULTS = w2a.ARTIFACTS / "frozen-w2a-rerun-results.json"
-    w2a.SUMMARY = w2a.ARTIFACTS / "frozen-w2a-rerun-summary.csv"
+    w2a.FREEZE = TERMINAL_ARTIFACTS / "freeze.json"
+    w2a.RECEIPT = TERMINAL_ARTIFACTS / "receipt.json"
+    w2a.RESULTS = TERMINAL_ARTIFACTS / "results.json"
+    w2a.SUMMARY = TERMINAL_ARTIFACTS / "summary.csv"
+
+    if TERMINAL_ARTIFACTS.exists() or OUTPUT.exists():
+        raise RuntimeError("terminal-v2 evidence or result-bearing output already exists")
+
+    build_command = [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "openwepp-runner",
+        "--bin",
+        "openwepp-snowbench",
+    ]
+    subprocess.run(build_command, cwd=REPO, check=True)
+    binary_stat = w2a.SNOWBENCH.stat()
+    TERMINAL_ARTIFACTS.mkdir(parents=True, exist_ok=False)
+    w2a.write_json(
+        TERMINAL_ARTIFACTS / "release-build-receipt.json",
+        {
+            "argv": build_command,
+            "working_directory": str(REPO),
+            "source_head": subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=REPO, text=True
+            ).strip(),
+            "source_dirty_diff_sha256": sha256_bytes(
+                subprocess.check_output(["git", "diff", "--binary", "HEAD"], cwd=REPO)
+            ),
+            "binary_path": str(w2a.SNOWBENCH.relative_to(REPO)),
+            "binary_sha256": w2a.sha256(w2a.SNOWBENCH),
+            "binary_size_bytes": binary_stat.st_size,
+            "binary_mtime_ns": binary_stat.st_mtime_ns,
+        },
+    )
 
     w2a.self_check()
     freeze = w2a.freeze()
@@ -94,7 +128,7 @@ def main() -> int:
         "maximum_energy_closure_j_m2": result["maximum_energy_closure_j_m2"],
         "result": result,
     }
-    (PACKAGE / "artifacts/frozen-w2a-rerun-adjudication.json").write_text(
+    (TERMINAL_ARTIFACTS / "adjudication.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(

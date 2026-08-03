@@ -1,0 +1,13 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.65s
+────────────
+ Nextest run ID 0dc9a5a7-a815-4115-b3b2-78e780d575f5 with nextest profile: frost
+    Starting 345 tests across 202 binaries (1903 tests skipped, including 1898 tests via profile.frost.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 556.083s] 345 tests run: 345 passed (1 slow), 1903 skipped
