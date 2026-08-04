@@ -1,0 +1,989 @@
+{
+  "annual_ledger_path": "target/snowbird_rst_prepeak_flux_diagnostic/annual-flux-ledger.json",
+  "annual_ledger_sha256": "e8a66185175ed1a9425ee13b52486bbc6b72dbfb6b9bdc7a69e697634693853c",
+  "cell_count": 36,
+  "executed": {
+    "snotel_mica_creek_st_joe_id": {
+      "rst_0p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_0p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p0/snotel_mica_creek_st_joe_id-rst_0p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p0/snotel_mica_creek_st_joe_id-rst_0p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "06a362bf3a4adeba52d4685823405d728639b94ff637f405ce1661a39985be5e",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_0p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_0p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p5/snotel_mica_creek_st_joe_id-rst_0p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_0p5/snotel_mica_creek_st_joe_id-rst_0p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "311ccbc54c96241e0828277a5040c33f141d17a07a954eaf156f1aadaa94a260",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_1p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_1p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p0/snotel_mica_creek_st_joe_id-rst_1p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p0/snotel_mica_creek_st_joe_id-rst_1p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_1p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_1p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p5/snotel_mica_creek_st_joe_id-rst_1p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_1p5/snotel_mica_creek_st_joe_id-rst_1p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "54d01daf1d1bcb471aaf36a0b6649aed91b929a71e6d006bdea66da1542a61e4",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_2p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_2p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p0/snotel_mica_creek_st_joe_id-rst_2p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p0/snotel_mica_creek_st_joe_id-rst_2p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "e02fcb5ad7aff81ee69566f58224b4e0ad9949a37ec5dfeae6ea3a6981889e72",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_2p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_2p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p5/snotel_mica_creek_st_joe_id-rst_2p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_2p5/snotel_mica_creek_st_joe_id-rst_2p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9fb3fae433fcd39134ca27112a8935edf17385625bd622d15a3d797584951f3c",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_3p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_3p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p0/snotel_mica_creek_st_joe_id-rst_3p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p0/snotel_mica_creek_st_joe_id-rst_3p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9ef3e26fa4303b03d6aa3f302201b9b488136b37201e75e0dd01a25bd05c28a4",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_3p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_3p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p5/snotel_mica_creek_st_joe_id-rst_3p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_3p5/snotel_mica_creek_st_joe_id-rst_3p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "c092de0e131d7adb3b95c480d885a5b1489c2c1264f2368eb02ca578ea281470",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      },
+      "rst_4p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_mica_creek_st_joe_id/rst_4p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_4p0/snotel_mica_creek_st_joe_id-rst_4p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_4p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_mica_creek_st_joe_id/rst_4p0/snotel_mica_creek_st_joe_id-rst_4p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "d77e49bcfc283e9006b92c00a78fa4a09e5f048e29419a2758b37db45f761aee",
+        "trace_sha256": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+        "wat_sha256": "c24263562339c816d5b46e8db09c307cc3f5f0d94bff5115bc1ff7c1634aaa40"
+      }
+    },
+    "snotel_niwot_co": {
+      "rst_0p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_0p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p0/snotel_niwot_co-rst_0p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p0/snotel_niwot_co-rst_0p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "06a362bf3a4adeba52d4685823405d728639b94ff637f405ce1661a39985be5e",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_0p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_0p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p5/snotel_niwot_co-rst_0p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_0p5/snotel_niwot_co-rst_0p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "311ccbc54c96241e0828277a5040c33f141d17a07a954eaf156f1aadaa94a260",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_1p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_1p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p0/snotel_niwot_co-rst_1p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p0/snotel_niwot_co-rst_1p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_1p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_1p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p5/snotel_niwot_co-rst_1p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_1p5/snotel_niwot_co-rst_1p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "54d01daf1d1bcb471aaf36a0b6649aed91b929a71e6d006bdea66da1542a61e4",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_2p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_2p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p0/snotel_niwot_co-rst_2p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p0/snotel_niwot_co-rst_2p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "e02fcb5ad7aff81ee69566f58224b4e0ad9949a37ec5dfeae6ea3a6981889e72",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_2p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_2p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p5/snotel_niwot_co-rst_2p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_2p5/snotel_niwot_co-rst_2p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9fb3fae433fcd39134ca27112a8935edf17385625bd622d15a3d797584951f3c",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_3p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_3p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p0/snotel_niwot_co-rst_3p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p0/snotel_niwot_co-rst_3p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9ef3e26fa4303b03d6aa3f302201b9b488136b37201e75e0dd01a25bd05c28a4",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_3p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_3p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p5/snotel_niwot_co-rst_3p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_3p5/snotel_niwot_co-rst_3p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "c092de0e131d7adb3b95c480d885a5b1489c2c1264f2368eb02ca578ea281470",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      },
+      "rst_4p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_niwot_co/rst_4p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_4p0/snotel_niwot_co-rst_4p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_4p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_niwot_co/rst_4p0/snotel_niwot_co-rst_4p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "d77e49bcfc283e9006b92c00a78fa4a09e5f048e29419a2758b37db45f761aee",
+        "trace_sha256": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+        "wat_sha256": "082e243e82bccfc6cb3ad26897bb8d8ebb47f7e42981427b5dddbecf2b985db3"
+      }
+    },
+    "snotel_paradise_wa": {
+      "rst_0p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_0p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p0/snotel_paradise_wa-rst_0p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p0/snotel_paradise_wa-rst_0p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "06a362bf3a4adeba52d4685823405d728639b94ff637f405ce1661a39985be5e",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_0p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_0p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p5/snotel_paradise_wa-rst_0p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_0p5/snotel_paradise_wa-rst_0p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "311ccbc54c96241e0828277a5040c33f141d17a07a954eaf156f1aadaa94a260",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_1p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_1p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p0/snotel_paradise_wa-rst_1p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p0/snotel_paradise_wa-rst_1p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_1p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_1p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p5/snotel_paradise_wa-rst_1p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_1p5/snotel_paradise_wa-rst_1p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "54d01daf1d1bcb471aaf36a0b6649aed91b929a71e6d006bdea66da1542a61e4",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_2p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_2p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p0/snotel_paradise_wa-rst_2p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p0/snotel_paradise_wa-rst_2p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "e02fcb5ad7aff81ee69566f58224b4e0ad9949a37ec5dfeae6ea3a6981889e72",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_2p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_2p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p5/snotel_paradise_wa-rst_2p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_2p5/snotel_paradise_wa-rst_2p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9fb3fae433fcd39134ca27112a8935edf17385625bd622d15a3d797584951f3c",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_3p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_3p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p0/snotel_paradise_wa-rst_3p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p0/snotel_paradise_wa-rst_3p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9ef3e26fa4303b03d6aa3f302201b9b488136b37201e75e0dd01a25bd05c28a4",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_3p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_3p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p5/snotel_paradise_wa-rst_3p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_3p5/snotel_paradise_wa-rst_3p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "c092de0e131d7adb3b95c480d885a5b1489c2c1264f2368eb02ca578ea281470",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      },
+      "rst_4p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_paradise_wa/rst_4p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_4p0/snotel_paradise_wa-rst_4p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_4p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_paradise_wa/rst_4p0/snotel_paradise_wa-rst_4p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "d77e49bcfc283e9006b92c00a78fa4a09e5f048e29419a2758b37db45f761aee",
+        "trace_sha256": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5",
+        "wat_sha256": "4b3f768a2ea540b31c1daf88598172243600a6b6e446e8764fc4f7216245922f"
+      }
+    },
+    "snotel_snowbird_ut": {
+      "rst_0p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_0p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p0/snotel_snowbird_ut-rst_0p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p0/snotel_snowbird_ut-rst_0p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "06a362bf3a4adeba52d4685823405d728639b94ff637f405ce1661a39985be5e",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_0p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_0p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p5/snotel_snowbird_ut-rst_0p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_0p5/snotel_snowbird_ut-rst_0p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "311ccbc54c96241e0828277a5040c33f141d17a07a954eaf156f1aadaa94a260",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_1p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_1p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p0/snotel_snowbird_ut-rst_1p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p0/snotel_snowbird_ut-rst_1p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_1p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_1p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p5/snotel_snowbird_ut-rst_1p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_1p5/snotel_snowbird_ut-rst_1p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "54d01daf1d1bcb471aaf36a0b6649aed91b929a71e6d006bdea66da1542a61e4",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_2p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_2p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p0/snotel_snowbird_ut-rst_2p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p0/snotel_snowbird_ut-rst_2p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "e02fcb5ad7aff81ee69566f58224b4e0ad9949a37ec5dfeae6ea3a6981889e72",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_2p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_2p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p5/snotel_snowbird_ut-rst_2p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_2p5/snotel_snowbird_ut-rst_2p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9fb3fae433fcd39134ca27112a8935edf17385625bd622d15a3d797584951f3c",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_3p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_3p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p0/snotel_snowbird_ut-rst_3p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p0/snotel_snowbird_ut-rst_3p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "9ef3e26fa4303b03d6aa3f302201b9b488136b37201e75e0dd01a25bd05c28a4",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_3p5": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_3p5",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p5/snotel_snowbird_ut-rst_3p5.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p5",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_3p5/snotel_snowbird_ut-rst_3p5.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "c092de0e131d7adb3b95c480d885a5b1489c2c1264f2368eb02ca578ea281470",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      },
+      "rst_4p0": {
+        "argv": [
+          "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/fixtures/snotel_snowbird_ut/rst_4p0",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_4p0/snotel_snowbird_ut-rst_4p0.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_4p0",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "effective_openwepp_environment": {
+          "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowbird_rst_prepeak_flux_diagnostic/runs/snotel_snowbird_ut/rst_4p0/snotel_snowbird_ut-rst_4p0.snow.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+          "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+          "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+          "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+        },
+        "removed_openwepp_keys": [],
+        "returncode": 0,
+        "snow_txt_sha256": "d77e49bcfc283e9006b92c00a78fa4a09e5f048e29419a2758b37db45f761aee",
+        "trace_sha256": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+        "wat_sha256": "30014d20e2037642bec3b15a4a03c5609daf7396aff942054cb23d2b219b8ef6"
+      }
+    }
+  },
+  "freeze_sha256": "c10812352a88b001f1174c1c9f43e61c2982915f3ad3017b349a499818ed0f57",
+  "schema_version": 1
+}

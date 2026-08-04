@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_BEFORE_LEGACY_RST_EXTENSION_EXECUTION",
+  "reason": "the completed active Harder-Pomeroy arm proved exact rst invariance because that phase path does not consume rst; this extension exercises the existing legacy_rst diagnostic selector",
+  "phase_model": "legacy_rst",
+  "rst_values_c": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
+  "stress_disposition": "values above 1 C are ASSUMED_FOR_EXECUTION best-case diagnostic stress only and are not calibratable or promotable evidence",
+  "extension_tool_sha256": "68d7df717c90357dca67602fe3fbd033972e03e76ffc79ae825f6d7f41d172af",
+  "base_tool_sha256": "624a311c6f0fcb7fa78dbf1ab10d0bd5f8efc3a61a001d1191f952f7ddc50725",
+  "openwepp_binary_sha256": "b50dd71cb00f24806193b98d73fc5444e836efac84ad5a4e0465d1e67c81fec9",
+  "base_freeze_sha256": "c10812352a88b001f1174c1c9f43e61c2982915f3ad3017b349a499818ed0f57",
+  "base_receipt_sha256": "f1c2639b572bac6aaf0b1a91c7f06acf7f74a6170697b11dce9c94797ebfb14e",
+  "base_results_sha256": "d53a7df138a5000943bd58d73b9fa448ea0a087598c8422d35122521a1ac4b18"
+}

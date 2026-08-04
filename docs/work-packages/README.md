@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snowbird-rst-prepeak-flux-diagnostic-001/` — COMPLETE / PHASE
+  INSUFFICIENT / PRE-PEAK LIQUID RELEASE DOMINATES / NO CORRECTION: active
+  Harder-Pomeroy is exactly `rst`-invariant; the legacy `0..4 deg C` stress arm
+  improves some sites but leaves all peaks low and early. Snowbird improves
+  only `0.308 -> 0.385`; about `0.5 m` of pre-peak pack loss remains. Values
+  above `1 deg C` are attribution bounds only, not calibration recommendations.
+
 - `20260803-snowbird-snotel-cligen-swe-response-001/` — COMPLETE / MEDIATED
   RESPONSE IMPROVES BUT REMAINS INSUFFICIENT / NO CORRECTION: controlled original,
   CLIGEN-control, SNOTEL-P, SNOTEL-T, and
