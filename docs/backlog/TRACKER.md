@@ -13,7 +13,7 @@ concept → work-package → contract-authoring promotion path.
 - `complete` — superseded by completed work; **prune candidate** (move detail to the
   execution log and delete the note).
 
-Last updated: 2026-07-15 (Codex — reconciled hydrograph-resolved residual scope).
+Last updated: 2026-08-03 (Codex — added native-vegetation ET process model).
 
 | Item | State | Gate / blocker | Notes |
 |---|---|---|---|
@@ -26,6 +26,7 @@ Last updated: 2026-07-15 (Codex — reconciled hydrograph-resolved residual scop
 | [Frost-heave / frozen-fringe / impedance (`Qwet`)](20260612-frost-heave-frozen-fringe-impedance-formulation.md) | `concept` | ungated (FDHP01 done); deferred | The deferred wet-heat/`Qwet` candidate for the **2 snow-free frost cells** the frost arc bounded. Legacy `frzftp=0` (no authority); needs external/literature authority. |
 | [Irrigation management-gated activation](20260617-irrigation-management-gated-activation.md) | `concept` | deferred (runs only when management declares it) | Out of scope for the perf migration; activate when irrigation is prioritized. |
 | [Forest lateral-flow absolute-magnitude authority](20260618-forest-lateral-flow-absolute-magnitude-authority.md) | `complete` | — | **Promoted 2026-07-02** to the four-tier observed-authority envelope `SC-SUBHYD-001#INV-SUBHYD-033` (WS10/Maimai/Panola/Weiler); FARPOINT01 magnitude now judged against field data, not legacy. Judgment run = MOFEFID-C03. Prune candidate. |
+| [Native-vegetation evapotranspiration process model](20260803-native-vegetation-et-process-model.md) | `concept` | Vendor Stevens Canyon cohort; admit component-resolved forest authority; amend `SC-EVAP-001` | Replace agricultural LAI/crop-coefficient partitioning in explicit native mode with conservative live-canopy transpiration, soil evaporation, and canopy/litter interception processes. Legacy remains compatibility/diagnostic behavior, not native truth. |
 | [Frost / daylength canopy decline + leaf-on/leaf-off + residue cover](20260626-frost-daylength-canopy-decline-hemisphere-robust.md) | `staged` | empirical calibration and assurance under the [canopy phenology assurance roadmap](../planning/canopy-phenology-assurance-roadmap.md) | **Mechanics implemented:** dynamic residue coupling and `CANOPY-PHENOLOGY-02` native GSI leaf-on/leaf-off, canopy, LAI, litter, and real-consumer integration are complete. Remaining: Bill Elliot reproduction, field calibration, litter-source adjudication, canopy-gradient congruence, independent Southern Hemisphere evaluation, and `CANOPY-ASSURE-01`. |
 | [Canopy snow interception / sublimation](20260627-canopy-snow-interception-sublimation.md) | `concept` | not load-bearing yet | The canopy side of sublimation (distinct from the surface-pack side below). |
 | [Stream water temperature — surface energy balance](20260627-stream-water-temperature-surface-energy-balance.md) | `breadcrumb` | prerequisites met; not being planned | Surface-EB foundation + opt-in meltwater-temperature source exist. Open question on pickup: can hourly water+temperature serialize across HBP and be consumed by `openwepp-cli-watershed`. |

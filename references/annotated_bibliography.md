@@ -1417,3 +1417,99 @@ openWEPP note (2026-05-11):
 **Topic**: The limits of strict verification and validation claims for models of open, incompletely known natural systems; nonuniqueness; and the partial evidentiary role of model confirmation.
 **openWEPP V&V role**: Epistemic basis for separating hard verification of specified mathematical and software propositions from nonterminal empirical corroboration and from decision-owner application fitness. Agreement can add bounded evidence without proving the model true; contradiction can still reject or narrow a bounded claim.
 **Rights / distribution**: `restricted`; publisher article was not acquired or vendored.
+
+## Native-Vegetation ET Reference Intake (2026-08-03)
+
+The following references support the native-vegetation ET backlog item. No
+full-text artifact was added during concept intake. Rights default to
+`restricted` until the vendoring review confirms otherwise.
+
+## R-126: Penman (1948) combination evaporation
+
+**Citation**: Penman, H. L. (1948). "Natural evaporation from open water, bare soil and grass." *Proceedings of the Royal Society A*, 193, 120-145. https://doi.org/10.1098/rspa.1948.0037
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Radiation-aerodynamic combination equation for potential evaporation.
+**openWEPP role**: Atmospheric-demand lineage; not authority for forest-component partition or fire response.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-127: Priestley and Taylor (1972) equilibrium evaporation
+
+**Citation**: Priestley, C. H. B., and R. J. Taylor (1972). "On the assessment of surface heat flux and evaporation using large-scale parameters." *Monthly Weather Review*, 100, 81-92. https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Equilibrium evaporation multiplied by an empirical coefficient for extensive saturated surfaces under limited advection.
+**openWEPP role**: Optional low-input atmospheric-demand lineage; explicitly not a native-vegetation or fire-severity model.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-128: Gash (1979) forest rainfall interception
+
+**Citation**: Gash, J. H. C. (1979). "An analytical model of rainfall interception by forests." *Quarterly Journal of the Royal Meteorological Society*, 105, 43-55. https://doi.org/10.1002/qj.49710544304
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Forest-canopy wetting, saturation, drainage, and drying with independent wet-canopy evaporation.
+**openWEPP role**: Candidate authority for explicit canopy-interception storage and flux separation.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-129: Shuttleworth and Wallace (1985) two-source ET
+
+**Citation**: Shuttleworth, W. J., and J. S. Wallace (1985). "Evaporation from sparse crops—an energy combination theory." *Quarterly Journal of the Royal Meteorological Society*, 111, 839-855. https://doi.org/10.1002/qj.49711146910
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Coupled soil and canopy resistance network spanning bare ground through closed canopy.
+**openWEPP role**: Preferred conceptual foundation for separately constrained live-canopy transpiration and soil evaporation.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-130: Fisher, Tu, and Baldocchi (2008) PT-JPL partition
+
+**Citation**: Fisher, J. B., K. P. Tu, and D. D. Baldocchi (2008). "Global estimates of the land-atmosphere water flux based on monthly AVHRR and ISLSCP-II data, validated at 16 FLUXNET sites." *Remote Sensing of Environment*, 112, 901-919. https://doi.org/10.1016/j.rse.2007.06.025
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Independent canopy-transpiration, soil-evaporation, and interception constraints applied to Priestley-Taylor potential demand.
+**openWEPP role**: Minimal three-component diagnostic-prototype precedent; monthly remote-sensing formulation is not directly portable.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-131: Martens et al. (2017) GLEAM v3
+
+**Citation**: Martens, B., et al. (2017). "GLEAM v3: satellite-based land evaporation and root-zone soil moisture." *Geoscientific Model Development*, 10, 1903-1925. https://doi.org/10.5194/gmd-10-1903-2017
+**Local path**: `not-acquired`; open article at DOI.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`.
+**Topic**: Separate transpiration, bare-soil evaporation, interception, open-water evaporation, and sublimation with surface/root-zone moisture constraints.
+**openWEPP role**: Modular precedent for Gash interception and distinct surface-versus-root moisture stress.
+**Rights / distribution**: Open-access article; exact local redistribution intake not yet performed.
+
+## R-132: NASA MOD16 terrestrial ET algorithm
+
+**Citation**: Mu, Q., M. Zhao, and S. W. Running. *MODIS Global Terrestrial Evapotranspiration Algorithm Theoretical Basis Document* and MOD16 user guide. https://modis-land.gsfc.nasa.gov/ET.html
+**Local path**: `not-acquired`; official NASA documentation at cited URL.
+**Reference quality**: `verified-primary-government-algorithm-documentation`.
+**Topic**: Wet-canopy evaporation, dry-canopy transpiration, and soil evaporation with biome-dependent resistance and stress parameters.
+**openWEPP role**: Forest plant-functional-type parameter and three-component architecture reference; not a wholesale implementation target.
+**Rights / distribution**: U.S. government-hosted documentation; redistribution status still requires intake review.
+
+## R-133: Zhang, Dawes, and Walker (2001) vegetation-change ET
+
+**Citation**: Zhang, L., W. R. Dawes, and G. R. Walker (2001). "Response of mean annual evapotranspiration to vegetation changes at catchment scale." *Water Resources Research*, 37, 701-708. https://doi.org/10.1029/2000WR900325
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Observationally evaluated mean-annual ET response to precipitation, potential ET, vegetation, and plant-available water.
+**openWEPP role**: Annual native-vegetation total-ET validation constraint, not a daily component-flux kernel.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## R-134: Roche, Goulden, and Bales (2020) Sierra Nevada wildfire ET
+
+**Citation**: Roche, J. W., M. L. Goulden, and R. C. Bales (2020). "Wildfire controls on evapotranspiration in California's Sierra Nevada." *Journal of Hydrology*, 590, 125364. https://doi.org/10.1016/j.jhydrol.2020.125364
+**Local path**: `not-acquired`; U.S. Forest Service record at https://research.fs.usda.gov/treesearch/62600
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: First-year and recovery-scale ET response to burn severity and pre-fire vegetation density.
+**openWEPP role**: Regional total-ET authority for severity response and the Stevens Canyon diagnostic target matrix.
+**Rights / distribution**: `restricted` pending article-rights review; metadata and government record only.
+
+## R-135: White et al. (2020) post-fire forest ET partition
+
+**Citation**: White, D. A., et al. (2020). "The effect of wildfire on the structure and water balance of a high conservation value Hualo forest in central Chile." *Forest Ecology and Management*, 472, 118219. https://doi.org/10.1016/j.foreco.2020.118219
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Pre-/post-fire transpiration, canopy interception, soil evaporation, total ET, and recovery.
+**openWEPP role**: Component-partition authority showing that post-fire soil evaporation can rise while total ET declines.
+**Rights / distribution**: `restricted`; remote DOI metadata only.
