@@ -1,0 +1,155 @@
+{
+  "schema": "snotel-prcpsa-diagnostic-v1",
+  "recorded_date": "2026-08-04",
+  "status": "diagnostic_only_not_independent_validation",
+  "station": {
+    "site_id": "snotel_snowbird_ut",
+    "station_triplet": "766:UT:SNTL",
+    "station_elevation_m": 2795.0,
+    "modeled_hillslope_elevation_m": 2968.9,
+    "modeled_minus_station_elevation_m": 173.9
+  },
+  "awdb_elements": {
+    "PREC": {
+      "description": "Water Year Accumulated Precipitation",
+      "role": "cumulative gauge series in the normalized observed CSV"
+    },
+    "PRCP": {
+      "description": "Total Precipitation daily increment",
+      "role": "unadjusted gauge-derived increment used for sensor comparison",
+      "derived_data": true,
+      "returned_precision_in": 0.01
+    },
+    "PRCPSA": {
+      "description": "Snow Adjusted Total Precipitation daily increment",
+      "role": "derived snow-adjusted diagnostic",
+      "derived_data": true,
+      "returned_precision_in": 0.1
+    },
+    "WTEQ": {
+      "description": "Snow Water Equivalent",
+      "role": "measured pillow series and SWE validation target",
+      "derived_data": false,
+      "returned_precision_in": 0.1
+    },
+    "SNRR": {
+      "description": "Daily SWE increases as a percentage of total precipitation",
+      "role": "derived supporting diagnostic",
+      "derived_data": true
+    }
+  },
+  "source_queries": [
+    {
+      "purpose": "PRCPSA source identity",
+      "url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=766%3AUT%3ASNTL&elements=PRCPSA&duration=DAILY&beginDate=1989-10-01&endDate=2024-09-30",
+      "response_bytes": 434932,
+      "response_sha256": "fb6358fffc7abdeccbc1d9fe6352f33c1d04829d44473aee36574133ec26e2d1",
+      "response_committed": false
+    },
+    {
+      "purpose": "daily reconstruction and quality flags",
+      "url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=766%3AUT%3ASNTL&elements=PRCP%2CPRCPSA%2CWTEQ%2CSNRR&duration=DAILY&beginDate=1989-10-01&endDate=2024-09-30&returnFlags=true",
+      "response_bytes": 2435663,
+      "response_sha256": "d9b85d71a84408aaad91081e00632f6ea23dac8d1a4cc54c81f977d3e7f12ebf",
+      "response_committed": false
+    }
+  ],
+  "series_inventory": {
+    "begin_date": "1989-10-01",
+    "end_date": "2024-09-30",
+    "duration": "DAILY",
+    "ordinal": 1,
+    "row_counts": {
+      "PRCP": 12784,
+      "PRCPSA": 12784,
+      "SNRR": 4669,
+      "WTEQ": 12784
+    },
+    "prcpsa_quality_flag_counts": {
+      "E": 7671,
+      "V": 5113
+    }
+  },
+  "empirical_reconstruction": {
+    "formula": "PRCPSA_day_in = round_to_0.1_in(max(PRCP_day_in, max(WTEQ_day_in - WTEQ_previous_day_in, 0)))",
+    "scope": "non-water-year-reset days with same-day PRCP and consecutive WTEQ",
+    "comparison_day_count": 12749,
+    "exact_match_count": 12749,
+    "prcpsa_greater_than_prcp_day_count": 1856,
+    "prcpsa_equal_to_prcp_day_count": 10928,
+    "interpretation": "This exact station-period reconstruction demonstrates dependence on pillow SWE change; it is not asserted as a universal NRCS algorithm contract."
+  },
+  "primary_window_analysis": {
+    "window_definition": "October 1 through observed positive WTEQ peak date, inclusive",
+    "water_year_first": 1990,
+    "water_year_last": 2024,
+    "complete_window_count": 35,
+    "model_window_source": "docs/work-packages/20260804-snow-prepeak-mass-transition-physics-adjudication-001/artifacts/cross-fixture-results.json",
+    "fixture_climate_source": "tests/fixtures/snotel_observed/snotel_snowbird_ut/p8.cli",
+    "ratios": {
+      "prcp_sum_to_pillow_peak_swe": {
+        "median": 0.94,
+        "minimum": 0.8064516129,
+        "maximum": 1.54,
+        "count_below_one": 23
+      },
+      "prcpsa_sum_to_pillow_peak_swe": {
+        "median": 1.2506666667,
+        "minimum": 1.0497835498,
+        "maximum": 1.66,
+        "count_below_one": 0
+      },
+      "prcpsa_sum_to_prcp_sum": {
+        "median": 1.268370607,
+        "minimum": 1.0779220779,
+        "maximum": 1.5131264916
+      },
+      "fixture_all_phase_precipitation_to_prcpsa_sum": {
+        "median": 0.6563362272,
+        "minimum": 0.4979631884,
+        "maximum": 0.8650660471,
+        "count_below_one": 35
+      },
+      "fixture_all_phase_precipitation_to_pillow_peak_swe": {
+        "median": 0.8226677054,
+        "minimum": 0.628901716,
+        "maximum": 1.1917322835,
+        "count_below_one": 34
+      }
+    }
+  },
+  "interpretation": {
+    "supported": [
+      "Unadjusted PREC or PRCP is not a hard physical ceiling on Snowbird snowfall or pillow SWE.",
+      "The current p8.cli is mass-limited relative to the pillow target in the median primary window under a no-lateral-import assumption.",
+      "The fixture-to-target comparison must retain gauge undercatch, elevation, footprint, canopy, and redistribution hypotheses."
+    ],
+    "not_supported": [
+      "PRCPSA as independent validation of WTEQ or modeled SWE.",
+      "PRCPSA as truth, a calibration target, or direct precipitation-correction authority.",
+      "Any forcing multiplier or additive correction inferred directly from the fixture-to-PRCPSA ratio.",
+      "Attribution of the remaining modeled SWE deficit to a single forcing or snow-physics mechanism."
+    ]
+  },
+  "citations": [
+    {
+      "title": "NRCS AWDB REST API element catalog",
+      "url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/reference-data?referenceType=elements"
+    },
+    {
+      "title": "NRCS National Engineering Handbook Part 622 Chapter 6, Data Management",
+      "url": "https://directives.nrcs.usda.gov/sites/default/files2/1720456725/Chapter%206%20-%20Data%20Management.pdf"
+    },
+    {
+      "title": "Improved SNOTEL Precipitation Gauge Undercatch Corrections",
+      "url": "https://doi.org/10.1175/JHM-D-23-0158.1"
+    }
+  ],
+  "claim_limits": [
+    "The AWDB query responses are checksummed but not committed; future provider revisions can change their bytes or values.",
+    "PRCPSA incorporates WTEQ and is circular when WTEQ is also the validation target.",
+    "The reconstruction is empirical for Snowbird and the frozen period, not a normative provider algorithm.",
+    "Point sensors do not resolve hillslope-scale lateral redistribution or representativeness.",
+    "No model run, fixture climate value, observation value, or production snow physics was changed by this diagnostic."
+  ]
+}

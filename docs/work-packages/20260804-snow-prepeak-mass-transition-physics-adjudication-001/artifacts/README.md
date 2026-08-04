@@ -13,3 +13,13 @@ Large traces, full event/hour tables, figure source tables, logs, and disposable
 run products remain under
 `target/snow_prepeak_mass_transition_physics_adjudication_v2/` with exact
 identities in the execution receipt and evidence manifest.
+
+## Post-Closure Supplements
+
+The independently authored
+[`post-closure-target-feasibility-review.md`](post-closure-target-feasibility-review.md)
+and Codex
+[`post-closure-target-feasibility-disposition.md`](post-closure-target-feasibility-disposition.md)
+were added after closure. They are not part of the original frozen or gated
+evidence set. The disposition preserves the original code-path verdict while
+reopening a prospective forcing/target-feasibility discriminant lane.

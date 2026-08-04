@@ -53,6 +53,35 @@ conductivity model).
 - **Units:** AWDB returns English — `SNWD`/`WTEQ` in **inches**, temps in **°F**.
   Convert to SI (depth → m, SWE → mm, °F → °C). `STO` returns depth-tagged values.
 
+### Snowbird snow-adjusted precipitation diagnostic
+
+Snowbird also publishes the derived daily AWDB element `PRCPSA` (snow-adjusted
+total precipitation). Keep its identity distinct from the other precipitation
+fields:
+
+| Element | Meaning | Role here |
+|---|---|---|
+| `PREC` | water-year accumulated precipitation | cumulative gauge series already normalized in the observed CSV |
+| `PRCP` | daily total-precipitation increment | unadjusted gauge-derived increment used only for sensor comparison |
+| `PRCPSA` | daily snow-adjusted precipitation increment | derived diagnostic; not an independent observation |
+| `WTEQ` | snow-pillow SWE | measured validation target and an input to the snow adjustment |
+| `SNRR` | SWE increases as a percentage of precipitation | derived supporting diagnostic |
+
+For Snowbird WY1990–WY2024, the published `PRCPSA` values are reproduced on
+every non-reset day by rounding to the series' 0.1-inch precision after taking
+the greater of `PRCP`, positive daily `WTEQ` change, and zero. This is an
+empirical reconstruction of the station series, not a universal NRCS algorithm
+contract. NRCS documentation explains why gauge and pillow records are rarely
+one-to-one, and a published NRCS analysis confirms that snow-adjusted gauge
+precipitation uses pillow SWE changes to address possible gauge undercatch.
+
+Because `PRCPSA` incorporates the `WTEQ` series used as the SWE target, it must
+not be used as independent validation, truth, or direct correction authority.
+It does show that unadjusted `PREC`/`PRCP` is not a hard physical ceiling on
+Snowbird snowfall. The exact queries, response hashes, reconstruction counts,
+primary-window ratios, citations, and claim limits are frozen in the
+[Snowbird PRCPSA diagnostic sidecar](observations/provenance/snotel_snowbird_ut_prcpsa_diagnostic.json).
+
 The normalized H corpus is checked in under `observations/`:
 
 - `observations/manifest.json`
