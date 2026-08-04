@@ -386,7 +386,15 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-30 UTC`:
+State as of `2026-08-03 UTC`:
+
+- `20260803-snow-mass-transition-ledger-persistence-001/` - QUEUED /
+  SCAFFOLDED / NOT EXECUTED: preserve the campaign-proven solid-to-liquid and
+  liquid-disposition boundaries as two exact linked compact ledgers over one
+  authoritative snow calculation. Separate production-required outcomes from
+  the opt-in hourly schema-v4 research payload, prove trace-disabled payload
+  absence and performance non-regression, and retain exact trace-enabled and
+  ordinary-output compatibility without changing snow physics.
 
 - `20260730-snow-surface-eb-04-factorial-execution-adjudication-001/` -
   EXECUTED / HOLD / NONPROMOTION: froze result operators before execution,
