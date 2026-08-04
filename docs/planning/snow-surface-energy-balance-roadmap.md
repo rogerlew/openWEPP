@@ -1,6 +1,6 @@
 # Snow Surface-Energy-Balance Campaign Roadmap
 
-Status: **active scientific campaign roadmap** (2026-07-30).
+Status: **active scientific campaign roadmap** (2026-08-04).
 
 Campaign ID: `SNOW-SURFACE-EB`.
 
@@ -129,6 +129,28 @@ Execution grids introduced only to test machinery are
 `ASSUMED_FOR_EXECUTION`, not empirical priors, physiological bounds, or
 calibrated ranges.
 
+### Snowbird Development Forcing Policy
+
+Beginning with the next snow work package, result-bearing Snowbird development
+lanes use an explicit precipitation-scaled derivative of the canonical CLI:
+
+- multiply precipitation only by `1.2155576`; preserve temperature, timing,
+  wind, radiation inputs, and all non-precipitation fields;
+- preserve the canonical `p8.cli` byte-for-byte and retain it as the historical
+  and provenance control;
+- label the derivative `DEVELOPMENT_ONLY`, with no production-default,
+  transferability, independent-validation, or forcing-truth claim;
+- bind the transformation, rounding, source and derived hashes, and exact
+  consumer path before a result-bearing run; and
+- do not use the scaling to prove a physics correction or reinterpret earlier
+  packages retrospectively.
+
+The factor is the median annual precipitation multiplier required for the
+current no-lateral-input fixture ceiling to reach the point-pillow peak over 35
+complete Snowbird years. It is a development normalization for the live
+input-feasibility signal, not a calibrated site coefficient. The first
+successor package must materialize and validate the derivative before using it.
+
 ## 6. Ordered Work Packages
 
 | Order | Package | Objective | Advancement gate |
@@ -167,7 +189,9 @@ calibrated ranges.
 | 21H | [`SNOW-MASS-TRANSITION-LEDGER-PERSISTENCE`](../work-packages/20260803-snow-mass-transition-ledger-persistence-001/package.md) durable linked mass-accounting architecture — **complete / review and verification pass** | Preserve the solid-to-liquid and liquid-disposition boundaries as two exact linked compact ledgers over one authoritative calculation, while separating production outcomes from the opt-in hourly research payload. | Exact schema-v4/WAT/HBP identity, compact-ledger closure, payload-footprint reduction, runtime/RSS bounds, quick/frost/Critical full, dual review, and dual verification pass. Physics adjudication remains separate. |
 | 21I | [`SNOW-PREPEAK-MASS-TRANSITION-PHYSICS-ADJUDICATION`](../work-packages/20260804-snow-prepeak-mass-transition-physics-adjudication-001/package.md) exact-current cross-fixture correction-family adjudication — **complete / upstream-generation priority / review and verification pass** | Four fixtures localize modeled pre-peak pack loss to the authoritative upstream CoE path. Daily signed opportunity is material at only Mica/Niwot; post-CoE cold opportunity is `0.455-1.37%` of peak deficit; current Stage-3 disposition controls neither SWE nor runoff publication. | Exact real CLI/compatibility/closure, six figures, primitive anti-alias reconstruction, dual review, and dual terminal verification pass. No equation, calibration, forcing exoneration, or correction is authorized. |
 | 21J | [`SNOW-ACCUMULATION-TARGET-FEASIBILITY-AND-INPUT-LOSS-DISCRIMINATION`](../work-packages/20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/package.md) target/input/loss discrimination — **complete / loss-priority signal / coverage-fragile / no correction** | Across 154 primary windows, only Snowbird fails the all-phase zero-loss ceiling; Niwot, Paradise, and Snowbird pass guarded dry-loss screens. Cold-event input remains non-systemic but is padding-sensitive. | Prioritize scale-aware warm/mixed pre-peak loss attribution while retaining Snowbird as multifactor. Point-versus-hillslope, coverage, resolution, and PRCPSA independence limits prohibit a correction. |
-| 22 | `SNOW-SURFACE-EB-05` campaign assurance closeout — **deferred pending 04U–04X and admitted successors** | Refresh `ASSURE-06` after the prospective partition sequence and any authority-backed process amendments or component-specific promotion studies reach disposition. | Distinguish implemented physics, empirical efficacy, noninferiority, unresolved forcing/process ownership, and default status. Warm-maritime conifer transfer remains withheld. |
+| 21K | `SNOW-WET-COMPACTION-OPERAND-AUTHORITY-AND-DUPLICATE-ALIAS-CLOSURE` — **next / defect-first** | Establish the authoritative complete active-multilayer wet-compaction operand from canonical contracts, the pinned legacy baseline, and exact current consumer flow. Materialize the Snowbird scaled development CLI, quantify the current `2 * state loss + released rain` alias on density/layer trajectories, and correct it only if authority resolves the physical defect. | Require exact single-count operand custody, mass and density closure, real-consumer evidence, canonical four-site nonregression, scaled/unscaled Snowbird separation, dual review, and dual verification. Early-melt attribution remains blocked until closure or a truthful authority hold. |
+| 21L | `SNOW-WARM-MIXED-PREPEAK-LOSS-ENERGY-ATTRIBUTION` — **queued behind 21K** | Rebaseline accumulation and guarded dry-loss behavior after wet-compaction disposition, then attribute warm/mixed pre-peak loss timing across Snowbird scaled/canonical lanes, Niwot, Paradise, and Mica Creek. Preserve forcing, snowfall, storage, loss, and energy operands separately. | Proceed only from an alias-clean or explicitly bounded state. Empirical CoE components remain melt-depth terms rather than measured energy shares; no tuning or production correction is admitted without independent physical authority. |
+| 22 | `SNOW-SURFACE-EB-05` campaign assurance closeout — **deferred pending 21K–21L** | Refresh `ASSURE-06` only after wet-compaction authority/alias closure and corrected-state warm/mixed pre-peak loss attribution reach disposition, together with any other admitted process amendments. | Distinguish implemented physics, empirical efficacy, noninferiority, unresolved forcing/process ownership, development-only Snowbird normalization, and default status. Warm-maritime conifer transfer remains withheld. |
 
 EB-04B assigned all captured failures and correction authority. EB-04C closes
 the 22 thermal failures, and EB-04D closes both isolated geometry failures.
