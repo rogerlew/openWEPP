@@ -31,6 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
+| `SNOW-PREPEAK-MASS-TRANSITION-PHYSICS-ADJUDICATION` | Snow surface-energy-balance campaign | `queued` | Exact-current four-site linked-ledger reconstruction, frozen signed-hour and pre-export cold-content diagnostic bounds, figures/sidecars, correction-family adjudication, and dual review/verification without production physics changes. |
 | `SNOW-MASS-TRANSITION-LEDGER-PERSISTENCE` | Snow surface-energy-balance campaign | `complete` | One mass authority, two linked compact ledgers, opt-in hourly payload, exact schema-v4/WAT/HBP identity, bounded performance, quick/frost/Critical full, dual review, and dual terminal verification pass. No physics correction is claimed. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |

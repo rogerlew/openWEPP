@@ -386,7 +386,13 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-03 UTC`:
+State as of `2026-08-04 UTC`:
+
+- `20260804-snow-prepeak-mass-transition-physics-adjudication-001/` - QUEUED /
+  SCAFFOLD: execute exact-current four-site linked-ledger reconstruction,
+  quantify frozen signed-hour and pre-export cold-content diagnostic bounds,
+  and adjudicate the next correction family without changing production
+  physics, contracts, tests, fixtures, or observations.
 
 - `20260803-snow-mass-transition-ledger-persistence-001/` - COMPLETE / REVIEW
   AND VERIFICATION PASS: implemented one authoritative snow

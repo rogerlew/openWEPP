@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_result_execution",
+  "intake_commit": "8087f3ee9d6f3fb4f5661abf389be6b0fcc8e843",
+  "sites": [
+    {
+      "fixture_manifest_sha256": "ebbd5212b7f3c9adc0d5a41bf277be291452d3deb6cb81e0869e655f6028ab9d",
+      "site": "snotel_mica_creek_st_joe_id"
+    },
+    {
+      "fixture_manifest_sha256": "d410ce0170e65141b13d7f78a5c3d7d584e8ad1d42e642e73fdf015c67960d54",
+      "site": "snotel_niwot_co"
+    },
+    {
+      "fixture_manifest_sha256": "887eb662366ea78dc841a532fd846b52d054753acdbc060c09e7a17c5c172eb3",
+      "site": "snotel_paradise_wa"
+    },
+    {
+      "fixture_manifest_sha256": "5e8054a6e447dac349f2b1fcf0ad10a077e504cde1512d0f7aea58751404c2f7",
+      "site": "snotel_snowbird_ut"
+    }
+  ],
+  "source_fixture_root": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/fixtures/baseline_replay",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "selectors": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  },
+  "primary_window": {
+    "end": "observed positive SNOTEL SWE peak date inclusive",
+    "right_censored_water_years_excluded": [2025],
+    "start": "October 1 inclusive"
+  },
+  "event_thresholds_m_per_day": [0.0001, 0.0005, 0.001],
+  "primary_event_threshold_m_per_day": 0.0005,
+  "temperature_classes_c": [
+    "air_temperature_c <= 0",
+    "0 < air_temperature_c <= 2",
+    "air_temperature_c > 2"
+  ],
+  "precipitation_classes": [
+    "dry",
+    "snowfall",
+    "rain",
+    "mixed_or_both"
+  ],
+  "constants": {
+    "latent_heat_fusion_j_kg": 333550.0,
+    "rho_water_kg_m3": 1000.0,
+    "zero_tolerance_m": 1e-12,
+    "mass_closure_tolerance_m": 1e-9
+  },
+  "diagnostic_bounds": {
+    "signed_hour_cancellation": "gross positive applied CoE melt minus max(sum signed applied CoE melt, 0), aggregated only over the frozen window; no state feedback",
+    "cold_content_opportunity": "min(stage3 incoming liquid, positive stage3 cold content before / (rho_water * latent_heat_fusion)), daily; no state feedback",
+    "combined_bound": "report overlap explicitly; never sum signed-hour and cold-content bounds as independent recovery"
+  },
+  "assumed_for_execution_screens": {
+    "downstream_storage_dominant": "median (retained positive change + refrozen) / incoming >= 0.5 at three or more sites",
+    "preexport_interaction_material": "median opportunity bound / observed-minus-modeled peak SWE deficit >= 0.25 at three or more sites",
+    "systemic_direction": "same direction at all four sites and at least 75 percent of eligible primary site-years",
+    "upstream_generation_tracks_loss": "site median gross-positive applied melt / solid-pack loss lies in [0.8, 1.2] at three or more sites"
+  },
+  "verdicts": [
+    "UPSTREAM_GENERATION_PRIORITY",
+    "PREEXPORT_ENTHALPY_OR_SIGNED_HOUR_PRIORITY",
+    "DOWNSTREAM_RETENTION_REFREEZE_PRIORITY",
+    "MULTIFACTOR_PRIORITY",
+    "UNRESOLVED"
+  ],
+  "claim_limits": [
+    "CoE A/B/C/D are empirical melt-depth contributions, not physical energy shares",
+    "opportunity bounds are feedback-free and are not simulated SWE recovery",
+    "legacy routing is a rollback bound, not correction authority",
+    "forcing and observation uncertainty remain unless directly tested",
+    "no production correction or calibration is authorized"
+  ]
+}
