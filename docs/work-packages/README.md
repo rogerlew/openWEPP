@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snow-stage3-liquid-signed-hour-trace-closure-001/` — QUEUED /
+  BEHAVIOR-NEUTRAL TRACE CLOSURE: publish exact Stage-3 liquid and signed-hour
+  forcing/state operands through additive direct-production JSONL schema v4,
+  independently reconstruct Snowbird liquid closure, reject adjacent aliases,
+  and prove protected WAT plus pre-v4 trace behavior unchanged. No snow physics,
+  calibration, selector, default, fixture, or observation change is authorized.
+
 - `20260803-snow-prepeak-liquid-evacuation-physics-audit-001/` — EXECUTED /
   REVIEWED / VERIFIED / HOLD-EVIDENCE: same-binary v3 finds Snowbird median
   pre-peak pack loss `0.5296 m` against `0.5379 m` gross-positive CoE melt.
