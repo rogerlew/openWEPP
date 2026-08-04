@@ -1,0 +1,90 @@
+{
+  "schema_version": 3,
+  "status": "EXECUTED_WITH_NAMED_STAGE3_LIQUID_TRACE_GAP",
+  "evidence_mode": "INDEPENDENT_PRIMITIVE_RECONSTRUCTION",
+  "mass_boundary": {
+    "identity": "delta_swe = accumulation + rain_retained - snowpack_swe_loss - sublimation",
+    "units": "m water equivalent",
+    "primary_uncensored_window_count": 154,
+    "all_window_sensitivity_count": 158,
+    "maximum_absolute_daily_residual_in_primary_windows_m": 8.831099999999999e-13,
+    "maximum_absolute_endpoint_window_residual_m": 8.839595722065496e-13,
+    "maximum_absolute_all_row_residual_m": 9.99729999999999e-13,
+    "aliases_rejected_as_additional_sinks": [
+      "raw_melt_m",
+      "routed_melt_m",
+      "liquid_water_released_m",
+      "rain_released_m",
+      "stage3_refrozen_liquid_m"
+    ],
+    "alias_identity": "routed_melt_m = snowpack_swe_loss_m + rain_released_m",
+    "maximum_absolute_routed_alias_residual_m": 1.5612511283791264e-17
+  },
+  "hourly_coe_boundary": {
+    "uncapped_identity": "uncapped = amelt + bmelt + cmelt + dmelt",
+    "maximum_absolute_uncapped_residual_m_per_hour": 2.0166160408230382e-17,
+    "applied_identity": "applied = uncapped + cap_adjustment",
+    "maximum_absolute_applied_residual_m_per_hour": 1.0408340855860843e-17,
+    "daily_raw_identity": "raw_melt = sum(hourly applied)",
+    "maximum_absolute_daily_raw_residual_m": 8.000000000417595e-17,
+    "scope_warning": "CoE produces empirical melt-depth equivalents; these identities are not a complete surface-energy balance."
+  },
+  "primary_uncensored_site_medians": {
+    "snotel_mica_creek_st_joe_id": {
+      "years": 34,
+      "accumulation_m": 0.5962112852660377,
+      "snowpack_loss_m": 0.30835902241031476,
+      "gross_positive_hourly_coe_m": 0.30847817240013653,
+      "negative_hourly_coe_m": -0.07774503484383286,
+      "stage3_refreeze_m": 0.0005854217461776551
+    },
+    "snotel_niwot_co": {
+      "years": 44,
+      "accumulation_m": 0.40163496795313647,
+      "snowpack_loss_m": 0.28834982280060373,
+      "gross_positive_hourly_coe_m": 0.29104746111060437,
+      "negative_hourly_coe_m": -0.1555182246945796,
+      "stage3_refreeze_m": 0.00003073116293865
+    },
+    "snotel_paradise_wa": {
+      "years": 41,
+      "accumulation_m": 1.547875031821337,
+      "snowpack_loss_m": 0.7313393740663916,
+      "gross_positive_hourly_coe_m": 0.7348656107474348,
+      "negative_hourly_coe_m": -0.1471304255201692,
+      "stage3_refreeze_m": 0.00368204589886428
+    },
+    "snotel_snowbird_ut": {
+      "years": 35,
+      "accumulation_m": 0.7690078927276244,
+      "snowpack_loss_m": 0.5296031612149295,
+      "gross_positive_hourly_coe_m": 0.5378684285115035,
+      "negative_hourly_coe_m": -0.12431802790132923,
+      "stage3_refreeze_m": 0.00112141313600313
+    }
+  },
+  "right_censored_all_window_sensitivity": {
+    "excluded_water_year": 2025,
+    "snowbird_years": 36,
+    "snowbird_accumulation_m": 0.7335209470210111,
+    "snowbird_snowpack_loss_m": 0.5262533986824418,
+    "snowbird_peak_swe_ratio": 0.3833524967952857
+  },
+  "stage3_energy_boundary": {
+    "valid_identity": "surface_energy + internal_conduction + latent_refreeze + cold_content_export = cold_content_before - cold_content_after",
+    "scope": "Post-CoE diagnostic layered thermal carrier only",
+    "not_in_scope": "Complete snow surface energy balance or authoritative melt production",
+    "maximum_absolute_independent_residual_j_m2": 1.8684659153223038e-08,
+    "maximum_absolute_trace_difference_j_m2": 7.275957614183426e-12,
+    "snowbird_median": {
+      "shortwave_j_m2": 223250043.80051336,
+      "surface_energy_applied_j_m2": 6385308.512856287,
+      "unused_positive_energy_j_m2": 216872880.56502524,
+      "latent_refreeze_energy_j_m2": 374047.3515138419
+    },
+    "trace_gap": "The runtime diagnostic owns incoming_liquid_m, routed_liquid_m, retained_liquid_m, and liquid_closure_residual_m, but the JSONL serializer omits them. Exact Stage-3 liquid closure cannot be independently reconstructed."
+  },
+  "detail_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/dynamic-results.json",
+  "detail_sha256": "f28eabdc5acac200c252da16d67fd578bc50ecb05ba7c980ed25e30bda1bae54",
+  "independent_check_path": "artifacts/reconstruction-check.json"
+}

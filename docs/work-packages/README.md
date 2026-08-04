@@ -11,6 +11,14 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260803-snow-prepeak-liquid-evacuation-physics-audit-001/` — EXECUTED /
+  REVIEWED / VERIFIED / HOLD-EVIDENCE: same-binary v3 finds Snowbird median
+  pre-peak pack loss `0.5296 m` against `0.5379 m` gross-positive CoE melt.
+  Stage 3 and explicit longwave are mass-neutral; legacy routing provides an
+  order-one rollback bound. The wet-compaction duplicate alias lacks active
+  physical operand authority. Required Stage-3 liquid operands remain absent
+  from the real trace, so independent liquid closure cannot complete.
+
 - `20260803-snowbird-rst-prepeak-flux-diagnostic-001/` — COMPLETE / PHASE
   INSUFFICIENT / PRE-PEAK LIQUID RELEASE DOMINATES / NO CORRECTION: active
   Harder-Pomeroy is exactly `rst`-invariant; the legacy `0..4 deg C` stress arm

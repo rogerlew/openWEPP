@@ -1,0 +1,47 @@
+{
+  "schema_version": 3,
+  "status": "EXECUTED_HOLD_EVIDENCE",
+  "accepted_execution": {
+    "audit_freeze_sha256": "1994e037ea5af4a1bb0b3afc1ca83fd377443ff67cd6098b789b386efece42f3",
+    "audit_tool_sha256": "d8bb84ca26415585a69e4cac0dfac8b8c7a78d92a711b7f13fda005467c19054",
+    "openwepp_binary_sha256": "8fb77e17b380c617a6f03faa27670ee45c29a4b2f0ada19b96a164248722c673",
+    "cell_count": 16,
+    "all_return_codes_zero": true,
+    "exact_receipt_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/execution-receipt.json",
+    "exact_receipt_sha256": "52238c81067eec4469989e671b51e7607baec217ce03d15c7357278fcee77ab0",
+    "dynamic_results_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/dynamic-results.json",
+    "dynamic_results_sha256": "f28eabdc5acac200c252da16d67fd578bc50ecb05ba7c980ed25e30bda1bae54"
+  },
+  "rejected_executions": [
+    {
+      "status": "INVALIDATED_RAIN_LABEL",
+      "recovery_path": "/tmp/openwepp-snow-prepeak-audit-invalid-rain-label-v1-20260803",
+      "tool_sha256": "285a4b43967e0bd78eae17c1604e24e493890996b89c1b28c7aa2ef17a6fde30",
+      "dynamic_results_sha256": "26e4d806012cb494740fc89ec0b300edf04d8420e78d176a0b86ecbf77046ddd",
+      "execution_receipt_sha256": "2341803ff8da79ebb0bb745a9e72193504896d7813927084a1872af9a7a88ea2"
+    },
+    {
+      "status": "SUPERSEDED_NON_PROSPECTIVE_REVIEW_REJECTED",
+      "output": "target/snow_prepeak_liquid_evacuation_physics_audit",
+      "audit_freeze_sha256": "d140c1fceb895b07c65c148cd87985669acc908b114e1f7093e8fa432029df25",
+      "tool_sha256": "6036870e480f58d992562c0a22d360d8e16af5b537857b5044f7571980b87d72",
+      "dynamic_results_sha256": "96ffdf63b9d5c7e66fbee2b9659a6c42926de963c9d33efdf51a3f46d06843d9",
+      "execution_receipt_sha256": "a343d9092912038d4968c98970a0ee3ab3d37c98a059092730e333a4b0c20ef7",
+      "reason": "Event rules were not fully frozen and WY2025 was included in primary summaries."
+    },
+    {
+      "status": "REJECTED_BINARY_REFERENCE_CONFOUNDING",
+      "output": "target/snow_prepeak_liquid_evacuation_physics_audit_v2",
+      "audit_freeze_sha256": "6336cc3a886925fa67b0a06debfa282480cff29eaf07d6f6b14d3f29e4e15dbb",
+      "tool_sha256": "c3dfd957414e6ecc078874a016e1aa915e2b8acd2d075d6dafc1b8f101f04f25",
+      "dynamic_results_sha256": "2806d6fa38c628c4f2329a917dd0c08349d2dd8e47e779cac9aee87026be36a3",
+      "execution_receipt_sha256": "017d95efc2639e4a908b772e98a512d1944393be4c5933aa097f663292b4cdf3",
+      "reason": "Fresh operator cells were compared with predecessor traces from a different binary; v3 added same-binary baseline cells."
+    }
+  ],
+  "unused_frozen_operator": {
+    "id": "legacy_density",
+    "reason": "Physical density is outside the direct CoE/SWE boundary, and legacy density does not compose with the selected Stage-3 boundary."
+  },
+  "scope": "No production, contract, test, fixture, observation, selector, default, or parameter-domain path was modified."
+}

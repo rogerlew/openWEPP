@@ -1,0 +1,95 @@
+{
+  "schema_version": 3,
+  "status": "EXECUTED",
+  "evidence_mode": "SITE_YEAR_EVENT_CHARACTERIZATION_ONLY",
+  "window_definition": "October 1 through the earliest maximum positive SNOTEL SWE date; WY2025 excluded from primary summaries and retained as sensitivity.",
+  "event_definition": "Consecutive days with snowpack SWE loss at or above 0.0005 m/day; top three ranked by event loss per water year.",
+  "threshold_sensitivity_m_per_day": [0.0001, 0.0005, 0.001],
+  "coverage": {
+    "primary_uncensored_site_years": 154,
+    "all_window_sensitivity_site_years": 158,
+    "eligible_events_at_primary_threshold": 2830,
+    "stored_top_events": 461,
+    "snotel_mica_creek_st_joe_id": {
+      "years": 34,
+      "eligible_events": 519,
+      "stored_top_events": 102,
+      "all_eligible_loss_fraction": 0.9911216685874265,
+      "top_three_loss_fraction": 0.626076906357979
+    },
+    "snotel_niwot_co": {
+      "years": 44,
+      "eligible_events": 792,
+      "stored_top_events": 131,
+      "all_eligible_loss_fraction": 0.9961760133318134,
+      "top_three_loss_fraction": 0.500464443168005
+    },
+    "snotel_paradise_wa": {
+      "years": 41,
+      "eligible_events": 836,
+      "stored_top_events": 123,
+      "all_eligible_loss_fraction": 0.9958063858415078,
+      "top_three_loss_fraction": 0.5479314452966244
+    },
+    "snotel_snowbird_ut": {
+      "years": 35,
+      "eligible_events": 683,
+      "stored_top_events": 105,
+      "all_eligible_loss_fraction": 0.996760167895759,
+      "top_three_loss_fraction": 0.5619050518482959
+    }
+  },
+  "largest_stored_event_by_site": {
+    "snotel_mica_creek_st_joe_id": {
+      "water_year": 2016,
+      "start": "2016-02-23",
+      "end": "2016-03-14",
+      "event_loss_m": 0.1948638939823466,
+      "event_share_of_annual_loss": 0.36559618974323943,
+      "positive_hourly_coe_m": 0.18996654467450136,
+      "negative_hourly_coe_m": -0.031784568986786006
+    },
+    "snotel_niwot_co": {
+      "water_year": 1995,
+      "start": "1995-04-27",
+      "end": "1995-05-15",
+      "event_loss_m": 0.19331398334761957,
+      "event_share_of_annual_loss": 0.3177928977639197,
+      "positive_hourly_coe_m": 0.19439455926063098,
+      "negative_hourly_coe_m": -0.0727003925697395
+    },
+    "snotel_paradise_wa": {
+      "water_year": 1992,
+      "start": "1992-02-24",
+      "end": "1992-04-03",
+      "event_loss_m": 0.6584387307855438,
+      "event_share_of_annual_loss": 0.5542062471749747,
+      "positive_hourly_coe_m": 0.6404848304062524,
+      "negative_hourly_coe_m": -0.03349609014332944
+    },
+    "snotel_snowbird_ut": {
+      "water_year": 2011,
+      "start": "2011-05-02",
+      "end": "2011-05-22",
+      "event_loss_m": 0.3729910658535941,
+      "event_share_of_annual_loss": 0.46774177874904077,
+      "positive_hourly_coe_m": 0.3665784242148774,
+      "negative_hourly_coe_m": -0.023928649000829513,
+      "stage3_refrozen_m": 0.00019440574776799
+    }
+  },
+  "aggregate_dry_loss_fraction": {
+    "snotel_mica_creek_st_joe_id": 0.429045688619124,
+    "snotel_niwot_co": 0.8172863113786794,
+    "snotel_paradise_wa": 0.5414892989925089,
+    "snotel_snowbird_ut": 0.7973095423263505
+  },
+  "claim_limits": [
+    "SNOTEL dates and peaks retain a calibration/diagnostic role.",
+    "WY2025 is reported only in explicitly named right-censored sensitivity surfaces.",
+    "Top-three event coverage is quantified; complete annual rows retain eligible-event counts and loss coverage.",
+    "Density and capacity associations are not standalone causal proof."
+  ],
+  "detail_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/dynamic-results.json",
+  "detail_sha256": "f28eabdc5acac200c252da16d67fd578bc50ecb05ba7c980ed25e30bda1bae54"
+}

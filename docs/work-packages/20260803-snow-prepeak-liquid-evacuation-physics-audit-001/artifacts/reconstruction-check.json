@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "evidence_mode": "INDEPENDENT_STREAMING_RECONSTRUCTION",
+  "population": "Four accepted v3 baseline-replay traces, all rows",
+  "daily_rows": 61364,
+  "hourly_rows": 1472736,
+  "maximum_absolute_residuals": {
+    "coe_uncapped_term_sum_m_per_hour": 2.0166160408230382e-17,
+    "coe_applied_identity_m_per_hour": 1.0408340855860843e-17,
+    "daily_raw_sum_m": 8.000000000417595e-17,
+    "daily_primitive_mass_m": 9.99729999999999e-13,
+    "routed_alias_m": 1.5612511283791264e-17,
+    "wet_compaction_input_identity_m": 2.7755575615628914e-17,
+    "stage3_energy_j_m2": 1.8684659153223038e-08,
+    "stage3_energy_trace_difference_j_m2": 7.275957614183426e-12
+  },
+  "trace_hashes": {
+    "snotel_mica_creek_st_joe_id": "fbefa3d2fdaed94c494a62b3ef4a977cd3e1ca108b186c74782ab126ec378e3f",
+    "snotel_niwot_co": "a41ac3304411a0d16cb3b74e3603783780f3a11132144eccdbea09d2c1561c97",
+    "snotel_paradise_wa": "4f94dbfcd20c34b040e5d2bbefe8dc74c9d92317bcc0aee27c89ca85fe997ff6",
+    "snotel_snowbird_ut": "bc10b398c49967a3332f5ee75c46b03c910e1e2b2e9e422869ed9ea1237f0810"
+  },
+  "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python docs/work-packages/20260803-snow-prepeak-liquid-evacuation-physics-audit-001/tools/verify_reconstruction.py",
+  "verification_tool_sha256": "1061f2115e249996909f1da9d4fa49127f4b95ff08c08b5e0159a8f2d42d2347"
+}

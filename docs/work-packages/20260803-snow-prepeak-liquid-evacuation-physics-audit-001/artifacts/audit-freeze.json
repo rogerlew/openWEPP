@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_BEFORE_RESULT_BEARING_ANALYSIS",
+  "frozen_at_utc": "2026-08-04T00:21:31Z",
+  "characterization_only": true,
+  "external_connectivity_allowed": false,
+  "production_correction_authorized": false,
+  "source_identity": {
+    "git_head": "073dafe3e40afc60a2ae5d1cb7c889a6923c6eec",
+    "predecessor_execution_source_head": "afd80fdb6652c3164ea1dd573feca943dc831262",
+    "tracked_dirty_paths_at_freeze": [
+      "docs/planning/snow-surface-energy-balance-roadmap.md",
+      "docs/work-packages/README.md"
+    ],
+    "untracked_scope_at_freeze": "docs/work-packages/20260803-snow-prepeak-liquid-evacuation-physics-audit-001/",
+    "protected_tree_hashes": {
+      "crates/openwepp-hillslope-orchestrator": "9e27a823eee22c590e0d85efa13756e8ffe0e4fc",
+      "crates/openwepp-meteorology": "62516929bc5d5384eb368aa1092d66a95f70342a",
+      "crates/openwepp-runner": "e6df4f7d63286ca0707035bcb7b9351c9ccdf4bf",
+      "docs/specifications/science-contracts": "05792608d67af2c266c17d3a92fb9b045322baa7",
+      "tests": "4c2af9023e281b81dfa56ecb98b56dac3ae51859",
+      "references/50201000": "49c080e5d9b1a87267f3f90ca93f95aad139b7db"
+    }
+  },
+  "package_identity": {
+    "package_md_sha256": "8d2f812f8ae121502c6ff9733970e2c3656c6ab64ae9bd6f1ca5dc0479d5643f",
+    "kickoff_prompt_sha256": "7d32b321fc8a12c8396b5c91f78392135eb2ce26974dfc3e3010f4d73d2dce7c"
+  },
+  "predecessor_identity": {
+    "package_md_sha256": "5e8e835bfcb75dd1f4bfdffddf2c89e72b9a87b1d7b863d1c2f20e6af5e094e5",
+    "experiment_freeze_sha256": "c10812352a88b001f1174c1c9f43e61c2982915f3ad3017b349a499818ed0f57",
+    "execution_receipt_sha256": "f1c2639b572bac6aaf0b1a91c7f06acf7f74a6170697b11dce9c94797ebfb14e",
+    "response_results_sha256": "d53a7df138a5000943bd58d73b9fa448ea0a087598c8422d35122521a1ac4b18",
+    "scientific_disposition_sha256": "06b842647766bbc7d8c873c0b7f390f8f902b795975e9fde4e0dab77eeb4af80",
+    "annual_flux_ledger_sha256": "e8a66185175ed1a9425ee13b52486bbc6b72dbfb6b9bdc7a69e697634693853c",
+    "experiment_tool_sha256": "624a311c6f0fcb7fa78dbf1ab10d0bd5f8efc3a61a001d1191f952f7ddc50725",
+    "openwepp_binary_sha256": "b50dd71cb00f24806193b98d73fc5444e836efac84ad5a4e0465d1e67c81fec9"
+  },
+  "cohort": {
+    "sites": [
+      "snotel_snowbird_ut",
+      "snotel_mica_creek_st_joe_id",
+      "snotel_niwot_co",
+      "snotel_paradise_wa"
+    ],
+    "baseline_rst_c": 1.0,
+    "observation_role": "CALIBRATION_REUSED_AS_DIAGNOSTIC_ONLY",
+    "baseline_configuration": {
+      "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+      "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+      "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+      "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+      "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+      "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+    }
+  },
+  "baseline_trace_sha256": {
+    "snotel_snowbird_ut": "09fac357a9464ecb33f513b561eda02e5a5e62552b9a0e226a140a74b3163239",
+    "snotel_mica_creek_st_joe_id": "35217bbc5cde3eeafb3d47e5be2b744022752262fb25327121d274a1d7616b4f",
+    "snotel_niwot_co": "6be8cf1057c3f6a20198a8211de99e318ad42501fac3bb6af088849651d9ab36",
+    "snotel_paradise_wa": "3ad6154283dd57c6845e632311cf14e7f6a17967260b1e12d6b4fb2ad728fcf5"
+  },
+  "prospective_replay_operators": [
+    {
+      "id": "stage3_disabled",
+      "change_from_baseline": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "disabled"
+      },
+      "purpose": "Bound the net Stage-3 thermal/refreeze/routing effect."
+    },
+    {
+      "id": "legacy_coe_routing",
+      "change_from_baseline": {
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "legacy_coe"
+      },
+      "purpose": "Bound the liquid-holding-capacity routing extension relative to the retained CoE producer."
+    },
+    {
+      "id": "legacy_density",
+      "change_from_baseline": {
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "legacy_wepp"
+      },
+      "purpose": "Bound multilayer density/capacity coupling without changing forcing or phase partition."
+    },
+    {
+      "id": "surface_longwave_enabled",
+      "change_from_baseline": {
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1"
+      },
+      "purpose": "Bound the omitted explicit Stage-3 longwave surface on the same forcing."
+    }
+  ],
+  "replay_policy": {
+    "execution_trigger": "Run only operators needed after static investigation; unused frozen operators remain NOT_RUN.",
+    "sites": "all four cohort sites for any selected operator",
+    "tuning_after_inspection": false,
+    "new_selectors_or_instrumentation": false,
+    "claim_class": "DIAGNOSTIC_CAUSAL_BOUND_ONLY",
+    "heavy_suite_selected": false
+  },
+  "primitive_mass_identity": "delta_swe = accumulation + rain_retained - snowpack_swe_loss - sublimation",
+  "aliases_not_independent_sinks": [
+    "raw_melt_m",
+    "routed_melt_m",
+    "liquid_water_released_m",
+    "rain_released_m",
+    "stage3_refrozen_liquid_m"
+  ],
+  "allowed_claims": [
+    "static implementation and authority characterization",
+    "independent mass reconstruction from frozen primitive trace operands",
+    "bounded Stage-3 energy-accounting statements",
+    "event/year/site-specific diagnostic signatures",
+    "ranked mechanisms with explicit falsifiers",
+    "confirmed defect only when file-line mechanism, authority, and reproduced trace signature all agree"
+  ],
+  "excluded_claims": [
+    "calibration",
+    "independent validation",
+    "model promotion",
+    "production correction",
+    "complete surface-energy closure for empirical CoE melt",
+    "comparator agreement as correctness authority"
+  ]
+}

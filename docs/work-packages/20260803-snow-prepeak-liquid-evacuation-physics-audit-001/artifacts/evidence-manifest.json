@@ -1,0 +1,63 @@
+{
+  "schema_version": 3,
+  "status": "EXECUTED_HOLD_EVIDENCE",
+  "evidence_mode": "STATIC_PLUS_RAN_CHARACTERIZATION_ONLY",
+  "source": {
+    "audit_source_head": "073dafe3e40afc60a2ae5d1cb7c889a6923c6eec",
+    "legacy_baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "fixed_negative_melt_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "audit_freeze_path": "docs/work-packages/20260803-snow-prepeak-liquid-evacuation-physics-audit-001/artifacts/audit-freeze-v3.json",
+    "audit_freeze_sha256": "1994e037ea5af4a1bb0b3afc1ca83fd377443ff67cd6098b789b386efece42f3"
+  },
+  "executable": {
+    "build_command": "cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
+    "build_source_head": "073dafe3e40afc60a2ae5d1cb7c889a6923c6eec",
+    "path": "target/release/openwepp-cli-hill",
+    "sha256": "8fb77e17b380c617a6f03faa27670ee45c29a4b2f0ada19b96a164248722c673",
+    "size_bytes": 11206520,
+    "mtime_utc": "2026-08-04T01:04:10.449126+00:00"
+  },
+  "analysis_tool": {
+    "path": "docs/work-packages/20260803-snow-prepeak-liquid-evacuation-physics-audit-001/tools/run_audit.py",
+    "sha256": "d8bb84ca26415585a69e4cac0dfac8b8c7a78d92a711b7f13fda005467c19054",
+    "helper_dependency_count": 9,
+    "helper_identity_surface": "audit-freeze-v3.json#tool_identity.helper_dependencies"
+  },
+  "input_identity": {
+    "site_count": 4,
+    "source_fixture_file_count": 36,
+    "fixture_manifests": "audit-freeze-v3.json#source_fixture_manifests",
+    "observation_identities": "audit-freeze-v3.json#observations",
+    "predecessor_trace_identities": "audit-freeze-v3.json#baseline_traces",
+    "legacy_blob_identities": "audit-freeze-v3.json#legacy_authority",
+    "era_cloud_identities": "audit-freeze-v3.json#upstream_diagnostic_identities"
+  },
+  "accepted_execution": {
+    "cell_count": 16,
+    "operators": [
+      "baseline_replay",
+      "stage3_disabled",
+      "legacy_coe_routing",
+      "surface_longwave_enabled"
+    ],
+    "exact_receipt_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/execution-receipt.json",
+    "exact_receipt_sha256": "52238c81067eec4469989e671b51e7607baec217ce03d15c7357278fcee77ab0",
+    "dynamic_results_path": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/dynamic-results.json",
+    "dynamic_results_sha256": "f28eabdc5acac200c252da16d67fd578bc50ecb05ba7c980ed25e30bda1bae54",
+    "primary_uncensored_windows": 154,
+    "all_window_sensitivity_windows": 158,
+    "excluded_right_censored_water_years": [2025]
+  },
+  "accepted_reference_trace_sha256": {
+    "snotel_mica_creek_st_joe_id": "fbefa3d2fdaed94c494a62b3ef4a977cd3e1ca108b186c74782ab126ec378e3f",
+    "snotel_niwot_co": "a41ac3304411a0d16cb3b74e3603783780f3a11132144eccdbea09d2c1561c97",
+    "snotel_paradise_wa": "4f94dbfcd20c34b040e5d2bbefe8dc74c9d92317bcc0aee27c89ca85fe997ff6",
+    "snotel_snowbird_ut": "bc10b398c49967a3332f5ee75c46b03c910e1e2b2e9e422869ed9ea1237f0810"
+  },
+  "roles": {
+    "observations": "CALIBRATION_REUSED_AS_DIAGNOSTIC_ONLY",
+    "existing_selector_replays": "DIAGNOSTIC_CAUSAL_BOUND_ONLY",
+    "legacy_comparator": "FLAG_NOT_TARGET",
+    "era_and_cloud": "DIAGNOSTIC_ONLY"
+  }
+}
