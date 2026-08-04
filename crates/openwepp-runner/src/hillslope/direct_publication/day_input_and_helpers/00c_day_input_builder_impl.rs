@@ -196,6 +196,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_lane_state.runtime_swe_m,
         )?;
         let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
+        let snow_diagnostic_capture =
+            DirectSnowDiagnosticCaptureRequest::resolve(day_index, lane_index);
         let snow_liquid = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
@@ -206,15 +208,20 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             self.sturm_climate_class,
             sturm_day_of_year,
             self.winter_hourly_geometry,
+            snow_diagnostic_capture.capture,
         )?;
-        maybe_write_r7h_direct_production_snow_trace(
+        let snow_trace_row = DirectSnowTraceRowContext {
             day_index,
             lane_index,
-            rainfall_input_m,
-            &snow_lane_state,
-            authority.snow_frost.snow_melt_model,
-            authority.snow_frost.snow_phase_model,
-            &snow_liquid,
+            hyetograph_rainfall_m: rainfall_input_m,
+            snow_lane_state: &snow_lane_state,
+            snow_melt_model: authority.snow_frost.snow_melt_model,
+            snow_phase_model: authority.snow_frost.snow_phase_model,
+            snow_liquid: &snow_liquid,
+        };
+        maybe_write_r7h_direct_production_snow_trace(
+            &snow_diagnostic_capture,
+            &snow_trace_row,
         )?;
         let frost_context = authority.snow_frost.frost_day_context(
             self.climate_request,
@@ -225,7 +232,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &forcing,
             &snow_lane_state,
             self.winter_hourly_geometry,
-            rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
+            rainfall_input_m > 1.0e-12
+                || snow_liquid
+                    .solid_to_liquid_ledger()
+                    .liquid_handoff_m
+                    > 1.0e-12,
             Some(residue_cover_projection.state_after.residue_depth_m),
             Some(growth_state_for_publication.canopy_height_m),
         )?;
@@ -316,7 +327,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         )?;
         hyetograph = direct_publication_hyetograph_with_added_daily_depth(
             &post_interception_hyetograph,
-            snow_liquid.routed_melt_m,
+            snow_liquid.solid_to_liquid_ledger().liquid_handoff_m,
         )?;
         let hydrology_layers = frost_context
             .as_ref()
@@ -335,17 +346,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             precip_input_handoff_m: Some(precipitation_m),
         });
         day_input.liquid_input_inputs = Some(direct_publication_liquid_input_inputs(
-            interception_state.liquid_after_interception_m + snow_liquid.routed_melt_m,
+            interception_state.liquid_after_interception_m
+                + snow_liquid.solid_to_liquid_ledger().liquid_handoff_m,
         )?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
             snow_state_projected: authority.snow_frost.snow_state_projected(&snow_lane_state),
             active_snow_coupling: snow_liquid.active_snow_coupling,
-            raw_melt_m: snow_liquid.raw_melt_m,
-            redistributed_melt_m: snow_liquid.redistributed_melt_m,
-            routed_melt_m: snow_liquid.routed_melt_m,
+            mass_transition_ledgers: Box::new(snow_liquid.mass_transition_ledgers),
             hourly_routed_melt_m: snow_liquid.hourly_routed_melt_m,
-            snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
             sublimation_m: snow_liquid.sublimation_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
             runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
@@ -360,7 +369,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
             snow_layers_after: snow_liquid.snow_layers_after.clone(),
-            stage3_diagnostics: snow_liquid.stage3_diagnostics.boxed_when_enabled(),
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
@@ -1091,37 +1099,25 @@ fn write_canopy_research_trace_line(
 }
 
 fn maybe_write_r7h_direct_production_snow_trace(
-    day_index: usize,
-    lane_index: usize,
-    hyetograph_rainfall_m: f64,
-    snow_lane_state: &openwepp_hillslope_orchestrator::DirectSnowLaneState,
-    snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
-    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
-    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    request: &DirectSnowDiagnosticCaptureRequest,
+    context: &DirectSnowTraceRowContext<'_>,
 ) -> Result<(), HillslopeCliError> {
-    let Some(path) = std::env::var_os("OPENWEPP_R7H_SNOW_TRACE_PATH") else {
+    let Some(verbose_diagnostics) =
+        selected_snow_verbose_diagnostics(request, context.snow_liquid)?
+    else {
         return Ok(());
     };
-    if path.is_empty() {
-        return Ok(());
-    }
-    if let Some(filter_day_index) =
-        direct_production_trace_env_usize("OPENWEPP_R7H_SNOW_TRACE_DAY_INDEX")
-        && filter_day_index != day_index
-    {
-        return Ok(());
-    }
-    if let Some(filter_lane_index) =
-        direct_production_trace_env_usize("OPENWEPP_R7H_SNOW_TRACE_LANE_INDEX")
-        && filter_lane_index != lane_index
-    {
-        return Ok(());
-    }
+    let path = request.selected_path.as_ref().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_trace",
+            detail: format!("{SIMOUT_GUARD_ID} selected snow trace path was lost"),
+        }
+    })?;
 
     let mut file = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&path)
+        .open(path)
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_trace",
             detail: format!(
@@ -1129,15 +1125,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
                 std::path::PathBuf::from(&path).display()
             ),
         })?;
-    let line = r7h_direct_production_snow_trace_line(
-        day_index,
-        lane_index,
-        hyetograph_rainfall_m,
-        snow_lane_state,
-        snow_melt_model,
-        snow_phase_model,
-        snow_liquid,
-    );
+    let line = r7h_direct_production_snow_trace_line(context, verbose_diagnostics);
     std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_trace",
@@ -1149,17 +1137,23 @@ fn maybe_write_r7h_direct_production_snow_trace(
     })
 }
 
+// Keep the schema-v4 ordered-key formatter contiguous so column order and projection stay auditable.
+#[allow(clippy::too_many_lines)]
 fn r7h_direct_production_snow_trace_line(
-    day_index: usize,
-    lane_index: usize,
-    hyetograph_rainfall_m: f64,
-    snow_lane_state: &openwepp_hillslope_orchestrator::DirectSnowLaneState,
-    snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
-    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
-    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    context: &DirectSnowTraceRowContext<'_>,
+    verbose_diagnostics: &openwepp_hillslope_orchestrator::DirectSnowVerboseDiagnostics,
 ) -> String {
+    let DirectSnowTraceRowContext {
+        day_index,
+        lane_index,
+        hyetograph_rainfall_m,
+        snow_lane_state,
+        snow_melt_model,
+        snow_phase_model,
+        snow_liquid,
+    } = *context;
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
-    let thermal = direct_snow_trace_thermal_diagnostics(snow_liquid);
+    let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
     let line = format!(
@@ -1225,13 +1219,13 @@ fn r7h_direct_production_snow_trace_line(
         snow_phase_model.id(),
         snow_liquid.active_snow_coupling,
         direct_production_trace_number(snow_liquid.snow_coupling_signed_s_m),
-        direct_production_trace_number(snow_liquid.raw_melt_m),
-        direct_production_trace_number(snow_liquid.snowpack_swe_loss_m),
+        direct_production_trace_number(snow_liquid.solid_to_liquid_ledger().raw_signed_melt_m),
+        direct_production_trace_number(snow_liquid.solid_to_liquid_ledger().snowpack_swe_loss_m),
         direct_production_trace_number(snow_liquid.accumulation_m),
         direct_production_trace_number(snow_liquid.sublimation_m),
-        direct_production_trace_number(snow_liquid.routed_melt_m),
+        direct_production_trace_number(snow_liquid.solid_to_liquid_ledger().liquid_handoff_m),
         direct_production_trace_number(snow_liquid.rain_retained_m),
-        direct_production_trace_number(snow_liquid.rain_released_m),
+        direct_production_trace_number(snow_liquid.solid_to_liquid_ledger().rain_released_m),
         direct_production_trace_number(snow_liquid.liquid_holding_capacity_after_m),
         direct_production_trace_number(snow_liquid.liquid_water_retained_after_m),
         direct_production_trace_number(snow_liquid.liquid_water_released_m),
@@ -1253,7 +1247,7 @@ fn r7h_direct_production_snow_trace_line(
     );
     format!(
         "{line},{}\n",
-        direct_snow_trace_diagnostic_suffix(snow_liquid, &thermal)
+        direct_snow_trace_diagnostic_suffix(snow_liquid, verbose_diagnostics, &thermal)
     )
 }
 
@@ -1390,6 +1384,8 @@ fn direct_snow_trace_stage3_hourly_fields(
 }
 
 fn direct_snow_trace_stage3_fields(
+    outcome: &openwepp_hillslope_orchestrator::DirectSnowStage3Outcome,
+    ledger: &openwepp_hillslope_orchestrator::DirectSnowLiquidDispositionLedger,
     diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
 ) -> String {
     let hourly = direct_snow_trace_stage3_hourly_fields(diagnostics);
@@ -1433,11 +1429,11 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_lower_thermal_volume_collapsed_seconds\":{},\
 \"stage3_minimum_collapsed_lower_mass_kg_m2\":{},\
 \"stage3_refrozen_liquid_m\":{}",
-        diagnostics.enabled,
-        direct_production_trace_number(diagnostics.incoming_liquid_m),
-        direct_production_trace_number(diagnostics.routed_liquid_m),
-        direct_production_trace_number(diagnostics.retained_liquid_m),
-        direct_production_trace_number(diagnostics.liquid_closure_residual_m),
+        outcome.enabled,
+        direct_production_trace_number(ledger.incoming_liquid_m),
+        direct_production_trace_number(ledger.routed_liquid_m),
+        direct_production_trace_number(ledger.retained_liquid_delta_m),
+        direct_production_trace_number(ledger.liquid_closure_residual_m),
         direct_production_trace_number(diagnostics.cold_content_before_j_m2),
         direct_production_trace_number(diagnostics.cold_content_after_j_m2),
         direct_production_trace_number(diagnostics.energy_closure_residual_j_m2),
@@ -1472,7 +1468,7 @@ fn direct_snow_trace_stage3_fields(
         direct_production_trace_number(diagnostics.minimum_unresolved_thermal_mass_kg_m2),
         direct_production_trace_number(diagnostics.lower_thermal_volume_collapsed_seconds),
         direct_production_trace_number(diagnostics.minimum_collapsed_lower_mass_kg_m2),
-        direct_production_trace_number(diagnostics.refrozen_liquid_m),
+        direct_production_trace_number(ledger.refrozen_liquid_m),
     )
 }
 
@@ -1499,12 +1495,17 @@ mod stage3_trace_field_tests {
     fn formatter_preserves_exact_liquid_and_hourly_thermal_operands() {
         let mut diagnostics =
             openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled();
-        diagnostics.enabled = true;
-        diagnostics.incoming_liquid_m = 0.021;
-        diagnostics.routed_liquid_m = 0.009;
-        diagnostics.retained_liquid_m = 0.004;
-        diagnostics.refrozen_liquid_m = 0.006;
-        diagnostics.liquid_closure_residual_m = 0.002;
+        let outcome = openwepp_hillslope_orchestrator::DirectSnowStage3Outcome {
+            enabled: true,
+            ..openwepp_hillslope_orchestrator::DirectSnowStage3Outcome::default()
+        };
+        let ledger = openwepp_hillslope_orchestrator::DirectSnowLiquidDispositionLedger {
+            incoming_liquid_m: 0.021,
+            routed_liquid_m: 0.009,
+            retained_liquid_delta_m: 0.004,
+            refrozen_liquid_m: 0.006,
+            liquid_closure_residual_m: 0.002,
+        };
         diagnostics.hourly_surface_energy[0].active_layer_mass_kg_m2 = 41.0;
         diagnostics.hourly_surface_energy[0].active_layer_depth_m = 0.22;
         diagnostics.hourly_surface_energy[0].active_layer_temperature_c = -1.5;
@@ -1515,7 +1516,10 @@ mod stage3_trace_field_tests {
         diagnostics.hourly_surface_energy[0].lower_layer_temperature_c = -2.25;
         diagnostics.hourly_surface_energy[0].lower_layer_cold_content_j_m2 = 23_500.0;
 
-        let json = format!("{{{}}}", direct_snow_trace_stage3_fields(&diagnostics));
+        let json = format!(
+            "{{{}}}",
+            direct_snow_trace_stage3_fields(&outcome, &ledger, &diagnostics)
+        );
         let value: serde_json::Value =
             serde_json::from_str(&json).expect("Stage-3 suffix must be valid JSON");
         assert_eq!(value["stage3_incoming_liquid_m"], 0.021);
@@ -1616,10 +1620,10 @@ fn direct_snow_trace_thermal_fields(thermal: &DirectSnowTraceThermalDiagnostics)
 }
 
 fn direct_snow_trace_thermal_diagnostics(
-    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    stage3_diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
 ) -> DirectSnowTraceThermalDiagnostics {
     let mut diagnostics = DirectSnowTraceThermalDiagnostics::default();
-    for hour in snow_liquid.stage3_diagnostics.hourly_surface_energy {
+    for hour in stage3_diagnostics.hourly_surface_energy {
         diagnostics.maximum_active_depth_m =
             diagnostics.maximum_active_depth_m.max(hour.active_layer_depth_m);
         diagnostics.maximum_lower_depth_m =

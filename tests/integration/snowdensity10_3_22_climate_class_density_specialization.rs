@@ -37,7 +37,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_source_verified_climate_class_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "physics_bulk_climate_class_density_v1",
         "snow_climate_class",
         "sturm1995_climate_normals",

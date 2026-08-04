@@ -27,7 +27,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_stage_b_unlock_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-SNOWDENSITY1020",
         "REF-SNOWFREEZE-LIBSNOBAL-CC0",
         "INV-SNOWFREEZE-076",
@@ -92,14 +92,24 @@ fn stage_b_surface_temperature_gate_reduces_stage_a_sublimation_without_liquid_r
         stage_b.sublimation_m < stage_a.sublimation_m,
         "cold surface-layer vapor pressure should reduce Stage A sublimation"
     );
-    assert!((stage_b.routed_melt_m - stage_a.routed_melt_m).abs() <= TOL);
-    assert!((stage_b.snowpack_swe_loss_m - stage_a.snowpack_swe_loss_m).abs() <= TOL);
+    assert!(
+        (stage_b.solid_to_liquid_ledger().liquid_handoff_m
+            - stage_a.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (stage_b.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - stage_a.solid_to_liquid_ledger().snowpack_swe_loss_m)
+            .abs()
+            <= TOL
+    );
 
     let available_swe_m = dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageBV1)
         .runtime_swe_m
         + stage_b.rain_retained_m;
     let closure = available_swe_m
-        - stage_b.snowpack_swe_loss_m
+        - stage_b.solid_to_liquid_ledger().snowpack_swe_loss_m
         - stage_b.sublimation_m
         - stage_b.runtime_swe_after_m;
     assert!(

@@ -1,6 +1,8 @@
 use crate::{
     DirectDayFrame, DirectRunIdentity, DirectRuntimeError, DirectSnowCouplingInputs,
-    DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
+    DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
+    DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs,
 };
 
 #[test]
@@ -176,7 +178,18 @@ fn r4g_rejects_hourly_routed_melt_daily_nonclosure() {
     let mut hourly = [0.0_f64; 24];
     hourly[0] = 0.009;
     day.snow_coupling_inputs = DirectSnowCouplingInputs {
-        routed_melt_m: 0.010,
+        mass_transition_ledgers: Box::new(
+            DirectSnowMassTransitionLedgers::try_from_parts(
+                DirectSnowSolidToLiquidLedger {
+                    snowpack_swe_loss_m: 0.010,
+                    liquid_handoff_m: 0.010,
+                    ..DirectSnowSolidToLiquidLedger::default()
+                },
+                DirectSnowLiquidDispositionLedger::default(),
+                DirectSnowStage3Outcome::default(),
+            )
+            .expect("valid disabled Stage-3 mass transition"),
+        ),
         hourly_routed_melt_m: hourly,
         ..DirectSnowCouplingInputs::zero()
     };

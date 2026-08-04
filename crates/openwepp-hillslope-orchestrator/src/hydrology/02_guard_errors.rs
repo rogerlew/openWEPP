@@ -45,6 +45,10 @@ impl SnowLayerAggregateMismatchError {
 pub enum Wb11HydrologyKernelGuardError {
     SnowStage3Conductivity(Box<SnowStage3ConductivityError>),
     SnowLayerAggregateMismatch(Box<SnowLayerAggregateMismatchError>),
+    SnowMassTransitionLedger {
+        phase_class: HillslopeKernelPhaseClass,
+        source: DirectSnowMassTransitionLedgerError,
+    },
     MissingRequiredStateSymbol {
         phase_class: HillslopeKernelPhaseClass,
         symbol: BoundarySymbol,
@@ -131,11 +135,16 @@ impl Wb11HydrologyKernelGuardError {
             | Self::NonFiniteFluxSymbol { .. }
             | Self::Erod13NonFiniteSymbol { .. }
             | Self::Erod14NonFiniteSymbol { .. }
-            | Self::Erod18NonFiniteSymbol { .. } => BoundaryClass::NonFinite,
+            | Self::Erod18NonFiniteSymbol { .. }
+            | Self::SnowMassTransitionLedger {
+                source: DirectSnowMassTransitionLedgerError::NonFinite { .. },
+                ..
+            } => BoundaryClass::NonFinite,
             Self::StateSymbolOutOfRange { .. }
             | Self::FluxSymbolOutOfRange { .. }
             | Self::SnowStage3Conductivity(_)
             | Self::SnowLayerAggregateMismatch(_)
+            | Self::SnowMassTransitionLedger { .. }
             | Self::Erod13DomainViolation { .. }
             | Self::Erod14DomainViolation { .. }
             | Self::Erod18DomainViolation { .. } => BoundaryClass::DomainViolation,
@@ -181,9 +190,14 @@ impl Wb11HydrologyKernelGuardError {
             Self::MissingRequiredStateSymbol { phase_class, .. }
             | Self::MissingRequiredFluxSymbol { phase_class, .. } => (phase_class, "001"),
             Self::NonFiniteStateSymbol { phase_class, .. }
-            | Self::NonFiniteFluxSymbol { phase_class, .. } => (phase_class, "002"),
+            | Self::NonFiniteFluxSymbol { phase_class, .. }
+            | Self::SnowMassTransitionLedger {
+                phase_class,
+                source: DirectSnowMassTransitionLedgerError::NonFinite { .. },
+            } => (phase_class, "002"),
             Self::StateSymbolOutOfRange { phase_class, .. }
-            | Self::FluxSymbolOutOfRange { phase_class, .. } => (phase_class, "003"),
+            | Self::FluxSymbolOutOfRange { phase_class, .. }
+            | Self::SnowMassTransitionLedger { phase_class, .. } => (phase_class, "003"),
             Self::SnowStage3Conductivity(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::Erod13MissingRequiredSymbol { .. }
@@ -214,7 +228,9 @@ impl Wb11HydrologyKernelGuardError {
 
     fn display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
         match self {
-            Self::SnowStage3Conductivity(_) | Self::SnowLayerAggregateMismatch(_) => {
+            Self::SnowStage3Conductivity(_)
+            | Self::SnowLayerAggregateMismatch(_)
+            | Self::SnowMassTransitionLedger { .. } => {
                 unreachable!("snow diagnostic errors use their typed display")
             }
             Self::MissingRequiredStateSymbol { .. }
@@ -477,6 +493,14 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
                 phase_class.as_str(),
                 )
             }
+            Self::SnowMassTransitionLedger {
+                phase_class,
+                source,
+            } => write!(
+                f,
+                "{code}: phase class {} snow mass-transition ledger validation failed: {source}",
+                phase_class.as_str()
+            ),
             _ => self.display_parts().fmt_with_code(&code, f),
         }
     }
@@ -486,6 +510,7 @@ impl Error for Wb11HydrologyKernelGuardError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::SnowStage3Conductivity(snapshot) => Some(&snapshot.source),
+            Self::SnowMassTransitionLedger { source, .. } => Some(source),
             _ => None,
         }
     }
@@ -497,6 +522,32 @@ mod cqr_row5_guard_error_tests {
 
     fn symbol() -> BoundarySymbol {
         BoundarySymbol::from("row5.symbol")
+    }
+
+    #[test]
+    fn snow_mass_transition_errors_preserve_boundary_category_code_and_source() {
+        let nonfinite_source = DirectSnowMassTransitionLedgerError::NonFinite {
+            field: "raw_signed_melt_m",
+        };
+        let nonfinite = Wb11HydrologyKernelGuardError::SnowMassTransitionLedger {
+            phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            source: nonfinite_source,
+        };
+        assert_eq!(nonfinite.boundary_class(), BoundaryClass::NonFinite);
+        assert_eq!(nonfinite.code(), "HKERNEL-WB14-RUNOFF-E-002");
+        assert!(nonfinite.to_string().contains("raw_signed_melt_m"));
+        assert_eq!(
+            std::error::Error::source(&nonfinite).map(ToString::to_string),
+            Some(nonfinite_source.to_string())
+        );
+
+        let closure = Wb11HydrologyKernelGuardError::SnowMassTransitionLedger {
+            phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            source: DirectSnowMassTransitionLedgerError::Stage3Closure,
+        };
+        assert_eq!(closure.boundary_class(), BoundaryClass::DomainViolation);
+        assert_eq!(closure.code(), "HKERNEL-WB14-RUNOFF-E-003");
+        assert!(closure.to_string().contains("does not close"));
     }
 
     #[test]

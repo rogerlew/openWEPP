@@ -1314,7 +1314,7 @@ pub struct DirectDayFrame {
     pub snow_coupling_inputs: DirectSnowCouplingInputs,
     pub snow_coupling: DirectSnowCouplingState,
     pub snow_coupling_downstream_operands: DirectSnowCouplingDownstreamOperands,
-    pub snow_coupling_shadow_projection: Option<DirectSnowCouplingShadowProjection>,
+    pub snow_coupling_shadow_projection: Option<Box<DirectSnowCouplingShadowProjection>>,
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,

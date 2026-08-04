@@ -36,7 +36,7 @@ fn assert_contains(text: &str, marker: &str, path: &str) {
 fn contract_and_package_bind_stage_a_without_activation() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-MARKS1998-TURBULENT",
         "REF-SNOWFREEZE-MARKS1999-SUBLIMATION",
         "snow_sublimation",
@@ -119,11 +119,33 @@ fn stage_a_exports_vapor_without_routing_it_as_liquid() {
     .expect("Stage A sublimation candidate should compute");
 
     assert!(candidate.sublimation_m > 0.0);
-    assert!((candidate.raw_melt_m - base.raw_melt_m).abs() <= TOL);
-    assert!((candidate.redistributed_melt_m - base.redistributed_melt_m).abs() <= TOL);
-    assert!((candidate.routed_melt_m - base.routed_melt_m).abs() <= TOL);
+    assert!(
+        (candidate.solid_to_liquid_ledger().raw_signed_melt_m
+            - base.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (candidate
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m
+            - base.solid_to_liquid_ledger().redistributed_positive_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (candidate.solid_to_liquid_ledger().liquid_handoff_m
+            - base.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
+    );
     assert!((candidate.post_winter_rain_m - base.post_winter_rain_m).abs() <= TOL);
-    assert!((candidate.snowpack_swe_loss_m - base.snowpack_swe_loss_m).abs() <= TOL);
+    assert!(
+        (candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - base.solid_to_liquid_ledger().snowpack_swe_loss_m)
+            .abs()
+            <= TOL
+    );
     assert!(candidate.runtime_swe_after_m < base.runtime_swe_after_m);
     assert!(candidate.runtime_depth_after_m < base.runtime_depth_after_m);
 
@@ -131,7 +153,7 @@ fn stage_a_exports_vapor_without_routing_it_as_liquid() {
         .runtime_swe_m
         + candidate.rain_retained_m;
     let closure = available_swe_m
-        - candidate.snowpack_swe_loss_m
+        - candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
         - candidate.sublimation_m
         - candidate.runtime_swe_after_m;
     assert!(

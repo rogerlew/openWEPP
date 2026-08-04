@@ -17,7 +17,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_decouple_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE",
         "INV-SNOWFREEZE-081",
         "OBL-SNOWFREEZE-P-056",
@@ -73,7 +73,7 @@ fn stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density() {
     let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect("decoupled Stage 3 should synthesize bulk-equivalent layers");
 
-    assert!(partition.stage3_diagnostics.enabled);
+    assert!(partition.stage3_outcome().enabled);
     assert!((partition.runtime_swe_after_m - disabled.runtime_swe_after_m).abs() <= 1.0e-12);
     assert!((partition.runtime_depth_after_m - disabled.runtime_depth_after_m).abs() <= 1.0e-12);
     assert!(
@@ -84,14 +84,23 @@ fn stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density() {
     assert_bulk_equivalent_layers(&partition);
     assert!(
         partition
-            .stage3_diagnostics
+            .stage3_outcome()
             .meltwater_temperature_c
             .is_none_or(|temperature| { temperature.as_celsius().abs() <= 1.0e-12 })
     );
-    assert!(partition.stage3_diagnostics.liquid_closure_residual_m.abs() <= 1.0e-9);
     assert!(
         partition
-            .stage3_diagnostics
+            .liquid_disposition_ledger()
+            .liquid_closure_residual_m
+            .abs()
+            <= 1.0e-9
+    );
+    assert!(
+        partition
+            .verbose_diagnostics
+            .as_deref()
+            .expect("compatibility solve retains verbose diagnostics")
+            .stage3
             .energy_closure_residual_j_m2
             .abs()
             <= 1.0e-6
@@ -112,7 +121,7 @@ fn stage3_decouple_carries_geometry_but_removes_density_gradient() {
     let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect("decoupled Stage 3 should preserve geometry with bulk density");
 
-    assert!(partition.stage3_diagnostics.enabled);
+    assert!(partition.stage3_outcome().enabled);
     assert!(partition.snow_layers_after.len() >= 2);
     assert_bulk_equivalent_layers(&partition);
     let surface_density = partition

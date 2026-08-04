@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: `queued`
+Status: `empty / kickoff archived`
 
-Execute the dated kickoff prompt in this directory.
+The dated kickoff prompt was archived unchanged when execution began.

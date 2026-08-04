@@ -1,7 +1,11 @@
 # SC-SNOWFREEZE-001 Verification A
 
-Status: `queued`
+Status: `PASS / no open findings`
 
-Evidence mode: `Not run`
+Evidence mode: `Static + Ran`
 
-Verify accepted/rejected contract finding closure and implementation mapping.
+The terminal Rust verifier confirmed v124 aliases, `INV-SNOWFREEZE-091`,
+`OBL-SNOWFREEZE-P-064`, `TOL-SNOWFREEZE-016`, guard rows, binding exposure,
+revision history, implementation mapping, exact linked operands, centralized
+tolerances, and assurance identities. No authority was weakened or left
+unmapped.

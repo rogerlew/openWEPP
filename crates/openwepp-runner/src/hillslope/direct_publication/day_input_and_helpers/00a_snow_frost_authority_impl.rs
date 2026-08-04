@@ -368,12 +368,14 @@ impl DirectProductionSnowFrostAuthority {
         sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
         sturm_day_of_year: Option<f64>,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
+        capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
     ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
         if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(inactive_direct_snow_liquid_partition(
                 self.snow_density_model,
                 hyetograph_rainfall_m,
                 snow_lane_state,
+                capture,
             ));
         }
         let hourly = climate_request
@@ -460,7 +462,10 @@ impl DirectProductionSnowFrostAuthority {
             underlying_surface_albedo: 0.2,
             hourly: snow_hourly,
         };
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&partition_inputs)
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+            &partition_inputs,
+            capture,
+        )
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",
             detail: format!("{SIMOUT_GUARD_ID} direct production typed snow partition failed: {source}"),
@@ -472,19 +477,17 @@ fn inactive_direct_snow_liquid_partition(
     snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
     hyetograph_rainfall_m: f64,
     snow_lane_state: &DirectSnowLaneState,
+    capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
 ) -> openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
     openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
         active_snow_coupling: false,
         snow_density_model,
         snow_coupling_signed_s_m: 0.0,
-        raw_melt_m: 0.0,
-        redistributed_melt_m: 0.0,
-        routed_melt_m: 0.0,
+        mass_transition_ledgers:
+            openwepp_hillslope_orchestrator::DirectSnowMassTransitionLedgers::zero(),
         hourly_routed_melt_m: [0.0; 24],
-        snowpack_swe_loss_m: 0.0,
         accumulation_m: 0.0,
         rain_retained_m: 0.0,
-        rain_released_m: 0.0,
         post_winter_rain_m: hyetograph_rainfall_m,
         runtime_swe_after_m: snow_lane_state.runtime_swe_m,
         runtime_depth_after_m: snow_lane_state.runtime_depth_m,
@@ -501,11 +504,16 @@ fn inactive_direct_snow_liquid_partition(
         density_unbounded_swe_residual_m: 0.0,
         density_process_diagnostics:
             openwepp_hillslope_orchestrator::SnowDensityProcessDiagnostics::default(),
-        accumulation_melt_diagnostics:
-            openwepp_hillslope_orchestrator::DirectSnowAccumulationMeltDiagnostics::default(),
+        verbose_diagnostics: capture.is_verbose().then(|| Box::new(
+            openwepp_hillslope_orchestrator::DirectSnowVerboseDiagnostics {
+                accumulation_melt:
+                    openwepp_hillslope_orchestrator::DirectSnowAccumulationMeltDiagnostics::default(),
+                stage3:
+                    openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled(),
+            },
+        )),
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
         snow_layers_after: snow_lane_state.layers.clone(),
-        stage3_diagnostics: openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled(),
     }
 }
 

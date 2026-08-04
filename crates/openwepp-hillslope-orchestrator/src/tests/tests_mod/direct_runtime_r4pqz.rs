@@ -5,9 +5,9 @@ use crate::{
     DirectHydrologyProjectionInputs, DirectHydrologyProjectionShadowProjection,
     DirectHydrologyProjectionState, DirectPercolationShadowProjection, DirectPhaseKind,
     DirectRunIdentity, DirectRunoffShadowProjection, DirectRunonCarryShadowProjection,
-    DirectRuntimeError, DirectSnowCouplingShadowProjection, DirectStorageShadowProjection,
-    DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceLayerInputs,
-    DirectSubsurfaceLayerState, reset_direct_runtime_audit_counters,
+    DirectRuntimeError, DirectSnowCouplingShadowProjection, DirectSnowMassTransitionLedgers,
+    DirectStorageShadowProjection, DirectSubsurfaceComputeShadowProjection,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -459,15 +459,12 @@ fn apply_projectable_terminal_shadows(
             layer_uptake_actual_m: vec![0.0, 0.015_625],
             layer_state_after_root_uptake: vec![layer(0.5, 0.0625), layer(0.25, 0.03125)],
         });
-    day.snow_coupling_shadow_projection = Some(DirectSnowCouplingShadowProjection {
+    day.snow_coupling_shadow_projection = Some(Box::new(DirectSnowCouplingShadowProjection {
         lane_index,
         day_index,
         snow_coupling_m: 0.007_812_5,
         active_snow_coupling: false,
-        raw_melt_m: 0.0,
-        redistributed_melt_m: 0.0,
-        routed_melt_m: 0.0,
-        snowpack_swe_loss_m: 0.0,
+        mass_transition_ledgers: DirectSnowMassTransitionLedgers::zero(),
         sublimation_m: 0.0,
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.0,
@@ -478,8 +475,7 @@ fn apply_projectable_terminal_shadows(
         coe_boundary_density_after_kg_m3: 0.0,
         coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
-        stage3_diagnostics: None,
-    });
+    }));
     day.storage_shadow_projection = Some(DirectStorageShadowProjection {
         lane_index,
         day_index,

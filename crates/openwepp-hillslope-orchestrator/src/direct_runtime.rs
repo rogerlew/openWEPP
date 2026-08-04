@@ -3,7 +3,13 @@ use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::constants::{WB11_ZERO_THRESHOLD, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
-use crate::hydrology::{DirectSnowStage3Diagnostics, SnowAlbedoState};
+#[cfg(test)]
+use crate::hydrology::{
+    DirectSnowLiquidDispositionLedger, DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome,
+};
+use crate::hydrology::{
+    DirectSnowMassTransitionLedgerError, DirectSnowMassTransitionLedgers, SnowAlbedoState,
+};
 use crate::winter_column::{
     DirectFrostFineLayerState, DirectFrostLaneState, DirectFrostLayerShadowState,
     DirectSnowLaneState, DirectSnowLayerState, DirectWinterColumnState,

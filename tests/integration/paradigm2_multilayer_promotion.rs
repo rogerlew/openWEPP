@@ -18,7 +18,7 @@ const HILLSLOPE_PASS_SCHEMA: &str = "crates/openwepp-hillslope-output/src/hillsl
 fn promotion_contract_and_package_ratify_supported_opt_in_capability() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-PARADIGM2-PROMOTION",
         "INV-SNOWFREEZE-082",
         "OBL-SNOWFREEZE-P-057",
@@ -73,12 +73,12 @@ fn meltwater_temperature_is_a_supported_nullable_wat_output() {
 }
 
 #[test]
-fn direct_publication_consumes_stage3_diagnostics_and_default_path_is_null() {
+fn direct_publication_consumes_stage3_outcome_and_default_path_is_null() {
     let publication = read(DIRECT_PUBLICATION);
     for marker in [
         "DirectPublicationWaterTemperatureOperands",
         "snow_coupling_shadow_projection",
-        "stage3_diagnostics",
+        "stage3_outcome",
         "meltwater_temperature_c",
         "publication.water_temperature.meltwater_temperature_c",
     ] {

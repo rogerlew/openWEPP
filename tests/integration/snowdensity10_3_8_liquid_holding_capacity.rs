@@ -38,7 +38,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_liquid_holding_capacity_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY",
         "REF-SNOWFREEZE-ANDERSON1976-LIQUID",
         "REF-SNOWFREEZE-SNOW17-PLWHC",
@@ -124,9 +124,14 @@ fn opt_in_retains_liquid_to_capacity_and_routes_excess() {
     )
     .expect("capacity candidate should compute");
 
-    assert!(legacy.raw_melt_m > 0.0);
-    assert!((legacy.raw_melt_m - candidate.raw_melt_m).abs() <= TOL);
-    assert!(legacy.snowpack_swe_loss_m.abs() <= TOL);
+    assert!(legacy.solid_to_liquid_ledger().raw_signed_melt_m > 0.0);
+    assert!(
+        (legacy.solid_to_liquid_ledger().raw_signed_melt_m
+            - candidate.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(legacy.solid_to_liquid_ledger().snowpack_swe_loss_m.abs() <= TOL);
     assert!(legacy.liquid_water_retained_after_m.abs() <= TOL);
 
     assert!(candidate.liquid_holding_capacity_after_m > 0.0);
@@ -136,13 +141,20 @@ fn opt_in_retains_liquid_to_capacity_and_routes_excess() {
         candidate.liquid_water_retained_after_m <= candidate.liquid_holding_capacity_after_m + TOL
     );
     assert!(
-        candidate.snowpack_swe_loss_m > 0.0 && candidate.snowpack_swe_loss_m < candidate.raw_melt_m,
+        candidate.solid_to_liquid_ledger().snowpack_swe_loss_m > 0.0
+            && candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
+                < candidate.solid_to_liquid_ledger().raw_signed_melt_m,
         "capacity candidate must route only excess liquid, not all positive melt"
     );
-    assert!((candidate.snowpack_swe_loss_m - candidate.liquid_water_released_m).abs() <= TOL);
     assert!(
-        (candidate.raw_melt_m
-            - candidate.snowpack_swe_loss_m
+        (candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - candidate.liquid_water_released_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (candidate.solid_to_liquid_ledger().raw_signed_melt_m
+            - candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
             - candidate.liquid_water_retained_after_m)
             .abs()
             <= TOL,

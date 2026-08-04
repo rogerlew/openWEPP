@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -125,23 +125,83 @@ fn snowdensity05d_opt_in_changes_only_shortwave_amelt_operand() {
     let legacy_expected_raw_m = 0.0607 * 10.0 * 0.0254;
     let opt_in_expected_raw_m = 0.0607 * 10.0 * (1.0 - opt_in_hour_one_albedo) * 0.0254;
 
-    assert!((legacy.raw_melt_m - legacy_expected_raw_m).abs() <= TOL);
-    assert!((legacy.redistributed_melt_m - legacy.raw_melt_m).abs() <= TOL);
-    assert!((legacy.routed_melt_m - legacy.raw_melt_m).abs() <= TOL);
-    assert!((legacy.snowpack_swe_loss_m - legacy.raw_melt_m).abs() <= TOL);
-    assert!((legacy.snow_coupling_signed_s_m - legacy.raw_melt_m).abs() <= TOL);
-    assert!((legacy.runtime_swe_after_m - (0.4 - legacy.snowpack_swe_loss_m)).abs() <= TOL);
+    assert!(
+        (legacy.solid_to_liquid_ledger().raw_signed_melt_m - legacy_expected_raw_m).abs() <= TOL
+    );
+    assert!(
+        (legacy
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m
+            - legacy.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (legacy.solid_to_liquid_ledger().liquid_handoff_m
+            - legacy.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (legacy.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - legacy.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (legacy.snow_coupling_signed_s_m - legacy.solid_to_liquid_ledger().raw_signed_melt_m).abs()
+            <= TOL
+    );
+    assert!(
+        (legacy.runtime_swe_after_m - (0.4 - legacy.solid_to_liquid_ledger().snowpack_swe_loss_m))
+            .abs()
+            <= TOL
+    );
     assert!(legacy.post_winter_rain_m.abs() <= TOL);
     assert_eq!(legacy.snow_albedo_state_after, None);
 
-    assert!((opt_in.raw_melt_m - opt_in_expected_raw_m).abs() <= TOL);
-    assert!((opt_in.redistributed_melt_m - opt_in.raw_melt_m).abs() <= TOL);
-    assert!((opt_in.routed_melt_m - opt_in.raw_melt_m).abs() <= TOL);
-    assert!((opt_in.hourly_routed_melt_m.iter().sum::<f64>() - opt_in.routed_melt_m).abs() <= TOL);
-    assert!((opt_in.snowpack_swe_loss_m - opt_in.raw_melt_m).abs() <= TOL);
-    assert!((opt_in.snow_coupling_signed_s_m - opt_in.raw_melt_m).abs() <= TOL);
-    assert!((opt_in.runtime_swe_after_m - (0.4 - opt_in.snowpack_swe_loss_m)).abs() <= TOL);
-    assert!(opt_in.raw_melt_m < legacy.raw_melt_m);
+    assert!(
+        (opt_in.solid_to_liquid_ledger().raw_signed_melt_m - opt_in_expected_raw_m).abs() <= TOL
+    );
+    assert!(
+        (opt_in
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m
+            - opt_in.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.solid_to_liquid_ledger().liquid_handoff_m
+            - opt_in.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.hourly_routed_melt_m.iter().sum::<f64>()
+            - opt_in.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - opt_in.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.snow_coupling_signed_s_m - opt_in.solid_to_liquid_ledger().raw_signed_melt_m).abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.runtime_swe_after_m - (0.4 - opt_in.solid_to_liquid_ledger().snowpack_swe_loss_m))
+            .abs()
+            <= TOL
+    );
+    assert!(
+        opt_in.solid_to_liquid_ledger().raw_signed_melt_m
+            < legacy.solid_to_liquid_ledger().raw_signed_melt_m
+    );
 }
 
 #[test]
@@ -175,11 +235,8 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         snow_coupling_handoff_m: opt_in.snow_coupling_signed_s_m,
         snow_state_projected: true,
         active_snow_coupling: opt_in.active_snow_coupling,
-        raw_melt_m: opt_in.raw_melt_m,
-        redistributed_melt_m: opt_in.redistributed_melt_m,
-        routed_melt_m: opt_in.routed_melt_m,
+        mass_transition_ledgers: Box::new(opt_in.mass_transition_ledgers),
         hourly_routed_melt_m: opt_in.hourly_routed_melt_m,
-        snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
         sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,
         runtime_swe_after_m: opt_in.runtime_swe_after_m,
@@ -194,20 +251,43 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
         snow_layers_after: opt_in.snow_layers_after.clone(),
-        stage3_diagnostics: opt_in.stage3_diagnostics.boxed_when_enabled(),
     };
     day.run_r4g_snow_coupling_span()
         .expect("direct snow-coupling span should project opt-in carry");
 
-    assert!((day.snow_coupling.raw_melt_m - opt_in.raw_melt_m).abs() <= TOL);
-    assert!((day.snow_coupling.redistributed_melt_m - opt_in.redistributed_melt_m).abs() <= TOL);
-    assert!((day.snow_coupling.routed_melt_m - opt_in.routed_melt_m).abs() <= TOL);
+    assert!(
+        (day.snow_coupling.solid_to_liquid_ledger().raw_signed_melt_m
+            - opt_in.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (day.snow_coupling
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m
+            - opt_in
+                .solid_to_liquid_ledger()
+                .redistributed_positive_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (day.snow_coupling.solid_to_liquid_ledger().liquid_handoff_m
+            - opt_in.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
+    );
     assert!(
         (day.storage_reconciliation_inputs.snow_coupling_m - opt_in.snow_coupling_signed_s_m).abs()
             <= TOL
     );
     assert!(
-        (day.snow_coupling_downstream_operands.routed_melt_m - opt_in.routed_melt_m).abs() <= TOL
+        (day.snow_coupling_downstream_operands
+            .solid_to_liquid_ledger()
+            .liquid_handoff_m
+            - opt_in.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
     );
     assert_eq!(
         day.snow_coupling_shadow_projection

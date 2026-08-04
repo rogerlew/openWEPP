@@ -16,7 +16,7 @@ fn contract_binds_phase_accumulation_and_melt_diagnostics_without_promotion() {
     let contract =
         repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for binding in [
-        "contract_version: 123",
+        "contract_version: 124",
         "INV-SNOWFREEZE-088",
         "OBL-SNOWFREEZE-P-062",
         "TOL-SNOWFREEZE-013",
@@ -92,7 +92,7 @@ fn independent_residual(
 ) -> f64 {
     let typed_snowfall_swe_m: f64 = inputs.hourly.iter().map(|hour| hour.snowfall_m * 0.1).sum();
     inputs.runtime_swe_m + typed_snowfall_swe_m + outcome.rain_retained_m
-        - outcome.snowpack_swe_loss_m
+        - outcome.solid_to_liquid_ledger().snowpack_swe_loss_m
         - outcome.sublimation_m
         - outcome.runtime_swe_after_m
 }
@@ -221,7 +221,7 @@ fn stage3_trace_contract_binds_exact_operands_and_behavior_neutrality() {
     let contract =
         repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for binding in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-STAGE3-TRACE-CLOSURE",
         "INV-SNOWFREEZE-090",
         "OBL-SNOWFREEZE-P-063",

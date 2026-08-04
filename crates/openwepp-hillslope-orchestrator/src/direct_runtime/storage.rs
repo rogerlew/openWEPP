@@ -2,9 +2,12 @@ use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
     DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
-    DirectSnowRuntimeCarry, DirectSnowStage3Diagnostics, DirectSubsurfaceLayerState,
+    DirectSnowMassTransitionLedgers, DirectSnowRuntimeCarry, DirectSubsurfaceLayerState,
     SnowAlbedoState, WB11_ZERO_THRESHOLD, sum_nonnegative_direct_m, validate_finite,
     validate_nonnegative_direct_m,
+};
+use crate::hydrology::{
+    DirectSnowLiquidDispositionLedger, DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome,
 };
 use crate::winter_column::DirectSnowLayerState;
 
@@ -567,10 +570,9 @@ impl DirectDayFrame {
             day_index: self.day_index,
             snow_coupling_m: self.snow_coupling_downstream_operands.snow_coupling_m,
             active_snow_coupling: self.snow_coupling_downstream_operands.active_snow_coupling,
-            raw_melt_m: self.snow_coupling_downstream_operands.raw_melt_m,
-            redistributed_melt_m: self.snow_coupling_downstream_operands.redistributed_melt_m,
-            routed_melt_m: self.snow_coupling_downstream_operands.routed_melt_m,
-            snowpack_swe_loss_m: self.snow_coupling_downstream_operands.snowpack_swe_loss_m,
+            mass_transition_ledgers: self
+                .snow_coupling_downstream_operands
+                .mass_transition_ledgers,
             sublimation_m: self.snow_coupling_downstream_operands.sublimation_m,
             post_winter_rain_m: self.snow_coupling_downstream_operands.post_winter_rain_m,
             runtime_swe_after_m: self.snow_coupling_downstream_operands.runtime_swe_after_m,
@@ -593,12 +595,9 @@ impl DirectDayFrame {
             snow_albedo_state_after: self
                 .snow_coupling_downstream_operands
                 .snow_albedo_state_after,
-            stage3_diagnostics: self
-                .snow_coupling_downstream_operands
-                .stage3_diagnostics
-                .clone(),
         };
-        self.snow_coupling_shadow_projection = Some(snow_coupling_shadow_projection.clone());
+        self.snow_coupling_shadow_projection =
+            Some(Box::new(snow_coupling_shadow_projection.clone()));
         DIRECT_AUDIT.record_shadow_projection();
 
         Ok(DirectSnowCouplingSpanReport {
@@ -769,10 +768,7 @@ impl DirectDayFrame {
             snow_coupling_m: self.snow_coupling_inputs.snow_coupling_handoff_m,
             snow_state_projected: self.snow_coupling_inputs.snow_state_projected,
             active_snow_coupling: self.snow_coupling_inputs.active_snow_coupling,
-            raw_melt_m: self.snow_coupling_inputs.raw_melt_m,
-            redistributed_melt_m: self.snow_coupling_inputs.redistributed_melt_m,
-            routed_melt_m: self.snow_coupling_inputs.routed_melt_m,
-            snowpack_swe_loss_m: self.snow_coupling_inputs.snowpack_swe_loss_m,
+            mass_transition_ledgers: *self.snow_coupling_inputs.mass_transition_ledgers,
             sublimation_m: self.snow_coupling_inputs.sublimation_m,
             post_winter_rain_m: self.snow_coupling_inputs.post_winter_rain_m,
             runtime_swe_after_m: self.snow_coupling_inputs.runtime_swe_after_m,
@@ -795,7 +791,6 @@ impl DirectDayFrame {
             liquid_water_released_m: self.snow_coupling_inputs.liquid_water_released_m,
             snow_albedo_state_after: self.snow_coupling_inputs.snow_albedo_state_after,
             snow_layers_after: self.snow_coupling_inputs.snow_layers_after.clone(),
-            stage3_diagnostics: self.snow_coupling_inputs.stage3_diagnostics.clone(),
         })
     }
 
@@ -909,19 +904,32 @@ impl DirectDayFrame {
     }
 
     fn validate_r4g_snow_coupling_domain(&self) -> Result<(), DirectRuntimeError> {
+        self.snow_coupling_inputs
+            .mass_transition_ledgers
+            .validate()
+            .map_err(DirectRuntimeError::SnowMassTransitionLedger)?;
         validate_finite(
             "snow_coupling.snow_coupling_handoff_m",
             self.snow_coupling_inputs.snow_coupling_handoff_m,
         )?;
         validate_nonnegative_direct_m(
             "snow_coupling.routed_melt_m",
-            self.snow_coupling_inputs.routed_melt_m,
+            self.snow_coupling_inputs
+                .mass_transition_ledgers
+                .solid_to_liquid()
+                .liquid_handoff_m,
         )?;
         let hourly_routed_melt_total_m = sum_nonnegative_direct_m(
             "snow_coupling.hourly_routed_melt_m",
             &self.snow_coupling_inputs.hourly_routed_melt_m,
         )?;
-        if (hourly_routed_melt_total_m - self.snow_coupling_inputs.routed_melt_m).abs()
+        if (hourly_routed_melt_total_m
+            - self
+                .snow_coupling_inputs
+                .mass_transition_ledgers
+                .solid_to_liquid()
+                .liquid_handoff_m)
+            .abs()
             > WB11_ZERO_THRESHOLD
         {
             return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
@@ -1313,11 +1321,8 @@ pub struct DirectSnowCouplingInputs {
     pub snow_coupling_handoff_m: f64,
     pub snow_state_projected: bool,
     pub active_snow_coupling: bool,
-    pub raw_melt_m: f64,
-    pub redistributed_melt_m: f64,
-    pub routed_melt_m: f64,
+    pub mass_transition_ledgers: Box<DirectSnowMassTransitionLedgers>,
     pub hourly_routed_melt_m: [f64; 24],
-    pub snowpack_swe_loss_m: f64,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
@@ -1332,21 +1337,17 @@ pub struct DirectSnowCouplingInputs {
     pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
-    pub stage3_diagnostics: Option<Box<DirectSnowStage3Diagnostics>>,
 }
 
 impl DirectSnowCouplingInputs {
     #[must_use]
-    pub const fn zero() -> Self {
+    pub fn zero() -> Self {
         Self {
             snow_coupling_handoff_m: 0.0,
             snow_state_projected: false,
             active_snow_coupling: false,
-            raw_melt_m: 0.0,
-            redistributed_melt_m: 0.0,
-            routed_melt_m: 0.0,
+            mass_transition_ledgers: Box::new(DirectSnowMassTransitionLedgers::zero()),
             hourly_routed_melt_m: [0.0; 24],
-            snowpack_swe_loss_m: 0.0,
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
@@ -1361,7 +1362,6 @@ impl DirectSnowCouplingInputs {
             liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
             snow_layers_after: Vec::new(),
-            stage3_diagnostics: None,
         }
     }
 }
@@ -1371,10 +1371,7 @@ pub struct DirectSnowCouplingState {
     pub snow_coupling_m: f64,
     pub snow_state_projected: bool,
     pub active_snow_coupling: bool,
-    pub raw_melt_m: f64,
-    pub redistributed_melt_m: f64,
-    pub routed_melt_m: f64,
-    pub snowpack_swe_loss_m: f64,
+    pub mass_transition_ledgers: DirectSnowMassTransitionLedgers,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
@@ -1389,7 +1386,6 @@ pub struct DirectSnowCouplingState {
     pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
-    pub stage3_diagnostics: Option<Box<DirectSnowStage3Diagnostics>>,
 }
 
 impl DirectSnowCouplingState {
@@ -1399,10 +1395,7 @@ impl DirectSnowCouplingState {
             snow_coupling_m: 0.0,
             snow_state_projected: false,
             active_snow_coupling: false,
-            raw_melt_m: 0.0,
-            redistributed_melt_m: 0.0,
-            routed_melt_m: 0.0,
-            snowpack_swe_loss_m: 0.0,
+            mass_transition_ledgers: DirectSnowMassTransitionLedgers::zero(),
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
@@ -1417,8 +1410,22 @@ impl DirectSnowCouplingState {
             liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
             snow_layers_after: Vec::new(),
-            stage3_diagnostics: None,
         }
+    }
+
+    #[must_use]
+    pub const fn solid_to_liquid_ledger(&self) -> DirectSnowSolidToLiquidLedger {
+        self.mass_transition_ledgers.solid_to_liquid()
+    }
+
+    #[must_use]
+    pub const fn liquid_disposition_ledger(&self) -> DirectSnowLiquidDispositionLedger {
+        self.mass_transition_ledgers.liquid_disposition()
+    }
+
+    #[must_use]
+    pub const fn stage3_outcome(&self) -> DirectSnowStage3Outcome {
+        self.mass_transition_ledgers.stage3_outcome()
     }
 }
 
@@ -1426,11 +1433,8 @@ impl DirectSnowCouplingState {
 pub struct DirectSnowCouplingDownstreamOperands {
     pub snow_coupling_m: f64,
     pub active_snow_coupling: bool,
-    pub raw_melt_m: f64,
-    pub redistributed_melt_m: f64,
-    pub routed_melt_m: f64,
+    pub mass_transition_ledgers: DirectSnowMassTransitionLedgers,
     pub hourly_routed_melt_m: Box<[f64; 24]>,
-    pub snowpack_swe_loss_m: f64,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
@@ -1444,7 +1448,6 @@ pub struct DirectSnowCouplingDownstreamOperands {
     pub liquid_water_retained_after_m: f64,
     pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
-    pub stage3_diagnostics: Option<Box<DirectSnowStage3Diagnostics>>,
 }
 
 impl DirectSnowCouplingDownstreamOperands {
@@ -1453,11 +1456,8 @@ impl DirectSnowCouplingDownstreamOperands {
         Self {
             snow_coupling_m: 0.0,
             active_snow_coupling: false,
-            raw_melt_m: 0.0,
-            redistributed_melt_m: 0.0,
-            routed_melt_m: 0.0,
+            mass_transition_ledgers: DirectSnowMassTransitionLedgers::zero(),
             hourly_routed_melt_m: Box::new([0.0; 24]),
-            snowpack_swe_loss_m: 0.0,
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
@@ -1471,13 +1471,29 @@ impl DirectSnowCouplingDownstreamOperands {
             liquid_water_retained_after_m: 0.0,
             liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
-            stage3_diagnostics: None,
         }
+    }
+
+    #[must_use]
+    pub const fn solid_to_liquid_ledger(&self) -> DirectSnowSolidToLiquidLedger {
+        self.mass_transition_ledgers.solid_to_liquid()
+    }
+
+    #[must_use]
+    pub const fn liquid_disposition_ledger(&self) -> DirectSnowLiquidDispositionLedger {
+        self.mass_transition_ledgers.liquid_disposition()
+    }
+
+    #[must_use]
+    pub const fn stage3_outcome(&self) -> DirectSnowStage3Outcome {
+        self.mass_transition_ledgers.stage3_outcome()
     }
 }
 
 impl DirectSnowCouplingDownstreamOperands {
     #[must_use]
+    // Preserve the established public ownership contract at this publication seam.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn from_state_and_hourly_routed_melt(
         state: DirectSnowCouplingState,
         hourly_routed_melt_m: [f64; 24],
@@ -1485,11 +1501,8 @@ impl DirectSnowCouplingDownstreamOperands {
         Self {
             snow_coupling_m: state.snow_coupling_m,
             active_snow_coupling: state.active_snow_coupling,
-            raw_melt_m: state.raw_melt_m,
-            redistributed_melt_m: state.redistributed_melt_m,
-            routed_melt_m: state.routed_melt_m,
+            mass_transition_ledgers: state.mass_transition_ledgers,
             hourly_routed_melt_m: Box::new(hourly_routed_melt_m),
-            snowpack_swe_loss_m: state.snowpack_swe_loss_m,
             sublimation_m: state.sublimation_m,
             post_winter_rain_m: state.post_winter_rain_m,
             runtime_swe_after_m: state.runtime_swe_after_m,
@@ -1503,7 +1516,6 @@ impl DirectSnowCouplingDownstreamOperands {
             liquid_water_retained_after_m: state.liquid_water_retained_after_m,
             liquid_water_released_m: state.liquid_water_released_m,
             snow_albedo_state_after: state.snow_albedo_state_after,
-            stage3_diagnostics: state.stage3_diagnostics,
         }
     }
 }
@@ -1514,10 +1526,7 @@ pub struct DirectSnowCouplingShadowProjection {
     pub day_index: usize,
     pub snow_coupling_m: f64,
     pub active_snow_coupling: bool,
-    pub raw_melt_m: f64,
-    pub redistributed_melt_m: f64,
-    pub routed_melt_m: f64,
-    pub snowpack_swe_loss_m: f64,
+    pub mass_transition_ledgers: DirectSnowMassTransitionLedgers,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
@@ -1528,7 +1537,23 @@ pub struct DirectSnowCouplingShadowProjection {
     pub coe_boundary_density_after_kg_m3: f64,
     pub coe_boundary_settle_day_count_after: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
-    pub stage3_diagnostics: Option<Box<DirectSnowStage3Diagnostics>>,
+}
+
+impl DirectSnowCouplingShadowProjection {
+    #[must_use]
+    pub const fn solid_to_liquid_ledger(&self) -> DirectSnowSolidToLiquidLedger {
+        self.mass_transition_ledgers.solid_to_liquid()
+    }
+
+    #[must_use]
+    pub const fn liquid_disposition_ledger(&self) -> DirectSnowLiquidDispositionLedger {
+        self.mass_transition_ledgers.liquid_disposition()
+    }
+
+    #[must_use]
+    pub const fn stage3_outcome(&self) -> DirectSnowStage3Outcome {
+        self.mass_transition_ledgers.stage3_outcome()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

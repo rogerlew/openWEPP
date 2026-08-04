@@ -388,13 +388,12 @@
 
 State as of `2026-08-03 UTC`:
 
-- `20260803-snow-mass-transition-ledger-persistence-001/` - QUEUED /
-  SCAFFOLDED / NOT EXECUTED: preserve the campaign-proven solid-to-liquid and
-  liquid-disposition boundaries as two exact linked compact ledgers over one
-  authoritative snow calculation. Separate production-required outcomes from
-  the opt-in hourly schema-v4 research payload, prove trace-disabled payload
-  absence and performance non-regression, and retain exact trace-enabled and
-  ordinary-output compatibility without changing snow physics.
+- `20260803-snow-mass-transition-ledger-persistence-001/` - COMPLETE / REVIEW
+  AND VERIFICATION PASS: implemented one authoritative snow
+  calculation with two linked compact ledgers, a compact Stage-3 outcome, and
+  runner-selected optional schema-v4 payload. Exact trace/WAT/HBP
+  compatibility, independent closure, carrier reduction, performance bounds,
+  quick/frost/Critical full, dual review, and dual terminal verification pass.
 
 - `20260730-snow-surface-eb-04-factorial-execution-adjudication-001/` -
   EXECUTED / HOLD / NONPROMOTION: froze result operators before execution,

@@ -41,7 +41,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_thaw_state_loss_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "coe_winter_thaw_state_loss_v1",
         "INV-SNOWFREEZE-066",
         "OBL-SNOWFREEZE-P-041",
@@ -126,17 +126,32 @@ fn opt_in_routes_positive_low_density_thaw_melt_to_state_loss() {
     )
     .expect("candidate CoE melt should compute");
 
-    assert!(legacy.raw_melt_m > 0.0);
-    assert!((legacy.raw_melt_m - candidate.raw_melt_m).abs() <= TOL);
-    assert!(legacy.snowpack_swe_loss_m.abs() <= TOL);
-    assert!(legacy.routed_melt_m.abs() <= TOL);
+    assert!(legacy.solid_to_liquid_ledger().raw_signed_melt_m > 0.0);
+    assert!(
+        (legacy.solid_to_liquid_ledger().raw_signed_melt_m
+            - candidate.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(legacy.solid_to_liquid_ledger().snowpack_swe_loss_m.abs() <= TOL);
+    assert!(legacy.solid_to_liquid_ledger().liquid_handoff_m.abs() <= TOL);
     assert!(
         legacy.runtime_density_after_kg_m3
             > low_density_positive_thaw_inputs(SnowMeltModel::LegacyCoe).runtime_density_kg_m3
     );
 
-    assert!((candidate.snowpack_swe_loss_m - candidate.raw_melt_m).abs() <= TOL);
-    assert!((candidate.routed_melt_m - candidate.raw_melt_m).abs() <= TOL);
+    assert!(
+        (candidate.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - candidate.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (candidate.solid_to_liquid_ledger().liquid_handoff_m
+            - candidate.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
     assert!(
         candidate.runtime_swe_after_m < legacy.runtime_swe_after_m,
         "candidate must realize positive thaw melt as SWE state loss"
@@ -166,15 +181,22 @@ fn opt_in_state_loss_is_conservation_closed_and_routed() {
             .sum::<f64>()
         + outcome.rain_retained_m;
     assert!(
-        outcome.snowpack_swe_loss_m <= available_swe_m + TOL,
+        outcome.solid_to_liquid_ledger().snowpack_swe_loss_m <= available_swe_m + TOL,
         "candidate must not release more SWE than available pack/input storage"
     );
     assert!(
-        (available_swe_m - outcome.snowpack_swe_loss_m - outcome.runtime_swe_after_m).abs() <= TOL,
+        (available_swe_m
+            - outcome.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - outcome.runtime_swe_after_m)
+            .abs()
+            <= TOL,
         "candidate SWE state must close exactly"
     );
     assert!(
-        (outcome.routed_melt_m - outcome.rain_released_m - outcome.snowpack_swe_loss_m).abs()
+        (outcome.solid_to_liquid_ledger().liquid_handoff_m
+            - outcome.solid_to_liquid_ledger().rain_released_m
+            - outcome.solid_to_liquid_ledger().snowpack_swe_loss_m)
+            .abs()
             <= TOL,
         "SWE state loss must appear in routed liquid after separating released rain"
     );

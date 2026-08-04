@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -117,10 +117,34 @@ fn snowdensity07_opt_in_changes_only_runtime_density_depth_surface() {
 
     assert!((opt_in.runtime_swe_after_m - legacy.runtime_swe_after_m).abs() <= TOL);
     assert!((opt_in.snow_coupling_signed_s_m - legacy.snow_coupling_signed_s_m).abs() <= TOL);
-    assert!((opt_in.raw_melt_m - legacy.raw_melt_m).abs() <= TOL);
-    assert!((opt_in.redistributed_melt_m - legacy.redistributed_melt_m).abs() <= TOL);
-    assert!((opt_in.routed_melt_m - legacy.routed_melt_m).abs() <= TOL);
-    assert!((opt_in.snowpack_swe_loss_m - legacy.snowpack_swe_loss_m).abs() <= TOL);
+    assert!(
+        (opt_in.solid_to_liquid_ledger().raw_signed_melt_m
+            - legacy.solid_to_liquid_ledger().raw_signed_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m
+            - legacy
+                .solid_to_liquid_ledger()
+                .redistributed_positive_melt_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.solid_to_liquid_ledger().liquid_handoff_m
+            - legacy.solid_to_liquid_ledger().liquid_handoff_m)
+            .abs()
+            <= TOL
+    );
+    assert!(
+        (opt_in.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - legacy.solid_to_liquid_ledger().snowpack_swe_loss_m)
+            .abs()
+            <= TOL
+    );
     assert!((opt_in.post_winter_rain_m - legacy.post_winter_rain_m).abs() <= TOL);
     assert_eq!(
         opt_in.snow_albedo_state_after,
@@ -162,11 +186,8 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
         snow_coupling_handoff_m: opt_in.snow_coupling_signed_s_m,
         snow_state_projected: true,
         active_snow_coupling: opt_in.active_snow_coupling,
-        raw_melt_m: opt_in.raw_melt_m,
-        redistributed_melt_m: opt_in.redistributed_melt_m,
-        routed_melt_m: opt_in.routed_melt_m,
+        mass_transition_ledgers: Box::new(opt_in.mass_transition_ledgers),
         hourly_routed_melt_m: opt_in.hourly_routed_melt_m,
-        snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
         sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,
         runtime_swe_after_m: opt_in.runtime_swe_after_m,
@@ -181,7 +202,6 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
         liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
         snow_layers_after: opt_in.snow_layers_after.clone(),
-        stage3_diagnostics: opt_in.stage3_diagnostics.boxed_when_enabled(),
     };
 
     let report = day
@@ -227,7 +247,7 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
     let shadow = day
         .snow_coupling_shadow_projection
         .expect("R4G should emit a shadow projection");
-    assert_eq!(shadow, report.snow_coupling_shadow_projection);
+    assert_eq!(*shadow, report.snow_coupling_shadow_projection);
     assert!((shadow.runtime_density_after_kg_m3 - opt_in.runtime_density_after_kg_m3).abs() <= TOL);
     assert!(
         (shadow.coe_boundary_density_after_kg_m3 - opt_in.coe_boundary_density_after_kg_m3).abs()

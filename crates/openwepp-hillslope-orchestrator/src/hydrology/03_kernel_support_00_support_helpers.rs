@@ -1,6 +1,4 @@
 
-use openwepp_unit_boundary::TemperatureCelsius;
-
 use crate::winter_column::DirectSnowLayerState;
 use crate::runtime_inputs::SnowPhasePartitionModel;
 
@@ -95,7 +93,7 @@ pub(crate) struct SnowHourlyState {
     sublimation_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
-    melt_diagnostics: DirectSnowMeltHourDiagnostics,
+    melt_diagnostics: Option<DirectSnowMeltHourDiagnostics>,
     pack_depth_before_m: f64,
     pack_depth_after_m: f64,
     pack_density_before_kg_m3: f64,
@@ -105,7 +103,7 @@ pub(crate) struct SnowHourlyState {
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct SnowMeltComputation {
     wmelt_m: f64,
-    diagnostics: DirectSnowMeltHourDiagnostics,
+    diagnostics: Option<DirectSnowMeltHourDiagnostics>,
 }
 
 #[cfg(test)]
@@ -122,10 +120,10 @@ mod tests {
             sublimation_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
-            melt_diagnostics: DirectSnowMeltHourDiagnostics {
+            melt_diagnostics: Some(DirectSnowMeltHourDiagnostics {
                 coe_melt_applied_m: melt_m,
                 ..DirectSnowMeltHourDiagnostics::default()
-            },
+            }),
             pack_depth_before_m: 0.0,
             pack_depth_after_m: 0.0,
             pack_density_before_kg_m3: 0.0,
@@ -174,14 +172,19 @@ pub(crate) struct SnowCouplingOutcome {
     raw_melt: f64,
     redistributed_melt: f64,
     hourly_routed_melt: [f64; 24],
-    hourly_melt_diagnostics: [DirectSnowMeltHourDiagnostics; 24],
-    hourly_trace: SnowHourlyTrace,
+    verbose_diagnostics: Option<Box<SnowCouplingVerboseDiagnostics>>,
     snowpack_state_loss: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
     runtime_density_kg_m3: f64,
     runtime_settle_day_count: f64,
     snow_albedo_state_after: Option<SnowAlbedoState>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct SnowCouplingVerboseDiagnostics {
+    hourly_melt: [DirectSnowMeltHourDiagnostics; 24],
+    hourly_trace: SnowHourlyTrace,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -203,14 +206,10 @@ pub struct DirectSnowLiquidPartition {
     pub active_snow_coupling: bool,
     pub snow_density_model: SnowDensityModel,
     pub snow_coupling_signed_s_m: f64,
-    pub raw_melt_m: f64,
-    pub redistributed_melt_m: f64,
-    pub routed_melt_m: f64,
+    pub mass_transition_ledgers: DirectSnowMassTransitionLedgers,
     pub hourly_routed_melt_m: [f64; 24],
-    pub snowpack_swe_loss_m: f64,
     pub accumulation_m: f64,
     pub rain_retained_m: f64,
-    pub rain_released_m: f64,
     pub liquid_holding_capacity_after_m: f64,
     pub liquid_water_retained_after_m: f64,
     pub liquid_water_released_m: f64,
@@ -226,10 +225,26 @@ pub struct DirectSnowLiquidPartition {
     pub density_swe_identity_residual_m: f64,
     pub density_unbounded_swe_residual_m: f64,
     pub density_process_diagnostics: SnowDensityProcessDiagnostics,
-    pub accumulation_melt_diagnostics: DirectSnowAccumulationMeltDiagnostics,
+    pub verbose_diagnostics: Option<Box<DirectSnowVerboseDiagnostics>>,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
-    pub stage3_diagnostics: DirectSnowStage3Diagnostics,
+}
+
+impl DirectSnowLiquidPartition {
+    #[must_use]
+    pub const fn solid_to_liquid_ledger(&self) -> DirectSnowSolidToLiquidLedger {
+        self.mass_transition_ledgers.solid_to_liquid()
+    }
+
+    #[must_use]
+    pub const fn liquid_disposition_ledger(&self) -> DirectSnowLiquidDispositionLedger {
+        self.mass_transition_ledgers.liquid_disposition()
+    }
+
+    #[must_use]
+    pub const fn stage3_outcome(&self) -> DirectSnowStage3Outcome {
+        self.mass_transition_ledgers.stage3_outcome()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -417,13 +432,6 @@ impl DirectSnowSurfaceEnergyHourDiagnostics {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowStage3Diagnostics {
-    pub enabled: bool,
-    pub meltwater_temperature_c: Option<TemperatureCelsius>,
-    pub incoming_liquid_m: f64,
-    pub routed_liquid_m: f64,
-    pub retained_liquid_m: f64,
-    pub refrozen_liquid_m: f64,
-    pub liquid_closure_residual_m: f64,
     pub cold_content_before_j_m2: f64,
     pub cold_content_after_j_m2: f64,
     pub surface_energy_j_m2: f64,
@@ -435,7 +443,6 @@ pub struct DirectSnowStage3Diagnostics {
     pub latent_energy_j_m2: f64,
     pub vapor_mass_exchange_kg_m2: f64,
     pub latent_mass_energy_j_m2: f64,
-    pub sublimation_m: f64,
     pub cold_content_export_j_m2: f64,
     pub mass_latent_identity_residual_j_m2: f64,
     pub unused_positive_energy_j_m2: f64,
@@ -450,13 +457,6 @@ impl DirectSnowStage3Diagnostics {
     #[must_use]
     pub const fn disabled() -> Self {
         Self {
-            enabled: false,
-            meltwater_temperature_c: None,
-            incoming_liquid_m: 0.0,
-            routed_liquid_m: 0.0,
-            retained_liquid_m: 0.0,
-            refrozen_liquid_m: 0.0,
-            liquid_closure_residual_m: 0.0,
             cold_content_before_j_m2: 0.0,
             cold_content_after_j_m2: 0.0,
             surface_energy_j_m2: 0.0,
@@ -468,7 +468,6 @@ impl DirectSnowStage3Diagnostics {
             latent_energy_j_m2: 0.0,
             vapor_mass_exchange_kg_m2: 0.0,
             latent_mass_energy_j_m2: 0.0,
-            sublimation_m: 0.0,
             cold_content_export_j_m2: 0.0,
             mass_latent_identity_residual_j_m2: 0.0,
             unused_positive_energy_j_m2: 0.0,
@@ -480,14 +479,6 @@ impl DirectSnowStage3Diagnostics {
         }
     }
 
-    #[must_use]
-    pub fn boxed_when_enabled(self) -> Option<Box<Self>> {
-        if self.enabled {
-            Some(Box::new(self))
-        } else {
-            None
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -927,5 +918,9 @@ const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 mod support_helpers_mod;
 pub use support_helpers_mod::{
     DirectKsatadjEffectiveConductivityInputs, DirectKsatadjEffectiveConductivityOutcome,
-    DirectKsatadjLayerInputs,
+    DirectKsatadjLayerInputs, DirectSnowDiagnosticCapture,
+    DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgerError,
+    DirectSnowMassTransitionLedgers, DirectSnowSolidToLiquidLedger,
+    DirectSnowStage3Outcome, DirectSnowVerboseDiagnostics,
 };
+pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;

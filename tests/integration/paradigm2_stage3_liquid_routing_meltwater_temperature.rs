@@ -20,7 +20,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",
@@ -57,7 +57,7 @@ fn stage3_contract_package_and_selector_are_bound() {
         "stage3_liquid_routing_model: self.stage3_liquid_routing_model",
         RUNNER_IMPL,
     );
-    assert_contains(&runner_impl, "stage3_diagnostics", RUNNER_IMPL);
+    assert_contains(&runner_impl, "mass_transition_ledgers", RUNNER_IMPL);
 
     let hydrology_impl = read(HYDROLOGY_IMPL);
     for marker in [
@@ -112,11 +112,15 @@ fn stage3_disabled_default_leaves_diagnostics_off() {
     )
     .expect("disabled Stage 3 partition should compute");
     assert_eq!(
-        partition.stage3_diagnostics,
+        partition
+            .verbose_diagnostics
+            .as_deref()
+            .expect("compatibility solve retains verbose diagnostics")
+            .stage3,
         DirectSnowStage3Diagnostics::disabled()
     );
     assert!(
-        partition.routed_melt_m > 0.0,
+        partition.solid_to_liquid_ledger().liquid_handoff_m > 0.0,
         "test setup should exercise the existing CoE melt path"
     );
 }
@@ -128,20 +132,41 @@ fn stage3_routes_liquid_closes_energy_and_produces_typed_temperature() {
     )
     .expect("Stage 3 opt-in partition should compute");
 
-    let diagnostics = partition.stage3_diagnostics;
-    assert!(diagnostics.enabled);
-    assert!(diagnostics.incoming_liquid_m > 0.0);
-    assert!(diagnostics.routed_liquid_m > 0.0);
-    assert!(diagnostics.refrozen_liquid_m > 0.0);
-    assert!(diagnostics.retained_liquid_m > 0.0);
-    assert!(diagnostics.liquid_closure_residual_m.abs() <= 1.0e-9);
+    let diagnostics = &partition
+        .verbose_diagnostics
+        .as_deref()
+        .expect("compatibility solve retains verbose diagnostics")
+        .stage3;
+    assert!(partition.stage3_outcome().enabled);
+    assert!(partition.liquid_disposition_ledger().incoming_liquid_m > 0.0);
+    assert!(partition.liquid_disposition_ledger().routed_liquid_m > 0.0);
+    assert!(partition.liquid_disposition_ledger().refrozen_liquid_m > 0.0);
+    assert!(
+        partition
+            .liquid_disposition_ledger()
+            .retained_liquid_delta_m
+            > 0.0
+    );
+    assert!(
+        partition
+            .liquid_disposition_ledger()
+            .liquid_closure_residual_m
+            .abs()
+            <= 1.0e-9
+    );
     assert!(diagnostics.energy_closure_residual_j_m2.abs() <= 1.0e-6);
-    let meltwater_temperature_c = diagnostics
+    let meltwater_temperature_c = partition
+        .stage3_outcome()
         .meltwater_temperature_c
         .expect("positive routed liquid should carry typed temperature")
         .as_celsius();
     assert!(meltwater_temperature_c.abs() <= 1.0e-12);
-    assert!((partition.routed_melt_m - diagnostics.incoming_liquid_m).abs() <= 1.0e-12);
+    assert!(
+        (partition.solid_to_liquid_ledger().liquid_handoff_m
+            - partition.liquid_disposition_ledger().incoming_liquid_m)
+            .abs()
+            <= 1.0e-12
+    );
     assert!(
         partition
             .snow_layers_after
@@ -163,7 +188,7 @@ fn stage3_accepts_bulk_density_model_after_decouple() {
     let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect("Stage 3 must run on the bulk-density model after decoupling");
 
-    assert!(partition.stage3_diagnostics.enabled);
+    assert!(partition.stage3_outcome().enabled);
     assert!((partition.runtime_swe_after_m - disabled.runtime_swe_after_m).abs() <= 1.0e-12);
     assert!((partition.runtime_depth_after_m - disabled.runtime_depth_after_m).abs() <= 1.0e-12);
     assert!(

@@ -68,16 +68,21 @@ fn direct_snow_trace_accumulation_melt_fields(
 
 fn direct_snow_trace_diagnostic_suffix(
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    verbose_diagnostics: &openwepp_hillslope_orchestrator::DirectSnowVerboseDiagnostics,
     thermal: &DirectSnowTraceThermalDiagnostics,
 ) -> String {
     format!(
         "{},{},{},{}",
         direct_snow_trace_density_process_fields(&snow_liquid.density_process_diagnostics),
         direct_snow_trace_accumulation_melt_fields(
-            &snow_liquid.accumulation_melt_diagnostics,
+            &verbose_diagnostics.accumulation_melt,
             snow_liquid.active_snow_coupling,
         ),
-        direct_snow_trace_stage3_fields(&snow_liquid.stage3_diagnostics),
+        direct_snow_trace_stage3_fields(
+            &snow_liquid.stage3_outcome(),
+            &snow_liquid.liquid_disposition_ledger(),
+            &verbose_diagnostics.stage3,
+        ),
         direct_snow_trace_thermal_fields(thermal)
     )
 }

@@ -1,5 +1,6 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
+use openwepp_unit_boundary::TemperatureCelsius;
 
 #[derive(Debug, Clone, Copy)]
 struct ActiveSnowBoundaryState {
@@ -46,36 +47,38 @@ mod cqr_row5_tests {
 
         let zero_wind = simimpl29_melt(0.0, 0.0, -2.0, 0.4, 240.0, 0.2, 1.0).unwrap();
         assert!(zero_wind.wmelt_m.is_finite());
+        let zero_wind_diagnostics = zero_wind.diagnostics.expect("verbose melt diagnostics");
         assert!(
-            (zero_wind.diagnostics.coe_melt_applied_m
-                - zero_wind.diagnostics.coe_melt_uncapped_m
-                - zero_wind.diagnostics.coe_melt_cap_adjustment_m)
+            (zero_wind_diagnostics.coe_melt_applied_m
+                - zero_wind_diagnostics.coe_melt_uncapped_m
+                - zero_wind_diagnostics.coe_melt_cap_adjustment_m)
                 .abs()
                 <= 1.0e-12
         );
 
         let windy_rain = simimpl29_melt(4.0, 0.004, 1.5, 0.4, 240.0, 0.2, 3.0).unwrap();
         assert!(windy_rain.wmelt_m.is_finite());
+        let windy_diagnostics = windy_rain.diagnostics.expect("verbose melt diagnostics");
         assert!(
-            (windy_rain.diagnostics.coe_melt_amelt_m - 0.000_161_886_9).abs() <= 1.0e-12
+            (windy_diagnostics.coe_melt_amelt_m - 0.000_161_886_9).abs() <= 1.0e-12
         );
         assert!(
-            (windy_rain.diagnostics.coe_melt_bmelt_m - (-0.000_257_175)).abs() <= 1.0e-12
+            (windy_diagnostics.coe_melt_bmelt_m - (-0.000_257_175)).abs() <= 1.0e-12
         );
         assert!(
-            (windy_rain.diagnostics.coe_melt_cmelt_m - 0.000_275_696_527_821_433_83).abs()
+            (windy_diagnostics.coe_melt_cmelt_m - 0.000_275_696_527_821_433_83).abs()
                 <= 1.0e-12
         );
         assert!(
-            (windy_rain.diagnostics.coe_melt_dmelt_m - 0.000_075_599_848_8).abs()
+            (windy_diagnostics.coe_melt_dmelt_m - 0.000_075_599_848_8).abs()
                 <= 1.0e-12
         );
-        let windy_component_sum = windy_rain.diagnostics.coe_melt_amelt_m
-            + windy_rain.diagnostics.coe_melt_bmelt_m
-            + windy_rain.diagnostics.coe_melt_cmelt_m
-            + windy_rain.diagnostics.coe_melt_dmelt_m;
+        let windy_component_sum = windy_diagnostics.coe_melt_amelt_m
+            + windy_diagnostics.coe_melt_bmelt_m
+            + windy_diagnostics.coe_melt_cmelt_m
+            + windy_diagnostics.coe_melt_dmelt_m;
         assert!(
-            (windy_rain.diagnostics.coe_melt_uncapped_m - windy_component_sum).abs()
+            (windy_diagnostics.coe_melt_uncapped_m - windy_component_sum).abs()
                 <= 1.0e-12
         );
 
@@ -86,15 +89,16 @@ mod cqr_row5_tests {
             )
             .unwrap();
         assert!(capped.wmelt_m <= maximum_melt_m + 1.0e-12);
-        assert!(capped.diagnostics.coe_melt_cap_adjustment_m < 0.0);
-        let component_sum = capped.diagnostics.coe_melt_amelt_m
-            + capped.diagnostics.coe_melt_bmelt_m
-            + capped.diagnostics.coe_melt_cmelt_m
-            + capped.diagnostics.coe_melt_dmelt_m;
+        let capped_diagnostics = capped.diagnostics.expect("verbose melt diagnostics");
+        assert!(capped_diagnostics.coe_melt_cap_adjustment_m < 0.0);
+        let component_sum = capped_diagnostics.coe_melt_amelt_m
+            + capped_diagnostics.coe_melt_bmelt_m
+            + capped_diagnostics.coe_melt_cmelt_m
+            + capped_diagnostics.coe_melt_dmelt_m;
         assert!(
-            (capped.diagnostics.coe_melt_applied_m
+            (capped_diagnostics.coe_melt_applied_m
                 - component_sum
-                - capped.diagnostics.coe_melt_cap_adjustment_m)
+                - capped_diagnostics.coe_melt_cap_adjustment_m)
                 .abs()
                 <= 1.0e-12
         );
@@ -137,6 +141,13 @@ struct ActiveSnowPackState {
     snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct ActiveSnowHourPolicy {
+    daily_mean_temp_c: f64,
+    capacity_drainage_opt_in: bool,
+    capture: DirectSnowDiagnosticCapture,
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 #[allow(clippy::struct_field_names)]
 struct ActiveSnowHourlyFluxes {
@@ -147,7 +158,7 @@ struct ActiveSnowHourlyFluxes {
     sublimation_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
-    melt_diagnostics: DirectSnowMeltHourDiagnostics,
+    melt_diagnostics: Option<DirectSnowMeltHourDiagnostics>,
 }
 
 impl ActiveSnowHourlyFluxes {
@@ -546,6 +557,7 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    #[cfg(test)]
     pub(crate) fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
         cancov: f64,
@@ -558,6 +570,37 @@ impl Wb11HydrologyKernel {
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
         shortwave_absorbed_fraction: f64,
+    ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
+        Self::compute_simimpl29_melt_hour_with_capture(
+            phase_class,
+            cancov,
+            hrad_mj_m2,
+            cloud_fraction,
+            hrtemp_c,
+            tdpt_c,
+            vwind_m_s,
+            hrrain_m,
+            snow_depth_m,
+            snow_density_kg_m3,
+            shortwave_absorbed_fraction,
+            DirectSnowDiagnosticCapture::Verbose,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn compute_simimpl29_melt_hour_with_capture(
+        phase_class: HillslopeKernelPhaseClass,
+        cancov: f64,
+        hrad_mj_m2: f64,
+        cloud_fraction: f64,
+        hrtemp_c: f64,
+        tdpt_c: f64,
+        vwind_m_s: f64,
+        hrrain_m: f64,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+        shortwave_absorbed_fraction: f64,
+        capture: DirectSnowDiagnosticCapture,
     ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
         Self::validate_simimpl29_melt_inputs(
             phase_class,
@@ -574,7 +617,9 @@ impl Wb11HydrologyKernel {
         if snow_depth_m <= WB11_ZERO_THRESHOLD || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD {
             return Ok(SnowMeltComputation {
                 wmelt_m: 0.0,
-                diagnostics: DirectSnowMeltHourDiagnostics::default(),
+                diagnostics: capture
+                    .is_verbose()
+                    .then(DirectSnowMeltHourDiagnostics::default),
             });
         }
 
@@ -632,21 +677,13 @@ impl Wb11HydrologyKernel {
                 &error,
             )
         })?;
-        let diagnostics = DirectSnowMeltHourDiagnostics {
-            coe_melt_amelt_m: amelt_m,
-            coe_melt_bmelt_m: bmelt_m,
-            coe_melt_cmelt_m: cmelt_m,
-            coe_melt_dmelt_m: dmelt_m,
-            coe_melt_uncapped_m: wmelt_m,
-            coe_melt_cap_adjustment_m: 0.0,
-            coe_melt_applied_m: wmelt_m,
-        };
         Self::cap_simimpl29_melt_to_snowpack(
             phase_class,
             wmelt_m,
             snow_depth_m,
             snow_density_kg_m3,
-            diagnostics,
+            [amelt_m, bmelt_m, cmelt_m, dmelt_m],
+            capture,
         )
     }
 
@@ -803,7 +840,8 @@ impl Wb11HydrologyKernel {
         mut wmelt_m: f64,
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
-        mut diagnostics: DirectSnowMeltHourDiagnostics,
+        components_m: [f64; 4],
+        capture: DirectSnowDiagnosticCapture,
     ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
         if !wmelt_m.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -814,6 +852,7 @@ impl Wb11HydrologyKernel {
                 maximum: Some(snow_depth_m),
             });
         }
+        let uncapped_m = wmelt_m;
         if wmelt_m >= 0.0 {
             let melt_depth_at_snow_density =
                 openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
@@ -862,23 +901,33 @@ impl Wb11HydrologyKernel {
             None,
             Some(maximum_melt_m),
         )?;
-        diagnostics.coe_melt_cap_adjustment_m = wmelt_m - diagnostics.coe_melt_uncapped_m;
-        diagnostics.coe_melt_applied_m = wmelt_m;
-        Self::validate_coe_melt_diagnostic_closure(phase_class, diagnostics)?;
+        let cap_adjustment_m = wmelt_m - uncapped_m;
+        Self::validate_coe_melt_component_closure(
+            phase_class,
+            components_m,
+            cap_adjustment_m,
+            wmelt_m,
+        )?;
+        let diagnostics = capture.is_verbose().then(|| DirectSnowMeltHourDiagnostics {
+            coe_melt_amelt_m: components_m[0],
+            coe_melt_bmelt_m: components_m[1],
+            coe_melt_cmelt_m: components_m[2],
+            coe_melt_dmelt_m: components_m[3],
+            coe_melt_uncapped_m: uncapped_m,
+            coe_melt_cap_adjustment_m: cap_adjustment_m,
+            coe_melt_applied_m: wmelt_m,
+        });
         Ok(SnowMeltComputation { wmelt_m, diagnostics })
     }
 
-    fn validate_coe_melt_diagnostic_closure(
+    fn validate_coe_melt_component_closure(
         phase_class: HillslopeKernelPhaseClass,
-        diagnostics: DirectSnowMeltHourDiagnostics,
+        components_m: [f64; 4],
+        cap_adjustment_m: f64,
+        applied_m: f64,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        let component_sum_m = diagnostics.coe_melt_amelt_m
-            + diagnostics.coe_melt_bmelt_m
-            + diagnostics.coe_melt_cmelt_m
-            + diagnostics.coe_melt_dmelt_m;
-        let residual_m = diagnostics.coe_melt_applied_m
-            - component_sum_m
-            - diagnostics.coe_melt_cap_adjustment_m;
+        let component_sum_m = components_m.iter().sum::<f64>();
+        let residual_m = applied_m - component_sum_m - cap_adjustment_m;
         Self::require_direct_typed_snow_value_with(
             phase_class,
             || BoundarySymbol::from("snow.hourly.coe_melt_component_closure_residual_m"),
@@ -888,9 +937,28 @@ impl Wb11HydrologyKernel {
         )
     }
 
+    #[cfg(test)]
+    fn validate_coe_melt_diagnostic_closure(
+        phase_class: HillslopeKernelPhaseClass,
+        diagnostics: DirectSnowMeltHourDiagnostics,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::validate_coe_melt_component_closure(
+            phase_class,
+            [
+                diagnostics.coe_melt_amelt_m,
+                diagnostics.coe_melt_bmelt_m,
+                diagnostics.coe_melt_cmelt_m,
+                diagnostics.coe_melt_dmelt_m,
+            ],
+            diagnostics.coe_melt_cap_adjustment_m,
+            diagnostics.coe_melt_applied_m,
+        )
+    }
+
     pub(crate) fn compute_active_snow_coupling_from_typed(
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
+        capture: DirectSnowDiagnosticCapture,
     ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
         Self::validate_active_snow_coupling_inputs(phase_class, inputs)?;
         let boundary = Self::resolve_active_snow_boundary_state(phase_class, inputs)?;
@@ -907,6 +975,11 @@ impl Wb11HydrologyKernel {
             snow_albedo_state_after: inputs.snow_albedo_state,
         };
         let daily_mean_temp = f64::midpoint(inputs.tmax_c, inputs.tmin_c);
+        let hour_policy = ActiveSnowHourPolicy {
+            daily_mean_temp_c: daily_mean_temp,
+            capacity_drainage_opt_in,
+            capture,
+        };
         let mut totals = ActiveSnowDailyTotals::default();
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
@@ -915,8 +988,7 @@ impl Wb11HydrologyKernel {
                 phase_class,
                 inputs,
                 hour,
-                daily_mean_temp,
-                capacity_drainage_opt_in,
+                hour_policy,
                 &mut state,
             )?;
             totals.add_fluxes(inputs.hourly[hour - 1].snowfall_m, fluxes);
@@ -930,6 +1002,7 @@ impl Wb11HydrologyKernel {
             state,
             totals,
             hourly_state,
+            capture,
         )
     }
 
@@ -1129,8 +1202,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         hour: usize,
-        daily_mean_temp: f64,
-        capacity_drainage_opt_in: bool,
+        policy: ActiveSnowHourPolicy,
         state: &mut ActiveSnowPackState,
     ) -> Result<(SnowHourlyState, ActiveSnowHourlyFluxes), Wb11HydrologyKernelGuardError> {
         let hourly = inputs.hourly[hour - 1];
@@ -1142,13 +1214,18 @@ impl Wb11HydrologyKernel {
         Self::advance_active_snow_settle_clock(state, hour, hourly.snowfall_m);
         let state_before = *state;
         let depth_before_m = state_before.depth_m.max(0.0);
-        let mut fluxes = ActiveSnowHourlyFluxes::default();
+        let mut fluxes = ActiveSnowHourlyFluxes {
+            melt_diagnostics: policy
+                .capture
+                .is_verbose()
+                .then(DirectSnowMeltHourDiagnostics::default),
+            ..ActiveSnowHourlyFluxes::default()
+        };
         let albedo_updated_this_hour = Self::advance_active_snowpack_for_hour(
             phase_class,
             inputs,
             hourly,
-            daily_mean_temp,
-            capacity_drainage_opt_in,
+            policy,
             state,
             &mut fluxes,
         )?;
@@ -1165,7 +1242,7 @@ impl Wb11HydrologyKernel {
             phase_class,
             inputs,
             hourly,
-            capacity_drainage_opt_in,
+            policy.capacity_drainage_opt_in,
             state,
             &mut fluxes,
         )?;
@@ -1316,8 +1393,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         hourly: DirectSnowHourlyForcing,
-        daily_mean_temp: f64,
-        capacity_drainage_opt_in: bool,
+        policy: ActiveSnowHourPolicy,
         state: &mut ActiveSnowPackState,
         fluxes: &mut ActiveSnowHourlyFluxes,
     ) -> Result<bool, Wb11HydrologyKernelGuardError> {
@@ -1325,7 +1401,7 @@ impl Wb11HydrologyKernel {
             Self::reset_or_start_snowpack_from_hourly_snow(state, hourly.snowfall_m, inputs);
             return Ok(false);
         }
-        if daily_mean_temp < 0.0 {
+        if policy.daily_mean_temp_c < 0.0 {
             Self::advance_cold_snowpack_density(state, hourly.snowfall_m, inputs);
             return Ok(false);
         }
@@ -1336,7 +1412,8 @@ impl Wb11HydrologyKernel {
                 phase_class,
                 inputs,
                 hourly,
-                capacity_drainage_opt_in,
+                policy.capacity_drainage_opt_in,
+                policy.capture,
                 state,
                 fluxes,
             )?;
@@ -1416,6 +1493,7 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         hourly: DirectSnowHourlyForcing,
         capacity_drainage_opt_in: bool,
+        capture: DirectSnowDiagnosticCapture,
         state: &mut ActiveSnowPackState,
         fluxes: &mut ActiveSnowHourlyFluxes,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
@@ -1434,7 +1512,7 @@ impl Wb11HydrologyKernel {
         )?;
         let shortwave_absorbed_fraction =
             Self::active_snow_shortwave_absorbed_fraction(phase_class, inputs, state)?;
-        let melt = Self::compute_simimpl29_melt_hour(
+        let melt = Self::compute_simimpl29_melt_hour_with_capture(
             phase_class,
             inputs.canopy_cover_fraction,
             hourly.radiation_mj_m2,
@@ -1446,6 +1524,7 @@ impl Wb11HydrologyKernel {
             state.depth_m,
             state.density_kg_m3,
             shortwave_absorbed_fraction,
+            capture,
         )?;
         let wmelt = melt.wmelt_m;
         fluxes.melt_raw_m = wmelt;
@@ -1880,6 +1959,7 @@ impl Wb11HydrologyKernel {
         mut state: ActiveSnowPackState,
         totals: ActiveSnowDailyTotals,
         mut hourly_state: Vec<SnowHourlyState>,
+        capture: DirectSnowDiagnosticCapture,
     ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
         let mut final_liquid_holding_capacity_m = totals.final_liquid_holding_capacity_m;
         let mut liquid_water_retained_m = state.liquid_water_retained_m;
@@ -1938,9 +2018,23 @@ impl Wb11HydrologyKernel {
             &hourly_state,
             routed_melt_total_m,
         )?;
-        let hourly_melt_diagnostics =
-            std::array::from_fn(|index| hourly_state[index].melt_diagnostics);
-        let hourly_trace = Self::active_snow_hourly_trace(&hourly_state);
+        let verbose_diagnostics = if capture.is_verbose() {
+            let mut hourly_melt = [DirectSnowMeltHourDiagnostics::default(); 24];
+            for (index, state) in hourly_state.iter().enumerate() {
+                hourly_melt[index] = state.melt_diagnostics.ok_or_else(|| {
+                    Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                        phase_class,
+                        symbol: BoundarySymbol::from("snow.verbose_hourly_melt_diagnostics"),
+                    }
+                })?;
+            }
+            Some(Box::new(SnowCouplingVerboseDiagnostics {
+                hourly_melt,
+                hourly_trace: Self::active_snow_hourly_trace(&hourly_state),
+            }))
+        } else {
+            None
+        };
 
         Ok(SnowCouplingOutcome {
             signed_s,
@@ -1954,8 +2048,7 @@ impl Wb11HydrologyKernel {
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             hourly_routed_melt,
-            hourly_melt_diagnostics,
-            hourly_trace,
+            verbose_diagnostics,
             snowpack_state_loss: bounded_state_loss_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: state.depth_m,
@@ -2301,10 +2394,10 @@ mod tests {
             sublimation_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
-            melt_diagnostics: DirectSnowMeltHourDiagnostics {
+            melt_diagnostics: Some(DirectSnowMeltHourDiagnostics {
                 coe_melt_applied_m: melt_m,
                 ..DirectSnowMeltHourDiagnostics::default()
-            },
+            }),
             pack_depth_before_m: 0.0,
             pack_depth_after_m: 0.0,
             pack_density_before_kg_m3: 0.0,

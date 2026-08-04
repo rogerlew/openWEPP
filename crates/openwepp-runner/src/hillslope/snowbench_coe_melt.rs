@@ -740,27 +740,31 @@ fn simulate_coe_melt(
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,
             hourly: day.hourly,
         };
-        let partition =
-            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-                .map_err(|source| SnowbenchError::SnowKernel { source })?;
+        let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+            &inputs,
+            openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Disabled,
+        )
+        .map_err(|source| SnowbenchError::SnowKernel { source })?;
+        let solid_to_liquid = partition.solid_to_liquid_ledger();
         let snowpack_swe_balance_residual_m =
             snow_water_before_m + day.snow_input_m + partition.rain_retained_m
-                - partition.snowpack_swe_loss_m
+                - solid_to_liquid.snowpack_swe_loss_m
                 - partition.sublimation_m
                 - partition.runtime_swe_after_m;
         require_coe_melt_swe_closure(&day.date, snowpack_swe_balance_residual_m)?;
-        let routed_state_loss_residual_m =
-            partition.routed_melt_m - partition.rain_released_m - partition.snowpack_swe_loss_m;
+        let routed_state_loss_residual_m = solid_to_liquid.liquid_handoff_m
+            - solid_to_liquid.rain_released_m
+            - solid_to_liquid.snowpack_swe_loss_m;
         let state_loss_available_storage_margin_m =
             snow_water_before_m + day.snow_input_m + day.rain_m
-                - partition.snowpack_swe_loss_m
+                - solid_to_liquid.snowpack_swe_loss_m
                 - partition.sublimation_m;
         ledger.total_snow_input_m += day.snow_input_m;
         ledger.total_rain_input_m += day.rain_m;
-        ledger.total_raw_melt_m += partition.raw_melt_m;
-        ledger.total_redistributed_melt_m += partition.redistributed_melt_m;
-        ledger.total_routed_melt_m += partition.routed_melt_m;
-        ledger.total_swe_loss_m += partition.snowpack_swe_loss_m;
+        ledger.total_raw_melt_m += solid_to_liquid.raw_signed_melt_m;
+        ledger.total_redistributed_melt_m += solid_to_liquid.redistributed_positive_melt_m;
+        ledger.total_routed_melt_m += solid_to_liquid.liquid_handoff_m;
+        ledger.total_swe_loss_m += solid_to_liquid.snowpack_swe_loss_m;
         ledger.total_sublimation_m += partition.sublimation_m;
         ledger.total_liquid_water_released_m += partition.liquid_water_released_m;
         ledger.positive_snow_hours += day
@@ -780,17 +784,17 @@ fn simulate_coe_melt(
             snow_input_m: day.snow_input_m,
             rain_input_m: day.rain_m,
             rain_retained_m: partition.rain_retained_m,
-            rain_released_m: partition.rain_released_m,
+            rain_released_m: solid_to_liquid.rain_released_m,
             liquid_holding_capacity_m: partition.liquid_holding_capacity_after_m,
             liquid_water_retained_m: partition.liquid_water_retained_after_m,
             liquid_water_released_m: partition.liquid_water_released_m,
             snow_water_m: runtime_swe_m,
             snow_depth_m: runtime_depth_m,
             snow_density_kg_m3: runtime_density_kg_m3,
-            raw_melt_m: partition.raw_melt_m,
-            redistributed_melt_m: partition.redistributed_melt_m,
-            routed_melt_m: partition.routed_melt_m,
-            snowpack_swe_loss_m: partition.snowpack_swe_loss_m,
+            raw_melt_m: solid_to_liquid.raw_signed_melt_m,
+            redistributed_melt_m: solid_to_liquid.redistributed_positive_melt_m,
+            routed_melt_m: solid_to_liquid.liquid_handoff_m,
+            snowpack_swe_loss_m: solid_to_liquid.snowpack_swe_loss_m,
             sublimation_m: partition.sublimation_m,
             snowpack_swe_balance_residual_m,
             routed_state_loss_residual_m,

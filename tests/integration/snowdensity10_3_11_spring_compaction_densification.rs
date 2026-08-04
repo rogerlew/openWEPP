@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 123",
+        "contract_version: 124",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",
@@ -68,15 +68,27 @@ fn runtime_candidate_preserves_swe_and_density_cap() {
         spring.snow_density_model,
         SnowDensityModel::PhysicsBulkSpringDensificationV1
     );
-    assert_close(spring.raw_melt_m, density_baseline.raw_melt_m);
     assert_close(
-        spring.redistributed_melt_m,
-        density_baseline.redistributed_melt_m,
+        spring.solid_to_liquid_ledger().raw_signed_melt_m,
+        density_baseline.solid_to_liquid_ledger().raw_signed_melt_m,
     );
-    assert_close(spring.routed_melt_m, density_baseline.routed_melt_m);
     assert_close(
-        spring.snowpack_swe_loss_m,
-        density_baseline.snowpack_swe_loss_m,
+        spring
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m,
+        density_baseline
+            .solid_to_liquid_ledger()
+            .redistributed_positive_melt_m,
+    );
+    assert_close(
+        spring.solid_to_liquid_ledger().liquid_handoff_m,
+        density_baseline.solid_to_liquid_ledger().liquid_handoff_m,
+    );
+    assert_close(
+        spring.solid_to_liquid_ledger().snowpack_swe_loss_m,
+        density_baseline
+            .solid_to_liquid_ledger()
+            .snowpack_swe_loss_m,
     );
     assert_close(
         spring.runtime_swe_after_m,

@@ -1,7 +1,7 @@
 # Prompts
 
-Status: `queued`
+Status: `complete / kickoff archived`
 
-The active kickoff prompt authorizes end-to-end execution. Archive it unchanged
-after execution begins and keep only README placeholders in `active/` at
-closure.
+The dated kickoff prompt authorized end-to-end execution and was archived
+byte-identically when execution began. Only the README placeholder remains in
+`active/`.

@@ -519,7 +519,10 @@ impl DirectDayFrame {
         )?;
         validate_nonnegative_direct_m(
             "snow_coupling.routed_melt_m",
-            self.snow_coupling_inputs.routed_melt_m,
+            self.snow_coupling_inputs
+                .mass_transition_ledgers
+                .solid_to_liquid()
+                .liquid_handoff_m,
         )?;
         validate_nonnegative_direct_m(
             "snow_coupling.post_winter_rain_m",
@@ -530,7 +533,12 @@ impl DirectDayFrame {
             self.storage_reconciliation_inputs.precip_input_m,
         )?;
         if self.snow_coupling_inputs.active_snow_coupling
-            && self.snow_coupling_inputs.routed_melt_m > WB11_ZERO_THRESHOLD
+            && self
+                .snow_coupling_inputs
+                .mass_transition_ledgers
+                .solid_to_liquid()
+                .liquid_handoff_m
+                > WB11_ZERO_THRESHOLD
             && self.snow_coupling_inputs.post_winter_rain_m <= WB11_ZERO_THRESHOLD
             && self.storage_reconciliation_inputs.precip_input_m <= WB11_ZERO_THRESHOLD
         {
@@ -1103,7 +1111,12 @@ impl DirectDayFrame {
 
     fn r4a_has_material_winter_local_liquid_context(&self) -> Result<bool, DirectRuntimeError> {
         if self.snow_coupling_inputs.active_snow_coupling
-            && self.snow_coupling_inputs.routed_melt_m > WB11_ZERO_THRESHOLD
+            && self
+                .snow_coupling_inputs
+                .mass_transition_ledgers
+                .solid_to_liquid()
+                .liquid_handoff_m
+                > WB11_ZERO_THRESHOLD
             && self.snow_coupling_inputs.post_winter_rain_m <= WB11_ZERO_THRESHOLD
             && self.storage_reconciliation_inputs.precip_input_m <= WB11_ZERO_THRESHOLD
         {

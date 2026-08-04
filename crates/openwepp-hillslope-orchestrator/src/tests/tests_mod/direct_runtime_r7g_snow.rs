@@ -2,7 +2,9 @@ use super::direct_runtime_test_lock;
 use crate::{
     DirectDayFrame, DirectExecutorMode, DirectFrameExecutor, DirectLaneConstructorInputs,
     DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity, DirectSnowCouplingInputs,
-    DirectSnowLaneState, DirectSnowRuntimeCarry, reset_direct_runtime_audit_counters,
+    DirectSnowLaneState, DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
+    DirectSnowRuntimeCarry, DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome,
+    reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -101,7 +103,18 @@ fn r7g_r4g_snow_coupling_mutates_winter_column_snow_state() {
         snow_coupling_handoff_m: 0.015_625,
         snow_state_projected: true,
         active_snow_coupling: true,
-        routed_melt_m: 0.003_906_25,
+        mass_transition_ledgers: Box::new(
+            DirectSnowMassTransitionLedgers::try_from_parts(
+                DirectSnowSolidToLiquidLedger {
+                    snowpack_swe_loss_m: 0.003_906_25,
+                    liquid_handoff_m: 0.003_906_25,
+                    ..DirectSnowSolidToLiquidLedger::default()
+                },
+                DirectSnowLiquidDispositionLedger::default(),
+                DirectSnowStage3Outcome::default(),
+            )
+            .expect("valid disabled Stage-3 mass transition"),
+        ),
         hourly_routed_melt_m: {
             let mut hourly = [0.0; 24];
             hourly[0] = 0.003_906_25;
@@ -144,7 +157,7 @@ fn r7g_executor_commits_r4g_winter_column_snow_state_to_lane() {
         snow_coupling_handoff_m: 0.0,
         snow_state_projected: true,
         active_snow_coupling: false,
-        routed_melt_m: 0.0,
+        mass_transition_ledgers: Box::new(DirectSnowMassTransitionLedgers::zero()),
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.046_875,
         runtime_depth_after_m: 0.1875,

@@ -9,10 +9,11 @@ use crate::{
     DirectFrostThermalInputs, DirectHydrologyProjectionInputs, DirectLaneConstructorInputs,
     DirectPercolationInputs, DirectPublicationCalendarDay, DirectPublicationDayInput,
     DirectPublicationRunMetadata, DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-    DirectSnowCouplingInputs, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
-    DirectSubsurfaceLayerState, DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
-    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome, Wb11HydrologyKernel,
-    reset_direct_runtime_audit_counters,
+    DirectSnowCouplingInputs, DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
+    DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs, DirectWinterFrostComputeInputs,
+    DirectWinterFrostPartitionOutcome, Wb11HydrologyKernel, reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -601,7 +602,18 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
         snow_coupling_handoff_m: liquid_input_m,
         snow_state_projected: true,
         active_snow_coupling: true,
-        routed_melt_m: liquid_input_m,
+        mass_transition_ledgers: Box::new(
+            DirectSnowMassTransitionLedgers::try_from_parts(
+                DirectSnowSolidToLiquidLedger {
+                    snowpack_swe_loss_m: liquid_input_m,
+                    liquid_handoff_m: liquid_input_m,
+                    ..DirectSnowSolidToLiquidLedger::default()
+                },
+                DirectSnowLiquidDispositionLedger::default(),
+                DirectSnowStage3Outcome::default(),
+            )
+            .expect("valid disabled Stage-3 mass transition"),
+        ),
         hourly_routed_melt_m: {
             let mut hourly = [0.0; 24];
             hourly[0] = liquid_input_m;
@@ -730,7 +742,18 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
         snow_coupling_handoff_m: routed_melt_m,
         snow_state_projected: true,
         active_snow_coupling: true,
-        routed_melt_m,
+        mass_transition_ledgers: Box::new(
+            DirectSnowMassTransitionLedgers::try_from_parts(
+                DirectSnowSolidToLiquidLedger {
+                    snowpack_swe_loss_m: routed_melt_m,
+                    liquid_handoff_m: routed_melt_m,
+                    ..DirectSnowSolidToLiquidLedger::default()
+                },
+                DirectSnowLiquidDispositionLedger::default(),
+                DirectSnowStage3Outcome::default(),
+            )
+            .expect("valid disabled Stage-3 mass transition"),
+        ),
         hourly_routed_melt_m: {
             let mut hourly = [0.0; 24];
             hourly[0] = routed_melt_m;

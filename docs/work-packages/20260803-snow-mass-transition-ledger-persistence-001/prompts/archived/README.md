@@ -1,5 +1,6 @@
 # Archived Prompts
 
-Status: `empty / queued`
+Status: `retained / execution complete`
 
-Move the active kickoff prompt here unchanged when execution begins.
+The dated kickoff prompt is retained here byte-identically as the execution
+authority.

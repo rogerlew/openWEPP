@@ -276,6 +276,7 @@ pub enum DirectRuntimeError {
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
+    SnowMassTransitionLedger(DirectSnowMassTransitionLedgerError),
     DirectDayExecutionFailure {
         lane_index: usize,
         day_index: usize,
@@ -373,6 +374,7 @@ impl DirectRuntimeError {
             }
             Self::PublicationSinkFailure { detail } => Guard::SinkFailure(detail.as_str()).into(),
             Self::DirectClosureToleranceExceeded { field } => Guard::ClosureTolerance(field).into(),
+            Self::SnowMassTransitionLedger(source) => Guard::SnowMassTransitionLedger(source).into(),
             Self::DirectDayExecutionFailure {
                 lane_index,
                 day_index,
@@ -573,6 +575,7 @@ enum DirectRuntimeGuardDisplay<'a> {
     DayInputBuildFailure(&'a str),
     SinkFailure(&'a str),
     ClosureTolerance(&'static str),
+    SnowMassTransitionLedger(&'a DirectSnowMassTransitionLedgerError),
     DayExecutionFailure {
         lane_index: usize,
         day_index: usize,
@@ -625,6 +628,9 @@ impl fmt::Display for DirectRuntimeGuardDisplay<'_> {
                     "direct runtime field {field} exceeds declared closure tolerance"
                 )
             }
+            Self::SnowMassTransitionLedger(source) => {
+                write!(formatter, "direct runtime snow mass-transition ledger validation failed: {source}")
+            }
             Self::DayExecutionFailure {
                 lane_index,
                 day_index,
@@ -641,7 +647,14 @@ impl fmt::Display for DirectRuntimeGuardDisplay<'_> {
     }
 }
 
-impl Error for DirectRuntimeError {}
+impl Error for DirectRuntimeError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::SnowMassTransitionLedger(source) => Some(source),
+            _ => None,
+        }
+    }
+}
 
 fn validate_finite(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
     if value.is_finite() {
@@ -749,10 +762,25 @@ fn sum_finite_direct_m(field: &'static str, values: &[f64]) -> Result<f64, Direc
 
 #[cfg(test)]
 mod cqr_direct_runtime_error_display_tests {
-    use super::{DirectRuntimeAuditCounters, DirectRuntimeError};
+    use super::{
+        DirectRuntimeAuditCounters, DirectRuntimeError, DirectSnowMassTransitionLedgerError,
+    };
 
     fn assert_display(error: &DirectRuntimeError, expected: &str) {
         assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn snow_mass_transition_error_remains_a_typed_direct_runtime_source() {
+        let source = DirectSnowMassTransitionLedgerError::Negative {
+            field: "snowpack_swe_loss_m",
+        };
+        let error = DirectRuntimeError::SnowMassTransitionLedger(source);
+        assert!(error.to_string().contains("snowpack_swe_loss_m"));
+        assert_eq!(
+            std::error::Error::source(&error).map(ToString::to_string),
+            Some(source.to_string())
+        );
     }
 
     #[test]

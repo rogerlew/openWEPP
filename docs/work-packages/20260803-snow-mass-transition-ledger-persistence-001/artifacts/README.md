@@ -1,10 +1,10 @@
 # Artifacts
 
-Status: `queued`
+Status: `COMPLETE / review and verification PASS`
 
-Evidence mode: `Static scaffold; no production execution`
+Evidence mode: `Static + Ran`
 
-This directory will record baseline provenance, field ownership, linked operand
+This directory records baseline provenance, field ownership, linked operand
 lineage, contract-first implementation, real-consumer compatibility,
 performance/storage evidence, direct gates, independent reviews, terminal
 verifications, handoff, and final disposition.
@@ -30,3 +30,9 @@ Required closure artifacts:
 - `review-agent-a.md`, `review-agent-b.md`, and `review-disposition.md`
 - `verification-agent-a.md` and `verification-agent-b.md`
 - `gate-results.md`, `worker-handoff.md`, and `disposition.md`
+
+Scaffold/candidate release evidence and raw gate logs live under
+`target/snow_mass_transition_ledger_persistence/`. Source, contract,
+compatibility, performance, focused gates, dual review, quick, frost, Critical
+full, doctests, and dual fresh terminal verification pass. No closure gate is
+deferred.

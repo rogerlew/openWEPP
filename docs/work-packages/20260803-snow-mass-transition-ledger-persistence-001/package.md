@@ -1,6 +1,6 @@
 # SNOW-MASS-TRANSITION-LEDGER-PERSISTENCE
 
-Status: `queued / scaffolded / not executed`
+Status: `COMPLETE / review and verification PASS`
 
 Date: `2026-08-03`
 
@@ -149,6 +149,8 @@ two boundaries or introduce dual mass authority.
   `adopt-report-source` transaction if the contract edit invalidates the
   declared report dependency;
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs`,
+  limited to review-required typed ledger-error preservation;
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs`
@@ -157,18 +159,34 @@ two boundaries or introduce dual mass authority.
   `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/`
   for ledger/capture types and exact projections;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`,
+  limited to boxing the already-optional snow shadow record for the retained
+  live-frame type-size ceiling;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/04_audit_error_helpers.rs`,
+  limited to review-required typed ledger-error preservation;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`
 - `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r3_r4.rs`
 - `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r4pqz.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r7g_frost.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r7g_snow.rs`,
+  limited to mechanical construction of the replacement typed ledgers;
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00f_snow_accumulation_melt_trace.rs`
+- `crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs`, limited to
+  migrating the existing diagnostic consumer to the authoritative upstream
+  ledger fields;
 - at most one new bounded runner include under
   `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/`
   for trace-request or formatting ownership;
-- `tests/integration/*.rs`, limited to new ledger/capture/consumer contracts and
-  mechanical `SC-SNOWFREEZE-001` version-pin reconciliation;
+- `tests/integration/*.rs`, limited to new ledger/capture/consumer contracts,
+  mechanical migration of existing typed snow-result assertions, and
+  `SC-SNOWFREEZE-001` version-pin reconciliation;
+- `Cargo.toml`, limited to registering the new integration-test target;
 - `target/snow_mass_transition_ledger_persistence/`.
 
 Everything else is protected. Fixture, observation, retained campaign result,
@@ -412,7 +430,29 @@ selector and must preserve empty/absent equivalence.
   direct-runtime handoffs, and opt-in JSONL writer before freezing scope.
 - [x] (2026-08-03) Prepared this exact scaffold as its own local commit before
   contract or production edits.
-- [ ] Execute Phases A-E end-to-end.
+- [x] (2026-08-03) Archived the kickoff prompt unchanged, retained the exact
+  scaffold binary, hashed the frozen fixture, and completed trace-enabled plus
+  seven-sample trace-disabled baseline capture.
+- [x] (2026-08-03) Froze field/API ownership, the one-authority architecture,
+  both compact-ledger identities, the exact linked handoff, and rejected
+  aliases before production edits.
+- [x] (2026-08-03) Amended `SC-SNOWFREEZE-001` to v124, reconciled all version
+  pins, registered the contract test, and retained the exact `1 PASS / 2 RED`
+  pre-implementation gate with no production Rust diff.
+- [x] (2026-08-03) Implemented one authoritative calculation with two linked
+  compact ledgers, a compact Stage-3 outcome, and typed runner-selected verbose
+  capture; migrated every repository-owned consumer.
+- [x] (2026-08-03) Built the candidate release binary and passed exact
+  schema-v4/WAT/HBP compatibility, independent two-ledger reconstruction,
+  seven-sample runtime/RSS bounds, focused science tests, runner tests, and
+  assurance source adoption.
+- [x] (2026-08-03) Completed dual independent review and remediated every
+  accepted finding without deferral; exact-current quick `2172/2172`, frost
+  `352/352`, Critical full `2221/2221`, and workspace doctests pass.
+- [x] (2026-08-03) Completed dual fresh terminal verification with no open
+  findings, reconciled catalogs and the exact `103`-path manifest, and prepared
+  the local completion commit.
+- [x] (2026-08-03) Executed Phases A-E end-to-end.
 
 ## Surprises & Discoveries
 
@@ -422,6 +462,16 @@ selector and must preserve empty/absent equivalence.
 - `DirectSnowStage3Diagnostics` currently mixes production-required handoff
   state and optional research observations, so simply wrapping the whole value
   in `Option` would risk disabling real production behavior.
+- Root integration tests are explicitly registered in `Cargo.toml`; the first
+  focused RED command correctly reported the unregistered new target. The
+  pre-production write set was amended to permit only that mechanical target
+  registration.
+- The Snowbench CoE-melt diagnostic was an additional upstream-scalar consumer
+  not named in the scaffold inventory. It migrated mechanically to the same
+  ledger and was added to the declared write set before editing.
+- Loss JSON embeds the deliberately different harness run name. Every modeled
+  value is identical after removing that single provenance field; schema-v4,
+  WAT, and HBP/PASS are byte-identical without normalization.
 
 ## Decision Log
 
@@ -441,8 +491,37 @@ selector and must preserve empty/absent equivalence.
   Rationale: the package should not exchange eager stack copies for hidden heap
   churn or claim an optimization without comparable baseline evidence.
   Date/Author: 2026-08-03 / Codex.
+- Decision: retain the original public compute entry as the explicit verbose
+  compatibility route and use a new capture-aware method only from production
+  runner orchestration.
+  Rationale: repository tests keep stable diagnostic behavior while normal
+  production stops carrying the large payload; the crate is unpublished and
+  all field consumers migrate atomically.
+  Date/Author: 2026-08-03 / Codex.
+- Decision: extend the write set through both typed guard/error seams, box the
+  durable bundle only at the large constructor-input boundary, and box the
+  already-optional snow shadow record in the live frame.
+  Rationale: independent review found that generic remapping erased ledger
+  failure categories and that the inline bundle violated the pre-existing
+  constructor type-size ceiling. Typed source variants preserve the exact
+  cause. The constructor-boundary box and optional-shadow box restore both
+  retained layout ceilings while keeping compact ledgers unconditionally
+  available and leaving production state/consumer carriers inline.
+  Date/Author: 2026-08-03 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. No contract, production, test, fixture, output, or assurance mutation
-has occurred in this scaffold.
+Implementation, direct evidence, dual review, exact-current heavy profiles,
+and dual fresh terminal verification are complete. One authoritative snow
+calculation now carries two exact linked compact ledgers across the durable
+runtime boundary, while verbose hourly diagnostics are constructed only for
+the existing trace opt-in. Schema-v4, WAT, HBP/PASS, physics, fixtures,
+coefficients, selectors, defaults, and modeled outputs are unchanged.
+
+The frozen Snowbird comparison passed both closure reconstructions, all named
+anti-alias separations, byte compatibility, and the 5% runtime/RSS bounds.
+This closes durable accounting architecture only; it does not promote or
+correct pre-peak liquid physics. Remaining debt is explicit: the benchmark is
+single-fixture, the two guarded carrier ceilings retain 48 bytes of headroom,
+two cohesive WARN hosts grew, and the pre-implementation RED result lacks a
+raw transcript.

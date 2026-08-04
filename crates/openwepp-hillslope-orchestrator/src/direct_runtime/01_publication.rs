@@ -528,8 +528,12 @@ fn direct_publication_water_temperature_operands(
     let meltwater_temperature_c = day_frame
         .snow_coupling_shadow_projection
         .as_ref()
-        .and_then(|projection| projection.stage3_diagnostics.as_deref())
-        .and_then(|diagnostics| diagnostics.meltwater_temperature_c)
+        .and_then(|projection| {
+            projection
+                .mass_transition_ledgers
+                .stage3_outcome()
+                .meltwater_temperature_c
+        })
         .map(openwepp_unit_boundary::TemperatureCelsius::as_celsius);
     if let Some(value) = meltwater_temperature_c {
         validate_finite(
@@ -929,21 +933,40 @@ mod cqr_publication_tests {
         );
     }
 
-    fn snow_projection_with_temperature(value_c: f64) -> DirectSnowCouplingShadowProjection {
-        let mut diagnostics = DirectSnowStage3Diagnostics::disabled();
-        diagnostics.meltwater_temperature_c = Some(
+    fn snow_ledgers_with_temperature(
+        value_c: f64,
+    ) -> Result<DirectSnowMassTransitionLedgers, DirectSnowMassTransitionLedgerError> {
+        let stage3_outcome = DirectSnowStage3Outcome {
+            enabled: true,
+            meltwater_temperature_c: Some(
             openwepp_unit_boundary::TemperatureCelsius::try_new(value_c)
                 .expect("finite snow temperature"),
-        );
+            ),
+            sublimation_m: 0.0,
+        };
+        DirectSnowMassTransitionLedgers::try_from_parts(
+            DirectSnowSolidToLiquidLedger {
+                snowpack_swe_loss_m: 0.01,
+                liquid_handoff_m: 0.01,
+                ..DirectSnowSolidToLiquidLedger::default()
+            },
+            DirectSnowLiquidDispositionLedger {
+                incoming_liquid_m: 0.01,
+                routed_liquid_m: 0.01,
+                ..DirectSnowLiquidDispositionLedger::default()
+            },
+            stage3_outcome,
+        )
+    }
+
+    fn snow_projection_with_temperature(value_c: f64) -> DirectSnowCouplingShadowProjection {
         DirectSnowCouplingShadowProjection {
             lane_index: 0,
             day_index: 0,
             snow_coupling_m: 0.0,
             active_snow_coupling: true,
-            raw_melt_m: 0.0,
-            redistributed_melt_m: 0.0,
-            routed_melt_m: 0.0,
-            snowpack_swe_loss_m: 0.0,
+            mass_transition_ledgers: snow_ledgers_with_temperature(value_c)
+                .expect("nonpositive linked snow mass-transition fixture should validate"),
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
@@ -954,26 +977,24 @@ mod cqr_publication_tests {
             coe_boundary_density_after_kg_m3: 0.0,
             coe_boundary_settle_day_count_after: 0.0,
             snow_albedo_state_after: None,
-            stage3_diagnostics: Some(Box::new(diagnostics)),
         }
     }
 
     #[test]
-    fn cqr_water_temperature_accepts_nonpositive_and_rejects_positive_meltwater() {
+    fn cqr_water_temperature_accepts_nonpositive_and_ledger_rejects_positive_meltwater() {
         let run_identity = identity(1, 1);
         let mut day = DirectDayFrame::seed(run_identity, 0, 0).expect("temperature day");
-        day.snow_coupling_shadow_projection = Some(snow_projection_with_temperature(-0.25));
+        day.snow_coupling_shadow_projection =
+            Some(Box::new(snow_projection_with_temperature(-0.25)));
         let operands = direct_publication_water_temperature_operands(&day)
             .expect("nonpositive meltwater temperature");
         assert_eq!(operands.meltwater_temperature_c, Some(-0.25));
 
-        day.snow_coupling_shadow_projection = Some(snow_projection_with_temperature(0.25));
-        assert!(matches!(
-            direct_publication_water_temperature_operands(&day),
-            Err(DirectRuntimeError::DirectDomainViolation {
-                field: "publication.water_temperature.meltwater_temperature_c"
-            })
-        ));
+        assert_eq!(
+            snow_ledgers_with_temperature(0.25)
+                .expect_err("positive meltwater must fail at the durable ledger boundary"),
+            DirectSnowMassTransitionLedgerError::Stage3Outcome
+        );
     }
 
     #[test]

@@ -1,4 +1,5 @@
 use super::*;
+use crate::DirectSnowMassTransitionLedgers;
 
 #[test]
 fn r3a_input_accounting_span_computes_mutates_downstream_and_shadow_projects() {
@@ -1259,10 +1260,7 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         day_index: 0,
         snow_coupling_m: -0.09375,
         active_snow_coupling: false,
-        raw_melt_m: 0.0,
-        redistributed_melt_m: 0.0,
-        routed_melt_m: 0.0,
-        snowpack_swe_loss_m: 0.0,
+        mass_transition_ledgers: DirectSnowMassTransitionLedgers::zero(),
         sublimation_m: 0.0,
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.0,
@@ -1273,14 +1271,13 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         coe_boundary_density_after_kg_m3: 0.0,
         coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
-        stage3_diagnostics: None,
     };
 
     assert_eq!(day.snow_coupling, expected_state);
     assert_eq!(day.snow_coupling_downstream_operands, expected_operands);
     assert_eq!(
         day.snow_coupling_shadow_projection,
-        Some(expected_shadow.clone())
+        Some(Box::new(expected_shadow.clone()))
     );
     assert_eq!(
         day.storage_reconciliation_inputs.snow_coupling_m.to_bits(),

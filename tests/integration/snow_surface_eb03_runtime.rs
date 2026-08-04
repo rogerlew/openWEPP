@@ -5,6 +5,16 @@ use openwepp_hillslope_orchestrator::{
     Wb11HydrologyKernel, snow_density_compaction_v1_constants,
 };
 
+fn stage3_diagnostics(
+    result: &DirectSnowLiquidPartition,
+) -> &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics {
+    &result
+        .verbose_diagnostics
+        .as_deref()
+        .expect("public compatibility solve requests verbose diagnostics")
+        .stage3
+}
+
 fn independently_compacted_density_after_day(
     initial_density_kg_m3: f64,
     overburden_kg_m2: f64,
@@ -123,7 +133,7 @@ fn minimum_resolved_thermal_mass_preserves_state_and_suspends_exchange() {
         let result =
             Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
                 .expect("sub-resolution Stage 3 domain");
-        let diagnostics = result.stage3_diagnostics;
+        let diagnostics = stage3_diagnostics(&result);
 
         assert!((diagnostics.thermal_domain_suspended_seconds - 86_400.0).abs() <= f64::EPSILON);
         assert!(
@@ -134,10 +144,10 @@ fn minimum_resolved_thermal_mass_preserves_state_and_suspends_exchange() {
         assert!(diagnostics.longwave_energy_j_m2.abs() <= f64::EPSILON);
         assert!(diagnostics.latent_energy_j_m2.abs() <= f64::EPSILON);
         assert!(diagnostics.vapor_mass_exchange_kg_m2.abs() <= f64::EPSILON);
-        assert!(diagnostics.sublimation_m.abs() <= f64::EPSILON);
+        assert!(result.stage3_outcome().sublimation_m.abs() <= f64::EPSILON);
         assert!(diagnostics.conduction_energy_j_m2.abs() <= f64::EPSILON);
         assert!(diagnostics.surface_energy_j_m2.abs() <= f64::EPSILON);
-        assert!(result.routed_melt_m.abs() <= f64::EPSILON);
+        assert!(result.solid_to_liquid_ledger().liquid_handoff_m.abs() <= f64::EPSILON);
         assert_eq!(result.snow_layers_after.len(), 1);
         assert!((result.snow_layers_after[0].mass_swe_m - expected.mass_swe_m).abs() <= 1.0e-12);
         assert!(
@@ -165,7 +175,7 @@ fn mass_above_resolved_boundary_resumes_existing_stage3_exchange() {
 
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
         .expect("resolved Stage 3 domain");
-    let diagnostics = result.stage3_diagnostics;
+    let diagnostics = stage3_diagnostics(&result);
 
     assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
     assert!(diagnostics.minimum_unresolved_thermal_mass_kg_m2.abs() <= f64::EPSILON);
@@ -215,7 +225,7 @@ fn authoritative_mass_increase_resumes_from_retained_unresolved_state() {
 
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&resumed)
         .expect("authoritative mass increase must resume the retained state");
-    let diagnostics = result.stage3_diagnostics;
+    let diagnostics = stage3_diagnostics(&result);
 
     assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
     assert!((diagnostics.cold_content_before_j_m2 - retained_cold_content_j_m2).abs() <= 1.0e-9);
@@ -442,7 +452,7 @@ fn sub_resolution_lower_control_volume_collapses_to_one_resolved_volume() {
 
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
         .expect("a sub-resolution lower thermal volume must collapse to one volume");
-    let diagnostics = result.stage3_diagnostics;
+    let diagnostics = stage3_diagnostics(&result);
 
     assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
     assert!((diagnostics.lower_thermal_volume_collapsed_seconds - 86_400.0).abs() <= f64::EPSILON);
@@ -511,7 +521,7 @@ fn one_kg_m2_lower_control_volume_remains_a_two_volume_solve() {
 
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
         .expect("an exact 1 kg m-2 lower volume remains resolved");
-    let diagnostics = result.stage3_diagnostics;
+    let diagnostics = stage3_diagnostics(&result);
 
     assert!(diagnostics.thermal_domain_suspended_seconds.abs() <= f64::EPSILON);
     assert!(diagnostics.lower_thermal_volume_collapsed_seconds.abs() <= f64::EPSILON);
@@ -554,13 +564,13 @@ fn deep_unresolved_pack_preserves_topology_and_stored_state_before_partition() {
 
     assert_eq!(result.snow_layers_after, projected.snow_layers_after);
     assert!(
-        (result.stage3_diagnostics.thermal_domain_suspended_seconds - 86_400.0).abs()
+        (stage3_diagnostics(&result).thermal_domain_suspended_seconds - 86_400.0).abs()
             <= f64::EPSILON
     );
 }
 
 fn assert_stage3_energy_reconstructs(result: &DirectSnowLiquidPartition) {
-    let diagnostics = result.stage3_diagnostics;
+    let diagnostics = stage3_diagnostics(result);
     let independently_reconstructed_energy_residual = diagnostics.surface_energy_j_m2
         + diagnostics.conduction_energy_j_m2
         + diagnostics.latent_refreeze_energy_j_m2
@@ -624,19 +634,19 @@ fn orthogonal_cells_share_stage3_and_compose_additively() {
     ))
     .expect("combined cell");
 
-    assert!(baseline.stage3_diagnostics.enabled);
-    assert!(baseline.stage3_diagnostics.longwave_energy_j_m2.abs() <= f64::EPSILON);
-    assert!(baseline.stage3_diagnostics.sublimation_m.abs() <= f64::EPSILON);
-    assert!(longwave.stage3_diagnostics.longwave_energy_j_m2.abs() > f64::EPSILON);
-    assert!(sublimation.stage3_diagnostics.sublimation_m > 0.0);
-    assert!(combined.stage3_diagnostics.sublimation_m > 0.0);
-    assert!(combined.stage3_diagnostics.longwave_energy_j_m2.abs() > f64::EPSILON);
-    assert!(combined.stage3_diagnostics.latent_energy_j_m2.abs() > f64::EPSILON);
+    assert!(baseline.stage3_outcome().enabled);
+    assert!(stage3_diagnostics(&baseline).longwave_energy_j_m2.abs() <= f64::EPSILON);
+    assert!(baseline.stage3_outcome().sublimation_m.abs() <= f64::EPSILON);
+    assert!(stage3_diagnostics(&longwave).longwave_energy_j_m2.abs() > f64::EPSILON);
+    assert!(sublimation.stage3_outcome().sublimation_m > 0.0);
+    assert!(combined.stage3_outcome().sublimation_m > 0.0);
+    assert!(stage3_diagnostics(&combined).longwave_energy_j_m2.abs() > f64::EPSILON);
+    assert!(stage3_diagnostics(&combined).latent_energy_j_m2.abs() > f64::EPSILON);
     assert!(combined.runtime_swe_after_m < longwave.runtime_swe_after_m);
     assert!(
         (baseline.runtime_swe_after_m
             - sublimation.runtime_swe_after_m
-            - sublimation.stage3_diagnostics.sublimation_m)
+            - sublimation.stage3_outcome().sublimation_m)
             .abs()
             <= 1.0e-9
     );
@@ -650,29 +660,41 @@ fn orthogonal_cells_share_stage3_and_compose_additively() {
             .abs()
             <= 1.0e-9
     );
-    assert!((sublimation.routed_melt_m - baseline.routed_melt_m).abs() <= 1.0e-12);
-    assert!((sublimation.snowpack_swe_loss_m - baseline.snowpack_swe_loss_m).abs() <= 1.0e-12);
     assert!(
-        (sublimation.stage3_diagnostics.incoming_liquid_m
-            - baseline.stage3_diagnostics.incoming_liquid_m)
+        (sublimation.solid_to_liquid_ledger().liquid_handoff_m
+            - baseline.solid_to_liquid_ledger().liquid_handoff_m)
             .abs()
             <= 1.0e-12
     );
     assert!(
-        (sublimation.stage3_diagnostics.routed_liquid_m
-            - baseline.stage3_diagnostics.routed_liquid_m)
+        (sublimation.solid_to_liquid_ledger().snowpack_swe_loss_m
+            - baseline.solid_to_liquid_ledger().snowpack_swe_loss_m)
             .abs()
             <= 1.0e-12
     );
     assert!(
-        (sublimation.stage3_diagnostics.retained_liquid_m
-            - baseline.stage3_diagnostics.retained_liquid_m)
+        (sublimation.liquid_disposition_ledger().incoming_liquid_m
+            - baseline.liquid_disposition_ledger().incoming_liquid_m)
             .abs()
             <= 1.0e-12
     );
     assert!(
-        (sublimation.stage3_diagnostics.refrozen_liquid_m
-            - baseline.stage3_diagnostics.refrozen_liquid_m)
+        (sublimation.liquid_disposition_ledger().routed_liquid_m
+            - baseline.liquid_disposition_ledger().routed_liquid_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(
+        (sublimation
+            .liquid_disposition_ledger()
+            .retained_liquid_delta_m
+            - baseline.liquid_disposition_ledger().retained_liquid_delta_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(
+        (sublimation.liquid_disposition_ledger().refrozen_liquid_m
+            - baseline.liquid_disposition_ledger().refrozen_liquid_m)
             .abs()
             <= 1.0e-12
     );
@@ -781,13 +803,13 @@ fn shallow_pack_uses_the_whole_active_thermal_volume_not_the_event_layer() {
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
         .expect("a shallow pack must use one active thermal control volume");
     let applied_first_hour =
-        result.stage3_diagnostics.hourly_surface_energy[0].applied_surface_energy_j_m2;
+        stage3_diagnostics(&result).hourly_surface_energy[0].applied_surface_energy_j_m2;
 
     assert!(applied_first_hour > event_layer_cold_content_j_m2 * 100.0);
     assert!(
-        result.stage3_diagnostics.hourly_surface_energy[0].unused_positive_energy_j_m2 <= 1.0e-9
+        stage3_diagnostics(&result).hourly_surface_energy[0].unused_positive_energy_j_m2 <= 1.0e-9
     );
-    assert!(result.stage3_diagnostics.cold_content_after_j_m2 > 0.0);
+    assert!(stage3_diagnostics(&result).cold_content_after_j_m2 > 0.0);
     assert_stage3_energy_reconstructs(&result);
 }
 
@@ -808,7 +830,7 @@ fn unequal_depositional_temperatures_project_to_persistent_active_and_lower_stat
 
     let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
         .expect("unequal depositional temperatures must form coupled thermal states");
-    let first_hour = result.stage3_diagnostics.hourly_surface_energy[0];
+    let first_hour = stage3_diagnostics(&result).hourly_surface_energy[0];
 
     assert!(first_hour.lower_layer_present_fraction > 0.0);
     assert!(first_hour.active_layer_temperature_c < -2.0);
