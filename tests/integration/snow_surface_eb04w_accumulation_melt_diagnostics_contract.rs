@@ -16,7 +16,7 @@ fn contract_binds_phase_accumulation_and_melt_diagnostics_without_promotion() {
     let contract =
         repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for binding in [
-        "contract_version: 122",
+        "contract_version: 123",
         "INV-SNOWFREEZE-088",
         "OBL-SNOWFREEZE-P-062",
         "TOL-SNOWFREEZE-013",
@@ -35,7 +35,7 @@ fn contract_binds_phase_accumulation_and_melt_diagnostics_without_promotion() {
     }
 }
 
-fn zero_pack_inputs(hourly: [DirectSnowHourlyForcing; 24]) -> DirectActiveSnowPartitionInputs {
+fn zero_pack_inputs(hourly: &[DirectSnowHourlyForcing; 24]) -> DirectActiveSnowPartitionInputs {
     DirectActiveSnowPartitionInputs {
         hyetograph_rainfall_m: hourly.iter().map(|hour| hour.active_precipitation_m).sum(),
         rst_c: 0.0,
@@ -66,7 +66,7 @@ fn zero_pack_inputs(hourly: [DirectSnowHourlyForcing; 24]) -> DirectActiveSnowPa
         snow_albedo_state: None,
         snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
-        hourly,
+        hourly: *hourly,
     }
 }
 
@@ -127,7 +127,7 @@ fn typed_snow_activation_uses_the_strict_physical_depth_threshold() {
     for (snowfall_depth_m, expected_active) in [(threshold_m, false), (just_above_m, true)] {
         let mut hourly = [DirectSnowHourlyForcing::zero(); 24];
         hourly[6] = snowfall_hour(snowfall_depth_m, 0.0);
-        let inputs = zero_pack_inputs(hourly);
+        let inputs = zero_pack_inputs(&hourly);
         let outcome = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
             .expect("activation-threshold probe must compute");
         assert_eq!(outcome.active_snow_coupling, expected_active);
@@ -139,7 +139,7 @@ fn warm_mean_zero_pack_typed_snow_and_mixed_event_activate_and_close() {
     for (snowfall_depth_m, rain_m) in [(0.10, 0.0), (0.08, 0.002)] {
         let mut hourly = [DirectSnowHourlyForcing::zero(); 24];
         hourly[6] = snowfall_hour(snowfall_depth_m, rain_m);
-        let inputs = zero_pack_inputs(hourly);
+        let inputs = zero_pack_inputs(&hourly);
         let outcome = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
             .expect("valid warm-day typed snowfall must compute");
 
@@ -162,12 +162,12 @@ fn warm_all_rain_zero_pack_remains_inactive() {
         hydrometeor_temperature_c: Some(2.0),
         ..DirectSnowHourlyForcing::zero()
     };
-    let inputs = zero_pack_inputs(hourly);
+    let inputs = zero_pack_inputs(&hourly);
     let outcome = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect("warm all-rain input must remain valid");
 
     assert!(!outcome.active_snow_coupling);
-    assert_eq!(outcome.accumulation_m, 0.0);
+    assert_eq!(outcome.accumulation_m.abs().to_bits(), 0.0_f64.to_bits());
     assert!(independent_residual(&inputs, &outcome).abs() <= STORAGE_TOLERANCE_M);
 }
 
@@ -213,5 +213,112 @@ fn typed_runtime_and_real_consumer_expose_required_non_aliased_fields() {
             "real projection/consumer missing {field}"
         );
     }
-    assert!(consumer.contains("openwepp-r7h-direct-production-snow-trace-v3"));
+    assert!(consumer.contains("openwepp-r7h-direct-production-snow-trace-v4"));
+}
+
+#[test]
+fn stage3_trace_contract_binds_exact_operands_and_behavior_neutrality() {
+    let contract =
+        repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    for binding in [
+        "contract_version: 123",
+        "REF-SNOWFREEZE-STAGE3-TRACE-CLOSURE",
+        "INV-SNOWFREEZE-090",
+        "OBL-SNOWFREEZE-P-063",
+        "TOL-SNOWFREEZE-015",
+        "incoming - routed - retained_delta - refrozen = residual",
+        "WAT/HBP/PASS schemas and values",
+        "all pre-v4 trace field values",
+    ] {
+        assert!(
+            contract.contains(binding),
+            "missing Stage-3 trace contract binding: {binding}"
+        );
+    }
+}
+
+#[test]
+fn stage3_liquid_identity_rejects_adjacent_alias_formulas() {
+    let incoming_m = 0.021_f64;
+    let stage3_routed_m = 0.009_f64;
+    let retained_delta_m = 0.004_f64;
+    let refrozen_m = 0.006_f64;
+    let producer_residual_m = 0.002_f64;
+    let top_level_coe_routed_m = 0.007_f64;
+    let coe_retained_store_m = 0.003_f64;
+    let tolerance_m = 1.0e-9_f64;
+
+    let reconstruct = |routed_m: f64, retained_m: f64, refrozen_multiplier: f64| {
+        incoming_m - routed_m - retained_m - refrozen_multiplier * refrozen_m
+    };
+    let accepted = reconstruct(stage3_routed_m, retained_delta_m, 1.0);
+    assert!((accepted - producer_residual_m).abs() <= tolerance_m);
+
+    let aliases = [
+        reconstruct(stage3_routed_m, 0.0, 1.0),
+        reconstruct(top_level_coe_routed_m, retained_delta_m, 1.0),
+        reconstruct(stage3_routed_m, coe_retained_store_m, 1.0),
+        reconstruct(stage3_routed_m, retained_delta_m, 2.0),
+    ];
+    for alias in aliases {
+        assert!((alias - producer_residual_m).abs() > tolerance_m);
+    }
+    assert!(producer_residual_m.abs() > tolerance_m);
+}
+
+#[test]
+fn schema_v4_real_consumer_names_exact_stage3_and_signed_hour_operands() {
+    let carrier = repo_text(
+        "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    );
+    let consumer = repo_text(
+        "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",
+    );
+    let hourly = repo_text(
+        "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00f_snow_accumulation_melt_trace.rs",
+    );
+    assert!(consumer.contains("openwepp-r7h-direct-production-snow-trace-v4"));
+    for field in [
+        "stage3_incoming_liquid_m",
+        "stage3_routed_liquid_m",
+        "stage3_retained_liquid_delta_m",
+        "stage3_refrozen_liquid_m",
+        "stage3_liquid_closure_residual_m",
+        "stage3_hourly_active_mass_kg_m2",
+        "stage3_hourly_active_depth_m",
+        "stage3_hourly_active_temperature_c",
+        "stage3_hourly_active_cold_content_j_m2",
+        "stage3_hourly_lower_present_fraction",
+        "stage3_hourly_lower_mass_kg_m2",
+        "stage3_hourly_lower_depth_m",
+        "stage3_hourly_lower_temperature_c",
+        "stage3_hourly_lower_cold_content_j_m2",
+    ] {
+        assert!(consumer.contains(field), "real consumer missing {field}");
+    }
+    for field in [
+        "wind_m_s",
+        "dewpoint_c",
+        "canopy_cover_fraction",
+        "hourly_air_temperature_c",
+        "hourly_radiation_mj_m2",
+        "hourly_cloud_fraction",
+        "hourly_routed_melt_m",
+        "hourly_liquid_holding_capacity_m",
+        "hourly_liquid_water_retained_before_m",
+        "hourly_liquid_water_retained_after_m",
+        "hourly_liquid_water_released_m",
+        "hourly_rain_released_m",
+        "hourly_sublimation_m",
+        "hourly_pack_depth_before_m",
+        "hourly_pack_depth_after_m",
+        "hourly_pack_density_before_kg_m3",
+        "hourly_pack_density_after_kg_m3",
+    ] {
+        assert!(
+            carrier.contains(field),
+            "typed signed-hour carrier missing {field}"
+        );
+        assert!(hourly.contains(field), "hourly formatter missing {field}");
+    }
 }

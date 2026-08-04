@@ -11,12 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260803-snow-stage3-liquid-signed-hour-trace-closure-001/` — QUEUED /
-  BEHAVIOR-NEUTRAL TRACE CLOSURE: publish exact Stage-3 liquid and signed-hour
-  forcing/state operands through additive direct-production JSONL schema v4,
-  independently reconstruct Snowbird liquid closure, reject adjacent aliases,
-  and prove protected WAT plus pre-v4 trace behavior unchanged. No snow physics,
-  calibration, selector, default, fixture, or observation change is authorized.
+- `20260803-snow-stage3-liquid-signed-hour-trace-closure-001/` — COMPLETE /
+  REVIEWED / VERIFIED / BEHAVIOR-NEUTRAL EVIDENCE CLOSURE: additive internal
+  JSONL v4 publishes exact Stage-3 liquid and signed-hour forcing/state/thermal
+  operands. All `14,245` Snowbird rows independently close within
+  `1.23e-17 m`; four aliases are rejected, and WAT, HBP/PASS, and pre-v4 values
+  are unchanged. Stage 3 routes most incoming liquid; no physics correction,
+  calibration, or promotion is authorized.
 
 - `20260803-snow-prepeak-liquid-evacuation-physics-audit-001/` — EXECUTED /
   REVIEWED / VERIFIED / HOLD-EVIDENCE: same-binary v3 finds Snowbird median

@@ -1,6 +1,6 @@
 # SNOW-STAGE3-LIQUID-SIGNED-HOUR-TRACE-CLOSURE
 
-Status: `scaffolded / ready for execution`
+Status: `complete / reviewed / verified / behavior-neutral evidence closure`
 
 Date: `2026-08-03`
 
@@ -80,6 +80,13 @@ defaults, observations, calibration, and promotion remain unchanged.
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
 - `docs/specifications/science-contracts/index.md`
+- `assurance/v2/identity.lock.json`
+- `assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json`
+- `assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
+- one generated `assurance/v2/transactions/*.json` receipt from the typed
+  `adopt-report-source` transaction for `SC-SNOWFREEZE-001`;
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
@@ -226,15 +233,32 @@ credential paths.
   end-to-end execution of this follow-up.
 - [x] (2026-08-03) Scaffolded package, prompt, authority map, artifacts,
   catalog, and roadmap; required pre-read is `509317` bytes (`WARN`).
-- [ ] Commit the scaffold before production edits.
-- [ ] Complete contract-first authority, tests, and pre-implementation gate.
-- [ ] Implement additive diagnostic publication and real-consumer proof.
-- [ ] Complete direct validation, dual review, dual verification, and final
-  disposition.
+- [x] (2026-08-03) Committed the scaffold as `48d89081` before production
+  edits.
+- [x] (2026-08-03) Completed v123 contract authority, contract-derived
+  anti-alias tests, exact operand lineage, and a `7 passed / 2 expected failed`
+  pre-implementation RED gate.
+- [x] (2026-08-03) Implemented additive diagnostic publication and completed
+  the independent real-Snowbird reconstruction and neutrality proof.
+- [x] (2026-08-03) Amended the write set before assurance mutation to include
+  the typed generated consequences of adopting the changed declared contract
+  dependency; no assurance source prose, lifecycle decision, or approval is
+  authorized.
+- [x] (2026-08-03) Completed focused, format, Clippy, doctest, documentation,
+  assurance, quick `2160/2160`, frost `345/345`, and Critical full `2209/2209`
+  gates.
+- [x] (2026-08-03) Completed two independent reviews with exact-diff assurance
+  supplements, two fresh terminal verifications, prompt archival, handoff, and
+  final disposition.
 
 ## Surprises & Discoveries
 
-- None recorded at scaffold time.
+- The first quick profile correctly failed closed because the v123 contract
+  bytes no longer matched the generated assurance identity. The snow assurance
+  report is a `DRAFT`, declares this contract as an external `local_content`
+  dependency, and has no active review events or approvals; the repository's
+  typed `adopt-report-source` transaction is therefore the bounded closure
+  route. Hand-editing generated locks remains prohibited.
 
 ## Decision Log
 
@@ -249,8 +273,30 @@ credential paths.
   Rationale: downstream consumers can distinguish the new closure-capable
   surface, while historical v3 evidence remains immutable.
   Date/Author: 2026-08-03 / Codex.
+- Decision: include only the machine-generated assurance identity files and
+  transaction receipt emitted by the typed contract-dependency adoption.
+  Rationale: the contract is already a declared report dependency and the
+  fail-closed transaction is required to reconcile that intentional source
+  change; it makes no human lifecycle decision and invalidates no authority.
+  Date/Author: 2026-08-03 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. Execution must replace this section with the observed publication,
-closure, neutrality, review, verification, and disposition results.
+The real internal snow trace now has additive schema v4 with exact Stage-3
+liquid closure and existing signed-hour forcing/state/thermal observability.
+An independent parser closed `14245` Snowbird rows to `1.2272e-17 m`, found
+`227` mixed rows with every Stage-3 operand nonzero, rejected four adjacent
+aliases, and proved WAT, HBP/PASS, and every pre-v4 trace value unchanged.
+
+The predecessor's missing-operand hold is closed. The resulting trajectory
+shows Stage 3 routes most incoming liquid (`39.5692/40.3463 m`), with much
+smaller retained change (`0.7230 m`) and refreeze (`0.0541 m`). That is a
+mechanism observation, not authority for a physics correction. The next work
+must prospectively separate forcing and empirical `B/C` error from signed-hour
+thermal/export policy and separately establish wet-compaction operand
+authority.
+
+The v123 contract edit correctly triggered stale-assurance failure. The typed
+source-adoption transaction reconciled generated identity without invalidating
+active authority. All focused and broad gates, both reviews, and both terminal
+verifications pass.

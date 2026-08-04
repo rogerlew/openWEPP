@@ -18,7 +18,7 @@ const HILLSLOPE_PASS_SCHEMA: &str = "crates/openwepp-hillslope-output/src/hillsl
 fn promotion_contract_and_package_ratify_supported_opt_in_capability() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 122",
+        "contract_version: 123",
         "REF-SNOWFREEZE-PARADIGM2-PROMOTION",
         "INV-SNOWFREEZE-082",
         "OBL-SNOWFREEZE-P-057",

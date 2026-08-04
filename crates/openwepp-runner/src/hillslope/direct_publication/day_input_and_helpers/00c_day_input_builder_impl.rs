@@ -1163,7 +1163,7 @@ fn r7h_direct_production_snow_trace_line(
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
     let line = format!(
-        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v3\",\
+        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v4\",\
 \"day_index\":{day_index},\
 \"lane_index\":{lane_index},\
 \"hyetograph_rainfall_m\":{},\
@@ -1329,24 +1329,77 @@ fn direct_snow_trace_layers(
     format!("[{rows}]")
 }
 
+struct DirectSnowStage3HourlyTraceFields {
+    shortwave: String,
+    longwave: String,
+    vapor_mass: String,
+    latent_heat: String,
+    latent_flux: String,
+    active_mass: String,
+    active_depth: String,
+    active_temperature: String,
+    active_cold_content: String,
+    lower_present_fraction: String,
+    lower_mass: String,
+    lower_depth: String,
+    lower_temperature: String,
+    lower_cold_content: String,
+}
+
+fn direct_snow_trace_stage3_hourly_fields(
+    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
+) -> DirectSnowStage3HourlyTraceFields {
+    DirectSnowStage3HourlyTraceFields {
+        shortwave: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.net_shortwave_w_m2
+        }),
+        longwave: direct_snow_trace_hourly_values(diagnostics, |hour| hour.net_longwave_w_m2),
+        vapor_mass: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.vapor_mass_exchange_kg_m2
+        }),
+        latent_heat: direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_heat_j_kg),
+        latent_flux: direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_flux_w_m2),
+        active_mass: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.active_layer_mass_kg_m2
+        }),
+        active_depth: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.active_layer_depth_m
+        }),
+        active_temperature: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.active_layer_temperature_c
+        }),
+        active_cold_content: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.active_layer_cold_content_j_m2
+        }),
+        lower_present_fraction: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.lower_layer_present_fraction
+        }),
+        lower_mass: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.lower_layer_mass_kg_m2
+        }),
+        lower_depth: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.lower_layer_depth_m
+        }),
+        lower_temperature: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.lower_layer_temperature_c
+        }),
+        lower_cold_content: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.lower_layer_cold_content_j_m2
+        }),
+    }
+}
+
 fn direct_snow_trace_stage3_fields(
     diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
 ) -> String {
-    let hourly_shortwave = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.net_shortwave_w_m2
-    });
-    let hourly_longwave =
-        direct_snow_trace_hourly_values(diagnostics, |hour| hour.net_longwave_w_m2);
-    let hourly_vapor_mass = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.vapor_mass_exchange_kg_m2
-    });
-    let hourly_latent_heat =
-        direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_heat_j_kg);
-    let hourly_latent_flux =
-        direct_snow_trace_hourly_values(diagnostics, |hour| hour.latent_flux_w_m2);
+    let hourly = direct_snow_trace_stage3_hourly_fields(diagnostics);
     format!(
         "\
 \"stage3_energy_enabled\":{},\
+\"stage3_incoming_liquid_m\":{},\
+\"stage3_routed_liquid_m\":{},\
+\"stage3_retained_liquid_delta_m\":{},\
+\"stage3_liquid_closure_residual_m\":{},\
 \"stage3_cold_content_before_j_m2\":{},\
 \"stage3_cold_content_after_j_m2\":{},\
 \"stage3_energy_closure_residual_j_m2\":{},\
@@ -1362,6 +1415,15 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_hourly_vapor_mass_exchange_kg_m2\":{},\
 \"stage3_hourly_latent_heat_j_kg\":{},\
 \"stage3_hourly_latent_flux_w_m2\":{},\
+\"stage3_hourly_active_mass_kg_m2\":{},\
+\"stage3_hourly_active_depth_m\":{},\
+\"stage3_hourly_active_temperature_c\":{},\
+\"stage3_hourly_active_cold_content_j_m2\":{},\
+\"stage3_hourly_lower_present_fraction\":{},\
+\"stage3_hourly_lower_mass_kg_m2\":{},\
+\"stage3_hourly_lower_depth_m\":{},\
+\"stage3_hourly_lower_temperature_c\":{},\
+\"stage3_hourly_lower_cold_content_j_m2\":{},\
 \"stage3_latent_refreeze_energy_j_m2\":{},\
 \"stage3_cold_content_export_j_m2\":{},\
 \"stage3_mass_latent_identity_residual_j_m2\":{},\
@@ -1372,6 +1434,10 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_minimum_collapsed_lower_mass_kg_m2\":{},\
 \"stage3_refrozen_liquid_m\":{}",
         diagnostics.enabled,
+        direct_production_trace_number(diagnostics.incoming_liquid_m),
+        direct_production_trace_number(diagnostics.routed_liquid_m),
+        direct_production_trace_number(diagnostics.retained_liquid_m),
+        direct_production_trace_number(diagnostics.liquid_closure_residual_m),
         direct_production_trace_number(diagnostics.cold_content_before_j_m2),
         direct_production_trace_number(diagnostics.cold_content_after_j_m2),
         direct_production_trace_number(diagnostics.energy_closure_residual_j_m2),
@@ -1382,11 +1448,20 @@ fn direct_snow_trace_stage3_fields(
         direct_production_trace_number(diagnostics.latent_energy_j_m2),
         direct_production_trace_number(diagnostics.vapor_mass_exchange_kg_m2),
         direct_production_trace_number(diagnostics.latent_mass_energy_j_m2),
-        hourly_shortwave,
-        hourly_longwave,
-        hourly_vapor_mass,
-        hourly_latent_heat,
-        hourly_latent_flux,
+        hourly.shortwave,
+        hourly.longwave,
+        hourly.vapor_mass,
+        hourly.latent_heat,
+        hourly.latent_flux,
+        hourly.active_mass,
+        hourly.active_depth,
+        hourly.active_temperature,
+        hourly.active_cold_content,
+        hourly.lower_present_fraction,
+        hourly.lower_mass,
+        hourly.lower_depth,
+        hourly.lower_temperature,
+        hourly.lower_cold_content,
         direct_production_trace_number(diagnostics.latent_refreeze_energy_j_m2),
         direct_production_trace_number(diagnostics.cold_content_export_j_m2),
         direct_production_trace_number(
@@ -1414,6 +1489,56 @@ fn direct_snow_trace_hourly_values(
         .collect::<Vec<_>>()
         .join(",");
     format!("[{values}]")
+}
+
+#[cfg(test)]
+mod stage3_trace_field_tests {
+    use super::*;
+
+    #[test]
+    fn formatter_preserves_exact_liquid_and_hourly_thermal_operands() {
+        let mut diagnostics =
+            openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled();
+        diagnostics.enabled = true;
+        diagnostics.incoming_liquid_m = 0.021;
+        diagnostics.routed_liquid_m = 0.009;
+        diagnostics.retained_liquid_m = 0.004;
+        diagnostics.refrozen_liquid_m = 0.006;
+        diagnostics.liquid_closure_residual_m = 0.002;
+        diagnostics.hourly_surface_energy[0].active_layer_mass_kg_m2 = 41.0;
+        diagnostics.hourly_surface_energy[0].active_layer_depth_m = 0.22;
+        diagnostics.hourly_surface_energy[0].active_layer_temperature_c = -1.5;
+        diagnostics.hourly_surface_energy[0].active_layer_cold_content_j_m2 = 12_500.0;
+        diagnostics.hourly_surface_energy[0].lower_layer_present_fraction = 0.75;
+        diagnostics.hourly_surface_energy[0].lower_layer_mass_kg_m2 = 64.0;
+        diagnostics.hourly_surface_energy[0].lower_layer_depth_m = 0.31;
+        diagnostics.hourly_surface_energy[0].lower_layer_temperature_c = -2.25;
+        diagnostics.hourly_surface_energy[0].lower_layer_cold_content_j_m2 = 23_500.0;
+
+        let json = format!("{{{}}}", direct_snow_trace_stage3_fields(&diagnostics));
+        let value: serde_json::Value =
+            serde_json::from_str(&json).expect("Stage-3 suffix must be valid JSON");
+        assert_eq!(value["stage3_incoming_liquid_m"], 0.021);
+        assert_eq!(value["stage3_routed_liquid_m"], 0.009);
+        assert_eq!(value["stage3_retained_liquid_delta_m"], 0.004);
+        assert_eq!(value["stage3_refrozen_liquid_m"], 0.006);
+        assert_eq!(value["stage3_liquid_closure_residual_m"], 0.002);
+        assert_eq!(value["stage3_hourly_active_mass_kg_m2"][0], 41.0);
+        assert_eq!(value["stage3_hourly_active_depth_m"][0], 0.22);
+        assert_eq!(value["stage3_hourly_active_temperature_c"][0], -1.5);
+        assert_eq!(
+            value["stage3_hourly_active_cold_content_j_m2"][0],
+            12_500.0
+        );
+        assert_eq!(value["stage3_hourly_lower_present_fraction"][0], 0.75);
+        assert_eq!(value["stage3_hourly_lower_mass_kg_m2"][0], 64.0);
+        assert_eq!(value["stage3_hourly_lower_depth_m"][0], 0.31);
+        assert_eq!(value["stage3_hourly_lower_temperature_c"][0], -2.25);
+        assert_eq!(
+            value["stage3_hourly_lower_cold_content_j_m2"][0],
+            23_500.0
+        );
+    }
 }
 
 #[derive(Default)]

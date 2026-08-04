@@ -151,17 +151,25 @@ struct ActiveSnowHourlyFluxes {
 }
 
 impl ActiveSnowHourlyFluxes {
-    fn into_hourly_state(self, liquid_water_retained_before_m: f64, liquid_water_retained_after_m: f64) -> SnowHourlyState {
+    fn into_hourly_state(
+        self,
+        state_before: ActiveSnowPackState,
+        state_after: ActiveSnowPackState,
+    ) -> SnowHourlyState {
         SnowHourlyState {
             rain_released_m: self.rain_released_m,
             liquid_holding_capacity_m: self.liquid_holding_capacity_m,
-            liquid_water_retained_before_m,
-            liquid_water_retained_after_m,
+            liquid_water_retained_before_m: state_before.liquid_water_retained_m,
+            liquid_water_retained_after_m: state_after.liquid_water_retained_m,
             liquid_water_released_m: self.liquid_water_released_m,
             sublimation_m: self.sublimation_m,
             melt_raw_m: self.melt_raw_m,
             melt_m: self.melt_m,
             melt_diagnostics: self.melt_diagnostics,
+            pack_depth_before_m: state_before.depth_m,
+            pack_depth_after_m: state_after.depth_m,
+            pack_density_before_kg_m3: state_before.density_kg_m3,
+            pack_density_after_kg_m3: state_after.density_kg_m3,
         }
     }
 }
@@ -1132,8 +1140,8 @@ impl Wb11HydrologyKernel {
             .any(|future| future.snowfall_m > WB11_ZERO_THRESHOLD);
 
         Self::advance_active_snow_settle_clock(state, hour, hourly.snowfall_m);
-        let depth_before_m = state.depth_m.max(0.0);
-        let liquid_water_retained_before_m = state.liquid_water_retained_m;
+        let state_before = *state;
+        let depth_before_m = state_before.depth_m.max(0.0);
         let mut fluxes = ActiveSnowHourlyFluxes::default();
         let albedo_updated_this_hour = Self::advance_active_snowpack_for_hour(
             phase_class,
@@ -1167,13 +1175,7 @@ impl Wb11HydrologyKernel {
             fluxes.rain_released_m = hourly.rain_m - fluxes.rain_retained_m;
         }
 
-        Ok((
-            fluxes.into_hourly_state(
-                liquid_water_retained_before_m,
-                state.liquid_water_retained_m,
-            ),
-            fluxes,
-        ))
+        Ok((fluxes.into_hourly_state(state_before, *state), fluxes))
     }
 
     fn validate_active_snow_hour(
@@ -1938,6 +1940,7 @@ impl Wb11HydrologyKernel {
         )?;
         let hourly_melt_diagnostics =
             std::array::from_fn(|index| hourly_state[index].melt_diagnostics);
+        let hourly_trace = Self::active_snow_hourly_trace(&hourly_state);
 
         Ok(SnowCouplingOutcome {
             signed_s,
@@ -1952,6 +1955,7 @@ impl Wb11HydrologyKernel {
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             hourly_routed_melt,
             hourly_melt_diagnostics,
+            hourly_trace,
             snowpack_state_loss: bounded_state_loss_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: state.depth_m,
@@ -1959,6 +1963,37 @@ impl Wb11HydrologyKernel {
             runtime_settle_day_count: state.settle_day_count,
             snow_albedo_state_after: state.snow_albedo_state_after,
         })
+    }
+
+    fn active_snow_hourly_trace(hourly_state: &[SnowHourlyState]) -> SnowHourlyTrace {
+        SnowHourlyTrace {
+            liquid_holding_capacity: std::array::from_fn(|index| {
+                hourly_state[index].liquid_holding_capacity_m
+            }),
+            liquid_water_retained_before: std::array::from_fn(|index| {
+                hourly_state[index].liquid_water_retained_before_m
+            }),
+            liquid_water_retained_after: std::array::from_fn(|index| {
+                hourly_state[index].liquid_water_retained_after_m
+            }),
+            liquid_water_released: std::array::from_fn(|index| {
+                hourly_state[index].liquid_water_released_m
+            }),
+            rain_released: std::array::from_fn(|index| hourly_state[index].rain_released_m),
+            sublimation: std::array::from_fn(|index| hourly_state[index].sublimation_m),
+            pack_depth_before: std::array::from_fn(|index| {
+                hourly_state[index].pack_depth_before_m
+            }),
+            pack_depth_after: std::array::from_fn(|index| {
+                hourly_state[index].pack_depth_after_m
+            }),
+            pack_density_before: std::array::from_fn(|index| {
+                hourly_state[index].pack_density_before_kg_m3
+            }),
+            pack_density_after: std::array::from_fn(|index| {
+                hourly_state[index].pack_density_after_kg_m3
+            }),
+        }
     }
 
     fn build_active_snow_hourly_routed_melt_from_shape(
@@ -2270,6 +2305,10 @@ mod tests {
                 coe_melt_applied_m: melt_m,
                 ..DirectSnowMeltHourDiagnostics::default()
             },
+            pack_depth_before_m: 0.0,
+            pack_depth_after_m: 0.0,
+            pack_density_before_kg_m3: 0.0,
+            pack_density_after_kg_m3: 0.0,
         }
     }
 

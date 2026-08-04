@@ -17,30 +17,64 @@ pub struct DirectSnowMeltHourDiagnostics {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowAccumulationMeltDiagnostics {
+    pub wind_m_s: f64,
+    pub dewpoint_c: f64,
+    pub canopy_cover_fraction: f64,
     pub hourly_active_precipitation_m: [f64; 24],
     pub hourly_rain_m: [f64; 24],
     pub hourly_snowfall_depth_m: [f64; 24],
     pub hourly_snowfall_swe_m: [f64; 24],
+    pub hourly_air_temperature_c: [f64; 24],
+    pub hourly_radiation_mj_m2: [f64; 24],
+    pub hourly_cloud_fraction: [f64; 24],
     pub hourly_rain_fraction: [f64; 24],
     pub hourly_snow_fraction: [f64; 24],
     pub hourly_phase_model: [SnowPhasePartitionModel; 24],
     pub hourly_hydrometeor_temperature_c: [Option<f64>; 24],
     pub hourly_melt: [DirectSnowMeltHourDiagnostics; 24],
+    pub hourly_routed_melt_m: [f64; 24],
+    pub hourly_liquid_holding_capacity_m: [f64; 24],
+    pub hourly_liquid_water_retained_before_m: [f64; 24],
+    pub hourly_liquid_water_retained_after_m: [f64; 24],
+    pub hourly_liquid_water_released_m: [f64; 24],
+    pub hourly_rain_released_m: [f64; 24],
+    pub hourly_sublimation_m: [f64; 24],
+    pub hourly_pack_depth_before_m: [f64; 24],
+    pub hourly_pack_depth_after_m: [f64; 24],
+    pub hourly_pack_density_before_kg_m3: [f64; 24],
+    pub hourly_pack_density_after_kg_m3: [f64; 24],
     pub modeled_wind_redistribution_m: [f64; 24],
 }
 
 impl Default for DirectSnowAccumulationMeltDiagnostics {
     fn default() -> Self {
         Self {
+            wind_m_s: 0.0,
+            dewpoint_c: 0.0,
+            canopy_cover_fraction: 0.0,
             hourly_active_precipitation_m: [0.0; 24],
             hourly_rain_m: [0.0; 24],
             hourly_snowfall_depth_m: [0.0; 24],
             hourly_snowfall_swe_m: [0.0; 24],
+            hourly_air_temperature_c: [0.0; 24],
+            hourly_radiation_mj_m2: [0.0; 24],
+            hourly_cloud_fraction: [0.0; 24],
             hourly_rain_fraction: [0.0; 24],
             hourly_snow_fraction: [0.0; 24],
             hourly_phase_model: [SnowPhasePartitionModel::LegacyRst; 24],
             hourly_hydrometeor_temperature_c: [None; 24],
             hourly_melt: [DirectSnowMeltHourDiagnostics::default(); 24],
+            hourly_routed_melt_m: [0.0; 24],
+            hourly_liquid_holding_capacity_m: [0.0; 24],
+            hourly_liquid_water_retained_before_m: [0.0; 24],
+            hourly_liquid_water_retained_after_m: [0.0; 24],
+            hourly_liquid_water_released_m: [0.0; 24],
+            hourly_rain_released_m: [0.0; 24],
+            hourly_sublimation_m: [0.0; 24],
+            hourly_pack_depth_before_m: [0.0; 24],
+            hourly_pack_depth_after_m: [0.0; 24],
+            hourly_pack_density_before_kg_m3: [0.0; 24],
+            hourly_pack_density_after_kg_m3: [0.0; 24],
             modeled_wind_redistribution_m: [0.0; 24],
         }
     }
@@ -62,6 +96,10 @@ pub(crate) struct SnowHourlyState {
     melt_raw_m: f64,
     melt_m: f64,
     melt_diagnostics: DirectSnowMeltHourDiagnostics,
+    pack_depth_before_m: f64,
+    pack_depth_after_m: f64,
+    pack_density_before_kg_m3: f64,
+    pack_density_after_kg_m3: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -88,6 +126,10 @@ mod tests {
                 coe_melt_applied_m: melt_m,
                 ..DirectSnowMeltHourDiagnostics::default()
             },
+            pack_depth_before_m: 0.0,
+            pack_depth_after_m: 0.0,
+            pack_density_before_kg_m3: 0.0,
+            pack_density_after_kg_m3: 0.0,
         }
     }
 
@@ -133,12 +175,27 @@ pub(crate) struct SnowCouplingOutcome {
     redistributed_melt: f64,
     hourly_routed_melt: [f64; 24],
     hourly_melt_diagnostics: [DirectSnowMeltHourDiagnostics; 24],
+    hourly_trace: SnowHourlyTrace,
     snowpack_state_loss: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
     runtime_density_kg_m3: f64,
     runtime_settle_day_count: f64,
     snow_albedo_state_after: Option<SnowAlbedoState>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct SnowHourlyTrace {
+    liquid_holding_capacity: [f64; 24],
+    liquid_water_retained_before: [f64; 24],
+    liquid_water_retained_after: [f64; 24],
+    liquid_water_released: [f64; 24],
+    rain_released: [f64; 24],
+    sublimation: [f64; 24],
+    pack_depth_before: [f64; 24],
+    pack_depth_after: [f64; 24],
+    pack_density_before: [f64; 24],
+    pack_density_after: [f64; 24],
 }
 
 #[derive(Debug, Clone, PartialEq)]

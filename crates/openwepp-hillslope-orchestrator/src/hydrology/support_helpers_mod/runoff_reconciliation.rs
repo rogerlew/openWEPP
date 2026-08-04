@@ -371,6 +371,9 @@ impl Wb11HydrologyKernel {
                 )
             })?;
         let accumulation_melt_diagnostics = DirectSnowAccumulationMeltDiagnostics {
+            wind_m_s: inputs.wind_m_s,
+            dewpoint_c: inputs.dewpoint_c,
+            canopy_cover_fraction: inputs.canopy_cover_fraction,
             hourly_active_precipitation_m: std::array::from_fn(|index| {
                 inputs.hourly[index].active_precipitation_m
             }),
@@ -380,6 +383,15 @@ impl Wb11HydrologyKernel {
             }),
             hourly_snowfall_swe_m: std::array::from_fn(|index| {
                 inputs.hourly[index].snowfall_m * 0.1
+            }),
+            hourly_air_temperature_c: std::array::from_fn(|index| {
+                inputs.hourly[index].air_temperature_c
+            }),
+            hourly_radiation_mj_m2: std::array::from_fn(|index| {
+                inputs.hourly[index].radiation_mj_m2
+            }),
+            hourly_cloud_fraction: std::array::from_fn(|index| {
+                inputs.hourly[index].cloud_fraction
             }),
             hourly_rain_fraction: std::array::from_fn(|index| {
                 inputs.hourly[index].rain_fraction
@@ -394,6 +406,27 @@ impl Wb11HydrologyKernel {
                 inputs.hourly[index].hydrometeor_temperature_c
             }),
             hourly_melt: snow_coupling.hourly_melt_diagnostics,
+            hourly_routed_melt_m: snow_coupling.hourly_routed_melt,
+            hourly_liquid_holding_capacity_m: snow_coupling
+                .hourly_trace
+                .liquid_holding_capacity,
+            hourly_liquid_water_retained_before_m: snow_coupling
+                .hourly_trace
+                .liquid_water_retained_before,
+            hourly_liquid_water_retained_after_m: snow_coupling
+                .hourly_trace
+                .liquid_water_retained_after,
+            hourly_liquid_water_released_m: snow_coupling
+                .hourly_trace
+                .liquid_water_released,
+            hourly_rain_released_m: snow_coupling.hourly_trace.rain_released,
+            hourly_sublimation_m: snow_coupling.hourly_trace.sublimation,
+            hourly_pack_depth_before_m: snow_coupling.hourly_trace.pack_depth_before,
+            hourly_pack_depth_after_m: snow_coupling.hourly_trace.pack_depth_after,
+            hourly_pack_density_before_kg_m3: snow_coupling
+                .hourly_trace
+                .pack_density_before,
+            hourly_pack_density_after_kg_m3: snow_coupling.hourly_trace.pack_density_after,
             modeled_wind_redistribution_m: [0.0; 24],
         };
 
@@ -521,6 +554,7 @@ impl Wb11HydrologyKernel {
             redistributed_melt: 0.0,
             hourly_routed_melt: [0.0; 24],
             hourly_melt_diagnostics: [DirectSnowMeltHourDiagnostics::default(); 24],
+            hourly_trace: SnowHourlyTrace::default(),
             snowpack_state_loss: 0.0,
             runtime_swe: inputs.runtime_swe_m,
             runtime_depth_m: inputs.runtime_depth_m,

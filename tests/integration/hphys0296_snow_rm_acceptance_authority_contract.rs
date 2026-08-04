@@ -85,7 +85,7 @@ fn hphys0296_runner_trace_preserves_snow_rm_acceptance_surfaces() {
     let runner = read_runner_hillslope_sources();
 
     for required_field in [
-        "openwepp-r7h-direct-production-snow-trace-v3",
+        "openwepp-r7h-direct-production-snow-trace-v4",
         "runtime_swe_before_m",
         "runtime_swe_after_m",
         "runtime_depth_before_m",
