@@ -1,3 +1,3 @@
 # Active Prompts
 
-Execute `20260804-execute-target-feasibility-input-loss.md` package-end-to-end.
+No active prompt remains; execution is complete.

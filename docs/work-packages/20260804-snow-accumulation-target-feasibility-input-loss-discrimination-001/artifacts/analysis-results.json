@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "evidence_mode": "Ran: exact retained trace plus checked-in climate and observation analysis",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "verdict": "LOSS_PRIORITY_SIGNAL",
+  "counts": {
+    "annual_mass_rows": 154,
+    "cold_event_rows": 1217,
+    "dry_interval_rows": 253,
+    "dry_annual_rows": 109
+  },
+  "cohort_screens": {
+    "mass_ceiling_site_signal_count": 1,
+    "cold_event_all_phase_site_signal_count": 0,
+    "cold_event_snowfall_site_signal_count": 0,
+    "phase_or_solid_input_site_signal_count": 0,
+    "dry_loss_site_signal_count": 3,
+    "systemic_site_count_required": 3,
+    "input_evidence": false,
+    "loss_evidence": true
+  },
+  "sites": [
+    {
+      "site": "Mica Creek",
+      "primary_years": 34,
+      "median_current_input_mass_ceiling_ratio": 1.5393522064605736,
+      "fraction_years_mass_ceiling_below_observed_peak": 0.0,
+      "median_observed_date_modeled_storage_ratio": 0.5440973746819306,
+      "cold_events": 234,
+      "median_cold_event_all_phase_input_ratio": 1.6595191226096733,
+      "median_cold_event_snowfall_ratio": 1.4634194842399437,
+      "dry_annuals": 18,
+      "median_dry_annual_modeled_minus_observed_loss_m": 0.00494474838719127,
+      "fraction_dry_annual_differences_positive": 0.6111111111111112,
+      "mass_ceiling_signal": false,
+      "dry_loss_signal": false
+    },
+    {
+      "site": "Niwot",
+      "primary_years": 44,
+      "median_current_input_mass_ceiling_ratio": 1.1982030590431083,
+      "fraction_years_mass_ceiling_below_observed_peak": 0.045454545454545456,
+      "median_observed_date_modeled_storage_ratio": 0.29854543217389484,
+      "cold_events": 383,
+      "median_cold_event_all_phase_input_ratio": 1.322834645669291,
+      "median_cold_event_snowfall_ratio": 1.2992085423293747,
+      "dry_annuals": 34,
+      "median_dry_annual_modeled_minus_observed_loss_m": 0.03416926271088114,
+      "fraction_dry_annual_differences_positive": 0.8529411764705882,
+      "mass_ceiling_signal": false,
+      "dry_loss_signal": true
+    },
+    {
+      "site": "Paradise",
+      "primary_years": 41,
+      "median_current_input_mass_ceiling_ratio": 1.1045144356955379,
+      "fraction_years_mass_ceiling_below_observed_peak": 0.0975609756097561,
+      "median_observed_date_modeled_storage_ratio": 0.4161163064764024,
+      "cold_events": 391,
+      "median_cold_event_all_phase_input_ratio": 1.2393700787401576,
+      "median_cold_event_snowfall_ratio": 1.1104344194175073,
+      "dry_annuals": 29,
+      "median_dry_annual_modeled_minus_observed_loss_m": 0.08647852044322751,
+      "fraction_dry_annual_differences_positive": 0.9310344827586207,
+      "mass_ceiling_signal": false,
+      "dry_loss_signal": true
+    },
+    {
+      "site": "Snowbird",
+      "primary_years": 35,
+      "median_current_input_mass_ceiling_ratio": 0.8226677054060823,
+      "fraction_years_mass_ceiling_below_observed_peak": 0.9714285714285714,
+      "median_observed_date_modeled_storage_ratio": 0.19957763393995998,
+      "cold_events": 209,
+      "median_cold_event_all_phase_input_ratio": 1.2335958005249266,
+      "median_cold_event_snowfall_ratio": 1.1666268804422326,
+      "dry_annuals": 10,
+      "median_dry_annual_modeled_minus_observed_loss_m": 0.01862041009423232,
+      "fraction_dry_annual_differences_positive": 0.9,
+      "mass_ceiling_signal": true,
+      "dry_loss_signal": true
+    }
+  ],
+  "claim_limits": [
+    "SNOTEL is a point observation and the fixtures are hillslope representations.",
+    "PRCPSA incorporates WTEQ and is not independent validation or correction authority.",
+    "Cold-event ratios are timing-tolerant magnitude diagnostics; active-day-only alignment yields site signals at Paradise and Snowbird but remains non-systemic.",
+    "Dry-interval loss is resolution-limited, and the third passing site sits exactly at the 10-annual coverage floor.",
+    "No forcing, phase, loss-physics, observation, or default correction is authorized."
+  ],
+  "retained_result_sha256": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4"
+}

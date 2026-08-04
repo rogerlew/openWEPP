@@ -37,6 +37,6 @@ Evidence mode: `Static`
 | SNOTEL fixture README and per-site manifests | Observation and spatial provenance |
 | Snowbird PRCPSA diagnostic sidecar | Derived-series identity and claim limits |
 
-Required-reading budget: `125590` local bytes across the Core files plus this
+Required-reading budget: `130529` local bytes across the Core files plus this
 map, classified `OK`. The canonical thresholds are `OK <= 400000`,
 `WARN > 400000`, and `REQUIRES-JUSTIFICATION > 800000` bytes.

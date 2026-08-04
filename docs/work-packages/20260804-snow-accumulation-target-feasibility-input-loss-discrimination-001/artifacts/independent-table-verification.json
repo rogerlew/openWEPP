@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "evidence_mode": "Ran: independent retained-table reduction and artifact verification",
+  "command": ".venv/bin/python docs/work-packages/20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/tools/verify_results.py",
+  "retained_verification_sha256": "4c12c0d13ec9de144c8cd24240c5ed1b89455e22c3f06d2f4fe8329dd6fae88f",
+  "result_sha256": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4",
+  "annual_mass_row_count": 154,
+  "cold_event_row_count": 1217,
+  "dry_interval_row_count": 253,
+  "recomputed_site_count": 4,
+  "figure_count": 4,
+  "recomputed_verdict": "LOSS_PRIORITY_SIGNAL"
+}

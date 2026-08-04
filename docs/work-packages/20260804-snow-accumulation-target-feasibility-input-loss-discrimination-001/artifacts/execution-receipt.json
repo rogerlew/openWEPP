@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "evidence_mode": "Ran",
+  "command": ".venv/bin/python docs/work-packages/20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/tools/analyze.py",
+  "scaffold_commit": "b92a971b",
+  "analysis_freeze_sha256": "37e9d2356bb82a4293754735be61bf5b40655c4defefd3d92bd5179409dc8ba1",
+  "retained_execution_receipt_sha256": "e88acc3d3ab4bb7f0865677cf2a52b23d8ce012516dde6c4d552a68884fadd21",
+  "result_sha256": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4",
+  "source_authority_hashes": {
+    "predecessor_evidence_manifest": "f1c768d349e80220030b5b57856cf3a45d4a7e383479d66cca70212ecbcb5286",
+    "predecessor_trace_receipt": "accd6ceb45336b371828aa659d5846d4aa53050f042d0df4dfd2996948242701",
+    "predecessor_annual_results": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752",
+    "snowbird_prcpsa_at_intake": "9f956f264b482b37293cf8d9ffdb048b5eb9bb34432660c93d2e6ad4c21d83d1"
+  },
+  "output_hashes": {
+    "annual_mass_csv": "a1d50081d65de8eb4d2301b6b467be6d1d8435155e95985ff2ce250c5b23a4d0",
+    "cold_events_csv": "2462069e2d64a2e55d5eaad67877edac92aea144aef583fd33c724be20492b48",
+    "dry_annual_csv": "4ed8beb67dfb3287799cc839a649f388fa7a82908b92400c81e1421bfdd1613a",
+    "dry_intervals_csv": "f4127fd63a845f0b304b7e5f0cfd58ef01da228516e07f491272ea1db5998b8e",
+    "site_summary_csv": "9e0e0f950df46480515514d627f8e6b89b46e2246973f0735ef53a45d3771442"
+  },
+  "source_trace_rows": {
+    "Mica Creek": 14245,
+    "Niwot": 16437,
+    "Paradise": 16437,
+    "Snowbird": 14245
+  },
+  "maximum_abs_storage_closure_m": 9.9973e-13,
+  "maximum_abs_accumulation_residual_m": 3.4368e-13,
+  "verdict": "LOSS_PRIORITY_SIGNAL"
+}

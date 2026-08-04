@@ -11,6 +11,14 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/`
+  — COMPLETE / LOSS-PRIORITY SIGNAL / COVERAGE-FRAGILE / NO CORRECTION:
+  154 four-site primary windows show a systemic guarded dry-loss signal at
+  Niwot, Paradise, and Snowbird, while only Snowbird fails the all-phase
+  zero-loss ceiling. Cold-event input is non-systemic but padding-sensitive.
+  Snowbird remains multifactor; point-versus-hillslope and observation limits
+  prohibit a forcing or physics correction.
+
 - `20260803-snow-stage3-liquid-signed-hour-trace-closure-001/` — COMPLETE /
   REVIEWED / VERIFIED / BEHAVIOR-NEUTRAL EVIDENCE CLOSURE: additive internal
   JSONL v4 publishes exact Stage-3 liquid and signed-hour forcing/state/thermal

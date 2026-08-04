@@ -1,6 +1,6 @@
 # SNOW-ACCUMULATION-TARGET-FEASIBILITY-AND-INPUT-LOSS-DISCRIMINATION
 
-Status: `scaffolded / queued / prospective operators frozen`
+Status: `complete / LOSS_PRIORITY_SIGNAL / reviewed and verified / coverage-fragile / no correction`
 
 Date: `2026-08-04`
 
@@ -104,7 +104,8 @@ input or consumer.
 - `docs/work-packages/README.md`
 - `docs/ROADMAP.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
-- `target/snow_accumulation_target_feasibility_input_loss_discrimination/`
+- `target/snow_accumulation_target_feasibility_input_loss_discrimination_v2/`
+  (accepted) and the retained rejected-v1 namespace of the same stem.
 
 Everything else is read-only. Generated target outputs remain untracked.
 
@@ -251,15 +252,39 @@ credential path may be committed.
 - [x] (2026-08-04) User authorized package scaffolding and end-to-end execution.
 - [x] (2026-08-04) Froze the prospective operators, truth table, write set, and
   no-correction boundary.
-- [ ] Commit the validated scaffold checkpoint.
-- [ ] Implement and test the package-local analyzer and figure renderer.
-- [ ] Execute the four-site retained-data analysis and generate figures.
-- [ ] Complete synthesis, dual review, finding disposition, dual verification,
-  prompt archival, and final closure.
+- [x] (2026-08-04) Committed validated scaffold checkpoint `b92a971b`.
+- [x] (2026-08-04) Implemented and focused-tested the package-local analyzer,
+  independent table verifier, and figure renderer.
+- [x] (2026-08-04) Verified exact input identities, streamed 61,364 retained
+  trace rows, analyzed 154 primary windows, and generated four figures.
+- [x] (2026-08-04) Applied the frozen truth table: one mass-ceiling site signal,
+  zero cold-event input site signals, and three dry-loss site signals produce
+  `LOSS_PRIORITY_SIGNAL`.
+- [x] (2026-08-04) Completed synthesis, dual independent review, accepted and
+  resolved all findings, and generated a fail-closed v2 evidence set.
+- [x] (2026-08-04) Completed dual terminal verification with no findings,
+  archived the kickoff prompt byte-identically, reconciled the 42-path diff,
+  and closed with no correction authority.
 
 ## Surprises & Discoveries
 
-- None at scaffold. Result-bearing evidence has not been computed.
+- Result-blind implementation inspection found that the cold-event padding
+  rule needed an explicit primary-window boundary. The freeze now clips the
+  one-day timing allowance to the October 1 through observed-peak window before
+  merging; no results had been computed.
+- The zero-loss input ceiling is systemic only at Snowbird: its median ceiling
+  is `0.823`, and 97.1% of its complete years remain below the pillow peak.
+- All four sites have median cold-event all-phase and snowfall ratios above one;
+  the event operator does not support systemic gross cold-input limitation.
+- Niwot, Paradise, and Snowbird pass the annual-first guarded dry-loss screen,
+  satisfying the three-of-four systemic rule. Nearly all detected excess loss
+  occurs in warm or mixed rather than cold dry intervals.
+- Observed WTEQ loss is zero in 58.8% to 74.6% of retained site intervals. The
+  0.1-inch observation increment materially limits magnitude interpretation.
+- Independent review found that active-day-only alignment produces event input
+  signals at Paradise and Snowbird, still below the systemic three-site rule,
+  and that Snowbird supplies the third dry-loss signal with exactly the minimum
+  10 annuals. The cohort verdict is threshold-passing but coverage-fragile.
 
 ## Decision Log
 
@@ -277,10 +302,46 @@ credential path may be committed.
   Rationale: it falsifies a hard raw-gauge ceiling but incorporates the pillow
   target and is therefore non-independent.
   Date/Author: 2026-08-04 / Codex.
+- Decision: clip cold-event timing padding to the primary window.
+  Rationale: this prevents pre-window or post-target mass from entering an
+  event ratio while preserving the prospectively selected one-day timing
+  allowance. The clarification was made before result execution.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: accept `LOSS_PRIORITY_SIGNAL` as the frozen cohort verdict while
+  retaining Snowbird as a multifactor site.
+  Rationale: three sites pass the excess-loss screen, only Snowbird passes the
+  current-input ceiling, and Snowbird passes both. The cohort truth table ranks
+  the next investigation family; it cannot erase the site-specific mass limit.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: treat the cold-event ratios as timing-tolerant magnitude evidence
+  and the dry-loss values as resolution-limited evidence.
+  Rationale: event input includes one-day padding while the observed denominator
+  includes qualifying active-day gains, and SNOTEL WTEQ is quantized at 0.1
+  inch. Neither operator supports direct parameter fitting.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: reject the preliminary result namespace and rerun as v2 with
+  fail-closed source custody.
+  Rationale: independent review found that the first analyzer verified sources
+  against the live predecessor receipt without first binding that receipt to
+  its tracked evidence manifest, and the renderer did not hash-check PRCPSA.
+  Current values matched, scientific operators and thresholds remain unchanged,
+  and only v2 may support closure.
+  Date/Author: 2026-08-04 / Codex.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+The complete frozen analysis selects `LOSS_PRIORITY_SIGNAL`. The result
+prioritizes warm or mixed pre-peak loss timing and energy attribution for the
+next cohort-wide investigation, subject to padding sensitivity and a
+coverage-floor third site. Snowbird remains a multifactor sentinel: its current
+fixture lacks point-pillow mass headroom under no lateral input, and its modeled
+loss is material. No forcing, phase, observation, or physics correction is
+authorized.
 
-Revision note: initial scaffold freezes a read-only, annual-first and
-event-scale discrimination protocol before new result computation.
+Revision note: initial scaffold froze a read-only, annual-first and event-scale
+discrimination protocol before new result computation. A result-blind
+implementation clarification clipped event padding to the primary window. A
+review-identified custody correction rejected the preliminary namespace before
+acceptance and required a fail-closed v2 rerun with unchanged operators. The
+accepted result and claim limits passed dual independent review and dual
+terminal verification and are recorded in `artifacts/`.

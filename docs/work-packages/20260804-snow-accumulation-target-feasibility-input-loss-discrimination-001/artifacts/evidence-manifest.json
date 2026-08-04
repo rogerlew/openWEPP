@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "tracked_summary": "artifacts/analysis-results.json",
+  "retained_namespace": "target/snow_accumulation_target_feasibility_input_loss_discrimination_v2",
+  "rejected_namespace": "target/snow_accumulation_target_feasibility_input_loss_discrimination_rejected_v1",
+  "protocol_custody": {
+    "rejected_v1_freeze_sha256": "0b34d91ccaf507b41b76a0103f8f72f405b012dc886615d337e6eb6eb33a7aca",
+    "accepted_v2_freeze_sha256": "37e9d2356bb82a4293754735be61bf5b40655c4defefd3d92bd5179409dc8ba1",
+    "rejected_v1_result_sha256": "5a806abcdfb8ad10e0b897d50bb9078fd3bd1495ed134b7cd719163cc793223d",
+    "rejected_v1_execution_receipt_sha256": "51c8c9fd56871200f4af1f83f8d86fc8b084afc338e7adcd03b6258f0a5c28b6",
+    "archived_prompt_sha256": "1366d57b2182e9676a6e0e658102a20d25d95e5c20bc8c8d010f70c233eea67a"
+  },
+  "source_authority_hashes": {
+    "predecessor_evidence_manifest": "f1c768d349e80220030b5b57856cf3a45d4a7e383479d66cca70212ecbcb5286",
+    "predecessor_trace_receipt": "accd6ceb45336b371828aa659d5846d4aa53050f042d0df4dfd2996948242701",
+    "predecessor_annual_results": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752",
+    "snowbird_prcpsa_at_intake": "9f956f264b482b37293cf8d9ffdb048b5eb9bb34432660c93d2e6ad4c21d83d1"
+  },
+  "retained_hashes": {
+    "results.json": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4",
+    "execution-receipt.json": "e88acc3d3ab4bb7f0865677cf2a52b23d8ce012516dde6c4d552a68884fadd21",
+    "independent-verification.json": "4c12c0d13ec9de144c8cd24240c5ed1b89455e22c3f06d2f4fe8329dd6fae88f",
+    "figure-manifest.json": "a1c1156eccd8bccd1b424deebd516ec5acc76c5e48ec1222683da1c64f075201"
+  },
+  "figure_hashes": {
+    "mass-ceiling-pathways.png": "98266c6356dd6cff8f43b0f1bcdb4de126f490209414a8b9199965a07d9e1897",
+    "cold-event-input-storage-ratios.png": "a78f1c68eb1e8230e465a4812ebe26bee149ed96ce7a28c119cb38787c982d3d",
+    "dry-interval-loss-comparison.png": "e5cc9d32fbaa6a6616921b9fbea7f84ac93744bd1f41718697cbd5663dec3afb",
+    "snowbird-evidence-chain.png": "3181aaadde4a3ed445afff9f9303b0b03f80171b79a85cbdf7e9b5aa40b2f6ee"
+  },
+  "figure_source_hashes": {
+    "site-summary.csv": "9e0e0f950df46480515514d627f8e6b89b46e2246973f0735ef53a45d3771442",
+    "cold-events.csv": "2462069e2d64a2e55d5eaad67877edac92aea144aef583fd33c724be20492b48",
+    "dry-annual.csv": "4ed8beb67dfb3287799cc839a649f388fa7a82908b92400c81e1421bfdd1613a",
+    "snowbird-evidence-chain.csv": "a19ee47c76e4842ad5f626742b44972d3cc0418cf84aa57ea252a62565cc8ec9"
+  }
+}

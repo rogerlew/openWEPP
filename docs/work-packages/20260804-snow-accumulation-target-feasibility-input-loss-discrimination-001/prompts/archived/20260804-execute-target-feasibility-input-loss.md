@@ -19,12 +19,13 @@ Required reading:
 - On-demand: predecessor machine results/traces, forcing dispositions, EB-04W2
   evidence, and fixture provenance named in the map.
 
-Required-reading budget: `125590` local bytes, `OK`; map:
+Required-reading budget: `130529` local bytes, `OK`; map:
 `artifacts/required-reading-map.md`.
 
 Files: write only the package-local tree, `docs/work-packages/README.md`,
 `docs/ROADMAP.md`, `docs/planning/snow-surface-energy-balance-roadmap.md`, and
-`target/snow_accumulation_target_feasibility_input_loss_discrimination/`.
+`target/snow_accumulation_target_feasibility_input_loss_discrimination_v2/`
+plus the retained rejected-v1 namespace.
 
 Task: execute the package objective end-to-end. Preserve the prospective
 operators and truth table. Verify retained source identities before accepting

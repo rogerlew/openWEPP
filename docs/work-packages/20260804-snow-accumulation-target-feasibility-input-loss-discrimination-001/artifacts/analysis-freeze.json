@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "frozen_before_result_execution",
   "intake_commit": "237ba40d",
-  "result_namespace": "target/snow_accumulation_target_feasibility_input_loss_discrimination",
+  "result_namespace": "target/snow_accumulation_target_feasibility_input_loss_discrimination_v2",
   "observation_role": "DIAGNOSTIC_ONLY",
   "sites": [
     "snotel_mica_creek_st_joe_id",
@@ -17,6 +17,18 @@
     "climates": "tests/fixtures/snotel_observed/<site>/*.cli",
     "observations": "tests/fixtures/snotel_observed/observations/sites/<site>.csv",
     "snowbird_prcpsa": "tests/fixtures/snotel_observed/observations/provenance/snotel_snowbird_ut_prcpsa_diagnostic.json"
+  },
+  "source_identity_expectations": {
+    "predecessor_evidence_manifest_sha256": "f1c768d349e80220030b5b57856cf3a45d4a7e383479d66cca70212ecbcb5286",
+    "predecessor_trace_receipt_sha256": "accd6ceb45336b371828aa659d5846d4aa53050f042d0df4dfd2996948242701",
+    "predecessor_annual_results_sha256": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752",
+    "trace_sha256_by_site": {
+      "snotel_mica_creek_st_joe_id": "447ee65c4273b9e2cac39698006002f09a040a1d30e8e28af58df76a3d3aad8e",
+      "snotel_niwot_co": "773deb596dd1b553b662e25cf2b9670dedfe0a82d40f8b9f2e5d5d57c433eb4d",
+      "snotel_paradise_wa": "d6d5434491f2d219f1d5349a551324fd4a7353414f6d6df1d4dd784da56fb6fb",
+      "snotel_snowbird_ut": "84a64c1b4031584842c4d20023acac92fcffbea946fcce04953fb5a0a339fb5f"
+    },
+    "snowbird_prcpsa_sha256_at_intake_commit": "9f956f264b482b37293cf8d9ffdb048b5eb9bb34432660c93d2e6ad4c21d83d1"
   },
   "constants": {
     "mass_tolerance_m": 1e-9,
@@ -61,7 +73,7 @@
   },
   "cold_accumulation_events": {
     "active_day": "consecutive observed WTEQ records have positive change >= observed_accumulation_event_threshold_m and observed_tmax_c <= 0 C on the current day",
-    "grouping": "group consecutive active days; expand each group by one calendar day before and after for climate/trace timing allowance; merge expanded intervals that overlap or touch",
+    "grouping": "group consecutive active days; expand each group by one calendar day before and after for climate/trace timing allowance, clipped to the primary window; merge expanded intervals that overlap or touch",
     "observed_gain": "sum positive active-day WTEQ changes belonging to the merged event; padding-day changes are excluded",
     "modeled_operands": "sum fixture all-phase precipitation, modeled snowfall, rain retained, pack loss, and storage change across the expanded event interval",
     "coverage": "require every event interval day in climate and trace and every active-day observation operand; otherwise exclude with reason",
