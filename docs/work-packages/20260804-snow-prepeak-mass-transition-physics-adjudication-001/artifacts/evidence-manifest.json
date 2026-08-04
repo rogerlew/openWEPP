@@ -1,4 +1,54 @@
 {
   "schema_version": 1,
-  "status": "queued"
+  "status": "complete_review_and_verification_pass",
+  "scaffold_commit": "6ab0946b",
+  "binary_sha256": "4e0ebd96da7daa74c6a2c22dce200c87208997df9ac424a0e0b31de83b51da47",
+  "frozen_protocol": {
+    "rejected_v1_sha256": "3894a13a173b0c325fc494ef0f9d9b8cc1f79f3bae5acff8b1687c7bb2d9fb00",
+    "v2_sha256": "3c59657ad1494004a72815b6660224652486d225867cc52a19fbb2f5ffadef1b"
+  },
+  "tracked_results": {
+    "cross_fixture_sha256": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752",
+    "event_index_sha256": "e58aac1b31dc7fc7422a07c361419d940cedd1b8782b956da516fd017048a508",
+    "execution_receipt_sha256": "accd6ceb45336b371828aa659d5846d4aa53050f042d0df4dfd2996948242701",
+    "independent_verification_sha256": "6db9c04ecbff84cd5c269fe3501f7f3e3f3088a57d727a395fdf981ea85dfa3a"
+  },
+  "exact_traces": [
+    {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.snow.jsonl",
+      "sha256": "447ee65c4273b9e2cac39698006002f09a040a1d30e8e28af58df76a3d3aad8e",
+      "size_bytes": 652110305
+    },
+    {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.snow.jsonl",
+      "sha256": "773deb596dd1b553b662e25cf2b9670dedfe0a82d40f8b9f2e5d5d57c433eb4d",
+      "size_bytes": 754376884
+    },
+    {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.snow.jsonl",
+      "sha256": "d6d5434491f2d219f1d5349a551324fd4a7353414f6d6df1d4dd784da56fb6fb",
+      "size_bytes": 775849381
+    },
+    {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.snow.jsonl",
+      "sha256": "84a64c1b4031584842c4d20023acac92fcffbea946fcce04953fb5a0a339fb5f",
+      "size_bytes": 659499507
+    }
+  ],
+  "full_dynamic_surfaces": {
+    "event_attribution_sha256": "77ac8cc06c8f946b663a7fe61e3377b00649b07be46df871709a1d00c4555852",
+    "event_table_sha256": "b1d9e7f78883b63215da1603f3109a6d3fc54fa7903c5e4889c200e8d3622a72",
+    "hour_class_table_sha256": "49c8a2df8b260de5f27eec738ff643361430574694dc917e519cfbde77288810"
+  },
+  "figure_png_sha256": {
+    "coe-component-depths.png": "3bf279654994adcdaa2cffd7a94917949e0ad2e561d06fc790c1999025ca242a",
+    "hourly-coe-by-temperature.png": "e7760fb453537701013f20ca62a58c8c73fe4567be26d52128ae95a7110230f8",
+    "linked-mass-boundaries.png": "22ca894a3cba70218edd55b375c39ac13f53595be1842b58ad4bca3f71f4c914",
+    "pack-loss-by-precipitation-context.png": "8aafdb05928aaf4238623bb8f7f55c716d77b6fc0553686b91a443ffe8e2452d",
+    "signed-opportunity-vs-peak-deficit.png": "61eb42e33920c5a78209b9e384367e4378794ddacc3c3ea75fe670339a339927",
+    "stage3-store-semantics.png": "e950399e09ae20a615f61c4fde569893c2b13b28bbc1f270afda9c971ff318b0"
+  },
+  "prompt_sha256": "e8e0084a1274179f49153a6420124b131e0fc7f19f44c5f338986bcc91c8bb4c",
+  "owned_path_count": 56,
+  "owned_path_list_sha256": "caa2f88cd1ceeda03776445feffb75414bc544d95eeb290b09eb1f242099eeb1"
 }

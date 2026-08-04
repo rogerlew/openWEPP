@@ -1,6 +1,6 @@
 # SNOW-PREPEAK-MASS-TRANSITION-PHYSICS-ADJUDICATION
 
-Status: `queued / scaffold`
+Status: `complete / upstream-generation priority / review and verification pass`
 
 Date: `2026-08-04`
 
@@ -136,8 +136,10 @@ may rank correction families but cannot create equation authority.
 
 ## Prospective Analysis Contract
 
-`artifacts/analysis-freeze.json`, `artifacts/operand-lineage.md`, and
-`artifacts/adjudication-rules.md` are binding before result-bearing execution.
+The scaffold `artifacts/analysis-freeze.json` was rejected before result-bearing
+execution by the result-blind static audit. `artifacts/analysis-freeze-v2.json`,
+`artifacts/protocol-amendment.md`, `artifacts/operand-lineage.md`, and the v2
+truth table are binding for execution.
 The executor may correct a deterministic implementation bug in the
 package-local analysis tool only if the correction, invalidated result custody,
 and unchanged scientific operator are recorded. Result-driven changes to
@@ -287,13 +289,28 @@ removed before each replay and the exact allowed selector map is recorded.
 ## Progress
 
 - [x] (2026-08-04) User authorized scaffolding and end-to-end execution.
-- [ ] Commit the scaffold and frozen analysis contract.
-- [ ] Complete static audits and exact four-site execution.
-- [ ] Complete adjudication, figures, review, verification, and local commit.
+- [x] (2026-08-04) Committed scaffold and v1 freeze at `6ab0946b`.
+- [x] (2026-08-04) Result-blind audits rejected incomplete v1 operators and
+  froze the corrected v2 protocol before model execution.
+- [x] (2026-08-04) Completed four exact CLI replays, 61,364-row compatibility
+  comparison, 154 primary windows, independent reconstruction, and six figures.
+- [x] (2026-08-04) Completed dual review, finding disposition, dual terminal
+  verification, lifecycle reconciliation, and local completion commit.
 
 ## Surprises & Discoveries
 
-None at scaffold.
+- The scaffold's downstream screen was causally inverted: current Stage-3
+  disposition controls neither runtime SWE nor hydrologic liquid publication.
+- `stage3_cold_content_before_j_m2` is post-CoE/post-density state, so it cannot
+  quantify pre-debit cold content.
+- Producer Stage-3 retained amount is newly retained incoming, not the complete
+  signed day-over-day layer-store delta.
+- The initial compatibility parser counted expected v4 schema/hourly additions
+  as differences. Retained outputs were identity-checked and reanalyzed after
+  projection repair; all 61,364 pre-v4 rows are exact.
+- Daily-local signed opportunity is positive in every primary site-year but
+  passes the frozen materiality screen at only two sites. Cold opportunity and
+  Stage-3 capture are small at every site.
 
 ## Decision Log
 
@@ -306,7 +323,23 @@ None at scaffold.
   Rationale: the empirical CoE terms and Stage-3 cold content do not by
   themselves authorize a replacement coupled equation.
   Date/Author: 2026-08-04 / Codex.
+- Decision: supersede v1 with a result-blind v2 protocol before execution.
+  Rationale: exact operators and a causally valid truth table were required;
+  numerical thresholds, cohort, selectors, and observation role did not move.
+  Date/Author: 2026-08-04 / Codex plus four independent static audits.
+- Decision: rank `UPSTREAM_GENERATION_PRIORITY` without authorizing a
+  correction.
+  Rationale: Stage 3 is excluded as the current causal SWE/runoff path, while
+  daily signed and post-CoE cold indices fail cohort-wide materiality. Gross
+  CoE/loss tracking localizes but does not prove excessive generation.
+  Date/Author: 2026-08-04 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. No result or correction-family verdict is claimed at scaffold.
+Execution supports an upstream-generation/total-snow-water authority successor,
+not downstream retention tuning. The exact current ledgers close, no duplicate
+SWE debit exists, signed-hour asymmetry is insufficient across the cohort, and
+post-CoE cold content is both temporally mislocated and quantitatively small.
+No production correction, fitted parameter, forcing exoneration, or validation
+claim is available. Dual independent review and fresh terminal verification
+pass with no remaining findings.

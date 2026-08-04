@@ -1,9 +1,9 @@
 # Pre-Implementation Contract Gate
 
-Status: `NOT_APPLICABLE / no production implementation authorized`
+Status: `not invoked / read-only adjudication`
 
-Evidence mode: `Static scaffold`
+Evidence mode: `Static`
 
-The package is read-only with respect to kernel, contract, and test paths.
-Any need for production implementation stops this package and requires a new
-contract-first work package.
+No production implementation was authorized or attempted. The successor must
+open a new contract-first package before changing state authority, CoE
+generation, signed-hour handling, capacity ownership, or consumers.

@@ -1,0 +1,112 @@
+{
+  "schema_version": 2,
+  "status": "frozen_before_result_execution",
+  "supersedes": "analysis-freeze.json",
+  "supersession_reason": "Result-blind static audit found incomplete operators and a causally inverted downstream verdict screen before any new replay or result was read.",
+  "result_namespace": "target/snow_prepeak_mass_transition_physics_adjudication_v2",
+  "scaffold_commit": "6ab0946b",
+  "intake_commit": "8087f3ee9d6f3fb4f5661abf389be6b0fcc8e843",
+  "sites": [
+    {
+      "fixture_manifest_sha256": "4de5001f8b014b6219c1f2dabea678f8e39bb49439419ec0c1700ece10429633",
+      "site": "snotel_mica_creek_st_joe_id"
+    },
+    {
+      "fixture_manifest_sha256": "60dd238f4dbb7c32dc8dbeb57f8298b77edf1e839555c3608d163cc2bcdcc513",
+      "site": "snotel_niwot_co"
+    },
+    {
+      "fixture_manifest_sha256": "c5eb31b8890ba1b1ac94b9ff2bcf6fc509e4b3ca83815dfdd44314c9b8e33214",
+      "site": "snotel_paradise_wa"
+    },
+    {
+      "fixture_manifest_sha256": "f6c344f72ec7fb2e56085a6d88cc77340f12471c71171b026bfc8599d5f39ffc",
+      "site": "snotel_snowbird_ut"
+    }
+  ],
+  "source_fixture_root": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/fixtures/baseline_replay",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "selectors": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  },
+  "constants": {
+    "latent_heat_fusion_j_kg": 333550.0,
+    "mass_closure_tolerance_m": 1e-09,
+    "rho_water_kg_m3": 1000.0,
+    "zero_tolerance_m": 1e-12
+  },
+  "eligibility_and_peak_operators": {
+    "observation_rows": "Use nonmissing observed_swe_mm; select the maximum positive value within each observation water_year; earliest date wins ties; skip years whose maximum is nonpositive.",
+    "primary_window": "October 1 of water_year - 1 through the observed positive peak date, inclusive; require both dates in the climate/trace chronology.",
+    "right_censoring": "Exclude water year 2025 from all primary site summaries and verdict screens; retain it only in explicitly named sensitivity rows.",
+    "modeled_peak": "Maximum runtime_swe_after_m within the frozen window; earliest date wins ties.",
+    "peak_deficit": "observed_peak_swe_m minus modeled_peak_swe_m; ratios using this denominator are eligible only when it is strictly greater than zero_tolerance_m."
+  },
+  "aggregation_operators": {
+    "annual_first": "Compute every metric per site and eligible water year before aggregation.",
+    "site_summary": "Python statistics.median over uncensored eligible annual values; ratio metrics are computed per annual row before the site median.",
+    "cohort_summary": "Count sites passing their site-median rule; do not pool water volume or weight sites by record length.",
+    "zero_denominators": "Represent ratios with incoming, solid loss, or positive peak deficit at or below zero_tolerance_m as null and exclude them from that ratio median; report exclusions.",
+    "systemic_direction": "A primary site-year is eligible when peak deficit and solid-pack loss exceed zero_tolerance_m. Direction is positive when its daily-local signed opportunity divided by peak deficit is greater than zero. Require positive direction at every site and at least 75 percent of eligible primary site-years.",
+    "event": {
+      "active_day": "snowpack_swe_loss_m >= the selected threshold",
+      "grouping": "Consecutive active calendar days; any inactive day ends the event.",
+      "ranking": "Descending aggregate event snowpack_swe_loss_m; chronological order breaks ties.",
+      "reporting": "Retain every event; figures may identify the top three per site-year without changing inferential summaries."
+    }
+  },
+  "event_thresholds_m_per_day": [
+    0.0001,
+    0.0005,
+    0.001
+  ],
+  "primary_event_threshold_m_per_day": 0.0005,
+  "hour_class_operators": {
+    "temperature": [
+      "air_temperature_c <= 0",
+      "0 < air_temperature_c <= 2",
+      "air_temperature_c > 2"
+    ],
+    "precipitation": "snowfall when snowfall_swe_m > tolerance only; rain when rain_m > tolerance only; mixed_or_both when both; dry when neither.",
+    "radiation": "positive when radiation_mj_m2 > tolerance; zero otherwise.",
+    "pack_state": "pack_present when pack_depth_before_m > tolerance; snow_free otherwise.",
+    "mixed_signed_day": "gross positive applied CoE melt > tolerance and negative applied CoE melt < -tolerance within the same day.",
+    "components": "Report signed A/B/C/D totals and their totals conditional on the sign of the summed applied hourly CoE value; never call them energy shares and never allocate the cap among components."
+  },
+  "diagnostic_indices": {
+    "daily_local_signed_opportunity_primary": "For each day, gross positive applied CoE melt minus max(daily signed applied CoE melt, 0); sum daily values over the window; no state feedback.",
+    "window_nonlocal_signed_index_secondary": "Gross positive applied CoE melt over the window minus max(window signed applied CoE melt, 0); loose nonlocal algebraic index only.",
+    "post_coe_stage3_cold_opportunity_secondary": "Daily min(stage3 incoming liquid, positive stage3 cold content before / (rho_water * latent_heat_fusion)); this is post-CoE start-of-Stage-3 state, mixes released rain and solid loss, may reuse persistent cold content across days, and has no state feedback.",
+    "solid_source_limited_cold_index_secondary": "Daily min(snowpack_swe_loss_m, positive stage3 cold content before / (rho_water * latent_heat_fusion)); still post-CoE, temporally reusable, and feedback-free.",
+    "overlap": "Report daily min(daily-local signed opportunity, post-CoE Stage-3 cold opportunity) as an overlap cap; never add the indices as independent recovery."
+  },
+  "descriptive_screens": {
+    "downstream_capture_throughput": "Site median of annual (sum positive producer retained amount + producer refrozen amount) / incoming >= 0.5. This is a diagnostic-arm throughput measure, not endpoint net storage and not causal peak-SWE evidence.",
+    "upstream_ledger_localization": "Site median annual gross-positive applied melt / solid-pack loss lies in [0.8, 1.2]. This localizes the current debit but is not independent evidence that melt is excessive."
+  },
+  "causal_adjudication": {
+    "static_stage3_exclusion": "If exact current code and real-consumer evidence confirm Stage-3 retained/routed/refrozen outcomes do not control runtime SWE or downstream liquid publication, DOWNSTREAM_RETENTION_REFREEZE_PRIORITY is excluded regardless of the descriptive throughput screen.",
+    "signed_materiality": "Site median daily-local signed opportunity / positive observed-minus-modeled peak SWE deficit >= 0.25 at three or more sites.",
+    "signed_systemic": "Positive direction at all four sites and at least 75 percent of eligible primary site-years.",
+    "preexport_priority": "Select PREEXPORT_ENTHALPY_OR_SIGNED_HOUR_PRIORITY only when static Stage-3 exclusion, signed materiality, and signed systemic screens all pass. This ranks a contract-first correction family; it does not validate signed netting as physics.",
+    "upstream_priority": "Select UPSTREAM_GENERATION_PRIORITY only when static Stage-3 exclusion passes, signed materiality/systemic does not jointly pass, and upstream ledger localization passes at three or more sites. This is an investigation priority, not proof that CoE forcing or coefficients are excessive.",
+    "downstream_priority": "Not selectable under confirmed current Stage-3 decoupling. If static consumer evidence contradicts decoupling, stop and issue a new result-blind protocol before using this verdict.",
+    "multifactor_priority": "Select only if two causally independent production paths pass prospectively declared materiality screens. Descriptive Stage-3 throughput, cold opportunity, and upstream localization are not independent causal paths.",
+    "unresolved": "Select when real-consumer ordering is not proven, coverage is insufficient, static and dynamic evidence conflict, or no selectable priority rule passes."
+  },
+  "claim_limits": [
+    "CoE A/B/C/D are empirical melt-depth contributions, not physical energy shares",
+    "opportunity indices are feedback-free and are not simulated SWE recovery",
+    "post-CoE Stage-3 cold content is not pre-CoE or pre-export cold content",
+    "positive producer retention plus refreeze is throughput, not endpoint net storage",
+    "the linked upstream and downstream ledgers are nested boundaries, not one additive partition",
+    "legacy routing is a rollback bound, not correction authority",
+    "forcing and observation uncertainty remain unless directly tested",
+    "no production correction or calibration is authorized"
+  ]
+}

@@ -1,5 +1,5 @@
 # Archived Prompts
 
-Status: `empty at scaffold`
+Status: `execution prompt archived`
 
-The active kickoff will be retained here unchanged after execution begins.
+The dated kickoff prompt is retained here unchanged from the scaffold commit.

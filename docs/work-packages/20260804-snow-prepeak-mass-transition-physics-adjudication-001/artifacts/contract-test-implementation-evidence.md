@@ -1,8 +1,10 @@
 # Contract-Test Implementation Evidence
 
-Status: `NOT_APPLICABLE / protected`
+Status: `not applicable / no contract-test edit`
 
-Evidence mode: `Static scaffold`
+Evidence mode: `Static`
 
-No production or contract behavior is changed; existing ledger and trace tests
-remain protected gates.
+No canonical contract test was authored or modified. Existing focused snow
+tests are terminal validation only. Package-local Python tests cover the frozen
+analysis operators; the independent verifier reconstructs the real trace
+consumer separately.

@@ -1,4 +1,49 @@
 {
   "schema_version": 1,
-  "status": "not_run"
+  "status": "executed_full_surface_retained_under_target",
+  "diagnostic_screen_status": "ASSUMED_FOR_EXECUTION",
+  "primary_event_threshold_m_per_day": 0.0005,
+  "full_event_surface": {
+    "event_count_all_windows": 2865,
+    "event_count_primary_windows": 2830,
+    "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/results/event-attribution.json",
+    "sha256": "77ac8cc06c8f946b663a7fe61e3377b00649b07be46df871709a1d00c4555852"
+  },
+  "source_tables": {
+    "event_attribution": {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/tables/event-attribution.csv",
+      "sha256": "b1d9e7f78883b63215da1603f3109a6d3fc54fa7903c5e4889c200e8d3622a72"
+    },
+    "hour_class_summary": {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/tables/hour-class-summary.csv",
+      "sha256": "49c8a2df8b260de5f27eec738ff643361430574694dc917e519cfbde77288810"
+    }
+  },
+  "primary_site_event_summaries": [
+    {
+      "event_count": 519,
+      "maximum_event_loss_m": 0.1948638939823466,
+      "median_event_loss_m": 0.00804852328679276,
+      "site": "snotel_mica_creek_st_joe_id"
+    },
+    {
+      "event_count": 792,
+      "maximum_event_loss_m": 0.19331398334761957,
+      "median_event_loss_m": 0.008428728873093235,
+      "site": "snotel_niwot_co"
+    },
+    {
+      "event_count": 836,
+      "maximum_event_loss_m": 0.6584387307855438,
+      "median_event_loss_m": 0.014722539836725244,
+      "site": "snotel_paradise_wa"
+    },
+    {
+      "event_count": 683,
+      "maximum_event_loss_m": 0.3729910658535941,
+      "median_event_loss_m": 0.01209692277150987,
+      "site": "snotel_snowbird_ut"
+    }
+  ],
+  "claim_limit": "Events and A/B/C/D terms are empirical depth diagnostics; opportunity indices contain no state feedback and are not simulated SWE recovery."
 }

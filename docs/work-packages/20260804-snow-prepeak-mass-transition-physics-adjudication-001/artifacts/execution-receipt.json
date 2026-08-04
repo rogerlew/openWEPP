@@ -1,4 +1,775 @@
 {
+  "analysis_correction": {
+    "corrections": [
+      "Project expected v4 top-level and nested hourly additions plus the v3-to-v4 schema label before comparing pre-v4 fields.",
+      "Reconstruct snowfall from hourly snowfall_swe_m for storage and annual evidence; compare reported accumulation only afterward.",
+      "Compare top-level CoE routed melt to Stage-3 routed liquid for the required anti-alias, while separately confirming the exact top-level-to-incoming handoff."
+    ],
+    "invalidated_result_surface": "compatibility booleans, snowfall/storage proof lineage, and top-level-routed anti-alias counters",
+    "model_outputs_rerun": false,
+    "scientific_operators_changed": false
+  },
+  "analysis_mode": "retained_exact_run_reanalysis_after_pre_v4_projection_fix",
+  "binary": {
+    "build_command": "cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
+    "path": "target/release/openwepp-cli-hill",
+    "sha256": "4e0ebd96da7daa74c6a2c22dce200c87208997df9ac424a0e0b31de83b51da47",
+    "size_bytes": 11249152
+  },
+  "freeze": {
+    "path": "docs/work-packages/20260804-snow-prepeak-mass-transition-physics-adjudication-001/artifacts/analysis-freeze-v2.json",
+    "sha256": "3c59657ad1494004a72815b6660224652486d225867cc52a19fbb2f5ffadef1b"
+  },
+  "results": {
+    "cross_fixture": {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/results/cross-fixture-results.json",
+      "sha256": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752"
+    },
+    "event_attribution": {
+      "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/results/event-attribution.json",
+      "sha256": "77ac8cc06c8f946b663a7fe61e3377b00649b07be46df871709a1d00c4555852"
+    }
+  },
+  "scaffold_commit": "6ab0946b",
   "schema_version": 1,
-  "status": "not_run"
+  "sites": {
+    "snotel_mica_creek_st_joe_id": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/fixtures/snotel_mica_creek_st_joe_id",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "copied_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "2083d4324d6acba4c981d11b2661fbcca8892be0672a5734b610c7fafd7f0238",
+            "size_bytes": 1499
+          },
+          {
+            "path": "p1.cli",
+            "sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63",
+            "size_bytes": 998092
+          },
+          {
+            "path": "p1.man",
+            "sha256": "e32690e88466b80d2abc45dae35bca8f8ec2d8213645c77a24208cc989c0d20c",
+            "size_bytes": 5451
+          },
+          {
+            "path": "p1.run",
+            "sha256": "08d798e4b294f6221166cbde60417fe519d29f648945486dc9faf4396be06be1",
+            "size_bytes": 244
+          },
+          {
+            "path": "p1.slp",
+            "sha256": "b5eceaddaf95fa8776ee0154fef5b3405cc8a37e9d6c6cf0ce0581cecc86e63f",
+            "size_bytes": 159
+          },
+          {
+            "path": "p1.sol",
+            "sha256": "0005b9266f500991a02d0786e8da032e0c4aa351c88017682cffc2524b60ec9b",
+            "size_bytes": 4218
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "4de5001f8b014b6219c1f2dabea678f8e39bb49439419ec0c1700ece10429633"
+      },
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "observation": {
+        "path": "tests/fixtures/snotel_observed/observations/sites/snotel_mica_creek_st_joe_id.csv",
+        "role": "DIAGNOSTIC_ONLY",
+        "sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce"
+      },
+      "outputs": {
+        "openwepp_hillslope_run_manifest.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/openwepp_hillslope_run_manifest.json",
+          "sha256": "c6e555bf4c698653c829cc00bfa16d73c2ff77df118172d1822b301a5793266e",
+          "size_bytes": 9641
+        },
+        "snotel_mica_creek_st_joe_id-adjudication.hbp": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.hbp",
+          "sha256": "273b0e7c318be5e90c4d0e80b7933d1d22ed2c2342d8427bffd230fe11ad70a8",
+          "size_bytes": 2142
+        },
+        "snotel_mica_creek_st_joe_id-adjudication.loss.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.loss.json",
+          "sha256": "ec94a455461e8d6f2daa050b419083b4443df0606fa311e12e3e075b921594a4",
+          "size_bytes": 401
+        },
+        "snotel_mica_creek_st_joe_id-adjudication.run": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.run",
+          "sha256": "fee90b0eb0d5c51b1b0d2f830b3da483c5219e57564f0d098c52330491faceec",
+          "size_bytes": 1252
+        },
+        "snotel_mica_creek_st_joe_id-adjudication.snow.jsonl": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.snow.jsonl",
+          "sha256": "447ee65c4273b9e2cac39698006002f09a040a1d30e8e28af58df76a3d3aad8e",
+          "size_bytes": 652110305
+        },
+        "snotel_mica_creek_st_joe_id-adjudication.wat.parquet": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/snotel_mica_creek_st_joe_id-adjudication.wat.parquet",
+          "sha256": "9932e44e95dce560b5aa2c8cd3814ddf662ab43626f7766f3aa46aadc6d0b592",
+          "size_bytes": 1065123
+        },
+        "stderr.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/stderr.txt",
+          "sha256": "4922d50a9dae897045236aa51f444237376d047caef8320a934d9dc8f468002a",
+          "size_bytes": 386
+        },
+        "stdout.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_mica_creek_st_joe_id/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        }
+      },
+      "protected_output_identity": {
+        "hbp_current_sha256": "273b0e7c318be5e90c4d0e80b7933d1d22ed2c2342d8427bffd230fe11ad70a8",
+        "hbp_exact": true,
+        "hbp_predecessor_sha256": "273b0e7c318be5e90c4d0e80b7933d1d22ed2c2342d8427bffd230fe11ad70a8",
+        "pass_output": "not emitted by this direct hillslope surface",
+        "wat_current_sha256": "9932e44e95dce560b5aa2c8cd3814ddf662ab43626f7766f3aa46aadc6d0b592",
+        "wat_exact": true,
+        "wat_predecessor_sha256": "9932e44e95dce560b5aa2c8cd3814ddf662ab43626f7766f3aa46aadc6d0b592"
+      },
+      "removed_openwepp_key_names": [],
+      "returncode": 0,
+      "site": "snotel_mica_creek_st_joe_id",
+      "source_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "2083d4324d6acba4c981d11b2661fbcca8892be0672a5734b610c7fafd7f0238",
+            "size_bytes": 1499
+          },
+          {
+            "path": "p1.cli",
+            "sha256": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63",
+            "size_bytes": 998092
+          },
+          {
+            "path": "p1.man",
+            "sha256": "e32690e88466b80d2abc45dae35bca8f8ec2d8213645c77a24208cc989c0d20c",
+            "size_bytes": 5451
+          },
+          {
+            "path": "p1.run",
+            "sha256": "08d798e4b294f6221166cbde60417fe519d29f648945486dc9faf4396be06be1",
+            "size_bytes": 244
+          },
+          {
+            "path": "p1.slp",
+            "sha256": "b5eceaddaf95fa8776ee0154fef5b3405cc8a37e9d6c6cf0ce0581cecc86e63f",
+            "size_bytes": 159
+          },
+          {
+            "path": "p1.sol",
+            "sha256": "0005b9266f500991a02d0786e8da032e0c4aa351c88017682cffc2524b60ec9b",
+            "size_bytes": 4218
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "4de5001f8b014b6219c1f2dabea678f8e39bb49439419ec0c1700ece10429633"
+      }
+    },
+    "snotel_niwot_co": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/fixtures/snotel_niwot_co",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "copied_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "8fd63646804f31a7a6c7be8225c6010dbcb8617c003d2d5e750b859ad7579db2",
+            "size_bytes": 1551
+          },
+          {
+            "path": "p2.cli",
+            "sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead",
+            "size_bytes": 1151532
+          },
+          {
+            "path": "p2.man",
+            "sha256": "e12fe947598ae9fd4353b27fbc4274d8e479791059aa6a92d6c7af4a80acf1a6",
+            "size_bytes": 5955
+          },
+          {
+            "path": "p2.run",
+            "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+            "size_bytes": 244
+          },
+          {
+            "path": "p2.slp",
+            "sha256": "197be010d9c839baa29b5fb7e55a8e3211d6a8213b9a498e3a3f16d3c282084f",
+            "size_bytes": 158
+          },
+          {
+            "path": "p2.sol",
+            "sha256": "77c39a4ebbd78640608c08d071f92ef3ae7e9a53e7dd6838bdb67709f61c90af",
+            "size_bytes": 4368
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "60dd238f4dbb7c32dc8dbeb57f8298b77edf1e839555c3608d163cc2bcdcc513"
+      },
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "observation": {
+        "path": "tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+        "role": "DIAGNOSTIC_ONLY",
+        "sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c"
+      },
+      "outputs": {
+        "openwepp_hillslope_run_manifest.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/openwepp_hillslope_run_manifest.json",
+          "sha256": "9edf497081f70af32ece781261bfc3ba87747f5600a7fa60c6996eb877014a24",
+          "size_bytes": 9334
+        },
+        "snotel_niwot_co-adjudication.hbp": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.hbp",
+          "sha256": "a7fafa044206cadcadb1c7a5b1369dd4a53f728dcb8eb987f2a8c652087407b4",
+          "size_bytes": 2142
+        },
+        "snotel_niwot_co-adjudication.loss.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.loss.json",
+          "sha256": "91a2f3423b472174a7b17cddbd7512982b77bb28c16832b3c20cc8dd9bc4c353",
+          "size_bytes": 374
+        },
+        "snotel_niwot_co-adjudication.run": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.run",
+          "sha256": "3a315457dbb7c0a44b3a6003cf28444dd862aa58f121a53bcb585e5dc4e0c408",
+          "size_bytes": 1120
+        },
+        "snotel_niwot_co-adjudication.snow.jsonl": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.snow.jsonl",
+          "sha256": "773deb596dd1b553b662e25cf2b9670dedfe0a82d40f8b9f2e5d5d57c433eb4d",
+          "size_bytes": 754376884
+        },
+        "snotel_niwot_co-adjudication.wat.parquet": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/snotel_niwot_co-adjudication.wat.parquet",
+          "sha256": "6040e26d35e508921bf9dee5a2d55e7b7e8bd323e3390c1fe19699dee261bc45",
+          "size_bytes": 1327759
+        },
+        "stderr.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/stderr.txt",
+          "sha256": "a53ca3ba83c3cccf323f0fe6f70174174250ab8275988740a7e7d44348c3b693",
+          "size_bytes": 362
+        },
+        "stdout.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_niwot_co/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        }
+      },
+      "protected_output_identity": {
+        "hbp_current_sha256": "a7fafa044206cadcadb1c7a5b1369dd4a53f728dcb8eb987f2a8c652087407b4",
+        "hbp_exact": true,
+        "hbp_predecessor_sha256": "a7fafa044206cadcadb1c7a5b1369dd4a53f728dcb8eb987f2a8c652087407b4",
+        "pass_output": "not emitted by this direct hillslope surface",
+        "wat_current_sha256": "6040e26d35e508921bf9dee5a2d55e7b7e8bd323e3390c1fe19699dee261bc45",
+        "wat_exact": true,
+        "wat_predecessor_sha256": "6040e26d35e508921bf9dee5a2d55e7b7e8bd323e3390c1fe19699dee261bc45"
+      },
+      "removed_openwepp_key_names": [],
+      "returncode": 0,
+      "site": "snotel_niwot_co",
+      "source_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "8fd63646804f31a7a6c7be8225c6010dbcb8617c003d2d5e750b859ad7579db2",
+            "size_bytes": 1551
+          },
+          {
+            "path": "p2.cli",
+            "sha256": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead",
+            "size_bytes": 1151532
+          },
+          {
+            "path": "p2.man",
+            "sha256": "e12fe947598ae9fd4353b27fbc4274d8e479791059aa6a92d6c7af4a80acf1a6",
+            "size_bytes": 5955
+          },
+          {
+            "path": "p2.run",
+            "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+            "size_bytes": 244
+          },
+          {
+            "path": "p2.slp",
+            "sha256": "197be010d9c839baa29b5fb7e55a8e3211d6a8213b9a498e3a3f16d3c282084f",
+            "size_bytes": 158
+          },
+          {
+            "path": "p2.sol",
+            "sha256": "77c39a4ebbd78640608c08d071f92ef3ae7e9a53e7dd6838bdb67709f61c90af",
+            "size_bytes": 4368
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "7814a741eac8ab4447845d4ca43e8cc515fb0d720b29b39440d8dbd47c388e59",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "60dd238f4dbb7c32dc8dbeb57f8298b77edf1e839555c3608d163cc2bcdcc513"
+      }
+    },
+    "snotel_paradise_wa": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/fixtures/snotel_paradise_wa",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "copied_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "b136a0db72db3dec72d59a68ec1fcff4cc7c0c2d7926519fc42c90025f63bd6f",
+            "size_bytes": 1388
+          },
+          {
+            "path": "p2.cli",
+            "sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c",
+            "size_bytes": 1151532
+          },
+          {
+            "path": "p2.man",
+            "sha256": "dbdff638d59bc19cb9c2a8a19098500948abe080e23687220ce66846c0b3a923",
+            "size_bytes": 5955
+          },
+          {
+            "path": "p2.run",
+            "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+            "size_bytes": 244
+          },
+          {
+            "path": "p2.slp",
+            "sha256": "56990f7b9efd28e342602d8147c8991fa1ac672c47ec2ff3542319629dbd20ac",
+            "size_bytes": 174
+          },
+          {
+            "path": "p2.sol",
+            "sha256": "f47010ade9762d8a0982942bd416932b2f1944aa45dea786dd74c47932bffd71",
+            "size_bytes": 6557
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "27a59cffbb0a7dd0c6f303233fd1a2537ff90d458b0a9295f98111e17df404a7",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "c5eb31b8890ba1b1ac94b9ff2bcf6fc509e4b3ca83815dfdd44314c9b8e33214"
+      },
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "observation": {
+        "path": "tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+        "role": "DIAGNOSTIC_ONLY",
+        "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
+      },
+      "outputs": {
+        "openwepp_hillslope_run_manifest.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/openwepp_hillslope_run_manifest.json",
+          "sha256": "8abf021541e3fbb5008248c1fd203e2e2c71c7b84080bf82f63ac25cc8d509d0",
+          "size_bytes": 9412
+        },
+        "snotel_paradise_wa-adjudication.hbp": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.hbp",
+          "sha256": "9ba61787ebc2146a6279563d2de335d54d9d8ad8e0d8874b0cdd95b2eb7f3518",
+          "size_bytes": 2142
+        },
+        "snotel_paradise_wa-adjudication.loss.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.loss.json",
+          "sha256": "dbdabdcb053626a34a5416a8c426d5ae777940d99863223024e92b39c83e0ecb",
+          "size_bytes": 377
+        },
+        "snotel_paradise_wa-adjudication.run": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.run",
+          "sha256": "bcf897f0e59ac358907414285de16d511a56a6087b82c99bdf40f9b048726d02",
+          "size_bytes": 1153
+        },
+        "snotel_paradise_wa-adjudication.snow.jsonl": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.snow.jsonl",
+          "sha256": "d6d5434491f2d219f1d5349a551324fd4a7353414f6d6df1d4dd784da56fb6fb",
+          "size_bytes": 775849381
+        },
+        "snotel_paradise_wa-adjudication.wat.parquet": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/snotel_paradise_wa-adjudication.wat.parquet",
+          "sha256": "50810fc0f0748117ce219bf613677d380a39f670773c7ddbb98f2aff0a12b9af",
+          "size_bytes": 1366076
+        },
+        "stderr.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/stderr.txt",
+          "sha256": "80806a9971cbbc57eda00f03b3db728c80d137a780563ac3beb4310f84ec6251",
+          "size_bytes": 368
+        },
+        "stdout.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_paradise_wa/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        }
+      },
+      "protected_output_identity": {
+        "hbp_current_sha256": "9ba61787ebc2146a6279563d2de335d54d9d8ad8e0d8874b0cdd95b2eb7f3518",
+        "hbp_exact": true,
+        "hbp_predecessor_sha256": "9ba61787ebc2146a6279563d2de335d54d9d8ad8e0d8874b0cdd95b2eb7f3518",
+        "pass_output": "not emitted by this direct hillslope surface",
+        "wat_current_sha256": "50810fc0f0748117ce219bf613677d380a39f670773c7ddbb98f2aff0a12b9af",
+        "wat_exact": true,
+        "wat_predecessor_sha256": "50810fc0f0748117ce219bf613677d380a39f670773c7ddbb98f2aff0a12b9af"
+      },
+      "removed_openwepp_key_names": [],
+      "returncode": 0,
+      "site": "snotel_paradise_wa",
+      "source_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "b136a0db72db3dec72d59a68ec1fcff4cc7c0c2d7926519fc42c90025f63bd6f",
+            "size_bytes": 1388
+          },
+          {
+            "path": "p2.cli",
+            "sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c",
+            "size_bytes": 1151532
+          },
+          {
+            "path": "p2.man",
+            "sha256": "dbdff638d59bc19cb9c2a8a19098500948abe080e23687220ce66846c0b3a923",
+            "size_bytes": 5955
+          },
+          {
+            "path": "p2.run",
+            "sha256": "3930f491c95de7b479948b554567dcf907d211955a513ce878d79dc2c24fcbe9",
+            "size_bytes": 244
+          },
+          {
+            "path": "p2.slp",
+            "sha256": "56990f7b9efd28e342602d8147c8991fa1ac672c47ec2ff3542319629dbd20ac",
+            "size_bytes": 174
+          },
+          {
+            "path": "p2.sol",
+            "sha256": "f47010ade9762d8a0982942bd416932b2f1944aa45dea786dd74c47932bffd71",
+            "size_bytes": 6557
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "27a59cffbb0a7dd0c6f303233fd1a2537ff90d458b0a9295f98111e17df404a7",
+            "size_bytes": 113
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "c5eb31b8890ba1b1ac94b9ff2bcf6fc509e4b3ca83815dfdd44314c9b8e33214"
+      }
+    },
+    "snotel_snowbird_ut": {
+      "argv": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/fixtures/snotel_snowbird_ut",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "copied_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "f50c6b2ffb73208a0df4e09472a37955c63e1a3318d85c6dd7a090f5cf139e09",
+            "size_bytes": 1396
+          },
+          {
+            "path": "p8.cli",
+            "sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+            "size_bytes": 998092
+          },
+          {
+            "path": "p8.man",
+            "sha256": "21c435275d13d9ce8faccd3f807b34c941175446cf3add8e4532c2024fe2e9c5",
+            "size_bytes": 5451
+          },
+          {
+            "path": "p8.run",
+            "sha256": "4017f8f4644760e973d02f0ad715e1e6825204207bf2af7b9cf57b7863af9ba4",
+            "size_bytes": 244
+          },
+          {
+            "path": "p8.slp",
+            "sha256": "f8e11413f6a9ac23adfee608a02354a6217129e21f51397c41d8d05585ef89e6",
+            "size_bytes": 295
+          },
+          {
+            "path": "p8.sol",
+            "sha256": "e53a8e58d23ee452a3979ffc7fa55f3aa8c528b15aedb3316057eff8716fd18a",
+            "size_bytes": 3964
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "57cce528f58530463e6606613c47122f44065d2e64e88bb5bb071b1736e498a6",
+            "size_bytes": 972
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "f6c344f72ec7fb2e56085a6d88cc77340f12471c71171b026bfc8599d5f39ffc"
+      },
+      "effective_openwepp_environment": {
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.snow.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+        "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+        "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "disabled",
+        "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+      },
+      "observation": {
+        "path": "tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+        "role": "DIAGNOSTIC_ONLY",
+        "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+      },
+      "outputs": {
+        "openwepp_hillslope_run_manifest.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/openwepp_hillslope_run_manifest.json",
+          "sha256": "f5d7a06714006e5839aab8bf7b19a0d50aca8b1651b4f723fd53a903274b5435",
+          "size_bytes": 9464
+        },
+        "snotel_snowbird_ut-adjudication.hbp": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.hbp",
+          "sha256": "d5d3468d361510df069475423f785e2be036e0b353c281d0c32d0f82b583c149",
+          "size_bytes": 2142
+        },
+        "snotel_snowbird_ut-adjudication.loss.json": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.loss.json",
+          "sha256": "30809a1a67ac054d8a531471e7965a63ad8bfa52552faa87eaf58fc3ae5d6754",
+          "size_bytes": 377
+        },
+        "snotel_snowbird_ut-adjudication.run": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.run",
+          "sha256": "2d878b176c9074d9e66e8cde24d328402c843a6326de890b521bef028c24c0fc",
+          "size_bytes": 1153
+        },
+        "snotel_snowbird_ut-adjudication.snow.jsonl": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.snow.jsonl",
+          "sha256": "84a64c1b4031584842c4d20023acac92fcffbea946fcce04953fb5a0a339fb5f",
+          "size_bytes": 659499507
+        },
+        "snotel_snowbird_ut-adjudication.wat.parquet": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.wat.parquet",
+          "sha256": "e74b8df25485f6e1dd1430a9332c4aab3bafb8498a228f5455611d8081521b75",
+          "size_bytes": 1088889
+        },
+        "stderr.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/stderr.txt",
+          "sha256": "6c45415ed817c959710f91b9115fdd961f9b4d9e028a89435f506f524c8aa941",
+          "size_bytes": 368
+        },
+        "stdout.txt": {
+          "path": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        }
+      },
+      "protected_output_identity": {
+        "hbp_current_sha256": "d5d3468d361510df069475423f785e2be036e0b353c281d0c32d0f82b583c149",
+        "hbp_exact": true,
+        "hbp_predecessor_sha256": "d5d3468d361510df069475423f785e2be036e0b353c281d0c32d0f82b583c149",
+        "pass_output": "not emitted by this direct hillslope surface",
+        "wat_current_sha256": "e74b8df25485f6e1dd1430a9332c4aab3bafb8498a228f5455611d8081521b75",
+        "wat_exact": true,
+        "wat_predecessor_sha256": "e74b8df25485f6e1dd1430a9332c4aab3bafb8498a228f5455611d8081521b75"
+      },
+      "removed_openwepp_key_names": [],
+      "returncode": 0,
+      "site": "snotel_snowbird_ut",
+      "source_fixture_manifest": {
+        "file_count": 9,
+        "files": [
+          {
+            "path": "gwcoeff.txt",
+            "sha256": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+            "size_bytes": 168
+          },
+          {
+            "path": "manifest.md",
+            "sha256": "f50c6b2ffb73208a0df4e09472a37955c63e1a3318d85c6dd7a090f5cf139e09",
+            "size_bytes": 1396
+          },
+          {
+            "path": "p8.cli",
+            "sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+            "size_bytes": 998092
+          },
+          {
+            "path": "p8.man",
+            "sha256": "21c435275d13d9ce8faccd3f807b34c941175446cf3add8e4532c2024fe2e9c5",
+            "size_bytes": 5451
+          },
+          {
+            "path": "p8.run",
+            "sha256": "4017f8f4644760e973d02f0ad715e1e6825204207bf2af7b9cf57b7863af9ba4",
+            "size_bytes": 244
+          },
+          {
+            "path": "p8.slp",
+            "sha256": "f8e11413f6a9ac23adfee608a02354a6217129e21f51397c41d8d05585ef89e6",
+            "size_bytes": 295
+          },
+          {
+            "path": "p8.sol",
+            "sha256": "e53a8e58d23ee452a3979ffc7fa55f3aa8c528b15aedb3316057eff8716fd18a",
+            "size_bytes": 3964
+          },
+          {
+            "path": "pmetpara.txt",
+            "sha256": "57cce528f58530463e6606613c47122f44065d2e64e88bb5bb071b1736e498a6",
+            "size_bytes": 972
+          },
+          {
+            "path": "snow.txt",
+            "sha256": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2",
+            "size_bytes": 106
+          }
+        ],
+        "manifest_sha256": "f6c344f72ec7fb2e56085a6d88cc77340f12471c71171b026bfc8599d5f39ffc"
+      }
+    }
+  },
+  "source_head": "6ab0946bae9a477d1a6653214d61efcddb2156dc",
+  "status": "EXECUTED",
+  "tool": {
+    "path": "docs/work-packages/20260804-snow-prepeak-mass-transition-physics-adjudication-001/tools/run_adjudication.py",
+    "sha256": "5b7c874c155898c2a7ba4c474417065d4d0ae7ee3211a38f4428995a1f462aeb"
+  }
 }

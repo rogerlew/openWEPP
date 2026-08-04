@@ -1,7 +1,10 @@
 # Worker Handoff
 
-Status: `queued`
+Status: `complete`
 
-Evidence mode: `Not run`
+Evidence mode: `Static`
 
-Populate after execution and review.
+The orchestrator alone edited tracked files. Four authorized read-only agents
+audited state/consumer ordering, CoE physics, Stage-3 semantics, and the frozen
+protocol. Their result-blind findings forced the v2 protocol amendment before
+execution. No worker or investigator edited production or package files.

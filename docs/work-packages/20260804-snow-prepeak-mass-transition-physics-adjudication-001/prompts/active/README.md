@@ -1,5 +1,6 @@
 # Active Prompts
 
-Status: `queued`
+Status: `empty / execution complete`
 
-The dated kickoff prompt is the active execution authority.
+The dated kickoff prompt moved byte-identically to `../archived/` when
+execution began.

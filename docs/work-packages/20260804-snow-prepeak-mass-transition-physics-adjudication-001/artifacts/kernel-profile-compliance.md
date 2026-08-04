@@ -1,8 +1,10 @@
 # Kernel Profile Compliance
 
-Status: `queued / zero kernel diff required`
+Status: `pass / terminal production and kernel diff empty`
 
-Evidence mode: `Static scaffold`
+Evidence mode: `Static`
 
-Closure requires an empty production, contract, and test diff plus exact-current
-real-consumer evidence. Any kernel edit invalidates this package classification.
+All tracked writes are confined to the package and its three documentation
+catalogs. No kernel, runtime, selector, contract, test, fixture, observation,
+or assurance source changed. Kernel implementation profiles are therefore not
+applicable; existing focused snow tests remain a conservative terminal check.

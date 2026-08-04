@@ -1,0 +1,1140 @@
+{
+  "evidence_mode": "Ran: independent direct trace and annual reconstruction",
+  "maximum_abs_accumulation_hourly_residual_m": 3.4381e-13,
+  "maximum_abs_annual_field_difference_m": 2.220446049250313e-15,
+  "maximum_abs_handoff_closure_m": 1.3877787807814457e-17,
+  "maximum_abs_stage3_producer_residual_difference_m": 2.0921713797181218e-17,
+  "maximum_abs_stage3_reconstructed_residual_m": 2.5045070184415152e-17,
+  "maximum_abs_storage_closure_m": 9.99729999999999e-13,
+  "primary_window_count": 154,
+  "receipt_sha256": "accd6ceb45336b371828aa659d5846d4aa53050f042d0df4dfd2996948242701",
+  "result_sha256": "97b326fdc2851810d17a09345b99733bcb7c7371799b5fa28d91efdb8fdda752",
+  "schema_version": 1,
+  "site_count": 4,
+  "sites": {
+    "snotel_mica_creek_st_joe_id": {
+      "annual_comparisons": [
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 179,
+          "water_year": 1991
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 143,
+          "water_year": 1992
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 165,
+          "water_year": 1993
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 151,
+          "water_year": 1994
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 174,
+          "water_year": 1995
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 159,
+          "water_year": 1996
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 8.326672684688674e-17,
+          "row_count": 150,
+          "water_year": 1997
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 162,
+          "water_year": 1998
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 190,
+          "water_year": 1999
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 178,
+          "water_year": 2000
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.7755575615628914e-17,
+          "row_count": 169,
+          "water_year": 2001
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 179,
+          "water_year": 2002
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 179,
+          "water_year": 2003
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 157,
+          "water_year": 2004
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 186,
+          "water_year": 2005
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 177,
+          "water_year": 2006
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 154,
+          "water_year": 2007
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 8.326672684688674e-17,
+          "row_count": 192,
+          "water_year": 2008
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 187,
+          "water_year": 2009
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 190,
+          "water_year": 2010
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 204,
+          "water_year": 2011
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 175,
+          "water_year": 2012
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 173,
+          "water_year": 2013
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 179,
+          "water_year": 2014
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 125,
+          "water_year": 2015
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 181,
+          "water_year": 2016
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 160,
+          "water_year": 2017
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 197,
+          "water_year": 2018
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 166,
+          "water_year": 2019
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 188,
+          "water_year": 2020
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 181,
+          "water_year": 2021
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 170,
+          "water_year": 2022
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 185,
+          "water_year": 2023
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 164,
+          "water_year": 2024
+        }
+      ],
+      "maximum_abs_accumulation_hourly_residual_m": 3.4367999999999996e-13,
+      "maximum_abs_handoff_closure_m": 1.3877787807814457e-17,
+      "maximum_abs_stage3_producer_residual_difference_m": 1.3979431761484973e-17,
+      "maximum_abs_stage3_reconstructed_residual_m": 1.7943545954635098e-17,
+      "maximum_abs_storage_closure_m": 9.6872e-13,
+      "primary_window_count": 34,
+      "trace_row_count": 14245
+    },
+    "snotel_niwot_co": {
+      "annual_comparisons": [
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.3877787807814457e-17,
+          "row_count": 190,
+          "water_year": 1981
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 194,
+          "water_year": 1982
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.734723475976807e-18,
+          "row_count": 105,
+          "water_year": 1983
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 218,
+          "water_year": 1984
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 186,
+          "water_year": 1985
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 203,
+          "water_year": 1986
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 8.326672684688674e-17,
+          "row_count": 195,
+          "water_year": 1987
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 182,
+          "water_year": 1988
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 194,
+          "water_year": 1989
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 187,
+          "water_year": 1990
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 180,
+          "water_year": 1991
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 183,
+          "water_year": 1992
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.7755575615628914e-17,
+          "row_count": 202,
+          "water_year": 1993
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 192,
+          "water_year": 1994
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 242,
+          "water_year": 1995
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 188,
+          "water_year": 1996
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 213,
+          "water_year": 1997
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.6653345369377348e-16,
+          "row_count": 209,
+          "water_year": 1998
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 214,
+          "water_year": 1999
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 186,
+          "water_year": 2000
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 204,
+          "water_year": 2001
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 177,
+          "water_year": 2002
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 189,
+          "water_year": 2003
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.6653345369377348e-16,
+          "row_count": 208,
+          "water_year": 2004
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 214,
+          "water_year": 2005
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.6653345369377348e-16,
+          "row_count": 177,
+          "water_year": 2006
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 208,
+          "water_year": 2007
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 200,
+          "water_year": 2008
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 200,
+          "water_year": 2009
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 189,
+          "water_year": 2010
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 233,
+          "water_year": 2011
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 155,
+          "water_year": 2012
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 222,
+          "water_year": 2013
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 190,
+          "water_year": 2014
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 236,
+          "water_year": 2015
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 214,
+          "water_year": 2016
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 187,
+          "water_year": 2017
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 191,
+          "water_year": 2018
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 195,
+          "water_year": 2019
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 208,
+          "water_year": 2020
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 204,
+          "water_year": 2021
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 199,
+          "water_year": 2022
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 187,
+          "water_year": 2023
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 181,
+          "water_year": 2024
+        }
+      ],
+      "maximum_abs_accumulation_hourly_residual_m": 1.6565e-13,
+      "maximum_abs_handoff_closure_m": 1.3877787807814457e-17,
+      "maximum_abs_stage3_producer_residual_difference_m": 2.0921713797181218e-17,
+      "maximum_abs_stage3_reconstructed_residual_m": 2.0921713797181218e-17,
+      "maximum_abs_storage_closure_m": 9.7189e-13,
+      "primary_window_count": 44,
+      "trace_row_count": 16437
+    },
+    "snotel_paradise_wa": {
+      "annual_comparisons": [
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 131,
+          "water_year": 1984
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 215,
+          "water_year": 1985
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-15,
+          "row_count": 229,
+          "water_year": 1986
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 197,
+          "water_year": 1987
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 220,
+          "water_year": 1988
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 183,
+          "water_year": 1989
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 183,
+          "water_year": 1990
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 223,
+          "water_year": 1991
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 8.881784197001252e-16,
+          "row_count": 200,
+          "water_year": 1992
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 217,
+          "water_year": 1993
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 195,
+          "water_year": 1994
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 213,
+          "water_year": 1995
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-15,
+          "row_count": 226,
+          "water_year": 1996
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.3322676295501878e-15,
+          "row_count": 192,
+          "water_year": 1997
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 6.661338147750939e-16,
+          "row_count": 201,
+          "water_year": 1998
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 230,
+          "water_year": 1999
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 227,
+          "water_year": 2000
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 219,
+          "water_year": 2001
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.3322676295501878e-15,
+          "row_count": 225,
+          "water_year": 2002
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 234,
+          "water_year": 2003
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 209,
+          "water_year": 2004
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 197,
+          "water_year": 2005
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 203,
+          "water_year": 2006
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 6.661338147750939e-16,
+          "row_count": 209,
+          "water_year": 2007
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 227,
+          "water_year": 2008
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 225,
+          "water_year": 2009
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-15,
+          "row_count": 224,
+          "water_year": 2010
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 6.661338147750939e-16,
+          "row_count": 226,
+          "water_year": 2011
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.6653345369377348e-16,
+          "row_count": 202,
+          "water_year": 2012
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 216,
+          "water_year": 2013
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 223,
+          "water_year": 2014
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 196,
+          "water_year": 2015
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-16,
+          "row_count": 191,
+          "water_year": 2016
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 214,
+          "water_year": 2017
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 202,
+          "water_year": 2018
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 6.661338147750939e-16,
+          "row_count": 201,
+          "water_year": 2019
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 188,
+          "water_year": 2020
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 201,
+          "water_year": 2021
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 8.881784197001252e-16,
+          "row_count": 227,
+          "water_year": 2022
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 210,
+          "water_year": 2023
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-15,
+          "row_count": 222,
+          "water_year": 2024
+        }
+      ],
+      "maximum_abs_accumulation_hourly_residual_m": 3.4381e-13,
+      "maximum_abs_handoff_closure_m": 1.3877787807814457e-17,
+      "maximum_abs_stage3_producer_residual_difference_m": 2.0675861316624662e-17,
+      "maximum_abs_stage3_reconstructed_residual_m": 2.5045070184415152e-17,
+      "maximum_abs_storage_closure_m": 9.049199999999997e-13,
+      "primary_window_count": 41,
+      "trace_row_count": 16437
+    },
+    "snotel_snowbird_ut": {
+      "annual_comparisons": [
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 212,
+          "water_year": 1990
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 216,
+          "water_year": 1991
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 183,
+          "water_year": 1992
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 223,
+          "water_year": 1993
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 101,
+          "water_year": 1994
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 226,
+          "water_year": 1995
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 205,
+          "water_year": 1996
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 6.661338147750939e-16,
+          "row_count": 216,
+          "water_year": 1997
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 209,
+          "water_year": 1998
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 227,
+          "water_year": 1999
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 209,
+          "water_year": 2000
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 206,
+          "water_year": 2001
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 212,
+          "water_year": 2002
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 223,
+          "water_year": 2003
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 210,
+          "water_year": 2004
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 201,
+          "water_year": 2005
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 199,
+          "water_year": 2006
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 206,
+          "water_year": 2007
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 214,
+          "water_year": 2008
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 202,
+          "water_year": 2009
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 227,
+          "water_year": 2010
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 234,
+          "water_year": 2011
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 203,
+          "water_year": 2012
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 3.3306690738754696e-16,
+          "row_count": 204,
+          "water_year": 2013
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 188,
+          "water_year": 2014
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 5.551115123125783e-17,
+          "row_count": 157,
+          "water_year": 2015
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.6653345369377348e-16,
+          "row_count": 183,
+          "water_year": 2016
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 214,
+          "water_year": 2017
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 203,
+          "water_year": 2018
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 203,
+          "water_year": 2019
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 206,
+          "water_year": 2020
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 209,
+          "water_year": 2021
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 2.220446049250313e-16,
+          "row_count": 206,
+          "water_year": 2022
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 4.440892098500626e-16,
+          "row_count": 188,
+          "water_year": 2023
+        },
+        {
+          "exact_peak_date": true,
+          "field_count": 10,
+          "maximum_abs_field_difference_m": 1.1102230246251565e-16,
+          "row_count": 190,
+          "water_year": 2024
+        }
+      ],
+      "maximum_abs_accumulation_hourly_residual_m": 2.2814e-13,
+      "maximum_abs_handoff_closure_m": 1.3877787807814457e-17,
+      "maximum_abs_stage3_producer_residual_difference_m": 1.2271813339820303e-17,
+      "maximum_abs_stage3_reconstructed_residual_m": 1.9434323941802667e-17,
+      "maximum_abs_storage_closure_m": 9.99729999999999e-13,
+      "primary_window_count": 35,
+      "trace_row_count": 14245
+    }
+  },
+  "status": "PASS",
+  "trace_row_count": 61364
+}
