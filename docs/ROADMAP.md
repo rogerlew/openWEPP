@@ -31,6 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
+| `SNOW-ACCUMULATION-TARGET-FEASIBILITY-AND-INPUT-LOSS-DISCRIMINATION` | Snow surface-energy-balance campaign | `scaffolded / queued` | Freeze and execute four-site all-phase mass ceilings, cold observed-accumulation events, and guarded dry-interval loss comparisons before selecting a forcing or CoE correction family. |
 | `SNOW-PREPEAK-MASS-TRANSITION-PHYSICS-ADJUDICATION` | Snow surface-energy-balance campaign | `complete / review and verification pass` | Four exact-current fixtures localize modeled pre-peak solid-pack loss to the upstream CoE path. Signed-hour and post-CoE cold indices are insufficient across the cohort; Stage 3 is noncausal under current consumers. No correction is authorized. |
 | `SNOW-MASS-TRANSITION-LEDGER-PERSISTENCE` | Snow surface-energy-balance campaign | `complete` | One mass authority, two linked compact ledgers, opt-in hourly payload, exact schema-v4/WAT/HBP identity, bounded performance, quick/frost/Critical full, dual review, and dual terminal verification pass. No physics correction is claimed. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |

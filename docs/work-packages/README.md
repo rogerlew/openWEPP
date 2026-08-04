@@ -388,6 +388,12 @@
 
 State as of `2026-08-04 UTC`:
 
+- `20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/`
+  - SCAFFOLDED / QUEUED: prospectively freezes four-site all-phase mass
+  ceilings, cold observed-accumulation events, guarded dry intervals, and an
+  input-versus-loss truth table. PRCPSA remains Snowbird-only derived context;
+  no correction is authorized.
+
 - `20260804-snow-prepeak-mass-transition-physics-adjudication-001/` - COMPLETE /
   REVIEW AND VERIFICATION PASS: four exact-current fixtures support an
   upstream-generation investigation priority. Daily signed opportunity is

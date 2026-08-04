@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_result_execution",
+  "intake_commit": "237ba40d",
+  "result_namespace": "target/snow_accumulation_target_feasibility_input_loss_discrimination",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "sites": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa",
+    "snotel_snowbird_ut"
+  ],
+  "source_surfaces": {
+    "annual_results": "docs/work-packages/20260804-snow-prepeak-mass-transition-physics-adjudication-001/artifacts/cross-fixture-results.json",
+    "trace_receipt": "target/snow_prepeak_mass_transition_physics_adjudication_v2/execution-receipt.json",
+    "traces": "target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/<site>/<site>-adjudication.snow.jsonl",
+    "climates": "tests/fixtures/snotel_observed/<site>/*.cli",
+    "observations": "tests/fixtures/snotel_observed/observations/sites/<site>.csv",
+    "snowbird_prcpsa": "tests/fixtures/snotel_observed/observations/provenance/snotel_snowbird_ut_prcpsa_diagnostic.json"
+  },
+  "constants": {
+    "mass_tolerance_m": 1e-9,
+    "zero_tolerance_m": 1e-12,
+    "gauge_negative_tolerance_m": 1e-12,
+    "observed_accumulation_event_threshold_m": 0.00508,
+    "dry_precipitation_threshold_m_per_day": 0.000254,
+    "event_ratio_materiality": 0.8,
+    "mass_ceiling_ratio_materiality": 0.95,
+    "annual_dry_loss_difference_materiality_m": 0.01,
+    "site_direction_fraction": 0.75,
+    "event_direction_fraction": 0.6,
+    "systemic_site_count": 3,
+    "minimum_primary_years_per_site": 10,
+    "minimum_cold_events_per_site": 10,
+    "minimum_dry_annuals_per_site": 10,
+    "minimum_dry_interval_days": 3
+  },
+  "primary_window": {
+    "start": "October 1 of water_year - 1 inclusive",
+    "end": "earliest date of maximum positive observed WTEQ in the water year inclusive",
+    "right_censored_water_years": [2025],
+    "coverage": "require complete climate and trace coverage from start through observed peak",
+    "aggregation": "compute annual values first, then Python statistics.median by site; do not pool water volume or weight sites by record length"
+  },
+  "precipitation_increment_operator": {
+    "source": "normalized observed_precip_mm, which is AWDB PREC water-year cumulative precipitation",
+    "eligibility": "current and previous records are consecutive calendar dates in the same water year and both are finite",
+    "difference": "current cumulative value minus previous cumulative value",
+    "negative_policy": "differences below -gauge_negative_tolerance_m are unavailable; values within tolerance canonicalize to zero",
+    "prohibition": "never bridge missing dates or water-year resets"
+  },
+  "mass_ceiling_operator": {
+    "current_input_mass_ceiling_m": "initial_swe_m + sum fixture all-phase .cli precipitation from window start through observed peak",
+    "storage_effective_input_m": "initial_swe_m + modeled snowfall_m + modeled rain_retained_m",
+    "observed_date_modeled_storage_m": "runtime_swe_after_m on observed peak date",
+    "within_window_modeled_peak_m": "maximum runtime_swe_after_m in the primary window, earliest date wins ties",
+    "ratios": "divide each magnitude by observed_peak_swe_m after computing the annual numerator",
+    "input_shortfall_m": "max(observed_peak_swe_m - current_input_mass_ceiling_m, 0)",
+    "input_to_storage_gap_m": "current_input_mass_ceiling_m - observed_date_modeled_storage_m; descriptive only",
+    "site_signal": "at least minimum_primary_years_per_site, site median current-input ceiling ratio < mass_ceiling_ratio_materiality, and at least site_direction_fraction of annual ratios < 1.0"
+  },
+  "cold_accumulation_events": {
+    "active_day": "consecutive observed WTEQ records have positive change >= observed_accumulation_event_threshold_m and observed_tmax_c <= 0 C on the current day",
+    "grouping": "group consecutive active days; expand each group by one calendar day before and after for climate/trace timing allowance; merge expanded intervals that overlap or touch",
+    "observed_gain": "sum positive active-day WTEQ changes belonging to the merged event; padding-day changes are excluded",
+    "modeled_operands": "sum fixture all-phase precipitation, modeled snowfall, rain retained, pack loss, and storage change across the expanded event interval",
+    "coverage": "require every event interval day in climate and trace and every active-day observation operand; otherwise exclude with reason",
+    "site_all_phase_signal": "at least minimum_cold_events_per_site, median event all-phase-input/observed-gain ratio < event_ratio_materiality, and at least event_direction_fraction of event ratios < event_ratio_materiality",
+    "site_snowfall_signal": "same rule using modeled-snowfall/observed-gain ratio",
+    "phase_or_solid_input_signal": "site all-phase signal is false while site snowfall signal is true; this does not uniquely identify phase",
+    "systemic": "site signal at systemic_site_count or more sites"
+  },
+  "dry_intervals": {
+    "active_day": "fixture all-phase precipitation <= dry threshold, guarded observed precipitation increment <= dry threshold, observed WTEQ and Tmax are present, modeled and observed SWE are positive at interval entry, and date is in the primary window",
+    "grouping": "maximal consecutive active-day groups with at least minimum_dry_interval_days; groups are disjoint and may not cross water years",
+    "observed_loss_m": "max(observed WTEQ on day before interval minus observed WTEQ on final interval day, 0)",
+    "modeled_pack_loss_m": "sum authoritative snowpack_swe_loss_m over interval days",
+    "modeled_storage_change_m": "runtime_swe_after_m on final day minus runtime_swe_before_m on first day",
+    "temperature_strata": "cold when observed_tmax_c <= 0 C on every interval day; warm_or_mixed otherwise",
+    "annual_aggregation": "sum interval observed loss and modeled pack loss by site, water year, and all-temperature primary stratum; report cold stratum separately",
+    "annual_difference_m": "modeled pack loss minus observed WTEQ loss",
+    "site_signal": "at least minimum_dry_annuals_per_site, site median annual difference >= annual_dry_loss_difference_materiality_m, and at least site_direction_fraction of annual differences are positive",
+    "systemic": "site signal at systemic_site_count or more sites"
+  },
+  "truth_table": {
+    "input_evidence": "systemic current-input mass ceiling OR systemic cold-event all-phase-input signal OR systemic cold-event modeled-snowfall signal",
+    "loss_evidence": "systemic guarded dry-interval excess-loss signal",
+    "INPUT_PRIORITY_SIGNAL": "input_evidence true and loss_evidence false",
+    "LOSS_PRIORITY_SIGNAL": "input_evidence false and loss_evidence true",
+    "MULTIFACTOR_INPUT_AND_LOSS_SIGNAL": "input_evidence true and loss_evidence true",
+    "UNRESOLVED_OR_COVERAGE_LIMITED": "neither evidence family passes or required coverage is unavailable"
+  },
+  "context_only": [
+    "EB-04W2 precipitation-scaling response shape",
+    "Snowbird SNOTEL-conditioned CLIGEN response",
+    "Snowbird wet-winter Tmax bias",
+    "Snowbird upper precipitation-event-tail deficit",
+    "Snowbird PRCPSA ratios"
+  ],
+  "claim_limits": [
+    "SNOTEL is a point observation and the fixtures are hillslope representations with elevation, canopy, footprint, and redistribution differences",
+    "PRCPSA incorporates WTEQ and is not independent validation or correction authority",
+    "cold-event modeled snowfall can confound forcing timing, phase, interception, and spatial representativeness",
+    "dry-interval differences can confound point-versus-hillslope energy, redistribution, gauge missingness, and timing",
+    "screen passage ranks evidence families but does not prove a correction equation or identify a parameter",
+    "no forcing, phase, loss-physics, observation, or default correction is authorized"
+  ]
+}
