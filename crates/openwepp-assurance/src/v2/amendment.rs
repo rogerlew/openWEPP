@@ -1387,10 +1387,11 @@ fn has_matching_return_to_draft_event(
 ) -> Result<bool> {
     let confined = ConfinedDirectory::open_ambient(root, false)?;
     let directory = PathBuf::from(format!("assurance/v2/reports/{report_id}/review-events"));
-    for path in confined.collect_regular_files(&directory)? {
-        if path.extension().and_then(|value| value.to_str()) != Some("json") {
+    for relative in confined.collect_regular_files(&directory)? {
+        if relative.extension().and_then(|value| value.to_str()) != Some("json") {
             continue;
         }
+        let path = directory.join(relative);
         let event_bytes = confined.read_regular(&path)?;
         let event: ReviewEvent =
             serde_json::from_slice(&event_bytes).map_err(|error| AssuranceError::Parse {
