@@ -4,16 +4,16 @@ id: snow-and-frozen-soil-process-evaluation
 version: 1.0.0
 title: Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
 owner: openWEPP scientific assurance maintainers
-lifecycle: DRAFT
+lifecycle: IN_REVIEW
 trust_domain: production
 fixture_only: false
 reader_metadata:
   scientific_question: What does the admitted observational and production evidence show about openWEPP precipitation phase, seasonal snowpack state, frozen-soil response, and conservation across the tested domains?
   assessed_process: Precipitation phase, snow accumulation and ablation, bulk snow density, and frozen-soil response
   assessed_quantity: Hourly rain/snow classification; daily SWE, depth, and density; frost depth and soil-temperature isotherm response; water-ledger residuals
-  realization: Named retained snow/frost evidence realizations synthesized at openWEPP 47c2cf9e; exact current-release transfer is not claimed
+  realization: Named retained snow/frost evidence realizations synthesized at openWEPP 47c2cf9e and authority-refreshed through 21N at 4d921ad1; exact current-release transfer is not claimed
   related_model_narrative: snow-frost-modeling-and-validation.md
-  manuscript_date: 2026-07-16
+  manuscript_date: 2026-08-05
 authorship:
   id: SF-AUTHORSHIP
   title: ASSURE-06 authorship and accountability
@@ -28,8 +28,8 @@ agent_assistance:
   id: SF-AGENT-ASSISTANCE
   title: ASSURE-06 disclosed agent assistance
   owner: openWEPP assurance steward
-  procedure_version: assure06-snow-frost-synthesis-v1
-  objective: Synthesize identified retained snow and frozen-soil evidence into a claim-specific scientific manuscript and deterministic strict result.
+  procedure_version: assure06-snow-frost-synthesis-authority-refresh-v2
+  objective: Preserve the deterministic snow/frost result while refreshing its claim limits and implementation currency against v7/v126 and campaign increments 21K-21N.
   tool_model_identity: OpenAI Codex based on GPT-5; hidden runtime and sampling configuration are not exposed to the repository.
   input_dependency_ids:
   - SF-DEP-CONTRACT
@@ -42,13 +42,19 @@ agent_assistance:
   - SF-DEP-CONSERVATION-LOG
   - SF-DEP-PROTOCOL
   - SF-DEP-INVENTORY
+  - SF-DEP-ENERGY-CONTRACT
+  - SF-DEP-21K
+  - SF-DEP-21L
+  - SF-DEP-21M
+  - SF-DEP-21N
+  - SF-DEP-REFRESH-PROMPT
   exact_output_dependency_id: SF-DEP-AGENT-PACKET
-  human_disposition: Roger Lew reviewed the report and accepted accountability as report lead. Because he led the underlying snow/frost development campaign, he is a material producer and his acceptance is not independent scientific or reproduction/publication approval.
+  human_disposition: entered_pending_review — Enter the authority-refreshed ASSURE-06 source into independent human review without assigning or claiming an independent approver. (roger-lew, 2026-08-05).
   known_nondeterminism: Agent sampling may vary; the exact prompt, protocol, input identities, accepted source, deterministic procedure, and strict result are retained.
   limitations: Hidden model/runtime configuration is unavailable and agent assistance cannot supply accountable human authorship or approval.
   independent_review: ASSURE-06 internal coding-agent review is package evidence and is not external scientific peer review.
   provenance_complete: true
-  review_entry_authorized: false
+  review_entry_authorized: true
 manuscript:
   id: SF-MANUSCRIPT
   title: Snow and frozen-soil process-evaluation manuscript
@@ -67,9 +73,15 @@ manuscript:
   - SF-OBJECT-CONSERVATION-LOG
   - SF-OBJECT-DATASET-PROVENANCE
   - SF-OBJECT-CONTRACT
+  - SF-OBJECT-ENERGY-CONTRACT
+  - SF-OBJECT-21K
+  - SF-OBJECT-21L
+  - SF-OBJECT-21M
+  - SF-OBJECT-21N
   - SF-OBJECT-PROTOCOL
   - SF-OBJECT-INVENTORY
   - SF-OBJECT-PROMPT
+  - SF-OBJECT-REFRESH-PROMPT
   - SF-OBJECT-AGENT-PACKET
   media_type: text/markdown
   provenance: Agent-assisted scientific synthesis authored from the ASSURE-06 protocol and content-identified retained evidence.
@@ -79,6 +91,7 @@ manuscript:
   - SF-P02
   - SF-P03
   - SF-P04
+  - SF-P05
   method_ids:
   - SF-METHOD-PHASE
   - SF-METHOD-SNOW
@@ -296,6 +309,7 @@ manuscript:
   - SF-REF-DUN-2010
   - SF-REF-SLEEPERS
   - SF-REF-GGD498
+  - SF-REF-ENERGY-CONTRACT
 supplement:
   id: SF-SUPPLEMENT
   title: Snow and frozen-soil process-evaluation supplement
@@ -314,9 +328,15 @@ supplement:
   - SF-OBJECT-CONSERVATION-LOG
   - SF-OBJECT-DATASET-PROVENANCE
   - SF-OBJECT-CONTRACT
+  - SF-OBJECT-ENERGY-CONTRACT
+  - SF-OBJECT-21K
+  - SF-OBJECT-21L
+  - SF-OBJECT-21M
+  - SF-OBJECT-21N
   - SF-OBJECT-PROTOCOL
   - SF-OBJECT-INVENTORY
   - SF-OBJECT-PROMPT
+  - SF-OBJECT-REFRESH-PROMPT
   - SF-OBJECT-AGENT-PACKET
   media_type: text/markdown
   provenance: Agent-assisted technical supplement authored from exact evidence and reconstruction identities.
@@ -326,6 +346,7 @@ supplement:
   - SF-P02
   - SF-P03
   - SF-P04
+  - SF-P05
   method_ids:
   - SF-METHOD-PHASE
   - SF-METHOD-SNOW
@@ -543,6 +564,7 @@ supplement:
   - SF-REF-DUN-2010
   - SF-REF-SLEEPERS
   - SF-REF-GGD498
+  - SF-REF-ENERGY-CONTRACT
 dependencies:
 - id: SF-DEP-CONTRACT
   title: Snow and frozen-soil science contract
@@ -856,6 +878,126 @@ dependencies:
   review_role: null
   immutable_identity: doi:10.7265/1mcs-q536
   restriction_reason: null
+- id: SF-DEP-ENERGY-CONTRACT
+  title: Snow-surface energy and sub-canopy longwave science contract
+  owner: openWEPP science-contract maintainers
+  kind: local_content
+  provenance: Canonical v7 target authority for complete Stage 3 energy and future sole melt ownership.
+  creation_procedure: Science-contract authoring and adjudication procedure.
+  access: public_repository
+  license: repository_license
+  path: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21K
+  title: 21K wet-compaction operand correction disposition
+  owner: SNOW-WET-COMPACTION-OPERAND-AUTHORITY package owner
+  kind: local_content
+  provenance: Reviewed correction evidence that replaces the duplicate density-input alias without changing generated melt or upstream snow mass.
+  creation_procedure: Execute the contract-first defect-closure package and retain its reviewed terminal disposition.
+  access: public_repository
+  license: repository_license
+  path: docs/work-packages/20260804-snow-wet-compaction-operand-authority-duplicate-alias-closure-001/artifacts/disposition.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21K-EXTRACT
+  title: Public-safe 21K authority-impact extract
+  owner: ASSURE-06 package owner
+  kind: local_content
+  provenance: Report-owned faithful extract of the bound 21K terminal disposition.
+  creation_procedure: Summarize only the reviewed outcome and claim limits while citing the exact bound source.
+  access: public_repository
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21k-wet-compaction.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21L
+  title: 21L warm and mixed pre-peak loss attribution disposition
+  owner: SNOW-WARM-MIXED-PREPEAK-LOSS-ENERGY-ATTRIBUTION package owner
+  kind: local_content
+  provenance: Reviewed corrected-state evidence for multifactor, chronology-confounded warm and mixed pre-peak loss.
+  creation_procedure: Execute the frozen four-site attribution matrix and retain its reviewed terminal disposition.
+  access: public_repository
+  license: repository_license
+  path: docs/work-packages/20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/artifacts/disposition.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21L-EXTRACT
+  title: Public-safe 21L authority-impact extract
+  owner: ASSURE-06 package owner
+  kind: local_content
+  provenance: Report-owned faithful extract of the bound 21L terminal disposition.
+  creation_procedure: Summarize only the reviewed outcome and claim limits while citing the exact bound source.
+  access: public_repository
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21l-warm-mixed.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21M
+  title: 21M CoE physics authority audit disposition
+  owner: SNOW-WARM-MIXED-COE-PHYSICS-AUTHORITY-AUDIT package owner
+  kind: local_content
+  provenance: Reviewed baseline-fidelity evidence and bounded independent-authority gap for material post-handbook CoE changes.
+  creation_procedure: Reconstruct the exact current CoE terms against pinned baseline authority and retain the reviewed disposition.
+  access: public_repository
+  license: repository_license
+  path: docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/disposition.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21M-EXTRACT
+  title: Public-safe 21M authority-impact extract
+  owner: ASSURE-06 package owner
+  kind: local_content
+  provenance: Report-owned faithful extract of the bound 21M terminal disposition.
+  creation_procedure: Summarize only the reviewed outcome and claim limits while citing the exact bound source.
+  access: public_repository
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21m-coe-audit.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21N
+  title: 21N Stage 3 melt-owner authority disposition
+  owner: SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION package owner
+  kind: local_content
+  provenance: Reviewed authority decision admitting future Stage 3 sole ownership while holding implementation and preserving current CoE compatibility behavior.
+  creation_procedure: Execute the result-blind authority reconciliation and retain its reviewed held disposition.
+  access: public_repository
+  license: repository_license
+  path: docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/artifacts/disposition.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-21N-EXTRACT
+  title: Public-safe 21N authority-impact extract
+  owner: ASSURE-06 package owner
+  kind: local_content
+  provenance: Report-owned faithful extract of the bound 21N terminal disposition.
+  creation_procedure: Summarize only the reviewed outcome and claim limits while citing the exact bound source.
+  access: public_repository
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21n-stage3-owner.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
+- id: SF-DEP-REFRESH-PROMPT
+  title: ASSURE-06 authority-refresh execution prompt
+  owner: ASSURE-06 package owner
+  kind: local_content
+  provenance: Exact archived prompt that authorized and bounded the 2026-08-05 authority refresh.
+  creation_procedure: Archive the executed prompt unchanged after its active phase.
+  access: public_repository
+  license: repository_license
+  path: docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/prompts/archived/20260805-codex-execute-assure06-refresh_prompt.md
+  review_role: null
+  immutable_identity: null
+  restriction_reason: null
 units:
 - id: row_count
   symbol: rows
@@ -1010,6 +1152,26 @@ claims:
   - mm
   reference_ids:
   - SF-REF-CONTRACT
+- id: SF-P05
+  title: Snowmelt authority and implementation currency
+  owner: openWEPP snow-process owner
+  statement: Canonical v7/v126 authority admits Stage 3 as the future sole melt owner, while the byte-identical post-2007 CoE generator remains the current compatibility runtime under an atomic implementation hold.
+  claim_type: science_authority_and_implementation_currency
+  scope_limit: This authority decision does not establish empirical efficacy, noninferiority, causation, a default change, runtime cutover, release transfer, or warm-maritime conifer transferability.
+  method_ids:
+  - SF-METHOD-SYNTHESIS
+  result_ids: []
+  dependency_ids:
+  - SF-DEP-CONTRACT
+  - SF-DEP-ENERGY-CONTRACT
+  - SF-DEP-21K
+  - SF-DEP-21L
+  - SF-DEP-21M
+  - SF-DEP-21N
+  unit_ids: []
+  reference_ids:
+  - SF-REF-CONTRACT
+  - SF-REF-ENERGY-CONTRACT
 methods:
 - id: SF-METHOD-PHASE
   title: Jennings hourly precipitation-phase evaluation
@@ -2988,10 +3150,18 @@ references:
   title: SC-SNOWFREEZE-001
   owner: openWEPP science-contract maintainers
   citation: openWEPP snow and frozen-soil process, evaluation, and production-obligation science contract.
-  immutable_identity: sha256:f7364f33ab446479b9160c5cf0bafef13826fd2637e140c823dfde2204cb1a16
+  immutable_identity: openwepp:SC-SNOWFREEZE-001:v126
   access: public_repository
   license: repository_license
   dependency_id: SF-DEP-CONTRACT
+- id: SF-REF-ENERGY-CONTRACT
+  title: SC-SNOWENERGY-001
+  owner: openWEPP science-contract maintainers
+  citation: openWEPP snow-surface energy, sub-canopy longwave, Stage 3 energy closure, and future melt-owner science contract.
+  immutable_identity: openwepp:SC-SNOWENERGY-001:v7
+  access: public_repository
+  license: repository_license
+  dependency_id: SF-DEP-ENERGY-CONTRACT
 - id: SF-REF-HARDER
   title: Harder-Pomeroy psychrometric precipitation-phase method
   owner: Harder and Pomeroy
@@ -3262,6 +3432,89 @@ research_objects:
   - SF-METHOD-CONSERVATION
   dependency_ids:
   - SF-DEP-CONTRACT
+- id: SF-OBJECT-ENERGY-CONTRACT
+  title: Portable snow-surface energy science contract
+  owner: openWEPP science-contract maintainers
+  access: public_safe
+  license: repository_license
+  path: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md
+  reproduction_instructions: Inspect v7 target authority, INV-SNOWENERGY-029/030, current-runtime distinctions, and the atomic implementation hold.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SNOW
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-ENERGY-CONTRACT
+- id: SF-OBJECT-21K
+  title: Public-safe 21K wet-compaction authority extract
+  owner: ASSURE-06 package owner
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21k-wet-compaction.md
+  reproduction_instructions: Inspect the exact operand correction, changed density/depth consequences, unchanged upstream mass, and development-only Snowbird limit.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SNOW
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-21K
+  - SF-DEP-21K-EXTRACT
+  - SF-DEP-CONTRACT
+- id: SF-OBJECT-21L
+  title: Public-safe 21L warm and mixed loss authority extract
+  owner: ASSURE-06 package owner
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21l-warm-mixed.md
+  reproduction_instructions: Inspect the corrected four-site chronology screen, multifactor signal, and explicit noncausal boundary.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SNOW
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-21L
+  - SF-DEP-21L-EXTRACT
+- id: SF-OBJECT-21M
+  title: Public-safe 21M CoE authority-audit extract
+  owner: ASSURE-06 package owner
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21m-coe-audit.md
+  reproduction_instructions: Inspect exact post-2007 baseline fidelity, the independent-authority gap, and the absence of correction authority.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SNOW
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-21M
+  - SF-DEP-21M-EXTRACT
+  - SF-DEP-CONTRACT
+- id: SF-OBJECT-21N
+  title: Public-safe 21N Stage 3 ownership extract
+  owner: ASSURE-06 package owner
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21n-stage3-owner.md
+  reproduction_instructions: Inspect the frozen ownership outcome, present CoE compatibility status, atomic Stage 3 implementation obligations, and assurance hold.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SNOW
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-21N
+  - SF-DEP-21N-EXTRACT
+  - SF-DEP-CONTRACT
+  - SF-DEP-ENERGY-CONTRACT
 - id: SF-OBJECT-PROTOCOL
   title: ASSURE-06 study protocol
   owner: ASSURE-06 package owner
@@ -3306,6 +3559,20 @@ research_objects:
   - SF-METHOD-SYNTHESIS
   dependency_ids:
   - SF-DEP-AGENT-PACKET
+- id: SF-OBJECT-REFRESH-PROMPT
+  title: ASSURE-06 authority-refresh execution prompt
+  owner: ASSURE-06 package owner
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/prompts/archived/20260805-codex-execute-assure06-refresh_prompt.md
+  reproduction_instructions: Inspect the refresh scope, authority inputs, human-review boundary, and delegated-review limits; no bitwise prose regeneration is claimed.
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - SF-METHOD-SYNTHESIS
+  dependency_ids:
+  - SF-DEP-REFRESH-PROMPT
 - id: SF-OBJECT-AGENT-PACKET
   title: ASSURE-06 agent-assistance packet
   owner: ASSURE-06 package owner
@@ -3324,12 +3591,14 @@ review:
   id: SF-REVIEW
   title: Scientific and publication review state
   owner: openWEPP assurance steward
-  state: DRAFT
-  decision: not_started
-  independence_assessment: not_assessed
-  review_charge: null
-  build_maintainer_id: null
-  material_producer_ids: []
+  state: IN_REVIEW
+  decision: pending
+  independence_assessment: Roger Lew led the snow/frost campaign and Codex authored and maintained the build; both are material producers and excluded from independent scientific and reproduction/publication approval. Independent human reviewers remain unassigned.
+  review_charge: Independently assess the refreshed scientific claims, v7/v126 authority treatment, 21K-21N evidence and limits, exact reproduction, reader communication, and publication readiness against this exact subject.
+  build_maintainer_id: codex-agent-assure05
+  material_producer_ids:
+  - roger-lew
+  - codex-agent-assure05
 publication:
   id: SF-PUBLICATION
   title: Publication authorization state

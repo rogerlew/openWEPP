@@ -1,6 +1,6 @@
 # ASSURE-06 — Snow/Frost Flagship Authority Refresh
 
-Status: `executing / scaffolded`
+Status: `HOLD-INDEPENDENT-HUMAN-REVIEW`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 Keep progress, discoveries, decisions, and outcomes current throughout
@@ -70,6 +70,7 @@ close at the strongest lifecycle state supported by actual human authority.
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/**`
 - `assurance/v2/identity.lock.json`
+- `assurance/v2/README.md`
 - new files under `assurance/v2/transactions/`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md`
@@ -78,13 +79,24 @@ close at the strongest lifecycle state supported by actual human authority.
 - new files under
   `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json`
+- new `authority-impact-21*.md` public-safe extracts under
+  `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/`
 - `usersum/assurance/review-drafts/README.md`
 - `usersum/assurance/review-drafts/snow-and-frozen-soil-process-evaluation/1.0.0/**`
+- `crates/openwepp-assurance/src/v2/amendment.rs`
+- `tests/integration/assurance_v2_amendment_contract.rs`
+- `tests/integration/assurance_v2_source_contract.rs`
 
 Everything else is read-only. Generated identity and review files may change
-only through the typed assurance CLI. Production Rust and tests are excluded;
-if a required gate exposes a tooling defect, amend this package before any
-such edit.
+only through the typed assurance CLI. The Rust/test paths were admitted after
+manifest adoption exposed that the existing DRAFT transaction cannot add a
+newly declared external `local_content` member to the generated identity. The
+bounded correction may allow only a manifest-selected, schema-valid declared
+source; it must retain confinement, unrelated-drift rejection, deterministic
+check/apply identity, and all existing lifecycle invalidation.
+The source-contract test path was admitted after terminal quick correctly
+exposed its stale real-repository `DRAFT` expectation following governed review
+entry; only that current lifecycle assertion may change.
 
 ## Required Reading
 
@@ -101,11 +113,24 @@ corresponding paragraph.
   scope at `4d921ad1`.
 - [x] (2026-08-05) Scaffolded package, active prompt, intake evidence, and queue
   pointers.
-- [ ] Refresh and adopt the exact report source.
-- [ ] Reproduce, build, inspect, and validate the refreshed report.
-- [ ] Complete dual internal review and disposition findings.
-- [ ] Issue the new exact pending-review root and complete terminal validation.
-- [ ] Complete dual terminal verification and truthful disposition.
+- [x] (2026-08-05) Amended the write set before tooling edits after the typed
+  manifest transaction rejected the newly declared v7 dependency; recorded the
+  required bounded adoption correction and contract test.
+- [x] (2026-08-05) Refreshed and adopted the exact report source, including
+  v7/v126 and public-safe 21K-21N authority extracts.
+- [x] (2026-08-05) Reproduced all 188 retained values with exact parsed-JSON
+  equality and confirmed the current generated identity passes inspection.
+- [x] (2026-08-05) Built, inspected, and validated the refreshed report through all declared
+  technical gates.
+- [x] (2026-08-05) Completed domain-science, reproduction/publication, Rust
+  correctness, Rust QA, and post-entry Rust delta review without unresolved
+  findings.
+- [x] (2026-08-05) Issued the new exact pending-review root and completed
+  terminal validation, including corrected real-lifecycle fixture assertions.
+- [x] (2026-08-05) Completed dual terminal verification, corrected one
+  identity-bound README lifecycle sentence through typed rebind, repeated all
+  campaign profiles at the exact terminal generation, and dispositioned the
+  package truthfully.
 
 ## Phase Plan
 
@@ -155,9 +180,11 @@ Run two independent terminal verifications over the exact final diff, roots,
 gates, protected surfaces, and lifecycle boundary. Update queue/catalog records
 and close truthfully.
 
-Acceptance: no current-scope technical gate or finding remains open. Human
-review/approval stays a named hold unless authenticated records are actually
-supplied.
+Acceptance: no current-scope technical gate or finding remains open. Independent
+human review stays a named hold until authenticated records are supplied.
+Advancement from the intentionally null approver assignment additionally
+requires a separate governed assignment/reentry design; this package does not
+claim that later approval is mechanically reachable from its terminal root.
 
 ## Validation And Gates
 
@@ -169,7 +196,8 @@ Run and record:
 4. two unrelated `build` plus `check` runs and full tree comparison;
 5. generated-identity transition and review-root checks;
 6. tracked review-draft byte comparison with the stabilized build;
-7. focused assurance Nextest profiles/tests selected by the exact diff;
+7. focused assurance Nextest profiles/tests selected by the exact diff,
+   including the DRAFT manifest-adoption contract;
 8. `cargo nextest run --workspace --profile quick`;
 9. `cargo nextest run --workspace --profile frost`;
 10. campaign-strength `cargo nextest run --workspace`;
@@ -178,9 +206,9 @@ Run and record:
 12. dual review, finding disposition, dual terminal verification, and exact
     terminal-diff reconciliation.
 
-`cargo fmt` and Clippy are not applicable unless an authorized amendment adds
-Rust changes. Coverage/CRAP is observational and not required for this
-scientific-source package.
+Because the bounded amendment adds Rust changes, run `cargo fmt --all --check`,
+warnings-denied workspace Clippy, and doctests. Coverage/CRAP remains
+observational and is not required for this scientific-source package.
 
 ## Subagent Authorization
 
@@ -188,6 +216,9 @@ Subagent authorization: this package explicitly authorizes spawning/delegation
 to one domain-science reviewer, one independent reproduction/publication
 reviewer, and two terminal verifier subagents for read-only review of the final
 source, exact roots, gates, lifecycle truthfulness, and protected boundaries.
+Because the amendment workflow changed, it also authorizes the dedicated Rust
+code-review and Rust QA-review agents to inspect the declared Rust/test paths
+read-only before lifecycle entry.
 Expected outputs are compact findings and verification evidence returned to the
 parent for package artifacts; write access is read-only. This package also
 explicitly authorizes a heavy-gate-runner subagent if needed, with writes
@@ -219,10 +250,50 @@ fitness.
   unpublished `DRAFT`/`IN_REVIEW`. Rationale: published-byte semantic-version
   rules do not require an unpublished source bump, while the new exact root
   provides content identity. Date/Author: 2026-08-05 / Codex.
+- Decision: amend the package for one assurance transaction correction after
+  the real refresh exposed a missing supported path for newly declared local
+  dependencies. Rationale: removing v7/21K-21N from the generated identity
+  would weaken the package's exact-source acceptance criterion. The correction
+  is limited to manifest-selected DRAFT adoption and must not permit unrelated
+  drift or unconfined/undeclared sources. Date/Author: 2026-08-05 / Codex.
+- Decision: keep `scientific_approver` null at pending review entry. Rationale:
+  requiring a named scientific approver before an independent human accepts
+  that role would fabricate authority and contradict the package's explicit
+  hold boundary. The same typed amendment module now accepts an absent optional
+  approver at review entry. Advancement from that null assignment requires a
+  separate governed approver-assignment/reentry design package; this refresh
+  does not redefine the v2 identity projection or fabricate an approver merely
+  to keep a later transition mechanically reachable. Date/Author: 2026-08-05 /
+  Codex.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+ASSURE-06 refreshed the snow/frost flagship against v7/v126 and exact 21K-21N
+authority without changing the 188 retained values, runtime physics, defaults,
+or public surfaces. The report is now `IN_REVIEW` at generation
+`0a63d3fe7d847a0b623c163ac0d83f0ca64a47807b39575d3b0b101f76d50567`.
+Roger Lew is recorded as accountable report lead and material producer; the
+approval lock is null and public report count remains zero.
+
+The real refresh exposed a bounded manifest-adoption gap and three stale test
+assumptions tied to the old `DRAFT` repository state. The transaction path now
+admits only manifest-declared, confined report-owned sources and declared
+external `local_content`, and all corrected focused, amendment, quick, frost,
+and full-workspace gates pass. Internal science, reproduction/publication,
+Rust, and QA reviews pass without unresolved findings.
+
+Terminal disposition is held for independent human scientific and
+reproduction/publication review plus assurance-steward authority. Advancement
+from the intentionally null scientific-approver assignment also requires a
+separate governed assignment/reentry design. No release transfer, publication,
+cutover, efficacy, noninferiority, causation, default change, application
+fitness, or warm-maritime conifer transfer is claimed.
+
+Terminal verification found and closed one identity-bound README sentence that
+incorrectly generalized every tracked review state as `DRAFT`. Typed
+implementation rebind adopted the corrected `DRAFT`/`IN_REVIEW` wording into
+the terminal generation without changing the exact report roots or active
+review event.
 
 ## Idempotence And Recovery
 

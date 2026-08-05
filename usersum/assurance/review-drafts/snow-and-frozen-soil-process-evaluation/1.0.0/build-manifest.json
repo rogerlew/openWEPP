@@ -2,7 +2,7 @@
   "schema_version": 1,
   "report_id": "snow-and-frozen-soil-process-evaluation",
   "report_version": "1.0.0",
-  "source_root_sha256": "b50c246138d130a146bdfc7f77462d3a742911b1e848572fcb5751934ef10e55",
+  "source_root_sha256": "b3e306156464f3fbfc2a75165e8350154dd09e56da630191c02a9e6075ead51e",
   "assembly_tool": "openwepp-assurance-assembly:1",
   "files": [
     {
@@ -15,19 +15,43 @@
     },
     {
       "path": "index.md",
-      "sha256": "13edd054825705cb717b4049c0912043ee0e19803faad9bc6d538f13c154750b"
+      "sha256": "ca91b98b3719f1f309f84f67176ec25ded4173f1694257346f31f87411f3f655"
     },
     {
       "path": "research-objects/20260716-codex-execute-assure06_prompt.md",
       "sha256": "ebf194982ddc6b65eff3f1e30499f74ca03dc121820267ddc2a17aef5d8f99e2"
     },
     {
+      "path": "research-objects/20260805-codex-execute-assure06-refresh_prompt.md",
+      "sha256": "9bbb4768df55e2dece4d057c923dd75d793605bc25dd29496721ede2fb6fa184"
+    },
+    {
+      "path": "research-objects/SC-SNOWENERGY-001.md",
+      "sha256": "bc22e76cd4a55a219e0c949ce0d476ed105cc8734113b6d01e5310bfb70e0faa"
+    },
+    {
       "path": "research-objects/SC-SNOWFREEZE-001.md",
-      "sha256": "53ef8d5f8e771c5eef13e04d7fca71e9a9f4b06ecca2248270b81d8dcc0ee9b4"
+      "sha256": "663de67c65b664417905970cd7950f4b2eadea4b9d9cf6633ea48c41e5a7fd12"
     },
     {
       "path": "research-objects/agent-assistance-packet.json",
-      "sha256": "06092920a2ab1a4306d7f89ca2fe7c76d4854fcd9c64e3421fc4117c8644af9b"
+      "sha256": "ed466e4422be98577f638138df1f2bb918a6e174c4826738c5cc5c144e697a80"
+    },
+    {
+      "path": "research-objects/authority-impact-21k-wet-compaction.md",
+      "sha256": "68f286b94b2df7cadeffa3c0d39a0e1322707d81d28e093f82d23be1d58e5572"
+    },
+    {
+      "path": "research-objects/authority-impact-21l-warm-mixed.md",
+      "sha256": "50cba09b38ee2aa8502b18925876f12cec6b05a6543467b6c50258fd566be452"
+    },
+    {
+      "path": "research-objects/authority-impact-21m-coe-audit.md",
+      "sha256": "bb9737f8892d187aca9ae13877c7ce1c99df6d4f235d15e3e90cf8ed4453b03c"
+    },
+    {
+      "path": "research-objects/authority-impact-21n-stage3-owner.md",
+      "sha256": "f062f1432cd70223f7d8d7f1d7271426eb5dc60ad2dcf7abdb0ade253abd7073"
     },
     {
       "path": "research-objects/conservation-operands.json",
@@ -83,7 +107,7 @@
     },
     {
       "path": "supplement.md",
-      "sha256": "dfa9ac071b89107fb8c136f79129e71c19a91baffd8445d2feceb56a33101d2a"
+      "sha256": "828b470d0289e1866e56266074fc846cf91d392bcb39a8949808c404e44887e8"
     }
   ]
 }

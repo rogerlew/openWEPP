@@ -348,8 +348,10 @@ pub fn adopt_report_source(
 /// current.
 ///
 /// Selecting the report manifest adopts the complete set of drifted internal
-/// sources already bound to that DRAFT report. Selecting an external
-/// `local_content` dependency retains single-source adoption semantics.
+/// sources bound to that DRAFT report and admits newly declared report-owned
+/// sources or external `local_content` dependencies. Selecting an external
+/// `local_content` dependency directly retains single-source adoption
+/// semantics.
 ///
 /// # Errors
 ///
@@ -393,21 +395,8 @@ pub fn adopt_report_source_at_generation(
 
     let previous = IdentityLock::load(root)?;
     require_expected_generation(&previous, if_generation)?;
-    let observed_sources = if selected_is_manifest {
-        manifest_owned_source_drift(root, report_id, &report_path, &previous.sources)?
-    } else {
-        let expected = previous.sources.get(selected).ok_or_else(|| {
-            AssuranceError::Invalid(format!(
-                "declared report source '{selected}' is absent from generated identity"
-            ))
-        })?;
-        let observed = sha256_bytes(&read_regular(root, path)?);
-        if observed == *expected {
-            BTreeMap::new()
-        } else {
-            BTreeMap::from([(selected.to_owned(), observed)])
-        }
-    };
+    let observed_sources =
+        report_source_drift(root, report_id, selected, &report_path, &report, &previous)?;
     let exceptions = observed_sources.keys().map(String::as_str).collect();
     previous.verify_files_except(root, &exceptions)?;
     let current_review = load_review_lock(root, report_id)?;
@@ -454,8 +443,47 @@ pub fn adopt_report_source_at_generation(
         if_generation,
         observed_sources.keys().cloned().collect(),
         observed_sources,
-        false,
+        selected_is_manifest,
     )
+}
+
+fn report_source_drift(
+    root: &Path,
+    report_id: &str,
+    selected: &str,
+    report_path: &Path,
+    report: &serde_yaml::Value,
+    previous: &IdentityLock,
+) -> Result<BTreeMap<String, String>> {
+    if Path::new(selected) != report_path {
+        let expected = previous.sources.get(selected).ok_or_else(|| {
+            AssuranceError::Invalid(format!(
+                "declared report source '{selected}' is absent from generated identity"
+            ))
+        })?;
+        let observed = sha256_bytes(&read_regular(root, Path::new(selected))?);
+        return Ok(if observed == *expected {
+            BTreeMap::new()
+        } else {
+            BTreeMap::from([(selected.to_owned(), observed)])
+        });
+    }
+
+    let mut observed =
+        manifest_owned_source_drift(root, report_id, report_path, &previous.sources)?;
+    let report_directory = report_path.parent().ok_or_else(|| {
+        AssuranceError::Invalid(format!("report '{report_id}' manifest lacks a parent"))
+    })?;
+    for (source, digest) in collect_admission_sources(root, report_path, report)? {
+        if previous.sources.contains_key(&source) {
+            continue;
+        }
+        if Path::new(&source).strip_prefix(report_directory).is_err() {
+            require_declared_external_local_content(report, report_id, &source)?;
+        }
+        observed.insert(source, digest);
+    }
+    Ok(observed)
 }
 
 /// Admits one complete unadmitted DRAFT report through the generated-identity
@@ -1370,10 +1398,6 @@ fn validate_lifecycle_payload(request: &V2LifecycleRequest) -> Result<()> {
                 request.independence_assessment.as_ref(),
                 "independence assessment",
             )?;
-            require_optional_text(
-                request.scientific_approver_id.as_ref(),
-                "scientific approver ID",
-            )?;
             if request.material_producer_ids.is_empty() {
                 return Err(AssuranceError::Usage(
                     "review entry requires material_producer_ids".to_owned(),
@@ -1606,12 +1630,14 @@ fn apply_review_entry(report: &mut serde_yaml::Value, request: &V2LifecycleReque
         .and_then(serde_yaml::Value::as_mapping_mut)
         .ok_or_else(|| AssuranceError::Invalid("report authorship is missing".to_owned()))?;
     set_yaml_string(authorship, "human_report_lead", &request.principal_id);
-    set_yaml_string(
-        authorship,
-        "scientific_approver",
-        request.scientific_approver_id.as_deref().ok_or_else(|| {
-            AssuranceError::Usage("review entry requires scientific_approver_id".to_owned())
-        })?,
+    authorship.insert(
+        yaml_key("scientific_approver"),
+        request
+            .scientific_approver_id
+            .as_ref()
+            .map_or(serde_yaml::Value::Null, |value| {
+                serde_yaml::Value::String(value.clone())
+            }),
     );
     set_yaml_string(authorship, "accountability_state", "assigned");
     let assistance = mapping

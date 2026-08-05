@@ -1,6 +1,6 @@
 # Supplement: Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
 
-*Version 1.0 — 2026-07-16*
+*Version 1.0 — 2026-08-05*
 
 This supplement documents the evidence identities, reconstruction, dataset
 roles, metric semantics, and claim boundaries behind the
@@ -33,6 +33,13 @@ fresh release reproduction. Human review may require selected reruns, and
 publication requires a separate release transfer to an exact approved source
 and release configuration.
 
+The 2026-08-05 authority refresh binds the report to
+`SC-SNOWENERGY-001` v7, `SC-SNOWFREEZE-001` v126, and the terminal dispositions
+of campaign increments 21K-21N. It does not replace the retained empirical
+result with the later diagnostic populations. The retained ten-surface result
+still describes its named historical realization; the later evidence changes
+currency and interpretation, not those 188 stored values.
+
 ## S3. Evidence Identities
 
 | Evidence | SHA-256 | Role |
@@ -42,10 +49,19 @@ and release configuration.
 | Post-partition residual decomposition | `0225ff80580ef352b2b91720da947f7f16f909a48827fb47e6c207da5b4e8875` | Signed snow residuals and process-family diagnosis |
 | Non-SNOTEL frozen-soil baseline | `b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930` | Frost-tube, isotherm, and paired snow-control metrics |
 | Integrated conservation and consumer evidence | `306b96a1d45fca85d5604b16fe8ce4b814df48d2fc15ecb910e198085ee81f18` | Independently reconstructed production WAT ledgers |
-| Snow/frost science contract | `f7364f33ab446479b9160c5cf0bafef13826fd2637e140c823dfde2204cb1a16` | Formulation, units, obligations, and evidence authority |
+| Snow/frost science contract | generated identity lock | v126 formulation, units, obligations, current defaults, and Stage 3 ownership seam |
+| Snow-energy science contract | generated identity lock | v7 surface-energy and future sole-melt-owner authority |
+| 21K wet-compaction disposition and public-safe extract | generated identity lock | Corrected exact operand lineage and causal-attribution reset |
+| 21L warm/mixed disposition and public-safe extract | generated identity lock | Multifactor, chronology-confounded corrected-state signal |
+| 21M CoE audit disposition and public-safe extract | generated identity lock | Post-2007 baseline fidelity with an independent-authority gap |
+| 21N ownership disposition and public-safe extract | generated identity lock | Stage 3 future ownership and atomic implementation hold |
 
-All are exposed as public-safe research objects in the disposable report build.
-Their inclusion in staging is not publication authority.
+The exact terminal dispositions are identity-bound inputs. Uniquely named,
+report-owned faithful extracts are exposed as public-safe research objects in
+the disposable build. The
+[archived refresh prompt](research-objects/20260805-codex-execute-assure06-refresh_prompt.md) is
+likewise content-identified and staged. Inclusion in staging is not publication
+authority.
 
 ## S4. Precipitation-Phase Reconstruction
 
@@ -245,6 +261,7 @@ authorize publication.
 | --- | --- | --- | --- |
 | SF-P01 precipitation phase | Jennings result; activation trace; Harder-Pomeroy authority | Retrospective observed classification, humidity pattern, active selector, partition closure | Untouched held-out validation, precipitation amount, snowpack accuracy |
 | SF-P02 seasonal snowpack | Current-default profile; residual decomposition; admitted SNOTEL/canopy observations | Cross-regime response profile and named residual families | Universal score, forcing-independent magnitude accuracy, untested-site fitness |
+| SF-P05 authority and implementation currency | v7/v126 contracts; identity-bound 21K-21N dispositions and public-safe extracts | Corrected operand authority, current CoE compatibility ownership, future Stage 3 sole ownership, and implementation hold | Empirical efficacy, noninferiority, default change, runtime cutover, causation, or warm-maritime conifer transfer |
 | SF-P03 frozen-soil response | Non-SNOTEL baseline; observation manifests | Method-specific coupled residuals and snow-control status | Isolated frost-physics error or transferable frost-depth accuracy |
 | SF-P04 production verification | Activation trace; integrated WAT reconstruction | Selected real consumer and water-accounting identities | Empirical predictive accuracy |
 
@@ -261,15 +278,16 @@ They cannot supply accountable human report leadership, scientific approval,
 external peer review, assurance stewardship, release ownership, or application
 fitness. The current structured attribution and lifecycle projections are:
 
-**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: None recorded.
+**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: Roger Lew, Codex (AI coding agent).
 
 
-**Assurance status.** This report is `DRAFT`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
+**Assurance status.** This report is `IN_REVIEW`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
 
 
 ## Revision Log
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 1.0 authority refresh | 2026-08-05 | Bound v7/v126 and 21K-21N, separated current CoE implementation from future Stage 3 authority, and retained the unchanged 188-value empirical result and human-review boundary. |
 | 1.0 review entry | 2026-07-16 | Recorded Roger Lew as report lead and material producer; entered independent human review without changing scientific claims, methods, results, tables, or figures. |
 | 1.0 draft | 2026-07-16 | First manuscript-first synthesis of the retained phase, seasonal snowpack, frozen-soil, and conservation evidence. |

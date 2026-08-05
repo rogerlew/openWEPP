@@ -358,8 +358,7 @@ attestation:
 
 #[test]
 fn principal_and_lifecycle_checks_recalculate_identical_candidates() {
-    let fixture = fixture("assurance-amend-deterministic-candidates");
-    enter_snow_review(&fixture.path);
+    let fixture = current_unverified_fixture("assurance-amend-deterministic-candidates");
     let principal = br"schema_version: 1
 principal_id: roger-lew
 display_name: Roger Lew, deterministic fixture
@@ -397,8 +396,7 @@ predecessor_event_ids: []
 
 #[test]
 fn supersession_is_terminal_and_requires_a_named_successor() {
-    let fixture = fixture("assurance-amend-supersession");
-    enter_snow_review(&fixture.path);
+    let fixture = current_unverified_fixture("assurance-amend-supersession");
     let missing = br"schema_version: 1
 event_type: supersession
 principal_id: roger-lew
@@ -538,10 +536,7 @@ fn report_source_adoption_is_read_only_deterministic_and_invalidates_review_auth
         .unwrap(),
     )
     .unwrap();
-    assert_eq!(
-        prior_report["authorship"]["scientific_approver"].as_str(),
-        Some("roger-lew")
-    );
+    assert!(prior_report["authorship"]["scientific_approver"].is_null());
 
     let first = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Check).unwrap();
     let second = adopt_report_source(&fixture.path, SNOW, source, V2AmendMode::Check).unwrap();
@@ -747,6 +742,154 @@ fn manifest_adoption_accepts_complete_owned_internal_source_set() {
     let repeated =
         adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Apply).unwrap();
     assert!(!repeated.changed);
+}
+
+#[test]
+fn manifest_adoption_admits_new_declared_external_local_content() {
+    let fixture = fixture("assurance-adopt-new-declared-source");
+    let manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));
+    let new_source = PathBuf::from("docs/assurance-adoption-new-source.md");
+    let source_bytes = b"# Newly Declared Assurance Source\n";
+    fs::create_dir_all(fixture.path.join("docs")).unwrap();
+    fs::write(fixture.path.join(&new_source), source_bytes).unwrap();
+
+    let manifest_path = fixture.path.join(&manifest);
+    let mut report: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
+    let dependency: serde_yaml::Value = serde_yaml::from_str(
+        r"
+id: CANOPY-DEP-NEW-DECLARED-SOURCE
+title: Newly declared assurance source
+owner: assurance transaction contract
+kind: local_content
+provenance: Integration fixture for exact manifest-selected source admission.
+creation_procedure: Write one confined regular file before manifest adoption.
+access: public_repository
+license: repository_license
+path: docs/assurance-adoption-new-source.md
+review_role: null
+immutable_identity: null
+restriction_reason: null
+",
+    )
+    .unwrap();
+    report["dependencies"]
+        .as_sequence_mut()
+        .unwrap()
+        .push(dependency);
+    report["agent_assistance"]["input_dependency_ids"]
+        .as_sequence_mut()
+        .unwrap()
+        .push(serde_yaml::Value::String(
+            "CANOPY-DEP-NEW-DECLARED-SOURCE".to_string(),
+        ));
+    fs::write(&manifest_path, serde_yaml::to_string(&report).unwrap()).unwrap();
+
+    let before = capture_tree(&fixture.path.join("assurance/v2"));
+    let checked =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Check).unwrap();
+    assert!(checked.changed);
+    assert!(
+        checked
+            .affected_paths
+            .contains(&new_source.display().to_string())
+    );
+    assert_eq!(before, capture_tree(&fixture.path.join("assurance/v2")));
+
+    let applied =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Apply).unwrap();
+    assert_eq!(checked, applied);
+    let identity: serde_json::Value = serde_json::from_slice(
+        &fs::read(fixture.path.join("assurance/v2/identity.lock.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        identity["sources"][new_source.to_str().unwrap()].as_str(),
+        Some(sha256_bytes(source_bytes).as_str())
+    );
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_report(CANOPY)
+        .unwrap();
+    let repeated =
+        adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Apply).unwrap();
+    assert!(!repeated.changed);
+}
+
+#[test]
+fn manifest_adoption_rejects_invalid_new_external_sources_without_mutation() {
+    for (label, source, kind, declared, expected) in [
+        (
+            "wrong-kind",
+            "docs/assurance-adoption-wrong-kind.md",
+            "external_reference",
+            true,
+            "must be a local_content dependency",
+        ),
+        (
+            "assurance-internal",
+            "assurance/v2/assurance-adoption-internal.md",
+            "local_content",
+            true,
+            "must be outside assurance",
+        ),
+        (
+            "undeclared",
+            "docs/assurance-adoption-undeclared.md",
+            "local_content",
+            false,
+            "is not declared by report",
+        ),
+    ] {
+        let fixture = fixture(&format!("assurance-adopt-new-{label}"));
+        let manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));
+        let source_path = fixture.path.join(source);
+        fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+        fs::write(&source_path, b"# Invalid New Assurance Source\n").unwrap();
+
+        let manifest_path = fixture.path.join(&manifest);
+        let mut report: serde_yaml::Value =
+            serde_yaml::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
+        if declared {
+            let dependency: serde_yaml::Value = serde_yaml::from_str(&format!(
+                "id: CANOPY-DEP-INVALID-NEW-SOURCE\n\
+                 title: Invalid newly declared source\n\
+                 owner: assurance transaction contract\n\
+                 kind: {kind}\n\
+                 provenance: Negative manifest-admission integration fixture.\n\
+                 creation_procedure: Write one confined regular file.\n\
+                 access: public_repository\n\
+                 license: repository_license\n\
+                 path: {source}\n\
+                 review_role: null\n\
+                 immutable_identity: null\n\
+                 restriction_reason: null\n"
+            ))
+            .unwrap();
+            report["dependencies"]
+                .as_sequence_mut()
+                .unwrap()
+                .push(dependency);
+            report["agent_assistance"]["input_dependency_ids"]
+                .as_sequence_mut()
+                .unwrap()
+                .push(serde_yaml::Value::String(
+                    "CANOPY-DEP-INVALID-NEW-SOURCE".to_string(),
+                ));
+        } else {
+            report["research_objects"].as_sequence_mut().unwrap()[0]["path"] =
+                serde_yaml::Value::String(source.to_string());
+        }
+        fs::write(&manifest_path, serde_yaml::to_string(&report).unwrap()).unwrap();
+
+        let before = capture_tree(&fixture.path.join("assurance/v2"));
+        let error = adopt_report_source(&fixture.path, CANOPY, &manifest, V2AmendMode::Check)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains(expected), "unexpected error: {error}");
+        assert_eq!(before, capture_tree(&fixture.path.join("assurance/v2")));
+        assert!(!fixture.path.join("assurance/.v2.amend.next").exists());
+    }
 }
 
 #[test]
@@ -1275,9 +1418,13 @@ build_maintainer_id: codex-agent-assure05
 material_producer_ids:
 - roger-lew
 independence_assessment: Integration fixture authority is intentionally pending.
-scientific_approver_id: roger-lew
 ";
     amend_lifecycle(root, SNOW, review_entry, V2AmendMode::Apply).unwrap();
+    let report: serde_yaml::Value = serde_yaml::from_slice(
+        &fs::read(root.join(format!("assurance/v2/reports/{SNOW}/report.yaml"))).unwrap(),
+    )
+    .unwrap();
+    assert!(report["authorship"]["scientific_approver"].is_null());
 }
 
 fn rewrite_canopy_dependency(root: &Path, rewrite: impl FnOnce(&mut serde_yaml::Value)) {

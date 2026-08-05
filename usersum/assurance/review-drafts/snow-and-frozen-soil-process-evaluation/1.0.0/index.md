@@ -1,14 +1,14 @@
 # Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
 
-*Version 1.0 — 2026-07-16*
+*Version 1.0 — 2026-08-05*
 
 Prepared with disclosed Codex assistance for openWEPP scientific-assurance
 maintainers. The findings below are a bounded synthesis of identified evidence.
 
-**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: None recorded.
+**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: Roger Lew, Codex (AI coding agent).
 
 
-**Assurance status.** This report is `DRAFT`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
+**Assurance status.** This report is `IN_REVIEW`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
 
 
 ## Key Findings
@@ -39,6 +39,12 @@ maintainers. The findings below are a bounded synthesis of identified evidence.
   reconstructed from their storage and transfer operands and closed at
   floating-point residuals. These are named spot verifications, not a general
   predictive or all-row conservation claim.
+- The 2026-08-05 authority refresh separates current implementation from
+  target authority: CoE remains the byte-identical compatibility melt runtime,
+  while Stage 3 is admitted only as the future sole melt owner under an
+  implementation hold. This authority decision is not empirical efficacy,
+  noninferiority, runtime cutover, or a change to the retained observational
+  results.
 
 ## Plain-Language Summary
 
@@ -63,6 +69,17 @@ early peak or meltout timing at mountain sites, and depth relative to SWE at two
 humid New England surfaces. Absolute SWE and depth often inherit large errors
 from precipitation and temperature forcing, so those magnitudes cannot be
 assigned solely to snow physics.
+
+Later campaign evidence corrected a duplicate wet-compaction input and changed
+density and depth without changing generated melt or upstream snow mass. Its
+annual-first site medians localized nearly all pre-peak loss to warm or mixed
+days, but the
+temperature, moisture, radiation, density, and pack-depth signals occur
+together and do not identify one cause. The current CoE equations reproduce the
+pinned post-2007 baseline, yet the material post-handbook changes lack an
+independently validated production envelope. Consequently, CoE remains the
+current compatibility runtime while Stage 3 is only the admitted future owner;
+the required atomic implementation and cutover have not occurred.
 
 The frozen-soil observations show why the chain must be evaluated together.
 Where frost-tube depth was available, the simulated frost response could be
@@ -107,6 +124,10 @@ snow/frost implementation and identifies specific residual mechanisms. Because
 the observational corpora influenced model development and frozen-soil
 comparisons remain snow-confounded, the synthesis does not constitute an
 independent predictive validation or authorize fitness for an untested site.
+The 2026-08-05 authority refresh does not change those retained empirical
+results: it records that current CoE melt remains a compatibility
+implementation and that Stage 3 future ownership is not yet implemented or
+empirically validated.
 
 ## 1. Introduction
 
@@ -158,6 +179,26 @@ dry-compaction, and wet-compaction behavior drawn from the Anderson/SNOBAL
 lineage. SWE remains the mass authority. Density and depth may change without
 inventing or removing water, and the direct runtime keeps the snowpack boundary
 used by melt distinct from diagnostic or alternative-model state.
+
+The active wet-compaction driver is now explicitly positive hourly generated
+melt plus interval-start snow-contact rain, counted once before runoff. The
+retired driver double counted bounded pack loss through an adjacent routed-
+liquid alias. This correction materially changes density and depth trajectories
+but not generated melt, upstream mass, phase, forcing, canopy, or the active
+default selectors.
+
+The current melt owner remains the post-2007 coefficient-of-efficiency (CoE)
+generator for compatibility. Canonical
+[snow-energy v7](research-objects/SC-SNOWENERGY-001.md) and
+snow/frost v126 authority admit the resolved
+Stage 3 surface-energy and phase-change system as the future sole melt owner,
+but only after one atomic implementation closes complete sensible and
+precipitation-advection heat, thin-pack residual-snow phase disposition, a
+canonical physical recipient and next-state disposition for terminal remaining
+energy without proxy transfer, same-substep liquid handling, linked
+ledgers, selectors, rollback, and the real downstream consumer. Until that
+implementation passes, Stage 3 cannot generate production melt and CoE cannot
+be partially retired.
 
 The bulk representation is intentionally simpler than a multilayer energy-
 balance snow model. That simplicity is useful for hillslope-scale erosion
@@ -405,6 +446,31 @@ variants. These negative results increase confidence that the activated process
 combination was not selected from one favorable site, while the reuse of the
 same observation network still prevents an independent validation claim.
 
+The later
+[21K wet-compaction correction](research-objects/authority-impact-21k-wet-compaction.md),
+[21L warm/mixed attribution](research-objects/authority-impact-21l-warm-mixed.md),
+[21M CoE authority audit](research-objects/authority-impact-21m-coe-audit.md), and
+[21N ownership reconciliation](research-objects/authority-impact-21n-stage3-owner.md) change how
+these residuals are interpreted. The wet-compaction correction removed a
+density/geometry confounder, so pre-21K
+density, depth, and loss baselines cannot carry causal attribution forward.
+Annual-first site medians place almost all pre-peak loss on warm or mixed days
+and identify CoE's empirical `cmelt` term as the largest annual-first positive
+term at all four canonical mountain sites. These observations are
+chronology-confounded: warm,
+moist, more radiative, denser, and shallower states co-occur. They do not prove
+that `cmelt`, radiation, forcing, density, or another individual process caused
+the loss, and they supply no correction or calibration authority.
+
+The CoE implementation audit found exact post-2007 baseline fidelity rather
+than a Rust transcription defect. Because the material 2007/2008 changes lack
+cited independent validation or bounded transferability authority, v7/v126
+admit Stage 3 as the future sole melt owner. This is a target-authority decision,
+not evidence that Stage 3 currently controls SWE or runoff. CoE remains the
+unchanged default compatibility owner on `IMPLEMENTATION_HOLD`; Stage 3
+cutover, efficacy, noninferiority, and warm-maritime conifer transfer remain
+unproven.
+
 ### 4.3 Frozen-soil response
 
 **Frozen-soil comparison and snow-control counts.** Method-specific retained counts; frost-tube residuals and soil-temperature bounds are not pooled as equivalent depth measurements.
@@ -520,6 +586,14 @@ vertical or structural density evolution, mountain snow persistence and
 representativeness, and canopy/subcanopy control of depth relative to SWE. That
 is a more useful conclusion than either “validated” or “insufficient.”
 
+The campaign's authority result sharpens, but does not strengthen, that
+empirical conclusion. Corrected wet-compaction lineage is now authoritative;
+warm/mixed loss evidence remains multifactor and observational; CoE is
+baseline-faithful but lacks an adequate independent production envelope; and
+Stage 3 is a future implementation target, not an evaluated production
+replacement. No noninferiority or default-change claim follows from authority
+admission alone.
+
 The frozen-soil evidence supports implementation credibility and shows that the
 model responds across long observational records. It does not yet isolate
 frozen-soil predictive skill. This is not because the frost model lacks
@@ -567,6 +641,17 @@ conservation does not guarantee correct runoff timing.
 - The ten-surface snow rubric is a development diagnostic. Its ordinal bands
   are signature-specific and cannot be interpreted as a probability of
   correctness or a transferable accuracy grade.
+- The later Snowbird precipitation-normalized lane is development-only input-
+  sensitivity evidence. It is not precipitation truth, calibration,
+  independent validation, or authority to transfer a multiplier to production.
+- The 21L warm/mixed contrasts are chronology-confounded and cannot identify a
+  unique forcing, radiation, density, canopy, or melt-process owner.
+- Stage 3 future melt ownership is canonical target authority, not implemented
+  physics, empirical efficacy, noninferiority, a default change, or a runtime
+  cutover. CoE remains the compatibility owner until all atomic cutover gates
+  pass.
+- The evidence does not support transfer to warm-maritime conifer conditions;
+  that claim remains explicitly withheld.
 - Wind redistribution, canopy interception/unloading, subcanopy longwave
   radiation, and vertical snow layering are incomplete or simplified relative
   to advanced snow models.
@@ -591,6 +676,17 @@ densification, mountain persistence, and depth-SWE geometry. Conservation and
 consumer checks verify precipitation partition across the retained production
 trace and water-storage arithmetic at four selected WAT rows.
 
+The post-synthesis campaign corrected a duplicate wet-compaction operand, and
+its annual-first site medians showed that corrected pre-peak loss is
+concentrated on warm or mixed days, but it did not isolate one causal
+mechanism. The current CoE melt implementation
+matches the pinned post-2007 baseline while lacking a sufficient independent
+validation envelope for its material changes. Stage 3 is therefore admitted as
+the future sole melt owner under v7/v126, while CoE remains the byte-identical
+current compatibility runtime on implementation hold. This authority decision
+does not establish Stage 3 efficacy, noninferiority, transferability, or
+production readiness.
+
 The frozen-soil evidence is valuable but not independently attributable because
 snow-depth control frequently failed or was unavailable. The appropriate
 scientific conclusion is therefore claim-specific: phase and snow-process
@@ -604,10 +700,13 @@ hydrologist, soil scientist, practitioner, or responsible institution.
 
 ## 8. Open Research and Reproduction
 
-The version-bound research-object surface contains the compact strict result,
-its reconstruction procedure and conservation operands, the four primary
-machine-readable evidence sources, the production conservation record, the
-science contract, exact phase-scoring implementation, selected-row operand log,
+The report binds the exact 21K-21N terminal dispositions as inputs. Its
+version-bound research-object surface exposes their public-safe authority-
+impact extracts alongside the compact strict result, reconstruction procedure,
+conservation operands, four primary machine-readable evidence sources,
+production conservation record, snow/frost and snow-energy science contracts,
+exact phase-scoring implementation, selected-row operand log, the
+[archived authority-refresh prompt](research-objects/20260805-codex-execute-assure06-refresh_prompt.md),
 and [dataset provenance](research-objects/dataset-provenance.md).
 The technical supplement maps each
 claim to those objects and gives the exact offline command.
@@ -615,7 +714,9 @@ claim to those objects and gives the exact offline command.
 Priority independent work is to preregister and run held-out site evaluation;
 propagate forcing and snow-boundary uncertainty; evaluate snow density and
 layering without site calibration; add paired snow observations to frozen-soil
-sites; and reproduce the selected evidence against an exact release candidate.
+sites; implement and close the complete Stage 3 sole-owner cutover without a
+dual-owner interval; evaluate warm-maritime conifer transfer independently;
+and reproduce the selected evidence against an exact release candidate.
 
 ## References
 
@@ -638,21 +739,25 @@ USGS Sleepers River frost-tube and paired snow-depth data release used by the So
 
 NSIDC GGD498 seasonal frost-tube observations used by the Morris, Minnesota fixture. [doi:10.7265/1mcs-q536](https://doi.org/10.7265/1mcs-q536)
 
+openWEPP snow-surface energy, sub-canopy longwave, Stage 3 energy closure, and future melt-owner science contract. (`openwepp:SC-SNOWENERGY-001:v7`)
+
 NRCS SNOTEL and SCAN station records and USDA-ARS Reynolds Creek soil-
 temperature records are identified in the dataset-provenance research object.
-openWEPP snow and frozen-soil process, evaluation, and production-obligation science contract. (`sha256:f7364f33ab446479b9160c5cf0bafef13826fd2637e140c823dfde2204cb1a16`)
+openWEPP snow and frozen-soil process, evaluation, and production-obligation science contract. (`openwepp:SC-SNOWFREEZE-001:v126`)
 
 ## About This Report
 
 This report is production-domain V2 source version 1.0.0. It synthesizes named
-historical evidence at the source identities listed in its supplement and was
-assembled at openWEPP Git `47c2cf9eae6eef95f0f670d157d2d31df4cbf9cc`.
+historical evidence at the source identities listed in its supplement, was
+assembled at openWEPP Git `47c2cf9eae6eef95f0f670d157d2d31df4cbf9cc`, and
+was refreshed on 2026-08-05 against campaign increments 21K-21N and canonical
+v7/v126 authority.
 Codex drafted the report and deterministic reconstruction procedure. The
 current attribution and governance status below are generated from the
 principal registry, report descriptor, and review lock.
 
-**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: None recorded.
+**Authorship and accountability.** Draft authors: Codex (AI coding agent). Accountable report lead: Roger Lew. Material producers: Roger Lew, Codex (AI coding agent).
 
 
-**Assurance status.** This report is `DRAFT`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
+**Assurance status.** This report is `IN_REVIEW`. Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists. It does not authorize public export, vendoring, or an application-fitness determination.
 

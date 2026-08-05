@@ -137,13 +137,15 @@ target/release/openwepp-assurance amend adopt-report-source \
 Apply the same command with `--apply` only after reviewing the complete
 candidate. Selecting the exact conventional manifest path of a `DRAFT` report
 adopts every drifted internal source already owned by that report in one
-transaction. Unrelated report drift still fails closed. Dependency adoption
-accepts exactly one drifted external dependency, refuses internal or undeclared
-paths, returns an `IN_REVIEW` report to `DRAFT`, clears its review authority,
-and invalidates its active review events. Neither form creates a human decision
-or edits a source. This is a `scientific-full` transition; run the
-package-selected implementation and full gates rather than the focused
-report-data receipt runner.
+transaction. It may also admit a newly declared report-owned path or an exact
+external `local_content` dependency; assurance-internal, wrong-kind,
+undeclared, unconfined, and unrelated paths fail closed. Direct dependency
+adoption accepts exactly one already-bound drifted external dependency. Both
+forms return an `IN_REVIEW` report to `DRAFT`, clear its review authority, and
+invalidate its active review events. Neither form creates a human decision or
+edits a source. This is a `scientific-full` transition; run the package-selected
+implementation and full gates rather than the focused report-data receipt
+runner.
 
 After an applied report-data-only transaction, run its receipt-authorized gate:
 
@@ -283,8 +285,9 @@ cargo build -p openwepp-assurance
 The command invokes the real `build --all` and `check --all` consumers in an
 owned temporary root, then compares exact paths and bytes. `--apply` replaces
 only `usersum/assurance/review-drafts/`; `--check` writes nothing and rejects
-missing, extra, drifted, symlinked, or special files. The review index and every
-report state explicitly say `DRAFT`.
+missing, extra, drifted, symlinked, or special files. The review index and each
+report explicitly display its governed nonpublic lifecycle, including `DRAFT`
+or `IN_REVIEW`.
 
 Tracked review drafts are durable review inputs. They are not the approved
 public catalog, a publication snapshot, a release transfer, an export, or a

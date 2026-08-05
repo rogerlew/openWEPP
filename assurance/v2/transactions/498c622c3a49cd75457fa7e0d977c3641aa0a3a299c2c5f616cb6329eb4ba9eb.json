@@ -1,0 +1,108 @@
+{
+  "schema_version": 2,
+  "operation": "adopt-report-source",
+  "impact_class": "scientific-full",
+  "changed": true,
+  "old_generation_id": "5a681e26dda567da740ade0853272e79c14cf5179db2e6c06e172ed64c0e841b",
+  "new_generation_id": "c762c2e4e540556cd7e8ce30220a6c4ddc7171f8a8303ef09f21f84113944a32",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "native-forest-canopy-phenology-evaluation",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json"
+  ],
+  "old_roots": {
+    "linear-groundwater-reservoir-recurrence": {
+      "science_root": "1b2f0d0e3c8de9107d7ea5adca8d79c524840dd7555d6eee79538552b162e43d",
+      "communication_root": "4b5995f2dcd2f0a947061a62c83883d9db619748681fa25f0ec7660098ef128c",
+      "attribution_root": "4461f051ab8e6a4241724e3684ada62b4658448340648f7912af89eecf463d30",
+      "review_governance_root": "463beb19ec57b48462cd09593042beda17cda008612ecfe3f036deb108f958cb",
+      "content_review_subject_root": "3c6ae095861477de6671420bba53ac40d0e4b62d9be3d6118c0c894c2207fb1c",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "b797a176592577dd6416fd3788b6528f7c1727d4740de83a11a6d7a1589903e0",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    },
+    "native-forest-canopy-phenology-evaluation": {
+      "science_root": "d821400be24ef30a058a3cc3353c9fa2a2ed0ce38258fc0938052aba3a9a192b",
+      "communication_root": "d37985541aae6f25cf5b19f68ead845be984173a72a59de76a27360f4c96aa88",
+      "attribution_root": "e6357a5eff61f1e58fb37b505be958076c1d648df376d590a9b135e0d04d2133",
+      "review_governance_root": "636695b8c615ae13dab99720ff344c86ec0aaa51ab2b0bbef9d5455069d38c62",
+      "content_review_subject_root": "20bcf9b471afbc90bc804386b82adcf57bfde030ec116264eb4599cd1093c652",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "e36b35344dff483bd4d7c60fe3b63332ade56df9faa27583f3162fa2694a3439",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    },
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "36dfd8ddc6a3dc8f50bc197cca878a8f172a87502ca8fd01ad3b5f7d001952d7",
+      "communication_root": "1c09c512ab2347964f2cec42cd91523369070ef4721c44dfe941538c1b7153b0",
+      "attribution_root": "c05a07cb2f45d19fa7044e88206cc0c8a9ab5b54397de56e8de3ed101ebaf6a3",
+      "review_governance_root": "4a7028fb02f34f15265d89364de21b0d7e15747e14513a78cf0f93f44695fa42",
+      "content_review_subject_root": "0fc16411c4ba5edaa6ca4e3cc93e7997ca6f625bf236c48250d30d3b8594bf49",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "ea253b8c7a212c68d27231698746172e76d502e6d9fdd800deaffe1c9257cc39",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "new_roots": {
+    "linear-groundwater-reservoir-recurrence": {
+      "science_root": "1b2f0d0e3c8de9107d7ea5adca8d79c524840dd7555d6eee79538552b162e43d",
+      "communication_root": "4b5995f2dcd2f0a947061a62c83883d9db619748681fa25f0ec7660098ef128c",
+      "attribution_root": "4461f051ab8e6a4241724e3684ada62b4658448340648f7912af89eecf463d30",
+      "review_governance_root": "463beb19ec57b48462cd09593042beda17cda008612ecfe3f036deb108f958cb",
+      "content_review_subject_root": "3c6ae095861477de6671420bba53ac40d0e4b62d9be3d6118c0c894c2207fb1c",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "b797a176592577dd6416fd3788b6528f7c1727d4740de83a11a6d7a1589903e0",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    },
+    "native-forest-canopy-phenology-evaluation": {
+      "science_root": "d821400be24ef30a058a3cc3353c9fa2a2ed0ce38258fc0938052aba3a9a192b",
+      "communication_root": "d37985541aae6f25cf5b19f68ead845be984173a72a59de76a27360f4c96aa88",
+      "attribution_root": "e6357a5eff61f1e58fb37b505be958076c1d648df376d590a9b135e0d04d2133",
+      "review_governance_root": "636695b8c615ae13dab99720ff344c86ec0aaa51ab2b0bbef9d5455069d38c62",
+      "content_review_subject_root": "20bcf9b471afbc90bc804386b82adcf57bfde030ec116264eb4599cd1093c652",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "e36b35344dff483bd4d7c60fe3b63332ade56df9faa27583f3162fa2694a3439",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    },
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "dad1ca64196ac6903a7d382df17089fcd1eb43dec68b188c75bfb266a17f1817",
+      "communication_root": "1c09c512ab2347964f2cec42cd91523369070ef4721c44dfe941538c1b7153b0",
+      "attribution_root": "c05a07cb2f45d19fa7044e88206cc0c8a9ab5b54397de56e8de3ed101ebaf6a3",
+      "review_governance_root": "4a7028fb02f34f15265d89364de21b0d7e15747e14513a78cf0f93f44695fa42",
+      "content_review_subject_root": "38f805b474f0d8b3892c7afbd3a727172a86f29ed43a361ff1ab09e9b265e397",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "9a4ba1c6392878056b6ce49ebe9091f19fd0ba035b945854899c56a1a6ce80f4",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "invalidated_authority": [],
+  "gate_ids": [
+    "assurance-implementation-package-v1"
+  ],
+  "gate_argv": []
+}

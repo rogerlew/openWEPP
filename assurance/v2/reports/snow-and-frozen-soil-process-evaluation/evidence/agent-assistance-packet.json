@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "packet_id": "SF-AGENT-PACKET-ASSURE06-IN-REVIEW",
-  "objective": "Synthesize identified retained snow and frozen-soil evidence into a claim-specific scientific manuscript and deterministic strict result without assigning human approval or application fitness.",
+  "packet_id": "SF-AGENT-PACKET-ASSURE06-AUTHORITY-REFRESH",
+  "objective": "Preserve the deterministic snow/frost result while refreshing claim limits and implementation currency against v7/v126 and campaign increments 21K-21N without assigning human approval or application fitness.",
   "tool": "OpenAI Codex",
   "model_disclosure": "Codex based on GPT-5; hidden runtime and sampling configuration are unavailable to the repository",
   "role": "evidence synthesizer, draft author, and mechanical analysis implementer; not a human scientific or publication approver",
-  "procedure_version": "assure06-snow-frost-synthesis-v1",
+  "procedure_version": "assure06-snow-frost-synthesis-authority-refresh-v2",
   "human_edits_and_disposition": {
     "human_edits_received": false,
     "human_scientific_disposition_received": false,
@@ -15,7 +15,7 @@
   "independent_review": {
     "external_peer_review_claimed": false,
     "human_independent_review_complete": false,
-    "internal_agent_review": "Two package-authorized coding-agent reviews were requested for scientific reporting and mechanical reproduction; their findings are package evidence, not human or external peer review."
+    "internal_agent_review": "The original synthesis and 2026-08-05 refresh each require two package-authorized coding-agent reviews for scientific reporting and mechanical reproduction; their findings are package evidence, not human or external peer review."
   },
   "prompt": {
     "path": "docs/work-packages/20260716-assure06-snow-frost-flagship-synthesis-001/prompts/archived/20260716-codex-execute-assure06_prompt.md",
@@ -60,15 +60,27 @@
       "sha256": "fde95cdc7bb56f244c40f61af098d618e45dcf8215ec795f5676b097b35ea1f3"
     }
   ],
-  "authored_outputs": [
-    {
-      "path": "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md",
-      "sha256": "8ad2eeea3a21640a9f551dfee7d0b9421b343b3592ddc88abcbf6b90a27a8def"
-    },
-    {
-      "path": "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md",
-      "sha256": "40d1104e097a333a5b4093412c44adc81d7a780b79c3751beae1ab578e9ffbc8"
-    }
-  ],
-  "repeatability_boundary": "The retained prompt, evidence identities, deterministic procedure, strict result, exact authored outputs, and report-lead disposition support source audit and independent human review. Hidden model/runtime configuration prevents a claim that independently sampled prose will be byte-identical. Quantitative result regeneration does not depend on the agent and is separately executable."
+  "authority_refresh": {
+    "date": "2026-08-05",
+    "package": "docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/package.md",
+    "prompt": "docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/prompts/archived/20260805-codex-execute-assure06-refresh_prompt.md",
+    "prompt_research_object": "SF-OBJECT-REFRESH-PROMPT",
+    "material_inputs": [
+      "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+      "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "docs/work-packages/20260804-snow-wet-compaction-operand-authority-duplicate-alias-closure-001/artifacts/disposition.md",
+      "docs/work-packages/20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/artifacts/disposition.md",
+      "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/disposition.md",
+      "docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/artifacts/disposition.md"
+    ],
+    "claim_boundary": "The refresh distinguishes current CoE compatibility implementation from future Stage 3 authority and does not create efficacy, noninferiority, causation, transferability, cutover, release, or approval claims."
+  },
+  "authored_outputs": {
+    "identity_authority": "assurance/v2/identity.lock.json",
+    "paths": [
+      "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md",
+      "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md"
+    ]
+  },
+  "repeatability_boundary": "The retained prompts, evidence identities, deterministic procedure, strict result, generated source identities, and report-lead disposition support source audit and independent human review. Hidden model/runtime configuration prevents a claim that independently sampled prose will be byte-identical. Quantitative result regeneration does not depend on the agent and is separately executable."
 }

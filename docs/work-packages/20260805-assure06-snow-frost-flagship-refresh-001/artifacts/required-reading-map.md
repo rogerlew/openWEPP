@@ -36,6 +36,10 @@ No deeper `AGENTS.md` exists under `assurance/` or `usersum/assurance/`.
 | `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml` | governed descriptor and object graph | inspected |
 | `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md` | current manuscript | read |
 | `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md` | current technical supplement | read |
+| `crates/AGENTS.md` | Rust assurance-tooling rules | read after tooling amendment |
+| `crates/openwepp-assurance/src/v2/draft_adoption.rs` | current manifest-adoption source selection | read after tooling amendment |
+| `crates/openwepp-assurance/src/v2/amendment.rs` | transaction orchestration and new-source policy | read after tooling amendment |
+| `tests/integration/assurance_v2_amendment_contract.rs` | typed transaction contract coverage | read after tooling amendment |
 
 ## Campaign Evidence
 

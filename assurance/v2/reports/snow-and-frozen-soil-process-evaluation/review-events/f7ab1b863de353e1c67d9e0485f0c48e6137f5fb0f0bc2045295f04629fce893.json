@@ -1,0 +1,22 @@
+{
+  "event_id": "f7ab1b863de353e1c67d9e0485f0c48e6137f5fb0f0bc2045295f04629fce893",
+  "schema_version": 1,
+  "event_type": "review_entry",
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "principal_id": "roger-lew",
+  "decision": "entered_pending_review",
+  "rationale": "Enter the authority-refreshed ASSURE-06 source into independent human review without assigning or claiming an independent approver.",
+  "recorded_on": "2026-08-05",
+  "bound_roots": {
+    "content_review_subject_root": "91ac53ad93d44bb12a9dbf0558f437f8e3dd48415e1304a15468a2a7da0be731",
+    "finding_ledger_root": "c37d46974349b54d99dc41f2d1d638bd00b8c37eabee84247c0c238e6872c53a"
+  },
+  "predecessor_event_ids": [],
+  "authority_source": "Direct operator instruction to scaffold and execute ASSURE-06, together with the existing governed Roger Lew report-lead attestation.",
+  "inputs": {
+    "build_maintainer_id": "codex-agent-assure05",
+    "independence_assessment": "Roger Lew led the snow/frost campaign and Codex authored and maintained the build; both are material producers and excluded from independent scientific and reproduction/publication approval. Independent human reviewers remain unassigned.",
+    "material_producer_ids": "roger-lew,codex-agent-assure05",
+    "review_charge": "Independently assess the refreshed scientific claims, v7/v126 authority treatment, 21K-21N evidence and limits, exact reproduction, reader communication, and publication readiness against this exact subject."
+  }
+}

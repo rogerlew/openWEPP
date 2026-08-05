@@ -425,14 +425,23 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-04 UTC`:
+State as of `2026-08-05 UTC`:
+
+- `20260805-assure06-snow-frost-flagship-refresh-001/` -
+  HOLD-INDEPENDENT-HUMAN-REVIEW: refreshed the snow/frost flagship against
+  `SC-SNOWENERGY-001` v7, `SC-SNOWFREEZE-001` v126, and exact 21K-21N
+  dispositions without changing 188 retained values or runtime physics. The
+  exact source is `IN_REVIEW`; internal reviews plus amendment, quick, frost,
+  and full-workspace gates pass. Roger Lew is report lead and material
+  producer. Independent human review, approval, release transfer, publication,
+  and application fitness remain absent; public report count is zero.
 
 - `20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` -
-  EXECUTED / STAGE 3 AUTHORITY ADMITTED / HOLD-ASSURANCE-REFRESH: dual science
+  EXECUTED / STAGE 3 AUTHORITY ADMITTED / ASSURANCE REFRESHED: dual science
   review and focused authority gates pass. Current CoE runtime remains
-  byte-identical and on implementation hold. Canonical quick/full correctly
-  reject the stale locked snow/frost assurance report; accountable `ASSURE-06`
-  refresh is required before terminal closure.
+  byte-identical and on implementation hold. ASSURE-06 has replaced the stale
+  locked snow/frost report with an exact pending-review root; later Stage 3
+  implementation and cutover remain separately unauthorized.
 
 - `20260804-snow-prepeak-mass-transition-physics-adjudication-001/` - COMPLETE /
   REVIEW AND VERIFICATION PASS: four exact-current fixtures support an

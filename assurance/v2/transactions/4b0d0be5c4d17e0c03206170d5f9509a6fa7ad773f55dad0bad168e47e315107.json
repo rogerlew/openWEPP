@@ -1,0 +1,61 @@
+{
+  "schema_version": 2,
+  "operation": "lifecycle",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "da2457a099dd1500ecca2c762c17771d088d3a2d8a6386a468d9ff035d7cdf84",
+  "new_generation_id": "fe9c554cba9b478508d0ebea97bd6d81a7262fc2d0d55f087cf1b429f6678c60",
+  "affected_reports": [
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/f7ab1b863de353e1c67d9e0485f0c48e6137f5fb0f0bc2045295f04629fce893.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json"
+  ],
+  "old_roots": {
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "d20c19b46a11a93703fbb60f16bbcc9d4ba56c4f5a2d42669212c80120df3244",
+      "communication_root": "b4840a80594022e11ad10082271e8c255f1ae12027d3e169c438798e7c998009",
+      "attribution_root": "c05a07cb2f45d19fa7044e88206cc0c8a9ab5b54397de56e8de3ed101ebaf6a3",
+      "review_governance_root": "ee136159ce61dd91de667eb8df170822bec65c41024769a93c82bb25b1803b42",
+      "content_review_subject_root": "3bc119ee0060b90f4e8af0347e8b668948fb5cf52778489c8cdade30b134fcdb",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "47881fd4cb6fcf5815395eb28713769181663e594329ea478c01376d00614523",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "new_roots": {
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "d20c19b46a11a93703fbb60f16bbcc9d4ba56c4f5a2d42669212c80120df3244",
+      "communication_root": "b4840a80594022e11ad10082271e8c255f1ae12027d3e169c438798e7c998009",
+      "attribution_root": "abc680d4ca8a25f5a0f16b0e4691e87cfc17fc1a83621257c1b95ddac8339403",
+      "review_governance_root": "e8d823042d676aa9247004971575bfcf8ca8d3a2cc6e3ad0162599a5a3e4cb5b",
+      "content_review_subject_root": "91ac53ad93d44bb12a9dbf0558f437f8e3dd48415e1304a15468a2a7da0be731",
+      "finding_ledger_root": "769d5ecb718202bf2633751f3525d63a8fe4fbcc7f0df3db33bdced844d9e367",
+      "preapproval_realization_root": "6b5d268922ef6bc8264b96f2d8111c72b91ae913a920f356dc9820370e30761a",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "invalidated_authority": [],
+  "gate_ids": [
+    "assurance-amendment-governance-v1"
+  ],
+  "gate_argv": [
+    [
+      "cargo",
+      "nextest",
+      "run",
+      "--workspace",
+      "--profile",
+      "assurance-amendment"
+    ]
+  ]
+}
