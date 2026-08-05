@@ -1,6 +1,6 @@
 # SNOW-WARM-MIXED-COE-PHYSICS-AUTHORITY-AUDIT
 
-Status: `queued / scaffolded`
+Status: `active / audit executed / review pending`
 
 Date: `2026-08-04`
 
@@ -33,7 +33,7 @@ positive empirical term at all four canonical sites. It explicitly classified
 that result as chronology-confounded and noncausal.
 
 Current Rust computes four empirical melt-depth terms in legacy inches and
-converts their signed sum to metres of water equivalent. The pinned
+converts their signed sum to meters of water equivalent. The pinned
 `dac3c950...` `melt.for` contains modifications dated 2007 and 2008 that differ
 from the July 1995 Chapter 3 equations in cold-hour shortwave attenuation,
 longwave/temperature partition, aerodynamic adjustment, canopy handling, and
@@ -71,7 +71,8 @@ that the active default has sufficient physical authority.
    open aerodynamic/moisture and canopy-temperature pieces, without relabeling
    those empirical pieces as measured physical fluxes.
 5. Quantify warm/mixed positive-melt exposure by site, including subfreezing
-   hourly air temperature, sub-`350 kg m^-3` pack density, same-hour snowfall,
+   hourly air temperature, interval-start sub-`350 kg m^-3` pack density,
+   same-hour snowfall,
    and positive `cmelt` when dewpoint remains below freezing.
 6. Convert empirical melt depths to latent-heat-equivalent flux only as a
    dimensional magnitude diagnostic; do not claim energy closure or a physical
@@ -259,10 +260,13 @@ committed.
   instruction chains before edits.
 - [x] (2026-08-05 UTC) Froze exact identities and the analysis contract before
   result-bearing execution.
-- [ ] Commit the validated scaffold checkpoint.
-- [ ] Complete static authority and chronology audit.
-- [ ] Implement, test, and execute quantitative reconstruction.
-- [ ] Integrate evidence and apply the frozen disposition matrix.
+- [x] (2026-08-05 UTC) Committed validated scaffold checkpoint `c95edb9f`.
+- [x] (2026-08-05 UTC) Completed static authority and chronology audit.
+- [x] (2026-08-05 UTC) Implemented, tested, and executed quantitative
+  reconstruction over 394705 hours and 17431 site-days; maximum residual
+  `9.941202185450096e-18 m`.
+- [x] (2026-08-05 UTC) Integrated evidence and selected
+  `BASELINE_FIDELITY_WITH_AUTHORITY_GAP` under the frozen matrix.
 - [ ] Complete dual review, finding disposition, dual verification, prompt
   archival, exact-diff reconciliation, and final disposition.
 
@@ -281,6 +285,20 @@ committed.
   observe-only lines.
   Evidence: exact commit/worktree hashes and pinned `git show` comparison in
   `artifacts/audit-freeze.json`.
+- Observation: the initial analyzer attempt evaluated the CoE formula on
+  mixed-day hours that the daily midpoint-temperature caller gate bypassed.
+  Evidence: rejected pre-result exception and
+  `infiltration_reconciliation.rs:1046-1050,1469-1475`.
+- Observation: after adding the accepted canonical climate identities needed
+  for that caller operand, every hourly term reproduced; daily aggregates were
+  exact and the maximum residual was `9.941202185450096e-18 m`.
+  Evidence: `artifacts/audit-freeze.json`, `quantitative-audit.json`, and
+  `execution-receipt.json`.
+- Observation: `C` is the largest positive empirical component at all four
+  sites, but the net open wind/dewpoint subcomponent is negative at every site
+  while the canopy air-temperature subcomponent is strongly positive.
+  Evidence: `artifacts/quantitative-audit.json` and
+  `physical-authority-matrix.md`.
 
 ## Decision Log
 
@@ -300,6 +318,19 @@ committed.
   Rationale: a clean checkout can still point at a later commit; normative
   provenance is the exact `dac3c950` object named by repository governance.
   Date/Author: 2026-08-04 / Codex.
+- Decision: Correct the result-blind freeze to bind the four canonical climate
+  files after the first run failed on a missing daily caller operand.
+  Rationale: current Rust and pinned `snowd.for` require the daily
+  `midpoint(Tmax,Tmin)` gate; adding exact already accepted inputs restores the
+  declared caller reconstruction without changing any result rule.
+  Date/Author: 2026-08-05 / Codex.
+- Decision: Select `BASELINE_FIDELITY_WITH_AUTHORITY_GAP`.
+  Rationale: exact Rust/pinned reconstruction excludes a transcription defect,
+  while the material 2007/2008 deviations from Chapter 3 lack cited independent
+  validation or a bounded transferability claim. Full energy-balance sources
+  additionally expose surface temperature, cold content, and resolved
+  radiative/turbulent state that the CoE melt owner does not consume.
+  Date/Author: 2026-08-05 / Codex.
 
 ## Outcomes & Retrospective
 

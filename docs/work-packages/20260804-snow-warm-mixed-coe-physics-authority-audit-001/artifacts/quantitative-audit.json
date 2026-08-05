@@ -1,0 +1,303 @@
+{
+  "absolute_tolerance_m": 1e-12,
+  "evidence_class": "Ran",
+  "freeze_sha256": "44e49887cd01b8ce15a04509e057ec4ee0e9fce54363c66feb85ac811d120935",
+  "magnitude_conversion": {
+    "interpretation": "latent-heat-equivalent magnitude only; not energy closure",
+    "interval_seconds": 3600.0,
+    "label": "ASSUMED_FOR_DIMENSIONAL_AUDIT",
+    "latent_heat_fusion_j_kg": 333550.0,
+    "rho_water_kg_m3": 1000.0
+  },
+  "max_abs_daily_aggregation_residual_m": {
+    "amelt": 0.0,
+    "amelt_positive": 0.0,
+    "bmelt": 0.0,
+    "bmelt_positive": 0.0,
+    "cmelt": 0.0,
+    "cmelt_positive": 0.0,
+    "dmelt": 0.0,
+    "dmelt_positive": 0.0
+  },
+  "overall_max_abs_reconstruction_residual_m": 9.941202185450096e-18,
+  "population": "canonical 21L eligible warm/mixed hours",
+  "schema_version": 1,
+  "selected_day_count": 17431,
+  "selected_hour_count": 394705,
+  "site_count": 4,
+  "sites": {
+    "snotel_mica_creek_st_joe_id": {
+      "applied_sum_m": 7.815109758729454,
+      "cap_adjustment_sum_m": -1.2111256667275299,
+      "day_count": 3416,
+      "eligible_hour_count": 73613,
+      "exposure_applied_depth_sum_m": {
+        "applied_positive": 10.42682553377061,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 0.00675231534963894,
+        "applied_positive_air_at_or_below_freezing": 0.00675231534963894,
+        "applied_positive_density_below_350_kg_m3": 10.426825533767444,
+        "applied_positive_dewpoint_at_or_below_freezing": 6.746806814749073,
+        "applied_positive_pack_capped": 0.09877900847811193,
+        "applied_positive_same_hour_snowfall": 2.194043155364259,
+        "b_clear_negative": 3.2380194872862567,
+        "c_open_negative_air_above_freezing": 3.685319451251333,
+        "c_open_positive_dewpoint_at_or_below_freezing": 2.94182738480671
+      },
+      "exposure_counts": {
+        "applied_positive": 27142,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 218,
+        "applied_positive_air_at_or_below_freezing": 218,
+        "applied_positive_density_below_350_kg_m3": 27136,
+        "applied_positive_dewpoint_at_or_below_freezing": 19068,
+        "applied_positive_pack_capped": 1485,
+        "applied_positive_same_hour_snowfall": 6751,
+        "b_clear_negative": 15446,
+        "c_open_negative_air_above_freezing": 15114,
+        "c_open_positive_dewpoint_at_or_below_freezing": 5624
+      },
+      "max_abs_applied_closure_residual_m": 9.920449878242366e-18,
+      "max_abs_latent_equivalent_flux_w_m2": {
+        "amelt": 38.704762766611196,
+        "applied": 217.56398306928023,
+        "bmelt": 80.21282556783478,
+        "cmelt": 173.04754435462976,
+        "dmelt": 64.38084235648658
+      },
+      "max_abs_subcomponent_closure_residual_m": {
+        "bmelt": 1.0842021724855044e-19,
+        "cmelt": 2.168404344971009e-19
+      },
+      "max_abs_term_reconstruction_residual_m": {
+        "amelt": 5.000882520589389e-18,
+        "bmelt": 5.000882520589389e-18,
+        "cmelt": 5.000882520589389e-18,
+        "dmelt": 5.3939058081153846e-18
+      },
+      "max_abs_uncapped_closure_residual_m": 5.312590645178972e-18,
+      "positive_term_sum_m": {
+        "amelt": 1.4567286583129477,
+        "bmelt": 4.014657599340649,
+        "cmelt": 6.314026987199193,
+        "dmelt": 0.23481370908554497
+      },
+      "subcomponent_sum_m": {
+        "b_clear": -0.7090911671534224,
+        "b_temp": 3.7990600437896465,
+        "c_canopy": 4.9235818167513985,
+        "c_open": -0.677936740924615
+      },
+      "term_sum_m": {
+        "amelt": 1.4567286583129477,
+        "bmelt": 3.0899688766361995,
+        "cmelt": 4.245645075826754,
+        "dmelt": 0.23389281468109802
+      },
+      "uncapped_sum_m": 9.026235425457
+    },
+    "snotel_niwot_co": {
+      "applied_sum_m": 6.09997841784896,
+      "cap_adjustment_sum_m": -0.36935420505752714,
+      "day_count": 4148,
+      "eligible_hour_count": 93287,
+      "exposure_applied_depth_sum_m": {
+        "applied_positive": 13.051195659881266,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 0.027489393110272348,
+        "applied_positive_air_at_or_below_freezing": 0.027489393110272348,
+        "applied_positive_density_below_350_kg_m3": 13.051195659881266,
+        "applied_positive_dewpoint_at_or_below_freezing": 11.031654806255519,
+        "applied_positive_pack_capped": 0.1304823564471168,
+        "applied_positive_same_hour_snowfall": 0.6700222701290652,
+        "b_clear_negative": 5.423705768927671,
+        "c_open_negative_air_above_freezing": 7.2609900675908525,
+        "c_open_positive_dewpoint_at_or_below_freezing": 3.4032169802047334
+      },
+      "exposure_counts": {
+        "applied_positive": 21917,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 379,
+        "applied_positive_air_at_or_below_freezing": 379,
+        "applied_positive_density_below_350_kg_m3": 21917,
+        "applied_positive_dewpoint_at_or_below_freezing": 19302,
+        "applied_positive_pack_capped": 546,
+        "applied_positive_same_hour_snowfall": 1379,
+        "b_clear_negative": 33340,
+        "c_open_negative_air_above_freezing": 18007,
+        "c_open_positive_dewpoint_at_or_below_freezing": 3728
+      },
+      "max_abs_applied_closure_residual_m": 9.75781955236954e-18,
+      "max_abs_latent_equivalent_flux_w_m2": {
+        "amelt": 63.93156469767061,
+        "applied": 228.63297466906545,
+        "bmelt": 65.49644449470365,
+        "cmelt": 127.40794921833339,
+        "dmelt": 55.8011019230785
+      },
+      "max_abs_subcomponent_closure_residual_m": {
+        "bmelt": 1.0842021724855044e-19,
+        "cmelt": 2.168404344971009e-19
+      },
+      "max_abs_term_reconstruction_residual_m": {
+        "amelt": 5.000882520589389e-18,
+        "bmelt": 5.000882520589389e-18,
+        "cmelt": 5.000882520589389e-18,
+        "dmelt": 5.5429836068321414e-18
+      },
+      "max_abs_uncapped_closure_residual_m": 5.637851296924623e-18,
+      "positive_term_sum_m": {
+        "amelt": 4.1807864093337335,
+        "bmelt": 4.164028116974266,
+        "cmelt": 6.000337416044739,
+        "dmelt": 0.07455959677706801
+      },
+      "subcomponent_sum_m": {
+        "b_clear": -2.2782367114814095,
+        "b_temp": 3.8588494363281653,
+        "c_canopy": 5.001068869481331,
+        "c_open": -4.367588341141831
+      },
+      "term_sum_m": {
+        "amelt": 4.1807864093337335,
+        "bmelt": 1.5806127248465416,
+        "cmelt": 0.6334805283395104,
+        "dmelt": 0.07445296038673961
+      },
+      "uncapped_sum_m": 6.469332622906499
+    },
+    "snotel_paradise_wa": {
+      "applied_sum_m": 25.102802124299867,
+      "cap_adjustment_sum_m": -3.464204083174455,
+      "day_count": 5876,
+      "eligible_hour_count": 136554,
+      "exposure_applied_depth_sum_m": {
+        "applied_positive": 31.18600024063986,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 0.03421078816611009,
+        "applied_positive_air_at_or_below_freezing": 0.03421078816611009,
+        "applied_positive_density_below_350_kg_m3": 31.18600024061427,
+        "applied_positive_dewpoint_at_or_below_freezing": 14.923675363552343,
+        "applied_positive_pack_capped": 0.16036241880304608,
+        "applied_positive_same_hour_snowfall": 11.479698038655659,
+        "b_clear_negative": 17.51738694357197,
+        "c_open_negative_air_above_freezing": 7.550248607203332,
+        "c_open_positive_dewpoint_at_or_below_freezing": 7.02130011280301
+      },
+      "exposure_counts": {
+        "applied_positive": 59595,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 615,
+        "applied_positive_air_at_or_below_freezing": 615,
+        "applied_positive_density_below_350_kg_m3": 59568,
+        "applied_positive_dewpoint_at_or_below_freezing": 34844,
+        "applied_positive_pack_capped": 3862,
+        "applied_positive_same_hour_snowfall": 27669,
+        "b_clear_negative": 46958,
+        "c_open_negative_air_above_freezing": 27490,
+        "c_open_positive_dewpoint_at_or_below_freezing": 10972
+      },
+      "max_abs_applied_closure_residual_m": 9.941202185450096e-18,
+      "max_abs_latent_equivalent_flux_w_m2": {
+        "amelt": 58.151782519996296,
+        "applied": 306.36894506885386,
+        "bmelt": 94.16234127550649,
+        "cmelt": 204.79562123932493,
+        "dmelt": 47.67241219873986
+      },
+      "max_abs_subcomponent_closure_residual_m": {
+        "bmelt": 1.0842021724855044e-19,
+        "cmelt": 4.336808689942018e-19
+      },
+      "max_abs_term_reconstruction_residual_m": {
+        "amelt": 5.000882520589389e-18,
+        "bmelt": 5.000882520589389e-18,
+        "cmelt": 5.000882520589389e-18,
+        "dmelt": 5.502326025363935e-18
+      },
+      "max_abs_uncapped_closure_residual_m": 5.421010862427522e-18,
+      "positive_term_sum_m": {
+        "amelt": 5.201017180308579,
+        "bmelt": 10.610142556359637,
+        "cmelt": 18.997076065222732,
+        "dmelt": 0.7773232001455203
+      },
+      "subcomponent_sum_m": {
+        "b_clear": -2.7991163402665493,
+        "b_temp": 11.129001644266568,
+        "c_canopy": 14.423186130969457,
+        "c_open": -0.16240155090939917
+      },
+      "term_sum_m": {
+        "amelt": 5.201017180308579,
+        "bmelt": 8.329885304000198,
+        "cmelt": 14.2607845800602,
+        "dmelt": 0.7753191431052354
+      },
+      "uncapped_sum_m": 28.56700620747434
+    },
+    "snotel_snowbird_ut": {
+      "applied_sum_m": 14.787322775595866,
+      "cap_adjustment_sum_m": -0.6461211750996121,
+      "day_count": 3991,
+      "eligible_hour_count": 91251,
+      "exposure_applied_depth_sum_m": {
+        "applied_positive": 18.962688129027224,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 0.015087980219872558,
+        "applied_positive_air_at_or_below_freezing": 0.015087980219872558,
+        "applied_positive_density_below_350_kg_m3": 18.962688129011983,
+        "applied_positive_dewpoint_at_or_below_freezing": 12.68983500188116,
+        "applied_positive_pack_capped": 0.10558020158184213,
+        "applied_positive_same_hour_snowfall": 2.131201411895146,
+        "b_clear_negative": 11.812363833738164,
+        "c_open_negative_air_above_freezing": 7.904845656083666,
+        "c_open_positive_dewpoint_at_or_below_freezing": 4.591564610456924
+      },
+      "exposure_counts": {
+        "applied_positive": 33381,
+        "applied_positive_air_and_dewpoint_at_or_below_freezing": 362,
+        "applied_positive_air_at_or_below_freezing": 362,
+        "applied_positive_density_below_350_kg_m3": 33367,
+        "applied_positive_dewpoint_at_or_below_freezing": 26093,
+        "applied_positive_pack_capped": 864,
+        "applied_positive_same_hour_snowfall": 4722,
+        "b_clear_negative": 35971,
+        "c_open_negative_air_above_freezing": 22228,
+        "c_open_positive_dewpoint_at_or_below_freezing": 5918
+      },
+      "max_abs_applied_closure_residual_m": 9.818488287216629e-18,
+      "max_abs_latent_equivalent_flux_w_m2": {
+        "amelt": 54.1140023914491,
+        "applied": 255.8042271810891,
+        "bmelt": 74.493611804409,
+        "cmelt": 151.53663701293465,
+        "dmelt": 52.37555055977916
+      },
+      "max_abs_subcomponent_closure_residual_m": {
+        "bmelt": 1.0842021724855044e-19,
+        "cmelt": 4.336808689942018e-19
+      },
+      "max_abs_term_reconstruction_residual_m": {
+        "amelt": 5.000882520589389e-18,
+        "bmelt": 5.000882520589389e-18,
+        "cmelt": 5.000882520589389e-18,
+        "dmelt": 5.407458335271453e-18
+      },
+      "max_abs_uncapped_closure_residual_m": 5.854691731421724e-18,
+      "positive_term_sum_m": {
+        "amelt": 3.0834998123359747,
+        "bmelt": 6.7978274137263455,
+        "cmelt": 10.235096744583348,
+        "dmelt": 0.17394470679192048
+      },
+      "subcomponent_sum_m": {
+        "b_clear": -1.7509268944068361,
+        "b_temp": 6.871822282391364,
+        "c_canopy": 8.905881677979274,
+        "c_open": -1.850652393205649
+      },
+      "term_sum_m": {
+        "amelt": 3.0834998123359747,
+        "bmelt": 5.120895387984424,
+        "cmelt": 7.055229284773645,
+        "dmelt": 0.173819465601469
+      },
+      "uncapped_sum_m": 15.433443950695501
+    }
+  },
+  "status": "PASS"
+}
