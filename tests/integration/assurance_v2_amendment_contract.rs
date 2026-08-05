@@ -417,7 +417,7 @@ fn report_lead_can_return_pending_review_to_draft_without_erasing_history() {
             )
         })
         .collect::<Vec<_>>();
-    let request = br"schema_version: 1
+    let missing_predecessors = br"schema_version: 1
 event_type: return_to_draft
 principal_id: roger-lew
 decision: returned_to_draft
@@ -426,8 +426,29 @@ recorded_on: 2026-08-05
 authority_source: ASSURANCE-SINGLE-APPROVER-DRAFT-RETURN
 predecessor_event_ids: []
 ";
-    let checked = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Check).unwrap();
-    let applied = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Apply).unwrap();
+    assert!(
+        amend_lifecycle(
+            &fixture.path,
+            SNOW,
+            missing_predecessors,
+            V2AmendMode::Check
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("predecessors must equal")
+    );
+    let predecessor_yaml = prior_event_ids
+        .iter()
+        .map(|id| format!("- {}", id.as_str().unwrap()))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let request = format!(
+        "schema_version: 1\nevent_type: return_to_draft\nprincipal_id: roger-lew\ndecision: returned_to_draft\nrationale: Preserve the report as a draft while governance is clarified.\nrecorded_on: 2026-08-05\nauthority_source: ASSURANCE-SINGLE-APPROVER-DRAFT-RETURN\npredecessor_event_ids:\n{predecessor_yaml}\n"
+    );
+    let checked =
+        amend_lifecycle(&fixture.path, SNOW, request.as_bytes(), V2AmendMode::Check).unwrap();
+    let applied =
+        amend_lifecycle(&fixture.path, SNOW, request.as_bytes(), V2AmendMode::Apply).unwrap();
     assert_eq!(checked, applied);
 
     let inspection = inspect_report(&fixture.path, SNOW).unwrap();
@@ -511,7 +532,8 @@ predecessor_event_ids: []
         .unwrap()
         .validate_all()
         .unwrap();
-    let repeated = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Apply).unwrap();
+    let repeated =
+        amend_lifecycle(&fixture.path, SNOW, request.as_bytes(), V2AmendMode::Apply).unwrap();
     assert!(!repeated.changed);
 }
 

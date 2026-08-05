@@ -1261,6 +1261,17 @@ pub fn amend_lifecycle_at_generation(
         );
     }
     validate_lifecycle_transition(&request.event_type, &current.lifecycle)?;
+    if request.event_type == "return_to_draft"
+        && request
+            .predecessor_event_ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            != current.event_ids.iter().collect::<BTreeSet<_>>()
+    {
+        return Err(AssuranceError::Invalid(
+            "return_to_draft predecessors must equal the active review event IDs".to_owned(),
+        ));
+    }
     require_lifecycle_principal(root, &request.principal_id, &request.event_type)?;
     if request.event_type == "return_to_draft" {
         require_report_lead(&report, &request.principal_id)?;
