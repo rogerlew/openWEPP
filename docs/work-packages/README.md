@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260805-assure06-snow-frost-flagship-refresh-001/` — EXECUTING /
+  SCAFFOLDED: refreshes the snow/frost flagship against campaign increments
+  21K-21N and `SC-SNOWENERGY-001` v7 / `SC-SNOWFREEZE-001` v126, preserves the
+  current CoE compatibility runtime versus future Stage 3 owner distinction,
+  and issues a new exact pending-review root without fabricating human review
+  or approval.
+
 - `20260804-snow-warm-mixed-coe-physics-authority-audit-001/` — COMPLETE /
   BASELINE FIDELITY WITH AUTHORITY GAP / REVIEW AND VERIFICATION PASS: exact
   reconstruction over `394705` eligible canonical warm/mixed hours excludes a
