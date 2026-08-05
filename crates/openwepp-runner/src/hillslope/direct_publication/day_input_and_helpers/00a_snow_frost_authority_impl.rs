@@ -450,6 +450,7 @@ impl DirectProductionSnowFrostAuthority {
                 daily_extraterrestrial_radiation_mj_m2,
                 daylight,
                 atmospheric_pressure_pa: self.snow_atmospheric_pressure_pa,
+                turbulent_geometry: openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
             },
             sturm_climate_class,
             sturm_day_of_year,

@@ -121,7 +121,9 @@ today's carrier would exhaust `m_ice_available` and leave positive
 - `docs/specifications/science-contracts/index.md`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
+- `crates/openwepp-hillslope-orchestrator/src/lib.rs`
 - `crates/openwepp-meteorology/src/surface_energy.rs`
+- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs`
 - `tests/integration/snow_surface_eb03_runtime.rs`
 - `tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs`
 - ignored evidence under `target/snow_stage3_complete_carrier_shadow_melt/`
@@ -183,6 +185,8 @@ may not edit tracked files or reinterpret frozen acceptance rules.
   existing typed longwave, turbulent, and precipitation-advection primitives.
 - [x] (2026-08-05) User granted input authority; contract version 8 binds the
   typed `5 m` virtual heights and `0.005 m` exposed-snow roughness.
+- [x] (2026-08-05) Implemented the explicit typed geometry through the real
+  runner-to-hydrology boundary and passed its contract/focused gates.
 - [ ] Reconstruct the Snowbird gate from retained operands; the supplied
   summary is frozen but its exact retained source artifact is not present.
 - [ ] Implement and validate the complete carrier.

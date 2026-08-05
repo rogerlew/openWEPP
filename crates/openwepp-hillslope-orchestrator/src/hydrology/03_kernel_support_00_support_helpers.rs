@@ -289,6 +289,30 @@ impl SnowSurfaceSublimationModel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowTurbulentGeometry {
+    pub air_temperature_height_m: f64,
+    pub vapor_pressure_height_m: f64,
+    pub wind_speed_height_m: f64,
+    pub aerodynamic_roughness_length_m: f64,
+}
+
+impl DirectSnowTurbulentGeometry {
+    /// Contract-bound CLIGEN virtual instruments above the modeled snow surface.
+    pub const CLIGEN_V1: Self = Self {
+        air_temperature_height_m: 5.0,
+        vapor_pressure_height_m: 5.0,
+        wind_speed_height_m: 5.0,
+        aerodynamic_roughness_length_m: 0.005,
+    };
+}
+
+impl Default for DirectSnowTurbulentGeometry {
+    fn default() -> Self {
+        Self::CLIGEN_V1
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowSurfaceEnergyOptions {
     pub longwave_model: SnowSurfaceLongwaveModel,
     pub sublimation_model: SnowSurfaceSublimationModel,
@@ -296,6 +320,7 @@ pub struct DirectSnowSurfaceEnergyOptions {
     pub daily_extraterrestrial_radiation_mj_m2: f64,
     pub daylight: bool,
     pub atmospheric_pressure_pa: f64,
+    pub turbulent_geometry: DirectSnowTurbulentGeometry,
 }
 
 impl Default for DirectSnowSurfaceEnergyOptions {
@@ -307,6 +332,7 @@ impl Default for DirectSnowSurfaceEnergyOptions {
             daily_extraterrestrial_radiation_mj_m2: 0.0,
             daylight: false,
             atmospheric_pressure_pa: 101_324.6,
+            turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
         }
     }
 }

@@ -1,9 +1,31 @@
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLayerState,
-    DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions, SnowDensityModel, SnowMeltModel,
-    SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel,
-    Wb11HydrologyKernel, snow_density_compaction_v1_constants,
+    DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions, DirectSnowTurbulentGeometry,
+    SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
+    SnowSurfaceSublimationModel, Wb11HydrologyKernel, snow_density_compaction_v1_constants,
 };
+
+#[test]
+fn cligen_virtual_instrument_geometry_is_contract_bound() {
+    let geometry = DirectSnowTurbulentGeometry::CLIGEN_V1;
+    assert_eq!(
+        geometry.air_temperature_height_m.to_bits(),
+        5.0_f64.to_bits()
+    );
+    assert_eq!(
+        geometry.vapor_pressure_height_m.to_bits(),
+        5.0_f64.to_bits()
+    );
+    assert_eq!(geometry.wind_speed_height_m.to_bits(), 5.0_f64.to_bits());
+    assert_eq!(
+        geometry.aerodynamic_roughness_length_m.to_bits(),
+        0.005_f64.to_bits()
+    );
+    assert_eq!(
+        DirectSnowSurfaceEnergyOptions::default().turbulent_geometry,
+        geometry
+    );
+}
 
 fn stage3_diagnostics(
     result: &DirectSnowLiquidPartition,
@@ -86,6 +108,7 @@ fn inputs(
             daily_extraterrestrial_radiation_mj_m2: 10.0,
             daylight: true,
             atmospheric_pressure_pa: 101_324.6,
+            turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
         },
         sturm_climate_class: None,
         sturm_day_of_year: None,
