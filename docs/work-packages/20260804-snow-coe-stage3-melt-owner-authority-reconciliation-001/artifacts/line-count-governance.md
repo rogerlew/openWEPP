@@ -1,8 +1,12 @@
 # Line-Count Governance
 
-Status: queued
+Status: pass
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Count the changed Rust test file and confirm zero production `.rs` changes;
-apply the 2000/3000-line rules.
+The only changed Rust file is the contract-derived integration test:
+`tests/integration/snow_surface_eb03_contract.rs`, 266 lines. It is below the
+2000-line review threshold and 3000-line hard ceiling.
+
+Production `.rs` changes: zero. Therefore no production split exception or
+legacy overage applies.

@@ -65,6 +65,12 @@ def main() -> int:
     require(not predicates["dual_owner_allowed"], "dual owner prohibited", checks)
     require(decision["runtime_disposition"] == "IMPLEMENTATION_HOLD", "runtime implementation hold", checks)
     require(not decision["current_runtime"]["runtime_changed_by_package"], "runtime unchanged declaration", checks)
+    require(
+        "exact physical recipient and next-state chronology for positive terminal unallocated energy"
+        in decision["mandatory_holds"],
+        "terminal unallocated-energy mandatory hold",
+        checks,
+    )
 
     energy = (root / "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md").read_text(encoding="utf-8")
     snow = (root / "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md").read_text(encoding="utf-8")
@@ -74,6 +80,11 @@ def main() -> int:
         "INV-SNOWENERGY-030",
         "OBL-SNOWENERGY-C-013",
         "GAP-SNOWENERGY-011",
+        "Q_complete + Q_refreeze - delta_E_cold - L_f*m_melt - Q_unallocated_after_exhaustion = 0",
+        "m_ice_start + m_solid_precip + m_deposition - m_ice_end - m_sublimation - m_melt + m_refrozen = 0",
+        "m_liquid_external_in + m_melt - m_refrozen - delta_m_retained - m_routed = 0",
+        "unresolved terminal meltout/remaining-energy boundary",
+        "m_ice_available=max(m_ice_after_solid_precip-m_sublimation,0)",
     ):
         require(token in energy, f"energy contract token: {token}", checks)
     for token in (
@@ -81,6 +92,7 @@ def main() -> int:
         "INV-SNOWFREEZE-093",
         "OBL-SNOWFREEZE-P-066",
         "GAP-SNOWFREEZE-006",
+        "prospectively supersedes every earlier invariant, addendum, boundary row, and package constraint",
     ):
         require(token in snow, f"snow contract token: {token}", checks)
 

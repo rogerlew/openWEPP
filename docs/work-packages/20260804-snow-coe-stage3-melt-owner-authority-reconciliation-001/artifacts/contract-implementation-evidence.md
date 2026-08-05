@@ -1,7 +1,20 @@
 # Contract Implementation Evidence
 
-Status: queued
+Status: candidate complete
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Record canonical changes only after frozen adjudication.
+After frozen adjudication selected `STAGE3_MELT_OWNER_ADMITTED`:
+
+- `SC-SNOWENERGY-001` advanced to v7 with `INV-SNOWENERGY-029/030`,
+  `OBL-SNOWENERGY-P-006`, `OBL-SNOWENERGY-C-013`,
+  `GAP-SNOWENERGY-011`, test vectors, binding exposure, and explicit
+  `AUTHORITY_ADMITTED_IMPLEMENTATION_HOLD` status.
+- `SC-SNOWFREEZE-001` advanced to v126 with
+  `REF-SNOWFREEZE-21N-MELT-OWNER`, `INV-SNOWFREEZE-093`,
+  `OBL-SNOWFREEZE-P-066`, boundary/invalid-state guards,
+  `GAP-SNOWFREEZE-006`, binding exposure, and revision history.
+- The lifecycle index records both amended versions and their static authority
+  posture.
+
+Candidate commit: `ec7cdbe06e813cec8f33e733041038961ba0fd1e`.

@@ -1,9 +1,19 @@
 # Worker Handoff
 
-Status: queued
+Status: ready after 21N closure
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Name the smallest separately authorized implementation or evidence package and
-its first actionable contract-derived step without pre-authorizing a partial
-cutover.
+Next package: a separately authorized atomic Stage 3 melt-owner implementation
+and cutover package derived from `INV-SNOWENERGY-029/030` and
+`INV-SNOWFREEZE-093`.
+
+Its first actionable step is a contract-first implementation freeze covering
+complete sensible and precipitation-advected heat, the exact `m_s <= 1 kg
+m^-2` residual-snow phase disposition, the physical recipient and next-state
+chronology for positive terminal unallocated energy, same-substep liquid
+handling, linked ledger operands, selectors/default/rollback, and real
+downstream consumer.
+The package must keep CoE live until all gates pass, then retire CoE generation
+in the same stable increment. No partial or dual-owner deployment is
+pre-authorized.

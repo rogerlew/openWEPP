@@ -30,6 +30,7 @@
     "complete precipitation-advected heat wiring",
     "complete ground and interlayer energy accounting",
     "exact residual-snow phase disposition at m_s <= 1 kg m^-2",
+    "exact physical recipient and next-state chronology for positive terminal unallocated energy",
     "same-substep refreeze retention and routing",
     "independent energy solid-to-liquid and liquid-disposition closure",
     "atomic selector default rollback and real-consumer cutover"
