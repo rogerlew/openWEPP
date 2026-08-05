@@ -1,3 +1,3 @@
 # Archived Prompts
 
-No prompt is archived while 21N remains active.
+The byte-identical kickoff prompt was archived at closure.

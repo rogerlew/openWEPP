@@ -55,9 +55,12 @@ is the seam this package adjudicates.
 - Production/kernel edit intent: `none`.
 - Contract edit intent: `SC-SNOWFREEZE-001`, `SC-SNOWENERGY-001`, and their
   lifecycle registry row.
-- Test edit intent: reconcile only
-  `tests/integration/snow_surface_eb03_contract.rs` after the authority decision;
-  do not add executable melt behavior.
+- Test edit intent: reconcile
+  `tests/integration/snow_surface_eb03_contract.rs` for new authority and, after
+  the first heavy run discovered repository-wide version-token drift,
+  mechanically advance every existing integration assertion that requires
+  `SC-SNOWFREEZE-001` version 125 to version 126. Do not alter any other test
+  expectation or add executable melt behavior.
 - Risk: `critical authority-only change`; canonical production-process
   authority changes even though executable behavior remains byte-identical.
 
@@ -103,6 +106,8 @@ is the seam this package adjudicates.
 - `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`
 - `docs/specifications/science-contracts/index.md`
 - `tests/integration/snow_surface_eb03_contract.rs`
+- Existing `tests/integration/*.rs` files containing the exact stale marker
+  `contract_version: 125`, limited to a mechanical `125 -> 126` replacement.
 - `docs/work-packages/README.md`
 - `docs/ROADMAP.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
@@ -170,7 +175,8 @@ cutover.
 
 1. Freeze and adjudicate authority.
 2. Amend both canonical contracts and registry.
-3. Reconcile the contract-derived static test.
+3. Reconcile the contract-derived static test and every discovered stale global
+   contract-version assertion without weakening any behavioral marker.
 4. Record the pre-implementation gate proving production Rust is unchanged.
 5. Do not perform production edits in this package.
 
@@ -215,7 +221,8 @@ typed state. Select one primary outcome and record alternatives explicitly.
 
 Promote the selected authority into both contracts, guard maps, obligations,
 gaps, binding exposure, and change logs. Update the lifecycle index and then
-the single affected static contract test. Preserve runtime source bytes.
+the authority-owning static contract test and the mechanically affected global
+version assertions. Preserve runtime source bytes.
 
 ### Phase D: Review, Validate, And Close
 
@@ -277,6 +284,17 @@ fixture, provider, or public-output surface.
   set; sensible heat is zero and precipitation advection is absent from the
   implemented carrier.
   Evidence: `stage3_hourly_surface_energy` source inspection.
+- Observation: the first quick/frost profiles discovered 35 stale assertions
+  across 34 additional integration tests that bind the global
+  `SC-SNOWFREEZE-001` version token.
+  Evidence: every failure required the stale literal `contract_version: 125`;
+  no science or behavior assertion failed. The intended test write set was
+  expanded before the mechanical replacements.
+- Observation: changing `SC-SNOWFREEZE-001` correctly invalidates the locked
+  snow/frost assurance report until its accountable refresh/review cycle.
+  Evidence: assurance v2 rejects the old source hash rather than silently
+  assembling a stale report. 21N records this as a truthful downstream hold
+  and does not rewrite assurance identity or scientific review artifacts.
 
 ## Decision Log
 

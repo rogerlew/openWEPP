@@ -1,3 +1,4 @@
 # Active Prompts
 
-Contains the 21N package-end-to-end kickoff prompt while execution is active.
+No active prompt remains after closure; the kickoff prompt is archived
+byte-identically under `../archived/`.

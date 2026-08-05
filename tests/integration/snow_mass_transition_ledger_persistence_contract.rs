@@ -30,7 +30,7 @@ use openwepp_hillslope_orchestrator::{
 #[test]
 fn snowfreeze_v125_binds_one_authority_two_ledgers_and_optional_capture() {
     for required in [
-        "contract_version: 125",
+        "contract_version: 126",
         "INV-SNOWFREEZE-091",
         "OBL-SNOWFREEZE-P-064",
         "TOL-SNOWFREEZE-016",

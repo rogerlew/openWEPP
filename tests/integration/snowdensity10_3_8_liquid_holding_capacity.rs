@@ -38,7 +38,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_liquid_holding_capacity_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 125",
+        "contract_version: 126",
         "REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY",
         "REF-SNOWFREEZE-ANDERSON1976-LIQUID",
         "REF-SNOWFREEZE-SNOW17-PLWHC",
