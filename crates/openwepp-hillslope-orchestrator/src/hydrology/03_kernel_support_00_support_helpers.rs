@@ -171,6 +171,7 @@ pub(crate) struct SnowCouplingOutcome {
     sublimation: f64,
     raw_melt: f64,
     redistributed_melt: f64,
+    wet_compaction_liquid_input_m: f64,
     hourly_routed_melt: [f64; 24],
     verbose_diagnostics: Option<Box<SnowCouplingVerboseDiagnostics>>,
     snowpack_state_loss: f64,

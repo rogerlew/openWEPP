@@ -7,7 +7,7 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "12bddac798a5ba9eb4358fded7c192ec0bab528489c6e55ee4423dfb5beedad7",
+  "previous_generation_id": "eabe80e95d8ecbea49fa6a35c85cca2156a2df0c99ee769f12de3b7129e6d168",
   "sources": {
     "assurance/v2/README.md": "e5729db578edd6ca83a1fc59ae9ac2fb989b8095e6c5a2dd32e8ae0524b468e8",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
@@ -64,7 +64,7 @@
     "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
     "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "3eca7860a4e936ff09b5a250058c287b696fc4f199341f909d8719ee501cae53",
     "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "5fb5abca137b25f929629703f5809513dc67fb4a0e8679d64d89c40bdca3dfc7",
-    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "e9fded2778be50f14360371255ba106bb068be506a08ed2c1635013910994643",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "c986822b5c7dfd1803b57ae24e346c6f868b0c51ac2f6069755da77e81d0d13b",
     "docs/work-packages/20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/artifacts/non_snotel_rubric_baseline.json": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930",
     "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.json": "f5d261379f2aaed862a4ad6734e76e3d8123f56df46ca7739fa2fab86c2d6ef8",
     "docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json": "f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a",
@@ -116,14 +116,14 @@
     "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea",
     "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365",
     "tests/fixtures/precip_phase_observed/jennings2018/README.md": "b018efb56a9ed30206621d71214b300a060b5347bd67ee4f799647431ede2566",
-    "tests/fixtures/snotel_observed/README.md": "b702b96e85c39241e8ccad3b3e43334f8264945eb3bd62b5bc300073469651a5",
+    "tests/fixtures/snotel_observed/README.md": "702aaa13bf04713a5a874996b0775f15699ee4d225e79f36969c5ad7b1d5b426",
     "tests/fixtures/snowfreeze_observed/README.md": "93bb72a83571104095ee0bc66137b569f428aff175d63384a2043ce7803351a3",
     "usersum/openwepp-canopy-phenology.md": "31026d56d39abd393bd9a4af7e700c91c243229db4b63b892db8768b2638a48d"
   },
   "review_locks": {
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "042e655e01115f6bf300f50a54ffc54e5745490091c52b5c9cc40800eaf4c65c",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "969c62f567511de574d03fe8133b93f0281d89205390bb39f2ce386b02eca941",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "0f7fc333a5afc754c947200bd07c81777b005b5ad5fa9a3a7f23eea2e8d03744"
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "0d1f37f867ed9aedef33a408d3bcd68775ec38355c724319d043d35be04674f9"
   },
-  "generation_id": "57f3999b93ee5065071acc1d214b850f1d38777edbf69a495d0cae1bc4db0a50"
+  "generation_id": "74a81a2e00757d0477f8b7f1de9d80e9fc3a9d4c391006dd9217b3c20b491364"
 }

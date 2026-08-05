@@ -1,0 +1,28 @@
+{
+  "changed_precipitation_row_count": 4472,
+  "claim_limits": [
+    "not precipitation truth",
+    "not an observation",
+    "not a calibration or default",
+    "not independent validation of snow physics",
+    "not transferable beyond the Snowbird development lane"
+  ],
+  "classification": "DEVELOPMENT_ONLY",
+  "consumer_protocol": "Copy the canonical Snowbird fixture to a fresh run directory, then replace only the staged p8.cli with this derived p8.cli. Never overwrite the canonical fixture.",
+  "daily_row_count": 14245,
+  "derived": "tests/fixtures/snotel_observed/snotel_snowbird_ut/development/precip_x1p2155576/p8.cli",
+  "derived_precipitation_total_mm": "56519.1",
+  "derived_sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb",
+  "positive_precipitation_row_count": 4472,
+  "schema": "openwepp-development-cli-transform-v1",
+  "source": "tests/fixtures/snotel_observed/snotel_snowbird_ut/p8.cli",
+  "source_precipitation_total_mm": "46491.8",
+  "source_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+  "transformation": {
+    "factor_decimal_exact": "1.2155576",
+    "field": "daily precipitation only",
+    "other_fields": "byte-preserved apart from spacing needed to retain the precipitation column",
+    "output_resolution_mm": "0.1",
+    "rounding": "ROUND_HALF_UP"
+  }
+}

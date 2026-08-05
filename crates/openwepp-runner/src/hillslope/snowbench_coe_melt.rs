@@ -134,6 +134,7 @@ struct CoeMeltDailyRow {
     snow_depth_m: f64,
     snow_density_kg_m3: f64,
     raw_melt_m: f64,
+    gross_positive_generated_melt_m: f64,
     redistributed_melt_m: f64,
     routed_melt_m: f64,
     snowpack_swe_loss_m: f64,
@@ -742,9 +743,23 @@ fn simulate_coe_melt(
         };
         let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
             &inputs,
-            openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Disabled,
+            openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Verbose,
         )
         .map_err(|source| SnowbenchError::SnowKernel { source })?;
+        let gross_positive_generated_melt_m = partition
+            .verbose_diagnostics
+            .as_ref()
+            .ok_or_else(|| SnowbenchError::InvalidInput {
+                detail: format!(
+                    "{} missing verbose CoE melt diagnostics for wet-compaction lineage",
+                    day.date
+                ),
+            })?
+            .accumulation_melt
+            .hourly_melt
+            .iter()
+            .map(|hour| hour.coe_melt_applied_m.max(0.0))
+            .sum::<f64>();
         let solid_to_liquid = partition.solid_to_liquid_ledger();
         let snowpack_swe_balance_residual_m =
             snow_water_before_m + day.snow_input_m + partition.rain_retained_m
@@ -792,6 +807,7 @@ fn simulate_coe_melt(
             snow_depth_m: runtime_depth_m,
             snow_density_kg_m3: runtime_density_kg_m3,
             raw_melt_m: solid_to_liquid.raw_signed_melt_m,
+            gross_positive_generated_melt_m,
             redistributed_melt_m: solid_to_liquid.redistributed_positive_melt_m,
             routed_melt_m: solid_to_liquid.liquid_handoff_m,
             snowpack_swe_loss_m: solid_to_liquid.snowpack_swe_loss_m,
@@ -845,7 +861,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
     let mut file = fs::File::create(path).map_err(|source| snowbench_io(path, source))?;
     writeln!(
         file,
-        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,sublimation_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
+        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,gross_positive_generated_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,sublimation_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
     )
     .map_err(|source| snowbench_io(path, source))?;
     for row in rows {
@@ -855,7 +871,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
             .unwrap_or_default();
         writeln!(
             file,
-            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
+            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
             row.date,
             row.snow_water_before_m,
             row.snow_input_m,
@@ -869,6 +885,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
             row.snow_depth_m,
             row.snow_density_kg_m3,
             row.raw_melt_m,
+            row.gross_positive_generated_melt_m,
             row.redistributed_melt_m,
             row.routed_melt_m,
             row.snowpack_swe_loss_m,

@@ -66,6 +66,9 @@ struct CoeBoundaryRow {
     snow_density_kg_m3: f64,
     routed_melt_m: f64,
     snowpack_swe_loss_m: f64,
+    gross_positive_generated_melt_m: f64,
+    rain_retained_m: f64,
+    rain_released_m: f64,
 }
 
 #[derive(Debug, Clone)]
@@ -314,6 +317,12 @@ fn read_coe_boundary(path: &Path) -> Result<Vec<CoeBoundaryRow>, SnowbenchError>
     let routed_melt_index = coe_boundary_required_column(path, &header_columns, "routed_melt_m")?;
     let snowpack_swe_loss_index =
         coe_boundary_required_column(path, &header_columns, "snowpack_swe_loss_m")?;
+    let gross_positive_generated_melt_index =
+        coe_boundary_required_column(path, &header_columns, "gross_positive_generated_melt_m")?;
+    let rain_retained_index =
+        coe_boundary_required_column(path, &header_columns, "rain_retained_m")?;
+    let rain_released_index =
+        coe_boundary_required_column(path, &header_columns, "rain_released_m")?;
     let mut rows = Vec::new();
     for (line_index, line) in lines.enumerate() {
         if line.trim().is_empty() {
@@ -362,6 +371,24 @@ fn read_coe_boundary(path: &Path) -> Result<Vec<CoeBoundaryRow>, SnowbenchError>
                 line_index + 2,
                 "snowpack_swe_loss_m",
                 columns[snowpack_swe_loss_index],
+            )?,
+            gross_positive_generated_melt_m: parse_nonnegative_column(
+                path,
+                line_index + 2,
+                "gross_positive_generated_melt_m",
+                columns[gross_positive_generated_melt_index],
+            )?,
+            rain_retained_m: parse_nonnegative_column(
+                path,
+                line_index + 2,
+                "rain_retained_m",
+                columns[rain_retained_index],
+            )?,
+            rain_released_m: parse_nonnegative_column(
+                path,
+                line_index + 2,
+                "rain_released_m",
+                columns[rain_released_index],
             )?,
         });
     }
@@ -415,6 +442,40 @@ fn parse_column(
     }
 }
 
+fn parse_nonnegative_column(
+    path: &Path,
+    line_number: usize,
+    field: &'static str,
+    raw: &str,
+) -> Result<f64, SnowbenchError> {
+    let value = parse_column(path, line_number, field, raw)?;
+    if value < 0.0 {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "{} line {line_number} field {field} is negative: {value}",
+                path.display()
+            ),
+        });
+    }
+    Ok(value)
+}
+
+fn wet_compaction_liquid_input_m(boundary_day: &CoeBoundaryRow) -> Result<f64, SnowbenchError> {
+    let liquid_input_m = boundary_day.gross_positive_generated_melt_m
+        + boundary_day.rain_retained_m
+        + boundary_day.rain_released_m;
+    if liquid_input_m.is_finite() {
+        Ok(liquid_input_m)
+    } else {
+        Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "{} wet-compaction liquid input is non-finite: {liquid_input_m}",
+                boundary_day.date
+            ),
+        })
+    }
+}
+
 fn simulate_coe_bound_density(
     forcing: &[DailyForcing],
     boundary: &[CoeBoundaryRow],
@@ -446,6 +507,7 @@ fn simulate_coe_bound_density(
         ledger.total_rain_input_kg_m2 += forcing_day.rain_input_kg_m2;
         ledger.total_boundary_swe_loss_m += boundary_day.snowpack_swe_loss_m;
         ledger.total_boundary_routed_melt_m += boundary_day.routed_melt_m;
+        let wet_compaction_liquid_input_m = wet_compaction_liquid_input_m(boundary_day)?;
         ledger.hourly_row_count += forcing_day.hourly_row_count;
 
         if forcing_day.snow_input_kg_m2 > ZERO_MASS_KG_M2 {
@@ -458,8 +520,7 @@ fn simulate_coe_bound_density(
         }
         apply_daily_compaction(
             &mut state,
-            (boundary_day.snowpack_swe_loss_m + boundary_day.routed_melt_m).max(0.0)
-                * RHO_WATER_KG_M3,
+            wet_compaction_liquid_input_m * RHO_WATER_KG_M3,
             forcing_day.mean_air_temperature_c.clamp(-30.0, 0.0),
             constants,
         );
@@ -791,5 +852,118 @@ fn snowbench_io(path: impl Into<PathBuf>, source: io::Error) -> SnowbenchError {
     SnowbenchError::Io {
         path: path.into(),
         source,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::Debug;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+
+    static TEMP_SEQUENCE: AtomicUsize = AtomicUsize::new(0);
+
+    fn temp_path(label: &str) -> PathBuf {
+        let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "openwepp-coe-density-{label}-{}-{sequence}.csv",
+            std::process::id()
+        ))
+    }
+
+    fn invalid_forcing_detail<T: Debug>(result: Result<T, SnowbenchError>) -> String {
+        match result {
+            Err(SnowbenchError::InvalidForcing { detail }) => detail,
+            other => panic!("expected invalid-forcing error, observed {other:?}"),
+        }
+    }
+
+    fn boundary_result(contents: &str) -> Result<Vec<CoeBoundaryRow>, SnowbenchError> {
+        let path = temp_path("boundary");
+        fs::write(&path, contents).expect("temporary boundary fixture must be writable");
+        let result = read_coe_boundary(&path);
+        fs::remove_file(path).expect("temporary boundary fixture must be removable");
+        result
+    }
+
+    #[test]
+    fn boundary_requires_finite_nonnegative_authoritative_source_columns() {
+        let missing = "date,snow_water_m,snow_depth_m,snow_density_kg_m3,routed_melt_m,snowpack_swe_loss_m,gross_positive_generated_melt_m,rain_retained_m\n2020-01-01,0.1,0.5,200,0.011,0.006,0.011,0.003\n";
+        assert!(
+            invalid_forcing_detail(boundary_result(missing))
+                .contains("missing required field rain_released_m")
+        );
+
+        let negative = "date,snow_water_m,snow_depth_m,snow_density_kg_m3,routed_melt_m,snowpack_swe_loss_m,gross_positive_generated_melt_m,rain_retained_m,rain_released_m\n2020-01-01,0.1,0.5,200,0.011,0.006,0.011,-0.003,0.005\n";
+        assert!(
+            invalid_forcing_detail(boundary_result(negative))
+                .contains("field rain_retained_m is negative")
+        );
+
+        let nonfinite = "date,snow_water_m,snow_depth_m,snow_density_kg_m3,routed_melt_m,snowpack_swe_loss_m,gross_positive_generated_melt_m,rain_retained_m,rain_released_m\n2020-01-01,0.1,0.5,200,0.011,0.006,NaN,0.003,0.005\n";
+        assert!(
+            invalid_forcing_detail(boundary_result(nonfinite))
+                .contains("field gross_positive_generated_melt_m is non-finite")
+        );
+    }
+
+    #[test]
+    fn replay_uses_generated_melt_and_contact_rain_once() {
+        let forcing = [DailyForcing {
+            date: "2020-01-01".to_string(),
+            snow_input_kg_m2: 100.0,
+            rain_input_kg_m2: 8.0,
+            mean_air_temperature_c: -2.0,
+            hourly_row_count: 24,
+        }];
+        let boundary = [CoeBoundaryRow {
+            date: "2020-01-01".to_string(),
+            snow_water_m: 0.1,
+            snow_depth_m: 0.5,
+            snow_density_kg_m3: 200.0,
+            routed_melt_m: 0.011,
+            snowpack_swe_loss_m: 0.006,
+            gross_positive_generated_melt_m: 0.011,
+            rain_retained_m: 0.003,
+            rain_released_m: 0.005,
+        }];
+        let (rows, _) = simulate_coe_bound_density(
+            &forcing,
+            &boundary,
+            physics_bulk_constants_for_variant(PhysicsBulkVariant::DensityCompactionV1),
+            "wet-compaction-test",
+        )
+        .expect("authoritative replay vector must compute");
+        let actual = wet_compaction_liquid_input_m(&boundary[0])
+            .expect("authoritative wet-compaction scalar must compute");
+        let authoritative = 0.011 + 0.003 + 0.005;
+        assert!((actual - authoritative).abs() <= 1.0e-12);
+        for rejected in [0.006 + 0.011, 0.011, 0.006 + 0.003 + 0.005] {
+            assert!((actual - rejected).abs() > 1.0e-12);
+        }
+
+        let mut alias_changed = boundary[0].clone();
+        alias_changed.snowpack_swe_loss_m = 0.080;
+        alias_changed.routed_melt_m = 0.090;
+        let (alias_rows, _) = simulate_coe_bound_density(
+            &forcing,
+            &[alias_changed],
+            physics_bulk_constants_for_variant(PhysicsBulkVariant::DensityCompactionV1),
+            "alias-change-test",
+        )
+        .expect("diagnostic alias changes must not affect compaction");
+        assert!((alias_rows[0].snow_density_kg_m3 - rows[0].snow_density_kg_m3).abs() <= 1.0e-12);
+
+        let mut authority_changed = boundary[0].clone();
+        authority_changed.gross_positive_generated_melt_m += 0.005;
+        let (authority_rows, _) = simulate_coe_bound_density(
+            &forcing,
+            &[authority_changed],
+            physics_bulk_constants_for_variant(PhysicsBulkVariant::DensityCompactionV1),
+            "authority-change-test",
+        )
+        .expect("authoritative source change must compute");
+        assert!((authority_rows[0].snow_density_kg_m3 - rows[0].snow_density_kg_m3).abs() > 1.0e-9);
     }
 }

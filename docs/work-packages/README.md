@@ -12,12 +12,13 @@
 ## Reusable Execution Plans And Templates
 
 - `20260804-snow-wet-compaction-operand-authority-duplicate-alias-closure-001/`
-  — ACTIVE / DC-EXECPLAN: closes `SNOW-WETCOMPACT-DUP-001` by establishing
-  generated-melt-plus-snow-contact-rain operand authority, separating every
-  plausible routed/state/store alias, correcting the real density consumer
-  when the seven-gate bar passes, and materializing a development-only
-  Snowbird `1.2155576` precipitation derivative without changing canonical
-  `p8.cli`. Early-melt attribution remains protected for 21L.
+  — COMPLETE / DEFECT CORRECTED / REVIEW AND VERIFICATION PASS: closes
+  `SNOW-WETCOMPACT-DUP-001` with exact positive-generated-melt plus
+  snow-contact-rain authority, one private typed real-consumer handoff, and an
+  aligned fail-closed offline replay. The corrected accumulated driver is
+  `55.7-61.9%` of the retired alias across four sites; upstream mass and all
+  density/layer closures pass. The verified Snowbird `1.2155576` derivative is
+  development-only. 21L is admitted after corrected-state rebaselining.
 
 - `20260804-snow-accumulation-target-feasibility-input-loss-discrimination-001/`
   — COMPLETE / LOSS-PRIORITY SIGNAL / COVERAGE-FRAGILE / NO CORRECTION:
@@ -403,12 +404,6 @@
 ## Current Active/Held Packages
 
 State as of `2026-08-04 UTC`:
-
-- `20260804-snow-wet-compaction-operand-authority-duplicate-alias-closure-001/`
-  - SCAFFOLDED / QUEUED: DC-ExecPlan for the exact duplicate wet-compaction
-  alias, complete pre-runoff liquid-input authority, derived Snowbird
-  development forcing custody, contract-first correction, real-consumer and
-  conservation proof, Critical gates, dual review, and dual verification.
 
 - `20260804-snow-prepeak-mass-transition-physics-adjudication-001/` - COMPLETE /
   REVIEW AND VERIFICATION PASS: four exact-current fixtures support an

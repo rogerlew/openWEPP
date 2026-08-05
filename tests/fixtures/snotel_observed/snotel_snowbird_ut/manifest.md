@@ -56,3 +56,20 @@ target, and the modeled hillslope is 173.9 m above the station with different
 footprint, canopy, and redistribution exposure. See the machine-readable
 [PRCPSA diagnostic sidecar](../observations/provenance/snotel_snowbird_ut_prcpsa_diagnostic.json)
 for exact source identity, ranges, checksums, and claim limits.
+
+## Development-only precipitation lane
+
+Future snow-process packages may use
+[`development/precip_x1p2155576/p8.cli`](development/precip_x1p2155576/p8.cli)
+as a separately labeled Snowbird development lane. It is derived from canonical
+`p8.cli` by scaling daily precipitation only with exact decimal factor
+`1.2155576` and rounding to `0.1 mm` with `ROUND_HALF_UP`. Canonical `p8.cli`
+remains unchanged at SHA-256
+`10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7`.
+
+The derivative is not precipitation truth, an observation, a calibration or
+default, independent snow-physics validation, or transferable evidence. Copy
+the complete canonical fixture to a fresh run directory, then replace only the
+staged `p8.cli`; never overwrite this fixture's canonical file. The derivative
+[`manifest.json`](development/precip_x1p2155576/manifest.json) freezes the
+transform, hashes, totals, consumer protocol, and claim limits.

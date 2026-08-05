@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: queued
+Status: complete
 
 Evidence mode: Static
 
@@ -44,5 +44,7 @@ Evidence mode: Static
 
 Local required pre-read byte count: `548607`.
 
-Disposition: expected `WARN` because the required work-package catalog is large;
-the contract, source, baseline, and predecessor corpus remain on-demand.
+Disposition: `WARN`, accepted. The required work-package catalog dominates the
+pre-read budget; the contract, source, baseline, and predecessor corpus were
+read on demand before their respective authority, implementation, and review
+decisions.

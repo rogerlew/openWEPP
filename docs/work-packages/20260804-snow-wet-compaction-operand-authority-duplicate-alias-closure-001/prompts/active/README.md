@@ -1,3 +1,3 @@
-# Active Prompt
+# Active Prompts
 
-`20260804_execute_21k_kickoff_agent_prompt.md` is the only active kickoff.
+No active prompt remains; execution is complete.

@@ -740,6 +740,10 @@ path = "tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contr
 name = "snow_mass_transition_ledger_persistence_contract"
 path = "tests/integration/snow_mass_transition_ledger_persistence_contract.rs"
 
+[[test]]
+name = "snow_wet_compaction_operand_authority"
+path = "tests/integration/snow_wet_compaction_operand_authority.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -207,6 +207,75 @@ impl ActiveSnowDailyTotals {
     }
 }
 
+#[cfg(test)]
+mod wet_compaction_operand_tests {
+    use super::*;
+
+    const PHASE: HillslopeKernelPhaseClass =
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+
+    fn hourly_melt(melt_raw_m: f64) -> SnowHourlyState {
+        SnowHourlyState {
+            rain_released_m: 0.0,
+            liquid_holding_capacity_m: 0.0,
+            liquid_water_retained_before_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
+            sublimation_m: 0.0,
+            melt_raw_m,
+            melt_m: melt_raw_m.max(0.0),
+            melt_diagnostics: None,
+            pack_depth_before_m: 1.0,
+            pack_depth_after_m: 1.0,
+            pack_density_before_kg_m3: 200.0,
+            pack_density_after_kg_m3: 200.0,
+        }
+    }
+
+    #[test]
+    fn helper_sums_positive_melt_and_contact_rain_and_fails_closed() {
+        let hourly = [hourly_melt(0.011), hourly_melt(-0.007)];
+        let totals = ActiveSnowDailyTotals {
+            rain_retained_m: 0.003,
+            rain_released_m: 0.005,
+            ..ActiveSnowDailyTotals::default()
+        };
+        let actual = Wb11HydrologyKernel::wet_compaction_liquid_input_m(
+            PHASE, &hourly, totals,
+        )
+        .expect("valid wet-compaction source operands must compute");
+        assert!((actual - 0.019).abs() <= 1.0e-12);
+
+        let nonfinite = ActiveSnowDailyTotals {
+            rain_retained_m: f64::NAN,
+            ..ActiveSnowDailyTotals::default()
+        };
+        let error = Wb11HydrologyKernel::wet_compaction_liquid_input_m(
+            PHASE, &hourly, nonfinite,
+        )
+        .expect_err("non-finite wet-compaction input must fail");
+        assert!(matches!(
+            error,
+            Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { ref symbol, .. }
+                if symbol.as_str() == "snow.wet_compaction_liquid_input_m"
+        ));
+
+        let negative = ActiveSnowDailyTotals {
+            rain_released_m: -0.020,
+            ..ActiveSnowDailyTotals::default()
+        };
+        let error = Wb11HydrologyKernel::wet_compaction_liquid_input_m(
+            PHASE, &hourly, negative,
+        )
+        .expect_err("negative wet-compaction input must fail");
+        assert!(matches!(
+            error,
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { ref symbol, .. }
+                if symbol.as_str() == "snow.wet_compaction_liquid_input_m"
+        ));
+    }
+}
+
 impl Wb11HydrologyKernel {
     #[allow(clippy::too_many_arguments)]
     fn update_hourly_opt_in_snow_albedo_state(
@@ -1973,6 +2042,8 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(|hourly| hourly.melt_raw_m)
             .sum::<f64>();
+        let wet_compaction_liquid_input_m =
+            Self::wet_compaction_liquid_input_m(phase_class, &hourly_state, totals)?;
         let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
         Self::add_released_rain_to_hourly_melt(&mut hourly_state);
         let available_runtime_swe_for_state_loss =
@@ -2047,6 +2118,7 @@ impl Wb11HydrologyKernel {
             sublimation: bounded_sublimation_m,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
+            wet_compaction_liquid_input_m,
             hourly_routed_melt,
             verbose_diagnostics,
             snowpack_state_loss: bounded_state_loss_m,
@@ -2056,6 +2128,28 @@ impl Wb11HydrologyKernel {
             runtime_settle_day_count: state.settle_day_count,
             snow_albedo_state_after: state.snow_albedo_state_after,
         })
+    }
+
+    fn wet_compaction_liquid_input_m(
+        phase_class: HillslopeKernelPhaseClass,
+        hourly_state: &[SnowHourlyState],
+        totals: ActiveSnowDailyTotals,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let gross_positive_generated_melt_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_raw_m.max(0.0))
+            .sum::<f64>();
+        let liquid_input_m = gross_positive_generated_melt_m
+            + totals.rain_retained_m
+            + totals.rain_released_m;
+        Self::require_direct_typed_snow_value_with(
+            phase_class,
+            || BoundarySymbol::from("snow.wet_compaction_liquid_input_m"),
+            liquid_input_m,
+            Some(0.0),
+            None,
+        )?;
+        Ok(liquid_input_m)
     }
 
     fn active_snow_hourly_trace(hourly_state: &[SnowHourlyState]) -> SnowHourlyTrace {

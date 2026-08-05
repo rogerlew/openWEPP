@@ -335,7 +335,6 @@ impl Wb11HydrologyKernel {
             phase_class,
             inputs,
             &snow_coupling,
-            routed_melt_m,
         )?;
         let mut density_process_diagnostics = density_outcome.density_process_diagnostics;
         let mut snow_layers_after = density_outcome.layers_after;
@@ -600,6 +599,7 @@ impl Wb11HydrologyKernel {
             sublimation: 0.0,
             raw_melt: 0.0,
             redistributed_melt: 0.0,
+            wet_compaction_liquid_input_m: 0.0,
             hourly_routed_melt: [0.0; 24],
             verbose_diagnostics: capture.is_verbose().then(|| Box::new(
                 SnowCouplingVerboseDiagnostics {
@@ -2287,7 +2287,6 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         snow_coupling: &SnowCouplingOutcome,
-        routed_melt_m: f64,
     ) -> Result<SnowDensityRuntimeOutcome, Wb11HydrologyKernelGuardError> {
         let mean_air_temperature_c = inputs
             .hourly
@@ -2306,7 +2305,7 @@ impl Wb11HydrologyKernel {
             boundary_depth_after_m: snow_coupling.runtime_depth_m,
             boundary_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
             snow_input_m: snow_coupling.accumulation,
-            liquid_for_compaction_m: snow_coupling.snowpack_state_loss + routed_melt_m,
+            liquid_for_compaction_m: snow_coupling.wet_compaction_liquid_input_m,
             mean_air_temperature_c,
             runtime_density_cap_kg_m3: SIMIMPL29_SNOW_DENSITY_CAP_KG_M3,
             sturm_climate_class: inputs.sturm_climate_class,

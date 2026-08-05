@@ -82,6 +82,14 @@ Snowbird snowfall. The exact queries, response hashes, reconstruction counts,
 primary-window ratios, citations, and claim limits are frozen in the
 [Snowbird PRCPSA diagnostic sidecar](observations/provenance/snotel_snowbird_ut_prcpsa_diagnostic.json).
 
+The Snowbird fixture also contains a separately labeled
+[`development/precip_x1p2155576`](snotel_snowbird_ut/development/precip_x1p2155576/)
+lane for future process diagnostics. It changes canonical daily CLI
+precipitation only by the frozen factor `1.2155576` with `0.1 mm` decimal
+half-up rounding. The lane is development normalization, not forcing truth,
+calibration, a default, independent validation, or transferable evidence;
+consumers stage it without modifying canonical `p8.cli`.
+
 The normalized H corpus is checked in under `observations/`:
 
 - `observations/manifest.json`

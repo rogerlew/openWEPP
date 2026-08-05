@@ -1,6 +1,6 @@
 # SNOW-WET-COMPACTION-OPERAND-AUTHORITY-AND-DUPLICATE-ALIAS-CLOSURE
 
-Status: `queued`
+Status: `complete / defect corrected / review and verification pass`
 
 Date: `2026-08-04`
 
@@ -88,7 +88,12 @@ was established.
 
 ### In-scope write set
 
+- `Cargo.toml` for the owned integration-test target registration
+- `assurance/v2/identity.lock.json`, the Snow report `review.lock.json`, and
+  generated typed source-adoption transactions required by the contract and
+  fixture-catalog assurance-impact bindings
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
+- `docs/specifications/science-contracts/index.md`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/09_snow_density.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs`
@@ -275,13 +280,26 @@ primary and secondary Rust correctness gates after implementation.
 - [x] (2026-08-04) Initial current-flow and PySnobal 0.2.3 source intake
   identified the exact duplicate and the pre-runoff generated-melt-plus-rain
   candidate.
-- [ ] Commit the complete scaffold before implementation edits.
-- [ ] Freeze authority, operand lineage, and derived-fixture protocol.
-- [ ] Materialize and verify the development-only Snowbird CLI.
-- [ ] Amend the canonical contract and add a pre-fix failing regression.
-- [ ] Implement the authority-backed correction and real-consumer proof.
-- [ ] Run focused and heavy validation.
-- [ ] Complete dual review, finding disposition, dual verification, and closure.
+- [x] (2026-08-04) Committed the complete scaffold as `4a6948dd` before
+  implementation edits.
+- [x] (2026-08-04) Froze authority, operand lineage, and derived-fixture
+  protocol.
+- [x] (2026-08-04) Materialized and verified the development-only Snowbird CLI.
+- [x] (2026-08-04) Amended the canonical contract and captured the pre-fix
+  failing regression.
+- [x] (2026-08-04) Implemented the authority-backed correction and
+  real-consumer/offline-mirror proof.
+- [x] (2026-08-04) Closed review findings on public v1 report/CSV stability,
+  evidence custody, materiality fail-closed thresholds, root-test Clippy, and
+  generated assurance identity.
+- [x] (2026-08-04) Ran focused red/green and consumer validation.
+- [x] (2026-08-04) Completed fresh receipt-bound canonical four-site and
+  Snowbird development-lane materiality with fail-closed acceptance.
+- [x] (2026-08-04) Completed focused, quick, frost, Critical full, doctest,
+  format, Clippy, dependency-policy, assurance, fixture, anti-evasion, and
+  AUTH11 gates.
+- [x] (2026-08-04) Completed dual review, finding disposition, dual terminal
+  verification, exact-diff reconciliation, roadmap admission, and closure.
 
 ## Surprises & Discoveries
 
@@ -293,6 +311,36 @@ primary and secondary Rust correctness gates after implementation.
   on generated melt plus rain, so routed-only is also not automatically the
   complete physical operand.
   Evidence: PySnobal 0.2.3 `mass_bal` and `h2o_compact` source intake.
+- Observation: PySnobal fixes `snowcover` at interval start, so rain in a mixed
+  event that first establishes a pack does not compact that new pack during the
+  same interval.
+  Evidence: PySnobal 0.2.3 timestep state and `h2o_compact` gate; this matches
+  openWEPP's existing snow-contact-rain classification.
+- Observation: the offline CoE-bound density replay carried the same duplicate
+  alias as the production caller.
+  Evidence: pre-fix `snowbench_coe_density.rs` reconstructed
+  `snowpack_swe_loss + routed_melt`; the corrected boundary now exports and
+  consumes exact generated-melt and rain columns.
+- Observation: the Snow assurance identity also retained an inherited stale
+  hash for the fixture-family README from the PRCPSA package.
+  Evidence: typed source adoption initially failed closed on that member;
+  sequential contract and fixture-catalog adoption transactions now validate.
+- Observation: calculated materiality metrics alone were not fail-closed gate
+  authority.
+  Evidence: Review B identified that the first v2 tool could publish values
+  above contract tolerances; a red/green regression now binds and enforces
+  reconstruction, conservation, and minimum-materiality thresholds before
+  atomic publication.
+- Observation: the corrected driver is substantially smaller at every
+  canonical site, but the change is density/geometry material rather than an
+  upstream mass change.
+  Evidence: corrected-to-retired accumulated-driver ratios are `0.557-0.619`;
+  `22,392` density-days change while maximum upstream mass delta remains
+  `2.443e-15 m`.
+- Observation: low-concurrency execution is required for stable local
+  assurance publication tests on this host.
+  Evidence: the first unconstrained quick attempt timed out under contention;
+  exact-source `-j 2` quick and full runs passed `2181/2181` and `2270/2270`.
 
 ## Decision Log
 
@@ -305,11 +353,55 @@ primary and secondary Rust correctness gates after implementation.
   Rationale: the user directed future packages to use the normalized lane, and
   materializing it now prevents result-aware transformations in 21L.
   Date/Author: 2026-08-04 / Codex.
+- Decision: Correct both production and the offline CoE-bound replay in the
+  same package.
+  Rationale: leaving the diagnostic mirror on the retired alias would encode a
+  second false authority and invalidate future density comparisons.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Add `Cargo.toml` to the living write-set reconciliation.
+  Rationale: the contract-derived integration target requires explicit root
+  manifest registration. The initial envelope named focused integration tests
+  but omitted their necessary registration surface; the terminal plan records
+  that adjacent owned surface rather than hiding the omission.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Use the typed DRAFT report-source adoption workflow after the
+  canonical contract reaches terminal content, then adopt the independently
+  changed SNOTEL fixture README.
+  Rationale: both are declared local-content dependencies of the snow/frost
+  assurance report. Fail-closed checks exposed the new contract drift and an
+  inherited README drift. Updating generated locks through two typed
+  transactions preserves both impacts without refreshing the held ASSURE-06
+  manuscript or claiming campaign/release transfer.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Admit 21L only after corrected-state rebaselining and keep the
+  scaled Snowbird lane out of acceptance.
+  Rationale: 21K changes density and depth trajectories materially, while the
+  scaled lane demonstrates input sensitivity rather than forcing truth or
+  physics validity.
+  Date/Author: 2026-08-04 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. Replace this text with the terminal correction/non-defect/HOLD outcome,
-scientific consequences, and the exact 21L entry condition.
+`SNOW-WETCOMPACT-DUP-001` is closed. Canonical authority now defines the daily
+wet-compaction driver as the sum of positive hourly generated melt plus
+interval-start snow-contact retained and released rain, before runoff and
+counted once. Production carries one private typed scalar to bulk or multilayer
+density; the offline CoE-bound replay consumes the same exact lineage and
+fails closed on historical alias-only files.
+
+The correction is material: the new accumulated driver is `55.7-61.9%` of the
+retired value across the four canonical sites, `24,046` driver-days and
+`22,392` density-days change, and maximum density/depth changes are
+`174.016 kg m^-3` / `0.367071 m`. Operand, upstream mass, density, layer, and
+Stage-3 closures all pass. This is not an early-melt correction or attribution;
+generated melt and all energy/forcing/phase surfaces remain unchanged.
+
+The deterministic Snowbird development CLI preserves the canonical hash and
+changes precipitation only. Its peak-SWE response confirms input sensitivity,
+not precipitation truth. Both reviews return `GO`, both terminal verifiers
+return `PASS`, and all required gates pass. 21L is admitted only after it
+regenerates corrected-state canonical and scaled baselines and preserves
+forcing, snowfall, storage, loss, and energy operands separately.
 
 ## Idempotence And Recovery
 
@@ -320,3 +412,6 @@ failures into passes. Canonical `p8.cli` is immutable and recoverable from Git.
 
 Revision note (2026-08-04): initial 21K scaffold authored from the defect-first
 roadmap, confirmed alias evidence, and primary wet-compaction source intake.
+
+Revision note (2026-08-04): executed to validated correction, dual-review and
+dual-verification pass, and admitted corrected-state 21L rebaselining.
