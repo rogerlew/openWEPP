@@ -1261,21 +1261,9 @@ pub fn amend_lifecycle_at_generation(
         );
     }
     validate_lifecycle_transition(&request.event_type, &current.lifecycle)?;
-    if request.event_type == "return_to_draft"
-        && request
-            .predecessor_event_ids
-            .iter()
-            .collect::<BTreeSet<_>>()
-            != current.event_ids.iter().collect::<BTreeSet<_>>()
-    {
-        return Err(AssuranceError::Invalid(
-            "return_to_draft predecessors must equal the active review event IDs".to_owned(),
-        ));
-    }
+    validate_return_predecessors(&request, &current)?;
     require_lifecycle_principal(root, &request.principal_id, &request.event_type)?;
-    if request.event_type == "return_to_draft" {
-        require_report_lead(&report, &request.principal_id)?;
-    }
+    validate_return_report_lead(&report, &request)?;
     let mut replacements = BTreeMap::new();
     if request.event_type == "review_entry" {
         apply_review_entry(&mut report, &request)?;
@@ -1355,17 +1343,39 @@ pub fn amend_lifecycle_at_generation(
     )
 }
 
-fn require_report_lead(report: &serde_yaml::Value, principal_id: &str) -> Result<()> {
+fn validate_return_report_lead(
+    report: &serde_yaml::Value,
+    request: &V2LifecycleRequest,
+) -> Result<()> {
+    if request.event_type != "return_to_draft" {
+        return Ok(());
+    }
     let report_lead = report
         .get("authorship")
         .and_then(|value| value.get("human_report_lead"))
         .and_then(serde_yaml::Value::as_str)
         .ok_or_else(|| AssuranceError::Invalid("report lead is missing".to_owned()))?;
-    if principal_id == report_lead {
+    if request.principal_id == report_lead {
         Ok(())
     } else {
         Err(AssuranceError::Invalid(
             "return_to_draft principal must be the report lead".to_owned(),
+        ))
+    }
+}
+
+fn validate_return_predecessors(request: &V2LifecycleRequest, lock: &ReviewLock) -> Result<()> {
+    if request.event_type != "return_to_draft"
+        || request
+            .predecessor_event_ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            == lock.event_ids.iter().collect::<BTreeSet<_>>()
+    {
+        Ok(())
+    } else {
+        Err(AssuranceError::Invalid(
+            "return_to_draft predecessors must equal the active review event IDs".to_owned(),
         ))
     }
 }
