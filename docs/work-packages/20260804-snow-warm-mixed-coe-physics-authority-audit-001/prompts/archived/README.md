@@ -1,3 +1,4 @@
 # Archived Prompts
 
-No prompt is archived while the package is queued or executing.
+The byte-identical 21M package-end-to-end kickoff prompt is archived here after
+execution and review.

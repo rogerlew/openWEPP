@@ -31,8 +31,8 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| [`SNOW-WARM-MIXED-COE-PHYSICS-AUTHORITY-AUDIT`](work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/package.md) | Snow surface-energy-balance campaign | `active / 21M` | Read-only first-principles audit of warm/mixed CoE melt generation, prioritizing temperature, dewpoint, radiation, and state interactions while preserving 21L's chronology-confounded evidence and admitting no correction before authority adjudication. |
-| `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after 21K closes wet-compaction authority, 21L dispositions warm/mixed pre-peak loss, the scientific manuscript is refreshed against those results and the admitted canopy/energy work, and a new exact review root is issued. |
+| `SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION` | Snow surface-energy-balance campaign | `next / 21N` | Contract-first decision on bounded empirical CoE sufficiency versus state-resolved Stage-3 melt ownership; prioritize the 2008 canopy branch, daily midpoint gate, embedded albedo lineage, and cold-content satisfaction without preselecting a correction. |
+| `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after 21N adjudicates the CoE/Stage-3 melt-owner authority seam, the scientific manuscript is refreshed against 21K-21M and the admitted canopy/energy work, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 
 ## Test And Gate Architecture Queue

@@ -14,14 +14,16 @@ Implemented only:
 
 Ran:
 
+Working directory for every command: `/home/workdir/openWEPP`.
+
 ```text
-.venv/bin/python -m py_compile <analyzer> <test>
+.venv/bin/python -m py_compile docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/tools/audit_coe_authority.py docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/tools/test_audit_coe_authority.py
 PASS
 
-.venv/bin/python -m unittest <test> -v
+.venv/bin/python -m unittest docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/tools/test_audit_coe_authority.py -v
 Ran 4 tests; OK
 
-.venv/bin/python <analyzer> --freeze <freeze> --output <result> --receipt <receipt>
+.venv/bin/python docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/tools/audit_coe_authority.py --freeze docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/audit-freeze.json --output target/snow_warm_mixed_coe_physics_authority_audit/terminal-quantitative-audit.json --receipt target/snow_warm_mixed_coe_physics_authority_audit/terminal-execution-receipt.json
 PASS: 394705 hours; 17431 days; max residual 9.941202185450096e-18 m
 ```
 

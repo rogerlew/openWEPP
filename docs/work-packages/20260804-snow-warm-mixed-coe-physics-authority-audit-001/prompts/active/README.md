@@ -1,3 +1,3 @@
 # Active Prompts
 
-The 21M package-end-to-end kickoff prompt is active until terminal disposition.
+No prompt is active after execution and review.

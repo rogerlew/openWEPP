@@ -1,6 +1,6 @@
 # SNOW-WARM-MIXED-COE-PHYSICS-AUTHORITY-AUDIT
 
-Status: `active / audit executed / review pending`
+Status: `complete / review and verification pass`
 
 Date: `2026-08-04`
 
@@ -267,8 +267,15 @@ committed.
   `9.941202185450096e-18 m`.
 - [x] (2026-08-05 UTC) Integrated evidence and selected
   `BASELINE_FIDELITY_WITH_AUTHORITY_GAP` under the frozen matrix.
-- [ ] Complete dual review, finding disposition, dual verification, prompt
-  archival, exact-diff reconciliation, and final disposition.
+- [x] (2026-08-05 UTC) Completed dual independent science review; both returned
+  `PASS_WITH_FINDINGS`, all seven findings were accepted and remediated, and
+  the focused suite now has four passing tests.
+- [x] (2026-08-05 UTC) Archived the kickoff prompt byte-identically and passed
+  direct terminal syntax, focused-test, frozen-rerun, byte-reproducibility,
+  JSON, Markdown, spelling-review, path, diff, and line-count gates.
+- [x] (2026-08-05 UTC) Completed dual terminal verification after remediating
+  exact-command custody and a predecessor Stage-3 result citation/value
+  finding; both final rechecks returned `PASS`.
 
 ## Surprises & Discoveries
 
@@ -334,9 +341,28 @@ committed.
 
 ## Outcomes & Retrospective
 
-Queued. Populate after the accepted audit and terminal review.
+The package excluded a Rust CoE term-generation defect and selected
+`BASELINE_FIDELITY_WITH_AUTHORITY_GAP`. The accepted run covered `394705`
+eligible canonical warm/mixed hours and `17431` site-days with a maximum
+residual of `9.941202185450096e-18 m`. The decisive gap is not that empirical
+models are intrinsically invalid: it is the absence of cited independent
+validation or bounded transferability authority for the material 2007/2008
+departures from Chapter 3. Current contracts intentionally preserve CoE melt
+ownership while full energy-balance state remains in Stage 3.
+
+No production, contract, contract-test, fixture, observation, reference,
+selector, default, or public schema changed. The smallest justified follow-on
+is contract-first 21N CoE/Stage-3 melt-owner authority reconciliation. Dual
+independent science review and dual independent terminal verification pass
+with every finding accepted and remediated.
 
 ## Revision Note
 
 2026-08-04: Initial scaffold created from the roadmap-authorized 21M objective
 and 21L handoff.
+
+2026-08-05: Executed the frozen audit, accepted and remediated dual-review
+findings, and prepared the terminal verification candidate.
+
+2026-08-05: Accepted and remediated terminal-verification findings, obtained
+two clean final rechecks, reconciled the exact diff, and closed the package.
