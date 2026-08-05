@@ -427,6 +427,12 @@
 
 State as of `2026-08-05 UTC`:
 
+- `20260805-jennings-dryad-hourly-archive-lfs-vendoring-001/` -
+  EXECUTING / SCAFFOLDED: vendor the exact 1.2 GB Jennings et al. Dryad hourly
+  precipitation-phase archive through a path-scoped Git LFS object. Preserve
+  DOI/version/CC0/UCAR lineage and exact bytes; do not alter observations,
+  scientific results, runtime behavior, or ordinary-CI download requirements.
+
 - `20260805-assure06-snow-frost-flagship-refresh-001/` -
   HOLD-INDEPENDENT-HUMAN-REVIEW: refreshed the snow/frost flagship against
   `SC-SNOWENERGY-001` v7, `SC-SNOWFREEZE-001` v126, and exact 21K-21N
