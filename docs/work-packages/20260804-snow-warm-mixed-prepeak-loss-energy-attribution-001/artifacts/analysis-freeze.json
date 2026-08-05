@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_result_execution",
+  "scaffold_base_commit": "004ad95f352050c22253766bbbe2ae56e00a2e9e",
+  "result_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "canonical_lanes": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa",
+    "snotel_snowbird_ut"
+  ],
+  "development_lanes": [
+    "snotel_snowbird_ut__precip_x1p2155576"
+  ],
+  "source_identities": {
+    "execution_receipt_sha256": "1cd4aa5fb2110eb0445f57de846e2b65b224e7b0704e00a9d6cff1e3d4ca220a",
+    "materiality_result_sha256": "25c8150f95d1be81afa7597d93dc271f8df5d82e062c558b231dd1695afab05a",
+    "predecessor_21j_result_sha256": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4",
+    "trace_sha256_by_lane": {
+      "snotel_mica_creek_st_joe_id": "310f3f4621aba17ce96d3f9fa9df29f3cc14ad5fad6916799e9367e02fcad95c",
+      "snotel_niwot_co": "03fe33f959003d2a5f0dbce4ef742d164c949ac0588a42f2341ca6747ad5aff5",
+      "snotel_paradise_wa": "7f77be3d223e7347fc05fec5c3858c8988ac51a60745a97855eb204f13065",
+      "snotel_snowbird_ut": "653176d6354e9654acf42f43865a7e2ebacafff431b3e5a36f0cadd882feaaf3",
+      "snotel_snowbird_ut__precip_x1p2155576": "fde0d83cf8a4a23409808f05ca2450b051dac69e966dc4116c6b0b1bf29c65e6"
+    },
+    "observation_sha256_by_site": {
+      "snotel_mica_creek_st_joe_id": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce",
+      "snotel_niwot_co": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c",
+      "snotel_paradise_wa": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795",
+      "snotel_snowbird_ut": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+    },
+    "canonical_snowbird_cli_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+    "development_snowbird_cli_sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb"
+  },
+  "constants": {
+    "mass_tolerance_m": 1e-9,
+    "energy_tolerance_j_m2": 1e-6,
+    "zero_tolerance_m": 1e-12,
+    "dry_precipitation_threshold_m_per_day": 0.000254,
+    "material_daily_loss_m": 0.000254,
+    "minimum_episode_days": 3,
+    "minimum_eligible_years_per_site": 10,
+    "site_direction_fraction": 0.75,
+    "systemic_site_count": 3,
+    "warm_mixed_loss_fraction_threshold": 0.6,
+    "scaled_state_response_materiality_m": 0.01,
+    "scaled_direction_fraction": 0.75
+  },
+  "primary_window": {
+    "start": "October 1 of water_year - 1 inclusive",
+    "end": "earliest date of maximum positive observed WTEQ in the water year inclusive",
+    "right_censored_water_years": [2025],
+    "coverage": "require complete observation, climate, and trace coverage from start through observed peak",
+    "aggregation": "compute annual values first, then Python statistics.median by site; pooled hours/days are secondary exposure-weighted views only"
+  },
+  "thermal_classification": {
+    "eligible_hour": "interval-start active pack or positive hourly snowfall, with finite hourly air temperature",
+    "cold_day": "maximum eligible hourly air temperature <= 0 C",
+    "mixed_day": "minimum eligible hourly air temperature <= 0 C and maximum > 0 C",
+    "warm_day": "minimum eligible hourly air temperature > 0 C",
+    "exhaustiveness": "each eligible day is exactly one of cold_day, mixed_day, warm_day"
+  },
+  "dry_period_operator": {
+    "daily_eligibility": "fixture all-phase precipitation <= 0.000254 m and guarded observed PREC increment <= 0.000254 m; never bridge missing dates or water-year resets",
+    "grouping": "maximal consecutive eligible days, minimum 3 days, clipped to primary window",
+    "modeled_loss": "sum snowpack_swe_loss_m over the interval",
+    "observed_loss": "max(WTEQ at interval start minus WTEQ at interval end, 0)",
+    "predecessor_comparison": "same site, water year, start, and end key against the retained 21J dry-interval table"
+  },
+  "coe_attribution": {
+    "components": ["amelt", "bmelt", "cmelt", "dmelt"],
+    "identity": "applied_melt = amelt + bmelt + cmelt + dmelt + cap_adjustment within tolerance",
+    "reporting": "signed and positive-only empirical melt-depth totals by thermal class; never label values measured energy shares",
+    "association": "annual Spearman and Pearson association of positive applied melt and pack loss, reported only with counts",
+    "dominance": "largest positive empirical component is descriptive and not causal authority"
+  },
+  "stage3_attribution": {
+    "chronology": "downstream response after CoE melt and snow-contact rain",
+    "fields": ["surface", "shortwave", "longwave", "latent", "conduction", "cold_content_change", "refreeze", "retained_liquid_delta", "routed_liquid"],
+    "prohibition": "do not use Stage-3 energy to assign upstream CoE melt causation"
+  },
+  "snowbird_pairing": {
+    "key": "date and water year",
+    "required_identity": "all non-precipitation climate tokens are identical",
+    "primary_response": "annual pre-peak pack-loss difference and observed-date/within-window SWE difference",
+    "state_signal": "at least 10 paired years, median absolute pack-loss difference >= 0.01 m, and at least 75% of nonzero annual differences share one direction",
+    "role": "DEVELOPMENT_ONLY input sensitivity; never canonical acceptance"
+  },
+  "adjudication": {
+    "warm_mixed_site_signal": "at least 10 eligible years, median annual warm+mixed share of pre-peak pack loss >= 0.6, and at least 75% of annual shares >= 0.5",
+    "systemic_warm_mixed": "warm_mixed_site_signal at at least 3 canonical sites",
+    "state_mediated": "Snowbird paired state_signal passes",
+    "matrix": {
+      "systemic=true,state=true": "MULTIFACTOR_WARM_MIXED_AND_STATE_SIGNAL",
+      "systemic=true,state=false": "WARM_MIXED_COE_LOSS_CONCENTRATION_SIGNAL",
+      "systemic=false,state=true": "STATE_MEDIATED_INPUT_SENSITIVITY_SIGNAL",
+      "systemic=false,state=false,coverage=true": "NO_SYSTEMIC_WARM_MIXED_SIGNAL",
+      "coverage=false": "UNRESOLVED_OR_COVERAGE_LIMITED"
+    }
+  }
+}

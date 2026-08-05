@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/` — ACTIVE /
+  SCAFFOLDED: rebaseline five corrected-state lanes after 21K, then attribute
+  warm/mixed pre-peak loss across forcing, empirical CoE melt-depth, snow-state,
+  and downstream Stage-3 response surfaces. Canonical lanes own conclusions;
+  scaled Snowbird is development-only input sensitivity.
+
 - `20260804-snow-wet-compaction-operand-authority-duplicate-alias-closure-001/`
   — COMPLETE / DEFECT CORRECTED / REVIEW AND VERIFICATION PASS: closes
   `SNOW-WETCOMPACT-DUP-001` with exact positive-generated-melt plus
