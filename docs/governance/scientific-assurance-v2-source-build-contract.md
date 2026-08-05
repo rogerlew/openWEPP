@@ -230,10 +230,13 @@ follows this matrix:
 | Unclear or mixed impact | Full scientific, reproduction, and publication rereview |
 
 The report lead or any material dataset, method, result, table, or figure
-producer cannot be the sole scientific approver. The report lead, a material
-dataset/method/result producer, or the build maintainer cannot be the sole
-reproduction approver. None of those producers or maintainers may be the sole
-material-change waiver authority.
+producer is ineligible to be the scientific approver. The report lead, a
+material dataset/method/result producer, or the build maintainer is ineligible
+to be the reproduction approver. None of those producers or maintainers may be
+the material-change waiver authority. The current publication path accepts one
+active principal per required approval role and provides no co-approver
+primitive; these are
+therefore flat exclusions, not permission to approve alongside another person.
 
 Every renewal record binds the old and new content roots, changed identities,
 classification and rationale, named approvers, role-independence attestations,

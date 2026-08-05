@@ -346,6 +346,7 @@ The initial implementation is deliberately narrow:
 | normalization | allow | allow; preserve `science_root`, create a new communication/content-review subject and ledger, and invalidate every approval that binds `communication_root`, including scientific, reproduction/publication, and steward approval | reject; require typed reentry or new version | reject mutation; require new patch version |
 | implementation rebind | allow when generated locks are stale | allow when current events remain valid; recalculate generated locks only | allow only when every existing approval remains valid against the current implementation identity; otherwise reject | reject mutation; require new version or explicit lifecycle workflow |
 | enter review | allow transition to `IN_REVIEW` | no-op only when subject is identical | reject | reject |
+| return to draft | no-op only for the identical retained return event; otherwise reject | allow through an immutable report-lead event that invalidates active review authority | reject | reject |
 | finding or disposition | reject | allow | reject | reject |
 | approval | reject | allow only for current ledger and eligible independent principal | no-op only for identical event | reject |
 | withdraw or supersede | typed lifecycle rules only | typed lifecycle rules only | typed lifecycle rules only | allow only as a new immutable governance event |
@@ -381,8 +382,9 @@ openwepp-assurance lifecycle --report <id> --request <yaml> (--check|--apply)
 openwepp-assurance verify-generation --base-ref <commit>
 ```
 
-The lifecycle request schema provides typed variants for review entry, finding,
-disposition, approval, withdrawal, supersession, and release transfer. The
+The lifecycle request schema provides typed variants for review entry, return
+to draft, finding, disposition, approval, withdrawal, supersession, and release
+transfer. The
 command records a supplied human decision; it never invents one.
 
 Ordinary attribution flags cover existing-principal display/affiliation

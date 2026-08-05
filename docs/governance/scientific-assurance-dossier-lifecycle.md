@@ -32,11 +32,15 @@ and how an approved report is bound to an openWEPP release. It implements the
 | Application assessment | Named user or institution | Judge adequacy for a named site, decision, accuracy need, and consequence of error. |
 
 Roles may be combined only when independence is preserved. A report lead or
-material claim/data/method/result/figure producer cannot be the sole scientific
-approver. A report lead, material data/method/result producer, or build
-maintainer cannot be the sole reproduction approver. None may be the sole
-authority waiving rereview after a material change. If an independent reviewer
-is unavailable, the report remains in review. Agent review is internal review.
+material claim/data/method/result/figure producer is ineligible to be the
+scientific approver. A report lead, material data/method/result producer, or
+build maintainer is ineligible to be the reproduction approver. None may be
+the authority waiving rereview after a material change. The current publication
+contract requires one active principal per required role and has no co-approver
+primitive,
+so these are flat exclusions. If an independent reviewer is unavailable, the
+report remains `DRAFT` or `IN_REVIEW`, as applicable. Agent review is internal
+review.
 
 ## Lifecycle States
 

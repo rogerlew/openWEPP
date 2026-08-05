@@ -30,6 +30,7 @@
         "scientific_approval",
         "reproduction_approval",
         "steward_approval",
+        "return_to_draft",
         "withdrawal",
         "supersession",
         "release_transfer"

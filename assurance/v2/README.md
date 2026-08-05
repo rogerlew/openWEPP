@@ -313,8 +313,8 @@ release, or vendoring authority.
 
 The authored lifecycle is `DRAFT` → `IN_REVIEW` → `APPROVED`. There is no
 authored `PUBLISHED` state. Immutable events record supplied review entry,
-findings, dispositions, approvals, withdrawal, supersession, and release
-transfer. Generated locks bind those events to the applicable science,
+findings, dispositions, approvals, return to draft, withdrawal, supersession,
+and release transfer. Generated locks bind those events to the applicable science,
 communication, governance, attribution, finding-ledger, realization, and exact
 predecessor identities. Regeneration can invalidate authority; it cannot create
 or carry a human decision to different reviewed bytes.

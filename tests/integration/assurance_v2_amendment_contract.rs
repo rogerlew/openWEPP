@@ -395,6 +395,127 @@ predecessor_event_ids: []
 }
 
 #[test]
+fn report_lead_can_return_pending_review_to_draft_without_erasing_history() {
+    let fixture = current_unverified_fixture("assurance-return-to-draft");
+    let review_lock_path = fixture
+        .path
+        .join(format!("assurance/v2/reports/{SNOW}/review.lock.json"));
+    let prior_lock: serde_json::Value =
+        serde_json::from_slice(&fs::read(&review_lock_path).unwrap()).unwrap();
+    let prior_event_ids = prior_lock["event_ids"].as_array().unwrap().clone();
+    assert!(!prior_event_ids.is_empty());
+    let prior_event_bytes = prior_event_ids
+        .iter()
+        .map(|id| {
+            let id = id.as_str().unwrap();
+            (
+                id.to_owned(),
+                fs::read(fixture.path.join(format!(
+                    "assurance/v2/reports/{SNOW}/review-events/{id}.json"
+                )))
+                .unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let request = br"schema_version: 1
+event_type: return_to_draft
+principal_id: roger-lew
+decision: returned_to_draft
+rationale: Preserve the report as a draft while governance is clarified.
+recorded_on: 2026-08-05
+authority_source: ASSURANCE-SINGLE-APPROVER-DRAFT-RETURN
+predecessor_event_ids: []
+";
+    let checked = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Check).unwrap();
+    let applied = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Apply).unwrap();
+    assert_eq!(checked, applied);
+
+    let inspection = inspect_report(&fixture.path, SNOW).unwrap();
+    assert_eq!(inspection.lifecycle, "DRAFT");
+    assert!(inspection.approval_lock_root.is_none());
+    let report: serde_yaml::Value = serde_yaml::from_slice(
+        &fs::read(
+            fixture
+                .path
+                .join(format!("assurance/v2/reports/{SNOW}/report.yaml")),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(report["review"]["state"].as_str(), Some("DRAFT"));
+    assert_eq!(report["review"]["decision"].as_str(), Some("not_started"));
+    for field in [
+        "subject_root",
+        "review_charge",
+        "build_maintainer_id",
+        "finding_ledger_root",
+        "approval_lock_root",
+    ] {
+        assert!(report["review"][field].is_null(), "{field} must be clear");
+    }
+    assert_eq!(
+        report["review"]["independence_assessment"].as_str(),
+        Some("not_assessed")
+    );
+    assert!(
+        report["review"]["material_producer_ids"]
+            .as_sequence()
+            .is_some_and(Vec::is_empty)
+    );
+    assert_eq!(
+        report["agent_assistance"]["review_entry_authorized"].as_bool(),
+        Some(false)
+    );
+    assert!(report["authorship"]["scientific_approver"].is_null());
+    assert!(
+        applied
+            .affected_paths
+            .iter()
+            .any(|path| path.contains("review-events")),
+        "the immutable return event must be retained"
+    );
+    let review_lock: serde_json::Value =
+        serde_json::from_slice(&fs::read(&review_lock_path).unwrap()).unwrap();
+    let event_path = applied
+        .affected_paths
+        .iter()
+        .find(|path| path.contains("review-events"))
+        .map(|path| fixture.path.join(path))
+        .unwrap();
+    let return_event_id = event_path.file_stem().unwrap().to_str().unwrap();
+    assert_eq!(
+        review_lock["event_ids"].as_array().unwrap(),
+        &[serde_json::Value::String(return_event_id.to_owned())],
+        "the return event must remain reachable from the review lock"
+    );
+    assert!(
+        review_lock["invalidated_event_ids"]
+            .as_array()
+            .is_some_and(|ids| prior_event_ids.iter().all(|id| ids.contains(id))),
+        "the prior review entry must remain reachable as invalidated history"
+    );
+    for (event_id, before) in prior_event_bytes {
+        let after = fs::read(fixture.path.join(format!(
+            "assurance/v2/reports/{SNOW}/review-events/{event_id}.json"
+        )))
+        .unwrap();
+        assert_eq!(before, after, "prior event bytes must remain immutable");
+    }
+    assert_schema_accepts(
+        &fixture
+            .path
+            .join("assurance/v2/schemas/review-event.schema.json"),
+        &event_path,
+    );
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_all()
+        .unwrap();
+    let repeated = amend_lifecycle(&fixture.path, SNOW, request, V2AmendMode::Apply).unwrap();
+    assert!(!repeated.changed);
+}
+
+#[test]
 fn supersession_is_terminal_and_requires_a_named_successor() {
     let fixture = current_unverified_fixture("assurance-amend-supersession");
     let missing = br"schema_version: 1

@@ -1248,24 +1248,46 @@ pub fn amend_lifecycle_at_generation(
     let bytes = read_regular(root, &path)?;
     let mut report: serde_yaml::Value = parse_yaml(&path, &bytes)?;
     let current = load_review_lock(root, report_id)?;
+    if request.event_type == "return_to_draft"
+        && current.lifecycle == "DRAFT"
+        && has_matching_return_to_draft_event(root, report_id, &request)?
+    {
+        return no_op_receipt(
+            root,
+            "lifecycle",
+            "governance-focused",
+            vec![report_id.to_owned()],
+            if_generation,
+        );
+    }
     validate_lifecycle_transition(&request.event_type, &current.lifecycle)?;
     require_lifecycle_principal(root, &request.principal_id, &request.event_type)?;
+    if request.event_type == "return_to_draft" {
+        require_report_lead(&report, &request.principal_id)?;
+    }
     let mut replacements = BTreeMap::new();
     if request.event_type == "review_entry" {
         apply_review_entry(&mut report, &request)?;
+        replacements.insert(path.clone(), render_yaml(&report)?);
+    } else if request.event_type == "return_to_draft" {
+        apply_return_to_draft(&mut report, &request)?;
         replacements.insert(path.clone(), render_yaml(&report)?);
     } else if matches!(request.event_type.as_str(), "withdrawal" | "supersession") {
         apply_terminal_lifecycle(&mut report, &request)?;
         replacements.insert(path.clone(), render_yaml(&report)?);
     }
-    let provisional = candidate_review_lock(
-        root,
-        report_id,
-        &report,
-        &replacements,
-        current.event_ids.clone(),
-    )?;
-    let bound_roots = lifecycle_bound_roots(&request.event_type, &provisional)?;
+    let candidate_event_ids = if request.event_type == "return_to_draft" {
+        Vec::new()
+    } else {
+        current.event_ids.clone()
+    };
+    let provisional =
+        candidate_review_lock(root, report_id, &report, &replacements, candidate_event_ids)?;
+    let bound_roots = if request.event_type == "return_to_draft" {
+        lifecycle_bound_roots(&request.event_type, &current)?
+    } else {
+        lifecycle_bound_roots(&request.event_type, &provisional)?
+    };
     let event = ReviewEvent::new(
         request.event_type.clone(),
         report_id.to_owned(),
@@ -1299,6 +1321,11 @@ pub fn amend_lifecycle_at_generation(
         );
     }
     replacements.insert(event_path, event.render()?);
+    let invalidate_existing = matches!(
+        request.event_type.as_str(),
+        "return_to_draft" | "withdrawal" | "supersession"
+    ) || (request.event_type == "review_entry"
+        && active_event_is_return_to_draft(root, report_id, &current)?);
     prepare_or_apply_successor(
         root,
         "lifecycle",
@@ -1309,15 +1336,82 @@ pub fn amend_lifecycle_at_generation(
             report_id.to_owned(),
             EventUpdate {
                 event_ids: vec![event.event_id],
-                invalidate_existing: matches!(
-                    request.event_type.as_str(),
-                    "withdrawal" | "supersession"
-                ),
+                invalidate_existing,
             },
         )]),
         mode,
         if_generation,
     )
+}
+
+fn require_report_lead(report: &serde_yaml::Value, principal_id: &str) -> Result<()> {
+    let report_lead = report
+        .get("authorship")
+        .and_then(|value| value.get("human_report_lead"))
+        .and_then(serde_yaml::Value::as_str)
+        .ok_or_else(|| AssuranceError::Invalid("report lead is missing".to_owned()))?;
+    if principal_id == report_lead {
+        Ok(())
+    } else {
+        Err(AssuranceError::Invalid(
+            "return_to_draft principal must be the report lead".to_owned(),
+        ))
+    }
+}
+
+fn active_event_is_return_to_draft(
+    root: &Path,
+    report_id: &str,
+    lock: &ReviewLock,
+) -> Result<bool> {
+    let [event_id] = lock.event_ids.as_slice() else {
+        return Ok(false);
+    };
+    let confined = ConfinedDirectory::open_ambient(root, false)?;
+    let path = PathBuf::from(format!(
+        "assurance/v2/reports/{report_id}/review-events/{event_id}.json"
+    ));
+    let bytes = confined.read_regular(&path)?;
+    let event: ReviewEvent =
+        serde_json::from_slice(&bytes).map_err(|error| AssuranceError::Parse {
+            path: root.join(path),
+            message: error.to_string(),
+        })?;
+    Ok(event.event_type == "return_to_draft")
+}
+
+fn has_matching_return_to_draft_event(
+    root: &Path,
+    report_id: &str,
+    request: &V2LifecycleRequest,
+) -> Result<bool> {
+    let confined = ConfinedDirectory::open_ambient(root, false)?;
+    let directory = PathBuf::from(format!("assurance/v2/reports/{report_id}/review-events"));
+    for path in confined.collect_regular_files(&directory)? {
+        if path.extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+        let event_bytes = confined.read_regular(&path)?;
+        let event: ReviewEvent =
+            serde_json::from_slice(&event_bytes).map_err(|error| AssuranceError::Parse {
+                path: root.join(&path),
+                message: error.to_string(),
+            })?;
+        if event.schema_version == 1
+            && event.report_id == report_id
+            && event.event_type == "return_to_draft"
+            && event.principal_id == request.principal_id
+            && event.decision == request.decision
+            && event.rationale == request.rationale
+            && event.recorded_on == request.recorded_on
+            && event.authority_source == request.authority_source
+            && event.predecessor_event_ids == request.predecessor_event_ids
+            && event.inputs == lifecycle_event_inputs(request)
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 fn validate_lifecycle_request(request: &V2LifecycleRequest) -> Result<()> {
@@ -1349,6 +1443,7 @@ fn validate_lifecycle_event_type(event_type: &str) -> Result<()> {
             | "scientific_approval"
             | "reproduction_approval"
             | "steward_approval"
+            | "return_to_draft"
             | "withdrawal"
             | "supersession"
             | "release_transfer"
@@ -1377,6 +1472,7 @@ fn validate_lifecycle_decision(event_type: &str, decision: &str) -> Result<()> {
         | "reproduction_approval"
         | "steward_approval"
         | "release_transfer" => "approved",
+        "return_to_draft" => "returned_to_draft",
         "withdrawal" => "withdrawn",
         "supersession" => "superseded",
         _ => "",
@@ -1430,7 +1526,8 @@ fn validate_lifecycle_transition(event_type: &str, lifecycle: &str) -> Result<()
         | "disposition"
         | "scientific_approval"
         | "reproduction_approval"
-        | "steward_approval" => lifecycle == "IN_REVIEW",
+        | "steward_approval"
+        | "return_to_draft" => lifecycle == "IN_REVIEW",
         "withdrawal" | "supersession" => matches!(lifecycle, "IN_REVIEW" | "APPROVED"),
         "release_transfer" => lifecycle == "APPROVED",
         _ => false,
@@ -1663,6 +1760,33 @@ fn apply_review_entry(report: &mut serde_yaml::Value, request: &V2LifecycleReque
     Ok(())
 }
 
+fn apply_return_to_draft(
+    report: &mut serde_yaml::Value,
+    request: &V2LifecycleRequest,
+) -> Result<()> {
+    reset_report_to_draft(report)?;
+    let mapping = report
+        .as_mapping_mut()
+        .ok_or_else(|| AssuranceError::Invalid("report is not an object".to_owned()))?;
+    let assistance = mapping
+        .get_mut(yaml_key("agent_assistance"))
+        .and_then(serde_yaml::Value::as_mapping_mut)
+        .ok_or_else(|| AssuranceError::Invalid("agent assistance is missing".to_owned()))?;
+    assistance.insert(
+        yaml_key("review_entry_authorized"),
+        serde_yaml::Value::Bool(false),
+    );
+    set_yaml_string(
+        assistance,
+        "human_disposition",
+        &format!(
+            "{} — {} ({}, {}).",
+            request.decision, request.rationale, request.principal_id, request.recorded_on
+        ),
+    );
+    Ok(())
+}
+
 fn apply_steward_approval(report: &mut serde_yaml::Value) -> Result<()> {
     let mapping = report
         .as_mapping_mut()
@@ -1798,7 +1922,8 @@ fn apply_release_transfer(
 fn lifecycle_bound_roots(event_type: &str, lock: &ReviewLock) -> Result<BTreeMap<String, String>> {
     let mut roots = BTreeMap::new();
     match event_type {
-        "review_entry" | "finding" | "disposition" | "withdrawal" | "supersession" => {
+        "review_entry" | "finding" | "disposition" | "return_to_draft" | "withdrawal"
+        | "supersession" => {
             roots.insert(
                 "content_review_subject_root".to_owned(),
                 lock.content_review_subject_root.clone(),
@@ -1898,15 +2023,20 @@ fn require_lifecycle_principal(root: &Path, principal_id: &str, event_type: &str
         .ok_or_else(|| AssuranceError::Invalid("principal kind is missing".to_owned()))?;
     if matches!(
         event_type,
-        "scientific_approval" | "reproduction_approval" | "steward_approval" | "release_transfer"
+        "scientific_approval"
+            | "reproduction_approval"
+            | "steward_approval"
+            | "release_transfer"
+            | "return_to_draft"
     ) && kind != "human"
     {
         return Err(AssuranceError::Invalid(
-            "approval and release-transfer authority requires a human principal".to_owned(),
+            "approval, return-to-draft, and release-transfer authority requires a human principal"
+                .to_owned(),
         ));
     }
     let required = match event_type {
-        "review_entry" | "withdrawal" | "supersession" => "report_lead",
+        "review_entry" | "return_to_draft" | "withdrawal" | "supersession" => "report_lead",
         "finding" | "disposition" => "reviewer",
         "scientific_approval" => "scientific_approver",
         "reproduction_approval" => "reproduction_approver",

@@ -456,6 +456,7 @@ fn validate_event_decision(event_type: &str, decision: &str) -> Result<()> {
             decision == "approved"
         }
         "withdrawal" => decision == "withdrawn",
+        "return_to_draft" => decision == "returned_to_draft",
         "supersession" => decision == "superseded",
         "release_transfer" => decision == "approved",
         "role_assignment" => decision == "roles_assigned",

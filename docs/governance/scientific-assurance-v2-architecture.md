@@ -121,11 +121,19 @@ One person may hold multiple maintenance roles in a small project, but the
 following incompatibilities are hard boundaries:
 
 - a report lead or material claim, dataset, method, result, table, or figure
-  producer cannot be the sole scientific approver;
+  producer is ineligible to serve as the scientific approver;
 - a report lead, material dataset/method/result producer, or assurance build
-  maintainer cannot be the sole reproduction approver for that material; and
-- no producer or build maintainer may be the sole authority waiving review
+  maintainer is ineligible to serve as the reproduction approver for that
+  material; and
+- no producer or build maintainer may serve as the authority waiving review
   after a material dependency change.
+
+These are flat exclusions in the current publication path, whose publication
+contract requires one active principal for each approval role and has no
+co-approver primitive. The
+older phrase "cannot be the sole approver" must not be read as permission for
+producer co-approval. Any quorum or co-approval design requires a separately
+governed schema, event, independence, and publication-contract extension.
 
 If the required independent person is unavailable, the report remains in
 review; resource scarcity does not convert self-review into independence.

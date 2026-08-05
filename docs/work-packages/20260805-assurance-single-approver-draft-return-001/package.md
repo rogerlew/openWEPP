@@ -7,8 +7,9 @@ This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 ## Purpose
 
 Remove the ambiguity between governance prose and the v2 assurance event
-model. The current model has exactly one scientific approver and one
-reproduction/publication approver, with no co-approver primitive. Therefore a
+model. The current publication contract requires exactly one scientific
+approver and one reproduction/publication approver, with no co-approver
+primitive. Therefore a
 report lead, applicable material producer, or applicable build maintainer is
 ineligible for the corresponding approval role; "not the sole approver" must
 not imply that producer co-approval is representable.
@@ -57,13 +58,17 @@ the assurance in draft.
 - `docs/governance/scientific-assurance-v2-architecture.md`
 - `docs/governance/scientific-assurance-v2-source-build-contract.md`
 - `docs/governance/scientific-assurance-dossier-lifecycle.md`
+- `docs/specifications/assurance-amendment-and-identity-workflow.md`
 - `docs/ROADMAP.md`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260805-assure06-snow-frost-flagship-refresh-001/**`
 - `docs/work-packages/20260805-assurance-single-approver-draft-return-001/**`
 - `crates/openwepp-assurance/src/v2/amendment.rs`
+- `crates/openwepp-assurance/src/v2/identity.rs`
 - `crates/openwepp-assurance/src/v2/lifecycle.rs`
 - `crates/openwepp-assurance/src/v2/publication.rs`
+- `assurance/v2/README.md`
+- `assurance/v2/schemas/review-event.schema.json`
 - `tests/integration/assurance_v2_amendment_contract.rs`
 - `tests/integration/assurance_v2_lifecycle_contract.rs`
 - `tests/integration/assurance_v2_source_contract.rs`
@@ -84,22 +89,26 @@ typed assurance CLI.
   producers, or independence claim while the immutable return event records
   why the prior review root ceased to be active.
 - Named and all-report validation/plan pass; public report count remains zero.
-- Formatting, warnings-denied Clippy, doctests, quick profile, documentation
-  lint, American-English preview, path checks, and `git diff --check` pass.
+- Formatting, warnings-denied Clippy, doctests, quick profile, immediate
+  full-workspace correctness regression, documentation lint, American-English
+  preview, path checks, and `git diff --check` pass.
 - Dual independent Rust/governance review and dual terminal verification.
 
 ## Subagent Authorization
 
-This package explicitly authorizes one read-only Rust correctness reviewer,
-one read-only assurance-governance/QA reviewer, and two read-only terminal
-verifiers. No reviewer may edit files, create approval authority, or publish.
+This package explicitly authorizes subagent spawning/delegation to one
+read-only Rust correctness reviewer, one read-only assurance-governance/QA
+reviewer, two read-only terminal verifiers, and one read-only
+`comparator_suite_runner` for the required full-workspace correctness run. No
+reviewer or runner may edit tracked files, create approval authority, or
+publish.
 
 ## Progress
 
 - [x] (2026-08-05) User identified the policy/tooling mismatch and directed
   explicit language plus DRAFT posture.
-- [x] (2026-08-05) Confirmed the event model enforces one distinct human per
-  approval role and has no return-to-draft transition.
+- [x] (2026-08-05) Confirmed the publication contract enforces one distinct
+  human per approval role and the lifecycle had no return-to-draft transition.
 - [x] (2026-08-05) Scaffolded this package before implementation edits.
 - [ ] Implement and test policy/tooling reconciliation.
 - [ ] Apply typed return-to-draft event and validate exact projections.
