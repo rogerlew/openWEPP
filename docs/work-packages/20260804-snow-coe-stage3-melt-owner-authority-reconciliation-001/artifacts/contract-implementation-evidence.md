@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: candidate complete
+Status: reviewed pass
 
 Evidence mode: Static
 
@@ -17,4 +17,8 @@ After frozen adjudication selected `STAGE3_MELT_OWNER_ADMITTED`:
 - The lifecycle index records both amended versions and their static authority
   posture.
 
-Candidate commit: `ec7cdbe06e813cec8f33e733041038961ba0fd1e`.
+Initial candidate commit: `ec7cdbe06e813cec8f33e733041038961ba0fd1e`.
+Review remediation is included through `d0931911`, and both independent
+science reviewers pass the resulting v7/v126 contracts without remaining
+findings. The current runtime remains explicitly nonconformant to the admitted
+future target and is not changed by this evidence.

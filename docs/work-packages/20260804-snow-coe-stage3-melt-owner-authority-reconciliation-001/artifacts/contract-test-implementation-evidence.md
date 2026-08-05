@@ -12,4 +12,5 @@ compatibility-owner phrase.
 
 No unrelated assertion or executable behavior test was removed. Ran:
 `cargo nextest run --test snow_surface_eb03_contract` passed 11/11 at candidate
-commit `ec7cdbe0`.
+commit `ec7cdbe0`. After review remediation and global version-token repair,
+the same command passed 11/11 at `37442718`.

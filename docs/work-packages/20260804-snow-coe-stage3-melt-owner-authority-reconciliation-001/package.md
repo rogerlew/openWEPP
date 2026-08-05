@@ -1,6 +1,6 @@
 # SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION
 
-Status: `scaffolded / authority freeze complete / execution queued`
+Status: `executed / authority admitted / hold-assurance-refresh`
 
 Date: `2026-08-04`
 
@@ -245,15 +245,17 @@ exact diff, update roadmaps/catalog, and commit truthful closure.
 - Production Rust, fixtures, references, selectors, and public schemas are
   byte-identical.
 - Focused contract test, formatting, contract/schema/documentation checks,
-  quick/frost profiles, and critical full-workspace correctness pass as
-  selected by the critical authority-change classification.
+  quick/frost profiles, and critical full-workspace correctness are executed
+  directly; any fail-closed downstream assurance invalidation is retained as a
+  package hold rather than repaired outside the write set.
 - No external-authority suite posture, cohort fixture, or required-case binding
   changes; anti-evasion gates are required only if terminal diff contradicts
   this declaration.
 - Exact terminal diff stays inside the intended write set; changed `.rs` line
   counts are dispositioned and no production `.rs` file changes.
-- Dual reviews, finding disposition, dual verification, gate legitimacy,
-  prompt archive, security assessment, and truthful status all pass.
+- Dual reviews, finding disposition, dual verification of the held terminal
+  state, gate legitimacy, prompt archive, security assessment, and truthful
+  status are required before disposition.
 
 ## Security And Data Impact
 
@@ -268,9 +270,17 @@ fixture, provider, or public-output surface.
   documentation instructions before edits.
 - [x] (2026-08-04) Froze the authority inputs and outcome matrix before
   result-bearing adjudication.
-- [ ] Commit the scaffold checkpoint.
-- [ ] Complete authority adjudication and canonical amendments.
-- [ ] Complete dual review, direct validation, dual verification, and closure.
+- [x] (2026-08-04) Committed the scaffold checkpoint as `36c9a7c8`.
+- [x] (2026-08-04) Selected `STAGE3_MELT_OWNER_ADMITTED`, amended both
+  contracts, and completed dual independent science review with no remaining
+  findings.
+- [x] (2026-08-04) Reconciled 35 stale version assertions in 34 additional
+  integration tests without changing behavioral expectations.
+- [x] (2026-08-04) Ran focused and Critical validation; focused authority,
+  frost, formatting, clippy, and doctest gates pass.
+- [x] (2026-08-04) Archived the frozen prompt byte-identically.
+- [ ] Complete dual terminal verification of the truthful assurance-held
+  disposition.
 
 ## Surprises & Discoveries
 
@@ -311,12 +321,40 @@ fixture, provider, or public-output surface.
   Rationale: the exact diff changes production process authority even though
   production source remains byte-identical.
   Date/Author: 2026-08-04 / Codex.
+- Decision: select `STAGE3_MELT_OWNER_ADMITTED` with current-runtime
+  `IMPLEMENTATION_HOLD`.
+  Rationale: the post-2007 CoE claim lacks specific independent validation and
+  an enforceable envelope, while admitted energy/mass authority supports a
+  bounded single-owner Stage 3 target with explicit unresolved implementation
+  guards.
+  Date/Author: 2026-08-04 / Codex after dual independent science review.
+- Decision: hold terminal closure for `ASSURE-06` refresh.
+  Rationale: the amended contract correctly invalidates the locked snow/frost
+  report. Rewriting assurance identity or review evidence here would exceed
+  package authority and misrepresent scientific review currency.
+  Date/Author: 2026-08-04 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued pending frozen-matrix adjudication.
+The frozen matrix admitted Stage 3 as the future sole melt owner and removed
+target authority from the empirical CoE generator without changing current
+runtime bytes. Both independent science reviewers pass the v7/v126 amendment,
+including exact energy, solid-mass, and liquid-mass ledgers; sublimation-first
+available-ice bounds; same-substep refreeze symmetry; explicit remaining-energy
+and thin-pack holds; and global prospective supersession.
+
+Focused authority verification passes 47/47, the contract test passes 11/11,
+and frost passes 358/358. Canonical quick/full fail solely because the locked
+assurance report retains the prior contract hash. That is a successful
+fail-closed safeguard and a real terminal hold, not a reason to rewrite
+scientific review artifacts. The authority reconciliation is executed; the
+package is not closure-eligible until accountable `ASSURE-06` refresh.
 
 ## Revision Note
 
 2026-08-04: Initial scaffold created from the roadmap-authorized 21N objective
 and the verified 21M handoff.
+
+2026-08-04: Selected and reviewed `STAGE3_MELT_OWNER_ADMITTED`, reconciled
+global contract-version guards, archived the prompt, executed Critical gates,
+and recorded the fail-closed `ASSURE-06` terminal hold.
