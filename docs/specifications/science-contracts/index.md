@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-07-17
+Last updated: 2026-08-04
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -59,8 +59,8 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 | `SC-ROUTE-001` | Watershed Routing and Channel Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md` | `static` | `2026-07-10` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-RUNOFFPART-001` | Surface Runoff Partition Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md` | `static` | `2026-06-14` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-SED-001` | Hillslope Erosion Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SED-001.md` | `static` | `2026-08-02` |  | Revision 60 completes the EB-04W2C profile/readiness schema and semantic Binding Exposure Index; amendment history lives in the canonical contract. |
-| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `in_review` | `draft` | openWEPP maintainers + snow-process reviewer | `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md` | `runtime` | `2026-07-31` |  | v5 retains v4 thermal-domain closure and separates represented density-layer mass lifecycle from independent meter-unit aggregate residual tolerances; EB-04D runtime review and verification pass. |
-| `SC-SNOWFREEZE-001` | Snow and Freeze Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md` | `static` | `2026-08-04` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
+| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `in_review` | `draft` | openWEPP maintainers + snow-process reviewer | `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md` | `static` | `2026-08-04` |  | v7 admits Stage 3 as the sole future melt owner and records the unchanged CoE runtime as compatibility-only under an atomic implementation hold. |
+| `SC-SNOWFREEZE-001` | Snow and Freeze Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md` | `static` | `2026-08-04` |  | v126 binds the Stage 3 future melt owner, no-dual-owner rule, same-substep liquid chronology, and current-runtime implementation hold. |
 | `SC-SOIL-001` | Soil State and Erodibility Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SOIL-001.md` | `static` | `2026-05-31` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-SUBHYD-001` | Subsurface Hydrology and Drainage Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md` | `static` | `2026-06-18` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-SYSTEM-001` | System Integration Boundary and Watershed Assembly Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md` | `static` | `2026-06-14` |  | Lifecycle-only row; amendment history lives in the canonical contract. |

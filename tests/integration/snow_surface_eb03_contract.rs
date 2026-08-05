@@ -17,7 +17,7 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     let freeze = read(SNOW_FREEZE_CONTRACT);
 
     for required in [
-        "contract_version: 6",
+        "contract_version: 7",
         "INV-SNOWENERGY-015",
         "INV-SNOWENERGY-016",
         "INV-SNOWENERGY-017",
@@ -31,6 +31,12 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
         "INV-SNOWENERGY-025",
         "INV-SNOWENERGY-026",
         "INV-SNOWENERGY-027",
+        "INV-SNOWENERGY-029",
+        "INV-SNOWENERGY-030",
+        "OBL-SNOWENERGY-P-006",
+        "OBL-SNOWENERGY-C-013",
+        "stage3_melt_owner_status = AUTHORITY_ADMITTED_IMPLEMENTATION_HOLD",
+        "m_melt = min(Q_excess/L_f, m_ice,available)",
         "KTS+efcon",
         "snow_active_lower_conduction_w_m2",
         "layered_thermal_liquid_v1",
@@ -46,14 +52,18 @@ fn eb03_contract_binds_provider_selectors_and_exact_one_exchange() {
     }
 
     for required in [
-        "contract_version: 125",
+        "contract_version: 126",
         "INV-SNOWFREEZE-085",
         "INV-SNOWFREEZE-086",
         "OBL-SNOWFREEZE-P-059",
         "OBL-SNOWFREEZE-P-060",
+        "INV-SNOWFREEZE-093",
+        "OBL-SNOWFREEZE-P-066",
         "snow_surface_longwave_model",
         "snow_sublimation_model",
-        "positive excess does not replace CoE melt",
+        "Stage 3 is the sole admitted future melt owner",
+        "CoE plus Stage 3 may never generate melt simultaneously",
+        "21N authorizes no runtime change by itself",
     ] {
         assert!(
             freeze.contains(required),
@@ -89,7 +99,7 @@ fn eb04c_contract_binds_exact_minimum_resolved_thermal_domain() {
         "m_v = m_sub = 0",
         "G_0 = Q_E = 0",
         "INV-SNOWENERGY-026",
-        "CoE remains authoritative",
+        "compatibility runtime owner",
     ] {
         assert!(energy.contains(required), "contract missing {required}");
     }

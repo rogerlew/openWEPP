@@ -1,7 +1,42 @@
 {
   "schema_version": 1,
-  "status": "QUEUED",
-  "evidence_class": "not-run",
-  "selected_outcome": null,
-  "predicate_results": {}
+  "status": "ADJUDICATED",
+  "evidence_class": "Static",
+  "selected_outcome": "STAGE3_MELT_OWNER_ADMITTED",
+  "runtime_disposition": "IMPLEMENTATION_HOLD",
+  "predicate_results": {
+    "coe_specific_independent_validation": false,
+    "coe_enforceable_transferability_envelope": false,
+    "coe_no_material_single_owner_or_conservation_conflict": false,
+    "independent_positive_energy_to_bounded_melt_authority": true,
+    "reproducible_stage3_solid_liquid_routing_chronology": true,
+    "dual_owner_allowed": false
+  },
+  "current_runtime": {
+    "melt_owner": "post_2007_coe_compatibility",
+    "stage3_positive_energy_conversion": false,
+    "runtime_changed_by_package": false,
+    "conforms_to_target": false
+  },
+  "target": {
+    "sole_melt_owner": "stage3_energy_mass_control_volume",
+    "cold_content_first": true,
+    "melt_equation": "m_melt=min(Q_excess/L_f,m_ice_available)",
+    "same_substep_liquid_disposition": true,
+    "simultaneous_coe_stage3_generation": false
+  },
+  "mandatory_holds": [
+    "complete sensible heat wiring",
+    "complete precipitation-advected heat wiring",
+    "complete ground and interlayer energy accounting",
+    "exact residual-snow phase disposition at m_s <= 1 kg m^-2",
+    "same-substep refreeze retention and routing",
+    "independent energy solid-to-liquid and liquid-disposition closure",
+    "atomic selector default rollback and real-consumer cutover"
+  ],
+  "rejected_outcomes": {
+    "BOUNDED_COE_RETAINED": "specific validation and enforceable post-2007 envelope predicates failed",
+    "CURRENT_DUAL_OWNER_ALLOWED": "prohibited by the frozen exact-one-owner rule",
+    "AUTHORITY_UNRESOLVED": "pinned energy balance and mass-balance sources support a reproducible Stage3 target chronology"
+  }
 }
