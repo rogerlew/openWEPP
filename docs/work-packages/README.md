@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260804-snow-warm-mixed-coe-physics-authority-audit-001/` — ACTIVE / 21M
+  READ-ONLY AUTHORITY AUDIT: maps Chapter 3, pinned post-2007 legacy CoE,
+  current Rust, and independent surface-energy authority; reconstructs exact
+  warm/mixed empirical subcomponents from 21L without rerunning or tuning the
+  model; and admits no correction before dual-reviewed authority disposition.
+
 - `20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/` — COMPLETE /
   MULTIFACTOR WARM/MIXED AND STATE SIGNAL / REVIEW AND VERIFICATION PASS:
   corrected loss is concentrated on warm/mixed days at all four canonical

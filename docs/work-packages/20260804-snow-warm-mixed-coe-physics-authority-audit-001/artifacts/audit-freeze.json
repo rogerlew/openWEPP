@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "status": "frozen_before_result_execution",
+  "evidence_mode": "Static + Ran",
+  "frozen_at_utc": "2026-08-05T04:25:28Z",
+  "openwepp_source_head": "ae3f49a3684b3da35a35a2250ee362e147259b09",
+  "openwepp_dirty_state_at_freeze": "package scaffold plus three declared catalog/roadmap paths only",
+  "production_correction_authorized": false,
+  "result_population": "canonical_21l_only",
+  "dispositions": [
+    "CURRENT_AUTHORITY_SUFFICIENT",
+    "RUST_TRANSCRIPTION_DEFECT",
+    "BASELINE_FIDELITY_WITH_AUTHORITY_GAP",
+    "UNRESOLVED_EVIDENCE"
+  ],
+  "quantitative_rules": {
+    "authority": "package.md#prospective-quantitative-audit-contract",
+    "canonical_roles": ["CANONICAL"],
+    "thermal_classes": ["mixed_day", "warm_day"],
+    "eligible_hour_required": true,
+    "join_key": ["lane", "date"],
+    "absolute_reconstruction_tolerance_m": 1e-12,
+    "water_density_kg_m3": 1000.0,
+    "latent_heat_fusion_j_kg": 333550.0,
+    "hour_seconds": 3600.0,
+    "magnitude_constants_role": "ASSUMED_FOR_DIMENSIONAL_AUDIT",
+    "numeric_handbook_counterfactual_authorized": false
+  },
+  "pinned_legacy": {
+    "repository": "/workdir/wepp-forest_260430_baseline",
+    "commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "path": "src/melt.for",
+    "sha256": "475e6f89ccc6df1e103c1702d083cc47cef742bcba151ec4a05c32c49c04b7aa",
+    "size_bytes": 9901,
+    "read_method": "git show <commit>:src/melt.for"
+  },
+  "rejected_legacy_convenience_surface": {
+    "worktree_head": "2f65506d239b449bbb73c6820ff9cb949fa55158",
+    "worktree_melt_sha256": "e5864334d71cf9cc59d6cf5aa0b6fe5df2d1c65fc76f37139c93e000c506dbd6",
+    "reason": "clean worktree is not the normative pinned commit; it adds ten observe-only lines"
+  },
+  "inputs": {
+    "chapter3": {
+      "path": "references/50201000/chap3.pdf",
+      "sha256": "ffd628a5f759b8fdb476e35bb542742c67e705407f9f42a8c4d133e181c5db43",
+      "size_bytes": 75346
+    },
+    "marks1998": {
+      "path": "references/copyrighted/source_pdfs/marks1998.pdf",
+      "sha256": "693028bee2b6967df29eafcbc19e310e038cbecfaa7aebd0d5437e866b2c786c",
+      "size_bytes": 1794603
+    },
+    "marks1999": {
+      "path": "references/copyrighted/marks1999.pdf",
+      "sha256": "cd9660a359a1176defada3aa6e213ed2a53d2a8cabc0689fcd33c0b4e6a4d311",
+      "size_bytes": 2717243
+    },
+    "ohmura2001": {
+      "path": "references/copyrighted/Ohmura2001_meltindex.pdf",
+      "sha256": "57b06ebea52b5ebc15c4278ea79244afb2ddf1efe946858eaa96ddfe33a0dd97",
+      "size_bytes": 104174
+    },
+    "walter2005": {
+      "path": "references/copyrighted/walter2005.pdf",
+      "sha256": "e77fe939ee3d821047840a6b79e671d03f63c804a8bd7e8d0f1fda0b2514069d",
+      "size_bytes": 264529
+    },
+    "snowfreeze_contract": {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "sha256": "c986822b5c7dfd1803b57ae24e346c6f868b0c51ac2f6069755da77e81d0d13b",
+      "size_bytes": 526407
+    },
+    "snowenergy_contract": {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+      "sha256": "364a2bad34235c105cc4b47be50e12ca34e0b9e27b2aa2fd0c6842681670ab72",
+      "size_bytes": 73637
+    },
+    "rust_constants": {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+      "sha256": "c53ff2a5db75dc88e1f69b577419ef8ca52ceec0d15df3a5f241e461cef1eeb7",
+      "size_bytes": 32737
+    },
+    "rust_coe_and_caller": {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs",
+      "sha256": "e0f8ccaed56bc37f188c82cc5a73642409b8dfc849c3ea6bccb31b759c7206d2",
+      "size_bytes": 95723
+    },
+    "rust_hourly_forcing": {
+      "path": "crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs",
+      "sha256": "011f3195149c133a021821637e1cf2daf3bcd1df1f2e630daa76bd72fd3e068b",
+      "size_bytes": 45223
+    },
+    "predecessor_receipt": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/artifacts/execution-receipt.json",
+      "sha256": "049210d83bb91b99497794e65002501de65296a1cc8398a9c3305705e02d1a12",
+      "size_bytes": 1595
+    },
+    "predecessor_synthesis": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-prepeak-loss-energy-attribution-001/artifacts/scientific-synthesis.md",
+      "sha256": "b3085e2fd87d711aa784f164ad5e23d12ca0a9a987ca788e8cc6731b99c50197",
+      "size_bytes": 4264
+    },
+    "daily_table": {
+      "path": "target/snow_warm_mixed_prepeak_loss_energy_attribution_v2/tables/daily-attribution.csv",
+      "sha256": "28ef43fc2e2cac85e418c2f60c874d64be01894eaafac959b350f0b143474b78",
+      "size_bytes": 20851918
+    },
+    "hourly_table": {
+      "path": "target/snow_warm_mixed_prepeak_loss_energy_attribution_v2/tables/hourly-classification.csv",
+      "sha256": "72ef85b96064b004df848b2588a819cba161e3662ad1c6de0c43388b5e276d3c",
+      "size_bytes": 244070033
+    }
+  }
+}
