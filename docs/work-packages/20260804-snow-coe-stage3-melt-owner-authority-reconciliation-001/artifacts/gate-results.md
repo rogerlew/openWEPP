@@ -18,11 +18,19 @@ Heavy-suite source identity:
   1917 skipped, in 558.186 s.
 - `cargo test --doc --workspace`: PASS, zero doctests, in 6.030 s.
 - `cargo nextest run --test snow_surface_eb03_contract`: PASS, 11/11.
-- `.venv/bin/python -m pytest -q <package>/tools/test_verify_authority_decision.py`:
+- `.venv/bin/python -m pytest -q
+  docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/tools/test_verify_authority_decision.py`:
   PASS, 2/2.
-- `.venv/bin/python <package>/tools/verify_authority_decision.py`: PASS,
-  47/47 frozen, authority, chronology, contract, test, source-identity, and
-  prompt checks.
+- `.venv/bin/python
+  docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/tools/verify_authority_decision.py
+  --root . --freeze
+  docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/artifacts/authority-freeze.json
+  --decision
+  docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/artifacts/authority-decision.json
+  --output
+  target/snow_coe_stage3_melt_owner_authority_reconciliation/authority-verification.json`:
+  PASS, 47/47 frozen, authority, chronology, contract, test, source-identity,
+  and prompt checks.
 - `cargo nextest run --workspace --profile quick --filterset
   'test(.*) - test(/assurance_v2_/)' --no-run`: PASS filter-expression
   validation. This is not reported as a correctness run.

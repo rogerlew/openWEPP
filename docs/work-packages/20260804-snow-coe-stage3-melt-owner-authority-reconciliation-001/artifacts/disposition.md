@@ -18,7 +18,8 @@ ledger, selector/default/rollback, and real-consumer obligations before it
 retires CoE in the same stable increment.
 
 Package disposition: authority adjudication and contract review PASS; terminal
-closure HOLD. Canonical quick/full correctly reject the stale locked snow/frost
+verification PASS for the held state; closure HOLD. Canonical quick/full
+correctly reject the stale locked snow/frost
 assurance report after the contract hash changed. `ASSURE-06` must refresh the
 scientific manuscript, establish a new exact review root, and complete its
 accountable review lifecycle. This package does not mutate assurance evidence

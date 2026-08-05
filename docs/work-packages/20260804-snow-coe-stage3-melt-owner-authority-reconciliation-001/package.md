@@ -279,8 +279,8 @@ fixture, provider, or public-output surface.
 - [x] (2026-08-04) Ran focused and Critical validation; focused authority,
   frost, formatting, clippy, and doctest gates pass.
 - [x] (2026-08-04) Archived the frozen prompt byte-identically.
-- [ ] Complete dual terminal verification of the truthful assurance-held
-  disposition.
+- [x] (2026-08-04) Completed dual terminal verification of the truthful
+  assurance-held disposition; both verifiers pass with no remaining findings.
 
 ## Surprises & Discoveries
 
@@ -348,7 +348,8 @@ and frost passes 358/358. Canonical quick/full fail solely because the locked
 assurance report retains the prior contract hash. That is a successful
 fail-closed safeguard and a real terminal hold, not a reason to rewrite
 scientific review artifacts. The authority reconciliation is executed; the
-package is not closure-eligible until accountable `ASSURE-06` refresh.
+package is not closure-eligible until accountable `ASSURE-06` refresh. Both
+terminal verifiers pass this held disposition with no remaining findings.
 
 ## Revision Note
 
