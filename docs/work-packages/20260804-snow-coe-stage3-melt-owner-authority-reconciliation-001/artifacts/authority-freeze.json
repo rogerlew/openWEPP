@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_BEFORE_ADJUDICATION",
+  "evidence_class": "Static",
+  "openwepp_source_head": "4c205c3c4f84a1f900710caefe3334dd69797ec3",
+  "pinned_libsnobal_commit": "bf8b41c71e3e54ae654ae04005ddf72566c47ee6",
+  "inputs": {
+    "snowfreeze_contract": {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "sha256": "c986822b5c7dfd1803b57ae24e346c6f868b0c51ac2f6069755da77e81d0d13b"
+    },
+    "snowenergy_contract": {
+      "path": "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+      "sha256": "364a2bad34235c105cc4b47be50e12ca34e0b9e27b2aa2fd0c6842681670ab72"
+    },
+    "contract_index": {
+      "path": "docs/specifications/science-contracts/index.md",
+      "sha256": "f248118395c692545205e594b2d9bcda985db2b6adc372a86af697cc5361c618"
+    },
+    "contract_test": {
+      "path": "tests/integration/snow_surface_eb03_contract.rs",
+      "sha256": "a30d4fe9f810b212850b55255d404b3d7b2883289446e4deab297bcc50261e25"
+    },
+    "stage3_source": {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+      "sha256": "23640dae3dcf8a5197f4bf4aafc1ac0045e82463130de4630e7cc1843fa7b3a3"
+    },
+    "coe_source": {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs",
+      "sha256": "e0f8ccaed56bc37f188c82cc5a73642409b8dfc849c3ea6bccb31b759c7206d2"
+    },
+    "21m_integrated_audit": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/integrated-audit.md",
+      "sha256": "9bb06cca27ddeeb488de9efb3fb7ff8c676676e13f75f7e5f08f0d1be5c021b2"
+    },
+    "21m_lineage": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/authority-lineage-map.md",
+      "sha256": "d45822e746714a8311f89e1859ecf0c33d83dafd5877f3e1a5ca3825946a169f"
+    },
+    "21m_chronology": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/formula-chronology-audit.md",
+      "sha256": "4d9214349d626e9eb342e903122135638d4e2fbefeb1adcfea8e7bfc5c443804"
+    },
+    "21m_physical_matrix": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/physical-authority-matrix.md",
+      "sha256": "8fc747437455fe28c323b7d88261ad7ec978e0f3513c651a085de1c0d01c5ef9"
+    },
+    "21m_quantitative_result": {
+      "path": "docs/work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/artifacts/quantitative-audit.json",
+      "sha256": "32cf0dcb74218521d4defb777a2f08297a091cf680b56807b9e1ff5d1e5539c2"
+    }
+  },
+  "git_blob_inputs": {
+    "libsnobal_snowmelt": {
+      "path": "pysnobal/c_snobal/libsnobal/_snowmelt.c",
+      "sha256": "d6599301dd890a9457c240bcb4b2c890b552529ec9928d4410d850ff54c4058a",
+      "size_bytes": 3340
+    },
+    "libsnobal_energy_balance": {
+      "path": "pysnobal/c_snobal/libsnobal/_e_bal.c",
+      "sha256": "3361bba74ae4d917ca42eae86d825eebb71c7cf7fcb1f8cfa5043c7ac7e0c660",
+      "size_bytes": 1555
+    },
+    "libsnobal_precipitation_advection": {
+      "path": "pysnobal/c_snobal/libsnobal/_advec.c",
+      "sha256": "00314db933c463460ee020eb24d30d89cf73c1753c54612ae3b99851e5c90297",
+      "size_bytes": 722
+    },
+    "libsnobal_mass_balance": {
+      "path": "pysnobal/c_snobal/libsnobal/_mass_bal.c",
+      "sha256": "76d90791946e4e121e04c3ee98612b56dcbd6cbed8ab3fda2b7ecd261097da07",
+      "size_bytes": 1449
+    },
+    "libsnobal_runoff": {
+      "path": "pysnobal/c_snobal/libsnobal/_runoff.c",
+      "sha256": "bc36bb6f0c1b9ead2fc0ef71128b11f1dfea5cf4103941e6a128f1053ea50f00",
+      "size_bytes": 1510
+    }
+  },
+  "outcome_matrix": {
+    "BOUNDED_COE_RETAINED": [
+      "specific independent validation of material post-2007 formula",
+      "enforceable meteorological canopy pack-state and chronology envelope",
+      "no material single-owner or conservation conflict"
+    ],
+    "STAGE3_MELT_OWNER_ADMITTED": [
+      "BOUNDED_COE_RETAINED predicates fail",
+      "independent authority converts positive post-cold-content energy to bounded melt",
+      "one reproducible Stage3 solid-to-liquid and liquid-routing chronology exists"
+    ],
+    "CURRENT_DUAL_OWNER_ALLOWED": [
+      "PROHIBITED: violates exact-one melt generation and mass-ledger authority"
+    ],
+    "AUTHORITY_UNRESOLVED": [
+      "neither a bounded CoE claim nor a reproducible Stage3 target chronology is supported"
+    ]
+  },
+  "prohibitions": [
+    "no result-aware outcome-rule changes",
+    "no production or fixture edits",
+    "no coefficient fitting or empirical substitution",
+    "no causal use of 21L observations",
+    "no simultaneous CoE and Stage3 melt generation",
+    "no activation or conformance claim before real-consumer implementation"
+  ]
+}

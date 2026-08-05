@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION` | Snow surface-energy-balance campaign | `next / 21N` | Contract-first decision on bounded empirical CoE sufficiency versus state-resolved Stage-3 melt ownership; prioritize the 2008 canopy branch, daily midpoint gate, embedded albedo lineage, and cold-content satisfaction without preselecting a correction. |
+| [`SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION`](work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/package.md) | Snow surface-energy-balance campaign | `active / scaffolded / 21N` | Frozen contract-first decision on bounded empirical CoE sufficiency versus state-resolved Stage-3 melt ownership; no runtime edit is authorized before canonical adjudication, review, and verification. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after 21N adjudicates the CoE/Stage-3 melt-owner authority seam, the scientific manuscript is refreshed against 21K-21M and the admitted canopy/energy work, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 

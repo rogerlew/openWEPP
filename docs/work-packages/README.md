@@ -420,6 +420,12 @@
 
 State as of `2026-08-04 UTC`:
 
+- `20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` - ACTIVE
+  / SCAFFOLDED / AUTHORITY FROZEN: 21N owns the contract-first decision between
+  a defensibly bounded post-2007 CoE claim and future sole state-resolved Stage
+  3 melt ownership. Runtime code, defaults, fixtures, and public schemas remain
+  protected.
+
 - `20260804-snow-prepeak-mass-transition-physics-adjudication-001/` - COMPLETE /
   REVIEW AND VERIFICATION PASS: four exact-current fixtures support an
   upstream-generation investigation priority. Daily signed opportunity is
