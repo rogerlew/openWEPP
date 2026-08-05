@@ -773,6 +773,78 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
             && hour.shadow_latent_flux_w_m2.abs() > f64::EPSILON
             && hour.shadow_complete_energy_j_m2.abs() > f64::EPSILON
     }));
+    for hour in diagnostics
+        .hourly_surface_energy
+        .iter()
+        .filter(|hour| hour.shadow_complete_carrier_evaluated)
+    {
+        let reconstructed = hour.shadow_cold_energy_change_j_m2
+            + 333_550.0 * hour.shadow_melt_kg_m2
+            + hour.shadow_unallocated_after_exhaustion_j_m2;
+        assert!((hour.shadow_complete_energy_j_m2 - reconstructed).abs() <= 1.0e-6);
+        assert!(hour.shadow_energy_closure_residual_j_m2.abs() <= 1.0e-6);
+    }
+    assert!(diagnostics.shadow_maximum_energy_closure_residual_j_m2 <= 1.0e-6);
+}
+
+#[test]
+fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
+    let mut cold = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    cold.surface_energy_options.complete_carrier_shadow = true;
+    set_single_layer_mass(&mut cold, 0.50, -50.0);
+    cold.tmax_c = -50.0;
+    cold.tmin_c = -50.0;
+    cold.dewpoint_c = -60.0;
+    cold.surface_energy_options.daily_solar_radiation_mj_m2 = 0.1;
+    cold.hourly = [DirectSnowHourlyForcing {
+        radiation_mj_m2: 0.0,
+        air_temperature_c: -50.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    let cold_result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&cold)
+        .expect("cold-content shadow");
+    let cold_diagnostics = stage3_diagnostics(&cold_result);
+    assert!(
+        cold_diagnostics.shadow_melt_kg_m2 <= 1.0e-9,
+        "cold-pack numerical melt was {} kg m^-2",
+        cold_diagnostics.shadow_melt_kg_m2
+    );
+    assert!(cold_diagnostics.shadow_cold_energy_change_j_m2.abs() > f64::EPSILON);
+
+    let mut terminal = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    terminal.surface_energy_options.complete_carrier_shadow = true;
+    set_single_layer_mass(&mut terminal, 0.001_1, 0.0);
+    terminal.surface_energy_options.daily_solar_radiation_mj_m2 = 48.0;
+    terminal.hourly = [DirectSnowHourlyForcing {
+        radiation_mj_m2: 1_000.0,
+        air_temperature_c: 0.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    let mut terminal_baseline = terminal.clone();
+    terminal_baseline
+        .surface_energy_options
+        .complete_carrier_shadow = false;
+    let baseline_result =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&terminal_baseline)
+            .expect("terminal-energy authoritative baseline");
+    let terminal_result =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&terminal)
+            .expect("terminal-energy shadow");
+    let terminal_diagnostics = stage3_diagnostics(&terminal_result);
+    assert!(terminal_diagnostics.shadow_melt_kg_m2 > 0.0);
+    assert!(terminal_diagnostics.shadow_unallocated_after_exhaustion_j_m2 > 0.0);
+    assert!(terminal_diagnostics.shadow_maximum_energy_closure_residual_j_m2 <= 1.0e-6);
+    assert_eq!(
+        terminal_result.runtime_swe_after_m.to_bits(),
+        baseline_result.runtime_swe_after_m.to_bits(),
+        "shadow melt must not mutate authoritative SWE"
+    );
 }
 
 #[test]

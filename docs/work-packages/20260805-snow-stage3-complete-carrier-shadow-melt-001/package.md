@@ -96,18 +96,22 @@ today's carrier would exhaust `m_ice_available` and leave positive
 5. Persist internal diagnostic evidence sufficient to compare Stage 3 shadow
    chronology with authoritative CoE on the same substeps and accumulation
    windows.
-6. Prove exact noninterference: CoE remains the only mass-mutating melt owner
+6. Expose a default-off, diagnostic-only runner environment switch and trace
+   operands needed to execute and independently reconstruct the real Snowbird
+   shadow; this surface cannot select authoritative melt behavior.
+7. Prove exact noninterference: CoE remains the only mass-mutating melt owner
    and all established runtime/public outputs remain byte-identical.
-7. Evaluate the frozen predictions and seasonal carrier plausibility without
+8. Evaluate the frozen predictions and seasonal carrier plausibility without
    tuning to outcomes.
 
 ## Excluded Scope
 
 - Stage 3 authoritative melt conversion or CoE retirement.
 - Any dual-owner state mutation.
-- Selector, public-output, calibration, site-window, observation, or release
-  change. The version-8 typed CLIGEN geometry definitions are the sole
-  authorized default/input-contract change.
+- Authoritative selector, public-output, calibration, site-window, observation,
+  or release change. The version-8 typed CLIGEN geometry definitions are the
+  sole default/input-contract change; the new shadow switch and fields are
+  diagnostic-only and default off.
 - Treating shadow results as cutover authority when terminal energy, thin-pack,
   same-substep liquid, or real-consumer gates remain open.
 
@@ -124,7 +128,10 @@ today's carrier would exhaust `m_ice_available` and leave positive
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`
 - `crates/openwepp-meteorology/src/surface_energy.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs`
+- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
+- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`
 - `tests/integration/snow_surface_eb03_runtime.rs`
+- `tests/integration/snow_surface_eb03_contract.rs`
 - `tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs`
 - ignored evidence under `target/snow_stage3_complete_carrier_shadow_melt/`
 
@@ -193,8 +200,13 @@ may not edit tracked files or reinterpret frozen acceptance rules.
 - [ ] Reconstruct the Snowbird gate from retained operands; the supplied
   summary is frozen but its exact retained source artifact is not present.
 - [ ] Implement and validate the complete carrier.
-- [ ] Implement non-mutating shadow melt and linked ledgers.
-- [ ] Evaluate prospective directions and disposition all gates.
+- [x] Implemented a within-day sequential, non-mutating cold-content/melt
+  shadow with explicit fusion and terminal-energy operands; persistent
+  cross-day state and linked liquid disposition remain open.
+- [x] Reconstructed the real Snowbird primary windows and dispositioned the
+  seasonal carrier and terminal-energy gates as failed without tuning.
+- [ ] Evaluate chronology directions after persistent seasonal shadow state
+  and same-substep liquid disposition exist.
 
 ## Decision Log
 

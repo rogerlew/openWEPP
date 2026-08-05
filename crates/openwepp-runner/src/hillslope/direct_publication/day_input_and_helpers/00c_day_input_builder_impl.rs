@@ -5,6 +5,8 @@ const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODE
 const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str = "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
 const SNOW_SURFACE_LONGWAVE_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL";
 const SNOW_SURFACE_SUBLIMATION_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL";
+const SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV: &str =
+    "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW";
 
 #[derive(Clone, Debug)]
 struct CanopyResearchTraceConfig {
@@ -1338,6 +1340,11 @@ struct DirectSnowStage3HourlyTraceFields {
     lower_depth: String,
     lower_temperature: String,
     lower_cold_content: String,
+    shadow_complete_energy: String,
+    shadow_cold_energy_change: String,
+    shadow_melt: String,
+    shadow_terminal_energy: String,
+    shadow_energy_residual: String,
 }
 
 fn direct_snow_trace_stage3_hourly_fields(
@@ -1380,9 +1387,25 @@ fn direct_snow_trace_stage3_hourly_fields(
         lower_cold_content: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.lower_layer_cold_content_j_m2
         }),
+        shadow_complete_energy: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.shadow_complete_energy_j_m2
+        }),
+        shadow_cold_energy_change: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.shadow_cold_energy_change_j_m2
+        }),
+        shadow_melt: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.shadow_melt_kg_m2
+        }),
+        shadow_terminal_energy: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.shadow_unallocated_after_exhaustion_j_m2
+        }),
+        shadow_energy_residual: direct_snow_trace_hourly_values(diagnostics, |hour| {
+            hour.shadow_energy_closure_residual_j_m2
+        }),
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn direct_snow_trace_stage3_fields(
     outcome: &openwepp_hillslope_orchestrator::DirectSnowStage3Outcome,
     ledger: &openwepp_hillslope_orchestrator::DirectSnowLiquidDispositionLedger,
@@ -1420,6 +1443,18 @@ fn direct_snow_trace_stage3_fields(
 \"stage3_hourly_lower_depth_m\":{},\
 \"stage3_hourly_lower_temperature_c\":{},\
 \"stage3_hourly_lower_cold_content_j_m2\":{},\
+\"stage3_shadow_hourly_complete_energy_j_m2\":{},\
+\"stage3_shadow_hourly_cold_energy_change_j_m2\":{},\
+\"stage3_shadow_hourly_melt_kg_m2\":{},\
+\"stage3_shadow_hourly_terminal_energy_j_m2\":{},\
+\"stage3_shadow_hourly_energy_residual_j_m2\":{},\
+\"stage3_shadow_complete_energy_j_m2\":{},\
+\"stage3_shadow_cold_energy_change_j_m2\":{},\
+\"stage3_shadow_excess_energy_j_m2\":{},\
+\"stage3_shadow_sublimation_kg_m2\":{},\
+\"stage3_shadow_melt_kg_m2\":{},\
+\"stage3_shadow_unallocated_after_exhaustion_j_m2\":{},\
+\"stage3_shadow_maximum_energy_closure_residual_j_m2\":{},\
 \"stage3_latent_refreeze_energy_j_m2\":{},\
 \"stage3_cold_content_export_j_m2\":{},\
 \"stage3_mass_latent_identity_residual_j_m2\":{},\
@@ -1458,6 +1493,22 @@ fn direct_snow_trace_stage3_fields(
         hourly.lower_depth,
         hourly.lower_temperature,
         hourly.lower_cold_content,
+        hourly.shadow_complete_energy,
+        hourly.shadow_cold_energy_change,
+        hourly.shadow_melt,
+        hourly.shadow_terminal_energy,
+        hourly.shadow_energy_residual,
+        direct_production_trace_number(diagnostics.shadow_complete_energy_j_m2),
+        direct_production_trace_number(diagnostics.shadow_cold_energy_change_j_m2),
+        direct_production_trace_number(diagnostics.shadow_excess_energy_j_m2),
+        direct_production_trace_number(diagnostics.shadow_sublimation_kg_m2),
+        direct_production_trace_number(diagnostics.shadow_melt_kg_m2),
+        direct_production_trace_number(
+            diagnostics.shadow_unallocated_after_exhaustion_j_m2
+        ),
+        direct_production_trace_number(
+            diagnostics.shadow_maximum_energy_closure_residual_j_m2
+        ),
         direct_production_trace_number(diagnostics.latent_refreeze_energy_j_m2),
         direct_production_trace_number(diagnostics.cold_content_export_j_m2),
         direct_production_trace_number(
@@ -2048,6 +2099,28 @@ fn snow_surface_sublimation_model()
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_surface_sublimation_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOW_SURFACE_SUBLIMATION_MODEL_ENV} must be UTF-8"),
+        }),
+    }
+}
+
+fn snow_stage3_complete_carrier_shadow() -> Result<bool, HillslopeCliError> {
+    match std::env::var(SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "0" | "false" | "disabled" => Ok(false),
+            "1" | "true" | "enabled" => Ok(true),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_stage3_complete_carrier_shadow",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be enabled, disabled, true, false, 1, 0, or empty default, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => Ok(false),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_stage3_complete_carrier_shadow",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be UTF-8"
+            ),
         }),
     }
 }

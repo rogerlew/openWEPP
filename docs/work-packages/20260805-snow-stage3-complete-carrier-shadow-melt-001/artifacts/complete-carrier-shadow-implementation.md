@@ -11,6 +11,11 @@ authoritative compatibility result:
 - rain/snow precipitation-advected heat; and
 - active/lower conduction added to the shadow complete-energy ledger.
 
+Hourly precipitation totals are converted to a rate with the fixed
+`3600 s` hourly boundary and held across stability substeps. This prevents
+rain/snow mass and precipitation-advected heat from being integrated once per
+substep instead of exactly once per hour.
+
 The shadow uses the typed version-8 CLIGEN geometry. It fails closed when net
 longwave is absent, geometry is invalid, precipitation lacks hydrometeor
 temperature, or a typed meteorology primitive rejects its domain. The
