@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "operation": "lifecycle",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "ee780f10cdd4f4323b8b0e5b9cd15e6abd5a30137243b46f92a22c5f2289543e",
+  "new_generation_id": "f9884c0556bea183c9df5d084298d28a4b9243c75208c59591ab6c0f338de0ea",
+  "affected_reports": [
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/adaebc9577f04440dbfde53998e057ecb7ca3ee10b3d92cfcb003e6569c2e780.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json"
+  ],
+  "old_roots": {
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "d20c19b46a11a93703fbb60f16bbcc9d4ba56c4f5a2d42669212c80120df3244",
+      "communication_root": "b4840a80594022e11ad10082271e8c255f1ae12027d3e169c438798e7c998009",
+      "attribution_root": "abc680d4ca8a25f5a0f16b0e4691e87cfc17fc1a83621257c1b95ddac8339403",
+      "review_governance_root": "e8d823042d676aa9247004971575bfcf8ca8d3a2cc6e3ad0162599a5a3e4cb5b",
+      "content_review_subject_root": "91ac53ad93d44bb12a9dbf0558f437f8e3dd48415e1304a15468a2a7da0be731",
+      "finding_ledger_root": "769d5ecb718202bf2633751f3525d63a8fe4fbcc7f0df3db33bdced844d9e367",
+      "preapproval_realization_root": "207e06e50767da707764835adaa29940987caede54ce45e3905a9c72706474b0",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "new_roots": {
+    "snow-and-frozen-soil-process-evaluation": {
+      "science_root": "d20c19b46a11a93703fbb60f16bbcc9d4ba56c4f5a2d42669212c80120df3244",
+      "communication_root": "b4840a80594022e11ad10082271e8c255f1ae12027d3e169c438798e7c998009",
+      "attribution_root": "c05a07cb2f45d19fa7044e88206cc0c8a9ab5b54397de56e8de3ed101ebaf6a3",
+      "review_governance_root": "cfcb6193692e924970c33f62c71964e31f302c4c62579c14b577ca6252ef0c21",
+      "content_review_subject_root": "3ef6a5119a19dd129db7ae4732dd2d63978df86bde3bd412e987c2fb865c4ca9",
+      "finding_ledger_root": null,
+      "preapproval_realization_root": "9cd906afda5a83578f7dd1d1f64cbe5d7a1886b16b6c00b73813a6f8911afad4",
+      "pre_steward_approval_root": null,
+      "approval_lock_root": null,
+      "realization_root": null,
+      "release_transfer_root": null
+    }
+  },
+  "invalidated_authority": [
+    "prior_review_events:snow-and-frozen-soil-process-evaluation"
+  ],
+  "gate_ids": [
+    "assurance-amendment-governance-v1"
+  ],
+  "gate_argv": [
+    [
+      "cargo",
+      "nextest",
+      "run",
+      "--workspace",
+      "--profile",
+      "assurance-amendment"
+    ]
+  ]
+}

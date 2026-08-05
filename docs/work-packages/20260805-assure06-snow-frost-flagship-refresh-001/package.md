@@ -1,6 +1,6 @@
 # ASSURE-06 — Snow/Frost Flagship Authority Refresh
 
-Status: `HOLD-INDEPENDENT-HUMAN-REVIEW`
+Status: `DRAFT / review authority returned`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 Keep progress, discoveries, decisions, and outcomes current throughout
@@ -282,12 +282,13 @@ external `local_content`, and all corrected focused, amendment, quick, frost,
 and full-workspace gates pass. Internal science, reproduction/publication,
 Rust, and QA reviews pass without unresolved findings.
 
-Terminal disposition is held for independent human scientific and
-reproduction/publication review plus assurance-steward authority. Advancement
-from the intentionally null scientific-approver assignment also requires a
-separate governed assignment/reentry design. No release transfer, publication,
-cutover, efficacy, noninferiority, causation, default change, application
-fitness, or warm-maritime conifer transfer is claimed.
+On 2026-08-05 the accountable report lead directed that assurance remain in
+draft while approval-role governance was clarified. The typed
+`return_to_draft` event invalidated the active review entry without deleting
+its immutable history. The current lifecycle is `DRAFT`; no active review,
+approval, release, publication, cutover, efficacy, noninferiority, causation,
+default change, application-fitness, or warm-maritime conifer-transfer
+authority is claimed.
 
 Terminal verification found and closed one identity-bound README sentence that
 incorrectly generalized every tracked review state as `DRAFT`. Typed

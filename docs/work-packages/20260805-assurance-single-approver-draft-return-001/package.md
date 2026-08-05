@@ -1,6 +1,6 @@
 # Assurance Single-Approver Semantics And Draft Return
 
-Status: `scaffolded / authorized`
+Status: `executing / DRAFT returned / full gate incomplete`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
@@ -110,8 +110,16 @@ publish.
 - [x] (2026-08-05) Confirmed the publication contract enforces one distinct
   human per approval role and the lifecycle had no return-to-draft transition.
 - [x] (2026-08-05) Scaffolded this package before implementation edits.
-- [ ] Implement and test policy/tooling reconciliation.
-- [ ] Apply typed return-to-draft event and validate exact projections.
+- [x] (2026-08-05) Implement and test policy/tooling reconciliation.
+- [x] (2026-08-05) Implemented and focused-tested policy/tooling
+  reconciliation with accepted Rust and QA findings incorporated.
+- [x] (2026-08-05) Replayed the typed return-to-draft event after the canonical
+  reset correction at generation
+  `f9884c0556bea183c9df5d084298d28a4b9243c75208c59591ab6c0f338de0ea`.
+- [ ] Full-workspace correctness: the first run failed on two stale DRAFT
+  expectations; after correction, a rerun reached 208 passes with no organic
+  failures before operator interruption at 1,158.839 seconds. This is `NOT
+  RUN` to completion, not PASS, and prevents package closure.
 - [ ] Complete reviews, verification, and disposition.
 
 ## Decision Log
@@ -122,8 +130,16 @@ publish.
   Date/Author: 2026-08-05 / Codex.
 - Decision: preserve review history through a typed event rather than hand-edit
   the report back to DRAFT. Rationale: lifecycle history and generation
-  identity are governed evidence. Date/Author: 2026-08-05 / Codex.
+identity are governed evidence. Date/Author: 2026-08-05 / Codex.
+- Decision: do not treat an interrupted full-workspace run as closure evidence.
+  Rationale: 208 passing tests are partial evidence; 2,063 tests did not run.
+  Date/Author: 2026-08-05 / Codex.
 
 ## Outcomes
 
-Pending execution.
+The snow/frost flagship is a governed `DRAFT`; the prior review entry remains
+immutable invalidated history and public report count is zero. Focused review
+passes after correcting schema coverage, canonical reset, confined replay,
+event reachability, idempotence, and predecessor binding. The required full
+gate and terminal verification remain incomplete, so this package remains
+open while the report itself remains governed DRAFT.

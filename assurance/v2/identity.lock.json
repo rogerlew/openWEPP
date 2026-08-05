@@ -7,9 +7,9 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "fe9c554cba9b478508d0ebea97bd6d81a7262fc2d0d55f087cf1b429f6678c60",
+  "previous_generation_id": "ee780f10cdd4f4323b8b0e5b9cd15e6abd5a30137243b46f92a22c5f2289543e",
   "sources": {
-    "assurance/v2/README.md": "78b6c67d3fd22f910ca158b437e2f8e1423bdeccf494441641ea0127f5763906",
+    "assurance/v2/README.md": "44a10480c37ac73435885bad01d26688bcd8da43c749991a21fd68ac00bd5942",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
     "assurance/v2/principals.yaml": "3cf97c15f0c0cbd50d514caf95de2a79daa4ad096598b652236cced4add48ba5",
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/agent-assistance-packet.json": "bbe0a0734975c095ef0477d84955376f5a7d2fff013dc5fe065f48039449f974",
@@ -41,7 +41,7 @@
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/inputs/conservation-operands.json": "bc58d72901fd6967a82067a0aee1df71bfd2962475f978bcfd5fa8e358012f18",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md": "9f08f4a8dc9752aa1fbfd66639206b052074f42ecef4cb1b0c76d2c9c6b88400",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/procedures/reproduce_snow_frost_synthesis.py": "63fd14f184a8784382e78ab395e1cad6ec97da4bde37b85d01b7d97b9c5e1080",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml": "c63b706c8c6abe37abe59aff923e9c4ba1467b0cc5538d3501fff2939643f6f5",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml": "7fc8a1eee92e292c813766236d74a90f48f9642bf0a2a6953059aa15b7f3d32f",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/results/snow-frost-synthesis.json": "90cc97ff4893cc45fd478d16358c660a86eb20db3c989088b95758d697c7c0dd",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/276e8109b84c04c321d945131e82eed6a8a126e923a71d156aace17ae2eb919d.json": "6db25097453e6cde09b4da8e7691be2b09b2c1653d12d1fcfcd5aa652a8ee12c",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/280abe0783b37e691aa96f060b8b53b47152031c6fa8f4410727816a7f783e7d.json": "223477f4c951617e684598a99f4dcfa6a6f8afd611859235440b8c02c478a216",
@@ -49,6 +49,7 @@
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/57c395cf9cdfb90dbb17323dc97d2c8b1c337544abd67592d050d77b64dcdf09.json": "442dfcb56b2b1ebcc4137c44a1e47895e7f87e1f35f1fef3dec97d6d4f0481e7",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/721e38ad215b1ff748c7f2b837d104769ecae845f3560285638eb039d1d19eb6.json": "9a8a57c12dd171776c47f2e00c906b03397db3d69814005437f8a4d04bf654c5",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/abfccb371574165fee289a551520a562cbb70123eb2ef3d2a83a0be84a8a5e9a.json": "ef67a75e9181bda3b0bf10bb963fe0f50e428250258fc06cc0322ce0e81872b9",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/adaebc9577f04440dbfde53998e057ecb7ca3ee10b3d92cfcb003e6569c2e780.json": "41161206bccc1e263af4913b4852088c3c68943cc77af97cb000c14732c74b13",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/cb3aaf08a4d55c975897cace5cf9a02893e31ed9b10b11d1c5d885b44836bcff.json": "e150924953cd9a613c66b8befca72c326c8496ecf2758db8d5eb24b6f33f1687",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/d9f97e92ce13481bfc2190ddf2e370d8c84e0abec1b7717305615a15017c55c2.json": "03741129f005b23680bc0b2695d7928b47ab266d204e20768c2e552b7aeaa4d7",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/e62c4ff396367a530dec5bf24a5d07dd48928d6e7bbde1f2de94e1b46b93a6f4.json": "2eebbe27304648ef28431ebadcbc6ec3a841a57faaa7a5c68d220f920eab08f7",
@@ -60,7 +61,7 @@
     "assurance/v2/schemas/principals.schema.json": "b755eb70cbd8fcb8522f5fd09f553299eb23ac6975eac0e199fdb98e8752ff4b",
     "assurance/v2/schemas/report.schema.json": "4183e2db7e182d67a00de4ee38a55cb6801b82a5b7a3a0142f8501344ef325e6",
     "assurance/v2/schemas/result.schema.json": "417efb4dbf2d9209cff3c41f52eca2637325c667dccc7c3588d14a0e8dc673a4",
-    "assurance/v2/schemas/review-event.schema.json": "02e5bfe037efaad12210cf364622eaa3a2e9d754b2eb1051283091af04019ec5",
+    "assurance/v2/schemas/review-event.schema.json": "03dfc7c3e2f2ca729cb332b1568e6fa13a959c89f7a87ab436992849c66cb870",
     "assurance/v2/schemas/review-lock.schema.json": "f779e3b097603f407d8cb19e0a9df49e4bc1a0086bc318e52548f261c2a100c8",
     "assurance/v2/schemas/transaction-receipt.schema.json": "1574237115b58790adcedec5d03bbadf6a9b857d4cc488d358e3063b7ccdb7e8",
     "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs": "92674b52f7edd4ec67acd07a9069be9de4cfec6512f7c47e19d03f228746cb14",
@@ -132,9 +133,9 @@
     "usersum/openwepp-canopy-phenology.md": "31026d56d39abd393bd9a4af7e700c91c243229db4b63b892db8768b2638a48d"
   },
   "review_locks": {
-    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "042e655e01115f6bf300f50a54ffc54e5745490091c52b5c9cc40800eaf4c65c",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "969c62f567511de574d03fe8133b93f0281d89205390bb39f2ce386b02eca941",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "8bc94ef3faa85c29d03ee60a4717515fd00d96629efd2053695684694ba2c00e"
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "ac2dc30278685b4e3dc6e50b49dcf0960ffe1eaaa10bef29a335e4d455d71b31",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "f54c56f40f9f8a4d00b513b88e48c8254b0dcf7959ee2b22cdc89d9a4a9e95f6",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "ffe782b498dd01a8d83b36df89e9832666a1aab0481fead7ea564339ff2062f8"
   },
-  "generation_id": "0a63d3fe7d847a0b623c163ac0d83f0ca64a47807b39575d3b0b101f76d50567"
+  "generation_id": "f9884c0556bea183c9df5d084298d28a4b9243c75208c59591ab6c0f338de0ea"
 }

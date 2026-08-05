@@ -1,0 +1,18 @@
+{
+  "event_id": "adaebc9577f04440dbfde53998e057ecb7ca3ee10b3d92cfcb003e6569c2e780",
+  "schema_version": 1,
+  "event_type": "return_to_draft",
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "principal_id": "roger-lew",
+  "decision": "returned_to_draft",
+  "rationale": "Keep the snow and frozen-soil assurance report in draft while approval-role governance is clarified and Stage 3 carrier work remains pre-cutover.",
+  "recorded_on": "2026-08-05",
+  "bound_roots": {
+    "content_review_subject_root": "91ac53ad93d44bb12a9dbf0558f437f8e3dd48415e1304a15468a2a7da0be731",
+    "finding_ledger_root": "769d5ecb718202bf2633751f3525d63a8fe4fbcc7f0df3db33bdced844d9e367"
+  },
+  "predecessor_event_ids": [
+    "f7ab1b863de353e1c67d9e0485f0c48e6137f5fb0f0bc2045295f04629fce893"
+  ],
+  "authority_source": "ASSURANCE-SINGLE-APPROVER-DRAFT-RETURN user direction"
+}

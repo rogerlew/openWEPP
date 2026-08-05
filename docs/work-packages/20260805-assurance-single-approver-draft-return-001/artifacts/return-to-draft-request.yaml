@@ -1,0 +1,9 @@
+schema_version: 1
+event_type: return_to_draft
+principal_id: roger-lew
+decision: returned_to_draft
+rationale: Keep the snow and frozen-soil assurance report in draft while approval-role governance is clarified and Stage 3 carrier work remains pre-cutover.
+recorded_on: 2026-08-05
+authority_source: ASSURANCE-SINGLE-APPROVER-DRAFT-RETURN user direction
+predecessor_event_ids:
+  - f7ab1b863de353e1c67d9e0485f0c48e6137f5fb0f0bc2045295f04629fce893
