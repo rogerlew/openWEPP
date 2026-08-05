@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-05
 supersedes: []
 superseded_by: []
 ---
@@ -69,6 +69,15 @@ it. CoE is a compatibility implementation during the hold, not the target
 scientific authority, and simultaneous CoE/Stage 3 melt generation is
 prohibited.
 
+Version 8 binds the CLIGEN/openWEPP hourly forcing projection to explicit
+virtual-instrument geometry for Stage 3 turbulent exchange. Temperature,
+humidity, and wind are represented at `5 m` above the modeled instantaneous
+snow surface, and exposed-snow aerodynamic roughness is `0.005 m`. These are
+fixed forcing/surface metadata derived from the pinned libsnobal point-input
+contract, not calibration parameters or site observations. A future forcing
+producer may provide different measured heights or surface roughness only
+through an explicit typed authority amendment.
+
 ## Scientific Scope
 
 In scope:
@@ -114,7 +123,7 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `REF-SNOWENERGY-PLANT` | `SC-PLANT-001#INV-PLANT-034` and native canopy variables | Canonical openWEPP meanings of effective canopy cover, structural cover floor, LAI, and height. | `[DIRECT][Static]` |
 | `REF-SNOWENERGY-EB01A` | `docs/work-packages/20260730-snow-surface-eb-01a-longwave-authority-research-001/` | Package evidence that reconciled atmospheric longwave candidates and admitted the FSM2 canopy route. | `[DIRECT][Static]` |
 | `REF-SNOWENERGY-MARKS1999` | Marks et al. (1999), *Hydrological Processes* 13:1935-1959, doi: `10.1002/(SICI)1099-1085(199909)13:12/13<1935::AID-HYP868>3.0.CO;2-C` | Two-layer SNOBAL energy balance, active-layer thermal state, conductive exchange, and progressively smaller shallow-layer timesteps. | `[DIRECT][Static]` |
-| `REF-SNOWENERGY-LIBSNOBAL` | CC0 libsnobal at `/home/workdir/pysnobal`, commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6`; `_calc_layers.c`, `_adj_layers.c`, `_e_bal.c`, `g_snow.c`, `_divide_tstep.c`, `_below_thold.c`, and `snobal.h` | Equation-reference implementation for `z_s_0`, `G_0`, harmonic two-layer transfer, the `60/10/1 kg m^-2` mass-dependent `60/15/1 minute` timestep hierarchy, exact total-`<=`/lower-`<` terminal-layer ordering, and residual-snow phase disposition. | `[DIRECT][Static]` |
+| `REF-SNOWENERGY-LIBSNOBAL` | CC0 libsnobal at `/home/workdir/pysnobal`, commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6`; `_calc_layers.c`, `_adj_layers.c`, `_e_bal.c`, `g_snow.c`, `_divide_tstep.c`, `_below_thold.c`, `snobal.h`, `pysnobal/ipysnobal.py`, and `test_data_point/inheight.input` | Equation-reference implementation for `z_s_0`, `G_0`, harmonic two-layer transfer, the `60/10/1 kg m^-2` mass-dependent `60/15/1 minute` timestep hierarchy, exact total-`<=`/lower-`<` terminal-layer ordering, residual-snow phase disposition, and the point-forcing `5 m` thermodynamic/wind virtual heights plus `0.005 m` snow roughness. | `[DIRECT][Static]` |
 | `REF-SNOWENERGY-LUTE2022` | Lute et al. (2022), *Geoscientific Model Development* 15:5045-5071, doi: `10.5194/gmd-15-5045-2022`, section 2.2.7 | Independent documentation that Marks et al. address shallow-snow energy instability with progressively smaller timesteps. SnowClim's alternative temperature replacement and fitted cold-content tax are not admitted. | `[DIRECT][Static]` |
 | `REF-SNOWENERGY-PHYSICAL` | Stefan-Boltzmann law and bounded-fraction physical invariants | Thermal emission, finite-temperature, and bounded-transmission requirements. | `[INFERENCE][Static]` |
 | `REF-SNOWENERGY-21N` | `docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` with frozen 21M evidence and pinned libsnobal commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6` (`_e_bal.c`, `_snowmelt.c`, `_advec.c`, `_mass_bal.c`, `_runoff.c`, `envphys.h`, `snow.h`) | Result-blind CoE-envelope adjudication; energy-to-melt derivation; exact energy, solid-to-liquid, and liquid-disposition chronology; current-runtime hold. | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -144,6 +153,10 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `L_out` | `W m^-2` | Upward longwave emitted by snow. | snow emission | net longwave |
 | `L_net` | `W m^-2` | Net longwave, positive toward snow. | longwave balance | snow energy carrier |
 | `z_0` | `m` | Active thermal-layer depth, normally `min(z_s, 0.25 m)`; whole-pack depth when `INV-SNOWENERGY-026` collapses a lower volume with `0 < m_l < 1 kg m^-2`. | Stage 3 thermal partition | shared energy carrier |
+| `z_T` | `m` | Effective air-temperature measurement height above the instantaneous modeled snow surface; `5 m` for the CLIGEN/openWEPP virtual instrument. | forcing metadata | turbulent sensible exchange |
+| `z_q` | `m` | Effective humidity/vapor-pressure measurement height above the instantaneous modeled snow surface; `5 m` and colocated with `z_T` for CLIGEN/openWEPP forcing. | forcing metadata | turbulent latent exchange |
+| `z_u` | `m` | Effective wind measurement height above the instantaneous modeled snow surface; `5 m` for the CLIGEN/openWEPP virtual instrument. | forcing metadata | turbulent momentum exchange |
+| `z_0,aero` | `m` | Aerodynamic roughness length of the exposed snow surface; fixed `0.005 m` for the admitted Stage 3 snow surface. This is distinct from active-layer depth `z_0`. | snow-surface authority | turbulent exchange |
 | `m_0` | `kg m^-2` | Snow-ice mass contained in `z_0`. | Stage 3 thermal partition | active-layer heat capacity |
 | `T_0` | `K` | Heat-capacity-weighted active-layer temperature. | active-layer cold content | radiation and turbulent exchange |
 | `T_l` | `K` | Heat-capacity-weighted lower-pack temperature when `z_s > z_0`. | lower-pack cold content | interface conduction |
@@ -182,6 +195,7 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | Surface | Required state |
 |---|---|
 | Above-canopy meteorology | hourly finite `T_a > 0 K`; daily finite `e_a >= 0 kPa` and `R_s >= 0 MJ m^-2 d^-1` |
+| Turbulent forcing geometry | typed positive `z_T`, `z_q`, and `z_u` plus typed positive `z_0,aero`, all relative to the instantaneous modeled snow surface; the CLIGEN/openWEPP projection is exactly `5 m`, `5 m`, `5 m`, and `0.005 m` respectively |
 | Solar geometry | finite `R_a >= 0 MJ m^-2 d^-1` plus an explicit daylight/polar-night classification |
 | Canopy | finite effective daily `C` in `[0, 1)` |
 | Thermal provider | supported internal `layered_thermal_liquid_v1`; finite active-layer `T_0 > 0 K`, non-negative finite active/lower cold content, conservative depositional-to-thermal partition, and `T_c=T_a` with the named approximation identity |
@@ -233,6 +247,9 @@ Required evaluation order:
    calculating melt availability. Define
    `m_deposition=max(m_v,0)`, `m_sublimation=max(-m_v,0)`, and
    `m_ice_available=max(m_ice_after_solid_precip-m_sublimation,0)`.
+   For CLIGEN/openWEPP forcing, use the version-8 virtual geometry
+   `z_T=z_q=z_u=5 m` and `z_0,aero=0.005 m`; validate each typed length and the
+   logarithmic displacement/roughness domain before flux arithmetic.
 8. Select the `60`, `15`, or `1 minute` stability substep from the
    Marks/SNOBAL active/lower mass thresholds and reevaluate `T_0`, vapor
    exchange, radiation, and `G_0` at every substep.
@@ -575,6 +592,7 @@ refreeze operands.
 | Branch/condition | Required behavior | Guard class | Failure class |
 |---|---|---|---|
 | Any required scalar is non-finite | Reject before arithmetic. | runtime | typed invalid forcing/state |
+| Any turbulent height or `z_0,aero` is non-finite/non-positive, or a measurement height does not exceed the displacement/roughness boundary | Reject before logarithms or stability iteration; do not substitute another forcing profile. | runtime | typed invalid turbulent geometry |
 | `T_a <= 0 K`, `T_c <= 0 K`, or `T_s <= 0 K` | Reject. | runtime | typed invalid temperature |
 | `e_a < 0 kPa`, `R_s < 0`, or `R_a < 0` | Reject. | runtime | typed invalid forcing |
 | Derived `L_clear`, `epsilon_clear`, `epsilon_all`, or `L_atm` is non-finite, or either emissivity is outside `[0,1]` | Reject without clamping. | runtime | typed out-of-authority atmospheric state |
@@ -642,6 +660,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-028` | A `1e-9 m` SWE closure residual is exactly `1e-6 kg m^-2` when the same residual is expressed as area mass through `rho_w=1000 kg m^-3`; vapor-to-sublimation transfer closure uses that `1e-6 kg m^-2` bound. This conversion does not alter the separately governed `1e-9 kg m^-2` hourly/daily vapor-aggregation reconstruction tolerance or the `1e-9 kg m^-2` represented-layer lifecycle boundary (`1e-12 m` SWE). | `INV-SNOWENERGY-017`, `INV-SNOWENERGY-018`, `INV-SNOWENERGY-027`, named unit conversion, dimensional consistency | `[DIRECT][Static] + [INFERENCE][Static]` | operand-specific independent reconstruction and named SWE-to-area-mass conversion | typed closure failure / blocked adjudication on cross-predicate substitution |
 | `INV-SNOWENERGY-029` | The admitted future melt owner is Stage 3 alone. In each resolved stability substep, complete net radiation, sensible heat, latent heat, ground/interlayer conduction, and precipitation-advected heat satisfy cold content first. Split the already bounded signed vapor exchange exactly as `m_deposition=max(m_v,0)` and `m_sublimation=max(-m_v,0)`; reserve sublimation from post-precipitation ice; define `m_ice_available=max(m_ice_after_solid_precip-m_sublimation,0)`; then define `Q_excess=max(Q_complete-Q_cold_required,0)` after active/lower allocation and convert only that remainder as `m_melt=min(Q_excess/L_f,m_ice_available)`. `Q_unallocated_after_exhaustion=Q_excess-L_f*m_melt` must be zero; a positive value is an unresolved terminal boundary and blocks cutover. The CoE `A/B/C/D`, `C_canopy`, daily midpoint gate, embedded albedo, and rain-heat terms are compatibility diagnostics only and cannot generate melt after cutover. | `REF-SNOWENERGY-21N`, `REF-SNOWENERGY-LIBSNOBAL`, physical energy/phase conservation | `[DIRECT][Static] + [INFERENCE][Static]` | complete-component, cold-content-first, joint vapor/melt availability, latent-fusion, terminal-energy, and exact-one-owner gates | hard `IMPLEMENTATION_HOLD` until complete; typed energy/mass closure failure after cutover |
 | `INV-SNOWENERGY-030` | Stage 3-generated liquid is debited from ice and credited to the single liquid handoff exactly once in the same substep, then passes through refreeze, retention, and routing before thermal repartition. The energy ledger includes latent heat released by refreeze; the solid ledger credits refrozen liquid back to ice; and the liquid ledger debits that same refrozen mass. All three reconstruct independently from exact operands. Simultaneous CoE/Stage 3 melt, discarded positive energy, delayed duplicate routing, or an unresolved `m_s <= 1 kg m^-2` phase proxy is prohibited. | `REF-SNOWENERGY-21N`, `SC-SNOWFREEZE-001#INV-SNOWFREEZE-091`, physical conservation | `[DIRECT][Static] + [INFERENCE][Static]` | same-substep chronology, linked-ledger reconstruction, thin-pack authority, and real-consumer cutover gates | hard `IMPLEMENTATION_HOLD`; typed closure failure after cutover |
+| `INV-SNOWENERGY-031` | The CLIGEN/openWEPP Stage 3 turbulent forcing projection uses explicit virtual-instrument heights `z_T=z_q=z_u=5 m` above the instantaneous modeled snow surface and exposed-snow aerodynamic roughness `z_0,aero=0.005 m`. These fixed metadata are not observations, calibration parameters, or interchangeable with active thermal-layer depth `z_0`. All four values cross a typed runtime boundary and satisfy the logarithmic displacement/roughness domain before evaluation. | `REF-SNOWENERGY-LIBSNOBAL`, user authority dated 2026-08-05 | `[DIRECT][Static]` | exact-value projection, typed-domain, and sensitivity/non-alias tests | typed invalid turbulent geometry / blocked cutover |
 
 ### Guard Map
 
@@ -925,7 +944,8 @@ the originating evidence to authority promoted into this canonical core.
 | `SNOWENERGY-EB04C-THERMAL-DOMAIN` | `docs/work-packages/20260731-snow-surface-eb-04c-thin-pack-thermal-domain-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-026` | `dual review and verification required` | Package evidence must implement and verify the exact minimum-resolved-mass branch without importing libsnobal's phase conversion or weakening typed guards. |
 | `SNOWENERGY-EB04D-LAYER-RECONCILIATION` | `docs/work-packages/20260731-snow-surface-eb-04d-layer-thickness-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-021, INV-SNOWENERGY-027` | `dual review and verification required` | Package evidence must separate mass-unit lifecycle selection from meter-unit aggregate residual tolerances and preserve coupled layer state. |
 | `SNOWENERGY-EB04S-TOLERANCE-RECONCILIATION` | `docs/work-packages/20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-027, INV-SNOWENERGY-028` | `dual review and verification required` | Result-blind authority reconciliation binds the SWE-to-area-mass equivalence while preserving distinct vapor-aggregation and layer-lifecycle predicates. |
-| `SNOWENERGY-21N-MELT-OWNER` | `docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` | `active-target / implementation-hold` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, OBL-SNOWENERGY-P-006, OBL-SNOWENERGY-C-013` | `dual review and verification required` | Stage 3 is the sole future melt owner; the unchanged CoE runtime remains compatibility-only until complete energy, residual-snow, same-substep liquid, real-consumer, and cutover gates pass atomically. |
+| `SNOWENERGY-21N-MELT-OWNER` | `docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, OBL-SNOWENERGY-P-006, OBL-SNOWENERGY-C-013` | `dual review and verification required` | Stage 3 is the sole future melt owner; the unchanged CoE runtime remains compatibility-only until complete energy, residual-snow, same-substep liquid, real-consumer, and cutover gates pass atomically. |
+| `SNOWENERGY-STAGE3-COMPLETE-CARRIER` | `docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, INV-SNOWENERGY-031` | `dual review and verification required` | User authority binds explicit CLIGEN virtual-instrument geometry and lifts the turbulent-input authority hold; carrier and shadow evidence remain required before atomic cutover. |
 
 ## Gap Register
 
@@ -947,6 +967,7 @@ the originating evidence to authority promoted into this canonical core.
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 8 | 2026-08-05 | Bound typed CLIGEN/openWEPP virtual-instrument heights `z_T=z_q=z_u=5 m` above the instantaneous modeled snow surface and exposed-snow aerodynamic roughness `z_0,aero=0.005 m`; distinguished aerodynamic roughness from active-layer depth and retained all carrier/cutover gates. | Direct user authority plus pinned libsnobal point-input defaults and fixture |
 | 7 | 2026-08-04 | Admitted Stage 3 as the sole future melt owner after CoE failed the frozen specific-validation and enforceable-envelope predicates. Bound cold-content-first complete energy, bounded latent-fusion conversion, same-substep linked mass/liquid ledgers, no-dual-owner guards, and an atomic implementation hold covering incomplete fluxes and residual snow. Runtime CoE behavior remains unchanged as compatibility implementation, not target authority. | `SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION` frozen adjudication and pinned libsnobal chronology |
 | 6 | 2026-08-01 | Made closure tolerances operand- and unit-explicit: `1e-9 m` SWE equals `1e-6 kg m^-2` for the same residual and governs vapor-to-sublimation transfer closure; hourly/daily vapor aggregation and represented-layer lifecycle retain their distinct `1e-9 kg m^-2` predicates. | `SNOW-SURFACE-EB-04S` result-blind authority freeze and independent authority reviews |
 | 5 | 2026-07-31 | Separated represented density-layer mass lifecycle from aggregate SWE/depth residual tolerances. Layers above `1e-9 kg m^-2` after named SWE conversion remain represented with all coupled state; the independent `1e-9 m` closure guards remain unchanged. | `SNOW-SURFACE-EB-04D` authority reconciliation and required runtime replay |

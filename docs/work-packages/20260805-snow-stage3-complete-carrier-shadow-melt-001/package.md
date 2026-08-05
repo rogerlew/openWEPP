@@ -1,6 +1,6 @@
 # Stage 3 Complete Carrier And Shadow Melt
 
-Status: `executing / prediction frozen / carrier-input authority hold`
+Status: `executing / prediction frozen / carrier-input authority granted`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
@@ -30,6 +30,12 @@ before implementation or result inspection:
 These are prospective directional tests, not tuning targets. Thresholds,
 acceptance rules, or site windows may not be changed after result inspection
 without a new package and explicit result-aware disclosure.
+
+Follow-up user authority on 2026-08-05 grants explicit definition of the
+turbulent virtual-instrument geometry and directs continuation of the work it
+held up. Contract version 8 binds `z_T=z_q=z_u=5 m` above the instantaneous
+modeled snow surface and exposed-snow `z_0,aero=0.005 m` for CLIGEN/openWEPP
+forcing. These are fixed metadata, not calibration knobs.
 
 ## Frozen Gate Observation
 
@@ -99,8 +105,9 @@ today's carrier would exhaust `m_ice_available` and leave positive
 
 - Stage 3 authoritative melt conversion or CoE retirement.
 - Any dual-owner state mutation.
-- Default, selector, runfile, schema, public-output, calibration, coefficient,
-  site-window, observation, or release change.
+- Selector, public-output, calibration, site-window, observation, or release
+  change. The version-8 typed CLIGEN geometry definitions are the sole
+  authorized default/input-contract change.
 - Treating shadow results as cutover authority when terminal energy, thin-pack,
   same-substep liquid, or real-consumer gates remain open.
 
@@ -110,6 +117,8 @@ today's carrier would exhaust `m_ice_available` and leave positive
 - `docs/ROADMAP.md`
 - `docs/work-packages/README.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
+- `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`
+- `docs/specifications/science-contracts/index.md`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
 - `crates/openwepp-meteorology/src/surface_energy.rs`
@@ -117,9 +126,8 @@ today's carrier would exhaust `m_ice_available` and leave positive
 - `tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs`
 - ignored evidence under `target/snow_stage3_complete_carrier_shadow_melt/`
 
-Production edits remain blocked until the canonical contract selects the
-missing turbulent-transfer measurement-height and roughness inputs or binds an
-existing typed runtime source for them.
+Production edits may begin after the version-8 contract gate records the
+explicit turbulent-transfer geometry amendment.
 
 ## Phase Plan
 
@@ -173,6 +181,8 @@ may not edit tracked files or reinterpret frozen acceptance rules.
 - [x] (2026-08-05) Scaffolded this package before source edits.
 - [x] (2026-08-05) Mapped and narrowed the exact carrier seams; confirmed
   existing typed longwave, turbulent, and precipitation-advection primitives.
+- [x] (2026-08-05) User granted input authority; contract version 8 binds the
+  typed `5 m` virtual heights and `0.005 m` exposed-snow roughness.
 - [ ] Reconstruct the Snowbird gate from retained operands; the supplied
   summary is frozen but its exact retained source artifact is not present.
 - [ ] Implement and validate the complete carrier.
@@ -202,3 +212,7 @@ also treats these as required inputs rather than universal constants. Inserting
 guessed values would violate the no-surrogate-physics rule. No production code
 was edited. Carrier completion resumes after contract-bound input authority is
 selected.
+
+The user granted that authority on 2026-08-05. Version 8 now defines the
+CLIGEN/openWEPP geometry explicitly, lifting this input hold without weakening
+the complete-carrier, terminal-energy, residual-snow, or exact-one-owner gates.
