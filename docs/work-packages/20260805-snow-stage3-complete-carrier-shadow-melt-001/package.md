@@ -1,6 +1,6 @@
 # Stage 3 Complete Carrier And Shadow Melt
 
-Status: `scaffolded / authorized / prediction frozen`
+Status: `executing / prediction frozen / carrier-input authority hold`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
@@ -106,19 +106,20 @@ today's carrier would exhaust `m_ice_available` and leave positive
 
 ## Intended Write Set
 
-To be narrowed after source-seam inventory and before production edits:
-
 - `docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/**`
 - `docs/ROADMAP.md`
 - `docs/work-packages/README.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
-- applicable snow-energy implementation modules under `crates/openwepp-runner/src/hillslope/`
-- applicable typed meteorology/energy modules under `crates/openwepp-meteorology/src/`
-- focused integration tests under `tests/integration/`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
+- `crates/openwepp-meteorology/src/surface_energy.rs`
+- `tests/integration/snow_surface_eb03_runtime.rs`
+- `tests/integration/snow_surface_eb04w_accumulation_melt_diagnostics_contract.rs`
 - ignored evidence under `target/snow_stage3_complete_carrier_shadow_melt/`
 
-No production edit may begin until the exact file list replaces the two
-module-level placeholders above.
+Production edits remain blocked until the canonical contract selects the
+missing turbulent-transfer measurement-height and roughness inputs or binds an
+existing typed runtime source for them.
 
 ## Phase Plan
 
@@ -170,7 +171,10 @@ may not edit tracked files or reinterpret frozen acceptance rules.
 - [x] (2026-08-05) Froze directional predictions and the Snowbird retained
   energy gate before implementation.
 - [x] (2026-08-05) Scaffolded this package before source edits.
-- [ ] Reconstruct the gate and narrow the exact write set.
+- [x] (2026-08-05) Mapped and narrowed the exact carrier seams; confirmed
+  existing typed longwave, turbulent, and precipitation-advection primitives.
+- [ ] Reconstruct the Snowbird gate from retained operands; the supplied
+  summary is frozen but its exact retained source artifact is not present.
 - [ ] Implement and validate the complete carrier.
 - [ ] Implement non-mutating shadow melt and linked ledgers.
 - [ ] Evaluate prospective directions and disposition all gates.
@@ -189,3 +193,12 @@ may not edit tracked files or reinterpret frozen acceptance rules.
 ## Outcomes
 
 Pending execution.
+
+Source inventory found a hard pre-implementation authority gap. The existing
+Monin-Obukhov primitive requires `z_T`, `z_q`, `z_u`, and `z_0`; the Stage 3
+runtime input has air temperature, dewpoint, wind, pressure, precipitation, and
+surface state but no measurement-height or roughness fields. Pinned libsnobal
+also treats these as required inputs rather than universal constants. Inserting
+guessed values would violate the no-surrogate-physics rule. No production code
+was edited. Carrier completion resumes after contract-bound input authority is
+selected.
