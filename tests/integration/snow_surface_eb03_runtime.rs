@@ -109,6 +109,7 @@ fn inputs(
             daylight: true,
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+            complete_carrier_shadow: false,
         },
         sturm_climate_class: None,
         sturm_day_of_year: None,
@@ -724,6 +725,89 @@ fn orthogonal_cells_share_stage3_and_compose_additively() {
     for result in [&baseline, &longwave, &sublimation, &combined] {
         assert_stage3_energy_reconstructs(result);
     }
+}
+
+#[test]
+fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
+    let authoritative_inputs = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    let mut shadow_inputs = authoritative_inputs.clone();
+    shadow_inputs.surface_energy_options.complete_carrier_shadow = true;
+
+    let authoritative =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&authoritative_inputs)
+            .expect("authoritative compatibility result");
+    let shadow =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&shadow_inputs)
+            .expect("complete carrier shadow result");
+
+    assert_eq!(
+        shadow.runtime_swe_after_m.to_bits(),
+        authoritative.runtime_swe_after_m.to_bits()
+    );
+    assert_eq!(
+        shadow.runtime_depth_after_m.to_bits(),
+        authoritative.runtime_depth_after_m.to_bits()
+    );
+    assert_eq!(shadow.snow_layers_after, authoritative.snow_layers_after);
+    assert_eq!(
+        shadow.solid_to_liquid_ledger(),
+        authoritative.solid_to_liquid_ledger()
+    );
+    assert_eq!(
+        shadow.liquid_disposition_ledger(),
+        authoritative.liquid_disposition_ledger()
+    );
+
+    let diagnostics = stage3_diagnostics(&shadow);
+    assert!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .all(|hour| hour.shadow_complete_carrier_evaluated)
+    );
+    assert!(diagnostics.hourly_surface_energy.iter().any(|hour| {
+        hour.shadow_sensible_flux_w_m2.abs() > f64::EPSILON
+            && hour.shadow_latent_flux_w_m2.abs() > f64::EPSILON
+            && hour.shadow_complete_energy_j_m2.abs() > f64::EPSILON
+    }));
+}
+
+#[test]
+fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
+    let mut missing_longwave = inputs(
+        SnowSurfaceLongwaveModel::Disabled,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    missing_longwave
+        .surface_energy_options
+        .complete_carrier_shadow = true;
+    let error =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&missing_longwave)
+            .expect_err("complete shadow requires net longwave");
+    assert!(
+        error
+            .to_string()
+            .contains("shadow_requires_complete_longwave")
+    );
+
+    let mut invalid_geometry = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    invalid_geometry
+        .surface_energy_options
+        .complete_carrier_shadow = true;
+    invalid_geometry
+        .surface_energy_options
+        .turbulent_geometry
+        .wind_speed_height_m = 0.0;
+    let error =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&invalid_geometry)
+            .expect_err("invalid virtual instrument geometry must fail closed");
+    assert!(error.to_string().contains("wind_speed_height_m"));
 }
 
 #[test]

@@ -321,6 +321,7 @@ pub struct DirectSnowSurfaceEnergyOptions {
     pub daylight: bool,
     pub atmospheric_pressure_pa: f64,
     pub turbulent_geometry: DirectSnowTurbulentGeometry,
+    pub complete_carrier_shadow: bool,
 }
 
 impl Default for DirectSnowSurfaceEnergyOptions {
@@ -333,6 +334,7 @@ impl Default for DirectSnowSurfaceEnergyOptions {
             daylight: false,
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+            complete_carrier_shadow: false,
         }
     }
 }
@@ -361,6 +363,12 @@ pub struct DirectSnowSurfaceEnergyHourDiagnostics {
     pub vapor_mass_exchange_kg_m2: f64,
     pub latent_heat_j_kg: f64,
     pub latent_flux_w_m2: f64,
+    pub shadow_sensible_flux_w_m2: f64,
+    pub shadow_latent_flux_w_m2: f64,
+    pub shadow_advected_flux_w_m2: f64,
+    pub shadow_complete_energy_j_m2: f64,
+    pub shadow_vapor_mass_exchange_kg_m2: f64,
+    pub shadow_complete_carrier_evaluated: bool,
     pub potential_surface_energy_j_m2: f64,
     pub applied_surface_energy_j_m2: f64,
     pub unused_positive_energy_j_m2: f64,
@@ -416,6 +424,12 @@ impl DirectSnowSurfaceEnergyHourDiagnostics {
             vapor_mass_exchange_kg_m2: 0.0,
             latent_heat_j_kg: 0.0,
             latent_flux_w_m2: 0.0,
+            shadow_sensible_flux_w_m2: 0.0,
+            shadow_latent_flux_w_m2: 0.0,
+            shadow_advected_flux_w_m2: 0.0,
+            shadow_complete_energy_j_m2: 0.0,
+            shadow_vapor_mass_exchange_kg_m2: 0.0,
+            shadow_complete_carrier_evaluated: false,
             potential_surface_energy_j_m2: 0.0,
             applied_surface_energy_j_m2: 0.0,
             unused_positive_energy_j_m2: 0.0,

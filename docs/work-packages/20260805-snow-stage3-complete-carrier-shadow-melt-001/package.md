@@ -187,6 +187,9 @@ may not edit tracked files or reinterpret frozen acceptance rules.
   typed `5 m` virtual heights and `0.005 m` exposed-snow roughness.
 - [x] (2026-08-05) Implemented the explicit typed geometry through the real
   runner-to-hydrology boundary and passed its contract/focused gates.
+- [x] (2026-08-05) Implemented and focused-tested an opt-in noninterfering
+  complete-carrier shadow with longwave, turbulent, precipitation-advection,
+  and conduction operands.
 - [ ] Reconstruct the Snowbird gate from retained operands; the supplied
   summary is frozen but its exact retained source artifact is not present.
 - [ ] Implement and validate the complete carrier.

@@ -356,6 +356,25 @@ impl DirectProductionSnowFrostAuthority {
         Ok(self.frost_wint_red_enabled && forcing.tmin_c < 0.0)
     }
 
+    fn snow_surface_energy_options(
+        &self,
+        daily_solar_radiation_mj_m2: f64,
+        daily_extraterrestrial_radiation_mj_m2: f64,
+        daylight: bool,
+    ) -> openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
+        openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
+            longwave_model: self.snow_surface_longwave_model,
+            sublimation_model: self.snow_surface_sublimation_model,
+            daily_solar_radiation_mj_m2,
+            daily_extraterrestrial_radiation_mj_m2,
+            daylight,
+            atmospheric_pressure_pa: self.snow_atmospheric_pressure_pa,
+            turbulent_geometry:
+                openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
+            complete_carrier_shadow: false,
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn snow_liquid_partition(
         &self,
@@ -443,15 +462,11 @@ impl DirectProductionSnowFrostAuthority {
             snow_melt_model: self.snow_melt_model,
             snow_density_model: self.snow_density_model,
             stage3_liquid_routing_model: self.stage3_liquid_routing_model,
-            surface_energy_options: openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
-                longwave_model: self.snow_surface_longwave_model,
-                sublimation_model: self.snow_surface_sublimation_model,
+            surface_energy_options: self.snow_surface_energy_options(
                 daily_solar_radiation_mj_m2,
                 daily_extraterrestrial_radiation_mj_m2,
                 daylight,
-                atmospheric_pressure_pa: self.snow_atmospheric_pressure_pa,
-                turbulent_geometry: openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
-            },
+            ),
             sturm_climate_class,
             sturm_day_of_year,
             coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,

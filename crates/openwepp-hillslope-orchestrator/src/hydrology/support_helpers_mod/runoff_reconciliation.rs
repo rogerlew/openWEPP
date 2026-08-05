@@ -3,13 +3,18 @@ use super::super::*;
 use openwepp_meteorology::surface_energy::{
     conductive_heat_flux, latent_heat_flux_from_mass_flux,
     latent_heat_for_surface_temperature, net_shortwave_radiation,
-    saturation_vapor_pressure_snobal_pa, snow_effective_thermal_conductivity_snobal,
-    snow_longwave_dilley_unsworth, surface_energy_balance, EnergyFluxWattsPerSquareMeter,
-    MassFluxKilogramsPerSquareMeterSecond, PositiveLengthMeters, PressurePascals,
-    RadiativeFluxWattsPerSquareMeter, SnowLongwaveInputs, SurfaceEnergyBalanceTerms,
-    ThermalConductivityWattsPerMeterKelvin,
+    precipitation_advected_heat_flux, saturation_vapor_pressure_snobal_pa,
+    snow_effective_thermal_conductivity_snobal, snow_longwave_dilley_unsworth,
+    surface_energy_balance, turbulent_fluxes_monin_obukhov, EnergyFluxWattsPerSquareMeter,
+    MassFluxKilogramsPerSquareMeterSecond, PositiveLengthMeters,
+    PrecipitationAdvectedHeatInputs, PrecipitationMassFluxKilogramsPerSquareMeterSecond,
+    PressurePascals, RadiativeFluxWattsPerSquareMeter, SnowLongwaveInputs,
+    SurfaceEnergyBalanceTerms, ThermalConductivityWattsPerMeterKelvin, TurbulentFluxInputs,
+    TurbulentTransferOptions,
 };
-use openwepp_unit_boundary::{FractionUnitInterval, TemperatureCelsius};
+use openwepp_unit_boundary::{
+    FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius,
+};
 use super::snow_mass_transition::{
     SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M, SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M,
 };
@@ -1578,6 +1583,181 @@ impl Wb11HydrologyKernel {
                 diagnostics.latent_flux_w_m2 = latent_w_m2;
             }
         }
+        if inputs.surface_energy_options.complete_carrier_shadow {
+            if inputs.surface_energy_options.longwave_model
+                != SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_shadow_requires_complete_longwave",
+                    0.0,
+                    Some(1.0),
+                    Some(1.0),
+                ));
+            }
+            let geometry = inputs.surface_energy_options.turbulent_geometry;
+            let air_temperature = Self::stage3_temperature(phase_class, hourly.air_temperature_c)?;
+            let surface_temperature =
+                Self::stage3_temperature(phase_class, surface_temperature_c)?;
+            let air_vapor_pressure = saturation_vapor_pressure_snobal_pa(
+                Self::stage3_temperature(phase_class, inputs.dewpoint_c)?,
+            )
+            .map_err(|_| {
+                Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_shadow_air_vapor_pressure",
+                    inputs.dewpoint_c,
+                    None,
+                    None,
+                )
+            })?;
+            let surface_vapor_pressure = saturation_vapor_pressure_snobal_pa(surface_temperature)
+                .map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_shadow_surface_vapor_pressure",
+                        surface_temperature_c,
+                        None,
+                        None,
+                    )
+                })?;
+            let length = |symbol: &'static str, value: f64| {
+                PositiveLengthMeters::try_new(value).map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        symbol,
+                        value,
+                        Some(0.0),
+                        None,
+                    )
+                })
+            };
+            let turbulent = turbulent_fluxes_monin_obukhov(TurbulentFluxInputs {
+                air_pressure: PressurePascals::try_new(
+                    inputs.surface_energy_options.atmospheric_pressure_pa,
+                )
+                .map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_shadow_air_pressure_pa",
+                        inputs.surface_energy_options.atmospheric_pressure_pa,
+                        Some(0.0),
+                        None,
+                    )
+                })?,
+                air_temperature,
+                surface_temperature,
+                air_vapor_pressure,
+                surface_vapor_pressure,
+                air_temperature_height: length(
+                    "snow.stage3_air_temperature_height_m",
+                    geometry.air_temperature_height_m,
+                )?,
+                vapor_pressure_height: length(
+                    "snow.stage3_vapor_pressure_height_m",
+                    geometry.vapor_pressure_height_m,
+                )?,
+                wind_speed: LinearRateMetersPerSecond::try_new(inputs.wind_m_s).map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_shadow_wind_m_s",
+                        inputs.wind_m_s,
+                        Some(0.0),
+                        None,
+                    )
+                })?,
+                wind_speed_height: length(
+                    "snow.stage3_wind_speed_height_m",
+                    geometry.wind_speed_height_m,
+                )?,
+                roughness_length: length(
+                    "snow.stage3_aerodynamic_roughness_length_m",
+                    geometry.aerodynamic_roughness_length_m,
+                )?,
+                options: TurbulentTransferOptions::default(),
+            })
+            .map_err(|_| {
+                Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_shadow_turbulent_flux",
+                    inputs.wind_m_s,
+                    Some(0.0),
+                    None,
+                )
+            })?;
+            let precipitation_temperature_c = if hourly.rain_m > 0.0 || hourly.snowfall_m > 0.0 {
+                hourly.hydrometeor_temperature_c.ok_or_else(|| {
+                    Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                        phase_class,
+                        symbol: BoundarySymbol::from(
+                            "snow.stage3_shadow_hydrometeor_temperature_c",
+                        ),
+                    }
+                })?
+            } else {
+                surface_temperature_c
+            };
+            let precipitation_temperature =
+                Self::stage3_temperature(phase_class, precipitation_temperature_c)?;
+            let rain_mass_flux = hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / duration_seconds;
+            let snow_mass_flux = hourly.snowfall_m * STAGE3_RHO_WATER_KG_M3 / duration_seconds;
+            let advected = precipitation_advected_heat_flux(PrecipitationAdvectedHeatInputs {
+                rain_mass_flux: PrecipitationMassFluxKilogramsPerSquareMeterSecond::try_new(
+                    rain_mass_flux,
+                )
+                .map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_shadow_rain_mass_flux",
+                        rain_mass_flux,
+                        Some(0.0),
+                        None,
+                    )
+                })?,
+                rain_temperature: precipitation_temperature,
+                snow_mass_flux: PrecipitationMassFluxKilogramsPerSquareMeterSecond::try_new(
+                    snow_mass_flux,
+                )
+                .map_err(|_| {
+                    Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_shadow_snow_mass_flux",
+                        snow_mass_flux,
+                        Some(0.0),
+                        None,
+                    )
+                })?,
+                snow_temperature: precipitation_temperature,
+                surface_temperature,
+            })
+            .map_err(|_| {
+                Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_shadow_advected_heat",
+                    precipitation_temperature_c,
+                    None,
+                    None,
+                )
+            })?;
+            let shadow_surface_flux_w_m2 = shortwave.as_watts_per_square_meter()
+                + longwave_w_m2
+                + turbulent.sensible_heat.as_watts_per_square_meter()
+                + turbulent.latent_heat.as_watts_per_square_meter()
+                + advected.as_watts_per_square_meter();
+            if let Some(diagnostics) = diagnostics.as_mut() {
+                diagnostics.shadow_sensible_flux_w_m2 =
+                    turbulent.sensible_heat.as_watts_per_square_meter();
+                diagnostics.shadow_latent_flux_w_m2 =
+                    turbulent.latent_heat.as_watts_per_square_meter();
+                diagnostics.shadow_advected_flux_w_m2 = advected.as_watts_per_square_meter();
+                diagnostics.shadow_complete_energy_j_m2 =
+                    shadow_surface_flux_w_m2 * duration_seconds;
+                diagnostics.shadow_vapor_mass_exchange_kg_m2 =
+                    turbulent.mass_flux.as_kilograms_per_square_meter_second()
+                        * duration_seconds;
+                diagnostics.shadow_complete_carrier_evaluated = true;
+            }
+        }
         let zero = EnergyFluxWattsPerSquareMeter::try_new(0.0).map_err(|_| {
             Self::stage3_domain_error(phase_class, "snow.stage3_zero_flux", 0.0, None, None)
         })?;
@@ -2100,6 +2280,16 @@ impl Wb11HydrologyKernel {
         hourly.net_longwave_w_m2 += surface.net_longwave_w_m2 * weight;
         hourly.net_shortwave_w_m2 += surface.net_shortwave_w_m2 * weight;
         hourly.vapor_mass_exchange_kg_m2 += surface.vapor_mass_exchange_kg_m2;
+        hourly.shadow_sensible_flux_w_m2 += surface.shadow_sensible_flux_w_m2 * weight;
+        hourly.shadow_latent_flux_w_m2 += surface.shadow_latent_flux_w_m2 * weight;
+        hourly.shadow_advected_flux_w_m2 += surface.shadow_advected_flux_w_m2 * weight;
+        if surface.shadow_complete_carrier_evaluated {
+            hourly.shadow_complete_energy_j_m2 +=
+                surface.shadow_complete_energy_j_m2 + conduction.active_energy;
+        }
+        hourly.shadow_vapor_mass_exchange_kg_m2 +=
+            surface.shadow_vapor_mass_exchange_kg_m2;
+        hourly.shadow_complete_carrier_evaluated |= surface.shadow_complete_carrier_evaluated;
         hourly.potential_surface_energy_j_m2 += surface.potential_surface_energy_j_m2;
         hourly.applied_surface_energy_j_m2 += applied_j_m2;
         hourly.unused_positive_energy_j_m2 += unused_j_m2;
