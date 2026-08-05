@@ -1,0 +1,20 @@
+{
+  "command": "cargo nextest run --workspace",
+  "workdir": "/home/workdir/openWEPP",
+  "exit_code": 100,
+  "status": "FAIL",
+  "duration_seconds": 466.433,
+  "summary": {
+    "tests_run": 102,
+    "tests_total": 2273,
+    "passed": 100,
+    "failed": 2,
+    "skipped": 5,
+    "not_run": 2171,
+    "failed_tests": [
+      "openwepp::assurance_v2_source_contract::real_sources_satisfy_the_declared_v2_2020_12_schemas",
+      "openwepp::assurance_v2_source_contract::real_source_and_cli_validate_named_and_all_deterministically"
+    ]
+  },
+  "log_path": "/home/workdir/openWEPP/docs/work-packages/20260805-assurance-single-approver-draft-return-001/artifacts/nextest-workspace-20260805T212358Z.log"
+}

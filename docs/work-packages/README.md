@@ -427,11 +427,16 @@
 
 State as of `2026-08-05 UTC`:
 
+- `20260805-assurance-single-approver-draft-return-001/` -
+  SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
+  governance and return the snow/frost flagship from `IN_REVIEW` to `DRAFT`
+  through typed immutable lifecycle history. No approval or publication.
+
 - `20260805-jennings-dryad-hourly-archive-lfs-vendoring-001/` -
-  EXECUTING / SCAFFOLDED: vendor the exact 1.2 GB Jennings et al. Dryad hourly
-  precipitation-phase archive through a path-scoped Git LFS object. Preserve
-  DOI/version/CC0/UCAR lineage and exact bytes; do not alter observations,
-  scientific results, runtime behavior, or ordinary-CI download requirements.
+  EXECUTING / AWAITING INDEPENDENT REVIEW: exact-path Git LFS custody,
+  DOI/version/CC0/UCAR provenance, byte integrity, and deterministic current
+  consumer evidence pass. Dual review and terminal verification remain; no
+  object or commit has been pushed.
 
 - `20260805-assure06-snow-frost-flagship-refresh-001/` -
   HOLD-INDEPENDENT-HUMAN-REVIEW: refreshed the snow/frost flagship against

@@ -1,0 +1,7 @@
+{
+  "command": "cargo nextest run --workspace",
+  "workdir": "/workdir/openWEPP",
+  "exit_code": 100,
+  "elapsed_seconds": 477,
+  "log_path": "docs/work-packages/20260805-assurance-single-approver-draft-return-001/artifacts/nextest-workspace-20260805T212358Z.log"
+}

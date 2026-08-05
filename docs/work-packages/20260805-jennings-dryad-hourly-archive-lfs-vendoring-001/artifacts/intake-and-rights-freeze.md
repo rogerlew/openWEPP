@@ -3,7 +3,7 @@
 Evidence class: **Static + Ran**
 
 - DOI: `10.5061/dryad.c9h35`.
-- Dryad version: 2019-01-31.
+- Dryad version: 1; published 2019-01-31.
 - File: `jennings_et_al_2018_file2_ppt_phase_met_observations.csv`.
 - Dryad-listed size: 1.21 GB; local exact size: `1,206,721,342` bytes.
 - Local SHA-256:

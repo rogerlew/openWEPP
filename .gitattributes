@@ -9,6 +9,7 @@ tests/fixtures/forest_lateral_flow_authority/**/*.zip filter=lfs diff=lfs merge=
 tests/fixtures/forest_lateral_flow_authority/**/*.pdf filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/forest_lateral_flow_authority/**/*.xls filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/forest_lateral_flow_authority/**/*.XLS filter=lfs diff=lfs merge=lfs -text
+tests/fixtures/precip_phase_observed/jennings2018/jennings_et_al_2018_file2_ppt_phase_met_observations.csv filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/**/*.cli filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/**/outputs/*.dat filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/**/*.parquet filter=lfs diff=lfs merge=lfs -text

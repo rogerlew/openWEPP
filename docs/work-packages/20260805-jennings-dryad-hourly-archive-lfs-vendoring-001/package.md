@@ -1,13 +1,14 @@
 # Jennings Dryad Hourly Archive Git LFS Vendoring
 
-Status: `executing / scaffolded`
+Status: `executing / awaiting independent review`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
 ## Purpose
 
 Vendor the exact Jennings et al. hourly precipitation-phase observation CSV
-from Dryad DOI `10.5061/dryad.c9h35`, version 2019-01-31, into its existing
+from Dryad DOI `10.5061/dryad.c9h35`, version 1 published 2019-01-31, into its
+existing
 source-native fixture path through Git LFS. Preserve DOI, original UCAR
 `ds464.0` lineage, CC0 redistribution authority, byte identity, and an opt-in
 heavy-data validation posture.
@@ -33,8 +34,8 @@ heavy-data validation posture.
 Replace the local-only/gitignored custody of the exact hourly CSV with a
 tracked Git LFS pointer and object, add a checksum manifest and accurate
 fixture/reference ledgers, prove the staged pointer binds the frozen bytes,
-and retain ordinary checkout/test behavior without silently requiring the
-1.2 GB object in unrelated profiles.
+retain ordinary test behavior without requiring the 1.2 GB object in unrelated
+profiles, and document Git LFS clone bandwidth plus the no-smudge opt-out.
 
 ## Implementation Intent
 
@@ -75,6 +76,7 @@ public-output behavior changes.
 - `tests/fixtures/precip_phase_observed/jennings2018/.gitignore`
 - `tests/fixtures/precip_phase_observed/jennings2018/README.md`
 - `tests/fixtures/precip_phase_observed/jennings2018/SHA256SUMS`
+- `tests/fixtures/precip_phase_observed/jennings2018/VENDORED_ARCHIVE.md`
 - `tests/fixtures/precip_phase_observed/jennings2018/jennings_et_al_2018_file2_ppt_phase_met_observations.csv`
 
 Everything else is read-only.
@@ -86,8 +88,10 @@ Everything else is read-only.
   Git LFS availability.
 - [x] (2026-08-05) Scaffolded package, active prompt, intake, reading map, and
   queue pointers before fixture/LFS edits.
-- [ ] Install the exact LFS rule, pointer, checksum, and provenance updates.
-- [ ] Run focused and repository-integrity validation.
+- [x] (2026-08-05) Installed the exact LFS rule, staged pointer, checksum
+  manifest, and provenance updates without rewriting the archive.
+- [x] (2026-08-05) Ran byte/object/pointer/CSV checks, two deterministic
+  current-consumer runs, and both external-authority anti-evasion gates.
 - [ ] Complete dual review, dual terminal verification, and disposition.
 
 ## Phase Plan
@@ -138,8 +142,14 @@ catalog/roadmap state, archive the prompt, and commit the stable increment.
    write-set reconciliation pass.
 
 No full-workspace correctness run is selected: the intended diff changes only
-external-data custody, LFS metadata, checksums, and prose. Existing scientific
-consumer output must remain identical under the focused harness.
+external-data custody, LFS metadata, checksums, and prose. Repeated current
+consumer runs must retain identical row counts, confusion matrices, and
+headline accuracies. Aggregate threshold floats and JSON bytes are
+observational because the pre-existing consumer reduces station values from
+an unordered `HashMap`.
+The retained June report predates the hydrometeor solver bisection fallback in
+commit `62063495`; it is historical evidence rather than the expected output
+of current `HEAD`.
 
 ## Subagent Authorization
 
@@ -176,7 +186,9 @@ campaign/release boundary is selected.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+Execution installed exact-path Git LFS custody for the unchanged Dryad bytes.
+Integrity and current-consumer checks pass. Independent review and terminal
+verification remain pending.
 
 ## Idempotence And Recovery
 

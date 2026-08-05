@@ -702,13 +702,24 @@ openWEPP note (2026-05-11):
 ## R-53: Jennings et al. (2018) rain–snow temperature threshold across the NH
 
 **Citation**: Jennings, K. S., T. S. Winchell, B. Livneh, and N. P. Molotch (2018). *Spatial variation of the rain–snow temperature threshold across the Northern Hemisphere*. Nature Communications, 9, 1148. https://doi.org/10.1038/s41467-018-03629-7
-**Local path**: `references/vendorable/Jennings2018_NatComm.pdf`
+**Local path**: article at `references/vendorable/Jennings2018_NatComm.pdf`;
+Dryad dataset at
+`tests/fixtures/precip_phase_observed/jennings2018/`, with the 1.2 GB hourly
+CSV tracked by Git LFS.
 **Reference quality**: `verified-primary`
-**Distribution status**: `redistributable` (Nature Communications, CC-BY 4.0).
+**Distribution status**: `redistributable` (article: Nature Communications,
+CC-BY 4.0; Dryad dataset DOI `10.5061/dryad.c9h35`: CC0).
 **Topic**: Observed precipitation-phase dataset and a temperature + relative-humidity method for partitioning rain vs snow — the "observed data" basis for replacing a single tuned air-temperature threshold (e.g. WEPP `RST`).
 **Key equations / concepts**: ~17.8M Northern-Hemisphere land-station phase observations; the 50% rain/snow **air-temperature** threshold averages 1.0 °C and ranges −0.4 to 2.4 °C (95%), varying with **relative humidity** (humid maritime low, dry continental high) — so a spatially uniform air-temp threshold is structurally wrong. A binary-logistic phase method on temperature + RH outperforms it. Note: Mariana's `RST=-2 °C` for Oregon/DAYMET sits *below* this observed air-temp range, indicating it also corrects the DAYMET **daily-mean** resolution, not only humidity.
 **Kernel mapping**: SNOWDENSITY-10.3.4 partition-first disposition; the `10.3.5` partition/thaw candidate (`docs/planning/snow-frost-fidelity-strategy.md` §10.2/§10.3). Complements SMRF's dew-point `Susong1999` partition.
-**Notes / caveats**: The supplementary station dataset (figshare) is the observed-phase corpus for validation; not yet installed under `tests/fixtures/`.
+**Notes / caveats**: The Dryad dataset is installed under `tests/fixtures/`.
+The exact hourly file is dataset version 1, published 2019-01-31,
+`1,206,721,342` bytes, SHA-256
+`0cc82fbc5211c2c24b19653c4711d63a88fc4ed7bd90fc39cce84913d071f3a1`,
+and is tracked through Git LFS. Dryad identifies it as a cleaned/formatted
+version of UCAR RDA `ds464.0`; cite the original dataset as well. The corpus was
+used for phase-method validation and is not independent validation for claims
+that were selected or tuned using it.
 **OAR-6 compliance status**: Primary authority for observed-data rain/snow partition.
 
 ## R-54: Susong, Marks & Garen (1999) dew-point precipitation-phase method

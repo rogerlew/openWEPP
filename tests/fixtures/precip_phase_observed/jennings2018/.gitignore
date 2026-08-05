@@ -1,2 +1,1 @@
-# Full ~17.8M-row observation file (1.2 GB) — kept local, never committed.
-jennings_et_al_2018_file2_ppt_phase_met_observations.csv
+# The full hourly archive is tracked through an exact-path Git LFS rule.
