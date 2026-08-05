@@ -1,6 +1,6 @@
 # SNOW-WARM-MIXED-PREPEAK-LOSS-ENERGY-ATTRIBUTION
 
-Status: `scaffolded / queued for execution`
+Status: `complete / review and verification pass`
 
 Date: `2026-08-04`
 
@@ -103,7 +103,10 @@ they cannot be relabeled as the cause of generated melt.
 - `docs/work-packages/README.md`
 - `docs/ROADMAP.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
-- `target/snow_warm_mixed_prepeak_loss_energy_attribution/` (untracked results)
+- `target/snow_warm_mixed_prepeak_loss_energy_attribution/` (untracked, rejected
+  prepublication results retained for audit)
+- `target/snow_warm_mixed_prepeak_loss_energy_attribution_v2/` (untracked,
+  accepted results)
 
 Everything else is read-only.
 
@@ -245,10 +248,13 @@ provider response, secret, or local credential path may be committed.
 - [x] (2026-08-04) User authorized scaffolding and end-to-end execution.
 - [x] (2026-08-04) Froze scope, source identities, operators, acceptance roles,
   and no-correction boundary before result execution.
-- [ ] Commit the validated scaffold checkpoint.
-- [ ] Implement and focused-test analysis, verification, and figure tools.
-- [ ] Execute the five-lane corrected-state analysis and render figures.
-- [ ] Complete synthesis, dual review, dual verification, and closure.
+- [x] (2026-08-04) Committed the validated scaffold checkpoint (`785e0fdd`).
+- [x] (2026-08-04) Implemented and focused-tested analysis, verification, and
+  figure tools.
+- [x] (2026-08-04) Executed accepted v2 five-lane analysis and rendered figures.
+- [x] (2026-08-04) Completed synthesis and dual independent `GO` reviews.
+- [x] (2026-08-04) Completed dual terminal verification (`PASS` / `PASS`) and
+  archived the execution prompt byte-identically.
 
 ## Surprises & Discoveries
 
@@ -256,6 +262,29 @@ provider response, secret, or local credential path may be committed.
   hourly empirical/Stage-3 diagnostics, so 21L needs no model rerun.
   Evidence: 21K execution receipt and five schema-v4 trace hashes frozen in
   `artifacts/analysis-freeze.json`.
+- Observation: the scaffold transcribed Paradise's 64-character trace digest
+  as a 61-character string. The first result attempt failed closed before
+  publishing any table; the digest was corrected from the already frozen 21K
+  receipt without changing an operator, threshold, or result namespace.
+  Evidence: analyzer identity exception and 21K receipt lane digest.
+- Observation: the first dry-interval implementation omitted 21J's finite
+  observed-`Tmax` eligibility guard and therefore produced a different interval
+  inventory. Exact predecessor-key reconciliation failed before publication;
+  restoring the frozen guard made the implementation match the prospective
+  operator.
+  Evidence: missing-key exception for Mica Creek WY1994.
+- Observation: repeat execution initially allowed stale target-side verifier
+  and figure files into the pre-receipt output inventory, making the new receipt
+  self-inconsistent. The runner now enumerates only its 12 owned accepted
+  outputs; downstream verification and rendering own separate manifests.
+  Evidence: independent verifier rejected the stale `execution-receipt.json`
+  identity before accepting the refreshed run.
+- Observation: adversarial review found that v1 did not bind the inherited 21J
+  dry table, independently reconstruct Stage-3 closure, exclude ineligible
+  days, or retain all promised hourly/monthly/forcing-state evidence.
+  Evidence: rejected v1 namespace and review findings. The result-blind v2
+  freeze binds the full custody chain and the accepted analyzer/verifier emit
+  and independently check the missing operands.
 
 ## Decision Log
 
@@ -273,11 +302,40 @@ provider response, secret, or local credential path may be committed.
   Rationale: `INV-SNOWFREEZE-088` prohibits interpreting CoE terms as measured
   energy shares, and Stage 3 occurs after upstream melt generation.
   Date/Author: 2026-08-04 / Codex.
+- Decision: Correct the Paradise digest transcription before accepting results.
+  Rationale: this is a deterministic intake typo proven by the immutable 21K
+  receipt and direct file hash; no scientific rule or result was inspected.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Restore the finite observed-`Tmax` dry-interval eligibility guard.
+  Rationale: 21L explicitly freezes the 21J operator; inventory equality is a
+  current acceptance gate, not a result-dependent choice.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Make the execution receipt inventory explicit and idempotent.
+  Rationale: accepted execution must not depend on stale downstream files in a
+  reusable target directory.
+  Date/Author: 2026-08-04 / Codex.
+- Decision: Reject v1 and rerun in a distinct v2 namespace after result-blind
+  review corrections.
+  Rationale: changing accepted evidence in place would obscure provenance; the
+  scientific thresholds and adjudication matrix did not change.
+  Date/Author: 2026-08-04 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. Replace this section with the executed result and bounded handoff.
+Accepted v2 returns `MULTIFACTOR_WARM_MIXED_AND_STATE_SIGNAL`. All four
+canonical sites place more than `99.6%` of median pre-peak pack loss on warm or
+mixed days; `cmelt` is the largest annual-first positive empirical term at each
+site. Corrected dry loss reproduces 21J within `9.02e-17 m`. Snowbird's scaled
+development lane gains `0.1258 m` median peak SWE and `0.0190 m` pack loss.
+The bounded handoff is a read-only first-principles authority audit of warm and
+mixed CoE melt, prioritizing temperature/dewpoint/radiation/state interactions
+without presuming a correction.
 
 ## Revision Note
 
 2026-08-04: Initial scaffold freezes 21L after the completed 21K correction.
+The Paradise trace digest was corrected before accepted result publication
+after the fail-closed first attempt exposed a three-character transcription
+omission. The analyzer then restored the frozen finite-`Tmax` dry eligibility
+guard after exact predecessor inventory reconciliation failed before output
+publication.

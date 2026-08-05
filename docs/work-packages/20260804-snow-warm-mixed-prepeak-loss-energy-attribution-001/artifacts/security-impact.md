@@ -1,10 +1,10 @@
 # Security And Data Impact
 
-Status: queued
+Status: complete / pass
 
 Evidence mode: Static
 
-Expected impact is none. Execution is local and read-only outside the package
+Impact is none. Execution was local and read-only outside the package
 and untracked target namespace. No credentials, network calls, raw provider
 responses, secret paths, fixture mutations, or observation mutations are
-authorized. Terminal verification must confirm this boundary.
+present. Terminal verification must independently confirm this boundary.

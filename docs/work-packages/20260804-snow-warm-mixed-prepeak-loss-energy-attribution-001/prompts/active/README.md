@@ -1,3 +1,3 @@
 # Active Prompts
 
-One package-end-to-end kickoff prompt is active.
+No prompt is active after closure.

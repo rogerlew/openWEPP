@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "status": "PASS",
+  "scaffold_commit": "785e0fdd",
+  "accepted_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution_v2",
+  "rejected_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution",
+  "freeze_sha256": "ea403abd3648f7c1ff4e01f65a2159cd593fb7ed964e4403f08c35b738c05dfd",
+  "analyzer_sha256": "67856a153e24cd2ed1f9b816164d56f75d4c650cf933e58738f0b366c191cf34",
+  "result_sha256": "8ae39e3cb7e1206f787e5333e619b2e7f529f122566c566589be293e374f13e5",
+  "target_execution_receipt_sha256": "273b8438e1e8007c9b96bc8d0ca54d879273bfd05982e0a3f903c5b8ad62d4ea",
+  "independent_verification_sha256": "ffda0c8117fa297a4b0d60ddf65779446348161c89737cd5295b797c0ebb4c26",
+  "independent_verifier_sha256": "e8f8dcde078b2ee5dcaca19306e8d938a11372f3327cae05ca341909a934f7db",
+  "figure_renderer_sha256": "c9a2a5ca7100bfa63fbd3c3b6e84d2a34575eb0afe32e1c01281c6b5d01b1275",
+  "figure_manifest_sha256": "f2e6af4da4e3ee2d2b2723298fd7ce4c9ef8273118522440c1836173818bfc81",
+  "verdict": "MULTIFACTOR_WARM_MIXED_AND_STATE_SIGNAL",
+  "failed_prepublication_attempts": [
+    "Paradise frozen-digest transcription mismatch",
+    "finite observed-Tmax dry-interval guard omission",
+    "stale downstream file included in reusable target receipt inventory",
+    "v1 review found ambiguous dry entry wording, ineligible-day fallback, pooled component ranking, and incomplete independent/source custody"
+  ],
+  "failed_attempt_disposition": "all rejected before acceptance and closure; v1 remains retained and v2 was rerun under the corrected result-blind freeze"
+}

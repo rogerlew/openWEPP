@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "status": "PASS",
+  "evidence_mode": "Ran: independent reconstruction from accepted v2 tables",
+  "accepted_result_sha256": "8ae39e3cb7e1206f787e5333e619b2e7f529f122566c566589be293e374f13e5",
+  "accepted_execution_receipt_sha256": "273b8438e1e8007c9b96bc8d0ca54d879273bfd05982e0a3f903c5b8ad62d4ea",
+  "target_independent_verification_sha256": "ffda0c8117fa297a4b0d60ddf65779446348161c89737cd5295b797c0ebb4c26",
+  "counts": {
+    "annual_rows": 189,
+    "daily_rows": 37303,
+    "monthly_rows": 3745,
+    "hourly_rows": 895272,
+    "empirical_rows": 2268,
+    "stage3_rows": 37303,
+    "forcing_state_contrast_rows": 5,
+    "dry_rows": 273,
+    "canonical_dry_comparison_rows": 253,
+    "snowbird_pair_rows": 35
+  },
+  "maximum_abs_corrected_minus_pre_21k_dry_loss_m": 9.020562075079397e-17,
+  "maximum_abs_independent_hourly_coe_identity_m": 2.02e-17,
+  "maximum_abs_independent_stage3_mass_closure_m": 2.63e-17,
+  "maximum_abs_independent_stage3_energy_closure_j_m2": 2.33e-8,
+  "unclassified_material_loss_day_count": 0,
+  "unclassified_pack_loss_m": 0.0,
+  "verdict": "MULTIFACTOR_WARM_MIXED_AND_STATE_SIGNAL"
+}

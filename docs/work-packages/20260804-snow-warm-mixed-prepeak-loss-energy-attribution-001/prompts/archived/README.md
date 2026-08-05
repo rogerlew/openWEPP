@@ -1,3 +1,4 @@
 # Archived Prompts
 
-No prompt is archived while execution is active.
+The byte-identical 21L execution prompt is archived here after execution and
+review.

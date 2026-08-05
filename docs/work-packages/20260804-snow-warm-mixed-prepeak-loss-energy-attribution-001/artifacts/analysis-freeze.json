@@ -2,7 +2,14 @@
   "schema_version": 1,
   "status": "frozen_before_result_execution",
   "scaffold_base_commit": "004ad95f352050c22253766bbbe2ae56e00a2e9e",
-  "result_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution",
+  "result_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution_v2",
+  "freeze_corrections": [
+    {
+      "reason": "Result-blind review correction: make the inherited 21J dry-interval entry boundary explicit, exclude days without eligible classification hours, and bind the retained predecessor table read by the analyzer.",
+      "rejected_namespace": "target/snow_warm_mixed_prepeak_loss_energy_attribution",
+      "status": "v1_rejected_before_publication"
+    }
+  ],
   "observation_role": "DIAGNOSTIC_ONLY",
   "canonical_lanes": [
     "snotel_mica_creek_st_joe_id",
@@ -17,10 +24,13 @@
     "execution_receipt_sha256": "1cd4aa5fb2110eb0445f57de846e2b65b224e7b0704e00a9d6cff1e3d4ca220a",
     "materiality_result_sha256": "25c8150f95d1be81afa7597d93dc271f8df5d82e062c558b231dd1695afab05a",
     "predecessor_21j_result_sha256": "48bd5deec99e436d5c41308ff5f3f2115b3700769bede2da26f0c7d81fc74fe4",
+    "predecessor_21j_dry_intervals_sha256": "f4127fd63a845f0b304b7e5f0cfd58ef01da228516e07f491272ea1db5998b8e",
+    "predecessor_21j_tracked_manifest_sha256": "46116618a30aec2f401f18ea9e6ea027f1b51ce08ace327d3cba8cfd5c5d3546",
+    "predecessor_21j_tracked_receipt_sha256": "48f63487999d082508a9d8a93d7404221ebfeaa3df12a099008990d92fdc073b",
     "trace_sha256_by_lane": {
       "snotel_mica_creek_st_joe_id": "310f3f4621aba17ce96d3f9fa9df29f3cc14ad5fad6916799e9367e02fcad95c",
       "snotel_niwot_co": "03fe33f959003d2a5f0dbce4ef742d164c949ac0588a42f2341ca6747ad5aff5",
-      "snotel_paradise_wa": "7f77be3d223e7347fc05fec5c3858c8988ac51a60745a97855eb204f13065",
+      "snotel_paradise_wa": "7f77be3d223e7347fc05fec5c3853858c8988ac51a60745a97855eb204f13065",
       "snotel_snowbird_ut": "653176d6354e9654acf42f43865a7e2ebacafff431b3e5a36f0cadd882feaaf3",
       "snotel_snowbird_ut__precip_x1p2155576": "fde0d83cf8a4a23409808f05ca2450b051dac69e966dc4116c6b0b1bf29c65e6"
     },
@@ -51,7 +61,7 @@
     "start": "October 1 of water_year - 1 inclusive",
     "end": "earliest date of maximum positive observed WTEQ in the water year inclusive",
     "right_censored_water_years": [2025],
-    "coverage": "require complete observation, climate, and trace coverage from start through observed peak",
+    "coverage": "require complete climate and trace coverage from start through a finite positive observation-supported peak date; observation continuity is not required for annual attribution and missing observation days are excluded by the dry-period operator",
     "aggregation": "compute annual values first, then Python statistics.median by site; pooled hours/days are secondary exposure-weighted views only"
   },
   "thermal_classification": {
@@ -59,13 +69,13 @@
     "cold_day": "maximum eligible hourly air temperature <= 0 C",
     "mixed_day": "minimum eligible hourly air temperature <= 0 C and maximum > 0 C",
     "warm_day": "minimum eligible hourly air temperature > 0 C",
-    "exhaustiveness": "each eligible day is exactly one of cold_day, mixed_day, warm_day"
+    "exhaustiveness": "each eligible day is exactly one of cold_day, mixed_day, warm_day; a day with no eligible hours is unclassified and excluded from thermal-class attribution"
   },
   "dry_period_operator": {
-    "daily_eligibility": "fixture all-phase precipitation <= 0.000254 m and guarded observed PREC increment <= 0.000254 m; never bridge missing dates or water-year resets",
-    "grouping": "maximal consecutive eligible days, minimum 3 days, clipped to primary window",
+    "daily_eligibility": "fixture all-phase precipitation <= 0.000254 m, guarded observed PREC increment <= 0.000254 m, and finite observed WTEQ and Tmax; never bridge missing dates or water-year resets",
+    "grouping": "maximal consecutive eligible days, minimum 3 days, clipped to primary window; require positive observed WTEQ on the day before entry and positive modeled interval-start pack",
     "modeled_loss": "sum snowpack_swe_loss_m over the interval",
-    "observed_loss": "max(WTEQ at interval start minus WTEQ at interval end, 0)",
+    "observed_loss": "max(WTEQ on the day before the first eligible interval date minus WTEQ on the final eligible interval date, 0); this explicitly inherits the 21J entry boundary",
     "predecessor_comparison": "same site, water year, start, and end key against the retained 21J dry-interval table"
   },
   "coe_attribution": {

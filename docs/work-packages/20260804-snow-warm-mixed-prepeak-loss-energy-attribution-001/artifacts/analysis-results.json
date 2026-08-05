@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "ANALYSIS_COMPLETE",
+  "evidence_mode": "Ran: receipt-bound corrected-state five-lane analysis",
+  "verdict": "MULTIFACTOR_WARM_MIXED_AND_STATE_SIGNAL",
+  "counts": {
+    "annual_rows": 189,
+    "canonical_annual_rows": 154,
+    "dry_interval_rows": 273,
+    "canonical_dry_interval_rows": 253,
+    "daily_rows": 37303,
+    "monthly_rows": 3745,
+    "hourly_class_rows": 895272,
+    "empirical_term_rows": 2268,
+    "stage3_response_rows": 37303,
+    "forcing_state_contrast_rows": 5,
+    "snowbird_pair_rows": 35
+  },
+  "maximum_abs_corrected_minus_pre_21k_dry_loss_m": 9.020562075079397e-17,
+  "canonical_site_median_warm_mixed_loss_fraction": {
+    "snotel_mica_creek_st_joe_id": 0.9965423745854323,
+    "snotel_niwot_co": 0.9990976926758051,
+    "snotel_paradise_wa": 0.9960606307167064,
+    "snotel_snowbird_ut": 0.9986958747278049
+  },
+  "dominant_positive_empirical_term_all_canonical_sites": "cmelt",
+  "snowbird_development_summary": {
+    "role": "DEVELOPMENT_ONLY",
+    "paired_year_count": 35,
+    "median_scaled_minus_canonical_pack_loss_m": 0.019024028737360754,
+    "median_scaled_minus_canonical_peak_swe_m": 0.12581630070976985,
+    "median_scaled_minus_canonical_observed_date_swe_m": 0.14591440344020712,
+    "direction_fraction_nonzero_pack_loss_delta": 0.9428571428571428,
+    "state_signal": true
+  },
+  "claim_limits": [
+    "Forcing and state contrasts are chronology-confounded descriptive accompaniment, not causal attribution.",
+    "Empirical CoE terms are melt-depth formula contributions, not measured energy shares.",
+    "Stage-3 energy is downstream response, not upstream CoE melt causation.",
+    "Scaled Snowbird is DEVELOPMENT_ONLY input sensitivity.",
+    "No result authorizes tuning or a production correction."
+  ]
+}

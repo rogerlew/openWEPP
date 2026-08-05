@@ -1,4 +1,4 @@
 # Prompts
 
-The active kickoff prompt is retained under `active/` during execution and
-moved byte-identically to `archived/` only after terminal closure.
+The byte-identical execution prompt is archived after completed execution and
+review. No active prompt remains.
