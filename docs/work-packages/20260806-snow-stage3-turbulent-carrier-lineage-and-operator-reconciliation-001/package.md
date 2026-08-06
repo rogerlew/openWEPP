@@ -161,10 +161,12 @@ operands, stability solution, or state endpoints required to separate them.
   `docs/planning/snow-surface-energy-balance-roadmap.md`;
 - retained rejected-v1 evidence under the ignored
   `target/snow_stage3_operator_reconciliation/` namespace, prospective
-  corrected raw evidence under the distinct ignored
-  `target/snow_stage3_operator_reconciliation_v2/` namespace, and normal
-  ignored build/test outputs. The rejected-v1 namespace is read-only custody
-  and must not be overwritten or reused;
+  corrected-but-rejected evidence under the distinct ignored
+  `target/snow_stage3_operator_reconciliation_v2/` namespace, prospective
+  continuity-corrected raw evidence under the ignored
+  `target/snow_stage3_operator_reconciliation_v3/` namespace, and normal
+  ignored build/test outputs. The rejected v1/v2 namespaces are read-only
+  custody and must not be overwritten or reused;
 
 No fixture, observation, dependency, selector default, public output, or
 unrelated crate change is authorized. A needed path outside this set requires a
@@ -612,8 +614,16 @@ must not mutate source fixtures. The new schema is internal and default-off.
   across disabled/enabled calls, disabled output remains schema v4, focused
   Rust tests pass `18/18`; the contract/observability selection passes `13/13`;
   and consumer tests pass `50/50`, including malformed-sentinel, contradictory-
-  support, and reduction-level inactive-day vectors. Result-blind re-review
-  remains required before v2 execution.
+  support, and reduction-level inactive-day vectors. This result-blind gate was
+  completed before v2 execution.
+- [x] (2026-08-06) Independent science/Rust/consumer re-review passed at exact
+  clean `e591d89c219d69f619e68f9aa7194f88d20f9a1c`. Corrected v2 then completed
+  all 12 model lanes but failed closed before results on exact sequential
+  after-to-next-before layer-state continuity. Preserved v2 read-only and
+  prospectively assigned v3; no metric or decision was admitted.
+- [ ] Move deterministic next-substep control-volume preparation inside the
+  serialized sequential transition boundary, prove exact continuity, and
+  repeat result-blind review before v3 execution.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.
@@ -641,6 +651,12 @@ must not mutate source fixtures. The new schema is internal and default-off.
   validator during this critical observability increment would enlarge the
   mechanical write set without changing behavior, so the warning is accepted
   and retained for the next mechanical extraction package.
+- Observation: corrected v2 completed all 12 model lanes but failed before
+  metrics because the producer captured each sequential tuple's after-state
+  before the next substep's deterministic alignment/normalization/coalescence
+  preparation. The next before-state therefore had a different exact layer
+  fingerprint (and occasionally a one-ULP total-cold difference). This is an
+  observability-boundary defect, not a model result; v2 is retained read-only.
 
 ## Decision Log
 

@@ -80,7 +80,7 @@
     "head_policy": "runner requires a caller-supplied full reviewed commit SHA and exact clean HEAD before build, before analysis, and before acceptance",
     "operators": ["disabled", "same_state_paired_carrier_v1", "sequential_resolved_shadow_v1"],
     "observation_root": "tests/fixtures/snotel_observed/observations/sites",
-    "result_namespace": "target/snow_stage3_operator_reconciliation_v2",
+    "result_namespace": "target/snow_stage3_operator_reconciliation_v3",
     "run_argv_template": [
       "target/release/openwepp-cli-hill",
       "--run-dir", "{staged_fixture}",
@@ -153,8 +153,15 @@
     "namespace": "target/snow_stage3_operator_reconciliation",
     "reuse_prohibited": true
   },
-  "schema_version": 3,
-  "status": "frozen_result_blind_admitted_pass_pass",
+  "rejected_execution_v2": {
+    "execution_head": "e591d89c219d69f619e68f9aa7194f88d20f9a1c",
+    "failure": "consumer rejected exact sequential tuple continuity because the producer captured each after-state before the next substep's alignment/normalization/coalescence preparation",
+    "metrics_produced": false,
+    "namespace": "target/snow_stage3_operator_reconciliation_v2",
+    "reuse_prohibited": true
+  },
+  "schema_version": 4,
+  "status": "frozen_result_blind_readmission_pending",
   "support": {
     "censored_primary_water_years": [2025],
     "minimum_calendar_coverage_for_screen": 0.25,
