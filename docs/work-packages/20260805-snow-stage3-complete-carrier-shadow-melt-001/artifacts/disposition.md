@@ -26,3 +26,8 @@ This disposition ends the result-bearing increment without marking it
 complete. The `3,177`-line solver extraction remains mandatory before feature
 work. No Stage 3 publication, soil energy receipt, default activation, CoE
 retirement, or assurance claim is authorized.
+
+Contract v8 source custody is current at assurance generation `910ab3d3` after
+a typed DRAFT adoption. The snow/frost report remains unpublished with no
+active review event or approval root; current identity is not scientific
+approval of this shadow result.

@@ -30,16 +30,17 @@
   infiltration-first liquid mass routing, but not the terminal integrator,
   complete post-meltout energy recipient, or parallel persistent
   snow/surface/soil/frost state. No contract, Rust, selector, test, or runtime
-  behavior changed. CoE remains authoritative. The land-surface-energy
-  authority gate is next for event-local work; coupled-state authority is an
-  additional prerequisite for persistence and seasonal claims.
+  behavior changed. CoE remains authoritative. Its original handoff placed
+  land-surface-energy authority next; package 23's upstream carrier failure and
+  the canonical roadmap now place evaluation-shadow authority, extraction,
+  observability, and the four-site audit first.
 
-- `20260805-assure06-snow-frost-flagship-refresh-001/` — EXECUTING /
-  SCAFFOLDED: refreshes the snow/frost flagship against campaign increments
-  21K-21N and `SC-SNOWENERGY-001` v7 / `SC-SNOWFREEZE-001` v126, preserves the
-  current CoE compatibility runtime versus future Stage 3 owner distinction,
-  and issues a new exact pending-review root without fabricating human review
-  or approval.
+- `20260805-assure06-snow-frost-flagship-refresh-001/` — DRAFT / REVIEW
+  AUTHORITY RETURNED: refreshed the snow/frost flagship against campaign
+  increments 21K-21N and preserved the current CoE compatibility runtime versus
+  future Stage 3 ownership. The typed return invalidated active review custody;
+  contract-v8 adoption now binds generation `910ab3d3`. No review, approval, or
+  publication authority is active.
 
 - `20260804-snow-warm-mixed-coe-physics-authority-audit-001/` — COMPLETE /
   BASELINE FIDELITY WITH AUTHORITY GAP / REVIEW AND VERIFICATION PASS: exact

@@ -12,6 +12,8 @@ carrier inventory, prediction evaluation, validation, review, and disposition.
 - `prediction-disposition.md`: clause-by-clause prospective prediction result.
 - `authoritative-precipitation-divisor-audit.md`: static authoritative
   mass-cadence check after the shadow precipitation-rate correction.
+- `assurance-source-adoption.md`: typed reconciliation of contract v8 into the
+  governed DRAFT identity after the first clean quick gate exposed drift.
 - `owned-file-manifest.md`: exact package commit and path reconciliation.
 - `gate-results.md`: focused, closeout, and superseded gate evidence.
 - `review-domain.md`, `review-rust.md`, and `review-qa.md`: independent review

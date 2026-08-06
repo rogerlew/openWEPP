@@ -125,6 +125,9 @@ different accounting lineages.
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
 - `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`
 - `docs/specifications/science-contracts/index.md`
+- `assurance/v2/identity.lock.json`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
+- new typed receipt under `assurance/v2/transactions/**`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`
@@ -283,10 +286,19 @@ sites. A behavior-neutral solver extraction must also reduce
 `runoff_reconciliation.rs` below the `3,000`-line closure threshold before
 further feature work in that module.
 
+The exact-head quick gate exposed that contract v8 had not been adopted into
+the governed assurance identity. The canonical DRAFT
+`adopt-report-source` transaction advanced generation `f9884c05` to
+`910ab3d3`, kept the snow/frost flagship unpublished in `DRAFT`, cleared active
+review-event custody, retained all prior events as invalidated history, and
+restored `validate --all`. It did not create review or approval authority.
+
 Historical execution deviations are retained rather than normalized away.
 Commits `122c88af` and `24676c6d` expanded the declared write set in the same
 increment that first edited the added paths. Contract version 8 landed at
 `478fa788`, while the source-binding integration guard remained pinned to
 version 7 until `24676c6d`. The terminal source is consistent and the current
-guard passes, but later packages must amend write sets before edits and update
-contract authority plus its binding guard in one stable increment.
+guard passes. The assurance paths were also added to this package only after
+the exact-head gate exposed the missing v8 adoption. Later packages must amend
+write sets before edits and update contract authority, its binding guard, and
+governed source identity in one stable increment.

@@ -17,6 +17,7 @@ Evidence class: Static + Ran, 2026-08-06.
 | Write-set expansion and v8 guard lag | Disclosed as historical governance deviations. |
 | `3,177`-line solver file | Remains binding; mechanical extraction precedes feature work and `complete`. |
 | Prompt remained active | Archived without changing its execution text. |
+| Contract v8 assurance identity was stale | First clean quick failed `31` tests; typed DRAFT source adoption advanced generation `f9884c05` to `910ab3d3`, and focused source/snow tests pass `44/44`. |
 | Exact-head full gates absent | Assigned to the authorized heavy runner after the final clean closeout commit. |
 
 No acceptance window, geometry, flux parameter, or threshold was changed after

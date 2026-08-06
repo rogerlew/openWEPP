@@ -63,7 +63,7 @@ zero. This is not a coherent post-cutover seasonal energy balance because the
 shadow reinitializes daily from authoritative post-CoE state.
 
 `NOT EVALUABLE` — terminal meltout. The resolved-domain terminal-energy
-operand is zero, but the shadow reaches the pre-existing thin-pack boundary
+operand is zero, but the shadow reaches the preexisting thin-pack boundary
 without localizing exhaustion or dispositioning residual snow and post-snow
 energy. CoE retirement and Stage 3 authoritative melt remain blocked. No flux,
 geometry, window, or threshold was tuned after inspection.

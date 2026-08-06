@@ -20,7 +20,7 @@ contain `1,364` added and `54` deleted lines across the following 21 paths:
 
 - six Rust runner/orchestrator paths;
 - two canonical snow-energy contract/index paths;
-- ten package artifact/plan/prompt paths; and
+- eleven package artifact/plan/prompt paths; and
 - two focused snow integration tests.
 
 The exact path list is recoverable with:
@@ -32,9 +32,23 @@ done | sort -u
 ```
 
 No roadmap, assurance, Jennings, or terminal-meltout package change is
-attributed to those six execution commits. Closeout documentation and the
-current-head assurance test-helper extraction are separately visible in the
-terminal closeout diff.
+attributed to those six execution commits. Closeout documentation is separately
+visible in the terminal diff. Mixed correction commit `2d035638` contains the
+carrier snowfall/fusion corrections plus the unrelated
+`tests/integration/assurance_v2_amendment_contract.rs` helper extraction needed
+to clear the current-head Clippy gate.
+
+The terminal quick gate then found that contract v8 remained stale in the
+governed assurance identity. A typed `adopt-report-source` transaction added
+the following closeout paths:
+
+- `assurance/v2/identity.lock.json`;
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`;
+  and
+- `assurance/v2/transactions/ae69c6d2af715b5b24fd08aa3b75375671a7e50afb85f10599b0f6cdaee5a99c.json`.
+
+Generation advanced from `f9884c05` to `910ab3d3`. The report remains
+unpublished `DRAFT`, with no active event or approval roots.
 
 ## Governance Deviations
 
@@ -44,6 +58,8 @@ terminal closeout diff.
   `snow_surface_eb03_contract.rs`.
 - Contract v8 landed at `478fa788`, but its binding guard remained at v7 until
   `24676c6d`.
+- Contract v8 was not adopted into the assurance identity until the terminal
+  closeout gate failed and the typed DRAFT transaction was applied.
 
 Current source and binding tests are consistent. These are historical
 prospective-sequencing defects, not authority for future same-commit write-set
