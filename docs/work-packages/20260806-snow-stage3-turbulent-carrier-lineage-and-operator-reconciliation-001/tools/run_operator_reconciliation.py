@@ -27,7 +27,7 @@ sys.dont_write_bytecode = True
 REPO = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
 FREEZE_PATH = PACKAGE / "artifacts/protocol-freeze.json"
-OUTPUT = REPO / "target/snow_stage3_operator_reconciliation"
+OUTPUT = REPO / "target/snow_stage3_operator_reconciliation_v2"
 PREDECESSOR_TOOL = REPO / (
     "docs/work-packages/20260806-snow-stage3-four-site-carrier-term-audit-001/"
     "tools/run_carrier_term_audit.py"

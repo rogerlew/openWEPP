@@ -461,6 +461,32 @@ fn active_direct_winter_frost_partition(
 }
 
 impl Wb11HydrologyKernel {
+    /// Attaches an evaluation-only Stage 3 record to an authoritative inactive
+    /// snow partition without requesting forcing or advancing snow state.
+    ///
+    /// The returned schema-v6 record declares the full daily support as
+    /// requested but unevaluated. Its empty tuple inventory and
+    /// `operator_not_selected` hourly statuses make the inactive lifecycle
+    /// explicit while preserving the authoritative partition byte-for-byte.
+    #[must_use]
+    pub fn attach_inactive_stage3_evaluation(
+        authoritative: DirectSnowLiquidPartition,
+        operator: SnowStage3EvaluationOperator,
+    ) -> DirectSnowStage3EvaluationWithReconciliationResult {
+        let mut summary = Stage3ShadowSummary::new(Stage3EvaluationTag::new(operator));
+        for hourly in &mut summary.hourly {
+            hourly.requested_seconds = STAGE3_SECONDS_PER_HOUR;
+        }
+        let evaluation = Self::stage3_evaluation_diagnostics(&summary);
+        DirectSnowStage3EvaluationWithReconciliationResult {
+            result: DirectSnowStage3EvaluationResult {
+                authoritative,
+                evaluation: Some(evaluation),
+            },
+            reconciliation: Some(Box::new(summary.reconciliation)),
+        }
+    }
+
     pub(crate) fn resolve_snow_partition_terms(
         phase_class: HillslopeKernelPhaseClass,
         hyetograph_rainfall: f64,

@@ -831,4 +831,63 @@ mod stage3_evaluation_real_consumer_tests {
             "maximum thermodynamic residual",
         );
     }
+
+    #[test]
+    fn inactive_day_emits_declared_v6_evaluation_without_mutating_authority() {
+        let lane = DirectSnowLaneState::zero();
+        let disabled = inactive_direct_snow_evaluation_result(
+            SnowDensityModel::LegacyWepp,
+            0.0,
+            &lane,
+            openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Verbose,
+            None,
+        );
+        let enabled = inactive_direct_snow_evaluation_result(
+            SnowDensityModel::LegacyWepp,
+            0.0,
+            &lane,
+            openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Verbose,
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
+        );
+
+        assert_eq!(enabled.result.authoritative, disabled.result.authoritative);
+        assert!(disabled.result.evaluation.is_none());
+        assert!(disabled.reconciliation.is_none());
+        assert_eq!(
+            direct_snow_trace_schema(None, None),
+            "openwepp-r7h-direct-production-snow-trace-v4"
+        );
+
+        let evaluation = enabled
+            .result
+            .evaluation
+            .as_ref()
+            .expect("enabled inactive evaluation");
+        let reconciliation = enabled
+            .reconciliation
+            .as_deref()
+            .expect("enabled inactive reconciliation");
+        assert_eq!(
+            direct_snow_trace_schema(Some(evaluation), Some(reconciliation)),
+            "openwepp-r7h-direct-production-snow-trace-v6"
+        );
+        assert_eq!(evaluation.requested_seconds.to_bits(), 86_400.0_f64.to_bits());
+        assert_eq!(evaluation.evaluated_seconds.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(evaluation.coverage_fraction.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(evaluation.source_fingerprint, 0);
+        assert_eq!(evaluation.forcing_fingerprint, 0);
+        assert_eq!(evaluation.geometry_fingerprint, 0);
+        assert_eq!(evaluation.non_formulation_fingerprint, 0);
+        assert!(evaluation.hourly.iter().all(|hour| {
+            hour.requested_seconds.to_bits() == 3_600.0_f64.to_bits()
+                && hour.evaluated_seconds.to_bits() == 0.0_f64.to_bits()
+                && !hour.complete_carrier_evaluated
+        }));
+        assert_eq!(reconciliation.schema_version, 6);
+        assert!(reconciliation.tuples.is_empty());
+        assert!(reconciliation
+            .hourly_status
+            .iter()
+            .all(|status| !status.evaluated && status.reason == "operator_not_selected"));
+    }
 }

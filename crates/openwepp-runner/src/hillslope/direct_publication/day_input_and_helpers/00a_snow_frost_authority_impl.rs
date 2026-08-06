@@ -392,14 +392,13 @@ impl DirectProductionSnowFrostAuthority {
         openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult,
         HillslopeCliError,
     > {
-        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?
-            && self.snow_stage3_evaluation_operator.is_none()
-        {
+        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(inactive_direct_snow_evaluation_result(
                 self.snow_density_model,
                 hyetograph_rainfall_m,
                 snow_lane_state,
                 capture,
+                self.snow_stage3_evaluation_operator,
             ));
         }
         let hourly = climate_request
@@ -500,15 +499,22 @@ fn inactive_direct_snow_evaluation_result(
     hyetograph_rainfall_m: f64,
     snow_lane_state: &DirectSnowLaneState,
     capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
+    evaluation_operator: Option<
+        openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator,
+    >,
 ) -> openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult {
+    let authoritative = inactive_direct_snow_liquid_partition(
+        snow_density_model,
+        hyetograph_rainfall_m,
+        snow_lane_state,
+        capture,
+    );
+    if let Some(operator) = evaluation_operator {
+        return Wb11HydrologyKernel::attach_inactive_stage3_evaluation(authoritative, operator);
+    }
     openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult {
         result: openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
-            authoritative: inactive_direct_snow_liquid_partition(
-                snow_density_model,
-                hyetograph_rainfall_m,
-                snow_lane_state,
-                capture,
-            ),
+            authoritative,
             evaluation: None,
         },
         reconciliation: None,

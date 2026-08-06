@@ -602,9 +602,12 @@ must not mutate source fixtures. The new schema is internal and default-off.
   metric, result, receipt, or manifest: enabling evaluation caused inactive
   no-snow/no-precipitation day 73 to demand typed hourly forcing. Preserved the
   rejected v1 namespace and prospectively moved corrected execution to v2.
-- [ ] Amend the contract/test and runtime so an enabled inactive day emits an
-  empty schema-v6 `operator_not_selected` record without invoking the active
-  forcing-required path; re-run result-blind review before v2 execution.
+- [x] (2026-08-06) Amended the contract/test and runtime so an enabled inactive
+  day emits an empty schema-v6 `operator_not_selected` record without invoking
+  the active forcing-required path. The authoritative inactive result is exact
+  across disabled/enabled calls, disabled output remains schema v4, focused
+  Rust tests pass `18/18`, and consumer tests pass `41/41`. Result-blind
+  re-review remains required before v2 execution.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.

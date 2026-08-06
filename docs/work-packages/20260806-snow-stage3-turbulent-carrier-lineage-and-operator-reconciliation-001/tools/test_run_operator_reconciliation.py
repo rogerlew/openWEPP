@@ -185,6 +185,24 @@ def test_same_state_tuple_reconstructs_without_producer_totals() -> None:
     assert parsed == [row]
 
 
+def test_inactive_v6_row_accepts_declared_empty_operator_support() -> None:
+    operator = "same_state_paired_carrier_v1"
+    row = v6_row(synthetic_tuple(), operator)
+    row["stage3_operator_reconciliation"] = {
+        "schema_version": 6,
+        "hourly_status": [
+            {"evaluated": False, "reason": "operator_not_selected"}
+            for _ in range(24)
+        ],
+        "tuples": [],
+    }
+    row["stage3_evaluation_source_fingerprint_fnv1a64"] = "0000000000000000"
+    row["stage3_evaluation_forcing_fingerprint_fnv1a64"] = "0000000000000000"
+    row["stage3_evaluation_geometry_fingerprint_fnv1a64"] = "0000000000000000"
+
+    assert MODULE.validate_v6_row(row, operator) == []
+
+
 def test_sequential_endpoint_and_legacy_bridge_reconstruct() -> None:
     row = synthetic_tuple("sequential_resolved_shadow_v1")
     MODULE.validate_tuple(row, "sequential_resolved_shadow_v1")

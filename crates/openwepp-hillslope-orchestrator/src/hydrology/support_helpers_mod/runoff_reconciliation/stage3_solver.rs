@@ -486,7 +486,7 @@ impl Wb11HydrologyKernel {
         })
     }
 
-    fn stage3_evaluation_diagnostics(
+    pub(super) fn stage3_evaluation_diagnostics(
         shadow: &Stage3ShadowSummary,
     ) -> DirectSnowStage3EvaluationDiagnostics {
         let tag = shadow.tag;
