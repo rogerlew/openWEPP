@@ -89,6 +89,9 @@ invented.
 | --- | --- | --- | --- | --- |
 | `incoming_shortwave_w_m2` | W m^-2 | `hourly_radiation_mj_m2 * 1e6 / 3600` | tuple flux; energy `* duration` | Incoming, not absorbed. |
 | `snow_albedo_fraction` | 1 | selected snow albedo state or `STAGE3_DEFAULT_SNOW_ALBEDO = 0.82` | repeated per tuple | Exact existing value; `0.45` and underlying-surface albedo are rejected aliases. |
+| `snow_albedo_source_id` | enum | `snow_albedo_state` when state is present; otherwise `stage3_default_snow_albedo_0p82` | repeated per tuple and fixed in reference | Exact source discriminator; an opaque fingerprint or value `0.82` alone is insufficient. |
+| `snow_albedo_model_id` | enum/null | selected albedo-state model ID; null for fallback | repeated per tuple and fixed in reference | State lineage; null requires fallback source ID. |
+| `snow_albedo_accumulated_positive_temperature_c_day` | deg C day/null | selected albedo-state accumulation; null for fallback | repeated per tuple and fixed in reference | Completes optional-state lineage already present in forcing fingerprint. |
 | `net_shortwave_w_m2` | W m^-2 | `incoming_shortwave * (1-albedo)` | tuple flux | State-independent external term. |
 | `actual_vapor_pressure_pa` | Pa | existing saturation-vapor-pressure function at dewpoint | repeated per tuple | Longwave and turbulent input. |
 | `longwave_cloud_fraction` | 1 | existing Dilley-Unsworth clearness mapping | tuple value | Diagnostic intermediate. |

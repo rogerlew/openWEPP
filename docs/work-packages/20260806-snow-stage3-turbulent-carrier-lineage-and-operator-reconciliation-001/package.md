@@ -339,9 +339,12 @@ The scientific disposition is one of:
 5. `INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION` only when,
    on identical three-way common support, the same-state external Snowbird
    estimator is below `-1e-6 J m^-2` and the frozen-active estimator is above
-   `+1e-6 J m^-2`. This ordered same-state-to-frozen step attributes the sign
-   crossing to initial projection; state evolution does not receive the sign
-   claim merely because sequential remains positive.
+   `+1e-6 J m^-2`, the actual sequential estimator is also above
+   `+1e-6 J m^-2`, the legacy bridge reproduces the predecessor,
+   reconstruction/delta closure passes, and shortwave remains invariant. This
+   ordered same-state-to-frozen step attributes the sustained sign crossing to
+   initial projection; state evolution does not receive the sign claim merely
+   because sequential remains positive.
 6. `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` only when, on identical
    three-way common support, both same-state and frozen-active external
    Snowbird estimators are below `-1e-6 J m^-2`, the sequential external
@@ -378,8 +381,10 @@ forms each WY window sum, then the primary Snowbird estimator as Python
 `statistics.median` across the 35 WY1990--2024 sums. It reports
 `delta_projection = F - S` and `delta_evolution = Q - F` at tuple/hour/WY/site
 levels. Projection receives the sign claim only for `S < -tol` and `F > +tol`;
-evolution receives it only for `F < -tol` and `Q > +tol`, with `S < -tol` also
-required. `tol = 1e-6 J m^-2` is applied before MJ conversion.
+it also requires `Q > +tol` and the same bridge/closure/shortwave gates as
+evolution. Evolution receives the sign claim only for `F < -tol` and
+`Q > +tol`, with `S < -tol` also required. `tol = 1e-6 J m^-2` is applied
+before MJ conversion.
 
 ## Conservation And Output Acceptance
 
@@ -523,6 +528,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] (2026-08-06) Third Rust review at the same commit additionally required
   explicit `S/F/Q` delta formulas, status-to-stability mapping, exact reference
   fields, and solver-option equality; all are amended.
+- [x] (2026-08-06) Fourth dual review at
+  `dc2e4b09363b54a7dc3a13c990a97bd615751330` required actual sequential
+  positivity/bridge gates for projection attribution and explicit albedo-source
+  lineage; both are amended.
 - [ ] Obtain PASS/PASS on the amended result-blind admission commit.
 - [ ] Amend contract authority and pass the pre-implementation contract gate.
 - [ ] Implement behavior-neutral schema-v6 observability and focused tests.
@@ -596,3 +605,7 @@ daily albedo into the frozen-active reference.
 2026-08-06: Third result-blind Rust HOLD disposition made ordered deltas,
 stability classes, reference operands, and solver-option equality fully
 executable.
+
+2026-08-06: Fourth result-blind dual HOLD disposition required a sustained
+actual sequential sign reversal for projection attribution and explicit
+state-versus-fallback albedo lineage.

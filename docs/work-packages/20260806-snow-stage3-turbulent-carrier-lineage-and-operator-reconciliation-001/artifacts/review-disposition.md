@@ -42,5 +42,12 @@ Evidence class: `Static`.
 | Status-to-stability mapping absent | `accepted` | Bound exact class, iteration, length, retained-correction semantics for every solver termination; mixed/nonfinite zero-buoyancy correction state fails lineage. | Pending fourth review. |
 | Reference fields/options categorical | `accepted` | Enumerated exact fixed, varying-hourly, and identity-only fields and required exact geometry/solver/selector equality before construction. | Pending fourth review. |
 
+## Fourth-review Residual Disposition
+
+| Finding | Disposition | Amendment | Closure |
+| --- | --- | --- | --- |
+| Projection class can fire without real sequential reversal | `accepted` | Added `Q > +tol`, exact legacy-bridge reproduction, reconstruction/delta closure, and invariant-shortwave requirements. | Pending fifth review. |
+| Albedo source lineage opaque | `accepted` | Added explicit source ID, nullable model ID, and nullable accumulated-positive-temperature state field; all are fixed in reference custody and covered by anti-alias tests. | Pending fifth review. |
+
 No finding was rejected, deferred, or moved to follow-up. Contract and runtime
 edits remain blocked until both reviewers pass the next exact amended commit.

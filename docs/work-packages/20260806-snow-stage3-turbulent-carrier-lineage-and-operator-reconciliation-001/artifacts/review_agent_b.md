@@ -59,3 +59,16 @@ remained `HOLD` with three residuals:
 
 All earlier Rust/custody findings were otherwise closed. No result-bearing lane
 ran and the reviewer edited no file.
+
+## Fourth Re-review
+
+Static re-review at clean `dc2e4b09363b54a7dc3a13c990a97bd615751330`
+remained `HOLD` with two residuals:
+
+1. `HIGH`: projection reconciliation did not require actual sequential
+   `Q > +tol`.
+2. `MEDIUM`: selected snow albedo had no explicit source/model/state-lineage
+   fields, so value `0.82` could not distinguish explicit state from fallback.
+
+All earlier Rust/custody findings passed. No result-bearing lane ran and the
+reviewer edited no file.

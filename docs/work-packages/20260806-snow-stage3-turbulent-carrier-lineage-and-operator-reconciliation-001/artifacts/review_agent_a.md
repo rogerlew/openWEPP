@@ -60,3 +60,12 @@ remained `HOLD` with two residuals:
 
 All second-review residuals were otherwise closed. No result-bearing lane ran
 and the reviewer edited no file.
+
+## Fourth Re-review
+
+Static re-review at clean `dc2e4b09363b54a7dc3a13c990a97bd615751330`
+remained `HOLD` with one `HIGH` residual: the projection sign class could fire
+when actual sequential `Q` was non-positive or the legacy positive result came
+only from internal conduction. It required `Q > +tol` plus the same predecessor
+bridge, reconstruction/delta closure, and shortwave invariance gates as the
+evolution class. All earlier science findings passed.
