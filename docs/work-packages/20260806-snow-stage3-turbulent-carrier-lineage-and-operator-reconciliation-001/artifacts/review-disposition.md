@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `all initial findings accepted and amended; independent re-review required`.
+Status: `all findings accepted, amended, and independently closed PASS/PASS`.
 
 Evidence class: `Static`.
 
@@ -49,5 +49,11 @@ Evidence class: `Static`.
 | Projection class can fire without real sequential reversal | `accepted` | Added `Q > +tol`, exact legacy-bridge reproduction, reconstruction/delta closure, and invariant-shortwave requirements. | Pending fifth review. |
 | Albedo source lineage opaque | `accepted` | Added explicit source ID, nullable model ID, and nullable accumulated-positive-temperature state field; all are fixed in reference custody and covered by anti-alias tests. | Pending fifth review. |
 
-No finding was rejected, deferred, or moved to follow-up. Contract and runtime
-edits remain blocked until both reviewers pass the next exact amended commit.
+Fifth independent admission review closed every row above at exact clean
+`42a32a297383eb4e624abc0038a073238a5d0a92`: science `PASS`, Rust/custody
+`PASS`. No result-bearing evidence was inspected.
+
+No finding was rejected, deferred, or moved to follow-up. The result-blind
+admission gate is complete. Contract-first implementation may begin; result
+execution remains blocked until the later implementation and consumer review
+gates pass.

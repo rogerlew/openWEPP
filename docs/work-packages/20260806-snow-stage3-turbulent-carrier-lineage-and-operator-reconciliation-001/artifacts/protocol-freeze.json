@@ -147,7 +147,7 @@
     "water_year_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)"
   },
   "schema_version": 2,
-  "status": "result_blind_amendment_review_required",
+  "status": "frozen_result_blind_admitted_pass_pass",
   "support": {
     "censored_primary_water_years": [2025],
     "minimum_calendar_coverage_for_screen": 0.25,
