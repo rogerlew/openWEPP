@@ -126,10 +126,13 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
     for required in [
         "SC-SNOWENERGY-001#INV-SNOWENERGY-029",
         "SC-SNOWENERGY-001#INV-SNOWENERGY-030",
+        "SC-SNOWFREEZE-001#INV-SNOWFREEZE-085/086/094/095",
+        "SC-SNOWENERGY-001#INV-SNOWENERGY-015/016/017/019/020/021/022/023/025/026/031",
         "aerodynamic_roughness_length_m",
         "bare `z_0` remains a rejected alias",
         "snow_albedo_source_id",
         "stage3_default_snow_albedo_0p82",
+        "snow_albedo_accumulated_positive_temperature_c_day` uses `degC day`",
         "24 * 60 = 1,440",
         "post_substep_no_resolved_surface",
         "total_ice_mass_after_kg_m2",
@@ -148,6 +151,10 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "+170.2536089 MJ m^-2",
         "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
         "A zero denominator makes the ratio N/A",
+        "`PREDECESSOR_NOT_REPRODUCED` applies when",
+        "`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` applies only when",
+        "`INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` applies only",
+        "inclusive zero band `[-tol, +tol]`",
     ] {
         assert!(addendum.contains(required), "canonical addendum missing {required}");
     }
@@ -179,6 +186,23 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
     ] {
         assert!(tolerances.contains(required), "tolerance table missing {required}");
     }
+
+    let variables = section(&contract, "## Variables and Units", "## Invariants");
+    assert!(
+        variables.contains("`degC day`")
+            && variables.contains("snow_albedo_accumulated_positive_temperature_c_day"),
+        "variables table must preserve albedo accumulation as degC day"
+    );
+
+    let operator_invariants = section(&contract, "| INV-SNOWFREEZE-094", "### HPHYS0298");
+    assert!(
+        !operator_invariants.contains("z_T/z_q/z_u/z_0`"),
+        "operator invariants must reject bare z_0 geometry"
+    );
+    assert!(
+        operator_invariants.matches("z_T/z_q/z_u/z_0,aero").count() >= 2,
+        "INV-094 and INV-095 must both bind z_0,aero"
+    );
 }
 
 #[test]
