@@ -1705,9 +1705,11 @@ Decision classes are evaluated in this precedence:
 `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`,
 `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES`, then
 `MULTIFACTOR_UNRESOLVED`. Lineage failure suppresses causal interpretation;
-after that precedence the seven named non-lineage classes before
-`MULTIFACTOR_UNRESOLVED` may coexist in listed order. The exclusive fallback
-cannot coexist with any preceding class.
+after that precedence the six named non-lineage classes after
+`LINEAGE_OR_IDENTITY_FAILURE` and before `MULTIFACTOR_UNRESOLVED` may coexist
+in listed order. The exclusive fallback requires that none of the seven
+preceding classes, comprising lineage failure plus those six non-lineage
+classes, is emitted and cannot coexist with any preceding class.
 
 Support censoring is material when the complete external delta changes sign
 between common and all-evaluated support or when this ratio exceeds `0.05`:
