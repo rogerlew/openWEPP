@@ -6,10 +6,13 @@ const PACKAGE: &str = "docs/work-packages/20260806-snow-stage3-shadow-solver-ext
 const SUPPORT: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
 const SOLVER: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs";
+const SOLVER_PARENT: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
 const EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs";
 const ERRORS: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs";
 const RUNNER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const RUNNER_EVALUATION: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs";
+const PUBLICATION: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/02_publication_and_manifest_helpers.rs";
+const BUILDERS: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -82,7 +85,7 @@ fn lifecycle_index_and_package_name_the_same_realization() {
 #[test]
 fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
     let support = read(SUPPORT);
-    let solver = read(SOLVER);
+    let solver = format!("{}\n{}", read(SOLVER), read(SOLVER_PARENT));
     let evaluation = read(EVALUATION);
     let errors = read(ERRORS);
 
@@ -91,18 +94,31 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
         "SameStatePairedCarrierV1",
         "SequentialResolvedShadowV1",
         "pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>",
+        "pub complete_carrier_shadow: bool",
         "pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>",
     ] {
         assert!(support.contains(required), "{SUPPORT} missing {required}");
     }
     for required in [
+        "struct Stage3EvaluationTag",
+        "coverage_id: \"evaluated_seconds_over_requested_seconds_v1\"",
         "evaluate_stage3_same_state_paired_carrier",
         "evaluate_stage3_sequential_melt_shadow",
-        "complete_arm_residual_j_m2",
+        "complete_arm_component_residual_j_m2",
         "snow_ground_cross_day_terminal_recipient_unresolved_v1",
     ] {
         assert!(solver.contains(required), "{SOLVER} missing {required}");
     }
+    let tag_position = solver
+        .find("let tag = Stage3EvaluationTag::new(operator)")
+        .expect("typed tag construction");
+    let clone_position = solver
+        .find("layers.clone()")
+        .expect("bounded sequential clone");
+    assert!(
+        tag_position < clone_position,
+        "complete tag must precede clone allocation"
+    );
     for required in [
         "stage3_shadow_fingerprints",
         "stage3_fnv1a_u64",
@@ -128,6 +144,8 @@ fn real_trace_consumer_has_enabled_only_v5_and_all_audit_families() {
         "stage3_evaluation_operator_id",
         "stage3_evaluation_pairing_id",
         "stage3_evaluation_non_formulation_fingerprint_fnv1a64",
+        "stage3_evaluation_surface_arm_non_formulation_fingerprint_fnv1a64",
+        "stage3_evaluation_complete_arm_non_formulation_fingerprint_fnv1a64",
         "stage3_evaluation_complete_arm_shortwave_j_m2",
         "stage3_evaluation_complete_arm_longwave_j_m2",
         "stage3_evaluation_complete_arm_sensible_j_m2",
@@ -139,11 +157,29 @@ fn real_trace_consumer_has_enabled_only_v5_and_all_audit_families() {
         "stage3_evaluation_hourly_cold_content_export_j_m2",
         "stage3_evaluation_complete_arm_available_ice_kg_m2",
         "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
+        "stage3_evaluation_complete_arm_component_residual_j_m2",
+        "stage3_evaluation_hourly_complete_energy_j_m2",
+        "stage3_evaluation_hourly_melt_kg_m2",
+        "stage3_evaluation_hourly_energy_closure_residual_j_m2",
         "stage3_evaluation_requested_seconds",
         "stage3_evaluation_evaluated_seconds",
         "schema_v5_consumer_reconstructs_shadow_operands_and_rejects_production_aliases",
+        "full_solver_rows_reconstruct_all_v5_operands_and_reject_adjacent_aliases",
     ] {
         assert!(runner.contains(required), "{RUNNER} missing {required}");
     }
     assert!(!runner.contains("complete_carrier_shadow: bool"));
+}
+
+#[test]
+fn public_wat_hbp_pass_projection_cannot_read_evaluation_evidence() {
+    for path in [PUBLICATION, BUILDERS] {
+        let source = read(path);
+        assert!(
+            !source.contains(".evaluation")
+                && !source.contains("stage3_evaluation_complete_arm")
+                && !source.contains("stage3_evaluation_hourly"),
+            "{path} must not consume evaluation evidence"
+        );
+    }
 }

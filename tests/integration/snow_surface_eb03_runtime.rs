@@ -1,9 +1,9 @@
 use openwepp_hillslope_orchestrator::{
-    DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLayerState,
-    DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions, DirectSnowTurbulentGeometry,
-    SnowDensityModel, SnowMeltModel, SnowStage3EvaluationOperator, SnowStage3LiquidRoutingModel,
-    SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel, Wb11HydrologyKernel,
-    snow_density_compaction_v1_constants,
+    DirectActiveSnowPartitionInputs, DirectSnowDiagnosticCapture, DirectSnowHourlyForcing,
+    DirectSnowLayerState, DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions,
+    DirectSnowTurbulentGeometry, SnowDensityModel, SnowMeltModel, SnowPhasePartitionModel,
+    SnowStage3EvaluationOperator, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
+    SnowSurfaceSublimationModel, Wb11HydrologyKernel, snow_density_compaction_v1_constants,
 };
 
 #[test]
@@ -110,6 +110,7 @@ fn inputs(
             daylight: true,
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+            complete_carrier_shadow: false,
             stage3_evaluation_operator: None,
         },
         sturm_climate_class: None,
@@ -764,6 +765,14 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
         shadow.liquid_disposition_ledger(),
         authoritative.liquid_disposition_ledger()
     );
+    let mut public_shadow = shadow.clone();
+    let mut public_authoritative = authoritative.clone();
+    public_shadow.verbose_diagnostics = None;
+    public_authoritative.verbose_diagnostics = None;
+    assert_eq!(
+        public_shadow, public_authoritative,
+        "evaluation-only diagnostics must be the sole partition difference"
+    );
 
     let diagnostics = stage3_diagnostics(&shadow);
     assert!(
@@ -800,6 +809,11 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
     assert_eq!(evaluation.arm_count, 1);
     assert!(evaluation.coverage_fraction > 0.0 && evaluation.coverage_fraction <= 1.0);
     assert_ne!(evaluation.non_formulation_fingerprint, 0);
+    assert!(!evaluation.surface_arm_applicable);
+    assert_eq!(
+        evaluation.surface_arm_total_j_m2.to_bits(),
+        0.0_f64.to_bits()
+    );
 }
 
 #[test]
@@ -852,6 +866,11 @@ fn same_state_pair_has_identical_support_and_reconstructable_named_arms() {
         86_400.0_f64.to_bits()
     );
     assert_eq!(evaluation.coverage_fraction.to_bits(), 1.0_f64.to_bits());
+    assert!(evaluation.surface_arm_applicable);
+    assert_eq!(
+        evaluation.surface_arm_non_formulation_fingerprint,
+        evaluation.complete_arm_non_formulation_fingerprint
+    );
     assert!(!evaluation.surface_arm_sensible_applicable);
     assert!(!evaluation.surface_arm_advected_applicable);
     assert!(!evaluation.complete_arm_internal_conduction_applicable);
@@ -867,7 +886,7 @@ fn same_state_pair_has_identical_support_and_reconstructable_named_arms() {
         + evaluation.complete_arm_latent_j_m2
         + evaluation.complete_arm_advected_j_m2;
     assert!((evaluation.complete_arm_total_j_m2 - complete_reconstructed).abs() <= 1.0e-6);
-    assert!(evaluation.complete_arm_residual_j_m2.abs() <= 1.0e-6);
+    assert!(evaluation.complete_arm_component_residual_j_m2.abs() <= 1.0e-6);
     assert!(diagnostics.hourly_surface_energy.iter().all(|hour| {
         hour.shadow_requested_seconds.to_bits() == 3_600.0_f64.to_bits()
             && hour.shadow_evaluated_seconds.to_bits() == 3_600.0_f64.to_bits()
@@ -963,6 +982,184 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         baseline_result.runtime_swe_after_m.to_bits(),
         "shadow melt must not mutate authoritative SWE"
     );
+    let evaluation = terminal_diagnostics
+        .evaluation
+        .expect("terminal shadow evaluation metadata");
+    assert!(evaluation.evaluated_seconds < evaluation.requested_seconds);
+    assert_eq!(
+        terminal_diagnostics
+            .hourly_surface_energy
+            .iter()
+            .map(|hour| hour.shadow_requested_seconds)
+            .sum::<f64>()
+            .to_bits(),
+        evaluation.requested_seconds.to_bits()
+    );
+    assert_eq!(
+        terminal_diagnostics
+            .hourly_surface_energy
+            .iter()
+            .map(|hour| hour.shadow_evaluated_seconds)
+            .sum::<f64>()
+            .to_bits(),
+        evaluation.evaluated_seconds.to_bits()
+    );
+    assert!(
+        terminal_diagnostics
+            .hourly_surface_energy
+            .iter()
+            .any(|hour| {
+                hour.shadow_requested_seconds == 3_600.0 && hour.shadow_evaluated_seconds == 0.0
+            })
+    );
+}
+
+#[test]
+fn filtered_capture_skips_evaluation_primitives_and_preserves_authoritative_result() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.surface_energy_options.stage3_evaluation_operator =
+        Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
+    candidate
+        .surface_energy_options
+        .turbulent_geometry
+        .wind_speed_height_m = 0.001;
+    candidate
+        .surface_energy_options
+        .turbulent_geometry
+        .aerodynamic_roughness_length_m = 0.005;
+    let mut baseline = candidate.clone();
+    baseline.surface_energy_options.stage3_evaluation_operator = None;
+
+    let expected = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+        &baseline,
+        DirectSnowDiagnosticCapture::Disabled,
+    )
+    .expect("filtered authoritative baseline");
+    let observed = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+        &candidate,
+        DirectSnowDiagnosticCapture::Disabled,
+    )
+    .expect("filtered request must not execute invalid evaluation geometry");
+    assert_eq!(observed, expected);
+    assert!(observed.verbose_diagnostics.is_none());
+}
+
+#[test]
+fn selected_evaluator_on_empty_pack_emits_tagged_zero_coverage() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.runtime_swe_m = 0.0;
+    candidate.runtime_depth_m = 0.0;
+    candidate.runtime_density_kg_m3 = 0.0;
+    candidate.coe_boundary_depth_m = 0.0;
+    candidate.coe_boundary_density_kg_m3 = 0.0;
+    candidate.snow_layers.clear();
+    candidate.surface_energy_options.stage3_evaluation_operator =
+        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("empty-pack evaluation row");
+    let diagnostics = stage3_diagnostics(&result);
+    let evaluation = diagnostics
+        .evaluation
+        .expect("selected empty-pack evaluator retains its tag");
+    assert_eq!(evaluation.evaluated_seconds.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(evaluation.coverage_fraction.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(
+        diagnostics
+            .hourly_surface_energy
+            .iter()
+            .map(|hour| hour.shadow_requested_seconds)
+            .sum::<f64>()
+            .to_bits(),
+        evaluation.requested_seconds.to_bits()
+    );
+}
+
+#[test]
+fn legacy_complete_carrier_field_remains_source_and_behavior_compatible() {
+    let mut legacy = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    legacy.surface_energy_options.complete_carrier_shadow = true;
+    let mut typed = legacy.clone();
+    typed.surface_energy_options.complete_carrier_shadow = false;
+    typed.surface_energy_options.stage3_evaluation_operator =
+        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
+    assert_eq!(
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&legacy)
+            .expect("legacy complete-carrier request"),
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&typed)
+            .expect("typed sequential request")
+    );
+}
+
+#[test]
+fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
+    fn fingerprint(mut candidate: DirectActiveSnowPartitionInputs, label: &str) -> u64 {
+        candidate.surface_energy_options.stage3_evaluation_operator =
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
+        let result =
+            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+                .unwrap_or_else(|error| panic!("paired fingerprint candidate {label}: {error}"));
+        let evaluation = stage3_diagnostics(&result)
+            .evaluation
+            .expect("paired fingerprint metadata");
+        assert_eq!(
+            evaluation.surface_arm_non_formulation_fingerprint,
+            evaluation.complete_arm_non_formulation_fingerprint
+        );
+        evaluation.non_formulation_fingerprint
+    }
+
+    let baseline_inputs = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    let baseline = fingerprint(baseline_inputs.clone(), "baseline");
+    let mut variants = Vec::new();
+    let mut pressure = baseline_inputs.clone();
+    pressure.surface_energy_options.atmospheric_pressure_pa += 10.0;
+    variants.push(("pressure", pressure));
+    let mut daily_solar = baseline_inputs.clone();
+    daily_solar
+        .surface_energy_options
+        .daily_solar_radiation_mj_m2 += 0.1;
+    variants.push(("daily_solar", daily_solar));
+    let mut extraterrestrial = baseline_inputs.clone();
+    extraterrestrial
+        .surface_energy_options
+        .daily_extraterrestrial_radiation_mj_m2 += 0.1;
+    variants.push(("extraterrestrial", extraterrestrial));
+    let mut forcing = baseline_inputs.clone();
+    forcing.hyetograph_rainfall_m = 1.0e-6;
+    forcing.hourly[0].active_precipitation_m = 1.0e-6;
+    forcing.hourly[0].rain_m = 1.0e-6;
+    forcing.hourly[0].rain_fraction = 1.0;
+    forcing.hourly[0].hydrometeor_temperature_c = Some(-5.0);
+    variants.push(("active_precipitation", forcing));
+    let mut phase = baseline_inputs.clone();
+    phase.hourly[0].phase_model = SnowPhasePartitionModel::HarderPomeroyHourly;
+    variants.push(("phase_model", phase));
+    let mut layer = baseline_inputs.clone();
+    layer.snow_layers[0].settle_day_count += 1.0;
+    variants.push(("settle_count", layer));
+    let mut refrozen = baseline_inputs.clone();
+    refrozen.snow_layers[0].refrozen_liquid_m = 1.0e-8;
+    variants.push(("refrozen_liquid", refrozen));
+
+    for (name, variant) in variants {
+        assert_ne!(
+            fingerprint(variant, name),
+            baseline,
+            "fingerprint omitted {name}"
+        );
+    }
 }
 
 #[test]

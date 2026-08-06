@@ -345,6 +345,8 @@ pub struct DirectSnowSurfaceEnergyOptions {
     pub daylight: bool,
     pub atmospheric_pressure_pa: f64,
     pub turbulent_geometry: DirectSnowTurbulentGeometry,
+    /// Backward-compatible spelling for the sequential complete-carrier shadow.
+    pub complete_carrier_shadow: bool,
     pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>,
 }
 
@@ -358,6 +360,7 @@ impl Default for DirectSnowSurfaceEnergyOptions {
             daylight: false,
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+            complete_carrier_shadow: false,
             stage3_evaluation_operator: None,
         }
     }
@@ -562,6 +565,7 @@ pub struct DirectSnowStage3EvaluationDiagnostics {
     pub support_id: &'static str,
     pub cadence_id: &'static str,
     pub carrier_id: &'static str,
+    pub coverage_id: &'static str,
     pub claim_class: &'static str,
     pub unresolved_boundaries_id: &'static str,
     pub pairing_id: Option<&'static str>,
@@ -571,9 +575,12 @@ pub struct DirectSnowStage3EvaluationDiagnostics {
     pub forcing_fingerprint: u64,
     pub geometry_fingerprint: u64,
     pub non_formulation_fingerprint: u64,
+    pub surface_arm_non_formulation_fingerprint: u64,
+    pub complete_arm_non_formulation_fingerprint: u64,
     pub requested_seconds: f64,
     pub evaluated_seconds: f64,
     pub coverage_fraction: f64,
+    pub surface_arm_applicable: bool,
     pub surface_arm_shortwave_j_m2: f64,
     pub surface_arm_longwave_j_m2: f64,
     pub surface_arm_latent_j_m2: f64,
@@ -587,6 +594,7 @@ pub struct DirectSnowStage3EvaluationDiagnostics {
     pub complete_arm_latent_j_m2: f64,
     pub complete_arm_advected_j_m2: f64,
     pub complete_arm_internal_active_lower_conduction_j_m2: f64,
+    pub complete_arm_applicable: bool,
     pub complete_arm_internal_conduction_applicable: bool,
     pub complete_arm_vapor_mass_exchange_kg_m2: f64,
     pub complete_arm_cold_content_export_j_m2: f64,
@@ -594,8 +602,15 @@ pub struct DirectSnowStage3EvaluationDiagnostics {
     pub complete_arm_available_ice_kg_m2: f64,
     pub complete_arm_available_ice_applicable: bool,
     pub complete_arm_total_j_m2: f64,
+    pub complete_arm_sequential_ledger_applicable: bool,
+    pub complete_arm_cold_energy_change_j_m2: f64,
+    pub complete_arm_excess_energy_j_m2: f64,
+    pub complete_arm_sublimation_kg_m2: f64,
+    pub complete_arm_melt_kg_m2: f64,
     pub complete_arm_terminal_unallocated_j_m2: f64,
-    pub complete_arm_residual_j_m2: f64,
+    pub complete_arm_terminal_unallocated_applicable: bool,
+    pub complete_arm_component_residual_j_m2: f64,
+    pub complete_arm_maximum_thermodynamic_residual_j_m2: f64,
 }
 
 impl DirectSnowStage3Diagnostics {

@@ -13,13 +13,13 @@ fn direct_snow_trace_stage3_evaluation_fields(
         hour.shadow_longwave_energy_j_m2
     });
     let hourly_sensible = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_sensible_flux_w_m2 * hour.shadow_evaluated_seconds
+        hour.shadow_sensible_flux_w_m2 * 3_600.0
     });
     let hourly_latent = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_latent_flux_w_m2 * hour.shadow_evaluated_seconds
+        hour.shadow_latent_flux_w_m2 * 3_600.0
     });
     let hourly_advected = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_advected_flux_w_m2 * hour.shadow_evaluated_seconds
+        hour.shadow_advected_flux_w_m2 * 3_600.0
     });
     let hourly_internal_conduction = direct_snow_trace_hourly_values(diagnostics, |hour| {
         hour.shadow_internal_active_lower_conduction_j_m2
@@ -33,12 +33,47 @@ fn direct_snow_trace_stage3_evaluation_fields(
     let hourly_evaluated = direct_snow_trace_hourly_values(diagnostics, |hour| {
         hour.shadow_evaluated_seconds
     });
+    let hourly_vapor = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_vapor_mass_exchange_kg_m2
+    });
+    let hourly_complete = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_complete_energy_j_m2
+    });
+    let hourly_cold_required = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_cold_required_j_m2
+    });
+    let hourly_cold_change = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_cold_energy_change_j_m2
+    });
+    let hourly_excess = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_excess_energy_j_m2
+    });
+    let hourly_available_ice = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_ice_available_kg_m2
+    });
+    let hourly_sublimation = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_sublimation_kg_m2
+    });
+    let hourly_melt = direct_snow_trace_hourly_values(diagnostics, |hour| hour.shadow_melt_kg_m2);
+    let hourly_terminal = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_unallocated_after_exhaustion_j_m2
+    });
+    let hourly_residual = direct_snow_trace_hourly_values(diagnostics, |hour| {
+        hour.shadow_energy_closure_residual_j_m2
+    });
+    let hourly_carrier_evaluated = diagnostics
+        .hourly_surface_energy
+        .iter()
+        .map(|hour| hour.shadow_complete_carrier_evaluated.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
     Some(format!(
         "\"stage3_evaluation_operator_id\":\"{}\",\
 \"stage3_evaluation_source_snapshot_id\":\"{}\",\
 \"stage3_evaluation_support_id\":\"{}\",\
 \"stage3_evaluation_cadence_id\":\"{}\",\
 \"stage3_evaluation_carrier_id\":\"{}\",\
+\"stage3_evaluation_coverage_id\":\"{}\",\
 \"stage3_evaluation_claim_class\":\"{}\",\
 \"stage3_evaluation_unresolved_boundaries_id\":\"{}\",\
 \"stage3_evaluation_pairing_id\":{},\
@@ -48,9 +83,12 @@ fn direct_snow_trace_stage3_evaluation_fields(
 \"stage3_evaluation_forcing_fingerprint_fnv1a64\":\"{:016x}\",\
 \"stage3_evaluation_geometry_fingerprint_fnv1a64\":\"{:016x}\",\
 \"stage3_evaluation_non_formulation_fingerprint_fnv1a64\":\"{:016x}\",\
+\"stage3_evaluation_surface_arm_non_formulation_fingerprint_fnv1a64\":\"{:016x}\",\
+\"stage3_evaluation_complete_arm_non_formulation_fingerprint_fnv1a64\":\"{:016x}\",\
 \"stage3_evaluation_requested_seconds\":{},\
 \"stage3_evaluation_evaluated_seconds\":{},\
 \"stage3_evaluation_coverage_fraction\":{},\
+\"stage3_evaluation_surface_arm_applicable\":{},\
 \"stage3_evaluation_surface_arm_shortwave_j_m2\":{},\
 \"stage3_evaluation_surface_arm_longwave_j_m2\":{},\
 \"stage3_evaluation_surface_arm_latent_j_m2\":{},\
@@ -64,6 +102,7 @@ fn direct_snow_trace_stage3_evaluation_fields(
 \"stage3_evaluation_complete_arm_latent_j_m2\":{},\
 \"stage3_evaluation_complete_arm_advected_j_m2\":{},\
 \"stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2\":{},\
+\"stage3_evaluation_complete_arm_applicable\":{},\
 \"stage3_evaluation_complete_arm_internal_conduction_applicable\":{},\
 \"stage3_evaluation_complete_arm_vapor_mass_exchange_kg_m2\":{},\
 \"stage3_evaluation_complete_arm_cold_content_export_j_m2\":{},\
@@ -71,8 +110,15 @@ fn direct_snow_trace_stage3_evaluation_fields(
 \"stage3_evaluation_complete_arm_available_ice_kg_m2\":{},\
 \"stage3_evaluation_complete_arm_available_ice_applicable\":{},\
 \"stage3_evaluation_complete_arm_total_j_m2\":{},\
+\"stage3_evaluation_complete_arm_sequential_ledger_applicable\":{},\
+\"stage3_evaluation_complete_arm_cold_energy_change_j_m2\":{},\
+\"stage3_evaluation_complete_arm_excess_energy_j_m2\":{},\
+\"stage3_evaluation_complete_arm_sublimation_kg_m2\":{},\
+\"stage3_evaluation_complete_arm_melt_kg_m2\":{},\
 \"stage3_evaluation_complete_arm_terminal_unallocated_j_m2\":{},\
-\"stage3_evaluation_complete_arm_residual_j_m2\":{},\
+\"stage3_evaluation_complete_arm_terminal_unallocated_applicable\":{},\
+\"stage3_evaluation_complete_arm_component_residual_j_m2\":{},\
+\"stage3_evaluation_complete_arm_maximum_thermodynamic_residual_j_m2\":{},\
 \"stage3_evaluation_hourly_shortwave_j_m2\":{},\
 \"stage3_evaluation_hourly_longwave_j_m2\":{},\
 \"stage3_evaluation_hourly_sensible_j_m2\":{},\
@@ -80,6 +126,17 @@ fn direct_snow_trace_stage3_evaluation_fields(
 \"stage3_evaluation_hourly_advected_j_m2\":{},\
 \"stage3_evaluation_hourly_internal_active_lower_conduction_j_m2\":{},\
 \"stage3_evaluation_hourly_cold_content_export_j_m2\":{},\
+\"stage3_evaluation_hourly_vapor_mass_exchange_kg_m2\":{},\
+\"stage3_evaluation_hourly_complete_energy_j_m2\":{},\
+\"stage3_evaluation_hourly_cold_required_j_m2\":{},\
+\"stage3_evaluation_hourly_cold_energy_change_j_m2\":{},\
+\"stage3_evaluation_hourly_excess_energy_j_m2\":{},\
+\"stage3_evaluation_hourly_available_ice_kg_m2\":{},\
+\"stage3_evaluation_hourly_sublimation_kg_m2\":{},\
+\"stage3_evaluation_hourly_melt_kg_m2\":{},\
+\"stage3_evaluation_hourly_terminal_unallocated_j_m2\":{},\
+\"stage3_evaluation_hourly_energy_closure_residual_j_m2\":{},\
+\"stage3_evaluation_hourly_complete_carrier_evaluated\":[{}],\
 \"stage3_evaluation_hourly_requested_seconds\":{},\
 \"stage3_evaluation_hourly_evaluated_seconds\":{}",
         evaluation.operator.id(),
@@ -87,6 +144,7 @@ fn direct_snow_trace_stage3_evaluation_fields(
         evaluation.support_id,
         evaluation.cadence_id,
         evaluation.carrier_id,
+        evaluation.coverage_id,
         evaluation.claim_class,
         evaluation.unresolved_boundaries_id,
         pairing_id,
@@ -97,9 +155,12 @@ fn direct_snow_trace_stage3_evaluation_fields(
         evaluation.forcing_fingerprint,
         evaluation.geometry_fingerprint,
         evaluation.non_formulation_fingerprint,
+        evaluation.surface_arm_non_formulation_fingerprint,
+        evaluation.complete_arm_non_formulation_fingerprint,
         direct_production_trace_number(evaluation.requested_seconds),
         direct_production_trace_number(evaluation.evaluated_seconds),
         direct_production_trace_number(evaluation.coverage_fraction),
+        evaluation.surface_arm_applicable,
         direct_production_trace_number(evaluation.surface_arm_shortwave_j_m2),
         direct_production_trace_number(evaluation.surface_arm_longwave_j_m2),
         direct_production_trace_number(evaluation.surface_arm_latent_j_m2),
@@ -115,6 +176,7 @@ fn direct_snow_trace_stage3_evaluation_fields(
         direct_production_trace_number(
             evaluation.complete_arm_internal_active_lower_conduction_j_m2
         ),
+        evaluation.complete_arm_applicable,
         evaluation.complete_arm_internal_conduction_applicable,
         direct_production_trace_number(
             evaluation.complete_arm_vapor_mass_exchange_kg_m2
@@ -126,10 +188,19 @@ fn direct_snow_trace_stage3_evaluation_fields(
         direct_production_trace_number(evaluation.complete_arm_available_ice_kg_m2),
         evaluation.complete_arm_available_ice_applicable,
         direct_production_trace_number(evaluation.complete_arm_total_j_m2),
+        evaluation.complete_arm_sequential_ledger_applicable,
+        direct_production_trace_number(evaluation.complete_arm_cold_energy_change_j_m2),
+        direct_production_trace_number(evaluation.complete_arm_excess_energy_j_m2),
+        direct_production_trace_number(evaluation.complete_arm_sublimation_kg_m2),
+        direct_production_trace_number(evaluation.complete_arm_melt_kg_m2),
         direct_production_trace_number(
             evaluation.complete_arm_terminal_unallocated_j_m2
         ),
-        direct_production_trace_number(evaluation.complete_arm_residual_j_m2),
+        evaluation.complete_arm_terminal_unallocated_applicable,
+        direct_production_trace_number(evaluation.complete_arm_component_residual_j_m2),
+        direct_production_trace_number(
+            evaluation.complete_arm_maximum_thermodynamic_residual_j_m2
+        ),
         hourly_shortwave,
         hourly_longwave,
         hourly_sensible,
@@ -137,7 +208,467 @@ fn direct_snow_trace_stage3_evaluation_fields(
         hourly_advected,
         hourly_internal_conduction,
         hourly_cold_content_export,
+        hourly_vapor,
+        hourly_complete,
+        hourly_cold_required,
+        hourly_cold_change,
+        hourly_excess,
+        hourly_available_ice,
+        hourly_sublimation,
+        hourly_melt,
+        hourly_terminal,
+        hourly_residual,
+        hourly_carrier_evaluated,
         hourly_requested,
         hourly_evaluated,
     ))
+}
+
+#[cfg(test)]
+mod stage3_evaluation_real_consumer_tests {
+    use super::*;
+    use openwepp_hillslope_orchestrator::{
+        DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
+        DirectSnowLayerState, DirectSnowSurfaceEnergyOptions, DirectSnowTurbulentGeometry,
+        SnowDensityModel, SnowMeltModel, SnowPhasePartitionModel, SnowStage3EvaluationOperator,
+        SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel,
+        Wb11HydrologyKernel,
+    };
+
+    const LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
+
+    fn solver_row(
+        operator: Option<SnowStage3EvaluationOperator>,
+        terminal: bool,
+    ) -> (String, serde_json::Value) {
+        let (mass_swe_m, depth_m, density_kg_m3, temperature_c) = if terminal {
+            (0.001_1, 0.002_2, 500.0, 0.0)
+        } else {
+            (0.18, 0.40, 450.0, -8.0)
+        };
+        let mut layer = DirectSnowLayerState::new(mass_swe_m, depth_m, density_kg_m3, 12.0);
+        layer.temperature_c = temperature_c;
+        layer.cold_content_j_m2 =
+            mass_swe_m * 1_000.0 * 2_100.0 * (-temperature_c).max(0.0);
+        let hourly = [DirectSnowHourlyForcing {
+            radiation_mj_m2: if terminal { 1_000.0 } else { 0.0 },
+            air_temperature_c: if terminal { 0.0 } else { -5.0 },
+            ..DirectSnowHourlyForcing::zero()
+        }; 24];
+        let inputs = DirectActiveSnowPartitionInputs {
+            hyetograph_rainfall_m: 0.0,
+            rst_c: 0.0,
+            newsnw_kg_m3: 100.0,
+            ssd_kg_m3: 522.0,
+            runtime_swe_m: mass_swe_m,
+            runtime_depth_m: depth_m,
+            runtime_density_kg_m3: density_kg_m3,
+            runtime_settle_day_count: 12.0,
+            liquid_water_retained_m: 0.0,
+            tmax_c: -3.0,
+            tmin_c: -7.0,
+            canopy_cover_fraction: 0.45,
+            wind_m_s: 3.0,
+            dewpoint_c: -15.0,
+            snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
+            stage3_liquid_routing_model: SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+            surface_energy_options: DirectSnowSurfaceEnergyOptions {
+                longwave_model: SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+                sublimation_model: SnowSurfaceSublimationModel::Disabled,
+                daily_solar_radiation_mj_m2: if terminal { 48.0 } else { 5.0 },
+                daily_extraterrestrial_radiation_mj_m2: 10.0,
+                daylight: true,
+                atmospheric_pressure_pa: 101_324.6,
+                turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+                complete_carrier_shadow: false,
+                stage3_evaluation_operator: operator,
+            },
+            sturm_climate_class: None,
+            sturm_day_of_year: None,
+            coe_boundary_depth_m: depth_m,
+            coe_boundary_density_kg_m3: density_kg_m3,
+            coe_boundary_settle_day_count: 12.0,
+            snow_albedo_model: None,
+            snow_albedo_state: None,
+            snow_layers: vec![layer],
+            underlying_surface_albedo: 0.2,
+            hourly,
+        };
+        let mut partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
+            &inputs,
+        )
+        .expect("solver-produced evaluation partition");
+        {
+            let verbose = partition
+                .verbose_diagnostics
+                .as_mut()
+                .expect("verbose solver diagnostics");
+            verbose.stage3.shortwave_energy_j_m2 = 9.91e12;
+            verbose.stage3.surface_energy_j_m2 = 9.92e12;
+            verbose.stage3.energy_closure_residual_j_m2 = 9.93e12;
+            verbose.stage3.hourly_surface_energy[0].net_shortwave_w_m2 = 9.94e12;
+        }
+
+        let mut lane = DirectSnowLaneState::from_runtime_values(
+            mass_swe_m,
+            depth_m,
+            density_kg_m3,
+            12.0,
+        );
+        lane.layers = vec![layer];
+        let context = DirectSnowTraceRowContext {
+            day_index: 17,
+            lane_index: 3,
+            hyetograph_rainfall_m: 0.0,
+            snow_lane_state: &lane,
+            snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            snow_phase_model: SnowPhasePartitionModel::LegacyRst,
+            snow_liquid: &partition,
+        };
+        let verbose = partition
+            .verbose_diagnostics
+            .as_deref()
+            .expect("verbose solver diagnostics");
+        let row = r7h_direct_production_snow_trace_line(&context, verbose);
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-stage3-real-v5-{}-{}.jsonl",
+            std::process::id(),
+            operator.map_or("disabled", SnowStage3EvaluationOperator::id)
+        ));
+        std::fs::write(&path, &row).expect("write full schema-v5 trace row");
+        let observed = std::fs::read_to_string(&path).expect("reread full schema-v5 trace row");
+        std::fs::remove_file(path).expect("remove schema-v5 trace row");
+        let value = serde_json::from_str(observed.trim()).expect("full snow trace row is valid JSON");
+        (observed, value)
+    }
+
+    fn numbers(value: &serde_json::Value, field: &str) -> Vec<f64> {
+        value[field]
+            .as_array()
+            .unwrap_or_else(|| panic!("{field} must be an array"))
+            .iter()
+            .map(|item| item.as_f64().unwrap_or_else(|| panic!("{field} item must be numeric")))
+            .collect()
+    }
+
+    fn number(value: &serde_json::Value, field: &str) -> f64 {
+        value[field]
+            .as_f64()
+            .unwrap_or_else(|| panic!("{field} must be numeric"))
+    }
+
+    fn assert_close(left: f64, right: f64, context: &str) {
+        assert!((left - right).abs() <= 1.0e-6, "{context}: {left} != {right}");
+    }
+
+    fn fnv1a64(bytes: &[u8]) -> u64 {
+        bytes.iter().fold(0xcbf2_9ce4_8422_2325, |mut hash, byte| {
+            hash ^= u64::from(*byte);
+            hash.wrapping_mul(0x0000_0100_0000_01b3)
+        })
+    }
+
+    #[test]
+    fn disabled_full_row_retains_the_frozen_schema_v4_bytes() {
+        let (row, value) = solver_row(None, false);
+        assert_eq!(value["schema"], "openwepp-r7h-direct-production-snow-trace-v4");
+        assert!(
+            value
+                .as_object()
+                .expect("v4 row object")
+                .keys()
+                .all(|field| !field.starts_with("stage3_evaluation_"))
+        );
+        assert_eq!(fnv1a64(row.as_bytes()), 0xa398_0f35_4195_8836);
+    }
+
+    #[test]
+    #[allow(
+        clippy::too_many_lines,
+        clippy::float_cmp,
+        clippy::cast_precision_loss
+    )]
+    fn full_solver_rows_reconstruct_all_v5_operands_and_reject_adjacent_aliases() {
+        let (_, paired) = solver_row(
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
+            false,
+        );
+        let (_, sequential) = solver_row(
+            Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1),
+            true,
+        );
+        let required = [
+            "operator_id", "source_snapshot_id", "support_id", "cadence_id", "carrier_id",
+            "coverage_id", "claim_class", "unresolved_boundaries_id", "pairing_id", "arm_ids",
+            "arm_count", "source_fingerprint_fnv1a64", "forcing_fingerprint_fnv1a64",
+            "geometry_fingerprint_fnv1a64", "non_formulation_fingerprint_fnv1a64",
+            "surface_arm_non_formulation_fingerprint_fnv1a64",
+            "complete_arm_non_formulation_fingerprint_fnv1a64", "requested_seconds",
+            "evaluated_seconds", "coverage_fraction", "surface_arm_applicable",
+            "surface_arm_shortwave_j_m2", "surface_arm_longwave_j_m2",
+            "surface_arm_latent_j_m2", "surface_arm_sensible_applicable",
+            "surface_arm_advected_applicable", "surface_arm_internal_conduction_applicable",
+            "surface_arm_total_j_m2", "complete_arm_shortwave_j_m2",
+            "complete_arm_longwave_j_m2", "complete_arm_sensible_j_m2",
+            "complete_arm_latent_j_m2", "complete_arm_advected_j_m2",
+            "complete_arm_internal_active_lower_conduction_j_m2", "complete_arm_applicable",
+            "complete_arm_internal_conduction_applicable", "complete_arm_vapor_mass_exchange_kg_m2",
+            "complete_arm_cold_content_export_j_m2", "complete_arm_cold_content_export_applicable",
+            "complete_arm_available_ice_kg_m2", "complete_arm_available_ice_applicable",
+            "complete_arm_total_j_m2", "complete_arm_sequential_ledger_applicable",
+            "complete_arm_cold_energy_change_j_m2", "complete_arm_excess_energy_j_m2",
+            "complete_arm_sublimation_kg_m2", "complete_arm_melt_kg_m2",
+            "complete_arm_terminal_unallocated_j_m2",
+            "complete_arm_terminal_unallocated_applicable", "complete_arm_component_residual_j_m2",
+            "complete_arm_maximum_thermodynamic_residual_j_m2", "hourly_shortwave_j_m2",
+            "hourly_longwave_j_m2", "hourly_sensible_j_m2", "hourly_latent_j_m2",
+            "hourly_advected_j_m2", "hourly_internal_active_lower_conduction_j_m2",
+            "hourly_cold_content_export_j_m2", "hourly_vapor_mass_exchange_kg_m2",
+            "hourly_complete_energy_j_m2", "hourly_cold_required_j_m2",
+            "hourly_cold_energy_change_j_m2", "hourly_excess_energy_j_m2",
+            "hourly_available_ice_kg_m2", "hourly_sublimation_kg_m2", "hourly_melt_kg_m2",
+            "hourly_terminal_unallocated_j_m2", "hourly_energy_closure_residual_j_m2",
+            "hourly_complete_carrier_evaluated", "hourly_requested_seconds",
+            "hourly_evaluated_seconds",
+        ];
+        for value in [&paired, &sequential] {
+            assert_eq!(value["schema"], "openwepp-r7h-direct-production-snow-trace-v5");
+            let object = value.as_object().expect("trace row object");
+            for suffix in required {
+                let field = format!("stage3_evaluation_{suffix}");
+                assert!(object.contains_key(&field), "consumer omitted {field}");
+            }
+            assert!(object.keys().all(|field| {
+                !field.starts_with("stage3_evaluation_") || !field.contains("ground")
+            }));
+            let requested = number(value, "stage3_evaluation_requested_seconds");
+            let evaluated = number(value, "stage3_evaluation_evaluated_seconds");
+            assert_close(
+                number(value, "stage3_evaluation_coverage_fraction"),
+                evaluated / requested,
+                "coverage must use seconds, not row/hour counts",
+            );
+            assert_close(
+                numbers(value, "stage3_evaluation_hourly_requested_seconds")
+                    .iter()
+                    .sum(),
+                requested,
+                "hourly requested support",
+            );
+            assert_close(
+                numbers(value, "stage3_evaluation_hourly_evaluated_seconds")
+                    .iter()
+                    .sum(),
+                evaluated,
+                "hourly evaluated support",
+            );
+            assert_ne!(
+                number(value, "stage3_evaluation_complete_arm_shortwave_j_m2"),
+                number(value, "stage3_shortwave_energy_j_m2"),
+                "production shortwave alias must remain distinct"
+            );
+            assert_ne!(
+                number(value, "stage3_evaluation_complete_arm_component_residual_j_m2"),
+                number(value, "stage3_energy_closure_residual_j_m2"),
+                "producer residual must not substitute for evaluation reconstruction"
+            );
+        }
+
+        assert_eq!(paired["stage3_evaluation_surface_arm_applicable"], true);
+        assert_eq!(
+            paired["stage3_evaluation_surface_arm_non_formulation_fingerprint_fnv1a64"],
+            paired["stage3_evaluation_complete_arm_non_formulation_fingerprint_fnv1a64"]
+        );
+        let paired_surface = ["shortwave", "longwave", "latent"]
+            .into_iter()
+            .map(|term| number(&paired, &format!("stage3_evaluation_surface_arm_{term}_j_m2")))
+            .sum::<f64>();
+        assert_close(
+            paired_surface,
+            number(&paired, "stage3_evaluation_surface_arm_total_j_m2"),
+            "paired surface total",
+        );
+
+        let components = ["shortwave", "longwave", "sensible", "latent", "advected"];
+        for value in [&paired, &sequential] {
+            let mut total = components
+                .iter()
+                .map(|term| number(value, &format!("stage3_evaluation_complete_arm_{term}_j_m2")))
+                .sum::<f64>();
+            if value["stage3_evaluation_complete_arm_internal_conduction_applicable"] == true {
+                total += number(
+                    value,
+                    "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2",
+                );
+            }
+            assert_close(
+                total,
+                number(value, "stage3_evaluation_complete_arm_total_j_m2"),
+                "complete component total",
+            );
+        }
+
+        assert_eq!(sequential["stage3_evaluation_surface_arm_applicable"], false);
+        assert!(number(&sequential, "stage3_evaluation_evaluated_seconds")
+            < number(&sequential, "stage3_evaluation_requested_seconds"));
+        assert_ne!(
+            number(&sequential, "stage3_evaluation_requested_seconds"),
+            1.0,
+            "one JSONL row is not requested support"
+        );
+        let evaluated_hours = numbers(
+            &sequential,
+            "stage3_evaluation_hourly_evaluated_seconds",
+        );
+        let nonzero_hour_fraction = evaluated_hours
+            .iter()
+            .filter(|seconds| **seconds > 0.0)
+            .count() as f64
+            / 24.0;
+        assert_ne!(
+            number(&sequential, "stage3_evaluation_coverage_fraction"),
+            nonzero_hour_fraction,
+            "nonzero-hour count is not substep coverage"
+        );
+        assert_ne!(
+            number(&sequential, "stage3_evaluation_complete_arm_melt_kg_m2"),
+            number(&sequential, "raw_melt_m") * 1_000.0,
+            "CoE melt must not substitute for evaluation melt"
+        );
+        assert_close(
+            number(&sequential, "stage3_evaluation_complete_arm_total_j_m2"),
+            number(
+                &sequential,
+                "stage3_evaluation_complete_arm_cold_energy_change_j_m2",
+            ) + LATENT_HEAT_FUSION_J_KG
+                * number(&sequential, "stage3_evaluation_complete_arm_melt_kg_m2")
+                + number(
+                    &sequential,
+                    "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
+                ),
+            "sequential cold/fusion/terminal identity",
+        );
+        for (hour, (((complete, cold), melt), terminal)) in numbers(
+            &sequential,
+            "stage3_evaluation_hourly_complete_energy_j_m2",
+        )
+        .into_iter()
+        .zip(numbers(
+            &sequential,
+            "stage3_evaluation_hourly_cold_energy_change_j_m2",
+        ))
+        .zip(numbers(&sequential, "stage3_evaluation_hourly_melt_kg_m2"))
+        .zip(numbers(
+            &sequential,
+            "stage3_evaluation_hourly_terminal_unallocated_j_m2",
+        ))
+        .enumerate()
+        {
+            let residual = numbers(
+                &sequential,
+                "stage3_evaluation_hourly_energy_closure_residual_j_m2",
+            )[hour];
+            assert_close(
+                complete,
+                cold + LATENT_HEAT_FUSION_J_KG * melt + terminal + residual,
+                "hourly sequential identity",
+            );
+        }
+        for (term, daily_field) in [
+            ("shortwave", "complete_arm_shortwave_j_m2"),
+            ("longwave", "complete_arm_longwave_j_m2"),
+            ("sensible", "complete_arm_sensible_j_m2"),
+            ("latent", "complete_arm_latent_j_m2"),
+            ("advected", "complete_arm_advected_j_m2"),
+            (
+                "internal_active_lower_conduction",
+                "complete_arm_internal_active_lower_conduction_j_m2",
+            ),
+        ] {
+            assert_close(
+                numbers(
+                    &sequential,
+                    &format!("stage3_evaluation_hourly_{term}_j_m2"),
+                )
+                .iter()
+                .sum(),
+                number(&sequential, &format!("stage3_evaluation_{daily_field}")),
+                "hourly component reconstruction",
+            );
+        }
+        for (hourly_field, daily_field) in [
+            (
+                "hourly_complete_energy_j_m2",
+                "complete_arm_total_j_m2",
+            ),
+            (
+                "hourly_vapor_mass_exchange_kg_m2",
+                "complete_arm_vapor_mass_exchange_kg_m2",
+            ),
+            (
+                "hourly_cold_content_export_j_m2",
+                "complete_arm_cold_content_export_j_m2",
+            ),
+            (
+                "hourly_cold_energy_change_j_m2",
+                "complete_arm_cold_energy_change_j_m2",
+            ),
+            (
+                "hourly_excess_energy_j_m2",
+                "complete_arm_excess_energy_j_m2",
+            ),
+            (
+                "hourly_sublimation_kg_m2",
+                "complete_arm_sublimation_kg_m2",
+            ),
+            ("hourly_melt_kg_m2", "complete_arm_melt_kg_m2"),
+            (
+                "hourly_terminal_unallocated_j_m2",
+                "complete_arm_terminal_unallocated_j_m2",
+            ),
+        ] {
+            assert_close(
+                numbers(
+                    &sequential,
+                    &format!("stage3_evaluation_{hourly_field}"),
+                )
+                .iter()
+                .sum(),
+                number(
+                    &sequential,
+                    &format!("stage3_evaluation_{daily_field}"),
+                ),
+                "hourly sequential operand reconstruction",
+            );
+        }
+        assert_close(
+            numbers(
+                &sequential,
+                "stage3_evaluation_hourly_available_ice_kg_m2",
+            )
+            .into_iter()
+            .fold(0.0_f64, f64::max),
+            number(
+                &sequential,
+                "stage3_evaluation_complete_arm_available_ice_kg_m2",
+            ),
+            "available ice uses maximum pre-debit support",
+        );
+        let maximum_hourly_residual = numbers(
+            &sequential,
+            "stage3_evaluation_hourly_energy_closure_residual_j_m2",
+        )
+        .into_iter()
+        .map(f64::abs)
+        .fold(0.0_f64, f64::max);
+        assert_close(
+            maximum_hourly_residual,
+            number(
+                &sequential,
+                "stage3_evaluation_complete_arm_maximum_thermodynamic_residual_j_m2",
+            ),
+            "maximum thermodynamic residual",
+        );
+    }
 }

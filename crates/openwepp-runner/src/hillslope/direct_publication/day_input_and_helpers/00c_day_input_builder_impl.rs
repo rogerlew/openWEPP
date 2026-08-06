@@ -1636,6 +1636,7 @@ mod stage3_trace_field_tests {
             support_id: "stage3_daily_24_hour_support_v1",
             cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
             carrier_id: "stage3_carrier_pair_v1",
+            coverage_id: "evaluated_seconds_over_requested_seconds_v1",
             claim_class: "carrier_component_comparison",
             unresolved_boundaries_id: "snow_ground_cross_day_terminal_recipient_unresolved_v1",
             pairing_id: Some("stage3_carrier_pair_v1"),
@@ -1645,9 +1646,12 @@ mod stage3_trace_field_tests {
             forcing_fingerprint: 0x22,
             geometry_fingerprint: 0x33,
             non_formulation_fingerprint: 0x44,
+            surface_arm_non_formulation_fingerprint: 0x44,
+            complete_arm_non_formulation_fingerprint: 0x44,
             requested_seconds: 100.0,
             evaluated_seconds: 80.0,
             coverage_fraction: 0.8,
+            surface_arm_applicable: true,
             surface_arm_shortwave_j_m2: 1.0,
             surface_arm_longwave_j_m2: 2.0,
             surface_arm_latent_j_m2: 3.0,
@@ -1660,16 +1664,24 @@ mod stage3_trace_field_tests {
             complete_arm_sensible_j_m2: 4.0,
             complete_arm_latent_j_m2: 5.0,
             complete_arm_advected_j_m2: 6.0,
-            complete_arm_internal_active_lower_conduction_j_m2: 7.0,
-            complete_arm_internal_conduction_applicable: true,
+            complete_arm_internal_active_lower_conduction_j_m2: 0.0,
+            complete_arm_applicable: true,
+            complete_arm_internal_conduction_applicable: false,
             complete_arm_vapor_mass_exchange_kg_m2: -0.25,
-            complete_arm_cold_content_export_j_m2: 8.0,
-            complete_arm_cold_content_export_applicable: true,
-            complete_arm_available_ice_kg_m2: 9.0,
-            complete_arm_available_ice_applicable: true,
-            complete_arm_total_j_m2: 25.0,
-            complete_arm_terminal_unallocated_j_m2: 10.0,
-            complete_arm_residual_j_m2: 0.0,
+            complete_arm_cold_content_export_j_m2: 0.0,
+            complete_arm_cold_content_export_applicable: false,
+            complete_arm_available_ice_kg_m2: 0.0,
+            complete_arm_available_ice_applicable: false,
+            complete_arm_total_j_m2: 18.0,
+            complete_arm_sequential_ledger_applicable: false,
+            complete_arm_cold_energy_change_j_m2: 0.0,
+            complete_arm_excess_energy_j_m2: 0.0,
+            complete_arm_sublimation_kg_m2: 0.0,
+            complete_arm_melt_kg_m2: 0.0,
+            complete_arm_terminal_unallocated_j_m2: 0.0,
+            complete_arm_terminal_unallocated_applicable: false,
+            complete_arm_component_residual_j_m2: 0.0,
+            complete_arm_maximum_thermodynamic_residual_j_m2: 0.0,
         });
 
         let fields = direct_snow_trace_stage3_evaluation_fields(&diagnostics)
@@ -1709,7 +1721,7 @@ mod stage3_trace_field_tests {
         .into_iter()
         .map(|field| value[field].as_f64().expect("complete component"))
         .sum::<f64>();
-        assert_eq!(complete, 25.0);
+        assert_eq!(complete, 18.0);
         assert_eq!(value["stage3_evaluation_hourly_shortwave_j_m2"][0], 11.0);
         assert_eq!(
             value["stage3_evaluation_hourly_cold_content_export_j_m2"][0],
@@ -1793,7 +1805,7 @@ fn direct_snow_trace_thermal_fields(thermal: &DirectSnowTraceThermalDiagnostics)
 \"stage3_minimum_substep_seconds\":{},\
 \"stage3_maximum_active_energy_residual_j_m2\":{},\
 \"stage3_maximum_lower_energy_residual_j_m2\":{},\
-\"stage3_maximum_conduction_cancellation_residual_j_m2\":{}}}",
+\"stage3_maximum_conduction_cancellation_residual_j_m2\":{}",
         direct_production_trace_number(thermal.maximum_active_depth_m),
         direct_production_trace_number(thermal.maximum_lower_depth_m),
         direct_production_trace_number(thermal.maximum_active_mass_kg_m2),

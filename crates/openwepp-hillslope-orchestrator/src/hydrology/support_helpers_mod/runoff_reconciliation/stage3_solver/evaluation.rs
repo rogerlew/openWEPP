@@ -5,13 +5,23 @@ impl Wb11HydrologyKernel {
     #[allow(clippy::too_many_lines)]
     pub(super) fn evaluate_stage3_sequential_melt_shadow(
         phase_class: HillslopeKernelPhaseClass,
+        tag: Stage3EvaluationTag,
         inputs: &DirectActiveSnowPartitionInputs,
         mut layers: Vec<DirectSnowLayerState>,
         mut cold_content_by_layer: Vec<f64>,
     ) -> Result<Stage3ShadowSummary, Wb11HydrologyKernelGuardError> {
-        let mut summary = Stage3ShadowSummary::ZERO;
-        summary.operator = SnowStage3EvaluationOperator::SequentialResolvedShadowV1;
-        Self::stage3_shadow_fingerprints(inputs, &layers, &mut summary);
+        let mut summary = Stage3ShadowSummary::new(tag);
+        Self::stage3_shadow_fingerprints(
+            inputs,
+            &layers,
+            &cold_content_by_layer,
+            &mut summary,
+        );
+        summary.complete_arm_non_formulation_fingerprint =
+            summary.non_formulation_fingerprint;
+        for hour in &mut summary.hourly {
+            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+        }
         for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
             let mut elapsed_seconds = 0.0;
             while elapsed_seconds < STAGE3_SECONDS_PER_HOUR && !layers.is_empty() {
@@ -62,6 +72,7 @@ impl Wb11HydrologyKernel {
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
                     },
+                    Some(tag.operator),
                     DirectSnowDiagnosticCapture::Verbose,
                 )?;
                 let surface = carrier.diagnostics.ok_or_else(|| {
@@ -164,19 +175,16 @@ impl Wb11HydrologyKernel {
                 hour.shadow_cold_energy_change_j_m2 += cold_energy_change_j_m2;
                 hour.shadow_cold_content_export_j_m2 += cold_content_export_j_m2;
                 hour.shadow_excess_energy_j_m2 += excess_energy_j_m2;
-                hour.shadow_ice_available_kg_m2 = ice_available_kg_m2;
+                hour.shadow_ice_available_kg_m2 = hour
+                    .shadow_ice_available_kg_m2
+                    .max(ice_available_kg_m2);
                 hour.shadow_sublimation_kg_m2 += sublimation_kg_m2;
                 hour.shadow_melt_kg_m2 += melt_kg_m2;
                 hour.shadow_unallocated_after_exhaustion_j_m2 += unallocated_j_m2;
                 hour.shadow_energy_closure_residual_j_m2 += closure_residual_j_m2;
                 hour.shadow_complete_carrier_evaluated = true;
-                hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
                 hour.shadow_evaluated_seconds += substep_seconds;
                 summary.evaluated_seconds += substep_seconds;
-                summary.surface_arm_shortwave_j_m2 += carrier.shortwave_j_m2;
-                summary.surface_arm_longwave_j_m2 += carrier.longwave_j_m2;
-                summary.surface_arm_latent_j_m2 += carrier.latent_j_m2;
-                summary.surface_arm_total_j_m2 += carrier.total_j_m2;
                 summary.complete_shortwave_j_m2 += carrier.shortwave_j_m2;
                 summary.complete_longwave_j_m2 += carrier.longwave_j_m2;
                 summary.complete_sensible_j_m2 +=
@@ -207,13 +215,19 @@ impl Wb11HydrologyKernel {
 
     pub(super) fn evaluate_stage3_same_state_paired_carrier(
         phase_class: HillslopeKernelPhaseClass,
+        tag: Stage3EvaluationTag,
         inputs: &DirectActiveSnowPartitionInputs,
         layers: &[DirectSnowLayerState],
         cold_content_by_layer: &[f64],
     ) -> Result<Stage3ShadowSummary, Wb11HydrologyKernelGuardError> {
-        let mut summary = Stage3ShadowSummary::ZERO;
-        summary.operator = SnowStage3EvaluationOperator::SameStatePairedCarrierV1;
-        Self::stage3_shadow_fingerprints(inputs, layers, &mut summary);
+        let mut summary = Stage3ShadowSummary::new(tag);
+        Self::stage3_shadow_fingerprints(inputs, layers, cold_content_by_layer, &mut summary);
+        summary.surface_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
+        Self::stage3_shadow_fingerprints(inputs, layers, cold_content_by_layer, &mut summary);
+        summary.complete_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
+        for hour in &mut summary.hourly {
+            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+        }
         let snapshot = Self::stage3_control_volume_state(
             phase_class,
             layers,
@@ -224,8 +238,6 @@ impl Wb11HydrologyKernel {
             snapshot.mass_swe_m,
             snapshot.cold_content_j_m2,
         );
-        summary.available_ice_kg_m2 = snapshot.mass_swe_m * STAGE3_RHO_WATER_KG_M3;
-
         for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
             let carrier = Self::stage3_hourly_surface_energy(
                 phase_class,
@@ -237,6 +249,7 @@ impl Wb11HydrologyKernel {
                     snow_density_kg_m3: snapshot.density_kg_m3,
                     duration_seconds: STAGE3_SECONDS_PER_HOUR,
                 },
+                Some(tag.operator),
                 DirectSnowDiagnosticCapture::Verbose,
             )?;
             let mut hour = carrier.diagnostics.ok_or_else(|| {
@@ -270,9 +283,11 @@ impl Wb11HydrologyKernel {
         Ok(summary)
     }
 
-    fn stage3_shadow_fingerprints(
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn stage3_shadow_fingerprints(
         inputs: &DirectActiveSnowPartitionInputs,
         layers: &[DirectSnowLayerState],
+        cold_content_by_layer: &[f64],
         summary: &mut Stage3ShadowSummary,
     ) {
         let mut source = Self::stage3_fnv1a_start();
@@ -281,31 +296,74 @@ impl Wb11HydrologyKernel {
                 layer.mass_swe_m,
                 layer.thickness_m,
                 layer.density_kg_m3,
+                layer.settle_day_count,
                 layer.temperature_c,
                 layer.liquid_water_m,
                 layer.cold_content_j_m2,
+                layer.refrozen_liquid_m,
             ] {
                 source = Self::stage3_fnv1a_u64(source, value.to_bits());
             }
         }
+        for cold_content_j_m2 in cold_content_by_layer {
+            source = Self::stage3_fnv1a_u64(source, cold_content_j_m2.to_bits());
+        }
         let mut forcing = Self::stage3_fnv1a_start();
         for hour in inputs.hourly {
             for value in [
+                hour.active_precipitation_m,
                 hour.radiation_mj_m2,
                 hour.air_temperature_c,
                 hour.rain_m,
                 hour.snowfall_m,
                 hour.cloud_fraction,
+                hour.rain_fraction,
+                hour.snow_fraction,
             ] {
                 forcing = Self::stage3_fnv1a_u64(forcing, value.to_bits());
             }
+            forcing = Self::stage3_fnv1a_bytes(forcing, hour.phase_model.id().as_bytes());
             forcing = Self::stage3_fnv1a_u64(
                 forcing,
                 hour.hydrometeor_temperature_c.map_or(u64::MAX, f64::to_bits),
             );
         }
-        for value in [inputs.wind_m_s, inputs.dewpoint_c, inputs.canopy_cover_fraction] {
+        for value in [
+            inputs.wind_m_s,
+            inputs.dewpoint_c,
+            inputs.canopy_cover_fraction,
+            inputs.surface_energy_options.daily_solar_radiation_mj_m2,
+            inputs
+                .surface_energy_options
+                .daily_extraterrestrial_radiation_mj_m2,
+            inputs.surface_energy_options.atmospheric_pressure_pa,
+            inputs.underlying_surface_albedo,
+        ] {
             forcing = Self::stage3_fnv1a_u64(forcing, value.to_bits());
+        }
+        forcing = Self::stage3_fnv1a_u64(
+            forcing,
+            u64::from(inputs.surface_energy_options.daylight),
+        );
+        forcing = Self::stage3_fnv1a_bytes(
+            forcing,
+            inputs.surface_energy_options.longwave_model.id().as_bytes(),
+        );
+        forcing = Self::stage3_fnv1a_bytes(
+            forcing,
+            inputs.surface_energy_options.sublimation_model.id().as_bytes(),
+        );
+        match inputs.snow_albedo_state {
+            Some(state) => {
+                forcing = Self::stage3_fnv1a_u64(forcing, 1);
+                forcing = Self::stage3_fnv1a_bytes(forcing, state.model.id().as_bytes());
+                forcing = Self::stage3_fnv1a_u64(forcing, state.albedo.to_bits());
+                forcing = Self::stage3_fnv1a_u64(
+                    forcing,
+                    state.accumulated_positive_temperature_c_day.to_bits(),
+                );
+            }
+            None => forcing = Self::stage3_fnv1a_u64(forcing, 0),
         }
         let geometry = inputs.surface_energy_options.turbulent_geometry;
         let mut geometry_hash = Self::stage3_fnv1a_start();
@@ -320,6 +378,16 @@ impl Wb11HydrologyKernel {
         let mut combined = Self::stage3_fnv1a_start();
         for value in [source, forcing, geometry_hash] {
             combined = Self::stage3_fnv1a_u64(combined, value);
+        }
+        for value in [
+            summary.tag.source_snapshot_id,
+            summary.tag.support_id,
+            summary.tag.cadence_id,
+            summary.tag.carrier_id,
+            summary.tag.coverage_id,
+            summary.tag.unresolved_boundaries_id,
+        ] {
+            combined = Self::stage3_fnv1a_bytes(combined, value.as_bytes());
         }
         summary.source_fingerprint = source;
         summary.forcing_fingerprint = forcing;
@@ -339,12 +407,21 @@ impl Wb11HydrologyKernel {
         hash
     }
 
+    fn stage3_fnv1a_bytes(mut hash: u64, value: &[u8]) -> u64 {
+        for byte in value {
+            hash ^= u64::from(*byte);
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+        hash
+    }
+
     #[allow(clippy::too_many_lines)]
     pub(super) fn stage3_hourly_surface_energy(
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         hourly: DirectSnowHourlyForcing,
         interval: Stage3SurfaceInterval,
+        evaluation_operator: Option<SnowStage3EvaluationOperator>,
         capture: DirectSnowDiagnosticCapture,
     ) -> Result<Stage3HourlySurfaceEnergy, Wb11HydrologyKernelGuardError> {
         let Stage3SurfaceInterval {
@@ -549,7 +626,7 @@ impl Wb11HydrologyKernel {
                 diagnostics.latent_flux_w_m2 = latent_w_m2;
             }
         }
-        if let Some(operator) = inputs.surface_energy_options.stage3_evaluation_operator {
+        if let Some(operator) = evaluation_operator {
             if inputs.surface_energy_options.longwave_model
                 != SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1
             {

@@ -16,12 +16,43 @@ impl Wb11HydrologyKernel {
         if !Self::stage3_liquid_routing_enabled(phase_class, inputs, incoming_liquid_m)? {
             return Ok(DirectSnowStage3Resolution::disabled(capture));
         }
+        let evaluation_tag = if capture.is_verbose() {
+            Self::stage3_evaluation_operator(phase_class, inputs)?
+                .map(|operator| {
+                    let tag = Stage3EvaluationTag::new(operator);
+                    Self::validate_stage3_evaluation_tag(phase_class, tag)?;
+                    Ok(tag)
+                })
+                .transpose()?
+        } else {
+            None
+        };
         Self::prepare_stage3_layer_stack(phase_class, inputs, aggregate, layers)?;
         if layers.is_empty() {
             let meltwater_temperature_c = if incoming_liquid_m > WB11_ZERO_THRESHOLD {
                 Some(Self::stage3_temperature(phase_class, 0.0)?)
             } else {
                 None
+            };
+            let diagnostics = if let Some(tag) = evaluation_tag {
+                let mut summary = Stage3ShadowSummary::new(tag);
+                Self::stage3_shadow_fingerprints(inputs, layers, &[], &mut summary);
+                summary.complete_arm_non_formulation_fingerprint =
+                    summary.non_formulation_fingerprint;
+                if tag.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1 {
+                    summary.surface_arm_non_formulation_fingerprint =
+                        summary.non_formulation_fingerprint;
+                }
+                for hour in &mut summary.hourly {
+                    hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+                }
+                Self::validate_stage3_shadow_summary(phase_class, &summary)?;
+                let mut diagnostics = DirectSnowStage3Diagnostics::disabled();
+                diagnostics.evaluation = Some(Self::stage3_evaluation_diagnostics(&summary));
+                diagnostics.hourly_surface_energy = summary.hourly;
+                Some(diagnostics)
+            } else {
+                capture.is_verbose().then(DirectSnowStage3Diagnostics::disabled)
             };
             return Ok(DirectSnowStage3Resolution {
                 outcome: DirectSnowStage3Outcome {
@@ -34,7 +65,7 @@ impl Wb11HydrologyKernel {
                     routed_liquid_m: incoming_liquid_m,
                     ..DirectSnowLiquidDispositionLedger::default()
                 },
-                diagnostics: capture.is_verbose().then(DirectSnowStage3Diagnostics::disabled),
+                diagnostics,
             });
         }
 
@@ -52,28 +83,30 @@ impl Wb11HydrologyKernel {
             cold_content_by_layer.push(cold_content);
             cold_content_before_j_m2 += cold_content;
         }
-        let shadow_summary = if capture.is_verbose() {
-            match inputs.surface_energy_options.stage3_evaluation_operator {
-                Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1) => {
-                    Some(Self::evaluate_stage3_same_state_paired_carrier(
+        let shadow_summary = match evaluation_tag {
+                Some(tag) if tag.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1 => {
+                    let summary = Self::evaluate_stage3_same_state_paired_carrier(
                         phase_class,
+                        tag,
                         inputs,
                         layers,
                         &cold_content_by_layer,
-                    )?)
+                    )?;
+                    Self::validate_stage3_shadow_summary(phase_class, &summary)?;
+                    Some(summary)
                 }
-                Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1) => {
-                    Some(Self::evaluate_stage3_sequential_melt_shadow(
+                Some(tag) => {
+                    let summary = Self::evaluate_stage3_sequential_melt_shadow(
                         phase_class,
+                        tag,
                         inputs,
                         layers.clone(),
                         cold_content_by_layer.clone(),
-                    )?)
+                    )?;
+                    Self::validate_stage3_shadow_summary(phase_class, &summary)?;
+                    Some(summary)
                 }
                 None => None,
-            }
-        } else {
-            None
         };
         let mut active_layer_count: usize;
 
@@ -188,6 +221,7 @@ impl Wb11HydrologyKernel {
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
                     },
+                    None,
                     capture,
                 )?;
                 shortwave_energy_j_m2 += carrier.shortwave_j_m2;
@@ -290,7 +324,7 @@ impl Wb11HydrologyKernel {
                     hour_latent_energy_j_m2,
                     hour_latent_mass_energy_j_m2,
                 );
-                if let Some(shadow) = shadow_summary {
+                if let Some(ref shadow) = shadow_summary {
                     let sequential = shadow.hourly[hour_index];
                     hour_diagnostics.shadow_sensible_flux_w_m2 =
                         sequential.shadow_sensible_flux_w_m2;
@@ -413,21 +447,21 @@ impl Wb11HydrologyKernel {
                     cold_content_export_j_m2,
                     mass_latent_identity_residual_j_m2,
                     unused_positive_energy_j_m2,
-                    shadow_complete_energy_j_m2: shadow_summary
+                    shadow_complete_energy_j_m2: shadow_summary.as_ref()
                         .map_or(0.0, |shadow| shadow.complete_energy_j_m2),
-                    shadow_cold_energy_change_j_m2: shadow_summary
+                    shadow_cold_energy_change_j_m2: shadow_summary.as_ref()
                         .map_or(0.0, |shadow| shadow.cold_energy_change_j_m2),
-                    shadow_excess_energy_j_m2: shadow_summary
+                    shadow_excess_energy_j_m2: shadow_summary.as_ref()
                         .map_or(0.0, |shadow| shadow.excess_energy_j_m2),
-                    shadow_sublimation_kg_m2: shadow_summary
+                    shadow_sublimation_kg_m2: shadow_summary.as_ref()
                         .map_or(0.0, |shadow| shadow.sublimation_kg_m2),
-                    shadow_melt_kg_m2: shadow_summary
+                    shadow_melt_kg_m2: shadow_summary.as_ref()
                         .map_or(0.0, |shadow| shadow.melt_kg_m2),
-                    shadow_unallocated_after_exhaustion_j_m2: shadow_summary.map_or(
+                    shadow_unallocated_after_exhaustion_j_m2: shadow_summary.as_ref().map_or(
                         0.0,
                         |shadow| shadow.unallocated_after_exhaustion_j_m2,
                     ),
-                    shadow_maximum_energy_closure_residual_j_m2: shadow_summary.map_or(
+                    shadow_maximum_energy_closure_residual_j_m2: shadow_summary.as_ref().map_or(
                         0.0,
                         |shadow| shadow.maximum_energy_closure_residual_j_m2,
                     ),
@@ -435,76 +469,84 @@ impl Wb11HydrologyKernel {
                     minimum_unresolved_thermal_mass_kg_m2,
                     lower_thermal_volume_collapsed_seconds,
                     minimum_collapsed_lower_mass_kg_m2,
-                    evaluation: shadow_summary.map(|shadow| {
-                        let paired = shadow.operator
-                            == SnowStage3EvaluationOperator::SameStatePairedCarrierV1;
-                        let complete_component_total_j_m2 = shadow.complete_shortwave_j_m2
-                            + shadow.complete_longwave_j_m2
-                            + shadow.complete_sensible_j_m2
-                            + shadow.complete_latent_j_m2
-                            + shadow.complete_advected_j_m2
-                            + shadow.internal_active_lower_conduction_j_m2;
-                        DirectSnowStage3EvaluationDiagnostics {
-                            operator: shadow.operator,
-                            source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
-                            support_id: "stage3_daily_24_hour_support_v1",
-                            cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
-                            carrier_id: if paired {
-                                "stage3_carrier_pair_v1"
-                            } else {
-                                "stage3_complete_carrier_v1"
-                            },
-                            claim_class: shadow.operator.claim_class(),
-                            unresolved_boundaries_id:
-                                "snow_ground_cross_day_terminal_recipient_unresolved_v1",
-                            pairing_id: paired.then_some("stage3_carrier_pair_v1"),
-                            arm_ids: if paired {
-                                ["stage3_surface_energy_v1", "stage3_complete_carrier_v1"]
-                            } else {
-                                ["stage3_complete_carrier_v1", "not_applicable"]
-                            },
-                            arm_count: if paired { 2 } else { 1 },
-                            source_fingerprint: shadow.source_fingerprint,
-                            forcing_fingerprint: shadow.forcing_fingerprint,
-                            geometry_fingerprint: shadow.geometry_fingerprint,
-                            non_formulation_fingerprint: shadow.non_formulation_fingerprint,
-                            requested_seconds: shadow.requested_seconds,
-                            evaluated_seconds: shadow.evaluated_seconds,
-                            coverage_fraction: shadow.evaluated_seconds
-                                / shadow.requested_seconds,
-                            surface_arm_shortwave_j_m2: shadow.surface_arm_shortwave_j_m2,
-                            surface_arm_longwave_j_m2: shadow.surface_arm_longwave_j_m2,
-                            surface_arm_latent_j_m2: shadow.surface_arm_latent_j_m2,
-                            surface_arm_sensible_applicable: false,
-                            surface_arm_advected_applicable: false,
-                            surface_arm_internal_conduction_applicable: false,
-                            surface_arm_total_j_m2: shadow.surface_arm_total_j_m2,
-                            complete_arm_shortwave_j_m2: shadow.complete_shortwave_j_m2,
-                            complete_arm_longwave_j_m2: shadow.complete_longwave_j_m2,
-                            complete_arm_sensible_j_m2: shadow.complete_sensible_j_m2,
-                            complete_arm_latent_j_m2: shadow.complete_latent_j_m2,
-                            complete_arm_advected_j_m2: shadow.complete_advected_j_m2,
-                            complete_arm_internal_active_lower_conduction_j_m2: shadow
-                                .internal_active_lower_conduction_j_m2,
-                            complete_arm_internal_conduction_applicable: !paired,
-                            complete_arm_vapor_mass_exchange_kg_m2: shadow
-                                .complete_vapor_mass_exchange_kg_m2,
-                            complete_arm_cold_content_export_j_m2: shadow
-                                .cold_content_export_j_m2,
-                            complete_arm_cold_content_export_applicable: !paired,
-                            complete_arm_available_ice_kg_m2: shadow.available_ice_kg_m2,
-                            complete_arm_available_ice_applicable: !paired,
-                            complete_arm_total_j_m2: shadow.complete_energy_j_m2,
-                            complete_arm_terminal_unallocated_j_m2: shadow
-                                .unallocated_after_exhaustion_j_m2,
-                            complete_arm_residual_j_m2: shadow.complete_energy_j_m2
-                                - complete_component_total_j_m2,
-                        }
-                    }),
+                    evaluation: shadow_summary
+                        .as_ref()
+                        .map(Self::stage3_evaluation_diagnostics),
                     hourly_surface_energy: *hourly_surface_energy,
                 }
             }),
         })
+    }
+
+    fn stage3_evaluation_diagnostics(
+        shadow: &Stage3ShadowSummary,
+    ) -> DirectSnowStage3EvaluationDiagnostics {
+        let tag = shadow.tag;
+        let paired = tag.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1;
+        let complete_component_total_j_m2 = shadow.complete_shortwave_j_m2
+            + shadow.complete_longwave_j_m2
+            + shadow.complete_sensible_j_m2
+            + shadow.complete_latent_j_m2
+            + shadow.complete_advected_j_m2
+            + shadow.internal_active_lower_conduction_j_m2;
+        DirectSnowStage3EvaluationDiagnostics {
+            operator: tag.operator,
+            source_snapshot_id: tag.source_snapshot_id,
+            support_id: tag.support_id,
+            cadence_id: tag.cadence_id,
+            carrier_id: tag.carrier_id,
+            coverage_id: tag.coverage_id,
+            claim_class: tag.claim_class,
+            unresolved_boundaries_id: tag.unresolved_boundaries_id,
+            pairing_id: tag.pairing_id,
+            arm_ids: tag.arm_ids,
+            arm_count: tag.arm_count,
+            source_fingerprint: shadow.source_fingerprint,
+            forcing_fingerprint: shadow.forcing_fingerprint,
+            geometry_fingerprint: shadow.geometry_fingerprint,
+            non_formulation_fingerprint: shadow.non_formulation_fingerprint,
+            surface_arm_non_formulation_fingerprint: shadow
+                .surface_arm_non_formulation_fingerprint,
+            complete_arm_non_formulation_fingerprint: shadow
+                .complete_arm_non_formulation_fingerprint,
+            requested_seconds: shadow.requested_seconds,
+            evaluated_seconds: shadow.evaluated_seconds,
+            coverage_fraction: shadow.evaluated_seconds / shadow.requested_seconds,
+            surface_arm_applicable: paired,
+            surface_arm_shortwave_j_m2: shadow.surface_arm_shortwave_j_m2,
+            surface_arm_longwave_j_m2: shadow.surface_arm_longwave_j_m2,
+            surface_arm_latent_j_m2: shadow.surface_arm_latent_j_m2,
+            surface_arm_sensible_applicable: false,
+            surface_arm_advected_applicable: false,
+            surface_arm_internal_conduction_applicable: false,
+            surface_arm_total_j_m2: shadow.surface_arm_total_j_m2,
+            complete_arm_shortwave_j_m2: shadow.complete_shortwave_j_m2,
+            complete_arm_longwave_j_m2: shadow.complete_longwave_j_m2,
+            complete_arm_sensible_j_m2: shadow.complete_sensible_j_m2,
+            complete_arm_latent_j_m2: shadow.complete_latent_j_m2,
+            complete_arm_advected_j_m2: shadow.complete_advected_j_m2,
+            complete_arm_internal_active_lower_conduction_j_m2: shadow
+                .internal_active_lower_conduction_j_m2,
+            complete_arm_applicable: true,
+            complete_arm_internal_conduction_applicable: !paired,
+            complete_arm_vapor_mass_exchange_kg_m2: shadow.complete_vapor_mass_exchange_kg_m2,
+            complete_arm_cold_content_export_j_m2: shadow.cold_content_export_j_m2,
+            complete_arm_cold_content_export_applicable: !paired,
+            complete_arm_available_ice_kg_m2: shadow.available_ice_kg_m2,
+            complete_arm_available_ice_applicable: !paired,
+            complete_arm_total_j_m2: shadow.complete_energy_j_m2,
+            complete_arm_sequential_ledger_applicable: !paired,
+            complete_arm_cold_energy_change_j_m2: shadow.cold_energy_change_j_m2,
+            complete_arm_excess_energy_j_m2: shadow.excess_energy_j_m2,
+            complete_arm_sublimation_kg_m2: shadow.sublimation_kg_m2,
+            complete_arm_melt_kg_m2: shadow.melt_kg_m2,
+            complete_arm_terminal_unallocated_j_m2: shadow.unallocated_after_exhaustion_j_m2,
+            complete_arm_terminal_unallocated_applicable: !paired,
+            complete_arm_component_residual_j_m2: shadow.complete_energy_j_m2
+                - complete_component_total_j_m2,
+            complete_arm_maximum_thermodynamic_residual_j_m2: shadow
+                .maximum_energy_closure_residual_j_m2,
+        }
     }
 
     fn stage3_liquid_routing_enabled(
@@ -576,6 +618,148 @@ impl Wb11HydrologyKernel {
             ));
         }
         Ok(true)
+    }
+
+    fn stage3_evaluation_operator(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) -> Result<Option<SnowStage3EvaluationOperator>, Wb11HydrologyKernelGuardError> {
+        match (
+            inputs.surface_energy_options.complete_carrier_shadow,
+            inputs.surface_energy_options.stage3_evaluation_operator,
+        ) {
+            (false, operator) => Ok(operator),
+            (true, None | Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)) => {
+                Ok(Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1))
+            }
+            (true, Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)) => {
+                Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_evaluation_request_conflict",
+                    2.0,
+                    Some(0.0),
+                    Some(1.0),
+                ))
+            }
+        }
+    }
+
+    fn validate_stage3_evaluation_tag(
+        phase_class: HillslopeKernelPhaseClass,
+        tag: Stage3EvaluationTag,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if tag != Stage3EvaluationTag::new(tag.operator) {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_evaluation_tag",
+                0.0,
+                Some(1.0),
+                Some(1.0),
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_stage3_shadow_summary(
+        phase_class: HillslopeKernelPhaseClass,
+        summary: &Stage3ShadowSummary,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_direct_typed_snow_value_with(
+            phase_class,
+            || BoundarySymbol::from("snow.stage3_evaluation_requested_seconds"),
+            summary.requested_seconds,
+            Some(f64::EPSILON),
+            Some(24.0 * STAGE3_SECONDS_PER_HOUR),
+        )?;
+        Self::require_direct_typed_snow_value_with(
+            phase_class,
+            || BoundarySymbol::from("snow.stage3_evaluation_evaluated_seconds"),
+            summary.evaluated_seconds,
+            Some(0.0),
+            Some(summary.requested_seconds),
+        )?;
+        let hourly_requested_seconds = summary
+            .hourly
+            .iter()
+            .map(|hour| hour.shadow_requested_seconds)
+            .sum::<f64>();
+        let hourly_evaluated_seconds = summary
+            .hourly
+            .iter()
+            .map(|hour| hour.shadow_evaluated_seconds)
+            .sum::<f64>();
+        for (symbol, residual) in [
+            (
+                "snow.stage3_evaluation_requested_support_residual_seconds",
+                summary.requested_seconds - hourly_requested_seconds,
+            ),
+            (
+                "snow.stage3_evaluation_evaluated_support_residual_seconds",
+                summary.evaluated_seconds - hourly_evaluated_seconds,
+            ),
+            (
+                "snow.stage3_evaluation_surface_component_residual_j_m2",
+                summary.surface_arm_total_j_m2
+                    - summary.surface_arm_shortwave_j_m2
+                    - summary.surface_arm_longwave_j_m2
+                    - summary.surface_arm_latent_j_m2,
+            ),
+            (
+                "snow.stage3_evaluation_complete_component_residual_j_m2",
+                summary.complete_energy_j_m2
+                    - summary.complete_shortwave_j_m2
+                    - summary.complete_longwave_j_m2
+                    - summary.complete_sensible_j_m2
+                    - summary.complete_latent_j_m2
+                    - summary.complete_advected_j_m2
+                    - summary.internal_active_lower_conduction_j_m2,
+            ),
+        ] {
+            Self::require_direct_typed_snow_value_with(
+                phase_class,
+                || BoundarySymbol::from(symbol),
+                residual.abs(),
+                None,
+                Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+            )?;
+        }
+        if summary.non_formulation_fingerprint == 0
+            || summary.complete_arm_non_formulation_fingerprint == 0
+        {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_evaluation_fingerprint",
+                0.0,
+                Some(1.0),
+                None,
+            ));
+        }
+        if summary.tag.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1 {
+            if summary.surface_arm_non_formulation_fingerprint
+                != summary.complete_arm_non_formulation_fingerprint
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_evaluation_paired_fingerprint_equality",
+                    0.0,
+                    Some(1.0),
+                    Some(1.0),
+                ));
+            }
+        } else {
+            let sequential_residual = summary.complete_energy_j_m2
+                - summary.cold_energy_change_j_m2
+                - STAGE3_LATENT_HEAT_FUSION_J_KG * summary.melt_kg_m2
+                - summary.unallocated_after_exhaustion_j_m2;
+            Self::require_direct_typed_snow_value_with(
+                phase_class,
+                || BoundarySymbol::from("snow.stage3_evaluation_sequential_residual_j_m2"),
+                sequential_residual.abs(),
+                None,
+                Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+            )?;
+        }
+        Ok(())
     }
 
     #[allow(clippy::too_many_lines)]

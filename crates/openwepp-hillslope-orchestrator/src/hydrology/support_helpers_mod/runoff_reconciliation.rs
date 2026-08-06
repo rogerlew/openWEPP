@@ -129,13 +129,64 @@ struct Stage3SubstepDiagnostics {
     atmospheric_pressure_pa: f64,
 }
 
-#[derive(Clone, Copy)]
-struct Stage3ShadowSummary {
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Stage3EvaluationTag {
     operator: SnowStage3EvaluationOperator,
+    source_snapshot_id: &'static str,
+    support_id: &'static str,
+    cadence_id: &'static str,
+    carrier_id: &'static str,
+    coverage_id: &'static str,
+    claim_class: &'static str,
+    unresolved_boundaries_id: &'static str,
+    pairing_id: Option<&'static str>,
+    arm_ids: [&'static str; 2],
+    arm_count: u8,
+}
+
+impl Stage3EvaluationTag {
+    const fn new(operator: SnowStage3EvaluationOperator) -> Self {
+        let paired = matches!(
+            operator,
+            SnowStage3EvaluationOperator::SameStatePairedCarrierV1
+        );
+        Self {
+            operator,
+            source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
+            support_id: "stage3_daily_24_hour_support_v1",
+            cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
+            carrier_id: if paired {
+                "stage3_carrier_pair_v1"
+            } else {
+                "stage3_complete_carrier_v1"
+            },
+            coverage_id: "evaluated_seconds_over_requested_seconds_v1",
+            claim_class: operator.claim_class(),
+            unresolved_boundaries_id:
+                "snow_ground_cross_day_terminal_recipient_unresolved_v1",
+            pairing_id: if paired {
+                Some("stage3_carrier_pair_v1")
+            } else {
+                None
+            },
+            arm_ids: if paired {
+                ["stage3_surface_energy_v1", "stage3_complete_carrier_v1"]
+            } else {
+                ["stage3_complete_carrier_v1", "not_applicable"]
+            },
+            arm_count: if paired { 2 } else { 1 },
+        }
+    }
+}
+
+struct Stage3ShadowSummary {
+    tag: Stage3EvaluationTag,
     source_fingerprint: u64,
     forcing_fingerprint: u64,
     geometry_fingerprint: u64,
     non_formulation_fingerprint: u64,
+    surface_arm_non_formulation_fingerprint: u64,
+    complete_arm_non_formulation_fingerprint: u64,
     requested_seconds: f64,
     evaluated_seconds: f64,
     surface_arm_shortwave_j_m2: f64,
@@ -162,12 +213,15 @@ struct Stage3ShadowSummary {
 }
 
 impl Stage3ShadowSummary {
-    const ZERO: Self = Self {
-        operator: SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    const fn new(tag: Stage3EvaluationTag) -> Self {
+        Self {
+        tag,
         source_fingerprint: 0,
         forcing_fingerprint: 0,
         geometry_fingerprint: 0,
         non_formulation_fingerprint: 0,
+        surface_arm_non_formulation_fingerprint: 0,
+        complete_arm_non_formulation_fingerprint: 0,
         requested_seconds: 24.0 * STAGE3_SECONDS_PER_HOUR,
         evaluated_seconds: 0.0,
         surface_arm_shortwave_j_m2: 0.0,
@@ -191,7 +245,8 @@ impl Stage3ShadowSummary {
         unallocated_after_exhaustion_j_m2: 0.0,
         maximum_energy_closure_residual_j_m2: 0.0,
         hourly: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
-    };
+        }
+    }
 }
 
 fn inactive_direct_winter_frost_partition() -> DirectWinterFrostPartitionOutcome {
