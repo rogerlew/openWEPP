@@ -804,8 +804,21 @@ def saturation_vapor_pressure(temperature_c: float) -> float:
 def reconstruct_longwave(row: dict[str, Any], surface_temperature_c: float) -> dict[str, float]:
     if row.get("longwave_model_id") != LONGWAVE_MODEL:
         raise RuntimeError("unexpected longwave model")
+    daily_solar = checked_number(row, "daily_solar_radiation_mj_m2")
+    daily_extraterrestrial = checked_number(
+        row, "daily_extraterrestrial_radiation_mj_m2"
+    )
+    canopy_cover = checked_number(row, "canopy_cover_fraction")
+    if checked_bool(row, "daylight") is not True:
+        raise RuntimeError("Dilley-Unsworth cloud forcing requires daylight")
+    if daily_solar < 0.0 or daily_extraterrestrial <= 1.0e-9:
+        raise RuntimeError("Dilley-Unsworth radiation forcing is outside authority")
+    if not 0.0 <= canopy_cover < 1.0:
+        raise RuntimeError("Dilley-Unsworth canopy cover is outside [0,1)")
     air_k = checked_number(row, "air_temperature_c") + FREEZE_K
     surface_k = surface_temperature_c + FREEZE_K
+    if air_k <= 0.0 or surface_k <= 0.0:
+        raise RuntimeError("Dilley-Unsworth temperature is below absolute zero")
     vapor_kpa = checked_number(row, "actual_vapor_pressure_pa") / 1_000.0
     precipitable_water = 4_650.0 * vapor_kpa / air_k
     clear_longwave = (
@@ -815,13 +828,15 @@ def reconstruct_longwave(row: dict[str, Any], surface_temperature_c: float) -> d
     )
     blackbody_air = SIGMA * air_k**4
     clear_emissivity = clear_longwave / blackbody_air
-    clearness = checked_number(row, "daily_solar_radiation_mj_m2") / checked_number(
-        row, "daily_extraterrestrial_radiation_mj_m2"
-    )
+    if not 0.0 <= clear_emissivity <= 1.0:
+        raise RuntimeError("Dilley-Unsworth clear emissivity is outside [0,1]")
+    clearness = daily_solar / daily_extraterrestrial
     cloud = min(1.0, max(0.0, (0.80 - clearness) / (0.80 - 0.15)))
     all_sky_emissivity = (1.0 - 0.84 * cloud) * clear_emissivity + 0.84 * cloud
+    if not 0.0 <= all_sky_emissivity <= 1.0:
+        raise RuntimeError("Dilley-Unsworth all-sky emissivity is outside [0,1]")
     atmospheric = all_sky_emissivity * blackbody_air
-    sky_view = (1.0 - checked_number(row, "canopy_cover_fraction")) ** 1.6
+    sky_view = (1.0 - canopy_cover) ** 1.6
     canopy = blackbody_air
     subcanopy = sky_view * atmospheric + (1.0 - sky_view) * canopy
     outgoing = SIGMA * surface_k**4

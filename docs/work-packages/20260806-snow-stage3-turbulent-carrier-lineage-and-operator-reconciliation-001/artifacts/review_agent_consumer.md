@@ -24,7 +24,7 @@ support inventories, fails closed on the exact tuple/state surface, applies
 all frozen causal gates, and revalidates exact-head/binary/fixture/observation/
 receipt custody. Exhaustive hour/WY inventories are retained outside the
 compact result with exact hash/count custody. The expanded result-blind suite
-passes `34/34`.
+passes `40/40`.
 
 Follow-up review correctly found that the real snow row has no serialized
 `site_id`; the site is bound by its retained lane receipt/path. The consumer
@@ -34,3 +34,8 @@ geometry/options cases. Exact `3600 s`, selector `disabled`, and pre-solver
 domain and vapor-pressure checks now reject those cases on every termination
 path. Closure
 remains pending independent re-review at the next exact clean commit.
+
+The last follow-up HOLD found the same fail-closed gap in selected longwave
+applicability. Independent Dilley-Unsworth reconstruction now mirrors the Rust
+daylight, radiation, canopy, temperature, and derived-emissivity domains, with
+adversarial vectors. No cohort evidence was run or inspected.

@@ -283,6 +283,26 @@ def test_exact_selector_duration_and_geometry_domains_fail_closed(
         MODULE.validate_tuple(row, "same_state_paired_carrier_v1")
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("daylight", False, "requires daylight"),
+        ("daily_solar_radiation_mj_m2", -1.0, "radiation forcing"),
+        ("daily_extraterrestrial_radiation_mj_m2", 1.0e-9, "radiation forcing"),
+        ("canopy_cover_fraction", -0.1, "canopy cover"),
+        ("canopy_cover_fraction", 1.0, "canopy cover"),
+        ("air_temperature_c", -273.16, "absolute zero"),
+    ),
+)
+def test_selected_longwave_domains_fail_closed(
+    field: str, value: object, message: str
+) -> None:
+    row = synthetic_tuple()
+    row[field] = value
+    with pytest.raises(RuntimeError, match=message):
+        MODULE.validate_tuple(row, "same_state_paired_carrier_v1")
+
+
 def test_sequential_partial_hour_requires_terminal_surface_exhaustion() -> None:
     tuple_row = synthetic_tuple("sequential_resolved_shadow_v1")
     tuple_row["requested_seconds"] = 3_600.0

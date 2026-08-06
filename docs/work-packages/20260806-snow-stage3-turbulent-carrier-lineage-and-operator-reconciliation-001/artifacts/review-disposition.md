@@ -83,3 +83,9 @@ bound rather than fabricated as a snow-row field, and the consumer validates
 the exact runtime duration, selector, and pre-solver domains, including vapor
 pressure below atmospheric pressure. Adversarial coverage is `34/34`; result
 execution remains blocked pending re-review.
+
+The last result-blind residual—independent longwave reconstruction accepting
+producer-impossible daylight/radiation/canopy domains—is accepted and amended
+with exact selected-solver gates and adversarial coverage. The model-free
+consumer suite is now `40/40`; cohort execution remains blocked until the
+exact-commit science and consumer verdicts pass.
