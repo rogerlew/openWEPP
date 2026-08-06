@@ -159,8 +159,12 @@ operands, stability solution, or state endpoints required to separate them.
   check/adopt workflow;
 - `docs/work-packages/README.md`, `docs/ROADMAP.md`, and
   `docs/planning/snow-surface-energy-balance-roadmap.md`;
-- ignored `target/snow_stage3_operator_reconciliation/` raw evidence and normal
-  ignored build/test outputs.
+- retained rejected-v1 evidence under the ignored
+  `target/snow_stage3_operator_reconciliation/` namespace, prospective
+  corrected raw evidence under the distinct ignored
+  `target/snow_stage3_operator_reconciliation_v2/` namespace, and normal
+  ignored build/test outputs. The rejected-v1 namespace is read-only custody
+  and must not be overwritten or reused;
 
 No fixture, observation, dependency, selector default, public output, or
 unrelated crate change is authorized. A needed path outside this set requires a
