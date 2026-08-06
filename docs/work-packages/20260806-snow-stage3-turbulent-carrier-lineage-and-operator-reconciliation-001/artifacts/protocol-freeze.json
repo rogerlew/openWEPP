@@ -1,59 +1,14 @@
 {
-  "schema_version": 1,
-  "status": "result_blind_scaffold_review_required",
-  "source_package": "20260806-snow-stage3-four-site-carrier-term-audit-001",
-  "result_namespace": "target/snow_stage3_operator_reconciliation",
-  "operators": [
-    "disabled",
-    "same_state_paired_carrier_v1",
-    "sequential_resolved_shadow_v1"
-  ],
-  "sites": [
-    "snotel_mica_creek_st_joe_id",
-    "snotel_niwot_co",
-    "snotel_paradise_wa",
-    "snotel_snowbird_ut"
-  ],
-  "canonical_decisive_sites": [
-    "snotel_mica_creek_st_joe_id",
-    "snotel_niwot_co",
-    "snotel_paradise_wa"
-  ],
-  "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC",
-  "observation_role": "DIAGNOSTIC_ONLY",
-  "selectors_except_operator": {
-    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
-    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
-    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
-    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
-    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
-    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  "aggregation": {
+    "all_evaluated_support": "integrate every applicable tuple independently per operator",
+    "common_partial_support_seconds": "min(same_state_evaluated_seconds, sequential_evaluated_seconds) per joined hour",
+    "common_support_integration": "integrate ordered tuples on elapsed interval [0, common_partial_support_seconds), splitting the final tuple exactly at the boundary without interpolation",
+    "full_support_hour": "both operators have contiguous non-overlapping tuples totaling exactly 3600 seconds",
+    "primary_site_summary": "Python statistics.median across screen-eligible water-year samples",
+    "term_energy_j_m2": "sum(tuple_flux_w_m2 * tuple_duration_seconds)",
+    "water_year_first_condition_samples": true,
+    "trajectory_claim": "prohibited: daily source snapshots are condition samples, not a persistent seasonal trajectory"
   },
-  "join_identity": [
-    "site",
-    "day_index",
-    "lane_index",
-    "source_fingerprint_fnv1a64",
-    "forcing_fingerprint_fnv1a64",
-    "geometry_fingerprint_fnv1a64"
-  ],
-  "primary_support": "both operators evaluate exactly 3600 seconds in the hour",
-  "partial_support": "reported separately and never substituted for full support",
-  "external_terms": [
-    "shortwave",
-    "longwave",
-    "sensible",
-    "latent",
-    "precipitation_advected"
-  ],
-  "sign_convention": "positive energy or vapor mass toward snow; negative away from snow",
-  "decision_classes": [
-    "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION",
-    "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
-    "PREDECESSOR_NOT_REPRODUCED",
-    "LINEAGE_OR_IDENTITY_FAILURE",
-    "MULTIFACTOR_UNRESOLVED"
-  ],
   "claim_limits": [
     "characterization only",
     "not seasonal chronology",
@@ -64,5 +19,143 @@
     "not promotion or cutover",
     "CoE remains authoritative"
   ],
-  "no_tuning": "No result-driven change to cohort, forcing, operators, join keys, support classes, sign conventions, reconstruction tolerances, or decision categories in this namespace."
+  "cohort": [
+    {
+      "climate_file": "p1.cli",
+      "fixture_manifest_sha256": "4de5001f8b014b6219c1f2dabea678f8e39bb49439419ec0c1700ece10429633",
+      "observation_sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce",
+      "site": "snotel_mica_creek_st_joe_id"
+    },
+    {
+      "climate_file": "p2.cli",
+      "fixture_manifest_sha256": "60dd238f4dbb7c32dc8dbeb57f8298b77edf1e839555c3608d163cc2bcdcc513",
+      "observation_sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c",
+      "site": "snotel_niwot_co"
+    },
+    {
+      "climate_file": "p2.cli",
+      "fixture_manifest_sha256": "c5eb31b8890ba1b1ac94b9ff2bcf6fc509e4b3ca83815dfdd44314c9b8e33214",
+      "observation_sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795",
+      "site": "snotel_paradise_wa"
+    },
+    {
+      "canonical_climate_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+      "climate_file": "p8.cli",
+      "development_climate_sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb",
+      "fixture_manifest_sha256": "f6c344f72ec7fb2e56085a6d88cc77340f12471c71171b026bfc8599d5f39ffc",
+      "forcing_class": "DEVELOPMENT_ONLY",
+      "observation_sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992",
+      "site": "snotel_snowbird_ut"
+    }
+  ],
+  "decision": {
+    "classes_in_precedence_order": [
+      "LINEAGE_OR_IDENTITY_FAILURE",
+      "PREDECESSOR_NOT_REPRODUCED",
+      "INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE",
+      "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION",
+      "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
+      "MULTIFACTOR_UNRESOLVED"
+    ],
+    "initial_projection_difference": "raw-source identity passes and first effective input fingerprint differs, or any first active mass/depth/cold/temperature/layer-membership operand differs above its reconstruction tolerance",
+    "lineage_failure_precedence": "suppresses causal interpretation; remaining classes are not evaluated as causes",
+    "multilabel_policy": "after identity precedence, PREDECESSOR_NOT_REPRODUCED, INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE, STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION, and SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES may coexist and are reported in listed order",
+    "state_dependent_terms": ["longwave", "sensible", "latent", "precipitation_advected", "vapor_mass"],
+    "state_evolution_class": "requires positive predecessor reproduction, negative same-state Snowbird estimator, reconstruction and delta closure, invariant shortwave, and either matching first effective inputs or an independently reconstructed frozen-active-projection reference separating projection from later evolution",
+    "state_independent_terms": ["shortwave"],
+    "support_materiality": "complete external-subset delta changes sign between common and all-evaluated support, or omitted-support energy exceeds 0.05 * all-evaluated sum_abs_operands"
+  },
+  "execution": {
+    "binary": "target/release/openwepp-cli-hill",
+    "build_command": "cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
+    "control_per_site": "same binary and selectors with evaluation disabled",
+    "fixture_root": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/fixtures/baseline_replay",
+    "head_policy": "runner requires a caller-supplied full reviewed commit SHA and exact clean HEAD before build, before analysis, and before acceptance",
+    "operators": ["disabled", "same_state_paired_carrier_v1", "sequential_resolved_shadow_v1"],
+    "observation_root": "tests/fixtures/snotel_observed/observations/sites",
+    "result_namespace": "target/snow_stage3_operator_reconciliation",
+    "run_argv_template": [
+      "target/release/openwepp-cli-hill",
+      "--run-dir", "{staged_fixture}",
+      "--run-file", "{generated_runfile}",
+      "--output-dir", "{lane_output}",
+      "--legacy-sidecar-discovery",
+      "--direct-production-executor"
+    ],
+    "snowbird_derivative_path": "tests/fixtures/snotel_observed/snotel_snowbird_ut/development/precip_x1p2155576/p8.cli",
+    "trace_environment": "OPENWEPP_R7H_SNOW_TRACE_PATH={lane_output}/{site}-operator-reconciliation.snow.jsonl"
+  },
+  "join": {
+    "daily_identity": ["site", "day_index", "lane_index", "source_fingerprint_fnv1a64", "forcing_fingerprint_fnv1a64", "geometry_fingerprint_fnv1a64"],
+    "hour_expansion": "after a unique daily join, expand arrays positionally using hour_index 0..23",
+    "substep_identity": ["operator", "hour_index", "substep_index", "elapsed_start_seconds"],
+    "rejection": ["duplicate daily identity", "missing daily mate", "duplicate tuple identity", "missing hour", "noncontiguous substep indices", "overlapping durations", "elapsed interval outside [0, 3600]", "raw-source/forcing/geometry fingerprint mismatch"],
+    "effective_input_policy": "first effective carrier-input fingerprints are compared as an estimand and are not required to match"
+  },
+  "operators": {
+    "same_state_paired_carrier_v1": "whole-column projection held immutable; one 3600-second tuple per evaluated hour",
+    "sequential_resolved_shadow_v1": "existing active-volume alignment/normalization and dynamic substeps; every evaluated substep emitted",
+    "frozen_active_projection_reference": "consumer-side diagnostic reconstruction using the sequential operator's first effective carrier input held fixed; never a runtime operator, owner, or production state"
+  },
+  "predecessor": {
+    "artifact_path": "docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/artifacts/snowbird-seasonal-shadow-evaluation.md",
+    "artifact_sha256": "8619b497bdb41b6ea8631991fecb80f8a61bad1f7be6c10da386988024060498",
+    "binary_path": "target/release/openwepp-cli-hill",
+    "binary_sha256": "7e3cc80d0f80cf05a2e3ff6a343ed891a2eb69f4bc3d3ee1fc2b66d68ec95f0a",
+    "binary_sidecar_sha256": "a400ac255fe90681a4fbbf0ecfb38a225cfc705d39e97cd918fbd7c066e4daa5",
+    "estimand": "Python statistics.median across 35 Snowbird WY1990-2024 window sums of stage3_shadow_complete_energy_j_m2, October 1 through earliest maximum positive observed SWE date inclusive",
+    "median_mj_m2": 170.2536089,
+    "source_commit": "2d035638a9819961a393207cd4813712d64bddcf",
+    "trace_path": "target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/snowbird-shadow-corrected.snow.jsonl",
+    "trace_sha256": "621bd3f91076403aac45737c387954e89c4760a12698e36952dec6dd72b94716"
+  },
+  "predecessor_cohort_freeze": {
+    "path": "docs/work-packages/20260806-snow-stage3-four-site-carrier-term-audit-001/artifacts/protocol-freeze.json",
+    "sha256": "83d472c565f432c5e379825ad17a28fb1ea652389b8bf4af9cc7296bc3f6a992"
+  },
+  "reconstruction": {
+    "complete_external_subset": "shortwave + longwave + sensible + latent + precipitation_advected",
+    "delta_closure_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
+    "hourly_energy_j_m2": "sum independently reconstructed tuple flux_w_m2 * tuple_duration_seconds",
+    "longwave_w_m2": "subcanopy_longwave_w_m2 - outgoing_longwave_w_m2",
+    "mass_endpoint_kg_m2": "total_ice_after = total_ice_before - melt - sublimation + deposition",
+    "cold_endpoint_j_m2": "total_cold_after = total_cold_before - cold_energy_change - cold_content_export",
+    "numeric_zero_tolerance_j_m2": 0.000001,
+    "predecessor_median_tolerance_mj_m2": 0.0000001,
+    "shortwave_w_m2": "incoming_shortwave_w_m2 * (1 - albedo_fraction)",
+    "substep_energy_j_m2": "reconstructed complete external flux_w_m2 * duration_seconds",
+    "tuple_flux_tolerance_w_m2": "max(1e-10, 1e-12 * sum_abs_operands)",
+    "tuple_mass_tolerance_kg_m2": "max(1e-12, 1e-12 * sum_abs_operands)",
+    "water_year_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)"
+  },
+  "schema_version": 2,
+  "status": "result_blind_amendment_review_required",
+  "support": {
+    "censored_primary_water_years": [2025],
+    "minimum_calendar_coverage_for_screen": 0.25,
+    "minimum_evaluated_days_for_screen": 30,
+    "primary_window": "October 1 through earliest maximum positive observed SWE date inclusive",
+    "snowbird_primary_water_years": "1990-2024 inclusive (35 windows)",
+    "zero_support": "tuple absent and hourly applicability false with an enumerated reason; no numeric endpoint or transfer value is serialized as a zero alias"
+  },
+  "selectors_except_operator": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  },
+  "sites": {
+    "canonical_decisive": ["snotel_mica_creek_st_joe_id", "snotel_niwot_co", "snotel_paradise_wa"],
+    "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC"
+  },
+  "tuple": {
+    "applicability_reasons": ["evaluated", "no_resolved_snow_at_day_start", "thin_pack_boundary_reached", "operator_not_selected"],
+    "ordering": "hour_index, then substep_index; elapsed_start_seconds must equal prior elapsed_end_seconds",
+    "same_state_duration_seconds": 3600.0,
+    "sequential_duration": "existing dynamic substep duration without alteration",
+    "zero_alias_prohibited": true
+  },
+  "no_tuning": "No result-driven change to cohort, forcing, operators, projection definitions, joins, windows, support, aggregation, tolerances, predecessor estimand, or decision predicates in this namespace."
 }

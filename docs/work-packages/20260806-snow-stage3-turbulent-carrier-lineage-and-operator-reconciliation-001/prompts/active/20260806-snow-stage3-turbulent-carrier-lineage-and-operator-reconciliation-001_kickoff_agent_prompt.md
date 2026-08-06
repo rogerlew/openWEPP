@@ -14,9 +14,12 @@ operators, claims, write set, protected boundaries, and validation obligations.
 Contract-first sequence: amend `SC-SNOWFREEZE-001`, add contract-derived tests,
 pass and record the pre-implementation contract gate, and only then edit Rust.
 
-Task: expose the existing evaluation-only surface-state and turbulent-transfer
-lineage through internal schema v6 without changing physics, then execute and
-reconcile the frozen four-site same-state and bounded-sequential lanes.
+Task: expose exact duration-tagged evaluation substeps through internal schema
+v6 without changing physics. Preserve existing public type shapes through an
+enabled-only boxed companion. Reconcile whole-column initial projection,
+aligned-active initial projection, later within-day evolution, and unequal
+support as separate estimands before applying the frozen four-site decision
+rule.
 
 No surrogate physics: do not add proxy, provisional, fitted, heuristic, or
 empirical stand-in process math. Preserve existing formulas, constants,
@@ -28,7 +31,10 @@ endpoints through the real JSONL consumer; retain protected-output byte
 identity. Self-consistency and one-sided bounds are supporting evidence only.
 
 Real consumer proof: schema-v6 evidence must be read by the actual internal
-JSONL consumer. Prove the evaluator clone and new fields cannot reach
+JSONL consumer at package-local `tools/run_operator_reconciliation.py`. The
+consumer must independently reconstruct nonlinear turbulent, radiation,
+advected, complete-carrier, and endpoint equations from substep operands;
+hourly primitive means are prohibited. Prove the evaluator clone and new fields cannot reach
 production state, runoff, WAT, HBP, PASS, defaults, calibration, or public
 outputs.
 
@@ -66,6 +72,7 @@ without requesting user direction unless a declared hard blocker is proven.
 - `/workdir/openWEPP/docs/standards/kernel-work-package-preparation.md`
 - `/workdir/openWEPP/docs/standards/prompt-wording-guidance.md`
 - `/workdir/openWEPP/docs/specifications/science-contracts/AGENTS.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/index.md`
 - `/workdir/openWEPP/docs/specifications/science-contract-authoring-procedure.md`
 - `/workdir/openWEPP/docs/specifications/science-contracts/kernel-process-contract-profile.md`
 - `/workdir/openWEPP/crates/AGENTS.md` before Rust edits

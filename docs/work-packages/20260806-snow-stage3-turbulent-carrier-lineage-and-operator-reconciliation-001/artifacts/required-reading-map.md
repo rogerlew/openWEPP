@@ -26,6 +26,7 @@ below the `800000`-byte justification threshold.
 | `docs/standards/kernel-work-package-preparation.md` | Contract/runtime observability changes. |
 | `docs/standards/prompt-wording-guidance.md` | Kickoff authoring and delegation wording. |
 | `docs/specifications/science-contracts/AGENTS.md` | Canonical contract edit. |
+| `docs/specifications/science-contracts/index.md` | Version/index binding edited by this package. |
 | `docs/specifications/science-contract-authoring-procedure.md` | Contract amendment and review. |
 | `docs/specifications/science-contracts/kernel-process-contract-profile.md` | Runtime projection and kernel-adjacent diagnostics. |
 | `crates/AGENTS.md` | Any Rust edit. |
@@ -40,6 +41,7 @@ below the `800000`-byte justification threshold.
 | predecessor package and `artifacts/worker-handoff.md` | Exact failed screen and required successor scope. |
 | `crates/openwepp-meteorology/src/surface_energy.rs` | Monin-Obukhov inputs, state, and result. |
 | extracted Stage 3 evaluation/trace modules | Operator state evolution and consumer projection. |
+| package-local analyzer and tests | Real consumer, join, reconstruction, and decision logic. |
 | assurance specifications/tools | Only if typed source adoption is required by impact analysis. |
 
 Large contracts stay on-demand but must be read for every touched section
