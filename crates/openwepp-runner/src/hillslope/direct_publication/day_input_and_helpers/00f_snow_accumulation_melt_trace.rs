@@ -70,6 +70,7 @@ fn direct_snow_trace_diagnostic_suffix(
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     verbose_diagnostics: &openwepp_hillslope_orchestrator::DirectSnowVerboseDiagnostics,
     thermal: &DirectSnowTraceThermalDiagnostics,
+    evaluation: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
 ) -> String {
     let base = format!(
         "{},{},{},{}",
@@ -85,7 +86,7 @@ fn direct_snow_trace_diagnostic_suffix(
         ),
         direct_snow_trace_thermal_fields(thermal)
     );
-    match direct_snow_trace_stage3_evaluation_fields(&verbose_diagnostics.stage3) {
+    match evaluation.map(direct_snow_trace_stage3_evaluation_fields) {
         Some(evaluation) => format!("{base},{evaluation}}}"),
         None => format!("{base}}}"),
     }

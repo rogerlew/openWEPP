@@ -13,7 +13,7 @@ impl Wb11HydrologyKernel {
         layers: &mut Vec<DirectSnowLayerState>,
         capture: DirectSnowDiagnosticCapture,
         evaluation_operator: Option<SnowStage3EvaluationOperator>,
-    ) -> Result<DirectSnowStage3Resolution, Wb11HydrologyKernelGuardError> {
+    ) -> Result<DirectSnowStage3Resolution, DirectSnowStage3EvaluationError> {
         if !Self::stage3_liquid_routing_enabled(phase_class, inputs, incoming_liquid_m)? {
             return Ok(DirectSnowStage3Resolution::disabled(capture));
         }
@@ -26,12 +26,14 @@ impl Wb11HydrologyKernel {
                 .map(|operator| {
                     let tag = Stage3EvaluationTag::new(operator);
                     Self::validate_stage3_evaluation_tag(phase_class, tag)?;
-                    Ok(tag)
+                    Ok::<Stage3EvaluationTag, Wb11HydrologyKernelGuardError>(tag)
                 })
                 .transpose()?
         } else {
             None
         };
+        let project_legacy_shadow = evaluation_operator.is_none()
+            && inputs.surface_energy_options.complete_carrier_shadow;
         Self::prepare_stage3_layer_stack(phase_class, inputs, aggregate, layers)?;
         if layers.is_empty() {
             let meltwater_temperature_c = if incoming_liquid_m > WB11_ZERO_THRESHOLD {
@@ -39,7 +41,7 @@ impl Wb11HydrologyKernel {
             } else {
                 None
             };
-            let diagnostics = if let Some(tag) = evaluation_tag {
+            let evaluation = if let Some(tag) = evaluation_tag {
                 let mut summary = Stage3ShadowSummary::new(tag);
                 Self::stage3_shadow_fingerprints(inputs, layers, &[], &mut summary);
                 summary.complete_arm_non_formulation_fingerprint =
@@ -49,16 +51,16 @@ impl Wb11HydrologyKernel {
                         summary.non_formulation_fingerprint;
                 }
                 for hour in &mut summary.hourly {
-                    hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+                    hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
                 }
                 Self::validate_stage3_shadow_summary(phase_class, &summary)?;
-                let mut diagnostics = DirectSnowStage3Diagnostics::disabled();
-                diagnostics.evaluation = Some(Self::stage3_evaluation_diagnostics(&summary));
-                diagnostics.hourly_surface_energy = summary.hourly;
-                Some(diagnostics)
+                Some(Self::stage3_evaluation_diagnostics(&summary))
             } else {
-                capture.is_verbose().then(DirectSnowStage3Diagnostics::disabled)
+                None
             };
+            let diagnostics = capture
+                .is_verbose()
+                .then(DirectSnowStage3Diagnostics::disabled);
             return Ok(DirectSnowStage3Resolution {
                 outcome: DirectSnowStage3Outcome {
                     enabled: true,
@@ -71,6 +73,7 @@ impl Wb11HydrologyKernel {
                     ..DirectSnowLiquidDispositionLedger::default()
                 },
                 diagnostics,
+                evaluation,
             });
         }
 
@@ -329,47 +332,31 @@ impl Wb11HydrologyKernel {
                     hour_latent_energy_j_m2,
                     hour_latent_mass_energy_j_m2,
                 );
-                if let Some(ref shadow) = shadow_summary {
+                if project_legacy_shadow && let Some(ref shadow) = shadow_summary {
                     let sequential = shadow.hourly[hour_index];
-                    hour_diagnostics.shadow_sensible_flux_w_m2 =
-                        sequential.shadow_sensible_flux_w_m2;
-                    hour_diagnostics.shadow_latent_flux_w_m2 =
-                        sequential.shadow_latent_flux_w_m2;
-                    hour_diagnostics.shadow_advected_flux_w_m2 =
-                        sequential.shadow_advected_flux_w_m2;
-                    hour_diagnostics.shadow_shortwave_energy_j_m2 =
-                        sequential.shadow_shortwave_energy_j_m2;
-                    hour_diagnostics.shadow_longwave_energy_j_m2 =
-                        sequential.shadow_longwave_energy_j_m2;
-                    hour_diagnostics.shadow_internal_active_lower_conduction_j_m2 =
-                        sequential.shadow_internal_active_lower_conduction_j_m2;
-                    hour_diagnostics.shadow_complete_energy_j_m2 =
-                        sequential.shadow_complete_energy_j_m2;
+                    hour_diagnostics.shadow_sensible_flux_w_m2 = sequential.sensible_flux_w_m2;
+                    hour_diagnostics.shadow_latent_flux_w_m2 = sequential.latent_flux_w_m2;
+                    hour_diagnostics.shadow_advected_flux_w_m2 = sequential.advected_flux_w_m2;
+                    hour_diagnostics.shadow_complete_energy_j_m2 = sequential.complete_energy_j_m2;
                     hour_diagnostics.shadow_vapor_mass_exchange_kg_m2 =
-                        sequential.shadow_vapor_mass_exchange_kg_m2;
+                        sequential.vapor_mass_exchange_kg_m2;
                     hour_diagnostics.shadow_cold_required_j_m2 =
-                        sequential.shadow_cold_required_j_m2;
+                        sequential.cold_required_j_m2;
                     hour_diagnostics.shadow_cold_energy_change_j_m2 =
-                        sequential.shadow_cold_energy_change_j_m2;
-                    hour_diagnostics.shadow_cold_content_export_j_m2 =
-                        sequential.shadow_cold_content_export_j_m2;
+                        sequential.cold_energy_change_j_m2;
                     hour_diagnostics.shadow_excess_energy_j_m2 =
-                        sequential.shadow_excess_energy_j_m2;
+                        sequential.excess_energy_j_m2;
                     hour_diagnostics.shadow_ice_available_kg_m2 =
-                        sequential.shadow_ice_available_kg_m2;
+                        sequential.ice_available_kg_m2;
                     hour_diagnostics.shadow_sublimation_kg_m2 =
-                        sequential.shadow_sublimation_kg_m2;
-                    hour_diagnostics.shadow_melt_kg_m2 = sequential.shadow_melt_kg_m2;
+                        sequential.sublimation_kg_m2;
+                    hour_diagnostics.shadow_melt_kg_m2 = sequential.melt_kg_m2;
                     hour_diagnostics.shadow_unallocated_after_exhaustion_j_m2 =
-                        sequential.shadow_unallocated_after_exhaustion_j_m2;
+                        sequential.unallocated_after_exhaustion_j_m2;
                     hour_diagnostics.shadow_energy_closure_residual_j_m2 =
-                        sequential.shadow_energy_closure_residual_j_m2;
+                        sequential.energy_closure_residual_j_m2;
                     hour_diagnostics.shadow_complete_carrier_evaluated =
-                        sequential.shadow_complete_carrier_evaluated;
-                    hour_diagnostics.shadow_requested_seconds =
-                        sequential.shadow_requested_seconds;
-                    hour_diagnostics.shadow_evaluated_seconds =
-                        sequential.shadow_evaluated_seconds;
+                        sequential.complete_carrier_evaluated;
                 }
                 hourly_surface_energy[hour_index] = hour_diagnostics;
             }
@@ -423,6 +410,11 @@ impl Wb11HydrologyKernel {
             None
         };
 
+        let legacy_shadow_summary = if project_legacy_shadow {
+            shadow_summary.as_ref()
+        } else {
+            None
+        };
         Ok(DirectSnowStage3Resolution {
             outcome: DirectSnowStage3Outcome {
                 enabled: true,
@@ -452,21 +444,21 @@ impl Wb11HydrologyKernel {
                     cold_content_export_j_m2,
                     mass_latent_identity_residual_j_m2,
                     unused_positive_energy_j_m2,
-                    shadow_complete_energy_j_m2: shadow_summary.as_ref()
+                    shadow_complete_energy_j_m2: legacy_shadow_summary
                         .map_or(0.0, |shadow| shadow.complete_energy_j_m2),
-                    shadow_cold_energy_change_j_m2: shadow_summary.as_ref()
+                    shadow_cold_energy_change_j_m2: legacy_shadow_summary
                         .map_or(0.0, |shadow| shadow.cold_energy_change_j_m2),
-                    shadow_excess_energy_j_m2: shadow_summary.as_ref()
+                    shadow_excess_energy_j_m2: legacy_shadow_summary
                         .map_or(0.0, |shadow| shadow.excess_energy_j_m2),
-                    shadow_sublimation_kg_m2: shadow_summary.as_ref()
+                    shadow_sublimation_kg_m2: legacy_shadow_summary
                         .map_or(0.0, |shadow| shadow.sublimation_kg_m2),
-                    shadow_melt_kg_m2: shadow_summary.as_ref()
+                    shadow_melt_kg_m2: legacy_shadow_summary
                         .map_or(0.0, |shadow| shadow.melt_kg_m2),
-                    shadow_unallocated_after_exhaustion_j_m2: shadow_summary.as_ref().map_or(
+                    shadow_unallocated_after_exhaustion_j_m2: legacy_shadow_summary.map_or(
                         0.0,
                         |shadow| shadow.unallocated_after_exhaustion_j_m2,
                     ),
-                    shadow_maximum_energy_closure_residual_j_m2: shadow_summary.as_ref().map_or(
+                    shadow_maximum_energy_closure_residual_j_m2: legacy_shadow_summary.map_or(
                         0.0,
                         |shadow| shadow.maximum_energy_closure_residual_j_m2,
                     ),
@@ -474,12 +466,12 @@ impl Wb11HydrologyKernel {
                     minimum_unresolved_thermal_mass_kg_m2,
                     lower_thermal_volume_collapsed_seconds,
                     minimum_collapsed_lower_mass_kg_m2,
-                    evaluation: shadow_summary
-                        .as_ref()
-                        .map(Self::stage3_evaluation_diagnostics),
                     hourly_surface_energy: *hourly_surface_energy,
                 }
             }),
+            evaluation: shadow_summary
+                .as_ref()
+                .map(Self::stage3_evaluation_diagnostics),
         })
     }
 
@@ -551,6 +543,7 @@ impl Wb11HydrologyKernel {
                 - complete_component_total_j_m2,
             complete_arm_maximum_thermodynamic_residual_j_m2: shadow
                 .maximum_energy_closure_residual_j_m2,
+            hourly: shadow.hourly,
         }
     }
 
@@ -684,12 +677,12 @@ impl Wb11HydrologyKernel {
         let hourly_requested_seconds = summary
             .hourly
             .iter()
-            .map(|hour| hour.shadow_requested_seconds)
+            .map(|hour| hour.requested_seconds)
             .sum::<f64>();
         let hourly_evaluated_seconds = summary
             .hourly
             .iter()
-            .map(|hour| hour.shadow_evaluated_seconds)
+            .map(|hour| hour.evaluated_seconds)
             .sum::<f64>();
         for (symbol, residual) in [
             (
@@ -1771,8 +1764,8 @@ mod stage3_evaluation_validation_tests {
         summary.complete_arm_non_formulation_fingerprint = 6;
         summary.evaluated_seconds = summary.requested_seconds;
         for hour in &mut summary.hourly {
-            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
-            hour.shadow_evaluated_seconds = STAGE3_SECONDS_PER_HOUR;
+            hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
+            hour.evaluated_seconds = STAGE3_SECONDS_PER_HOUR;
         }
 
         let error = Wb11HydrologyKernel::validate_stage3_shadow_summary(

@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: remediation implemented; independent re-review pending.
+Status: second remediation implemented; independent re-review pending.
 
 All first-round findings were accepted. The remediation:
 
@@ -26,3 +26,23 @@ All first-round findings were accepted. The remediation:
 
 Focused remediation evidence: `53/53` six-binary Stage 3 tests, `150/150`
 runner unit tests, and warnings-denied two-crate all-target Clippy pass.
+
+The first re-review accepted the numerical, custody, schema, and consumer
+remediation, but QA correctly retained `HOLD`: fields still extended two
+existing exhaustive public diagnostics structs, a variant extended the public
+kernel error enum, and no actual protected-output byte comparison existed.
+That finding is accepted. The second remediation:
+
+- restores the exact pre-package field/variant shapes of
+  `DirectSnowSurfaceEnergyHourDiagnostics`, `DirectSnowStage3Diagnostics`, and
+  `Wb11HydrologyKernelGuardError`;
+- carries evaluator-only hourly data, the optional evaluator result, and typed
+  turbulent failure on new additive types;
+- keeps the authoritative partition outside the evaluation payload and proves
+  it exactly equals disabled execution, including verbose diagnostics; and
+- projects that authoritative partition through the real WAT, HBP, and PASS
+  writers and compares exact enabled-versus-disabled bytes.
+
+Second-remediation focused evidence: `53/53` six-binary Stage 3 tests, `2/2`
+evaluator validation tests, `5/5` runner evaluation tests including exact
+WAT/HBP/PASS bytes, and warnings-denied two-crate all-target Clippy pass.

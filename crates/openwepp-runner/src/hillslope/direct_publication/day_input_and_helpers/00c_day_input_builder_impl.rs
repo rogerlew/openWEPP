@@ -202,7 +202,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
         let snow_diagnostic_capture =
             DirectSnowDiagnosticCaptureRequest::resolve(day_index, lane_index);
-        let snow_liquid = authority.snow_frost.snow_liquid_partition(
+        let snow_evaluation = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
             &forcing,
@@ -214,6 +214,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             self.winter_hourly_geometry,
             snow_diagnostic_capture.capture,
         )?;
+        let snow_liquid = snow_evaluation.authoritative;
         let snow_trace_row = DirectSnowTraceRowContext {
             day_index,
             lane_index,
@@ -222,6 +223,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_melt_model: authority.snow_frost.snow_melt_model,
             snow_phase_model: authority.snow_frost.snow_phase_model,
             snow_liquid: &snow_liquid,
+            stage3_evaluation: snow_evaluation.evaluation.as_ref(),
         };
         maybe_write_r7h_direct_production_snow_trace(
             &snow_diagnostic_capture,
@@ -1143,9 +1145,9 @@ fn maybe_write_r7h_direct_production_snow_trace(
 
 // Keep the schema-v4 ordered-key formatter contiguous so column order and projection stay auditable.
 fn direct_snow_trace_schema(
-    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
+    evaluation: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
 ) -> &'static str {
-    if diagnostics.evaluation.is_some() {
+    if evaluation.is_some() {
         "openwepp-r7h-direct-production-snow-trace-v5"
     } else {
         "openwepp-r7h-direct-production-snow-trace-v4"
@@ -1165,12 +1167,13 @@ fn r7h_direct_production_snow_trace_line(
         snow_melt_model,
         snow_phase_model,
         snow_liquid,
+        stage3_evaluation,
     } = *context;
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
     let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
-    let schema = direct_snow_trace_schema(&verbose_diagnostics.stage3);
+    let schema = direct_snow_trace_schema(stage3_evaluation);
     let line = format!(
         "{{\"schema\":\"{schema}\",\
 \"day_index\":{day_index},\
@@ -1262,7 +1265,12 @@ fn r7h_direct_production_snow_trace_line(
     );
     format!(
         "{line},{}\n",
-        direct_snow_trace_diagnostic_suffix(snow_liquid, verbose_diagnostics, &thermal)
+        direct_snow_trace_diagnostic_suffix(
+            snow_liquid,
+            verbose_diagnostics,
+            &thermal,
+            stage3_evaluation,
+        )
     )
 }
 
@@ -1612,25 +1620,24 @@ mod stage3_trace_field_tests {
     #[allow(clippy::float_cmp, clippy::too_many_lines)]
     fn schema_v5_consumer_reconstructs_shadow_operands_and_rejects_production_aliases() {
         use openwepp_hillslope_orchestrator::{
-            DirectSnowStage3EvaluationDiagnostics, SnowStage3EvaluationOperator,
+            DirectSnowStage3EvaluationDiagnostics, DirectSnowStage3EvaluationHourDiagnostics,
+            SnowStage3EvaluationOperator,
         };
 
-        let mut diagnostics =
-            openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled();
-        diagnostics.shortwave_energy_j_m2 = 999.0;
-        diagnostics.surface_energy_j_m2 = 888.0;
-        diagnostics.hourly_surface_energy[0].net_shortwave_w_m2 = 777.0;
-        diagnostics.hourly_surface_energy[0].shadow_shortwave_energy_j_m2 = 11.0;
-        diagnostics.hourly_surface_energy[0].shadow_longwave_energy_j_m2 = 12.0;
-        diagnostics.hourly_surface_energy[0].shadow_sensible_flux_w_m2 = 0.013;
-        diagnostics.hourly_surface_energy[0].shadow_latent_flux_w_m2 = 0.014;
-        diagnostics.hourly_surface_energy[0].shadow_advected_flux_w_m2 = 0.015;
-        diagnostics.hourly_surface_energy[0]
-            .shadow_internal_active_lower_conduction_j_m2 = 16.0;
-        diagnostics.hourly_surface_energy[0].shadow_cold_content_export_j_m2 = 17.0;
-        diagnostics.hourly_surface_energy[0].shadow_requested_seconds = 100.0;
-        diagnostics.hourly_surface_energy[0].shadow_evaluated_seconds = 80.0;
-        diagnostics.evaluation = Some(DirectSnowStage3EvaluationDiagnostics {
+        let mut hourly = [DirectSnowStage3EvaluationHourDiagnostics::zero(); 24];
+        hourly[0] = DirectSnowStage3EvaluationHourDiagnostics {
+            shortwave_energy_j_m2: 11.0,
+            longwave_energy_j_m2: 12.0,
+            sensible_flux_w_m2: 0.013,
+            latent_flux_w_m2: 0.014,
+            advected_flux_w_m2: 0.015,
+            internal_active_lower_conduction_j_m2: 16.0,
+            cold_content_export_j_m2: 17.0,
+            requested_seconds: 100.0,
+            evaluated_seconds: 80.0,
+            ..DirectSnowStage3EvaluationHourDiagnostics::zero()
+        };
+        let evaluation = DirectSnowStage3EvaluationDiagnostics {
             operator: SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
             source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
             support_id: "stage3_daily_24_hour_support_v1",
@@ -1682,10 +1689,10 @@ mod stage3_trace_field_tests {
             complete_arm_terminal_unallocated_applicable: false,
             complete_arm_component_residual_j_m2: 0.0,
             complete_arm_maximum_thermodynamic_residual_j_m2: 0.0,
-        });
+            hourly,
+        };
 
-        let fields = direct_snow_trace_stage3_evaluation_fields(&diagnostics)
-            .expect("enabled evaluation fields");
+        let fields = direct_snow_trace_stage3_evaluation_fields(&evaluation);
         let row = format!("{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v5\",{fields}}}\n");
         let path = std::env::temp_dir().join(format!(
             "openwepp-stage3-v5-consumer-{}.jsonl",
@@ -1739,20 +1746,12 @@ mod stage3_trace_field_tests {
             value["stage3_evaluation_non_formulation_fingerprint_fnv1a64"],
             "0000000000000044"
         );
-        assert!(
-            direct_snow_trace_stage3_evaluation_fields(
-                &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled()
-            )
-            .is_none()
-        );
         assert_eq!(
-            direct_snow_trace_schema(
-                &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled()
-            ),
+            direct_snow_trace_schema(None),
             "openwepp-r7h-direct-production-snow-trace-v4"
         );
         assert_eq!(
-            direct_snow_trace_schema(&diagnostics),
+            direct_snow_trace_schema(Some(&evaluation)),
             "openwepp-r7h-direct-production-snow-trace-v5"
         );
     }

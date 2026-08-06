@@ -9,7 +9,7 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         mut layers: Vec<DirectSnowLayerState>,
         mut cold_content_by_layer: Vec<f64>,
-    ) -> Result<Stage3ShadowSummary, Wb11HydrologyKernelGuardError> {
+    ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
         let mut summary = Stage3ShadowSummary::new(tag);
         Self::stage3_shadow_fingerprints(
             inputs,
@@ -20,7 +20,7 @@ impl Wb11HydrologyKernel {
         summary.complete_arm_non_formulation_fingerprint =
             summary.non_formulation_fingerprint;
         for hour in &mut summary.hourly {
-            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+            hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
         }
         for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
             let mut elapsed_seconds = 0.0;
@@ -162,28 +162,26 @@ impl Wb11HydrologyKernel {
 
                 let hour = &mut summary.hourly[hour_index];
                 let weight = substep_seconds / STAGE3_SECONDS_PER_HOUR;
-                hour.shadow_sensible_flux_w_m2 += surface.shadow_sensible_flux_w_m2 * weight;
-                hour.shadow_latent_flux_w_m2 += surface.shadow_latent_flux_w_m2 * weight;
-                hour.shadow_advected_flux_w_m2 += surface.shadow_advected_flux_w_m2 * weight;
-                hour.shadow_shortwave_energy_j_m2 += carrier.shortwave_j_m2;
-                hour.shadow_longwave_energy_j_m2 += carrier.longwave_j_m2;
-                hour.shadow_internal_active_lower_conduction_j_m2 += conduction.active_energy;
-                hour.shadow_complete_energy_j_m2 += q_complete_j_m2;
-                hour.shadow_vapor_mass_exchange_kg_m2 +=
+                hour.sensible_flux_w_m2 += surface.shadow_sensible_flux_w_m2 * weight;
+                hour.latent_flux_w_m2 += surface.shadow_latent_flux_w_m2 * weight;
+                hour.advected_flux_w_m2 += surface.shadow_advected_flux_w_m2 * weight;
+                hour.shortwave_energy_j_m2 += carrier.shortwave_j_m2;
+                hour.longwave_energy_j_m2 += carrier.longwave_j_m2;
+                hour.internal_active_lower_conduction_j_m2 += conduction.active_energy;
+                hour.complete_energy_j_m2 += q_complete_j_m2;
+                hour.vapor_mass_exchange_kg_m2 +=
                     surface.shadow_vapor_mass_exchange_kg_m2;
-                hour.shadow_cold_required_j_m2 += cold_required_j_m2;
-                hour.shadow_cold_energy_change_j_m2 += cold_energy_change_j_m2;
-                hour.shadow_cold_content_export_j_m2 += cold_content_export_j_m2;
-                hour.shadow_excess_energy_j_m2 += excess_energy_j_m2;
-                hour.shadow_ice_available_kg_m2 = hour
-                    .shadow_ice_available_kg_m2
-                    .max(ice_available_kg_m2);
-                hour.shadow_sublimation_kg_m2 += sublimation_kg_m2;
-                hour.shadow_melt_kg_m2 += melt_kg_m2;
-                hour.shadow_unallocated_after_exhaustion_j_m2 += unallocated_j_m2;
-                hour.shadow_energy_closure_residual_j_m2 += closure_residual_j_m2;
-                hour.shadow_complete_carrier_evaluated = true;
-                hour.shadow_evaluated_seconds += substep_seconds;
+                hour.cold_required_j_m2 += cold_required_j_m2;
+                hour.cold_energy_change_j_m2 += cold_energy_change_j_m2;
+                hour.cold_content_export_j_m2 += cold_content_export_j_m2;
+                hour.excess_energy_j_m2 += excess_energy_j_m2;
+                hour.ice_available_kg_m2 = hour.ice_available_kg_m2.max(ice_available_kg_m2);
+                hour.sublimation_kg_m2 += sublimation_kg_m2;
+                hour.melt_kg_m2 += melt_kg_m2;
+                hour.unallocated_after_exhaustion_j_m2 += unallocated_j_m2;
+                hour.energy_closure_residual_j_m2 += closure_residual_j_m2;
+                hour.complete_carrier_evaluated = true;
+                hour.evaluated_seconds += substep_seconds;
                 summary.evaluated_seconds += substep_seconds;
                 summary.complete_shortwave_j_m2 += carrier.shortwave_j_m2;
                 summary.complete_longwave_j_m2 += carrier.longwave_j_m2;
@@ -219,14 +217,14 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         layers: &[DirectSnowLayerState],
         cold_content_by_layer: &[f64],
-    ) -> Result<Stage3ShadowSummary, Wb11HydrologyKernelGuardError> {
+    ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
         let mut summary = Stage3ShadowSummary::new(tag);
         Self::stage3_shadow_fingerprints(inputs, layers, cold_content_by_layer, &mut summary);
         summary.surface_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
         Self::stage3_shadow_fingerprints(inputs, layers, cold_content_by_layer, &mut summary);
         summary.complete_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
         for hour in &mut summary.hourly {
-            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+            hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
         }
         let snapshot = Self::stage3_control_volume_state(
             phase_class,
@@ -252,16 +250,25 @@ impl Wb11HydrologyKernel {
                 Some(tag.operator),
                 DirectSnowDiagnosticCapture::Verbose,
             )?;
-            let mut hour = carrier.diagnostics.ok_or_else(|| {
+            let surface = carrier.diagnostics.ok_or_else(|| {
                 Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                     phase_class,
                     symbol: BoundarySymbol::from("snow.stage3_shadow_diagnostics"),
                 }
             })?;
-            hour.shadow_shortwave_energy_j_m2 = carrier.shortwave_j_m2;
-            hour.shadow_longwave_energy_j_m2 = carrier.longwave_j_m2;
-            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
-            hour.shadow_evaluated_seconds = STAGE3_SECONDS_PER_HOUR;
+            let hour = DirectSnowStage3EvaluationHourDiagnostics {
+                sensible_flux_w_m2: surface.shadow_sensible_flux_w_m2,
+                latent_flux_w_m2: surface.shadow_latent_flux_w_m2,
+                advected_flux_w_m2: surface.shadow_advected_flux_w_m2,
+                shortwave_energy_j_m2: carrier.shortwave_j_m2,
+                longwave_energy_j_m2: carrier.longwave_j_m2,
+                complete_energy_j_m2: surface.shadow_complete_energy_j_m2,
+                vapor_mass_exchange_kg_m2: surface.shadow_vapor_mass_exchange_kg_m2,
+                complete_carrier_evaluated: surface.shadow_complete_carrier_evaluated,
+                requested_seconds: STAGE3_SECONDS_PER_HOUR,
+                evaluated_seconds: STAGE3_SECONDS_PER_HOUR,
+                ..DirectSnowStage3EvaluationHourDiagnostics::zero()
+            };
             summary.hourly[hour_index] = hour;
             summary.evaluated_seconds += STAGE3_SECONDS_PER_HOUR;
             summary.surface_arm_shortwave_j_m2 += carrier.shortwave_j_m2;
@@ -271,14 +278,14 @@ impl Wb11HydrologyKernel {
             summary.complete_shortwave_j_m2 += carrier.shortwave_j_m2;
             summary.complete_longwave_j_m2 += carrier.longwave_j_m2;
             summary.complete_sensible_j_m2 +=
-                hour.shadow_sensible_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+                hour.sensible_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
             summary.complete_latent_j_m2 +=
-                hour.shadow_latent_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+                hour.latent_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
             summary.complete_advected_j_m2 +=
-                hour.shadow_advected_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+                hour.advected_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
             summary.complete_vapor_mass_exchange_kg_m2 +=
-                hour.shadow_vapor_mass_exchange_kg_m2;
-            summary.complete_energy_j_m2 += hour.shadow_complete_energy_j_m2;
+                hour.vapor_mass_exchange_kg_m2;
+            summary.complete_energy_j_m2 += hour.complete_energy_j_m2;
         }
         Ok(summary)
     }
@@ -423,7 +430,7 @@ impl Wb11HydrologyKernel {
         interval: Stage3SurfaceInterval,
         evaluation_operator: Option<SnowStage3EvaluationOperator>,
         capture: DirectSnowDiagnosticCapture,
-    ) -> Result<Stage3HourlySurfaceEnergy, Wb11HydrologyKernelGuardError> {
+    ) -> Result<Stage3HourlySurfaceEnergy, DirectSnowStage3EvaluationError> {
         let Stage3SurfaceInterval {
             surface_temperature_c,
             snow_depth_m,
@@ -636,7 +643,8 @@ impl Wb11HydrologyKernel {
                     0.0,
                     Some(1.0),
                     Some(1.0),
-                ));
+                )
+                .into());
             }
             let geometry = inputs.surface_energy_options.turbulent_geometry;
             let air_temperature = Self::stage3_temperature(phase_class, hourly.air_temperature_c)?;
@@ -720,7 +728,7 @@ impl Wb11HydrologyKernel {
                 options: TurbulentTransferOptions::default(),
             })
             .map_err(|source| {
-                Wb11HydrologyKernelGuardError::SnowStage3TurbulentTransfer(Box::new(
+                DirectSnowStage3EvaluationError::TurbulentTransfer(Box::new(
                     SnowStage3TurbulentTransferError {
                         phase_class,
                         source,
@@ -807,9 +815,6 @@ impl Wb11HydrologyKernel {
                 diagnostics.shadow_latent_flux_w_m2 =
                     turbulent.latent_heat.as_watts_per_square_meter();
                 diagnostics.shadow_advected_flux_w_m2 = advected.as_watts_per_square_meter();
-                diagnostics.shadow_shortwave_energy_j_m2 =
-                    shortwave.as_watts_per_square_meter() * duration_seconds;
-                diagnostics.shadow_longwave_energy_j_m2 = longwave_w_m2 * duration_seconds;
                 diagnostics.shadow_complete_energy_j_m2 =
                     shadow_surface_flux_w_m2 * duration_seconds;
                 diagnostics.shadow_vapor_mass_exchange_kg_m2 =

@@ -38,6 +38,15 @@ fn stage3_diagnostics(
         .stage3
 }
 
+fn evaluation_diagnostics(
+    result: &openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult,
+) -> &openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics {
+    result
+        .evaluation
+        .as_ref()
+        .expect("enabled request carries evaluation diagnostics")
+}
+
 fn independently_compacted_density_after_day(
     initial_density_kg_m3: f64,
     overburden_kg_m2: f64,
@@ -746,23 +755,26 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
     .expect("complete carrier shadow result");
 
     assert_eq!(
-        shadow.runtime_swe_after_m.to_bits(),
+        shadow.authoritative.runtime_swe_after_m.to_bits(),
         authoritative.runtime_swe_after_m.to_bits()
     );
     assert_eq!(
-        shadow.runtime_depth_after_m.to_bits(),
+        shadow.authoritative.runtime_depth_after_m.to_bits(),
         authoritative.runtime_depth_after_m.to_bits()
     );
-    assert_eq!(shadow.snow_layers_after, authoritative.snow_layers_after);
     assert_eq!(
-        shadow.solid_to_liquid_ledger(),
+        shadow.authoritative.snow_layers_after,
+        authoritative.snow_layers_after
+    );
+    assert_eq!(
+        shadow.authoritative.solid_to_liquid_ledger(),
         authoritative.solid_to_liquid_ledger()
     );
     assert_eq!(
-        shadow.liquid_disposition_ledger(),
+        shadow.authoritative.liquid_disposition_ledger(),
         authoritative.liquid_disposition_ledger()
     );
-    let mut public_shadow = shadow.clone();
+    let mut public_shadow = shadow.authoritative.clone();
     let mut public_authoritative = authoritative.clone();
     public_shadow.verbose_diagnostics = None;
     public_authoritative.verbose_diagnostics = None;
@@ -771,33 +783,30 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
         "evaluation-only diagnostics must be the sole partition difference"
     );
 
-    let diagnostics = stage3_diagnostics(&shadow);
+    let evaluation = evaluation_diagnostics(&shadow);
     assert!(
-        diagnostics
-            .hourly_surface_energy
+        evaluation
+            .hourly
             .iter()
-            .all(|hour| hour.shadow_complete_carrier_evaluated)
+            .all(|hour| hour.complete_carrier_evaluated)
     );
-    assert!(diagnostics.hourly_surface_energy.iter().any(|hour| {
-        hour.shadow_sensible_flux_w_m2.abs() > f64::EPSILON
-            && hour.shadow_latent_flux_w_m2.abs() > f64::EPSILON
-            && hour.shadow_complete_energy_j_m2.abs() > f64::EPSILON
+    assert!(evaluation.hourly.iter().any(|hour| {
+        hour.sensible_flux_w_m2.abs() > f64::EPSILON
+            && hour.latent_flux_w_m2.abs() > f64::EPSILON
+            && hour.complete_energy_j_m2.abs() > f64::EPSILON
     }));
-    for hour in diagnostics
-        .hourly_surface_energy
+    for hour in evaluation
+        .hourly
         .iter()
-        .filter(|hour| hour.shadow_complete_carrier_evaluated)
+        .filter(|hour| hour.complete_carrier_evaluated)
     {
-        let reconstructed = hour.shadow_cold_energy_change_j_m2
-            + 333_600.0 * hour.shadow_melt_kg_m2
-            + hour.shadow_unallocated_after_exhaustion_j_m2;
-        assert!((hour.shadow_complete_energy_j_m2 - reconstructed).abs() <= 1.0e-6);
-        assert!(hour.shadow_energy_closure_residual_j_m2.abs() <= 1.0e-6);
+        let reconstructed = hour.cold_energy_change_j_m2
+            + 333_600.0 * hour.melt_kg_m2
+            + hour.unallocated_after_exhaustion_j_m2;
+        assert!((hour.complete_energy_j_m2 - reconstructed).abs() <= 1.0e-6);
+        assert!(hour.energy_closure_residual_j_m2.abs() <= 1.0e-6);
     }
-    assert!(diagnostics.shadow_maximum_energy_closure_residual_j_m2 <= 1.0e-6);
-    let evaluation = diagnostics
-        .evaluation
-        .expect("enabled sequential shadow carries typed evaluation metadata");
+    assert!(evaluation.complete_arm_maximum_thermodynamic_residual_j_m2 <= 1.0e-6);
     assert_eq!(
         evaluation.operator,
         SnowStage3EvaluationOperator::SequentialResolvedShadowV1
@@ -829,21 +838,23 @@ fn same_state_pair_has_identical_support_and_reconstructable_named_arms() {
     )
     .expect("same-state pair");
     assert_eq!(
-        observed.runtime_swe_after_m.to_bits(),
+        observed.authoritative.runtime_swe_after_m.to_bits(),
         expected.runtime_swe_after_m.to_bits()
     );
-    assert_eq!(observed.snow_layers_after, expected.snow_layers_after);
     assert_eq!(
-        observed.solid_to_liquid_ledger(),
+        observed.authoritative.snow_layers_after,
+        expected.snow_layers_after
+    );
+    assert_eq!(
+        observed.authoritative.solid_to_liquid_ledger(),
         expected.solid_to_liquid_ledger()
     );
     assert_eq!(
-        observed.liquid_disposition_ledger(),
+        observed.authoritative.liquid_disposition_ledger(),
         expected.liquid_disposition_ledger()
     );
 
-    let diagnostics = stage3_diagnostics(&observed);
-    let evaluation = diagnostics.evaluation.expect("paired evaluation metadata");
+    let evaluation = evaluation_diagnostics(&observed);
     assert_eq!(
         evaluation.operator,
         SnowStage3EvaluationOperator::SameStatePairedCarrierV1
@@ -884,9 +895,9 @@ fn same_state_pair_has_identical_support_and_reconstructable_named_arms() {
         + evaluation.complete_arm_advected_j_m2;
     assert!((evaluation.complete_arm_total_j_m2 - complete_reconstructed).abs() <= 1.0e-6);
     assert!(evaluation.complete_arm_component_residual_j_m2.abs() <= 1.0e-6);
-    assert!(diagnostics.hourly_surface_energy.iter().all(|hour| {
-        hour.shadow_requested_seconds.to_bits() == 3_600.0_f64.to_bits()
-            && hour.shadow_evaluated_seconds.to_bits() == 3_600.0_f64.to_bits()
+    assert!(evaluation.hourly.iter().all(|hour| {
+        hour.requested_seconds.to_bits() == 3_600.0_f64.to_bits()
+            && hour.evaluated_seconds.to_bits() == 3_600.0_f64.to_bits()
     }));
 }
 
@@ -911,13 +922,14 @@ fn complete_carrier_converts_geometric_snowfall_to_water_mass_once() {
         SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
     )
     .expect("snowfall advected-heat shadow");
-    let hour = &stage3_diagnostics(&result).hourly_surface_energy[0];
+    let production_hour = &stage3_diagnostics(&result.authoritative).hourly_surface_energy[0];
+    let hour = &evaluation_diagnostics(&result).hourly[0];
     let snow_specific_heat_j_kg_k =
         4.186_798_188 * (0.024_928 + 0.001_76 * (-5.0 + 273.16)) / 0.001;
     let expected_flux_w_m2 = snow_specific_heat_j_kg_k
         * (0.01 * 0.1 * 1_000.0 / 3_600.0)
-        * (-5.0 - hour.surface_temperature_c);
-    assert!((hour.shadow_advected_flux_w_m2 - expected_flux_w_m2).abs() <= 1.0e-12);
+        * (-5.0 - production_hour.surface_temperature_c);
+    assert!((hour.advected_flux_w_m2 - expected_flux_w_m2).abs() <= 1.0e-12);
 }
 
 #[test]
@@ -941,13 +953,13 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
     )
     .expect("cold-content shadow");
-    let cold_diagnostics = stage3_diagnostics(&cold_result);
+    let cold_diagnostics = evaluation_diagnostics(&cold_result);
     assert!(
-        cold_diagnostics.shadow_melt_kg_m2 <= 1.0e-9,
+        cold_diagnostics.complete_arm_melt_kg_m2 <= 1.0e-9,
         "cold-pack numerical melt was {} kg m^-2",
-        cold_diagnostics.shadow_melt_kg_m2
+        cold_diagnostics.complete_arm_melt_kg_m2
     );
-    assert!(cold_diagnostics.shadow_cold_energy_change_j_m2.abs() > f64::EPSILON);
+    assert!(cold_diagnostics.complete_arm_cold_energy_change_j_m2.abs() > f64::EPSILON);
 
     let mut terminal = inputs(
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
@@ -970,44 +982,40 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
             SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
         )
         .expect("terminal-energy shadow");
-    let terminal_diagnostics = stage3_diagnostics(&terminal_result);
-    assert!(terminal_diagnostics.shadow_melt_kg_m2 > 0.0);
-    assert!(terminal_diagnostics.shadow_unallocated_after_exhaustion_j_m2 > 0.0);
-    assert!(terminal_diagnostics.shadow_maximum_energy_closure_residual_j_m2 <= 1.0e-6);
+    let terminal_diagnostics = evaluation_diagnostics(&terminal_result);
+    assert!(terminal_diagnostics.complete_arm_melt_kg_m2 > 0.0);
+    assert!(terminal_diagnostics.complete_arm_terminal_unallocated_j_m2 > 0.0);
+    assert!(terminal_diagnostics.complete_arm_maximum_thermodynamic_residual_j_m2 <= 1.0e-6);
     assert_eq!(
-        terminal_result.runtime_swe_after_m.to_bits(),
+        terminal_result.authoritative.runtime_swe_after_m.to_bits(),
         baseline_result.runtime_swe_after_m.to_bits(),
         "shadow melt must not mutate authoritative SWE"
     );
-    let evaluation = terminal_diagnostics
-        .evaluation
-        .expect("terminal shadow evaluation metadata");
+    let evaluation = terminal_diagnostics;
     assert!(evaluation.evaluated_seconds < evaluation.requested_seconds);
     assert_eq!(
-        terminal_diagnostics
-            .hourly_surface_energy
+        evaluation
+            .hourly
             .iter()
-            .map(|hour| hour.shadow_requested_seconds)
+            .map(|hour| hour.requested_seconds)
             .sum::<f64>()
             .to_bits(),
         evaluation.requested_seconds.to_bits()
     );
     assert_eq!(
-        terminal_diagnostics
-            .hourly_surface_energy
+        evaluation
+            .hourly
             .iter()
-            .map(|hour| hour.shadow_evaluated_seconds)
+            .map(|hour| hour.evaluated_seconds)
             .sum::<f64>()
             .to_bits(),
         evaluation.evaluated_seconds.to_bits()
     );
     assert!(
-        terminal_diagnostics
-            .hourly_surface_energy
+        evaluation
+            .hourly
             .iter()
-            .any(|hour| {
-                hour.shadow_requested_seconds == 3_600.0 && hour.shadow_evaluated_seconds == 0.0
-            })
+            .any(|hour| hour.requested_seconds == 3_600.0 && hour.evaluated_seconds == 0.0)
     );
 }
 
@@ -1039,8 +1047,9 @@ fn filtered_capture_skips_evaluation_primitives_and_preserves_authoritative_resu
             Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
         )
         .expect("filtered request must not execute invalid evaluation geometry");
-    assert_eq!(observed, expected);
-    assert!(observed.verbose_diagnostics.is_none());
+    assert_eq!(observed.authoritative, expected);
+    assert!(observed.authoritative.verbose_diagnostics.is_none());
+    assert!(observed.evaluation.is_none());
 }
 
 #[test]
@@ -1060,17 +1069,14 @@ fn selected_evaluator_on_empty_pack_emits_tagged_zero_coverage() {
         SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
     )
     .expect("empty-pack evaluation row");
-    let diagnostics = stage3_diagnostics(&result);
-    let evaluation = diagnostics
-        .evaluation
-        .expect("selected empty-pack evaluator retains its tag");
+    let evaluation = evaluation_diagnostics(&result);
     assert_eq!(evaluation.evaluated_seconds.to_bits(), 0.0_f64.to_bits());
     assert_eq!(evaluation.coverage_fraction.to_bits(), 0.0_f64.to_bits());
     assert_eq!(
-        diagnostics
-            .hourly_surface_energy
+        evaluation
+            .hourly
             .iter()
-            .map(|hour| hour.shadow_requested_seconds)
+            .map(|hour| hour.requested_seconds)
             .sum::<f64>()
             .to_bits(),
         evaluation.requested_seconds.to_bits()
@@ -1087,14 +1093,25 @@ fn legacy_complete_carrier_field_remains_source_and_behavior_compatible() {
     let typed = legacy.clone();
     let mut typed = typed;
     typed.surface_energy_options.complete_carrier_shadow = false;
-    assert_eq!(
+    let legacy_result =
         Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&legacy)
-            .expect("legacy complete-carrier request"),
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
-            &typed,
-            SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
-        )
-        .expect("typed sequential request")
+            .expect("legacy complete-carrier request");
+    let typed_result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &typed,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect("typed sequential request");
+    let typed_baseline =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&typed)
+            .expect("typed authoritative baseline");
+    assert_eq!(typed_result.authoritative, typed_baseline);
+    assert_eq!(
+        stage3_diagnostics(&legacy_result)
+            .shadow_complete_energy_j_m2
+            .to_bits(),
+        evaluation_diagnostics(&typed_result)
+            .complete_arm_total_j_m2
+            .to_bits()
     );
     let conflict = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
         &legacy,
@@ -1112,9 +1129,7 @@ fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
             SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
         )
         .unwrap_or_else(|error| panic!("paired fingerprint candidate {label}: {error}"));
-        let evaluation = stage3_diagnostics(&result)
-            .evaluation
-            .expect("paired fingerprint metadata");
+        let evaluation = evaluation_diagnostics(&result);
         assert_eq!(
             evaluation.surface_arm_non_formulation_fingerprint,
             evaluation.complete_arm_non_formulation_fingerprint
@@ -1217,7 +1232,7 @@ fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
     )
     .expect_err("primitive geometry violation must retain its meteorology source");
     match error {
-        openwepp_hillslope_orchestrator::Wb11HydrologyKernelGuardError::SnowStage3TurbulentTransfer(
+        openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationError::TurbulentTransfer(
             snapshot,
         ) => {
             assert_eq!(

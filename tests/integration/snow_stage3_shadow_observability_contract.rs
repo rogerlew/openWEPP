@@ -97,6 +97,8 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
         "SequentialResolvedShadowV1",
         "pub complete_carrier_shadow: bool",
         "pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>",
+        "pub struct DirectSnowStage3EvaluationResult",
+        "pub struct DirectSnowStage3EvaluationHourDiagnostics",
     ] {
         assert!(support.contains(required), "{SUPPORT} missing {required}");
     }
@@ -129,7 +131,7 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
     for required in [
         "stage3_shadow_fingerprints",
         "stage3_fnv1a_u64",
-        "shadow_evaluated_seconds",
+        "evaluated_seconds",
         "SnowStage3TurbulentTransferError",
     ] {
         assert!(
@@ -138,6 +140,42 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
         );
     }
     assert!(errors.contains("SnowStage3TurbulentTransfer"));
+    let legacy_hour = support
+        .split("pub struct DirectSnowSurfaceEnergyHourDiagnostics")
+        .nth(1)
+        .and_then(|text| {
+            text.split("impl DirectSnowSurfaceEnergyHourDiagnostics")
+                .next()
+        })
+        .expect("legacy hourly diagnostics body");
+    for forbidden in [
+        "shadow_shortwave_energy_j_m2",
+        "shadow_longwave_energy_j_m2",
+        "shadow_internal_active_lower_conduction_j_m2",
+        "shadow_cold_content_export_j_m2",
+        "shadow_requested_seconds",
+        "shadow_evaluated_seconds",
+    ] {
+        assert!(
+            !legacy_hour.contains(forbidden),
+            "legacy hourly API gained {forbidden}"
+        );
+    }
+    let legacy_stage3 = support
+        .split("pub struct DirectSnowStage3Diagnostics")
+        .nth(1)
+        .and_then(|text| {
+            text.split("pub struct DirectSnowStage3EvaluationDiagnostics")
+                .next()
+        })
+        .expect("legacy Stage 3 diagnostics body");
+    assert!(!legacy_stage3.contains("pub evaluation:"));
+    let legacy_error = errors
+        .split("pub enum Wb11HydrologyKernelGuardError")
+        .nth(1)
+        .and_then(|text| text.split("impl Wb11HydrologyKernelGuardError").next())
+        .expect("legacy kernel error body");
+    assert!(!legacy_error.contains("SnowStage3TurbulentTransfer"));
     assert!(solver_core.lines().count() < 3_000);
     assert!(solver_parent.lines().count() < 3_000);
     assert!(evaluation.lines().count() < 3_000);

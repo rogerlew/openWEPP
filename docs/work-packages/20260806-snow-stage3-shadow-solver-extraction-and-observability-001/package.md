@@ -139,8 +139,13 @@ boundary and may not be inferred from the residual.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`;
 - new files below
   `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/`;
+- review-driven additive-wrapper custody in
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs`
+  and the crate export surface in `crates/openwepp-hillslope-orchestrator/src/lib.rs`;
 - the direct runner authority/options builder and internal trace formatter under
   `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/`;
+- the runner test include registration plus
+  `crates/openwepp-runner/src/hillslope/tests03/stage3_evaluation_publication_parity.rs`;
 - focused Stage 3 runtime and direct-consumer tests;
 - the root roadmap, snow campaign roadmap, and package catalog; and
 - typed assurance source-adoption paths and receipts selected by check mode.
@@ -291,6 +296,13 @@ custody.
 - Decision: label the current sequential claim `bounded_response_experiment`.
   Rationale: this package does not add cross-day persistence or complete
   same-substep phase/liquid chronology. Date/Author: 2026-08-06 / Codex.
+- Decision: carry evaluation diagnostics and typed turbulent failures on new
+  additive result/error/hourly types, not fields or variants added to existing
+  exhaustive public records. Rationale: independent consumer review correctly
+  identified source-compatibility breaks outside the initially restored
+  options record. The review-driven write-set expansion is limited to the
+  private Stage 3 resolution handoff, crate exports, trace custody, and the
+  real WAT/HBP/PASS byte-parity test. Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 

@@ -58,7 +58,6 @@ impl SnowLayerAggregateMismatchError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Wb11HydrologyKernelGuardError {
     SnowStage3Conductivity(Box<SnowStage3ConductivityError>),
-    SnowStage3TurbulentTransfer(Box<SnowStage3TurbulentTransferError>),
     SnowLayerAggregateMismatch(Box<SnowLayerAggregateMismatchError>),
     SnowMassTransitionLedger {
         phase_class: HillslopeKernelPhaseClass,
@@ -158,7 +157,6 @@ impl Wb11HydrologyKernelGuardError {
             Self::StateSymbolOutOfRange { .. }
             | Self::FluxSymbolOutOfRange { .. }
             | Self::SnowStage3Conductivity(_)
-            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::SnowMassTransitionLedger { .. }
             | Self::Erod13DomainViolation { .. }
@@ -170,9 +168,7 @@ impl Wb11HydrologyKernelGuardError {
     #[must_use]
     pub fn code(&self) -> String {
         match self {
-            Self::SnowStage3Conductivity(_)
-            | Self::SnowStage3TurbulentTransfer(_)
-            | Self::SnowLayerAggregateMismatch(_) => {
+            Self::SnowStage3Conductivity(_) | Self::SnowLayerAggregateMismatch(_) => {
                 return String::from("HKERNEL-WB14-RUNOFF-E-003");
             }
             Self::Erod13MissingRequiredSymbol { .. } => {
@@ -217,7 +213,6 @@ impl Wb11HydrologyKernelGuardError {
             | Self::FluxSymbolOutOfRange { phase_class, .. }
             | Self::SnowMassTransitionLedger { phase_class, .. } => (phase_class, "003"),
             Self::SnowStage3Conductivity(_)
-            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::Erod13MissingRequiredSymbol { .. }
             | Self::Erod13NonFiniteSymbol { .. }
@@ -248,7 +243,6 @@ impl Wb11HydrologyKernelGuardError {
     fn display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
         match self {
             Self::SnowStage3Conductivity(_)
-            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::SnowMassTransitionLedger { .. } => {
                 unreachable!("snow diagnostic errors use their typed display")
@@ -513,22 +507,6 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
                 phase_class.as_str(),
                 )
             }
-            Self::SnowStage3TurbulentTransfer(snapshot) => write!(
-                f,
-                "{code}: phase class {} snow Stage 3 {} turbulent transfer failed: {}; \
-                 pressure_pa={}, wind_m_s={}, air_temperature_c={}, surface_temperature_c={}, \
-                 air_vapor_pressure_pa={}, surface_vapor_pressure_pa={}, geometry={:?}",
-                snapshot.phase_class.as_str(),
-                snapshot.operator.id(),
-                snapshot.source,
-                snapshot.atmospheric_pressure_pa,
-                snapshot.wind_speed_m_s,
-                snapshot.air_temperature_c,
-                snapshot.surface_temperature_c,
-                snapshot.air_vapor_pressure_pa,
-                snapshot.surface_vapor_pressure_pa,
-                snapshot.geometry,
-            ),
             Self::SnowMassTransitionLedger {
                 phase_class,
                 source,
@@ -546,9 +524,52 @@ impl Error for Wb11HydrologyKernelGuardError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::SnowStage3Conductivity(snapshot) => Some(&snapshot.source),
-            Self::SnowStage3TurbulentTransfer(snapshot) => Some(&snapshot.source),
             Self::SnowMassTransitionLedger { source, .. } => Some(source),
             _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum DirectSnowStage3EvaluationError {
+    Kernel(Box<Wb11HydrologyKernelGuardError>),
+    TurbulentTransfer(Box<SnowStage3TurbulentTransferError>),
+}
+
+impl From<Wb11HydrologyKernelGuardError> for DirectSnowStage3EvaluationError {
+    fn from(source: Wb11HydrologyKernelGuardError) -> Self {
+        Self::Kernel(Box::new(source))
+    }
+}
+
+impl fmt::Display for DirectSnowStage3EvaluationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Kernel(source) => source.fmt(f),
+            Self::TurbulentTransfer(snapshot) => write!(
+                f,
+                "snow Stage 3 {} turbulent transfer failed: {}; pressure_pa={}, wind_m_s={}, \
+                 air_temperature_c={}, surface_temperature_c={}, air_vapor_pressure_pa={}, \
+                 surface_vapor_pressure_pa={}, geometry={:?}",
+                snapshot.operator.id(),
+                snapshot.source,
+                snapshot.atmospheric_pressure_pa,
+                snapshot.wind_speed_m_s,
+                snapshot.air_temperature_c,
+                snapshot.surface_temperature_c,
+                snapshot.air_vapor_pressure_pa,
+                snapshot.surface_vapor_pressure_pa,
+                snapshot.geometry,
+            ),
+        }
+    }
+}
+
+impl Error for DirectSnowStage3EvaluationError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Kernel(source) => Some(source.as_ref()),
+            Self::TurbulentTransfer(snapshot) => Some(&snapshot.source),
         }
     }
 }

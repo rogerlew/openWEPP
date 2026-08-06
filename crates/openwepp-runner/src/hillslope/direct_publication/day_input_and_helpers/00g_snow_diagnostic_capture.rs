@@ -13,6 +13,8 @@ struct DirectSnowTraceRowContext<'a> {
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_liquid: &'a openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    stage3_evaluation:
+        Option<&'a openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
 }
 
 impl DirectSnowDiagnosticCaptureRequest {

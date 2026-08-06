@@ -388,9 +388,9 @@ impl DirectProductionSnowFrostAuthority {
         sturm_day_of_year: Option<f64>,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
-    ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
+    ) -> Result<openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult, HillslopeCliError> {
         if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
-            return Ok(inactive_direct_snow_liquid_partition(
+            return Ok(inactive_direct_snow_evaluation_result(
                 self.snow_density_model,
                 hyetograph_rainfall_m,
                 snow_lane_state,
@@ -487,6 +487,23 @@ impl DirectProductionSnowFrostAuthority {
             surface: "direct_publication_frame",
             detail: format!("{SIMOUT_GUARD_ID} direct production typed snow partition failed: {source}"),
         })
+    }
+}
+
+fn inactive_direct_snow_evaluation_result(
+    snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
+    hyetograph_rainfall_m: f64,
+    snow_lane_state: &DirectSnowLaneState,
+    capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
+) -> openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
+    openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
+        authoritative: inactive_direct_snow_liquid_partition(
+            snow_density_model,
+            hyetograph_rainfall_m,
+            snow_lane_state,
+            capture,
+        ),
+        evaluation: None,
     }
 }
 

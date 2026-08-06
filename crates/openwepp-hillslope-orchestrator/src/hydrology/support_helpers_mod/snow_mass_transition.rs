@@ -2,7 +2,10 @@ use openwepp_unit_boundary::TemperatureCelsius;
 use std::error::Error;
 use std::fmt;
 
-use super::super::{DirectSnowAccumulationMeltDiagnostics, DirectSnowStage3Diagnostics};
+use super::super::{
+    DirectSnowAccumulationMeltDiagnostics, DirectSnowStage3Diagnostics,
+    DirectSnowStage3EvaluationDiagnostics,
+};
 use crate::constants::WB11_ZERO_THRESHOLD;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -282,6 +285,7 @@ pub(crate) struct DirectSnowStage3Resolution {
     pub outcome: DirectSnowStage3Outcome,
     pub liquid_disposition_ledger: DirectSnowLiquidDispositionLedger,
     pub diagnostics: Option<DirectSnowStage3Diagnostics>,
+    pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>,
 }
 
 impl DirectSnowStage3Resolution {
@@ -293,6 +297,7 @@ impl DirectSnowStage3Resolution {
             diagnostics: capture
                 .is_verbose()
                 .then(DirectSnowStage3Diagnostics::disabled),
+            evaluation: None,
         }
     }
 }

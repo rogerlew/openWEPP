@@ -1,73 +1,83 @@
 #[allow(clippy::too_many_lines)]
 fn direct_snow_trace_stage3_evaluation_fields(
-    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
-) -> Option<String> {
-    let evaluation = diagnostics.evaluation?;
+    evaluation: &openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics,
+) -> String {
     let pairing_id = evaluation
         .pairing_id
         .map_or_else(|| "null".to_string(), |value| format!("\"{value}\""));
-    let hourly_shortwave = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_shortwave_energy_j_m2
+    let hourly_values = |value: fn(
+        &openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationHourDiagnostics,
+    ) -> f64| {
+        let values = evaluation
+            .hourly
+            .iter()
+            .map(|hour| direct_production_trace_number(value(hour)))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!("[{values}]")
+    };
+    let hourly_shortwave = hourly_values(|hour| {
+        hour.shortwave_energy_j_m2
     });
-    let hourly_longwave = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_longwave_energy_j_m2
+    let hourly_longwave = hourly_values(|hour| {
+        hour.longwave_energy_j_m2
     });
-    let hourly_sensible = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_sensible_flux_w_m2 * 3_600.0
+    let hourly_sensible = hourly_values(|hour| {
+        hour.sensible_flux_w_m2 * 3_600.0
     });
-    let hourly_latent = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_latent_flux_w_m2 * 3_600.0
+    let hourly_latent = hourly_values(|hour| {
+        hour.latent_flux_w_m2 * 3_600.0
     });
-    let hourly_advected = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_advected_flux_w_m2 * 3_600.0
+    let hourly_advected = hourly_values(|hour| {
+        hour.advected_flux_w_m2 * 3_600.0
     });
-    let hourly_internal_conduction = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_internal_active_lower_conduction_j_m2
+    let hourly_internal_conduction = hourly_values(|hour| {
+        hour.internal_active_lower_conduction_j_m2
     });
-    let hourly_cold_content_export = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_cold_content_export_j_m2
+    let hourly_cold_content_export = hourly_values(|hour| {
+        hour.cold_content_export_j_m2
     });
-    let hourly_requested = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_requested_seconds
+    let hourly_requested = hourly_values(|hour| {
+        hour.requested_seconds
     });
-    let hourly_evaluated = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_evaluated_seconds
+    let hourly_evaluated = hourly_values(|hour| {
+        hour.evaluated_seconds
     });
-    let hourly_vapor = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_vapor_mass_exchange_kg_m2
+    let hourly_vapor = hourly_values(|hour| {
+        hour.vapor_mass_exchange_kg_m2
     });
-    let hourly_complete = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_complete_energy_j_m2
+    let hourly_complete = hourly_values(|hour| {
+        hour.complete_energy_j_m2
     });
-    let hourly_cold_required = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_cold_required_j_m2
+    let hourly_cold_required = hourly_values(|hour| {
+        hour.cold_required_j_m2
     });
-    let hourly_cold_change = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_cold_energy_change_j_m2
+    let hourly_cold_change = hourly_values(|hour| {
+        hour.cold_energy_change_j_m2
     });
-    let hourly_excess = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_excess_energy_j_m2
+    let hourly_excess = hourly_values(|hour| {
+        hour.excess_energy_j_m2
     });
-    let hourly_available_ice = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_ice_available_kg_m2
+    let hourly_available_ice = hourly_values(|hour| {
+        hour.ice_available_kg_m2
     });
-    let hourly_sublimation = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_sublimation_kg_m2
+    let hourly_sublimation = hourly_values(|hour| {
+        hour.sublimation_kg_m2
     });
-    let hourly_melt = direct_snow_trace_hourly_values(diagnostics, |hour| hour.shadow_melt_kg_m2);
-    let hourly_terminal = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_unallocated_after_exhaustion_j_m2
+    let hourly_melt = hourly_values(|hour| hour.melt_kg_m2);
+    let hourly_terminal = hourly_values(|hour| {
+        hour.unallocated_after_exhaustion_j_m2
     });
-    let hourly_residual = direct_snow_trace_hourly_values(diagnostics, |hour| {
-        hour.shadow_energy_closure_residual_j_m2
+    let hourly_residual = hourly_values(|hour| {
+        hour.energy_closure_residual_j_m2
     });
-    let hourly_carrier_evaluated = diagnostics
-        .hourly_surface_energy
+    let hourly_carrier_evaluated = evaluation
+        .hourly
         .iter()
-        .map(|hour| hour.shadow_complete_carrier_evaluated.to_string())
+        .map(|hour| hour.complete_carrier_evaluated.to_string())
         .collect::<Vec<_>>()
         .join(",");
-    Some(format!(
+    format!(
         "\"stage3_evaluation_operator_id\":\"{}\",\
 \"stage3_evaluation_source_snapshot_id\":\"{}\",\
 \"stage3_evaluation_support_id\":\"{}\",\
@@ -221,7 +231,7 @@ fn direct_snow_trace_stage3_evaluation_fields(
         hourly_carrier_evaluated,
         hourly_requested,
         hourly_evaluated,
-    ))
+    )
 }
 
 #[cfg(test)]
@@ -247,6 +257,30 @@ mod stage3_evaluation_real_consumer_tests {
         verbose.stage3.surface_energy_j_m2 = 9.92e12;
         verbose.stage3.energy_closure_residual_j_m2 = 9.93e12;
         verbose.stage3.hourly_surface_energy[0].net_shortwave_w_m2 = 9.94e12;
+    }
+
+    fn evaluated_partition(
+        inputs: &DirectActiveSnowPartitionInputs,
+        operator: Option<SnowStage3EvaluationOperator>,
+    ) -> (
+        DirectSnowLiquidPartition,
+        Option<openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
+    ) {
+        match operator {
+            Some(operator) => {
+                let result =
+                    Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+                        inputs, operator,
+                    )
+                    .expect("solver-produced evaluation partition");
+                (result.authoritative, result.evaluation)
+            }
+            None => (
+                Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(inputs)
+                    .expect("solver-produced production partition"),
+                None,
+            ),
+        }
     }
 
     fn solver_row(
@@ -306,13 +340,7 @@ mod stage3_evaluation_real_consumer_tests {
             underlying_surface_albedo: 0.2,
             hourly,
         };
-        let mut partition = match operator {
-            Some(operator) => Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
-                &inputs, operator,
-            ),
-            None => Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs),
-        }
-        .expect("solver-produced evaluation partition");
+        let (mut partition, evaluation) = evaluated_partition(&inputs, operator);
         poison_production_diagnostics(&mut partition);
 
         let mut lane = DirectSnowLaneState::from_runtime_values(
@@ -330,6 +358,7 @@ mod stage3_evaluation_real_consumer_tests {
             snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
             snow_phase_model: SnowPhasePartitionModel::LegacyRst,
             snow_liquid: &partition,
+            stage3_evaluation: evaluation.as_ref(),
         };
         let verbose = partition
             .verbose_diagnostics

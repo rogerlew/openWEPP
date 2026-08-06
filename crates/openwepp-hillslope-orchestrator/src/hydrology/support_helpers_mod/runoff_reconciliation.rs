@@ -213,7 +213,7 @@ struct Stage3ShadowSummary {
     melt_kg_m2: f64,
     unallocated_after_exhaustion_j_m2: f64,
     maximum_energy_closure_residual_j_m2: f64,
-    hourly: [DirectSnowSurfaceEnergyHourDiagnostics; 24],
+    hourly: [DirectSnowStage3EvaluationHourDiagnostics; 24],
 }
 
 impl Stage3ShadowSummary {
@@ -248,7 +248,7 @@ impl Stage3ShadowSummary {
         melt_kg_m2: 0.0,
         unallocated_after_exhaustion_j_m2: 0.0,
         maximum_energy_closure_residual_j_m2: 0.0,
-        hourly: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
+        hourly: [DirectSnowStage3EvaluationHourDiagnostics::zero(); 24],
         }
     }
 }
@@ -439,9 +439,21 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         capture: DirectSnowDiagnosticCapture,
     ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
-        Self::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+        match Self::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
             inputs, capture, None,
-        )
+        ) {
+            Ok(result) => Ok(result.authoritative),
+            Err(DirectSnowStage3EvaluationError::Kernel(source)) => Err(*source),
+            Err(DirectSnowStage3EvaluationError::TurbulentTransfer(snapshot)) => Err(
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class: snapshot.phase_class,
+                    symbol: BoundarySymbol::from("snow.stage3_shadow_turbulent_flux"),
+                    value: snapshot.wind_speed_m_s,
+                    minimum: Some(0.0),
+                    maximum: None,
+                },
+            ),
+        }
     }
 
     /// Computes a verbose authoritative result plus one bounded evaluation
@@ -449,7 +461,7 @@ impl Wb11HydrologyKernel {
     pub fn compute_direct_snow_liquid_partition_with_evaluation(
         inputs: &DirectActiveSnowPartitionInputs,
         operator: SnowStage3EvaluationOperator,
-    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+    ) -> Result<DirectSnowStage3EvaluationResult, DirectSnowStage3EvaluationError> {
         Self::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
             inputs,
             DirectSnowDiagnosticCapture::Verbose,
@@ -464,7 +476,7 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         capture: DirectSnowDiagnosticCapture,
         evaluation_operator: Option<SnowStage3EvaluationOperator>,
-    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+    ) -> Result<DirectSnowStage3EvaluationResult, DirectSnowStage3EvaluationError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
         Self::require_direct_typed_snow_value_with(
             phase_class,
@@ -613,7 +625,8 @@ impl Wb11HydrologyKernel {
                     value: 1.0,
                     minimum: Some(0.0),
                     maximum: Some(0.0),
-                });
+                }
+                .into());
             }
         };
 
@@ -664,7 +677,10 @@ impl Wb11HydrologyKernel {
             snow_layers_after,
         };
         Self::validate_direct_snow_storage_closure(phase_class, inputs, &partition)?;
-        Ok(partition)
+        Ok(DirectSnowStage3EvaluationResult {
+            authoritative: partition,
+            evaluation: stage3_resolution.evaluation,
+        })
     }
 
     fn validate_direct_snow_storage_closure(
