@@ -21,6 +21,33 @@ Evidence class: Ran, real direct-production consumer, corrected rerun on
   `target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/snowbird-shadow-corrected.snow.jsonl`
 - Trace SHA-256:
   `621bd3f91076403aac45737c387954e89c4760a12698e36952dec6dd72b94716`.
+- Run manifest:
+  `target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/openwepp_hillslope_run_manifest.json`.
+
+Exact build command:
+
+```text
+cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+```
+
+Exact execution command, run from repository root:
+
+```text
+env \
+  OPENWEPP_SNOWDENSITY09_DENSITY_MODEL=physics_bulk_multilayer_density_v1 \
+  OPENWEPP_SNOWDENSITY1035_PHASE_MODEL=harder_pomeroy_hourly \
+  OPENWEPP_SNOWDENSITY1038_MELT_MODEL=coe_liquid_holding_capacity_v1 \
+  OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1 \
+  OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL=dilley_unsworth_subcanopy_v1 \
+  OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW=enabled \
+  OPENWEPP_R7H_SNOW_TRACE_PATH=/home/workdir/openWEPP/target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/snowbird-shadow-corrected.snow.jsonl \
+  target/release/openwepp-cli-hill \
+  --run-dir /home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/fixtures/snotel_snowbird_ut \
+  --run-file /home/workdir/openWEPP/target/snow_prepeak_mass_transition_physics_adjudication_v2/runs/snotel_snowbird_ut/snotel_snowbird_ut-adjudication.run \
+  --output-dir /home/workdir/openWEPP/target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut \
+  --legacy-sidecar-discovery \
+  --direct-production-executor
+```
 
 This rerun supersedes the 2026-08-05 binary and trace after correction of two
 shadow-only arithmetic defects: geometric snowfall now contributes advected
