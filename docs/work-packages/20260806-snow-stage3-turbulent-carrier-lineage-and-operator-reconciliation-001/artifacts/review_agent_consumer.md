@@ -22,5 +22,7 @@ term vectors for all current estimands, retains signed operator/term operands
 through each primary window, reports vapor-mass deltas and exhaustive typed
 support inventories, fails closed on the exact tuple/state surface, applies
 all frozen causal gates, and revalidates exact-head/binary/fixture/observation/
-receipt custody. The expanded result-blind suite passes `27/27`. Closure
+receipt custody. Exhaustive hour/WY inventories are retained outside the
+compact result with exact hash/count custody. The expanded result-blind suite
+passes `28/28`. Closure
 remains pending independent re-review at the next exact clean commit.

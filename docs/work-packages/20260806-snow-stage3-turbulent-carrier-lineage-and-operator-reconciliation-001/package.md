@@ -583,7 +583,7 @@ must not mutate source fixtures. The new schema is internal and default-off.
   sequential endpoint continuity, independently reconstructed aggregation,
   per-window signed support arithmetic, median-of-window deltas, complete
   causal gates, exhaustive support inventories, and exact-head retained
-  verification. Adversarial consumer coverage passes `27/27`; exact-commit
+  verification. Adversarial consumer coverage passes `28/28`; exact-commit
   re-review is pending.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal

@@ -172,10 +172,13 @@ def assert_execution_source(expected_head: str) -> str:
 
 def write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(value, allow_nan=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    path.write_bytes(json_bytes(value))
+
+
+def json_bytes(value: Any) -> bytes:
+    return (
+        json.dumps(value, allow_nan=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
 
 
 def required(row: dict[str, Any], field: str) -> Any:
@@ -1629,6 +1632,33 @@ def performance_observation(
     }
 
 
+def externalize_inventories(
+    site_summary: dict[str, Any], *, write: bool
+) -> dict[str, Any]:
+    inventories = required(site_summary, "inventories")
+    if not isinstance(inventories, dict):
+        raise RuntimeError("site inventory is not an object")
+    payload = json_bytes(inventories)
+    path = OUTPUT / "inventories" / f"{checked_string(site_summary, 'site')}.json"
+    if write:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+    elif not path.is_file() or path.read_bytes() != payload:
+        raise RuntimeError(f"retained exhaustive inventory differs for {site_summary['site']}")
+    site_summary["inventories"] = {
+        "path": relative(path),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "size_bytes": len(payload),
+        "counts": {
+            key: len(value)
+            for key, value in inventories.items()
+            if isinstance(value, list)
+        },
+        "scope": "exhaustive_typed_hour_and_water_year_inventory",
+    }
+    return site_summary
+
+
 def execute(expected_head: str) -> None:
     if OUTPUT.exists():
         raise RuntimeError(f"refusing to overwrite {OUTPUT}")
@@ -1712,7 +1742,7 @@ def execute(expected_head: str) -> None:
             predecessor_windows if site == "snotel_snowbird_ut" else None,
         )
         annual.extend(site_annual)
-        site_summaries.append(summary)
+        site_summaries.append(externalize_inventories(summary, write=True))
     snowbird = next(row for row in site_summaries if row["site"] == "snotel_snowbird_ut")
     performance = performance_observation(receipts)
     results = {"schema_version": 1, "execution_head": head, "decision_classes": classify(snowbird), "site_summaries": site_summaries, "annual_samples": annual, "performance_observation": performance, "claim_class": "operator_mechanics_only", "coe_authority": "unchanged"}
@@ -1792,7 +1822,9 @@ def verify_existing() -> None:
             predecessor_windows if site == "snotel_snowbird_ut" else None,
         )
         recomputed_annual.extend(site_annual)
-        recomputed_summaries.append(site_summary)
+        recomputed_summaries.append(
+            externalize_inventories(site_summary, write=False)
+        )
         control_wat = sha256(output_path(receipt["lanes"][site]["control"], ".wat.parquet"))
         control_hbp = sha256(output_path(receipt["lanes"][site]["control"], ".hbp"))
         for lane in ("paired", "sequential"):

@@ -622,6 +622,35 @@ def test_support_reduction_uses_signed_window_terms_then_site_median_deltas() ->
     assert summary["common_operator_delta_median_j_m2"] != 11.0 - 100.0
 
 
+def test_exhaustive_inventory_is_externalized_without_compact_result_loss(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "output"
+    monkeypatch.setattr(MODULE, "OUTPUT", output)
+    monkeypatch.setattr(MODULE, "relative", lambda path: str(path))
+    summary = {
+        "site": "synthetic_site",
+        "inventories": {
+            "non_evaluated_hours": [
+                {
+                    "date": "2000-01-01",
+                    "hour": 0,
+                    "operator": "same_state",
+                    "reason": "no_resolved_snow_at_day_start",
+                }
+            ],
+            "censored_water_years": [],
+        },
+    }
+    compact = MODULE.externalize_inventories(copy.deepcopy(summary), write=True)
+    assert compact["inventories"]["counts"]["non_evaluated_hours"] == 1
+    assert compact["inventories"]["scope"] == (
+        "exhaustive_typed_hour_and_water_year_inventory"
+    )
+    verified = MODULE.externalize_inventories(copy.deepcopy(summary), write=False)
+    assert verified == compact
+
+
 def test_classification_requires_every_causal_gate_and_accepts_zero_external() -> None:
     summary = {
         "medians_j_m2": {
