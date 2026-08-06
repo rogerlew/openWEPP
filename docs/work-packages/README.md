@@ -12,8 +12,7 @@
 ## Reusable Execution Plans And Templates
 
 - `20260806-snow-stage3-shadow-solver-extraction-and-observability-001/` —
-  EXECUTED / BOUNDED EVALUATION REALIZED / REVIEW PASS / TERMINAL GATES
-  PENDING:
+  EXECUTED / BOUNDED EVALUATION REALIZED / REVIEW AND VERIFICATION PASS:
   `SC-SNOWFREEZE-001` v128 realizes the two typed default-off operators, and the
   extracted solver publishes complete paired/sequential per-term, fingerprint,
   support, coverage, mass, cold-content, terminal-energy, and residual evidence

@@ -1,6 +1,6 @@
 # Stage 3 Shadow Solver Extraction And Observability
 
-Status: `closure candidate / implementation, review, and heavy gates pass / terminal verification queued`
+Status: `complete / reviewed / verified`
 
 Date: `2026-08-06`
 
@@ -273,8 +273,8 @@ custody.
 - [x] Adopt the v128 source while retaining DRAFT and null authority roots.
 - [x] Complete dual review, independent consumer QA, and prompt archival.
 - [x] Pass exact-head heavy validation at clean immutable commit `56f85c3a`.
-- [ ] Complete exact-diff reconciliation and dual terminal verification; then
-  close on a clean commit.
+- [x] Complete exact-diff reconciliation and dual terminal verification.
+- [x] Close the package on a clean documentation-only terminal commit.
 
 ## Surprises & Discoveries
 
@@ -346,3 +346,6 @@ handoff and active roadmap.
 
 2026-08-06: v128 bounded implementation, review remediation, DRAFT assurance
 adoption, and closure-candidate documentation completed.
+
+2026-08-06: exact-head quick, frost, and full gates plus dual terminal
+verification passed; package closed with the four-site carrier-term audit next.
