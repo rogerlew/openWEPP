@@ -1,7 +1,7 @@
 # Stage 3 Turbulent Carrier Lineage And Operator Reconciliation
 
-Status: `active / result-blind protocol admitted PASS/PASS / implementation
-re-admission pending`
+Status: `active / result-blind protocol admitted PASS/PASS / inactive-day
+amendment re-admission pending`
 
 Date: `2026-08-06`
 
@@ -597,6 +597,14 @@ must not mutate source fixtures. The new schema is internal and default-off.
   applicability domains. It now rejects absent daylight, negative or
   insufficient radiation, canopy cover outside `[0,1)`, below-absolute-zero
   temperatures, and derived emissivity outside `[0,1]` before flux use.
+- [x] (2026-08-06) First admitted cohort execution at exact reviewed
+  `9447f9b28653476e12d96c02b2b245cb2079f00e` failed closed before any
+  metric, result, receipt, or manifest: enabling evaluation caused inactive
+  no-snow/no-precipitation day 73 to demand typed hourly forcing. Preserved the
+  rejected v1 namespace and prospectively moved corrected execution to v2.
+- [ ] Amend the contract/test and runtime so an enabled inactive day emits an
+  empty schema-v6 `operator_not_selected` record without invoking the active
+  forcing-required path; re-run result-blind review before v2 execution.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.

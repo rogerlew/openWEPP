@@ -1592,6 +1592,17 @@ or sampling; the current maximum is `24 * 60 = 1,440` tuples per day.
 Substeps are ordered by hour then index, start at zero, are contiguous and
 non-overlapping, and stay inside `[0, 3600]`.
 
+When the authoritative day has neither active snow forcing nor resolved snow
+and the production hourly-forcing provider therefore returns no typed hourly
+array, an enabled evaluation request must not convert that inactive day into an
+active production partition or a forcing error. It emits schema v6 with the
+selected operator identity, no tuples, all 24 statuses exactly
+`operator_not_selected`, and receipt-joinable zero sentinel source, forcing,
+geometry, and non-formulation fingerprints. Those sentinels are applicable
+only to the empty inactive record and cannot enter `S/F/Q`, projection, flux,
+or closure estimands. Disabled/default execution retains the existing inactive
+schema-v4 bytes and performs no companion allocation.
+
 JSON `null`, never numeric zero, represents N/A state, endpoint, stability, or
 transfer. After a substep removes the resolved active surface,
 `after_surface_applicable=false` with reason

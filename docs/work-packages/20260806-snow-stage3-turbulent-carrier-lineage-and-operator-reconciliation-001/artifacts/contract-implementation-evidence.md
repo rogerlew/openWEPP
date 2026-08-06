@@ -36,3 +36,11 @@ Consumer re-review then corrected site-identity wording: the retained lane
 receipt/path binds `site_id`; the snow JSONL row does not duplicate it. The
 canonical addendum and section-scoped test now make that producer/consumer
 boundary explicit without changing schema v6 or any runtime field.
+
+The rejected v1 execution exposed one inactive-day lifecycle underbinding
+before any result metric existed. The canonical applicability section now
+requires an enabled request with neither active forcing nor resolved snow to
+emit an empty schema-v6 `operator_not_selected` record with joinable zero
+sentinel identities, while disabled/default execution preserves the existing
+inactive schema-v4 bytes and allocation behavior. Runtime implementation
+remains blocked until this amendment passes its focused gate.

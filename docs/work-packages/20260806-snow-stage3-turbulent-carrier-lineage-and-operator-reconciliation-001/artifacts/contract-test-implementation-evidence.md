@@ -34,3 +34,8 @@ bindings. The canonical Binding Exposure validator again passed all `11` rows.
 The focused contract target also binds receipt/path site custody and the
 absence of a fabricated row-level `site_id`; the contract/observability
 selection passes `12/12` after this correction.
+
+After the v1 pre-result execution rejection, the same focused selection passed
+`12/12` with section-scoped bindings for inactive-day schema v6, all-24-hour
+`operator_not_selected` status, zero sentinel identities, and exact disabled
+inactive schema-v4 preservation. Binding Exposure remained `11/11`.

@@ -80,7 +80,7 @@
     "head_policy": "runner requires a caller-supplied full reviewed commit SHA and exact clean HEAD before build, before analysis, and before acceptance",
     "operators": ["disabled", "same_state_paired_carrier_v1", "sequential_resolved_shadow_v1"],
     "observation_root": "tests/fixtures/snotel_observed/observations/sites",
-    "result_namespace": "target/snow_stage3_operator_reconciliation",
+    "result_namespace": "target/snow_stage3_operator_reconciliation_v2",
     "run_argv_template": [
       "target/release/openwepp-cli-hill",
       "--run-dir", "{staged_fixture}",
@@ -146,7 +146,14 @@
     "tuple_mass_tolerance_kg_m2": "max(1e-12, 1e-12 * sum_abs_operands)",
     "water_year_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)"
   },
-  "schema_version": 2,
+  "rejected_execution_v1": {
+    "execution_head": "9447f9b28653476e12d96c02b2b245cb2079f00e",
+    "failure": "CLIHILL-E-011: enabled evaluation incorrectly required typed winter hourly forcing on an inactive no-snow/no-precipitation day",
+    "metrics_produced": false,
+    "namespace": "target/snow_stage3_operator_reconciliation",
+    "reuse_prohibited": true
+  },
+  "schema_version": 3,
   "status": "frozen_result_blind_admitted_pass_pass",
   "support": {
     "censored_primary_water_years": [2025],
