@@ -55,3 +55,9 @@ All three independent reviewers returned `GO` at exact clean commit
 second-round findings are closed. No formula, coefficient, threshold,
 production owner, public schema, default, fixture, observation, calibration,
 or assurance lifecycle authority changed.
+
+Post-review heavy-gate finding: the first workspace-wide Clippy pass identified
+three test-only lints outside the earlier two-crate command. They were accepted
+and corrected narrowly; warnings-denied workspace all-target Clippy and the
+affected `36/36` tests pass. The correction changes no assertion meaning,
+runtime type, formula, error, custody, or publication path.

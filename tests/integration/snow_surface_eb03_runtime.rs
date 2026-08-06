@@ -1011,12 +1011,10 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
             .to_bits(),
         evaluation.evaluated_seconds.to_bits()
     );
-    assert!(
-        evaluation
-            .hourly
-            .iter()
-            .any(|hour| hour.requested_seconds == 3_600.0 && hour.evaluated_seconds == 0.0)
-    );
+    assert!(evaluation.hourly.iter().any(|hour| {
+        hour.requested_seconds.to_bits() == 3_600.0_f64.to_bits()
+            && hour.evaluated_seconds.to_bits() == 0.0_f64.to_bits()
+    }));
 }
 
 #[test]
@@ -1123,9 +1121,9 @@ fn legacy_complete_carrier_field_remains_source_and_behavior_compatible() {
 
 #[test]
 fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
-    fn fingerprint(candidate: DirectActiveSnowPartitionInputs, label: &str) -> u64 {
+    fn fingerprint(candidate: &DirectActiveSnowPartitionInputs, label: &str) -> u64 {
         let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
-            &candidate,
+            candidate,
             SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
         )
         .unwrap_or_else(|error| panic!("paired fingerprint candidate {label}: {error}"));
@@ -1141,7 +1139,7 @@ fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    let baseline = fingerprint(baseline_inputs.clone(), "baseline");
+    let baseline = fingerprint(&baseline_inputs, "baseline");
     let mut variants = Vec::new();
     let mut pressure = baseline_inputs.clone();
     pressure.surface_energy_options.atmospheric_pressure_pa += 10.0;
@@ -1175,7 +1173,7 @@ fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
 
     for (name, variant) in variants {
         assert_ne!(
-            fingerprint(variant, name),
+            fingerprint(&variant, name),
             baseline,
             "fingerprint omitted {name}"
         );
@@ -1241,7 +1239,9 @@ fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
             );
             assert!(!snapshot.source.to_string().is_empty());
         }
-        other => panic!("expected typed turbulent transfer error, observed {other}"),
+        openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationError::Kernel(error) => {
+            panic!("expected typed turbulent transfer error, observed {error}")
+        }
     }
 }
 

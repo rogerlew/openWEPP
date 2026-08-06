@@ -288,6 +288,10 @@ custody.
 - Observation: independent review exposed legacy exhaustive-public-type drift
   and incomplete writer proof after the first implementation. The final shape
   uses additive evaluator types and real WAT/HBP/PASS byte comparison.
+- Observation: the first full-workspace Clippy pass found three test-only
+  warnings not covered by the earlier two-crate Clippy command: exact float
+  comparison, an unnecessary by-value helper, and a single-variant wildcard.
+  All were corrected without changing runtime behavior.
 - Observation: the documentation wrapper is rooted to a different repository;
   both relative and absolute prompt moves were rejected, so the prompt was
   moved with an explicit patch after the required helper attempts.
