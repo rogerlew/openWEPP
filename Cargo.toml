@@ -749,6 +749,10 @@ name = "snow_stage3_shadow_observability_contract"
 path = "tests/integration/snow_stage3_shadow_observability_contract.rs"
 
 [[test]]
+name = "snow_stage3_turbulent_operator_reconciliation_contract"
+path = "tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs"
+
+[[test]]
 name = "snow_wet_compaction_operand_authority"
 path = "tests/integration/snow_wet_compaction_operand_authority.rs"
 

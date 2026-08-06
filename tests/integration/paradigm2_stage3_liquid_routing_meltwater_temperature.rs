@@ -22,7 +22,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 128",
+        "contract_version: 129",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",

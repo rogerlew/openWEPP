@@ -15,7 +15,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_bundle_activation_boundary() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 128",
+        "contract_version: 129",
         "INV-SNOWFREEZE-069",
         "OBL-SNOWFREEZE-P-044",
         "SNOWDENSITY-10.3.12 Combined Bundle Activation Adjudication Addendum",

@@ -119,6 +119,8 @@ operands, stability solution, or state endpoints required to separate them.
 ## Intended Write Set
 
 - this package tree;
+- root `Cargo.toml` only to register the package's contract-derived integration
+  test target;
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md` and
   `docs/specifications/science-contracts/index.md`;
 - exact contract-version and evaluation-observability tests under

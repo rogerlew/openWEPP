@@ -25,7 +25,7 @@ fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 128",
+        "contract_version: 129",
         "INV-SNOWFREEZE-091",
         "INV-SNOWFREEZE-094",
         "OBL-SNOWFREEZE-P-067",

@@ -11,7 +11,7 @@ const HANDOFF: &str =
 fn snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 128",
+        "contract_version: 129",
         "INV-SNOWFREEZE-051",
         "SNOWDENSITY-02 opt-in `physics_bulk` snow-model envelope",
         "snow_model = legacy_wepp | physics_bulk",
