@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `implementation loop PASS; result-blind re-review pending`.
+Status: `implementation and admitted v3 execution PASS`.
 
 Evidence mode: `Ran`.
 
@@ -64,5 +64,13 @@ Sequential transition-boundary correction:
 - package consumer — PASS (`50/50`);
 - affected-crate warnings-denied Clippy, formatting, and diff hygiene — PASS.
 
-Exact committed source identity and renewed result-blind verdict will be
-appended after the v3 implementation checkpoint. No v3 cohort has run.
+Exact committed source identity is
+`5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5`. Independent result-blind science,
+Rust, and consumer reviewers returned `PASS/PASS/PASS` before v3 execution.
+
+The admitted v3 release execution completed all 12 lanes in `2516.26 s` and
+wrote `143` retained artifacts. Independent `--verify-existing` completed in
+`2176.59 s` and revalidated exact source, binary, input, receipt, inventory,
+and result custody. Snowbird observed runner timing was `4.73 s` control,
+`28.89 s` paired, and `118.46 s` sequential; no prospective performance
+threshold was frozen, so these ratios are observational only.

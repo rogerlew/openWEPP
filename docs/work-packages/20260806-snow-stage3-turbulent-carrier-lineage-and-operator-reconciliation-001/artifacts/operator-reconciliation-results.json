@@ -1,6 +1,83 @@
 {
-  "schema_version": 1,
-  "status": "not_run",
-  "scientific_disposition": null,
-  "sites": []
+  "schema_version": 2,
+  "status": "verified",
+  "claim_class": "operator_mechanics_only",
+  "execution_head": "5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5",
+  "decision_classes": [
+    "PREDECESSOR_NOT_REPRODUCED",
+    "INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE"
+  ],
+  "coe_authority": "unchanged",
+  "retained_evidence": {
+    "namespace": "target/snow_stage3_operator_reconciliation_v3",
+    "verified_artifact_count": 143,
+    "binary_sha256": "c8d433af71911befb174c17c843a0b4a77a95936702683e54bc9569746782b09",
+    "raw_result_sha256": "3b885fa0f04201744da5c24766d413cd2e74f1273021a1a35d6fd0f7227f691e",
+    "execution_receipt_sha256": "61564035575b165722213abe0657a4dc70b04a1d72c1200b1bb5e35d435fdc9e",
+    "retained_manifest_sha256": "b0c161e7915a8fc52d5da12fb3b17d189480cceae0114cc9fda7d34fd7dedfcf"
+  },
+  "sites": [
+    {
+      "site": "snotel_mica_creek_st_joe_id",
+      "sample_count": 34,
+      "eligible_sample_count": 34,
+      "S_median_mj_m2": -706.2097247432085,
+      "F_median_mj_m2": -644.2315946274248,
+      "Q_median_mj_m2": 129.74171228787768,
+      "legacy_Q_all_median_mj_m2": 136.2062099634418,
+      "delta_projection_median_mj_m2": 53.638130132023335,
+      "delta_evolution_median_mj_m2": 774.9954949525235,
+      "support_omission_ratio": 0.007416349269225228
+    },
+    {
+      "site": "snotel_niwot_co",
+      "sample_count": 44,
+      "eligible_sample_count": 44,
+      "S_median_mj_m2": -1709.729099050346,
+      "F_median_mj_m2": -1353.8157703730349,
+      "Q_median_mj_m2": 106.22727030521895,
+      "legacy_Q_all_median_mj_m2": 126.23951633778096,
+      "delta_projection_median_mj_m2": 328.789880795784,
+      "delta_evolution_median_mj_m2": 1480.8729234094887,
+      "support_omission_ratio": 0.009414494863738751
+    },
+    {
+      "site": "snotel_paradise_wa",
+      "sample_count": 41,
+      "eligible_sample_count": 41,
+      "S_median_mj_m2": -887.0556491925953,
+      "F_median_mj_m2": -503.4318315436086,
+      "Q_median_mj_m2": 379.6567321909742,
+      "legacy_Q_all_median_mj_m2": 393.30812214481347,
+      "delta_projection_median_mj_m2": 385.1330242912679,
+      "delta_evolution_median_mj_m2": 877.5433729731352,
+      "support_omission_ratio": 0.004932388261677702
+    },
+    {
+      "site": "snotel_snowbird_ut",
+      "sample_count": 35,
+      "eligible_sample_count": 35,
+      "S_median_mj_m2": -1086.474818493409,
+      "F_median_mj_m2": -742.021651464931,
+      "Q_median_mj_m2": 179.59492252446086,
+      "legacy_Q_all_median_mj_m2": 188.8725288356066,
+      "delta_projection_median_mj_m2": 325.5334671901349,
+      "delta_evolution_median_mj_m2": 854.764458899913,
+      "support_omission_ratio": 0.005180178657866289,
+      "predecessor_bridge_expected_mj_m2": 170.2536089,
+      "predecessor_bridge_difference_mj_m2": 18.618919935606613,
+      "predecessor_bridge_relative_difference_percent": 10.935991346029317,
+      "predecessor_bridge_pass": false
+    }
+  ],
+  "global_invariants": {
+    "delta_closure_pass": true,
+    "reconstruction_closure_pass": true,
+    "shortwave_invariance_pass": true,
+    "lineage_identity_pass": true,
+    "support_delta_sign_changed": false,
+    "protected_hbp_exact": true,
+    "protected_pass_output_exact": true,
+    "protected_wat_exact": true
+  }
 }

@@ -1,7 +1,6 @@
 # Stage 3 Turbulent Carrier Lineage And Operator Reconciliation
 
-Status: `active / result-blind protocol admitted PASS/PASS / inactive-day
-amendment re-admission pending`
+Status: `executed / operator mechanics characterized / predecessor bridge HOLD`
 
 Date: `2026-08-06`
 
@@ -621,14 +620,18 @@ must not mutate source fixtures. The new schema is internal and default-off.
   all 12 model lanes but failed closed before results on exact sequential
   after-to-next-before layer-state continuity. Preserved v2 read-only and
   prospectively assigned v3; no metric or decision was admitted.
-- [ ] Move deterministic next-substep control-volume preparation inside the
+- [x] Move deterministic next-substep control-volume preparation inside the
   serialized sequential transition boundary, prove exact continuity, and
-  repeat result-blind review before v3 execution. Implementation and both
-  in-memory and real serialized same-hour substep vectors now pass; exact-head
-  re-review remains pending.
-- [ ] Execute and analyze the frozen four-site paired/sequential cohort.
-- [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
+  repeat result-blind review before v3 execution. Independent science, Rust,
+  and consumer reviews passed at exact clean `5ebfc5135`; in-memory and real
+  serialized same-hour substep vectors pass.
+- [x] Execute and independently verify the frozen four-site paired/sequential
+  cohort. All 12 lanes completed and `143/143` retained artifacts verified.
+- [ ] Complete result review, critical validation, terminal
   verification, roadmap disposition, prompt archival, and stable closure.
+- [x] Adopt the amended assurance source through typed transaction
+  `31798778...`; preserve the report as DRAFT with no active review, approval,
+  release, or publication authority.
 
 ## Surprises & Discoveries
 
@@ -659,6 +662,14 @@ must not mutate source fixtures. The new schema is internal and default-off.
   preparation. The next before-state therefore had a different exact layer
   fingerprint (and occasionally a one-ULP total-cold difference). This is an
   observability-boundary defect, not a model result; v2 is retained read-only.
+- Observation: admitted v3 produces the ordered sign pattern `S<0`, `F<0`,
+  `Q>0` at all four sites, but Snowbird's reconstructed legacy median is
+  `+188.8725 MJ m^-2`, not the frozen predecessor `+170.2536 MJ m^-2`.
+  Evidence: retained v3 result and exact replay verification.
+- Observation: common-support omission is below one percent everywhere and
+  never changes sign. Initial projection changes magnitude but leaves both
+  immutable references negative. The historical contradiction therefore
+  remains blocked on predecessor trajectory/cadence custody, not support.
 
 ## Decision Log
 
@@ -683,12 +694,27 @@ must not mutate source fixtures. The new schema is internal and default-off.
   state-evolution claim. Rationale: the two admitted operators use different
   first effective control volumes even with byte-identical raw sources.
   Date/Author: 2026-08-06 / Codex.
+- Decision: withhold the state-evolution causal class and close on a named
+  predecessor-bridge successor. Rationale: the frozen classifier requires exact
+  reproduction before attributing the historical sign contradiction; the
+  observed `10.94%` bridge difference fails that requirement.
+  Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. Completion requires a frozen, independently reviewed operator
-reconciliation result and truthful next-step disposition. CoE remains
-authoritative throughout.
+The package realized schema-v6 operator observability and executed the frozen
+four-site comparison without changing production snow state or output. Exact
+primitive reconstruction, support accounting, state continuity, and protected
+outputs pass. Every site moves from negative immutable references to positive
+evolving sequential energy, but the Snowbird legacy estimator misses its
+frozen predecessor by `10.94%`; the prospectively frozen classifier therefore
+rejects causal reconciliation.
+
+The outcome is an evidence-bearing HOLD, not an implementation failure. A
+successor must reconcile schema-v5 versus schema-v6 predecessor cadence and
+state lineage before persistence or physics adjudication resumes. CoE remains
+the sole authoritative owner; Stage 3 promotion, cutover, and retirement remain
+unauthorized. The assurance report remains DRAFT.
 
 ## Revision Note
 

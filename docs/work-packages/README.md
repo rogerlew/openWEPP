@@ -12,11 +12,15 @@
 ## Reusable Execution Plans And Templates
 
 - `20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/`
-  — ACTIVE / RESULT-BLIND PROTOCOL REVIEW: add default-off schema-v6
-  surface-state and Monin-Obukhov lineage, then execute matched same-state and
-  bounded-sequential lanes at all four campaign sites. The package may
-  reconcile operator mechanics only; it cannot fit, persist, correct physics,
-  change CoE ownership, or authorize cutover.
+  — EXECUTED / OPERATOR MECHANICS CHARACTERIZED / PREDECESSOR BRIDGE HOLD:
+  schema-v6 primitive, state, support, and Monin-Obukhov lineage reconstructs
+  exactly across 12 four-site lanes. Every site has negative same-state and
+  frozen-reference energy but positive evolving sequential energy; Snowbird is
+  `-1086.47`, `-742.02`, and `+179.59 MJ m^-2`. The frozen historical bridge
+  fails because current legacy reconstruction is `+188.8725`, not
+  `+170.2536 MJ m^-2`, so causal reconciliation is correctly withheld. HBP,
+  PASS, WAT, and CoE authority are unchanged; predecessor bridge reconciliation
+  is next, before persistence or any physics/cutover work.
 
 - `20260806-snow-stage3-four-site-carrier-term-audit-001/` — EXECUTED /
   CARRIER SCREEN FAIL / PERSISTENT SHADOW BLOCKED / REVIEW AND VERIFICATION
