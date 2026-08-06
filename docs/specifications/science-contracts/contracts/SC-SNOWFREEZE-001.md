@@ -1487,8 +1487,10 @@ physical seasonal trajectory.
 
 ### Exact schema-v6 surface and unit basis
 
-The JSONL row inherits receipt-bound `site_id` and its existing top-level
-`day_index` and `lane_index`; every tuple adds `operator_id`, `hour_index`,
+The JSONL lane inherits receipt-bound `site_id` from its exact retained
+receipt/path; `site_id` is not duplicated into the snow row. The row retains
+its existing top-level `day_index` and `lane_index`; every tuple adds
+`operator_id`, `hour_index`,
 `substep_index`, `elapsed_start_seconds`, `requested_seconds`,
 `evaluated_seconds`, `duration_seconds`, `applicable`, and
 `applicability_reason`. Fingerprint and projection custody consists exactly of

@@ -164,7 +164,6 @@ def v6_row(tuple_row: dict[str, object], operator: str) -> dict[str, object]:
     ]
     return {
         "schema": "openwepp-r7h-direct-production-snow-trace-v6",
-        "site_id": "synthetic_site",
         "day_index": 0,
         "lane_index": 0,
         "stage3_operator_reconciliation": {
@@ -246,23 +245,46 @@ def test_schema_v6_required_fields_cannot_be_omitted(scope: str, field: str) -> 
         MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
 
 
-def test_schema_v6_rejects_fractional_iterations_and_wrong_site() -> None:
+def test_schema_v6_rejects_fractional_iterations_and_trace_path_site_alias(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
     row["stage3_operator_reconciliation"]["tuples"][0][
         "turbulent_max_iterations"
     ] = 40.5
     with pytest.raises(RuntimeError, match="not an integer"):
         MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
-    row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
-    with pytest.raises(RuntimeError, match="site identity"):
-        MODULE.validate_v6_row(
-            row, "same_state_paired_carrier_v1", "different_site"
+    monkeypatch.setattr(MODULE, "OUTPUT", tmp_path)
+    admitted = tmp_path / "runs/synthetic_site/paired/trace.snow.jsonl"
+    MODULE.require_trace_path_custody(admitted, "synthetic_site", "paired")
+    with pytest.raises(RuntimeError, match="site/lane custody"):
+        MODULE.require_trace_path_custody(
+            admitted, "different_site", "paired"
         )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("requested_seconds", 60.0, "duration"),
+        ("sublimation_model_id", "invented", "sublimation"),
+        ("aerodynamic_roughness_length_m", -1.0, "geometry/options"),
+        ("turbulent_convergence_tolerance", 0.0, "geometry/options"),
+        ("air_temperature_height_m", 0.001, "measurement height"),
+    ),
+)
+def test_exact_selector_duration_and_geometry_domains_fail_closed(
+    field: str, value: object, message: str
+) -> None:
+    row = synthetic_tuple()
+    row[field] = value
+    with pytest.raises(RuntimeError, match=message):
+        MODULE.validate_tuple(row, "same_state_paired_carrier_v1")
 
 
 def test_sequential_partial_hour_requires_terminal_surface_exhaustion() -> None:
     tuple_row = synthetic_tuple("sequential_resolved_shadow_v1")
-    tuple_row["requested_seconds"] = 60.0
+    tuple_row["requested_seconds"] = 3_600.0
     tuple_row["evaluated_seconds"] = 60.0
     tuple_row["duration_seconds"] = 60.0
     tuple_row["vapor_mass_exchange_kg_m2"] = 0.0
@@ -294,7 +316,7 @@ def test_sequential_partial_hour_requires_terminal_surface_exhaustion() -> None:
 
 def test_sequential_cross_substep_state_continuity_is_exact() -> None:
     first = synthetic_tuple("sequential_resolved_shadow_v1")
-    first["requested_seconds"] = 60.0
+    first["requested_seconds"] = 3_600.0
     first["evaluated_seconds"] = 60.0
     first["duration_seconds"] = 60.0
     first["legacy_sequential_complete_j_m2"] = (

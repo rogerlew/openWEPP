@@ -271,7 +271,7 @@ def validate_tuple(row: dict[str, Any], operator: str) -> dict[str, float]:
     duration = checked_number(row, "duration_seconds")
     requested = checked_number(row, "requested_seconds")
     evaluated = checked_number(row, "evaluated_seconds")
-    if duration <= 0.0 or requested <= 0.0 or evaluated != duration or evaluated > requested:
+    if duration <= 0.0 or requested != 3_600.0 or evaluated != duration or evaluated > requested:
         raise RuntimeError("tuple duration mismatch")
     for field in (
         "source_fingerprint_fnv1a64", "forcing_fingerprint_fnv1a64",
@@ -293,7 +293,22 @@ def validate_tuple(row: dict[str, Any], operator: str) -> dict[str, float]:
     checked_string(row, "projection_id")
     checked_string(row, "snow_albedo_source_id")
     checked_string(row, "longwave_model_id")
-    checked_string(row, "sublimation_model_id")
+    if checked_string(row, "sublimation_model_id") != SUBLIMATION_MODEL:
+        raise RuntimeError("unexpected sublimation model")
+    wind = checked_number(row, "wind_speed_m_s")
+    pressure = checked_number(row, "air_pressure_pa")
+    z_t = checked_number(row, "air_temperature_height_m")
+    z_q = checked_number(row, "vapor_pressure_height_m")
+    z_u = checked_number(row, "wind_speed_height_m")
+    z_0 = checked_number(row, "aerodynamic_roughness_length_m")
+    convergence_tolerance = checked_number(
+        row, "turbulent_convergence_tolerance"
+    )
+    if wind < 0.0 or pressure <= 0.0 or z_0 <= 0.0 or convergence_tolerance <= 0.0:
+        raise RuntimeError("invalid turbulent geometry/options domain")
+    displacement = 2.0 * 7.35 * z_0 / 3.0
+    if any(height <= z_0 or height <= displacement for height in (z_t, z_q, z_u)):
+        raise RuntimeError("invalid turbulent measurement height")
     albedo_model = required(row, "snow_albedo_model_id")
     if albedo_model is not None and (not isinstance(albedo_model, str) or not albedo_model):
         raise RuntimeError("snow_albedo_model_id applicability/type mismatch")
@@ -362,12 +377,12 @@ def validate_tuple(row: dict[str, Any], operator: str) -> dict[str, float]:
         surface_vapor_pressure_pa=checked_number(row, "surface_vapor_pressure_pa"),
         air_pressure_pa=checked_number(row, "air_pressure_pa"),
         wind_speed_m_s=checked_number(row, "wind_speed_m_s"),
-        z_t=checked_number(row, "air_temperature_height_m"),
-        z_q=checked_number(row, "vapor_pressure_height_m"),
-        z_u=checked_number(row, "wind_speed_height_m"),
-        z_0=checked_number(row, "aerodynamic_roughness_length_m"),
+        z_t=z_t,
+        z_q=z_q,
+        z_u=z_u,
+        z_0=z_0,
         max_iterations=checked_int(row, "turbulent_max_iterations"),
-        tolerance=checked_number(row, "turbulent_convergence_tolerance"),
+        tolerance=convergence_tolerance,
     )
     if row.get("turbulent_termination_status") != independently_reconstructed["status"] or row.get("stability_class") != independently_reconstructed["class"]:
         raise RuntimeError("turbulent status/class mismatch")
@@ -533,9 +548,8 @@ def validate_v6_row(
     tuples = companion.get("tuples")
     if not isinstance(statuses, list) or len(statuses) != 24 or not isinstance(tuples, list):
         raise RuntimeError("invalid reconciliation arrays")
-    site_id = checked_string(row, "site_id")
-    if expected_site is not None and site_id != expected_site:
-        raise RuntimeError("top-level site identity mismatch")
+    if expected_site is not None and not expected_site:
+        raise RuntimeError("receipt-bound site identity is empty")
     if checked_int(row, "day_index") < 0 or checked_int(row, "lane_index") != 0:
         raise RuntimeError("top-level day/lane identity mismatch")
     if checked_string(row, "stage3_evaluation_operator_id") != operator:
@@ -980,6 +994,14 @@ def parse_trace(
     return result
 
 
+def require_trace_path_custody(path: Path, site: str, lane: str) -> None:
+    expected_parent = (OUTPUT / "runs" / site / lane).resolve()
+    if path.resolve().parent != expected_parent:
+        raise RuntimeError(
+            f"trace receipt-path site/lane custody mismatch: {path} != {expected_parent}"
+        )
+
+
 def tuples_by_hour(rows: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
     grouped = [[] for _ in range(24)]
     for row in rows:
@@ -1098,6 +1120,8 @@ def reconcile_site(
     predecessor_windows: dict[int, float] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     dates = carrier.climate_dates(carrier.climate_file(fixture))
+    require_trace_path_custody(paired_trace, site, "paired")
+    require_trace_path_custody(sequential_trace, site, "sequential")
     paired = parse_trace(
         paired_trace, dates, "same_state_paired_carrier_v1", site
     )

@@ -75,3 +75,10 @@ retained-source custody. All are accepted and amended in the package-local
 consumer with adversarial tests. No cohort result was run or inspected.
 Science and consumer closure remain pending exact-commit result-blind
 re-review; result execution remains blocked.
+
+Follow-up re-review also found a real row/receipt boundary mismatch plus
+permissive requested-duration, sublimation-selector, and zero-wind geometry/
+options custody. All are accepted: `site_id` is now explicitly receipt/path-
+bound rather than fabricated as a snow-row field, and the consumer validates
+the exact runtime duration, selector, and pre-solver domains. Adversarial
+coverage is `33/33`; result execution remains blocked pending re-review.

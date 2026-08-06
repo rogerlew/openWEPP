@@ -224,6 +224,7 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "aerodynamic_roughness_length_m",
         "longwave_model_id",
         "sublimation_model_id",
+        "`site_id` is not duplicated into the snow row",
         "bare `z_0` remains a rejected alias",
         "snow_albedo_source_id",
         "stage3_default_snow_albedo_0p82",

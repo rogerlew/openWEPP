@@ -31,3 +31,8 @@ frozen operator protocol but were not named in the schema-v6 exact-field list.
 The canonical addendum and its section-scoped contract test now bind both
 selector-lineage fields. This correction does not change an operator, value,
 default, schema version, or result-bearing execution.
+
+Consumer re-review then corrected site-identity wording: the retained lane
+receipt/path binds `site_id`; the snow JSONL row does not duplicate it. The
+canonical addendum and section-scoped test now make that producer/consumer
+boundary explicit without changing schema v6 or any runtime field.

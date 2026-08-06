@@ -583,8 +583,14 @@ must not mutate source fixtures. The new schema is internal and default-off.
   sequential endpoint continuity, independently reconstructed aggregation,
   per-window signed support arithmetic, median-of-window deltas, complete
   causal gates, exhaustive support inventories, and exact-head retained
-  verification. Adversarial consumer coverage passes `28/28`; exact-commit
+  verification. Adversarial consumer coverage passes `33/33`; exact-commit
   re-review is pending.
+- [x] (2026-08-06) Re-review found that `site_id` is receipt/path-bound rather
+  than serialized in the snow row, and that requested-duration, sublimation-
+  selector, and zero-wind geometry/options custody were still permissive. The
+  contract and consumer now bind receipt-path site/lane identity,
+  `requested_seconds = 3600`, selector `disabled`, and Rust-equivalent
+  pre-solver geometry/options domains before every termination path.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.
@@ -602,6 +608,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - Observation: the existing trace contains authoritative Stage 3 surface
   temperatures, but those are an invalid alias for the evaluation clone. A
   shadow-specific state surface is required.
+- Observation: snow JSONL rows carry day/lane identity but do not duplicate
+  the site identifier; site identity is held by the exact retained lane
+  receipt/path. Treating `site_id` as a row field would reject every real v6
+  row, so the consumer now checks the actual custody boundary.
 - Observation: the extracted `stage3_solver.rs` reached `2,316` lines after
   the exact tuple validator. This crosses the `2,000`-line WARN threshold but
   remains below the `3,000`-line refactor gate; splitting the tightly coupled

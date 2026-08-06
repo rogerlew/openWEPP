@@ -30,3 +30,7 @@ no-authoritative-mutation posture.
 After implementation re-review, the focused contract target passed `6/6` with
 the exact `longwave_model_id` and `sublimation_model_id` selector-lineage field
 bindings. The canonical Binding Exposure validator again passed all `11` rows.
+
+The focused contract target also binds receipt/path site custody and the
+absence of a fabricated row-level `site_id`; the contract/observability
+selection passes `12/12` after this correction.
