@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "evidence_mode": "Ran: exact release CLI water-year-stratified independent same-state condition samples",
+  "execution_head": "3ee1bac3ee849fbe00b517d1d227140f87fedc2a",
+  "raw_result_sha256": "d027fe11b156a839c27ff699f80c001a5391f56e35634b2074f5f0813581b6e9",
+  "screen_eligible_sample_count": 154,
+  "right_censored_window_count": 4,
+  "carrier_screen": {
+    "status": "FAIL",
+    "canonical_comparable_site_count": 3,
+    "canonical_near_balance_site_count": 0,
+    "persistent_shadow_advancement": "BLOCKED",
+    "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC"
+  },
+  "sites": [
+    {
+      "site": "snotel_mica_creek_st_joe_id",
+      "screen_eligible_sample_count": 34,
+      "median_coverage_fraction": 0.769818722943723,
+      "median_resolved_mean_w_m2": {
+        "shortwave": 10.126425187237789,
+        "longwave": -1.7081192724469276,
+        "sensible": -19.08757307898756,
+        "latent": -49.7811955775901,
+        "advected": 0.00575120699759877,
+        "net_radiation": 8.293346020566887,
+        "turbulent": -68.1028837170916,
+        "implemented_external_subset": -60.63188207881906,
+        "surface": 8.293346020566885,
+        "implemented_external_subset_minus_surface": -68.07512192231826
+      },
+      "external_subset_positive_fraction": 0.0
+    },
+    {
+      "site": "snotel_niwot_co",
+      "screen_eligible_sample_count": 44,
+      "median_coverage_fraction": 0.8084789679695683,
+      "median_resolved_mean_w_m2": {
+        "shortwave": 27.102323215127043,
+        "longwave": -5.90583305447129,
+        "sensible": -52.449099508164345,
+        "latent": -92.19149644520425,
+        "advected": -0.22127056158449324,
+        "net_radiation": 20.953596272762727,
+        "turbulent": -145.1067753536822,
+        "implemented_external_subset": -123.3243052702706,
+        "surface": 20.95359627276273,
+        "implemented_external_subset_minus_surface": -145.2614232411814
+      },
+      "external_subset_positive_fraction": 0.0
+    },
+    {
+      "site": "snotel_paradise_wa",
+      "screen_eligible_sample_count": 41,
+      "median_coverage_fraction": 0.8590308370044053,
+      "median_resolved_mean_w_m2": {
+        "shortwave": 16.669204435635272,
+        "longwave": 0.8068412586412637,
+        "sensible": -13.18031143692821,
+        "latent": -59.25920328712714,
+        "advected": -0.14001351402489204,
+        "net_radiation": 17.28015051154877,
+        "turbulent": -73.61827931667322,
+        "implemented_external_subset": -54.29732897163619,
+        "surface": 17.28015051154876,
+        "implemented_external_subset_minus_surface": -73.82236856391678
+      },
+      "external_subset_positive_fraction": 0.0
+    },
+    {
+      "site": "snotel_snowbird_ut",
+      "screen_eligible_sample_count": 35,
+      "median_coverage_fraction": 0.8217821782178217,
+      "median_resolved_mean_w_m2": {
+        "shortwave": 16.04746979480121,
+        "longwave": -1.5249820436571897,
+        "sensible": -26.506380573124762,
+        "latent": -56.86441625503349,
+        "advected": -0.3556815927615875,
+        "net_radiation": 14.571584248002502,
+        "turbulent": -83.16573973427897,
+        "implemented_external_subset": -67.2338865904314,
+        "surface": 14.571584248002523,
+        "implemented_external_subset_minus_surface": -83.53929057026988
+      },
+      "external_subset_positive_fraction": 0.0
+    }
+  ],
+  "snow_ground_boundary": "NOT_IMPLEMENTED",
+  "internal_active_lower_conduction": "NOT_APPLICABLE_AND_EXACT_ZERO",
+  "marks_numeric_comparison": "NOT_COMPARABLE_DIFFERENT_SITES_PERIODS_ESTIMAND",
+  "claim_limit": "No seasonal trajectory, melt, efficacy, persistence, promotion, or cutover claim"
+}

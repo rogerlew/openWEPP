@@ -1,6 +1,6 @@
 # Snow Stage 3 Four-Site Carrier-Term Audit
 
-Status: `scaffolded / protocol frozen / result execution pending`
+Status: `executed / carrier screen FAIL / persistent shadow blocked / result review PASS / terminal verification pending`
 
 Date: `2026-08-06`
 
@@ -378,9 +378,14 @@ contact external services, and never mutates source fixtures.
 - [x] (2026-08-06) Both reviewers admitted exact commit `73ca62bd1`; all eight
   lanes ran, but analysis rejected v1 on a validator-only residual-tolerance
   bug before any site metric or screen was produced.
-- [ ] Review and execute the frozen v2 validator-only amendment.
-- [ ] Execute four controls and four paired carrier lanes.
-- [ ] Reconstruct, classify, review, verify, and disposition results.
+- [x] (2026-08-06) Both reviewers admitted v2 at exact commit `3ee1bac3e`.
+- [x] (2026-08-06) Executed four controls and four paired lanes; exact WAT/HBP
+  identity and retained verification pass.
+- [x] (2026-08-06) Reconstructed `154` screen-eligible condition samples; all
+  four site distributions are negative and the canonical screen fails `0/3`.
+- [x] (2026-08-06) Independent science and custody reviews reproduced the
+  result; all findings were corrected and fresh reviews pass.
+- [ ] Complete dual terminal verification and stable commit.
 
 ## Surprises & Discoveries
 
@@ -394,6 +399,10 @@ contact external services, and never mutates source fixtures.
   evidence, not a same-state N/A field. Protocol v1 incorrectly required exact
   zero despite its already-frozen `1e-6 J m^-2` daily tolerance; the first
   `-2.79e-9 J m^-2` residual correctly stopped analysis before results.
+- Every screen-eligible water-year sample at all four sites has a negative
+  implemented external subset. Positive surface radiation is overwhelmed by
+  the complete arm's sensible-plus-latent loss, with site-median turbulent
+  terms from `-68.10` to `-145.11 W m^-2`.
 
 ## Decision Log
 
@@ -411,7 +420,21 @@ contact external services, and never mutates source fixtures.
   screen, not a claimed universal flux range.
   Rationale: subcanopy flux partition is climate-, canopy-, and event-dependent.
   Date/Author: 2026-08-06 / Codex.
+- Decision: block persistent-shadow advancement and place turbulent carrier
+  lineage/operator reconciliation next.
+  Rationale: all canonical site medians fail strongly negative, while the
+  independently reinitialized predecessor carrier was strongly positive;
+  terminal or
+  receiving-surface work cannot reconcile that upstream contradiction.
+  Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 
-Pending result execution.
+The exact v2 release execution and independent retained reconstruction pass,
+but the prospective carrier screen fails. Canonical implemented-external-subset
+medians are Mica `-60.63`, Niwot `-123.32`, and Paradise `-54.30 W m^-2`;
+non-decisive Snowbird is `-67.23 W m^-2`. All eligible water-year samples are
+negative. The radiative surface arm remains positive, and turbulent terms
+dominate the complete-arm-only negative delta. This is a bounded
+same-state condition-sample finding, not a seasonal-energy or melt-efficacy
+result. CoE remains authoritative; persistence and cutover stay blocked.

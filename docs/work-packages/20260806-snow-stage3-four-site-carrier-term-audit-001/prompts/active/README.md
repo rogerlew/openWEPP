@@ -1,3 +1,3 @@
 # Active Prompts
 
-The dated kickoff prompt is active until result execution begins.
+No dated kickoff prompt remains active. Execution has completed.

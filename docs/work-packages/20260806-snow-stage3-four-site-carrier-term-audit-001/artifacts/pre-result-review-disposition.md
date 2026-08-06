@@ -1,6 +1,6 @@
 # Pre-Result Review Disposition
 
-Status: `second review FAIL remediated; fresh independent review pending`
+Status: `CLOSED / all findings dispositioned / v2 PASS-PASS admitted`
 
 Evidence mode: `Static` plus package-local unit tests. No model result has run.
 
@@ -23,5 +23,6 @@ Evidence mode: `Static` plus package-local unit tests. No model result has run.
 | Marks collapsed ranges were not reproducible/comparable | Accepted after second review | Collapsed ranges and all numerical Marks classifications were removed. Marks remains qualitative context with an explicit different-site/period/estimand/boundary `NOT_COMPARABLE` result. |
 | V1 execution validator treated the applicable component residual as exact-zero N/A | Accepted after rejected v1 attempt | The v1 namespace is retained and rejected before metrics. V2 applies the already-frozen `1e-6 J m^-2` daily tolerance only to this applicable producer residual; all true same-state N/A fields remain exact zero. No science rule or threshold changed. |
 
-Fresh result-blind reviews must pass on a clean committed amendment before the
-target namespace may be created.
+Fresh result-blind v2 reviews passed on exact clean commit
+`3ee1bac3ee849fbe00b517d1d227140f87fedc2a` before the v2 namespace was
+created.

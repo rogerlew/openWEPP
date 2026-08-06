@@ -11,6 +11,19 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260806-snow-stage3-four-site-carrier-term-audit-001/` — EXECUTED /
+  CARRIER SCREEN FAIL / PERSISTENT SHADOW BLOCKED / RESULT REVIEW PASS /
+  TERMINAL VERIFICATION PENDING: exact release CLI reconstruction passes for 154 screen-eligible
+  water-year-stratified independent condition samples. All canonical medians
+  miss the prospective `[-5,+5] W m^-2` screen: Mica `-60.63`, Niwot
+  `-123.32`, and Paradise `-54.30`; non-decisive Snowbird is `-67.23`.
+  Radiative surface-arm medians remain positive; turbulent terms dominate the
+  complete-arm-only deltas of `-68` to `-145 W m^-2` and every eligible sample
+  is negative.
+  CoE remains authoritative. Reconcile turbulent lineage and same-state versus
+  sequential operator semantics before persistence, terminal work, promotion,
+  or cutover.
+
 - `20260806-snow-stage3-shadow-solver-extraction-and-observability-001/` —
   EXECUTED / BOUNDED EVALUATION REALIZED / REVIEW AND VERIFICATION PASS:
   `SC-SNOWFREEZE-001` v128 realizes the two typed default-off operators, and the

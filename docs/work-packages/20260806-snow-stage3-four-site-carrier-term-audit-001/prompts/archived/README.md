@@ -1,3 +1,3 @@
 # Archived Prompts
 
-No prompt is archived before execution begins.
+The dated kickoff prompt was moved here byte-identically after result execution.

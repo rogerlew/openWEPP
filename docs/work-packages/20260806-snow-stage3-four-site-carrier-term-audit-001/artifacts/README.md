@@ -7,7 +7,7 @@ binaries, fixtures, and outputs use
 
 Pre-result authority is frozen in `protocol-freeze.json`,
 `literature-envelope.md`, `fixture-and-forcing-custody.md`, and
-`operand-lineage.md`. The initial result-blind reviews and their complete
-disposition are retained here. Fresh review, execution, result, terminal
-verification, gate, line-count, write-set, disposition, and handoff evidence
-remain pending.
+`operand-lineage.md`. The rejected v1 attempt, complete pre-result reviews,
+compact v2 result, execution receipt, reconstruction, interpretation, gates,
+line-count, security, and worker handoff are retained here. Result review and
+dual terminal verification remain pending.
