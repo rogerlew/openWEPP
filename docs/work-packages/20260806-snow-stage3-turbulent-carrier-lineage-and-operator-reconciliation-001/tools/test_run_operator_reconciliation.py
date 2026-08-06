@@ -945,3 +945,30 @@ def test_classification_requires_every_causal_gate_and_accepts_zero_external() -
         rejected = copy.deepcopy(summary)
         rejected[gate] = False
         assert MODULE.classify(rejected) == ["LINEAGE_OR_IDENTITY_FAILURE"]
+
+
+def test_classification_allows_predecessor_and_legacy_sign_classes_to_coexist() -> None:
+    summary = {
+        "medians_j_m2": {
+            "S_j_m2": -2.0,
+            "F_j_m2": -1.0,
+            "Q_j_m2": -0.5,
+            "Q_all_j_m2": 0.0,
+            "legacy_Q_all_j_m2": (MODULE.PREDECESSOR_MJ_M2 + 1.0) * 1.0e6,
+        },
+        "initial_projection_difference_observed": False,
+        "support_omission_ratio": 0.0,
+        "support_delta_sign_changed": False,
+        "predecessor_bridge_pass": False,
+        "sample_count": 35,
+        "eligible_sample_count": 35,
+        "lineage_identity_pass": True,
+        "reconstruction_closure_pass": True,
+        "delta_closure_pass": True,
+        "shortwave_invariance_pass": True,
+    }
+
+    assert MODULE.classify(summary) == [
+        "PREDECESSOR_NOT_REPRODUCED",
+        "LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE",
+    ]

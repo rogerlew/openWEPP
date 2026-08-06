@@ -77,3 +77,20 @@ No residual science/protocol finding remained. The reviewer confirmed all
 projection/evolution, estimand, closure, lineage, support, turbulence,
 applicability, reference, and albedo findings closed. No result-bearing lane or
 result artifact was inspected, and no file was edited.
+
+## Post-Result Review
+
+Static + Ran review at exact clean
+`cab50eae1d931d183e996c52f65cc98ff3819b32` returned `HOLD` on one generic
+classifier defect. The protocol permits
+`PREDECESSOR_NOT_REPRODUCED` and
+`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` to coexist, but the
+consumer incorrectly gated the latter on predecessor reproduction. The
+retained result is unaffected because Snowbird's comparable external
+`Q_all=+179.5949 MJ m^-2`, so the legacy-sign predicate is false regardless.
+
+The finding is accepted. The `predecessor_ok` gate is removed only from the
+legacy-sign predicate, and an adversarial vector now requires both classes in
+their frozen order when predecessor reproduction fails while legacy energy is
+positive and external `Q_all <= 0`. Renewed exact-head science review is
+required before closure.

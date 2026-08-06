@@ -1641,7 +1641,7 @@ def classify(snowbird: dict[str, Any]) -> list[str]:
     )
     if not predecessor_ok:
         classes.append("PREDECESSOR_NOT_REPRODUCED")
-    if predecessor_ok and medians["legacy_Q_all_j_m2"] > ZERO_J_M2 and medians["Q_all_j_m2"] <= 0.0:
+    if medians["legacy_Q_all_j_m2"] > ZERO_J_M2 and medians["Q_all_j_m2"] <= 0.0:
         classes.append("LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE")
     if snowbird["initial_projection_difference_observed"]:
         classes.append("INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE")

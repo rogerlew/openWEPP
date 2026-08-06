@@ -1,8 +1,8 @@
 # Consumer And Reconstruction Review
 
-Status: `HOLD disposition amended; re-review pending`.
+Status: `post-result PASS; focused correction re-review pending`.
 
-Evidence class: `not reviewed`.
+Evidence class: `Static + Ran`.
 
 Verify the real schema-v6 consumer, independent formulas, rejected aliases,
 support/join custody, protected outputs, and claim limits.
@@ -39,3 +39,18 @@ The last follow-up HOLD found the same fail-closed gap in selected longwave
 applicability. Independent Dilley-Unsworth reconstruction now mirrors the Rust
 daylight, radiation, canopy, temperature, and derived-emissivity domains, with
 adversarial vectors. No cohort evidence was run or inspected.
+
+## Post-Result Review
+
+Independent read-only review passed at exact clean
+`cab50eae1d931d183e996c52f65cc98ff3819b32`. It independently closed all 154
+annual reductions and four compact summaries; sampled `2,468` real tuples and
+`2,368` sequential transition pairs across all sites/operators; reproduced
+primitive, support, endpoint, legacy-bridge, S/F/Q, and classifier arithmetic;
+and matched all retained hashes, inventories, and protected identities.
+
+Snowbird's current `188.8725288356066 MJ m^-2` legacy median versus frozen
+`170.2536089 MJ m^-2` and the two emitted classes were reproduced. Consumer
+tests passed `50/50` at the reviewed commit. A later science-review finding
+outside the retained result predicates requires focused re-review after its
+adversarial correction.

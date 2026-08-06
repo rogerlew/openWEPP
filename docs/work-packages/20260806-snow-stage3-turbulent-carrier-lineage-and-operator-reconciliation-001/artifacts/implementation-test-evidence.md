@@ -74,3 +74,11 @@ wrote `143` retained artifacts. Independent `--verify-existing` completed in
 and result custody. Snowbird observed runner timing was `4.73 s` control,
 `28.89 s` paired, and `118.46 s` sequential; no prospective performance
 threshold was frozen, so these ratios are observational only.
+
+Post-result classifier correction: a science reviewer found that the generic
+legacy internal-conduction sign class was incorrectly gated on predecessor
+reproduction even though the frozen protocol permits multilabel coexistence.
+The retained result is unchanged because its external `Q_all` is positive.
+After removing that unrelated gate and adding the missing coexistence vector,
+the package consumer passes `51/51` and the focused contract/observability
+selection passes `13/13`.

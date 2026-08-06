@@ -633,6 +633,11 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] Adopt the amended assurance source through typed transaction
   `31798778...`; preserve the report as DRAFT with no active review, approval,
   release, or publication authority.
+- [x] Independent post-result consumer review reproduced all 154 annual rows,
+  sampled `2,468` real tuples, and passed at `cab50eae1`. Science review found
+  one result-neutral multilabel classifier defect; accepted it, added
+  adversarial coexistence coverage, and restored the frozen class semantics at
+  `51/51`.
 
 ## Surprises & Discoveries
 

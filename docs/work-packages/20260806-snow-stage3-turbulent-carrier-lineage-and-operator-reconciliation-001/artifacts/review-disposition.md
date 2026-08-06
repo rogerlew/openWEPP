@@ -129,3 +129,12 @@ are accepted. The producer now recomputes resolved status after preparation,
 and the runner test forces same-hour substeps 0/1 through actual schema-v6 JSON
 serialization and bit-exact consumer fields. Renewed exact-head review remains
 required before v3 execution.
+
+## Post-Result Finding Disposition
+
+| Finding | Disposition | Correction | Result impact |
+| --- | --- | --- | --- |
+| Legacy-sign class incorrectly required predecessor reproduction | `accepted` | Removed `predecessor_ok` only from the class-3 predicate and added ordered coexistence coverage for predecessor failure plus legacy-positive/external-nonpositive energy. | None. Retained Snowbird external `Q_all` is positive, so the predicate remains false and the two retained classes are unchanged. |
+
+The corrected consumer suite passes `51/51`; renewed exact-head science and
+consumer review is required before closure.
