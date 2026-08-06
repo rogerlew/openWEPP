@@ -20,3 +20,11 @@ nonexempt files at or above 3,000 block closure.
 
 New schema-v6 formatting belongs in a new included module. Terminal evidence
 records every touched/new Rust file and blocks closure at 3,000 lines.
+
+Current continuity-corrected implementation counts:
+
+| File | Current lines | Disposition |
+| --- | ---: | --- |
+| orchestrator `stage3_solver.rs` | 2,393 | `WARN`; below the 3,000-line closure block. Retain the already-declared next mechanical extraction intent. |
+| orchestrator `stage3_solver/evaluation.rs` | 1,352 | Below WARN. |
+| runner `00c_day_input_builder_impl.rs` | 2,917 | `WARN`; six lines below scaffold and below the 3,000-line closure block. |

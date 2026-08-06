@@ -788,6 +788,7 @@ impl Wb11HydrologyKernel {
         let mut elapsed_by_hour = [0.0_f64; 24];
         let mut count_by_hour = [0_usize; 24];
         let mut last_hour_index = None;
+        let mut previous_sequential: Option<&DirectSnowStage3ReconciliationTuple> = None;
         for tuple in &reconciliation.tuples {
             if tuple.operator != summary.tag.operator
                 || tuple.hour_index >= 24
@@ -819,6 +820,42 @@ impl Wb11HydrologyKernel {
                 ));
             }
             last_hour_index = Some(tuple.hour_index);
+            if tuple.operator == SnowStage3EvaluationOperator::SequentialResolvedShadowV1 {
+                if let Some(previous) = previous_sequential {
+                    let continuous = previous.after_surface_applicable
+                        && previous.active_layer_prefix_count_after
+                            == Some(tuple.active_layer_prefix_count_before)
+                        && previous.total_layer_count_after == tuple.total_layer_count_before
+                        && previous.active_layer_state_fingerprint_after_fnv1a64
+                            == Some(tuple.active_layer_state_fingerprint_before_fnv1a64)
+                        && previous.total_layer_state_fingerprint_after_fnv1a64
+                            == tuple.total_layer_state_fingerprint_before_fnv1a64
+                        && previous.active_ice_mass_after_kg_m2.map(f64::to_bits)
+                            == Some(tuple.active_ice_mass_before_kg_m2.to_bits())
+                        && previous.active_depth_after_m.map(f64::to_bits)
+                            == Some(tuple.active_depth_before_m.to_bits())
+                        && previous.active_density_after_kg_m3.map(f64::to_bits)
+                            == Some(tuple.active_density_before_kg_m3.to_bits())
+                        && previous.active_cold_after_j_m2.map(f64::to_bits)
+                            == Some(tuple.active_cold_before_j_m2.to_bits())
+                        && previous.total_ice_mass_after_kg_m2.to_bits()
+                            == tuple.total_ice_mass_before_kg_m2.to_bits()
+                        && previous.total_cold_after_j_m2.to_bits()
+                            == tuple.total_cold_before_j_m2.to_bits()
+                        && previous.surface_temperature_after_c.map(f64::to_bits)
+                            == Some(tuple.surface_temperature_before_c.to_bits());
+                    if !continuous {
+                        return Err(Self::stage3_domain_error(
+                            phase_class,
+                            "snow.stage3_reconciliation_sequential_continuity",
+                            1.0,
+                            Some(0.0),
+                            Some(0.0),
+                        ));
+                    }
+                }
+                previous_sequential = Some(tuple);
+            }
             let duration_seconds = tuple.duration_seconds;
             let tolerance = |floor: f64, operands: &[f64]| {
                 floor.max(1.0e-12 * operands.iter().map(|value| value.abs()).sum::<f64>())
@@ -2283,6 +2320,46 @@ mod stage3_evaluation_validation_tests {
         Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary)
             .expect("unmodified sequential reconciliation must pass");
         summary.reconciliation.tuples[0].total_ice_mass_after_kg_m2 += 1.0e-8;
+        assert!(Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary).is_err());
+    }
+
+    #[test]
+    fn sequential_reconciliation_serializes_exact_transition_continuity() {
+        let phase = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        let inputs = reconciliation_inputs();
+        let cold = vec![inputs.snow_layers[0].cold_content_j_m2];
+        let tag = Stage3EvaluationTag::new(
+            SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+        );
+        let mut summary = Wb11HydrologyKernel::evaluate_stage3_sequential_melt_shadow(
+            phase,
+            tag,
+            &inputs,
+            inputs.snow_layers.clone(),
+            cold,
+        )
+        .expect("valid sequential reconciliation");
+        assert!(summary.reconciliation.tuples.len() > 1);
+        for pair in summary.reconciliation.tuples.windows(2) {
+            let (previous, next) = (&pair[0], &pair[1]);
+            assert_eq!(
+                previous.total_layer_state_fingerprint_after_fnv1a64,
+                next.total_layer_state_fingerprint_before_fnv1a64
+            );
+            assert_eq!(
+                previous.total_cold_after_j_m2.to_bits(),
+                next.total_cold_before_j_m2.to_bits()
+            );
+            assert_eq!(
+                previous.total_ice_mass_after_kg_m2.to_bits(),
+                next.total_ice_mass_before_kg_m2.to_bits()
+            );
+        }
+        Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary)
+            .expect("exactly continuous reconciliation must pass");
+
+        summary.reconciliation.tuples[1].total_layer_state_fingerprint_before_fnv1a64 ^=
+            1;
         assert!(Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary).is_err());
     }
 

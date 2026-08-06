@@ -24,6 +24,7 @@ impl Wb11HydrologyKernel {
         }
         let resolved_at_day_start = Self::stage3_total_ice_mass_swe_m(&layers)
             > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
+        let mut prepared_active_layer_count = None;
         for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
             let mut elapsed_seconds = 0.0;
             let mut substep_index = 0;
@@ -33,26 +34,12 @@ impl Wb11HydrologyKernel {
                 {
                     break;
                 }
-                let mut active_layer_count =
-                    Self::align_stage3_active_layer_boundary(&mut layers, &mut cold_content_by_layer);
-                let (_, lower_mass_swe_m) =
-                    Self::stage3_control_volume_masses_swe_m(&layers, active_layer_count);
-                if Self::stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m) {
-                    active_layer_count = layers.len();
-                }
-                Self::normalize_stage3_control_volume_temperature(
-                    &mut layers[..active_layer_count],
-                    &mut cold_content_by_layer[..active_layer_count],
-                );
-                Self::normalize_stage3_control_volume_temperature(
-                    &mut layers[active_layer_count..],
-                    &mut cold_content_by_layer[active_layer_count..],
-                );
-                active_layer_count = Self::coalesce_stage3_thermal_fragments(
-                    &mut layers,
-                    &mut cold_content_by_layer,
-                    active_layer_count,
-                );
+                let active_layer_count = prepared_active_layer_count.take().unwrap_or_else(|| {
+                    Self::prepare_stage3_sequential_control_volume(
+                        &mut layers,
+                        &mut cold_content_by_layer,
+                    )
+                });
                 let substep_seconds = Self::stage3_substep_seconds(&layers, active_layer_count)
                     .min(STAGE3_SECONDS_PER_HOUR - elapsed_seconds);
                 let before_reconciliation = Self::stage3_reconciliation_state(
@@ -184,7 +171,17 @@ impl Wb11HydrologyKernel {
                         / layers[0].density_kg_m3;
                 }
 
-                let after_active_layer_count = if layers.is_empty() {
+                let resolved_after = !layers.is_empty()
+                    && Self::stage3_total_ice_mass_swe_m(&layers)
+                        > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
+                let after_active_layer_count = if resolved_after {
+                    let prepared = Self::prepare_stage3_sequential_control_volume(
+                        &mut layers,
+                        &mut cold_content_by_layer,
+                    );
+                    prepared_active_layer_count = Some(prepared);
+                    prepared
+                } else if layers.is_empty() {
                     0
                 } else {
                     removal_active_count.clamp(1, layers.len())
@@ -194,10 +191,7 @@ impl Wb11HydrologyKernel {
                     &cold_content_by_layer,
                     after_active_layer_count,
                 );
-                let after_surface_applicable = !layers.is_empty()
-                    && after_reconciliation.total_ice_mass_kg_m2
-                        > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
-                            * STAGE3_RHO_WATER_KG_M3;
+                let after_surface_applicable = resolved_after;
                 let tuple = Self::stage3_reconciliation_tuple(
                     &summary,
                     hour_index,
@@ -289,6 +283,32 @@ impl Wb11HydrologyKernel {
             }
         }
         Ok(summary)
+    }
+
+    fn prepare_stage3_sequential_control_volume(
+        layers: &mut Vec<DirectSnowLayerState>,
+        cold_content_by_layer: &mut Vec<f64>,
+    ) -> usize {
+        let mut active_layer_count =
+            Self::align_stage3_active_layer_boundary(layers, cold_content_by_layer);
+        let (_, lower_mass_swe_m) =
+            Self::stage3_control_volume_masses_swe_m(layers, active_layer_count);
+        if Self::stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m) {
+            active_layer_count = layers.len();
+        }
+        Self::normalize_stage3_control_volume_temperature(
+            &mut layers[..active_layer_count],
+            &mut cold_content_by_layer[..active_layer_count],
+        );
+        Self::normalize_stage3_control_volume_temperature(
+            &mut layers[active_layer_count..],
+            &mut cold_content_by_layer[active_layer_count..],
+        );
+        Self::coalesce_stage3_thermal_fragments(
+            layers,
+            cold_content_by_layer,
+            active_layer_count,
+        )
     }
 
     #[allow(clippy::too_many_lines)]

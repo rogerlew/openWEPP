@@ -161,7 +161,7 @@
     "reuse_prohibited": true
   },
   "schema_version": 4,
-  "status": "frozen_result_blind_readmission_pending",
+  "status": "frozen_result_blind_admitted_pass_pass",
   "support": {
     "censored_primary_water_years": [2025],
     "minimum_calendar_coverage_for_screen": 0.25,
