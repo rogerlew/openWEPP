@@ -28,3 +28,19 @@ Disposition at reviewed commit: `HOLD`.
 
 The full finding text was delivered to the orchestrator and is dispositioned
 in `review-disposition.md`. No model lane ran and the reviewer edited no file.
+
+## Amended Re-review
+
+Static re-review at clean `6dd69f8fd4f1157da633eaf03f525e389612d2ca`
+remained `HOLD` with six residuals:
+
+1. `HIGH`: total-cold endpoint identity omitted lower/internal-conduction
+   cancellation.
+2. `HIGH`: frozen albedo fallback was `0.45`, not the implemented `0.82`.
+3. `HIGH`: turbulent termination/null taxonomy omitted multiple protected exits.
+4. `HIGH`: frozen-active reference cadence, fixed/varying operands, support,
+   and aggregation were underdefined.
+5. `MEDIUM`: assurance paths did not exist or match typed v2 adoption.
+6. `MEDIUM`: hourly-bin units and geometry-fingerprint operands were inaccurate.
+
+No result-bearing lane ran and the reviewer edited no file.

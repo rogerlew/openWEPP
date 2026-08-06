@@ -29,3 +29,21 @@ Disposition at reviewed commit: `HOLD`.
 
 The full finding text was delivered to the orchestrator and is dispositioned
 in `review-disposition.md`. No model lane ran and the reviewer edited no file.
+
+## Amended Re-review
+
+Static re-review at clean `6dd69f8fd4f1157da633eaf03f525e389612d2ca`
+remained `HOLD` with five residuals:
+
+1. `CRITICAL`: predecessor positive energy includes active conduction while the
+   comparable external carrier excludes it; required an explicit legacy bridge
+   and a like-for-like external sign predicate.
+2. `HIGH`: total cold closure used active cold change without lower-volume
+   cancellation.
+3. `HIGH`: albedo fallback and geometry-fingerprint lineage were factually
+   incorrect.
+4. `HIGH`: omitted-support materiality lacked a complete numerator/denominator.
+5. `MEDIUM`: neutral zero-iteration and post-melt after-surface applicability
+   were incomplete.
+
+No result-bearing lane ran and the reviewer edited no file.

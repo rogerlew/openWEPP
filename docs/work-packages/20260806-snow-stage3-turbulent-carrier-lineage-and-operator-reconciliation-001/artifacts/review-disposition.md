@@ -18,5 +18,19 @@ Evidence class: `Static`.
 | Rust 6: negative proof/tests | `accepted` | Whole-runtime allowlist, failure isolation, WAT/HBP/PASS parity, schema versions, solver vectors, covariance, support, closure, and allocation tests are explicit exit gates. | Pending re-review. |
 | Rust 7: governance/write set | `accepted` | Exact exports/runner/analyzer/assurance paths added; line baselines freeze a no-growth rule for 2,923-line `00c`; readiness and reading maps expanded. | Pending re-review. |
 
+## Second-review Residual Disposition
+
+| Finding | Disposition | Amendment | Closure |
+| --- | --- | --- | --- |
+| Unlike legacy/comparable sign estimands | `accepted` | Frozen exact external + active-conduction legacy bridge; historic value is custody-only; state-evolution class now requires sequential external positive versus same-state external negative; added legacy-estimand class. | Pending third review. |
+| Total cold closure omits lower cancellation | `accepted` | Added active and lower cold changes and total equation; nonzero-conduction anti-alias test required. | Pending third review. |
+| Wrong albedo fallback | `accepted` | Bound `STAGE3_DEFAULT_SNOW_ALBEDO = 0.82`; absent-state/source-symbol anti-alias test required. | Pending third review. |
+| Geometry hash and hourly-bin units | `accepted` | Listed exact forcing/geometry ordered operands and corrected energy/depth bin units. | Pending third review. |
+| Omitted-support materiality underdefined | `accepted` | Frozen both-operator/five-term omitted intervals, absolute-value placement, denominator, and zero-denominator behavior. | Pending third review. |
+| Turbulent termination branches | `accepted` | Frozen seven-status iteration/length/correction taxonomy and branch-parity tests. | Pending third review. |
+| Post-melt after-surface applicability | `accepted` | Added `post_substep_no_resolved_surface`; active after fields become null while total empty-state fields remain applicable. | Pending third review. |
+| Frozen-active reference underdefined | `accepted` | Frozen daily reset, first sequential active projection, fixed/varying operands, no-state/no-conduction equations, support, and aggregation. | Pending third review. |
+| Nonexistent assurance paths | `accepted` | Replaced with exact typed-v2 report, lock, identity, and transaction path families. | Pending third review. |
+
 No finding was rejected, deferred, or moved to follow-up. Contract and runtime
-edits remain blocked until both reviewers pass the exact amended commit.
+edits remain blocked until both reviewers pass the next exact amended commit.

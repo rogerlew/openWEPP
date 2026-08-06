@@ -145,9 +145,10 @@ operands, stability solution, or state endpoints required to separate them.
   `tools/run_operator_reconciliation.py` and
   `tools/test_run_operator_reconciliation.py`;
 - typed assurance-source adoption paths
-  `docs/assurance/snow-frost-report.yaml`, `docs/assurance/sources.yaml`, and
-  generated receipts under `docs/assurance/generated/` selected by the existing
-  workflow;
+  `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml`,
+  its `review.lock.json`, `assurance/v2/identity.lock.json`, and generated
+  `assurance/v2/transactions/<receipt-id>.json` selected by the existing
+  check/adopt workflow;
 - `docs/work-packages/README.md`, `docs/ROADMAP.md`, and
   `docs/planning/snow-surface-energy-balance-roadmap.md`;
 - ignored `target/snow_stage3_operator_reconciliation/` raw evidence and normal
@@ -280,9 +281,12 @@ vapor-mass, shortwave, longwave, advected, and complete external term from
 primitive tuple operands within the tolerances frozen in the protocol.
 Sequential state closes for each substep as
 `M_after = M_before - melt - sublimation + deposition` and
-`C_after = C_before - cold_energy_change - cold_content_export`, with all mass
-terms in `kg m^-2` and cold terms in `J m^-2`; hour endpoints are the first and
-last applicable tuple. Same-state requires exact unchanged endpoints. Known wrong
+`C_total_after = C_total_before - active_cold_energy_change -
+lower_cold_energy_change - cold_content_export`, where active and lower changes
+are independently reconstructed and their internal-conduction components
+cancel. All mass terms are in `kg m^-2` and cold terms in `J m^-2`; hour
+endpoints are the first and last applicable tuple. Same-state requires exact
+unchanged endpoints. Known wrong
 aliases—authoritative Stage 3 surface temperature, CoE terms, internal
 conduction, zero-filled N/A state, and calendar rather than evaluated support—
 must produce distinct values in anti-tautology fixtures.
@@ -296,38 +300,66 @@ inclusive from the corrected retained sequential trace. Its target is
 for the reported median. Sign classification uses an absolute zero tolerance
 of `1e-6 J m^-2`, never exact floating-point sign alone.
 
+That predecessor is a legacy mixed estimand, not the comparable external
+carrier: for every tuple, hour, window, and median input the consumer must
+close `legacy sequential complete = comparable external subset + active
+internal conduction`. Exact `+170.2536089 MJ m^-2` reproduction proves custody
+only. The like-for-like sign comparison uses the external subset for both
+operators.
+
+The consumer-side `frozen_active_projection_reference` resets once per joined
+daily source. It copies the sequential lane's first applicable tuple after
+active-volume alignment/normalization and holds its effective surface
+temperature, active mass/depth/density/cold content, layer membership, and
+effective-input fingerprint fixed for all 24 hours. Hourly atmospheric,
+radiation, precipitation, and canopy forcing varies exactly as emitted.
+Geometry and solver options remain fixed by the joined lane. The reference
+applies the external carrier equations only, has no state mutation or internal
+conduction, and reconstructs one constant-state `3600 s` flux per hour.
+Full-support reduction is primary; partial comparisons integrate it only on the
+same `[0, common_support)` interval as both real operators. It resets at every
+day and is never carried across a day, water year, or site.
+
 The scientific disposition is one of:
 
 1. `LINEAGE_OR_IDENTITY_FAILURE` when reconstruction, identity, applicability,
    closure, consumer custody, or protected-output identity fails. This class
    has precedence and suppresses causal claims.
-2. `PREDECESSOR_NOT_REPRODUCED` when the current bounded sequential lane does
-   not reproduce the predecessor's positive Snowbird sign.
-3. `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` when raw-source identity
+2. `PREDECESSOR_NOT_REPRODUCED` when the current bounded sequential legacy
+   bridge does not reproduce the exact positive Snowbird predecessor.
+3. `LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` when the reconstructed
+   legacy sequential total is positive but its comparable external subset is
+   non-positive, with bridge closure passing.
+4. `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` when raw-source identity
    passes but the first effective input fingerprint differs or any first active
    mass/depth/cold/temperature/layer-membership operand differs above the
    protocol tolerance. Report its per-term first-hour delta.
-4. `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` only when the current
-   sequential lane reproduces the positive predecessor, the immutable lane is
-   negative, and either first effective inputs match or an independently
-   reconstructed frozen-active-projection reference separates projection from
-   later evolution. State-dependent terms are longwave, sensible, latent,
-   precipitation-advection, and vapor mass; state-independent shortwave must
-   remain invariant within delta-closure tolerance.
-5. `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES` when the sign of the complete
+5. `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` only when the current
+   sequential external-subset Snowbird estimator is positive, the same-state
+   external-subset estimator is negative, the legacy bridge reproduces the
+   predecessor, and the frozen-active reference separately quantifies initial
+   projection versus later evolution. State-dependent terms are longwave,
+   sensible, latent, precipitation-advection, and vapor mass;
+   state-independent shortwave must remain invariant within delta-closure
+   tolerance.
+6. `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES` when the sign of the complete
    external-subset delta differs between common and all-evaluated support, or
-   when omitted-support energy exceeds `5%` of the all-evaluated absolute
-   operand sum. This threshold is attribution-only and cannot validate fluxes.
-6. `MULTIFACTOR_UNRESOLVED` when valid evidence does not uniquely satisfy the
+   when the frozen omitted-support magnitude ratio exceeds `5%`. For each
+   operator `o` and external term `t`, omitted energy is the integral over
+   `[common_support, evaluated_seconds_o)`. The ratio numerator is
+   `sum_o sum_t abs(E_omitted[o,t])`; its denominator is
+   `sum_o sum_t abs(E_all_evaluated[o,t])`. A zero denominator makes the ratio
+   N/A, leaving only the sign-change predicate. This threshold is
+   attribution-only and cannot validate fluxes.
+7. `MULTIFACTOR_UNRESOLVED` when valid evidence does not uniquely satisfy the
    preceding causal classes.
 
-After identity precedence, classes 2--5 may coexist and are reported in the
+After identity precedence, classes 2--6 may coexist and are reported in the
 listed order. A causal class requires term-delta closure within
 `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)`. None is a
 carrier-plausibility PASS.
-None is a carrier-plausibility PASS. Persistent-shadow advancement remains
-blocked unless a later prospectively authorized package establishes a physical
-carrier gate.
+Persistent-shadow advancement remains blocked unless a later prospectively
+authorized package establishes a physical carrier gate.
 
 ## Conservation And Output Acceptance
 
@@ -402,14 +434,20 @@ verifications, roadmap/catalog disposition, and stable local commits.
 - Disabled evaluation proves unchanged type size for protected public results,
   zero companion allocation, bounded runtime/RSS parity, and no v6 payload.
 - Enabled stress evidence records the actual maximum tuple count and serialized
-  bytes against the existing upper bound of 24 hours times 3,600 one-second
-  substeps per day. Any new diagnostic cap or dropped tuple is prohibited.
+  bytes against the existing upper bound of 24 hours times 60 sixty-second
+  substeps (`1,440`) per day. Any new diagnostic cap or dropped tuple is
+  prohibited.
 - Primitive reconstruction, term totals, support, state endpoints, and
   rejected-alias tests pass through the real consumer.
 - Consumer tests cover v4 golden identity, historical v5 parsing, v6 arrays and
   N/A status, unknown-schema failure, covariance-producing multi-substep data,
   full/partial/zero support, exact common-support splitting, and mass/cold
   endpoint closure.
+- Focused anti-alias vectors cover nonzero active/lower conduction, absent
+  albedo state selecting exact `STAGE3_DEFAULT_SNOW_ALBEDO = 0.82`, exact
+  geometry-versus-forcing fingerprint operands, every frozen turbulent
+  termination status, post-substep meltout N/A, and a synthetic case separating
+  whole-column projection from frozen-active projection and later evolution.
 - A whole-runtime symbol allowlist proves v6 fields and companion diagnostics
   reach only evaluation capture/trace paths. Enabled failures preserve the
   authoritative result, and both operators retain byte-identical WAT/HBP/PASS
@@ -455,6 +493,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] (2026-08-06) Independent science and Rust reviews returned HOLD; amended
   projection/evolution separation, exact substep operands, protocol custody,
   additive API, analyzer path, negative proof, and line-count constraints.
+- [x] (2026-08-06) Second review at `6dd69f8fd4f1157da633eaf03f525e389612d2ca`
+  found mixed legacy/external estimands plus cold-closure, lineage, support,
+  solver-status, frozen-reference, applicability, and assurance-path defects;
+  accepted and amended every finding without inspecting new model results.
 - [ ] Obtain PASS/PASS on the amended result-blind admission commit.
 - [ ] Amend contract authority and pass the pre-implementation contract gate.
 - [ ] Implement behavior-neutral schema-v6 observability and focused tests.
@@ -515,3 +557,8 @@ carrier audit and its worker handoff.
 separate first control-volume projection from later state evolution, replace
 hourly means with exact substep tuples, bind cohort/predecessor/tolerances, and
 make join, applicability, closure, and decision predicates executable.
+
+2026-08-06: Second result-blind HOLD disposition split the historic
+external-plus-active-conduction estimand from the comparable external carrier,
+corrected total cold closure and factual lineage, and fully froze support,
+termination, after-surface, reference, and assurance semantics.

@@ -52,6 +52,7 @@
     "classes_in_precedence_order": [
       "LINEAGE_OR_IDENTITY_FAILURE",
       "PREDECESSOR_NOT_REPRODUCED",
+      "LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE",
       "INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE",
       "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION",
       "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
@@ -59,11 +60,13 @@
     ],
     "initial_projection_difference": "raw-source identity passes and first effective input fingerprint differs, or any first active mass/depth/cold/temperature/layer-membership operand differs above its reconstruction tolerance",
     "lineage_failure_precedence": "suppresses causal interpretation; remaining classes are not evaluated as causes",
-    "multilabel_policy": "after identity precedence, PREDECESSOR_NOT_REPRODUCED, INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE, STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION, and SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES may coexist and are reported in listed order",
+    "legacy_estimand_class": "reconstructed legacy sequential total is positive but the comparable sequential external subset is non-positive; external plus active internal conduction bridge closure must pass",
+    "multilabel_policy": "after identity precedence, PREDECESSOR_NOT_REPRODUCED, LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE, INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE, STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION, and SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES may coexist and are reported in listed order",
+    "predecessor_not_reproduced": "reconstructed legacy-bridge Snowbird median differs from +170.2536089 MJ m-2 by more than 1e-7 MJ m-2, or any contributing water-year bridge fails its frozen scale-aware tolerance",
     "state_dependent_terms": ["longwave", "sensible", "latent", "precipitation_advected", "vapor_mass"],
-    "state_evolution_class": "requires positive predecessor reproduction, negative same-state Snowbird estimator, reconstruction and delta closure, invariant shortwave, and either matching first effective inputs or an independently reconstructed frozen-active-projection reference separating projection from later evolution",
+    "state_evolution_class": "requires positive sequential external-subset Snowbird estimator, negative same-state external-subset estimator, exact legacy predecessor bridge reproduction, reconstruction/delta closure, invariant shortwave, and the independently reconstructed frozen-active-projection reference separating projection from later evolution",
     "state_independent_terms": ["shortwave"],
-    "support_materiality": "complete external-subset delta changes sign between common and all-evaluated support, or omitted-support energy exceeds 0.05 * all-evaluated sum_abs_operands"
+    "support_materiality": "complete external-subset delta changes sign between common and all-evaluated support, or ratio exceeds 0.05; numerator=sum over both operators and five external terms of abs(integral over [common_support,evaluated_seconds_operator)); denominator=sum over both operators and five external terms of abs(all-evaluated term energy); zero denominator makes ratio N/A"
   },
   "execution": {
     "binary": "target/release/openwepp-cli-hill",
@@ -95,7 +98,15 @@
   "operators": {
     "same_state_paired_carrier_v1": "whole-column projection held immutable; one 3600-second tuple per evaluated hour",
     "sequential_resolved_shadow_v1": "existing active-volume alignment/normalization and dynamic substeps; every evaluated substep emitted",
-    "frozen_active_projection_reference": "consumer-side diagnostic reconstruction using the sequential operator's first effective carrier input held fixed; never a runtime operator, owner, or production state"
+    "frozen_active_projection_reference": {
+      "reset_cadence": "once per joined daily source; first applicable sequential tuple after active-volume alignment/normalization",
+      "fixed_operands": ["surface temperature", "active mass", "active depth", "active density", "active cold content", "active layer membership", "effective-input fingerprint", "geometry", "solver options"],
+      "varying_operands": "the joined 24 hourly atmospheric, radiation, precipitation, and canopy forcing records",
+      "state_behavior": "no mutation, melt, sublimation debit, deposition addition, cold change, or internal conduction",
+      "tuple_support": "one reconstructed 3600-second constant-state external-carrier tuple per hour; partial comparison truncates exactly to the three-way common support",
+      "aggregation": "same hourly, water-year-window, and site reductions as real operators; reset every day and never carry across day, water year, or site",
+      "authority": "consumer-side diagnostic only; never a runtime operator, owner, or production state"
+    }
   },
   "predecessor": {
     "artifact_path": "docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/artifacts/snowbird-seasonal-shadow-evaluation.md",
@@ -103,7 +114,7 @@
     "binary_path": "target/release/openwepp-cli-hill",
     "binary_sha256": "7e3cc80d0f80cf05a2e3ff6a343ed891a2eb69f4bc3d3ee1fc2b66d68ec95f0a",
     "binary_sidecar_sha256": "a400ac255fe90681a4fbbf0ecfb38a225cfc705d39e97cd918fbd7c066e4daa5",
-    "estimand": "Python statistics.median across 35 Snowbird WY1990-2024 window sums of stage3_shadow_complete_energy_j_m2, October 1 through earliest maximum positive observed SWE date inclusive",
+    "estimand": "Python statistics.median across 35 Snowbird WY1990-2024 window sums of stage3_shadow_complete_energy_j_m2, October 1 through earliest maximum positive observed SWE date inclusive; legacy mixed external-plus-active-internal-conduction custody estimand, not the like-for-like external carrier",
     "median_mj_m2": 170.2536089,
     "source_commit": "2d035638a9819961a393207cd4813712d64bddcf",
     "trace_path": "target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/snowbird-shadow-corrected.snow.jsonl",
@@ -115,11 +126,12 @@
   },
   "reconstruction": {
     "complete_external_subset": "shortwave + longwave + sensible + latent + precipitation_advected",
+    "legacy_sequential_bridge": "legacy sequential complete = comparable external subset + active internal conduction at tuple, hour, water-year-window, and median-input levels",
     "delta_closure_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
     "hourly_energy_j_m2": "sum independently reconstructed tuple flux_w_m2 * tuple_duration_seconds",
     "longwave_w_m2": "subcanopy_longwave_w_m2 - outgoing_longwave_w_m2",
     "mass_endpoint_kg_m2": "total_ice_after = total_ice_before - melt - sublimation + deposition",
-    "cold_endpoint_j_m2": "total_cold_after = total_cold_before - cold_energy_change - cold_content_export",
+    "cold_endpoint_j_m2": "total_cold_after = total_cold_before - active_cold_energy_change - lower_cold_energy_change - cold_content_export; active and lower internal-conduction contributions cancel",
     "numeric_zero_tolerance_j_m2": 0.000001,
     "predecessor_median_tolerance_mj_m2": 0.0000001,
     "shortwave_w_m2": "incoming_shortwave_w_m2 * (1 - albedo_fraction)",
@@ -152,10 +164,20 @@
   },
   "tuple": {
     "applicability_reasons": ["evaluated", "no_resolved_snow_at_day_start", "thin_pack_boundary_reached", "operator_not_selected"],
+    "after_surface_applicability_reasons": ["resolved_surface", "post_substep_no_resolved_surface"],
     "ordering": "hour_index, then substep_index; elapsed_start_seconds must equal prior elapsed_end_seconds",
     "same_state_duration_seconds": 3600.0,
     "sequential_duration": "existing dynamic substep duration without alteration",
     "zero_alias_prohibited": true
+  },
+  "turbulent_termination": {
+    "zero_wind": "iterations 0, null Obukhov length, zero corrections/friction/fluxes",
+    "initial_potential_temperature_neutral": "iterations 0, null Obukhov length, neutral corrections with nonzero-wind neutral state/fluxes",
+    "iterative_zero_buoyancy": "iterations >=1, null Obukhov length, last already-computed state/corrections",
+    "iterative_invalid_obukhov": "iterations >=1, null Obukhov length when computed length is nonfinite or zero, last state/corrections",
+    "converged_stable": "iterations >=1, positive finite Obukhov length, final stable state/corrections",
+    "converged_unstable": "iterations >=1, negative finite Obukhov length, final unstable state/corrections",
+    "did_not_converge": "typed enabled-request error; no successful tuple and no authoritative mutation"
   },
   "no_tuning": "No result-driven change to cohort, forcing, operators, projection definitions, joins, windows, support, aggregation, tolerances, predecessor estimand, or decision predicates in this namespace."
 }

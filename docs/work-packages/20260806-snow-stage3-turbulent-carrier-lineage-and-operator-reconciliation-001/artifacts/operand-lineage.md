@@ -41,15 +41,16 @@ mean is `energy / sum(duration)` only when support is positive.
 | `elapsed_start_seconds`, `duration_seconds` | s | existing operator loop and selected substep | intervals must be contiguous and within `[0,3600]` | Exact support; requested time is not evaluated support. |
 | `applicable`, `applicability_reason` | bool/enum | evaluation branch outcome | no numeric aggregation | Typed N/A authority. |
 | `source_fingerprint_fnv1a64` | hex u64 | unchanged ordered day-start layer/cold snapshot hash | exact daily join | Raw authoritative source identity, not effective input identity. |
-| `forcing_fingerprint_fnv1a64` | hex u64 | unchanged 24-hour forcing hash | exact daily join | Raw forcing identity. |
-| `geometry_fingerprint_fnv1a64` | hex u64 | unchanged pressure/virtual-instrument/selector hash | exact daily join | Geometry identity. |
+| `forcing_fingerprint_fnv1a64` | hex u64 | ordered hourly precipitation/radiation/temperature/phase/hydrometeor fields, then wind, dewpoint, canopy, daily solar/extraterrestrial radiation, pressure, underlying albedo, daylight, longwave/sublimation selector IDs, and optional albedo-state fields | exact daily join | Raw forcing and non-geometry selector identity. |
+| `geometry_fingerprint_fnv1a64` | hex u64 | ordered `to_bits` of `z_T`, `z_q`, `z_u`, and `z_0,aero` only | exact daily join | Geometry identity; pressure/selectors are rejected aliases and belong to forcing. |
 | `effective_input_fingerprint_fnv1a64` | hex u64 | ordered `to_bits` of effective active and total state immediately before carrier call | compare first tuple and track every tuple | Diagnostic carrier-input identity; raw source hash is a rejected alias. |
 | `projection_id` | enum | `whole_column_immutable_v1` or `aligned_active_volume_v1` | first tuple classification | Separates projection from later evolution. |
 | `active_layer_prefix_count_before`, `total_layer_count_before` | count | actual slices passed/retained immediately before carrier call | exact endpoint | Membership is ordered prefix `[0, active_count)` of the emitted layer-state fingerprint. |
 | `active_layer_state_fingerprint_before_fnv1a64` | hex u64 | ordered active slice layer fields plus cold vector | exact endpoint | First effective active membership/state. |
 | `total_layer_state_fingerprint_before_fnv1a64` | hex u64 | ordered complete clone layer fields plus cold vector | exact endpoint | Clone state, not production state. |
-| `active_layer_prefix_count_after`, `total_layer_count_after` | count | clone after substep energy/mass operations | exact endpoint | Null for zero support. |
-| `active_layer_state_fingerprint_after_fnv1a64`, `total_layer_state_fingerprint_after_fnv1a64` | hex u64 | same ordered hash after substep | exact endpoint | Same-state must equal before; no production alias. |
+| `active_layer_prefix_count_after`, `total_layer_count_after` | count/null | clone after substep energy/mass operations | exact endpoint | Active count is null after meltout; total count remains applicable and may be zero. |
+| `active_layer_state_fingerprint_after_fnv1a64`, `total_layer_state_fingerprint_after_fnv1a64` | hex u64/null | same ordered hash after substep | exact endpoint | Active hash is null after meltout; empty total hash remains applicable. Same-state equals before. |
+| `after_surface_applicable`, `after_surface_applicability_reason` | bool/enum | post-substep clone resolution | exact endpoint | `resolved_surface` or `post_substep_no_resolved_surface`; governs all active after-surface values. |
 
 Each layer-state fingerprint covers, in order, current vector index,
 `mass_swe_m`, `thickness_m`, `density_kg_m3`, `settle_day_count`,
@@ -62,22 +63,22 @@ invented.
 
 | Schema-v6 field | Unit | Source expression | Support/aggregation | Role and rejected aliases |
 | --- | --- | --- | --- | --- |
-| `active_ice_mass_before_kg_m2`, `active_ice_mass_after_kg_m2` | kg m^-2 | active `sum(mass_swe_m) * 1000` | exact tuple endpoints | Evaluation active volume. |
+| `active_ice_mass_before_kg_m2`, `active_ice_mass_after_kg_m2` | kg m^-2/null | active `sum(mass_swe_m) * 1000` | exact tuple endpoints | After value null when no resolved surface remains. |
 | `total_ice_mass_before_kg_m2`, `total_ice_mass_after_kg_m2` | kg m^-2 | clone `sum(mass_swe_m) * 1000` | exact tuple endpoints | Clone total; authoritative pack mass rejected. |
-| `active_depth_before_m`, `active_depth_after_m` | m | active `sum(thickness_m)` | exact tuple endpoints | Thermal active depth; never aerodynamic `z_0,aero`. |
-| `active_density_before_kg_m3`, `active_density_after_kg_m3` | kg m^-3 | control-volume mass/depth conversion already used by carrier | exact tuple endpoints | Effective active density. |
-| `active_cold_before_j_m2`, `active_cold_after_j_m2` | J m^-2 | active cold-vector sum before/after | exact tuple endpoints | Positive energy required to warm to melt point. |
+| `active_depth_before_m`, `active_depth_after_m` | m/null | active `sum(thickness_m)` | exact tuple endpoints | After value null when no resolved surface remains; never aerodynamic `z_0,aero`. |
+| `active_density_before_kg_m3`, `active_density_after_kg_m3` | kg m^-3/null | control-volume mass/depth conversion already used by carrier | exact tuple endpoints | After value null when no resolved surface remains. |
+| `active_cold_before_j_m2`, `active_cold_after_j_m2` | J m^-2/null | active cold-vector sum before/after | exact tuple endpoints | After value null when no resolved surface remains. |
 | `total_cold_before_j_m2`, `total_cold_after_j_m2` | J m^-2 | full clone cold-vector sum before/after | exact tuple endpoints | Clone total. |
-| `surface_temperature_before_c`, `surface_temperature_after_c` | deg C | existing cold-content-to-temperature mapping for effective active state | exact tuple endpoints | Evaluation surface; authoritative Stage 3 temperature rejected. |
+| `surface_temperature_before_c`, `surface_temperature_after_c` | deg C/null | existing cold-content-to-temperature mapping for effective active state | exact tuple endpoints | After value null with `post_substep_no_resolved_surface`; authoritative Stage 3 temperature rejected. |
 | `air_temperature_c` | deg C | hourly forcing | repeated per tuple; duration-weight only for summaries | Carrier input. |
 | `dewpoint_c` | deg C | daily CLIGEN input used by existing carrier | repeated per tuple | Lineage for actual vapor pressure. |
 | `wind_speed_m_s` | m s^-1 | daily CLIGEN wind used by existing carrier | repeated per tuple | Carrier input. |
 | `air_pressure_pa` | Pa | selected Stage 3 surface-energy options | repeated per tuple | Carrier input. |
-| `hourly_radiation_mj_m2` | MJ m^-2 hour^-1 | hourly forcing total | repeated per tuple; do not sum repeated value | Incoming shortwave lineage. |
+| `hourly_radiation_mj_m2` | MJ m^-2 per hourly bin | hourly-bin forcing energy total | repeated per tuple; do not sum repeated value | Incoming shortwave lineage. |
 | `daily_solar_radiation_mj_m2`, `daily_extraterrestrial_radiation_mj_m2` | MJ m^-2 day^-1 | selected daily forcing/options | repeated per tuple | Longwave cloud-forcing lineage. |
 | `daylight` | bool | selected daily forcing/options | repeated per tuple | Longwave applicability. |
 | `canopy_cover_fraction` | 1 | direct input | repeated per tuple | Longwave input. |
-| `rain_m`, `snowfall_geometric_m` | m h^-1 total | hourly forcing totals | repeated; not integrated per substep | Snowfall requires frozen `0.1` SWE conversion. |
+| `rain_m`, `snowfall_geometric_m` | m per hourly bin | hourly-bin forcing depth totals | repeated; not integrated per substep | Snowfall requires frozen `0.1` SWE conversion. |
 | `rain_mass_flux_kg_m2_s`, `snow_mass_flux_kg_m2_s` | kg m^-2 s^-1 | `rain_m*1000/3600`; `snowfall_geometric_m*0.1*1000/3600` | flux held through substeps; energy uses tuple duration | Substep duration divisor is a rejected alias. |
 | `rain_temperature_c`, `snow_temperature_c` | deg C | hourly hydrometeor temperature when precipitating; otherwise surface temperature | repeated per tuple | Typed applicability retained. |
 | `rain_specific_heat_j_kg_k`, `snow_specific_heat_j_kg_k` | J kg^-1 K^-1 | existing temperature-dependent `specific_heat_water/ice` result | repeated per tuple | Required advected operand; constant heat capacity rejected. |
@@ -87,7 +88,7 @@ invented.
 | Schema-v6 field | Unit | Source expression | Support/aggregation | Role and rejected aliases |
 | --- | --- | --- | --- | --- |
 | `incoming_shortwave_w_m2` | W m^-2 | `hourly_radiation_mj_m2 * 1e6 / 3600` | tuple flux; energy `* duration` | Incoming, not absorbed. |
-| `snow_albedo_fraction` | 1 | selected snow albedo state or existing `0.45` fallback | repeated per tuple | Exact existing value; no new default. |
+| `snow_albedo_fraction` | 1 | selected snow albedo state or `STAGE3_DEFAULT_SNOW_ALBEDO = 0.82` | repeated per tuple | Exact existing value; `0.45` and underlying-surface albedo are rejected aliases. |
 | `net_shortwave_w_m2` | W m^-2 | `incoming_shortwave * (1-albedo)` | tuple flux | State-independent external term. |
 | `actual_vapor_pressure_pa` | Pa | existing saturation-vapor-pressure function at dewpoint | repeated per tuple | Longwave and turbulent input. |
 | `longwave_cloud_fraction` | 1 | existing Dilley-Unsworth clearness mapping | tuple value | Diagnostic intermediate. |
@@ -115,10 +116,11 @@ invented.
 | `air_density_kg_m3` | kg m^-3 | existing gas-density/virtual-temperature equation at geometric mean air/surface states | tuple value | Exact solver primitive. |
 | `displacement_height_m` | m | `2*7.35*z_0,aero/3` | tuple value | Exact geometry intermediate. |
 | `log_momentum`, `log_sensible`, `log_latent` | 1 | `ln((z-d)/z_0,aero)` for `z_u/z_T/z_q` | tuple value | Exact neutral denominators. |
-| `stability_class` | enum | `zero_wind`, `neutral`, `stable`, or `unstable` from existing solve | tuple value | N/A is not encoded as zero. |
-| `obukhov_length_m` | m/null | final existing solver result; null only for admitted zero-wind/neutral completion | tuple value with class | Final solver diagnostic. |
+| `turbulent_termination_status` | enum | exact protected solver exit branch | tuple value | One of the taxonomy below; nonconvergence is a typed request error, not a successful tuple. |
+| `stability_class` | enum | `zero_wind`, `neutral`, `stable`, `unstable`, or `indeterminate_obukhov` from existing solve/status | tuple value | N/A is not encoded as zero. |
+| `obukhov_length_m` | m/null | final existing solver result | tuple value with status | Non-null only for stable/unstable convergence; nullable rules are frozen below. |
 | `psi_momentum`, `psi_sensible`, `psi_latent` | 1 | existing final stability-correction equation; zero for explicit neutral/zero-wind | tuple value | Exact final corrections. |
-| `turbulent_iterations` | count | existing solver returned count | tuple value | Zero is valid only for zero wind. |
+| `turbulent_iterations` | count | existing solver returned count | tuple value | Zero is valid for zero wind and initial potential-temperature neutrality. |
 | `friction_velocity_m_s` | m s^-1 | final `k*u/(log_momentum-psi_momentum)` | tuple value | Exact final solver state. |
 | `sensible_exchange_velocity_m_s` | m s^-1 | `k*u_star/(log_sensible-psi_sensible)` | tuple value | Diagnostic factor, not flux total. |
 | `latent_exchange_velocity_m_s` | m s^-1 | `k*u_star/(log_latent-psi_latent)` | tuple value | Diagnostic factor, not flux total. |
@@ -131,6 +133,18 @@ The independent analyzer reimplements these contract equations. It may compare
 producer fluxes only after reconstructing them and may not call a Rust producer
 helper or use a producer total as an input operand.
 
+The termination taxonomy preserves the existing branches exactly:
+
+| Status | Iterations | Obukhov length | Final corrections/state |
+| --- | ---: | --- | --- |
+| `zero_wind` | `0` | null | zero corrections, friction/fluxes zero. |
+| `initial_potential_temperature_neutral` | `0` | null | neutral corrections; nonzero-wind neutral state/fluxes. |
+| `iterative_zero_buoyancy` | `>=1` | null | last already-computed state and its corrections. |
+| `iterative_invalid_obukhov` | `>=1` | null | last state when computed length is nonfinite or zero. |
+| `converged_stable` | `>=1` | positive finite | final stable corrections/state. |
+| `converged_unstable` | `>=1` | negative finite | final unstable corrections/state. |
+| `did_not_converge` | typed error | N/A | no successful tuple; enabled request fails without authoritative mutation. |
+
 ## Advected, Complete, And Endpoint Fields
 
 | Schema-v6 field | Unit | Source expression | Support/aggregation | Role and rejected aliases |
@@ -141,9 +155,11 @@ helper or use a producer total as an input operand.
 | `sublimation_kg_m2` | kg m^-2 | bounded `max(-vapor exchange,0)` existing sequential debit | sum | Sequential only; same-state N/A, not zero. |
 | `deposition_kg_m2` | kg m^-2 | `max(vapor exchange,0)` existing sequential addition | sum | Sequential only. |
 | `melt_kg_m2` | kg m^-2 | existing bounded fusion debit | sum | Sequential only. |
-| `cold_energy_change_j_m2` | J m^-2 | active cold before minus post-energy/pre-export cold | sum | Sequential only. |
+| `active_cold_energy_change_j_m2` | J m^-2 | active cold before minus active post-energy/pre-export cold | sum | Includes active-side internal conduction; sequential only. |
+| `lower_cold_energy_change_j_m2` | J m^-2 | lower cold before minus lower post-conduction/pre-export cold | sum | Cancels the lower/active internal exchange in total closure; zero only when no lower volume. |
 | `cold_content_export_j_m2` | J m^-2 | proportional cold removed with melt/sublimation | sum | Positive removed from clone. |
 | `internal_active_lower_conduction_j_m2` | J m^-2 | existing internal exchange | sum; separate from external subset | Nonexternal; snow-ground heat alias rejected. |
+| `legacy_sequential_complete_j_m2` | J m^-2 | `complete_external_flux*duration + internal_active_lower_conduction` | sum and WY median input | Custody bridge to the historic `+170.2536089 MJ m^-2`; not like-for-like carrier. |
 | `energy_closure_residual_j_m2` | J m^-2 | existing sequential thermodynamic allocation residual | maximum absolute and sum | Check-only. |
 
 Sequential endpoint identities are independently checked for every tuple and
@@ -151,7 +167,10 @@ hour:
 
 ```text
 total_ice_after = total_ice_before - melt - sublimation + deposition
-total_cold_after = total_cold_before - cold_energy_change - cold_content_export
+total_cold_after = total_cold_before
+                 - active_cold_energy_change
+                 - lower_cold_energy_change
+                 - cold_content_export
 ```
 
 Mass tolerance is `max(1e-12 kg m^-2, 1e-12*sum_abs_operands)` and cold/energy

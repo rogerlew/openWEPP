@@ -21,6 +21,13 @@ aligned-active initial projection, later within-day evolution, and unequal
 support as separate estimands before applying the frozen four-site decision
 rule.
 
+Estimator discipline: the historic Snowbird `+170.2536089 MJ m^-2` is a
+legacy external-plus-active-internal-conduction custody estimand. Reconstruct
+that bridge exactly, but compare operator signs only on the like-for-like
+external subset. The daily-reset frozen-active reference holds the first
+sequential aligned active state fixed while hourly forcing varies; it has no
+state mutation or internal conduction.
+
 No surrogate physics: do not add proxy, provisional, fitted, heuristic, or
 empirical stand-in process math. Preserve existing formulas, constants,
 thresholds, arithmetic order, defaults, and production ownership.
@@ -28,7 +35,9 @@ thresholds, arithmetic order, defaults, and production ownership.
 Conservation/output acceptance: bind operand lineage and signs; separate every
 plausible alias; independently reconstruct fluxes, terms, support, and state
 endpoints through the real JSONL consumer; retain protected-output byte
-identity. Self-consistency and one-sided bounds are supporting evidence only.
+identity. Total cold closure must include active and lower cold changes so
+internal conduction cancels. Self-consistency and one-sided bounds are
+supporting evidence only.
 
 Real consumer proof: schema-v6 evidence must be read by the actual internal
 JSONL consumer at package-local `tools/run_operator_reconciliation.py`. The
