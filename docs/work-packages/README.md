@@ -463,6 +463,12 @@
 
 State as of `2026-08-06 UTC`:
 
+- `20260806-snow-stage3-shadow-solver-extraction-and-observability-001/` -
+  QUEUED / AUTHORIZED / CONTRACT-FIRST: amend v128 evaluation-realization
+  authority, extract the 3,177-line Stage 3 solver, and add typed default-off
+  paired/sequential schema-v5 observability while preserving exact disabled
+  schema-v4 and current CoE production ownership.
+
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
   governance and return the snow/frost flagship from `IN_REVIEW` to `DRAFT`
