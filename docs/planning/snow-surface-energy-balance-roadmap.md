@@ -260,6 +260,28 @@ separately frozen calibration studies, not retries or promotion rounds; their
 user-authorized forcing scaling does not alter EB-04R/04S evidence or
 stop-loss outcomes.
 
+### 6.2 Terminal Meltout And Receiving Surface
+
+The Stage 3 shadow may not stop physics permanently at the libsnobal
+`1 kg m^-2` resolved-layer boundary. The authorized planning target is a
+persistent cross-day shadow with a one-volume shallow-snow enthalpy state and
+an implicit or error-controlled terminal integrator. The earliest combined
+melt/sublimation solid-exhaustion event is localized within contract tolerance;
+the snow ledger closes at the event; generated and terminally retained liquid
+is dispositioned once through infiltration before residual runoff; and the
+surface changes to a reviewed snow-free land-surface regime selected from
+actual cover, liquid, and frost state for the remainder of the interval.
+
+Do not assign the snow-computed terminal excess directly to soil. Recompute
+the remaining-interval radiation, turbulent, evaporation, precipitation, and
+ground/soil terms using the new surface state. A seasonal claim additionally
+requires coupled persistence of all affected surface-liquid, soil
+thermal/water, frost, and evaporation state; a snow-only shadow is event-local
+evidence. Missing receiving-surface or coupled-state authority is a Phase-1
+pre-implementation contract hold, not permission to install an energy sink.
+This work remains shadow-only until a separate atomic cutover closes every
+owner, consumer, default, rollback, and assurance gate.
+
 ## 7. Stop-Loss
 
 Stop without promotion when any of the following is true:
