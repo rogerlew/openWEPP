@@ -1,6 +1,6 @@
 # Stage 3 Shadow Solver Extraction And Observability
 
-Status: `closure candidate / implementation and review pass / terminal gates queued`
+Status: `closure candidate / implementation, review, and heavy gates pass / terminal verification queued`
 
 Date: `2026-08-06`
 
@@ -272,8 +272,9 @@ custody.
 - [x] Implement typed evaluation and schema-v5 observability.
 - [x] Adopt the v128 source while retaining DRAFT and null authority roots.
 - [x] Complete dual review, independent consumer QA, and prompt archival.
-- [ ] Pass exact-head heavy validation, exact-diff reconciliation, and dual
-  terminal verification; then close on a clean commit.
+- [x] Pass exact-head heavy validation at clean immutable commit `56f85c3a`.
+- [ ] Complete exact-diff reconciliation and dual terminal verification; then
+  close on a clean commit.
 
 ## Surprises & Discoveries
 

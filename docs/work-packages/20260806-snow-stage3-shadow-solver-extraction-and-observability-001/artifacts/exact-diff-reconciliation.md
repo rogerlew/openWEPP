@@ -1,6 +1,7 @@
 # Exact Diff Reconciliation
 
-Status: closure candidate; final exact-head comparison queued.
+Status: closure candidate; heavy-gate input reconciled, final terminal
+comparison queued.
 
 Evidence class: `Static + Ran`.
 
@@ -15,6 +16,8 @@ The prompt moved byte-preservingly from `prompts/active/` to
 and absolute openWEPP paths, so an explicit patch move completed the operation
 after both required helper attempts. No inbound link needed rewriting.
 
-The final comparison will bind the exact clean commit after heavy validation
-and both terminal verifiers. It must show no missing or extra manifest path,
-`git diff --check` must pass, and the worktree must remain clean.
+The complete heavy set passed on exact clean implementation commit `56f85c3a`.
+The post-heavy closure-evidence commit may change only package documentation.
+The final comparison will bind the exact clean commit after both terminal
+verifiers. It must show no missing or extra manifest path, `git diff --check`
+must pass, and the worktree must remain clean.

@@ -1,7 +1,7 @@
 # Artifacts
 
-Status: closure candidate; implementation and review evidence complete, heavy
-validation and terminal verification pending.
+Status: closure candidate; implementation, review, and exact-head heavy
+evidence complete; terminal verification pending.
 
 This directory owns authority, operand lineage, modularization, implementation,
 consumer, validation, review, verification, and terminal reconciliation
