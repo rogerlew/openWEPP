@@ -106,6 +106,8 @@ fn admitted_protocol_freezes_support_bridge_and_decision_rules() {
         "delta_projection=F-S and delta_evolution=Q-F",
         "INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION",
         "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION",
+        "first active mass/depth/density/cold/temperature differs exactly",
+        "MULTIFACTOR_UNRESOLVED is the exclusive fallback",
         "not promotion or cutover",
         "zero_alias_prohibited",
     ] {
@@ -138,9 +140,6 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "total_ice_mass_after_kg_m2",
         "- lower_cold_energy_change_j_m2 - cold_content_export_j_m2",
         "legacy_sequential_complete_j_m2",
-        "iterative_zero_buoyancy",
-        "iterative_invalid_obukhov",
-        "did_not_converge",
         "fails without authoritative mutation",
         "frozen_active_projection_reference",
         "min(S_evaluated_seconds, 3600, Q_evaluated_seconds)",
@@ -151,12 +150,27 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "+170.2536089 MJ m^-2",
         "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
         "A zero denominator makes the ratio N/A",
-        "`PREDECESSOR_NOT_REPRODUCED` applies when",
-        "`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` applies only when",
-        "`INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` applies only",
-        "inclusive zero band `[-tol, +tol]`",
+        "`PREDECESSOR_NOT_REPRODUCED` applies when the reconstructed legacy-bridge Snowbird median differs from `+170.2536089 MJ m^-2` by more than `1e-7 MJ m^-2` or any contributing water-year bridge exceeds its `TOL-SNOWFREEZE-019` scale-aware tolerance",
+        "`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` applies only when the reconstructed legacy sequential total is positive, the comparable sequential external subset is non-positive, and the external-plus-active-conduction bridge closes",
+        "the first effective-input fingerprint differs exactly; the first active layer count, membership, or state fingerprint differs exactly; or the first active mass, depth, density, cold content, or temperature has different finite IEEE-754 `to_bits`",
+        "`TOL-SNOWFREEZE-018` governs reconstruction and closure only; it cannot erase or create an initial-projection identity difference",
+        "`MULTIFACTOR_UNRESOLVED` is the exclusive fallback and applies only when valid evidence emits none of the seven preceding classes, including positive Q when either ordered predecessor lies inside the inclusive zero band `[-tol, +tol]` or neither single ordered step uniquely crosses sign",
+        "`LINEAGE_OR_IDENTITY_FAILURE`, `PREDECESSOR_NOT_REPRODUCED`, `LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE`, `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE`, `INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION`, `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`, `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES`, then `MULTIFACTOR_UNRESOLVED`",
+        "The exclusive fallback cannot coexist with any preceding class",
     ] {
         assert!(addendum.contains(required), "canonical addendum missing {required}");
+    }
+
+    for status_row in [
+        "`zero_wind` | `0` / null | `zero_wind`; corrections, friction, and fluxes zero",
+        "`initial_potential_temperature_neutral` | `0` / null | `neutral`; nonzero-wind neutral state and fluxes",
+        "`iterative_zero_buoyancy` | `>=1` / null | retained actual state; `neutral` if all corrections are exactly zero, `stable` if all are non-positive with at least one negative, `unstable` if all are non-negative with at least one positive; mixed/nonfinite corrections fail lineage",
+        "`iterative_invalid_obukhov` | `>=1` / null | `indeterminate_obukhov`; retain the actual last state/corrections when computed length is nonfinite or zero",
+        "`converged_stable` | `>=1` / positive finite | `stable`; final stable state/corrections",
+        "`converged_unstable` | `>=1` / negative finite | `unstable`; final unstable state/corrections",
+        "`did_not_converge` | typed error / N/A | no successful tuple; enabled request fails without authoritative mutation",
+    ] {
+        assert!(addendum.contains(status_row), "canonical status row missing {status_row}");
     }
 
     let aliases = section(&contract, "## Symbol Alias Map", "## Allowed Degenerate States");

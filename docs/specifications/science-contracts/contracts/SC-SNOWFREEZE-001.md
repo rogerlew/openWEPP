@@ -1687,12 +1687,15 @@ reconstructed legacy sequential total is positive, the comparable sequential
 external subset is non-positive, and the external-plus-active-conduction
 bridge closes. `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` applies only
 after raw-source identity passes and either the first effective-input
-fingerprint differs or a first active mass, depth, cold content, temperature,
-layer count, membership, or state-fingerprint operand differs beyond its
-`TOL-SNOWFREEZE-018` reconstruction tolerance. `MULTIFACTOR_UNRESOLVED`
-applies when valid evidence does not uniquely satisfy a preceding causal class,
-including positive Q when either ordered predecessor lies inside the inclusive
-zero band `[-tol, +tol]` or neither single ordered step uniquely crosses sign.
+fingerprint differs exactly; the first active layer count, membership, or
+state fingerprint differs exactly; or the first active mass, depth, density,
+cold content, or temperature has different finite IEEE-754 `to_bits`.
+`TOL-SNOWFREEZE-018` governs reconstruction and closure only; it cannot erase
+or create an initial-projection identity difference. `MULTIFACTOR_UNRESOLVED`
+is the exclusive fallback and applies only when valid evidence emits none of
+the seven preceding classes, including positive Q when either ordered
+predecessor lies inside the inclusive zero band `[-tol, +tol]` or neither
+single ordered step uniquely crosses sign.
 
 Decision classes are evaluated in this precedence:
 `LINEAGE_OR_IDENTITY_FAILURE`, `PREDECESSOR_NOT_REPRODUCED`,
@@ -1702,7 +1705,9 @@ Decision classes are evaluated in this precedence:
 `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`,
 `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES`, then
 `MULTIFACTOR_UNRESOLVED`. Lineage failure suppresses causal interpretation;
-after that precedence the non-lineage classes may coexist in listed order.
+after that precedence the seven named non-lineage classes before
+`MULTIFACTOR_UNRESOLVED` may coexist in listed order. The exclusive fallback
+cannot coexist with any preceding class.
 
 Support censoring is material when the complete external delta changes sign
 between common and all-evaluated support or when this ratio exceeds `0.05`:
