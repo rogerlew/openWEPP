@@ -8,5 +8,10 @@ assertions in integration tests; `Cargo.toml` only for that test's explicit
 registration; the root and campaign roadmaps; the package catalog; and typed
 assurance identity, review-lock, and one source-adoption transaction.
 
+Typed check mode additionally proved that the shared generation rotation owns
+the groundwater and forest report review locks plus the snow report descriptor.
+Those exact tool-owned paths are admitted before apply; their science and
+communication roots remain unchanged.
+
 Production Rust, fixtures, references, configuration, and public schemas are
 explicitly excluded.

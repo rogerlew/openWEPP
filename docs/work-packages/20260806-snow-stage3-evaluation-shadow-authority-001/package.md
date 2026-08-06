@@ -118,6 +118,9 @@ boundaries, and claim class.
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
 - `docs/work-packages/README.md`
 - `assurance/v2/identity.lock.json`
+- `assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json`
+- `assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
 - one typed source-adoption receipt under `assurance/v2/transactions/**`
 
@@ -234,6 +237,12 @@ publication surface.
   registration; the initial focused command correctly rejected the unregistered
   new file. Evidence: Nextest target discovery and adjacent snow contract
   entries. The package write set was expanded before registration.
+- Observation: typed source-adoption preflight classifies the v127 contract
+  drift as `scientific-full` and rotates the shared generation plus the
+  groundwater and forest review locks, while leaving both unrelated reports'
+  science and communication roots unchanged. It also updates the snow report
+  descriptor and review lock. Evidence: check-mode old/new root manifest. The
+  package write set was expanded before apply.
 
 ## Decision Log
 
