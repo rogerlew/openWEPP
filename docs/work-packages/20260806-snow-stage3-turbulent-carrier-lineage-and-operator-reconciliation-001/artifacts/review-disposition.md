@@ -80,5 +80,6 @@ Follow-up re-review also found a real row/receipt boundary mismatch plus
 permissive requested-duration, sublimation-selector, and zero-wind geometry/
 options custody. All are accepted: `site_id` is now explicitly receipt/path-
 bound rather than fabricated as a snow-row field, and the consumer validates
-the exact runtime duration, selector, and pre-solver domains. Adversarial
-coverage is `33/33`; result execution remains blocked pending re-review.
+the exact runtime duration, selector, and pre-solver domains, including vapor
+pressure below atmospheric pressure. Adversarial coverage is `34/34`; result
+execution remains blocked pending re-review.

@@ -359,6 +359,10 @@ def validate_tuple(row: dict[str, Any], operator: str) -> dict[str, float]:
     close("precipitation advection", checked_number(row, "precipitation_advected_flux_w_m2"), advected, 1.0e-10)
     close("actual vapor pressure", checked_number(row, "actual_vapor_pressure_pa"), saturation_vapor_pressure(checked_number(row, "dewpoint_c")), 1.0e-10)
     close("surface vapor pressure", checked_number(row, "surface_vapor_pressure_pa"), saturation_vapor_pressure(checked_number(row, "surface_temperature_before_c")), 1.0e-10)
+    for field in ("actual_vapor_pressure_pa", "surface_vapor_pressure_pa"):
+        vapor_pressure = checked_number(row, field)
+        if vapor_pressure <= 0.0 or vapor_pressure >= pressure:
+            raise RuntimeError(f"{field} is outside the turbulent pressure domain")
     longwave = reconstruct_longwave(row, checked_number(row, "surface_temperature_before_c"))
     for field, key in (
         ("longwave_cloud_fraction", "cloud"),

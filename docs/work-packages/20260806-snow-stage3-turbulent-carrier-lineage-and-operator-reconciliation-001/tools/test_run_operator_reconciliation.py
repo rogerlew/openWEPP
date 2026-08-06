@@ -271,6 +271,7 @@ def test_schema_v6_rejects_fractional_iterations_and_trace_path_site_alias(
         ("aerodynamic_roughness_length_m", -1.0, "geometry/options"),
         ("turbulent_convergence_tolerance", 0.0, "geometry/options"),
         ("air_temperature_height_m", 0.001, "measurement height"),
+        ("air_pressure_pa", 1.0, "pressure domain"),
     ),
 )
 def test_exact_selector_duration_and_geometry_domains_fail_closed(

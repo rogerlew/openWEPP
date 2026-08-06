@@ -24,12 +24,13 @@ support inventories, fails closed on the exact tuple/state surface, applies
 all frozen causal gates, and revalidates exact-head/binary/fixture/observation/
 receipt custody. Exhaustive hour/WY inventories are retained outside the
 compact result with exact hash/count custody. The expanded result-blind suite
-passes `33/33`.
+passes `34/34`.
 
 Follow-up review correctly found that the real snow row has no serialized
 `site_id`; the site is bound by its retained lane receipt/path. The consumer
 and canonical wording now check that real boundary. Science follow-up also
 found permissive requested-duration, sublimation-selector, and zero-wind
 geometry/options cases. Exact `3600 s`, selector `disabled`, and pre-solver
-domain checks now reject those cases on every termination path. Closure
+domain and vapor-pressure checks now reject those cases on every termination
+path. Closure
 remains pending independent re-review at the next exact clean commit.
