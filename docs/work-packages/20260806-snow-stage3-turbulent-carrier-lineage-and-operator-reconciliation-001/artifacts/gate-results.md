@@ -39,3 +39,10 @@ that named nonpublic subtree while retaining the sole-public-README,
 zero-document, vendoring-disabled, validation, check, and transition-preflight
 requirements. Direct guard execution and deterministic review-draft drift
 checking pass. A renewed complete critical run remains required.
+
+Independent Rust/custody review then identified the governed snow review draft
+as stale against v129. The heavy run was interrupted because this already
+blocked closure. After prospective write-set admission, the canonical renderer
+updated exactly seven review-index/snow-report files; no other report changed.
+Exact `--check` now passes with `98` files current. A new clean candidate and
+renewed Rust/heavy review remain required.

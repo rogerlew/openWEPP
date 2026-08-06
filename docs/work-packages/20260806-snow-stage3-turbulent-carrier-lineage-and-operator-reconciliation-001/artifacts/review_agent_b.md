@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: `HOLD at scaffold commit; amendment re-review queued`.
+Status: `post-result HOLD finding accepted / exact re-review pending`.
 
 Evidence class: `Static` at exact clean commit
 `30e843d4116411520cf9eeb7f08a3bf1ce853b78`.
@@ -80,3 +80,16 @@ No residual Rust/custody finding remained. The reviewer confirmed all API,
 schema-v5, endpoint, turbulence, support, fingerprint, assurance, consumer,
 testing, reference, and albedo findings closed. No result-bearing lane or
 result artifact was inspected, and no file was edited.
+
+## Post-Result Custody Review
+
+Static + Ran review at the evolving closure candidate confirmed retained
+execution hashes, receipt identity, protected outputs, DRAFT assurance roots,
+write-set custody, and the result-neutral multilabel correction. It then
+returned one blocking finding: the tracked snow human-review rendering remained
+stale against contract v129, contradicting the initial package evidence claim.
+
+The finding is accepted. The package prospectively admitted only the review
+index and snow DRAFT subtree, the canonical renderer updated exactly seven
+files, and a separately completed `--check` now reports all `98` review files
+current. Exact-head Rust/custody re-review remains required.

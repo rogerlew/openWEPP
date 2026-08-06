@@ -18,3 +18,10 @@ The snow/frost report remains `DRAFT`, `review_entry_authorized=false`, and
 retains no approval, realization, release-transfer, snapshot, or publication
 authority. The workflow changed only generated identity/review-lock custody and
 its transaction receipt; it did not treat package review as assurance review.
+
+The canonical tracked human-review rendering was regenerated after custody
+review found it stale against v129. Exactly seven governed files changed: the
+review index and six snow-report build/prose/research-object files. No other
+report changed. `render_assurance_review_drafts.py --check` passes with all 98
+tracked review files current. These files are explicitly DRAFT/nonpublic review
+inputs, not approved reports, exports, release artifacts, or publication.

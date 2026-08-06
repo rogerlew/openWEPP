@@ -6,9 +6,9 @@ Evidence mode: `Ran`.
 
 - Base: `3e4c2b76eeec1fc84207e3a1ca5295b690ef9d36`.
 - Admitted result execution: `5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5`.
-- Tracked paths: `106`; package-local `43`, Rust `15`, integration tests `38`,
+- Tracked paths: `113`; package-local `43`, Rust `15`, integration tests `38`,
   contract/index `2`, assurance `3`, roadmaps/catalog `3`, Cargo manifest `1`,
-  assurance release guard `1`.
+  assurance release guard `1`, generated DRAFT review inputs `7`.
 - Intent match: additive default-off evaluation observability, independent
   consumer, contract/test binding, frozen execution, generated assurance
   custody, and evidence-limited roadmap disposition only.

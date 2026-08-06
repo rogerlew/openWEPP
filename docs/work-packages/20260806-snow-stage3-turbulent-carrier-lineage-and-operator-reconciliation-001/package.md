@@ -664,6 +664,9 @@ must not mutate source fixtures. The new schema is internal and default-off.
   rendering stale against v129 despite the corrected export guard. Prospectively
   admit only the generated review index and snow report subtree before invoking
   the canonical renderer; require exact `--check` closure afterward.
+- [x] Canonical rendering updated exactly seven review-index/snow DRAFT files;
+  no other report changed. A separately completed `--check` passes with all
+  `98` review files current. Renewed exact-head Rust and heavy review remain.
 
 ## Surprises & Discoveries
 

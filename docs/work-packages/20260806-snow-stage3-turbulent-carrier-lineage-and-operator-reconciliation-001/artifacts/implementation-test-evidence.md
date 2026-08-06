@@ -99,3 +99,9 @@ inventory. It still rejects any other extra public file and still requires the
 sole `usersum/assurance/README.md`, zero export documents, disabled vendoring,
 typed validation/check, and release-transition preflight. `bash -n`, direct
 guard execution, and `render_assurance_review_drafts.py --check` pass.
+
+The first claimed draft check was invalidated by independent review: its run
+had not completed when the parent observed the preceding command output. The
+reviewer correctly reproduced seven stale generated files. After prospective
+admission, the canonical renderer applied those updates and a separately
+completed `--check` returned `review rendering: PASS (98 files current)`.

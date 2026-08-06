@@ -139,3 +139,7 @@ required before v3 execution.
 The corrected consumer suite passes `51/51`. Independent science and consumer
 re-review both passed at exact clean `f70fb0cb258af0daffc08f49024d46c4076ae749`.
 No finding was rejected or deferred, and the retained result did not change.
+
+| Custody finding | Disposition | Correction | Authority impact |
+| --- | --- | --- | --- |
+| Tracked snow human-review rendering stale against v129 | `accepted` | Prospectively admitted the generated review index/snow subtree, ran the canonical renderer, and completed exact 98-file drift check. | None; outputs remain labeled DRAFT/nonpublic with no approval, release, or publication authority. |

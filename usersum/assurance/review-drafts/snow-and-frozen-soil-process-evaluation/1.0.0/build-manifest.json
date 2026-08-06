@@ -2,7 +2,7 @@
   "schema_version": 1,
   "report_id": "snow-and-frozen-soil-process-evaluation",
   "report_version": "1.0.0",
-  "source_root_sha256": "b3e306156464f3fbfc2a75165e8350154dd09e56da630191c02a9e6075ead51e",
+  "source_root_sha256": "52ddb70fa8fb03d1e6701d490441fb62700ddf370dc49e22ef8acdd6d820a89b",
   "assembly_tool": "openwepp-assurance-assembly:1",
   "files": [
     {
@@ -15,7 +15,7 @@
     },
     {
       "path": "index.md",
-      "sha256": "ca91b98b3719f1f309f84f67176ec25ded4173f1694257346f31f87411f3f655"
+      "sha256": "e025202b4f58fd12dda697676504f6b36e8a8060477ed7c4c88eba9344a042b1"
     },
     {
       "path": "research-objects/20260716-codex-execute-assure06_prompt.md",
@@ -27,15 +27,15 @@
     },
     {
       "path": "research-objects/SC-SNOWENERGY-001.md",
-      "sha256": "bc22e76cd4a55a219e0c949ce0d476ed105cc8734113b6d01e5310bfb70e0faa"
+      "sha256": "e574613dcc0f1173e6ec0bcc19ba69f237e86225f4bc6c8c77d03db15aa2291d"
     },
     {
       "path": "research-objects/SC-SNOWFREEZE-001.md",
-      "sha256": "663de67c65b664417905970cd7950f4b2eadea4b9d9cf6633ea48c41e5a7fd12"
+      "sha256": "f6f1fcb580167e01fb6e963a3936c49ad1d800408eea5fcff210505c437187db"
     },
     {
       "path": "research-objects/agent-assistance-packet.json",
-      "sha256": "ed466e4422be98577f638138df1f2bb918a6e174c4826738c5cc5c144e697a80"
+      "sha256": "a71e59452527aaf816ae7449a7dce39ad891136013a87735ab7ce9097255b6b6"
     },
     {
       "path": "research-objects/authority-impact-21k-wet-compaction.md",
@@ -107,7 +107,7 @@
     },
     {
       "path": "supplement.md",
-      "sha256": "828b470d0289e1866e56266074fc846cf91d392bcb39a8949808c404e44887e8"
+      "sha256": "90cacfd5eda5b92a041b3d319e605bfe0bfb6d0f4ef2488036c996cfecb80cbc"
     }
   ]
 }

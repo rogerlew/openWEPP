@@ -22,7 +22,7 @@ linked evidence—not the templated YAML source alone.
 - [Observational Evaluation of openWEPP Snow and Frozen-Soil Processes](snow-and-frozen-soil-process-evaluation/1.0.0/index.md)
   ([technical supplement](snow-and-frozen-soil-process-evaluation/1.0.0/supplement.md))
   - Report ID: `snow-and-frozen-soil-process-evaluation`
-  - Source root: `b3e306156464f3fbfc2a75165e8350154dd09e56da630191c02a9e6075ead51e`
+  - Source root: `52ddb70fa8fb03d1e6701d490441fb62700ddf370dc49e22ef8acdd6d820a89b`
 
 The approved public report catalog remains
 [separate](../README.md) and may contain only reports that complete
