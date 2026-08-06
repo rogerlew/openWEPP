@@ -55,8 +55,8 @@ internal JSONL consumer.
 
 ## Included Scope
 
-1. Build one exact release CLI from the clean execution HEAD descended from the
-   scaffold commit and record its commit and binary hashes.
+1. Require an out-of-band full SHA for the exact independently admitted clean
+   execution HEAD, build one release CLI there, and record commit/binary hashes.
 2. Copy and hash the four retained real CLI fixtures without mutating sources.
 3. Replace only the staged Snowbird climate file with the existing
    `DEVELOPMENT_ONLY` precipitation derivative and prove its exact consumer.
@@ -66,9 +66,9 @@ internal JSONL consumer.
    through the observed positive SNOTEL peak, inclusive; exclude WY2025 from
    primary summaries and report the complete year census.
 6. Report resolved-snow support separately from calendar-window support.
-7. Reconstruct hourly, daily, water-year sample, and site-median shortwave,
-   longwave, sensible, latent, advection, implemented external subset, and paired
-   formulation delta from exact operands.
+7. Reconstruct hourly complete-arm terms and the implemented external subset;
+   reconstruct both arms and their delta at daily, water-year-sample, and
+   site-median cadence from exact operands.
 8. Report internal active/lower conduction separately and never label it
    snow-ground or include it in the same-state external carrier.
 9. Explicitly report the absent snow-ground boundary.
@@ -173,8 +173,9 @@ that condition sample from the prospective screen.
 Compute every metric per site and water year first. A water-year sample is
 screen-eligible only with at least `30` fully evaluated days and resolved-snow
 coverage of at least `0.25` of calendar-window hours. Lower-coverage samples
-remain reported but cannot enter the carrier screen. Each site requires at
-least `10` screen-eligible water years. These thresholds are
+remain reported but cannot enter the carrier screen. Each canonical decisive
+site requires at least `10` screen-eligible water years; the same threshold
+controls only Snowbird's diagnostic comparability. These thresholds are
 `ASSUMED_FOR_EXECUTION` sampling adequacy rules, not physical bounds.
 
 Site summaries are Python `statistics.median` across screen-eligible water-year
@@ -191,18 +192,23 @@ claim seasonal energy, chronology, melt, peak timing, or persistence.
 
 ## Frozen Operand Reconstruction
 
-For each evaluated hour independently reconstruct:
+For each evaluated hour independently reconstruct the complete-arm implemented
+external subset:
+
+```text
+Q_implemented_external_subset = Q_shortwave,complete + Q_longwave,complete
+                              + Q_sensible,complete + Q_latent,complete
+                              + Q_precipitation_advected,complete
+```
+
+At daily and water-year-sample cadence reconstruct:
 
 ```text
 Q_surface = Q_shortwave,surface + Q_longwave,surface + Q_latent,surface
 
-Q_complete_external = Q_shortwave,complete + Q_longwave,complete
-                    + Q_sensible,complete + Q_latent,complete
-                    + Q_precipitation_advected,complete
-
-delta_complete_minus_surface = Q_sensible,complete
-                               + Q_precipitation_advected,complete
-                               + (Q_latent,complete - Q_latent,surface)
+delta_external_subset_minus_surface = Q_sensible,complete
+                                      + Q_precipitation_advected,complete
+                                      + (Q_latent,complete - Q_latent,surface)
 ```
 
 Shortwave and longwave must be identical across arms. Latent heat is a
@@ -227,12 +233,12 @@ separately and cannot substitute for the resolved-support mean.
 ## Prospective Literature Context And Decision Rule
 
 `artifacts/literature-envelope.md` is binding. It freezes source-specific
-comparison bands before results:
+qualitative context and numerical non-comparability before results:
 
-- Marks et al. (1998) Figure 7 forest climate-period context, visually read at
-  the published plotting precision: net all-wave approximately `[-4, +6]`,
-  combined sensible-plus-latent `[-2, +7]`, precipitation advection `[0, +10]`,
-  soil heat `[0, +2]`, and total balance `[-5, +20] W m^-2`;
+- Marks et al. (1998) Figure 7 term-sign/order-of-magnitude context across three
+  instrumented sites and seven periods; numerical comparison is
+  `NOT_COMPARABLE` because sites, periods, condition-sample estimand, and the
+  snow-ground boundary differ;
 - a campaign-specific water-year condition-sample screen of `[-5, +5] W m^-2`
   for the implemented external subset at the three canonical forcing sites;
 - Roth and Nolin (2017) annual forest context: longwave contributes `93%`,
@@ -243,9 +249,9 @@ comparison bands before results:
 - Webster et al. (2016) event context: subcanopy net longwave can reach about
   `+40 W m^-2` for short spring intervals. This is not a seasonal target.
 
-These ranges are heterogeneous context, not universal truth. Classification is
-`WITHIN_CONTEXT`, `OUTSIDE_CONTEXT`, or `NOT_COMPARABLE`; it is never
-automatically `VALIDATED`.
+These contexts are heterogeneous, not universal truth. The package's own
+prospective screen may classify the implemented subset, while literature
+numeric mappings remain `NOT_COMPARABLE` and never `VALIDATED`.
 
 The frozen carrier screen passes only if all of the following hold:
 
@@ -327,7 +333,9 @@ catalog, and commit locally.
 ## Validation And Exit Criteria
 
 - Pre-result scaffold/freeze and review amendments are committed before the
-  first model run; the exact clean execution HEAD is recorded in the receipt.
+  first model run; the exact independently reviewed clean SHA is supplied via
+  `--expected-head`, required unchanged before build/analysis/acceptance, and
+  recorded in the receipt.
 - Result-blind protocol review passes before execution.
 - Four control and four paired exact-current release CLI runs complete.
 - WAT/HBP control equality passes at all four sites.
@@ -363,6 +371,9 @@ contact external services, and never mutates source fixtures.
   literature context, decision rule, and no-tuning posture before results.
 - [x] (2026-08-06) Committed the result-blind scaffold; both independent
   reviewers blocked execution and every finding was amended before results.
+- [x] (2026-08-06) Fresh review of `54c8e00dc` found five residual custody,
+  naming, and consumer defects; all were accepted and amended without creating
+  the result namespace.
 - [ ] Obtain fresh PASS reviews of the amended pre-result commit.
 - [ ] Execute four controls and four paired carrier lanes.
 - [ ] Reconstruct, classify, review, verify, and disposition results.

@@ -18,6 +18,10 @@ protocol, analysis tool/tests, and independent review are committed. A
 result-driven protocol change rejects the namespace and requires a new frozen
 version before rerun.
 
+Commit binding: supply the full independently admitted commit SHA out of band
+with `--expected-head`. The runner must require exact HEAD and an empty tracked
+worktree before build, before analysis, and before final acceptance.
+
 No surrogate physics: this package changes no production or contract math. It
 may localize a term anomaly but cannot implement, fit, tune, validate, promote,
 persist, or cut over a replacement.

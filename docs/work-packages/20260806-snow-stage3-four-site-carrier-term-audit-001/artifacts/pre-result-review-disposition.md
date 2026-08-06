@@ -1,13 +1,13 @@
 # Pre-Result Review Disposition
 
-Status: `remediated; fresh independent review pending`
+Status: `second review FAIL remediated; fresh independent review pending`
 
 Evidence mode: `Static` plus package-local unit tests. No model result has run.
 
 | Finding | Disposition | Amendment |
 | --- | --- | --- |
 | Complete latent was substituted for surface latent | Accepted | Surface latent is a separate daily operand; the frozen disabled selector requires exact zero. The paired delta includes complete latent minus surface latent, and the asymmetric test fixture proves the distinction. |
-| Self-referential execution SHA and stale binary | Accepted | The freeze anchors the immutable scaffold ancestor. Execution requires a clean descendant HEAD, builds the release CLI at that exact HEAD, rechecks HEAD/cleanliness, retains the binary, and binds its hash before and after all runs. |
+| Self-referential execution SHA and stale binary | Accepted after second review | The caller supplies the full independently admitted SHA out of band. Execution requires exact clean HEAD before build, before analysis, and before acceptance; it builds and retains that SHA's release CLI and rechecks its binary hash after all runs. |
 | Same-state output called a seasonal trajectory | Accepted | Claims and output names now describe water-year-stratified independent condition samples. Seasonal integration, chronology, melt, and persistence claims are prohibited. |
 | Coverage could pass on one hour | Accepted | Screen eligibility requires 30 evaluated days, 0.25 calendar coverage, and 10 eligible samples per site. Lower-support samples remain descriptive and explicitly excluded. |
 | Roth values and ratio semantics were wrong | Accepted | Final-paper values are 93%, 92%, and 47%. The audit declares the literature partition ratio `NOT_COMPARABLE` and computes no clipped ratio. |
@@ -17,6 +17,10 @@ Evidence mode: `Static` plus package-local unit tests. No model result has run.
 | Observation years could disappear | Accepted | Chronology, water-year labels, earliest peak ties, missing/zero years, out-of-trace years, censoring, analysis, and screen exclusion receive explicit census dispositions. |
 | Runfile consumer and publication custody were incomplete | Accepted | Every generated TOML runfile is parsed to prove the exact staged climate path/hash and exact `pass/loss/wat` publication keys. HBP is asserted as `outputs.pass`; expected output cardinality and control/paired WAT/HBP bytes are checked. |
 | Retained verification trusted producer receipts | Accepted | A complete retained-artifact manifest is hashed. Verification reparses runfiles and traces, rechecks sources/observations, reconstructs all sample/site results, and directly rechecks WAT/HBP byte identity. |
+| Derived output still used `complete_*` for the no-ground subset | Accepted after second review | Every derived JSON/CSV/site/screen key uses `implemented_external_subset`; only canonical producer schema field names retain `complete_arm`. |
+| Mandatory v5 auxiliary operands were unread | Accepted after second review | Hourly/daily vapor, complete energy, cold-content, cold-required/change, excess, available ice, sublimation, melt, terminal energy, internal exchange, closure residual, and maximum residual fields are finite, reconciled, or exact zero/N/A as required. Negative tests reject contradictory complete energy and nonzero N/A residuals. |
+| Runfile PASS custody was recorded, not asserted | Accepted after second review | Parsed `outputs.pass/loss/wat` paths must exactly equal the retained HBP/loss/WAT paths; a mismatched path fails before execution. |
+| Marks collapsed ranges were not reproducible/comparable | Accepted after second review | Collapsed ranges and all numerical Marks classifications were removed. Marks remains qualitative context with an explicit different-site/period/estimand/boundary `NOT_COMPARABLE` result. |
 
 Fresh result-blind reviews must pass on a clean committed amendment before the
 target namespace may be created.

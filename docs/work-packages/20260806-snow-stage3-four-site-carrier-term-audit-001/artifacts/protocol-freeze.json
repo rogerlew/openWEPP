@@ -77,24 +77,18 @@
     "unresolved_boundaries_id": "snow_ground_cross_day_terminal_recipient_unresolved_v1"
   },
   "literature_context": {
-    "marks_1998_figure_7_forest_w_m2": {
-      "combined_sensible_latent": [-2.0, 7.0],
-      "external_total": [-5.0, 20.0],
-      "net_all_wave": [-4.0, 6.0],
-      "precipitation_advection": [0.0, 10.0],
-      "soil_heat_not_implemented": [0.0, 2.0]
-    },
+    "marks_1998_figure_7_numeric_comparison": "NOT_COMPARABLE_DIFFERENT_SITES_PERIODS_ESTIMAND",
     "roth_nolin_2017_forest_longwave_fraction_of_average_annual_net_energy_balance": [0.47, 0.93],
     "webster_2016_event_net_longwave_upper_context_w_m2": 40.0
   },
   "no_tuning": "No result-driven change to cohort, forcing, windows, support, aggregation, context, tolerances, or screen in this namespace.",
   "observation_role": "DIAGNOSTIC_ONLY",
-  "result_head_policy": "clean execution HEAD descended from scaffold_commit; exact HEAD recorded in execution receipt",
+  "result_head_policy": "caller supplies full reviewed commit SHA out-of-band; runner requires exact clean HEAD before build, before analysis, and before acceptance",
   "reconstruction": {
     "water_year_sample_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
     "daily_tolerance_j_m2": 1e-06,
     "implemented_external_subset": "shortwave + longwave + sensible + latent + precipitation_advected; not a complete energy balance because snow-ground is absent",
-    "complete_minus_surface": "complete sensible + complete precipitation advected + complete latent - surface latent",
+    "implemented_external_subset_minus_surface": "complete sensible + complete precipitation advected + complete latent - surface latent",
     "internal_conduction_expected_j_m2": 0.0,
     "shared_terms": "surface shortwave == complete shortwave and surface longwave == complete longwave",
     "surface": "surface shortwave + surface longwave + surface latent; selected surface latent is disabled while complete turbulent latent remains evaluated"

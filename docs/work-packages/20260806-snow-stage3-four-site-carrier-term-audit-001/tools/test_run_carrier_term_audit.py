@@ -48,6 +48,14 @@ def evaluation_row(active: bool = True) -> dict[str, object]:
     }
     for term, field in AUDIT.HOURLY_FIELDS.items():
         row[field] = values[term]
+    row["stage3_evaluation_hourly_complete_energy_j_m2"] = [
+        sum(values[term][hour] for term in AUDIT.TERMS) for hour in range(24)
+    ]
+    row["stage3_evaluation_hourly_vapor_mass_exchange_kg_m2"] = (
+        [0.1] * 24 if active else [0.0] * 24
+    )
+    for field in AUDIT.HOURLY_ZERO_FIELDS:
+        row[field] = [0.0] * 24
     for term, field in AUDIT.DAILY_FIELDS.items():
         row[field] = sum(values[term])
     for term in ("shortwave", "longwave"):
@@ -58,6 +66,11 @@ def evaluation_row(active: bool = True) -> dict[str, object]:
     row["stage3_evaluation_complete_arm_total_j_m2"] = complete
     row["stage3_evaluation_surface_arm_total_j_m2"] = surface
     row["stage3_evaluation_complete_arm_component_residual_j_m2"] = 0.0
+    row["stage3_evaluation_complete_arm_vapor_mass_exchange_kg_m2"] = (
+        2.4 if active else 0.0
+    )
+    for field in AUDIT.DAILY_ZERO_FIELDS:
+        row[field] = 0.0
     return row
 
 
@@ -87,6 +100,32 @@ def test_internal_conduction_cannot_alias_ground() -> None:
         assert "internal conduction" in str(error)
     else:
         raise AssertionError("internal conduction alias was accepted")
+
+
+def test_same_state_auxiliary_operand_cannot_be_nonzero() -> None:
+    row = evaluation_row()
+    residual = row["stage3_evaluation_hourly_energy_closure_residual_j_m2"]
+    assert isinstance(residual, list)
+    residual[0] = 1.0
+    try:
+        AUDIT.validate_evaluation_row(row, AUDIT.dt.date(2020, 1, 1))
+    except RuntimeError as error:
+        assert "same-state zero" in str(error)
+    else:
+        raise AssertionError("nonzero same-state closure residual was accepted")
+
+
+def test_hourly_complete_energy_is_independently_reconciled() -> None:
+    row = evaluation_row()
+    complete = row["stage3_evaluation_hourly_complete_energy_j_m2"]
+    assert isinstance(complete, list)
+    complete[0] = 99.0
+    try:
+        AUDIT.validate_evaluation_row(row, AUDIT.dt.date(2020, 1, 1))
+    except RuntimeError as error:
+        assert "implemented external subset" in str(error)
+    else:
+        raise AssertionError("contradictory hourly complete energy was accepted")
 
 
 def test_zero_coverage_is_not_an_evaluated_hour() -> None:
@@ -186,3 +225,30 @@ def test_parse_trace_rejects_wrong_day_identity(tmp_path: Path) -> None:
         assert "identity" in str(error)
     else:
         raise AssertionError("wrong trace day index was accepted")
+
+
+def test_runfile_consumer_rejects_noncanonical_pass_path(tmp_path: Path) -> None:
+    original_repo = AUDIT.REPO
+    AUDIT.REPO = tmp_path
+    try:
+        climate = tmp_path / "p1.cli"
+        climate.write_text("climate\n", encoding="utf-8")
+        runfile = tmp_path / "audit.run"
+        runfile.write_text(
+            'schema = "openwepp-hillslope-runfile-v1"\n'
+            '[inputs]\n'
+            f'climate = "{climate}"\n'
+            '[outputs]\n'
+            f'pass = "{tmp_path / "wrong.hbp"}"\n'
+            f'loss = "{tmp_path / "audit.loss.json"}"\n'
+            f'wat = "{tmp_path / "audit.wat.parquet"}"\n',
+            encoding="utf-8",
+        )
+        try:
+            AUDIT.validate_runfile_consumer(runfile, climate)
+        except RuntimeError as error:
+            assert "publication path" in str(error)
+        else:
+            raise AssertionError("noncanonical PASS path was accepted")
+    finally:
+        AUDIT.REPO = original_repo

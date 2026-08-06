@@ -56,6 +56,30 @@ HOURLY_FIELDS = {
     "latent": "stage3_evaluation_hourly_latent_j_m2",
     "advected": "stage3_evaluation_hourly_advected_j_m2",
 }
+HOURLY_ZERO_FIELDS = (
+    "stage3_evaluation_hourly_internal_active_lower_conduction_j_m2",
+    "stage3_evaluation_hourly_cold_content_export_j_m2",
+    "stage3_evaluation_hourly_cold_required_j_m2",
+    "stage3_evaluation_hourly_cold_energy_change_j_m2",
+    "stage3_evaluation_hourly_excess_energy_j_m2",
+    "stage3_evaluation_hourly_available_ice_kg_m2",
+    "stage3_evaluation_hourly_sublimation_kg_m2",
+    "stage3_evaluation_hourly_melt_kg_m2",
+    "stage3_evaluation_hourly_terminal_unallocated_j_m2",
+    "stage3_evaluation_hourly_energy_closure_residual_j_m2",
+)
+DAILY_ZERO_FIELDS = (
+    "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2",
+    "stage3_evaluation_complete_arm_cold_content_export_j_m2",
+    "stage3_evaluation_complete_arm_available_ice_kg_m2",
+    "stage3_evaluation_complete_arm_cold_energy_change_j_m2",
+    "stage3_evaluation_complete_arm_excess_energy_j_m2",
+    "stage3_evaluation_complete_arm_sublimation_kg_m2",
+    "stage3_evaluation_complete_arm_melt_kg_m2",
+    "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
+    "stage3_evaluation_complete_arm_component_residual_j_m2",
+    "stage3_evaluation_complete_arm_maximum_thermodynamic_residual_j_m2",
+)
 ZERO = 1.0e-12
 
 
@@ -85,6 +109,17 @@ def command_output(argv: list[str]) -> str:
     return subprocess.run(
         argv, check=True, text=True, capture_output=True, cwd=REPO
     ).stdout.strip()
+
+
+def assert_execution_source(expected_head: str) -> str:
+    if not re.fullmatch(r"[0-9a-f]{40}", expected_head):
+        raise RuntimeError("expected execution HEAD must be a full lowercase Git SHA")
+    head = command_output(["git", "rev-parse", "HEAD"])
+    if head != expected_head:
+        raise RuntimeError(f"execution HEAD {head} differs from admitted {expected_head}")
+    if command_output(["git", "status", "--porcelain"]):
+        raise RuntimeError("result execution requires an empty tracked worktree")
+    return head
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -147,6 +182,10 @@ def climate_file(root: Path) -> Path:
     if len(files) != 1:
         raise RuntimeError(f"expected exactly one climate file under {root}")
     return files[0]
+
+
+def retained_observation(site: str) -> Path:
+    return OUTPUT / "inputs/observations" / f"{site}.csv"
 
 
 def climate_dates(path: Path) -> list[dt.date]:
@@ -327,8 +366,15 @@ def parse_trace(
 def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
     tolerance = 1.0e-6
     arrays = {term: row[field] for term, field in HOURLY_FIELDS.items()}
+    hourly_complete = row["stage3_evaluation_hourly_complete_energy_j_m2"]
+    hourly_vapor = row["stage3_evaluation_hourly_vapor_mass_exchange_kg_m2"]
+    hourly_zero = {field: row[field] for field in HOURLY_ZERO_FIELDS}
     if any(len(values) != 24 for values in arrays.values()):
         raise RuntimeError(f"invalid term array length on {stamp}")
+    if len(hourly_complete) != 24 or len(hourly_vapor) != 24:
+        raise RuntimeError(f"invalid complete/vapor array length on {stamp}")
+    if any(len(values) != 24 for values in hourly_zero.values()):
+        raise RuntimeError(f"invalid same-state zero array length on {stamp}")
     requested = row["stage3_evaluation_hourly_requested_seconds"]
     evaluated = row["stage3_evaluation_hourly_evaluated_seconds"]
     active = row["stage3_evaluation_hourly_complete_carrier_evaluated"]
@@ -357,6 +403,25 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
                 raise RuntimeError(f"non-finite {term} on {stamp} h{hour}")
             if not active[hour] and abs(value) > ZERO:
                 raise RuntimeError(f"inactive {term} is nonzero on {stamp} h{hour}")
+        vapor = float(hourly_vapor[hour])
+        complete_energy = float(hourly_complete[hour])
+        if not math.isfinite(vapor) or not math.isfinite(complete_energy):
+            raise RuntimeError(f"non-finite complete/vapor operand on {stamp} h{hour}")
+        if not active[hour] and (abs(vapor) > ZERO or abs(complete_energy) > ZERO):
+            raise RuntimeError(f"inactive complete/vapor operand is nonzero on {stamp} h{hour}")
+        require_close(
+            f"hourly implemented external subset {stamp} h{hour}",
+            complete_energy,
+            sum(float(arrays[term][hour]) for term in TERMS),
+            tolerance,
+        )
+        for field, values in hourly_zero.items():
+            require_close(
+                f"same-state zero {field} {stamp} h{hour}",
+                float(values[hour]),
+                0.0,
+                0.0,
+            )
     if row["stage3_evaluation_complete_arm_internal_conduction_applicable"]:
         raise RuntimeError(f"internal conduction unexpectedly applicable on {stamp}")
     expected_applicability = {
@@ -374,15 +439,13 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
     for field, expected in expected_applicability.items():
         if type(row[field]) is not bool or row[field] is not expected:
             raise RuntimeError(f"same-state applicability mismatch: {field}")
-    require_close(
-        f"daily internal conduction {stamp}",
-        checked_float(
-            row,
-            "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2",
-        ),
-        0.0,
-        0.0,
-    )
+    for field in DAILY_ZERO_FIELDS:
+        require_close(
+            f"same-state daily zero {field} {stamp}",
+            checked_float(row, field),
+            0.0,
+            0.0,
+        )
     daily = {term: checked_float(row, field) for term, field in DAILY_FIELDS.items()}
     for term in TERMS:
         require_close(
@@ -410,6 +473,18 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
         tolerance,
     )
     require_close(
+        f"daily/hourly complete energy {stamp}",
+        complete,
+        sum(float(value) for value in hourly_complete),
+        tolerance,
+    )
+    require_close(
+        f"daily/hourly vapor mass {stamp}",
+        checked_float(row, "stage3_evaluation_complete_arm_vapor_mass_exchange_kg_m2"),
+        sum(float(value) for value in hourly_vapor),
+        tolerance,
+    )
+    require_close(
         f"surface reconstruction {stamp}",
         checked_float(row, "stage3_evaluation_surface_arm_total_j_m2"),
         surface,
@@ -428,12 +503,6 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
         + daily["advected"]
         + daily["latent"]
         - surface_latent,
-        tolerance,
-    )
-    require_close(
-        f"complete producer residual {stamp}",
-        checked_float(row, "stage3_evaluation_complete_arm_component_residual_j_m2"),
-        0.0,
         tolerance,
     )
     requested_total = sum(float(value) for value in requested)
@@ -544,10 +613,10 @@ def annual_window(
         for term in TERMS + (
             "net_radiation",
             "turbulent",
-            "complete",
+            "implemented_external_subset",
             "surface",
             "surface_latent",
-            "complete_minus_surface",
+            "implemented_external_subset_minus_surface",
         ):
             record[f"{term}_sample_energy_mj_m2"] = None
             record[f"{term}_resolved_mean_w_m2"] = None
@@ -558,16 +627,16 @@ def annual_window(
         **totals,
         "net_radiation": totals["shortwave"] + totals["longwave"],
         "turbulent": totals["sensible"] + totals["latent"],
-        "complete": sum(totals.values()),
+        "implemented_external_subset": sum(totals.values()),
         "surface": surface_total,
         "surface_latent": surface_latent_total,
-        "complete_minus_surface": sum(totals.values()) - surface_total,
+        "implemented_external_subset_minus_surface": sum(totals.values()) - surface_total,
     }
     abs_operands = sum(abs(value) for value in totals.values())
     annual_tolerance = max(1.0e-6, 1.0e-12 * abs_operands)
     require_close(
-        f"annual complete delta {site} WY{water_year}",
-        derived["complete"] - derived["surface"],
+        f"water-year external-subset delta {site} WY{water_year}",
+        derived["implemented_external_subset"] - derived["surface"],
         totals["sensible"]
         + totals["advected"]
         + totals["latent"]
@@ -575,8 +644,8 @@ def annual_window(
         annual_tolerance,
     )
     require_close(
-        f"water-year producer complete {site} WY{water_year}",
-        derived["complete"],
+        f"water-year producer external subset {site} WY{water_year}",
+        derived["implemented_external_subset"],
         producer_complete_total,
         annual_tolerance,
     )
@@ -596,7 +665,7 @@ def annual_window(
     hourly_fluxes["turbulent"] = [
         a + b for a, b in zip(hourly_fluxes["sensible"], hourly_fluxes["latent"])
     ]
-    hourly_fluxes["complete"] = [
+    hourly_fluxes["implemented_external_subset"] = [
         sum(values) for values in zip(*(hourly_fluxes[term] for term in TERMS))
     ]
     record["hourly_flux_distributions_w_m2"] = {
@@ -612,7 +681,6 @@ def classify(value: float, lower: float, upper: float) -> str:
 def summarize_sites(annual: list[dict[str, Any]], frozen: dict[str, Any]) -> list[dict[str, Any]]:
     summaries = []
     near = frozen["carrier_screen"]["near_balance_w_m2"]
-    marks = frozen["literature_context"]["marks_1998_figure_7_forest_w_m2"]
     for site in [row["site"] for row in frozen["cohort"]]:
         descriptive = [row for row in annual if row["site"] == site and row["descriptive_eligible"]]
         eligible = [row for row in annual if row["site"] == site and row["screen_eligible"]]
@@ -638,27 +706,23 @@ def summarize_sites(annual: list[dict[str, Any]], frozen: dict[str, Any]) -> lis
         for term in TERMS + (
             "net_radiation",
             "turbulent",
-            "complete",
+            "implemented_external_subset",
             "surface",
             "surface_latent",
-            "complete_minus_surface",
+            "implemented_external_subset_minus_surface",
         ):
             values = [row[f"{term}_resolved_mean_w_m2"] for row in eligible]
             summary[f"{term}_resolved_mean_w_m2"] = distribution(values)
             energies = [row[f"{term}_sample_energy_mj_m2"] for row in eligible]
             summary[f"{term}_sample_energy_mj_m2"] = distribution(energies)
-        complete = summary["complete_resolved_mean_w_m2"]["median"]
-        summary["near_balance_class"] = classify(complete, near[0], near[1])
+        implemented_subset = summary[
+            "implemented_external_subset_resolved_mean_w_m2"
+        ]["median"]
+        summary["near_balance_class"] = classify(
+            implemented_subset, near[0], near[1]
+        )
         summary["marks_external_total_context_class"] = "NOT_COMPARABLE_MISSING_SNOW_GROUND"
-        for term, key in (
-            ("net_radiation", "net_all_wave"),
-            ("turbulent", "combined_sensible_latent"),
-            ("advected", "precipitation_advection"),
-        ):
-            bounds = marks[key]
-            summary[f"marks_{term}_context_class"] = classify(
-                summary[f"{term}_resolved_mean_w_m2"]["median"], bounds[0], bounds[1]
-            )
+        summary["marks_term_comparison"] = "NOT_COMPARABLE_DIFFERENT_SITES_PERIODS_ESTIMAND"
         summary["roth_nolin_partition_comparison"] = "NOT_COMPARABLE_DIFFERENT_ESTIMAND"
         summaries.append(summary)
     return summaries
@@ -739,11 +803,22 @@ def validate_runfile_consumer(runfile: Path, expected_climate: Path) -> dict[str
     outputs = document.get("outputs", {})
     if set(outputs) != {"pass", "loss", "wat"}:
         raise RuntimeError(f"runfile publication surface differs: {runfile}")
+    stem = runfile.stem
+    expected_outputs = {
+        "pass": (runfile.parent / f"{stem}.hbp").resolve(),
+        "loss": (runfile.parent / f"{stem}.loss.json").resolve(),
+        "wat": (runfile.parent / f"{stem}.wat.parquet").resolve(),
+    }
+    consumed_outputs = {key: Path(value).resolve() for key, value in outputs.items()}
+    if consumed_outputs != expected_outputs:
+        raise RuntimeError(f"runfile publication path differs: {runfile}")
     return {
         "climate_path": relative(consumed),
         "climate_sha256": sha256(consumed),
-        "publication_keys": sorted(outputs),
-        "pass_is_hbp": str(outputs["pass"]).endswith(".hbp"),
+        "publication_paths": {
+            key: relative(path) for key, path in sorted(consumed_outputs.items())
+        },
+        "pass_is_exact_hbp": True,
     }
 
 
@@ -819,15 +894,13 @@ def output_path(receipt: dict[str, Any], suffix: str) -> Path:
     return REPO / matches[0]["path"]
 
 
-def execute() -> None:
+def execute(expected_head: str) -> None:
     if OUTPUT.exists():
         raise RuntimeError(f"refusing to overwrite {OUTPUT}")
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
     if frozen["status"] != "frozen_before_result_execution":
         raise RuntimeError("protocol freeze is not active")
-    if command_output(["git", "status", "--porcelain"]):
-        raise RuntimeError("result execution requires a clean worktree")
-    head = command_output(["git", "rev-parse", "HEAD"])
+    head = assert_execution_source(expected_head)
     ancestor = subprocess.run(
         ["git", "merge-base", "--is-ancestor", frozen["scaffold_commit"], head],
         cwd=REPO,
@@ -851,13 +924,13 @@ def execute() -> None:
     )
     if build.returncode != 0 or not BINARY.is_file():
         raise RuntimeError(f"release build failed: {build.stderr[-4000:]}")
-    if command_output(["git", "rev-parse", "HEAD"]) != head:
-        raise RuntimeError("HEAD changed during release build")
-    if command_output(["git", "status", "--porcelain"]):
-        raise RuntimeError("tracked worktree changed during release build")
+    assert_execution_source(expected_head)
     binary_sha256 = sha256(BINARY)
     w1 = load_module("carrier_audit_w1", W1_TOOL)
     OUTPUT.mkdir(parents=True)
+    retained_freeze = OUTPUT / "inputs/protocol-freeze.json"
+    retained_freeze.parent.mkdir(parents=True)
+    shutil.copyfile(FREEZE_PATH, retained_freeze)
     retained_binary = OUTPUT / "binary/openwepp-cli-hill"
     retained_binary.parent.mkdir(parents=True)
     shutil.copyfile(BINARY, retained_binary)
@@ -877,9 +950,12 @@ def execute() -> None:
         observation = OBSERVATIONS / f"{site}.csv"
         if sha256(observation) != frozen_site["observation_sha256"]:
             raise RuntimeError(f"observation hash differs for {site}")
+        retained_observation(site).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(observation, retained_observation(site))
         fixture_receipts[site]["observation"] = {
-            "path": relative(observation),
-            "sha256": sha256(observation),
+            "source_path": relative(observation),
+            "retained_path": relative(retained_observation(site)),
+            "sha256": sha256(retained_observation(site)),
             "role": "DIAGNOSTIC_ONLY",
         }
     selectors = dict(frozen["selectors"])
@@ -896,6 +972,7 @@ def execute() -> None:
         for future in as_completed(futures):
             site, lane = futures[future]
             receipts[site][lane] = future.result()
+    assert_execution_source(expected_head)
     protected_identity = {}
     for site, lanes in receipts.items():
         control, paired = lanes["control"], lanes["paired"]
@@ -915,6 +992,7 @@ def execute() -> None:
             raise RuntimeError(f"protected output differs for {site}")
     if sha256(BINARY) != binary_sha256:
         raise RuntimeError("release binary changed during execution")
+    assert_execution_source(expected_head)
     analyze_and_write(
         frozen,
         receipts,
@@ -936,7 +1014,7 @@ def compute_analysis(
         trace = output_path(receipts[site]["paired"], ".snow.jsonl")
         dates = climate_dates(climate_file(fixture))
         rows = parse_trace(trace, dates, frozen)
-        observation = OBSERVATIONS / f"{site}.csv"
+        observation = retained_observation(site)
         peaks, census = observed_peaks(observation)
         observation_census[site] = census
         by_year = {row["water_year"]: row for row in census}
@@ -985,7 +1063,7 @@ def analyze_and_write(
         "schema_version": 1,
         "evidence_mode": "Ran: exact-current release CLI four-site same-state paired carrier audit",
         "characterization_only": True,
-        "freeze_sha256": sha256(FREEZE_PATH),
+        "freeze_sha256": sha256(OUTPUT / "inputs/protocol-freeze.json"),
         "execution_head": head,
         "snow_ground_boundary": "NOT_IMPLEMENTED",
         "internal_active_lower_conduction": "NOT_APPLICABLE_IN_SAME_STATE_PAIR_AND_EXACT_ZERO",
@@ -1026,10 +1104,10 @@ def analyze_and_write(
                     + (
                         "net_radiation",
                         "turbulent",
-                        "complete",
+                        "implemented_external_subset",
                         "surface",
                         "surface_latent",
-                        "complete_minus_surface",
+                        "implemented_external_subset_minus_surface",
                     )
                 },
                 "near_balance_class": row.get("near_balance_class", "NOT_COMPARABLE"),
@@ -1050,13 +1128,18 @@ def analyze_and_write(
             "size_bytes": (OUTPUT / "binary/openwepp-cli-hill").stat().st_size,
         },
         "build": build_receipt,
-        "freeze": {"path": relative(FREEZE_PATH), "sha256": sha256(FREEZE_PATH)},
+        "freeze": {
+            "source_path": relative(FREEZE_PATH),
+            "retained_path": relative(OUTPUT / "inputs/protocol-freeze.json"),
+            "sha256": sha256(OUTPUT / "inputs/protocol-freeze.json"),
+        },
         "fixtures": fixture_receipts,
         "runs": receipts,
         "protected_output_identity": protected_identity,
     }
     write_json(OUTPUT / "execution-receipt.json", receipt)
     write_json(OUTPUT / "retained-artifact-manifest.json", retained_manifest(OUTPUT))
+    assert_execution_source(head)
     verify_outputs(frozen)
 
 
@@ -1069,7 +1152,7 @@ def verify_outputs(frozen: dict[str, Any]) -> None:
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     if results["execution_head"] != receipt["git_head"]:
         raise RuntimeError("result and receipt execution heads differ")
-    if results["freeze_sha256"] != sha256(FREEZE_PATH):
+    if results["freeze_sha256"] != sha256(OUTPUT / "inputs/protocol-freeze.json"):
         raise RuntimeError("result freeze hash differs")
     retained_binary = REPO / receipt["binary"]["path"]
     if (
@@ -1094,7 +1177,9 @@ def verify_outputs(frozen: dict[str, Any]) -> None:
 def verify_existing() -> None:
     if not OUTPUT.is_dir():
         raise RuntimeError(f"missing output namespace: {OUTPUT}")
-    frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
+    frozen = json.loads(
+        (OUTPUT / "inputs/protocol-freeze.json").read_text(encoding="utf-8")
+    )
     receipt = json.loads((OUTPUT / "execution-receipt.json").read_text(encoding="utf-8"))
     manifest_path = OUTPUT / "retained-artifact-manifest.json"
     retained = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -1116,7 +1201,7 @@ def verify_existing() -> None:
         )
         if sha256(climate_file(fixture)) != expected_climate_hash:
             raise RuntimeError(f"retained climate identity differs: {site}")
-        observation = OBSERVATIONS / f"{site}.csv"
+        observation = retained_observation(site)
         if sha256(observation) != frozen_site["observation_sha256"]:
             raise RuntimeError(f"observation identity differs: {site}")
         for lane in ("control", "paired"):
@@ -1144,11 +1229,14 @@ def verify_existing() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--verify-existing", action="store_true")
+    parser.add_argument("--expected-head")
     args = parser.parse_args()
     if args.verify_existing:
         verify_existing()
     else:
-        execute()
+        if args.expected_head is None:
+            parser.error("--expected-head is required for result execution")
+        execute(args.expected_head)
 
 
 if __name__ == "__main__":
