@@ -1,6 +1,6 @@
 # Terminal Diff Reconciliation
 
-Status: `closure candidate reconciled / exact terminal verification pending`.
+Status: `critical candidate reconciled / exact terminal verification pending`.
 
 Evidence mode: `Ran`.
 
@@ -22,3 +22,9 @@ Evidence mode: `Ran`.
 The terminal head is intentionally filled only after critical validation and
 closure evidence are committed. Both terminal verifiers must independently
 reconcile the final docs-only tail to this candidate.
+
+Critical validation and the final Rust/custody review both pass at exact clean
+`43bb9eea64a221a1ecdcdc2321fc4c6200ec46ee`. The next commit contains only
+these closure records. Terminal verifiers must bind that clean documentation
+candidate, prove its parent is the validated source/evidence candidate, and
+recheck the complete base-to-head inventory.

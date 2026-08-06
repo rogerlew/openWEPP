@@ -641,8 +641,9 @@ must not mutate source fixtures. The new schema is internal and default-off.
   serialized same-hour substep vectors pass.
 - [x] Execute and independently verify the frozen four-site paired/sequential
   cohort. All 12 lanes completed and `143/143` retained artifacts verified.
-- [ ] Complete result review, critical validation, terminal
-  verification, roadmap disposition, prompt archival, and stable closure.
+- [x] Complete result review, critical validation, roadmap disposition, prompt
+  archival, and stable closure-candidate commits. Dual terminal verification
+  remains pending.
 - [x] Adopt the amended assurance source through typed transaction
   `31798778...`; preserve the report as DRAFT with no active review, approval,
   release, or publication authority.
@@ -667,6 +668,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] Canonical rendering updated exactly seven review-index/snow DRAFT files;
   no other report changed. A separately completed `--check` passes with all
   `98` review files current. Renewed exact-head Rust and heavy review remain.
+- [x] Final Rust/custody review passed at exact clean `43bb9eea6`, including a
+  fresh `143/143` retained replay. Critical validation at the same commit passed
+  quick `2,230/2,230`, frost `360/360`, full `2,279/2,279`, and every applicable
+  static, focused, assurance, dependency, schema, and affected-doc gate.
 
 ## Surprises & Discoveries
 

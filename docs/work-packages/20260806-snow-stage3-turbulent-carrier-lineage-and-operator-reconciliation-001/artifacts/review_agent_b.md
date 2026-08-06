@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: `post-result HOLD finding accepted / exact re-review pending`.
+Status: `post-result PASS after accepted custody correction`.
 
 Evidence class: `Static` at exact clean commit
 `30e843d4116411520cf9eeb7f08a3bf1ce853b78`.
@@ -93,3 +93,12 @@ The finding is accepted. The package prospectively admitted only the review
 index and snow DRAFT subtree, the canonical renderer updated exactly seven
 files, and a separately completed `--check` now reports all `98` review files
 current. Exact-head Rust/custody re-review remains required.
+
+Final Static + Ran re-review passed at exact clean
+`43bb9eea64a221a1ecdcdc2321fc4c6200ec46ee`. A fresh detached retained-v3
+`--verify-existing` replay passed `143/143` at exact execution source
+`5ebfc5135`. The reviewer reconciled receipt, manifest, raw result, binary,
+compact result, classifier, protected outputs, assurance roots, corrected
+release guard, all `98` current review files, 113-path write set, focused
+`13/13` and consumer `51/51`, diff hygiene, and clean worktree. No Rust,
+serialization, evidence-custody, output, or authority finding remains.
