@@ -1,6 +1,7 @@
 # Stage 3 Complete Carrier And Shadow Melt Artifacts
 
-Status: executed / carrier plausibility FAIL / structural and authority HOLD
+Status: executed / carrier plausibility FAIL / structural and authority HOLD /
+review and verification PASS
 
 This directory retains source freeze, independent operand reconstruction,
 carrier inventory, prediction evaluation, validation, review, and disposition.
@@ -24,3 +25,5 @@ carrier inventory, prediction evaluation, validation, review, and disposition.
 - `security-impact.md`: security and data-boundary assessment.
 - `verification-agent-a.md` and `verification-agent-b.md`: terminal
   verification records.
+- `terminal-diff-reconciliation.md`: evidence-only terminal diff scope and
+  reuse justification.
