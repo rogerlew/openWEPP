@@ -452,6 +452,12 @@
 
 State as of `2026-08-05 UTC`:
 
+- `20260806-snow-stage3-evaluation-shadow-authority-001/` -
+  EXECUTING / CONTRACT-FIRST: scope the `INV-SNOWFREEZE-091` second-state
+  prohibition so declared same-state carrier and bounded sequential resolved
+  evaluation shadows have explicit non-authoritative custody. Runtime,
+  persistence, seasonal claims, CoE ownership, and cutover remain unchanged.
+
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
   governance and return the snow/frost flagship from `IN_REVIEW` to `DRAFT`
