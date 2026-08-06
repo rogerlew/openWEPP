@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import sys
 from pathlib import Path
@@ -163,6 +164,9 @@ def v6_row(tuple_row: dict[str, object], operator: str) -> dict[str, object]:
     ]
     return {
         "schema": "openwepp-r7h-direct-production-snow-trace-v6",
+        "site_id": "synthetic_site",
+        "day_index": 0,
+        "lane_index": 0,
         "stage3_operator_reconciliation": {
             "schema_version": 6,
             "hourly_status": statuses,
@@ -213,9 +217,136 @@ def test_schema_v6_rejects_fingerprint_reason_and_global_order_aliases() -> None
     with pytest.raises(RuntimeError, match="hourly reason"):
         MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
     row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
-    row["stage3_evaluation_source_fingerprint_fnv1a64"] = "different"
+    row["stage3_evaluation_source_fingerprint_fnv1a64"] = "0000000000000099"
     with pytest.raises(RuntimeError, match="custody mismatch"):
         MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
+
+
+@pytest.mark.parametrize(
+    ("scope", "field"),
+    (
+        ("tuple", "applicability_reason"),
+        ("tuple", "melt_kg_m2"),
+        ("tuple", "active_layer_prefix_count_after"),
+        ("tuple", "active_layer_state_fingerprint_before_fnv1a64"),
+        ("top", "stage3_evaluation_source_fingerprint_fnv1a64"),
+        ("tuple", "total_layer_count_after"),
+        ("tuple", "total_layer_state_fingerprint_after_fnv1a64"),
+    ),
+)
+def test_schema_v6_required_fields_cannot_be_omitted(scope: str, field: str) -> None:
+    row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
+    target = (
+        row["stage3_operator_reconciliation"]["tuples"][0]
+        if scope == "tuple"
+        else row
+    )
+    del target[field]
+    with pytest.raises(RuntimeError, match="missing|required|exact-field"):
+        MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
+
+
+def test_schema_v6_rejects_fractional_iterations_and_wrong_site() -> None:
+    row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
+    row["stage3_operator_reconciliation"]["tuples"][0][
+        "turbulent_max_iterations"
+    ] = 40.5
+    with pytest.raises(RuntimeError, match="not an integer"):
+        MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
+    row = v6_row(synthetic_tuple(), "same_state_paired_carrier_v1")
+    with pytest.raises(RuntimeError, match="site identity"):
+        MODULE.validate_v6_row(
+            row, "same_state_paired_carrier_v1", "different_site"
+        )
+
+
+def test_sequential_partial_hour_requires_terminal_surface_exhaustion() -> None:
+    tuple_row = synthetic_tuple("sequential_resolved_shadow_v1")
+    tuple_row["requested_seconds"] = 60.0
+    tuple_row["evaluated_seconds"] = 60.0
+    tuple_row["duration_seconds"] = 60.0
+    tuple_row["vapor_mass_exchange_kg_m2"] = 0.0
+    tuple_row["legacy_sequential_complete_j_m2"] = (
+        float(tuple_row["complete_external_flux_w_m2"]) * 60.0 + 5.0
+    )
+    row = v6_row(tuple_row, "sequential_resolved_shadow_v1")
+    with pytest.raises(RuntimeError, match="dropped tail"):
+        MODULE.validate_v6_row(copy.deepcopy(row), "sequential_resolved_shadow_v1")
+    tuple_row["after_surface_applicable"] = False
+    tuple_row["after_surface_applicability_reason"] = (
+        "post_substep_no_resolved_surface"
+    )
+    for field in (
+        "active_layer_prefix_count_after",
+        "active_layer_state_fingerprint_after_fnv1a64",
+        "active_ice_mass_after_kg_m2",
+        "active_depth_after_m",
+        "active_density_after_kg_m3",
+        "active_cold_after_j_m2",
+        "surface_temperature_after_c",
+    ):
+        tuple_row[field] = None
+    MODULE.validate_v6_row(
+        v6_row(tuple_row, "sequential_resolved_shadow_v1"),
+        "sequential_resolved_shadow_v1",
+    )
+
+
+def test_sequential_cross_substep_state_continuity_is_exact() -> None:
+    first = synthetic_tuple("sequential_resolved_shadow_v1")
+    first["requested_seconds"] = 60.0
+    first["evaluated_seconds"] = 60.0
+    first["duration_seconds"] = 60.0
+    first["legacy_sequential_complete_j_m2"] = (
+        float(first["complete_external_flux_w_m2"]) * 60.0 + 5.0
+    )
+    second = copy.deepcopy(first)
+    second["substep_index"] = 1
+    second["elapsed_start_seconds"] = 60.0
+    for before, after in (
+        ("active_layer_prefix_count_before", "active_layer_prefix_count_after"),
+        ("total_layer_count_before", "total_layer_count_after"),
+        (
+            "active_layer_state_fingerprint_before_fnv1a64",
+            "active_layer_state_fingerprint_after_fnv1a64",
+        ),
+        (
+            "total_layer_state_fingerprint_before_fnv1a64",
+            "total_layer_state_fingerprint_after_fnv1a64",
+        ),
+        ("active_ice_mass_before_kg_m2", "active_ice_mass_after_kg_m2"),
+        ("active_depth_before_m", "active_depth_after_m"),
+        ("active_density_before_kg_m3", "active_density_after_kg_m3"),
+        ("active_cold_before_j_m2", "active_cold_after_j_m2"),
+        ("total_ice_mass_before_kg_m2", "total_ice_mass_after_kg_m2"),
+        ("total_cold_before_j_m2", "total_cold_after_j_m2"),
+        ("surface_temperature_before_c", "surface_temperature_after_c"),
+    ):
+        second[before] = first[after]
+    second["total_ice_mass_after_kg_m2"] = 48.0
+    second["total_cold_after_j_m2"] = 80.0
+    second["after_surface_applicable"] = False
+    second["after_surface_applicability_reason"] = (
+        "post_substep_no_resolved_surface"
+    )
+    for field in (
+        "active_layer_prefix_count_after",
+        "active_layer_state_fingerprint_after_fnv1a64",
+        "active_ice_mass_after_kg_m2",
+        "active_depth_after_m",
+        "active_density_after_kg_m3",
+        "active_cold_after_j_m2",
+        "surface_temperature_after_c",
+    ):
+        second[field] = None
+    row = v6_row(first, "sequential_resolved_shadow_v1")
+    row["stage3_operator_reconciliation"]["tuples"] = [first, second]
+    MODULE.validate_v6_row(copy.deepcopy(row), "sequential_resolved_shadow_v1")
+    second["total_layer_state_fingerprint_before_fnv1a64"] = "0000000000000099"
+    row = v6_row(first, "sequential_resolved_shadow_v1")
+    row["stage3_operator_reconciliation"]["tuples"] = [first, second]
+    with pytest.raises(RuntimeError, match="continuity"):
+        MODULE.validate_v6_row(row, "sequential_resolved_shadow_v1")
 
 
 def test_same_state_requires_exact_bits_counts_and_null_transfers() -> None:
@@ -269,6 +400,19 @@ def test_advection_and_longwave_are_not_accepted_as_producer_totals() -> None:
     row["atmospheric_longwave_w_m2"] = float(row["atmospheric_longwave_w_m2"]) + 0.1
     with pytest.raises(RuntimeError, match="atmospheric_longwave"):
         MODULE.validate_tuple(row, "same_state_paired_carrier_v1")
+
+
+def test_accepted_producer_roundoff_never_becomes_aggregation_authority() -> None:
+    row = synthetic_tuple()
+    independently_reconstructed = MODULE.validate_tuple(
+        row, "same_state_paired_carrier_v1"
+    )["external"]
+    row["complete_external_flux_w_m2"] = float(
+        row["complete_external_flux_w_m2"]
+    ) + 1.0e-11
+    reconstructed = MODULE.validate_tuple(row, "same_state_paired_carrier_v1")
+    assert reconstructed["external"] == independently_reconstructed
+    assert reconstructed["external"] != row["complete_external_flux_w_m2"]
 
 
 def test_prefix_split_and_zero_wind_reference_are_exact() -> None:
@@ -374,6 +518,10 @@ def test_decision_fallback_is_exclusive() -> None:
         "predecessor_bridge_pass": True,
         "sample_count": 35,
         "eligible_sample_count": 35,
+        "lineage_identity_pass": True,
+        "reconstruction_closure_pass": True,
+        "delta_closure_pass": True,
+        "shortwave_invariance_pass": True,
     }
     assert MODULE.classify(unresolved) == ["MULTIFACTOR_UNRESOLVED"]
 
@@ -386,6 +534,10 @@ def test_decision_rule_orders_projection_evolution_and_support_classes() -> None
         "predecessor_bridge_pass": True,
         "sample_count": 35,
         "eligible_sample_count": 35,
+        "lineage_identity_pass": True,
+        "reconstruction_closure_pass": True,
+        "delta_closure_pass": True,
+        "shortwave_invariance_pass": True,
     }
     projection = common | {
         "medians_j_m2": {
@@ -427,5 +579,78 @@ def test_support_sign_change_is_material_even_below_ratio_threshold() -> None:
         "predecessor_bridge_pass": True,
         "sample_count": 35,
         "eligible_sample_count": 35,
+        "lineage_identity_pass": True,
+        "reconstruction_closure_pass": True,
+        "delta_closure_pass": True,
+        "shortwave_invariance_pass": True,
     }
     assert "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES" in MODULE.classify(summary)
+
+
+def test_support_reduction_uses_signed_window_terms_then_site_median_deltas() -> None:
+    window = {
+        "S_j_m2": -4.0,
+        "Q_j_m2": 2.0,
+        "S_all_j_m2": 4.0,
+        "Q_all_j_m2": -2.0,
+    }
+    for operator in ("S", "Q"):
+        for term in MODULE.TERMS:
+            window[f"{operator}_omitted_{term}_j_m2"] = 0.0
+            window[f"{operator}_all_{term}_j_m2"] = 0.0
+    window["S_omitted_shortwave_j_m2"] = 5.0
+    window["Q_omitted_shortwave_j_m2"] = -5.0
+    window["S_all_shortwave_j_m2"] = 20.0
+    window["Q_all_shortwave_j_m2"] = -20.0
+    metrics = MODULE.support_window_metrics(window)
+    assert metrics["support_omitted_magnitude_j_m2"] == 10.0
+    assert metrics["support_all_evaluated_magnitude_j_m2"] == 40.0
+    assert metrics["support_omission_ratio"] == 0.25
+    assert metrics["support_delta_sign_changed"] is True
+
+    rows = []
+    for same, sequential in ((0.0, 10.0), (100.0, 11.0), (101.0, 200.0)):
+        rows.append(
+            {
+                "common_operator_delta_j_m2": sequential - same,
+                "all_operator_delta_j_m2": sequential - same,
+                "support_omission_ratio": 0.0,
+            }
+        )
+    summary = MODULE.site_support_metrics(rows)
+    assert summary["common_operator_delta_median_j_m2"] == 10.0
+    assert summary["common_operator_delta_median_j_m2"] != 11.0 - 100.0
+
+
+def test_classification_requires_every_causal_gate_and_accepts_zero_external() -> None:
+    summary = {
+        "medians_j_m2": {
+            "S_j_m2": -2.0,
+            "F_j_m2": 2.0,
+            "Q_j_m2": 3.0,
+            "Q_all_j_m2": 0.0,
+            "legacy_Q_all_j_m2": MODULE.PREDECESSOR_MJ_M2 * 1.0e6,
+        },
+        "initial_projection_difference_observed": False,
+        "support_omission_ratio": 0.0,
+        "support_delta_sign_changed": False,
+        "predecessor_bridge_pass": True,
+        "sample_count": 35,
+        "eligible_sample_count": 35,
+        "lineage_identity_pass": True,
+        "reconstruction_closure_pass": True,
+        "delta_closure_pass": True,
+        "shortwave_invariance_pass": True,
+    }
+    assert "LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE" in MODULE.classify(
+        summary
+    )
+    for gate in (
+        "lineage_identity_pass",
+        "reconstruction_closure_pass",
+        "delta_closure_pass",
+        "shortwave_invariance_pass",
+    ):
+        rejected = copy.deepcopy(summary)
+        rejected[gate] = False
+        assert MODULE.classify(rejected) == ["LINEAGE_OR_IDENTITY_FAILURE"]

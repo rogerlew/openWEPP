@@ -1,6 +1,6 @@
 # Stage 3 Turbulent Carrier Lineage And Operator Reconciliation
 
-Status: `active / result-blind protocol admitted PASS/PASS`
+Status: `active / implementation re-admission pending`
 
 Date: `2026-08-06`
 
@@ -572,6 +572,18 @@ must not mutate source fixtures. The new schema is internal and default-off.
   observability `12/12`; and independent consumer `14/14` including historical
   schema dispatch, exact bits/nulls, primitive aliases, projection, support,
   and class precedence.
+- [x] (2026-08-06) Exact-commit implementation re-review found a narrow
+  selector-lineage contract enumeration gap; v129 and its section-scoped test
+  now bind `longwave_model_id` and `sublimation_model_id`, and Rust re-review
+  passed at `80b653ce9d343ce37b5949c3a9e853bc08315ac0`.
+- [x] (2026-08-06) Science and real-consumer re-review at that commit remained
+  HOLD before result execution. The consumer now enforces the exact 113-field
+  tuple surface, required null/type/fingerprint/site custody, exact cadence and
+  sequential endpoint continuity, independently reconstructed aggregation,
+  per-window signed support arithmetic, median-of-window deltas, complete
+  causal gates, exhaustive support inventories, and exact-head retained
+  verification. Adversarial consumer coverage passes `27/27`; exact-commit
+  re-review is pending.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.

@@ -57,3 +57,21 @@ No finding was rejected, deferred, or moved to follow-up. The result-blind
 admission gate is complete. Contract-first implementation may begin; result
 execution remains blocked until the later implementation and consumer review
 gates pass.
+
+## Implementation Re-Admission Disposition
+
+The first implementation review at `f5202ee65f8b40d2c0244d92fd5c2843077e9997`
+and its follow-up reviews remained result-blind. All findings were accepted.
+Rust reconstruction, applicability, ordering, mutation, protected-shape, and
+solver-taxonomy findings were amended at `ee86ac6a872ee00c925bc391175df712880db734`.
+The final Rust residual—missing exact contract enumeration of
+`longwave_model_id` and `sublimation_model_id`—was amended and independently
+closed PASS at `80b653ce9d343ce37b5949c3a9e853bc08315ac0`.
+
+Science and consumer review then found accepting malformed evidence,
+producer-total aggregation, incorrect support reduction, incomplete causal
+gates, incomplete status/tail/state custody, incomplete inventories, and weak
+retained-source custody. All are accepted and amended in the package-local
+consumer with adversarial tests. No cohort result was run or inspected.
+Science and consumer closure remain pending exact-commit result-blind
+re-review; result execution remains blocked.
