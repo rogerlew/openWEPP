@@ -4,9 +4,9 @@ Evidence class: `Static`.
 
 Baseline: `b966d5d86316d15ef409f933ecd7ee011d53514a`.
 
-The closure-candidate diff owns exactly 94 paths: 1 workspace manifest, 4
+The closure-candidate diff owns exactly 95 paths: 1 workspace manifest, 4
 assurance custody/transaction paths, 16 Rust implementation paths, 5
-non-package documentation paths, 30 package paths, and 38 integration-test
+non-package documentation paths, 30 package paths, and 39 integration-test
 paths. The two additive wrapper/export files and publication-parity test are the
 review-driven write-set amendment recorded prospectively in `package.md`.
 
@@ -69,6 +69,7 @@ docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observabili
 docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/prompts/archived/20260806-snow-stage3-shadow-solver-extraction-and-observability-001_kickoff_agent_prompt.md
 docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/prompts/archived/README.md
 docs/work-packages/README.md
+tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs
 tests/integration/paradigm2_multilayer_promotion.rs
 tests/integration/paradigm2_stage1_layered_snow_density.rs
 tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs

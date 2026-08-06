@@ -147,6 +147,8 @@ boundary and may not be inferred from the residual.
 - the runner test include registration plus
   `crates/openwepp-runner/src/hillslope/tests03/stage3_evaluation_publication_parity.rs`;
 - focused Stage 3 runtime and direct-consumer tests;
+- extraction-driven exact Stage 0 runtime-boundary enumeration in
+  `tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs`;
 - the root roadmap, snow campaign roadmap, and package catalog; and
 - typed assurance source-adoption paths and receipts selected by check mode.
 
@@ -292,6 +294,10 @@ custody.
   warnings not covered by the earlier two-crate Clippy command: exact float
   comparison, an unnecessary by-value helper, and a single-variant wildcard.
   All were corrected without changing runtime behavior.
+- Observation: quick-profile execution found that the pre-existing Stage 0
+  no-wiring guard enumerated only the old Stage 3 monolith and therefore
+  rejected the behavior-preserving extracted modules and internal evidence
+  consumers. Its exact allowed-path list must follow the authorized seam.
 - Observation: the documentation wrapper is rooted to a different repository;
   both relative and absolute prompt moves were rejected, so the prompt was
   moved with an explicit patch after the required helper attempts.

@@ -4,8 +4,8 @@ Status: closure candidate; final exact-head comparison queued.
 
 Evidence class: `Static + Ran`.
 
-The declared write set and review-driven amendment account for every path in
-the 94-path baseline-to-candidate diff. No fixture, observation, calibration,
+The declared write set and review/gate-driven amendments account for every path
+in the 95-path baseline-to-candidate diff. No fixture, observation, calibration,
 reference corpus, public schema, default, selector activation, production melt
 owner, assurance lifecycle event, approval, release, publication, or unrelated
 crate changed.
