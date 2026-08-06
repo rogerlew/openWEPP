@@ -112,6 +112,7 @@ boundaries, and claim class.
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
 - `docs/specifications/science-contracts/index.md`
 - `tests/integration/snow_stage3_evaluation_shadow_authority_contract.rs`
+- `Cargo.toml` only to register the new integration-test target
 - integration tests whose only change is the exact v126-to-v127 contract token
 - `docs/ROADMAP.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
@@ -229,6 +230,10 @@ publication surface.
   as protection against duplicate mutable production/capture state, not an
   evaluated decision about declared read-only or isolated evaluation objects.
   Evidence: v124 package and `INV-SNOWFREEZE-091` lineage.
+- Observation: workspace integration tests use explicit `Cargo.toml` target
+  registration; the initial focused command correctly rejected the unregistered
+  new file. Evidence: Nextest target discovery and adjacent snow contract
+  entries. The package write set was expanded before registration.
 
 ## Decision Log
 

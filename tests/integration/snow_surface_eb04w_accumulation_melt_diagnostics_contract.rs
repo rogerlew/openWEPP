@@ -16,7 +16,7 @@ fn contract_binds_phase_accumulation_and_melt_diagnostics_without_promotion() {
     let contract =
         repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for binding in [
-        "contract_version: 126",
+        "contract_version: 127",
         "INV-SNOWFREEZE-088",
         "OBL-SNOWFREEZE-P-062",
         "TOL-SNOWFREEZE-013",
@@ -221,7 +221,7 @@ fn stage3_trace_contract_binds_exact_operands_and_behavior_neutrality() {
     let contract =
         repo_text("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for binding in [
-        "contract_version: 126",
+        "contract_version: 127",
         "REF-SNOWFREEZE-STAGE3-TRACE-CLOSURE",
         "INV-SNOWFREEZE-090",
         "OBL-SNOWFREEZE-P-063",
