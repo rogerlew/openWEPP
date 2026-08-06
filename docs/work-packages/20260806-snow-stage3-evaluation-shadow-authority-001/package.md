@@ -56,17 +56,23 @@ parallel mutable production state or duplicate ledger ownership.
 
 ### Same-State Paired Carrier Operator
 
-Evaluate two named carrier formulations against the same immutable
-authoritative snow-state snapshot, forcing support, geometry, cadence, and
-coverage. Neither arm may mutate the snapshot or feed production. This
+Evaluate exactly two stable named/versioned carrier formulations under one
+pairing ID against the same immutable authoritative snow-state snapshot,
+forcing support, virtual-instrument geometry, cadence, coverage, and every
+non-formulation operand. Each arm declares component/NA semantics and closes
+its component total independently. Neither arm may mutate the snapshot or feed production. This
 operator may support component and formulation comparisons; it cannot support
 state-trajectory, efficacy, seasonal chronology, promotion, or cutover claims.
 
 ### Sequential Resolved-Shadow Operator
 
 Clone a named authoritative snapshot and evolve the clone only within a
-declared continuous interval and resolved Stage 3 domain. The evaluator owns
-the clone and its ledgers; production consumers cannot read it. Unless a later
+declared continuous interval and resolved Stage 3 domain. Physical
+within-interval chronology additionally requires every state-changing forcing
+and process, same-substep phase/liquid chronology, and independent
+initial-plus-flux-to-final mass, enthalpy, and liquid closure; without those
+proofs the operator yields only a bounded response experiment. The evaluator
+owns the clone and its ledgers; production consumers cannot read them. Unless a later
 contract amendment explicitly admits persistence, the clone must terminate at
 the declared interval boundary and may not seed a later production or shadow
 interval. Daily reinitialization cannot support accumulation-season, peak-SWE,
@@ -121,8 +127,13 @@ boundaries, and claim class.
 - `assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json`
 - `assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md`
+- `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json`
 - `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
-- one typed source-adoption receipt under `assurance/v2/transactions/**`
+- three typed source-adoption receipts: initial contract adoption
+  `095ab87a`, accepted-review contract re-adoption `b2e9d32d`, and DRAFT
+  report-subject adoption `e30ab158`
 
 No production `.rs` file is authorized. Scope expansion requires prospective
 package amendment before the additional edit.
@@ -243,6 +254,11 @@ publication surface.
   science and communication roots unchanged. It also updates the snow report
   descriptor and review lock. Evidence: check-mode old/new root manifest. The
   package write set was expanded before apply.
+- Observation: domain review found that the first v127 draft allowed a
+  sequential shadow to claim bounded chronology without explicitly requiring
+  complete state-changing forcing and independent clone ledgers, and that the
+  DRAFT assurance narrative still named v126 after source adoption. Both are
+  accepted findings; the package write set was expanded before remediation.
 
 ## Decision Log
 

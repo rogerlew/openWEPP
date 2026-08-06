@@ -7,7 +7,7 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "910ab3d3de81d78aedfb8c900188c3bd67a8f574613289af1371890fefdb394e",
+  "previous_generation_id": "3ff238175cdba22bb2391e7baa16fad3142b089f584562bb4d87beab39097d21",
   "sources": {
     "assurance/v2/README.md": "44a10480c37ac73435885bad01d26688bcd8da43c749991a21fd68ac00bd5942",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
@@ -32,16 +32,16 @@
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml": "8cf763adae6dc81fabecaed569afc88233d333ef15e61a666e0190e1d9b3d480",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json": "515344ded0cc73b344cc40f7972439a2036adef39401443c432f79f72d605dba",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/supplement.md": "b5ae941a0513225f00f8e67cced8392dfff18b58c216296389b34250d2be06f6",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json": "12dc2fc307deb5a088ca232c78566386ae5d521cdb2d4e77bf774ae74e3e7702",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json": "ecac488a9758797f86a9b20e2911f73787f858a44a29fbf6444dd88459b08b49",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21k-wet-compaction.md": "68f286b94b2df7cadeffa3c0d39a0e1322707d81d28e093f82d23be1d58e5572",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21l-warm-mixed.md": "50cba09b38ee2aa8502b18925876f12cec6b05a6543467b6c50258fd566be452",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21m-coe-audit.md": "bb9737f8892d187aca9ae13877c7ce1c99df6d4f235d15e3e90cf8ed4453b03c",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/authority-impact-21n-stage3-owner.md": "f062f1432cd70223f7d8d7f1d7271426eb5dc60ad2dcf7abdb0ade253abd7073",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/dataset-provenance.md": "8f84fc9f6328509798c103a5b8499d06358e4bcf6840d2bb017846edcc470298",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/inputs/conservation-operands.json": "bc58d72901fd6967a82067a0aee1df71bfd2962475f978bcfd5fa8e358012f18",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md": "9f08f4a8dc9752aa1fbfd66639206b052074f42ecef4cb1b0c76d2c9c6b88400",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md": "5df5f2c31994c52deb904d58330fd4b55c8702062cb24ba1ae2044d40bbff8f6",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/procedures/reproduce_snow_frost_synthesis.py": "63fd14f184a8784382e78ab395e1cad6ec97da4bde37b85d01b7d97b9c5e1080",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml": "7fc8a1eee92e292c813766236d74a90f48f9642bf0a2a6953059aa15b7f3d32f",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml": "75f2d2d0d0b0d416bb449ba03ddb89f1ba7526cdc5855560e4adb5aedc0be7e3",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/results/snow-frost-synthesis.json": "90cc97ff4893cc45fd478d16358c660a86eb20db3c989088b95758d697c7c0dd",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/276e8109b84c04c321d945131e82eed6a8a126e923a71d156aace17ae2eb919d.json": "6db25097453e6cde09b4da8e7691be2b09b2c1653d12d1fcfcd5aa652a8ee12c",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/280abe0783b37e691aa96f060b8b53b47152031c6fa8f4410727816a7f783e7d.json": "223477f4c951617e684598a99f4dcfa6a6f8afd611859235440b8c02c478a216",
@@ -55,7 +55,7 @@
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/e62c4ff396367a530dec5bf24a5d07dd48928d6e7bbde1f2de94e1b46b93a6f4.json": "2eebbe27304648ef28431ebadcbc6ec3a841a57faaa7a5c68d220f920eab08f7",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/f7ab1b863de353e1c67d9e0485f0c48e6137f5fb0f0bc2045295f04629fce893.json": "d7fd1c60335cdecaafa0d4eec4c06782e922dc04f3978fa96a190416602364f0",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/f857b6f266838d72f6059278e3d9591dd1c07e40871b9c57f2ffa3b03cae8116.json": "0ee82b00445799ce9d92ee78cb0975724f6f953004ee1655bf63769a76626e0a",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md": "cbfd4b6ab9550b290efd47159fe3431d60ba539e8f77de74500e164c68f4b7f1",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/supplement.md": "9dbfd5f17956999b030e08e7784b0bc4f073676305ea2df11cef84e4a8c2d8c1",
     "assurance/v2/schemas/catalog.schema.json": "c364fd245357f54694e0e00103536c9e14b831a325331f9694505a9102c846da",
     "assurance/v2/schemas/identity-lock.schema.json": "fd5c89b1dbbc6aeec54586c4a86fb711e409cab71b312672519f72da1bd3c2eb",
     "assurance/v2/schemas/principals.schema.json": "b755eb70cbd8fcb8522f5fd09f553299eb23ac6975eac0e199fdb98e8752ff4b",
@@ -71,7 +71,7 @@
     "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "3eca7860a4e936ff09b5a250058c287b696fc4f199341f909d8719ee501cae53",
     "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "5fb5abca137b25f929629703f5809513dc67fb4a0e8679d64d89c40bdca3dfc7",
     "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "e574613dcc0f1173e6ec0bcc19ba69f237e86225f4bc6c8c77d03db15aa2291d",
-    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "b8b1063d39b2d7d35a3bc36019c922a222ff2fe72533ae189ae12d7e4c036966",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "2a1577f5c1054169a06de20464e05d361f26ed4397c627642d73b1b55052dab9",
     "docs/work-packages/20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/artifacts/non_snotel_rubric_baseline.json": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930",
     "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.json": "f5d261379f2aaed862a4ad6734e76e3d8123f56df46ca7739fa2fab86c2d6ef8",
     "docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json": "f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a",
@@ -135,7 +135,7 @@
   "review_locks": {
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "ac2dc30278685b4e3dc6e50b49dcf0960ffe1eaaa10bef29a335e4d455d71b31",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "f54c56f40f9f8a4d00b513b88e48c8254b0dcf7959ee2b22cdc89d9a4a9e95f6",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "3858b4f004179ea2d6c99be8651924787bbf580b99bca4d5050d3a569a652664"
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "1b594edafdb398ad315d58095f2ed9179b3c7e8d81c6b1ed29fe25296ad65c67"
   },
-  "generation_id": "4fead9cc0fac9c5b3272ccfd5cf46e4415df150d9fda632a8cf000db59c75389"
+  "generation_id": "34f2f80ee58c9b0f85a595e7a981363dff74db97277d763f7486651f0ae2f9f6"
 }

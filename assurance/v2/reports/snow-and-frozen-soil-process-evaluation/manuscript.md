@@ -188,7 +188,7 @@ default selectors.
 The current melt owner remains the post-2007 coefficient-of-efficiency (CoE)
 generator for compatibility. Canonical
 {{link:research-object:SF-OBJECT-ENERGY-CONTRACT|snow-energy v7}} and
-snow/frost v126 authority admit the resolved
+snow/frost v127 authority admit the resolved
 Stage 3 surface-energy and phase-change system as the future sole melt owner,
 but only after one atomic implementation closes complete sensible and
 precipitation-advection heat, thin-pack residual-snow phase disposition, a
@@ -418,7 +418,7 @@ the loss, and they supply no correction or calibration authority.
 
 The CoE implementation audit found exact post-2007 baseline fidelity rather
 than a Rust transcription defect. Because the material 2007/2008 changes lack
-cited independent validation or bounded transferability authority, v7/v126
+cited independent validation or bounded transferability authority, v7/v127
 admit Stage 3 as the future sole melt owner. This is a target-authority decision,
 not evidence that Stage 3 currently controls SWE or runoff. CoE remains the
 unchanged default compatibility owner on `IMPLEMENTATION_HOLD`; Stage 3
@@ -588,7 +588,7 @@ concentrated on warm or mixed days, but it did not isolate one causal
 mechanism. The current CoE melt implementation
 matches the pinned post-2007 baseline while lacking a sufficient independent
 validation envelope for its material changes. Stage 3 is therefore admitted as
-the future sole melt owner under v7/v126, while CoE remains the byte-identical
+the future sole melt owner under v7/v127, while CoE remains the byte-identical
 current compatibility runtime on implementation hold. This authority decision
 does not establish Stage 3 efficacy, noninferiority, transferability, or
 production readiness.
@@ -657,7 +657,9 @@ This report is production-domain V2 source version 1.0.0. It synthesizes named
 historical evidence at the source identities listed in its supplement, was
 assembled at openWEPP Git `47c2cf9eae6eef95f0f670d157d2d31df4cbf9cc`, and
 was refreshed on 2026-08-05 against campaign increments 21K-21N and canonical
-v7/v126 authority.
+v7/v127 authority. Version 127 also admits two tagged, default-off,
+consumer-forbidden evaluation operators without authorizing persistence,
+production mutation, or cutover.
 Codex drafted the report and deterministic reconstruction procedure. The
 current attribution and governance status below are generated from the
 principal registry, report descriptor, and review lock.

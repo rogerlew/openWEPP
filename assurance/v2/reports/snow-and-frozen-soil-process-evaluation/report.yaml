@@ -29,7 +29,7 @@ agent_assistance:
   title: ASSURE-06 disclosed agent assistance
   owner: openWEPP assurance steward
   procedure_version: assure06-snow-frost-synthesis-authority-refresh-v2
-  objective: Preserve the deterministic snow/frost result while refreshing its claim limits and implementation currency against v7/v126 and campaign increments 21K-21N.
+  objective: Preserve the deterministic snow/frost result while refreshing its claim limits and implementation currency against v7/v127 and campaign increments 21K-21N plus the evaluation-shadow authority amendment.
   tool_model_identity: OpenAI Codex based on GPT-5; hidden runtime and sampling configuration are not exposed to the repository.
   input_dependency_ids:
   - SF-DEP-CONTRACT
@@ -1155,7 +1155,7 @@ claims:
 - id: SF-P05
   title: Snowmelt authority and implementation currency
   owner: openWEPP snow-process owner
-  statement: Canonical v7/v126 authority admits Stage 3 as the future sole melt owner, while the byte-identical post-2007 CoE generator remains the current compatibility runtime under an atomic implementation hold.
+  statement: Canonical v7/v127 authority admits Stage 3 as the future sole melt owner and two non-authoritative evaluation operators, while the byte-identical post-2007 CoE generator remains the current compatibility runtime under an atomic implementation hold.
   claim_type: science_authority_and_implementation_currency
   scope_limit: This authority decision does not establish empirical efficacy, noninferiority, causation, a default change, runtime cutover, release transfer, or warm-maritime conifer transferability.
   method_ids:
@@ -3150,7 +3150,7 @@ references:
   title: SC-SNOWFREEZE-001
   owner: openWEPP science-contract maintainers
   citation: openWEPP snow and frozen-soil process, evaluation, and production-obligation science contract.
-  immutable_identity: openwepp:SC-SNOWFREEZE-001:v126
+  immutable_identity: openwepp:SC-SNOWFREEZE-001:v127
   access: public_repository
   license: repository_license
   dependency_id: SF-DEP-CONTRACT

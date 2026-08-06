@@ -40,7 +40,7 @@
   AUTHORITY RETURNED: refreshed the snow/frost flagship against campaign
   increments 21K-21N and preserved the current CoE compatibility runtime versus
   future Stage 3 ownership. The typed return invalidated active review custody;
-  contract-v8 adoption now binds generation `910ab3d3`. No review, approval, or
+  the later v127 evaluation-shadow refresh now binds generation `34f2f80e`. No review, approval, or
   publication authority is active.
 
 - `20260804-snow-warm-mixed-coe-physics-authority-audit-001/` — COMPLETE /

@@ -34,7 +34,7 @@ publication requires a separate release transfer to an exact approved source
 and release configuration.
 
 The 2026-08-05 authority refresh binds the report to
-`SC-SNOWENERGY-001` v7, `SC-SNOWFREEZE-001` v126, and the terminal dispositions
+`SC-SNOWENERGY-001` v7, `SC-SNOWFREEZE-001` v127, and the terminal dispositions
 of campaign increments 21K-21N. It does not replace the retained empirical
 result with the later diagnostic populations. The retained ten-surface result
 still describes its named historical realization; the later evidence changes
@@ -49,7 +49,7 @@ currency and interpretation, not those 188 stored values.
 | Post-partition residual decomposition | `0225ff80580ef352b2b91720da947f7f16f909a48827fb47e6c207da5b4e8875` | Signed snow residuals and process-family diagnosis |
 | Non-SNOTEL frozen-soil baseline | `b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930` | Frost-tube, isotherm, and paired snow-control metrics |
 | Integrated conservation and consumer evidence | `306b96a1d45fca85d5604b16fe8ce4b814df48d2fc15ecb910e198085ee81f18` | Independently reconstructed production WAT ledgers |
-| Snow/frost science contract | generated identity lock | v126 formulation, units, obligations, current defaults, and Stage 3 ownership seam |
+| Snow/frost science contract | generated identity lock | v127 formulation, units, obligations, current defaults, Stage 3 ownership seam, and evaluation-only shadow authority |
 | Snow-energy science contract | generated identity lock | v7 surface-energy and future sole-melt-owner authority |
 | 21K wet-compaction disposition and public-safe extract | generated identity lock | Corrected exact operand lineage and causal-attribution reset |
 | 21L warm/mixed disposition and public-safe extract | generated identity lock | Multifactor, chronology-confounded corrected-state signal |
@@ -261,7 +261,7 @@ authorize publication.
 | --- | --- | --- | --- |
 | SF-P01 precipitation phase | Jennings result; activation trace; Harder-Pomeroy authority | Retrospective observed classification, humidity pattern, active selector, partition closure | Untouched held-out validation, precipitation amount, snowpack accuracy |
 | SF-P02 seasonal snowpack | Current-default profile; residual decomposition; admitted SNOTEL/canopy observations | Cross-regime response profile and named residual families | Universal score, forcing-independent magnitude accuracy, untested-site fitness |
-| SF-P05 authority and implementation currency | v7/v126 contracts; identity-bound 21K-21N dispositions and public-safe extracts | Corrected operand authority, current CoE compatibility ownership, future Stage 3 sole ownership, and implementation hold | Empirical efficacy, noninferiority, default change, runtime cutover, causation, or warm-maritime conifer transfer |
+| SF-P05 authority and implementation currency | v7/v127 contracts; identity-bound 21K-21N dispositions and public-safe extracts | Corrected operand authority, current CoE compatibility ownership, future Stage 3 sole ownership, evaluation-only shadow authority, and implementation hold | Empirical efficacy, noninferiority, default change, runtime cutover, causation, or warm-maritime conifer transfer |
 | SF-P03 frozen-soil response | Non-SNOTEL baseline; observation manifests | Method-specific coupled residuals and snow-control status | Isolated frost-physics error or transferable frost-depth accuracy |
 | SF-P04 production verification | Activation trace; integrated WAT reconstruction | Selected real consumer and water-accounting identities | Empirical predictive accuracy |
 
@@ -286,6 +286,6 @@ fitness. The current structured attribution and lifecycle projections are:
 
 | Version | Date | Change |
 | --- | --- | --- |
-| 1.0 authority refresh | 2026-08-05 | Bound v7/v126 and 21K-21N, separated current CoE implementation from future Stage 3 authority, and retained the unchanged 188-value empirical result and human-review boundary. |
+| 1.0 authority refresh | 2026-08-06 | Bound v7/v127, 21K-21N, and evaluation-shadow authority; separated current CoE implementation from future Stage 3 authority; and retained the unchanged 188-value empirical result and human-review boundary. |
 | 1.0 review entry | 2026-07-16 | Recorded Roger Lew as report lead and material producer; entered independent human review without changing scientific claims, methods, results, tables, or figures. |
 | 1.0 draft | 2026-07-16 | First manuscript-first synthesis of the retained phase, seasonal snowpack, frozen-soil, and conservation evidence. |

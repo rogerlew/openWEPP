@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "packet_id": "SF-AGENT-PACKET-ASSURE06-AUTHORITY-REFRESH",
-  "objective": "Preserve the deterministic snow/frost result while refreshing claim limits and implementation currency against v7/v126 and campaign increments 21K-21N without assigning human approval or application fitness.",
+  "objective": "Preserve the deterministic snow/frost result while refreshing claim limits and implementation currency against v7/v127, campaign increments 21K-21N, and evaluation-shadow authority without assigning human review, approval, or application fitness.",
   "tool": "OpenAI Codex",
   "model_disclosure": "Codex based on GPT-5; hidden runtime and sampling configuration are unavailable to the repository",
   "role": "evidence synthesizer, draft author, and mechanical analysis implementer; not a human scientific or publication approver",
