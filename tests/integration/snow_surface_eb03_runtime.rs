@@ -111,7 +111,6 @@ fn inputs(
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
             complete_carrier_shadow: false,
-            stage3_evaluation_operator: None,
         },
         sturm_climate_class: None,
         sturm_day_of_year: None,
@@ -735,18 +734,16 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    let mut shadow_inputs = authoritative_inputs.clone();
-    shadow_inputs
-        .surface_energy_options
-        .stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
+    let shadow_inputs = authoritative_inputs.clone();
 
     let authoritative =
         Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&authoritative_inputs)
             .expect("authoritative compatibility result");
-    let shadow =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&shadow_inputs)
-            .expect("complete carrier shadow result");
+    let shadow = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &shadow_inputs,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect("complete carrier shadow result");
 
     assert_eq!(
         shadow.runtime_swe_after_m.to_bits(),
@@ -818,19 +815,19 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
 
 #[test]
 fn same_state_pair_has_identical_support_and_reconstructable_named_arms() {
-    let mut candidate = inputs(
+    let candidate = inputs(
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    candidate.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
-    let mut baseline = candidate.clone();
-    baseline.surface_energy_options.stage3_evaluation_operator = None;
+    let baseline = candidate.clone();
 
     let expected = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&baseline)
         .expect("paired baseline");
-    let observed = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
-        .expect("same-state pair");
+    let observed = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &candidate,
+        SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+    )
+    .expect("same-state pair");
     assert_eq!(
         observed.runtime_swe_after_m.to_bits(),
         expected.runtime_swe_after_m.to_bits()
@@ -899,8 +896,6 @@ fn complete_carrier_converts_geometric_snowfall_to_water_mass_once() {
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    candidate.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
     candidate.hyetograph_rainfall_m = 0.001;
     candidate.hourly[0] = DirectSnowHourlyForcing {
         active_precipitation_m: 0.001,
@@ -911,8 +906,11 @@ fn complete_carrier_converts_geometric_snowfall_to_water_mass_once() {
         ..DirectSnowHourlyForcing::zero()
     };
 
-    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
-        .expect("snowfall advected-heat shadow");
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &candidate,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect("snowfall advected-heat shadow");
     let hour = &stage3_diagnostics(&result).hourly_surface_energy[0];
     let snow_specific_heat_j_kg_k =
         4.186_798_188 * (0.024_928 + 0.001_76 * (-5.0 + 273.16)) / 0.001;
@@ -928,8 +926,6 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    cold.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
     set_single_layer_mass(&mut cold, 0.50, -50.0);
     cold.tmax_c = -50.0;
     cold.tmin_c = -50.0;
@@ -940,8 +936,11 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         air_temperature_c: -50.0,
         ..DirectSnowHourlyForcing::zero()
     }; 24];
-    let cold_result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&cold)
-        .expect("cold-content shadow");
+    let cold_result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &cold,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect("cold-content shadow");
     let cold_diagnostics = stage3_diagnostics(&cold_result);
     assert!(
         cold_diagnostics.shadow_melt_kg_m2 <= 1.0e-9,
@@ -954,8 +953,6 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    terminal.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
     set_single_layer_mass(&mut terminal, 0.001_1, 0.0);
     terminal.surface_energy_options.daily_solar_radiation_mj_m2 = 48.0;
     terminal.hourly = [DirectSnowHourlyForcing {
@@ -963,16 +960,16 @@ fn sequential_shadow_gates_melt_on_cold_content_and_records_terminal_energy() {
         air_temperature_c: 0.0,
         ..DirectSnowHourlyForcing::zero()
     }; 24];
-    let mut terminal_baseline = terminal.clone();
-    terminal_baseline
-        .surface_energy_options
-        .stage3_evaluation_operator = None;
+    let terminal_baseline = terminal.clone();
     let baseline_result =
         Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&terminal_baseline)
             .expect("terminal-energy authoritative baseline");
     let terminal_result =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&terminal)
-            .expect("terminal-energy shadow");
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+            &terminal,
+            SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+        )
+        .expect("terminal-energy shadow");
     let terminal_diagnostics = stage3_diagnostics(&terminal_result);
     assert!(terminal_diagnostics.shadow_melt_kg_m2 > 0.0);
     assert!(terminal_diagnostics.shadow_unallocated_after_exhaustion_j_m2 > 0.0);
@@ -1020,8 +1017,6 @@ fn filtered_capture_skips_evaluation_primitives_and_preserves_authoritative_resu
         SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
         SnowSurfaceSublimationModel::Disabled,
     );
-    candidate.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
     candidate
         .surface_energy_options
         .turbulent_geometry
@@ -1030,19 +1025,20 @@ fn filtered_capture_skips_evaluation_primitives_and_preserves_authoritative_resu
         .surface_energy_options
         .turbulent_geometry
         .aerodynamic_roughness_length_m = 0.005;
-    let mut baseline = candidate.clone();
-    baseline.surface_energy_options.stage3_evaluation_operator = None;
+    let baseline = candidate.clone();
 
     let expected = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
         &baseline,
         DirectSnowDiagnosticCapture::Disabled,
     )
     .expect("filtered authoritative baseline");
-    let observed = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
-        &candidate,
-        DirectSnowDiagnosticCapture::Disabled,
-    )
-    .expect("filtered request must not execute invalid evaluation geometry");
+    let observed =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+            &candidate,
+            DirectSnowDiagnosticCapture::Disabled,
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
+        )
+        .expect("filtered request must not execute invalid evaluation geometry");
     assert_eq!(observed, expected);
     assert!(observed.verbose_diagnostics.is_none());
 }
@@ -1059,10 +1055,11 @@ fn selected_evaluator_on_empty_pack_emits_tagged_zero_coverage() {
     candidate.coe_boundary_depth_m = 0.0;
     candidate.coe_boundary_density_kg_m3 = 0.0;
     candidate.snow_layers.clear();
-    candidate.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
-    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
-        .expect("empty-pack evaluation row");
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &candidate,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect("empty-pack evaluation row");
     let diagnostics = stage3_diagnostics(&result);
     let evaluation = diagnostics
         .evaluation
@@ -1087,26 +1084,34 @@ fn legacy_complete_carrier_field_remains_source_and_behavior_compatible() {
         SnowSurfaceSublimationModel::Disabled,
     );
     legacy.surface_energy_options.complete_carrier_shadow = true;
-    let mut typed = legacy.clone();
+    let typed = legacy.clone();
+    let mut typed = typed;
     typed.surface_energy_options.complete_carrier_shadow = false;
-    typed.surface_energy_options.stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
     assert_eq!(
         Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&legacy)
             .expect("legacy complete-carrier request"),
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&typed)
-            .expect("typed sequential request")
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+            &typed,
+            SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+        )
+        .expect("typed sequential request")
     );
+    let conflict = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &legacy,
+        SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+    )
+    .expect_err("legacy sequential plus explicit paired request must conflict");
+    assert!(conflict.to_string().contains("evaluation_request_conflict"));
 }
 
 #[test]
 fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
-    fn fingerprint(mut candidate: DirectActiveSnowPartitionInputs, label: &str) -> u64 {
-        candidate.surface_energy_options.stage3_evaluation_operator =
-            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
-        let result =
-            Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
-                .unwrap_or_else(|error| panic!("paired fingerprint candidate {label}: {error}"));
+    fn fingerprint(candidate: DirectActiveSnowPartitionInputs, label: &str) -> u64 {
+        let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+            &candidate,
+            SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+        )
+        .unwrap_or_else(|error| panic!("paired fingerprint candidate {label}: {error}"));
         let evaluation = stage3_diagnostics(&result)
             .evaluation
             .expect("paired fingerprint metadata");
@@ -1164,17 +1169,15 @@ fn paired_non_formulation_fingerprint_covers_material_shared_inputs() {
 
 #[test]
 fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
-    let mut missing_longwave = inputs(
+    let missing_longwave = inputs(
         SnowSurfaceLongwaveModel::Disabled,
         SnowSurfaceSublimationModel::Disabled,
     );
-    missing_longwave
-        .surface_energy_options
-        .stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
-    let error =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&missing_longwave)
-            .expect_err("complete shadow requires net longwave");
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &missing_longwave,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect_err("complete shadow requires net longwave");
     assert!(
         error
             .to_string()
@@ -1187,15 +1190,13 @@ fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
     );
     invalid_geometry
         .surface_energy_options
-        .stage3_evaluation_operator =
-        Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1);
-    invalid_geometry
-        .surface_energy_options
         .turbulent_geometry
         .wind_speed_height_m = 0.0;
-    let error =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&invalid_geometry)
-            .expect_err("invalid virtual instrument geometry must fail closed");
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &invalid_geometry,
+        SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+    )
+    .expect_err("invalid virtual instrument geometry must fail closed");
     assert!(error.to_string().contains("wind_speed_height_m"));
 
     let mut primitive_failure = inputs(
@@ -1204,18 +1205,17 @@ fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
     );
     primitive_failure
         .surface_energy_options
-        .stage3_evaluation_operator = Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1);
-    primitive_failure
-        .surface_energy_options
         .turbulent_geometry
         .wind_speed_height_m = 0.001;
     primitive_failure
         .surface_energy_options
         .turbulent_geometry
         .aerodynamic_roughness_length_m = 0.005;
-    let error =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&primitive_failure)
-            .expect_err("primitive geometry violation must retain its meteorology source");
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+        &primitive_failure,
+        SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+    )
+    .expect_err("primitive geometry violation must retain its meteorology source");
     match error {
         openwepp_hillslope_orchestrator::Wb11HydrologyKernelGuardError::SnowStage3TurbulentTransfer(
             snapshot,

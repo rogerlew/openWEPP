@@ -372,7 +372,6 @@ impl DirectProductionSnowFrostAuthority {
             turbulent_geometry:
                 openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
             complete_carrier_shadow: false,
-            stage3_evaluation_operator: self.snow_stage3_evaluation_operator,
         }
     }
 
@@ -479,9 +478,10 @@ impl DirectProductionSnowFrostAuthority {
             underlying_surface_albedo: 0.2,
             hourly: snow_hourly,
         };
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
             &partition_inputs,
             capture,
+            self.snow_stage3_evaluation_operator,
         )
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",

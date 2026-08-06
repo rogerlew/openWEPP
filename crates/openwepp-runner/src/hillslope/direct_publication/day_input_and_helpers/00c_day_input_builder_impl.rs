@@ -1634,7 +1634,7 @@ mod stage3_trace_field_tests {
             operator: SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
             source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
             support_id: "stage3_daily_24_hour_support_v1",
-            cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
+            cadence_id: "stage3_fixed_hourly_immutable_snapshot_v1",
             carrier_id: "stage3_carrier_pair_v1",
             coverage_id: "evaluated_seconds_over_requested_seconds_v1",
             claim_class: "carrier_component_comparison",

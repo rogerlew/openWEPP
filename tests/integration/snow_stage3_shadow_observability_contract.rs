@@ -85,7 +85,9 @@ fn lifecycle_index_and_package_name_the_same_realization() {
 #[test]
 fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
     let support = read(SUPPORT);
-    let solver = format!("{}\n{}", read(SOLVER), read(SOLVER_PARENT));
+    let solver_core = read(SOLVER);
+    let solver_parent = read(SOLVER_PARENT);
+    let solver = format!("{solver_core}\n{solver_parent}");
     let evaluation = read(EVALUATION);
     let errors = read(ERRORS);
 
@@ -93,14 +95,19 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
         "pub enum SnowStage3EvaluationOperator",
         "SameStatePairedCarrierV1",
         "SequentialResolvedShadowV1",
-        "pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>",
         "pub complete_carrier_shadow: bool",
         "pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>",
     ] {
         assert!(support.contains(required), "{SUPPORT} missing {required}");
     }
+    assert!(
+        !support.contains("pub stage3_evaluation_operator:"),
+        "legacy public options record must remain exact"
+    );
     for required in [
         "struct Stage3EvaluationTag",
+        "pub fn compute_direct_snow_liquid_partition_with_evaluation",
+        "pub fn compute_direct_snow_liquid_partition_with_capture_and_evaluation",
         "coverage_id: \"evaluated_seconds_over_requested_seconds_v1\"",
         "evaluate_stage3_same_state_paired_carrier",
         "evaluate_stage3_sequential_melt_shadow",
@@ -131,7 +138,8 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
         );
     }
     assert!(errors.contains("SnowStage3TurbulentTransfer"));
-    assert!(solver.lines().count() < 3_000);
+    assert!(solver_core.lines().count() < 3_000);
+    assert!(solver_parent.lines().count() < 3_000);
     assert!(evaluation.lines().count() < 3_000);
 }
 

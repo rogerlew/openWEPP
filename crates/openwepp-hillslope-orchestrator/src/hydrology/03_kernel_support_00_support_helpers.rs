@@ -347,7 +347,6 @@ pub struct DirectSnowSurfaceEnergyOptions {
     pub turbulent_geometry: DirectSnowTurbulentGeometry,
     /// Backward-compatible spelling for the sequential complete-carrier shadow.
     pub complete_carrier_shadow: bool,
-    pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>,
 }
 
 impl Default for DirectSnowSurfaceEnergyOptions {
@@ -361,7 +360,6 @@ impl Default for DirectSnowSurfaceEnergyOptions {
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
             complete_carrier_shadow: false,
-            stage3_evaluation_operator: None,
         }
     }
 }

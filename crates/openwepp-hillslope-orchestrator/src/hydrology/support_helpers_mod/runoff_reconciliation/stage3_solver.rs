@@ -12,12 +12,17 @@ impl Wb11HydrologyKernel {
         aggregate: Stage3AggregateState,
         layers: &mut Vec<DirectSnowLayerState>,
         capture: DirectSnowDiagnosticCapture,
+        evaluation_operator: Option<SnowStage3EvaluationOperator>,
     ) -> Result<DirectSnowStage3Resolution, Wb11HydrologyKernelGuardError> {
         if !Self::stage3_liquid_routing_enabled(phase_class, inputs, incoming_liquid_m)? {
             return Ok(DirectSnowStage3Resolution::disabled(capture));
         }
         let evaluation_tag = if capture.is_verbose() {
-            Self::stage3_evaluation_operator(phase_class, inputs)?
+            Self::stage3_evaluation_operator(
+                phase_class,
+                inputs.surface_energy_options.complete_carrier_shadow,
+                evaluation_operator,
+            )?
                 .map(|operator| {
                     let tag = Stage3EvaluationTag::new(operator);
                     Self::validate_stage3_evaluation_tag(phase_class, tag)?;
@@ -622,12 +627,10 @@ impl Wb11HydrologyKernel {
 
     fn stage3_evaluation_operator(
         phase_class: HillslopeKernelPhaseClass,
-        inputs: &DirectActiveSnowPartitionInputs,
+        complete_carrier_shadow: bool,
+        evaluation_operator: Option<SnowStage3EvaluationOperator>,
     ) -> Result<Option<SnowStage3EvaluationOperator>, Wb11HydrologyKernelGuardError> {
-        match (
-            inputs.surface_energy_options.complete_carrier_shadow,
-            inputs.surface_energy_options.stage3_evaluation_operator,
-        ) {
+        match (complete_carrier_shadow, evaluation_operator) {
             (false, operator) => Ok(operator),
             (true, None | Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)) => {
                 Ok(Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1))
@@ -1748,4 +1751,54 @@ impl Wb11HydrologyKernel {
         }
     }
 
+}
+
+#[cfg(test)]
+mod stage3_evaluation_validation_tests {
+    use super::*;
+
+    #[test]
+    fn paired_arm_fingerprint_mismatch_fails_closed() {
+        let tag = Stage3EvaluationTag::new(
+            SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+        );
+        let mut summary = Stage3ShadowSummary::new(tag);
+        summary.source_fingerprint = 1;
+        summary.forcing_fingerprint = 2;
+        summary.geometry_fingerprint = 3;
+        summary.non_formulation_fingerprint = 4;
+        summary.surface_arm_non_formulation_fingerprint = 5;
+        summary.complete_arm_non_formulation_fingerprint = 6;
+        summary.evaluated_seconds = summary.requested_seconds;
+        for hour in &mut summary.hourly {
+            hour.shadow_requested_seconds = STAGE3_SECONDS_PER_HOUR;
+            hour.shadow_evaluated_seconds = STAGE3_SECONDS_PER_HOUR;
+        }
+
+        let error = Wb11HydrologyKernel::validate_stage3_shadow_summary(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            &summary,
+        )
+        .expect_err("paired fingerprint mismatch must fail");
+        assert!(
+            error
+                .to_string()
+                .contains("stage3_evaluation_paired_fingerprint_equality")
+        );
+    }
+
+    #[test]
+    fn operator_tags_have_exact_distinct_cadence() {
+        let paired = Stage3EvaluationTag::new(
+            SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+        );
+        let sequential = Stage3EvaluationTag::new(
+            SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
+        );
+        assert_eq!(paired.cadence_id, "stage3_fixed_hourly_immutable_snapshot_v1");
+        assert_eq!(
+            sequential.cadence_id,
+            "stage3_dynamic_substep_with_hourly_forcing_v1"
+        );
+    }
 }

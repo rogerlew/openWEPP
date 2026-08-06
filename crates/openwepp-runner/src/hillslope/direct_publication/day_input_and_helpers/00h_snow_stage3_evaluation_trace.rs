@@ -229,13 +229,25 @@ mod stage3_evaluation_real_consumer_tests {
     use super::*;
     use openwepp_hillslope_orchestrator::{
         DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
-        DirectSnowLayerState, DirectSnowSurfaceEnergyOptions, DirectSnowTurbulentGeometry,
+        DirectSnowLayerState, DirectSnowLiquidPartition, DirectSnowSurfaceEnergyOptions,
+        DirectSnowTurbulentGeometry,
         SnowDensityModel, SnowMeltModel, SnowPhasePartitionModel, SnowStage3EvaluationOperator,
         SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel,
         Wb11HydrologyKernel,
     };
 
     const LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
+
+    fn poison_production_diagnostics(partition: &mut DirectSnowLiquidPartition) {
+        let verbose = partition
+            .verbose_diagnostics
+            .as_mut()
+            .expect("verbose solver diagnostics");
+        verbose.stage3.shortwave_energy_j_m2 = 9.91e12;
+        verbose.stage3.surface_energy_j_m2 = 9.92e12;
+        verbose.stage3.energy_closure_residual_j_m2 = 9.93e12;
+        verbose.stage3.hourly_surface_energy[0].net_shortwave_w_m2 = 9.94e12;
+    }
 
     fn solver_row(
         operator: Option<SnowStage3EvaluationOperator>,
@@ -282,7 +294,6 @@ mod stage3_evaluation_real_consumer_tests {
                 atmospheric_pressure_pa: 101_324.6,
                 turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
                 complete_carrier_shadow: false,
-                stage3_evaluation_operator: operator,
             },
             sturm_climate_class: None,
             sturm_day_of_year: None,
@@ -295,20 +306,14 @@ mod stage3_evaluation_real_consumer_tests {
             underlying_surface_albedo: 0.2,
             hourly,
         };
-        let mut partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-            &inputs,
-        )
-        .expect("solver-produced evaluation partition");
-        {
-            let verbose = partition
-                .verbose_diagnostics
-                .as_mut()
-                .expect("verbose solver diagnostics");
-            verbose.stage3.shortwave_energy_j_m2 = 9.91e12;
-            verbose.stage3.surface_energy_j_m2 = 9.92e12;
-            verbose.stage3.energy_closure_residual_j_m2 = 9.93e12;
-            verbose.stage3.hourly_surface_energy[0].net_shortwave_w_m2 = 9.94e12;
+        let mut partition = match operator {
+            Some(operator) => Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
+                &inputs, operator,
+            ),
+            None => Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs),
         }
+        .expect("solver-produced evaluation partition");
+        poison_production_diagnostics(&mut partition);
 
         let mut lane = DirectSnowLaneState::from_runtime_values(
             mass_swe_m,

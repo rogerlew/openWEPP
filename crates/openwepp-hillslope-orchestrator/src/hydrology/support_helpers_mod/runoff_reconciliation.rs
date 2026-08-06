@@ -154,7 +154,11 @@ impl Stage3EvaluationTag {
             operator,
             source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
             support_id: "stage3_daily_24_hour_support_v1",
-            cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
+            cadence_id: if paired {
+                "stage3_fixed_hourly_immutable_snapshot_v1"
+            } else {
+                "stage3_dynamic_substep_with_hourly_forcing_v1"
+            },
             carrier_id: if paired {
                 "stage3_carrier_pair_v1"
             } else {
@@ -435,6 +439,32 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveSnowPartitionInputs,
         capture: DirectSnowDiagnosticCapture,
     ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+        Self::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+            inputs, capture, None,
+        )
+    }
+
+    /// Computes a verbose authoritative result plus one bounded evaluation
+    /// operator without changing the legacy options record or default entry point.
+    pub fn compute_direct_snow_liquid_partition_with_evaluation(
+        inputs: &DirectActiveSnowPartitionInputs,
+        operator: SnowStage3EvaluationOperator,
+    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+        Self::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+            inputs,
+            DirectSnowDiagnosticCapture::Verbose,
+            Some(operator),
+        )
+    }
+
+    /// Computes the authoritative result with an additive, evaluator-only
+    /// request used by the selected internal trace consumer.
+    #[allow(clippy::too_many_lines)]
+    pub fn compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+        inputs: &DirectActiveSnowPartitionInputs,
+        capture: DirectSnowDiagnosticCapture,
+        evaluation_operator: Option<SnowStage3EvaluationOperator>,
+    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
         Self::require_direct_typed_snow_value_with(
             phase_class,
@@ -477,6 +507,7 @@ impl Wb11HydrologyKernel {
             },
             &mut snow_layers_after,
             capture,
+            evaluation_operator,
         )?;
         snow_layers_after
             .retain(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
