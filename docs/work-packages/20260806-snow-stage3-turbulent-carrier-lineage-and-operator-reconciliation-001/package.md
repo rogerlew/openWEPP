@@ -160,6 +160,9 @@ operands, stability solution, or state endpoints required to separate them.
 - `tools/release/check_assurance_dossier_exports.sh` for a narrowly bounded
   release-guard correction if the canonical closure gate still misclassifies
   the already-governed `usersum/assurance/review-drafts/**` lane as public;
+- generated human-review custody selected by the canonical review-draft
+  renderer: `usersum/assurance/review-drafts/README.md` and
+  `usersum/assurance/review-drafts/snow-and-frozen-soil-process-evaluation/1.0.0/**`;
 - `docs/work-packages/README.md`, `docs/ROADMAP.md`, and
   `docs/planning/snow-surface-energy-balance-roadmap.md`;
 - retained rejected-v1 evidence under the ignored
@@ -507,6 +510,9 @@ verifications, roadmap/catalog disposition, and stable local commits.
   exactly `usersum/assurance/review-drafts/**`, continues to require the sole
   public README plus zero export documents and disabled vendoring, and passes
   without weakening DRAFT/publication separation.
+- Canonical review-draft rendering is drift-free after source adoption; only
+  generated review inputs change, and their labels remain DRAFT/nonpublic with
+  no review, approval, release, or publication authority.
 - Every required current-scope gate has direct current evidence. An unmet gate
   cannot be renamed future scope; the package remains HOLD if it cannot close.
 - Exact terminal diff matches this declared intent and write set.
@@ -654,6 +660,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
   tracked, explicitly nonpublic `review-drafts/**` lane as public. Prospectively
   amend the write set for that one guard before correction; retain its sole
   public README, zero-document, and vendoring-disabled checks unchanged.
+- [x] Independent Rust/custody review then found the tracked snow human-review
+  rendering stale against v129 despite the corrected export guard. Prospectively
+  admit only the generated review index and snow report subtree before invoking
+  the canonical renderer; require exact `--check` closure afterward.
 
 ## Surprises & Discoveries
 
