@@ -400,23 +400,8 @@ fn report_lead_can_return_pending_review_to_draft_without_erasing_history() {
     let review_lock_path = fixture
         .path
         .join(format!("assurance/v2/reports/{SNOW}/review.lock.json"));
-    let prior_lock: serde_json::Value =
-        serde_json::from_slice(&fs::read(&review_lock_path).unwrap()).unwrap();
-    let prior_event_ids = prior_lock["event_ids"].as_array().unwrap().clone();
-    assert!(!prior_event_ids.is_empty());
-    let prior_event_bytes = prior_event_ids
-        .iter()
-        .map(|id| {
-            let id = id.as_str().unwrap();
-            (
-                id.to_owned(),
-                fs::read(fixture.path.join(format!(
-                    "assurance/v2/reports/{SNOW}/review-events/{id}.json"
-                )))
-                .unwrap(),
-            )
-        })
-        .collect::<Vec<_>>();
+    let (prior_event_ids, prior_event_bytes) =
+        capture_snow_review_history(&fixture, &review_lock_path);
     let missing_predecessors = br"schema_version: 1
 event_type: return_to_draft
 principal_id: roger-lew
@@ -454,6 +439,55 @@ predecessor_event_ids: []
     let inspection = inspect_report(&fixture.path, SNOW).unwrap();
     assert_eq!(inspection.lifecycle, "DRAFT");
     assert!(inspection.approval_lock_root.is_none());
+    assert_snow_report_returned_to_draft(&fixture);
+    let event_path = returned_to_draft_event_path(&fixture, &applied.affected_paths);
+    assert_return_event_preserves_review_history(
+        &fixture,
+        &review_lock_path,
+        &event_path,
+        &prior_event_ids,
+        prior_event_bytes,
+    );
+    assert_schema_accepts(
+        &fixture
+            .path
+            .join("assurance/v2/schemas/review-event.schema.json"),
+        &event_path,
+    );
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_all()
+        .unwrap();
+    let repeated =
+        amend_lifecycle(&fixture.path, SNOW, request.as_bytes(), V2AmendMode::Apply).unwrap();
+    assert!(!repeated.changed);
+}
+
+fn capture_snow_review_history(
+    fixture: &Scratch,
+    review_lock_path: &Path,
+) -> (Vec<serde_json::Value>, Vec<(String, Vec<u8>)>) {
+    let prior_lock: serde_json::Value =
+        serde_json::from_slice(&fs::read(review_lock_path).unwrap()).unwrap();
+    let prior_event_ids = prior_lock["event_ids"].as_array().unwrap().clone();
+    assert!(!prior_event_ids.is_empty());
+    let prior_event_bytes = prior_event_ids
+        .iter()
+        .map(|id| {
+            let id = id.as_str().unwrap();
+            (
+                id.to_owned(),
+                fs::read(fixture.path.join(format!(
+                    "assurance/v2/reports/{SNOW}/review-events/{id}.json"
+                )))
+                .unwrap(),
+            )
+        })
+        .collect();
+    (prior_event_ids, prior_event_bytes)
+}
+
+fn assert_snow_report_returned_to_draft(fixture: &Scratch) {
     let report: serde_yaml::Value = serde_yaml::from_slice(
         &fs::read(
             fixture
@@ -488,21 +522,31 @@ predecessor_event_ids: []
         Some(false)
     );
     assert!(report["authorship"]["scientific_approver"].is_null());
+}
+
+fn returned_to_draft_event_path(fixture: &Scratch, affected_paths: &[String]) -> PathBuf {
     assert!(
-        applied
-            .affected_paths
+        affected_paths
             .iter()
             .any(|path| path.contains("review-events")),
         "the immutable return event must be retained"
     );
-    let review_lock: serde_json::Value =
-        serde_json::from_slice(&fs::read(&review_lock_path).unwrap()).unwrap();
-    let event_path = applied
-        .affected_paths
+    affected_paths
         .iter()
         .find(|path| path.contains("review-events"))
         .map(|path| fixture.path.join(path))
-        .unwrap();
+        .unwrap()
+}
+
+fn assert_return_event_preserves_review_history(
+    fixture: &Scratch,
+    review_lock_path: &Path,
+    event_path: &Path,
+    prior_event_ids: &[serde_json::Value],
+    prior_event_bytes: Vec<(String, Vec<u8>)>,
+) {
+    let review_lock: serde_json::Value =
+        serde_json::from_slice(&fs::read(review_lock_path).unwrap()).unwrap();
     let return_event_id = event_path.file_stem().unwrap().to_str().unwrap();
     assert_eq!(
         review_lock["event_ids"].as_array().unwrap(),
@@ -522,19 +566,6 @@ predecessor_event_ids: []
         .unwrap();
         assert_eq!(before, after, "prior event bytes must remain immutable");
     }
-    assert_schema_accepts(
-        &fixture
-            .path
-            .join("assurance/v2/schemas/review-event.schema.json"),
-        &event_path,
-    );
-    openwepp_assurance::V2Repository::open(&fixture.path)
-        .unwrap()
-        .validate_all()
-        .unwrap();
-    let repeated =
-        amend_lifecycle(&fixture.path, SNOW, request.as_bytes(), V2AmendMode::Apply).unwrap();
-    assert!(!repeated.changed);
 }
 
 #[test]

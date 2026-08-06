@@ -1,6 +1,6 @@
 # Stage 3 Complete Carrier And Shadow Melt
 
-Status: `executing / prediction frozen / carrier-input authority granted`
+Status: `executed / carrier plausibility FAIL / structural and authority HOLD`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
@@ -53,10 +53,10 @@ evidence:
 
 The unused positive energy is equivalent to about `84%` of median seasonal
 snowfall. It is not a post-cutover melt forecast. It demonstrates that the
-current shortwave-dominated carrier is not physically complete. Conversion of
-today's carrier would exhaust `m_ice_available` and leave positive
-`Q_unallocated_after_exhaustion`, which is already a hard cutover hold under
-`INV-SNOWENERGY-029`.
+retained shortwave-dominated carrier was not physically complete and motivated
+the terminal-energy gate. It does not predict the complete carrier's
+`Q_unallocated_after_exhaustion`: the retained and new quantities have
+different accounting lineages.
 
 ## Scientific Freeze
 
@@ -72,6 +72,8 @@ today's carrier would exhaust `m_ice_available` and leave positive
 - `m_melt=min(Q_excess/L_f,m_ice_available)` is shadow-only in this package.
 - `Q_unallocated_after_exhaustion` must be zero for every cutover-eligible
   substep. A positive value is not discarded or proxied and blocks cutover.
+  A zero value above the unresolved thin-pack boundary proves only allocation
+  over the evaluated resolved domain; it does not close the terminal event.
 - CoE remains the sole authoritative mass-mutating melt owner throughout this
   package. Shadow Stage 3 melt cannot affect pack state, routing, public
   outputs, defaults, or downstream consumers.
@@ -197,16 +199,23 @@ may not edit tracked files or reinterpret frozen acceptance rules.
 - [x] (2026-08-05) Implemented and focused-tested an opt-in noninterfering
   complete-carrier shadow with longwave, turbulent, precipitation-advection,
   and conduction operands.
-- [ ] Reconstruct the Snowbird gate from retained operands; the supplied
-  summary is frozen but its exact retained source artifact is not present.
-- [ ] Implement and validate the complete carrier.
+- [x] Reconstructed the retained Snowbird absorbed-shortwave median as
+  `223.2500438 MJ m^-2` over the frozen 35-window support.
+- [x] Implemented and focused-tested the default-off complete carrier.
 - [x] Implemented a within-day sequential, non-mutating cold-content/melt
   shadow with explicit fusion and terminal-energy operands; persistent
   cross-day state and linked liquid disposition remain open.
 - [x] Reconstructed the real Snowbird primary windows and dispositioned the
-  seasonal carrier and terminal-energy gates as failed without tuning.
-- [ ] Evaluate chronology directions after persistent seasonal shadow state
-  and same-substep liquid disposition exist.
+  prescribed-state carrier plausibility screen as failed without tuning.
+- [x] Dispositioned resolved-domain terminal allocation as numerically closed
+  while leaving the thin-pack terminal event open and not evaluable.
+- [x] Dispositioned all four chronology predictions as not evaluable because
+  the shadow reinitializes daily from the post-CoE pack and lacks coherent
+  snowfall/liquid chronology.
+- [x] Recorded independent domain, Rust, and QA review findings and retained
+  the package in HOLD rather than claiming cutover or completion.
+- [x] Retained the `3,177`-line solver extraction as a structural successor
+  gate.
 
 ## Decision Log
 
@@ -218,20 +227,60 @@ may not edit tracked files or reinterpret frozen acceptance rules.
   Rationale: this preserves exact-one melt ownership while allowing the
   complete carrier and cold-content mechanism to be tested prospectively.
   Date/Author: 2026-08-05 / Codex.
+- Decision: close the implementation as an executed HOLD rather than extend it
+  after inspecting the Snowbird result. Rationale: the frozen carrier screen
+  failed at `+169.684 MJ m^-2`; current trace observability cannot isolate the
+  responsible term, and persistence would require additional state authority.
+  Date/Author: 2026-08-06 / Codex.
+- Decision: route evaluation-shadow authority and per-term multi-site carrier
+  observability ahead of terminal land-surface work. Rationale: a downstream
+  recipient cannot repair an upstream carrier plausibility failure.
+  Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes
 
-Pending execution.
+The user granted the missing turbulent-input authority on 2026-08-05.
+Contract version 8 defines the CLIGEN/openWEPP virtual-instrument geometry, and
+the real runner carries those typed values into a default-off complete-energy
+shadow. The shadow adds explicit net longwave, Monin-Obukhov sensible and
+latent heat, precipitation-advection, and active/lower conduction, then applies
+cold-content-first bounded fusion on cloned snow state. CoE remains the only
+authoritative melt and mass owner.
 
-Source inventory found a hard pre-implementation authority gap. The existing
-Monin-Obukhov primitive requires `z_T`, `z_q`, `z_u`, and `z_0`; the Stage 3
-runtime input has air temperature, dewpoint, wind, pressure, precipitation, and
-surface state but no measurement-height or roughness fields. Pinned libsnobal
-also treats these as required inputs rather than universal constants. Inserting
-guessed values would violate the no-surrogate-physics rule. No production code
-was edited. Carrier completion resumes after contract-bound input authority is
-selected.
+The frozen Snowbird absorbed-shortwave median was independently recovered.
+The complete-carrier prescribed-state screen then produced median seasonal
+energy of `+169.6840 MJ m^-2`, positive excess of `196.5771 MJ m^-2`, shadow
+melt of `0.5893 m` SWE, and authoritative CoE raw melt of `0.4101 m`. The
+strongly positive carrier result fails the prospective plausibility screen. It
+does not identify a defective flux term and is not a coherent post-cutover
+seasonal balance.
 
-The user granted that authority on 2026-08-05. Version 8 now defines the
-CLIGEN/openWEPP geometry explicitly, lifting this input hold without weakening
-the complete-carrier, terminal-energy, residual-snow, or exact-one-owner gates.
+Resolved evaluated substeps closed within `1.409e-9 J m^-2`, and their median
+`Q_unallocated_after_exhaustion` was numerically zero. The shadow stops before
+the unresolved `1 kg m^-2` terminal event, so residual-snow exhaustion,
+post-snow energy, and the actual terminal gate remain open. The legacy
+`unused_positive_energy` quantity and new `Q_unallocated_after_exhaustion` are
+not interchangeable.
+
+The four frozen chronology directions are not evaluable. The shadow advances
+sequentially only within each daily call, reinitializes from the post-CoE pack,
+and lacks persistent snowfall, liquid, restart, and receiving-state ownership.
+The adverse `0.5893 m` versus `0.4101 m` melt comparison is a diagnostic signal,
+not evidence that mid-winter melt increased in a coherent Stage 3 simulation.
+
+The package closes as an executed HOLD. It does not authorize persistence,
+terminal meltout, a snow-to-soil energy handoff, Stage 3 publication, CoE
+retirement, or a default change. The next result-bearing work must first add
+contract-scoped evaluation-shadow authority and shadow-specific per-term
+observability, freeze the paired-window operator, and audit all four canonical
+sites. A behavior-neutral solver extraction must also reduce
+`runoff_reconciliation.rs` below the `3,000`-line closure threshold before
+further feature work in that module.
+
+Historical execution deviations are retained rather than normalized away.
+Commits `122c88af` and `24676c6d` expanded the declared write set in the same
+increment that first edited the added paths. Contract version 8 landed at
+`478fa788`, while the source-binding integration guard remained pinned to
+version 7 until `24676c6d`. The terminal source is consistent and the current
+guard passes, but later packages must amend write sets before edits and update
+contract authority plus its binding guard in one stable increment.

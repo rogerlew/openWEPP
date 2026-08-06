@@ -20,7 +20,7 @@ use super::snow_mass_transition::{
 };
 
 const STAGE3_RHO_WATER_KG_M3: f64 = 1_000.0;
-const STAGE3_LATENT_HEAT_FUSION_J_KG: f64 = 333_550.0;
+const STAGE3_LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
 const STAGE3_SPECIFIC_HEAT_ICE_J_KG_K: f64 = 2_100.0;
 const STAGE3_DEFAULT_SNOW_ALBEDO: f64 = 0.82;
 const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
@@ -1963,8 +1963,8 @@ impl Wb11HydrologyKernel {
             // integrated exactly once.
             let rain_mass_flux =
                 hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / STAGE3_SECONDS_PER_HOUR;
-            let snow_mass_flux =
-                hourly.snowfall_m * STAGE3_RHO_WATER_KG_M3 / STAGE3_SECONDS_PER_HOUR;
+            let snow_mass_flux = hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3
+                / STAGE3_SECONDS_PER_HOUR;
             let advected = precipitation_advected_heat_flux(PrecipitationAdvectedHeatInputs {
                 rain_mass_flux: PrecipitationMassFluxKilogramsPerSquareMeterSecond::try_new(
                     rain_mass_flux,

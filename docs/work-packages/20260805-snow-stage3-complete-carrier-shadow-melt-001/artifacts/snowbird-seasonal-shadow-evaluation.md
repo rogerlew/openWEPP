@@ -45,12 +45,16 @@ residual-snow disposition.
 
 ## Gate Disposition
 
-`FAIL` — the complete-carrier seasonal plausibility prediction did not pass.
-The median remains strongly positive rather than near zero. The resolved
-terminal-energy operand is zero, but the shadow reaches the pre-existing
-unresolved thin-pack boundary instead of proving residual-snow phase
-disposition. CoE retirement and Stage 3 authoritative melt remain blocked. No
-flux, geometry, window, or threshold was tuned after inspection.
+`FAIL` — the prescribed-state, resolved-domain complete-carrier plausibility
+screen did not pass. The median remains strongly positive rather than near
+zero. This is not a coherent post-cutover seasonal energy balance because the
+shadow reinitializes daily from authoritative post-CoE state.
+
+`NOT EVALUABLE` — terminal meltout. The resolved-domain terminal-energy
+operand is zero, but the shadow reaches the pre-existing thin-pack boundary
+without localizing exhaustion or dispositioning residual snow and post-snow
+energy. CoE retirement and Stage 3 authoritative melt remain blocked. No flux,
+geometry, window, or threshold was tuned after inspection.
 
 ## Interpretation Boundary
 
@@ -64,3 +68,11 @@ cannot adjudicate the frozen peak-SWE, peak-date, midwinter-melt, or spring-rate
 directions. Persistent cross-day shadow state, hourly precipitation-to-shadow
 chronology, and same-substep liquid refreeze/retention/routing remain required
 before those predictions can be evaluated.
+
+The retained `unused_positive_energy` and the new
+`Q_unallocated_after_exhaustion` have different lineages. The former records
+positive current-carrier energy left after cold-content application without a
+bounded fusion/ice debit. The latter records complete-carrier excess after
+cold warming and bounded latent-fusion consumption over evaluated shadow
+substeps. Their numerical change cannot be interpreted as a like-for-like
+improvement.

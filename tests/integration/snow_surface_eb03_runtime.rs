@@ -779,12 +779,40 @@ fn complete_carrier_shadow_is_noninterfering_and_uses_typed_turbulence() {
         .filter(|hour| hour.shadow_complete_carrier_evaluated)
     {
         let reconstructed = hour.shadow_cold_energy_change_j_m2
-            + 333_550.0 * hour.shadow_melt_kg_m2
+            + 333_600.0 * hour.shadow_melt_kg_m2
             + hour.shadow_unallocated_after_exhaustion_j_m2;
         assert!((hour.shadow_complete_energy_j_m2 - reconstructed).abs() <= 1.0e-6);
         assert!(hour.shadow_energy_closure_residual_j_m2.abs() <= 1.0e-6);
     }
     assert!(diagnostics.shadow_maximum_energy_closure_residual_j_m2 <= 1.0e-6);
+}
+
+#[test]
+fn complete_carrier_converts_geometric_snowfall_to_water_mass_once() {
+    let mut candidate = inputs(
+        SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        SnowSurfaceSublimationModel::Disabled,
+    );
+    candidate.surface_energy_options.complete_carrier_shadow = true;
+    candidate.hyetograph_rainfall_m = 0.001;
+    candidate.hourly[0] = DirectSnowHourlyForcing {
+        active_precipitation_m: 0.001,
+        snowfall_m: 0.01,
+        air_temperature_c: -5.0,
+        snow_fraction: 1.0,
+        hydrometeor_temperature_c: Some(-5.0),
+        ..DirectSnowHourlyForcing::zero()
+    };
+
+    let result = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&candidate)
+        .expect("snowfall advected-heat shadow");
+    let hour = &stage3_diagnostics(&result).hourly_surface_energy[0];
+    let snow_specific_heat_j_kg_k =
+        4.186_798_188 * (0.024_928 + 0.001_76 * (-5.0 + 273.16)) / 0.001;
+    let expected_flux_w_m2 = snow_specific_heat_j_kg_k
+        * (0.01 * 0.1 * 1_000.0 / 3_600.0)
+        * (-5.0 - hour.surface_temperature_c);
+    assert!((hour.shadow_advected_flux_w_m2 - expected_flux_w_m2).abs() <= 1.0e-12);
 }
 
 #[test]
