@@ -1,6 +1,6 @@
 # Snow Stage 3 Four-Site Carrier-Term Audit
 
-Status: `executed / carrier screen FAIL / persistent shadow blocked / result review PASS / terminal verification pending`
+Status: `executed / carrier screen FAIL / persistent shadow blocked / review and verification PASS`
 
 Date: `2026-08-06`
 
@@ -385,7 +385,11 @@ contact external services, and never mutates source fixtures.
   four site distributions are negative and the canonical screen fails `0/3`.
 - [x] (2026-08-06) Independent science and custody reviews reproduced the
   result; all findings were corrected and fresh reviews pass.
-- [ ] Complete dual terminal verification and stable commit.
+- [x] (2026-08-06) Both independent terminal verifiers reproduced the retained
+  result and passed the exact clean closure candidate with no findings.
+- [x] (2026-08-06) Reconciled the 44-path terminal diff, archived both
+  verifier PASS reports, renewed documentation/diff gates, and prepared the
+  stable closure commit.
 
 ## Surprises & Discoveries
 

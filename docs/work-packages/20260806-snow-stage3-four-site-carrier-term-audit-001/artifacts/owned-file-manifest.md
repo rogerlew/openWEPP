@@ -1,6 +1,6 @@
 # Owned File Manifest And Write-Set Reconciliation
 
-Status: `PASS before terminal verification`
+Status: `PASS / terminal verification complete`
 
 Terminal comparison base: `cb2e6ab74b89a6a939cf954b68092df011240f2d`.
 

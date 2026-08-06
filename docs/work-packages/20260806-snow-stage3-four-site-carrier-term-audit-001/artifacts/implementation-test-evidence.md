@@ -19,8 +19,8 @@ Evidence mode: `Ran` on 2026-08-06. No production or contract source changed.
 - `markdown-doc lint --path
   docs/work-packages/20260806-snow-stage3-four-site-carrier-term-audit-001
   --path docs/work-packages/README.md --path docs/ROADMAP.md --path
-  docs/planning/snow-surface-energy-balance-roadmap.md`: exit `0`, `31` files,
-  zero errors/warnings.
+  docs/planning/snow-surface-energy-balance-roadmap.md`: renewed at terminal
+  closure, exit `0`, `40` files, zero errors/warnings.
 - `jq empty` on compact result and protocol JSON: exit `0`.
 - `git diff --check`: exit `0`.
 

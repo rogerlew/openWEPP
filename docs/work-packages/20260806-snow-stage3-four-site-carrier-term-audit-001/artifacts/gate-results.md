@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `technical gates PASS / carrier screen FAIL`
+Status: `technical, review, and verification gates PASS / carrier screen FAIL`
 
 Evidence mode: `Ran`. TESTGATE was not used.
 
@@ -21,6 +21,8 @@ are recorded in `execution-receipt.md`.
 | Literature numeric comparability | PASS | Marks and Roth numerical mappings remain `NOT_COMPARABLE` |
 | Frozen carrier screen | FAIL | canonical near-balance count `0/3` |
 | Persistent-shadow advancement | FAIL / BLOCKED | required consequence of carrier-screen failure |
+| Independent result review | PASS / PASS | all findings dispositioned; fresh science and Rust/custody reviews pass |
+| Independent terminal verification | PASS / PASS | both verifiers reproduced retained custody, reconstruction, disposition, and direct gates at `342a06ecb` |
 
 The scientific FAIL is the result, not an incomplete technical gate. It closes
 this characterization package with nonpromotion and a named next diagnostic.

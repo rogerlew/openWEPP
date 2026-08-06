@@ -9,5 +9,5 @@ Pre-result authority is frozen in `protocol-freeze.json`,
 `literature-envelope.md`, `fixture-and-forcing-custody.md`, and
 `operand-lineage.md`. The rejected v1 attempt, complete pre-result reviews,
 compact v2 result, execution receipt, reconstruction, interpretation, gates,
-line-count, security, and worker handoff are retained here. Result review and
-dual terminal verification remain pending.
+line-count, security, worker handoff, result review, terminal diff
+reconciliation, and two independent terminal verifications are retained here.
