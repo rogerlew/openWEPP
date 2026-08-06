@@ -36,7 +36,7 @@ fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
         "same_state_paired_carrier_v1",
         "sequential_resolved_shadow_v1",
         "exactly two stable named/versioned carrier arms",
-        "geometry including `z_T/z_q/z_u/z_0`",
+        "geometry including `z_T/z_q/z_u/z_0,aero`",
         "independent initial-plus-flux-to-final mass, enthalpy, and liquid ledger closure",
         "typed, default-off request",
         "evaluator has exclusive custody",
