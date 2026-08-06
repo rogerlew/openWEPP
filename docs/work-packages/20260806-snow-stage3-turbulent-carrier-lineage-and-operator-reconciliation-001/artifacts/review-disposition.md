@@ -136,5 +136,6 @@ required before v3 execution.
 | --- | --- | --- | --- |
 | Legacy-sign class incorrectly required predecessor reproduction | `accepted` | Removed `predecessor_ok` only from the class-3 predicate and added ordered coexistence coverage for predecessor failure plus legacy-positive/external-nonpositive energy. | None. Retained Snowbird external `Q_all` is positive, so the predicate remains false and the two retained classes are unchanged. |
 
-The corrected consumer suite passes `51/51`; renewed exact-head science and
-consumer review is required before closure.
+The corrected consumer suite passes `51/51`. Independent science and consumer
+re-review both passed at exact clean `f70fb0cb258af0daffc08f49024d46c4076ae749`.
+No finding was rejected or deferred, and the retained result did not change.

@@ -1,6 +1,6 @@
 # Authority Freeze
 
-Status: `queued for independent review`.
+Status: `PASS / frozen authority preserved`.
 
 Evidence class: `Static`.
 

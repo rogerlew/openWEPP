@@ -1,6 +1,6 @@
 # Consumer And Reconstruction Review
 
-Status: `post-result PASS; focused correction re-review pending`.
+Status: `post-result PASS after focused correction re-review`.
 
 Evidence class: `Static + Ran`.
 
@@ -54,3 +54,10 @@ Snowbird's current `188.8725288356066 MJ m^-2` legacy median versus frozen
 tests passed `50/50` at the reviewed commit. A later science-review finding
 outside the retained result predicates requires focused re-review after its
 adversarial correction.
+
+Focused re-review passed at exact clean
+`f70fb0cb258af0daffc08f49024d46c4076ae749`. The generic class now matches the
+protocol's multilabel semantics, the adversarial boundary and order are exact,
+both causal classes retain predecessor gating, and the retained two-class
+result is unchanged. Consumer tests pass `51/51`; contract/observability tests
+pass `13/13`.

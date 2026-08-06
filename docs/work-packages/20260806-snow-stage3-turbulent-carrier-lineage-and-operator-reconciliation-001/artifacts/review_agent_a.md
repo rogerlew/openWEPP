@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: `HOLD at scaffold commit; amendment re-review queued`.
+Status: `post-result PASS after accepted classifier correction`.
 
 Evidence class: `Static` at exact clean commit
 `30e843d4116411520cf9eeb7f08a3bf1ce853b78`.
@@ -94,3 +94,10 @@ legacy-sign predicate, and an adversarial vector now requires both classes in
 their frozen order when predecessor reproduction fails while legacy energy is
 positive and external `Q_all <= 0`. Renewed exact-head science review is
 required before closure.
+
+Focused re-review passed at exact clean
+`f70fb0cb258af0daffc08f49024d46c4076ae749`. Only the generic legacy-sign
+class lost the predecessor gate; both stronger causal classes retain it. The
+new vector proves ordered coexistence, the retained result reclassifies to the
+same two classes because `Q_all` is positive, consumer tests pass `51/51`, and
+contract/observability tests pass `13/13`.

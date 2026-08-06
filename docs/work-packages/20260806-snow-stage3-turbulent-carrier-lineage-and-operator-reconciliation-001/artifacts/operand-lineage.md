@@ -1,6 +1,6 @@
 # Operand Lineage
 
-Status: `result-blind field freeze / amendment review required`.
+Status: `realized / independent reconstruction PASS`.
 
 Evidence class: `Static`.
 
