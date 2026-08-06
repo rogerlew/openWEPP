@@ -1,6 +1,14 @@
 # Contract Test Implementation Evidence
 
-Status: queued.
+Status: PASS.
 
-Evidence mode: not-run. Record the focused v128 guard and exact version-pin
-reconciliation.
+Evidence mode: Ran on 2026-08-06.
+
+- Added `snow_stage3_shadow_observability_contract` and registered it in the
+  workspace manifest.
+- Mechanically advanced 38 exact contract-version assertions from v127 to
+  v128. The governed assurance subject remains v127 until source adoption and
+  its existing DRAFT custody test intentionally remains pinned to that report
+  state.
+- The focused v128 plus predecessor-authority run passed all 7 tests before
+  production Rust edits.

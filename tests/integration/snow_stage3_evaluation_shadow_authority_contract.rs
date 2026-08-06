@@ -21,11 +21,11 @@ fn table_row<'a>(contract: &'a str, symbol: &str) -> &'a str {
 }
 
 #[test]
-fn v127_preserves_one_production_state_and_admits_only_two_shadow_operators() {
+fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 127",
+        "contract_version: 128",
         "INV-SNOWFREEZE-091",
         "INV-SNOWFREEZE-094",
         "OBL-SNOWFREEZE-P-067",
@@ -75,7 +75,7 @@ fn authority_rejects_production_reachability_and_overbroad_claims() {
         "otherwise the result is only a bounded response experiment",
         "Daily or independently reinitialized shadows cannot support accumulation-season",
         "Persistence and terminal/receiving-surface authority require separate amendments",
-        "authorizes no runtime implementation or CoE ownership change",
+        "by itself authorizes no runtime implementation or CoE ownership change",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }

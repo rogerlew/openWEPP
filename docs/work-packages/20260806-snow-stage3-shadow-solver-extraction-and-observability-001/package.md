@@ -259,8 +259,8 @@ custody.
 - [x] (2026-08-06) User authorized scaffolding and execution.
 - [x] (2026-08-06) Mapped the v127 authority boundary, 3,177-line seam,
   existing consumer, and missing operand surface.
-- [ ] Commit the scaffold and frozen pre-implementation artifacts.
-- [ ] Amend v128 and pass the pre-implementation contract gate.
+- [x] Commit the scaffold and frozen pre-implementation artifacts.
+- [x] Amend v128 and pass the pre-implementation contract gate.
 - [ ] Complete mechanical extraction and parity checks.
 - [ ] Implement typed evaluation and schema-v5 observability.
 - [ ] Adopt assurance source, review, validate, verify, archive, and close.
