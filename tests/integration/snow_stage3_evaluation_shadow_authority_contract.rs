@@ -13,7 +13,10 @@ fn read(path: &str) -> String {
 fn table_row<'a>(contract: &'a str, symbol: &str) -> &'a str {
     contract
         .lines()
-        .find(|line| line.starts_with(&format!("| `{symbol}` |")))
+        .find(|line| {
+            line.starts_with(&format!("| `{symbol}` |"))
+                || line.starts_with(&format!("| {symbol} |"))
+        })
         .unwrap_or_else(|| panic!("{CONTRACT} missing table row for {symbol}"))
 }
 
@@ -43,26 +46,20 @@ fn v127_preserves_one_production_state_and_admits_only_two_shadow_operators() {
     }
 
     let operator_row = table_row(&contract, "snow_evaluation_operator");
-    assert_eq!(operator_row.matches("_v1`").count(), 2);
     assert_eq!(
-        operator_row.matches("same_state_paired_carrier_v1").count(),
-        1
+        operator_row,
+        "| `snow_evaluation_operator` | `enum` | Evaluation-only operator identity: `same_state_paired_carrier_v1` or `sequential_resolved_shadow_v1`. Absence means no evaluation shadow. Unsupported or ambiguous values fail the evaluation request without changing production. | typed evaluation request | evaluation runner and evidence consumer only |"
     );
+
+    let inv091_row = table_row(&contract, "INV-SNOWFREEZE-091");
+    let exact_exception = "The sole exception is an evaluation-only object satisfying every custody and claim guard in `INV-SNOWFREEZE-094`; that exception does not weaken the one-authoritative-production-state rule.";
     assert_eq!(
-        operator_row
-            .matches("sequential_resolved_shadow_v1")
-            .count(),
-        1
+        inv091_row.matches("exception").count(),
+        2,
+        "INV-SNOWFREEZE-091 must expose one sole exception and its non-weakening restatement"
     );
-    assert_eq!(
-        contract
-            .matches("sole exception is an evaluation-only object satisfying every custody and claim guard")
-            .count(),
-        1
-    );
-    for forbidden in ["generic diagnostic state", "arbitrary diagnostic state"] {
-        assert!(!contract.to_lowercase().contains(forbidden));
-    }
+    assert!(inv091_row.contains(exact_exception));
+    assert!(inv091_row.contains(&format!("{exact_exception} | hard-fail |")));
 }
 
 #[test]

@@ -249,11 +249,11 @@ publication surface.
   new file. Evidence: Nextest target discovery and adjacent snow contract
   entries. The package write set was expanded before registration.
 - Observation: typed source-adoption preflight classifies the v127 contract
-  drift as `scientific-full` and rotates the shared generation plus the
-  groundwater and forest review locks, while leaving both unrelated reports'
-  science and communication roots unchanged. It also updates the snow report
-  descriptor and review lock. Evidence: check-mode old/new root manifest. The
-  package write set was expanded before apply.
+  drift as `scientific-full`, rotates the shared generation, and includes the
+  groundwater and forest review locks in its affected/tool-owned set without
+  changing their bytes or roots. It updates the snow report descriptor and
+  review lock. Evidence: check-mode old/new root manifest. The package write
+  set was expanded before apply.
 - Observation: domain review found that the first v127 draft allowed a
   sequential shadow to claim bounded chronology without explicitly requiring
   complete state-changing forcing and independent clone ledgers, and that the

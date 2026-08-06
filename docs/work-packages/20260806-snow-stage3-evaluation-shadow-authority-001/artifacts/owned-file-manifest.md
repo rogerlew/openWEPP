@@ -9,10 +9,11 @@ registration; the root and campaign roadmaps; the package catalog; and typed
 assurance identity, review-lock, and the exact three-receipt source-adoption
 chain `095ab87a -> b2e9d32d -> e30ab158`.
 
-Typed check mode additionally proved that the shared generation rotation owns
-the groundwater and forest report review locks plus the snow report descriptor.
-Those exact tool-owned paths are admitted before apply; their science and
-communication roots remain unchanged.
+Typed check mode additionally proved that the shared generation operation
+includes the groundwater and forest report review locks in its affected set
+plus the snow report descriptor. Those exact tool-owned paths were admitted
+before apply; the unrelated review-lock bytes and their science and
+communication roots remained unchanged.
 
 Domain review additionally admitted the snow report manuscript, supplement,
 and assistance packet so the governed DRAFT subject can name v127 consistently.
