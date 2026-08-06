@@ -2,8 +2,7 @@ use std::fs;
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
-const PACKAGE: &str =
-    "docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/package.md";
+const PACKAGE: &str = "docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/package.md";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -60,11 +59,7 @@ fn lifecycle_index_and_package_name_the_same_realization() {
     let index = read(INDEX);
     let package = read(PACKAGE);
 
-    for required in [
-        "SC-SNOWFREEZE-001",
-        "v128",
-        "schema-v5 observability",
-    ] {
+    for required in ["SC-SNOWFREEZE-001", "v128", "schema-v5 observability"] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
     for required in [

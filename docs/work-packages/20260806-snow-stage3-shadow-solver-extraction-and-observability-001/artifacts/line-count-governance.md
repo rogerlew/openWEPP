@@ -1,7 +1,14 @@
 # Line-Count Governance
 
-Status: queued.
+Status: PASS for the extraction increment.
 
-Evidence mode: not-run. Baseline `runoff_reconciliation.rs` is 3,177 lines and
-must finish below 3,000. Record every touched `.rs` file at 2,000+ lines and
-block closure on any nonexempt 3,000+ file.
+Evidence mode: Ran on 2026-08-06.
+
+| File | Baseline | Extracted | Disposition |
+|---|---:|---:|---|
+| `runoff_reconciliation.rs` | 3,177 | 1,091 | PASS |
+| `stage3_solver.rs` | absent | 1,477 | PASS |
+| `stage3_solver/evaluation.rs` | absent | 623 | PASS |
+
+No touched or new Rust file reaches the 2,000-line warning threshold or the
+3,000-line blocking threshold after extraction.

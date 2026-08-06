@@ -12,6 +12,8 @@ const PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-stage-3-liquid-rou
 const RUNNER_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const RUNNER_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const HYDROLOGY_IMPL: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
+const HYDROLOGY_SOLVER: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs";
+const HYDROLOGY_EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
 const OBSERVED_GATE_TOOL: &str =
     "tools/snowfreeze_observed/paradigm2_stage3_liquid_routing_meltwater_temperature.py";
@@ -59,7 +61,12 @@ fn stage3_contract_package_and_selector_are_bound() {
     );
     assert_contains(&runner_impl, "mass_transition_ledgers", RUNNER_IMPL);
 
-    let hydrology_impl = read(HYDROLOGY_IMPL);
+    let hydrology_impl = format!(
+        "{}\n{}\n{}",
+        read(HYDROLOGY_IMPL),
+        read(HYDROLOGY_SOLVER),
+        read(HYDROLOGY_EVALUATION)
+    );
     for marker in [
         "TemperatureCelsius",
         "surface_energy_balance",

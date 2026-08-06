@@ -10,6 +10,8 @@ const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWF
 const PACKAGE: &str =
     "docs/work-packages/20260629-paradigm-2-stage-3-decouple-water-temperature-001/package.md";
 const HYDROLOGY_IMPL: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
+const HYDROLOGY_SOLVER: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs";
+const HYDROLOGY_EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs";
 const OBSERVED_GATE_TOOL: &str =
     "tools/snowfreeze_observed/paradigm2_stage3_decouple_water_temperature.py";
 
@@ -37,7 +39,12 @@ fn stage3_decouple_contract_package_and_selector_are_bound() {
         assert_contains(&package, marker, PACKAGE);
     }
 
-    let hydrology_impl = read(HYDROLOGY_IMPL);
+    let hydrology_impl = format!(
+        "{}\n{}\n{}",
+        read(HYDROLOGY_IMPL),
+        read(HYDROLOGY_SOLVER),
+        read(HYDROLOGY_EVALUATION)
+    );
     for marker in [
         "prepare_stage3_layer_stack",
         "stage3_requires_bulk_or_multilayer_density_model",

@@ -261,7 +261,7 @@ custody.
   existing consumer, and missing operand surface.
 - [x] Commit the scaffold and frozen pre-implementation artifacts.
 - [x] Amend v128 and pass the pre-implementation contract gate.
-- [ ] Complete mechanical extraction and parity checks.
+- [x] Complete mechanical extraction and parity checks.
 - [ ] Implement typed evaluation and schema-v5 observability.
 - [ ] Adopt assurance source, review, validate, verify, archive, and close.
 
