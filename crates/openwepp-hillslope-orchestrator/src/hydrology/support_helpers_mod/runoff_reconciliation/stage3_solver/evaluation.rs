@@ -171,20 +171,22 @@ impl Wb11HydrologyKernel {
                         / layers[0].density_kg_m3;
                 }
 
-                let resolved_after = !layers.is_empty()
+                let resolved_before_preparation = !layers.is_empty()
                     && Self::stage3_total_ice_mass_swe_m(&layers)
                         > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
-                let after_active_layer_count = if resolved_after {
+                let (after_active_layer_count, resolved_after) = if resolved_before_preparation {
                     let prepared = Self::prepare_stage3_sequential_control_volume(
                         &mut layers,
                         &mut cold_content_by_layer,
                     );
-                    prepared_active_layer_count = Some(prepared);
-                    prepared
+                    let still_resolved = Self::stage3_total_ice_mass_swe_m(&layers)
+                        > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
+                    prepared_active_layer_count = still_resolved.then_some(prepared);
+                    (prepared, still_resolved)
                 } else if layers.is_empty() {
-                    0
+                    (0, false)
                 } else {
-                    removal_active_count.clamp(1, layers.len())
+                    (removal_active_count.clamp(1, layers.len()), false)
                 };
                 let after_reconciliation = Self::stage3_reconciliation_state(
                     &layers,

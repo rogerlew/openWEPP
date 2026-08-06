@@ -623,7 +623,9 @@ must not mutate source fixtures. The new schema is internal and default-off.
   prospectively assigned v3; no metric or decision was admitted.
 - [ ] Move deterministic next-substep control-volume preparation inside the
   serialized sequential transition boundary, prove exact continuity, and
-  repeat result-blind review before v3 execution.
+  repeat result-blind review before v3 execution. Implementation and both
+  in-memory and real serialized same-hour substep vectors now pass; exact-head
+  re-review remains pending.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.

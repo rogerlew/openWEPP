@@ -305,10 +305,19 @@ mod stage3_evaluation_real_consumer_tests {
         terminal: bool,
         schema6: bool,
     ) -> (String, serde_json::Value) {
+        solver_row_with_nonterminal_state(operator, terminal, schema6, None)
+    }
+
+    fn solver_row_with_nonterminal_state(
+        operator: Option<SnowStage3EvaluationOperator>,
+        terminal: bool,
+        schema6: bool,
+        nonterminal_state: Option<(f64, f64, f64, f64)>,
+    ) -> (String, serde_json::Value) {
         let (mass_swe_m, depth_m, density_kg_m3, temperature_c) = if terminal {
             (0.001_1, 0.002_2, 500.0, 0.0)
         } else {
-            (0.18, 0.40, 450.0, -8.0)
+            nonterminal_state.unwrap_or((0.18, 0.40, 450.0, -8.0))
         };
         let mut layer = DirectSnowLayerState::new(mass_swe_m, depth_m, density_kg_m3, 12.0);
         layer.temperature_c = temperature_c;
@@ -539,6 +548,63 @@ mod stage3_evaluation_real_consumer_tests {
         }
         assert!(terminal["total_ice_mass_after_kg_m2"].is_number());
         assert!(terminal["total_cold_after_j_m2"].is_number());
+    }
+
+    #[test]
+    fn schema_v6_serialized_dynamic_substeps_preserve_exact_transition_continuity() {
+        let (_, value) = solver_row_with_nonterminal_state(
+            Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1),
+            false,
+            true,
+            Some((0.02, 0.04, 500.0, -8.0)),
+        );
+        let tuples = value["stage3_operator_reconciliation"]["tuples"]
+            .as_array()
+            .expect("serialized sequential tuples");
+        assert!(tuples.len() > 1);
+        assert_eq!(tuples[0]["hour_index"], 0);
+        assert_eq!(tuples[0]["substep_index"], 0);
+        assert_eq!(tuples[1]["hour_index"], 0);
+        assert_eq!(tuples[1]["substep_index"], 1);
+        for pair in tuples.windows(2) {
+            let (previous, next) = (&pair[0], &pair[1]);
+            assert_eq!(previous["after_surface_applicable"], true);
+            for (after, before) in [
+                ("active_layer_prefix_count_after", "active_layer_prefix_count_before"),
+                ("total_layer_count_after", "total_layer_count_before"),
+                (
+                    "active_layer_state_fingerprint_after_fnv1a64",
+                    "active_layer_state_fingerprint_before_fnv1a64",
+                ),
+                (
+                    "total_layer_state_fingerprint_after_fnv1a64",
+                    "total_layer_state_fingerprint_before_fnv1a64",
+                ),
+            ] {
+                assert_eq!(previous[after], next[before], "{after} -> {before}");
+            }
+            for (after, before) in [
+                ("active_ice_mass_after_kg_m2", "active_ice_mass_before_kg_m2"),
+                ("total_ice_mass_after_kg_m2", "total_ice_mass_before_kg_m2"),
+                ("active_depth_after_m", "active_depth_before_m"),
+                ("active_density_after_kg_m3", "active_density_before_kg_m3"),
+                ("active_cold_after_j_m2", "active_cold_before_j_m2"),
+                ("total_cold_after_j_m2", "total_cold_before_j_m2"),
+                ("surface_temperature_after_c", "surface_temperature_before_c"),
+            ] {
+                assert_eq!(
+                    previous[after]
+                        .as_f64()
+                        .unwrap_or_else(|| panic!("{after} numeric"))
+                        .to_bits(),
+                    next[before]
+                        .as_f64()
+                        .unwrap_or_else(|| panic!("{before} numeric"))
+                        .to_bits(),
+                    "{after} -> {before}"
+                );
+            }
+        }
     }
 
     #[test]

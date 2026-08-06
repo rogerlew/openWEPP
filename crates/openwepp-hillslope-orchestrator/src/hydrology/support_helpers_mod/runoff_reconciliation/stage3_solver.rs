@@ -2326,7 +2326,16 @@ mod stage3_evaluation_validation_tests {
     #[test]
     fn sequential_reconciliation_serializes_exact_transition_continuity() {
         let phase = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
-        let inputs = reconciliation_inputs();
+        let mut inputs = reconciliation_inputs();
+        inputs.runtime_swe_m = 0.02;
+        inputs.runtime_depth_m = 0.04;
+        inputs.runtime_density_kg_m3 = 500.0;
+        inputs.coe_boundary_depth_m = 0.04;
+        inputs.coe_boundary_density_kg_m3 = 500.0;
+        inputs.snow_layers[0].mass_swe_m = 0.02;
+        inputs.snow_layers[0].thickness_m = 0.04;
+        inputs.snow_layers[0].density_kg_m3 = 500.0;
+        inputs.snow_layers[0].cold_content_j_m2 = 0.02 * 1_000.0 * 2_100.0 * 8.0;
         let cold = vec![inputs.snow_layers[0].cold_content_j_m2];
         let tag = Stage3EvaluationTag::new(
             SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
@@ -2340,6 +2349,10 @@ mod stage3_evaluation_validation_tests {
         )
         .expect("valid sequential reconciliation");
         assert!(summary.reconciliation.tuples.len() > 1);
+        assert_eq!(summary.reconciliation.tuples[0].hour_index, 0);
+        assert_eq!(summary.reconciliation.tuples[0].substep_index, 0);
+        assert_eq!(summary.reconciliation.tuples[1].hour_index, 0);
+        assert_eq!(summary.reconciliation.tuples[1].substep_index, 1);
         for pair in summary.reconciliation.tuples.windows(2) {
             let (previous, next) = (&pair[0], &pair[1]);
             assert_eq!(

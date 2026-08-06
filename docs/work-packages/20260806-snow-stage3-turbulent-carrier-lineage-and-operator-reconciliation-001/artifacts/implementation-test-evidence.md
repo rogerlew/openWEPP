@@ -52,11 +52,14 @@ Sequential transition-boundary correction:
   fingerprints, active/total mass and cold content, geometry, density, and
   surface-temperature continuity between every sequential tuple;
 - a positive real-solver vector proves exact continuity and a fingerprint-bit
-  mutation fails closed;
+  mutation fails closed; a second real runner/JSON vector forces substeps 0 and
+  1 within the same hour and proves every serialized after/before count,
+  fingerprint, mass, cold, depth, density, and surface-temperature value is
+  bit-exact after JSON round-trip;
 - `cargo nextest run -p openwepp-hillslope-orchestrator stage3 --no-fail-fast`
   — PASS (`9/9`);
 - `cargo nextest run -p openwepp-runner stage3 --no-fail-fast` — PASS
-  (`10/10`);
+  (`11/11`);
 - contract/observability — PASS (`13/13`);
 - package consumer — PASS (`50/50`);
 - affected-crate warnings-denied Clippy, formatting, and diff hygiene — PASS.

@@ -112,5 +112,20 @@ sentinel form, 24 `operator_not_selected` statuses, daily/hourly support, and
 carrier-evaluated flags with adversarial aliases. The real site reducer proves
 the inactive day changes only its typed inventory entries, and a source-order
 contract seam binds the inactive return ahead of forcing acquisition for every
-operator/default. Re-review of the amended exact clean commit remains pending;
-no v2 cohort result has been run or inspected.
+operator/default. Independent science/Rust/consumer re-review closed PASS at
+exact clean `e591d89c219d69f619e68f9aa7194f88d20f9a1c` before v2 execution.
+Corrected v2 subsequently failed before results on the separate sequential
+transition-continuity defect recorded below.
+
+## Sequential-Continuity Re-Admission Disposition
+
+The first v3 Rust review at exact clean
+`3fbcdfddeff1b25f3e9384120b04857af66d96da` found two validation seams while
+science and consumer review passed: the positive continuity vector crossed
+hours but did not reproduce v2's same-hour dynamic-substep failure or the real
+JSON formatter, and resolved status was computed before a preparation whose
+floating-point redistribution supplies the serialized endpoint. Both findings
+are accepted. The producer now recomputes resolved status after preparation,
+and the runner test forces same-hour substeps 0/1 through actual schema-v6 JSON
+serialization and bit-exact consumer fields. Renewed exact-head review remains
+required before v3 execution.
