@@ -157,6 +157,9 @@ operands, stability solution, or state endpoints required to separate them.
   its `review.lock.json`, `assurance/v2/identity.lock.json`, and generated
   `assurance/v2/transactions/<receipt-id>.json` selected by the existing
   check/adopt workflow;
+- `tools/release/check_assurance_dossier_exports.sh` for a narrowly bounded
+  release-guard correction if the canonical closure gate still misclassifies
+  the already-governed `usersum/assurance/review-drafts/**` lane as public;
 - `docs/work-packages/README.md`, `docs/ROADMAP.md`, and
   `docs/planning/snow-surface-energy-balance-roadmap.md`;
 - retained rejected-v1 evidence under the ignored
@@ -500,6 +503,10 @@ verifications, roadmap/catalog disposition, and stable local commits.
 - Formatting, warnings-denied Clippy, doctests, focused tests, quick, frost,
   full workspace, assurance validation, Markdown/schema checks, line-count,
   security, dual review, finding disposition, and dual verification pass.
+- The assurance export guard counts only the governed public route, excludes
+  exactly `usersum/assurance/review-drafts/**`, continues to require the sole
+  public README plus zero export documents and disabled vendoring, and passes
+  without weakening DRAFT/publication separation.
 - Every required current-scope gate has direct current evidence. An unmet gate
   cannot be renamed future scope; the package remains HOLD if it cannot close.
 - Exact terminal diff matches this declared intent and write set.
@@ -642,6 +649,11 @@ must not mutate source fixtures. The new schema is internal and default-off.
   the workspace 100-line Clippy limit. Split the unchanged assertions into two
   named helpers; workspace Clippy, focused `13/13`, and consumer `51/51` now
   pass. Renewed critical execution remains required.
+- [x] Second critical attempt passed Rust, focused, binding, and assurance
+  validation/plan gates, then exposed a stale release guard that counts the
+  tracked, explicitly nonpublic `review-drafts/**` lane as public. Prospectively
+  amend the write set for that one guard before correction; retain its sole
+  public README, zero-document, and vendoring-disabled checks unchanged.
 
 ## Surprises & Discoveries
 
