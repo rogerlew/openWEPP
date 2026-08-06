@@ -312,6 +312,30 @@ impl Default for DirectSnowTurbulentGeometry {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SnowStage3EvaluationOperator {
+    SameStatePairedCarrierV1,
+    SequentialResolvedShadowV1,
+}
+
+impl SnowStage3EvaluationOperator {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::SameStatePairedCarrierV1 => "same_state_paired_carrier_v1",
+            Self::SequentialResolvedShadowV1 => "sequential_resolved_shadow_v1",
+        }
+    }
+
+    #[must_use]
+    pub const fn claim_class(self) -> &'static str {
+        match self {
+            Self::SameStatePairedCarrierV1 => "carrier_component_comparison",
+            Self::SequentialResolvedShadowV1 => "bounded_response_experiment",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowSurfaceEnergyOptions {
     pub longwave_model: SnowSurfaceLongwaveModel,
@@ -321,7 +345,7 @@ pub struct DirectSnowSurfaceEnergyOptions {
     pub daylight: bool,
     pub atmospheric_pressure_pa: f64,
     pub turbulent_geometry: DirectSnowTurbulentGeometry,
-    pub complete_carrier_shadow: bool,
+    pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>,
 }
 
 impl Default for DirectSnowSurfaceEnergyOptions {
@@ -334,7 +358,7 @@ impl Default for DirectSnowSurfaceEnergyOptions {
             daylight: false,
             atmospheric_pressure_pa: 101_324.6,
             turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
-            complete_carrier_shadow: false,
+            stage3_evaluation_operator: None,
         }
     }
 }
@@ -366,10 +390,14 @@ pub struct DirectSnowSurfaceEnergyHourDiagnostics {
     pub shadow_sensible_flux_w_m2: f64,
     pub shadow_latent_flux_w_m2: f64,
     pub shadow_advected_flux_w_m2: f64,
+    pub shadow_shortwave_energy_j_m2: f64,
+    pub shadow_longwave_energy_j_m2: f64,
+    pub shadow_internal_active_lower_conduction_j_m2: f64,
     pub shadow_complete_energy_j_m2: f64,
     pub shadow_vapor_mass_exchange_kg_m2: f64,
     pub shadow_cold_required_j_m2: f64,
     pub shadow_cold_energy_change_j_m2: f64,
+    pub shadow_cold_content_export_j_m2: f64,
     pub shadow_excess_energy_j_m2: f64,
     pub shadow_ice_available_kg_m2: f64,
     pub shadow_sublimation_kg_m2: f64,
@@ -377,6 +405,8 @@ pub struct DirectSnowSurfaceEnergyHourDiagnostics {
     pub shadow_unallocated_after_exhaustion_j_m2: f64,
     pub shadow_energy_closure_residual_j_m2: f64,
     pub shadow_complete_carrier_evaluated: bool,
+    pub shadow_requested_seconds: f64,
+    pub shadow_evaluated_seconds: f64,
     pub potential_surface_energy_j_m2: f64,
     pub applied_surface_energy_j_m2: f64,
     pub unused_positive_energy_j_m2: f64,
@@ -435,10 +465,14 @@ impl DirectSnowSurfaceEnergyHourDiagnostics {
             shadow_sensible_flux_w_m2: 0.0,
             shadow_latent_flux_w_m2: 0.0,
             shadow_advected_flux_w_m2: 0.0,
+            shadow_shortwave_energy_j_m2: 0.0,
+            shadow_longwave_energy_j_m2: 0.0,
+            shadow_internal_active_lower_conduction_j_m2: 0.0,
             shadow_complete_energy_j_m2: 0.0,
             shadow_vapor_mass_exchange_kg_m2: 0.0,
             shadow_cold_required_j_m2: 0.0,
             shadow_cold_energy_change_j_m2: 0.0,
+            shadow_cold_content_export_j_m2: 0.0,
             shadow_excess_energy_j_m2: 0.0,
             shadow_ice_available_kg_m2: 0.0,
             shadow_sublimation_kg_m2: 0.0,
@@ -446,6 +480,8 @@ impl DirectSnowSurfaceEnergyHourDiagnostics {
             shadow_unallocated_after_exhaustion_j_m2: 0.0,
             shadow_energy_closure_residual_j_m2: 0.0,
             shadow_complete_carrier_evaluated: false,
+            shadow_requested_seconds: 0.0,
+            shadow_evaluated_seconds: 0.0,
             potential_surface_energy_j_m2: 0.0,
             applied_surface_energy_j_m2: 0.0,
             unused_positive_energy_j_m2: 0.0,
@@ -514,7 +550,52 @@ pub struct DirectSnowStage3Diagnostics {
     pub minimum_unresolved_thermal_mass_kg_m2: f64,
     pub lower_thermal_volume_collapsed_seconds: f64,
     pub minimum_collapsed_lower_mass_kg_m2: f64,
+    pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>,
     pub hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics; 24],
+}
+
+#[allow(clippy::struct_excessive_bools)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowStage3EvaluationDiagnostics {
+    pub operator: SnowStage3EvaluationOperator,
+    pub source_snapshot_id: &'static str,
+    pub support_id: &'static str,
+    pub cadence_id: &'static str,
+    pub carrier_id: &'static str,
+    pub claim_class: &'static str,
+    pub unresolved_boundaries_id: &'static str,
+    pub pairing_id: Option<&'static str>,
+    pub arm_ids: [&'static str; 2],
+    pub arm_count: u8,
+    pub source_fingerprint: u64,
+    pub forcing_fingerprint: u64,
+    pub geometry_fingerprint: u64,
+    pub non_formulation_fingerprint: u64,
+    pub requested_seconds: f64,
+    pub evaluated_seconds: f64,
+    pub coverage_fraction: f64,
+    pub surface_arm_shortwave_j_m2: f64,
+    pub surface_arm_longwave_j_m2: f64,
+    pub surface_arm_latent_j_m2: f64,
+    pub surface_arm_sensible_applicable: bool,
+    pub surface_arm_advected_applicable: bool,
+    pub surface_arm_internal_conduction_applicable: bool,
+    pub surface_arm_total_j_m2: f64,
+    pub complete_arm_shortwave_j_m2: f64,
+    pub complete_arm_longwave_j_m2: f64,
+    pub complete_arm_sensible_j_m2: f64,
+    pub complete_arm_latent_j_m2: f64,
+    pub complete_arm_advected_j_m2: f64,
+    pub complete_arm_internal_active_lower_conduction_j_m2: f64,
+    pub complete_arm_internal_conduction_applicable: bool,
+    pub complete_arm_vapor_mass_exchange_kg_m2: f64,
+    pub complete_arm_cold_content_export_j_m2: f64,
+    pub complete_arm_cold_content_export_applicable: bool,
+    pub complete_arm_available_ice_kg_m2: f64,
+    pub complete_arm_available_ice_applicable: bool,
+    pub complete_arm_total_j_m2: f64,
+    pub complete_arm_terminal_unallocated_j_m2: f64,
+    pub complete_arm_residual_j_m2: f64,
 }
 
 impl DirectSnowStage3Diagnostics {
@@ -546,6 +627,7 @@ impl DirectSnowStage3Diagnostics {
             minimum_unresolved_thermal_mass_kg_m2: 0.0,
             lower_thermal_volume_collapsed_seconds: 0.0,
             minimum_collapsed_lower_mass_kg_m2: 0.0,
+            evaluation: None,
             hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
         }
     }

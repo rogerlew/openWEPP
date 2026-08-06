@@ -3,6 +3,13 @@ use std::fs;
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const PACKAGE: &str = "docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/package.md";
+const SUPPORT: &str =
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
+const SOLVER: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs";
+const EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs";
+const ERRORS: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs";
+const RUNNER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
+const RUNNER_EVALUATION: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -70,4 +77,73 @@ fn lifecycle_index_and_package_name_the_same_realization() {
     ] {
         assert!(package.contains(required), "{PACKAGE} missing {required}");
     }
+}
+
+#[test]
+fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
+    let support = read(SUPPORT);
+    let solver = read(SOLVER);
+    let evaluation = read(EVALUATION);
+    let errors = read(ERRORS);
+
+    for required in [
+        "pub enum SnowStage3EvaluationOperator",
+        "SameStatePairedCarrierV1",
+        "SequentialResolvedShadowV1",
+        "pub stage3_evaluation_operator: Option<SnowStage3EvaluationOperator>",
+        "pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>",
+    ] {
+        assert!(support.contains(required), "{SUPPORT} missing {required}");
+    }
+    for required in [
+        "evaluate_stage3_same_state_paired_carrier",
+        "evaluate_stage3_sequential_melt_shadow",
+        "complete_arm_residual_j_m2",
+        "snow_ground_cross_day_terminal_recipient_unresolved_v1",
+    ] {
+        assert!(solver.contains(required), "{SOLVER} missing {required}");
+    }
+    for required in [
+        "stage3_shadow_fingerprints",
+        "stage3_fnv1a_u64",
+        "shadow_evaluated_seconds",
+        "SnowStage3TurbulentTransferError",
+    ] {
+        assert!(
+            evaluation.contains(required),
+            "{EVALUATION} missing {required}"
+        );
+    }
+    assert!(errors.contains("SnowStage3TurbulentTransfer"));
+    assert!(solver.lines().count() < 3_000);
+    assert!(evaluation.lines().count() < 3_000);
+}
+
+#[test]
+fn real_trace_consumer_has_enabled_only_v5_and_all_audit_families() {
+    let runner = format!("{}\n{}", read(RUNNER), read(RUNNER_EVALUATION));
+    for required in [
+        "openwepp-r7h-direct-production-snow-trace-v4",
+        "openwepp-r7h-direct-production-snow-trace-v5",
+        "stage3_evaluation_operator_id",
+        "stage3_evaluation_pairing_id",
+        "stage3_evaluation_non_formulation_fingerprint_fnv1a64",
+        "stage3_evaluation_complete_arm_shortwave_j_m2",
+        "stage3_evaluation_complete_arm_longwave_j_m2",
+        "stage3_evaluation_complete_arm_sensible_j_m2",
+        "stage3_evaluation_complete_arm_latent_j_m2",
+        "stage3_evaluation_complete_arm_advected_j_m2",
+        "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2",
+        "stage3_evaluation_complete_arm_vapor_mass_exchange_kg_m2",
+        "stage3_evaluation_complete_arm_cold_content_export_j_m2",
+        "stage3_evaluation_hourly_cold_content_export_j_m2",
+        "stage3_evaluation_complete_arm_available_ice_kg_m2",
+        "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
+        "stage3_evaluation_requested_seconds",
+        "stage3_evaluation_evaluated_seconds",
+        "schema_v5_consumer_reconstructs_shadow_operands_and_rejects_production_aliases",
+    ] {
+        assert!(runner.contains(required), "{RUNNER} missing {required}");
+    }
+    assert!(!runner.contains("complete_carrier_shadow: bool"));
 }

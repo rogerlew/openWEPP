@@ -262,7 +262,7 @@ custody.
 - [x] Commit the scaffold and frozen pre-implementation artifacts.
 - [x] Amend v128 and pass the pre-implementation contract gate.
 - [x] Complete mechanical extraction and parity checks.
-- [ ] Implement typed evaluation and schema-v5 observability.
+- [x] Implement typed evaluation and schema-v5 observability.
 - [ ] Adopt assurance source, review, validate, verify, archive, and close.
 
 ## Surprises & Discoveries

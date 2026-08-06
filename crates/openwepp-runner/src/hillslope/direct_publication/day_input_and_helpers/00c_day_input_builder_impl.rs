@@ -7,6 +7,8 @@ const SNOW_SURFACE_LONGWAVE_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_LONGWAVE_MO
 const SNOW_SURFACE_SUBLIMATION_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL";
 const SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV: &str =
     "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW";
+const SNOW_STAGE3_EVALUATION_OPERATOR_ENV: &str =
+    "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR";
 
 #[derive(Clone, Debug)]
 struct CanopyResearchTraceConfig {
@@ -1140,6 +1142,16 @@ fn maybe_write_r7h_direct_production_snow_trace(
 }
 
 // Keep the schema-v4 ordered-key formatter contiguous so column order and projection stay auditable.
+fn direct_snow_trace_schema(
+    diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
+) -> &'static str {
+    if diagnostics.evaluation.is_some() {
+        "openwepp-r7h-direct-production-snow-trace-v5"
+    } else {
+        "openwepp-r7h-direct-production-snow-trace-v4"
+    }
+}
+
 #[allow(clippy::too_many_lines)]
 fn r7h_direct_production_snow_trace_line(
     context: &DirectSnowTraceRowContext<'_>,
@@ -1158,8 +1170,9 @@ fn r7h_direct_production_snow_trace_line(
     let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
+    let schema = direct_snow_trace_schema(&verbose_diagnostics.stage3);
     let line = format!(
-        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v4\",\
+        "{{\"schema\":\"{schema}\",\
 \"day_index\":{day_index},\
 \"lane_index\":{lane_index},\
 \"hyetograph_rainfall_m\":{},\
@@ -1592,6 +1605,143 @@ mod stage3_trace_field_tests {
         assert_eq!(
             value["stage3_hourly_lower_cold_content_j_m2"][0],
             23_500.0
+        );
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp, clippy::too_many_lines)]
+    fn schema_v5_consumer_reconstructs_shadow_operands_and_rejects_production_aliases() {
+        use openwepp_hillslope_orchestrator::{
+            DirectSnowStage3EvaluationDiagnostics, SnowStage3EvaluationOperator,
+        };
+
+        let mut diagnostics =
+            openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled();
+        diagnostics.shortwave_energy_j_m2 = 999.0;
+        diagnostics.surface_energy_j_m2 = 888.0;
+        diagnostics.hourly_surface_energy[0].net_shortwave_w_m2 = 777.0;
+        diagnostics.hourly_surface_energy[0].shadow_shortwave_energy_j_m2 = 11.0;
+        diagnostics.hourly_surface_energy[0].shadow_longwave_energy_j_m2 = 12.0;
+        diagnostics.hourly_surface_energy[0].shadow_sensible_flux_w_m2 = 0.013;
+        diagnostics.hourly_surface_energy[0].shadow_latent_flux_w_m2 = 0.014;
+        diagnostics.hourly_surface_energy[0].shadow_advected_flux_w_m2 = 0.015;
+        diagnostics.hourly_surface_energy[0]
+            .shadow_internal_active_lower_conduction_j_m2 = 16.0;
+        diagnostics.hourly_surface_energy[0].shadow_cold_content_export_j_m2 = 17.0;
+        diagnostics.hourly_surface_energy[0].shadow_requested_seconds = 100.0;
+        diagnostics.hourly_surface_energy[0].shadow_evaluated_seconds = 80.0;
+        diagnostics.evaluation = Some(DirectSnowStage3EvaluationDiagnostics {
+            operator: SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+            source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
+            support_id: "stage3_daily_24_hour_support_v1",
+            cadence_id: "stage3_dynamic_substep_with_hourly_forcing_v1",
+            carrier_id: "stage3_carrier_pair_v1",
+            claim_class: "carrier_component_comparison",
+            unresolved_boundaries_id: "snow_ground_cross_day_terminal_recipient_unresolved_v1",
+            pairing_id: Some("stage3_carrier_pair_v1"),
+            arm_ids: ["stage3_surface_energy_v1", "stage3_complete_carrier_v1"],
+            arm_count: 2,
+            source_fingerprint: 0x11,
+            forcing_fingerprint: 0x22,
+            geometry_fingerprint: 0x33,
+            non_formulation_fingerprint: 0x44,
+            requested_seconds: 100.0,
+            evaluated_seconds: 80.0,
+            coverage_fraction: 0.8,
+            surface_arm_shortwave_j_m2: 1.0,
+            surface_arm_longwave_j_m2: 2.0,
+            surface_arm_latent_j_m2: 3.0,
+            surface_arm_sensible_applicable: false,
+            surface_arm_advected_applicable: false,
+            surface_arm_internal_conduction_applicable: false,
+            surface_arm_total_j_m2: 6.0,
+            complete_arm_shortwave_j_m2: 1.0,
+            complete_arm_longwave_j_m2: 2.0,
+            complete_arm_sensible_j_m2: 4.0,
+            complete_arm_latent_j_m2: 5.0,
+            complete_arm_advected_j_m2: 6.0,
+            complete_arm_internal_active_lower_conduction_j_m2: 7.0,
+            complete_arm_internal_conduction_applicable: true,
+            complete_arm_vapor_mass_exchange_kg_m2: -0.25,
+            complete_arm_cold_content_export_j_m2: 8.0,
+            complete_arm_cold_content_export_applicable: true,
+            complete_arm_available_ice_kg_m2: 9.0,
+            complete_arm_available_ice_applicable: true,
+            complete_arm_total_j_m2: 25.0,
+            complete_arm_terminal_unallocated_j_m2: 10.0,
+            complete_arm_residual_j_m2: 0.0,
+        });
+
+        let fields = direct_snow_trace_stage3_evaluation_fields(&diagnostics)
+            .expect("enabled evaluation fields");
+        let row = format!("{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v5\",{fields}}}\n");
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-stage3-v5-consumer-{}.jsonl",
+            std::process::id()
+        ));
+        std::fs::write(&path, row).expect("write schema-v5 JSONL row");
+        let observed = std::fs::read_to_string(&path).expect("read schema-v5 JSONL row");
+        std::fs::remove_file(&path).expect("remove schema-v5 JSONL test row");
+        let value: serde_json::Value =
+            serde_json::from_str(observed.trim()).expect("schema-v5 row is valid JSON");
+        assert_eq!(
+            value["schema"],
+            "openwepp-r7h-direct-production-snow-trace-v5"
+        );
+        let surface = value["stage3_evaluation_surface_arm_shortwave_j_m2"]
+            .as_f64()
+            .expect("surface shortwave")
+            + value["stage3_evaluation_surface_arm_longwave_j_m2"]
+                .as_f64()
+                .expect("surface longwave")
+            + value["stage3_evaluation_surface_arm_latent_j_m2"]
+                .as_f64()
+                .expect("surface latent");
+        assert_eq!(surface, 6.0);
+        let complete = [
+            "stage3_evaluation_complete_arm_shortwave_j_m2",
+            "stage3_evaluation_complete_arm_longwave_j_m2",
+            "stage3_evaluation_complete_arm_sensible_j_m2",
+            "stage3_evaluation_complete_arm_latent_j_m2",
+            "stage3_evaluation_complete_arm_advected_j_m2",
+            "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2",
+        ]
+        .into_iter()
+        .map(|field| value[field].as_f64().expect("complete component"))
+        .sum::<f64>();
+        assert_eq!(complete, 25.0);
+        assert_eq!(value["stage3_evaluation_hourly_shortwave_j_m2"][0], 11.0);
+        assert_eq!(
+            value["stage3_evaluation_hourly_cold_content_export_j_m2"][0],
+            17.0
+        );
+        assert_ne!(
+            value["stage3_evaluation_surface_arm_shortwave_j_m2"],
+            serde_json::Value::from(999.0)
+        );
+        assert_ne!(
+            value["stage3_evaluation_hourly_shortwave_j_m2"][0],
+            serde_json::Value::from(777.0)
+        );
+        assert_eq!(
+            value["stage3_evaluation_non_formulation_fingerprint_fnv1a64"],
+            "0000000000000044"
+        );
+        assert!(
+            direct_snow_trace_stage3_evaluation_fields(
+                &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled()
+            )
+            .is_none()
+        );
+        assert_eq!(
+            direct_snow_trace_schema(
+                &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled()
+            ),
+            "openwepp-r7h-direct-production-snow-trace-v4"
+        );
+        assert_eq!(
+            direct_snow_trace_schema(&diagnostics),
+            "openwepp-r7h-direct-production-snow-trace-v5"
         );
     }
 }
@@ -2103,25 +2253,135 @@ fn snow_surface_sublimation_model()
     }
 }
 
-fn snow_stage3_complete_carrier_shadow() -> Result<bool, HillslopeCliError> {
-    match std::env::var(SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "0" | "false" | "disabled" => Ok(false),
-            "1" | "true" | "enabled" => Ok(true),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_stage3_complete_carrier_shadow",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be enabled, disabled, true, false, 1, 0, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => Ok(false),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+fn snow_stage3_evaluation_operator() -> Result<
+    Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
+    HillslopeCliError,
+> {
+    let explicit = std::env::var(SNOW_STAGE3_EVALUATION_OPERATOR_ENV).map_err(|error| match error {
+        std::env::VarError::NotPresent => None,
+        std::env::VarError::NotUnicode(_) => Some(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_stage3_evaluation_operator",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be UTF-8"
+            ),
+        }),
+    });
+    let legacy = std::env::var(SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV).map_err(|error| match error {
+        std::env::VarError::NotPresent => None,
+        std::env::VarError::NotUnicode(_) => Some(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_stage3_complete_carrier_shadow",
             detail: format!(
                 "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be UTF-8"
             ),
         }),
+    });
+    match (explicit, legacy) {
+        (Err(Some(error)), _) | (_, Err(Some(error))) => Err(error),
+        (explicit, legacy) => snow_stage3_evaluation_operator_from_values(
+            explicit.ok().as_deref(),
+            legacy.ok().as_deref(),
+        ),
+    }
+}
+
+fn snow_stage3_evaluation_operator_from_values(
+    explicit_value: Option<&str>,
+    legacy_value: Option<&str>,
+) -> Result<
+    Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
+    HillslopeCliError,
+> {
+    use openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator;
+
+    let explicit = match explicit_value {
+        None => None,
+        Some(value) => Some(match value.trim() {
+            "" | "disabled" => None,
+            "same_state_paired_carrier_v1" => {
+                Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)
+            }
+            "sequential_resolved_shadow_v1" => {
+                Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
+            }
+            observed => {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_production_snow_stage3_evaluation_operator",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be disabled, same_state_paired_carrier_v1, sequential_resolved_shadow_v1, or empty default, observed {observed}"
+                    ),
+                });
+            }
+        }),
+    };
+    let legacy = match legacy_value {
+        None => None,
+        Some(value) => Some(match value.trim() {
+            "" | "0" | "false" | "disabled" => None,
+            "1" | "true" | "enabled" => {
+                Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
+            }
+            observed => {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_production_snow_stage3_complete_carrier_shadow",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be enabled, disabled, true, false, 1, 0, or empty default, observed {observed}"
+                    ),
+                });
+            }
+        }),
+    };
+    match (explicit, legacy) {
+        (Some(explicit_value), Some(legacy_value)) if explicit_value != legacy_value => {
+            Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_stage3_evaluation_operator",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} conflicting {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} and {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} requests"
+                ),
+            })
+        }
+        (Some(value), _) | (_, Some(value)) => Ok(value),
+        (None, None) => Ok(None),
+    }
+}
+
+#[cfg(test)]
+mod stage3_evaluation_operator_tests {
+    use super::*;
+    use openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator;
+
+    #[test]
+    fn default_and_legacy_compatibility_are_typed() {
+        assert_eq!(
+            snow_stage3_evaluation_operator_from_values(None, None)
+                .expect("absent default"),
+            None
+        );
+        assert_eq!(
+            snow_stage3_evaluation_operator_from_values(None, Some("enabled"))
+                .expect("legacy compatibility spelling"),
+            Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
+        );
+        assert_eq!(
+            snow_stage3_evaluation_operator_from_values(
+                Some("same_state_paired_carrier_v1"),
+                None,
+            )
+            .expect("typed paired request"),
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)
+        );
+    }
+
+    #[test]
+    fn conflicting_or_unknown_requests_fail_closed() {
+        let conflict = snow_stage3_evaluation_operator_from_values(
+            Some("same_state_paired_carrier_v1"),
+            Some("enabled"),
+        )
+        .expect_err("legacy sequential request conflicts with paired request");
+        assert!(conflict.to_string().contains("conflicting"));
+        let unsupported = snow_stage3_evaluation_operator_from_values(Some("generic"), None)
+            .expect_err("generic operator is not admitted");
+        assert!(unsupported.to_string().contains("generic"));
     }
 }
 

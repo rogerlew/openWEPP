@@ -15,5 +15,11 @@ Ran:
 - focused pre-existing Stage 3 surface-energy, liquid-routing, and decoupled
   water-temperature suites: PASS, 30 tests.
 
-The later typed evaluation additions remain the only authorized exported API
-delta and receive their own final parity disposition.
+Final typed additions are limited to
+`SnowStage3EvaluationOperator`, `DirectSnowStage3EvaluationDiagnostics`,
+`SnowStage3TurbulentTransferError`, the optional evaluation selector on the
+existing options record, and optional evaluation evidence on Stage 3
+diagnostics. No production state, ledger, routing, or publication callable
+changed. Focused integration and all-target clippy compilation prove existing
+consumers remain source-compatible after the prospectively declared diagnostic
+API delta.

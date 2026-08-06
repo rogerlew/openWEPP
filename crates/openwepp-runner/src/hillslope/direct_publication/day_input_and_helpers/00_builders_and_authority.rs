@@ -447,7 +447,8 @@ struct DirectProductionSnowFrostAuthority {
     stage3_liquid_routing_model: openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
     snow_surface_longwave_model: openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel,
     snow_surface_sublimation_model: openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel,
-    snow_stage3_complete_carrier_shadow: bool,
+    snow_stage3_evaluation_operator:
+        Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
     snow_atmospheric_pressure_pa: f64,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
@@ -2164,7 +2165,7 @@ fn direct_production_typed_snow_frost_authority(
         stage3_liquid_routing_model: paradigm2_stage3_liquid_routing_model()?,
         snow_surface_longwave_model: snow_surface_longwave_model()?,
         snow_surface_sublimation_model: snow_surface_sublimation_model()?,
-        snow_stage3_complete_carrier_shadow: snow_stage3_complete_carrier_shadow()?,
+        snow_stage3_evaluation_operator: snow_stage3_evaluation_operator()?,
         snow_atmospheric_pressure_pa: direct_snow_atmospheric_pressure_pa(
             climate_request.direct_elevation_m(),
         )?,

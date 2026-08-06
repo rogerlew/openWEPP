@@ -371,7 +371,7 @@ impl DirectProductionSnowFrostAuthority {
             atmospheric_pressure_pa: self.snow_atmospheric_pressure_pa,
             turbulent_geometry:
                 openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
-            complete_carrier_shadow: self.snow_stage3_complete_carrier_shadow,
+            stage3_evaluation_operator: self.snow_stage3_evaluation_operator,
         }
     }
 

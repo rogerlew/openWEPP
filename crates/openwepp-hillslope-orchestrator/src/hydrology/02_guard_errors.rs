@@ -13,6 +13,20 @@ pub struct SnowStage3ConductivityError {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct SnowStage3TurbulentTransferError {
+    pub phase_class: HillslopeKernelPhaseClass,
+    pub source: openwepp_meteorology::MeteorologyError,
+    pub operator: SnowStage3EvaluationOperator,
+    pub geometry: DirectSnowTurbulentGeometry,
+    pub atmospheric_pressure_pa: f64,
+    pub wind_speed_m_s: f64,
+    pub air_temperature_c: f64,
+    pub surface_temperature_c: f64,
+    pub air_vapor_pressure_pa: f64,
+    pub surface_vapor_pressure_pa: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct SnowLayerAggregateMismatchError {
     pub phase_class: HillslopeKernelPhaseClass,
     pub symbol: &'static str,
@@ -44,6 +58,7 @@ impl SnowLayerAggregateMismatchError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Wb11HydrologyKernelGuardError {
     SnowStage3Conductivity(Box<SnowStage3ConductivityError>),
+    SnowStage3TurbulentTransfer(Box<SnowStage3TurbulentTransferError>),
     SnowLayerAggregateMismatch(Box<SnowLayerAggregateMismatchError>),
     SnowMassTransitionLedger {
         phase_class: HillslopeKernelPhaseClass,
@@ -143,6 +158,7 @@ impl Wb11HydrologyKernelGuardError {
             Self::StateSymbolOutOfRange { .. }
             | Self::FluxSymbolOutOfRange { .. }
             | Self::SnowStage3Conductivity(_)
+            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::SnowMassTransitionLedger { .. }
             | Self::Erod13DomainViolation { .. }
@@ -154,7 +170,9 @@ impl Wb11HydrologyKernelGuardError {
     #[must_use]
     pub fn code(&self) -> String {
         match self {
-            Self::SnowStage3Conductivity(_) | Self::SnowLayerAggregateMismatch(_) => {
+            Self::SnowStage3Conductivity(_)
+            | Self::SnowStage3TurbulentTransfer(_)
+            | Self::SnowLayerAggregateMismatch(_) => {
                 return String::from("HKERNEL-WB14-RUNOFF-E-003");
             }
             Self::Erod13MissingRequiredSymbol { .. } => {
@@ -199,6 +217,7 @@ impl Wb11HydrologyKernelGuardError {
             | Self::FluxSymbolOutOfRange { phase_class, .. }
             | Self::SnowMassTransitionLedger { phase_class, .. } => (phase_class, "003"),
             Self::SnowStage3Conductivity(_)
+            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::Erod13MissingRequiredSymbol { .. }
             | Self::Erod13NonFiniteSymbol { .. }
@@ -229,6 +248,7 @@ impl Wb11HydrologyKernelGuardError {
     fn display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
         match self {
             Self::SnowStage3Conductivity(_)
+            | Self::SnowStage3TurbulentTransfer(_)
             | Self::SnowLayerAggregateMismatch(_)
             | Self::SnowMassTransitionLedger { .. } => {
                 unreachable!("snow diagnostic errors use their typed display")
@@ -493,6 +513,22 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
                 phase_class.as_str(),
                 )
             }
+            Self::SnowStage3TurbulentTransfer(snapshot) => write!(
+                f,
+                "{code}: phase class {} snow Stage 3 {} turbulent transfer failed: {}; \
+                 pressure_pa={}, wind_m_s={}, air_temperature_c={}, surface_temperature_c={}, \
+                 air_vapor_pressure_pa={}, surface_vapor_pressure_pa={}, geometry={:?}",
+                snapshot.phase_class.as_str(),
+                snapshot.operator.id(),
+                snapshot.source,
+                snapshot.atmospheric_pressure_pa,
+                snapshot.wind_speed_m_s,
+                snapshot.air_temperature_c,
+                snapshot.surface_temperature_c,
+                snapshot.air_vapor_pressure_pa,
+                snapshot.surface_vapor_pressure_pa,
+                snapshot.geometry,
+            ),
             Self::SnowMassTransitionLedger {
                 phase_class,
                 source,
@@ -510,6 +546,7 @@ impl Error for Wb11HydrologyKernelGuardError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::SnowStage3Conductivity(snapshot) => Some(&snapshot.source),
+            Self::SnowStage3TurbulentTransfer(snapshot) => Some(&snapshot.source),
             Self::SnowMassTransitionLedger { source, .. } => Some(source),
             _ => None,
         }
