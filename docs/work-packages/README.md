@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260806-snow-stage3-evaluation-shadow-authority-001/` — EXECUTED /
+  EVALUATION AUTHORITY ADMITTED / RUNTIME UNCHANGED / REVIEW AND VERIFICATION
+  PASS: `SC-SNOWFREEZE-001` v127 preserves one production snow-mass authority
+  and admits exactly two tagged, default-off, consumer-forbidden evaluation
+  operators: same-state paired carriers and bounded sequential resolved
+  shadows. The snow/frost assurance source adopts the amendment at generation
+  `34f2f80e` while remaining DRAFT with no review, approval, release, or
+  publication roots. Persistence, seasonal chronology, terminal meltout,
+  receiving-surface disposition, implementation, promotion, and cutover remain
+  unauthorized. Solver extraction and behavior-neutral observability are next.
+
 - `20260805-snow-stage3-complete-carrier-shadow-melt-001/` — EXECUTED /
   CARRIER PLAUSIBILITY FAIL / STRUCTURAL AND AUTHORITY HOLD / REVIEW AND
   VERIFICATION PASS: contract v8 binds
@@ -450,13 +461,7 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-05 UTC`:
-
-- `20260806-snow-stage3-evaluation-shadow-authority-001/` -
-  EXECUTING / CONTRACT-FIRST: scope the `INV-SNOWFREEZE-091` second-state
-  prohibition so declared same-state carrier and bounded sequential resolved
-  evaluation shadows have explicit non-authoritative custody. Runtime,
-  persistence, seasonal claims, CoE ownership, and cutover remain unchanged.
+State as of `2026-08-06 UTC`:
 
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance

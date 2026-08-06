@@ -1,6 +1,6 @@
 # Stage 3 Evaluation Shadow Authority
 
-Status: `executing / contract-first / runtime unchanged`
+Status: `executed / evaluation authority admitted / runtime unchanged / review and verification PASS`
 
 Date: `2026-08-06`
 
@@ -232,11 +232,13 @@ publication surface.
   documentation, and test instructions.
 - [x] (2026-08-06) Froze the two evaluation operators and exclusions before
   canonical contract edits.
-- [ ] Commit scaffold checkpoint.
-- [ ] Amend v127 authority and contract-derived tests.
-- [ ] Adopt the revised source while preserving assurance DRAFT.
-- [ ] Complete independent review, validation, and finding disposition.
-- [ ] Archive prompt, reconcile terminal diff, verify twice, and close.
+- [x] (2026-08-06) Committed scaffold checkpoint `5858618e`.
+- [x] (2026-08-06) Amended v127 authority and contract-derived tests.
+- [x] (2026-08-06) Adopted the revised source while preserving assurance DRAFT.
+- [x] (2026-08-06) Completed independent review, validation, and finding
+  disposition.
+- [x] (2026-08-06) Archived the kickoff prompt byte-identically, reconciled the
+  terminal diff, and obtained dual terminal verification.
 
 ## Surprises & Discoveries
 
@@ -259,6 +261,11 @@ publication surface.
   complete state-changing forcing and independent clone ledgers, and that the
   DRAFT assurance narrative still named v126 after source adoption. Both are
   accepted findings; the package write set was expanded before remediation.
+- Observation: exact-head critical validation is dominated by intentionally
+  slow assurance publication-contract cases even for a contract-only source
+  amendment. Evidence: quick `2,193/2,193`, frost `360/360`, and full
+  `2,282/2,282` all passed at clean `e601f0f9`; the quick and full profiles took
+  about 38 and 44 minutes respectively.
 
 ## Decision Log
 
@@ -274,12 +281,41 @@ publication surface.
   DRAFT assurance report in the same increment. Rationale: canonical process
   authority changed; fail-closed assurance identity must remain current without
   implying review or approval. Date/Author: 2026-08-06 / Codex.
+- Decision: promote solver extraction and behavior-neutral observability to the
+  next campaign increment while retaining persistent accumulation, terminal
+  energy, land-surface receipt, and cutover holds. Rationale: v127 resolves the
+  evaluation-custody blocker without supplying those separate state/process
+  authorities. Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+Contract v127 now makes the narrow distinction the predecessor needed: a
+declared evaluation object is not a second production owner, but only exactly
+two fully specified operators qualify for that exception. Same-state paired
+carriers can compare formulations without evolving state; bounded sequential
+resolved shadows can claim physical within-interval chronology only when
+complete state-changing forcing, same-substep phase/liquid chronology, and
+independent mass/enthalpy/liquid ledgers close. Otherwise their result is only
+a bounded response experiment.
+
+No production Rust or runtime behavior changed. CoE remains authoritative,
+and persistent accumulation, terminal meltout, receiving-surface energy,
+promotion, defaults, retirement, and cutover remain held. The snow/frost
+assurance report adopts v127 at generation `34f2f80e` while remaining DRAFT
+with empty review, approval, realization, release, and publication authority.
+
+Dual contract review, independent QA, focused and all v127-pinned guards,
+strict Binding Exposure, assurance validation, formatting, Clippy, doctests,
+dependency policy, quick, frost, and full-workspace correctness pass. The
+successor is the mechanical solver extraction followed by behavior-neutral
+evaluation observability; no result-bearing four-site audit is authorized
+until that surface exists.
 
 ## Revision Note
 
 2026-08-06: Initial contract-first scaffold created from the revised Stage 3
 roadmap and predecessor HOLD.
+
+2026-08-06: Executed v127 authority amendment, DRAFT assurance source adoption,
+review remediation, critical validation, roadmap handoff, and terminal
+verification. Runtime remains unchanged.

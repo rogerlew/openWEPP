@@ -17,7 +17,7 @@ Evidence class: `Static + Ran`
 | B4 | Rust | low | accepted | Name the exact three-receipt chain and distinguish affected paths from byte changes. | closed |
 | Q1 | QA | high | accepted | Re-adopt final contract and report bytes; validate exact final generation. | closed |
 | Q2 | QA | high | accepted | Update current v127/generation prose while retaining historical immutable events. | closed |
-| Q3 | QA | medium | accepted | Record an exact terminal path manifest and actual-vs-affected distinction. | terminal artifact |
+| Q3 | QA | medium | accepted | Record an exact terminal path manifest and actual-vs-affected distinction. | closed in `exact-diff-reconciliation.md` |
 | Q4 | QA | medium | accepted | Strengthen exact operator cardinality and Binding Exposure status guards. | closed |
 
 No finding was rejected, deferred, or used to expand runtime authority.
