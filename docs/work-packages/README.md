@@ -11,14 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260805-snow-stage3-terminal-meltout-soil-handoff-001/` — SCAFFOLDED /
-  REVIEWED / PHASE-1 AUTHORITY PREFLIGHT REQUIRED: proposes a
-  tolerance-localized implicit/error-controlled terminal solve, actual-state
-  snow-free land-surface selection, terminal retained-water release, and
-  infiltration-first liquid disposition. The independent review requires
-  coupled surface/soil thermal-water-frost shadow state before any seasonal
-  claim. CoE remains authoritative; snow-computed excess cannot be dumped
-  directly into soil.
+- `20260805-snow-stage3-terminal-meltout-soil-handoff-001/` — EXECUTED /
+  PHASE-1 AUTHORITY HOLD / REVIEW AND VERIFICATION PASS: Phase 1 confirms
+  current contracts and pinned sources admit resolved-snow energy plus
+  infiltration-first liquid mass routing, but not the terminal integrator,
+  complete post-meltout energy recipient, or parallel persistent
+  snow/surface/soil/frost state. No contract, Rust, selector, test, or runtime
+  behavior changed. CoE remains authoritative. The land-surface-energy
+  authority gate is next for event-local work; coupled-state authority is an
+  additional prerequisite for persistence and seasonal claims.
 
 - `20260805-assure06-snow-frost-flagship-refresh-001/` — EXECUTING /
   SCAFFOLDED: refreshes the snow/frost flagship against campaign increments

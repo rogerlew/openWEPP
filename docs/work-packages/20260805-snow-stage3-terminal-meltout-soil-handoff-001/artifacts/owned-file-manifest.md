@@ -1,9 +1,21 @@
 # Owned-File Manifest
 
-Status: queued
+Status: narrowed for Phase-1 HOLD
 
-Evidence mode: not run. Narrow the package write set before production edits,
-including every affected snow, surface-cover, soil, evaporation, frost,
-infiltration/runoff, and runner owner. Reconcile it against the terminal diff.
-If the coupled state cannot fit a reviewed coherent write set, split the work
-prospectively before editing production code.
+Evidence class: Static. Base commit: `2f423325`.
+
+The authority `NO-GO` narrowed the executed write set before any production or
+contract edit:
+
+- `docs/work-packages/20260805-snow-stage3-terminal-meltout-soil-handoff-001/**`
+- `docs/ROADMAP.md`
+- `docs/work-packages/README.md`
+- `docs/planning/snow-surface-energy-balance-roadmap.md`
+
+Explicitly not edited:
+
+- every `SC-*` contract and `docs/specifications/science-contracts/index.md`;
+- all Rust production and test paths;
+- fixtures, manifests, selectors, schemas, and runtime/public outputs.
+
+The terminal diff must contain only the four documentation surfaces above.

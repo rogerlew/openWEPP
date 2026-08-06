@@ -1,6 +1,6 @@
 # Terminal Meltout And Land-Surface Handoff Artifacts
 
-Status: scaffolded / not run
+Status: executed Phase-1 authority HOLD / review and verification PASS
 
 This directory owns authority reconciliation, operand lineage,
 pre-implementation gates, implementation evidence, reviews, verification, and

@@ -1,6 +1,6 @@
 # Stage 3 Terminal Meltout And Land-Surface Handoff
 
-Status: `scaffolded / reviewed / Phase-1 authority preflight required`
+Status: `executed / Phase-1 authority HOLD / review and verification PASS`
 
 This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
 
@@ -161,11 +161,15 @@ amendment and review.
 Inventory snow, liquid, vapor, frost, soil, runoff, evaporation, runner, and
 surface-regime ownership. Author an operand-lineage table. Define the
 receiving-regime selector and decide whether canonical authority supports the
-complete post-meltout land-surface solve and all coupled persistent states;
-distinguish direct authority, justified inference, and missing authority.
-This is a go/no-go pre-implementation gate. If authority remains incomplete,
-close this package in a truthful `HOLD` or prospectively split an
-authority-admission successor before any production edit.
+complete post-meltout land-surface solve and, separately, all coupled
+persistent states; distinguish direct authority, justified inference, and
+missing authority. Complete land-surface-energy authority is a go/no-go gate
+for any terminal implementation. Coupled-state authority is an additional
+go/no-go gate for persistence, restart, Snowbird, and seasonal claims. If the
+land-surface-energy authority remains incomplete, close this package in a
+truthful `HOLD` or prospectively split an authority-admission successor before
+any production edit. If only coupled-state authority is missing, constrain
+execution and disposition to event-local evidence.
 
 ### Phase 2 — Contract Tests And Pre-Implementation Gate
 
@@ -279,8 +283,14 @@ primary executor may edit tracked files.
 - [x] Proposed enthalpy/event-driven meltout and recomputed land-surface
   handoff frozen before implementation.
 - [x] Independent scaffold review and six blocking findings dispositioned.
-- [ ] Package execution separately authorized and started.
-- [ ] Contract authority, implementation, gates, reviews, and disposition.
+- [x] (2026-08-06) User authorized package-end-to-end execution.
+- [x] (2026-08-06) Phase-1 authority and operand preflight executed against
+  canonical contracts, pinned WEPP, and libsnobal.
+- [x] (2026-08-06) Recorded a production-edit `HOLD`: the terminal integrator,
+  complete receiving-surface energy ledger, and parallel coupled-state
+  ownership are not canonically admitted.
+- [x] (2026-08-06) Independent HOLD review, dual verification, and final documentation
+  gates.
 
 ## Decision Log
 
@@ -297,9 +307,37 @@ primary executor may edit tracked files.
   receiving surface and liquid route depend on actual cover, frost, and water
   state; and seasonal coherence requires coupled receiving-state persistence.
   Date/Author: 2026-08-05 / Codex.
+- Decision: stop before contract-derived tests and production code. Rationale:
+  the Phase-1 gate found no authoritative event-local snow-free latent or
+  precipitation-heat solve, surface-water/unfrozen-soil enthalpy recipient, or
+  parallel persistent coupled-state ownership; `INV-SNOWFREEZE-091` currently
+  makes a second snow mass state closure-blocking. Date/Author: 2026-08-06 /
+  Codex.
+- Decision: separate the resume gates. Rationale: complete post-meltout
+  land-surface-energy authority is required for any event-local terminal
+  implementation, while parallel coupled-state authority is additionally
+  required only for persistence, restart, Snowbird, and seasonal claims.
+  Date/Author: 2026-08-06 / Codex.
+
+## Surprises And Discoveries
+
+- Libsnobal converts a sub-threshold remnant to `h2o_total` and then clears
+  snow thermal/liquid state; it does not provide the tolerance-localized
+  terminal enthalpy algorithm proposed here.
+- Pinned WEPP `tmpadj` supplies a legacy linearized surface-temperature driver
+  for frost heat flow, not an independently reconstructable general
+  land-surface energy ledger. The legacy `qwet` water-migration term is
+  inactive in the pinned baseline.
+- Existing runoff and water-balance contracts authoritatively route meltwater
+  through infiltration before residual runoff, but they own water depth/mass,
+  not surface-water or runoff sensible energy.
 
 ## Outcomes
 
-The scaffold review is dispositioned. Execution must begin with the Phase-1
-authority go/no-go gate and may truthfully close `HOLD` before production edits
-if complete receiving-surface and coupled-state authority cannot be admitted.
+The Phase-1 gate executed and blocked production edits. Current authority is
+sufficient for resolved-snow carrier accounting and infiltration-first liquid
+routing, but not for the terminal integrator, complete snow-free land-surface
+energy recipient, or a persistent parallel land-surface/soil/frost state. The
+package closes as an executed authority `HOLD`, never `complete`. Domain, QA,
+and Rust review findings were dispositioned, and both terminal verifiers pass.
+CoE remains the sole authoritative melt owner and no runtime behavior changed.

@@ -1,3 +1,4 @@
 # Active Prompts
 
-Contains the package-end-to-end kickoff prompt pending execution.
+No active prompts. Package execution ended in a reviewed and verified Phase-1
+authority `HOLD`.

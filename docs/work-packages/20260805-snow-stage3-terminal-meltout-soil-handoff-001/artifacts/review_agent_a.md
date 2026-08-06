@@ -43,3 +43,29 @@ Evidence mode: Static independent domain-science review by
 `Q_unallocated_after_exhaustion` to soil is correctly rejected because those
 fluxes use invalid snow-surface properties after the regime change. Before the
 corrections, the package was executable only to a Phase-1 authority `HOLD`.
+
+## Phase-1 Follow-Up Review
+
+Evidence mode: Static independent domain-science audit by the same read-only
+reviewer on 2026-08-06. Verdict: `NO-GO` for production implementation or a
+coherent seasonal shadow; `GO` only for authority-admission work and the
+truthful Phase-1 `HOLD`.
+
+The follow-up confirmed:
+
+- `INV-SNOWENERGY-029/030` and `INV-SNOWFREEZE-093` admit resolved-snow
+  carrier/phase chronology but leave terminal energy and residual snow without
+  a recipient;
+- libsnobal supplies threshold conversion, not event-localized numerics;
+- pinned `tmpadj` and frost sources supply a limited frost-boundary heat path,
+  not unfrozen-soil or surface-water enthalpy;
+- existing evaporation authority is daily, not an event-remainder vapor/latent
+  solve;
+- infiltration, soil-water storage, ponding, and residual runoff are admitted
+  as water-mass recipients only; and
+- a persistent second snow mass state conflicts with
+  `INV-SNOWFREEZE-091`, while no parallel coupled surface/soil/frost ownership
+  is admitted.
+
+Required sequencing is the two authority-admission prerequisites recorded in
+`worker-handoff.md`. No tracked file was edited by the reviewer.

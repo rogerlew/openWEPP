@@ -282,6 +282,18 @@ pre-implementation contract hold, not permission to install an energy sink.
 This work remains shadow-only until a separate atomic cutover closes every
 owner, consumer, default, rollback, and assurance gate.
 
+The 2026-08-06 Phase-1 audit established an executed authority `HOLD` before
+production edits; independent review and dual terminal verification pass.
+Pinned libsnobal supplies a
+sub-threshold snow-to-water precedent but no error-controlled terminal event;
+pinned WEPP `tmpadj` supplies a frost surface-temperature driver but no closed
+general land-surface energy ledger. Current contracts also do not authorize a
+parallel persistent coupled state, and `INV-SNOWFREEZE-091` treats a second
+snow mass state as closure-blocking. The post-meltout land-surface-energy
+authority item must pass before event-local terminal implementation resumes;
+the coupled-shadow-state authority item must additionally pass before
+persistence, restart, Snowbird reconstruction, or seasonal claims resume.
+
 ## 7. Stop-Loss
 
 Stop without promotion when any of the following is true:
