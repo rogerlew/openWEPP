@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `queued`.
+Status: `executed / closure evidence assembled`.
 
 This directory owns the result-blind protocol, authority and operand freezes,
 contract/test/implementation evidence, compact four-site results, independent

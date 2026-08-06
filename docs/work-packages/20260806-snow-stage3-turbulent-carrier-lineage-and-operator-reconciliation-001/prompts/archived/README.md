@@ -1,3 +1,3 @@
 # Archived Prompts
 
-The active kickoff moves here byte-identically at closure.
+The package-end-to-end kickoff is archived here byte-identically at closure.

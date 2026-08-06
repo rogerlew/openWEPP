@@ -1,6 +1,6 @@
 # Line-Count Governance
 
-Status: `result-blind baselines frozen`.
+Status: `PASS with WARN dispositions`.
 
 Evidence mode: `Ran: wc -l at scaffold commit 30e843d4116411520cf9eeb7f08a3bf1ce853b78`.
 
@@ -25,6 +25,13 @@ Current continuity-corrected implementation counts:
 
 | File | Current lines | Disposition |
 | --- | ---: | --- |
-| orchestrator `stage3_solver.rs` | 2,393 | `WARN`; below the 3,000-line closure block. Retain the already-declared next mechanical extraction intent. |
-| orchestrator `stage3_solver/evaluation.rs` | 1,352 | Below WARN. |
+| orchestrator `stage3_solver.rs` | 2,406 | `WARN`; below the 3,000-line closure block. Retain the already-declared next mechanical extraction intent. |
+| orchestrator `stage3_solver/evaluation.rs` | 1,354 | Below WARN. |
 | runner `00c_day_input_builder_impl.rs` | 2,917 | `WARN`; six lines below scaffold and below the 3,000-line closure block. |
+
+Additional touched production Rust files remain below `2,000` lines; the
+largest are `surface_energy.rs` at `1,823`, `runoff_reconciliation.rs` at
+`1,378`, and `03_kernel_support_00_support_helpers.rs` at `1,287`. No touched
+or added `.rs` file reaches the `3,000`-line closure block. The `stage3_solver`
+WARN remains mechanical extraction debt and does not conceal a current
+correctness or authority failure.

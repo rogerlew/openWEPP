@@ -1,3 +1,3 @@
 # Active Prompts
 
-The package-end-to-end kickoff is active while this package executes.
+No prompt is active; execution has reached closure disposition.
