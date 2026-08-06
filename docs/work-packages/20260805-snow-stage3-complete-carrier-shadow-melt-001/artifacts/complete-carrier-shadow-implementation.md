@@ -16,6 +16,13 @@ Hourly precipitation totals are converted to a rate with the fixed
 rain/snow mass and precipitation-advected heat from being integrated once per
 substep instead of exactly once per hour.
 
+Closeout review found and corrected two shadow-only arithmetic defects on
+2026-08-06. Geometric snowfall is now converted to SWE with the authoritative
+`0.1` factor before forming mass flux, and fusion uses contract-bound
+`333,600 J kg^-1`. A focused snow-only advected-heat regression guards both the
+SWE conversion and once-per-hour cadence. The corrected Snowbird result is
+recorded separately.
+
 The shadow uses the typed version-8 CLIGEN geometry. It fails closed when net
 longwave is absent, geometry is invalid, precipitation lacks hydrometeor
 temperature, or a typed meteorology primitive rejects its domain. The

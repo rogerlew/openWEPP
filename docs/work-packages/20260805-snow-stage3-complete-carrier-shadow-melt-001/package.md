@@ -206,7 +206,9 @@ may not edit tracked files or reinterpret frozen acceptance rules.
   shadow with explicit fusion and terminal-energy operands; persistent
   cross-day state and linked liquid disposition remain open.
 - [x] Reconstructed the real Snowbird primary windows and dispositioned the
-  prescribed-state carrier plausibility screen as failed without tuning.
+  prescribed-state carrier plausibility screen as failed without tuning, then
+  reran the frozen evaluation after correcting snowfall-mass and fusion-heat
+  arithmetic.
 - [x] Dispositioned resolved-domain terminal allocation as numerically closed
   while leaving the thin-pack terminal event open and not evaluable.
 - [x] Dispositioned all four chronology predictions as not evaluable because
@@ -229,8 +231,9 @@ may not edit tracked files or reinterpret frozen acceptance rules.
   Date/Author: 2026-08-05 / Codex.
 - Decision: close the implementation as an executed HOLD rather than extend it
   after inspecting the Snowbird result. Rationale: the frozen carrier screen
-  failed at `+169.684 MJ m^-2`; current trace observability cannot isolate the
-  responsible term, and persistence would require additional state authority.
+  failed at corrected `+170.2536 MJ m^-2`; current trace observability cannot
+  isolate the responsible term, and persistence would require additional state
+  authority.
   Date/Author: 2026-08-06 / Codex.
 - Decision: route evaluation-shadow authority and per-term multi-site carrier
   observability ahead of terminal land-surface work. Rationale: a downstream
@@ -249,23 +252,26 @@ authoritative melt and mass owner.
 
 The frozen Snowbird absorbed-shortwave median was independently recovered.
 The complete-carrier prescribed-state screen then produced median seasonal
-energy of `+169.6840 MJ m^-2`, positive excess of `196.5771 MJ m^-2`, shadow
-melt of `0.5893 m` SWE, and authoritative CoE raw melt of `0.4101 m`. The
+  energy of `+170.2536 MJ m^-2`, positive excess of `196.4733 MJ m^-2`, shadow
+  melt of `0.5889 m` SWE, and authoritative CoE raw melt of `0.4101 m`. The
 strongly positive carrier result fails the prospective plausibility screen. It
 does not identify a defective flux term and is not a coherent post-cutover
 seasonal balance.
 
-Resolved evaluated substeps closed within `1.409e-9 J m^-2`, and their median
-`Q_unallocated_after_exhaustion` was numerically zero. The shadow stops before
-the unresolved `1 kg m^-2` terminal event, so residual-snow exhaustion,
-post-snow energy, and the actual terminal gate remain open. The legacy
+Resolved evaluated substeps satisfied the pre-vapor-debit allocation identity
+within `1.521e-9 J m^-2`, and their median
+`Q_unallocated_after_exhaustion` was numerically zero. The shadow does not emit
+cold content exported with sublimated mass, so this is not whole-state energy
+closure. It also stops before the unresolved `1 kg m^-2` terminal event;
+residual-snow exhaustion, post-snow energy, and the actual terminal gate remain
+open. The legacy
 `unused_positive_energy` quantity and new `Q_unallocated_after_exhaustion` are
 not interchangeable.
 
 The four frozen chronology directions are not evaluable. The shadow advances
 sequentially only within each daily call, reinitializes from the post-CoE pack,
 and lacks persistent snowfall, liquid, restart, and receiving-state ownership.
-The adverse `0.5893 m` versus `0.4101 m` melt comparison is a diagnostic signal,
+The adverse `0.5889 m` versus `0.4101 m` melt comparison is a diagnostic signal,
 not evidence that mid-winter melt increased in a coherent Stage 3 simulation.
 
 The package closes as an executed HOLD. It does not authorize persistence,

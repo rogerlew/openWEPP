@@ -11,6 +11,19 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260805-snow-stage3-complete-carrier-shadow-melt-001/` — EXECUTED /
+  CARRIER PLAUSIBILITY FAIL / STRUCTURAL AND AUTHORITY HOLD: contract v8 binds
+  explicit CLIGEN virtual-instrument geometry, and a default-off complete
+  carrier plus within-day cold-content/fusion shadow ran through the Snowbird
+  direct-production consumer without changing authoritative CoE state. Review
+  corrected snowfall advected-heat mass and fusion heat, then the frozen rerun
+  remained strongly positive at `+170.2536 MJ m^-2`; shadow melt was
+  `0.5889 m` versus CoE `0.4101 m`. Daily reinitialization makes chronology
+  not evaluable. Per-term trace lineage, shadow cold-content export,
+  persistence, terminal meltout, receiving-surface authority, and the
+  `3,177`-line solver extraction remain open. No cutover or default change is
+  authorized.
+
 - `20260805-snow-stage3-terminal-meltout-soil-handoff-001/` — EXECUTED /
   PHASE-1 AUTHORITY HOLD / REVIEW AND VERIFICATION PASS: Phase 1 confirms
   current contracts and pinned sources admit resolved-snow energy plus

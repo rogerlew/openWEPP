@@ -194,6 +194,7 @@ successor package must materialize and validate the derivative before using it.
 | 21M | [`SNOW-WARM-MIXED-COE-PHYSICS-AUTHORITY-AUDIT`](../work-packages/20260804-snow-warm-mixed-coe-physics-authority-audit-001/package.md) — **complete / baseline fidelity with authority gap / review and verification pass** | Exact reconstruction over `394705` warm/mixed hours excludes a Rust term-generation defect. The 2008 canopy branch is the sole net-positive `C` subcomponent in signed site sums; material post-handbook changes lack cited independent validation or bounded transferability authority. | No correction is authorized. Route the intentional CoE/Stage-3 ownership seam to contract-first 21N. |
 | 21N | [`SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION`](../work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/package.md) — **executed / Stage 3 authority admitted / assurance refreshed** | Stage 3 is the admitted future sole melt owner; current CoE remains byte-identical compatibility runtime on implementation hold. Dual science review and focused authority gates pass. | ASSURE-06 has replaced the stale locked flagship with an exact pending-review root and passing campaign gates. Later runtime implementation and cutover remain separately unauthorized. |
 | 22 | [`ASSURE-06` snow/frost flagship authority refresh](../work-packages/20260805-assure06-snow-frost-flagship-refresh-001/package.md) / `SNOW-SURFACE-EB-05` campaign assurance closeout — **HOLD-INDEPENDENT-HUMAN-REVIEW** | Refreshed the flagship against 21K-21N and v7/v126 authority, reproduced all 188 retained values, and issued generation `0a63d3fe` in `IN_REVIEW`. | Internal reviews and amendment/quick/frost/full gates pass. Target authority remains distinct from implemented physics, efficacy, noninferiority, default change, and cutover. Warm-maritime conifer transfer remains withheld; distinct human review and approval remain required. |
+| 23 | [`SNOW-STAGE3-COMPLETE-CARRIER-SHADOW-MELT`](../work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/package.md) — **executed / carrier plausibility FAIL / structural and authority HOLD** | Contract v8 binds the CLIGEN virtual-instrument geometry. A default-off, non-mutating complete carrier and within-day cold-content/fusion shadow ran through the real Snowbird consumer. After review corrections, the frozen screen remains strongly positive at `+170.2536 MJ m^-2`; shadow melt is `0.5889 m` versus CoE `0.4101 m`. | Chronology is not evaluable because state reinitializes daily. Per-term shadow lineage, cold-content export, persistence, terminal meltout, and receiving-surface authority remain open. CoE stays authoritative; the `3,177`-line solver requires extraction before feature work. |
 
 EB-04B assigned all captured failures and correction authority. EB-04C closes
 the 22 thermal failures, and EB-04D closes both isolated geometry failures.
@@ -283,16 +284,39 @@ This work remains shadow-only until a separate atomic cutover closes every
 owner, consumer, default, rollback, and assurance gate.
 
 The 2026-08-06 Phase-1 audit established an executed authority `HOLD` before
-production edits; independent review and dual terminal verification pass.
-Pinned libsnobal supplies a
+terminal production edits; independent review and dual terminal verification
+pass. Pinned libsnobal supplies a
 sub-threshold snow-to-water precedent but no error-controlled terminal event;
 pinned WEPP `tmpadj` supplies a frost surface-temperature driver but no closed
-general land-surface energy ledger. Current contracts also do not authorize a
-parallel persistent coupled state, and `INV-SNOWFREEZE-091` treats a second
-snow mass state as closure-blocking. The post-meltout land-surface-energy
-authority item must pass before event-local terminal implementation resumes;
-the coupled-shadow-state authority item must additionally pass before
-persistence, restart, Snowbird reconstruction, or seasonal claims resume.
+general land-surface energy ledger.
+
+The predecessor complete-carrier execution materially changes the order. Its
+corrected frozen Snowbird screen remains `+170.2536 MJ m^-2`, while daily
+post-CoE reinitialization makes the chronology predictions not evaluable. The
+near-zero resolved-domain `Q_unallocated_after_exhaustion` is only a
+pre-vapor-debit allocation result above the thin-pack cutoff; it does not close
+whole-shadow state energy or terminal meltout. A receiving-surface subsystem
+cannot repair this upstream carrier plausibility failure.
+
+The revised sequence is therefore:
+
+1. scope a declared evaluation shadow under `INV-SNOWFREEZE-091`, freezing
+   same-state carrier and sequential resolved-shadow operators;
+2. mechanically extract the shadow solver, then publish shadow-specific flux,
+   cold-content-export, mass, residual, and coverage operands;
+3. run a frozen paired-window per-term audit at Mica Creek, Niwot, Paradise,
+   and Snowbird;
+4. admit and run persistent accumulation-season shadow state only if that
+   audit is physically interpretable;
+5. admit terminal enthalpy-event numerics separately from the first-class
+   snow-free land-surface energy subsystem; and
+6. consider one atomic CoE retirement only after all owner, consumer, default,
+   rollback, assurance, terminal, and receiving-surface gates pass.
+
+The land-surface subsystem remains necessary for post-meltout continuation and
+cutover, but it is a cross-domain program rather than the next snow diagnostic
+prerequisite. Until then, event-local or persistent shadow results must be
+censored at every unresolved terminal/receiving boundary.
 
 ## 7. Stop-Loss
 
