@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: `PASS pending independent v129 contract review`.
+Status: `HOLD pending amended v129 PASS/PASS re-review`.
 
 Evidence mode: `Ran`.
 

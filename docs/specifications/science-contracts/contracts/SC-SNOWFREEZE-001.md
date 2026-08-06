@@ -207,9 +207,14 @@ Out of scope:
 | `snow_meltwater_flux_temperature` | `degC` | Typed intensive temperature assigned to the daily meltwater flux when positive routed liquid leaves the pack. After Paradigm 2 multilayer promotion, it is a supported hillslope-level water-temperature source published as nullable WAT parquet `MeltwaterTemperature`; it must not by itself activate HBP/watershed serialization or in-stream routing. | `layered_thermal_liquid_v1` production-supported opt-in / winter-column sub-solver / hillslope WAT output | stream-temperature source output |
 | `snow_stage3_energy_residual` | `J m^-2` | Diagnostic residual for Stage 3 surface-energy, conduction, cold-content, and latent refreeze accounting. Material non-closure is a hard gate failure, not a hidden correction. | `layered_thermal_liquid_v1` candidate / winter-column sub-solver | Stage 3 conservation evidence |
 | `snow_evaluation_operator` | `enum` | Evaluation-only operator identity: `same_state_paired_carrier_v1` or `sequential_resolved_shadow_v1`. Absence means no evaluation shadow. Unsupported or ambiguous values fail the evaluation request without changing production. | typed evaluation request | evaluation runner and evidence consumer only |
-| `snow_evaluation_authority_tag` | `record` | Mandatory non-authoritative custody tag containing operator ID, named authoritative source snapshot, interval/support, cadence, carrier identity, coverage, unresolved boundaries, and admitted claim class. For the paired operator it additionally contains one pairing ID, exactly two stable carrier formulation/version arm IDs, per-arm component IDs with explicit not-applicable semantics, and identical snapshot, forcing, geometry (`z_T`, `z_q`, `z_u`, `z_0`), cadence, coverage, and non-formulation-operand fingerprints. | evaluation-request resolver | evaluation evidence consumer only |
+| `snow_evaluation_authority_tag` | `record` | Mandatory non-authoritative custody tag containing operator ID, named authoritative source snapshot, interval/support, cadence, carrier identity, coverage, unresolved boundaries, and admitted claim class. For the paired operator it additionally contains one pairing ID, exactly two stable carrier formulation/version arm IDs, per-arm component IDs with explicit not-applicable semantics, and identical snapshot, forcing, geometry (`z_T`, `z_q`, `z_u`, `z_0,aero`), cadence, coverage, and non-formulation-operand fingerprints. | evaluation-request resolver | evaluation evidence consumer only |
 | `snow_evaluation_shadow_state` | `typed snow mass/enthalpy clone` | Independently owned evaluation state cloned from the tagged authoritative snapshot. It cannot alias, mutate, replace, route into, publish as, or select production state and cannot outlive the operator boundary. | declared evaluation operator | evaluator only; production consumers forbidden |
 | `snow_evaluation_observability` | `internal tagged schema-v5 or schema-v6 record` | Schema v5 retains its historical evaluation-only operator/tag, fingerprint, component, state, residual, support, and coverage semantics. Schema v6 additively carries ordered duration-tagged substep primitives, effective carrier-input custody, control-volume projection, turbulent solver status, stability/exchange operands, radiation/albedo lineage, precipitation-advection operands, clone-state endpoints, and active/lower cold-content changes for exact independent reconstruction. Disabled/default rows remain exact schema v4. | typed evaluation evidence writer | internal evaluation consumer only; production/public consumers forbidden |
+| `snow_stage3_reconciliation_identity_support` | `enum/count/s/hex-u64` | Schema-v6 operator, projection, applicability, tuple indices, elapsed/duration support, and source/forcing/geometry/effective/layer-state fingerprints. | enabled evaluation companion | independent internal reconciliation consumer only |
+| `snow_stage3_reconciliation_state` | `kg m^-2`, `m`, `kg m^-3`, `J m^-2`, `degC`, or nullable same unit | Schema-v6 active/total clone mass, depth, density, cold content, temperature, layer membership, and before/after endpoints. Nullable active after-state is permitted only after typed post-substep meltout; total empty-state fields remain applicable. | enabled evaluation companion | independent internal reconciliation consumer only |
+| `snow_stage3_reconciliation_forcing_radiation` | `degC`, `K`, `Pa`, `m s^-1`, `m`, `MJ m^-2 per hourly bin`, `MJ m^-2 d^-1`, `fraction`, `W m^-2`, `kg m^-2 s^-1`, or `J kg^-1 K^-1` | Exact hourly/daily forcing, virtual-instrument geometry, albedo lineage, shortwave/longwave primitives, and precipitation-advection operands used by the existing carrier. | enabled evaluation companion | independent internal reconciliation consumer only |
+| `snow_stage3_reconciliation_turbulence` | `enum/count/fraction/m/m s^-1/kg m^-3/kg kg^-1/J kg^-1/W m^-2/kg m^-2 s^-1` | Exact Monin-Obukhov options, termination/status, stability corrections, log factors, exchange state, heat/mass fluxes, and nullable Obukhov length from the shared private solver. | enabled evaluation companion | independent internal reconciliation consumer only |
+| `snow_stage3_reconciliation_endpoint_fluxes` | `W m^-2`, `J m^-2`, or `kg m^-2` | Exact external carrier, internal active/lower conduction, vapor exchange, melt/sublimation/deposition, active/lower cold changes, cold export, and closure operands over each tuple. | enabled evaluation companion | independent internal reconciliation consumer only |
 | `snow_shallow_compaction_guard_depth_threshold` | `m` | Opt-in shallow-pack density guard threshold. SNOWDENSITY-10.3.17 fixes this threshold at `0.25 m`, derived from Marks/SNOBAL active surface-layer depth authority rather than fixture fitting. | `physics_bulk_shallow_guard_v1` candidate | density-compaction branch guard and diagnostic trace reconstruction |
 | `snow_climate_class` | `enum` | Sturm snow climate class label for the climate-class density candidate: `tundra`, `taiga`, `alpine`, `maritime`, `prairie`, or `ephemeral`. Runtime class assignment must be derived from the run's own air-temperature, precipitation, and wind climate under Sturm 1995 authority; geographic or site-identity lookup is invalid. | `physics_bulk_climate_class_density_v1` candidate | density specialization and diagnostic trace reconstruction |
 | `snow_climate_class_assignment_source` | `enum/string` | Provenance marker for climate-class assignment. Valid promotion evidence must be `forcing_derived_sturm1995`; `NSIDC-0768` may appear only as an independent cross-check and never as the runtime assignment source. Missing, non-authoritative, rare-category, or wind-ambiguous assignment must fail closed. | `physics_bulk_climate_class_density_v1` candidate | class-assignment audit and no-fixture-fitting guard |
@@ -555,6 +560,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | HPHYS0271/HPHYS0272 melt-forcing diagnostics | `snow.hourly.melt_raw_m_####`, `snow.hourly.melt_m_####`, `snow.hourly.melt_amelt_in_####`, `snow.hourly.melt_bmelt_in_####`, `snow.hourly.melt_cmelt_in_####`, `snow.hourly.melt_dmelt_in_####`, `snow.hourly.melt_hrtef_f_####`, `snow.hourly.melt_hrdtf_f_####`, `snow.hourly.melt_vwmph_####`, `snow.hourly.melt_rainin_####`, `snow.hourly.melt_wind_adjustment_####`, `snow.hourly.melt_branch_active_####`, `winter.hourly.rad_mj_m2_####`, `winter.hourly.dewpoint_c_####`, `winter.hourly.wind_m_s_####` | Opt-in run-trace evidence for classifying H1 day-36 spurious melt against `melt.for` term-level lineage, hourly forcing, and `SC-CLIMATE-001#INV-CLIMATE-013` radiation units before changing production physics | melt depths `m`; radiation `MJ m^-2 h^-1`; melt terms in inch-equivalent pre-`0.0254` conversion, temperatures `degF`/`degC`, wind `mph`/`m s^-1`, rain `in`, flags `0/1` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ws_frz`, `Nft` | `frost.runtime_ws_frz`, `frost.runtime_nft` (`HillslopeProductionStateSymbol::{Wb14FrostRuntimeWsFrz,Wb14FrostRuntimeNft}`) | frozen-soil coupling boundary outputs | units preserved as declared | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `InfCap_frz` | `frost.runtime_infcap_frz` (`HillslopeProductionStateSymbol::Wb14FrostRuntimeInfcapFrz`) | frozen-soil infiltration-capacity boundary output | `m s^-1` required at exported boundary | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow_stage3_operator_reconciliation_tuple` | enabled-only boxed `DirectSnowStage3OperatorReconciliationDiagnostics` / ordered `DirectSnowStage3OperatorReconciliationTuple` companion projected to internal schema v6 | Evaluation-only scalar/vector diagnostic exception: it never crosses a production kernel boundary, is not registered as a `HillslopeProductionStateSymbol` or `HillslopeProductionFluxSymbol`, and is consumer-forbidden outside the independent internal analyzer. Each exact field, unit, time/area basis, nullable rule, and equation is bound by the v129 reconciliation addendum. | Typed meteorology wrappers validate dimensional carrier inputs; Rust field suffixes and the canonical schema table preserve SI units; the only explicit conversions are hourly radiation `MJ m^-2 * 10^6 / 3600 -> W m^-2`, snowfall geometry `m * 0.1 * 1000 / 3600 -> kg m^-2 s^-1`, rain `m * 1000 / 3600 -> kg m^-2 s^-1`, and `flux * duration -> J m^-2` or `kg m^-2`. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -1432,6 +1438,8 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-015 | Stage-3 published liquid-closure reconstruction (`INV-SNOWFREEZE-090`) | `abs(incoming_liquid_m - routed_liquid_m - retained_liquid_delta_m - refrozen_liquid_m - liquid_closure_residual_m) <= 1e-9 m` | Matches the existing Stage-3 runtime closure guard. Trace/reconstruction tolerance only; it does not authorize clamping, canonicalization, inferred operands, or process changes. |
 | TOL-SNOWFREEZE-016 | Solid-to-liquid compact-ledger reconstruction (`INV-SNOWFREEZE-091`) | `abs(liquid_handoff_m - snowpack_swe_loss_m - rain_released_m) <= 1e-9 m` | Matches the existing snow-partition arithmetic and daily snow-storage tolerance. Compact-ledger/reconstruction tolerance only; raw signed melt and redistributed positive melt remain distinct context and cannot be substituted for bounded authoritative state loss. |
 | TOL-SNOWFREEZE-017 | Wet-compaction daily operand reconstruction (`INV-SNOWFREEZE-092`) | `abs(wet_compaction_liquid_input_m - sum(max(hourly melt_raw_m, 0)) - rain_retained_m - rain_released_m) <= 1e-12 m` | Exact-source reconstruction tolerance only. It does not authorize clamping, inferred routing/storage aliases, coefficient changes, or a second density input. |
+| TOL-SNOWFREEZE-018 | Schema-v6 tuple reconstruction and endpoint closure (`INV-SNOWFREEZE-096`) | flux: `max(1e-10 W m^-2, 1e-12 * sum_abs_operands)`; mass: `max(1e-12 kg m^-2, 1e-12 * sum_abs_operands)`; energy/cold: `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)` | Consumer reconstruction only. It does not authorize producer correction, canonicalization, dropped tuples, or replacement of exact same-state `to_bits` endpoint equality. |
+| TOL-SNOWFREEZE-019 | Operator-reconciliation sign, predecessor, and support classification (`INV-SNOWFREEZE-096`) | absolute zero/sign threshold `1e-6 J m^-2`; Snowbird predecessor median tolerance `1e-7 MJ m^-2`; each contributing water-year bridge uses `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)`; support materiality ratio threshold `0.05` | Frozen classification tolerances, not physics-fit thresholds. Exact-zero denominator makes the support ratio N/A; it is never coerced to zero. |
 
 ## Stage 3 Evaluation Shadow Authority Addendum
 
@@ -1464,6 +1472,236 @@ tag emission cannot close negative consumer reachability.
 
 This addendum is authority for later implementation packages, not evidence
 that either operator is currently implemented.
+
+## Stage 3 Turbulent Carrier And Operator Reconciliation Addendum
+
+This addendum is the canonical algorithm and schema authority for
+`INV-SNOWFREEZE-096`. It is subordinate to the evaluation custody of
+`INV-SNOWFREEZE-094/095`, the unresolved meltout/terminal boundaries of
+`SC-SNOWENERGY-001#INV-SNOWENERGY-029`, and the same-substep liquid chronology
+required by `SC-SNOWENERGY-001#INV-SNOWENERGY-030`. It exposes existing
+calculations only; it does not satisfy either snow-energy invariant or admit a
+physical seasonal trajectory.
+
+### Exact schema-v6 surface and unit basis
+
+The JSONL row inherits receipt-bound `site_id` and its existing top-level
+`day_index` and `lane_index`; every tuple adds `operator_id`, `hour_index`,
+`substep_index`, `elapsed_start_seconds`, `requested_seconds`,
+`evaluated_seconds`, `duration_seconds`, `applicable`, and
+`applicability_reason`. Fingerprint and projection custody consists exactly of
+`source_fingerprint_fnv1a64`, `forcing_fingerprint_fnv1a64`,
+`geometry_fingerprint_fnv1a64`, `effective_input_fingerprint_fnv1a64`, and
+`projection_id`.
+
+Control-volume and endpoint fields are exactly:
+
+- `active_layer_prefix_count_before`, `total_layer_count_before`,
+  `active_layer_state_fingerprint_before_fnv1a64`, and
+  `total_layer_state_fingerprint_before_fnv1a64`;
+- `active_layer_prefix_count_after`, `total_layer_count_after`,
+  `active_layer_state_fingerprint_after_fnv1a64`, and
+  `total_layer_state_fingerprint_after_fnv1a64`;
+- `after_surface_applicable` and `after_surface_applicability_reason`;
+- `active_ice_mass_before_kg_m2`, `active_ice_mass_after_kg_m2`,
+  `total_ice_mass_before_kg_m2`, and `total_ice_mass_after_kg_m2`;
+- `active_depth_before_m`, `active_depth_after_m`,
+  `active_density_before_kg_m3`, and `active_density_after_kg_m3`;
+- `active_cold_before_j_m2`, `active_cold_after_j_m2`,
+  `total_cold_before_j_m2`, and `total_cold_after_j_m2`; and
+- `surface_temperature_before_c` and `surface_temperature_after_c`.
+
+Forcing, radiation, and albedo lineage fields are exactly
+`air_temperature_c`, `dewpoint_c`, `wind_speed_m_s`, `air_pressure_pa`,
+`hourly_radiation_mj_m2`, `daily_solar_radiation_mj_m2`,
+`daily_extraterrestrial_radiation_mj_m2`, `daylight`,
+`canopy_cover_fraction`, `rain_m`, `snowfall_geometric_m`,
+`rain_mass_flux_kg_m2_s`, `snow_mass_flux_kg_m2_s`, `rain_temperature_c`,
+`snow_temperature_c`, `rain_specific_heat_j_kg_k`,
+`snow_specific_heat_j_kg_k`, `incoming_shortwave_w_m2`,
+`snow_albedo_fraction`, `snow_albedo_source_id`, `snow_albedo_model_id`,
+`snow_albedo_accumulated_positive_temperature_c_day`,
+`net_shortwave_w_m2`, `actual_vapor_pressure_pa`,
+`longwave_cloud_fraction`, `sky_view_fraction`,
+`atmospheric_longwave_w_m2`, `canopy_longwave_w_m2`,
+`subcanopy_longwave_w_m2`, `outgoing_longwave_w_m2`, and
+`net_longwave_w_m2`. `snow_albedo_source_id` is exactly
+`snow_albedo_state` when state exists or
+`stage3_default_snow_albedo_0p82` otherwise; model and accumulated-positive-
+temperature fields are null only for that fallback.
+
+Turbulent geometry and primitive fields are exactly
+`air_temperature_height_m`, `vapor_pressure_height_m`,
+`wind_speed_height_m`, `aerodynamic_roughness_length_m`,
+`turbulent_max_iterations`, `turbulent_convergence_tolerance`,
+`surface_vapor_pressure_pa`, `air_potential_temperature_k`,
+`surface_temperature_k`, `specific_humidity_air_kg_kg`,
+`specific_humidity_surface_kg_kg`, `air_density_kg_m3`,
+`displacement_height_m`, `log_momentum`, `log_sensible`, `log_latent`,
+`turbulent_termination_status`, `stability_class`, `obukhov_length_m`,
+`psi_momentum`, `psi_sensible`, `psi_latent`, `turbulent_iterations`,
+`friction_velocity_m_s`, `sensible_exchange_velocity_m_s`,
+`latent_exchange_velocity_m_s`, `surface_latent_heat_j_kg`,
+`vapor_mass_flux_kg_m2_s`, `sensible_flux_w_m2`, and `latent_flux_w_m2`.
+The height fields are the virtual instruments `z_T`, `z_q`, `z_u`, and
+`z_0,aero`; bare `z_0` remains a rejected alias because it names the Stage 3
+thermal active depth elsewhere.
+
+Transfer and endpoint-ledger fields are exactly
+`precipitation_advected_flux_w_m2`, `complete_external_flux_w_m2`,
+`vapor_mass_exchange_kg_m2`, `sublimation_kg_m2`, `deposition_kg_m2`,
+`melt_kg_m2`, `active_cold_energy_change_j_m2`,
+`lower_cold_energy_change_j_m2`, `cold_content_export_j_m2`,
+`internal_active_lower_conduction_j_m2`,
+`legacy_sequential_complete_j_m2`, and `energy_closure_residual_j_m2`.
+
+Temperatures use `degC` except the two explicit `*_k` fields; pressure uses
+`Pa`; lengths use `m`; velocities use `m s^-1`; density uses `kg m^-3`;
+specific humidity uses `kg kg^-1`; heat capacity uses `J kg^-1 K^-1`;
+latent heat uses `J kg^-1`; energy flux uses `W m^-2`; energy uses `J m^-2`;
+mass uses `kg m^-2`; and mass flux uses `kg m^-2 s^-1`. Radiation source
+fields retain `MJ m^-2` per hourly bin or `MJ m^-2 d^-1` as named. Positive
+energy and vapor mass point toward snow. Exact conversions are
+`incoming_shortwave_w_m2 = hourly_radiation_mj_m2 * 1e6 / 3600`,
+`rain_mass_flux = rain_m * 1000 / 3600`, and
+`snow_mass_flux = snowfall_geometric_m * 0.1 * 1000 / 3600`; dividing hourly
+precipitation by substep duration is prohibited. Energy and mass integrate as
+`sum(flux * duration_seconds)`.
+
+These fields form one evaluation-only diagnostic scalar/vector exception to
+the production boundary registry. They are not production state/flux symbols,
+cannot reach a production/public consumer, and retain typed meteorology units
+at the carrier boundary plus unit-bearing field names and independent
+dimensional reconstruction at JSON egress.
+
+### Applicability, ordering, and state closure
+
+An evaluated tuple has `applicable=true`, reason `evaluated`, positive finite
+`duration_seconds`, and finite values for every selected-equation field. A
+non-evaluated hour has no tuple and exactly one hourly reason:
+`no_resolved_snow_at_day_start`, `thin_pack_boundary_reached`, or
+`operator_not_selected`. Same-state emits one `3600 s` tuple per evaluated
+hour. Sequential emits every existing dynamic substep, with no diagnostic cap
+or sampling; the current maximum is `24 * 60 = 1,440` tuples per day.
+Substeps are ordered by hour then index, start at zero, are contiguous and
+non-overlapping, and stay inside `[0, 3600]`.
+
+JSON `null`, never numeric zero, represents N/A state, endpoint, stability, or
+transfer. After a substep removes the resolved active surface,
+`after_surface_applicable=false` with reason
+`post_substep_no_resolved_surface`; every active after-surface field/count/hash
+is null, while `total_layer_count_after`, `total_ice_mass_after_kg_m2`,
+`total_cold_after_j_m2`, and the empty total-state fingerprint remain
+applicable. Otherwise the reason is `resolved_surface`. Same-state before and
+after state, counts, and fingerprints require exact `to_bits` equality.
+
+For every sequential tuple the independent consumer enforces:
+
+```text
+total_ice_mass_after_kg_m2
+  = total_ice_mass_before_kg_m2 - melt_kg_m2 - sublimation_kg_m2
+    + deposition_kg_m2
+total_cold_after_j_m2
+  = total_cold_before_j_m2 - active_cold_energy_change_j_m2
+    - lower_cold_energy_change_j_m2 - cold_content_export_j_m2
+legacy_sequential_complete_j_m2
+  = complete_external_flux_w_m2 * duration_seconds
+    + internal_active_lower_conduction_j_m2
+```
+
+Active and lower internal-conduction contributions cancel in total cold
+closure; neither may be called snow-ground heat. Reconstruction uses
+`TOL-SNOWFREEZE-018` and enabled malformed/nonclosing evidence fails the
+evaluation request without authoritative mutation.
+
+### Turbulent termination and reconstruction
+
+The shared private Monin-Obukhov solver preserves these exact exits:
+
+| `turbulent_termination_status` | Iterations / Obukhov length | `stability_class` and retained state |
+|---|---|---|
+| `zero_wind` | `0` / null | `zero_wind`; corrections, friction, and fluxes zero |
+| `initial_potential_temperature_neutral` | `0` / null | `neutral`; nonzero-wind neutral state and fluxes |
+| `iterative_zero_buoyancy` | `>=1` / null | retained actual state; `neutral` if all corrections are exactly zero, `stable` if all are non-positive with at least one negative, `unstable` if all are non-negative with at least one positive; mixed/nonfinite corrections fail lineage |
+| `iterative_invalid_obukhov` | `>=1` / null | `indeterminate_obukhov`; retain the actual last state/corrections when computed length is nonfinite or zero |
+| `converged_stable` | `>=1` / positive finite | `stable`; final stable state/corrections |
+| `converged_unstable` | `>=1` / negative finite | `unstable`; final unstable state/corrections |
+| `did_not_converge` | typed error / N/A | no successful tuple; enabled request fails without authoritative mutation |
+
+The consumer independently reconstructs log factors, exchange velocities,
+vapor mass, sensible/latent fluxes, radiation, and advected heat from the named
+primitives under `TOL-SNOWFREEZE-018`. Producer helpers and producer totals are
+check-only and cannot establish closure.
+
+### Frozen `S/F/Q` estimands and decision rule
+
+Daily rows first join uniquely on site, day, lane, raw-source fingerprint,
+forcing fingerprint, and geometry fingerprint; arrays then expand by hour and
+ordered substep identity. Missing/duplicate identities or a fingerprint
+mismatch are lineage failures, not delta samples. Effective fingerprints may
+differ because their difference is an estimand.
+
+`S` is the immutable whole-column same-state external carrier. `Q` is the
+existing aligned-active, within-day sequential external carrier. `F`, the
+consumer-only `frozen_active_projection_reference`, resets for every joined
+daily source and copies Q's first applicable post-alignment active membership,
+effective fingerprint, surface temperature, active mass/depth/density/cold
+content, and exact selected daily albedo value/source/model/accumulated-
+positive-temperature lineage. It also fixes the joined `z_T/z_q/z_u/z_0,aero`,
+pressure, wind, dewpoint, canopy, daily solar/extraterrestrial radiation,
+daylight, turbulent options, and longwave/sublimation selector IDs. Only hour
+index, air temperature, hourly radiation, rain/snow depths and mass fluxes, and
+hydrometeor temperatures vary hourly. `F` has no mutation, melt,
+sublimation/deposition debit, cold change, or internal conduction and evaluates
+one external-carrier `3600 s` tuple per hour.
+
+For each joined hour, three-way common support is
+`min(S_evaluated_seconds, 3600, Q_evaluated_seconds)`. Each operator integrates
+only the prefix `[0, common_support)`, splitting the final tuple exactly at the
+boundary without interpolation. All-evaluated and common-support summaries
+remain separate. At tuple, hour, water-year window, and each median input, the
+legacy bridge must close as `legacy Q complete = comparable Q external + Q
+active internal conduction`. The frozen predecessor is the Python
+`statistics.median` of the 35 Snowbird WY1990--2024 October-1-through-observed-
+peak window sums and equals `+170.2536089 MJ m^-2` within
+`TOL-SNOWFREEZE-019`; WY2025 is right-censored.
+
+On identical three-way common support, `delta_projection = F - S` and
+`delta_evolution = Q - F`. With `tol = 1e-6 J m^-2`, projection reconciles the
+sign contradiction only when the Snowbird median satisfies `S < -tol`,
+`F > +tol`, and `Q > +tol`; evolution reconciles it only when `S < -tol`,
+`F < -tol`, and `Q > +tol`. Both require predecessor reproduction, every
+bridge/reconstruction/delta closure, and invariant shortwave. Q remaining
+positive does not turn a qualifying projection crossing into an evolution
+crossing.
+
+Decision classes are evaluated in this precedence:
+`LINEAGE_OR_IDENTITY_FAILURE`, `PREDECESSOR_NOT_REPRODUCED`,
+`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE`,
+`INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE`,
+`INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION`,
+`STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`,
+`SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES`, then
+`MULTIFACTOR_UNRESOLVED`. Lineage failure suppresses causal interpretation;
+after that precedence the non-lineage classes may coexist in listed order.
+
+Support censoring is material when the complete external delta changes sign
+between common and all-evaluated support or when this ratio exceeds `0.05`:
+
+```text
+sum over S and Q and the five external terms
+  abs(integral over [common_support, operator_evaluated_seconds))
+/
+sum over S and Q and the five external terms
+  abs(all_evaluated_term_energy)
+```
+
+A zero denominator makes the ratio N/A. No cohort, forcing, operator,
+projection, join, window, support, aggregation, tolerance, predecessor, or
+decision predicate may change after result inspection. Every conclusion stays
+operator-mechanics characterization; seasonal chronology, carrier validation,
+persistence, terminal receipt, calibration, promotion, CoE retirement, and
+cutover remain prohibited.
 
 ## Wet-Compaction Operand Authority And Duplicate-Alias Closure Addendum
 
@@ -3496,7 +3734,7 @@ no-regression/conservation gates pass; zero residual closure is not required.
 | `SNOWFREEZE-21N-MELT-OWNER` | SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-093, OBL-SNOWFREEZE-P-066` | `dual-review` | Stage 3 is the sole future melt owner, while implementation remains under hard governance `HOLD`. CoE remains byte-identical compatibility runtime behavior until complete energy, residual-snow, same-substep liquid, linked-ledger, and cutover gates pass atomically. |
 | `SNOWFREEZE-STAGE3-EVALUATION-SHADOW` | SNOW-STAGE3-EVALUATION-SHADOW-AUTHORITY package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-094, OBL-SNOWFREEZE-P-067, OBL-SNOWFREEZE-C-009` | `dual-review` | Two tagged default-off evaluation operators are admitted with evaluator-only custody. Runtime implementation remains under hard governance `HOLD`; cross-interval persistence, seasonal/terminal claims, production consumers, and cutover remain held. |
 | `SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY` | SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-095, OBL-SNOWFREEZE-P-068, OBL-SNOWFREEZE-C-010` | `dual-review` | The bounded operators may be realized behind a typed default-off request with enabled-only internal schema-v5 evidence. Exact disabled schema v4, evaluator custody, typed primitive errors, module-size closure, and real-consumer anti-alias reconstruction are binding; persistence, physical chronology, seasonal/terminal claims, production consumers, and cutover remain held. |
-| `SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-096, OBL-SNOWFREEZE-P-069, OBL-SNOWFREEZE-C-011` | `dual-review` | Additive enabled-only schema-v6 tuples and one shared turbulent solver may expose exact carrier/state lineage for independent `S/F/Q` operator reconciliation. Exact disabled schema v4, historical schema-v5 semantics, public APIs, all production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain binding. |
+| `SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION package and canonical reconciliation addendum | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-096, OBL-SNOWFREEZE-P-069, OBL-SNOWFREEZE-C-011` | `flagged-binding-addition` | Additive enabled-only schema-v6 tuples and one shared turbulent solver may expose exact carrier/state lineage for independent `S/F/Q` operator reconciliation; `TOL-SNOWFREEZE-018` and `TOL-SNOWFREEZE-019` remain linked through the invariant and obligations. Exact disabled schema v4, historical schema-v5 semantics, public APIs, all production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain binding; independent science review is mandatory before implementation. |
 
 ## Known Gaps
 
@@ -3514,7 +3752,7 @@ no-regression/conservation gates pass; zero residual closure is not required.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
-| `2026-08-06` | `129` | `Codex` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION amendment: added `REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION`, `INV-SNOWFREEZE-096`, `OBL-SNOWFREEZE-P-069`, and `OBL-SNOWFREEZE-C-011`; admitted an additive enabled-only boxed companion and schema-v6 ordered substep observability through one shared private turbulent solver; and bound independent primitive, endpoint, legacy-bridge, common-support, and `S/F/Q` reconciliation. Disabled schema v4, historical schema-v5 semantics, existing public APIs, production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain unchanged. |
+| `2026-08-06` | `129` | `Codex` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION amendment: added `REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION`, `INV-SNOWFREEZE-096`, `OBL-SNOWFREEZE-P-069`, `OBL-SNOWFREEZE-C-011`, and `TOL-SNOWFREEZE-018/019`; admitted an additive enabled-only boxed companion and schema-v6 ordered substep observability through one shared private turbulent solver; and canonically bound exact fields/units, applicability and meltout N/A, turbulent termination, endpoint equations, legacy bridge, common support, frozen `S/F/Q` estimands, decision precedence, and sign/materiality predicates. Disabled schema v4, historical schema-v5 semantics, existing public APIs, production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain unchanged. |
 | `2026-08-06` | `128` | `Codex` | Runtime evidence closure: closed the bounded portion of `GAP-SNOWFREEZE-007` after exact disabled schema-v4 and authoritative WAT/HBP/PASS identity, typed evaluator-only custody, per-term/fingerprint/support reconstruction through the real schema-v5 consumer, typed-error preservation, module-size compliance, dual review, and independent consumer QA passed. Cross-day persistence, complete physical chronology, seasonal/terminal claims, receiving-surface disposition, production ownership, and cutover remain held. |
 | `2026-08-06` | `128` | `Codex` | SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY amendment: added `REF-SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY`, `INV-SNOWFREEZE-095`, `OBL-SNOWFREEZE-P-068`, and `OBL-SNOWFREEZE-C-010`; admitted bounded runtime realization of the two v127 evaluation operators behind a typed default-off request; bound exact disabled schema-v4 identity, enabled internal schema-v5 component/fingerprint/support evidence, typed turbulent-error custody, real-consumer anti-alias reconstruction, and solver modularization. CoE remains authoritative; persistence, complete physical chronology, seasonal/terminal claims, ground-flux inference, production consumers, and cutover remain held. |
 | `2026-08-06` | `127` | `Codex` | SNOW-STAGE3-EVALUATION-SHADOW-AUTHORITY amendment: scoped the v124 second-state prohibition to undeclared or production-readable parallel state while preserving one authoritative production snow calculation and linked ledgers; added `REF-SNOWFREEZE-STAGE3-EVALUATION-SHADOW-AUTHORITY`, `INV-SNOWFREEZE-094`, `OBL-SNOWFREEZE-P-067`, and `OBL-SNOWFREEZE-C-009`; and admitted only tagged, default-off, evaluator-owned same-state paired-carrier and bounded sequential resolved-shadow operators. Cross-interval persistence, restart/reappearance, seasonal and terminal claims, runtime implementation, production consumers, CoE ownership change, and cutover remain held. |
