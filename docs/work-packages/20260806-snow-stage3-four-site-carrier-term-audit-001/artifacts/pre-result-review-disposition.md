@@ -21,6 +21,7 @@ Evidence mode: `Static` plus package-local unit tests. No model result has run.
 | Mandatory v5 auxiliary operands were unread | Accepted after second review | Hourly/daily vapor, complete energy, cold-content, cold-required/change, excess, available ice, sublimation, melt, terminal energy, internal exchange, closure residual, and maximum residual fields are finite, reconciled, or exact zero/N/A as required. Negative tests reject contradictory complete energy and nonzero N/A residuals. |
 | Runfile PASS custody was recorded, not asserted | Accepted after second review | Parsed `outputs.pass/loss/wat` paths must exactly equal the retained HBP/loss/WAT paths; a mismatched path fails before execution. |
 | Marks collapsed ranges were not reproducible/comparable | Accepted after second review | Collapsed ranges and all numerical Marks classifications were removed. Marks remains qualitative context with an explicit different-site/period/estimand/boundary `NOT_COMPARABLE` result. |
+| V1 execution validator treated the applicable component residual as exact-zero N/A | Accepted after rejected v1 attempt | The v1 namespace is retained and rejected before metrics. V2 applies the already-frozen `1e-6 J m^-2` daily tolerance only to this applicable producer residual; all true same-state N/A fields remain exact zero. No science rule or threshold changed. |
 
 Fresh result-blind reviews must pass on a clean committed amendment before the
 target namespace may be created.

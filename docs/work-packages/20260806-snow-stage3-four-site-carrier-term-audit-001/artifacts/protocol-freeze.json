@@ -61,7 +61,7 @@
     "binary": "target/release/openwepp-cli-hill",
     "control_per_site": "same binary and selectors with evaluation disabled",
     "paired_per_site": "same_state_paired_carrier_v1",
-    "result_namespace": "target/snow_stage3_four_site_carrier_term_audit",
+    "result_namespace": "target/snow_stage3_four_site_carrier_term_audit_v2",
     "source_fixture_root": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/fixtures/baseline_replay"
   },
   "expected_tags": {
@@ -93,7 +93,13 @@
     "shared_terms": "surface shortwave == complete shortwave and surface longwave == complete longwave",
     "surface": "surface shortwave + surface longwave + surface latent; selected surface latent is disabled while complete turbulent latent remains evaluated"
   },
-  "schema_version": 1,
+  "protocol_amendment": {
+    "rejected_namespace": "target/snow_stage3_four_site_carrier_term_audit",
+    "rejection": "v1 validator incorrectly applied exact-zero semantics to the applicable producer component residual despite the already-frozen 1e-6 J m-2 daily tolerance; analysis stopped at the first row before any site metric or screen was produced",
+    "science_change": "none",
+    "threshold_change": "none"
+  },
+  "schema_version": 2,
   "scaffold_commit": "936feea9c2292f78ca908de16fe9d90f308cec68",
   "selectors": {
     "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
@@ -104,7 +110,7 @@
     "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
     "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
   },
-  "status": "frozen_before_result_execution",
+  "status": "frozen_v2_before_result_execution",
   "support": {
     "evaluated_hour": "complete_carrier_evaluated true and requested_seconds == evaluated_seconds == 3600",
     "minimum_calendar_coverage_for_screen": 0.25,

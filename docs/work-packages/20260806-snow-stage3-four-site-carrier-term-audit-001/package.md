@@ -99,7 +99,8 @@ internal JSONL consumer.
 - `docs/work-packages/README.md`
 - `docs/ROADMAP.md`
 - `docs/planning/snow-surface-energy-balance-roadmap.md`
-- ignored `target/snow_stage3_four_site_carrier_term_audit/`
+- ignored rejected `target/snow_stage3_four_site_carrier_term_audit/`
+- ignored admitted `target/snow_stage3_four_site_carrier_term_audit_v2/`
 - normal ignored build/test outputs
 
 Everything else is protected. A production, contract, test, fixture,
@@ -374,7 +375,10 @@ contact external services, and never mutates source fixtures.
 - [x] (2026-08-06) Fresh review of `54c8e00dc` found five residual custody,
   naming, and consumer defects; all were accepted and amended without creating
   the result namespace.
-- [ ] Obtain fresh PASS reviews of the amended pre-result commit.
+- [x] (2026-08-06) Both reviewers admitted exact commit `73ca62bd1`; all eight
+  lanes ran, but analysis rejected v1 on a validator-only residual-tolerance
+  bug before any site metric or screen was produced.
+- [ ] Review and execute the frozen v2 validator-only amendment.
 - [ ] Execute four controls and four paired carrier lanes.
 - [ ] Reconstruct, classify, review, verify, and disposition results.
 
@@ -386,6 +390,10 @@ contact external services, and never mutates source fixtures.
 - The same-state operator intentionally marks internal active/lower conduction
   not applicable. That cleanly prevents accidental substitution for the absent
   snow-ground boundary.
+- The applicable producer component residual is floating reconstruction
+  evidence, not a same-state N/A field. Protocol v1 incorrectly required exact
+  zero despite its already-frozen `1e-6 J m^-2` daily tolerance; the first
+  `-2.79e-9 J m^-2` residual correctly stopped analysis before results.
 
 ## Decision Log
 

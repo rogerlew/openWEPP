@@ -26,7 +26,7 @@ sys.dont_write_bytecode = True
 REPO = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[1]
 FREEZE_PATH = PACKAGE / "artifacts/protocol-freeze.json"
-OUTPUT = REPO / "target/snow_stage3_four_site_carrier_term_audit"
+OUTPUT = REPO / "target/snow_stage3_four_site_carrier_term_audit_v2"
 SOURCE_FIXTURES = REPO / (
     "target/snow_prepeak_liquid_evacuation_physics_audit_v3/"
     "fixtures/baseline_replay"
@@ -77,7 +77,6 @@ DAILY_ZERO_FIELDS = (
     "stage3_evaluation_complete_arm_sublimation_kg_m2",
     "stage3_evaluation_complete_arm_melt_kg_m2",
     "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
-    "stage3_evaluation_complete_arm_component_residual_j_m2",
     "stage3_evaluation_complete_arm_maximum_thermodynamic_residual_j_m2",
 )
 ZERO = 1.0e-12
@@ -446,6 +445,12 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
             0.0,
             0.0,
         )
+    require_close(
+        f"daily component residual {stamp}",
+        checked_float(row, "stage3_evaluation_complete_arm_component_residual_j_m2"),
+        0.0,
+        tolerance,
+    )
     daily = {term: checked_float(row, field) for term, field in DAILY_FIELDS.items()}
     for term in TERMS:
         require_close(
@@ -898,7 +903,7 @@ def execute(expected_head: str) -> None:
     if OUTPUT.exists():
         raise RuntimeError(f"refusing to overwrite {OUTPUT}")
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
-    if frozen["status"] != "frozen_before_result_execution":
+    if frozen["status"] != "frozen_v2_before_result_execution":
         raise RuntimeError("protocol freeze is not active")
     head = assert_execution_source(expected_head)
     ancestor = subprocess.run(

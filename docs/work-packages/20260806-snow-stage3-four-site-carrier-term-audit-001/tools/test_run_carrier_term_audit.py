@@ -128,6 +128,23 @@ def test_hourly_complete_energy_is_independently_reconciled() -> None:
         raise AssertionError("contradictory hourly complete energy was accepted")
 
 
+def test_component_residual_uses_frozen_daily_tolerance() -> None:
+    row = evaluation_row()
+    row["stage3_evaluation_complete_arm_component_residual_j_m2"] = -2.79396772e-9
+    AUDIT.validate_evaluation_row(row, AUDIT.dt.date(2020, 1, 1))
+
+
+def test_component_residual_exceeding_frozen_tolerance_is_rejected() -> None:
+    row = evaluation_row()
+    row["stage3_evaluation_complete_arm_component_residual_j_m2"] = 1.0001e-6
+    try:
+        AUDIT.validate_evaluation_row(row, AUDIT.dt.date(2020, 1, 1))
+    except RuntimeError as error:
+        assert "daily component residual" in str(error)
+    else:
+        raise AssertionError("out-of-tolerance component residual was accepted")
+
+
 def test_zero_coverage_is_not_an_evaluated_hour() -> None:
     AUDIT.validate_evaluation_row(evaluation_row(active=False), AUDIT.dt.date(2020, 1, 1))
 
