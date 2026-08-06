@@ -1,6 +1,6 @@
 # Kernel Profile Compliance
 
-Status: `PASS / independent amendment re-review pending`.
+Status: `PASS / independent amendment re-review PASS/PASS`.
 
 Evidence class: `Static + Ran`.
 
@@ -17,5 +17,5 @@ Evidence class: `Static + Ran`.
 | Gap/promotability posture | `PASS` | `GAP-SNOWFREEZE-006` remains non-promotable for Stage 3 cutover; `GAP-SNOWFREEZE-007` stays closed only for bounded v5 evaluation. v129 adds observability, not persistence, terminal receipt, validation, promotion, or ownership. |
 | Evidence paths | `PASS` | Canonical contract/index, package `protocol-freeze.json`, `operand-lineage.md`, `calibration-readiness-matrix.md`, `pre-implementation-contract-gate.md`, contract test, and package-local contract-cycle artifacts. |
 
-This profile disposition authorizes production work only after the amended
-contract receives independent PASS/PASS re-review.
+Independent science and Rust reviewers confirmed this profile and the exact
+canonical rules at clean `49e358c689163b1a701a2d504e5396fb67545733`.

@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: `PASS / independent amendment re-review pending`.
+Status: `PASS / independent amendment re-review PASS/PASS`.
 
 Evidence mode: `Static`.
 
@@ -20,6 +20,7 @@ SC-SNOWFREEZE-001 v129 now contains:
   production physics/defaults/outputs, CoE ownership, and every seasonal,
   terminal, validation, promotion, and cutover hold.
 
-Initial independent HOLD findings identified the underbinding. The current
-amendment accepts all findings; final disposition remains pending exact-commit
-PASS/PASS re-review.
+Initial independent HOLD findings identified the underbinding. Every finding
+was accepted and amended. Final result-blind science and Rust re-review passed
+at exact clean `49e358c689163b1a701a2d504e5396fb67545733` without inspecting
+result-bearing evidence.

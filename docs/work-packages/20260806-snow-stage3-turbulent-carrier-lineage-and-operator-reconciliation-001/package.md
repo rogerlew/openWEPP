@@ -537,7 +537,11 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] (2026-08-06) Fifth independent result-blind review returned PASS/PASS at
   exact clean `42a32a297383eb4e624abc0038a073238a5d0a92`; no result-bearing lane
   or result artifact was inspected.
-- [ ] Amend contract authority and pass the pre-implementation contract gate.
+- [x] (2026-08-06) Amended contract authority and passed the exact-head
+  pre-implementation contract gate at
+  `49e358c689163b1a701a2d504e5396fb67545733`: independent result-blind
+  science/Rust `PASS/PASS`, focused `16/16`, Binding Exposure `11/11`, and all
+  v129-bound targets `164/164` across `38` binaries.
 - [ ] Implement behavior-neutral schema-v6 observability and focused tests.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal

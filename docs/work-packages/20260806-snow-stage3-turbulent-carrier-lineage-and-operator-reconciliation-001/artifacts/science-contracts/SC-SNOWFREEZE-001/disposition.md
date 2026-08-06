@@ -16,5 +16,11 @@ Both initial independent reviews returned `HOLD`. All findings are accepted:
 - the review gate is `flagged-binding-addition`, the registry date is current,
   and kernel-profile compliance is complete.
 
-No finding is rejected or deferred. Production Rust remains blocked until both
-reviewers return PASS on the exact amended commit.
+No finding was rejected or deferred. Intermediate re-review findings were also
+accepted: bare aerodynamic aliases, `degC day`, current-mechanics references,
+complete decision predicates, exact initial-projection identity, fallback
+exclusivity, full status/precedence tests, and the six/seven class count are
+now aligned across contract, protocol, and tests. Both independent reviewers
+returned `PASS` at exact clean
+`49e358c689163b1a701a2d504e5396fb67545733`; the production-edit hold is
+closed within the declared package write set.
