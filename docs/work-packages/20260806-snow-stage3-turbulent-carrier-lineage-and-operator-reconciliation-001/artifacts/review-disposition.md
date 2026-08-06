@@ -89,3 +89,28 @@ producer-impossible daylight/radiation/canopy domains—is accepted and amended
 with exact selected-solver gates and adversarial coverage. The model-free
 consumer suite is now `40/40`; cohort execution remains blocked until the
 exact-commit science and consumer verdicts pass.
+
+## Inactive-Lifecycle Re-Admission Disposition
+
+The first corrected-lifecycle re-review at exact clean
+`4b0960426c694dfe4a84c58b4d4ba4c9433fe96b` remained result-blind and returned
+HOLD from science, Rust, and consumer review. Every finding is accepted:
+
+- the package write set and artifact routing named only the rejected v1 target
+  namespace even though the freeze and analyzer correctly selected v2;
+- the analyzer accepted empty records with nonzero/mixed/missing sentinel
+  identities or noncanonical hourly reasons and did not consume the serialized
+  inactive support fields;
+- the Rust test exercised the inactive constructor but not the repaired control
+  flow before typed hourly-forcing acquisition; and
+- no reduction-level vector proved that a paired inactive day cannot enter the
+  operator estimands.
+
+The package and artifact routing now distinguish read-only v1 custody from the
+authorized prospective v2 namespace. The consumer enforces the exact four-zero
+sentinel form, 24 `operator_not_selected` statuses, daily/hourly support, and
+carrier-evaluated flags with adversarial aliases. The real site reducer proves
+the inactive day changes only its typed inventory entries, and a source-order
+contract seam binds the inactive return ahead of forcing acquisition for every
+operator/default. Re-review of the amended exact clean commit remains pending;
+no v2 cohort result has been run or inspected.

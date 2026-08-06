@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import datetime as dt
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -175,7 +177,61 @@ def v6_row(tuple_row: dict[str, object], operator: str) -> dict[str, object]:
         "stage3_evaluation_source_fingerprint_fnv1a64": tuple_row["source_fingerprint_fnv1a64"],
         "stage3_evaluation_forcing_fingerprint_fnv1a64": tuple_row["forcing_fingerprint_fnv1a64"],
         "stage3_evaluation_geometry_fingerprint_fnv1a64": tuple_row["geometry_fingerprint_fnv1a64"],
+        "stage3_evaluation_non_formulation_fingerprint_fnv1a64": "0000000000000077",
     }
+
+
+def inactive_v6_row(operator: str = "same_state_paired_carrier_v1") -> dict[str, object]:
+    row = v6_row(synthetic_tuple(operator), operator)
+    row["stage3_operator_reconciliation"] = {
+        "schema_version": 6,
+        "hourly_status": [
+            {"evaluated": False, "reason": "operator_not_selected"}
+            for _ in range(24)
+        ],
+        "tuples": [],
+    }
+    for field in (
+        "stage3_evaluation_source_fingerprint_fnv1a64",
+        "stage3_evaluation_forcing_fingerprint_fnv1a64",
+        "stage3_evaluation_geometry_fingerprint_fnv1a64",
+        "stage3_evaluation_non_formulation_fingerprint_fnv1a64",
+    ):
+        row[field] = "0000000000000000"
+    row["stage3_evaluation_requested_seconds"] = 86_400.0
+    row["stage3_evaluation_evaluated_seconds"] = 0.0
+    row["stage3_evaluation_coverage_fraction"] = 0.0
+    row["stage3_evaluation_hourly_requested_seconds"] = [3_600.0] * 24
+    row["stage3_evaluation_hourly_evaluated_seconds"] = [0.0] * 24
+    row["stage3_evaluation_hourly_complete_carrier_evaluated"] = [False] * 24
+    return row
+
+
+def active_v6_row(operator: str, day_index: int) -> dict[str, object]:
+    tuples: list[dict[str, object]] = []
+    for hour in range(8):
+        tuple_row = synthetic_tuple(operator)
+        tuple_row["hour_index"] = hour
+        if operator == "sequential_resolved_shadow_v1":
+            tuple_row["total_ice_mass_before_kg_m2"] = 50.0 - hour
+            tuple_row["total_ice_mass_after_kg_m2"] = 49.0 - hour
+            tuple_row["total_cold_before_j_m2"] = 100.0 - 10.0 * hour
+            tuple_row["total_cold_after_j_m2"] = 90.0 - 10.0 * hour
+        tuples.append(tuple_row)
+    row = v6_row(tuples[0], operator)
+    row["day_index"] = day_index
+    row["stage3_operator_reconciliation"] = {
+        "schema_version": 6,
+        "hourly_status": [
+            {
+                "evaluated": hour < 8,
+                "reason": "evaluated" if hour < 8 else "thin_pack_boundary_reached",
+            }
+            for hour in range(24)
+        ],
+        "tuples": tuples,
+    }
+    return row
 
 
 def test_same_state_tuple_reconstructs_without_producer_totals() -> None:
@@ -187,20 +243,165 @@ def test_same_state_tuple_reconstructs_without_producer_totals() -> None:
 
 def test_inactive_v6_row_accepts_declared_empty_operator_support() -> None:
     operator = "same_state_paired_carrier_v1"
-    row = v6_row(synthetic_tuple(), operator)
-    row["stage3_operator_reconciliation"] = {
-        "schema_version": 6,
-        "hourly_status": [
-            {"evaluated": False, "reason": "operator_not_selected"}
-            for _ in range(24)
-        ],
-        "tuples": [],
-    }
-    row["stage3_evaluation_source_fingerprint_fnv1a64"] = "0000000000000000"
-    row["stage3_evaluation_forcing_fingerprint_fnv1a64"] = "0000000000000000"
-    row["stage3_evaluation_geometry_fingerprint_fnv1a64"] = "0000000000000000"
+    assert MODULE.validate_v6_row(inactive_v6_row(operator), operator) == []
 
-    assert MODULE.validate_v6_row(row, operator) == []
+
+def test_inactive_v6_row_rejects_nonzero_mixed_missing_and_wrong_status_evidence() -> None:
+    operator = "same_state_paired_carrier_v1"
+    row = inactive_v6_row(operator)
+    row["stage3_evaluation_source_fingerprint_fnv1a64"] = "0000000000000011"
+    with pytest.raises(RuntimeError, match="four exact zero sentinels"):
+        MODULE.validate_v6_row(row, operator)
+
+    row = inactive_v6_row(operator)
+    del row["stage3_evaluation_non_formulation_fingerprint_fnv1a64"]
+    with pytest.raises(RuntimeError, match="missing required field"):
+        MODULE.validate_v6_row(row, operator)
+
+    row = inactive_v6_row(operator)
+    row["stage3_evaluation_non_formulation_fingerprint_fnv1a64"] = "0000000000000077"
+    with pytest.raises(RuntimeError, match="four exact zero sentinels"):
+        MODULE.validate_v6_row(row, operator)
+
+    row = inactive_v6_row(operator)
+    row["stage3_operator_reconciliation"]["hourly_status"][0]["reason"] = (
+        "no_resolved_snow_at_day_start"
+    )
+    with pytest.raises(RuntimeError, match="24 exact operator_not_selected"):
+        MODULE.validate_v6_row(row, operator)
+
+    row = inactive_v6_row(operator)
+    row["stage3_operator_reconciliation"]["tuples"] = [synthetic_tuple()]
+    row["stage3_operator_reconciliation"]["hourly_status"][0] = {
+        "evaluated": True,
+        "reason": "evaluated",
+    }
+    with pytest.raises(RuntimeError, match="outside empty inactive record"):
+        MODULE.validate_v6_row(row, operator)
+
+
+def test_operator_not_selected_requires_zero_sentinel_form() -> None:
+    operator = "same_state_paired_carrier_v1"
+    row = inactive_v6_row(operator)
+    for field, value in (
+        ("stage3_evaluation_source_fingerprint_fnv1a64", "0000000000000011"),
+        ("stage3_evaluation_forcing_fingerprint_fnv1a64", "0000000000000022"),
+        ("stage3_evaluation_geometry_fingerprint_fnv1a64", "0000000000000033"),
+        ("stage3_evaluation_non_formulation_fingerprint_fnv1a64", "0000000000000077"),
+    ):
+        row[field] = value
+    with pytest.raises(RuntimeError, match="four exact zero sentinels"):
+        MODULE.validate_v6_row(row, operator)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("stage3_evaluation_requested_seconds", 0.0, "requested_seconds"),
+        ("stage3_evaluation_evaluated_seconds", 1.0, "evaluated_seconds"),
+        ("stage3_evaluation_coverage_fraction", 1.0, "coverage_fraction"),
+        ("stage3_evaluation_hourly_requested_seconds", [0.0] * 24, "hourly_requested"),
+        ("stage3_evaluation_hourly_evaluated_seconds", [1.0] * 24, "hourly_evaluated"),
+        (
+            "stage3_evaluation_hourly_complete_carrier_evaluated",
+            [True] + [False] * 23,
+            "carrier-evaluated",
+        ),
+    ),
+)
+def test_inactive_v6_row_rejects_contradictory_support_fields(
+    field: str, value: object, message: str
+) -> None:
+    row = inactive_v6_row()
+    row[field] = value
+    with pytest.raises(RuntimeError, match=message):
+        MODULE.validate_v6_row(row, "same_state_paired_carrier_v1")
+
+
+def test_inactive_paired_day_cannot_enter_reconciliation_estimands(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class SyntheticCarrier:
+        def __init__(self, dates: list[dt.date]) -> None:
+            self.dates = dates
+
+        def climate_file(self, fixture: Path) -> Path:
+            return fixture
+
+        def climate_dates(self, climate_file: Path) -> list[dt.date]:
+            return self.dates
+
+        def observed_peaks(
+            self, observation: Path
+        ) -> tuple[dict[int, tuple[dt.date, float]], list[object]]:
+            return {1991: (self.dates[-1], 1.0)}, []
+
+    monkeypatch.setattr(MODULE, "require_trace_path_custody", lambda *args: None)
+
+    def run(include_inactive: bool) -> tuple[list[dict[str, object]], dict[str, object]]:
+        count = 31 if include_inactive else 30
+        dates = [dt.date(1990, 10, 1) + dt.timedelta(days=index) for index in range(count)]
+        paired_rows = []
+        sequential_rows = []
+        for index in range(count):
+            if include_inactive and index == count - 1:
+                paired = inactive_v6_row()
+                sequential = inactive_v6_row("sequential_resolved_shadow_v1")
+                paired["day_index"] = index
+                sequential["day_index"] = index
+            else:
+                paired = active_v6_row("same_state_paired_carrier_v1", index)
+                sequential = active_v6_row("sequential_resolved_shadow_v1", index)
+            paired_rows.append(paired)
+            sequential_rows.append(sequential)
+        suffix = "with-inactive" if include_inactive else "active-only"
+        paired_path = tmp_path / f"paired-{suffix}.jsonl"
+        sequential_path = tmp_path / f"sequential-{suffix}.jsonl"
+        paired_path.write_text(
+            "".join(f"{json.dumps(row, separators=(',', ':'))}\n" for row in paired_rows),
+            encoding="utf-8",
+        )
+        sequential_path.write_text(
+            "".join(
+                f"{json.dumps(row, separators=(',', ':'))}\n"
+                for row in sequential_rows
+            ),
+            encoding="utf-8",
+        )
+        return MODULE.reconcile_site(
+            "synthetic_site",
+            tmp_path / "fixture",
+            tmp_path / "observation",
+            paired_path,
+            sequential_path,
+            SyntheticCarrier(dates),
+        )
+
+    active_annual, active_summary = run(False)
+    inactive_annual, inactive_summary = run(True)
+    for field in (
+        "S_j_m2",
+        "F_j_m2",
+        "Q_j_m2",
+        "S_all_j_m2",
+        "Q_all_j_m2",
+        "support_seconds",
+        "evaluated_days",
+    ):
+        assert inactive_annual[0][field] == active_annual[0][field]
+    active_inventories = active_summary["inventories"]
+    inactive_inventories = inactive_summary["inventories"]
+    assert len(inactive_inventories["non_evaluated_hours"]) == (
+        len(active_inventories["non_evaluated_hours"]) + 48
+    )
+    assert len(inactive_inventories["zero_support_hours"]) == (
+        len(active_inventories["zero_support_hours"]) + 24
+    )
+    assert inactive_inventories["unmatched_hours"] == active_inventories["unmatched_hours"]
+    assert inactive_inventories["partial_support_hours"] == active_inventories["partial_support_hours"]
+    assert inactive_summary["initial_projection_difference_observed"] is active_summary[
+        "initial_projection_difference_observed"
+    ]
 
 
 def test_sequential_endpoint_and_legacy_bridge_reconstruct() -> None:

@@ -10,6 +10,7 @@ const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWF
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const PACKAGE: &str = "docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/package.md";
 const PROTOCOL: &str = "docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/artifacts/protocol-freeze.json";
+const RUNNER_SNOW_AUTHORITY: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -329,6 +330,30 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         operator_invariants.matches("z_T/z_q/z_u/z_0,aero").count() >= 2,
         "INV-094 and INV-095 must both bind z_0,aero"
     );
+}
+
+#[test]
+fn inactive_operator_lifecycle_returns_before_hourly_forcing_acquisition() {
+    let source = read(RUNNER_SNOW_AUTHORITY);
+    let function = section(
+        &source,
+        "    fn snow_liquid_partition(",
+        "\n}\n\nfn inactive_direct_snow_evaluation_result(",
+    );
+    let inactive_guard = function
+        .find("if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?")
+        .expect("inactive guard");
+    let inactive_return = function
+        .find("return Ok(inactive_direct_snow_evaluation_result(")
+        .expect("inactive return");
+    let forcing_acquisition = function
+        .find(".direct_winter_hourly_forcing(")
+        .expect("typed hourly forcing acquisition");
+
+    assert!(inactive_guard < inactive_return);
+    assert!(inactive_return < forcing_acquisition);
+    assert!(function.contains("self.snow_stage3_evaluation_operator,"));
+    assert!(!function.contains("&& self.snow_stage3_evaluation_operator.is_none()"));
 }
 
 #[test]

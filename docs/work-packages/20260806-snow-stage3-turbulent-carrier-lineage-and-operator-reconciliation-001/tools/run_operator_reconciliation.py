@@ -558,12 +558,68 @@ def validate_v6_row(
         raise RuntimeError("top-level day/lane identity mismatch")
     if checked_string(row, "stage3_evaluation_operator_id") != operator:
         raise RuntimeError("top-level operator mismatch")
-    for field in (
+    sentinel_fields = (
         "stage3_evaluation_source_fingerprint_fnv1a64",
         "stage3_evaluation_forcing_fingerprint_fnv1a64",
         "stage3_evaluation_geometry_fingerprint_fnv1a64",
-    ):
-        checked_fingerprint(row, field)
+        "stage3_evaluation_non_formulation_fingerprint_fnv1a64",
+    )
+    fingerprints = {
+        field: checked_fingerprint(row, field) for field in sentinel_fields
+    }
+    zero_fields = {
+        field for field, value in fingerprints.items() if value == "0000000000000000"
+    }
+    operator_not_selected = any(
+        isinstance(status, dict) and status.get("reason") == "operator_not_selected"
+        for status in statuses
+    )
+    if not tuples and (zero_fields or operator_not_selected):
+        if zero_fields != set(sentinel_fields):
+            raise RuntimeError("inactive record requires four exact zero sentinels")
+        for status in statuses:
+            if (
+                not isinstance(status, dict)
+                or set(status) != {"evaluated", "reason"}
+                or status.get("evaluated") is not False
+                or status.get("reason") != "operator_not_selected"
+            ):
+                raise RuntimeError(
+                    "inactive record requires 24 exact operator_not_selected statuses"
+                )
+        for field, expected in (
+            ("stage3_evaluation_requested_seconds", 86_400.0),
+            ("stage3_evaluation_evaluated_seconds", 0.0),
+            ("stage3_evaluation_coverage_fraction", 0.0),
+        ):
+            require_same_bits(
+                f"inactive {field}", checked_number(row, field), expected
+            )
+        for field, expected in (
+            ("stage3_evaluation_hourly_requested_seconds", 3_600.0),
+            ("stage3_evaluation_hourly_evaluated_seconds", 0.0),
+        ):
+            values = required(row, field)
+            if not isinstance(values, list) or len(values) != 24:
+                raise RuntimeError(f"inactive {field} requires 24 values")
+            for value in values:
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    raise RuntimeError(f"inactive {field} value is not numeric")
+                require_same_bits(f"inactive {field}", value, expected)
+        carrier_evaluated = required(
+            row, "stage3_evaluation_hourly_complete_carrier_evaluated"
+        )
+        if (
+            not isinstance(carrier_evaluated, list)
+            or len(carrier_evaluated) != 24
+            or any(value is not False for value in carrier_evaluated)
+        ):
+            raise RuntimeError(
+                "inactive hourly carrier-evaluated flags require 24 false values"
+            )
+        return []
+    if zero_fields:
+        raise RuntimeError("zero inactive sentinel used outside empty inactive record")
     if len(tuples) > 1_440:
         raise RuntimeError("tuple bound exceeded")
     expected_index = [0] * 24

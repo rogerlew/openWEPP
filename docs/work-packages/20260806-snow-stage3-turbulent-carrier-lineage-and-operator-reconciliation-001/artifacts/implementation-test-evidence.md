@@ -13,9 +13,9 @@ Inactive-day lifecycle amendment:
 - `cargo nextest run -p openwepp-runner stage3 --no-fail-fast` — PASS
   (`10/10`).
 - `.venv/bin/python -m pytest -q docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/tools/test_run_operator_reconciliation.py`
-  — PASS (`41/41`).
+  — PASS (`50/50`).
 - `cargo nextest run --test snow_stage3_turbulent_operator_reconciliation_contract --test snow_stage3_shadow_observability_contract --no-fail-fast`
-  — PASS (`12/12`).
+  — PASS (`13/13`).
 - `.venv/bin/python tools/check_sc_binding_exposure.py docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
   — PASS (`11/11`).
 - `cargo clippy -p openwepp-meteorology -p openwepp-hillslope-orchestrator -p openwepp-runner --all-targets -- -D warnings`
@@ -27,7 +27,14 @@ equal with evaluation disabled or enabled, the disabled record remains schema
 v4 with no companion, and the enabled record carries schema v6, zero sentinel
 identities, zero evaluated support, 24 requested hourly intervals, no tuples,
 and 24 typed `operator_not_selected` statuses. The Python test independently
-proves that this declared empty-support row is accepted by the exact analyzer.
+proves that this declared empty-support row is accepted by the exact analyzer;
+rejects nonzero, mixed, missing, and tuple-bearing sentinel aliases, wrong
+hourly reasons, and contradictory support fields; and proves through the real
+site reduction that a paired/sequential inactive day changes only the typed
+non-evaluated and zero-support inventories, never `S/F/Q`, support, unmatched,
+partial, or projection estimands. A source-order seam test binds the inactive
+return before typed hourly-forcing acquisition and rejects restoration of the
+operator-disabled-only guard that caused the rejected v1 execution.
 
 Exact committed source identity and the result-blind re-review verdict will be
 appended after the implementation checkpoint is committed. No v2 cohort result
