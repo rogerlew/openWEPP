@@ -262,22 +262,39 @@ mod stage3_evaluation_real_consumer_tests {
     fn evaluated_partition(
         inputs: &DirectActiveSnowPartitionInputs,
         operator: Option<SnowStage3EvaluationOperator>,
+        schema6: bool,
     ) -> (
         DirectSnowLiquidPartition,
         Option<openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
+        Option<Box<openwepp_hillslope_orchestrator::DirectSnowStage3OperatorReconciliation>>,
     ) {
         match operator {
+            Some(operator) if schema6 => {
+                let result = Wb11HydrologyKernel::
+                    compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
+                        inputs,
+                        openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture::Verbose,
+                        Some(operator),
+                    )
+                    .expect("solver-produced schema-v6 evaluation partition");
+                (
+                    result.result.authoritative,
+                    result.result.evaluation,
+                    result.reconciliation,
+                )
+            }
             Some(operator) => {
                 let result =
                     Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_evaluation(
                         inputs, operator,
                     )
                     .expect("solver-produced evaluation partition");
-                (result.authoritative, result.evaluation)
+                (result.authoritative, result.evaluation, None)
             }
             None => (
                 Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(inputs)
                     .expect("solver-produced production partition"),
+                None,
                 None,
             ),
         }
@@ -286,6 +303,7 @@ mod stage3_evaluation_real_consumer_tests {
     fn solver_row(
         operator: Option<SnowStage3EvaluationOperator>,
         terminal: bool,
+        schema6: bool,
     ) -> (String, serde_json::Value) {
         let (mass_swe_m, depth_m, density_kg_m3, temperature_c) = if terminal {
             (0.001_1, 0.002_2, 500.0, 0.0)
@@ -340,7 +358,8 @@ mod stage3_evaluation_real_consumer_tests {
             underlying_surface_albedo: 0.2,
             hourly,
         };
-        let (mut partition, evaluation) = evaluated_partition(&inputs, operator);
+        let (mut partition, evaluation, reconciliation) =
+            evaluated_partition(&inputs, operator, schema6);
         poison_production_diagnostics(&mut partition);
 
         let mut lane = DirectSnowLaneState::from_runtime_values(
@@ -359,6 +378,7 @@ mod stage3_evaluation_real_consumer_tests {
             snow_phase_model: SnowPhasePartitionModel::LegacyRst,
             snow_liquid: &partition,
             stage3_evaluation: evaluation.as_ref(),
+            stage3_reconciliation: reconciliation.as_deref(),
         };
         let verbose = partition
             .verbose_diagnostics
@@ -366,8 +386,9 @@ mod stage3_evaluation_real_consumer_tests {
             .expect("verbose solver diagnostics");
         let row = r7h_direct_production_snow_trace_line(&context, verbose);
         let path = std::env::temp_dir().join(format!(
-            "openwepp-stage3-real-v5-{}-{}.jsonl",
+            "openwepp-stage3-real-{}-{}-{}.jsonl",
             std::process::id(),
+            if schema6 { "v6" } else { "v5" },
             operator.map_or("disabled", SnowStage3EvaluationOperator::id)
         ));
         std::fs::write(&path, &row).expect("write full schema-v5 trace row");
@@ -405,7 +426,7 @@ mod stage3_evaluation_real_consumer_tests {
 
     #[test]
     fn disabled_full_row_retains_the_frozen_schema_v4_bytes() {
-        let (row, value) = solver_row(None, false);
+        let (row, value) = solver_row(None, false, false);
         assert_eq!(value["schema"], "openwepp-r7h-direct-production-snow-trace-v4");
         assert!(
             value
@@ -418,6 +439,107 @@ mod stage3_evaluation_real_consumer_tests {
     }
 
     #[test]
+    fn schema_v6_real_consumer_reads_complete_tuples_and_reconstructs_primitives() {
+        let (_, paired) = solver_row(
+            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
+            false,
+            true,
+        );
+        assert_eq!(
+            paired["schema"],
+            "openwepp-r7h-direct-production-snow-trace-v6"
+        );
+        let reconciliation = &paired["stage3_operator_reconciliation"];
+        assert_eq!(reconciliation["schema_version"], 6);
+        let tuples = reconciliation["tuples"]
+            .as_array()
+            .expect("schema-v6 tuples");
+        assert_eq!(tuples.len(), 24);
+        let tuple = &tuples[0];
+        for field in [
+            "effective_input_fingerprint_fnv1a64",
+            "active_layer_state_fingerprint_before_fnv1a64",
+            "total_layer_state_fingerprint_after_fnv1a64",
+            "snow_albedo_source_id",
+            "turbulent_termination_status",
+            "stability_class",
+            "sensible_exchange_velocity_m_s",
+            "precipitation_advected_flux_w_m2",
+            "complete_external_flux_w_m2",
+            "energy_closure_residual_j_m2",
+        ] {
+            assert!(tuple.get(field).is_some(), "schema-v6 tuple missing {field}");
+        }
+        let incoming = tuple["hourly_radiation_mj_m2"]
+            .as_f64()
+            .expect("hourly radiation")
+            * 1_000_000.0
+            / 3_600.0;
+        assert_close(
+            tuple["incoming_shortwave_w_m2"]
+                .as_f64()
+                .expect("incoming shortwave"),
+            incoming,
+            "incoming shortwave reconstruction",
+        );
+        let external = [
+            "net_shortwave_w_m2",
+            "net_longwave_w_m2",
+            "sensible_flux_w_m2",
+            "latent_flux_w_m2",
+            "precipitation_advected_flux_w_m2",
+        ]
+        .iter()
+        .map(|field| tuple[*field].as_f64().expect("external operand"))
+        .sum::<f64>();
+        assert_close(
+            tuple["complete_external_flux_w_m2"]
+                .as_f64()
+                .expect("complete external"),
+            external,
+            "complete external reconstruction",
+        );
+        assert_eq!(
+            tuple["active_ice_mass_before_kg_m2"],
+            tuple["active_ice_mass_after_kg_m2"]
+        );
+        assert_ne!(tuple["net_shortwave_w_m2"], 9.94e12);
+    }
+
+    #[test]
+    fn schema_v6_terminal_tuple_uses_null_after_surface_fields() {
+        let (_, sequential) = solver_row(
+            Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1),
+            true,
+            true,
+        );
+        let tuples = sequential["stage3_operator_reconciliation"]["tuples"]
+            .as_array()
+            .expect("sequential schema-v6 tuples");
+        let terminal = tuples
+            .iter()
+            .find(|tuple| tuple["after_surface_applicable"] == false)
+            .expect("terminal tuple");
+        assert_eq!(
+            terminal["after_surface_applicability_reason"],
+            "post_substep_no_resolved_surface"
+        );
+        for field in [
+            "active_layer_prefix_count_after",
+            "active_layer_state_fingerprint_after_fnv1a64",
+            "active_ice_mass_after_kg_m2",
+            "active_depth_after_m",
+            "active_density_after_kg_m3",
+            "active_cold_after_j_m2",
+            "surface_temperature_after_c",
+        ] {
+            assert!(terminal[field].is_null(), "{field} must be null after meltout");
+        }
+        assert!(terminal["total_ice_mass_after_kg_m2"].is_number());
+        assert!(terminal["total_cold_after_j_m2"].is_number());
+    }
+
+    #[test]
     #[allow(
         clippy::too_many_lines,
         clippy::float_cmp,
@@ -427,10 +549,12 @@ mod stage3_evaluation_real_consumer_tests {
         let (_, paired) = solver_row(
             Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1),
             false,
+            false,
         );
         let (_, sequential) = solver_row(
             Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1),
             true,
+            false,
         );
         let required = [
             "operator_id", "source_snapshot_id", "support_id", "cadence_id", "carrier_id",

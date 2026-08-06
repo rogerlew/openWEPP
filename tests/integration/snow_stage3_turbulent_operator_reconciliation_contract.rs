@@ -159,7 +159,10 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "the six named non-lineage classes after `LINEAGE_OR_IDENTITY_FAILURE` and before `MULTIFACTOR_UNRESOLVED` may coexist in listed order",
         "The exclusive fallback requires that none of the seven preceding classes, comprising lineage failure plus those six non-lineage classes, is emitted and cannot coexist with any preceding class",
     ] {
-        assert!(addendum.contains(required), "canonical addendum missing {required}");
+        assert!(
+            addendum.contains(required),
+            "canonical addendum missing {required}"
+        );
     }
 
     for status_row in [
@@ -171,10 +174,17 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "`converged_unstable` | `>=1` / negative finite | `unstable`; final unstable state/corrections",
         "`did_not_converge` | typed error / N/A | no successful tuple; enabled request fails without authoritative mutation",
     ] {
-        assert!(addendum.contains(status_row), "canonical status row missing {status_row}");
+        assert!(
+            addendum.contains(status_row),
+            "canonical status row missing {status_row}"
+        );
     }
 
-    let aliases = section(&contract, "## Symbol Alias Map", "## Allowed Degenerate States");
+    let aliases = section(
+        &contract,
+        "## Symbol Alias Map",
+        "## Allowed Degenerate States",
+    );
     let aliases = aliases.split_whitespace().collect::<Vec<_>>().join(" ");
     for required in [
         "snow_stage3_operator_reconciliation_tuple",
@@ -199,7 +209,10 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         "1e-7 MJ m^-2",
         "support materiality ratio threshold `0.05`",
     ] {
-        assert!(tolerances.contains(required), "tolerance table missing {required}");
+        assert!(
+            tolerances.contains(required),
+            "tolerance table missing {required}"
+        );
     }
 
     let variables = section(&contract, "## Variables and Units", "## Invariants");
@@ -236,7 +249,10 @@ fn v129_binding_surfaces_each_retain_inv_096() {
         ("boundary disposition", boundary),
         ("binding exposure", exposure),
     ] {
-        assert!(scoped.contains("INV-SNOWFREEZE-096"), "{name} lost INV-SNOWFREEZE-096");
+        assert!(
+            scoped.contains("INV-SNOWFREEZE-096"),
+            "{name} lost INV-SNOWFREEZE-096"
+        );
     }
     for required in [
         "OBL-SNOWFREEZE-P-069",
@@ -245,6 +261,9 @@ fn v129_binding_surfaces_each_retain_inv_096() {
         "TOL-SNOWFREEZE-019",
         "`flagged-binding-addition`",
     ] {
-        assert!(exposure.contains(required), "binding exposure missing {required}");
+        assert!(
+            exposure.contains(required),
+            "binding exposure missing {required}"
+        );
     }
 }

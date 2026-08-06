@@ -542,7 +542,13 @@ must not mutate source fixtures. The new schema is internal and default-off.
   `49e358c689163b1a701a2d504e5396fb67545733`: independent result-blind
   science/Rust `PASS/PASS`, focused `16/16`, Binding Exposure `11/11`, and all
   v129-bound targets `164/164` across `38` binaries.
-- [ ] Implement behavior-neutral schema-v6 observability and focused tests.
+- [x] (2026-08-06) Implemented the additive, enabled-only schema-v6 companion
+  through the shared Monin-Obukhov solver, exact operator substep tuples,
+  runtime reconstruction guards, JSONL formatter, and independent Python
+  consumer. Model-free gates pass: warnings-denied Clippy across the three
+  affected crates; turbulent `3/3`; runner Stage 3 `9/9`; orchestrator Stage 3
+  `5/5`; contract/observability `12/12`; consumer `6/6`; and frozen schema-v4
+  identity within the runner suite.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.

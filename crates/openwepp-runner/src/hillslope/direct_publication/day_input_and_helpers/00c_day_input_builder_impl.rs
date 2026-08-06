@@ -202,7 +202,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
         let snow_diagnostic_capture =
             DirectSnowDiagnosticCaptureRequest::resolve(day_index, lane_index);
-        let snow_evaluation = authority.snow_frost.snow_liquid_partition(
+        let snow_result = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
             &forcing,
@@ -214,6 +214,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             self.winter_hourly_geometry,
             snow_diagnostic_capture.capture,
         )?;
+        let snow_reconciliation = snow_result.reconciliation;
+        let snow_evaluation = snow_result.result;
         let snow_liquid = snow_evaluation.authoritative;
         let snow_trace_row = DirectSnowTraceRowContext {
             day_index,
@@ -224,6 +226,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_phase_model: authority.snow_frost.snow_phase_model,
             snow_liquid: &snow_liquid,
             stage3_evaluation: snow_evaluation.evaluation.as_ref(),
+            stage3_reconciliation: snow_reconciliation.as_deref(),
         };
         maybe_write_r7h_direct_production_snow_trace(
             &snow_diagnostic_capture,
@@ -1143,17 +1146,6 @@ fn maybe_write_r7h_direct_production_snow_trace(
     })
 }
 
-// Keep the schema-v4 ordered-key formatter contiguous so column order and projection stay auditable.
-fn direct_snow_trace_schema(
-    evaluation: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
-) -> &'static str {
-    if evaluation.is_some() {
-        "openwepp-r7h-direct-production-snow-trace-v5"
-    } else {
-        "openwepp-r7h-direct-production-snow-trace-v4"
-    }
-}
-
 #[allow(clippy::too_many_lines)]
 fn r7h_direct_production_snow_trace_line(
     context: &DirectSnowTraceRowContext<'_>,
@@ -1168,12 +1160,13 @@ fn r7h_direct_production_snow_trace_line(
         snow_phase_model,
         snow_liquid,
         stage3_evaluation,
+        stage3_reconciliation,
     } = *context;
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
     let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
-    let schema = direct_snow_trace_schema(stage3_evaluation);
+    let schema = direct_snow_trace_schema(stage3_evaluation, stage3_reconciliation);
     let line = format!(
         "{{\"schema\":\"{schema}\",\
 \"day_index\":{day_index},\
@@ -1270,6 +1263,7 @@ fn r7h_direct_production_snow_trace_line(
             verbose_diagnostics,
             &thermal,
             stage3_evaluation,
+            stage3_reconciliation,
         )
     )
 }
@@ -1747,11 +1741,11 @@ mod stage3_trace_field_tests {
             "0000000000000044"
         );
         assert_eq!(
-            direct_snow_trace_schema(None),
+            direct_snow_trace_schema(None, None),
             "openwepp-r7h-direct-production-snow-trace-v4"
         );
         assert_eq!(
-            direct_snow_trace_schema(Some(&evaluation)),
+            direct_snow_trace_schema(Some(&evaluation), None),
             "openwepp-r7h-direct-production-snow-trace-v5"
         );
     }

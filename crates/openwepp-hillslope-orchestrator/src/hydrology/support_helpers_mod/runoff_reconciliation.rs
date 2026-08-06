@@ -4,13 +4,14 @@ use openwepp_meteorology::surface_energy::{
     conductive_heat_flux, latent_heat_flux_from_mass_flux,
     latent_heat_for_surface_temperature, net_shortwave_radiation,
     precipitation_advected_heat_flux, saturation_vapor_pressure_snobal_pa,
-    snow_effective_thermal_conductivity_snobal, snow_longwave_dilley_unsworth,
-    surface_energy_balance, turbulent_fluxes_monin_obukhov, EnergyFluxWattsPerSquareMeter,
+    snow_effective_thermal_conductivity_snobal, snow_longwave_dilley_unsworth, specific_heat_ice,
+    specific_heat_water, surface_energy_balance,
+    turbulent_fluxes_monin_obukhov_with_diagnostics, EnergyFluxWattsPerSquareMeter,
     MassFluxKilogramsPerSquareMeterSecond, PositiveLengthMeters,
     PrecipitationAdvectedHeatInputs, PrecipitationMassFluxKilogramsPerSquareMeterSecond,
     PressurePascals, RadiativeFluxWattsPerSquareMeter, SnowLongwaveInputs,
-    SurfaceEnergyBalanceTerms, ThermalConductivityWattsPerMeterKelvin, TurbulentFluxInputs,
-    TurbulentTransferOptions,
+    SurfaceEnergyBalanceTerms, ThermalConductivityWattsPerMeterKelvin, TurbulentFluxDiagnostics,
+    TurbulentFluxInputs, TurbulentTransferOptions,
 };
 use openwepp_unit_boundary::{
     FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius,
@@ -66,7 +67,7 @@ struct Stage3AggregateState {
     settle_day_count_after: f64,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct Stage3HourlySurfaceEnergy {
     total_j_m2: f64,
     shortwave_j_m2: f64,
@@ -77,6 +78,95 @@ struct Stage3HourlySurfaceEnergy {
     sublimation_m: f64,
     mass_latent_identity_residual_j_m2: f64,
     diagnostics: Option<DirectSnowSurfaceEnergyHourDiagnostics>,
+    reconciliation: Option<Stage3CarrierReconciliation>,
+}
+
+#[derive(Clone, Copy)]
+struct Stage3CarrierReconciliation {
+    air_temperature_c: f64,
+    dewpoint_c: f64,
+    wind_speed_m_s: f64,
+    air_pressure_pa: f64,
+    hourly_radiation_mj_m2: f64,
+    daily_solar_radiation_mj_m2: f64,
+    daily_extraterrestrial_radiation_mj_m2: f64,
+    daylight: bool,
+    canopy_cover_fraction: f64,
+    rain_m: f64,
+    snowfall_geometric_m: f64,
+    rain_mass_flux_kg_m2_s: f64,
+    snow_mass_flux_kg_m2_s: f64,
+    rain_temperature_c: f64,
+    snow_temperature_c: f64,
+    rain_specific_heat_j_kg_k: f64,
+    snow_specific_heat_j_kg_k: f64,
+    incoming_shortwave_w_m2: f64,
+    snow_albedo_fraction: f64,
+    snow_albedo_source_id: &'static str,
+    snow_albedo_model_id: Option<&'static str>,
+    snow_albedo_accumulated_positive_temperature_c_day: Option<f64>,
+    net_shortwave_w_m2: f64,
+    actual_vapor_pressure_pa: f64,
+    longwave_cloud_fraction: f64,
+    sky_view_fraction: f64,
+    atmospheric_longwave_w_m2: f64,
+    canopy_longwave_w_m2: f64,
+    subcanopy_longwave_w_m2: f64,
+    outgoing_longwave_w_m2: f64,
+    net_longwave_w_m2: f64,
+    air_temperature_height_m: f64,
+    vapor_pressure_height_m: f64,
+    wind_speed_height_m: f64,
+    aerodynamic_roughness_length_m: f64,
+    turbulent_options: TurbulentTransferOptions,
+    surface_vapor_pressure_pa: f64,
+    turbulent: TurbulentFluxDiagnostics,
+    precipitation_advected_flux_w_m2: f64,
+    complete_external_flux_w_m2: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Stage3ReconciliationState {
+    active_layer_count: usize,
+    total_layer_count: usize,
+    active_fingerprint: u64,
+    total_fingerprint: u64,
+    effective_input_fingerprint: u64,
+    active_ice_mass_kg_m2: f64,
+    total_ice_mass_kg_m2: f64,
+    active_depth_m: f64,
+    active_density_kg_m3: f64,
+    active_cold_j_m2: f64,
+    total_cold_j_m2: f64,
+    surface_temperature_c: f64,
+}
+
+#[allow(clippy::struct_field_names)]
+#[derive(Clone, Copy)]
+struct Stage3ReconciliationTransfer {
+    active_cold_energy_change_j_m2: Option<f64>,
+    lower_cold_energy_change_j_m2: Option<f64>,
+    cold_content_export_j_m2: Option<f64>,
+    internal_active_lower_conduction_j_m2: Option<f64>,
+    melt_kg_m2: Option<f64>,
+    sublimation_kg_m2: Option<f64>,
+    deposition_kg_m2: Option<f64>,
+    legacy_sequential_complete_j_m2: Option<f64>,
+    energy_closure_residual_j_m2: Option<f64>,
+}
+
+impl Stage3ReconciliationTransfer {
+    const SAME_STATE: Self = Self {
+        active_cold_energy_change_j_m2: None,
+        lower_cold_energy_change_j_m2: None,
+        cold_content_export_j_m2: None,
+        internal_active_lower_conduction_j_m2: None,
+        melt_kg_m2: None,
+        sublimation_kg_m2: None,
+        deposition_kg_m2: None,
+        legacy_sequential_complete_j_m2: None,
+        energy_closure_residual_j_m2: None,
+    };
 }
 
 #[derive(Clone, Copy)]
@@ -214,6 +304,7 @@ struct Stage3ShadowSummary {
     unallocated_after_exhaustion_j_m2: f64,
     maximum_energy_closure_residual_j_m2: f64,
     hourly: [DirectSnowStage3EvaluationHourDiagnostics; 24],
+    reconciliation: DirectSnowStage3OperatorReconciliation,
 }
 
 impl Stage3ShadowSummary {
@@ -249,6 +340,11 @@ impl Stage3ShadowSummary {
         unallocated_after_exhaustion_j_m2: 0.0,
         maximum_energy_closure_residual_j_m2: 0.0,
         hourly: [DirectSnowStage3EvaluationHourDiagnostics::zero(); 24],
+        reconciliation: DirectSnowStage3OperatorReconciliation {
+            schema_version: 6,
+            hourly_status: [DirectSnowStage3ReconciliationHourStatus::not_selected(); 24],
+            tuples: Vec::new(),
+        },
         }
     }
 }
@@ -477,6 +573,23 @@ impl Wb11HydrologyKernel {
         capture: DirectSnowDiagnosticCapture,
         evaluation_operator: Option<SnowStage3EvaluationOperator>,
     ) -> Result<DirectSnowStage3EvaluationResult, DirectSnowStage3EvaluationError> {
+        Self::compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
+            inputs,
+            capture,
+            evaluation_operator,
+        )
+        .map(|result| result.result)
+    }
+
+    /// Computes the protected evaluation result plus its enabled-only schema-v6
+    /// reconciliation companion for the internal trace consumer.
+    #[allow(clippy::too_many_lines)]
+    pub fn compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
+        inputs: &DirectActiveSnowPartitionInputs,
+        capture: DirectSnowDiagnosticCapture,
+        evaluation_operator: Option<SnowStage3EvaluationOperator>,
+    ) -> Result<DirectSnowStage3EvaluationWithReconciliationResult, DirectSnowStage3EvaluationError>
+    {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
         Self::require_direct_typed_snow_value_with(
             phase_class,
@@ -677,9 +790,12 @@ impl Wb11HydrologyKernel {
             snow_layers_after,
         };
         Self::validate_direct_snow_storage_closure(phase_class, inputs, &partition)?;
-        Ok(DirectSnowStage3EvaluationResult {
-            authoritative: partition,
-            evaluation: stage3_resolution.evaluation,
+        Ok(DirectSnowStage3EvaluationWithReconciliationResult {
+            result: DirectSnowStage3EvaluationResult {
+                authoritative: partition,
+                evaluation: stage3_resolution.evaluation,
+            },
+            reconciliation: stage3_resolution.reconciliation,
         })
     }
 

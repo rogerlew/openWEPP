@@ -657,6 +657,154 @@ pub struct DirectSnowStage3EvaluationResult {
     pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>,
 }
 
+/// Evaluation-only schema-v6 tuple used to reconcile the two Stage 3 operators.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectSnowStage3ReconciliationTuple {
+    pub operator: SnowStage3EvaluationOperator,
+    pub hour_index: usize,
+    pub substep_index: usize,
+    pub elapsed_start_seconds: f64,
+    pub requested_seconds: f64,
+    pub evaluated_seconds: f64,
+    pub duration_seconds: f64,
+    pub applicable: bool,
+    pub applicability_reason: &'static str,
+    pub source_fingerprint_fnv1a64: u64,
+    pub forcing_fingerprint_fnv1a64: u64,
+    pub geometry_fingerprint_fnv1a64: u64,
+    pub effective_input_fingerprint_fnv1a64: u64,
+    pub projection_id: &'static str,
+    pub active_layer_prefix_count_before: usize,
+    pub total_layer_count_before: usize,
+    pub active_layer_state_fingerprint_before_fnv1a64: u64,
+    pub total_layer_state_fingerprint_before_fnv1a64: u64,
+    pub active_layer_prefix_count_after: Option<usize>,
+    pub total_layer_count_after: usize,
+    pub active_layer_state_fingerprint_after_fnv1a64: Option<u64>,
+    pub total_layer_state_fingerprint_after_fnv1a64: u64,
+    pub after_surface_applicable: bool,
+    pub after_surface_applicability_reason: &'static str,
+    pub active_ice_mass_before_kg_m2: f64,
+    pub active_ice_mass_after_kg_m2: Option<f64>,
+    pub total_ice_mass_before_kg_m2: f64,
+    pub total_ice_mass_after_kg_m2: f64,
+    pub active_depth_before_m: f64,
+    pub active_depth_after_m: Option<f64>,
+    pub active_density_before_kg_m3: f64,
+    pub active_density_after_kg_m3: Option<f64>,
+    pub active_cold_before_j_m2: f64,
+    pub active_cold_after_j_m2: Option<f64>,
+    pub total_cold_before_j_m2: f64,
+    pub total_cold_after_j_m2: f64,
+    pub surface_temperature_before_c: f64,
+    pub surface_temperature_after_c: Option<f64>,
+    pub air_temperature_c: f64,
+    pub dewpoint_c: f64,
+    pub wind_speed_m_s: f64,
+    pub air_pressure_pa: f64,
+    pub hourly_radiation_mj_m2: f64,
+    pub daily_solar_radiation_mj_m2: f64,
+    pub daily_extraterrestrial_radiation_mj_m2: f64,
+    pub daylight: bool,
+    pub canopy_cover_fraction: f64,
+    pub rain_m: f64,
+    pub snowfall_geometric_m: f64,
+    pub rain_mass_flux_kg_m2_s: f64,
+    pub snow_mass_flux_kg_m2_s: f64,
+    pub rain_temperature_c: f64,
+    pub snow_temperature_c: f64,
+    pub rain_specific_heat_j_kg_k: f64,
+    pub snow_specific_heat_j_kg_k: f64,
+    pub incoming_shortwave_w_m2: f64,
+    pub snow_albedo_fraction: f64,
+    pub snow_albedo_source_id: &'static str,
+    pub snow_albedo_model_id: Option<&'static str>,
+    pub snow_albedo_accumulated_positive_temperature_c_day: Option<f64>,
+    pub net_shortwave_w_m2: f64,
+    pub actual_vapor_pressure_pa: f64,
+    pub longwave_cloud_fraction: f64,
+    pub sky_view_fraction: f64,
+    pub atmospheric_longwave_w_m2: f64,
+    pub canopy_longwave_w_m2: f64,
+    pub subcanopy_longwave_w_m2: f64,
+    pub outgoing_longwave_w_m2: f64,
+    pub net_longwave_w_m2: f64,
+    pub air_temperature_height_m: f64,
+    pub vapor_pressure_height_m: f64,
+    pub wind_speed_height_m: f64,
+    pub aerodynamic_roughness_length_m: f64,
+    pub turbulent_max_iterations: usize,
+    pub turbulent_convergence_tolerance: f64,
+    pub surface_vapor_pressure_pa: f64,
+    pub air_potential_temperature_k: Option<f64>,
+    pub surface_temperature_k: Option<f64>,
+    pub specific_humidity_air_kg_kg: Option<f64>,
+    pub specific_humidity_surface_kg_kg: Option<f64>,
+    pub air_density_kg_m3: Option<f64>,
+    pub displacement_height_m: Option<f64>,
+    pub log_momentum: Option<f64>,
+    pub log_sensible: Option<f64>,
+    pub log_latent: Option<f64>,
+    pub turbulent_termination_status: &'static str,
+    pub stability_class: &'static str,
+    pub obukhov_length_m: Option<f64>,
+    pub psi_momentum: f64,
+    pub psi_sensible: f64,
+    pub psi_latent: f64,
+    pub turbulent_iterations: usize,
+    pub friction_velocity_m_s: f64,
+    pub sensible_exchange_velocity_m_s: Option<f64>,
+    pub latent_exchange_velocity_m_s: Option<f64>,
+    pub surface_latent_heat_j_kg: Option<f64>,
+    pub vapor_mass_flux_kg_m2_s: f64,
+    pub sensible_flux_w_m2: f64,
+    pub latent_flux_w_m2: f64,
+    pub precipitation_advected_flux_w_m2: f64,
+    pub complete_external_flux_w_m2: f64,
+    pub vapor_mass_exchange_kg_m2: f64,
+    pub sublimation_kg_m2: Option<f64>,
+    pub deposition_kg_m2: Option<f64>,
+    pub melt_kg_m2: Option<f64>,
+    pub active_cold_energy_change_j_m2: Option<f64>,
+    pub lower_cold_energy_change_j_m2: Option<f64>,
+    pub cold_content_export_j_m2: Option<f64>,
+    pub internal_active_lower_conduction_j_m2: Option<f64>,
+    pub legacy_sequential_complete_j_m2: Option<f64>,
+    pub energy_closure_residual_j_m2: Option<f64>,
+}
+
+/// Per-hour coverage reason accompanying schema-v6 tuples.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectSnowStage3ReconciliationHourStatus {
+    pub evaluated: bool,
+    pub reason: &'static str,
+}
+
+impl DirectSnowStage3ReconciliationHourStatus {
+    #[must_use]
+    pub const fn not_selected() -> Self {
+        Self {
+            evaluated: false,
+            reason: "operator_not_selected",
+        }
+    }
+}
+
+/// Enabled-only reconciliation payload; never an authoritative snow state.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectSnowStage3OperatorReconciliation {
+    pub schema_version: u8,
+    pub hourly_status: [DirectSnowStage3ReconciliationHourStatus; 24],
+    pub tuples: Vec<DirectSnowStage3ReconciliationTuple>,
+}
+
+/// Additive wrapper that preserves the protected evaluation result shape.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectSnowStage3EvaluationWithReconciliationResult {
+    pub result: DirectSnowStage3EvaluationResult,
+    pub reconciliation: Option<Box<DirectSnowStage3OperatorReconciliation>>,
+}
+
 impl DirectSnowStage3Diagnostics {
     #[must_use]
     pub const fn disabled() -> Self {

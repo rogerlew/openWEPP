@@ -71,7 +71,11 @@ fn lifecycle_index_and_package_name_the_same_realization() {
     let index = read(INDEX);
     let package = read(PACKAGE);
 
-    for required in ["SC-SNOWFREEZE-001", "v129", "schema-v6 turbulent/state lineage"] {
+    for required in [
+        "SC-SNOWFREEZE-001",
+        "v129",
+        "schema-v6 turbulent/state lineage",
+    ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
     for required in [

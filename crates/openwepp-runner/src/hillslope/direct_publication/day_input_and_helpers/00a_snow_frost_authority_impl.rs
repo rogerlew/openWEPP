@@ -388,8 +388,13 @@ impl DirectProductionSnowFrostAuthority {
         sturm_day_of_year: Option<f64>,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
-    ) -> Result<openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult, HillslopeCliError> {
-        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
+    ) -> Result<
+        openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult,
+        HillslopeCliError,
+    > {
+        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?
+            && self.snow_stage3_evaluation_operator.is_none()
+        {
             return Ok(inactive_direct_snow_evaluation_result(
                 self.snow_density_model,
                 hyetograph_rainfall_m,
@@ -478,7 +483,7 @@ impl DirectProductionSnowFrostAuthority {
             underlying_surface_albedo: 0.2,
             hourly: snow_hourly,
         };
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_evaluation(
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
             &partition_inputs,
             capture,
             self.snow_stage3_evaluation_operator,
@@ -495,15 +500,18 @@ fn inactive_direct_snow_evaluation_result(
     hyetograph_rainfall_m: f64,
     snow_lane_state: &DirectSnowLaneState,
     capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
-) -> openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
-    openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
-        authoritative: inactive_direct_snow_liquid_partition(
-            snow_density_model,
-            hyetograph_rainfall_m,
-            snow_lane_state,
-            capture,
-        ),
-        evaluation: None,
+) -> openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult {
+    openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult {
+        result: openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationResult {
+            authoritative: inactive_direct_snow_liquid_partition(
+                snow_density_model,
+                hyetograph_rainfall_m,
+                snow_lane_state,
+                capture,
+            ),
+            evaluation: None,
+        },
+        reconciliation: None,
     }
 }
 

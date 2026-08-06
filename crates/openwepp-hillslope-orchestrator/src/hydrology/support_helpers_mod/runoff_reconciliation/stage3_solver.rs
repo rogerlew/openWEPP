@@ -41,7 +41,7 @@ impl Wb11HydrologyKernel {
             } else {
                 None
             };
-            let evaluation = if let Some(tag) = evaluation_tag {
+            let (evaluation, reconciliation) = if let Some(tag) = evaluation_tag {
                 let mut summary = Stage3ShadowSummary::new(tag);
                 Self::stage3_shadow_fingerprints(inputs, layers, &[], &mut summary);
                 summary.complete_arm_non_formulation_fingerprint =
@@ -53,10 +53,19 @@ impl Wb11HydrologyKernel {
                 for hour in &mut summary.hourly {
                     hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
                 }
+                for hour in &mut summary.reconciliation.hourly_status {
+                    *hour = DirectSnowStage3ReconciliationHourStatus {
+                        evaluated: false,
+                        reason: "no_resolved_snow_at_day_start",
+                    };
+                }
                 Self::validate_stage3_shadow_summary(phase_class, &summary)?;
-                Some(Self::stage3_evaluation_diagnostics(&summary))
+                (
+                    Some(Self::stage3_evaluation_diagnostics(&summary)),
+                    Some(Box::new(summary.reconciliation)),
+                )
             } else {
-                None
+                (None, None)
             };
             let diagnostics = capture
                 .is_verbose()
@@ -74,6 +83,7 @@ impl Wb11HydrologyKernel {
                 },
                 diagnostics,
                 evaluation,
+                reconciliation,
             });
         }
 
@@ -469,9 +479,10 @@ impl Wb11HydrologyKernel {
                     hourly_surface_energy: *hourly_surface_energy,
                 }
             }),
-            evaluation: shadow_summary
+            evaluation: shadow_summary.as_ref().map(Self::stage3_evaluation_diagnostics),
+            reconciliation: shadow_summary
                 .as_ref()
-                .map(Self::stage3_evaluation_diagnostics),
+                .map(|summary| Box::new(summary.reconciliation.clone())),
         })
     }
 
@@ -754,6 +765,244 @@ impl Wb11HydrologyKernel {
                 None,
                 Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
             )?;
+        }
+        Self::validate_stage3_reconciliation(phase_class, summary)?;
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn validate_stage3_reconciliation(
+        phase_class: HillslopeKernelPhaseClass,
+        summary: &Stage3ShadowSummary,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let reconciliation = &summary.reconciliation;
+        if reconciliation.schema_version != 6 || reconciliation.tuples.len() > 1_440 {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_reconciliation_schema_or_tuple_count",
+                1_441.0,
+                Some(0.0),
+                Some(1_440.0),
+            ));
+        }
+        let mut elapsed_by_hour = [0.0_f64; 24];
+        let mut count_by_hour = [0_usize; 24];
+        for tuple in &reconciliation.tuples {
+            if tuple.operator != summary.tag.operator
+                || tuple.hour_index >= 24
+                || tuple.source_fingerprint_fnv1a64 != summary.source_fingerprint
+                || tuple.forcing_fingerprint_fnv1a64 != summary.forcing_fingerprint
+                || tuple.geometry_fingerprint_fnv1a64 != summary.geometry_fingerprint
+                || tuple.effective_input_fingerprint_fnv1a64 == 0
+                || tuple.substep_index != count_by_hour[tuple.hour_index]
+                || tuple.elapsed_start_seconds.to_bits()
+                    != elapsed_by_hour[tuple.hour_index].to_bits()
+                || tuple.requested_seconds.to_bits() != STAGE3_SECONDS_PER_HOUR.to_bits()
+                || tuple.evaluated_seconds.to_bits() != tuple.duration_seconds.to_bits()
+                || !tuple.duration_seconds.is_finite()
+                || tuple.duration_seconds <= 0.0
+                || !tuple.applicable
+                || tuple.applicability_reason != "evaluated"
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_reconciliation_identity_or_order",
+                    24.0,
+                    Some(0.0),
+                    Some(23.0),
+                ));
+            }
+            let duration_seconds = tuple.duration_seconds;
+            let reconstruction = [
+                (
+                    "snow.stage3_reconciliation_incoming_shortwave",
+                    tuple.incoming_shortwave_w_m2
+                        - tuple.hourly_radiation_mj_m2 * 1_000_000.0
+                            / STAGE3_SECONDS_PER_HOUR,
+                ),
+                (
+                    "snow.stage3_reconciliation_net_shortwave",
+                    tuple.net_shortwave_w_m2
+                        - tuple.incoming_shortwave_w_m2
+                            * (1.0 - tuple.snow_albedo_fraction),
+                ),
+                (
+                    "snow.stage3_reconciliation_rain_mass_flux",
+                    tuple.rain_mass_flux_kg_m2_s
+                        - tuple.rain_m * STAGE3_RHO_WATER_KG_M3
+                            / STAGE3_SECONDS_PER_HOUR,
+                ),
+                (
+                    "snow.stage3_reconciliation_snow_mass_flux",
+                    tuple.snow_mass_flux_kg_m2_s
+                        - tuple.snowfall_geometric_m * 0.1 * STAGE3_RHO_WATER_KG_M3
+                            / STAGE3_SECONDS_PER_HOUR,
+                ),
+                (
+                    "snow.stage3_reconciliation_external_flux",
+                    tuple.complete_external_flux_w_m2
+                        - tuple.net_shortwave_w_m2
+                        - tuple.net_longwave_w_m2
+                        - tuple.sensible_flux_w_m2
+                        - tuple.latent_flux_w_m2
+                        - tuple.precipitation_advected_flux_w_m2,
+                ),
+                (
+                    "snow.stage3_reconciliation_vapor_mass",
+                    tuple.vapor_mass_exchange_kg_m2
+                        - tuple.vapor_mass_flux_kg_m2_s * duration_seconds,
+                ),
+            ];
+            for (symbol, residual) in reconstruction {
+                Self::require_direct_typed_snow_value_with(
+                    phase_class,
+                    || BoundarySymbol::from(symbol),
+                    residual.abs(),
+                    None,
+                    Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+                )?;
+            }
+            if let Some(latent_heat_j_kg) = tuple.surface_latent_heat_j_kg {
+                let latent_residual = tuple.latent_flux_w_m2
+                    - tuple.vapor_mass_flux_kg_m2_s * latent_heat_j_kg;
+                Self::require_direct_typed_snow_value_with(
+                    phase_class,
+                    || BoundarySymbol::from("snow.stage3_reconciliation_latent_flux"),
+                    latent_residual.abs(),
+                    None,
+                    Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+                )?;
+            } else if tuple.turbulent_termination_status != "zero_wind"
+                || tuple.latent_flux_w_m2 != 0.0
+                || tuple.vapor_mass_flux_kg_m2_s != 0.0
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_reconciliation_latent_applicability",
+                    tuple.latent_flux_w_m2,
+                    Some(0.0),
+                    Some(0.0),
+                ));
+            }
+            if tuple.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1 {
+                let same_state = tuple.active_ice_mass_after_kg_m2.is_some_and(|value| {
+                    value.to_bits() == tuple.active_ice_mass_before_kg_m2.to_bits()
+                }) && tuple.active_depth_after_m.is_some_and(|value| {
+                    value.to_bits() == tuple.active_depth_before_m.to_bits()
+                }) && tuple.active_density_after_kg_m3.is_some_and(|value| {
+                    value.to_bits() == tuple.active_density_before_kg_m3.to_bits()
+                }) && tuple.active_cold_after_j_m2.is_some_and(|value| {
+                    value.to_bits() == tuple.active_cold_before_j_m2.to_bits()
+                }) && tuple.surface_temperature_after_c.is_some_and(|value| {
+                    value.to_bits() == tuple.surface_temperature_before_c.to_bits()
+                }) && tuple.total_ice_mass_after_kg_m2.to_bits()
+                    == tuple.total_ice_mass_before_kg_m2.to_bits()
+                    && tuple.total_cold_after_j_m2.to_bits()
+                        == tuple.total_cold_before_j_m2.to_bits()
+                    && tuple.active_layer_state_fingerprint_after_fnv1a64
+                        == Some(tuple.active_layer_state_fingerprint_before_fnv1a64)
+                    && tuple.total_layer_state_fingerprint_after_fnv1a64
+                        == tuple.total_layer_state_fingerprint_before_fnv1a64;
+                if !same_state {
+                    return Err(Self::stage3_domain_error(
+                        phase_class,
+                        "snow.stage3_reconciliation_same_state_endpoint",
+                        1.0,
+                        Some(0.0),
+                        Some(0.0),
+                    ));
+                }
+            } else if let (
+                Some(melt_kg_m2),
+                Some(sublimation_kg_m2),
+                Some(deposition_kg_m2),
+                Some(active_cold_change_j_m2),
+                Some(lower_cold_change_j_m2),
+                Some(cold_export_j_m2),
+                Some(conduction_j_m2),
+                Some(legacy_j_m2),
+            ) = (
+                tuple.melt_kg_m2,
+                tuple.sublimation_kg_m2,
+                tuple.deposition_kg_m2,
+                tuple.active_cold_energy_change_j_m2,
+                tuple.lower_cold_energy_change_j_m2,
+                tuple.cold_content_export_j_m2,
+                tuple.internal_active_lower_conduction_j_m2,
+                tuple.legacy_sequential_complete_j_m2,
+            ) {
+                for (symbol, residual) in [
+                    (
+                        "snow.stage3_reconciliation_mass_endpoint",
+                        tuple.total_ice_mass_after_kg_m2
+                            - tuple.total_ice_mass_before_kg_m2
+                            + melt_kg_m2
+                            + sublimation_kg_m2
+                            - deposition_kg_m2,
+                    ),
+                    (
+                        "snow.stage3_reconciliation_cold_endpoint",
+                        tuple.total_cold_after_j_m2
+                            - tuple.total_cold_before_j_m2
+                            + active_cold_change_j_m2
+                            + lower_cold_change_j_m2
+                            + cold_export_j_m2,
+                    ),
+                    (
+                        "snow.stage3_reconciliation_legacy_bridge",
+                        legacy_j_m2
+                            - tuple.complete_external_flux_w_m2 * duration_seconds
+                            - conduction_j_m2,
+                    ),
+                ] {
+                    Self::require_direct_typed_snow_value_with(
+                        phase_class,
+                        || BoundarySymbol::from(symbol),
+                        residual.abs(),
+                        None,
+                        Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+                    )?;
+                }
+            } else {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_reconciliation_sequential_applicability",
+                    1.0,
+                    Some(0.0),
+                    Some(0.0),
+                ));
+            }
+            elapsed_by_hour[tuple.hour_index] += duration_seconds;
+            count_by_hour[tuple.hour_index] += 1;
+        }
+        for hour_index in 0..24 {
+            let status = reconciliation.hourly_status[hour_index];
+            if status.evaluated != (count_by_hour[hour_index] > 0)
+                || elapsed_by_hour[hour_index] > STAGE3_SECONDS_PER_HOUR
+                || (status.evaluated && status.reason != "evaluated")
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_reconciliation_hourly_status",
+                    24.0,
+                    Some(0.0),
+                    Some(23.0),
+                ));
+            }
+            if summary.tag.operator == SnowStage3EvaluationOperator::SameStatePairedCarrierV1
+                && status.evaluated
+                && (count_by_hour[hour_index] != 1
+                    || elapsed_by_hour[hour_index].to_bits()
+                        != STAGE3_SECONDS_PER_HOUR.to_bits())
+            {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_reconciliation_same_state_cadence",
+                    elapsed_by_hour[hour_index],
+                    Some(STAGE3_SECONDS_PER_HOUR),
+                    Some(STAGE3_SECONDS_PER_HOUR),
+                ));
+            }
         }
         Ok(())
     }

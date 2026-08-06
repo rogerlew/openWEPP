@@ -472,6 +472,80 @@ pub struct TurbulentFluxes {
     pub obukhov_length_m: Option<f64>,
 }
 
+/// Exact successful termination of the Monin-Obukhov solver.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TurbulentTerminationStatus {
+    ZeroWind,
+    InitialPotentialTemperatureNeutral,
+    IterativeZeroBuoyancy,
+    IterativeInvalidObukhov,
+    ConvergedStable,
+    ConvergedUnstable,
+}
+
+impl TurbulentTerminationStatus {
+    /// Stable schema identifier.
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::ZeroWind => "zero_wind",
+            Self::InitialPotentialTemperatureNeutral => "initial_potential_temperature_neutral",
+            Self::IterativeZeroBuoyancy => "iterative_zero_buoyancy",
+            Self::IterativeInvalidObukhov => "iterative_invalid_obukhov",
+            Self::ConvergedStable => "converged_stable",
+            Self::ConvergedUnstable => "converged_unstable",
+        }
+    }
+}
+
+/// Stability classification attached to a successful turbulent solve.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TurbulentStabilityClass {
+    ZeroWind,
+    Neutral,
+    Stable,
+    Unstable,
+    IndeterminateObukhov,
+}
+
+impl TurbulentStabilityClass {
+    /// Stable schema identifier.
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::ZeroWind => "zero_wind",
+            Self::Neutral => "neutral",
+            Self::Stable => "stable",
+            Self::Unstable => "unstable",
+            Self::IndeterminateObukhov => "indeterminate_obukhov",
+        }
+    }
+}
+
+/// Primitive state from the exact solver invocation that produced `fluxes`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TurbulentFluxDiagnostics {
+    pub fluxes: TurbulentFluxes,
+    pub termination_status: TurbulentTerminationStatus,
+    pub stability_class: TurbulentStabilityClass,
+    pub momentum_stability_correction: f64,
+    pub sensible_stability_correction: f64,
+    pub latent_stability_correction: f64,
+    pub displacement_height_m: Option<f64>,
+    pub log_momentum: Option<f64>,
+    pub log_sensible: Option<f64>,
+    pub log_latent: Option<f64>,
+    pub friction_velocity_m_s: f64,
+    pub sensible_exchange_velocity_m_s: Option<f64>,
+    pub latent_exchange_velocity_m_s: Option<f64>,
+    pub air_density_kg_m3: Option<f64>,
+    pub air_potential_temperature_k: Option<f64>,
+    pub surface_temperature_k: Option<f64>,
+    pub specific_humidity_air_kg_kg: Option<f64>,
+    pub specific_humidity_surface_kg_kg: Option<f64>,
+    pub latent_heat_j_kg: Option<f64>,
+}
+
 /// Precipitation advected-heat inputs.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PrecipitationAdvectedHeatInputs {
@@ -640,20 +714,58 @@ pub fn snow_effective_thermal_conductivity_snobal(
 pub fn turbulent_fluxes_monin_obukhov(
     inputs: TurbulentFluxInputs,
 ) -> Result<TurbulentFluxes, MeteorologyError> {
+    turbulent_fluxes_monin_obukhov_with_diagnostics(inputs).map(|result| result.fluxes)
+}
+
+/// Monin-Obukhov fluxes plus the exact primitive solver lineage.
+///
+/// This calls the same private solver as [`turbulent_fluxes_monin_obukhov`].
+///
+/// # Errors
+///
+/// Returns the same typed errors as [`turbulent_fluxes_monin_obukhov`].
+pub fn turbulent_fluxes_monin_obukhov_with_diagnostics(
+    inputs: TurbulentFluxInputs,
+) -> Result<TurbulentFluxDiagnostics, MeteorologyError> {
     validate_turbulent_inputs(inputs)?;
     if inputs.wind_speed.as_meters_per_second() == 0.0 {
-        return Ok(TurbulentFluxes {
-            sensible_heat: EnergyFluxWattsPerSquareMeter::try_new(0.0)?,
-            latent_heat: EnergyFluxWattsPerSquareMeter::try_new(0.0)?,
-            mass_flux: MassFluxKilogramsPerSquareMeterSecond::try_new(0.0)?,
-            iterations: 0,
-            obukhov_length_m: None,
+        return Ok(TurbulentFluxDiagnostics {
+            fluxes: TurbulentFluxes {
+                sensible_heat: EnergyFluxWattsPerSquareMeter::try_new(0.0)?,
+                latent_heat: EnergyFluxWattsPerSquareMeter::try_new(0.0)?,
+                mass_flux: MassFluxKilogramsPerSquareMeterSecond::try_new(0.0)?,
+                iterations: 0,
+                obukhov_length_m: None,
+            },
+            termination_status: TurbulentTerminationStatus::ZeroWind,
+            stability_class: TurbulentStabilityClass::ZeroWind,
+            momentum_stability_correction: 0.0,
+            sensible_stability_correction: 0.0,
+            latent_stability_correction: 0.0,
+            displacement_height_m: None,
+            log_momentum: None,
+            log_sensible: None,
+            log_latent: None,
+            friction_velocity_m_s: 0.0,
+            sensible_exchange_velocity_m_s: None,
+            latent_exchange_velocity_m_s: None,
+            air_density_kg_m3: None,
+            air_potential_temperature_k: None,
+            surface_temperature_k: None,
+            specific_humidity_air_kg_kg: None,
+            specific_humidity_surface_kg_kg: None,
+            latent_heat_j_kg: None,
         });
     }
 
     let state = TurbulentState::initial(inputs)?;
     if (state.air_potential_temperature_k - state.surface_temperature_k).abs() <= f64::EPSILON {
-        return state.finish(0, None);
+        return state.finish(
+            0,
+            None,
+            TurbulentTerminationStatus::InitialPotentialTemperatureNeutral,
+            TurbulentStabilityClass::Neutral,
+        );
     }
 
     iterate_turbulent_fluxes(inputs, state)
@@ -791,7 +903,7 @@ pub fn specific_heat_ice(
 fn iterate_turbulent_fluxes(
     inputs: TurbulentFluxInputs,
     mut state: TurbulentState,
-) -> Result<TurbulentFluxes, MeteorologyError> {
+) -> Result<TurbulentFluxDiagnostics, MeteorologyError> {
     let mut obukhov_length = f64::INFINITY;
     let mut last_delta = f64::INFINITY;
 
@@ -801,13 +913,24 @@ fn iterate_turbulent_fluxes(
             / (state.air_potential_temperature_k * SPECIFIC_HEAT_AIR_J_KG_K)
             + 0.61 * state.mass_flux_kg_m2_s;
         if stability_buoyancy == 0.0 {
-            return state.finish(iteration, None);
+            let stability_class = state.stability_class()?;
+            return state.finish(
+                iteration,
+                None,
+                TurbulentTerminationStatus::IterativeZeroBuoyancy,
+                stability_class,
+            );
         }
 
         obukhov_length = state.friction_velocity_m_s.powi(3) * state.air_density_kg_m3
             / (VON_KARMAN * GRAVITY_M_S2 * stability_buoyancy);
         if !obukhov_length.is_finite() || obukhov_length == 0.0 {
-            return state.finish(iteration, None);
+            return state.finish(
+                iteration,
+                None,
+                TurbulentTerminationStatus::IterativeInvalidObukhov,
+                TurbulentStabilityClass::IndeterminateObukhov,
+            );
         }
 
         state.recompute_with_obukhov_length(inputs, obukhov_length);
@@ -815,7 +938,18 @@ fn iterate_turbulent_fluxes(
         if last_delta.abs() <= inputs.options.convergence_tolerance
             || (last_delta / obukhov_length).abs() <= inputs.options.convergence_tolerance
         {
-            return state.finish(iteration, Some(obukhov_length));
+            let (status, stability_class) = if obukhov_length.is_sign_positive() {
+                (
+                    TurbulentTerminationStatus::ConvergedStable,
+                    TurbulentStabilityClass::Stable,
+                )
+            } else {
+                (
+                    TurbulentTerminationStatus::ConvergedUnstable,
+                    TurbulentStabilityClass::Unstable,
+                )
+            };
+            return state.finish(iteration, Some(obukhov_length), status, stability_class);
         }
     }
 
@@ -828,6 +962,7 @@ fn iterate_turbulent_fluxes(
 
 #[derive(Debug, Clone, Copy)]
 struct TurbulentState {
+    displacement_height_m: f64,
     log_momentum: f64,
     log_sensible: f64,
     log_latent: f64,
@@ -837,6 +972,11 @@ struct TurbulentState {
     surface_temperature_k: f64,
     air_density_kg_m3: f64,
     friction_velocity_m_s: f64,
+    momentum_stability_correction: f64,
+    sensible_stability_correction: f64,
+    latent_stability_correction: f64,
+    sensible_exchange_velocity_m_s: f64,
+    latent_exchange_velocity_m_s: f64,
     mass_flux_kg_m2_s: f64,
     sensible_heat_w_m2: f64,
     latent_heat_j_kg: f64,
@@ -871,6 +1011,7 @@ impl TurbulentState {
         let latent_heat_j_kg = latent_heat_for_surface_temperature(inputs.surface_temperature)?
             .as_joules_per_kilogram();
         let mut state = Self {
+            displacement_height_m: displacement_height,
             log_momentum,
             log_sensible,
             log_latent,
@@ -880,6 +1021,11 @@ impl TurbulentState {
             surface_temperature_k,
             air_density_kg_m3,
             friction_velocity_m_s: 0.0,
+            momentum_stability_correction: 0.0,
+            sensible_stability_correction: 0.0,
+            latent_stability_correction: 0.0,
+            sensible_exchange_velocity_m_s: 0.0,
+            latent_exchange_velocity_m_s: 0.0,
             mass_flux_kg_m2_s: 0.0,
             sensible_heat_w_m2: 0.0,
             latent_heat_j_kg,
@@ -916,10 +1062,17 @@ impl TurbulentState {
 
     fn recompute_fluxes(
         &mut self,
-        _momentum_correction: f64,
+        momentum_correction: f64,
         sensible_correction: f64,
         latent_correction: f64,
     ) {
+        self.momentum_stability_correction = momentum_correction;
+        self.sensible_stability_correction = sensible_correction;
+        self.latent_stability_correction = latent_correction;
+        self.sensible_exchange_velocity_m_s =
+            VON_KARMAN * self.friction_velocity_m_s / (self.log_sensible - sensible_correction);
+        self.latent_exchange_velocity_m_s =
+            VON_KARMAN * self.friction_velocity_m_s / (self.log_latent - latent_correction);
         let factor = VON_KARMAN * self.friction_velocity_m_s * self.air_density_kg_m3;
         self.mass_flux_kg_m2_s = (self.specific_humidity_air - self.specific_humidity_surface)
             * factor
@@ -934,8 +1087,10 @@ impl TurbulentState {
         self,
         iterations: usize,
         obukhov_length_m: Option<f64>,
-    ) -> Result<TurbulentFluxes, MeteorologyError> {
-        Ok(TurbulentFluxes {
+        termination_status: TurbulentTerminationStatus,
+        stability_class: TurbulentStabilityClass,
+    ) -> Result<TurbulentFluxDiagnostics, MeteorologyError> {
+        let fluxes = TurbulentFluxes {
             sensible_heat: EnergyFluxWattsPerSquareMeter::try_new(self.sensible_heat_w_m2)?,
             latent_heat: EnergyFluxWattsPerSquareMeter::try_new(
                 self.latent_heat_j_kg * self.mass_flux_kg_m2_s,
@@ -943,6 +1098,58 @@ impl TurbulentState {
             mass_flux: MassFluxKilogramsPerSquareMeterSecond::try_new(self.mass_flux_kg_m2_s)?,
             iterations,
             obukhov_length_m,
+        };
+        Ok(TurbulentFluxDiagnostics {
+            fluxes,
+            termination_status,
+            stability_class,
+            momentum_stability_correction: self.momentum_stability_correction,
+            sensible_stability_correction: self.sensible_stability_correction,
+            latent_stability_correction: self.latent_stability_correction,
+            displacement_height_m: Some(self.displacement_height_m),
+            log_momentum: Some(self.log_momentum),
+            log_sensible: Some(self.log_sensible),
+            log_latent: Some(self.log_latent),
+            friction_velocity_m_s: self.friction_velocity_m_s,
+            sensible_exchange_velocity_m_s: Some(self.sensible_exchange_velocity_m_s),
+            latent_exchange_velocity_m_s: Some(self.latent_exchange_velocity_m_s),
+            air_density_kg_m3: Some(self.air_density_kg_m3),
+            air_potential_temperature_k: Some(self.air_potential_temperature_k),
+            surface_temperature_k: Some(self.surface_temperature_k),
+            specific_humidity_air_kg_kg: Some(self.specific_humidity_air),
+            specific_humidity_surface_kg_kg: Some(self.specific_humidity_surface),
+            latent_heat_j_kg: Some(self.latent_heat_j_kg),
+        })
+    }
+
+    fn stability_class(&self) -> Result<TurbulentStabilityClass, MeteorologyError> {
+        let corrections = [
+            self.momentum_stability_correction,
+            self.sensible_stability_correction,
+            self.latent_stability_correction,
+        ];
+        if corrections.iter().any(|value| !value.is_finite()) {
+            return Err(MeteorologyError::OutOfAuthority {
+                quantity: "turbulent_stability_correction",
+                value: f64::NAN,
+                minimum: f64::NEG_INFINITY,
+                maximum: f64::INFINITY,
+            });
+        }
+        if corrections.iter().all(|value| *value == 0.0) {
+            return Ok(TurbulentStabilityClass::Neutral);
+        }
+        if corrections.iter().all(|value| *value <= 0.0) {
+            return Ok(TurbulentStabilityClass::Stable);
+        }
+        if corrections.iter().all(|value| *value >= 0.0) {
+            return Ok(TurbulentStabilityClass::Unstable);
+        }
+        Err(MeteorologyError::OutOfAuthority {
+            quantity: "turbulent_stability_correction",
+            value: f64::NAN,
+            minimum: 0.0,
+            maximum: 0.0,
         })
     }
 }
@@ -1354,6 +1561,70 @@ mod tests {
             fluxes.mass_flux.as_kilograms_per_square_meter_second() * latent_heat,
             1.0e-12,
         );
+    }
+
+    #[test]
+    fn turbulent_diagnostics_share_exact_flux_solver_results() {
+        let air_vapor_pressure =
+            saturation_vapor_pressure_snobal_pa(temp(-1.0)).expect("valid air vapor pressure");
+        let surface_vapor_pressure =
+            saturation_vapor_pressure_snobal_pa(temp(-6.0)).expect("valid surface vapor pressure");
+        let base = TurbulentFluxInputs {
+            air_pressure: PressurePascals::try_new(80_000.0).expect("valid pressure"),
+            air_temperature: temp(-1.0),
+            surface_temperature: temp(-6.0),
+            air_vapor_pressure,
+            surface_vapor_pressure,
+            air_temperature_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            vapor_pressure_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            wind_speed: LinearRateMetersPerSecond::try_new(3.5).expect("valid wind"),
+            wind_speed_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            roughness_length: PositiveLengthMeters::try_new(0.005).expect("valid roughness"),
+            options: TurbulentTransferOptions::default(),
+        };
+        for inputs in [
+            base,
+            TurbulentFluxInputs {
+                wind_speed: LinearRateMetersPerSecond::try_new(0.0).expect("valid zero wind"),
+                ..base
+            },
+        ] {
+            let legacy = turbulent_fluxes_monin_obukhov(inputs).expect("legacy fluxes");
+            let diagnostic =
+                turbulent_fluxes_monin_obukhov_with_diagnostics(inputs).expect("diagnostic fluxes");
+            assert_eq!(
+                legacy.sensible_heat.as_watts_per_square_meter().to_bits(),
+                diagnostic
+                    .fluxes
+                    .sensible_heat
+                    .as_watts_per_square_meter()
+                    .to_bits()
+            );
+            assert_eq!(
+                legacy.latent_heat.as_watts_per_square_meter().to_bits(),
+                diagnostic
+                    .fluxes
+                    .latent_heat
+                    .as_watts_per_square_meter()
+                    .to_bits()
+            );
+            assert_eq!(
+                legacy
+                    .mass_flux
+                    .as_kilograms_per_square_meter_second()
+                    .to_bits(),
+                diagnostic
+                    .fluxes
+                    .mass_flux
+                    .as_kilograms_per_square_meter_second()
+                    .to_bits()
+            );
+            assert_eq!(legacy.iterations, diagnostic.fluxes.iterations);
+            assert_eq!(
+                legacy.obukhov_length_m.map(f64::to_bits),
+                diagnostic.fluxes.obukhov_length_m.map(f64::to_bits)
+            );
+        }
     }
 
     #[test]

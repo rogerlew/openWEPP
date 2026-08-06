@@ -4,7 +4,7 @@ use std::fmt;
 
 use super::super::{
     DirectSnowAccumulationMeltDiagnostics, DirectSnowStage3Diagnostics,
-    DirectSnowStage3EvaluationDiagnostics,
+    DirectSnowStage3EvaluationDiagnostics, DirectSnowStage3OperatorReconciliation,
 };
 use crate::constants::WB11_ZERO_THRESHOLD;
 
@@ -286,6 +286,7 @@ pub(crate) struct DirectSnowStage3Resolution {
     pub liquid_disposition_ledger: DirectSnowLiquidDispositionLedger,
     pub diagnostics: Option<DirectSnowStage3Diagnostics>,
     pub evaluation: Option<DirectSnowStage3EvaluationDiagnostics>,
+    pub reconciliation: Option<Box<DirectSnowStage3OperatorReconciliation>>,
 }
 
 impl DirectSnowStage3Resolution {
@@ -298,6 +299,7 @@ impl DirectSnowStage3Resolution {
                 .is_verbose()
                 .then(DirectSnowStage3Diagnostics::disabled),
             evaluation: None,
+            reconciliation: None,
         }
     }
 }
