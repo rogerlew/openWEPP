@@ -1,0 +1,111 @@
+{
+  "aggregation": {
+    "annual_first": true,
+    "calendar_normalized_flux_context_only": true,
+    "primary_site_summary": "Python statistics.median across eligible annual values",
+    "resolved_support_flux": "sum energy J m-2 divided by evaluated seconds",
+    "site_distribution": ["minimum", "q1", "median", "q3", "maximum", "positive_fraction", "negative_fraction"]
+  },
+  "carrier_screen": {
+    "broader_context_w_m2": [-5.0, 20.0],
+    "max_sites_outside_broader_context": 0,
+    "minimum_sites_within_near_balance": 3,
+    "near_balance_w_m2": [-5.0, 5.0]
+  },
+  "claim_limits": [
+    "characterization only",
+    "SNOTEL observations are DIAGNOSTIC_ONLY",
+    "literature ranges are ASSUMED_FOR_EXECUTION context, not validation or calibration",
+    "same-state carrier comparison does not simulate persistent chronology or Stage 3 melt response",
+    "internal active/lower conduction is not snow-ground heat",
+    "snow-ground heat is absent",
+    "CoE remains authoritative"
+  ],
+  "cohort": [
+    {
+      "climate_file": "p1.cli",
+      "fixture_manifest_sha256": "4de5001f8b014b6219c1f2dabea678f8e39bb49439419ec0c1700ece10429633",
+      "observation_sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce",
+      "site": "snotel_mica_creek_st_joe_id"
+    },
+    {
+      "climate_file": "p2.cli",
+      "fixture_manifest_sha256": "60dd238f4dbb7c32dc8dbeb57f8298b77edf1e839555c3608d163cc2bcdcc513",
+      "observation_sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c",
+      "site": "snotel_niwot_co"
+    },
+    {
+      "climate_file": "p2.cli",
+      "fixture_manifest_sha256": "c5eb31b8890ba1b1ac94b9ff2bcf6fc509e4b3ca83815dfdd44314c9b8e33214",
+      "observation_sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795",
+      "site": "snotel_paradise_wa"
+    },
+    {
+      "canonical_climate_sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7",
+      "climate_file": "p8.cli",
+      "development_climate_sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb",
+      "fixture_manifest_sha256": "f6c344f72ec7fb2e56085a6d88cc77340f12471c71171b026bfc8599d5f39ffc",
+      "forcing_class": "DEVELOPMENT_ONLY",
+      "observation_sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992",
+      "site": "snotel_snowbird_ut"
+    }
+  ],
+  "censored_primary_water_years": [2025],
+  "execution": {
+    "binary": "target/release/openwepp-cli-hill",
+    "control_per_site": "same binary and selectors with evaluation disabled",
+    "paired_per_site": "same_state_paired_carrier_v1",
+    "result_namespace": "target/snow_stage3_four_site_carrier_term_audit",
+    "source_fixture_root": "target/snow_prepeak_liquid_evacuation_physics_audit_v3/fixtures/baseline_replay"
+  },
+  "expected_tags": {
+    "arm_ids": ["stage3_surface_energy_v1", "stage3_complete_carrier_v1"],
+    "cadence_id": "stage3_fixed_hourly_immutable_snapshot_v1",
+    "carrier_id": "stage3_carrier_pair_v1",
+    "claim_class": "carrier_component_comparison",
+    "coverage_id": "evaluated_seconds_over_requested_seconds_v1",
+    "operator_id": "same_state_paired_carrier_v1",
+    "pairing_id": "stage3_carrier_pair_v1",
+    "source_snapshot_id": "post_coe_daily_initial_snapshot_v1",
+    "support_id": "stage3_daily_24_hour_support_v1",
+    "unresolved_boundaries_id": "snow_ground_cross_day_terminal_recipient_unresolved_v1"
+  },
+  "literature_context": {
+    "marks_1998_figure_7_forest_w_m2": {
+      "combined_sensible_latent": [-2.0, 7.0],
+      "external_total": [-5.0, 20.0],
+      "net_all_wave": [-4.0, 6.0],
+      "precipitation_advection": [0.0, 10.0],
+      "soil_heat_not_implemented": [0.0, 2.0]
+    },
+    "roth_nolin_2017_forest_longwave_fraction_of_total_energy_input": [0.59, 0.88],
+    "webster_2016_event_net_longwave_upper_context_w_m2": 40.0
+  },
+  "no_tuning": "No result-driven change to cohort, forcing, windows, support, aggregation, context, tolerances, or screen in this namespace.",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "pre_result_commit": "PENDING",
+  "reconstruction": {
+    "annual_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
+    "daily_tolerance_j_m2": 1e-06,
+    "complete": "shortwave + longwave + sensible + latent + precipitation_advected",
+    "complete_minus_surface": "sensible + precipitation_advected",
+    "internal_conduction_expected_j_m2": 0.0,
+    "surface": "shortwave + longwave + latent"
+  },
+  "schema_version": 1,
+  "selectors": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR": "same_state_paired_carrier_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  },
+  "status": "frozen_before_result_execution",
+  "support": {
+    "evaluated_hour": "complete_carrier_evaluated true and requested_seconds == evaluated_seconds == 3600",
+    "primary_window": "October 1 through earliest maximum positive observed SWE date inclusive",
+    "zero_coverage": "reported in calendar coverage and excluded from resolved-snow energy mean"
+  }
+}

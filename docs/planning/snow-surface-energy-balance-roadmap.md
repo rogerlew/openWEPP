@@ -307,8 +307,8 @@ The revised sequence is therefore:
 2. completed: mechanically extract the shadow solver and publish
    shadow-specific flux, cold-content-export, mass, residual, and coverage
    operands through the real internal consumer;
-3. next: run a frozen paired-window per-term audit at Mica Creek, Niwot, Paradise,
-   and Snowbird;
+3. active: execute the prospectively frozen same-state paired per-term audit at
+   Mica Creek, Niwot, Paradise, and the governed Snowbird development lane;
 4. admit and run persistent accumulation-season shadow state only if that
    audit is physically interpretable;
 5. admit terminal enthalpy-event numerics separately from the first-class

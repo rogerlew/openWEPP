@@ -1,0 +1,369 @@
+# Snow Stage 3 Four-Site Carrier-Term Audit
+
+Status: `scaffolded / protocol frozen / result execution pending`
+
+Date: `2026-08-06`
+
+Package ID: `20260806-snow-stage3-four-site-carrier-term-audit-001`
+
+Plan class: `Read-only, result-bearing four-site science characterization`
+
+This ExecPlan is a living document governed by `docs/codex_exec_plans.md`.
+`Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes &
+Retrospective` remain current throughout execution.
+
+## Purpose
+
+Determine which terms make the Stage 3 complete carrier positive or negative
+over accumulation-season snow support at Mica Creek, Niwot, Paradise, and
+Snowbird. Execute the admitted same-state paired operator through the real
+schema-v5 consumer, independently reconstruct every energy sum, and compare
+annual-first site summaries with prospectively frozen literature context.
+
+This package characterizes an evaluation carrier. It does not persist shadow
+state, simulate seasonal Stage 3 melt chronology, alter production physics, or
+authorize CoE retirement.
+
+## Context
+
+The Snowbird complete-carrier predecessor closed resolved-domain terminal
+allocation but retained a strongly positive median seasonal balance and more
+shadow melt than CoE. That sequential experiment reinitialized from the
+post-CoE pack every day and did not publish term-complete lineage, so it could
+not isolate the anomaly or support chronology claims.
+
+Contract v128 now supplies a default-off `same_state_paired_carrier_v1`
+operator. Both arms use the immutable post-CoE daily initial snapshot, identical
+24-hour forcing and geometry, and equality-checkable non-formulation
+fingerprints. Schema v5 exports hourly shortwave, longwave, sensible, latent,
+precipitation-advection, vapor, support, and residual operands through the real
+internal JSONL consumer.
+
+## Implementation Intent
+
+- Intent: `characterization only`.
+- Science implementation status: `IMPLEMENTED`; no equation change is in
+  scope.
+- Calibration evidence status: `NOT_APPLICABLE`.
+- Identifiability status: `NOT_ASSESSED`; no parameter is fitted.
+- Observation role: SNOTEL SWE is `DIAGNOSTIC_ONLY` and selects the frozen
+  annual accumulation window only.
+- Literature screens: `ASSUMED_FOR_EXECUTION` context, not calibration,
+  validation, authority, or transferable bounds.
+- Production/kernel edit intent: `none`.
+
+## Included Scope
+
+1. Build one exact release CLI from the frozen pre-result commit and record its
+   hash.
+2. Copy and hash the four retained real CLI fixtures without mutating sources.
+3. Replace only the staged Snowbird climate file with the existing
+   `DEVELOPMENT_ONLY` precipitation derivative and prove its exact consumer.
+4. Execute one same-state paired-carrier replay per site with the frozen
+   selector map and schema-v5 trace.
+5. Select primary water-year windows from October 1 through the observed
+   positive SNOTEL peak, inclusive; exclude WY2025 from primary summaries.
+6. Report resolved-snow support separately from calendar-window support.
+7. Reconstruct hourly, daily, annual, and site-median shortwave, longwave,
+   sensible, latent, advection, external-carrier total, and paired formulation
+   delta from exact operands.
+8. Report internal active/lower conduction separately and never label it
+   snow-ground or include it in the same-state external carrier.
+9. Explicitly report the absent snow-ground boundary.
+10. Compare annual-first site medians and distributions with the frozen
+    literature context without tuning.
+11. Disposition carrier plausibility and the next roadmap step.
+12. Complete dual independent review, finding disposition, dual terminal
+    verification, validation, prompt archival, and a stable local commit.
+
+## Excluded Scope
+
+- Production Rust, canonical contracts, integration tests, fixtures,
+  observations, selectors, defaults, public outputs, assurance sources, or
+  reference custody.
+- Sequential melt, persistent state, peak-SWE response, terminal-event
+  numerics, snow-ground heat, snow-free land energy, receiving-surface energy,
+  promotion, or cutover.
+- Site-specific fitting, albedo or canopy tuning, forcing rescaling beyond the
+  already governed Snowbird development derivative, or post-result changes to
+  windows, ranges, or gates.
+- Calling internal active/lower redistribution a ground heat flux.
+- Treating literature context as independent validation of these SNOTEL
+  fixtures.
+
+## Intended Write Set
+
+- `docs/work-packages/20260806-snow-stage3-four-site-carrier-term-audit-001/`
+- `docs/work-packages/README.md`
+- `docs/ROADMAP.md`
+- `docs/planning/snow-surface-energy-balance-roadmap.md`
+- ignored `target/snow_stage3_four_site_carrier_term_audit/`
+- normal ignored build/test outputs
+
+Everything else is protected. A production, contract, test, fixture,
+observation, assurance, or reference edit stops this package.
+
+## Authority And Dependencies
+
+- `SC-SNOWFREEZE-001` v128, especially `INV-SNOWFREEZE-093` and `094`.
+- `SC-SNOWENERGY-001` v8, especially complete-carrier composition, exact-one
+  lineage, and acknowledged missing snow-ground/terminal boundaries.
+- `SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY` completion and
+  worker handoff.
+- `SNOW-STAGE3-COMPLETE-CARRIER-SHADOW-MELT` failed Snowbird screen.
+- The canonical four retained fixture copies and diagnostic SNOTEL records.
+- The governed Snowbird `precip_x1p2155576` development derivative.
+
+Canonical science remains in `SC-*`. Package evidence may localize an anomaly
+but cannot admit replacement physics.
+
+## Frozen Cohort And Forcing
+
+The cohort and exact hashes are in `artifacts/protocol-freeze.json` and
+`artifacts/fixture-and-forcing-custody.md`.
+
+- Mica Creek, Niwot, and Paradise use their canonical retained fixture copies.
+- Snowbird uses a fresh canonical fixture copy whose staged `p8.cli` is
+  replaced by the checksum-bound precipitation-only `1.2155576` derivative.
+- Canonical Snowbird remains byte-preserved as provenance control and is not a
+  second result lane.
+- The derivative is `DEVELOPMENT_ONLY`: it is not precipitation truth, an
+  observation, a calibration, a default, independent validation, or evidence
+  transferable beyond this lane.
+
+## Frozen Runtime Selectors
+
+- density: `physics_bulk_multilayer_density_v1`;
+- phase: `harder_pomeroy_hourly`;
+- melt: `coe_liquid_holding_capacity_v1`;
+- Stage 3: `layered_thermal_liquid_v1`;
+- longwave: `dilley_unsworth_subcanopy_v1`;
+- sublimation: `disabled`;
+- evaluation: `same_state_paired_carrier_v1`; and
+- legacy complete-carrier-shadow spelling: absent.
+
+Every ambient `OPENWEPP_*` key is removed before a run, then only this map and
+the per-run trace path are installed. CoE remains the sole authoritative melt
+and snow-mass owner.
+
+## Frozen Support And Aggregation
+
+For each observation water year, select the maximum positive nonmissing SWE;
+the earliest date wins ties. The primary window is October 1 of the prior
+calendar year through that date, inclusive. WY2025 is retained only as a named
+right-censored sensitivity.
+
+The physical comparison support is exactly the schema-v5 hours with:
+
+- operator, source, support, cadence, carrier, pairing, arms, claim class, and
+  unresolved-boundary IDs equal to the frozen values;
+- both non-formulation fingerprints equal and nonzero;
+- `complete_carrier_evaluated=true`;
+- requested and evaluated support both exactly `3600 s`; and
+- finite exported operands.
+
+Rows with no resolved post-CoE snow snapshot are explicit zero-coverage rows.
+They count in calendar coverage but never become zero energy in the
+resolved-snow mean. A primary annual window requires at least one evaluated
+hour. Coverage never excludes a valid year silently; low coverage is reported
+and prevents a seasonal generalization.
+
+Compute every metric per site and water year first. Site summaries are Python
+`statistics.median` across eligible annual values. Report minimum, median,
+maximum, quartiles, positive/negative fractions, evaluated hours, calendar
+hours, and coverage. Do not pool hours, joules, years, or sites for the primary
+verdict.
+
+## Frozen Operand Reconstruction
+
+For each evaluated hour independently reconstruct:
+
+```text
+Q_surface = Q_shortwave + Q_longwave + Q_latent
+
+Q_complete_external = Q_shortwave + Q_longwave + Q_sensible
+                    + Q_latent + Q_precipitation_advected
+
+delta_complete_minus_surface = Q_sensible + Q_precipitation_advected
+```
+
+The same-state pair marks internal active/lower conduction not applicable; it
+must be exactly zero. The exported complete total and surface total must equal
+the reconstructed sums within `1e-6 J m^-2` per daily row and within a
+scale-aware `max(1e-6, 1e-12 * sum_abs_operands) J m^-2` annual bound.
+Producer-carried totals and residuals are evidence to check, never operands in
+the independent reconstruction.
+
+Energy sums are reported in `MJ m^-2`. Resolved-support mean flux is annual
+energy divided by evaluated seconds. Calendar-normalized flux is reported
+separately and cannot substitute for the resolved-support mean.
+
+## Prospective Literature Context And Decision Rule
+
+`artifacts/literature-envelope.md` is binding. It freezes source-specific
+comparison bands before results:
+
+- Marks et al. (1998) Figure 7 forest climate-period context, visually read at
+  the published plotting precision: net all-wave approximately `[-4, +6]`,
+  combined sensible-plus-latent `[-2, +7]`, precipitation advection `[0, +10]`,
+  soil heat `[0, +2]`, and total balance `[-5, +20] W m^-2`;
+- a stricter accumulation near-balance screen of `[-5, +5] W m^-2` for the
+  external carrier total, based on the same paper's snow-development and cold
+  periods being described as at or near zero;
+- Roth and Nolin (2017) seasonal forest context: longwave contributes `82%`,
+  `88%`, and `59%` of total energy inputs at low, mid, and high forest sites,
+  while turbulent fluxes are not significant monthly or annually outside the
+  exposed high-open site; and
+- Webster et al. (2016) event context: subcanopy net longwave can reach about
+  `+40 W m^-2` for short spring intervals. This is not a seasonal target.
+
+These ranges are heterogeneous context, not universal truth. Classification is
+`WITHIN_CONTEXT`, `OUTSIDE_CONTEXT`, or `NOT_COMPARABLE`; it is never
+automatically `VALIDATED`.
+
+The frozen carrier screen passes only if all of the following hold:
+
+1. identity, tag, fingerprint, finite-value, and no-internal-ground-alias gates
+   pass for every evaluated row;
+2. every site has at least one primary annual window with evaluated support and
+   every annual window reports its coverage;
+3. at least three of four site-median external complete-carrier means lie in
+   the prospective `[-5, +5] W m^-2` accumulation near-balance band; and
+4. no site median lies outside Marks' broader `[-5, +20] W m^-2` forest
+   climate-period total context.
+
+Failure localizes terms and blocks persistent-shadow advancement. Passage
+permits roadmap consideration only; it does not prove physical validity or
+authorize persistence.
+
+## No-Tuning And Result Custody
+
+The cohort, hashes, selectors, windows, support rules, aggregation, literature
+context, tolerances, and decision rule are frozen before model execution.
+No post-result numeric or categorical change is allowed in this result
+namespace. A deterministic package-tool defect may be corrected only by
+rejecting affected generated results, recording the defect and unchanged
+science operator, prospectively freezing a versioned protocol amendment, and
+rerunning from a fresh target namespace.
+
+## Real Consumer And Negative Proof
+
+The exact release CLI must write schema-v5 JSONL rows. The independent parser
+must consume the exported hourly arrays directly. Unit-test structs,
+producer-only totals, old summaries, or manual transcription cannot close the
+claim.
+
+The execution must also prove WAT and HBP bytes equal an evaluation-disabled
+same-binary control for every site. PASS is recorded as not emitted where that
+is the actual direct-hillslope surface. No schema-v5 field may be described as
+production publication.
+
+## Subagent Authorization
+
+Subagent authorization: this package explicitly authorizes one
+`comparator_suite_runner` for the exact four-site release build/replays and
+heavy batch verification under the declared target namespace; two independent
+read-only science/Rust reviewers; and two independent read-only terminal
+verifiers. Expected outputs are compact findings, reproduced metrics, and
+evidence paths. Delegates may not edit tracked files or expand authority. The
+comparator may write only normal build/test and ignored package-target outputs.
+The orchestrator alone edits tracked files and dispositions findings.
+
+## Phase Plan
+
+### Phase A: Scaffold And Result-Blind Freeze
+
+Create and commit this package, prompt, reading map, fixture custody, operand
+lineage, literature context, protocol JSON, analysis tool/tests, catalog and
+roadmap state. Obtain result-blind protocol review and remediate before any
+model run.
+
+### Phase B: Exact Four-Site Execution
+
+Build the frozen release CLI. Run evaluation-disabled controls and paired
+evaluation lanes for all four sites, with the staged Snowbird derivative in
+both. Retain commands, environment custody, hashes, and outputs.
+
+### Phase C: Independent Analysis
+
+Stream the exact traces, bind climate dates and observation windows,
+reconstruct every term and residual, report annual/site distributions and
+coverage, apply the frozen literature classifications and carrier screen, and
+write compact tracked evidence from ignored raw outputs.
+
+### Phase D: Review And Closure
+
+Complete dual independent review, disposition every finding, remediate accepted
+findings, run direct gates, obtain two fresh terminal verifications, reconcile
+the terminal diff, archive the prompt byte-identically, update roadmaps and
+catalog, and commit locally.
+
+## Validation And Exit Criteria
+
+- Pre-result scaffold/freeze is committed before the first model run.
+- Result-blind protocol review passes before execution.
+- Four control and four paired exact-current release CLI runs complete.
+- WAT/HBP control equality passes at all four sites.
+- Schema-v5 tags, pairing, fingerprints, support, and every exported operand
+  pass independent checks.
+- Hourly/daily/annual term identities close at frozen tolerances.
+- Every eligible site-year and every zero-coverage or censored year is reported.
+- Internal conduction is separate and absent snow-ground heat is explicit.
+- Literature comparison follows the frozen source-specific context and
+  no-tuning rule.
+- Package-local syntax/tests, result verifier, JSON parsing, documentation
+  lint, spelling review, format/diff hygiene, and relevant focused schema-v5
+  tests pass.
+- Dual review, finding disposition, dual verification, prompt archival,
+  line-count governance, write-set reconciliation, and truthful disposition
+  pass with no deferred current-scope gate.
+
+No full-workspace correctness profile is required because the terminal
+production/kernel diff must be empty. Any need for such an edit stops this
+package and requires a separate contract-first package.
+
+## Security And Data Impact
+
+Security impact is `none expected`. Runs use local fixtures, observations,
+binaries, and ignored target paths. The tool removes ambient `OPENWEPP_*`
+variables, records only allowed key names/values, does not read credentials or
+contact external services, and never mutates source fixtures.
+
+## Progress
+
+- [x] (2026-08-06) User authorized scaffolding and end-to-end execution.
+- [x] (2026-08-06) Froze cohort, forcing custody, support, aggregation,
+  literature context, decision rule, and no-tuning posture before results.
+- [ ] Commit and independently review the result-blind scaffold.
+- [ ] Execute four controls and four paired carrier lanes.
+- [ ] Reconstruct, classify, review, verify, and disposition results.
+
+## Surprises & Discoveries
+
+- The same-state operator emits explicit zero-coverage diagnostics for an empty
+  post-CoE snow snapshot. Those rows cannot be treated as zero-energy snow
+  hours; calendar coverage must remain separate from resolved support.
+- The same-state operator intentionally marks internal active/lower conduction
+  not applicable. That cleanly prevents accidental substitution for the absent
+  snow-ground boundary.
+
+## Decision Log
+
+- Decision: use the governed Snowbird precipitation derivative for the sole
+  Snowbird result lane and preserve canonical Snowbird only as provenance.
+  Rationale: the campaign roadmap requires the derivative beginning with this
+  result-bearing package; adding canonical Snowbird as a second result after
+  inspection would create an unfrozen sensitivity.
+  Date/Author: 2026-08-06 / Codex.
+- Decision: compare resolved-snow and calendar-normalized means separately.
+  Rationale: schema-v5 distinguishes physical evaluated support from explicit
+  snow-free zero coverage.
+  Date/Author: 2026-08-06 / Codex.
+- Decision: use source-specific literature context plus a frozen near-balance
+  screen, not a claimed universal flux range.
+  Rationale: subcanopy flux partition is climate-, canopy-, and event-dependent.
+  Date/Author: 2026-08-06 / Codex.
+
+## Outcomes & Retrospective
+
+Pending result execution.
