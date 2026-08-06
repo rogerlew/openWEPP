@@ -1,6 +1,6 @@
 # Kernel Profile Compliance
 
-Status: PASS before review.
+Status: PASS after dual review and independent consumer QA.
 
 Evidence mode: Static plus Ran on 2026-08-06.
 
@@ -18,3 +18,6 @@ Evidence mode: Static plus Ran on 2026-08-06.
 - Boundaries: internal active/lower conduction is explicitly labeled and no
   snow-ground, persistence, physical-chronology, terminal-recipient, seasonal,
   or cutover claim is made.
+- Consumer/publication: evaluator evidence reaches only the enabled internal
+  schema-v5 JSONL trace. The authoritative partition alone reaches production,
+  and real enabled/disabled WAT/HBP/PASS writer bytes are exact.

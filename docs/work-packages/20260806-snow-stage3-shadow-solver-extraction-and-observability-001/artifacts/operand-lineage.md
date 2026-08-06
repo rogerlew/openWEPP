@@ -17,7 +17,10 @@ Sequential fixtures must reconstruct `complete = cold change + fusion*melt +
 terminal unallocated + residual`. Coverage must reconstruct as evaluated divided
 by requested seconds.
 
-Implementation status: PASS before review. Schema-v5 daily and hourly fields
-carry these exact sources. The real-file consumer fixture deliberately sets
-production and evaluation shortwave/total values unequal and reconstructs only
-the shadow-specific operands.
+Implementation status: PASS after review. Schema-v5 daily and hourly fields on
+`DirectSnowStage3EvaluationDiagnostics` and
+`DirectSnowStage3EvaluationHourDiagnostics` carry these exact sources. The
+real-file consumer fixture deliberately sets production and evaluation
+shortwave/total values unequal and reconstructs only the shadow-specific
+operands. Full paired and truncated-sequential solver rows prove every family,
+support fraction, and rejected alias through the real writer/reader path.

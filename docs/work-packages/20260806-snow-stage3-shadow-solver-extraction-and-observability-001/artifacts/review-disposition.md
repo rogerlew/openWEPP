@@ -1,6 +1,7 @@
 # Review Disposition
 
-Status: second remediation implemented; independent re-review pending.
+Status: PASS; both remediation rounds and exact-head independent re-review are
+complete.
 
 All first-round findings were accepted. The remediation:
 
@@ -46,3 +47,11 @@ That finding is accepted. The second remediation:
 Second-remediation focused evidence: `53/53` six-binary Stage 3 tests, `2/2`
 evaluator validation tests, `5/5` runner evaluation tests including exact
 WAT/HBP/PASS bytes, and warnings-denied two-crate all-target Clippy pass.
+
+All three independent reviewers returned `GO` at exact clean commit
+`6506da5d4b917c676683613d68e0556d467fed30`. Primary Rust re-review ran
+`56/56`, `2/2`, and `7/7`; science/custody re-review ran `32/32`, `6/6`, and
+`2/2`; consumer QA ran `2/2`, `1/1`, and `32/32`. All required first- and
+second-round findings are closed. No formula, coefficient, threshold,
+production owner, public schema, default, fixture, observation, calibration,
+or assurance lifecycle authority changed.

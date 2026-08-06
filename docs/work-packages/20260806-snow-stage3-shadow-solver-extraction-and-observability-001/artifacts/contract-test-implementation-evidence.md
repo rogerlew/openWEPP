@@ -12,3 +12,6 @@ Evidence mode: Ran on 2026-08-06.
   state.
 - The focused v128 plus predecessor-authority run passed all 7 tests before
   production Rust edits.
+- The reviewed runtime evidence closure is pinned by exact GAP wording; strict
+  Binding Exposure remains 10/10 rows, unit compliance has no findings, and the
+  final v128 plus predecessor-authority pair passes `10/10`.

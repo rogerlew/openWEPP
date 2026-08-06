@@ -7,7 +7,7 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "34f2f80ee58c9b0f85a595e7a981363dff74db97277d763f7486651f0ae2f9f6",
+  "previous_generation_id": "de62817a135872233fdc1d9485ee9cb848338b14b12e84e08cccf059dcc78198",
   "sources": {
     "assurance/v2/README.md": "44a10480c37ac73435885bad01d26688bcd8da43c749991a21fd68ac00bd5942",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
@@ -71,7 +71,7 @@
     "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "3eca7860a4e936ff09b5a250058c287b696fc4f199341f909d8719ee501cae53",
     "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "5fb5abca137b25f929629703f5809513dc67fb4a0e8679d64d89c40bdca3dfc7",
     "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "e574613dcc0f1173e6ec0bcc19ba69f237e86225f4bc6c8c77d03db15aa2291d",
-    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "0fb0d1930fa6136292e32cd5a00e8f5d7ebfc958b582b6c2cbe2267386d6c2fe",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "aa583302fc15b4b93c7afec3fda5741132726eb9090e0fd56013d3c74b512f07",
     "docs/work-packages/20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/artifacts/non_snotel_rubric_baseline.json": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930",
     "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.json": "f5d261379f2aaed862a4ad6734e76e3d8123f56df46ca7739fa2fab86c2d6ef8",
     "docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json": "f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a",
@@ -135,7 +135,7 @@
   "review_locks": {
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "ac2dc30278685b4e3dc6e50b49dcf0960ffe1eaaa10bef29a335e4d455d71b31",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "f54c56f40f9f8a4d00b513b88e48c8254b0dcf7959ee2b22cdc89d9a4a9e95f6",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "7ee14ba690b2b79df2df2b00a67163309eb60b7374bb742d70038ab00f6d5029"
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "902e73e1c17dc72fd0905d106c7c8e0946154b4690b349b7b0c43a50b5e70a77"
   },
-  "generation_id": "de62817a135872233fdc1d9485ee9cb848338b14b12e84e08cccf059dcc78198"
+  "generation_id": "221f8e5145271f29de2923f37252a95ed7ce51c7a0155a86def01eddbe593d69"
 }

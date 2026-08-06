@@ -1,3 +1,3 @@
 # Archived Prompts
 
-Completed prompt bytes are retained here after package closure.
+Contains the byte-preserved kickoff prompt archived at package closure.

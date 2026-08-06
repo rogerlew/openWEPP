@@ -1,10 +1,13 @@
 # Artifacts
 
-Status: active implementation evidence; review and verification pending.
+Status: closure candidate; implementation and review evidence complete, heavy
+validation and terminal verification pending.
 
 This directory owns authority, operand lineage, modularization, implementation,
 consumer, validation, review, verification, and terminal reconciliation
 evidence for this package.
 
-`assurance-source-adoption.md` records the typed v128 source transaction while
-preserving the report's DRAFT lifecycle.
+`assurance-source-adoption.md` records both typed v128 source transactions while
+preserving the report's DRAFT lifecycle. `review-disposition.md` closes both
+review/remediation rounds. `exact-diff-reconciliation.md` and the verification
+artifacts own terminal closure.

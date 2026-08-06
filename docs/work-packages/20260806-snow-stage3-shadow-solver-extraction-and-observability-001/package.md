@@ -1,6 +1,6 @@
 # Stage 3 Shadow Solver Extraction And Observability
 
-Status: `queued / authorized / contract-first`
+Status: `closure candidate / implementation and review pass / terminal gates queued`
 
 Date: `2026-08-06`
 
@@ -268,7 +268,10 @@ custody.
 - [x] Amend v128 and pass the pre-implementation contract gate.
 - [x] Complete mechanical extraction and parity checks.
 - [x] Implement typed evaluation and schema-v5 observability.
-- [ ] Adopt assurance source, review, validate, verify, archive, and close.
+- [x] Adopt the v128 source while retaining DRAFT and null authority roots.
+- [x] Complete dual review, independent consumer QA, and prompt archival.
+- [ ] Pass exact-head heavy validation, exact-diff reconciliation, and dual
+  terminal verification; then close on a clean commit.
 
 ## Surprises & Discoveries
 
@@ -282,6 +285,12 @@ custody.
 - Observation: `runoff_reconciliation.rs` is 3,177 lines; moving the complete
   Stage 3 seam can reduce it below 3,000 without touching unrelated frost,
   density, or runoff logic.
+- Observation: independent review exposed legacy exhaustive-public-type drift
+  and incomplete writer proof after the first implementation. The final shape
+  uses additive evaluator types and real WAT/HBP/PASS byte comparison.
+- Observation: the documentation wrapper is rooted to a different repository;
+  both relative and absolute prompt moves were rejected, so the prompt was
+  moved with an explicit patch after the required helper attempts.
 
 ## Decision Log
 
@@ -306,9 +315,23 @@ custody.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+The bounded realization is complete. The monolith fell from 3,177 to 1,233
+lines, with 1,797-line solver and 882-line evaluation modules. Both typed
+operators now expose the frozen schema-v5 evidence through a real consumer,
+while disabled schema v4, authoritative state/ledgers, legacy API, and
+WAT/HBP/PASS bytes remain exact. Two review/remediation rounds closed malformed
+row, evaluator-custody, support-scaling, fingerprint, compatibility, exhaustive
+API, and protected-writer proof defects.
+
+This package does not establish carrier plausibility or physical seasonal
+chronology. The next result-bearing increment is the prospectively frozen
+four-site carrier-term audit. Persistent state, terminal numerics, land-surface
+receipt, CoE retirement, and cutover remain separate held work.
 
 ## Revision Note
 
 2026-08-06: Initial contract-first scaffold created from the v127 worker
 handoff and active roadmap.
+
+2026-08-06: v128 bounded implementation, review remediation, DRAFT assurance
+adoption, and closure-candidate documentation completed.

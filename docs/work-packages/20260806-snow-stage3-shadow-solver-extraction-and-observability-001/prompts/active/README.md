@@ -1,3 +1,3 @@
 # Active Prompts
 
-Contains the current package kickoff prompt while execution is active.
+No active prompts remain. The kickoff prompt moved to `../archived/` at closure.

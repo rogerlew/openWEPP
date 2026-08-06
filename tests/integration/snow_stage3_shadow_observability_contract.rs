@@ -40,6 +40,8 @@ fn v128_admits_only_bounded_typed_shadow_observability() {
         "Internal conduction may not be relabeled snow-ground flux",
         "Turbulent primitive failures preserve their typed meteorology source",
         "move `runoff_reconciliation.rs` below 3,000 lines",
+        "Bounded realization closed 2026-08-06",
+        "No longer blocks claims that runtime conforms to the bounded operators",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }

@@ -11,6 +11,18 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260806-snow-stage3-shadow-solver-extraction-and-observability-001/` —
+  EXECUTED / BOUNDED EVALUATION REALIZED / REVIEW PASS / TERMINAL GATES
+  PENDING:
+  `SC-SNOWFREEZE-001` v128 realizes the two typed default-off operators, and the
+  extracted solver publishes complete paired/sequential per-term, fingerprint,
+  support, coverage, mass, cold-content, terminal-energy, and residual evidence
+  through the real internal schema-v5 consumer. Disabled schema v4, production
+  state and ledgers, legacy public API, and WAT/HBP/PASS bytes remain exact.
+  CoE stays authoritative. The DRAFT assurance source is generation `221f8e51`;
+  persistence, seasonal chronology, terminal receipt, receiving-surface energy,
+  promotion, and cutover remain held. The four-site carrier-term audit is next.
+
 - `20260806-snow-stage3-evaluation-shadow-authority-001/` — EXECUTED /
   EVALUATION AUTHORITY ADMITTED / RUNTIME UNCHANGED / REVIEW AND VERIFICATION
   PASS: `SC-SNOWFREEZE-001` v127 preserves one production snow-mass authority
@@ -462,12 +474,6 @@
 ## Current Active/Held Packages
 
 State as of `2026-08-06 UTC`:
-
-- `20260806-snow-stage3-shadow-solver-extraction-and-observability-001/` -
-  QUEUED / AUTHORIZED / CONTRACT-FIRST: amend v128 evaluation-realization
-  authority, extract the 3,177-line Stage 3 solver, and add typed default-off
-  paired/sequential schema-v5 observability while preserving exact disabled
-  schema-v4 and current CoE production ownership.
 
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
