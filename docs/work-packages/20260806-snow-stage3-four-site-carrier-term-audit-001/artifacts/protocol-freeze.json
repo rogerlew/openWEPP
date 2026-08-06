@@ -1,22 +1,28 @@
 {
   "aggregation": {
-    "annual_first": true,
+    "water_year_first_condition_samples": true,
     "calendar_normalized_flux_context_only": true,
-    "primary_site_summary": "Python statistics.median across eligible annual values",
+    "primary_site_summary": "Python statistics.median across screen-eligible water-year condition samples",
     "resolved_support_flux": "sum energy J m-2 divided by evaluated seconds",
-    "site_distribution": ["minimum", "q1", "median", "q3", "maximum", "positive_fraction", "negative_fraction"]
+    "site_distribution": ["minimum", "q1", "median", "q3", "maximum", "positive_fraction", "negative_fraction"],
+    "trajectory_claim": "prohibited: daily immutable snapshots are condition samples, not a seasonal energy ledger"
   },
   "carrier_screen": {
-    "broader_context_w_m2": [-5.0, 20.0],
-    "max_sites_outside_broader_context": 0,
-    "minimum_sites_within_near_balance": 3,
-    "near_balance_w_m2": [-5.0, 5.0]
+    "canonical_decisive_sites": [
+      "snotel_mica_creek_st_joe_id",
+      "snotel_niwot_co",
+      "snotel_paradise_wa"
+    ],
+    "minimum_canonical_sites_within_near_balance": 3,
+    "minimum_screen_eligible_water_years_per_site": 10,
+    "near_balance_w_m2": [-5.0, 5.0],
+    "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC"
   },
   "claim_limits": [
     "characterization only",
     "SNOTEL observations are DIAGNOSTIC_ONLY",
     "literature ranges are ASSUMED_FOR_EXECUTION context, not validation or calibration",
-    "same-state carrier comparison does not simulate persistent chronology or Stage 3 melt response",
+    "same-state carrier comparison does not simulate an accumulation-season trajectory, persistent chronology, or Stage 3 melt response",
     "internal active/lower conduction is not snow-ground heat",
     "snow-ground heat is absent",
     "CoE remains authoritative"
@@ -78,21 +84,23 @@
       "precipitation_advection": [0.0, 10.0],
       "soil_heat_not_implemented": [0.0, 2.0]
     },
-    "roth_nolin_2017_forest_longwave_fraction_of_total_energy_input": [0.59, 0.88],
+    "roth_nolin_2017_forest_longwave_fraction_of_average_annual_net_energy_balance": [0.47, 0.93],
     "webster_2016_event_net_longwave_upper_context_w_m2": 40.0
   },
   "no_tuning": "No result-driven change to cohort, forcing, windows, support, aggregation, context, tolerances, or screen in this namespace.",
   "observation_role": "DIAGNOSTIC_ONLY",
-  "pre_result_commit": "PENDING",
+  "result_head_policy": "clean execution HEAD descended from scaffold_commit; exact HEAD recorded in execution receipt",
   "reconstruction": {
-    "annual_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
+    "water_year_sample_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
     "daily_tolerance_j_m2": 1e-06,
-    "complete": "shortwave + longwave + sensible + latent + precipitation_advected",
-    "complete_minus_surface": "sensible + precipitation_advected",
+    "implemented_external_subset": "shortwave + longwave + sensible + latent + precipitation_advected; not a complete energy balance because snow-ground is absent",
+    "complete_minus_surface": "complete sensible + complete precipitation advected + complete latent - surface latent",
     "internal_conduction_expected_j_m2": 0.0,
-    "surface": "shortwave + longwave + latent"
+    "shared_terms": "surface shortwave == complete shortwave and surface longwave == complete longwave",
+    "surface": "surface shortwave + surface longwave + surface latent; selected surface latent is disabled while complete turbulent latent remains evaluated"
   },
   "schema_version": 1,
+  "scaffold_commit": "936feea9c2292f78ca908de16fe9d90f308cec68",
   "selectors": {
     "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
     "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
@@ -105,7 +113,10 @@
   "status": "frozen_before_result_execution",
   "support": {
     "evaluated_hour": "complete_carrier_evaluated true and requested_seconds == evaluated_seconds == 3600",
+    "minimum_calendar_coverage_for_screen": 0.25,
+    "minimum_evaluated_days_for_screen": 30,
     "primary_window": "October 1 through earliest maximum positive observed SWE date inclusive",
-    "zero_coverage": "reported in calendar coverage and excluded from resolved-snow energy mean"
+    "sample_claim": "water-year-stratified resolved-snow condition sample; not seasonal chronology or a seasonal energy ledger",
+    "zero_coverage": "reported in calendar coverage and excluded from resolved-snow condition-sample mean"
   }
 }

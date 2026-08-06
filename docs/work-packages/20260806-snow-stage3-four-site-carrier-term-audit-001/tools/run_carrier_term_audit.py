@@ -11,10 +11,12 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shutil
 import statistics
 import subprocess
 import sys
+import tomllib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Iterable
@@ -124,6 +126,22 @@ def file_manifest(root: Path) -> dict[str, Any]:
     }
 
 
+def retained_manifest(root: Path) -> dict[str, Any]:
+    manifest_name = "retained-artifact-manifest.json"
+    files = []
+    for path in sorted(candidate for candidate in root.rglob("*") if candidate.is_file()):
+        if path.relative_to(root).as_posix() == manifest_name:
+            continue
+        files.append(
+            {
+                "path": path.relative_to(root).as_posix(),
+                "sha256": sha256(path),
+                "size_bytes": path.stat().st_size,
+            }
+        )
+    return {"schema_version": 1, "files": files, "file_count": len(files)}
+
+
 def climate_file(root: Path) -> Path:
     files = sorted(root.glob("*.cli"))
     if len(files) != 1:
@@ -149,20 +167,53 @@ def climate_dates(path: Path) -> list[dt.date]:
     return dates
 
 
-def observed_peaks(path: Path) -> tuple[dict[int, tuple[dt.date, float]], list[int]]:
-    peaks: dict[int, tuple[dt.date, float]] = {}
+def water_year(stamp: dt.date) -> int:
+    return stamp.year + 1 if stamp.month >= 10 else stamp.year
+
+
+def observed_peaks(path: Path) -> tuple[dict[int, tuple[dt.date, float]], list[dict[str, Any]]]:
+    by_year: dict[int, list[tuple[dt.date, float | None]]] = {}
+    seen_dates: set[dt.date] = set()
+    previous: dt.date | None = None
     with path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
-            raw = row.get("observed_swe_mm")
-            if raw in (None, ""):
-                continue
+            stamp = dt.date.fromisoformat(row["date"])
             year = int(row["water_year"])
-            candidate = (dt.date.fromisoformat(row["date"]), float(raw) / 1000.0)
-            current = peaks.get(year)
-            if current is None or candidate[1] > current[1]:
-                peaks[year] = candidate
-    skipped = sorted(year for year, (_, value) in peaks.items() if value <= 0.0)
-    return ({year: peak for year, peak in peaks.items() if peak[1] > 0.0}, skipped)
+            if stamp in seen_dates or previous is not None and stamp <= previous:
+                raise RuntimeError(f"invalid observation chronology: {path} {stamp}")
+            if water_year(stamp) != year:
+                raise RuntimeError(f"observation water-year mismatch: {path} {stamp}")
+            seen_dates.add(stamp)
+            previous = stamp
+            raw = row.get("observed_swe_mm")
+            value = None if raw in (None, "") else float(raw) / 1000.0
+            if value is not None and not math.isfinite(value):
+                raise RuntimeError(f"non-finite observation: {path} {stamp}")
+            by_year.setdefault(year, []).append((stamp, value))
+    if not by_year:
+        raise RuntimeError(f"empty observation series: {path}")
+    peaks: dict[int, tuple[dt.date, float]] = {}
+    census: list[dict[str, Any]] = []
+    for year, samples in sorted(by_year.items()):
+        nonmissing = [(stamp, value) for stamp, value in samples if value is not None]
+        if not nonmissing:
+            census.append({"water_year": year, "observation_disposition": "NO_NONMISSING_SWE"})
+            continue
+        maximum = max(value for _, value in nonmissing)
+        if maximum <= 0.0:
+            census.append({"water_year": year, "observation_disposition": "NO_POSITIVE_PEAK"})
+            continue
+        earliest = min(stamp for stamp, value in nonmissing if value == maximum)
+        peaks[year] = (earliest, maximum)
+        census.append(
+            {
+                "water_year": year,
+                "observation_disposition": "POSITIVE_PEAK",
+                "peak_date": earliest.isoformat(),
+                "peak_swe_m": maximum,
+            }
+        )
+    return peaks, census
 
 
 def quantiles(values: list[float]) -> tuple[float, float]:
@@ -225,8 +276,23 @@ def validate_tags(row: dict[str, Any], frozen: dict[str, Any]) -> None:
         raise RuntimeError("arm count mismatch")
     surface = row["stage3_evaluation_surface_arm_non_formulation_fingerprint_fnv1a64"]
     complete = row["stage3_evaluation_complete_arm_non_formulation_fingerprint_fnv1a64"]
-    if surface != complete or surface == "0000000000000000":
+    overall = row["stage3_evaluation_non_formulation_fingerprint_fnv1a64"]
+    fingerprint_pattern = re.compile(r"^[0-9a-f]{16}$")
+    if (
+        surface != complete
+        or surface != overall
+        or not fingerprint_pattern.fullmatch(str(surface))
+        or surface == "0000000000000000"
+    ):
         raise RuntimeError("paired non-formulation fingerprint mismatch")
+    for field in (
+        "stage3_evaluation_source_fingerprint_fnv1a64",
+        "stage3_evaluation_forcing_fingerprint_fnv1a64",
+        "stage3_evaluation_geometry_fingerprint_fnv1a64",
+    ):
+        value = str(row[field])
+        if not fingerprint_pattern.fullmatch(value) or value == "0000000000000000":
+            raise RuntimeError(f"invalid evaluation fingerprint: {field}")
 
 
 def parse_trace(
@@ -239,11 +305,18 @@ def parse_trace(
                 raise RuntimeError("trace has more rows than climate")
             row = json.loads(line)
             stamp = dates[index]
+            if row.get("day_index") != index or row.get("lane_index") != 0:
+                raise RuntimeError(f"trace identity mismatch on {stamp}")
             schema = row.get("schema")
             if schema == "openwepp-r7h-direct-production-snow-trace-v5":
                 validate_tags(row, frozen["expected_tags"])
                 validate_evaluation_row(row, stamp)
-            elif schema != "openwepp-r7h-direct-production-snow-trace-v4":
+            elif schema == "openwepp-r7h-direct-production-snow-trace-v4":
+                if row.get("active_snow_coupling") is not False:
+                    raise RuntimeError(f"v4 row lacks inactive-snow reason on {stamp}")
+                if any(key.startswith("stage3_evaluation_") for key in row):
+                    raise RuntimeError(f"v4 row carries evaluation fields on {stamp}")
+            else:
                 raise RuntimeError(f"unexpected trace schema on {stamp}: {schema}")
             rows[stamp] = row
     if len(rows) != len(dates):
@@ -264,9 +337,13 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
     ]
     if any(len(values) != 24 for values in (requested, evaluated, active, internal)):
         raise RuntimeError(f"invalid support array length on {stamp}")
+    if any(type(value) is not bool for value in active):
+        raise RuntimeError(f"non-boolean hourly applicability on {stamp}")
+    if any(active) and not all(active):
+        raise RuntimeError(f"partial same-state daily support on {stamp}")
     for hour in range(24):
         require_close(f"requested support {stamp} h{hour}", float(requested[hour]), 3600.0, 0.0)
-        expected_evaluated = 3600.0 if bool(active[hour]) else 0.0
+        expected_evaluated = 3600.0 if active[hour] else 0.0
         require_close(
             f"evaluated support {stamp} h{hour}",
             float(evaluated[hour]),
@@ -278,8 +355,25 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
             value = float(arrays[term][hour])
             if not math.isfinite(value):
                 raise RuntimeError(f"non-finite {term} on {stamp} h{hour}")
+            if not active[hour] and abs(value) > ZERO:
+                raise RuntimeError(f"inactive {term} is nonzero on {stamp} h{hour}")
     if row["stage3_evaluation_complete_arm_internal_conduction_applicable"]:
         raise RuntimeError(f"internal conduction unexpectedly applicable on {stamp}")
+    expected_applicability = {
+        "stage3_evaluation_surface_arm_applicable": True,
+        "stage3_evaluation_surface_arm_sensible_applicable": False,
+        "stage3_evaluation_surface_arm_advected_applicable": False,
+        "stage3_evaluation_surface_arm_internal_conduction_applicable": False,
+        "stage3_evaluation_complete_arm_applicable": True,
+        "stage3_evaluation_complete_arm_internal_conduction_applicable": False,
+        "stage3_evaluation_complete_arm_cold_content_export_applicable": False,
+        "stage3_evaluation_complete_arm_available_ice_applicable": False,
+        "stage3_evaluation_complete_arm_sequential_ledger_applicable": False,
+        "stage3_evaluation_complete_arm_terminal_unallocated_applicable": False,
+    }
+    for field, expected in expected_applicability.items():
+        if type(row[field]) is not bool or row[field] is not expected:
+            raise RuntimeError(f"same-state applicability mismatch: {field}")
     require_close(
         f"daily internal conduction {stamp}",
         checked_float(
@@ -298,7 +392,17 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
             tolerance,
         )
     complete = sum(daily.values())
-    surface = daily["shortwave"] + daily["longwave"] + daily["latent"]
+    surface_latent = checked_float(
+        row, "stage3_evaluation_surface_arm_latent_j_m2"
+    )
+    surface = daily["shortwave"] + daily["longwave"] + surface_latent
+    for term in ("shortwave", "longwave"):
+        require_close(
+            f"paired shared {term} {stamp}",
+            checked_float(row, f"stage3_evaluation_surface_arm_{term}_j_m2"),
+            daily[term],
+            tolerance,
+        )
     require_close(
         f"complete reconstruction {stamp}",
         checked_float(row, "stage3_evaluation_complete_arm_total_j_m2"),
@@ -312,10 +416,45 @@ def validate_evaluation_row(row: dict[str, Any], stamp: dt.date) -> None:
         tolerance,
     )
     require_close(
+        f"frozen disabled surface latent {stamp}",
+        surface_latent,
+        0.0,
+        tolerance,
+    )
+    require_close(
+        f"paired formulation delta {stamp}",
+        complete - surface,
+        daily["sensible"]
+        + daily["advected"]
+        + daily["latent"]
+        - surface_latent,
+        tolerance,
+    )
+    require_close(
         f"complete producer residual {stamp}",
         checked_float(row, "stage3_evaluation_complete_arm_component_residual_j_m2"),
         0.0,
         tolerance,
+    )
+    requested_total = sum(float(value) for value in requested)
+    evaluated_total = sum(float(value) for value in evaluated)
+    require_close(
+        f"daily requested support {stamp}",
+        checked_float(row, "stage3_evaluation_requested_seconds"),
+        requested_total,
+        0.0,
+    )
+    require_close(
+        f"daily evaluated support {stamp}",
+        checked_float(row, "stage3_evaluation_evaluated_seconds"),
+        evaluated_total,
+        0.0,
+    )
+    require_close(
+        f"daily coverage {stamp}",
+        checked_float(row, "stage3_evaluation_coverage_fraction"),
+        evaluated_total / requested_total,
+        1.0e-15,
     )
 
 
@@ -325,6 +464,7 @@ def annual_window(
     peak: tuple[dt.date, float],
     rows: dict[dt.date, dict[str, Any]],
     censored: set[int],
+    support: dict[str, Any],
 ) -> dict[str, Any]:
     start = dt.date(water_year - 1, 10, 1)
     end, observed_peak_swe_m = peak
@@ -332,6 +472,10 @@ def annual_window(
     if not stamps or any(stamp not in rows for stamp in stamps):
         raise RuntimeError(f"window outside trace chronology: {site} WY{water_year}")
     totals = {term: 0.0 for term in TERMS}
+    surface_total = 0.0
+    producer_surface_total = 0.0
+    producer_complete_total = 0.0
+    surface_latent_total = 0.0
     hourly_fluxes = {term: [] for term in TERMS}
     evaluated_seconds = 0.0
     v5_days = 0
@@ -343,10 +487,25 @@ def annual_window(
         v5_days += 1
         active = row["stage3_evaluation_hourly_complete_carrier_evaluated"]
         evaluated = row["stage3_evaluation_hourly_evaluated_seconds"]
-        if not any(bool(value) for value in active):
+        if not any(active):
             zero_coverage_v5_days += 1
+        else:
+            surface_total += (
+                checked_float(row, "stage3_evaluation_surface_arm_shortwave_j_m2")
+                + checked_float(row, "stage3_evaluation_surface_arm_longwave_j_m2")
+                + checked_float(row, "stage3_evaluation_surface_arm_latent_j_m2")
+            )
+            producer_surface_total += checked_float(
+                row, "stage3_evaluation_surface_arm_total_j_m2"
+            )
+            producer_complete_total += checked_float(
+                row, "stage3_evaluation_complete_arm_total_j_m2"
+            )
+            surface_latent_total += checked_float(
+                row, "stage3_evaluation_surface_arm_latent_j_m2"
+            )
         for hour in range(24):
-            if not bool(active[hour]):
+            if not active[hour]:
                 continue
             seconds = float(evaluated[hour])
             evaluated_seconds += seconds
@@ -368,11 +527,29 @@ def annual_window(
         "evaluated_hours": int(round(evaluated_seconds / 3600.0)),
         "calendar_hours": len(stamps) * 24,
         "coverage_fraction": evaluated_seconds / calendar_seconds,
-        "eligible": evaluated_seconds > 0.0 and water_year not in censored,
+        "descriptive_eligible": evaluated_seconds > 0.0,
     }
+    exclusion_reasons = []
     if evaluated_seconds <= 0.0:
-        for term in TERMS + ("net_radiation", "turbulent", "complete", "surface", "complete_minus_surface"):
-            record[f"{term}_energy_mj_m2"] = None
+        exclusion_reasons.append("NO_EVALUATED_SUPPORT")
+    if water_year in censored:
+        exclusion_reasons.append("RIGHT_CENSORED")
+    if evaluated_seconds / 86_400.0 < support["minimum_evaluated_days_for_screen"]:
+        exclusion_reasons.append("BELOW_30_EVALUATED_DAYS")
+    if evaluated_seconds / calendar_seconds < support["minimum_calendar_coverage_for_screen"]:
+        exclusion_reasons.append("BELOW_0P25_CALENDAR_COVERAGE")
+    record["screen_eligible"] = not exclusion_reasons
+    record["screen_exclusion_reasons"] = exclusion_reasons
+    if evaluated_seconds <= 0.0:
+        for term in TERMS + (
+            "net_radiation",
+            "turbulent",
+            "complete",
+            "surface",
+            "surface_latent",
+            "complete_minus_surface",
+        ):
+            record[f"{term}_sample_energy_mj_m2"] = None
             record[f"{term}_resolved_mean_w_m2"] = None
             record[f"{term}_calendar_mean_w_m2"] = None
         record["hourly_flux_distributions_w_m2"] = None
@@ -382,19 +559,35 @@ def annual_window(
         "net_radiation": totals["shortwave"] + totals["longwave"],
         "turbulent": totals["sensible"] + totals["latent"],
         "complete": sum(totals.values()),
-        "surface": totals["shortwave"] + totals["longwave"] + totals["latent"],
-        "complete_minus_surface": totals["sensible"] + totals["advected"],
+        "surface": surface_total,
+        "surface_latent": surface_latent_total,
+        "complete_minus_surface": sum(totals.values()) - surface_total,
     }
     abs_operands = sum(abs(value) for value in totals.values())
     annual_tolerance = max(1.0e-6, 1.0e-12 * abs_operands)
     require_close(
         f"annual complete delta {site} WY{water_year}",
         derived["complete"] - derived["surface"],
-        derived["complete_minus_surface"],
+        totals["sensible"]
+        + totals["advected"]
+        + totals["latent"]
+        - surface_latent_total,
+        annual_tolerance,
+    )
+    require_close(
+        f"water-year producer complete {site} WY{water_year}",
+        derived["complete"],
+        producer_complete_total,
+        annual_tolerance,
+    )
+    require_close(
+        f"water-year producer surface {site} WY{water_year}",
+        derived["surface"],
+        producer_surface_total,
         annual_tolerance,
     )
     for term, energy in derived.items():
-        record[f"{term}_energy_mj_m2"] = energy / 1.0e6
+        record[f"{term}_sample_energy_mj_m2"] = energy / 1.0e6
         record[f"{term}_resolved_mean_w_m2"] = energy / evaluated_seconds
         record[f"{term}_calendar_mean_w_m2"] = energy / calendar_seconds
     hourly_fluxes["net_radiation"] = [
@@ -418,31 +611,45 @@ def classify(value: float, lower: float, upper: float) -> str:
 
 def summarize_sites(annual: list[dict[str, Any]], frozen: dict[str, Any]) -> list[dict[str, Any]]:
     summaries = []
-    broader = frozen["carrier_screen"]["broader_context_w_m2"]
     near = frozen["carrier_screen"]["near_balance_w_m2"]
     marks = frozen["literature_context"]["marks_1998_figure_7_forest_w_m2"]
     for site in [row["site"] for row in frozen["cohort"]]:
-        eligible = [row for row in annual if row["site"] == site and row["eligible"]]
-        if not eligible:
-            summaries.append({"site": site, "eligible_window_count": 0, "status": "NOT_COMPARABLE"})
+        descriptive = [row for row in annual if row["site"] == site and row["descriptive_eligible"]]
+        eligible = [row for row in annual if row["site"] == site and row["screen_eligible"]]
+        if len(eligible) < frozen["carrier_screen"]["minimum_screen_eligible_water_years_per_site"]:
+            summaries.append(
+                {
+                    "site": site,
+                    "descriptive_sample_count": len(descriptive),
+                    "screen_eligible_sample_count": len(eligible),
+                    "status": "NOT_COMPARABLE",
+                    "reason": "INSUFFICIENT_SCREEN_ELIGIBLE_WATER_YEARS",
+                }
+            )
             continue
         summary: dict[str, Any] = {
             "site": site,
-            "eligible_window_count": len(eligible),
+            "descriptive_sample_count": len(descriptive),
+            "screen_eligible_sample_count": len(eligible),
             "water_year_min": min(row["water_year"] for row in eligible),
             "water_year_max": max(row["water_year"] for row in eligible),
             "coverage_fraction": distribution([row["coverage_fraction"] for row in eligible]),
         }
-        for term in TERMS + ("net_radiation", "turbulent", "complete", "surface", "complete_minus_surface"):
+        for term in TERMS + (
+            "net_radiation",
+            "turbulent",
+            "complete",
+            "surface",
+            "surface_latent",
+            "complete_minus_surface",
+        ):
             values = [row[f"{term}_resolved_mean_w_m2"] for row in eligible]
             summary[f"{term}_resolved_mean_w_m2"] = distribution(values)
-            energies = [row[f"{term}_energy_mj_m2"] for row in eligible]
-            summary[f"{term}_energy_mj_m2"] = distribution(energies)
+            energies = [row[f"{term}_sample_energy_mj_m2"] for row in eligible]
+            summary[f"{term}_sample_energy_mj_m2"] = distribution(energies)
         complete = summary["complete_resolved_mean_w_m2"]["median"]
         summary["near_balance_class"] = classify(complete, near[0], near[1])
-        summary["broader_total_context_class"] = classify(
-            complete, broader[0], broader[1]
-        )
+        summary["marks_external_total_context_class"] = "NOT_COMPARABLE_MISSING_SNOW_GROUND"
         for term, key in (
             ("net_radiation", "net_all_wave"),
             ("turbulent", "combined_sensible_latent"),
@@ -452,34 +659,26 @@ def summarize_sites(annual: list[dict[str, Any]], frozen: dict[str, Any]) -> lis
             summary[f"marks_{term}_context_class"] = classify(
                 summary[f"{term}_resolved_mean_w_m2"]["median"], bounds[0], bounds[1]
             )
-        radiative_positive = max(
-            summary["shortwave_energy_mj_m2"]["median"], 0.0
-        ) + max(summary["longwave_energy_mj_m2"]["median"], 0.0)
-        summary["positive_longwave_radiative_fraction"] = (
-            max(summary["longwave_energy_mj_m2"]["median"], 0.0) / radiative_positive
-            if radiative_positive > 0.0
-            else None
-        )
+        summary["roth_nolin_partition_comparison"] = "NOT_COMPARABLE_DIFFERENT_ESTIMAND"
         summaries.append(summary)
     return summaries
 
 
 def apply_screen(site_summary: list[dict[str, Any]], frozen: dict[str, Any]) -> dict[str, Any]:
-    comparable = [row for row in site_summary if row.get("status") != "NOT_COMPARABLE"]
+    canonical_sites = set(frozen["carrier_screen"]["canonical_decisive_sites"])
+    canonical = [row for row in site_summary if row["site"] in canonical_sites]
+    comparable = [row for row in canonical if row.get("status") != "NOT_COMPARABLE"]
     near_count = sum(row["near_balance_class"] == "WITHIN_CONTEXT" for row in comparable)
-    outside_broad = sum(
-        row["broader_total_context_class"] == "OUTSIDE_CONTEXT" for row in comparable
-    )
     passed = (
-        len(comparable) == len(frozen["cohort"])
-        and near_count >= frozen["carrier_screen"]["minimum_sites_within_near_balance"]
-        and outside_broad <= frozen["carrier_screen"]["max_sites_outside_broader_context"]
+        len(comparable) == len(canonical_sites)
+        and near_count >= frozen["carrier_screen"]["minimum_canonical_sites_within_near_balance"]
     )
     return {
         "status": "PASS" if passed else "FAIL",
-        "comparable_site_count": len(comparable),
-        "near_balance_site_count": near_count,
-        "outside_broader_context_site_count": outside_broad,
+        "canonical_decisive_sites": sorted(canonical_sites),
+        "canonical_comparable_site_count": len(comparable),
+        "canonical_near_balance_site_count": near_count,
+        "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC",
         "persistent_shadow_advancement": "PERMITTED_FOR_CONSIDERATION" if passed else "BLOCKED",
     }
 
@@ -530,6 +729,24 @@ def prepare_fixture(site: str, frozen_site: dict[str, Any]) -> tuple[Path, dict[
     }
 
 
+def validate_runfile_consumer(runfile: Path, expected_climate: Path) -> dict[str, Any]:
+    with runfile.open("rb") as handle:
+        document = tomllib.load(handle)
+    consumed = Path(document["inputs"]["climate"]).resolve()
+    expected = expected_climate.resolve()
+    if consumed != expected or not consumed.is_file():
+        raise RuntimeError(f"runfile climate consumer mismatch: {runfile}")
+    outputs = document.get("outputs", {})
+    if set(outputs) != {"pass", "loss", "wat"}:
+        raise RuntimeError(f"runfile publication surface differs: {runfile}")
+    return {
+        "climate_path": relative(consumed),
+        "climate_sha256": sha256(consumed),
+        "publication_keys": sorted(outputs),
+        "pass_is_hbp": str(outputs["pass"]).endswith(".hbp"),
+    }
+
+
 def execute_lane(
     site: str,
     fixture: Path,
@@ -545,6 +762,7 @@ def execute_lane(
     w1.eb04r.legacy.observed_harness.write_runfile(
         runfile, fixture, source_stem, run_dir, stem
     )
+    consumer = validate_runfile_consumer(runfile, climate_file(fixture))
     command = w1.eb04r.legacy.observed_harness.cli_command(
         BINARY, fixture, runfile, run_dir, "direct-production-executor"
     )
@@ -566,6 +784,9 @@ def execute_lane(
     (run_dir / "stderr.txt").write_text(completed.stderr, encoding="utf-8")
     if completed.returncode != 0:
         raise RuntimeError(f"run failed for {site}/{lane}: {completed.stderr[-2000:]}")
+    expected_suffixes = {".run", ".hbp", ".loss.json", ".wat.parquet", ".txt"}
+    if lane == "paired":
+        expected_suffixes.add(".snow.jsonl")
     outputs = {}
     for path in sorted(candidate for candidate in run_dir.iterdir() if candidate.is_file()):
         outputs[path.name] = {
@@ -573,6 +794,11 @@ def execute_lane(
             "sha256": sha256(path),
             "size_bytes": path.stat().st_size,
         }
+    for suffix in expected_suffixes - {".txt"}:
+        if sum(name.endswith(suffix) for name in outputs) != 1:
+            raise RuntimeError(f"publication/output cardinality differs for {site}/{lane}: {suffix}")
+    if sum(name.endswith(".txt") for name in outputs) != 2:
+        raise RuntimeError(f"stdout/stderr custody differs for {site}/{lane}")
     return {
         "site": site,
         "lane": lane,
@@ -582,6 +808,7 @@ def execute_lane(
         "effective_openwepp_environment": effective,
         "outputs": outputs,
         "runfile_sha256": sha256(runfile),
+        "runfile_consumer": consumer,
     }
 
 
@@ -598,19 +825,50 @@ def execute() -> None:
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
     if frozen["status"] != "frozen_before_result_execution":
         raise RuntimeError("protocol freeze is not active")
-    if frozen["pre_result_commit"] == "PENDING":
-        raise RuntimeError("pre-result commit is not frozen")
     if command_output(["git", "status", "--porcelain"]):
         raise RuntimeError("result execution requires a clean worktree")
     head = command_output(["git", "rev-parse", "HEAD"])
-    if head != frozen["pre_result_commit"]:
-        raise RuntimeError("HEAD differs from frozen pre-result commit")
-    if not BINARY.is_file():
-        raise RuntimeError(f"release binary is missing: {BINARY}")
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", frozen["scaffold_commit"], head],
+        cwd=REPO,
+        check=False,
+    )
+    if ancestor.returncode != 0:
+        raise RuntimeError("execution HEAD does not descend from scaffold commit")
     if not SOURCE_FIXTURES.is_dir():
         raise RuntimeError(f"source fixtures are missing: {SOURCE_FIXTURES}")
+    build_command = [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "openwepp-runner",
+        "--bin",
+        "openwepp-cli-hill",
+    ]
+    build = subprocess.run(
+        build_command, cwd=REPO, text=True, capture_output=True, check=False
+    )
+    if build.returncode != 0 or not BINARY.is_file():
+        raise RuntimeError(f"release build failed: {build.stderr[-4000:]}")
+    if command_output(["git", "rev-parse", "HEAD"]) != head:
+        raise RuntimeError("HEAD changed during release build")
+    if command_output(["git", "status", "--porcelain"]):
+        raise RuntimeError("tracked worktree changed during release build")
+    binary_sha256 = sha256(BINARY)
     w1 = load_module("carrier_audit_w1", W1_TOOL)
     OUTPUT.mkdir(parents=True)
+    retained_binary = OUTPUT / "binary/openwepp-cli-hill"
+    retained_binary.parent.mkdir(parents=True)
+    shutil.copyfile(BINARY, retained_binary)
+    (OUTPUT / "build.stdout.txt").write_text(build.stdout, encoding="utf-8")
+    (OUTPUT / "build.stderr.txt").write_text(build.stderr, encoding="utf-8")
+    build_receipt = {
+        "argv": build_command,
+        "returncode": build.returncode,
+        "execution_head": head,
+        "binary_sha256": binary_sha256,
+    }
     fixture_receipts = {}
     fixtures = {}
     for frozen_site in frozen["cohort"]:
@@ -641,7 +899,8 @@ def execute() -> None:
     protected_identity = {}
     for site, lanes in receipts.items():
         control, paired = lanes["control"], lanes["paired"]
-        wat_control, wat_paired = output_path(control, ".wat.parquet"), output_path(paired, ".wat.parquet")
+        wat_control = output_path(control, ".wat.parquet")
+        wat_paired = output_path(paired, ".wat.parquet")
         hbp_control, hbp_paired = output_path(control, ".hbp"), output_path(paired, ".hbp")
         protected_identity[site] = {
             "wat_exact": sha256(wat_control) == sha256(wat_paired),
@@ -650,11 +909,65 @@ def execute() -> None:
             "hbp_exact": sha256(hbp_control) == sha256(hbp_paired),
             "hbp_control_sha256": sha256(hbp_control),
             "hbp_paired_sha256": sha256(hbp_paired),
-            "pass_output": "not emitted by direct hillslope surface",
+            "pass_output": "HBP is the runfile outputs.pass artifact",
         }
         if not protected_identity[site]["wat_exact"] or not protected_identity[site]["hbp_exact"]:
             raise RuntimeError(f"protected output differs for {site}")
-    analyze_and_write(frozen, receipts, fixture_receipts, protected_identity, head)
+    if sha256(BINARY) != binary_sha256:
+        raise RuntimeError("release binary changed during execution")
+    analyze_and_write(
+        frozen,
+        receipts,
+        fixture_receipts,
+        protected_identity,
+        head,
+        build_receipt,
+    )
+
+
+def compute_analysis(
+    frozen: dict[str, Any], receipts: dict[str, dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    annual = []
+    observation_census: dict[str, list[dict[str, Any]]] = {}
+    for frozen_site in frozen["cohort"]:
+        site = frozen_site["site"]
+        fixture = OUTPUT / "fixtures" / site
+        trace = output_path(receipts[site]["paired"], ".snow.jsonl")
+        dates = climate_dates(climate_file(fixture))
+        rows = parse_trace(trace, dates, frozen)
+        observation = OBSERVATIONS / f"{site}.csv"
+        peaks, census = observed_peaks(observation)
+        observation_census[site] = census
+        by_year = {row["water_year"]: row for row in census}
+        for water_year, peak in sorted(peaks.items()):
+            start = dt.date(water_year - 1, 10, 1)
+            if start < dates[0] or peak[0] > dates[-1]:
+                by_year[water_year]["analysis_disposition"] = "OUTSIDE_TRACE_CHRONOLOGY"
+                continue
+            record = annual_window(
+                site,
+                water_year,
+                peak,
+                rows,
+                set(frozen["censored_primary_water_years"]),
+                frozen["support"],
+            )
+            annual.append(record)
+            by_year[water_year]["analysis_disposition"] = (
+                "ANALYZED_RIGHT_CENSORED"
+                if record["right_censored"]
+                else "ANALYZED"
+            )
+            by_year[water_year]["screen_eligible"] = record["screen_eligible"]
+            by_year[water_year]["screen_exclusion_reasons"] = record[
+                "screen_exclusion_reasons"
+            ]
+        for row in census:
+            row.setdefault("analysis_disposition", "NO_ANALYSIS_WINDOW")
+    site_summary = summarize_sites(annual, frozen)
+    screen = apply_screen(site_summary, frozen)
+    return annual, site_summary, screen, observation_census
 
 
 def analyze_and_write(
@@ -663,67 +976,66 @@ def analyze_and_write(
     fixture_receipts: dict[str, Any],
     protected_identity: dict[str, Any],
     head: str,
+    build_receipt: dict[str, Any],
 ) -> None:
-    annual = []
-    skipped_zero_observed = {}
-    for frozen_site in frozen["cohort"]:
-        site = frozen_site["site"]
-        fixture = OUTPUT / "fixtures" / site
-        trace = output_path(receipts[site]["paired"], ".snow.jsonl")
-        dates = climate_dates(climate_file(fixture))
-        rows = parse_trace(trace, dates, frozen)
-        observation = OBSERVATIONS / f"{site}.csv"
-        peaks, skipped = observed_peaks(observation)
-        skipped_zero_observed[site] = skipped
-        for water_year, peak in sorted(peaks.items()):
-            start = dt.date(water_year - 1, 10, 1)
-            if start < dates[0] or peak[0] > dates[-1]:
-                continue
-            annual.append(
-                annual_window(
-                    site,
-                    water_year,
-                    peak,
-                    rows,
-                    set(frozen["censored_primary_water_years"]),
-                )
-            )
-    site_summary = summarize_sites(annual, frozen)
-    screen = apply_screen(site_summary, frozen)
+    annual, site_summary, screen, observation_census = compute_analysis(
+        frozen, receipts
+    )
     results = {
         "schema_version": 1,
         "evidence_mode": "Ran: exact-current release CLI four-site same-state paired carrier audit",
-        "characterization_only": true_value(),
+        "characterization_only": True,
         "freeze_sha256": sha256(FREEZE_PATH),
-        "pre_result_commit": head,
+        "execution_head": head,
         "snow_ground_boundary": "NOT_IMPLEMENTED",
         "internal_active_lower_conduction": "NOT_APPLICABLE_IN_SAME_STATE_PAIR_AND_EXACT_ZERO",
-        "primary_window_count": sum(row["eligible"] for row in annual),
+        "claim_class": "WATER_YEAR_STRATIFIED_INDEPENDENT_SAME_STATE_CONDITION_SAMPLES",
+        "screen_eligible_sample_count": sum(row["screen_eligible"] for row in annual),
         "right_censored_window_count": sum(row["right_censored"] for row in annual),
-        "annual": annual,
+        "water_year_condition_samples": annual,
         "site_summary": site_summary,
         "carrier_screen": screen,
-        "zero_observed_peak_years_skipped": skipped_zero_observed,
+        "observation_year_census": observation_census,
         "claim_limits": frozen["claim_limits"],
     }
     write_json(OUTPUT / "results/carrier-term-results.json", results)
     write_csv(
-        OUTPUT / "tables/annual-metrics.csv",
-        [{key: value for key, value in row.items() if key != "hourly_flux_distributions_w_m2"} for row in annual],
+        OUTPUT / "tables/water-year-condition-samples.csv",
+        [
+            {
+                key: value
+                for key, value in row.items()
+                if key != "hourly_flux_distributions_w_m2"
+            }
+            for row in annual
+        ],
     )
     flat_site = []
     for row in site_summary:
         flat_site.append(
             {
                 "site": row["site"],
-                "eligible_window_count": row["eligible_window_count"],
+                "descriptive_sample_count": row.get("descriptive_sample_count", 0),
+                "screen_eligible_sample_count": row.get("screen_eligible_sample_count", 0),
                 "median_coverage_fraction": row.get("coverage_fraction", {}).get("median"),
                 **{
-                    f"median_{term}_resolved_mean_w_m2": row.get(f"{term}_resolved_mean_w_m2", {}).get("median")
-                    for term in TERMS + ("net_radiation", "turbulent", "complete", "surface", "complete_minus_surface")
+                    f"median_{term}_resolved_mean_w_m2": row.get(
+                        f"{term}_resolved_mean_w_m2", {}
+                    ).get("median")
+                    for term in TERMS
+                    + (
+                        "net_radiation",
+                        "turbulent",
+                        "complete",
+                        "surface",
+                        "surface_latent",
+                        "complete_minus_surface",
+                    )
                 },
                 "near_balance_class": row.get("near_balance_class", "NOT_COMPARABLE"),
-                "broader_total_context_class": row.get("broader_total_context_class", "NOT_COMPARABLE"),
+                "marks_external_total_context_class": row.get(
+                    "marks_external_total_context_class", "NOT_COMPARABLE"
+                ),
             }
         )
     write_csv(OUTPUT / "tables/site-summary.csv", flat_site)
@@ -733,21 +1045,19 @@ def analyze_and_write(
         "git_head": head,
         "git_status_porcelain": command_output(["git", "status", "--porcelain"]),
         "binary": {
-            "path": relative(BINARY),
-            "sha256": sha256(BINARY),
-            "size_bytes": BINARY.stat().st_size,
+            "path": relative(OUTPUT / "binary/openwepp-cli-hill"),
+            "sha256": sha256(OUTPUT / "binary/openwepp-cli-hill"),
+            "size_bytes": (OUTPUT / "binary/openwepp-cli-hill").stat().st_size,
         },
+        "build": build_receipt,
         "freeze": {"path": relative(FREEZE_PATH), "sha256": sha256(FREEZE_PATH)},
         "fixtures": fixture_receipts,
         "runs": receipts,
         "protected_output_identity": protected_identity,
     }
     write_json(OUTPUT / "execution-receipt.json", receipt)
+    write_json(OUTPUT / "retained-artifact-manifest.json", retained_manifest(OUTPUT))
     verify_outputs(frozen)
-
-
-def true_value() -> bool:
-    return True
 
 
 def verify_outputs(frozen: dict[str, Any]) -> None:
@@ -757,10 +1067,16 @@ def verify_outputs(frozen: dict[str, Any]) -> None:
         raise RuntimeError("result or receipt is missing")
     results = json.loads(result_path.read_text(encoding="utf-8"))
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    if receipt["git_head"] != frozen["pre_result_commit"]:
-        raise RuntimeError("receipt head differs from freeze")
+    if results["execution_head"] != receipt["git_head"]:
+        raise RuntimeError("result and receipt execution heads differ")
     if results["freeze_sha256"] != sha256(FREEZE_PATH):
         raise RuntimeError("result freeze hash differs")
+    retained_binary = REPO / receipt["binary"]["path"]
+    if (
+        sha256(retained_binary) != receipt["binary"]["sha256"]
+        or receipt["binary"]["sha256"] != receipt["build"]["binary_sha256"]
+    ):
+        raise RuntimeError("retained binary/build identity differs")
     if len(results["site_summary"]) != len(frozen["cohort"]):
         raise RuntimeError("result site cohort differs")
     if any(
@@ -780,12 +1096,47 @@ def verify_existing() -> None:
         raise RuntimeError(f"missing output namespace: {OUTPUT}")
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
     receipt = json.loads((OUTPUT / "execution-receipt.json").read_text(encoding="utf-8"))
+    manifest_path = OUTPUT / "retained-artifact-manifest.json"
+    retained = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if retained != retained_manifest(OUTPUT):
+        raise RuntimeError("retained artifact manifest differs")
     for site_receipts in receipt["runs"].values():
         for lane_receipt in site_receipts.values():
             for value in lane_receipt["outputs"].values():
                 path = REPO / value["path"]
                 if path.stat().st_size != value["size_bytes"] or sha256(path) != value["sha256"]:
                     raise RuntimeError(f"retained output identity differs: {path}")
+    for frozen_site in frozen["cohort"]:
+        site = frozen_site["site"]
+        fixture = OUTPUT / "fixtures" / site
+        if file_manifest(SOURCE_FIXTURES / site)["manifest_sha256"] != frozen_site["fixture_manifest_sha256"]:
+            raise RuntimeError(f"source fixture identity differs: {site}")
+        expected_climate_hash = frozen_site.get(
+            "development_climate_sha256", sha256(climate_file(SOURCE_FIXTURES / site))
+        )
+        if sha256(climate_file(fixture)) != expected_climate_hash:
+            raise RuntimeError(f"retained climate identity differs: {site}")
+        observation = OBSERVATIONS / f"{site}.csv"
+        if sha256(observation) != frozen_site["observation_sha256"]:
+            raise RuntimeError(f"observation identity differs: {site}")
+        for lane in ("control", "paired"):
+            lane_receipt = receipt["runs"][site][lane]
+            runfile = output_path(lane_receipt, ".run")
+            if validate_runfile_consumer(runfile, climate_file(fixture)) != lane_receipt["runfile_consumer"]:
+                raise RuntimeError(f"runfile consumer receipt differs: {site}/{lane}")
+        control = receipt["runs"][site]["control"]
+        paired = receipt["runs"][site]["paired"]
+        for suffix in (".wat.parquet", ".hbp"):
+            if sha256(output_path(control, suffix)) != sha256(output_path(paired, suffix)):
+                raise RuntimeError(f"protected output identity differs: {site} {suffix}")
+    annual, site_summary, screen, census = compute_analysis(frozen, receipt["runs"])
+    results = json.loads((OUTPUT / "results/carrier-term-results.json").read_text(encoding="utf-8"))
+    if results["water_year_condition_samples"] != annual:
+        raise RuntimeError("retained water-year reconstruction differs")
+    if results["site_summary"] != site_summary or results["carrier_screen"] != screen:
+        raise RuntimeError("retained site summary or screen differs")
+    if results["observation_year_census"] != census:
+        raise RuntimeError("retained observation census differs")
     verify_outputs(frozen)
     print("carrier-term audit verification: PASS")
 

@@ -23,9 +23,9 @@ may localize a term anomaly but cannot implement, fit, tune, validate, promote,
 persist, or cut over a replacement.
 
 Conservation/output acceptance: independently reconstruct both arms and every
-complete-carrier term from hourly schema-v5 operands. Keep internal active/lower
-conduction separate and report snow-ground energy as absent. Producer totals
-and residuals are checks, not reconstruction inputs.
+implemented external-subset term from hourly schema-v5 operands. Keep internal
+active/lower conduction separate and report snow-ground energy as absent.
+Producer totals and residuals are checks, not reconstruction inputs.
 
 Real consumer: use exact release CLI JSONL. Prove evaluation-disabled WAT/HBP
 identity and schema-v5 tag/fingerprint/support custody at every site.

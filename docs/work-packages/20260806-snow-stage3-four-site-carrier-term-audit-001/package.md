@@ -14,11 +14,12 @@ Retrospective` remain current throughout execution.
 
 ## Purpose
 
-Determine which terms make the Stage 3 complete carrier positive or negative
-over accumulation-season snow support at Mica Creek, Niwot, Paradise, and
-Snowbird. Execute the admitted same-state paired operator through the real
-schema-v5 consumer, independently reconstruct every energy sum, and compare
-annual-first site summaries with prospectively frozen literature context.
+Determine which terms make the Stage 3 implemented external carrier subset positive or negative
+over water-year-stratified resolved-snow condition samples at Mica Creek,
+Niwot, Paradise, and Snowbird. Execute the admitted same-state paired operator
+through the real schema-v5 consumer, independently reconstruct every term, and
+compare water-year-first condition-sample summaries with prospectively frozen
+literature context.
 
 This package characterizes an evaluation carrier. It does not persist shadow
 state, simulate seasonal Stage 3 melt chronology, alter production physics, or
@@ -47,30 +48,31 @@ internal JSONL consumer.
 - Calibration evidence status: `NOT_APPLICABLE`.
 - Identifiability status: `NOT_ASSESSED`; no parameter is fitted.
 - Observation role: SNOTEL SWE is `DIAGNOSTIC_ONLY` and selects the frozen
-  annual accumulation window only.
+  water-year sampling window only.
 - Literature screens: `ASSUMED_FOR_EXECUTION` context, not calibration,
   validation, authority, or transferable bounds.
 - Production/kernel edit intent: `none`.
 
 ## Included Scope
 
-1. Build one exact release CLI from the frozen pre-result commit and record its
-   hash.
+1. Build one exact release CLI from the clean execution HEAD descended from the
+   scaffold commit and record its commit and binary hashes.
 2. Copy and hash the four retained real CLI fixtures without mutating sources.
 3. Replace only the staged Snowbird climate file with the existing
    `DEVELOPMENT_ONLY` precipitation derivative and prove its exact consumer.
 4. Execute one same-state paired-carrier replay per site with the frozen
    selector map and schema-v5 trace.
-5. Select primary water-year windows from October 1 through the observed
-   positive SNOTEL peak, inclusive; exclude WY2025 from primary summaries.
+5. Stratify daily same-state samples by water-year windows from October 1
+   through the observed positive SNOTEL peak, inclusive; exclude WY2025 from
+   primary summaries and report the complete year census.
 6. Report resolved-snow support separately from calendar-window support.
-7. Reconstruct hourly, daily, annual, and site-median shortwave, longwave,
-   sensible, latent, advection, external-carrier total, and paired formulation
-   delta from exact operands.
+7. Reconstruct hourly, daily, water-year sample, and site-median shortwave,
+   longwave, sensible, latent, advection, implemented external subset, and paired
+   formulation delta from exact operands.
 8. Report internal active/lower conduction separately and never label it
    snow-ground or include it in the same-state external carrier.
 9. Explicitly report the absent snow-ground boundary.
-10. Compare annual-first site medians and distributions with the frozen
+10. Compare water-year-first site medians and distributions with the frozen
     literature context without tuning.
 11. Disposition carrier plausibility and the next roadmap step.
 12. Complete dual independent review, finding disposition, dual terminal
@@ -164,38 +166,62 @@ The physical comparison support is exactly the schema-v5 hours with:
 
 Rows with no resolved post-CoE snow snapshot are explicit zero-coverage rows.
 They count in calendar coverage but never become zero energy in the
-resolved-snow mean. A primary annual window requires at least one evaluated
-hour. Coverage never excludes a valid year silently; low coverage is reported
-and prevents a seasonal generalization.
+resolved-snow mean. Every observation water year receives a census disposition.
+Coverage never excludes a year silently; low coverage is reported and excludes
+that condition sample from the prospective screen.
 
-Compute every metric per site and water year first. Site summaries are Python
-`statistics.median` across eligible annual values. Report minimum, median,
+Compute every metric per site and water year first. A water-year sample is
+screen-eligible only with at least `30` fully evaluated days and resolved-snow
+coverage of at least `0.25` of calendar-window hours. Lower-coverage samples
+remain reported but cannot enter the carrier screen. Each site requires at
+least `10` screen-eligible water years. These thresholds are
+`ASSUMED_FOR_EXECUTION` sampling adequacy rules, not physical bounds.
+
+Site summaries are Python `statistics.median` across screen-eligible water-year
+condition samples. Report minimum, median,
 maximum, quartiles, positive/negative fractions, evaluated hours, calendar
 hours, and coverage. Do not pool hours, joules, years, or sites for the primary
 verdict.
+
+The same-state operator does not produce an accumulation-season trajectory or
+seasonal energy ledger: every day starts from an immutable post-CoE snapshot.
+All sums and means are labeled window-stratified condition-sample statistics.
+They may compare formulation terms under sampled states and forcing, but cannot
+claim seasonal energy, chronology, melt, peak timing, or persistence.
 
 ## Frozen Operand Reconstruction
 
 For each evaluated hour independently reconstruct:
 
 ```text
-Q_surface = Q_shortwave + Q_longwave + Q_latent
+Q_surface = Q_shortwave,surface + Q_longwave,surface + Q_latent,surface
 
-Q_complete_external = Q_shortwave + Q_longwave + Q_sensible
-                    + Q_latent + Q_precipitation_advected
+Q_complete_external = Q_shortwave,complete + Q_longwave,complete
+                    + Q_sensible,complete + Q_latent,complete
+                    + Q_precipitation_advected,complete
 
-delta_complete_minus_surface = Q_sensible + Q_precipitation_advected
+delta_complete_minus_surface = Q_sensible,complete
+                               + Q_precipitation_advected,complete
+                               + (Q_latent,complete - Q_latent,surface)
 ```
+
+Shortwave and longwave must be identical across arms. Latent heat is a
+formulation difference: the surface arm uses the selected surface latent path,
+which is disabled in this audit, while the complete arm evaluates turbulent
+latent exchange. Schema v5 exports both daily latent terms but only the complete
+arm's hourly latent array. Hourly distributions therefore describe the complete
+arm; the arm delta is independently reconstructed at daily and water-year-sample cadence.
 
 The same-state pair marks internal active/lower conduction not applicable; it
 must be exactly zero. The exported complete total and surface total must equal
 the reconstructed sums within `1e-6 J m^-2` per daily row and within a
-scale-aware `max(1e-6, 1e-12 * sum_abs_operands) J m^-2` annual bound.
+scale-aware `max(1e-6, 1e-12 * sum_abs_operands) J m^-2` water-year-sample bound.
 Producer-carried totals and residuals are evidence to check, never operands in
 the independent reconstruction.
 
-Energy sums are reported in `MJ m^-2`. Resolved-support mean flux is annual
-energy divided by evaluated seconds. Calendar-normalized flux is reported
+Integrated condition-sample sums are reported in `MJ m^-2`. Resolved-support
+mean flux is the water-year sample sum divided by evaluated seconds.
+Calendar-normalized flux is reported
 separately and cannot substitute for the resolved-support mean.
 
 ## Prospective Literature Context And Decision Rule
@@ -207,11 +233,11 @@ comparison bands before results:
   the published plotting precision: net all-wave approximately `[-4, +6]`,
   combined sensible-plus-latent `[-2, +7]`, precipitation advection `[0, +10]`,
   soil heat `[0, +2]`, and total balance `[-5, +20] W m^-2`;
-- a stricter accumulation near-balance screen of `[-5, +5] W m^-2` for the
-  external carrier total, based on the same paper's snow-development and cold
-  periods being described as at or near zero;
-- Roth and Nolin (2017) seasonal forest context: longwave contributes `82%`,
-  `88%`, and `59%` of total energy inputs at low, mid, and high forest sites,
+- a campaign-specific water-year condition-sample screen of `[-5, +5] W m^-2`
+  for the implemented external subset at the three canonical forcing sites;
+- Roth and Nolin (2017) annual forest context: longwave contributes `93%`,
+  `92%`, and `47%` of average annual net energy balance at low, mid, and high
+  forest sites,
   while turbulent fluxes are not significant monthly or annually outside the
   exposed high-open site; and
 - Webster et al. (2016) event context: subcanopy net longwave can reach about
@@ -225,12 +251,12 @@ The frozen carrier screen passes only if all of the following hold:
 
 1. identity, tag, fingerprint, finite-value, and no-internal-ground-alias gates
    pass for every evaluated row;
-2. every site has at least one primary annual window with evaluated support and
-   every annual window reports its coverage;
-3. at least three of four site-median external complete-carrier means lie in
-   the prospective `[-5, +5] W m^-2` accumulation near-balance band; and
-4. no site median lies outside Marks' broader `[-5, +20] W m^-2` forest
-   climate-period total context.
+2. every canonical site has a minimum of `10` screen-eligible water-year
+   condition samples, and every
+   observed water year has an explicit census disposition;
+3. all three canonical-forcing site medians for the implemented external subset
+   lie in the prospective `[-5, +5] W m^-2` band; and
+4. Snowbird is reported as a development-only, non-decisive diagnostic.
 
 Failure localizes terms and blocks persistent-shadow advancement. Passage
 permits roadmap consideration only; it does not prove physical validity or
@@ -254,9 +280,9 @@ producer-only totals, old summaries, or manual transcription cannot close the
 claim.
 
 The execution must also prove WAT and HBP bytes equal an evaluation-disabled
-same-binary control for every site. PASS is recorded as not emitted where that
-is the actual direct-hillslope surface. No schema-v5 field may be described as
-production publication.
+same-binary control for every site. The runfile's `outputs.pass` HBP artifact is
+asserted from the parsed runfile and retained bytes. No schema-v5 field may be
+described as production publication.
 
 ## Subagent Authorization
 
@@ -287,7 +313,7 @@ both. Retain commands, environment custody, hashes, and outputs.
 ### Phase C: Independent Analysis
 
 Stream the exact traces, bind climate dates and observation windows,
-reconstruct every term and residual, report annual/site distributions and
+reconstruct every term and residual, report water-year/site distributions and
 coverage, apply the frozen literature classifications and carrier screen, and
 write compact tracked evidence from ignored raw outputs.
 
@@ -300,13 +326,14 @@ catalog, and commit locally.
 
 ## Validation And Exit Criteria
 
-- Pre-result scaffold/freeze is committed before the first model run.
+- Pre-result scaffold/freeze and review amendments are committed before the
+  first model run; the exact clean execution HEAD is recorded in the receipt.
 - Result-blind protocol review passes before execution.
 - Four control and four paired exact-current release CLI runs complete.
 - WAT/HBP control equality passes at all four sites.
 - Schema-v5 tags, pairing, fingerprints, support, and every exported operand
   pass independent checks.
-- Hourly/daily/annual term identities close at frozen tolerances.
+- Hourly/daily/water-year-sample term identities close at frozen tolerances.
 - Every eligible site-year and every zero-coverage or censored year is reported.
 - Internal conduction is separate and absent snow-ground heat is explicit.
 - Literature comparison follows the frozen source-specific context and
@@ -334,7 +361,9 @@ contact external services, and never mutates source fixtures.
 - [x] (2026-08-06) User authorized scaffolding and end-to-end execution.
 - [x] (2026-08-06) Froze cohort, forcing custody, support, aggregation,
   literature context, decision rule, and no-tuning posture before results.
-- [ ] Commit and independently review the result-blind scaffold.
+- [x] (2026-08-06) Committed the result-blind scaffold; both independent
+  reviewers blocked execution and every finding was amended before results.
+- [ ] Obtain fresh PASS reviews of the amended pre-result commit.
 - [ ] Execute four controls and four paired carrier lanes.
 - [ ] Reconstruct, classify, review, verify, and disposition results.
 
