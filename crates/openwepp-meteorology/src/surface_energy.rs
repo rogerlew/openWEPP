@@ -1582,12 +1582,31 @@ mod tests {
             roughness_length: PositiveLengthMeters::try_new(0.005).expect("valid roughness"),
             options: TurbulentTransferOptions::default(),
         };
-        for inputs in [
-            base,
-            TurbulentFluxInputs {
-                wind_speed: LinearRateMetersPerSecond::try_new(0.0).expect("valid zero wind"),
-                ..base
-            },
+        for (inputs, expected_status) in [
+            (base, TurbulentTerminationStatus::ConvergedStable),
+            (
+                TurbulentFluxInputs {
+                    wind_speed: LinearRateMetersPerSecond::try_new(0.0).expect("valid zero wind"),
+                    ..base
+                },
+                TurbulentTerminationStatus::ZeroWind,
+            ),
+            (
+                TurbulentFluxInputs {
+                    air_temperature: temp(-10.0),
+                    surface_temperature: temp(-2.0),
+                    ..base
+                },
+                TurbulentTerminationStatus::ConvergedUnstable,
+            ),
+            (
+                TurbulentFluxInputs {
+                    air_temperature: temp(-2.0),
+                    surface_temperature: temp(-2.0 + DRY_ADIABATIC_LAPSE_RATE_K_M * 5.0),
+                    ..base
+                },
+                TurbulentTerminationStatus::InitialPotentialTemperatureNeutral,
+            ),
         ] {
             let legacy = turbulent_fluxes_monin_obukhov(inputs).expect("legacy fluxes");
             let diagnostic =
@@ -1624,7 +1643,68 @@ mod tests {
                 legacy.obukhov_length_m.map(f64::to_bits),
                 diagnostic.fluxes.obukhov_length_m.map(f64::to_bits)
             );
+            assert_eq!(diagnostic.termination_status, expected_status);
         }
+
+        let nonconvergent = TurbulentFluxInputs {
+            options: TurbulentTransferOptions {
+                max_iterations: 1,
+                convergence_tolerance: f64::MIN_POSITIVE,
+            },
+            ..base
+        };
+        let legacy_error = turbulent_fluxes_monin_obukhov(nonconvergent)
+            .expect_err("one iteration must not converge");
+        let diagnostic_error = turbulent_fluxes_monin_obukhov_with_diagnostics(nonconvergent)
+            .expect_err("diagnostic solver must share nonconvergence");
+        assert_eq!(format!("{legacy_error:?}"), format!("{diagnostic_error:?}"));
+    }
+
+    #[test]
+    fn turbulent_diagnostic_retains_rare_iterative_exit_taxonomy() {
+        let air_vapor_pressure =
+            saturation_vapor_pressure_snobal_pa(temp(-1.0)).expect("valid air vapor pressure");
+        let surface_vapor_pressure =
+            saturation_vapor_pressure_snobal_pa(temp(-6.0)).expect("valid surface vapor pressure");
+        let inputs = TurbulentFluxInputs {
+            air_pressure: PressurePascals::try_new(80_000.0).expect("valid pressure"),
+            air_temperature: temp(-1.0),
+            surface_temperature: temp(-6.0),
+            air_vapor_pressure,
+            surface_vapor_pressure,
+            air_temperature_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            vapor_pressure_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            wind_speed: LinearRateMetersPerSecond::try_new(3.5).expect("valid wind"),
+            wind_speed_height: PositiveLengthMeters::try_new(5.0).expect("valid height"),
+            roughness_length: PositiveLengthMeters::try_new(0.005).expect("valid roughness"),
+            options: TurbulentTransferOptions::default(),
+        };
+
+        let mut zero_buoyancy = TurbulentState::initial(inputs).expect("initial state");
+        zero_buoyancy.sensible_heat_w_m2 = 0.0;
+        zero_buoyancy.mass_flux_kg_m2_s = 0.0;
+        let zero = iterate_turbulent_fluxes(inputs, zero_buoyancy)
+            .expect("zero buoyancy is a successful exact exit");
+        assert_eq!(
+            zero.termination_status,
+            TurbulentTerminationStatus::IterativeZeroBuoyancy
+        );
+        assert_eq!(zero.fluxes.iterations, 1);
+        assert!(zero.fluxes.obukhov_length_m.is_none());
+
+        let mut invalid_obukhov = TurbulentState::initial(inputs).expect("initial state");
+        invalid_obukhov.friction_velocity_m_s = f64::MAX;
+        let invalid = iterate_turbulent_fluxes(inputs, invalid_obukhov)
+            .expect("invalid Obukhov is a retained successful exit");
+        assert_eq!(
+            invalid.termination_status,
+            TurbulentTerminationStatus::IterativeInvalidObukhov
+        );
+        assert_eq!(
+            invalid.stability_class,
+            TurbulentStabilityClass::IndeterminateObukhov
+        );
+        assert!(invalid.fluxes.obukhov_length_m.is_none());
     }
 
     #[test]

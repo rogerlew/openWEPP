@@ -1,5 +1,11 @@
 use std::fs;
 
+use openwepp_hillslope_orchestrator::{
+    DirectSnowLiquidPartition, DirectSnowStage3EvaluationDiagnostics,
+    DirectSnowStage3EvaluationHourDiagnostics, DirectSnowStage3EvaluationResult,
+    SnowStage3EvaluationOperator,
+};
+
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const PACKAGE: &str = "docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/package.md";
@@ -7,6 +13,91 @@ const PROTOCOL: &str = "docs/work-packages/20260806-snow-stage3-turbulent-carrie
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+}
+
+#[allow(dead_code, clippy::too_many_lines)]
+fn protected_external_struct_literals_remain_exhaustive(authoritative: DirectSnowLiquidPartition) {
+    let hour = DirectSnowStage3EvaluationHourDiagnostics {
+        sensible_flux_w_m2: 0.0,
+        latent_flux_w_m2: 0.0,
+        advected_flux_w_m2: 0.0,
+        shortwave_energy_j_m2: 0.0,
+        longwave_energy_j_m2: 0.0,
+        internal_active_lower_conduction_j_m2: 0.0,
+        complete_energy_j_m2: 0.0,
+        vapor_mass_exchange_kg_m2: 0.0,
+        cold_required_j_m2: 0.0,
+        cold_energy_change_j_m2: 0.0,
+        cold_content_export_j_m2: 0.0,
+        excess_energy_j_m2: 0.0,
+        ice_available_kg_m2: 0.0,
+        sublimation_kg_m2: 0.0,
+        melt_kg_m2: 0.0,
+        unallocated_after_exhaustion_j_m2: 0.0,
+        energy_closure_residual_j_m2: 0.0,
+        complete_carrier_evaluated: false,
+        requested_seconds: 0.0,
+        evaluated_seconds: 0.0,
+    };
+    let evaluation = DirectSnowStage3EvaluationDiagnostics {
+        operator: SnowStage3EvaluationOperator::SameStatePairedCarrierV1,
+        source_snapshot_id: "source",
+        support_id: "support",
+        cadence_id: "cadence",
+        carrier_id: "carrier",
+        coverage_id: "coverage",
+        claim_class: "claim",
+        unresolved_boundaries_id: "boundaries",
+        pairing_id: None,
+        arm_ids: ["surface", "complete"],
+        arm_count: 2,
+        source_fingerprint: 0,
+        forcing_fingerprint: 0,
+        geometry_fingerprint: 0,
+        non_formulation_fingerprint: 0,
+        surface_arm_non_formulation_fingerprint: 0,
+        complete_arm_non_formulation_fingerprint: 0,
+        requested_seconds: 0.0,
+        evaluated_seconds: 0.0,
+        coverage_fraction: 0.0,
+        surface_arm_applicable: false,
+        surface_arm_shortwave_j_m2: 0.0,
+        surface_arm_longwave_j_m2: 0.0,
+        surface_arm_latent_j_m2: 0.0,
+        surface_arm_sensible_applicable: false,
+        surface_arm_advected_applicable: false,
+        surface_arm_internal_conduction_applicable: false,
+        surface_arm_total_j_m2: 0.0,
+        complete_arm_shortwave_j_m2: 0.0,
+        complete_arm_longwave_j_m2: 0.0,
+        complete_arm_sensible_j_m2: 0.0,
+        complete_arm_latent_j_m2: 0.0,
+        complete_arm_advected_j_m2: 0.0,
+        complete_arm_internal_active_lower_conduction_j_m2: 0.0,
+        complete_arm_applicable: false,
+        complete_arm_internal_conduction_applicable: false,
+        complete_arm_vapor_mass_exchange_kg_m2: 0.0,
+        complete_arm_cold_content_export_j_m2: 0.0,
+        complete_arm_cold_content_export_applicable: false,
+        complete_arm_available_ice_kg_m2: 0.0,
+        complete_arm_available_ice_applicable: false,
+        complete_arm_total_j_m2: 0.0,
+        complete_arm_sequential_ledger_applicable: false,
+        complete_arm_cold_energy_change_j_m2: 0.0,
+        complete_arm_excess_energy_j_m2: 0.0,
+        complete_arm_sublimation_kg_m2: 0.0,
+        complete_arm_melt_kg_m2: 0.0,
+        complete_arm_terminal_unallocated_j_m2: 0.0,
+        complete_arm_terminal_unallocated_applicable: false,
+        complete_arm_component_residual_j_m2: 0.0,
+        complete_arm_maximum_thermodynamic_residual_j_m2: 0.0,
+        hourly: [hour; 24],
+    };
+    let result = DirectSnowStage3EvaluationResult {
+        authoritative,
+        evaluation: Some(evaluation),
+    };
+    let _ = (hour, result);
 }
 
 fn section<'a>(document: &'a str, start: &str, end: &str) -> &'a str {

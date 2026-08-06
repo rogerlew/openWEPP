@@ -132,6 +132,9 @@ operands, stability solution, or state endpoints required to separate them.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs`
+  for the internal boxed companion carried beside the protected evaluation
+  result;
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs`;
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00f_snow_accumulation_melt_trace.rs`;
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00g_snow_diagnostic_capture.rs`;
@@ -143,6 +146,8 @@ operands, stability solution, or state endpoints required to separate them.
   line count below the scaffold baseline;
 - focused Stage 3 runtime tests required by the changed additive diagnostic
   types;
+- the external protected-shape compile guard at
+  `crates/openwepp-meteorology/tests/turbulent_fluxes_public_shape.rs`;
 - package-local tracked analyzer and tests at
   `tools/run_operator_reconciliation.py` and
   `tools/test_run_operator_reconciliation.py`;
@@ -324,7 +329,7 @@ Full-support reduction is primary; partial comparisons integrate it only on the
 same `[0, common_support)` interval as both real operators. It resets at every
 day and is never carried across a day, water year, or site.
 
-The scientific disposition is one of:
+The scientific disposition is an ordered class set:
 
 1. `LINEAGE_OR_IDENTITY_FAILURE` when reconstruction, identity, applicability,
    closure, consumer custody, or protected-output identity fails. This class
@@ -336,8 +341,9 @@ The scientific disposition is one of:
    non-positive, with bridge closure passing.
 4. `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` when raw-source identity
    passes but the first effective input fingerprint differs or any first active
-   mass/depth/cold/temperature/layer-membership operand differs above the
-   protocol tolerance. Report its per-term first-hour delta.
+   mass/depth/density/cold/temperature/layer-membership operand differs in
+   finite IEEE-754 `to_bits`. Reconstruction tolerances do not erase or create
+   this identity. Report its per-term first-hour delta.
 5. `INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION` only when,
    on identical three-way common support, the same-state external Snowbird
    estimator is below `-1e-6 J m^-2` and the frozen-active estimator is above
@@ -549,6 +555,23 @@ must not mutate source fixtures. The new schema is internal and default-off.
   affected crates; turbulent `3/3`; runner Stage 3 `9/9`; orchestrator Stage 3
   `5/5`; contract/observability `12/12`; consumer `6/6`; and frozen schema-v4
   identity within the runner suite.
+- [x] (2026-08-06) Independent implementation science, Rust, and consumer
+  reviews at `f5202ee65f8b40d2c0244d92fd5c2843077e9997` returned HOLD before
+  any result run. Accepted findings cover dimensioned scale-aware runtime
+  tolerances, unresolved-pack applicability, exact status/null/order custody,
+  complete independent flux reconstruction, frozen-reference operands,
+  predecessor/support/classification arithmetic, protected outputs, retained
+  verification, and missing negative vectors. The prospective write set now
+  names the already-required internal `snow_mass_transition.rs` companion
+  custody explicitly; no result predicate changed.
+- [x] (2026-08-06) Dispositioned the three HOLD reviews without result
+  inspection. Current model-free admission passes warnings-denied Clippy;
+  meteorology `25/25` including stable/unstable/neutral/zero-wind, rare exits,
+  nonconvergence, and external shape; orchestrator Stage 3 `8/8` including
+  mutation and `1 kg m^-2` boundary vectors; runner Stage 3 `9/9`; contract and
+  observability `12/12`; and independent consumer `14/14` including historical
+  schema dispatch, exact bits/nulls, primitive aliases, projection, support,
+  and class precedence.
 - [ ] Execute and analyze the frozen four-site paired/sequential cohort.
 - [ ] Complete review, critical validation, DRAFT assurance adoption, terminal
   verification, roadmap disposition, prompt archival, and stable closure.
@@ -566,6 +589,12 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - Observation: the existing trace contains authoritative Stage 3 surface
   temperatures, but those are an invalid alias for the evaluation clone. A
   shadow-specific state surface is required.
+- Observation: the extracted `stage3_solver.rs` reached `2,316` lines after
+  the exact tuple validator. This crosses the `2,000`-line WARN threshold but
+  remains below the `3,000`-line refactor gate; splitting the tightly coupled
+  validator during this critical observability increment would enlarge the
+  mechanical write set without changing behavior, so the warning is accepted
+  and retained for the next mechanical extraction package.
 
 ## Decision Log
 

@@ -109,6 +109,8 @@ fn direct_snow_trace_stage3_reconciliation_fields(
                 "subcanopy_longwave_w_m2": tuple.subcanopy_longwave_w_m2,
                 "outgoing_longwave_w_m2": tuple.outgoing_longwave_w_m2,
                 "net_longwave_w_m2": tuple.net_longwave_w_m2,
+                "longwave_model_id": tuple.longwave_model_id,
+                "sublimation_model_id": tuple.sublimation_model_id,
                 "air_temperature_height_m": tuple.air_temperature_height_m,
                 "vapor_pressure_height_m": tuple.vapor_pressure_height_m,
                 "wind_speed_height_m": tuple.wind_speed_height_m,

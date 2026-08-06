@@ -461,6 +461,8 @@ mod stage3_evaluation_real_consumer_tests {
             "active_layer_state_fingerprint_before_fnv1a64",
             "total_layer_state_fingerprint_after_fnv1a64",
             "snow_albedo_source_id",
+            "longwave_model_id",
+            "sublimation_model_id",
             "turbulent_termination_status",
             "stability_class",
             "sensible_exchange_velocity_m_s",

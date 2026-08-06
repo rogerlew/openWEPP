@@ -291,6 +291,7 @@ impl Wb11HydrologyKernel {
         Ok(summary)
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(super) fn evaluate_stage3_same_state_paired_carrier(
         phase_class: HillslopeKernelPhaseClass,
         tag: Stage3EvaluationTag,
@@ -305,6 +306,17 @@ impl Wb11HydrologyKernel {
         summary.complete_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
         for hour in &mut summary.hourly {
             hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
+        }
+        if Self::stage3_total_ice_mass_swe_m(layers)
+            <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+        {
+            for status in &mut summary.reconciliation.hourly_status {
+                *status = DirectSnowStage3ReconciliationHourStatus {
+                    evaluated: false,
+                    reason: "no_resolved_snow_at_day_start",
+                };
+            }
+            return Ok(summary);
         }
         let snapshot = Self::stage3_control_volume_state(
             phase_class,
@@ -704,6 +716,8 @@ impl Wb11HydrologyKernel {
             subcanopy_longwave_w_m2: carrier.subcanopy_longwave_w_m2,
             outgoing_longwave_w_m2: carrier.outgoing_longwave_w_m2,
             net_longwave_w_m2: carrier.net_longwave_w_m2,
+            longwave_model_id: carrier.longwave_model_id,
+            sublimation_model_id: carrier.sublimation_model_id,
             air_temperature_height_m: carrier.air_temperature_height_m,
             vapor_pressure_height_m: carrier.vapor_pressure_height_m,
             wind_speed_height_m: carrier.wind_speed_height_m,
@@ -1229,6 +1243,8 @@ impl Wb11HydrologyKernel {
                 subcanopy_longwave_w_m2,
                 outgoing_longwave_w_m2,
                 net_longwave_w_m2: longwave_w_m2,
+                longwave_model_id: inputs.surface_energy_options.longwave_model.id(),
+                sublimation_model_id: inputs.surface_energy_options.sublimation_model.id(),
                 air_temperature_height_m: geometry.air_temperature_height_m,
                 vapor_pressure_height_m: geometry.vapor_pressure_height_m,
                 wind_speed_height_m: geometry.wind_speed_height_m,

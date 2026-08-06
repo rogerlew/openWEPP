@@ -114,6 +114,8 @@ struct Stage3CarrierReconciliation {
     subcanopy_longwave_w_m2: f64,
     outgoing_longwave_w_m2: f64,
     net_longwave_w_m2: f64,
+    longwave_model_id: &'static str,
+    sublimation_model_id: &'static str,
     air_temperature_height_m: f64,
     vapor_pressure_height_m: f64,
     wind_speed_height_m: f64,
@@ -273,6 +275,7 @@ impl Stage3EvaluationTag {
     }
 }
 
+#[derive(Clone)]
 struct Stage3ShadowSummary {
     tag: Stage3EvaluationTag,
     source_fingerprint: u64,

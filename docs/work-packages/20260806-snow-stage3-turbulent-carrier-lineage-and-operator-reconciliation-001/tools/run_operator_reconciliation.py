@@ -14,8 +14,10 @@ import os
 import re
 import shutil
 import statistics
+import struct
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -47,6 +49,33 @@ GRAVITY = 9.80665
 MOLAR_DRY = 28.9644
 MOLAR_WATER = 18.0153
 UNIVERSAL_GAS = 8.31432e3
+CALORIE_TO_JOULE = 4.186_798_188
+LONGWAVE_MODEL = "dilley_unsworth_subcanopy_v1"
+SUBLIMATION_MODEL = "disabled"
+FLUX_FIELDS = (
+    "net_shortwave_w_m2",
+    "net_longwave_w_m2",
+    "sensible_flux_w_m2",
+    "latent_flux_w_m2",
+    "precipitation_advected_flux_w_m2",
+)
+FIXED_REFERENCE_FIELDS = (
+    "air_pressure_pa",
+    "wind_speed_m_s",
+    "dewpoint_c",
+    "daily_solar_radiation_mj_m2",
+    "daily_extraterrestrial_radiation_mj_m2",
+    "daylight",
+    "canopy_cover_fraction",
+    "air_temperature_height_m",
+    "vapor_pressure_height_m",
+    "wind_speed_height_m",
+    "aerodynamic_roughness_length_m",
+    "turbulent_max_iterations",
+    "turbulent_convergence_tolerance",
+    "longwave_model_id",
+    "sublimation_model_id",
+)
 
 
 def load_module(name: str, path: Path) -> Any:
@@ -114,6 +143,26 @@ def close(name: str, actual: float, expected: float, floor: float) -> None:
         )
 
 
+def same_bits(left: Any, right: Any) -> bool:
+    return (
+        isinstance(left, (int, float))
+        and not isinstance(left, bool)
+        and isinstance(right, (int, float))
+        and not isinstance(right, bool)
+        and struct.pack(">d", float(left)) == struct.pack(">d", float(right))
+    )
+
+
+def require_same_bits(name: str, left: Any, right: Any) -> None:
+    if not same_bits(left, right):
+        raise RuntimeError(f"{name} differs in IEEE-754 representation")
+
+
+def checked_optional_number(row: dict[str, Any], field: str) -> float | None:
+    value = row.get(field)
+    return None if value is None else checked_number(row, field)
+
+
 def validate_tuple(row: dict[str, Any], operator: str) -> None:
     if row.get("operator_id") != operator or row.get("applicable") is not True:
         raise RuntimeError("tuple operator/applicability mismatch")
@@ -135,43 +184,80 @@ def validate_tuple(row: dict[str, Any], operator: str) -> None:
     snow_flux = checked_number(row, "snowfall_geometric_m") * 0.1 * 1_000.0 / 3_600.0
     close("rain mass flux", checked_number(row, "rain_mass_flux_kg_m2_s"), rain_flux, 1.0e-12)
     close("snow mass flux", checked_number(row, "snow_mass_flux_kg_m2_s"), snow_flux, 1.0e-12)
-    latent_heat = row.get("surface_latent_heat_j_kg")
-    if latent_heat is None:
-        if row.get("turbulent_termination_status") != "zero_wind":
-            raise RuntimeError("latent heat is null outside zero-wind")
-    else:
-        close(
-            "latent primitive",
-            checked_number(row, "latent_flux_w_m2"),
-            checked_number(row, "vapor_mass_flux_kg_m2_s") * float(latent_heat),
-            1.0e-10,
-        )
-        independently_reconstructed = monin_obukhov(
-            air_temperature_c=checked_number(row, "air_temperature_c"),
-            surface_temperature_c=checked_number(row, "surface_temperature_before_c"),
-            air_vapor_pressure_pa=checked_number(row, "actual_vapor_pressure_pa"),
-            surface_vapor_pressure_pa=checked_number(row, "surface_vapor_pressure_pa"),
-            air_pressure_pa=checked_number(row, "air_pressure_pa"),
-            wind_speed_m_s=checked_number(row, "wind_speed_m_s"),
-            z_t=checked_number(row, "air_temperature_height_m"),
-            z_q=checked_number(row, "vapor_pressure_height_m"),
-            z_u=checked_number(row, "wind_speed_height_m"),
-            z_0=checked_number(row, "aerodynamic_roughness_length_m"),
-            max_iterations=int(row["turbulent_max_iterations"]),
-            tolerance=checked_number(row, "turbulent_convergence_tolerance"),
-        )
-        close(
-            "independent sensible reconstruction",
-            checked_number(row, "sensible_flux_w_m2"),
-            independently_reconstructed["sensible"],
-            1.0e-9,
-        )
-        close(
-            "independent latent reconstruction",
-            checked_number(row, "latent_flux_w_m2"),
-            independently_reconstructed["latent"],
-            1.0e-9,
-        )
+    rain_cp = 4_217.7 - 2.55 * checked_number(row, "rain_temperature_c")
+    snow_cp = CALORIE_TO_JOULE * (
+        0.024_928 + 0.001_76 * (checked_number(row, "snow_temperature_c") + FREEZE_K)
+    ) / 0.001
+    close("rain heat capacity", checked_number(row, "rain_specific_heat_j_kg_k"), rain_cp, 1.0e-10)
+    close("snow heat capacity", checked_number(row, "snow_specific_heat_j_kg_k"), snow_cp, 1.0e-10)
+    advected = (
+        rain_cp * rain_flux * (checked_number(row, "rain_temperature_c") - checked_number(row, "surface_temperature_before_c"))
+        + snow_cp * snow_flux * (checked_number(row, "snow_temperature_c") - checked_number(row, "surface_temperature_before_c"))
+    )
+    close("precipitation advection", checked_number(row, "precipitation_advected_flux_w_m2"), advected, 1.0e-10)
+    close("actual vapor pressure", checked_number(row, "actual_vapor_pressure_pa"), saturation_vapor_pressure(checked_number(row, "dewpoint_c")), 1.0e-10)
+    close("surface vapor pressure", checked_number(row, "surface_vapor_pressure_pa"), saturation_vapor_pressure(checked_number(row, "surface_temperature_before_c")), 1.0e-10)
+    longwave = reconstruct_longwave(row, checked_number(row, "surface_temperature_before_c"))
+    for field, key in (
+        ("longwave_cloud_fraction", "cloud"),
+        ("sky_view_fraction", "sky_view"),
+        ("atmospheric_longwave_w_m2", "atmospheric"),
+        ("canopy_longwave_w_m2", "canopy"),
+        ("subcanopy_longwave_w_m2", "subcanopy"),
+        ("outgoing_longwave_w_m2", "outgoing"),
+        ("net_longwave_w_m2", "net"),
+    ):
+        close(f"independent {field}", checked_number(row, field), longwave[key], 1.0e-10)
+    independently_reconstructed = monin_obukhov(
+        air_temperature_c=checked_number(row, "air_temperature_c"),
+        surface_temperature_c=checked_number(row, "surface_temperature_before_c"),
+        air_vapor_pressure_pa=checked_number(row, "actual_vapor_pressure_pa"),
+        surface_vapor_pressure_pa=checked_number(row, "surface_vapor_pressure_pa"),
+        air_pressure_pa=checked_number(row, "air_pressure_pa"),
+        wind_speed_m_s=checked_number(row, "wind_speed_m_s"),
+        z_t=checked_number(row, "air_temperature_height_m"),
+        z_q=checked_number(row, "vapor_pressure_height_m"),
+        z_u=checked_number(row, "wind_speed_height_m"),
+        z_0=checked_number(row, "aerodynamic_roughness_length_m"),
+        max_iterations=int(row["turbulent_max_iterations"]),
+        tolerance=checked_number(row, "turbulent_convergence_tolerance"),
+    )
+    if row.get("turbulent_termination_status") != independently_reconstructed["status"] or row.get("stability_class") != independently_reconstructed["class"]:
+        raise RuntimeError("turbulent status/class mismatch")
+    if row.get("turbulent_iterations") != independently_reconstructed["iterations"]:
+        raise RuntimeError("turbulent iteration mismatch")
+    for field, key in (
+        ("obukhov_length_m", "obukhov"),
+        ("displacement_height_m", "displacement"),
+        ("log_momentum", "log_momentum"),
+        ("log_sensible", "log_sensible"),
+        ("log_latent", "log_latent"),
+        ("sensible_exchange_velocity_m_s", "sensible_exchange"),
+        ("latent_exchange_velocity_m_s", "latent_exchange"),
+        ("air_density_kg_m3", "density"),
+        ("air_potential_temperature_k", "potential_temperature"),
+        ("surface_temperature_k", "surface_temperature_k"),
+        ("specific_humidity_air_kg_kg", "q_air"),
+        ("specific_humidity_surface_kg_kg", "q_surface"),
+        ("surface_latent_heat_j_kg", "latent_heat"),
+    ):
+        actual = checked_optional_number(row, field)
+        expected = independently_reconstructed[key]
+        if actual is None or expected is None:
+            if actual is not None or expected is not None:
+                raise RuntimeError(f"{field} applicability mismatch")
+        else:
+            close(f"independent {field}", actual, float(expected), 1.0e-10)
+    for field, key in (
+        ("psi_momentum", "psi_momentum"),
+        ("psi_sensible", "psi_sensible"),
+        ("psi_latent", "psi_latent"),
+        ("friction_velocity_m_s", "friction"),
+        ("vapor_mass_flux_kg_m2_s", "mass"),
+        ("sensible_flux_w_m2", "sensible"),
+        ("latent_flux_w_m2", "latent"),
+    ):
+        close(f"independent {field}", checked_number(row, field), float(independently_reconstructed[key]), 1.0e-10)
     external = sum(
         checked_number(row, field)
         for field in (
@@ -196,9 +282,31 @@ def validate_tuple(row: dict[str, Any], operator: str) -> None:
             ("active_density_before_kg_m3", "active_density_after_kg_m3"),
             ("active_cold_before_j_m2", "active_cold_after_j_m2"),
             ("surface_temperature_before_c", "surface_temperature_after_c"),
+            ("total_ice_mass_before_kg_m2", "total_ice_mass_after_kg_m2"),
+            ("total_cold_before_j_m2", "total_cold_after_j_m2"),
         ):
-            close(f"same-state {after}", checked_number(row, after), checked_number(row, before), 0.0)
+            require_same_bits(f"same-state {after}", row.get(after), row.get(before))
+        for before, after in (
+            ("active_layer_prefix_count_before", "active_layer_prefix_count_after"),
+            ("total_layer_count_before", "total_layer_count_after"),
+            ("active_layer_state_fingerprint_before_fnv1a64", "active_layer_state_fingerprint_after_fnv1a64"),
+            ("total_layer_state_fingerprint_before_fnv1a64", "total_layer_state_fingerprint_after_fnv1a64"),
+        ):
+            if row.get(after) != row.get(before):
+                raise RuntimeError(f"same-state {after} differs")
+        if row.get("projection_id") != "whole_column_immutable" or row.get("after_surface_applicable") is not True or row.get("after_surface_applicability_reason") != "resolved_surface":
+            raise RuntimeError("same-state applicability mismatch")
+        for field in (
+            "melt_kg_m2", "sublimation_kg_m2", "deposition_kg_m2",
+            "active_cold_energy_change_j_m2", "lower_cold_energy_change_j_m2",
+            "cold_content_export_j_m2", "internal_active_lower_conduction_j_m2",
+            "legacy_sequential_complete_j_m2", "energy_closure_residual_j_m2",
+        ):
+            if row.get(field) is not None:
+                raise RuntimeError(f"same-state {field} must be null")
     else:
+        if row.get("projection_id") != "aligned_active_dynamic":
+            raise RuntimeError("sequential projection mismatch")
         mass_after = checked_number(row, "total_ice_mass_after_kg_m2")
         mass_expected = (
             checked_number(row, "total_ice_mass_before_kg_m2")
@@ -219,6 +327,24 @@ def validate_tuple(row: dict[str, Any], operator: str) -> None:
             row, "internal_active_lower_conduction_j_m2"
         )
         close("legacy sequential bridge", checked_number(row, "legacy_sequential_complete_j_m2"), legacy, 1.0e-6)
+        close("sequential energy closure", checked_number(row, "energy_closure_residual_j_m2"), 0.0, 1.0e-6)
+        active_after_fields = (
+            "active_layer_prefix_count_after",
+            "active_layer_state_fingerprint_after_fnv1a64",
+            "active_ice_mass_after_kg_m2",
+            "active_depth_after_m",
+            "active_density_after_kg_m3",
+            "active_cold_after_j_m2",
+            "surface_temperature_after_c",
+        )
+        if row.get("after_surface_applicable") is True:
+            if row.get("after_surface_applicability_reason") != "resolved_surface" or any(row.get(field) is None for field in active_after_fields):
+                raise RuntimeError("resolved after-surface applicability mismatch")
+        elif row.get("after_surface_applicable") is False:
+            if row.get("after_surface_applicability_reason") != "post_substep_no_resolved_surface" or any(row.get(field) is not None for field in active_after_fields):
+                raise RuntimeError("terminal after-surface applicability mismatch")
+        else:
+            raise RuntimeError("missing after-surface applicability")
 
 
 def validate_v6_row(row: dict[str, Any], operator: str) -> list[dict[str, Any]]:
@@ -231,10 +357,14 @@ def validate_v6_row(row: dict[str, Any], operator: str) -> list[dict[str, Any]]:
     tuples = companion.get("tuples")
     if not isinstance(statuses, list) or len(statuses) != 24 or not isinstance(tuples, list):
         raise RuntimeError("invalid reconciliation arrays")
+    if row.get("stage3_evaluation_operator_id") != operator:
+        raise RuntimeError("top-level operator mismatch")
     if len(tuples) > 1_440:
         raise RuntimeError("tuple bound exceeded")
     expected_index = [0] * 24
     elapsed = [0.0] * 24
+    previous_identity: tuple[int, int] | None = None
+    fixed_options: tuple[Any, ...] | None = None
     for item in tuples:
         if not isinstance(item, dict):
             raise RuntimeError("tuple is not an object")
@@ -242,17 +372,57 @@ def validate_v6_row(row: dict[str, Any], operator: str) -> list[dict[str, Any]]:
         substep = item.get("substep_index")
         if not isinstance(hour, int) or not 0 <= hour < 24 or substep != expected_index[hour]:
             raise RuntimeError("tuple order mismatch")
+        identity = (hour, substep)
+        if previous_identity is not None and identity <= previous_identity:
+            raise RuntimeError("tuple global order mismatch")
+        previous_identity = identity
         close("elapsed start", checked_number(item, "elapsed_start_seconds"), elapsed[hour], 0.0)
+        if checked_number(item, "elapsed_start_seconds") + checked_number(item, "duration_seconds") > 3_600.0:
+            raise RuntimeError("tuple exceeds hourly interval")
+        for tuple_field, row_field in (
+            ("source_fingerprint_fnv1a64", "stage3_evaluation_source_fingerprint_fnv1a64"),
+            ("forcing_fingerprint_fnv1a64", "stage3_evaluation_forcing_fingerprint_fnv1a64"),
+            ("geometry_fingerprint_fnv1a64", "stage3_evaluation_geometry_fingerprint_fnv1a64"),
+        ):
+            if item.get(tuple_field) != row.get(row_field):
+                raise RuntimeError(f"tuple {tuple_field} custody mismatch")
+        options = tuple(item.get(field) for field in FIXED_REFERENCE_FIELDS)
+        if fixed_options is None:
+            fixed_options = options
+        elif options != fixed_options:
+            raise RuntimeError("fixed daily option/forcing drift")
         validate_tuple(item, operator)
         elapsed[hour] += checked_number(item, "duration_seconds")
         expected_index[hour] += 1
     for hour, status in enumerate(statuses):
         if not isinstance(status, dict) or status.get("evaluated") != (expected_index[hour] > 0):
             raise RuntimeError("hourly status mismatch")
+        expected_reasons = {"evaluated"} if expected_index[hour] else {
+            "no_resolved_snow_at_day_start",
+            "thin_pack_boundary_reached",
+            "operator_not_selected",
+        }
+        if status.get("reason") not in expected_reasons:
+            raise RuntimeError("hourly reason mismatch")
         if operator == "same_state_paired_carrier_v1" and expected_index[hour]:
             if expected_index[hour] != 1 or elapsed[hour] != 3_600.0:
                 raise RuntimeError("same-state cadence mismatch")
     return tuples
+
+
+def dispatch_trace_row(row: dict[str, Any], operator: str) -> tuple[int, list[dict[str, Any]]]:
+    schema = row.get("schema")
+    if schema == "openwepp-r7h-direct-production-snow-trace-v6":
+        return 6, validate_v6_row(row, operator)
+    if schema == "openwepp-r7h-direct-production-snow-trace-v5":
+        if "stage3_operator_reconciliation" in row:
+            raise RuntimeError("historical v5 row aliases schema-v6 companion")
+        return 5, []
+    if schema == "openwepp-r7h-direct-production-snow-trace-v4":
+        if "stage3_operator_reconciliation" in row:
+            raise RuntimeError("historical v4 row aliases schema-v6 companion")
+        return 4, []
+    raise RuntimeError(f"unknown enabled schema: {schema}")
 
 
 def integrate_prefix(tuples: list[dict[str, Any]], seconds: float, field: str) -> float:
@@ -274,21 +444,26 @@ def frozen_active_flux(same: dict[str, Any], first_q: dict[str, Any]) -> dict[st
     shortwave = checked_number(same, "incoming_shortwave_w_m2") * (
         1.0 - checked_number(first_q, "snow_albedo_fraction")
     )
-    outgoing = SIGMA * (surface_c + FREEZE_K) ** 4
-    longwave = checked_number(same, "subcanopy_longwave_w_m2") - outgoing
+    reference = dict(same)
+    for field in FIXED_REFERENCE_FIELDS:
+        reference[field] = first_q[field]
+    reference["actual_vapor_pressure_pa"] = saturation_vapor_pressure(
+        checked_number(first_q, "dewpoint_c")
+    )
+    longwave = reconstruct_longwave(reference, surface_c)["net"]
     turbulent = monin_obukhov(
         air_temperature_c=checked_number(same, "air_temperature_c"),
         surface_temperature_c=surface_c,
-        air_vapor_pressure_pa=checked_number(same, "actual_vapor_pressure_pa"),
+        air_vapor_pressure_pa=checked_number(reference, "actual_vapor_pressure_pa"),
         surface_vapor_pressure_pa=saturation_vapor_pressure(surface_c),
-        air_pressure_pa=checked_number(same, "air_pressure_pa"),
-        wind_speed_m_s=checked_number(same, "wind_speed_m_s"),
-        z_t=checked_number(same, "air_temperature_height_m"),
-        z_q=checked_number(same, "vapor_pressure_height_m"),
-        z_u=checked_number(same, "wind_speed_height_m"),
-        z_0=checked_number(same, "aerodynamic_roughness_length_m"),
-        max_iterations=int(same["turbulent_max_iterations"]),
-        tolerance=checked_number(same, "turbulent_convergence_tolerance"),
+        air_pressure_pa=checked_number(first_q, "air_pressure_pa"),
+        wind_speed_m_s=checked_number(first_q, "wind_speed_m_s"),
+        z_t=checked_number(first_q, "air_temperature_height_m"),
+        z_q=checked_number(first_q, "vapor_pressure_height_m"),
+        z_u=checked_number(first_q, "wind_speed_height_m"),
+        z_0=checked_number(first_q, "aerodynamic_roughness_length_m"),
+        max_iterations=int(first_q["turbulent_max_iterations"]),
+        tolerance=checked_number(first_q, "turbulent_convergence_tolerance"),
     )
     advected = (
         checked_number(same, "rain_specific_heat_j_kg_k")
@@ -331,10 +506,69 @@ def saturation_vapor_pressure(temperature_c: float) -> float:
     return 10.0**exponent
 
 
-def monin_obukhov(**values: float) -> dict[str, float]:
+def reconstruct_longwave(row: dict[str, Any], surface_temperature_c: float) -> dict[str, float]:
+    if row.get("longwave_model_id") != LONGWAVE_MODEL:
+        raise RuntimeError("unexpected longwave model")
+    air_k = checked_number(row, "air_temperature_c") + FREEZE_K
+    surface_k = surface_temperature_c + FREEZE_K
+    vapor_kpa = checked_number(row, "actual_vapor_pressure_pa") / 1_000.0
+    precipitable_water = 4_650.0 * vapor_kpa / air_k
+    clear_longwave = (
+        59.38
+        + 113.7 * (air_k / FREEZE_K) ** 6
+        + 96.96 * math.sqrt(precipitable_water / 25.0)
+    )
+    blackbody_air = SIGMA * air_k**4
+    clear_emissivity = clear_longwave / blackbody_air
+    clearness = checked_number(row, "daily_solar_radiation_mj_m2") / checked_number(
+        row, "daily_extraterrestrial_radiation_mj_m2"
+    )
+    cloud = min(1.0, max(0.0, (0.80 - clearness) / (0.80 - 0.15)))
+    all_sky_emissivity = (1.0 - 0.84 * cloud) * clear_emissivity + 0.84 * cloud
+    atmospheric = all_sky_emissivity * blackbody_air
+    sky_view = (1.0 - checked_number(row, "canopy_cover_fraction")) ** 1.6
+    canopy = blackbody_air
+    subcanopy = sky_view * atmospheric + (1.0 - sky_view) * canopy
+    outgoing = SIGMA * surface_k**4
+    return {
+        "cloud": cloud,
+        "sky_view": sky_view,
+        "atmospheric": atmospheric,
+        "canopy": canopy,
+        "subcanopy": subcanopy,
+        "outgoing": outgoing,
+        "net": subcanopy - outgoing,
+    }
+
+
+def monin_obukhov(**values: float) -> dict[str, Any]:
     wind = values["wind_speed_m_s"]
     if wind == 0.0:
-        return {"sensible": 0.0, "latent": 0.0}
+        return {
+            "sensible": 0.0,
+            "latent": 0.0,
+            "mass": 0.0,
+            "iterations": 0,
+            "obukhov": None,
+            "status": "zero_wind",
+            "class": "zero_wind",
+            "psi_momentum": 0.0,
+            "psi_sensible": 0.0,
+            "psi_latent": 0.0,
+            "friction": 0.0,
+            "displacement": None,
+            "log_momentum": None,
+            "log_sensible": None,
+            "log_latent": None,
+            "sensible_exchange": None,
+            "latent_exchange": None,
+            "density": None,
+            "potential_temperature": None,
+            "surface_temperature_k": None,
+            "q_air": None,
+            "q_surface": None,
+            "latent_heat": None,
+        }
     z0 = values["z_0"]
     displacement = 2.0 * 7.35 * z0 / 3.0
     logs = [math.log((values[key] - displacement) / z0) for key in ("z_u", "z_t", "z_q")]
@@ -367,30 +601,72 @@ def monin_obukhov(**values: float) -> dict[str, float]:
         latent_heat += 333_600.0 + 166.67 * (FREEZE_K - surface_k)
     corrections = [0.0, 0.0, 0.0]
 
-    def recompute() -> tuple[float, float, float]:
+    def recompute() -> tuple[float, float, float, float, float]:
         friction = VON_KARMAN * wind / (logs[0] - corrections[0])
         factor = VON_KARMAN * friction * density
+        latent_exchange = VON_KARMAN * friction / (logs[2] - corrections[2])
+        sensible_exchange = VON_KARMAN * friction / (logs[1] - corrections[1])
         mass = (q_air - q_surface) * factor / (logs[2] - corrections[2])
         sensible = (potential_k - surface_k) * factor * CP_AIR / (logs[1] - corrections[1])
-        return friction, mass, sensible
+        return friction, mass, sensible, sensible_exchange, latent_exchange
 
-    friction, mass, sensible = recompute()
+    def finish(iterations: int, obukhov: float | None, status: str, stability: str) -> dict[str, Any]:
+        return {
+            "sensible": sensible,
+            "latent": latent_heat * mass,
+            "mass": mass,
+            "iterations": iterations,
+            "obukhov": obukhov,
+            "status": status,
+            "class": stability,
+            "psi_momentum": corrections[0],
+            "psi_sensible": corrections[1],
+            "psi_latent": corrections[2],
+            "friction": friction,
+            "displacement": displacement,
+            "log_momentum": logs[0],
+            "log_sensible": logs[1],
+            "log_latent": logs[2],
+            "sensible_exchange": sensible_exchange,
+            "latent_exchange": latent_exchange,
+            "density": density,
+            "potential_temperature": potential_k,
+            "surface_temperature_k": surface_k,
+            "q_air": q_air,
+            "q_surface": q_surface,
+            "latent_heat": latent_heat,
+        }
+
+    def correction_class() -> str:
+        if not all(math.isfinite(value) for value in corrections):
+            raise RuntimeError("nonfinite stability correction")
+        if all(value == 0.0 for value in corrections):
+            return "neutral"
+        if all(value <= 0.0 for value in corrections):
+            return "stable"
+        if all(value >= 0.0 for value in corrections):
+            return "unstable"
+        raise RuntimeError("mixed-sign stability corrections")
+
+    friction, mass, sensible, sensible_exchange, latent_exchange = recompute()
     if abs(potential_k - surface_k) <= sys.float_info.epsilon:
-        return {"sensible": sensible, "latent": latent_heat * mass}
+        return finish(0, None, "initial_potential_temperature_neutral", "neutral")
     length = math.inf
-    for _ in range(int(values["max_iterations"])):
+    for iteration in range(1, int(values["max_iterations"]) + 1):
         previous = length
         buoyancy = sensible / (potential_k * CP_AIR) + 0.61 * mass
         if buoyancy == 0.0:
-            return {"sensible": sensible, "latent": latent_heat * mass}
+            return finish(iteration, None, "iterative_zero_buoyancy", correction_class())
         length = friction**3 * density / (VON_KARMAN * GRAVITY * buoyancy)
         if not math.isfinite(length) or length == 0.0:
-            return {"sensible": sensible, "latent": latent_heat * mass}
+            return finish(iteration, None, "iterative_invalid_obukhov", "indeterminate_obukhov")
         corrections = [psi(values[key] / length, kind) for key, kind in (("z_u", "momentum"), ("z_t", "heat"), ("z_q", "heat"))]
-        friction, mass, sensible = recompute()
+        friction, mass, sensible, sensible_exchange, latent_exchange = recompute()
         delta = previous - length
         if abs(delta) <= values["tolerance"] or abs(delta / length) <= values["tolerance"]:
-            return {"sensible": sensible, "latent": latent_heat * mass}
+            if length > 0.0:
+                return finish(iteration, length, "converged_stable", "stable")
+            return finish(iteration, length, "converged_unstable", "unstable")
     raise RuntimeError("consumer frozen-active turbulent solver did not converge")
 
 
@@ -414,7 +690,11 @@ def parse_trace(path: Path, dates: list[dt.date], operator: str) -> dict[dt.date
             row = json.loads(line)
             if row.get("day_index") != index or row.get("lane_index") != 0:
                 raise RuntimeError("trace identity mismatch")
-            row["_tuples"] = validate_v6_row(row, operator)
+            version, tuples = dispatch_trace_row(row, operator)
+            if version != 6:
+                raise RuntimeError(f"current operator trace requires schema v6, got v{version}")
+            row["_tuples"] = tuples
+            row["_serialized_bytes"] = len(line.encode("utf-8"))
             result[dates[index]] = row
     if len(result) != len(dates):
         raise RuntimeError("trace/climate row-count mismatch")
@@ -428,6 +708,54 @@ def tuples_by_hour(rows: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
     return grouped
 
 
+def projection_differs(first_s: dict[str, Any], first_q: dict[str, Any]) -> bool:
+    for field in (
+        "effective_input_fingerprint_fnv1a64",
+        "active_layer_prefix_count_before",
+        "active_layer_state_fingerprint_before_fnv1a64",
+    ):
+        if first_s.get(field) != first_q.get(field):
+            return True
+    return any(
+        not same_bits(first_s.get(field), first_q.get(field))
+        for field in (
+            "active_ice_mass_before_kg_m2",
+            "active_depth_before_m",
+            "active_density_before_kg_m3",
+            "active_cold_before_j_m2",
+            "surface_temperature_before_c",
+        )
+    )
+
+
+def historical_predecessor_windows(
+    trace: Path,
+    dates: list[dt.date],
+    peaks: dict[int, tuple[dt.date, float]],
+) -> dict[int, float]:
+    daily: dict[dt.date, float] = {}
+    with trace.open(encoding="utf-8") as handle:
+        for index, line in enumerate(handle):
+            if index >= len(dates):
+                raise RuntimeError("historical predecessor trace has extra rows")
+            row = json.loads(line)
+            version, _ = dispatch_trace_row(row, "historical")
+            if version not in (4, 5) or row.get("day_index") != index:
+                raise RuntimeError("historical predecessor schema/identity mismatch")
+            daily[dates[index]] = checked_number(row, "stage3_shadow_complete_energy_j_m2")
+    if len(daily) != len(dates):
+        raise RuntimeError("historical predecessor trace row count mismatch")
+    return {
+        year: sum(
+            daily[stamp]
+            for stamp in dates
+            if dt.date(year - 1, 10, 1) <= stamp <= peak
+        )
+        for year, (peak, _) in peaks.items()
+        if 1990 <= year <= 2024
+    }
+
+
 def reconcile_site(
     site: str,
     fixture: Path,
@@ -435,6 +763,7 @@ def reconcile_site(
     paired_trace: Path,
     sequential_trace: Path,
     carrier: Any,
+    predecessor_windows: dict[int, float] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     dates = carrier.climate_dates(carrier.climate_file(fixture))
     paired = parse_trace(paired_trace, dates, "same_state_paired_carrier_v1")
@@ -442,8 +771,13 @@ def reconcile_site(
     peaks, _ = carrier.observed_peaks(observation)
     daily: dict[dt.date, dict[str, float]] = {}
     projection_difference = False
-    omitted_abs = 0.0
-    all_abs = 0.0
+    first_projection_delta_samples: list[dict[str, float]] = []
+    inventories: dict[str, list[dict[str, Any]]] = {
+        "unmatched_hours": [],
+        "zero_support_hours": [],
+        "partial_support_hours": [],
+        "censored_water_years": [],
+    }
     for stamp in dates:
         p = paired[stamp]
         q = sequential[stamp]
@@ -456,22 +790,72 @@ def reconcile_site(
                 raise RuntimeError(f"joined fingerprint mismatch {site} {stamp} {field}")
         s_hours = tuples_by_hour(p["_tuples"])
         q_hours = tuples_by_hour(q["_tuples"])
-        sums = {name: 0.0 for name in ("S", "F", "Q", "legacy_Q", *(f"S_{term}" for term in TERMS), *(f"F_{term}" for term in TERMS), *(f"Q_{term}" for term in TERMS))}
+        sums = {name: 0.0 for name in (
+            "S", "F", "Q", "S_all", "Q_all", "legacy_Q", "legacy_Q_all",
+            *(f"S_{term}" for term in TERMS), *(f"F_{term}" for term in TERMS), *(f"Q_{term}" for term in TERMS),
+        )}
         sums["support_seconds"] = 0.0
+        sums["omitted_abs_j_m2"] = 0.0
+        sums["all_abs_j_m2"] = 0.0
         first_q = next((row for hour in q_hours for row in hour), None)
         if first_q is not None:
             first_s = next((row for hour in s_hours for row in hour), None)
-            if first_s is not None and first_s["effective_input_fingerprint_fnv1a64"] != first_q["effective_input_fingerprint_fnv1a64"]:
-                projection_difference = True
+            if first_s is not None:
+                for field in FIXED_REFERENCE_FIELDS:
+                    left, right = first_s.get(field), first_q.get(field)
+                    if isinstance(left, float) or isinstance(right, float):
+                        require_same_bits(f"joined fixed {field}", left, right)
+                    elif left != right:
+                        raise RuntimeError(f"joined fixed {field} mismatch")
+                for field in (
+                    "snow_albedo_fraction",
+                    "snow_albedo_source_id",
+                    "snow_albedo_model_id",
+                    "snow_albedo_accumulated_positive_temperature_c_day",
+                ):
+                    left, right = first_s.get(field), first_q.get(field)
+                    if isinstance(left, (int, float)) or isinstance(right, (int, float)):
+                        require_same_bits(f"joined albedo {field}", left, right)
+                    elif left != right:
+                        raise RuntimeError(f"joined albedo {field} mismatch")
+                if projection_differs(first_s, first_q):
+                    projection_difference = True
+                    first_hour = int(first_q["hour_index"])
+                    if s_hours[first_hour]:
+                        frozen_first = frozen_active_flux(s_hours[first_hour][0], first_q)
+                        first_projection_delta_samples.append({
+                            term: frozen_first[term] - checked_number(s_hours[first_hour][0], field)
+                            for term, field in zip(TERMS, FLUX_FIELDS, strict=True)
+                        })
         for hour in range(24):
-            if not s_hours[hour] or not q_hours[hour] or first_q is None:
-                for rows in (s_hours[hour], q_hours[hour]):
-                    omitted_abs += sum(abs(checked_number(row, "complete_external_flux_w_m2") * checked_number(row, "duration_seconds")) for row in rows)
-                continue
-            s = s_hours[hour][0]
             s_support = sum(checked_number(row, "duration_seconds") for row in s_hours[hour])
             q_support = sum(checked_number(row, "duration_seconds") for row in q_hours[hour])
+            for rows, prefix in ((s_hours[hour], "S"), (q_hours[hour], "Q")):
+                full_external = integrate_prefix(rows, sum(checked_number(row, "duration_seconds") for row in rows), "complete_external_flux_w_m2") if rows else 0.0
+                sums[f"{prefix}_all"] += full_external
+                for field in FLUX_FIELDS:
+                    full_term = integrate_prefix(rows, sum(checked_number(row, "duration_seconds") for row in rows), field) if rows else 0.0
+                    sums["all_abs_j_m2"] += abs(full_term)
+            sums["legacy_Q_all"] += sum(
+                checked_number(row, "complete_external_flux_w_m2")
+                * checked_number(row, "duration_seconds")
+                + checked_number(row, "internal_active_lower_conduction_j_m2")
+                for row in q_hours[hour]
+            )
+            if not s_hours[hour] or not q_hours[hour] or first_q is None:
+                if bool(s_hours[hour]) != bool(q_hours[hour]):
+                    inventories["unmatched_hours"].append({"date": stamp.isoformat(), "hour": hour, "S_seconds": s_support, "Q_seconds": q_support})
+                else:
+                    inventories["zero_support_hours"].append({"date": stamp.isoformat(), "hour": hour})
+                for rows in (s_hours[hour], q_hours[hour]):
+                    for field in FLUX_FIELDS:
+                        if rows:
+                            sums["omitted_abs_j_m2"] += abs(integrate_prefix(rows, sum(checked_number(row, "duration_seconds") for row in rows), field))
+                continue
+            s = s_hours[hour][0]
             common = min(s_support, q_support, 3_600.0)
+            if common < 3_600.0:
+                inventories["partial_support_hours"].append({"date": stamp.isoformat(), "hour": hour, "common_seconds": common, "S_seconds": s_support, "Q_seconds": q_support})
             sums["support_seconds"] += common
             frozen = frozen_active_flux(s, first_q)
             s_energy = integrate_prefix(s_hours[hour], common, "complete_external_flux_w_m2")
@@ -485,14 +869,16 @@ def reconcile_site(
                 sums[f"S_{term}"] += integrate_prefix(s_hours[hour], common, field)
                 sums[f"Q_{term}"] += integrate_prefix(q_hours[hour], common, field)
                 sums[f"F_{term}"] += frozen[term] * common
+            close("frozen shortwave invariance", frozen["shortwave"] * common, integrate_prefix(s_hours[hour], common, "net_shortwave_w_m2"), 1.0e-6)
             for rows, evaluated in ((s_hours[hour], s_support), (q_hours[hour], q_support)):
-                all_abs += sum(abs(checked_number(row, "complete_external_flux_w_m2") * checked_number(row, "duration_seconds")) for row in rows)
                 if evaluated > common:
-                    omitted_abs += abs(integrate_prefix(rows, evaluated, "complete_external_flux_w_m2") - integrate_prefix(rows, common, "complete_external_flux_w_m2"))
+                    for field in FLUX_FIELDS:
+                        sums["omitted_abs_j_m2"] += abs(integrate_prefix(rows, evaluated, field) - integrate_prefix(rows, common, field))
         daily[stamp] = sums
     annual: list[dict[str, Any]] = []
     for year, (peak, _) in sorted(peaks.items()):
         if year == 2025:
+            inventories["censored_water_years"].append({"water_year": year, "reason": "right_censored"})
             continue
         start = dt.date(year - 1, 10, 1)
         window = [stamp for stamp in dates if start <= stamp <= peak]
@@ -500,36 +886,88 @@ def reconcile_site(
             continue
         row: dict[str, Any] = {"site": site, "water_year": year, "window_days": len(window)}
         for field in next(iter(daily.values())):
-            if field == "support_seconds":
+            if field in ("support_seconds", "omitted_abs_j_m2", "all_abs_j_m2"):
                 continue
             row[f"{field}_j_m2"] = sum(daily[stamp][field] for stamp in window)
         row["support_seconds"] = sum(
             daily[stamp]["support_seconds"] for stamp in window
         )
         row["coverage_fraction"] = row["support_seconds"] / (len(window) * 86_400.0)
+        row["delta_projection_j_m2"] = row["F_j_m2"] - row["S_j_m2"]
+        row["delta_evolution_j_m2"] = row["Q_j_m2"] - row["F_j_m2"]
+        for term in TERMS:
+            row[f"delta_projection_{term}_j_m2"] = row[f"F_{term}_j_m2"] - row[f"S_{term}_j_m2"]
+            row[f"delta_evolution_{term}_j_m2"] = row[f"Q_{term}_j_m2"] - row[f"F_{term}_j_m2"]
+        row["evaluated_days"] = sum(daily[stamp]["support_seconds"] > 0.0 for stamp in window)
+        row["screen_eligible"] = row["coverage_fraction"] >= 0.25 and row["evaluated_days"] >= 30
+        row["omitted_abs_j_m2"] = sum(daily[stamp]["omitted_abs_j_m2"] for stamp in window)
+        row["all_abs_j_m2"] = sum(daily[stamp]["all_abs_j_m2"] for stamp in window)
+        if predecessor_windows is not None:
+            predecessor = predecessor_windows.get(year)
+            if predecessor is None:
+                raise RuntimeError(f"missing predecessor window {year}")
+            row["predecessor_legacy_j_m2"] = predecessor
+            tolerance = max(1.0e-6, 1.0e-12 * (abs(predecessor) + abs(row["legacy_Q_all_j_m2"])))
+            row["predecessor_bridge_pass"] = abs(row["legacy_Q_all_j_m2"] - predecessor) <= tolerance
         annual.append(row)
+    eligible = [row for row in annual if row["screen_eligible"]]
+    if not eligible:
+        raise RuntimeError(f"no screen-eligible windows for {site}")
     medians = {
-        field: statistics.median(float(row[field]) for row in annual)
-        for field in ("S_j_m2", "F_j_m2", "Q_j_m2", "legacy_Q_j_m2")
+        field: statistics.median(float(row[field]) for row in eligible)
+        for field in ("S_j_m2", "F_j_m2", "Q_j_m2", "S_all_j_m2", "Q_all_j_m2", "legacy_Q_j_m2", "legacy_Q_all_j_m2")
     }
+    omitted_abs = sum(float(row["omitted_abs_j_m2"]) for row in eligible)
+    all_abs = sum(float(row["all_abs_j_m2"]) for row in eligible)
+    common_delta = medians["Q_j_m2"] - medians["S_j_m2"]
+    all_delta = medians["Q_all_j_m2"] - medians["S_all_j_m2"]
+    bridge_pass = predecessor_windows is None or all(row.get("predecessor_bridge_pass") is True for row in annual)
     return annual, {
         "site": site,
         "sample_count": len(annual),
         "medians_j_m2": medians,
         "delta_projection_j_m2": medians["F_j_m2"] - medians["S_j_m2"],
         "delta_evolution_j_m2": medians["Q_j_m2"] - medians["F_j_m2"],
+        "term_delta_medians_j_m2": {
+            term: {
+                "projection": statistics.median(row[f"delta_projection_{term}_j_m2"] for row in eligible),
+                "evolution": statistics.median(row[f"delta_evolution_{term}_j_m2"] for row in eligible),
+            }
+            for term in TERMS
+        },
         "initial_projection_difference_observed": projection_difference,
+        "first_projection_term_delta_median_w_m2": {
+            term: statistics.median(sample[term] for sample in first_projection_delta_samples)
+            for term in TERMS
+        } if first_projection_delta_samples else None,
+        "eligible_sample_count": len(eligible),
         "support_omission_ratio": None if all_abs == 0.0 else omitted_abs / all_abs,
+        "support_delta_sign_changed": (common_delta < -ZERO_J_M2 and all_delta > ZERO_J_M2) or (common_delta > ZERO_J_M2 and all_delta < -ZERO_J_M2),
+        "predecessor_bridge_pass": bridge_pass,
+        "inventories": inventories,
+        "maximum_daily_tuple_count": {
+            "same_state": max((len(row["_tuples"]) for row in paired.values()), default=0),
+            "sequential": max((len(row["_tuples"]) for row in sequential.values()), default=0),
+        },
+        "maximum_serialized_row_bytes": {
+            "same_state": max((int(row["_serialized_bytes"]) for row in paired.values()), default=0),
+            "sequential": max((int(row["_serialized_bytes"]) for row in sequential.values()), default=0),
+        },
     }
 
 
 def classify(snowbird: dict[str, Any]) -> list[str]:
     medians = snowbird["medians_j_m2"]
     classes: list[str] = []
-    predecessor_ok = abs(medians["legacy_Q_j_m2"] / 1.0e6 - PREDECESSOR_MJ_M2) <= PREDECESSOR_TOL_MJ_M2
+    predecessor_ok = (
+        snowbird.get("predecessor_bridge_pass") is True
+        and snowbird.get("sample_count") == 35
+        and snowbird.get("eligible_sample_count") == 35
+        and abs(medians["legacy_Q_all_j_m2"] / 1.0e6 - PREDECESSOR_MJ_M2) <= PREDECESSOR_TOL_MJ_M2
+    )
     if not predecessor_ok:
         classes.append("PREDECESSOR_NOT_REPRODUCED")
-    if medians["legacy_Q_j_m2"] > ZERO_J_M2 and medians["Q_j_m2"] <= ZERO_J_M2:
+    if predecessor_ok and medians["legacy_Q_all_j_m2"] > ZERO_J_M2 and medians["Q_all_j_m2"] < -ZERO_J_M2:
         classes.append("LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE")
     if snowbird["initial_projection_difference_observed"]:
         classes.append("INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE")
@@ -537,7 +975,7 @@ def classify(snowbird: dict[str, Any]) -> list[str]:
         classes.append("INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION")
     if predecessor_ok and medians["S_j_m2"] < -ZERO_J_M2 and medians["F_j_m2"] < -ZERO_J_M2 and medians["Q_j_m2"] > ZERO_J_M2:
         classes.append("STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION")
-    if snowbird["support_omission_ratio"] is not None and snowbird["support_omission_ratio"] > 0.05:
+    if snowbird["support_delta_sign_changed"] or (snowbird["support_omission_ratio"] is not None and snowbird["support_omission_ratio"] > 0.05):
         classes.append("SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES")
     return classes or ["MULTIFACTOR_UNRESOLVED"]
 
@@ -559,13 +997,27 @@ def execute_lane(site: str, fixture: Path, lane: str, selectors: dict[str, str],
         "sequential": "sequential_resolved_shadow_v1",
     }[lane]
     environment, removed, observed = carrier.sanitized_environment(trace, effective)
-    completed = subprocess.run(command, cwd=REPO, env=environment, text=True, capture_output=True, check=False)
-    (run_dir / "stdout.txt").write_text(completed.stdout, encoding="utf-8")
-    (run_dir / "stderr.txt").write_text(completed.stderr, encoding="utf-8")
-    if completed.returncode:
-        raise RuntimeError(f"run failed for {site}/{lane}: {completed.stderr[-2000:]}")
+    started = time.perf_counter()
+    process = subprocess.Popen(command, cwd=REPO, env=environment, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    maximum_rss_kib = 0
+    while True:
+        try:
+            stdout, stderr = process.communicate(timeout=0.1)
+            break
+        except subprocess.TimeoutExpired:
+            status_path = Path(f"/proc/{process.pid}/status")
+            if status_path.is_file():
+                for status_line in status_path.read_text(encoding="utf-8").splitlines():
+                    if status_line.startswith("VmRSS:"):
+                        maximum_rss_kib = max(maximum_rss_kib, int(status_line.split()[1]))
+                        break
+    elapsed_seconds = time.perf_counter() - started
+    (run_dir / "stdout.txt").write_text(stdout, encoding="utf-8")
+    (run_dir / "stderr.txt").write_text(stderr, encoding="utf-8")
+    if process.returncode:
+        raise RuntimeError(f"run failed for {site}/{lane}: {stderr[-2000:]}")
     outputs = {path.name: {"path": relative(path), "sha256": sha256(path), "size_bytes": path.stat().st_size} for path in sorted(run_dir.iterdir()) if path.is_file()}
-    return {"site": site, "lane": lane, "argv": [str(value) for value in command], "returncode": 0, "removed_openwepp_key_names": removed, "effective_openwepp_environment": observed, "outputs": outputs, "runfile_sha256": sha256(runfile), "runfile_consumer": consumer}
+    return {"site": site, "lane": lane, "argv": [str(value) for value in command], "returncode": 0, "elapsed_seconds": elapsed_seconds, "maximum_observed_rss_kib": maximum_rss_kib, "removed_openwepp_key_names": removed, "effective_openwepp_environment": observed, "outputs": outputs, "runfile_sha256": sha256(runfile), "runfile_consumer": consumer}
 
 
 def output_path(receipt: dict[str, Any], suffix: str) -> Path:
@@ -609,6 +1061,15 @@ def execute(expected_head: str) -> None:
         retained = OUTPUT / "inputs/observations" / f"{site}.csv"
         retained.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(observation, retained)
+    predecessor_trace = REPO / frozen["predecessor"]["trace_path"]
+    if sha256(predecessor_trace) != frozen["predecessor"]["trace_sha256"]:
+        raise RuntimeError("historical predecessor trace hash differs")
+    predecessor_artifact = REPO / frozen["predecessor"]["artifact_path"]
+    if sha256(predecessor_artifact) != frozen["predecessor"]["artifact_sha256"]:
+        raise RuntimeError("historical predecessor artifact hash differs")
+    retained_predecessor = OUTPUT / "inputs/predecessor/snowbird-shadow-corrected.snow.jsonl"
+    retained_predecessor.parent.mkdir(parents=True)
+    shutil.copyfile(predecessor_trace, retained_predecessor)
     selectors = dict(frozen["selectors_except_operator"])
     receipts: dict[str, dict[str, Any]] = {site: {} for site in fixtures}
     jobs = [(site, lane) for site in fixtures for lane in ("control", "paired", "sequential")]
@@ -621,14 +1082,23 @@ def execute(expected_head: str) -> None:
     for site, lanes in receipts.items():
         control_wat = sha256(output_path(lanes["control"], ".wat.parquet"))
         control_hbp = sha256(output_path(lanes["control"], ".hbp"))
-        protected[site] = {"wat_exact": {}, "hbp_exact": {}}
+        protected[site] = {"wat_exact": {}, "hbp_exact": {}, "pass_output_exact": {}}
         for lane in ("paired", "sequential"):
             protected[site]["wat_exact"][lane] = sha256(output_path(lanes[lane], ".wat.parquet")) == control_wat
             protected[site]["hbp_exact"][lane] = sha256(output_path(lanes[lane], ".hbp")) == control_hbp
+            protected[site]["pass_output_exact"][lane] = protected[site]["hbp_exact"][lane]
             if not protected[site]["wat_exact"][lane] or not protected[site]["hbp_exact"][lane]:
                 raise RuntimeError(f"protected output differs for {site}/{lane}")
     annual = []
     site_summaries = []
+    snowbird_fixture = fixtures["snotel_snowbird_ut"]
+    snowbird_dates = carrier.climate_dates(carrier.climate_file(snowbird_fixture))
+    snowbird_peaks, _ = carrier.observed_peaks(OUTPUT / "inputs/observations/snotel_snowbird_ut.csv")
+    predecessor_windows = historical_predecessor_windows(
+        retained_predecessor,
+        snowbird_dates,
+        snowbird_peaks,
+    )
     for site, fixture in fixtures.items():
         site_annual, summary = reconcile_site(
             site,
@@ -637,11 +1107,24 @@ def execute(expected_head: str) -> None:
             output_path(receipts[site]["paired"], ".snow.jsonl"),
             output_path(receipts[site]["sequential"], ".snow.jsonl"),
             carrier,
+            predecessor_windows if site == "snotel_snowbird_ut" else None,
         )
         annual.extend(site_annual)
         site_summaries.append(summary)
     snowbird = next(row for row in site_summaries if row["site"] == "snotel_snowbird_ut")
-    results = {"schema_version": 1, "execution_head": head, "decision_classes": classify(snowbird), "site_summaries": site_summaries, "annual_samples": annual, "claim_class": "operator_mechanics_only", "coe_authority": "unchanged"}
+    performance = {
+        site: {
+            lane: {
+                "elapsed_seconds": lanes[lane]["elapsed_seconds"],
+                "elapsed_ratio_to_control": lanes[lane]["elapsed_seconds"] / lanes["control"]["elapsed_seconds"],
+                "maximum_observed_rss_kib": lanes[lane]["maximum_observed_rss_kib"],
+                "rss_ratio_to_control": None if lanes["control"]["maximum_observed_rss_kib"] == 0 else lanes[lane]["maximum_observed_rss_kib"] / lanes["control"]["maximum_observed_rss_kib"],
+            }
+            for lane in ("control", "paired", "sequential")
+        }
+        for site, lanes in receipts.items()
+    }
+    results = {"schema_version": 1, "execution_head": head, "decision_classes": classify(snowbird), "site_summaries": site_summaries, "annual_samples": annual, "performance_observation": performance, "claim_class": "operator_mechanics_only", "coe_authority": "unchanged"}
     write_json(OUTPUT / "results/operator-reconciliation-results.json", results)
     write_json(OUTPUT / "execution-receipt.json", {"execution_head": head, "binary_sha256": sha256(BINARY), "build": {"argv": build_command, "returncode": build.returncode}, "fixtures": fixture_receipts, "lanes": receipts, "protected_identity": protected})
     write_json(OUTPUT / "retained-artifact-manifest.json", carrier.retained_manifest(OUTPUT))
@@ -649,6 +1132,8 @@ def execute(expected_head: str) -> None:
 
 
 def verify_existing() -> None:
+    if command_output(["git", "status", "--porcelain"]):
+        raise RuntimeError("retained verification requires a clean worktree")
     carrier = load_module("operator_reconciliation_verify", PREDECESSOR_TOOL)
     manifest = json.loads((OUTPUT / "retained-artifact-manifest.json").read_text(encoding="utf-8"))
     for item in manifest["files"]:
@@ -656,18 +1141,67 @@ def verify_existing() -> None:
         if not path.is_file() or sha256(path) != item["sha256"] or path.stat().st_size != item["size_bytes"]:
             raise RuntimeError(f"retained artifact differs: {item['path']}")
     receipt = json.loads((OUTPUT / "execution-receipt.json").read_text(encoding="utf-8"))
+    execution_head = receipt.get("execution_head")
+    if not isinstance(execution_head, str) or not re.fullmatch(r"[0-9a-f]{40}", execution_head):
+        raise RuntimeError("retained execution HEAD is invalid")
+    subprocess.run(["git", "cat-file", "-e", f"{execution_head}^{{commit}}"], cwd=REPO, check=True)
+    if sha256(FREEZE_PATH) != sha256(OUTPUT / "inputs/protocol-freeze.json"):
+        raise RuntimeError("canonical and retained protocol freezes differ")
     frozen = json.loads((OUTPUT / "inputs/protocol-freeze.json").read_text(encoding="utf-8"))
+    retained_predecessor = OUTPUT / "inputs/predecessor/snowbird-shadow-corrected.snow.jsonl"
+    if sha256(retained_predecessor) != frozen["predecessor"]["trace_sha256"]:
+        raise RuntimeError("retained predecessor trace differs")
+    snowbird_fixture = OUTPUT / "fixtures/snotel_snowbird_ut"
+    snowbird_dates = carrier.climate_dates(carrier.climate_file(snowbird_fixture))
+    snowbird_peaks, _ = carrier.observed_peaks(OUTPUT / "inputs/observations/snotel_snowbird_ut.csv")
+    predecessor_windows = historical_predecessor_windows(retained_predecessor, snowbird_dates, snowbird_peaks)
+    recomputed_annual: list[dict[str, Any]] = []
+    recomputed_summaries: list[dict[str, Any]] = []
     for frozen_site in frozen["cohort"]:
         site = frozen_site["site"]
         fixture = OUTPUT / "fixtures" / site
-        reconcile_site(
+        site_annual, site_summary = reconcile_site(
             site,
             fixture,
             OUTPUT / "inputs/observations" / f"{site}.csv",
             output_path(receipt["lanes"][site]["paired"], ".snow.jsonl"),
             output_path(receipt["lanes"][site]["sequential"], ".snow.jsonl"),
             carrier,
+            predecessor_windows if site == "snotel_snowbird_ut" else None,
         )
+        recomputed_annual.extend(site_annual)
+        recomputed_summaries.append(site_summary)
+        control_wat = sha256(output_path(receipt["lanes"][site]["control"], ".wat.parquet"))
+        control_hbp = sha256(output_path(receipt["lanes"][site]["control"], ".hbp"))
+        for lane in ("paired", "sequential"):
+            if sha256(output_path(receipt["lanes"][site][lane], ".wat.parquet")) != control_wat or sha256(output_path(receipt["lanes"][site][lane], ".hbp")) != control_hbp:
+                raise RuntimeError(f"retained protected output differs for {site}/{lane}")
+    stored = json.loads((OUTPUT / "results/operator-reconciliation-results.json").read_text(encoding="utf-8"))
+    snowbird = next(row for row in recomputed_summaries if row["site"] == "snotel_snowbird_ut")
+    performance = {
+        site: {
+            lane: {
+                "elapsed_seconds": lanes[lane]["elapsed_seconds"],
+                "elapsed_ratio_to_control": lanes[lane]["elapsed_seconds"] / lanes["control"]["elapsed_seconds"],
+                "maximum_observed_rss_kib": lanes[lane]["maximum_observed_rss_kib"],
+                "rss_ratio_to_control": None if lanes["control"]["maximum_observed_rss_kib"] == 0 else lanes[lane]["maximum_observed_rss_kib"] / lanes["control"]["maximum_observed_rss_kib"],
+            }
+            for lane in ("control", "paired", "sequential")
+        }
+        for site, lanes in receipt["lanes"].items()
+    }
+    recomputed = {
+        "schema_version": 1,
+        "execution_head": execution_head,
+        "decision_classes": classify(snowbird),
+        "site_summaries": recomputed_summaries,
+        "annual_samples": recomputed_annual,
+        "performance_observation": performance,
+        "claim_class": "operator_mechanics_only",
+        "coe_authority": "unchanged",
+    }
+    if stored != recomputed:
+        raise RuntimeError("stored compact results differ from independent retained reconstruction")
     print(f"PASS verified {manifest['file_count']} retained artifacts")
 
 

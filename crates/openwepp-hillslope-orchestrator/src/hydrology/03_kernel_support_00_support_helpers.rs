@@ -729,6 +729,8 @@ pub struct DirectSnowStage3ReconciliationTuple {
     pub subcanopy_longwave_w_m2: f64,
     pub outgoing_longwave_w_m2: f64,
     pub net_longwave_w_m2: f64,
+    pub longwave_model_id: &'static str,
+    pub sublimation_model_id: &'static str,
     pub air_temperature_height_m: f64,
     pub vapor_pressure_height_m: f64,
     pub wind_speed_height_m: f64,
