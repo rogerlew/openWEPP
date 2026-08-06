@@ -145,6 +145,17 @@ The termination taxonomy preserves the existing branches exactly:
 | `converged_unstable` | `>=1` | negative finite | final unstable corrections/state. |
 | `did_not_converge` | typed error | N/A | no successful tuple; enabled request fails without authoritative mutation. |
 
+Status-to-class mapping is exact: `zero_wind -> zero_wind`,
+`initial_potential_temperature_neutral -> neutral`, `converged_stable ->
+stable`, `converged_unstable -> unstable`, `iterative_invalid_obukhov ->
+indeterminate_obukhov`, and `did_not_converge -> N/A`. For
+`iterative_zero_buoyancy`, classify the retained final corrections as `neutral`
+when all three are exactly zero, `stable` when all are non-positive with at
+least one negative, and `unstable` when all are non-negative with at least one
+positive; any mixed/nonfinite correction is a lineage failure. The emitted
+corrections always remain the actual retained solver-state corrections and are
+never replaced to match the class label.
+
 ## Advected, Complete, And Endpoint Fields
 
 | Schema-v6 field | Unit | Source expression | Support/aggregation | Role and rejected aliases |

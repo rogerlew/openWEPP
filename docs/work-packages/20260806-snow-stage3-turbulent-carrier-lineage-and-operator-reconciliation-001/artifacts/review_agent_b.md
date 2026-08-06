@@ -44,3 +44,18 @@ remained `HOLD` with six residuals:
 6. `MEDIUM`: hourly-bin units and geometry-fingerprint operands were inaccurate.
 
 No result-bearing lane ran and the reviewer edited no file.
+
+## Third Re-review
+
+Static re-review at clean `317bcd0e34617b4d44e5a0912d7e23da6d4d803d`
+remained `HOLD` with three residuals:
+
+1. `HIGH`: the frozen-active result lacked executable ordered delta/sign
+   attribution predicates.
+2. `MEDIUM`: turbulent termination statuses lacked exact stability-class
+   mapping for retained corrections and invalid Obukhov exits.
+3. `MEDIUM`: reference forcing/options remained categorical rather than exact
+   schema fields, and solver-option equality was not a join prerequisite.
+
+All earlier Rust/custody findings were otherwise closed. No result-bearing lane
+ran and the reviewer edited no file.

@@ -32,5 +32,15 @@ Evidence class: `Static`.
 | Frozen-active reference underdefined | `accepted` | Frozen daily reset, first sequential active projection, fixed/varying operands, no-state/no-conduction equations, support, and aggregation. | Pending third review. |
 | Nonexistent assurance paths | `accepted` | Replaced with exact typed-v2 report, lock, identity, and transaction path families. | Pending third review. |
 
+## Third-review Residual Disposition
+
+| Finding | Disposition | Amendment | Closure |
+| --- | --- | --- | --- |
+| Ordered causal crossing underconstrained | `accepted` | Added explicit three-way common support and distinct same-state-to-frozen projection crossing versus frozen-to-sequential evolution crossing predicates; zero-band/nonunique cases are multifactor. | Pending fourth review. |
+| Frozen reference omitted albedo | `accepted` | Selected daily albedo and state-versus-`0.82` fallback lineage are fixed and included in reference custody. | Pending fourth review. |
+| Ordered delta formulas absent | `accepted` | Defined `S/F/Q`, `delta_projection=F-S`, `delta_evolution=Q-F`, identical three-way support, WY reduction, and exact sign predicates. | Pending fourth review. |
+| Status-to-stability mapping absent | `accepted` | Bound exact class, iteration, length, retained-correction semantics for every solver termination; mixed/nonfinite zero-buoyancy correction state fails lineage. | Pending fourth review. |
+| Reference fields/options categorical | `accepted` | Enumerated exact fixed, varying-hourly, and identity-only fields and required exact geometry/solver/selector equality before construction. | Pending fourth review. |
+
 No finding was rejected, deferred, or moved to follow-up. Contract and runtime
 edits remain blocked until both reviewers pass the next exact amended commit.

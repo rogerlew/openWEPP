@@ -47,3 +47,16 @@ remained `HOLD` with five residuals:
    were incomplete.
 
 No result-bearing lane ran and the reviewer edited no file.
+
+## Third Re-review
+
+Static re-review at clean `317bcd0e34617b4d44e5a0912d7e23da6d4d803d`
+remained `HOLD` with two residuals:
+
+1. `HIGH`: the evolution class did not require the ordered frozen-reference to
+   sequential step itself to cross sign, so projection could be misattributed.
+2. `MEDIUM`: the daily frozen-active reference omitted selected snow-albedo
+   value and state/fallback lineage.
+
+All second-review residuals were otherwise closed. No result-bearing lane ran
+and the reviewer edited no file.

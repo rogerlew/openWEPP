@@ -311,9 +311,11 @@ The consumer-side `frozen_active_projection_reference` resets once per joined
 daily source. It copies the sequential lane's first applicable tuple after
 active-volume alignment/normalization and holds its effective surface
 temperature, active mass/depth/density/cold content, layer membership, and
-effective-input fingerprint fixed for all 24 hours. Hourly atmospheric,
-radiation, precipitation, and canopy forcing varies exactly as emitted.
-Geometry and solver options remain fixed by the joined lane. The reference
+effective-input fingerprint fixed for all 24 hours. It also copies the first
+tuple's selected daily snow albedo (including state-versus-`0.82` fallback
+lineage), holds it fixed, and includes it in reference-input custody. Hourly
+atmospheric, radiation, precipitation, and canopy forcing varies exactly as
+emitted. Geometry and solver options remain fixed by the joined lane. The reference
 applies the external carrier equations only, has no state mutation or internal
 conduction, and reconstructs one constant-state `3600 s` flux per hour.
 Full-support reduction is primary; partial comparisons integrate it only on the
@@ -334,15 +336,21 @@ The scientific disposition is one of:
    passes but the first effective input fingerprint differs or any first active
    mass/depth/cold/temperature/layer-membership operand differs above the
    protocol tolerance. Report its per-term first-hour delta.
-5. `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` only when the current
-   sequential external-subset Snowbird estimator is positive, the same-state
-   external-subset estimator is negative, the legacy bridge reproduces the
-   predecessor, and the frozen-active reference separately quantifies initial
-   projection versus later evolution. State-dependent terms are longwave,
-   sensible, latent, precipitation-advection, and vapor mass;
-   state-independent shortwave must remain invariant within delta-closure
-   tolerance.
-6. `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES` when the sign of the complete
+5. `INITIAL_CONTROL_VOLUME_PROJECTION_RECONCILES_SIGN_CONTRADICTION` only when,
+   on identical three-way common support, the same-state external Snowbird
+   estimator is below `-1e-6 J m^-2` and the frozen-active estimator is above
+   `+1e-6 J m^-2`. This ordered same-state-to-frozen step attributes the sign
+   crossing to initial projection; state evolution does not receive the sign
+   claim merely because sequential remains positive.
+6. `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` only when, on identical
+   three-way common support, both same-state and frozen-active external
+   Snowbird estimators are below `-1e-6 J m^-2`, the sequential external
+   estimator is above `+1e-6 J m^-2`, and the legacy bridge reproduces the
+   predecessor. This ordered frozen-to-sequential crossing attributes the sign
+   change to later evolution. State-dependent terms are longwave, sensible,
+   latent, precipitation-advection, and vapor mass; state-independent
+   shortwave must remain invariant within delta-closure tolerance.
+7. `SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES` when the sign of the complete
    external-subset delta differs between common and all-evaluated support, or
    when the frozen omitted-support magnitude ratio exceeds `5%`. For each
    operator `o` and external term `t`, omitted energy is the integral over
@@ -351,15 +359,27 @@ The scientific disposition is one of:
    `sum_o sum_t abs(E_all_evaluated[o,t])`. A zero denominator makes the ratio
    N/A, leaving only the sign-change predicate. This threshold is
    attribution-only and cannot validate fluxes.
-7. `MULTIFACTOR_UNRESOLVED` when valid evidence does not uniquely satisfy the
-   preceding causal classes.
+8. `MULTIFACTOR_UNRESOLVED` when valid evidence does not uniquely satisfy the
+   preceding causal classes, including a positive sequential external estimator
+   when either ordered predecessor is inside the zero-tolerance band or neither
+   single ordered step uniquely crosses sign.
 
-After identity precedence, classes 2--6 may coexist and are reported in the
+After identity precedence, classes 2--7 may coexist and are reported in the
 listed order. A causal class requires term-delta closure within
 `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)`. None is a
 carrier-plausibility PASS.
 Persistent-shadow advancement remains blocked unless a later prospectively
 authorized package establishes a physical carrier gate.
+
+For the ordered causal predicates, `S`, `F`, and `Q` are respectively the
+same-state, frozen-active, and sequential complete-external energies integrated
+on identical three-way common support for every joined hour. The consumer
+forms each WY window sum, then the primary Snowbird estimator as Python
+`statistics.median` across the 35 WY1990--2024 sums. It reports
+`delta_projection = F - S` and `delta_evolution = Q - F` at tuple/hour/WY/site
+levels. Projection receives the sign claim only for `S < -tol` and `F > +tol`;
+evolution receives it only for `F < -tol` and `Q > +tol`, with `S < -tol` also
+required. `tol = 1e-6 J m^-2` is applied before MJ conversion.
 
 ## Conservation And Output Acceptance
 
@@ -497,6 +517,12 @@ must not mutate source fixtures. The new schema is internal and default-off.
   found mixed legacy/external estimands plus cold-closure, lineage, support,
   solver-status, frozen-reference, applicability, and assurance-path defects;
   accepted and amended every finding without inspecting new model results.
+- [x] (2026-08-06) Third science review at
+  `317bcd0e34617b4d44e5a0912d7e23da6d4d803d` required ordered projection versus
+  evolution sign crossings and reference-albedo custody; both are amended.
+- [x] (2026-08-06) Third Rust review at the same commit additionally required
+  explicit `S/F/Q` delta formulas, status-to-stability mapping, exact reference
+  fields, and solver-option equality; all are amended.
 - [ ] Obtain PASS/PASS on the amended result-blind admission commit.
 - [ ] Amend contract authority and pass the pre-implementation contract gate.
 - [ ] Implement behavior-neutral schema-v6 observability and focused tests.
@@ -562,3 +588,11 @@ make join, applicability, closure, and decision predicates executable.
 external-plus-active-conduction estimand from the comparable external carrier,
 corrected total cold closure and factual lineage, and fully froze support,
 termination, after-surface, reference, and assurance semantics.
+
+2026-08-06: Third result-blind science HOLD disposition added ordered
+three-way-common-support projection/evolution predicates and bound selected
+daily albedo into the frozen-active reference.
+
+2026-08-06: Third result-blind Rust HOLD disposition made ordered deltas,
+stability classes, reference operands, and solver-option equality fully
+executable.
