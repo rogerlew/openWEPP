@@ -12,6 +12,9 @@ bash tools/release/check_assurance_release_transition.sh --mode release
 mapfile -t tracked_public < <(
   git ls-files 'usersum/assurance/**' |
     while IFS= read -r path; do
+      case "${path}" in
+        usersum/assurance/review-drafts/*) continue ;;
+      esac
       [[ -f "${path}" ]] && printf '%s\n' "${path}"
     done |
     sort

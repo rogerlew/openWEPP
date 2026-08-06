@@ -90,3 +90,12 @@ into `assert_canonical_addendum` and `assert_canonical_tables`. No assertion,
 contract text, runtime source, or result changed. Workspace all-target Clippy
 with warnings denied now passes, as do the focused `13/13` and consumer
 `51/51` selections.
+
+The canonical assurance export guard predated the governed tracked
+`review-drafts/**` lane and therefore failed every current checkout by treating
+review inputs as approved public output. After prospective write-set amendment,
+the guard excludes exactly `usersum/assurance/review-drafts/*` from its public
+inventory. It still rejects any other extra public file and still requires the
+sole `usersum/assurance/README.md`, zero export documents, disabled vendoring,
+typed validation/check, and release-transition preflight. `bash -n`, direct
+guard execution, and `render_assurance_review_drafts.py --check` pass.

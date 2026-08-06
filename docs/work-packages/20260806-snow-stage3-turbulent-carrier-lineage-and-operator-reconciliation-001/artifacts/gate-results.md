@@ -27,3 +27,15 @@ two named helpers without changing content. Workspace Clippy, focused
 contract/observability `13/13`, consumer `51/51`, formatting, and diff hygiene
 then passed locally. A renewed full critical run is required; the failed attempt
 is not counted as closure evidence.
+
+The second attempt at exact clean `50175c6f3` passed formatting, affected and
+workspace Clippy, doctests, consumer `51/51`, meteorology `25/25`, orchestrator
+Stage 3 `9/9`, runner Stage 3 `11/11`, contract/observability `13/13`, Binding
+Exposure `11/11`, and assurance validation/plan. It then stopped on the
+composite assurance export guard because that historical guard counted the
+later governed `usersum/assurance/review-drafts/**` lane as public. The package
+prospectively admitted a narrow guard correction. The guard now excludes only
+that named nonpublic subtree while retaining the sole-public-README,
+zero-document, vendoring-disabled, validation, check, and transition-preflight
+requirements. Direct guard execution and deterministic review-draft drift
+checking pass. A renewed complete critical run remains required.
