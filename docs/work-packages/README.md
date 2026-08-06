@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/`
+  — ACTIVE / RESULT-BLIND PROTOCOL REVIEW: add default-off schema-v6
+  surface-state and Monin-Obukhov lineage, then execute matched same-state and
+  bounded-sequential lanes at all four campaign sites. The package may
+  reconcile operator mechanics only; it cannot fit, persist, correct physics,
+  change CoE ownership, or authorize cutover.
+
 - `20260806-snow-stage3-four-site-carrier-term-audit-001/` — EXECUTED /
   CARRIER SCREEN FAIL / PERSISTENT SHADOW BLOCKED / REVIEW AND VERIFICATION
   PASS: exact release CLI reconstruction passes for 154 screen-eligible

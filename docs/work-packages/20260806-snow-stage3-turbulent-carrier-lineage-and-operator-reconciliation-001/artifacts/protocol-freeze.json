@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "result_blind_scaffold_review_required",
+  "source_package": "20260806-snow-stage3-four-site-carrier-term-audit-001",
+  "result_namespace": "target/snow_stage3_operator_reconciliation",
+  "operators": [
+    "disabled",
+    "same_state_paired_carrier_v1",
+    "sequential_resolved_shadow_v1"
+  ],
+  "sites": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa",
+    "snotel_snowbird_ut"
+  ],
+  "canonical_decisive_sites": [
+    "snotel_mica_creek_st_joe_id",
+    "snotel_niwot_co",
+    "snotel_paradise_wa"
+  ],
+  "snowbird_role": "DEVELOPMENT_ONLY_NON_DECISIVE_DIAGNOSTIC",
+  "observation_role": "DIAGNOSTIC_ONLY",
+  "selectors_except_operator": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled"
+  },
+  "join_identity": [
+    "site",
+    "day_index",
+    "lane_index",
+    "source_fingerprint_fnv1a64",
+    "forcing_fingerprint_fnv1a64",
+    "geometry_fingerprint_fnv1a64"
+  ],
+  "primary_support": "both operators evaluate exactly 3600 seconds in the hour",
+  "partial_support": "reported separately and never substituted for full support",
+  "external_terms": [
+    "shortwave",
+    "longwave",
+    "sensible",
+    "latent",
+    "precipitation_advected"
+  ],
+  "sign_convention": "positive energy or vapor mass toward snow; negative away from snow",
+  "decision_classes": [
+    "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION",
+    "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
+    "PREDECESSOR_NOT_REPRODUCED",
+    "LINEAGE_OR_IDENTITY_FAILURE",
+    "MULTIFACTOR_UNRESOLVED"
+  ],
+  "claim_limits": [
+    "characterization only",
+    "not seasonal chronology",
+    "not carrier plausibility validation",
+    "not persistence",
+    "not terminal or receiving-surface authority",
+    "not calibration or fitting",
+    "not promotion or cutover",
+    "CoE remains authoritative"
+  ],
+  "no_tuning": "No result-driven change to cohort, forcing, operators, join keys, support classes, sign conventions, reconstruction tolerances, or decision categories in this namespace."
+}
