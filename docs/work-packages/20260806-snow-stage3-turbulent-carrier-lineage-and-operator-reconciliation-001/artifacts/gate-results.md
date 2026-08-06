@@ -19,3 +19,11 @@ Evidence mode: `Ran`.
 Scientific reconciliation remains `HOLD` because the exact predecessor bridge
 fails. This does not invalidate the package's completed operator-mechanics
 characterization.
+
+The first critical closure attempt at exact clean `597aebd0e` stopped before
+expensive profiles because workspace warnings-denied Clippy found a 115-line
+contract-test function above its 100-line limit. The assertions were split into
+two named helpers without changing content. Workspace Clippy, focused
+contract/observability `13/13`, consumer `51/51`, formatting, and diff hygiene
+then passed locally. A renewed full critical run is required; the failed attempt
+is not counted as closure evidence.

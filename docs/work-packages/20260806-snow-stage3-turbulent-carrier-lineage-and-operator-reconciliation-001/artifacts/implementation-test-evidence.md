@@ -82,3 +82,11 @@ The retained result is unchanged because its external `Q_all` is positive.
 After removing that unrelated gate and adding the missing coexistence vector,
 the package consumer passes `51/51` and the focused contract/observability
 selection passes `13/13`.
+
+The first workspace-Clippy closure attempt found only test structure debt:
+`v129_canonical_addendum_pins_exact_algorithm_units_and_failures` was 115 lines
+against the 100-line lint. The exact assertion groups were mechanically split
+into `assert_canonical_addendum` and `assert_canonical_tables`. No assertion,
+contract text, runtime source, or result changed. Workspace all-target Clippy
+with warnings denied now passes, as do the focused `13/13` and consumer
+`51/51` selections.

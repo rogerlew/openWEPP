@@ -207,11 +207,9 @@ fn admitted_protocol_freezes_support_bridge_and_decision_rules() {
     }
 }
 
-#[test]
-fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
-    let contract = read(CONTRACT);
+fn assert_canonical_addendum(contract: &str) {
     let addendum = section(
-        &contract,
+        contract,
         "## Stage 3 Turbulent Carrier And Operator Reconciliation Addendum",
         "## Wet-Compaction Operand Authority And Duplicate-Alias Closure Addendum",
     );
@@ -278,9 +276,11 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
             "canonical status row missing {status_row}"
         );
     }
+}
 
+fn assert_canonical_tables(contract: &str) {
     let aliases = section(
-        &contract,
+        contract,
         "## Symbol Alias Map",
         "## Allowed Degenerate States",
     );
@@ -295,7 +295,7 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
     }
 
     let tolerances = section(
-        &contract,
+        contract,
         "## Tolerance and Numeric Notes",
         "## Stage 3 Evaluation Shadow Authority Addendum",
     );
@@ -314,14 +314,14 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         );
     }
 
-    let variables = section(&contract, "## Variables and Units", "## Invariants");
+    let variables = section(contract, "## Variables and Units", "## Invariants");
     assert!(
         variables.contains("`degC day`")
             && variables.contains("snow_albedo_accumulated_positive_temperature_c_day"),
         "variables table must preserve albedo accumulation as degC day"
     );
 
-    let operator_invariants = section(&contract, "| INV-SNOWFREEZE-094", "### HPHYS0298");
+    let operator_invariants = section(contract, "| INV-SNOWFREEZE-094", "### HPHYS0298");
     assert!(
         !operator_invariants.contains("z_T/z_q/z_u/z_0`"),
         "operator invariants must reject bare z_0 geometry"
@@ -330,6 +330,13 @@ fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
         operator_invariants.matches("z_T/z_q/z_u/z_0,aero").count() >= 2,
         "INV-094 and INV-095 must both bind z_0,aero"
     );
+}
+
+#[test]
+fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
+    let contract = read(CONTRACT);
+    assert_canonical_addendum(&contract);
+    assert_canonical_tables(&contract);
 }
 
 #[test]

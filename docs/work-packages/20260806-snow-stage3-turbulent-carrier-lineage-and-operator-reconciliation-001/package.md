@@ -638,6 +638,10 @@ must not mutate source fixtures. The new schema is internal and default-off.
   one result-neutral multilabel classifier defect; accepted it, added
   adversarial coexistence coverage, and restored the frozen class semantics at
   `51/51`.
+- [x] First critical closure attempt stopped on a 115-line contract test above
+  the workspace 100-line Clippy limit. Split the unchanged assertions into two
+  named helpers; workspace Clippy, focused `13/13`, and consumer `51/51` now
+  pass. Renewed critical execution remains required.
 
 ## Surprises & Discoveries
 
