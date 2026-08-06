@@ -26,3 +26,7 @@ predicates, exact support and endpoint equations, turbulent termination and
 post-melt N/A semantics, the `1,440` bound, albedo lineage, predecessor bridge,
 exact projection identity, exclusive fallback/class precedence, and
 no-authoritative-mutation posture.
+
+After implementation re-review, the focused contract target passed `6/6` with
+the exact `longwave_model_id` and `sublimation_model_id` selector-lineage field
+bindings. The canonical Binding Exposure validator again passed all `11` rows.

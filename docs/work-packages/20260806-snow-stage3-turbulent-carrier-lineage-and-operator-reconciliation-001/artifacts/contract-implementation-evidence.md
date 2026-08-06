@@ -24,3 +24,10 @@ Initial independent HOLD findings identified the underbinding. Every finding
 was accepted and amended. Final result-blind science and Rust re-review passed
 at exact clean `49e358c689163b1a701a2d504e5396fb67545733` without inspecting
 result-bearing evidence.
+
+The implementation re-review then found one exact-field enumeration gap:
+`longwave_model_id` and `sublimation_model_id` were emitted and required by the
+frozen operator protocol but were not named in the schema-v6 exact-field list.
+The canonical addendum and its section-scoped contract test now bind both
+selector-lineage fields. This correction does not change an operator, value,
+default, schema version, or result-bearing execution.

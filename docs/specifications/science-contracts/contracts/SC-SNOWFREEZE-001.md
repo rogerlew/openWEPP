@@ -1527,7 +1527,8 @@ Forcing, radiation, and albedo lineage fields are exactly
 `longwave_cloud_fraction`, `sky_view_fraction`,
 `atmospheric_longwave_w_m2`, `canopy_longwave_w_m2`,
 `subcanopy_longwave_w_m2`, `outgoing_longwave_w_m2`, and
-`net_longwave_w_m2`. `snow_albedo_source_id` is exactly
+`net_longwave_w_m2`; the exact selected operator lineage fields are
+`longwave_model_id` and `sublimation_model_id`. `snow_albedo_source_id` is exactly
 `snow_albedo_state` when state exists or
 `stage3_default_snow_albedo_0p82` otherwise; model and accumulated-positive-
 temperature fields are null only for that fallback.
