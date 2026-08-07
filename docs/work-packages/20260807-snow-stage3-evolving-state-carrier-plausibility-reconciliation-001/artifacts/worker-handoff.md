@@ -15,8 +15,16 @@ the retained generation lineage cannot supply those facts, the package must
 record `AUTHORITY_MISSING` and identify the external authoritative metadata
 needed; it must not infer exposure from the values or fit attenuation.
 
+Static follow-on evidence localizes a real height-path asymmetry: Stage 3
+receives raw nominal 10 m GRIDMET wind while the FAO-56 10 m-to-2 m adjustment
+is PMET-local. The neutral-log estimate is approximately 10% in friction
+velocity and 21% in the momentum/heat product. Treat that as a prospectively
+checked bound, not a fitted correction; it cannot by itself resolve the
+three- to fivefold magnitude concern.
+
 Only after exposure/applicability is resolved may a separate contract package
 ask whether a licensed canopy-aerodynamic operator is required. The Paradise
-WY2015 support failure and comparable physical magnitude-envelope authority
-remain explicit secondary blockers. No persistent shadow, physics correction,
-or production cutover should begin from this handoff.
+WY2015 support failure is a non-blocking, support-censored diagnostic owned by
+a separate roadmap resolution item. Comparable physical magnitude-envelope
+authority remains an explicit secondary blocker. No persistent shadow, physics
+correction, or production cutover should begin from this handoff.

@@ -509,14 +509,23 @@
 
 State as of `2026-08-07 UTC`:
 
+- `20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/`
+  - QUEUED / SCAFFOLDED / AUTHORITY RECONCILIATION: trace exact GRIDMET-to-CLI
+    custody, correct nominal 10 m versus virtual 5 m authority, and decide
+    forest-snow exposure applicability without fitting attenuation. A neutral
+    static bound predicts only about 21% turbulent-product inflation, so
+    exposure representativeness—not height conversion alone—retains the major
+    leverage. No production correction, canopy operator, persistence, or
+    cutover is authorized.
+
 - `20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/`
   - EXECUTED / PERSISTENCE HOLD / MULTIFACTOR OR INCONCLUSIVE: immutable
     attempt 004 closes reconstruction across 154 eligible water years with no
     transfer truncation or active-state plausibility failures. Paradise WY2015
-    fails support; wind exposure and physical magnitude/geometry envelopes are
-    unresolved. Exact GRIDMET product/cell/aggregation/exposure custody is the
-    first follow-on. No production change, persistence, promotion, CoE
-    retirement, or cutover occurred.
+    retains a historical support failure but is a non-blocking censored
+    diagnostic; wind exposure and physical magnitude/geometry envelopes remain
+    unresolved. No production change, persistence, promotion, CoE retirement,
+    or cutover occurred.
 
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
