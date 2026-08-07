@@ -14,7 +14,7 @@ Evidence mode: `Ran`.
 | Frozen scientific classifier | `PASS` | Emitted `PREDECESSOR_NOT_REPRODUCED` and projection difference without overclaim. |
 | Assurance source adoption | `PASS` | Typed transaction `31798778...`; DRAFT preserved, no authority invalidated. |
 | Critical terminal validation | `PASS` | Exact clean `43bb9eea6`; quick `2,230/2,230`, frost `360/360`, full `2,279/2,279`, plus static/focused/assurance/dependency gates. |
-| Dual terminal verification | `PENDING` | Exact closure-head independent verification to be appended. |
+| Dual terminal verification | `PASS` | Independent science/result and governance/custody audits pass at exact clean `2018433c7` after one accepted stale-roadmap identity correction. |
 
 Scientific reconciliation remains `HOLD` because the exact predecessor bridge
 fails. This does not invalidate the package's completed operator-mechanics
@@ -69,3 +69,17 @@ The separate full-history Markdown observation found 15 broken links in
 pre-existing retained documents outside the 113-path package diff. It is
 recorded as out-of-diff debt, not reported as PASS, and is not evidence for
 this package. The exact affected-document gate has zero findings.
+
+## Dual Terminal Verification
+
+Both independent terminal verifiers pass immutable clean
+`2018433c75921527ddccd641b83adf6bbde3b291`. Verifier A independently reduced
+all `154` annual rows, sampled `2,468` real tuples and `2,368` transitions, and
+confirmed the scientific HOLD and claim limits. Verifier B directly checked
+all `143` manifest entries, the exact 113-path inventory, critical-gate
+custody, assurance state, roadmap, and protected boundaries.
+
+Verifier B initially held the preceding candidate because three live roadmap
+rows named the superseded assurance generation. The finding was accepted and
+corrected in a one-file documentation-only commit; the final recheck passes.
+No terminal finding remains.

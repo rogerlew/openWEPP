@@ -147,3 +147,11 @@ No finding was rejected or deferred, and the retained result did not change.
 Rust/custody re-review closed this finding `PASS` at exact clean
 `43bb9eea64a221a1ecdcdc2321fc4c6200ec46ee`. All post-result findings are
 accepted, corrected, and independently closed; none is rejected or deferred.
+
+## Terminal Verification Finding
+
+| Finding | Disposition | Correction | Authority impact |
+| --- | --- | --- | --- |
+| Three live roadmap rows named superseded assurance v128/generation `221f8e51...` as current. | `accepted` | Updated only those rows to v129/current generation `cee22d5f...`; independent terminal recheck passed at `2018433c7`. | None; the report remains DRAFT and nonpublic with all review and approval authority absent. |
+
+No finding is rejected or deferred.

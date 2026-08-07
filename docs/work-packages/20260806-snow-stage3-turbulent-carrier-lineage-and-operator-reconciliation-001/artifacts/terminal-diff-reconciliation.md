@@ -1,6 +1,6 @@
 # Terminal Diff Reconciliation
 
-Status: `critical candidate reconciled / exact terminal verification pending`.
+Status: `PASS / exact terminal candidate independently verified`.
 
 Evidence mode: `Ran`.
 
@@ -19,12 +19,16 @@ Evidence mode: `Ran`.
 - Line counts: no touched `.rs` file reaches 3,000 lines; two WARN files are
   explicitly dispositioned.
 
-The terminal head is intentionally filled only after critical validation and
-closure evidence are committed. Both terminal verifiers must independently
-reconcile the final docs-only tail to this candidate.
+Critical validation and the final Rust/custody review pass at exact clean
+`43bb9eea64a221a1ecdcdc2321fc4c6200ec46ee`. Closure evidence was recorded at
+`52552800302bcd7025aa869e00677609928ab739`. Terminal verification found and
+accepted one stale live-roadmap assurance identity, corrected only that file,
+and then both independent verifiers passed exact clean
+`2018433c75921527ddccd641b83adf6bbde3b291`.
 
-Critical validation and the final Rust/custody review both pass at exact clean
-`43bb9eea64a221a1ecdcdc2321fc4c6200ec46ee`. The next commit contains only
-these closure records. Terminal verifiers must bind that clean documentation
-candidate, prove its parent is the validated source/evidence candidate, and
-recheck the complete base-to-head inventory.
+The complete base-to-candidate inventory remains exactly `113` paths in the
+declared categories with no outside write. The final package commit contains
+only package-local verifier records and closure-status reconciliation,
+including the contract-verification placeholders and lifecycle README status.
+It does not change implementation, retained results, assurance state, roadmap
+ordering, or scientific disposition.

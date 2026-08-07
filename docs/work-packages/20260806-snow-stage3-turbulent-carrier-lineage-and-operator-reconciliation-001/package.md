@@ -642,8 +642,7 @@ must not mutate source fixtures. The new schema is internal and default-off.
 - [x] Execute and independently verify the frozen four-site paired/sequential
   cohort. All 12 lanes completed and `143/143` retained artifacts verified.
 - [x] Complete result review, critical validation, roadmap disposition, prompt
-  archival, and stable closure-candidate commits. Dual terminal verification
-  remains pending.
+  archival, stable closure-candidate commits, and dual terminal verification.
 - [x] Adopt the amended assurance source through typed transaction
   `31798778...`; preserve the report as DRAFT with no active review, approval,
   release, or publication authority.
@@ -672,6 +671,12 @@ must not mutate source fixtures. The new schema is internal and default-off.
   fresh `143/143` retained replay. Critical validation at the same commit passed
   quick `2,230/2,230`, frost `360/360`, full `2,279/2,279`, and every applicable
   static, focused, assurance, dependency, schema, and affected-doc gate.
+- [x] Dual terminal verification passed at exact clean `2018433c7`. One stale
+  live-roadmap assurance identity finding was accepted, corrected in a
+  one-file documentation-only commit, and independently closed. Verifier A
+  reconstructed all `154` annual rows plus `2,468` real tuples and `2,368`
+  transitions; verifier B directly checked all `143` retained manifest entries
+  and the exact `113`-path terminal inventory.
 
 ## Surprises & Discoveries
 
@@ -754,7 +759,8 @@ The outcome is an evidence-bearing HOLD, not an implementation failure. A
 successor must reconcile schema-v5 versus schema-v6 predecessor cadence and
 state lineage before persistence or physics adjudication resumes. CoE remains
 the sole authoritative owner; Stage 3 promotion, cutover, and retirement remain
-unauthorized. The assurance report remains DRAFT.
+unauthorized. The assurance report remains DRAFT. Critical validation and dual
+terminal verification pass with no remaining review or verification finding.
 
 ## Revision Note
 

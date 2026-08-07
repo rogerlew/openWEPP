@@ -1,9 +1,8 @@
 # Operator-Reconciliation Consumer
 
-Status: `result-blind path scaffolded; implementation prohibited until the
-pre-implementation contract gate passes`.
+Status: `executed / retained v3 consumer and focused tests PASS`.
 
-Phase C will add:
+The realized independent path contains:
 
 - `run_operator_reconciliation.py`: exact-head, version-aware v5/v6 consumer,
   independent primitive reconstruction, two-stage join, support reduction,
@@ -13,6 +12,7 @@ Phase C will add:
   invalid-null, duplicate/missing identity, covariance, partial-support,
   endpoint-closure, and decision-precedence cases.
 
-The consumer will use only Python's standard library. It will not import or
-invoke Rust producer helpers. Result execution remains forbidden until the
-implemented analyzer has passed focused tests and independent consumer review.
+The consumer uses only Python's standard library and does not import Rust
+producer helpers. It passed focused tests and independent consumer review
+before admitted v3 execution, then wrote the verified `143`-file retained
+namespace and frozen operator-mechanics disposition.
