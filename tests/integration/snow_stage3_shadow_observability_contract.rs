@@ -71,13 +71,23 @@ fn lifecycle_index_and_package_name_the_same_realization() {
     let index = read(INDEX);
     let package = read(PACKAGE);
 
-    for required in [
-        "SC-SNOWFREEZE-001",
-        "v129",
-        "schema-v6 turbulent/state lineage",
-    ] {
-        assert!(index.contains(required), "{INDEX} missing {required}");
-    }
+    let registry_row = index
+        .lines()
+        .find(|line| line.starts_with("| `SC-SNOWFREEZE-001` |"))
+        .unwrap_or_else(|| panic!("{INDEX} missing the SC-SNOWFREEZE-001 registry row"));
+    let fields: Vec<_> = registry_row
+        .trim_matches('|')
+        .split('|')
+        .map(str::trim)
+        .collect();
+    assert_eq!(fields.len(), 10, "unexpected SC-SNOWFREEZE-001 row shape");
+    assert_eq!(fields[0], "`SC-SNOWFREEZE-001`");
+    assert_eq!(fields[2], "`in_review`");
+    assert_eq!(fields[3], "`draft`");
+    assert_eq!(
+        fields[5],
+        "`docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`"
+    );
     for required in [
         "Stage 3 Shadow Solver Extraction And Observability",
         "schema-v5",

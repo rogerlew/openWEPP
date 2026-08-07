@@ -23,6 +23,7 @@ Evidence mode: `Ran`.
 | Post-result science/Rust/consumer review | `PASS/PASS/PASS` | Science and custody pass at `dd7c1a3cf`; consumer hold corrected and recheck passes at `039ee78e2` |
 | First terminal quick attempt | `FAIL / finding accepted` | Exact clean `de3c14933`; 908 passed, 2 stale v129 version-pin failures, then fail-fast at 910 run; no science/runtime failure |
 | First 37-binary focused reconciliation | `FAIL / finding accepted` | 34 passed, 1 stale registry-index v129/narrative assertion failed, 123 not run after fail-fast; registry-row repair prospectively scoped |
+| Final 37-binary stale-guard reconciliation | `PASS` | Dedicated binary `6/6`; all 37 changed binaries `158/158` in `282.131 s` with no fail-fast |
 | Terminal quick/frost/full workspace | `NOT RUN` | Required after post-result review |
 | Dual terminal verification | `NOT RUN` | Required at exact clean closure candidate |
 

@@ -408,6 +408,9 @@ the package namespace and content-hashed.
   execution then exposed one additional stale v129/narrative index assertion
   in the already admitted shadow-observability test; prospectively narrowed it
   to stable registry structure before any edit.
+- [x] (2026-08-06) Independent prospective review passed the registry-row
+  amendment; the dedicated binary passed `6/6` and all 37 changed integration
+  binaries passed `158/158` without fail-fast.
 - [ ] Complete terminal validation/verification and close.
 
 ## Surprises & Discoveries

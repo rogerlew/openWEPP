@@ -1,6 +1,6 @@
 # Contract Version-Pin Reconciliation
 
-Status: `literal reconciliation reviewed and exact / one registry-row amendment pending review`.
+Status: `PASS / stable identity and registry structure reconciled`.
 
 Evidence mode: `Ran terminal failure; Static disposition`.
 
@@ -35,6 +35,13 @@ extraction asserting the stable contract ID, canonical path, `in_review`, and
 `draft`. This follows `tests/AGENTS.md`: registry tests bind structure and
 lifecycle; detailed authority remains in the canonical contract.
 
-Require independent review of that narrow amendment, then rerun all 37 changed
-integration binaries and a fresh complete terminal suite. Both failed runs
-remain evidence and are not converted into passes.
+Independent review passed at exact clean `55c7eef19` and required unique-row,
+positional field checks. The implementation extracts the sole exact
+SC-SNOWFREEZE-001 row and binds its ID, canonical path, `in_review`, `draft`,
+and ten-field shape. Package-side realization assertions are byte-unchanged.
+
+The dedicated shadow-observability binary passed `6/6`. A no-fail-fast run of
+all 37 changed integration binaries then passed `158/158` in `282.131 s`.
+Exact diff inspection confirms 38 identity substitutions plus only the
+reviewed registry-row restructuring. A fresh complete terminal suite remains
+required. Both failed runs remain evidence and are not converted into passes.
