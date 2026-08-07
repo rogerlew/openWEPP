@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: `queued`.
+Status: `Phase A admission amended / Phase B authorized`.
 
-Evidence mode: `not-run`.
+Evidence mode: `Static`; result-bearing execution remains not run.
 
 This directory owns the result-blind protocol, authority, forcing custody,
 operand lineage, implementation, execution, reconstruction, review,

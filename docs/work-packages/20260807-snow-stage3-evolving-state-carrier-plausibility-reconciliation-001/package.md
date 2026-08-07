@@ -35,7 +35,9 @@ over any owner.
 
 - [x] (2026-08-07) Scaffolded the package and made it the canonical next snow
   campaign increment.
-- [ ] Complete result-blind authority, cohort, estimator, and predicate freeze.
+- [x] (2026-08-07 14:12Z) Completed result-blind authority, exact trace/cohort,
+  estimator, mass/energy reconstruction, predicate, and zero-arm
+  counterfactual freeze; independent admission reviews dispositioned.
 - [ ] Amend canonical contract authority and contract-derived tests as needed.
 - [ ] Implement or prove the independent consumer and any strictly necessary
   default-off observability.
@@ -44,6 +46,22 @@ over any owner.
   package disposition.
 
 ## Surprises & Discoveries
+
+- Observation: Canonical `SC-SNOWENERGY-001` uses signed `m_v` as bounded
+  transfer, while schema-v6 exposes raw vapor opportunity and separate bounded
+  deposition/sublimation fields.
+  Evidence: independent science review against contract v8 and current Stage 3
+  evaluation chronology; Phase B must reconcile the names and latent/mass
+  semantics before analysis.
+- Observation: Existing schema-v6 is sufficient for independent turbulent,
+  bounded-vapor, operator-order cold/melt, endpoint, and support
+  reconstruction; no Rust observability expansion is justified.
+  Evidence: independent Rust/consumer reviews and exact tuple inventory.
+- Observation: Locally retained libsnobal and current Rust both use `z/L`, but
+  parity does not independently select `z/L` over `(z-d)/L` as science
+  authority.
+  Evidence: `hle1.c` and `surface_energy.rs`; physical geometry disposition is
+  `NOT_EVALUABLE`.
 
 - Observation: The retained operator evidence reports exact shortwave
   invariance, so shortwave cannot explain the `S/F < 0` to `Q > 0` crossing.
@@ -63,6 +81,19 @@ over any owner.
   Evidence: schema-v6 operand lineage and the Stage 3 sequential evaluator.
 
 ## Decision Log
+
+- Decision: Admit no equation counterfactual and keep all physical magnitude
+  gates that lack comparable authority `NOT_EVALUABLE`.
+  Rationale: result-blind governance forbids inventing a canopy operator,
+  geometry correction, or numeric envelope; this blocks plausibility passage
+  while allowing truthful mechanism characterization.
+  Date/Author: 2026-08-07 / Codex.
+- Decision: Independently reconstruct bounded vapor from raw opportunity and
+  pre-transfer active ice, and reconstruct melt in operator order before using
+  endpoints.
+  Rationale: producer transfer columns and endpoint identities alone are
+  tautological and can hide compensating aliases.
+  Date/Author: 2026-08-07 / Codex.
 
 - Decision: Treat canopy aerodynamic sheltering as a named high-priority
   hypothesis, not as an authorized correction.
@@ -149,7 +180,9 @@ that counterfactual's results.
   primitives.
 - Reconcile neutral logarithms using `ln((z-d)/z_0)` with the current stability
   arguments using `z/L`; determine from canonical equation authority whether
-  the latter must use `(z-d)/L`. Quantify the isolated consequence without
+  the latter must use `(z-d)/L`. Quantify an isolated consequence only if
+  canonical equation authority prospectively selects the alternative;
+  otherwise record implementation/reference parity and `NOT_EVALUABLE` without
   silently correcting production behavior.
 - Separate raw signed vapor exchange, bounded sublimation, bounded deposition,
   actual mass debit/credit, and mass censored at unresolved support. Label the

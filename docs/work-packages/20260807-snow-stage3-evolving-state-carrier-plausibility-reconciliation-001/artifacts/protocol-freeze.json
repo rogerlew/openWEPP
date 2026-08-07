@@ -1,8 +1,128 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run",
-  "schema_version": 1,
-  "package_id": "20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001",
-  "result_bearing_execution_authorized": false,
-  "note": "Complete and independently review every frozen input, estimator, quantitative predicate, decision rule, and counterfactual authority before setting result_bearing_execution_authorized true."
+  "schema": "snow-stage3-evolving-carrier-plausibility-protocol-v1",
+  "frozen_at_utc": "2026-08-07T14:06:16Z",
+  "result_blind_status": "FROZEN_BEFORE_NEW_ATTRIBUTION_RESULTS",
+  "source": {
+    "git_head": "8a2f18a56aac6845b2c941e3920184d880813daa",
+    "git_status_at_intake": "clean",
+    "retained_execution_receipt": "target/snow_stage3_operator_reconciliation_v3/execution-receipt.json",
+    "retained_execution_receipt_sha256": "61564035575b165722213abe0657a4dc70b04a1d72c1200b1bb5e35d435fdc9e",
+    "retained_operator_result_sha256": "3b885fa0f04201744da5c24766d413cd2e74f1273021a1a35d6fd0f7227f691e",
+    "predecessor_protocol_sha256": "b39ccb33e22f3278d549257c7be2f9a734e27b6892069d0138a222482d1f7e0e",
+    "binary_sha256": "c8d433af71911befb174c17c843a0b4a77a95936702683e54bc9569746782b09",
+    "trace_inventory": [
+      {"site":"snotel_mica_creek_st_joe_id","lane":"paired","sha256":"7f748622aa813521a071e4d280d60d4571e2fb3ff6a7266c60431bc973a9025f","size_bytes":1562887298},
+      {"site":"snotel_mica_creek_st_joe_id","lane":"sequential","sha256":"3244c7a08a9d202a22853286508d1ac186c39affb4b11f18adf235807aae4751","size_bytes":5241260850},
+      {"site":"snotel_niwot_co","lane":"paired","sha256":"51cee55205547041dd8c7c3c4fd816164459e88dee8dc92bec7132cecba0990a","size_bytes":1904084642},
+      {"site":"snotel_niwot_co","lane":"sequential","sha256":"01ecd2935017e43f6e02759b1f0968d7830824cfc9d540f709710b04248e7c16","size_bytes":10140059293},
+      {"site":"snotel_paradise_wa","lane":"paired","sha256":"5b6b7d87c18fe6db040e6ac8049ba947530cc1b3e274197f4a8c82daf38558a0","size_bytes":2128355922},
+      {"site":"snotel_paradise_wa","lane":"sequential","sha256":"b500e1b41a6d17722940322e4446b87ac71afee5cd80cea2879eb4c2bb2b7688","size_bytes":5506961656},
+      {"site":"snotel_snowbird_ut","lane":"paired","sha256":"a6f5af07346b7984eb0def232e326392a0a4e8de87d49ef3460e0e2dc823a7e1","size_bytes":1729992900},
+      {"site":"snotel_snowbird_ut","lane":"sequential","sha256":"10b46159748657e9ffa304400eac2e474158c5fadc37890432112c5fbc3ae32a","size_bytes":5850261821}
+    ]
+  },
+  "cohort": {
+    "canonical_sites": [
+      "snotel_mica_creek_st_joe_id",
+      "snotel_niwot_co",
+      "snotel_paradise_wa"
+    ],
+    "development_only_non_decisive_site": "snotel_snowbird_ut",
+    "window": "October 1 through earliest maximum positive observed SWE date inclusive",
+    "eligible_water_years": {
+      "snotel_mica_creek_st_joe_id": "1991-2024 inclusive; 34",
+      "snotel_niwot_co": "1981-2024 inclusive; 44",
+      "snotel_paradise_wa": "1984-2024 inclusive; 41",
+      "snotel_snowbird_ut": "1990-2024 inclusive; 35"
+    },
+    "right_censored_water_year": 2025,
+    "observations_role": "DIAGNOSTIC_ONLY window selection",
+    "aggregation": "sum per tuple to hour to water-year, then Python statistics.median across water years; never add separately reduced medians"
+  },
+  "forcing_custody": {
+    "provider_statement": "fixture documentation labels daily precipitation/temperature DAYMET, daily wind GRIDMET, sub-daily storm patterns CLIGEN, and spatial revision PRISM",
+    "consumed_surface": "the daily CLI w-vl value is repeated into each Stage 3 hourly/substep tuple",
+    "exposure_status_before_audit": "UNKNOWN; no retained metadata establishes open-site, above-canopy, within-canopy, or sub-canopy exposure",
+    "virtual_geometry": "z_T=z_q=z_u=5 m above the instantaneous modeled snow surface and z_0,aero=0.005 m are model metadata, not a physical instrument claim",
+    "climate_sha256": {
+      "snotel_mica_creek_st_joe_id": "e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63",
+      "snotel_niwot_co": "841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead",
+      "snotel_paradise_wa": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c",
+      "snotel_snowbird_ut": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb"
+    }
+  },
+  "operators": {
+    "S": "immutable whole-column same-state external carrier; raw vapor opportunity only",
+    "F": "consumer-only frozen-active external carrier; raw vapor opportunity only",
+    "Q": "within-day sequential resolved-state carrier; physical mass transfer is bounded deposition/sublimation and endpoint change",
+    "common_support": "three-way prefix minimum per joined hour, retaining all-evaluated results separately",
+    "evolution_attribution": "Q-F per-water-year totals for shortwave, longwave, sensible, latent, advected, raw vapor; Q-only bounded deposition/sublimation, endpoint mass, temperature, cold content, active volume, humidity gradient, stability class, exchange velocity, and support summaries"
+  },
+  "mass_semantics": {
+    "raw_vapor": "signed exchange opportunity; positive deposition, negative sublimation",
+    "same_state_and_frozen_actual_transfer": "NOT_APPLICABLE because mutation is prohibited",
+    "sequential_actual_transfer": "non-negative bounded sublimation/deposition plus total-ice endpoints",
+    "independent_bounded_vapor_transfer": "from independently reconstructed raw vapor and pre-transfer active ice: deposition=max(raw_vapor,0); sublimation=min(max(-raw_vapor,0),active_ice_mass_before); this consumes no producer deposition, sublimation, melt, or mass endpoint",
+    "producer_transfer_comparison": "for each Q tuple independently_reconstructed_deposition must equal producer deposition and independently_reconstructed_sublimation must equal producer sublimation under max(1e-12 kg m^-2,1e-12*sum_abs_operands), before any aggregation; same-sign wrong magnitude is invalid evidence",
+    "independent_melt": "for each Q tuple reconstruct in operator order without post-transfer endpoints: C0=active_cold_before; G=internal_active_lower_conduction; C1=C0-G; E=independently reconstructed external_flux*duration; surface_change=(E>=0 ? min(E,C1) : E); active_cold_change=G+surface_change; lower_cold_change=-G (G is zero for one-volume); q_complete=E+G; excess=max(q_complete-active_cold_change,0); ice_available=max(active_ice_before-independent_sublimation,0); melt=min(excess/333600 J kg^-1,ice_available); unallocated=max(excess-333600*melt,0). Compare derived active/lower cold changes, melt, unallocated/closure consequence to producer fields and only then use independently derived melt/transfer in post-repartition endpoint closure under scale-aware tolerances",
+    "endpoint_cross_check": "total_after = total_before - independently reconstructed melt - independently reconstructed sublimation + independently reconstructed deposition",
+    "mutual_exclusion": "independent deposition and sublimation cannot both be nonzero; producer deposition and sublimation cannot both be nonzero",
+    "tolerance_kg_m2": "max(1e-12 kg m^-2, 1e-12 * sum_abs_operands)",
+    "forbidden_aliases": ["raw vapor as actual debit", "sublimation as melt", "vapor as liquid", "separately reduced medians as a ledger"]
+  },
+  "physical_predicates": {
+    "energy_and_flux_reconstruction": {"status": "EVALUABLE", "tolerance_w_m2": "max(1e-10 W m^-2, 1e-12 * sum_abs_operands)", "tolerance_j_m2": "max(1e-6 J m^-2, 1e-12 * sum_abs_operands)"},
+    "mass_reconstruction": {"status": "EVALUABLE", "tolerance_kg_m2": "max(1e-12 kg m^-2, 1e-12 * sum_abs_operands)"},
+    "surface_temperature_domain": {"status": "EVALUABLE", "predicate": "finite, greater than -273.15 degC, and no resolved snow surface above 0 degC"},
+    "support_materiality": {"status": "EVALUABLE", "threshold": 0.05, "authority": "SC-SNOWFREEZE-001 TOL-SNOWFREEZE-019"},
+    "turbulent_termination": {"status": "EVALUABLE", "predicate": "only contract-enumerated statuses; finite reconstructed primitives; no nonconvergence laundering"},
+    "net_external_energy_magnitude": {"status": "NOT_EVALUABLE", "reason": "no admitted site/season/forest-comparable numeric envelope was located before result execution"},
+    "sensible_latent_magnitude": {"status": "NOT_EVALUABLE", "reason": "no admitted site/season/forest-comparable numeric envelope was located before result execution"},
+    "bounded_sublimation_deposition_magnitude": {"status": "NOT_EVALUABLE", "reason": "no admitted site/season/forest-comparable numeric envelope was located before result execution"},
+    "raw_vapor_opportunity_magnitude": {"status": "NOT_EVALUABLE", "reason": "no admitted site/season/forest-comparable numeric envelope was located before result execution"},
+    "stability_exchange_behavior_magnitude": {"status": "NOT_EVALUABLE", "reason": "termination/domain/finite reconstruction is evaluable, but no admitted site/season/forest-comparable class-frequency or exchange-velocity envelope was located"},
+    "stability_geometry_equation": {"status": "NOT_EVALUABLE", "reason": "libsnobal/openWEPP parity on z/L is provenance, not independent science authority selecting z/L versus (z-d)/L"},
+    "persistence_rule": "any NOT_EVALUABLE physical magnitude gate blocks EVOLVING_CARRIER_PLAUSIBILITY_PASS and persistence"
+  },
+  "counterfactual_budget": {
+    "maximum_new_equation_arms": 1,
+    "admitted_arms": [],
+    "canopy_aerodynamic": "PROHIBITED_AUTHORITY_MISSING unless a complete equation, applicability domain, and every input are admitted before results",
+    "stability_geometry": "PROHIBITED as a corrected arm unless canonical/reference authority selects a different equation; current libsnobal reference uses z/L",
+    "fixed_or_fitted_wind_attenuation": "FORBIDDEN"
+  },
+  "decision_precedence": [
+    "invalid execution or reconstruction, including any producer-versus-independent deposition/sublimation/melt disagreement, endpoint disagreement, or S/F numeric transfer in place of required N/A -> package HOLD; these are not scientific mechanism classes",
+    "the per-site exposure field is unknown at freeze -> WIND_FORCING_EXPOSURE_UNRESOLVED",
+    "CANOPY_AERODYNAMIC_AUTHORITY_REQUIRED may be emitted only if wind exposure and applicability evidence first establish that a distinct canopy aerodynamic operator is required; absent equation authority alone records AUTHORITY_MISSING and prohibits the counterfactual but does not prove the class",
+    "after all evidence-validity checks pass, any Q tuple with negative raw opportunity whose magnitude exceeds active_ice_mass_before under max(1e-12 kg m^-2,1e-12*sum_abs_operands), so valid independently bounded sublimation is smaller than raw opportunity, -> VAPOR_OPPORTUNITY_TRANSFER_MISMATCH; report capacity-truncated tuple count and mass before WY/site aggregation so errors cannot cancel",
+    "TURBULENT_STABILITY_GEOMETRY_DEFECT may be emitted only if canonical equation authority selects z/L or (z-d)/L and current execution differs; current libsnobal/openWEPP z/L parity alone is not science authority, so geometry remains NOT_EVALUABLE and no defect class is emitted",
+    "any resolved tuple has nonfinite or out-of-domain state, surface temperature <= -273.15 degC or > 0 degC, negative mass/depth/density/cold content, or fails endpoint continuity -> ACTIVE_STATE_EVOLUTION_PLAUSIBILITY_FAIL",
+    "COMPENSATING_TERM_ERROR is NOT_EVALUABLE and cannot be emitted because no admitted magnitude threshold exists",
+    "MULTIFACTOR_OR_INCONCLUSIVE is emitted whenever more than one unresolved/nonexclusive mechanism class remains or the unique F-to-Q crossing attribution is not identified"
+  ],
+  "classification_reduction": "evaluate predicates per eligible water year; report counts and site medians, but any qualifying canonical-site WY is retained and cannot be erased by a median. Canonical sites determine persistence. Snowbird is reported but non-decisive. Classes are nonexclusive except EVOLVING_CARRIER_PLAUSIBILITY_PASS, which requires every physical gate PASS and no other class.",
+  "adversarial_expected_disposition": {
+    "producer_transfer_or_melt_disagreement": "INVALID_EVIDENCE_PACKAGE_HOLD",
+    "endpoint_or_SF_NA_violation": "INVALID_EVIDENCE_PACKAGE_HOLD",
+    "valid_raw_capacity_truncation": "VAPOR_OPPORTUNITY_TRANSFER_MISMATCH",
+    "raw_equals_valid_bounded_transfer": "NO_VAPOR_OPPORTUNITY_TRANSFER_MISMATCH"
+  },
+  "required_adversarial_tests": [
+    "negative/nonfinite melt, deposition, sublimation, state, and endpoint",
+    "simultaneous nonzero deposition and sublimation",
+    "same-sign wrong producer deposition or sublimation magnitude",
+    "raw-positive with sublimation and raw-negative with deposition",
+    "endpoint-preserving melt-to-sublimation alias",
+    "same-sign wrong melt magnitude with compensating vapor transfer",
+    "active endpoint substituted for total endpoint",
+    "numeric-zero Q transfer copied into S/F instead of N/A",
+    "terminal meltout null/applicability mismatch",
+    "duplicate, reordered, or gapped tuple support",
+    "common-prefix/all-evaluated leakage",
+    "termination status, iterations, L, and psi mismatch",
+    "F first-Q state versus S whole-column fingerprint alias",
+    "median-of-medians and result-selected threshold rejection"
+  ],
+  "no_tuning": "No cohort, role, support, estimator, threshold, counterfactual, equation, or decision predicate may change after new attribution output is inspected."
 }

@@ -1,9 +1,13 @@
 # Security And Data Impact
 
-Status: `queued`.
+Static: Phase-A gate `PASS`.
 
-Evidence mode: `not-run`.
+Scope is local checked-in source, immutable fixtures, retained internal traces,
+and ignored package target outputs. No network, secret, credential, personal
+data, external message, deployment, or public release is involved. Observation
+and fixture files are read-only. Result execution must consume receipt-bound
+hashes, scrub undeclared selectors, and write only beneath
+`target/snow_stage3_evolving_state_carrier_plausibility_reconciliation/`.
 
-Record local-only data custody, environment scrubbing, immutable fixture and
-observation hashes, target-output containment, secret scan, external-action
-absence, and assurance/publication non-impact.
+No public schema, production state, WAT, HBP, PASS, default, calibration, or
+assurance lifecycle surface may change.
