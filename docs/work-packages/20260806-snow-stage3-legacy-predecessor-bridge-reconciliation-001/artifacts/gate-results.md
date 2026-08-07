@@ -51,7 +51,7 @@ and is recorded as an aborted, non-applicable legacy-harness observation: repo
 policy requires that harness only for libtest-specific behavior, which this
 package does not change. It is not reported as a gate pass or failure.
 
-The full-tree raw-unit observation reported 11 existing literals in two
+The full-tree raw-unit observation reported 12 existing literals in two
 production Rust files outside the 98-path package diff. No production Rust or
 conversion literal changed, and the package requires the passing scoped SC
 unit gate rather than remediation of unrelated baseline debt. This observation
