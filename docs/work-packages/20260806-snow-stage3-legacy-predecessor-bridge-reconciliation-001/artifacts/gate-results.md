@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `execution/reconstruction PASS / terminal workspace gates pending`.
+Status: `execution/reconstruction/review PASS / terminal workspace gates pending`.
 
 Evidence mode: `Ran`.
 
@@ -20,6 +20,7 @@ Evidence mode: `Ran`.
 | Assurance staged build/check | `PASS` | All three governed reports assembled and checked only in an owned temporary root |
 | Governed review-draft drift | `PASS` | Canonical renderer synchronized three stale v130-bound files, then exact check passed |
 | Assurance export/release guard | `PASS` | Zero public reports/documents; vendoring false; no transition performed |
+| Post-result science/Rust/consumer review | `PASS/PASS/PASS` | Science and custody pass at `dd7c1a3cf`; consumer hold corrected and recheck passes at `039ee78e2` |
 | Terminal quick/frost/full workspace | `NOT RUN` | Required after post-result review |
 | Dual terminal verification | `NOT RUN` | Required at exact clean closure candidate |
 

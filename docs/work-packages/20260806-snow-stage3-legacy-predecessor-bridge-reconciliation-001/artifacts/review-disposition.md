@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `result-blind contract/tool review PASS / post-result review pending`.
+Status: `result-blind and post-result review PASS`.
 
 Evidence class: `Static`.
 
@@ -105,5 +105,22 @@ protocol, fixture, protected-output, checkpoint-path, binary, semantic-input,
 and negative-test findings closed. Neither inspected result artifacts before
 the PASS decision. That exact commit then owned the frozen execution.
 
-Post-result science, custody, and consumer review remains required on the
-tracked interpretation and roadmap candidate before terminal closure.
+## Post-Result Review
+
+Independent science/protocol and Rust/custody reviewers returned `PASS` on
+exact clean `dd7c1a3cf5c2dffc761fe43acb3232a3dd994077`. They reproduced the
+forcing-matched gates, retained hashes and protected bytes, checkpoint
+no-trigger decision, operator classification, DRAFT assurance posture, and
+claim limits without rerunning the expensive model.
+
+The independent downstream-consumer reviewer reproduced the four cell
+medians, five per-WY effects, source thresholds, prior operator-result custody,
+and protected outputs. It initially returned `HOLD` because three live roadmap
+rows still named v129 and generation `cee22d5f` as current. The finding was
+accepted: those rows now name v130 and `7d1a3ba1`, while DRAFT, empty
+review/approval roots, zero public reports, CoE ownership, and all
+persistence/cutover holds remain explicit. Read-only recheck passed at exact
+clean `039ee78e2b2ff89e904159387ceab330096ac7a2`.
+
+No post-result review finding remains open. Terminal validation and dual
+exact-head verification remain required.
