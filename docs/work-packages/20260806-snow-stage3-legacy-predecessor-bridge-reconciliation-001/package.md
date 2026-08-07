@@ -85,12 +85,15 @@ from disabled/public output.
   the prospectively frozen build-input checkpoint groups from `2d035638a9`
   through the admitted v3 source on one fixed forcing.
 - Reconstruct daily and water-year values independently before medians.
-- At the first divergent source checkpoint, reconcile term totals, support,
-  first effective state, substep cadence, transition preparation, endpoints,
-  and internal conduction in temporal order.
+- At a first divergent source checkpoint, use behavior-neutral identically
+  instrumented parent/child twins to reconcile term totals, support, first
+  effective state, substep cadence, transition preparation, endpoints, and
+  internal conduction in temporal order.
 - Add package-local deterministic tools/tests and retained result custody.
-- If necessary, amend SC-SNOWFREEZE-001 and add narrow default-off diagnostic
-  Rust/test surfaces after result-blind dual review and contract gate.
+- Mandatorily amend SC-SNOWFREEZE-001 for forcing-matched predecessor authority
+  and add its binding test after scaffold review and before execution. Add any
+  later narrow default-off diagnostic Rust/test surface only after a separate
+  prospective observability amendment and review.
 - Update roadmap, catalog, DRAFT assurance source identity when contract
   authority changes, reviews, validation, and terminal disposition.
 
@@ -162,10 +165,15 @@ write.
    selector is absent in legacy arms; sublimation is explicitly disabled and
    all other science selectors are frozen. At the current source, additionally
    prove legacy-selector and explicit-selector equivalence.
-4. Independently reconstruct each cell from primitive trace fields without
-   importing or reusing execution-runner reduction helpers. Require exact daily
-   row identity, 35 water-year windows, term closure, mass/cold-content closure,
-   internal-conduction cancellation, and protected-output identity.
+4. Independently reconstruct each cell without importing or reusing execution-
+   runner reduction helpers. Schema-v4 E00/E01 are aggregate-custody arms only:
+   require exact daily identity, exact hourly-to-daily
+   `stage3_shadow_complete_energy_j_m2` closure, 35 windows, and enabled/control
+   protected-output identity; do not claim primitive support, term, state, mass,
+   cold-content, or conduction-cancellation closure. Schema-v6 E10/E11 retain
+   full primitive, tuple/support, mass/cold, conduction-cancellation, and
+   aggregate closure. Cross-schema factorial effects contrast only the common
+   aggregate estimand.
 5. Compute per-water-year effects before medians:
    `source_canonical=E10-E00`, `source_development=E11-E01`,
    `forcing_old=E01-E00`, `forcing_current=E11-E10`, and
@@ -181,12 +189,25 @@ write.
    `(day, hour, substep)` and decompose:
    source/reset -> first projection -> surface terms -> active conduction ->
    state application/removal -> transition preparation -> next endpoint.
-8. Treat the earliest differing field as descriptive localization only. Accept
-   a causal bridge class only after a controlled single-axis substitution
-   changes predecessor agreement to current agreement and closes the tuple,
-   day, water-year, and median deltas while excluding alternatives. Otherwise emit
+8. Term/support/state localization requires identically instrumented unmodified
+   parent/child twins, each proven behavior-neutral against its uninstrumented
+   endpoint. Treat the earliest differing field as one descriptive class only:
+   `FIRST_DIVERGENCE_DAILY_RESET`,
+   `FIRST_DIVERGENCE_INITIAL_CONTROL_VOLUME_PROJECTION`,
+   `FIRST_DIVERGENCE_SURFACE_TERMS`,
+   `FIRST_DIVERGENCE_ACTIVE_INTERNAL_CONDUCTION`,
+   `FIRST_DIVERGENCE_STATE_APPLICATION_REMOVAL`,
+   `FIRST_DIVERGENCE_TRANSITION_PREPARATION_CADENCE`, or
+   `FIRST_DIVERGENCE_MULTIPLE_OR_UNOBSERVED`.
+9. A causal class uses the matching name with `_CAUSAL` suffix and requires the
+   exact same forcing/input fingerprints, exact equality of every upstream
+   operand, a single counterfactual replacing only the named parent transition
+   with the child transition, and closure of every affected tuple, day, all 35
+   water years, and median under the named tolerance. Every alternative single-
+   axis substitution must fail closure. If zero or multiple substitutions close,
+   or the two forcing lanes localize different intervals/axes, emit only
    `MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY`.
-9. Preserve every contrary or failed execution, including stdout/stderr and
+10. Preserve every contrary or failed execution, including stdout/stderr and
    manifests. A deterministic semantic
    failure is not rerun into a pass.
 
@@ -212,29 +233,34 @@ required reading, line-count posture, security/custody analysis, and direct
 validation selection. Commit the scaffold before implementation edits. Obtain
 independent science/protocol and Rust/custody review; disposition all findings.
 
-### Phase B -- Model-Free Bridge Search
+### Phase B -- Mandatory Forcing-Identity Authority
+
+Author SC-SNOWFREEZE-001 v130 and its binding test, run the pre-implementation
+contract gate, commit the exact authority increment, and obtain fresh dual
+result-blind review of that contract/test commit. V130 must bind the exact
+S/F/Q forcing hash to its same-forcing predecessor endpoint.
+
+### Phase C -- Model-Free Bridge Search
 
 Implement separate execution-custody and independent-consumer tools. The
-consumer must not import runner reduction code. Test
-hash, join, schema, window, exact reduction, source-checkpoint, first-divergence,
-term closure, and false-attribution failures. Execute read-only reconciliation
-against retained traces and exact checkpoint binaries.
+consumer must not import runner reduction code. Test hash, join, schema, window,
+exact reduction, source-checkpoint, first-divergence, aggregate closure, and
+false-attribution failures. Execute retained-trace custody only after review.
 
-### Phase C -- Conditional Contract-First Observability
+### Phase D -- Conditional Contract-First Observability
 
-Amend SC-SNOWFREEZE-001 prospectively to correct forcing identity before Phase
-B results, add contract-derived tests, and record the pre-implementation
-contract gate. Only if the forcing-matched endpoints then prove an unobserved
-source boundary, add the smallest default-off diagnostic required to resolve it.
-Repeat focused result-blind review before any new result-bearing execution.
+Only if a forcing-matched endpoint source effect remains, author a separate
+prospective observability amendment, prove behavior-neutral instrumented
+parent/child twins, and add the smallest diagnostic required for the frozen
+causal classes. Repeat focused result-blind review before execution.
 
-### Phase D -- Frozen Execution And Reconstruction
+### Phase E -- Frozen Execution And Reconstruction
 
 Execute the admitted Snowbird bridge, retain complete custody, independently
 reconstruct daily/annual/median results and the earliest divergence, and emit
 only frozen decision classes. Do not tune after result inspection.
 
-### Phase E -- Review, Validation, And Closure
+### Phase F -- Review, Validation, And Closure
 
 Complete independent science, Rust/custody, and consumer review; disposition
 every finding; run the exact critical validation selected from the terminal
@@ -269,17 +295,23 @@ Outcome precedence is:
 1. `INPUT_OR_ENDPOINT_REPLAY_FAILURE` when immutable source/input/output
    custody or either retained anchor cannot be reconstructed under its original
    source and forcing.
-2. `FORCING_IDENTITY_DIFFERENCE` whenever the compared runs use different
-   forcing hashes; this suppresses direct source/state attribution.
+2. `FORCING_IDENTITY_DIFFERENCE` only for a comparison such as retained
+   E00-to-E11 whose forcing hashes differ; it suppresses attribution for that
+   comparison but not valid E00-to-E10 or E01-to-E11 contrasts.
 3. `FORCING_STRATIFIED_ENDPOINTS_RECONCILED` when all four endpoint cells and
    controls close under their exact identities.
-4. `SOURCE_INVARIANT_WITHIN_FORCING` when both fixed-forcing source effects are
-   within the frozen tolerance.
-5. `VERSIONED_ESTIMANDS_RECONCILED` when the retained v4 and v6 estimands are
-   explained by the prospectively frozen forcing/source decomposition.
-6. `CURRENT_V6_FORCING_MATCHED_PREDECESSOR_REPRODUCED` only when current schema
-   v6 under the predecessor forcing reproduces the predecessor reference under
-   the corrected contract predicate.
+4. `SOURCE_INVARIANT_WITHIN_FORCING[forcing_sha256]` only when all 35 paired
+   water-year source effects and their median are within the scale-aware and
+   median tolerances, respectively.
+5. `VERSIONED_ESTIMANDS_RECONCILED` when the retained v4 and v6 aggregate
+   estimands have exact factorial custody accounting. This is algebraic
+   accounting, not a mechanistic explanation.
+6. `CURRENT_V6_FORCING_MATCHED_PREDECESSOR_REPRODUCED[forcing_sha256]` only
+   when the current and old aggregate cells at that exact forcing have all 35
+   paired water-year differences and their median within tolerance. A
+   development-forcing S/F/Q class requires E11-to-E01 closure. Canonical
+   E10-to-E00 closure cannot unlock it, and this package cannot adjudicate a
+   canonical S/F/Q class unless it separately produces canonical S, F, and Q.
 7. A named causal source/state class only after controlled substitution closure.
 8. `MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY` otherwise.
 

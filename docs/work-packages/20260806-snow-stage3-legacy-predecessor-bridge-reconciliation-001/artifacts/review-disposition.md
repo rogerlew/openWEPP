@@ -23,5 +23,9 @@ Evidence class: `Static`.
 | HOLD legitimacy absent | `accepted` | Explicit allowed/prohibited state machine frozen | None |
 | Ambient `CARGO_HOME` remained writable | `accepted` | Package-local content-hashed non-credential cache seed and recorded identity required | Runner implementation pending |
 | Conditional checkpoint trigger/lane ambiguous | `accepted` | Any out-of-tolerance per-WY source delta triggers the affected forcing lane; both lanes run if both trigger | Endpoint execution pending |
+| S/F/Q predecessor gate not bound to its forcing | `accepted` | Parametric same-forcing all-WY-plus-median predicate; prior development S/F/Q requires E11-to-E01 | V130/test pending |
+| Schema v4 cannot prove v6 primitive/support closure | `accepted` | Old cells narrowed to aggregate custody; v6 retains primitives; localization requires neutral instrumented twins | Tools/tests pending |
+| Causal predicates remained placeholders | `accepted` | Six descriptive and six matching single-substitution causal classes frozen with equifinality fallback | Conditional observability only |
+| Mandatory v130 phase ordering contradicted package | `accepted` | V130/test/gate/fresh review now precede tools and any result execution | Pending execution |
 
 No result execution may begin with an undispositioned review finding.

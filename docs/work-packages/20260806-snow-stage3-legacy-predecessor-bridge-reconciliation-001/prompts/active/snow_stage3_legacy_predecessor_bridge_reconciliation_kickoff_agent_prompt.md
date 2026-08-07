@@ -44,10 +44,13 @@ Cargo targets, use the legacy selector consistently, prove current legacy vs
 explicit selector equivalence, preserve failures, and never overwrite evidence.
 The historical binary is not retained; label rebuilt history semantic replay.
 
-Authority sequencing: amend SC-SNOWFREEZE-001 prospectively before results so
-predecessor reproduction binds forcing identity. Technical PASS may coexist
-with causal HOLD; missing in-scope tools/tests/instrumentation cannot justify
-HOLD.
+Authority sequencing: after dual scaffold review, amend SC-SNOWFREEZE-001 and
+its binding test so predecessor reproduction is parametric on the exact S/F/Q
+forcing, run the contract gate, commit, and obtain fresh dual result-blind
+review before tools or results. Schema-v4 endpoints prove aggregate custody
+only; primitive/causal localization requires behavior-neutral instrumented
+twins. Technical PASS may coexist with causal HOLD; missing in-scope
+tools/tests/instrumentation cannot justify HOLD.
 
 Subagent requirement: REQUIRED. Spawn `comparator_suite_runner` for exact
 source-checkpoint/cohort and heavy workspace closure runs. This prompt

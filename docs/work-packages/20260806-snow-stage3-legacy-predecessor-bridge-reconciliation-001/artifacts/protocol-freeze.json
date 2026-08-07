@@ -117,13 +117,38 @@
   },
   "reconstruction": {
     "historical_estimand": "schema-v4 stage3_shadow_complete_energy_j_m2 daily values summed from October 1 through earliest maximum positive observed SWE date inclusive, then Python statistics.median across WY1990-2024",
-    "current_estimand": "schema-v6 ordered sequential tuple external complete energy plus active internal conduction, independently reconstructed at tuple/hour/day/WY levels",
+    "current_estimand": "schema-v6 ordered tuple legacy_sequential_complete_j_m2, independently reconstructed as complete_external_flux_w_m2*duration_seconds+internal_active_lower_conduction_j_m2 at tuple/hour/day/WY levels",
     "tuple_flux_tolerance_w_m2": "max(1e-10, 1e-12 * sum_abs_operands)",
     "tuple_mass_tolerance_kg_m2": "max(1e-12, 1e-12 * sum_abs_operands)",
     "energy_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
     "median_tolerance_mj_m2": 0.0000001,
     "date_join": "exact unique date; reject duplicate, missing, unordered, or out-of-cohort rows",
     "adversarial_rejections": ["daily external-only alias", "surface-only complete alias", "double-counted conduction", "CoE melt alias", "unused-positive-energy alias", "median-of-medians arithmetic", "mixed forcing identity", "duplicate/missing date", "noncontiguous tuple", "zero alias for absent support"]
+  },
+  "schema_adapters": {
+    "v4_aggregate_custody_only": {
+      "schema_value": "openwepp-r7h-direct-production-snow-trace-v4",
+      "identity_fields": ["day_index", "lane_index"],
+      "applicability_context": "stage3_energy_enabled is retained context; zero hourly/daily aggregate values do not prove support or N/A",
+      "hourly_field": "stage3_shadow_hourly_complete_energy_j_m2",
+      "daily_field": "stage3_shadow_complete_energy_j_m2",
+      "check_only_field": "stage3_shadow_maximum_energy_closure_residual_j_m2",
+      "sign_units": "positive toward snow; J m^-2 for hourly-bin energy and daily energy",
+      "closure": "sum exactly 24 hourly complete energy values equals daily complete energy within energy_tolerance_j_m2",
+      "prohibited_claims": ["primitive term closure", "tuple support identity", "mass closure", "cold-content closure", "active/lower conduction cancellation", "causal localization"]
+    },
+    "v6_primitive_and_aggregate": {
+      "schema_field": "stage3_operator_reconciliation.schema_version",
+      "schema_value": 6,
+      "support_fields": ["hourly_status[].evaluated", "hourly_status[].reason", "tuples[].applicable", "tuples[].applicability_reason", "tuples[].hour_index", "tuples[].substep_index", "tuples[].elapsed_start_seconds", "tuples[].duration_seconds"],
+      "aggregate_field": "tuples[].legacy_sequential_complete_j_m2",
+      "primitive_fields": ["tuples[].net_shortwave_w_m2", "tuples[].net_longwave_w_m2", "tuples[].sensible_flux_w_m2", "tuples[].latent_flux_w_m2", "tuples[].precipitation_advected_flux_w_m2", "tuples[].complete_external_flux_w_m2", "tuples[].duration_seconds", "tuples[].internal_active_lower_conduction_j_m2"],
+      "mass_fields": ["tuples[].total_ice_mass_before_kg_m2", "tuples[].melt_kg_m2", "tuples[].sublimation_kg_m2", "tuples[].deposition_kg_m2", "tuples[].total_ice_mass_after_kg_m2"],
+      "cold_fields": ["tuples[].total_cold_before_j_m2", "tuples[].active_cold_energy_change_j_m2", "tuples[].lower_cold_energy_change_j_m2", "tuples[].cold_content_export_j_m2", "tuples[].total_cold_after_j_m2"],
+      "sign_units": "positive energy and vapor mass toward snow; flux W m^-2; duration s; energy J m^-2; mass kg m^-2",
+      "applicability": "support only when tuple applicable=true/reason=evaluated and matching hourly status evaluated; null is N/A; numeric zero is not an absent-support alias"
+    },
+    "cross_schema_limit": "E00/E01 versus E10/E11 effects contrast only the common aggregate complete-energy estimand; no primitive, support, state, or mechanistic effect is inferred"
   },
   "windows": [
     [1990,"1989-10-01","1990-04-30"],[1991,"1990-10-01","1991-05-04"],[1992,"1991-10-01","1992-03-31"],[1993,"1992-10-01","1993-05-11"],[1994,"1993-10-01","1994-01-09"],[1995,"1994-10-01","1995-05-14"],[1996,"1995-10-01","1996-04-22"],[1997,"1996-10-01","1997-05-04"],[1998,"1997-10-01","1998-04-27"],[1999,"1998-10-01","1999-05-15"],[2000,"1999-10-01","2000-04-26"],[2001,"2000-10-01","2001-04-24"],[2002,"2001-10-01","2002-04-30"],[2003,"2002-10-01","2003-05-11"],[2004,"2003-10-01","2004-04-27"],[2005,"2004-10-01","2005-04-19"],[2006,"2005-10-01","2006-04-17"],[2007,"2006-10-01","2007-04-24"],[2008,"2007-10-01","2008-05-01"],[2009,"2008-10-01","2009-04-20"],[2010,"2009-10-01","2010-05-15"],[2011,"2010-10-01","2011-05-22"],[2012,"2011-10-01","2012-04-20"],[2013,"2012-10-01","2013-04-22"],[2014,"2013-10-01","2014-04-06"],[2015,"2014-10-01","2015-03-06"],[2016,"2015-10-01","2016-03-31"],[2017,"2016-10-01","2017-05-02"],[2018,"2017-10-01","2018-04-21"],[2019,"2018-10-01","2019-04-21"],[2020,"2019-10-01","2020-04-23"],[2021,"2020-10-01","2021-04-27"],[2022,"2021-10-01","2022-04-24"],[2023,"2022-10-01","2023-04-06"],[2024,"2023-10-01","2024-04-07"]
@@ -134,10 +159,35 @@
     "FORCING_STRATIFIED_ENDPOINTS_RECONCILED",
     "SOURCE_INVARIANT_WITHIN_FORCING",
     "VERSIONED_ESTIMANDS_RECONCILED",
-    "CURRENT_V6_FORCING_MATCHED_PREDECESSOR_REPRODUCED",
+    "CURRENT_V6_FORCING_MATCHED_PREDECESSOR_REPRODUCED[forcing_sha256]",
     "CONTROLLED_SOURCE_OR_STATE_CLASS",
     "MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY"
   ],
+  "forcing_identity_difference_scope": "emit only for a comparison whose two forcing SHA-256 values differ, including retained E00 versus E11; it does not suppress valid E00/E10 or E01/E11 fixed-forcing contrasts",
+  "forcing_matched_predecessor_gate": {
+    "predicate": "for forcing hash H, compare current cell and old cell at H; all 35 paired WY aggregate differences must satisfy energy_tolerance_j_m2 and statistics.median of paired differences must satisfy median_tolerance_mj_m2",
+    "canonical": "E10 versus E00",
+    "development": "E11 versus E01",
+    "sfq_binding": "an S/F/Q causal class requires the gate for the exact S/F/Q forcing hash; prior development S/F/Q requires development closure; canonical closure cannot substitute",
+    "canonical_claim_limit": "this package does not adjudicate canonical S/F/Q unless canonical S, F, and Q are separately produced under the frozen operator protocol"
+  },
+  "source_invariant_predicate": "SOURCE_INVARIANT_WITHIN_FORCING[H] requires every one of 35 paired WY source deltas at H within energy_tolerance_j_m2 and their median within median_tolerance_mj_m2",
+  "localization_classes": {
+    "descriptive_in_order": ["FIRST_DIVERGENCE_DAILY_RESET", "FIRST_DIVERGENCE_INITIAL_CONTROL_VOLUME_PROJECTION", "FIRST_DIVERGENCE_SURFACE_TERMS", "FIRST_DIVERGENCE_ACTIVE_INTERNAL_CONDUCTION", "FIRST_DIVERGENCE_STATE_APPLICATION_REMOVAL", "FIRST_DIVERGENCE_TRANSITION_PREPARATION_CADENCE", "FIRST_DIVERGENCE_MULTIPLE_OR_UNOBSERVED"],
+    "causal_in_order": ["DAILY_RESET_CAUSAL", "INITIAL_CONTROL_VOLUME_PROJECTION_CAUSAL", "SURFACE_TERMS_CAUSAL", "ACTIVE_INTERNAL_CONDUCTION_CAUSAL", "STATE_APPLICATION_REMOVAL_CAUSAL", "TRANSITION_PREPARATION_CADENCE_CAUSAL"],
+    "axes": {
+      "DAILY_RESET_CAUSAL": "replace only the parent day-start clone/reset construction with the child's day-start clone/reset construction",
+      "INITIAL_CONTROL_VOLUME_PROJECTION_CAUSAL": "replace only the parent first active-volume alignment/normalization/membership projection with the child's",
+      "SURFACE_TERMS_CAUSAL": "replace only the parent complete external surface-term operator outputs for identical primitive inputs with the child's",
+      "ACTIVE_INTERNAL_CONDUCTION_CAUSAL": "replace only the parent active-to-lower internal-conduction transfer with the child's equal-and-opposite transfer",
+      "STATE_APPLICATION_REMOVAL_CAUSAL": "replace only the parent cold/melt/sublimation/deposition state-application and removal transition with the child's",
+      "TRANSITION_PREPARATION_CADENCE_CAUSAL": "replace only the parent post-substep alignment/normalization/coalescence timing and next-substep cadence transition with the child's"
+    },
+    "common_predicate": "same exact source input, forcing hash, fixture hashes, selectors, date/window, and upstream operand to_bits; identically instrumented parent/child twins each behavior-neutral versus its uninstrumented endpoint; exactly one named parent-to-child substitution; affected tuple, day, every one of 35 WY deltas, and median close under frozen tolerances; every other single-axis substitution fails closure",
+    "equifinality": "if zero or multiple substitutions close, emit only MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY",
+    "forcing_interaction": "if both forcing lanes trigger and first divergent interval or axis differs, emit only MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY plus SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE; do not select the cleaner lane"
+  },
+  "versioned_estimands_reconciled_meaning": "exact algebraic aggregate custody accounting only; not mechanistic explanation",
   "hold_legitimacy": {
     "allowed": ["immutable required input absent", "historical executable absent and exact-source semantic replay impossible", "exact source cannot build or execute after frozen compatibility procedure", "genuinely unobserved boundary after all in-scope instrumentation and tests"],
     "prohibited": ["missing package tool", "missing package test", "incomplete checkpoint execution", "required in-scope instrumentation not implemented", "undispositioned review finding"]
