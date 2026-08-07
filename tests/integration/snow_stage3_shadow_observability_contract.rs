@@ -23,7 +23,7 @@ fn v128_admits_only_bounded_typed_shadow_observability() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 129",
+        "contract_id: SC-SNOWFREEZE-001",
         "REF-SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY",
         "INV-SNOWFREEZE-095",
         "OBL-SNOWFREEZE-P-068",

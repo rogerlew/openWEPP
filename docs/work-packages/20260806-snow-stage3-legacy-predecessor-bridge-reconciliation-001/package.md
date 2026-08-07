@@ -128,6 +128,13 @@ from disabled/public output.
     replace that brittle latest-version assertion with the stable canonical
     identity assertion `contract_id: SC-SNOWFREEZE-001`, retaining every
     invariant, obligation, behavior, and package assertion;
+  - after the admitted literal edit, the exact existing
+    `lifecycle_index_and_package_name_the_same_realization` test in
+    `tests/integration/snow_stage3_shadow_observability_contract.rs` may replace
+    its superseded v129/narrative index markers with exact extraction of the
+    SC-SNOWFREEZE-001 registry row and stable assertions for contract ID,
+    canonical path, `in_review`, and `draft`; its package-side realization
+    assertions remain byte-unchanged;
 - conditional default-off diagnostic files:
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
@@ -397,6 +404,10 @@ the package namespace and content-hashed.
   stale v129 pins before fail-fast. Prospectively admitted a mechanical
   reconciliation of all 37 identical historical version pins; no production
   or science assertion is weakened.
+- [x] (2026-08-06) The 38 reviewed literal replacements were exact. Focused
+  execution then exposed one additional stale v129/narrative index assertion
+  in the already admitted shadow-observability test; prospectively narrowed it
+  to stable registry structure before any edit.
 - [ ] Complete terminal validation/verification and close.
 
 ## Surprises & Discoveries
@@ -443,6 +454,11 @@ the package namespace and content-hashed.
   current revision number; retaining a latest-version assertion recreates the
   same failure on every legitimate contract amendment. Every substantive
   marker remains unchanged. Date/Author: 2026-08-06 / Codex.
+- Decision: registry-coupled historical tests bind lifecycle structure and the
+  canonical contract path, not the current row's revision-summary prose.
+  Rationale: `tests/AGENTS.md` explicitly assigns detailed authority to the
+  contract and registry structure to index tests. Date/Author: 2026-08-06 /
+  Codex.
 
 ## Outcomes & Retrospective
 

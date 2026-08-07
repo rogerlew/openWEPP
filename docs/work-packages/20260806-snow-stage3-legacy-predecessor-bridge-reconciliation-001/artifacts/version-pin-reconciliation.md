@@ -1,6 +1,6 @@
 # Contract Version-Pin Reconciliation
 
-Status: `prospective test-only write-set amendment / review pending`.
+Status: `literal reconciliation reviewed and exact / one registry-row amendment pending review`.
 
 Evidence mode: `Ran terminal failure; Static disposition`.
 
@@ -21,7 +21,20 @@ This preserves canonical file identity and avoids silently weakening the
 process-specific guards, while allowing later additive contract revisions
 without editing every historical package test.
 
-Before the edit, an independent reviewer must verify the scope and nonweakening
-argument. After the edit, require an exact 37-to-zero marker count, focused
-execution of all changed integration binaries, and a fresh complete terminal
-suite. The failed quick run remains evidence and is not converted into a pass.
+Independent review passed at exact clean `cc6a17db7`: the inventory is 37
+files and 38 occurrences; stable identity plus unchanged substantive markers
+is nonweakening, while current package tests continue to pin v130 directly.
+The 38 substitutions are exact and no v129 contract-version marker remains.
+
+The first focused execution ran 35 of 158 selected tests before fail-fast: 34
+passed and one existing shadow-observability test failed because it separately
+required the registry index to contain both `v129` and obsolete v129 summary
+prose. That test's package realization assertions are still current. Before
+editing it, this package prospectively admits only an exact registry-row
+extraction asserting the stable contract ID, canonical path, `in_review`, and
+`draft`. This follows `tests/AGENTS.md`: registry tests bind structure and
+lifecycle; detailed authority remains in the canonical contract.
+
+Require independent review of that narrow amendment, then rerun all 37 changed
+integration binaries and a fresh complete terminal suite. Both failed runs
+remain evidence and are not converted into passes.
