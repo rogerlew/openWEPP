@@ -88,3 +88,14 @@ profiles at `fae6f8a187c475a0213ef6d83cbedc14c5c5baa5`:
 
 Both exit codes were zero. The complete quick rerun supersedes the interrupted
 attempt; no selected correctness gate remains incomplete.
+
+After terminal finding corrections, the strict exact-head rerun at clean
+`2719512a125445be267e08ca2cc797bb28c1e0ef` also passed:
+
+- full: `2,288/2,288 PASS`, 33 skipped, `2,329.35 s`, maximum RSS
+  `866,788 KiB`;
+- quick: `2,239/2,239 PASS`, 40 skipped, `2,696.54 s`, maximum RSS
+  `866,084 KiB`.
+
+The final evidence-only status update changes no tested code, roadmap rule,
+contract, analyzer, assurance graph, or protected boundary.

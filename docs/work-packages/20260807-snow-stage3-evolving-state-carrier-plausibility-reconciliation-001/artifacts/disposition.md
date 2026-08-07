@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `executed characterization / persistence HOLD`.
+Status: `package complete / persistence HOLD`.
 
 Evidence mode: `Ran`.
 
@@ -29,3 +29,9 @@ cannot identify a unique physical cause.
 Protected boundaries pass: no Rust production/schema, fixture, observation,
 default, WAT, HBP, PASS, CoE ownership, persistence, promotion, or cutover
 change occurred. Assurance remains DRAFT.
+
+Both terminal verifiers returned `GO` after finding correction. At exact clean
+head `2719512a125445be267e08ca2cc797bb28c1e0ef`, full workspace correctness
+passed `2,288/2,288` and quick passed `2,239/2,239`. The package closes; the
+scientific persistence hold transfers to the wind source-custody/exposure
+authority follow-on.

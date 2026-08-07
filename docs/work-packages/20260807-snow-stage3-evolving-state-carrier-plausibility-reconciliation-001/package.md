@@ -1,6 +1,6 @@
 # Stage 3 Evolving-State Carrier Plausibility Reconciliation
 
-Status: `executed / persistence HOLD / closure validation pending`
+Status: `complete / persistence HOLD / follow-on required`
 
 Date: `2026-08-07`
 
@@ -52,8 +52,9 @@ over any owner.
   dispositioned every finding, adopted both changed sources into the DRAFT
   assurance graph, archived the kickoff byte-identically, and reconciled the
   closure-candidate write set.
-- [ ] Complete dual terminal verification and exact terminal full-workspace
-  correctness before final package disposition.
+- [x] (2026-08-07 22:47Z) Completed dual terminal verification and strict
+  exact-head full/quick workspace correctness at `2719512a1`; all verifier
+  findings are corrected and no package-closure blocker remains.
 
 ## Surprises & Discoveries
 

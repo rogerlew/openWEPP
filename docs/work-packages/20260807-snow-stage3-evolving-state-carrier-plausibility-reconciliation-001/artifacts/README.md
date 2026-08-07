@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `Phase E executed / persistence HOLD / closure validation pending`.
+Status: `package complete / persistence HOLD / follow-on required`.
 
 Evidence mode: `Static + Ran`; immutable attempt 004 is the admitted result.
 
