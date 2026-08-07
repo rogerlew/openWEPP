@@ -27,5 +27,8 @@ Evidence class: `Static`.
 | Schema v4 cannot prove v6 primitive/support closure | `accepted` | Old cells narrowed to aggregate custody; v6 retains primitives; localization requires neutral instrumented twins | Tools/tests pending |
 | Causal predicates remained placeholders | `accepted` | Six descriptive and six matching single-substitution causal classes frozen with equifinality fallback | Conditional observability only |
 | Mandatory v130 phase ordering contradicted package | `accepted` | V130/test/gate/fresh review now precede tools and any result execution | Pending execution |
+| INV-097 absent from guard/boundary maps | `accepted` | Added explicit governance/evidence guard and boundary rows plus section-scoped test | Reverification pending |
+| Checkpoint trigger omitted median failure | `accepted` | Aligned package/protocol to per-WY-or-median trigger for each forcing | Reverification pending |
+| TOL-019 retained superseded predecessor tolerance | `accepted` | Narrowed TOL-019 to sign/support; TOL-020 solely owns predecessor reproduction | Reverification pending |
 
 No result execution may begin with an undispositioned review finding.

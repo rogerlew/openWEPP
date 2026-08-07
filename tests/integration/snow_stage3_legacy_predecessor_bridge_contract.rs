@@ -9,6 +9,17 @@ fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
 }
 
+fn section<'a>(document: &'a str, start: &str, end: &str) -> &'a str {
+    let start_index = document
+        .find(start)
+        .unwrap_or_else(|| panic!("missing section start {start}"));
+    let remainder = &document[start_index..];
+    let end_index = remainder
+        .find(end)
+        .unwrap_or_else(|| panic!("missing section end {end}"));
+    &remainder[..end_index]
+}
+
 #[test]
 fn v130_binds_forcing_matched_predecessor_reproduction() {
     let contract = read(CONTRACT);
@@ -128,4 +139,109 @@ fn v130_protocol_and_registry_retain_claim_limits() {
         assert!(protocol.contains(required), "{PROTOCOL} missing {required}");
     }
     assert!(contract.contains("This correction changes no equation, constant, selector, default, state, output, ownership, or promotion status"));
+}
+
+#[test]
+fn v130_binding_surfaces_are_section_scoped_and_complete() {
+    let contract = read(CONTRACT);
+    let protocol = read(PROTOCOL);
+    let invariant = section(&contract, "| INV-SNOWFREEZE-097", "### HPHYS0298");
+    let guard = section(&contract, "## Invariant Guard Map", "## Symbol Alias Map");
+    let producer = section(
+        &contract,
+        "## Producer Obligations",
+        "## Consumer Obligations",
+    );
+    let consumer = section(
+        &contract,
+        "## Consumer Obligations",
+        "## Boundary Disposition",
+    );
+    let boundary = section(
+        &contract,
+        "## Boundary Disposition",
+        "## Tolerance and Numeric Notes",
+    );
+    let tolerance = section(
+        &contract,
+        "## Tolerance and Numeric Notes",
+        "## Stage 3 Evaluation Shadow Authority Addendum",
+    );
+    let addendum = section(
+        &contract,
+        "## Stage 3 Forcing-Matched Predecessor Bridge Correction Addendum",
+        "## Wet-Compaction Operand Authority And Duplicate-Alias Closure Addendum",
+    );
+    let exposure = section(&contract, "## Binding Exposure Index", "## Known Gaps");
+
+    for (name, scoped, required) in [
+        ("invariant", invariant, "INV-SNOWFREEZE-097"),
+        ("guard", guard, "`INV-SNOWFREEZE-097`"),
+        ("producer", producer, "OBL-SNOWFREEZE-P-070"),
+        ("consumer", consumer, "OBL-SNOWFREEZE-C-012"),
+        ("boundary", boundary, "INV-SNOWFREEZE-097"),
+        ("tolerance", tolerance, "TOL-SNOWFREEZE-020"),
+        ("exposure", exposure, "SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE"),
+    ] {
+        assert!(scoped.contains(required), "{name} missing {required}");
+    }
+
+    for required in [
+        "exact forcing-hash join",
+        "schema-v4 aggregate-only limit",
+        "same-forcing all-35-WY-plus-median aggregate reconstruction",
+        "paired disabled controls",
+        "single-axis substitution closure",
+        "Evidence hard-fail",
+        "governance `HOLD`",
+    ] {
+        assert!(
+            guard.contains(required) || boundary.contains(required),
+            "guard/boundary missing {required}"
+        );
+    }
+
+    for required in [
+        "any paired water-year source",
+        "paired-difference median fails",
+        "TOL-SNOWFREEZE-020",
+    ] {
+        assert!(producer.contains(required), "producer missing {required}");
+    }
+    for required in [
+        "canonical lane executes iff any WY E10-E00 exceeds",
+        "paired-difference median exceeds 1e-7 MJ m^-2",
+        "development lane uses the same WY-or-median rule for E11-E01",
+        "execute both when both trigger",
+    ] {
+        assert!(protocol.contains(required), "protocol missing {required}");
+    }
+    for required in [
+        "schema-v4 24-hour sum versus daily aggregate",
+        "max(1e-6 J m^-2, 1e-12 * sum_abs_operands)",
+        "1e-7 MJ m^-2",
+    ] {
+        assert!(tolerance.contains(required), "tolerance missing {required}");
+    }
+
+    for required in [
+        "FIRST_DIVERGENCE_DAILY_RESET",
+        "FIRST_DIVERGENCE_INITIAL_CONTROL_VOLUME_PROJECTION",
+        "FIRST_DIVERGENCE_SURFACE_TERMS",
+        "FIRST_DIVERGENCE_ACTIVE_INTERNAL_CONDUCTION",
+        "FIRST_DIVERGENCE_STATE_APPLICATION_REMOVAL",
+        "FIRST_DIVERGENCE_TRANSITION_PREPARATION_CADENCE",
+        "FIRST_DIVERGENCE_MULTIPLE_OR_UNOBSERVED",
+        "DAILY_RESET_CAUSAL",
+        "INITIAL_CONTROL_VOLUME_PROJECTION_CAUSAL",
+        "SURFACE_TERMS_CAUSAL",
+        "ACTIVE_INTERNAL_CONDUCTION_CAUSAL",
+        "STATE_APPLICATION_REMOVAL_CAUSAL",
+        "TRANSITION_PREPARATION_CADENCE_CAUSAL",
+        "Zero or multiple closing substitutions",
+        "different first intervals/axes across triggering forcing lanes",
+        "SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE",
+    ] {
+        assert!(addendum.contains(required), "addendum missing {required}");
+    }
 }

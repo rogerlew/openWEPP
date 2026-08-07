@@ -180,9 +180,10 @@ write.
    `interaction=(E11-E10)-(E01-E00)`. Do not algebraically combine medians of
    separately reduced distributions.
 6. If any water-year `E10-E00` source delta exceeds its scale-aware energy
-   tolerance, traverse every prospectively frozen distinct binary build-input
-   closure on canonical forcing. Apply the same rule to `E11-E01` and the
-   development forcing; if both trigger, traverse both lanes. Collapse commits only when the
+   tolerance or the paired-difference median exceeds `1e-7 MJ m^-2`, traverse
+   every prospectively frozen distinct binary build-input closure on canonical
+   forcing. Apply the same WY-or-median rule to `E11-E01` and development
+   forcing; if both trigger, traverse both lanes. Collapse commits only when the
    recorded closure digest is identical; never select a checkpoint from result
    values and never assume monotonicity.
 7. Within a first divergent source interval, compare the earliest evaluated
