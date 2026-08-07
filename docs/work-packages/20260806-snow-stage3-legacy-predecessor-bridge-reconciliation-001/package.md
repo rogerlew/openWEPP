@@ -121,6 +121,13 @@ from disabled/public output.
   - `Cargo.toml`
   - `tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs`
   - `tests/integration/snow_stage3_legacy_predecessor_bridge_contract.rs`
+- conditional stale contract-version guard reconciliation:
+  - exactly the 37 tracked `tests/integration/*.rs` files containing the exact
+    historical assertion string `contract_version: 129` at commit
+    `de3c14933650ed7eb41a54ac86028af4448f7a1d`; the only admitted edit is to
+    replace that brittle latest-version assertion with the stable canonical
+    identity assertion `contract_id: SC-SNOWFREEZE-001`, retaining every
+    invariant, obligation, behavior, and package assertion;
 - conditional default-off diagnostic files:
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
@@ -386,6 +393,10 @@ the package namespace and content-hashed.
   as `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` under v130.
 - [x] (2026-08-06) Independent post-result science, Rust/custody, and consumer
   review passed after one accepted stale-roadmap identity correction.
+- [x] (2026-08-06) First terminal quick attempt ran 910 tests and exposed two
+  stale v129 pins before fail-fast. Prospectively admitted a mechanical
+  reconciliation of all 37 identical historical version pins; no production
+  or science assertion is weakened.
 - [ ] Complete terminal validation/verification and close.
 
 ## Surprises & Discoveries
@@ -426,6 +437,12 @@ the package namespace and content-hashed.
   development predecessor gate, while the prior S/F/Q signs already isolate
   the sign crossing to later evolution; no evidence establishes physical
   correctness. Date/Author: 2026-08-06 / Codex.
+- Decision: replace historical tests' latest-version pins with the stable
+  canonical contract identity, rather than rolling every old package test to
+  v130. Rationale: those tests own invariant/obligation behavior, not the
+  current revision number; retaining a latest-version assertion recreates the
+  same failure on every legitimate contract amendment. Every substantive
+  marker remains unchanged. Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 

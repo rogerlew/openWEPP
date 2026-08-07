@@ -1,0 +1,283 @@
+{
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--workspace",
+    "--profile",
+    "quick"
+  ],
+  "exit_code": 100,
+  "git": {
+    "branch": "main",
+    "dirty": false,
+    "sha": "de3c14933650ed7eb41a54ac86028af4448f7a1d",
+    "status_short": ""
+  },
+  "label": "predecessor-bridge-de3c14933650-quick",
+  "machine": {
+    "cpu_count": 48,
+    "hostname": "forest",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "nextest": {
+    "junit_path": "target/nextest/quick/junit.xml",
+    "status_counts": {
+      "error": 0,
+      "failed": 2,
+      "passed": 908,
+      "skipped": 0
+    },
+    "test_count": 910,
+    "test_time_seconds": 9196.803,
+    "top_classes": [
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "slowest_test_seconds": 426.978,
+        "test_count": 37,
+        "test_time_seconds": 3895.971
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "slowest_test_seconds": 452.033,
+        "test_count": 23,
+        "test_time_seconds": 3484.926
+      },
+      {
+        "classname": "openwepp::assurance_v2_assembly_contract",
+        "slowest_test_seconds": 112.542,
+        "test_count": 9,
+        "test_time_seconds": 457.435
+      },
+      {
+        "classname": "openwepp::assurance_v2_normalization_contract",
+        "slowest_test_seconds": 143.837,
+        "test_count": 5,
+        "test_time_seconds": 396.024
+      },
+      {
+        "classname": "openwepp::assurance_v2_source_contract",
+        "slowest_test_seconds": 82.218,
+        "test_count": 12,
+        "test_time_seconds": 371.598
+      },
+      {
+        "classname": "openwepp::assurance_v2_planner_contract",
+        "slowest_test_seconds": 27.284,
+        "test_count": 10,
+        "test_time_seconds": 150.207
+      },
+      {
+        "classname": "openwepp::cqr_quality_evidence_handoff_contract",
+        "slowest_test_seconds": 122.327,
+        "test_count": 4,
+        "test_time_seconds": 123.221
+      },
+      {
+        "classname": "openwepp::erosion_multi_ofe_p102_chain",
+        "slowest_test_seconds": 35.468,
+        "test_count": 1,
+        "test_time_seconds": 35.468
+      },
+      {
+        "classname": "openwepp::laned_shadow_h2637",
+        "slowest_test_seconds": 33.268,
+        "test_count": 8,
+        "test_time_seconds": 35.121
+      },
+      {
+        "classname": "openwepp::dff_ws3_directional_burn_validation",
+        "slowest_test_seconds": 30.364,
+        "test_count": 2,
+        "test_time_seconds": 30.381
+      },
+      {
+        "classname": "openwepp::dff_ws2_ksatadj_direct_runtime",
+        "slowest_test_seconds": 29.414,
+        "test_count": 1,
+        "test_time_seconds": 29.414
+      },
+      {
+        "classname": "openwepp::dff_ws1_native_forest_cli",
+        "slowest_test_seconds": 29.153,
+        "test_count": 1,
+        "test_time_seconds": 29.153
+      },
+      {
+        "classname": "openwepp::hphys0208_fc_threshold_coupled_residual_contract",
+        "slowest_test_seconds": 26.167,
+        "test_count": 2,
+        "test_time_seconds": 26.202
+      },
+      {
+        "classname": "openwepp::hphys0209_profilewp_adjudication_contract",
+        "slowest_test_seconds": 25.943,
+        "test_count": 2,
+        "test_time_seconds": 25.969
+      },
+      {
+        "classname": "openwepp::assurance_dossier_build_contract",
+        "slowest_test_seconds": 20.175,
+        "test_count": 13,
+        "test_time_seconds": 21.097
+      },
+      {
+        "classname": "openwepp::erosion_single_ofe_p61_sediment",
+        "slowest_test_seconds": 17.9,
+        "test_count": 1,
+        "test_time_seconds": 17.9
+      },
+      {
+        "classname": "openwepp::erod16_wave1_continuity_fixture_conservation",
+        "slowest_test_seconds": 15.616,
+        "test_count": 1,
+        "test_time_seconds": 15.616
+      },
+      {
+        "classname": "openwepp::pl14s_tier_a_candidate_emission_and_replay_contract",
+        "slowest_test_seconds": 13.258,
+        "test_count": 7,
+        "test_time_seconds": 13.546
+      },
+      {
+        "classname": "openwepp::infile_watershed_structure_parser_contract",
+        "slowest_test_seconds": 8.044,
+        "test_count": 22,
+        "test_time_seconds": 8.824
+      },
+      {
+        "classname": "openwepp::owcmp_cli_contract",
+        "slowest_test_seconds": 1.116,
+        "test_count": 12,
+        "test_time_seconds": 4.152
+      }
+    ],
+    "top_tests": [
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority",
+        "status": "passed",
+        "time_seconds": 452.033
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "authority_bound_byte_negative_matrix_is_fail_closed",
+        "status": "passed",
+        "time_seconds": 426.978
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "principal_and_lifecycle_checks_recalculate_identical_candidates",
+        "status": "passed",
+        "time_seconds": 332.335
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "manifest_adoption_accepts_complete_owned_internal_source_set",
+        "status": "passed",
+        "time_seconds": 305.664
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "implementation_rebind_adopts_only_the_finite_contract_surface",
+        "status": "passed",
+        "time_seconds": 304.259
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "manifest_adoption_admits_new_declared_external_local_content",
+        "status": "passed",
+        "time_seconds": 303.539
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "new_report_admission_checks_applies_and_repeats_as_no_op",
+        "status": "passed",
+        "time_seconds": 289.344
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "report_lead_can_return_pending_review_to_draft_without_erasing_history",
+        "status": "passed",
+        "time_seconds": 274.662
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "approval_conflicts_and_release_mismatch_fail_before_publication",
+        "status": "passed",
+        "time_seconds": 271.746
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "canonical_public_path_and_real_markdown_narrative_link_are_mandatory",
+        "status": "passed",
+        "time_seconds": 244.448
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "receipt_preparation_is_reused_only_when_bytes_match",
+        "status": "passed",
+        "time_seconds": 244.028
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation",
+        "status": "passed",
+        "time_seconds": 230.333
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies",
+        "status": "passed",
+        "time_seconds": 227.228
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "supersession_is_terminal_and_requires_a_named_successor",
+        "status": "passed",
+        "time_seconds": 207.036
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation",
+        "status": "passed",
+        "time_seconds": 200.189
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "aliased_usersum_root_fails_closed",
+        "status": "passed",
+        "time_seconds": 200.133
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "concurrent_reader_observes_only_complete_old_or_new_report_bytes",
+        "status": "passed",
+        "time_seconds": 167.252
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "named_publication_preserves_receipted_peer_and_all_mode_converges",
+        "status": "passed",
+        "time_seconds": 155.658
+      },
+      {
+        "classname": "openwepp::assurance_v2_publication_contract",
+        "name": "special_files_on_public_and_immutable_surfaces_fail_closed",
+        "status": "passed",
+        "time_seconds": 154.827
+      },
+      {
+        "classname": "openwepp::assurance_v2_amendment_contract",
+        "name": "attribution_check_is_read_only_and_apply_is_layer_proportional",
+        "status": "passed",
+        "time_seconds": 153.917
+      }
+    ]
+  },
+  "profile": "quick",
+  "schema": "openwepp-local-ci-nextest-timing-v1",
+  "timestamp_utc": "2026-08-07T04:34:45+00:00",
+  "wall_time_seconds": 2139.019
+}

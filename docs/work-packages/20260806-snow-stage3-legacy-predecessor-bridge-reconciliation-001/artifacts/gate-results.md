@@ -21,6 +21,7 @@ Evidence mode: `Ran`.
 | Governed review-draft drift | `PASS` | Canonical renderer synchronized three stale v130-bound files, then exact check passed |
 | Assurance export/release guard | `PASS` | Zero public reports/documents; vendoring false; no transition performed |
 | Post-result science/Rust/consumer review | `PASS/PASS/PASS` | Science and custody pass at `dd7c1a3cf`; consumer hold corrected and recheck passes at `039ee78e2` |
+| First terminal quick attempt | `FAIL / finding accepted` | Exact clean `de3c14933`; 908 passed, 2 stale v129 version-pin failures, then fail-fast at 910 run; no science/runtime failure |
 | Terminal quick/frost/full workspace | `NOT RUN` | Required after post-result review |
 | Dual terminal verification | `NOT RUN` | Required at exact clean closure candidate |
 
@@ -28,3 +29,12 @@ Retained output root size is `32,038,680,276` bytes. The complete manifest has
 SHA-256 `a0e2a9ed1b08a41712980a8354b8471bf290faf1d9e7e164ab4858a43a05c4c6`.
 Execution/result/checkpoint receipt hashes are recorded in the package outcome
 and verified by both package tools. No TESTGATE command ran.
+
+The first terminal quick attempt is retained as contrary evidence under
+`artifacts/terminal-verification/`. It exposed a repository-wide historical
+test-coupling defect: 37 integration tests asserted that the canonical
+contract's latest version remained v129. The package prospectively expanded
+its test-only write set before any correction. The admitted mechanical repair
+keeps each test's invariant, obligation, behavior, and package markers while
+binding canonical contract identity instead of a perpetually stale latest
+revision number. A complete fresh quick/frost/full run is required.
