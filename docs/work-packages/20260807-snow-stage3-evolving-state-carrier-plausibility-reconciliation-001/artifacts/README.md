@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: `Phase A/B closed / Phase C analyzer authorized`.
+Status: `Phase E executed / persistence HOLD / closure validation pending`.
 
-Evidence mode: `Static + Ran`; result-bearing execution remains not run.
+Evidence mode: `Static + Ran`; immutable attempt 004 is the admitted result.
 
 This directory owns the result-blind protocol, authority, forcing custody,
 operand lineage, implementation, execution, reconstruction, review,

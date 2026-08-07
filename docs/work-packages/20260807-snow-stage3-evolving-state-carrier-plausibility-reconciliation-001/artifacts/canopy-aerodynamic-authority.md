@@ -17,3 +17,8 @@ forbidden and frost equations must not be reused as snow-energy authority.
 This `AUTHORITY_MISSING` finding does not prove that a separate canopy operator
 is physically required: that classification first requires resolved wind
 exposure and applicability evidence.
+
+Ran: the four-site audit confirms the current turbulent path has no canopy
+operand and that wind exposure remains unresolved. It therefore does not emit
+`CANOPY_AERODYNAMIC_AUTHORITY_REQUIRED`, does not spend the zero-arm
+counterfactual budget, and does not authorize attenuation or a canopy operator.

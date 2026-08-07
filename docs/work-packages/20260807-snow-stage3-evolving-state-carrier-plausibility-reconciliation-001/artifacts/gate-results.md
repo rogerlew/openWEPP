@@ -39,3 +39,42 @@ Ran at exact clean `5e353b8c8bc56c9d36301743119dbe1c76a0e9a0`:
 - clean worktree before and after the command set: `PASS`.
 
 Independent Phase-B reviews: science `GO`, Rust `GO`, and consumer `GO`.
+
+## Phase-D/E Four-Site Result
+
+Ran by the required comparator runner at clean `e07cdbdf9`: attempt 004 exited
+`0` after `1,969.55 s` per the retained timing log, maximum RSS `76,812 KiB`.
+Exact output hashes are
+recorded in `implementation-test-evidence.md`.
+
+Inventory: Mica Creek `34`, Niwot `44`, Paradise `41`, Snowbird `35` eligible
+water years; total `154`; WY2025 remained right-censored. All trace, receipt,
+result, climate, observation, cross-lane, fixed-field, tuple, energy, mass,
+endpoint, and N/A checks completed. No evidence hard-fail occurred.
+
+Scientific gates: zero capacity-truncated tuples and zero active-state failure
+tuples at every site. Mica Creek, Niwot, and Snowbird pass per-WY support
+materiality. Paradise fails one year, WY2015, at `0.0621730192` versus the
+frozen `0.05` threshold. Wind exposure remains `UNKNOWN`; geometry and physical
+magnitude envelopes remain `NOT_EVALUABLE`. Terminal classes are
+`WIND_FORCING_EXPOSURE_UNRESOLVED` and `MULTIFACTOR_OR_INCONCLUSIVE`;
+persistence is `HOLD`.
+
+## Phase-F Closure Candidate
+
+Ran on the reconciled closure candidate:
+
+- analyzer pytest: `29/29 PASS`;
+- focused Rust contract targets: `27/27 PASS`;
+- workspace all-target/all-feature Clippy with warnings denied: `PASS`;
+- `cargo fmt --all -- --check`: `PASS`;
+- Binding Exposure: Snow/Freeze `13` and Snow Energy `9`, both `PASS`;
+- DRAFT assurance validation and 98-file review-draft renderer check: `PASS`;
+- all changed Markdown files via `markdown-doc lint`: `PASS`;
+- `git diff --check`: `PASS`.
+
+The first workspace quick run stopped after `916` passes on one roadmap
+string-contract failure caused by the closure update. The roadmap was corrected
+to preserve the required conditional phrase, and the exact failed test then
+passed `1/1`. Full-workspace correctness and dual terminal verification remain
+pending at this evidence checkpoint.

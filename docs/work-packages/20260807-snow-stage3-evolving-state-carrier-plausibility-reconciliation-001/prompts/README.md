@@ -1,7 +1,6 @@
 # Prompts
 
-Status: `queued`.
+Status: `kickoff archived`.
 
-The package-end-to-end kickoff is active under `active/`. At closure it must be
-archived byte-identically under `archived/`, with its hash recorded in terminal
-evidence.
+The exact user kickoff is retained byte-identically under `archived/` after
+execution.

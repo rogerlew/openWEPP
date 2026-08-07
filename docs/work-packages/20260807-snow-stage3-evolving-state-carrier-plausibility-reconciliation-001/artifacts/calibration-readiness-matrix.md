@@ -24,3 +24,10 @@ coefficient, chooses an equation, or supplies independent validation.
 
 Missing physical magnitude authority blocks persistence, but does not turn this
 characterization package into a calibration package.
+
+Executed disposition: `identifiability_status = NOT_IDENTIFIABLE_FROM_CURRENT_EVIDENCE`.
+The crossing is associated with multiple numerically dominant reported
+state-dependent sensible,
+latent, and longwave changes while exposure, geometry, and magnitude authority
+remain unresolved. No fitted parameter, response surface, or calibration claim
+was introduced.

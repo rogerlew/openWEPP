@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static
-last_reviewed: 2026-08-05
+last_reviewed: 2026-08-07
 supersedes: []
 superseded_by: []
 ---
@@ -77,6 +77,12 @@ fixed forcing/surface metadata derived from the pinned libsnobal point-input
 contract, not calibration parameters or site observations. A future forcing
 producer may provide different measured heights or surface roughness only
 through an explicit typed authority amendment.
+
+Version 9 distinguishes the current evaluation carrier's raw signed vapor
+exchange opportunity from canonical bounded vapor transfer. Schema-v6 raw
+vapor and latent energy are diagnostic opportunities. Actual sequential snow
+mass debit/credit uses bounded transfer. Capacity truncation without a matching
+latent-energy bound is a plausibility finding, not production authority.
 
 ## Scientific Scope
 
@@ -164,7 +170,8 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `p_a` | `Pa` | Atmospheric pressure derived from run elevation. | climate metadata projection | SNOBAL effective snow conductivity |
 | `k_d`, `k_eff` | `W m^-1 K^-1` | Dry Yen snow conductivity and Anderson pore-vapor-enhanced effective conductivity. | density, temperature, pressure | active/lower series resistance and `G_0` |
 | `Q_cc` | `J m^-2` | Positive active-layer cold-content deficit relative to `0 degC` ice. | Stage 3 thermal partition | shared energy carrier |
-| `m_v` | `kg m^-2` | Signed hourly vapor mass exchange; deposition positive, sublimation negative. | shared turbulent exchange | snow mass and latent-energy ledgers |
+| `m_v,raw` | `kg m^-2` | Signed vapor exchange opportunity integrated from turbulent mass flux before snow-ice availability bounding; deposition positive, sublimation negative. | evaluation-only schema-v6 carrier | attribution diagnostic; never actual S/F debit |
+| `m_v` | `kg m^-2` | Signed bounded vapor transfer; deposition positive, sublimation negative. | bounded Stage 3 transfer | actual snow mass and canonical latent-energy ledgers |
 | `Q_E` | `J m^-2` | Hour-integrated applied surface energy, positive toward snow. | shared energy carrier | cold-content update |
 | `Q_complete` | `J m^-2` | Exact-one sum of all admitted external and ground/interlayer energy operands for the declared substep/control volume, before phase-change allocation. | future complete Stage 3 energy carrier | cold-content and phase allocation |
 | `Q_cold_required` | `J m^-2` | Non-negative energy required to bring the melt-owning ice to its phase threshold after active/lower allocation. | future Stage 3 thermal state | positive-excess derivation |
@@ -587,6 +594,60 @@ M_ice,before - M_ice,after = M_sublimation
 Sublimation must not enter routed melt, retained liquid, released liquid, or
 refreeze operands.
 
+### Raw opportunity versus bounded vapor transfer
+
+The current evaluation-only schema-v6 carrier exposes
+`vapor_mass_exchange_kg_m2 = m_v,raw`. For sequential `Q`, independently derive
+
+```text
+m_deposition = max(m_v,raw, 0)
+m_sublimation = min(max(-m_v,raw, 0), m_active_ice_before)
+m_v = m_deposition - m_sublimation
+```
+
+and compare both bounded components to producer fields before aggregation.
+Same-state `S` and frozen-active `F` prohibit mutation, so actual bounded
+transfer is N/A even when raw opportunity is nonzero. Numeric zero cannot
+replace N/A.
+
+The evaluation carrier's `latent_flux_w_m2` is raw turbulent latent-energy
+opportunity paired with `m_v,raw`. When the availability bound is inactive,
+raw and bounded mass/latent views coincide. When sublimation opportunity
+exceeds active ice, raw latent opportunity is not latent energy of actual
+bounded transfer. Report that valid capacity truncation as
+`VAPOR_OPPORTUNITY_TRANSFER_MISMATCH`; do not hide it in melt, liquid,
+deposition, a median, or an endpoint residual. `INV-SNOWENERGY-017/029`
+continue to require one bounded `m_v` for the future production target's
+exact-one mass and latent-energy ledgers. Version 9 authorizes
+characterization only and makes no production correction.
+
+The independent consumer reconstructs the current evaluation chronology per Q
+tuple, distinct from the future bounded-latent production target:
+
+```text
+Q_latent_raw = latent_flux_w_m2 * duration_seconds = m_v,raw * L_s(T_s)
+Q_latent_bounded = m_v * L_s(T_s)
+Q_latent_truncation = Q_latent_raw - Q_latent_bounded
+C1 = C0 - G
+E_raw = independently reconstructed external_flux_w_m2 * duration_seconds
+surface_change = if E_raw >= 0 then min(E_raw, C1) else E_raw
+active_cold_change = G + surface_change
+lower_cold_change = -G
+Q_complete_raw = E_raw + G
+Q_excess_raw = max(Q_complete_raw - active_cold_change, 0)
+m_ice_available = max(m_active_ice_before - m_sublimation, 0)
+m_melt_raw_carrier = min(Q_excess_raw / L_f, m_ice_available)
+Q_unallocated_raw = max(Q_excess_raw - L_f * m_melt_raw_carrier, 0)
+```
+
+Here `C0` is active cold content before the substep and `G` is the emitted
+active-side internal-conduction primitive; schema v6 does not independently
+recompute layerwise conductivity. The consumer compares each reconstructed
+cold, melt, and closure operand to producer fields, then checks mass endpoints.
+It preserves that the as-built melt chronology consumes `E_raw`; it must not
+relabel `Q_latent_raw` or `m_melt_raw_carrier` as conformance to the future
+bounded-latent production target.
+
 ## Branch and Guard Table
 
 | Branch/condition | Required behavior | Guard class | Failure class |
@@ -661,6 +722,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-029` | The admitted future melt owner is Stage 3 alone. In each resolved stability substep, complete net radiation, sensible heat, latent heat, ground/interlayer conduction, and precipitation-advected heat satisfy cold content first. Split the already bounded signed vapor exchange exactly as `m_deposition=max(m_v,0)` and `m_sublimation=max(-m_v,0)`; reserve sublimation from post-precipitation ice; define `m_ice_available=max(m_ice_after_solid_precip-m_sublimation,0)`; then define `Q_excess=max(Q_complete-Q_cold_required,0)` after active/lower allocation and convert only that remainder as `m_melt=min(Q_excess/L_f,m_ice_available)`. `Q_unallocated_after_exhaustion=Q_excess-L_f*m_melt` must be zero; a positive value is an unresolved terminal boundary and blocks cutover. The CoE `A/B/C/D`, `C_canopy`, daily midpoint gate, embedded albedo, and rain-heat terms are compatibility diagnostics only and cannot generate melt after cutover. | `REF-SNOWENERGY-21N`, `REF-SNOWENERGY-LIBSNOBAL`, physical energy/phase conservation | `[DIRECT][Static] + [INFERENCE][Static]` | complete-component, cold-content-first, joint vapor/melt availability, latent-fusion, terminal-energy, and exact-one-owner gates | hard `IMPLEMENTATION_HOLD` until complete; typed energy/mass closure failure after cutover |
 | `INV-SNOWENERGY-030` | Stage 3-generated liquid is debited from ice and credited to the single liquid handoff exactly once in the same substep, then passes through refreeze, retention, and routing before thermal repartition. The energy ledger includes latent heat released by refreeze; the solid ledger credits refrozen liquid back to ice; and the liquid ledger debits that same refrozen mass. All three reconstruct independently from exact operands. Simultaneous CoE/Stage 3 melt, discarded positive energy, delayed duplicate routing, or an unresolved `m_s <= 1 kg m^-2` phase proxy is prohibited. | `REF-SNOWENERGY-21N`, `SC-SNOWFREEZE-001#INV-SNOWFREEZE-091`, physical conservation | `[DIRECT][Static] + [INFERENCE][Static]` | same-substep chronology, linked-ledger reconstruction, thin-pack authority, and real-consumer cutover gates | hard `IMPLEMENTATION_HOLD`; typed closure failure after cutover |
 | `INV-SNOWENERGY-031` | The CLIGEN/openWEPP Stage 3 turbulent forcing projection uses explicit virtual-instrument heights `z_T=z_q=z_u=5 m` above the instantaneous modeled snow surface and exposed-snow aerodynamic roughness `z_0,aero=0.005 m`. These fixed metadata are not observations, calibration parameters, or interchangeable with active thermal-layer depth `z_0`. All four values cross a typed runtime boundary and satisfy the logarithmic displacement/roughness domain before evaluation. | `REF-SNOWENERGY-LIBSNOBAL`, user authority dated 2026-08-05 | `[DIRECT][Static]` | exact-value projection, typed-domain, and sensitivity/non-alias tests | typed invalid turbulent geometry / blocked cutover |
+| `INV-SNOWENERGY-032` | Evaluation schema-v6 preserves `m_v,raw` and `Q_latent_raw=m_v,raw L_s(T_s)` as raw opportunities and actual sequential transfer separately as bounded deposition/sublimation with `Q_latent_bounded=m_v L_s(T_s)`. `S/F` actual transfer is N/A. For Q, the consumer reconstructs bounded transfer plus the exact characterization-only `C0/G/C1/E_raw/surface_change/active_change/lower_change/Q_complete_raw/Q_excess_raw/availability/melt/unallocated` chronology before producer and endpoint checks. Producer disagreement, simultaneous transfer, wrong direction, numeric-zero N/A, melt/liquid aliasing, or nonclosure is invalid evidence. Valid capacity truncation and `Q_latent_truncation` are `VAPOR_OPPORTUNITY_TRANSFER_MISMATCH` and block passage/persistence. The raw-latent chronology is not future bounded-latent target conformance. | `INV-SNOWENERGY-017/018/029`, `SC-SNOWFREEZE-001#INV-SNOWFREEZE-096`, physical mass/energy conservation | `[DIRECT][Static] + [INFERENCE][Static]` | independent tuple-level raw/bounded mass/latent reconstruction, operator-order chronology, anti-alias tests, and endpoint/energy closure | evidence hard-fail on malformed/alias/nonclosure; governance hold on physical passage |
 
 ### Guard Map
 
@@ -696,6 +758,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-028` | independent snow-mass, vapor aggregation, and vapor-to-sublimation reconstructions | test/profile/governance | apply each operand's unit-explicit tolerance; reject cross-predicate substitution | EB-04E prospective protocol and EB-04S result-blind authority reconciliation |
 | `INV-SNOWENERGY-029` | future Stage 3 complete energy carrier and sole melt generator | runtime/test/governance | no partial activation; typed closure failure after cutover | 21N authority decision and future implementation evidence |
 | `INV-SNOWENERGY-030` | future same-substep phase/liquid pipeline and three independently reconstructed ledgers | runtime/test/governance | no dual owner, alias, delay, or unresolved thin-pack proxy | 21N chronology and future real-consumer evidence |
+| `INV-SNOWENERGY-032` | package-local independent schema-v6 consumer | test/governance | reject invalid evidence; preserve valid capacity truncation as a physical finding and keep persistence held | Stage 3 evolving-carrier plausibility package |
 
 ## Producer and Consumer Obligations
 
@@ -707,6 +770,7 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-P-004` | Stage 3 thermal producer | Above `m_res`, publish active-layer `T_s`, mass, depth, cold content, lower state when present, and explicitly identified `T_c=T_a`, or a typed unavailable result. At or below `m_res`, publish unresolved duration/mass without fabricating thermal state. |
 | `OBL-SNOWENERGY-P-005` | sublimation exchange | Publish one bounded signed vapor mass exchange and derive its latent heat using the same `T_s`. |
 | `OBL-SNOWENERGY-P-006` | complete energy producer | Before melt-owner cutover, publish finite, unit-explicit, same-substep net radiation, sensible heat, latent heat, ground/interlayer conduction, and precipitation-advected heat with exact-one composition and independently reconstructable lineage. |
+| `OBL-SNOWENERGY-P-007` | evaluation evidence producer | Preserve raw vapor/latent opportunity separately from bounded deposition/sublimation and state endpoints; use N/A for S/F actual transfer; do not relabel raw opportunity as actual snow loss. |
 | `OBL-SNOWENERGY-C-001` | longwave evaluator | Apply the equations and guards in the specified order without silent unit conversion or fallback. |
 | `OBL-SNOWENERGY-C-002` | shared energy carrier | Consume `L_net` exactly once with the positive-toward-snow convention. |
 | `OBL-SNOWENERGY-C-003` | sublimation/melt consumers | Use the same EB-03 snow state as longwave; do not reconstruct an independent surface temperature. |
@@ -720,6 +784,7 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-C-011` | conductive provider | Publish current active/lower state, applied `G_0`, cadence, and separate active/lower/cancellation residuals from the production solve. |
 | `OBL-SNOWENERGY-C-012` | density-layer handoff | Convert layer SWE to `kg m^-2` before applying the density model's zero-mass lifecycle boundary; preserve all coupled state for retained layers and keep aggregate residual tolerances independent. |
 | `OBL-SNOWENERGY-C-013` | melt-owner implementation and cutover | Atomically replace CoE generation with bounded Stage 3 positive-energy phase conversion; close same-substep refreeze/retention/routing, residual-snow and terminal-unallocated-energy authority, selectors/defaults/rollback, real-consumer use, and independent energy plus linked mass ledgers before claiming conformance. |
+| `OBL-SNOWENERGY-C-014` | evaluation evidence consumer | Reconstruct raw vapor from turbulent primitives; verify `Q_latent_raw=m_v,raw L_s(T_s)`; derive bounded transfer and `Q_latent_bounded=m_v L_s(T_s)`; report their difference; reconstruct the exact characterization-only raw-latent cold/melt chronology; and reject producer disagreement plus all vapor/melt/liquid/N/A aliases before reduction. Never claim the as-built raw-latent chronology conforms to the future bounded-latent target. |
 
 ## Symbol Alias Map
 
@@ -738,7 +803,8 @@ divide/branch threshold.
 | `L_sub` | `subcanopy_longwave_w_m2` | mixture to snow energy | `W m^-2` -> same | `SC-SNOWENERGY-001` | Downward longwave incident at snow. |
 | `L_net` | `net_longwave_w_m2` | longwave to shared energy carrier | `W m^-2` -> same | `SC-SNOWENERGY-001` | Positive toward snow. |
 | `Q_cc` | `cold_content_j_m2` | Stage 3 layer to shared energy carrier | `J m^-2` -> same | `SC-SNOWFREEZE-001` | Positive energy deficit relative to `0 degC` ice. |
-| `m_v` | `vapor_mass_exchange_kg_m2` | turbulent exchange to snow state | `kg m^-2` -> same | `SC-SNOWFREEZE-001` / `SC-SNOWENERGY-001` | Signed exchange; sublimation negative. |
+| `m_v,raw` | `vapor_mass_exchange_kg_m2` | evaluation turbulent opportunity | `kg m^-2` -> same | `SC-SNOWENERGY-001` | Raw signed opportunity; never actual S/F transfer or bounded snow loss. |
+| `m_v` | `deposition_kg_m2 - sublimation_kg_m2` | bounded Q transfer reconstructed from separate schema-v6 fields | `kg m^-2` -> same | `SC-SNOWFREEZE-001` / `SC-SNOWENERGY-001` | Actual signed bounded transfer; not the raw vapor field. |
 | `Q_E` | `applied_surface_energy_j_m2` | shared carrier to cold content | `J m^-2` -> same | `SC-SNOWFREEZE-001` | Positive toward snow. |
 | `Q_complete`, `Q_cold_required`, `Q_excess`, `delta_E_cold`, `Q_refreeze`, `Q_unallocated_after_exhaustion` | future typed Stage 3 energy-ledger fields | substep energy/phase closure | `J m^-2` -> same | `SC-SNOWENERGY-001` / `SC-SNOWFREEZE-001` | Exact named operands; `Q_refreeze=L_f m_refrozen` and none may be inferred from residual output. |
 | `m_ice_available`, `m_melt`, `m_liquid_external_in`, `delta_m_retained`, `m_refrozen`, `m_routed`, `m_solid_precip`, `m_deposition`, `m_sublimation` | future typed Stage 3 phase/liquid-ledger fields | same-substep mass closure | `kg m^-2` -> same | `SC-SNOWENERGY-001` / `SC-SNOWFREEZE-001` | Exact named operands with retained change defined as end minus start. |
@@ -797,7 +863,8 @@ model.
 | `Q_cc`, `Q_E`, `Q_complete`, `Q_cold_required`, `Q_excess`, `delta_E_cold`, `Q_refreeze`, `Q_unallocated_after_exhaustion` | `J m^-2` | Stage 3 scalar with contract-bound guard | no conversion | retained/future scalar exception: internal area-normalized energy ledger | required cutover evidence for future operands |
 | `m_melt` | `kg m^-2` | future Stage 3 solid-to-liquid ledger | named `Q_excess/L_f` conversion bounded by `m_ice_available` | internal scalar with linked-ledger guards | required cutover evidence |
 | `m_ice_available`, `m_liquid_external_in`, `delta_m_retained`, `m_refrozen`, `m_routed`, `m_solid_precip`, `m_deposition`, `m_sublimation` | `kg m^-2` | future Stage 3 phase/liquid ledgers | named phase-state and exact handoff conversions only | internal scalars with linked-ledger guards | required cutover evidence |
-| `m_v` | `kg m^-2` | Stage 3 scalar with contract-bound guard | named mass-flux hourly integration | retained scalar exception: internal area-normalized mass ledger | internal diagnostic only |
+| `m_v,raw` | `kg m^-2` | schema-v6 `vapor_mass_exchange_kg_m2` diagnostic scalar | named turbulent mass-flux duration integration | retained evaluation-only scalar exception | internal diagnostic only |
+| `m_v` | `kg m^-2` | schema-v6 bounded `deposition_kg_m2` and `sublimation_kg_m2` fields or future typed Stage 3 transfer | named availability bound and signed recomposition | internal scalar with mass/latent ledger guards | required bounded-transfer evidence |
 | `m_res` | `kg m^-2` | fixed internal model-domain constant | named SWE-to-mass conversion using `rho_w` | no user boundary or scalar exception | contract and environment-gated trace metadata |
 | `m_layer` | `m` SWE at the typed state seam; `kg m^-2` for lifecycle comparison | `SWE_layer` (`snow.layer.mass_swe_m`) | `snow_water_equivalent_meters_to_area_mass_kg_m2` | typed `DirectSnowLayerState` vector-element scalar exception | internal state only |
 | `z_layer` | `m` | `z_layer` (`snow.layer.thickness_m`) | identity | typed `DirectSnowLayerState` vector-element scalar exception | internal state only |
@@ -925,6 +992,11 @@ The implementation increment must reproduce package artifact
     omitted sensible or precipitation-advection terms, discarded positive
     energy, delayed/duplicate liquid disposition, and an unauthorized
     `m_s <= 1 kg m^-2` proxy.
+27. raw-versus-bounded vapor vectors covering inactive and active availability
+    bounds; `S/F` N/A; independent Q deposition/sublimation; same-sign wrong
+    magnitude; direction reversal; simultaneous deposition/sublimation;
+    endpoint-preserving melt/vapor aliases; active/total endpoint substitution;
+    and raw latent opportunity versus bounded-transfer latent energy.
 
 Producer-only analytical vectors cannot close runtime activation. EB-03 must
 prove the real shared Stage 3 snow-energy consumer reads the contracted
@@ -946,6 +1018,7 @@ the originating evidence to authority promoted into this canonical core.
 | `SNOWENERGY-EB04S-TOLERANCE-RECONCILIATION` | `docs/work-packages/20260801-snow-surface-eb-04s-authority-reconciliation-retained-adjudication-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-027, INV-SNOWENERGY-028` | `dual review and verification required` | Result-blind authority reconciliation binds the SWE-to-area-mass equivalence while preserving distinct vapor-aggregation and layer-lifecycle predicates. |
 | `SNOWENERGY-21N-MELT-OWNER` | `docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, OBL-SNOWENERGY-P-006, OBL-SNOWENERGY-C-013` | `dual review and verification required` | Stage 3 is the sole future melt owner; the unchanged CoE runtime remains compatibility-only until complete energy, residual-snow, same-substep liquid, real-consumer, and cutover gates pass atomically. |
 | `SNOWENERGY-STAGE3-COMPLETE-CARRIER` | `docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, INV-SNOWENERGY-031` | `dual review and verification required` | User authority binds explicit CLIGEN virtual-instrument geometry and lifts the turbulent-input authority hold; carrier and shadow evidence remain required before atomic cutover. |
+| `SNOWENERGY-STAGE3-EVOLVING-CARRIER-PLAUSIBILITY` | `docs/work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-029, INV-SNOWENERGY-032, OBL-SNOWENERGY-P-007, OBL-SNOWENERGY-C-014` | `dual review and verification required` | Distinguishes evaluation-only raw vapor/latent opportunity from actual bounded sequential transfer; no production correction or persistence authority. |
 
 ## Gap Register
 
@@ -962,11 +1035,13 @@ the originating evidence to authority promoted into this canonical core.
 | `GAP-SNOWENERGY-009` | Multilayer density initialization used the `1e-9 m` aggregate SWE tolerance as a layer-deletion threshold, omitting represented fragments whose physical depth remained in the expected aggregate. | `SNOW-SURFACE-EB-04D` | Apply the existing `1e-9 kg m^-2` density-model zero-mass boundary after named SWE-to-mass conversion; preserve coupled state and prove both captured geometry failures pass. | resolved in version 5; both 16,437-day trajectories complete with independently reconstructed layer mass/depth closure |
 | `GAP-SNOWENERGY-010` | EB-04R transcribed the `1e-9 m` SWE-equivalent vapor-to-sublimation closure as `1e-9 kg m^-2`, conflating it with separate mass-unit predicates. | `SNOW-SURFACE-EB-04S` | Reconcile from pre-result authority, state every operand-specific tolerance in canonical units, and preserve EB-04R as an unchanged HOLD. | resolved in version 6; result-blind dimensional authority frozen before retained-output adjudication |
 | `GAP-SNOWENERGY-011` | The current runtime still uses post-2007 CoE as melt generator, omits complete sensible and precipitation-advected heat from the Stage 3 carrier, reports rather than converts positive excess, and has no admitted residual-snow phase or positive terminal-unallocated-energy disposition for the target. | future Stage 3 melt-owner implementation package | Implement `INV-SNOWENERGY-029` and `INV-SNOWENERGY-030` atomically; retire CoE generation at cutover; prove complete flux lineage, exact thin-pack and terminal-energy disposition, linked ledgers, selectors/defaults/rollback, and real downstream consumption. | open critical `IMPLEMENTATION_HOLD`; version 7 changes authority only and leaves runtime bytes unchanged |
+| `GAP-SNOWENERGY-012` | Current evaluation schema-v6 can apply raw latent-energy opportunity while actual sublimation is availability-bounded. | this plausibility package and future production implementation | Quantify tuple-level capacity truncation without aliasing; production target must derive latent energy and mass from one bounded `m_v`. | characterization admitted; physical passage and persistence held when active |
 
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 9 | 2026-08-07 | Distinguished evaluation-only raw vapor/latent opportunity `m_v,raw` from actual bounded transfer `m_v`; bound independent tuple-level transfer reconstruction, N/A and alias rejection, and capacity-truncation plausibility hold without changing production physics. | Stage 3 evolving-state carrier result-blind authority reconciliation |
 | 8 | 2026-08-05 | Bound typed CLIGEN/openWEPP virtual-instrument heights `z_T=z_q=z_u=5 m` above the instantaneous modeled snow surface and exposed-snow aerodynamic roughness `z_0,aero=0.005 m`; distinguished aerodynamic roughness from active-layer depth and retained all carrier/cutover gates. | Direct user authority plus pinned libsnobal point-input defaults and fixture |
 | 7 | 2026-08-04 | Admitted Stage 3 as the sole future melt owner after CoE failed the frozen specific-validation and enforceable-envelope predicates. Bound cold-content-first complete energy, bounded latent-fusion conversion, same-substep linked mass/liquid ledgers, no-dual-owner guards, and an atomic implementation hold covering incomplete fluxes and residual snow. Runtime CoE behavior remains unchanged as compatibility implementation, not target authority. | `SNOW-COE-STAGE3-MELT-OWNER-AUTHORITY-RECONCILIATION` frozen adjudication and pinned libsnobal chronology |
 | 6 | 2026-08-01 | Made closure tolerances operand- and unit-explicit: `1e-9 m` SWE equals `1e-6 kg m^-2` for the same residual and governs vapor-to-sublimation transfer closure; hourly/daily vapor aggregation and represented-layer lifecycle retain their distinct `1e-9 kg m^-2` predicates. | `SNOW-SURFACE-EB-04S` result-blind authority freeze and independent authority reviews |

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "report_id": "snow-and-frozen-soil-process-evaluation",
   "report_version": "1.0.0",
-  "source_root_sha256": "6c7fabfe23e708cc42a87190fedf43b8d7266cfe4f8b8d8e35930937f3394791",
+  "source_root_sha256": "0bf8b46611580bda182f8c906306f11ae31aa116b1458a192a0d1282cf4e2e76",
   "assembly_tool": "openwepp-assurance-assembly:1",
   "files": [
     {
@@ -27,11 +27,11 @@
     },
     {
       "path": "research-objects/SC-SNOWENERGY-001.md",
-      "sha256": "e574613dcc0f1173e6ec0bcc19ba69f237e86225f4bc6c8c77d03db15aa2291d"
+      "sha256": "65db5f5fb2486762b60cf2daa2d8bc65e9b0ad1dccc9e3c43fcf21c1dae77eda"
     },
     {
       "path": "research-objects/SC-SNOWFREEZE-001.md",
-      "sha256": "e6392c597e1396338c99f9013e82ae6ad5c488450bc3bae4b8a8ac87a67d274d"
+      "sha256": "4d5bd7bdf7f2ff52f79f13d118f962f20551e01121f4057b0359d663b7a6ba9b"
     },
     {
       "path": "research-objects/agent-assistance-packet.json",

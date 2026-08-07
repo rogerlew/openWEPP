@@ -1,6 +1,6 @@
 # Stage 3 Evolving-State Carrier Plausibility Reconciliation
 
-Status: `queued / scaffolded / result-blind admission required`
+Status: `executed / persistence HOLD / closure validation pending`
 
 Date: `2026-08-07`
 
@@ -42,11 +42,18 @@ over any owner.
   added independent contract-derived arithmetic/adversarial vectors, and passed
   the clean pre-implementation gate at `5e353b8c8`.
 - [x] (2026-08-07 16:03Z) Implemented and independently reviewed the
-  package-local schema-v6 consumer; `28/28` analyzer tests pass and existing
+  package-local schema-v6 consumer; the terminal analyzer suite has `29/29`
+  passing tests and existing
   observability is sufficient, so no Rust/schema expansion occurred.
-- [ ] Execute the frozen four-site audit and independent reconstruction once.
-- [ ] Complete dual review, finding disposition, dual verification, and final
-  package disposition.
+- [x] (2026-08-07 17:02Z) Completed immutable four-site attempt 004 at clean
+  `e07cdbdf9`: `154` eligible water years, valid reconstruction, persistence
+  `HOLD`, and no production change.
+- [x] (2026-08-07 18:12Z) Completed three independent result reviews,
+  dispositioned every finding, adopted both changed sources into the DRAFT
+  assurance graph, archived the kickoff byte-identically, and reconciled the
+  closure-candidate write set.
+- [ ] Complete dual terminal verification and exact terminal full-workspace
+  correctness before final package disposition.
 
 ## Surprises & Discoveries
 
@@ -141,8 +148,15 @@ over any owner.
 
 ## Outcomes & Retrospective
 
-Queued. No result-bearing execution, physics change, persistence, promotion,
-or cutover claim has occurred.
+The independent four-site characterization executed successfully. It confirms
+that the S/F-to-Q crossing is a within-day evolving-state effect dominated
+descriptively by sensible and latent changes, with shortwave unchanged. It does
+not establish physical plausibility: wind exposure and magnitude authority are
+unresolved, geometry is not evaluable, Paradise WY2015 fails support
+materiality, and multiple mechanisms remain non-identifiable. Raw and bounded
+vapor agree without capacity truncation, so vapor opportunity/transfer mismatch
+is not the cause in this cohort. Persistence, CoE ownership, production physics,
+promotion, and cutover remain unchanged and held.
 
 ## Frozen Intake
 

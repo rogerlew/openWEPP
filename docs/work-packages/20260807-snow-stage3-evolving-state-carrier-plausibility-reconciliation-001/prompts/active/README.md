@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: `queued`.
+Status: `no active prompt`.
 
-- `20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001_kickoff_agent_prompt.md`
+The package kickoff moved byte-identically to `../archived/` after execution.

@@ -16,7 +16,11 @@ Static: prospective Phase-A write selection.
   `tools/test_analyze_evolving_carrier.py`.
 - Roadmaps/catalog: root roadmap, snow surface-energy roadmap, work-package
   catalog.
-- Conditional DRAFT assurance impact artifact only; no lifecycle publication.
+- Conditional DRAFT assurance source adoption selected
+  `assurance/v2/identity.lock.json`, the snow report `review.lock.json`, and two
+  immutable transaction receipts, plus the four changed governed review-draft
+  projection files selected by the canonical renderer; no lifecycle
+  publication.
 - Ignored results: package-specific target namespace.
 
 Not selected: Rust production/schema/trace files, fixtures, observations,
