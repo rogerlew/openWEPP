@@ -332,7 +332,7 @@ def validate_joined_identity(
     first_s, first_q = paired_tuples[0], sequential_tuples[0]
     for field in predecessor.FIXED_REFERENCE_FIELDS:
         left, right = first_s.get(field), first_q.get(field)
-        if isinstance(left, (int, float)) or isinstance(right, (int, float)):
+        if isinstance(left, float) or isinstance(right, float):
             predecessor.require_same_bits(f"joined fixed {field}", left, right)
         elif left != right:
             raise RuntimeError(f"joined fixed {field} mismatch")

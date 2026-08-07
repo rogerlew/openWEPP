@@ -55,6 +55,11 @@ over any owner.
   rejected it before reading evidence.
   Evidence: retained `attempt-001` logs and `artifacts/rejected-execution-v1.md`;
   recovery uses a new `attempt-002` namespace with sibling runner logs.
+- Observation: Attempt 2 exposed an analyzer-only boolean/float dispatch defect
+  in joined fixed-field custody; no result was produced.
+  Evidence: retained `runner-logs-attempt-002` and
+  `artifacts/rejected-execution-v2.md`; the correction matches predecessor
+  comparison semantics and is covered by a boolean regression vector.
 
 - Observation: Canonical `SC-SNOWENERGY-001` uses signed `m_v` as bounded
   transfer, while schema-v6 exposes raw vapor opportunity and separate bounded

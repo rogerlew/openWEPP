@@ -16,10 +16,12 @@ SPEC.loader.exec_module(MODULE)
 
 
 class FakePredecessor:
-    FIXED_REFERENCE_FIELDS = ("wind_speed_m_s",)
+    FIXED_REFERENCE_FIELDS = ("wind_speed_m_s", "daylight")
 
     @staticmethod
     def require_same_bits(name: str, left: object, right: object) -> None:
+        if not isinstance(left, float) or not isinstance(right, float):
+            raise RuntimeError(f"{name} received non-float")
         if left != right:
             raise RuntimeError(f"{name} differs")
 
@@ -268,8 +270,18 @@ def test_cross_lane_identity_and_first_q_frozen_state_are_explicit() -> None:
         "stage3_evaluation_geometry_fingerprint_fnv1a64": "3",
         "stage3_evaluation_non_formulation_fingerprint_fnv1a64": "paired",
     }
-    s = {"wind_speed_m_s": 5.0, "projection_id": "whole_column_immutable", "state_marker": "S"}
-    q = {"wind_speed_m_s": 5.0, "projection_id": "aligned_active_dynamic", "state_marker": "Q"}
+    s = {
+        "wind_speed_m_s": 5.0,
+        "daylight": True,
+        "projection_id": "whole_column_immutable",
+        "state_marker": "S",
+    }
+    q = {
+        "wind_speed_m_s": 5.0,
+        "daylight": True,
+        "projection_id": "aligned_active_dynamic",
+        "state_marker": "Q",
+    }
     sequential_top = dict(top)
     sequential_top["stage3_evaluation_non_formulation_fingerprint_fnv1a64"] = "sequential"
     MODULE.validate_joined_identity(top, sequential_top, [s], [q], FakePredecessor)
@@ -284,6 +296,10 @@ def test_cross_lane_identity_and_first_q_frozen_state_are_explicit() -> None:
     q_wrong_fixed["wind_speed_m_s"] = 6.0
     with pytest.raises(RuntimeError, match="joined fixed wind_speed"):
         MODULE.validate_joined_identity(top, sequential_top, [s], [q_wrong_fixed], FakePredecessor)
+    q_wrong_boolean = dict(q)
+    q_wrong_boolean["daylight"] = False
+    with pytest.raises(RuntimeError, match="joined fixed daylight mismatch"):
+        MODULE.validate_joined_identity(top, sequential_top, [s], [q_wrong_boolean], FakePredecessor)
     aliased_top = dict(top)
     with pytest.raises(RuntimeError, match="non-formulation fingerprint alias"):
         MODULE.validate_joined_identity(top, aliased_top, [s], [q], FakePredecessor)
