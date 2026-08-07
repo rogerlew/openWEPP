@@ -41,8 +41,9 @@ over any owner.
 - [x] (2026-08-07 15:06Z) Amended Snow Energy to v9 and Snow/Freeze to v131,
   added independent contract-derived arithmetic/adversarial vectors, and passed
   the clean pre-implementation gate at `5e353b8c8`.
-- [ ] Implement or prove the independent consumer and any strictly necessary
-  default-off observability.
+- [x] (2026-08-07 16:03Z) Implemented and independently reviewed the
+  package-local schema-v6 consumer; `28/28` analyzer tests pass and existing
+  observability is sufficient, so no Rust/schema expansion occurred.
 - [ ] Execute the frozen four-site audit and independent reconstruction once.
 - [ ] Complete dual review, finding disposition, dual verification, and final
   package disposition.
@@ -95,6 +96,13 @@ over any owner.
   endpoints.
   Rationale: producer transfer columns and endpoint identities alone are
   tautological and can hide compensating aliases.
+  Date/Author: 2026-08-07 / Codex.
+- Decision: Treat any nonfinite numeric tuple evidence as invalid package
+  evidence, while retaining finite reconstructable domain violations as the
+  nonexclusive active-state physical class.
+  Rationale: nonfinite operands cannot support independent mass/energy
+  reconstruction; classifying them as physical would suppress invalid-evidence
+  precedence or corrupt common support.
   Date/Author: 2026-08-07 / Codex.
 
 - Decision: Treat canopy aerodynamic sheltering as a named high-priority

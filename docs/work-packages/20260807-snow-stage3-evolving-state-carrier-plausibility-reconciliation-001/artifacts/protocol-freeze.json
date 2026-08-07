@@ -37,6 +37,12 @@
     },
     "right_censored_water_year": 2025,
     "observations_role": "DIAGNOSTIC_ONLY window selection",
+    "observation_sha256": {
+      "snotel_mica_creek_st_joe_id": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce",
+      "snotel_niwot_co": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c",
+      "snotel_paradise_wa": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795",
+      "snotel_snowbird_ut": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+    },
     "aggregation": "sum per tuple to hour to water-year, then Python statistics.median across water years; never add separately reduced medians"
   },
   "forcing_custody": {
@@ -97,7 +103,7 @@
     "CANOPY_AERODYNAMIC_AUTHORITY_REQUIRED may be emitted only if wind exposure and applicability evidence first establish that a distinct canopy aerodynamic operator is required; absent equation authority alone records AUTHORITY_MISSING and prohibits the counterfactual but does not prove the class",
     "after all evidence-validity checks pass, any Q tuple with negative raw opportunity whose magnitude exceeds active_ice_mass_before under max(1e-12 kg m^-2,1e-12*sum_abs_operands), so valid independently bounded sublimation is smaller than raw opportunity, -> VAPOR_OPPORTUNITY_TRANSFER_MISMATCH; report capacity-truncated tuple count and mass before WY/site aggregation so errors cannot cancel",
     "TURBULENT_STABILITY_GEOMETRY_DEFECT may be emitted only if canonical equation authority selects z/L or (z-d)/L and current execution differs; current libsnobal/openWEPP z/L parity alone is not science authority, so geometry remains NOT_EVALUABLE and no defect class is emitted",
-    "any resolved tuple has nonfinite or out-of-domain state, surface temperature <= -273.15 degC or > 0 degC, negative mass/depth/density/cold content, or fails endpoint continuity -> ACTIVE_STATE_EVOLUTION_PLAUSIBILITY_FAIL",
+    "any nonfinite numeric tuple field -> invalid execution evidence and package HOLD because independent reconstruction is undefined; any finite resolved tuple has out-of-domain state, surface temperature <= -273.15 degC or > 0 degC, negative mass/depth/density/cold content, or fails an independently reconstructable physical-domain predicate after evidence validity passes -> ACTIVE_STATE_EVOLUTION_PLAUSIBILITY_FAIL",
     "COMPENSATING_TERM_ERROR is NOT_EVALUABLE and cannot be emitted because no admitted magnitude threshold exists",
     "MULTIFACTOR_OR_INCONCLUSIVE is emitted whenever more than one unresolved/nonexclusive mechanism class remains or the unique F-to-Q crossing attribution is not identified"
   ],
@@ -105,6 +111,7 @@
   "adversarial_expected_disposition": {
     "producer_transfer_or_melt_disagreement": "INVALID_EVIDENCE_PACKAGE_HOLD",
     "endpoint_or_SF_NA_violation": "INVALID_EVIDENCE_PACKAGE_HOLD",
+    "nonfinite_numeric_evidence": "INVALID_EVIDENCE_PACKAGE_HOLD",
     "valid_raw_capacity_truncation": "VAPOR_OPPORTUNITY_TRANSFER_MISMATCH",
     "raw_equals_valid_bounded_transfer": "NO_VAPOR_OPPORTUNITY_TRANSFER_MISMATCH"
   },

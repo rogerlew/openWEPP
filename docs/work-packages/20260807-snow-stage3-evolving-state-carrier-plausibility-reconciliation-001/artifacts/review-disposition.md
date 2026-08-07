@@ -39,3 +39,23 @@ consumer/reconstruction `GO`. The clean pre-implementation contract gate
 passes at `5e353b8c8bc56c9d36301743119dbe1c76a0e9a0`; Phase C package-local
 consumer implementation is authorized, while result execution remains blocked
 until its own tests pass.
+
+## Phase-C Disposition
+
+All Phase-C findings were `accepted` and fixed before result execution:
+
+- missing F-to-Q/common-support attribution and climate/observation custody;
+- Snowbird leakage into canonical decisions;
+- median-laundered and numeric-zero support materiality;
+- cross-lane/fixed-field and first-Q/F alias gaps;
+- incomplete state, volume, humidity, exchange, endpoint, and censoring output;
+- physical versus invalid-evidence precedence, including combined failures;
+- nonfinite evidence that could suppress valid tuples or corrupt support; and
+- insufficient custody, immutable-output, support, and nonexclusive-class
+  adversarial vectors.
+
+The protocol's pre-result nonfinite rule was tightened rather than inventing a
+numeric substitute: nonfinite evidence is invalid package `HOLD`; finite
+reconstructable physical divergence remains a scientific class. Final reviews
+are science `GO`, Rust `GO`, and consumer/reconstruction `GO`. Phase-D result
+execution is authorized only from the committed clean analyzer identity.

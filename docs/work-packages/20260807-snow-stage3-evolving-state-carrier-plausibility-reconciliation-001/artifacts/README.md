@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: `Phase A admission amended / Phase B authorized`.
+Status: `Phase A/B closed / Phase C analyzer authorized`.
 
-Evidence mode: `Static`; result-bearing execution remains not run.
+Evidence mode: `Static + Ran`; result-bearing execution remains not run.
 
 This directory owns the result-blind protocol, authority, forcing custody,
 operand lineage, implementation, execution, reconstruction, review,
