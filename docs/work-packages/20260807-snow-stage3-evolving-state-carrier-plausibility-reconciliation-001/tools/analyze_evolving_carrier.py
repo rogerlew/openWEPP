@@ -318,15 +318,14 @@ def validate_joined_identity(
         "stage3_evaluation_non_formulation_fingerprint_fnv1a64"
     )
     zero = "0000000000000000"
-    if paired_tuples or sequential_tuples:
-        if (
-            paired_non_formulation in (None, zero)
-            or sequential_non_formulation in (None, zero)
-            or paired_non_formulation == sequential_non_formulation
-        ):
-            raise RuntimeError("joined operator-specific non-formulation fingerprint alias")
-    elif paired_non_formulation != zero or sequential_non_formulation != zero:
-        raise RuntimeError("inactive joined non-formulation fingerprints are not zero")
+    paired_zero = paired_non_formulation == zero
+    sequential_zero = sequential_non_formulation == zero
+    if paired_non_formulation is None or sequential_non_formulation is None:
+        raise RuntimeError("joined non-formulation fingerprint is missing")
+    if paired_zero != sequential_zero:
+        raise RuntimeError("joined non-formulation sentinel applicability mismatch")
+    if not paired_zero and paired_non_formulation == sequential_non_formulation:
+        raise RuntimeError("joined operator-specific non-formulation fingerprint alias")
     if not paired_tuples or not sequential_tuples:
         return
     first_s, first_q = paired_tuples[0], sequential_tuples[0]

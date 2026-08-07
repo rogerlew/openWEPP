@@ -309,6 +309,25 @@ def test_cross_lane_identity_and_first_q_frozen_state_are_explicit() -> None:
         MODULE.construct_frozen_active(s_alias, q, FakePredecessor)
 
 
+def test_empty_support_preserves_selected_or_inactive_fingerprint_state() -> None:
+    base = {
+        "stage3_evaluation_source_fingerprint_fnv1a64": "1",
+        "stage3_evaluation_forcing_fingerprint_fnv1a64": "2",
+        "stage3_evaluation_geometry_fingerprint_fnv1a64": "3",
+        "stage3_evaluation_non_formulation_fingerprint_fnv1a64": "paired-selected",
+    }
+    selected = dict(base)
+    selected["stage3_evaluation_non_formulation_fingerprint_fnv1a64"] = "q-selected"
+    MODULE.validate_joined_identity(base, selected, [], [], FakePredecessor)
+
+    inactive = dict(base)
+    inactive["stage3_evaluation_non_formulation_fingerprint_fnv1a64"] = "0000000000000000"
+    MODULE.validate_joined_identity(inactive, dict(inactive), [], [], FakePredecessor)
+
+    with pytest.raises(RuntimeError, match="sentinel applicability mismatch"):
+        MODULE.validate_joined_identity(inactive, selected, [], [], FakePredecessor)
+
+
 def test_valid_capacity_truncation_is_a_physical_class_not_invalid_evidence() -> None:
     row = q_tuple(raw=-2.0, active_ice=0.5, external_flux=0.0)
     result = MODULE.validate_q_tuple(row)

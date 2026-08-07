@@ -60,6 +60,11 @@ over any owner.
   Evidence: retained `runner-logs-attempt-002` and
   `artifacts/rejected-execution-v2.md`; the correction matches predecessor
   comparison semantics and is covered by a boolean regression vector.
+- Observation: Attempt 3 exposed an analyzer-only conflation of empty resolved
+  support with the all-zero `operator_not_selected` sentinel.
+  Evidence: all sites contain selected/no-snow rows with zero tuples and
+  distinct nonzero operator fingerprints; `artifacts/rejected-execution-v3.md`
+  retains the failure and exact recovery rule.
 
 - Observation: Canonical `SC-SNOWENERGY-001` uses signed `m_v` as bounded
   transfer, while schema-v6 exposes raw vapor opportunity and separate bounded
