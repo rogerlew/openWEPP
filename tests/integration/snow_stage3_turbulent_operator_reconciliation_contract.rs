@@ -113,11 +113,11 @@ fn section<'a>(document: &'a str, start: &str, end: &str) -> &'a str {
 }
 
 #[test]
-fn v129_admits_only_additive_default_off_operator_reconciliation() {
+fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 129",
+        "contract_version: 130",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -134,7 +134,7 @@ fn v129_admits_only_additive_default_off_operator_reconciliation() {
 }
 
 #[test]
-fn v129_binds_exact_tuple_lineage_and_independent_reconstruction() {
+fn v130_retains_exact_tuple_lineage_and_independent_reconstruction() {
     let contract = read(CONTRACT);
 
     for required in [
@@ -154,7 +154,7 @@ fn v129_binds_exact_tuple_lineage_and_independent_reconstruction() {
 }
 
 #[test]
-fn v129_retains_production_and_claim_holds() {
+fn v130_retains_production_and_claim_holds() {
     let contract = read(CONTRACT);
     let index = read(INDEX);
 
@@ -167,9 +167,9 @@ fn v129_retains_production_and_claim_holds() {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "v129",
-        "schema-v6 turbulent/state lineage",
-        "historical schema-v5 semantics",
+        "v130",
+        "exact S/F/Q forcing hash",
+        "schema-v4 evidence to aggregate custody",
         "CoE ownership",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
@@ -247,7 +247,8 @@ fn assert_canonical_addendum(contract: &str) {
         "+170.2536089 MJ m^-2",
         "SUPPORT_CENSORING_MATERIALLY_CONTRIBUTES",
         "A zero denominator makes the ratio N/A",
-        "`PREDECESSOR_NOT_REPRODUCED` applies when the reconstructed legacy-bridge Snowbird median differs from `+170.2536089 MJ m^-2` by more than `1e-7 MJ m^-2` or any contributing water-year bridge exceeds its `TOL-SNOWFREEZE-019` scale-aware tolerance",
+        "`PREDECESSOR_NOT_REPRODUCED` applies only to a fixed-forcing comparison",
+        "`FORCING_IDENTITY_DIFFERENCE` and cannot support source/state attribution",
         "`LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` applies only when the reconstructed legacy sequential total is positive, the comparable sequential external subset is non-positive, and the external-plus-active-conduction bridge closes",
         "the first effective-input fingerprint differs exactly; the first active layer count, membership, or state fingerprint differs exactly; or the first active mass, depth, density, cold content, or temperature has different finite IEEE-754 `to_bits`",
         "`TOL-SNOWFREEZE-018` governs reconstruction and closure only; it cannot erase or create an initial-projection identity difference",
@@ -333,7 +334,7 @@ fn assert_canonical_tables(contract: &str) {
 }
 
 #[test]
-fn v129_canonical_addendum_pins_exact_algorithm_units_and_failures() {
+fn v130_canonical_addendum_retains_exact_algorithm_units_and_failures() {
     let contract = read(CONTRACT);
     assert_canonical_addendum(&contract);
     assert_canonical_tables(&contract);
@@ -364,7 +365,7 @@ fn inactive_operator_lifecycle_returns_before_hourly_forcing_acquisition() {
 }
 
 #[test]
-fn v129_binding_surfaces_each_retain_inv_096() {
+fn v130_binding_surfaces_each_retain_inv_096() {
     let contract = read(CONTRACT);
     let guard = section(&contract, "## Invariant Guard Map", "## Symbol Alias Map");
     let boundary = section(

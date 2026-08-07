@@ -749,6 +749,10 @@ name = "snow_stage3_shadow_observability_contract"
 path = "tests/integration/snow_stage3_shadow_observability_contract.rs"
 
 [[test]]
+name = "snow_stage3_legacy_predecessor_bridge_contract"
+path = "tests/integration/snow_stage3_legacy_predecessor_bridge_contract.rs"
+
+[[test]]
 name = "snow_stage3_turbulent_operator_reconciliation_contract"
 path = "tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs"
 

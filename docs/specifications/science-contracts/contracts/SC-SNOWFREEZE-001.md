@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 129
+contract_version: 130
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -97,6 +97,7 @@ Out of scope:
 | REF-SNOWFREEZE-STAGE3-EVALUATION-SHADOW-AUTHORITY | `docs/work-packages/20260806-snow-stage3-evaluation-shadow-authority-001/`, the executed Stage 3 complete-carrier shadow package, and the revised snow surface-energy roadmap §6.2 | Contract-scoping authority that preserves one production snow-mass owner while admitting two explicitly tagged, default-off, consumer-forbidden evaluation operators with bounded custody and claims. | `[DIRECT][Static] + [INFERENCE][Ran]` |
 | REF-SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY | `docs/work-packages/20260806-snow-stage3-shadow-solver-extraction-and-observability-001/`, `INV-SNOWFREEZE-094`, and the schema-v4 direct snow trace lineage | Runtime-realization authority for the two admitted evaluation operators: typed default-off request/tag custody, exact disabled schema-v4 preservation, enabled internal schema-v5 per-term/fingerprint/support evidence, typed turbulent-error custody, and solver extraction without production-physics change. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION | `docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/`, its admitted result-blind protocol, `INV-SNOWFREEZE-094/095`, and `openwepp-meteorology` Monin-Obukhov surface-exchange lineage | Behavior-neutral authority for additive schema-v6 substep observability and an independent operator-reconciliation consumer that separates initial active-control-volume projection, within-day clone evolution, support censoring, and external-versus-internal energy terms without changing either admitted operator or production behavior. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE | `docs/work-packages/20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/`, its prospectively frozen two-source by two-forcing protocol, exact source commits `2d035638a9819961a393207cd4813712d64bddcf` and `5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5`, canonical Snowbird climate SHA-256 `10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7`, and development climate SHA-256 `c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb` | Corrective custody authority for forcing-matched schema-v4/schema-v6 predecessor reproduction, per-water-year source/forcing/interaction accounting, aggregate-only schema-v4 limits, and conditional behavior-neutral source localization. It supersedes only the unqualified scalar predecessor predicate in v129 and authorizes no physics or production change. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-STURM2010-DENSITY | `references/copyrighted/sturm2010_swe_climate_classes.pdf` Eq. 6 and Table 4 | Sturm 2010 density trajectory authority for class-specific `rho_max`, `rho_0`, `k1`, and `k2` parameters for alpine, maritime, prairie, tundra, and taiga snow. The same paper states ephemeral snow measurements were excluded, so no ephemeral density parameter row is available from this local authority. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-STURM1995-CLASSIFICATION | `references/copyrighted/sturm1995.pdf` pp. 1273-1276, Figs. 8-9 and Table 7 | Required authority for forcing-derived class assignment from the run's own air-temperature, precipitation, and wind climate. The original tree uses CDM with `Tc=10 degC`, high/low temperature threshold `125 degC-month`, ephemeral threshold `30 degC-month`, precipitation threshold `2 mm d^-1`, and wind low/high evidence bounded by `0.5-2.0 m s^-1`; the original map used vegetation as wind proxy, so direct-runtime wind classification must fail closed for the unresolved `0.5 < wind < 2.0 m s^-1` interval rather than inventing a fitted cutoff. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-STURM2021-CLASSIFICATION-CROSSCHECK | `references/copyrighted/hydr-JHM-D-21-0070.1.pdf` Fig. 2 and §2a; NSIDC-0768 user guide §Documentation | Cross-check for the Sturm classification update, not replacement authority for 1995-named classes. Sturm and Liston 2021 preserve the tree structure but update the ephemeral CDM threshold from `30` to `61 degC-month`, update the precipitation threshold from `2` to `4 mm d^-1`, and rename Taiga to Boreal Forest and Alpine to Montane Forest. Runtime pairing with Sturm 2010 density parameters must map names back to Sturm 1995 labels and must not silently inherit 2021 thresholds. | `[DIRECT][Static]` |
@@ -360,6 +361,7 @@ Out of scope:
 | INV-SNOWFREEZE-094 | SNOW-STAGE3-EVALUATION-SHADOW-AUTHORITY: production retains exactly one snow-mass/state authority and the linked ledgers of `INV-SNOWFREEZE-091`; an evaluation shadow is admitted only when a typed, default-off request selects exactly one operator and a mandatory non-authoritative tag names its source snapshot, support/interval, cadence, carrier, coverage, unresolved boundaries, and claim class. `same_state_paired_carrier_v1` evaluates exactly two stable named/versioned carrier arms against one identical immutable authoritative snapshot without state evolution. One pairing ID binds identical forcing, geometry including `z_T/z_q/z_u/z_0,aero`, cadence, coverage, and every non-formulation operand; each arm declares component IDs and explicit not-applicable components and independently reconstructs its component total. It admits carrier/component comparison only. `sequential_resolved_shadow_v1` clones one named snapshot and may evolve that clone only inside one declared continuous interval and the resolved Stage 3 domain. A physical within-interval chronology claim additionally requires every state-changing forcing/process on that interval, same-substep phase generation and liquid disposition under `SC-SNOWENERGY-001#INV-SNOWENERGY-030`, and independent initial-plus-flux-to-final mass, enthalpy, and liquid ledger closure; otherwise the result is only a bounded response experiment. Absent later authority, the clone terminates at the operator boundary and cannot seed another shadow or production interval. The evaluator has exclusive custody; the clone and its ledgers must not alias, mutate, replace, route into, publish as, calibrate, select, or otherwise reach production state, physics, defaults, fixtures, observations, public outputs, or downstream consumers. Untagged state, ambiguous operator/support, production consumer reachability, cross-boundary carry, incomplete chronology/closure, or evidence that exceeds the admitted operator claim is a governance `HOLD`; runtime errors in an enabled future evaluator must fail the evaluation request without changing authoritative execution. Daily or independently reinitialized shadows cannot support accumulation-season, peak-SWE, peak-date, meltout, restart, reappearance, terminal/post-terminal, efficacy, promotion, or cutover claims. Persistence and terminal/receiving-surface authority require separate amendments; this invariant by itself authorizes no runtime implementation or CoE ownership change. | evaluation hard-fail + governance hold | INV-SNOWFREEZE-091, INV-SNOWFREEZE-093, SC-SNOWENERGY-001#INV-SNOWENERGY-029, SC-SNOWENERGY-001#INV-SNOWENERGY-030, REF-SNOWFREEZE-STAGE3-EVALUATION-SHADOW-AUTHORITY, ADR-0042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-095 | SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY realization: the two `INV-SNOWFREEZE-094` operators may execute only through an absent-by-default typed request and complete typed tag. Disabled, absent, filtered-out, invalid, or conflicting requests allocate/evolve no evaluation clone or verbose evaluation payload and preserve exact schema-v4 rows plus authoritative calculations, arithmetic order, state, ledgers, routing, errors, defaults, WAT/HBP/PASS outputs, and production performance posture. Enabled evaluation emits internal schema v5 only. `same_state_paired_carrier_v1` uses the immutable initial post-CoE daily snapshot, pairing ID `stage3_carrier_pair_v1`, exactly arms `stage3_surface_energy_v1` and `stage3_complete_carrier_v1`, identical forcing and CLIGEN `z_T/z_q/z_u/z_0,aero` geometry, exact support/cadence, and deterministic stable source, forcing/geometry, and combined non-formulation fingerprints; each arm exposes explicit component applicability and independently reconstructs its total without evolving the snapshot. `sequential_resolved_shadow_v1` may retain the current within-call clone evolution but must label its claim `bounded_response_experiment`, terminate at the call boundary, and publish evaluated versus requested seconds; it may not claim physical chronology because this realization does not supply cross-day persistence or complete same-substep phase/liquid chronology. Both operators publish shadow-specific shortwave, longwave, sensible, latent, precipitation-advection, internal active/lower conduction, vapor exchange, cold-content export where state evolves, available ice where applicable, total, terminal unallocated energy, residual, support, and coverage. Internal conduction may not be relabeled snow-ground flux; the absent snow-ground boundary remains unresolved. The real internal JSONL consumer must read every new operand and independently reject production/adjacent aliases. Turbulent primitive failures preserve their typed meteorology source and evaluation context. Solver extraction must preserve exported production API and move `runoff_reconciliation.rs` below 3,000 lines without changing formulas, thresholds, arithmetic order, production ownership, fixtures, observations, calibration, promotion, or public outputs. | evaluation hard-fail + governance hold | INV-SNOWFREEZE-091, INV-SNOWFREEZE-093, INV-SNOWFREEZE-094, OBL-SNOWFREEZE-P-067, OBL-SNOWFREEZE-C-009, REF-SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY, ADR-0042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-096 | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION observability: an enabled `INV-SNOWFREEZE-094/095` request may add one boxed, enabled-only reconciliation companion and internal schema-v6 row without changing the existing exported `TurbulentFluxes`, `DirectSnowStage3EvaluationDiagnostics`, `DirectSnowStage3EvaluationHourDiagnostics`, or `DirectSnowStage3EvaluationResult` shapes or call signatures. The existing public turbulent function and the diagnostic path must share one private Monin-Obukhov solver; duplicated formulas, coefficients, convergence logic, or arithmetic order are prohibited. Schema v6 publishes ordered duration-tagged tuples: one `3600 s` tuple per applicable same-state hour and every existing dynamic sequential substep, with typed applicability instead of numeric-zero N/A. Each tuple binds site/day/lane/operator/hour/substep identity; elapsed/requested/evaluated support; raw-source, forcing, geometry, effective-input, and frozen-projection custody; exact control-volume membership and active/total mass, depth, density, temperature, and cold content before/after; air/dewpoint/surface temperature, vapor pressures, wind, pressure, `z_T/z_q/z_u/z_0,aero`; solver options/status, stability length/corrections/log factors, exchange velocities, air density/potential temperature, specific humidities, and latent heat; shortwave, explicit albedo source/model/state, longwave/canopy/sky-view, precipitation-advection, vapor/melt/sublimation/deposition/cold-export, active/lower cold-content change, and residual operands. Historical schema-v5 meaning remains unchanged and disabled/default rows remain exact schema v4 with no companion allocation. The independent version-aware consumer must fail closed on unknown/malformed versions, reconstruct primitive fluxes and duration integrals without producer helpers or producer totals, preserve the legacy identity `mixed sequential complete = comparable external subset + active internal conduction`, join only exact common-support identities, and separate immutable whole-column `S`, frozen active-volume projection `F`, and sequential clone `Q` as `F-S` projection and `Q-F` evolution effects. Support censoring, unmatched rows, and the Snowbird right-censored year remain explicit. The output is operator-mechanics evidence only: no result may change equations, constants, thresholds, defaults, ownership, state, ledgers, fixtures, observations, or public outputs, or claim seasonal physical chronology, terminal closure, validation, promotion, CoE retirement, or cutover. | evaluation hard-fail + governance hold | INV-SNOWFREEZE-091, INV-SNOWFREEZE-093, INV-SNOWFREEZE-094, INV-SNOWFREEZE-095, OBL-SNOWFREEZE-P-068, OBL-SNOWFREEZE-C-010, REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION, ADR-0042 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-097 | SNOW-STAGE3-LEGACY-PREDECESSOR-BRIDGE forcing-identity correction: predecessor reproduction is parameterized by the exact forcing SHA-256 of the `S/F/Q` estimand under adjudication. For forcing `H`, the current schema-v6 sequential aggregate and old schema-v4 sequential aggregate at `H` must pair the same 35 Snowbird WY1990--2024 windows; every paired water-year difference must close under `TOL-SNOWFREEZE-020`, and the Python `statistics.median` of those paired differences must close under its median tolerance. Development-forcing `S/F/Q` therefore requires current/development E11 versus old/development E01 closure; current/canonical E10 versus old/canonical E00 cannot substitute. A mismatched-forcing retained E00-versus-E11 comparison emits `FORCING_IDENTITY_DIFFERENCE` and cannot emit a source/state cause, but this does not suppress valid fixed-forcing contrasts. Schema-v4 arms prove aggregate custody only from exact daily `stage3_shadow_complete_energy_j_m2` and its 24 hourly complete-energy values; they cannot prove schema-v6 primitive terms, tuple support, state, mass/cold closure, or active/lower conduction cancellation. Cross-schema factorial decomposition is aggregate custody accounting, not mechanistic explanation. Source/state causal localization requires identically instrumented parent/child twins, behavior-neutrality against both uninstrumented endpoints, exact upstream identity, one frozen single-axis substitution, closure at tuple/day/all-water-year/median levels, exclusion of every alternative, and multifactor disposition on equifinality or forcing-dependent interval/axis. This correction changes no equation, constant, selector, default, state, output, ownership, or promotion status; CoE remains the sole production melt owner. | evidence hard-fail + governance hold | INV-SNOWFREEZE-093, INV-SNOWFREEZE-094, INV-SNOWFREEZE-095, INV-SNOWFREEZE-096, OBL-SNOWFREEZE-P-070, OBL-SNOWFREEZE-C-012, REF-SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE, TOL-SNOWFREEZE-018, TOL-SNOWFREEZE-020, ADR-0017, ADR-0042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -1322,6 +1324,18 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   before/after mass and cold-content operands. Historical schema-v5 semantics
   and exact disabled schema-v4 rows remain unchanged. `[DIRECT][Static] +
   [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-070: The v130 predecessor-bridge evidence producer must
+  freeze and execute old/current source crossed with canonical/development
+  Snowbird forcing, with an enabled legacy-selector arm and same-source/same-
+  forcing disabled control for every cell. It must use exact-source isolated
+  local clones, content-hashed build inputs and package-local Cargo caches,
+  locked/offline builds, scrubbed selectors/compiler flags, immutable output
+  namespaces, exact binary/runfile/input/output manifests, and retained failed
+  executions. Current-source legacy and explicit sequential selectors must be
+  equivalent. Conditional source checkpointing must traverse every frozen
+  build-input digest for every forcing lane whose 35 paired water-year source
+  effects fail `TOL-SNOWFREEZE-020`; no result-directed checkpoint selection is
+  allowed. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -1359,6 +1373,19 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   unmatched, truncated, non-applicable, and censored evidence stays explicit.
   No production or public consumer may read schema-v6 evidence as state or
   authority. `[INFERENCE][Static]`
+- OBL-SNOWFREEZE-C-012: The predecessor-bridge consumer must be independent of
+  execution-runner reduction helpers, dispatch schema v4 and v6 explicitly,
+  and reject unknown/malformed versions and adjacent aliases. Schema v4 may
+  reconstruct only exact hourly-to-daily aggregate complete energy and the 35
+  frozen windows. Schema v6 must additionally reconstruct primitive external
+  terms, duration integrals, internal conduction, ordered support, and mass/cold
+  endpoints under `TOL-SNOWFREEZE-018`. It must compute E10-E00, E11-E01,
+  E01-E00, E11-E10, and their interaction per paired water year before any
+  median. It may emit a forcing-matched reproduction class only when all 35
+  paired effects and their median close under `TOL-SNOWFREEZE-020`; mismatched
+  forcing, aggregate-only custody, equifinal substitutions, or forcing-
+  dependent localization cannot become a causal label. No production or public
+  consumer may read bridge evidence as state or authority. `[INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -1440,6 +1467,7 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-017 | Wet-compaction daily operand reconstruction (`INV-SNOWFREEZE-092`) | `abs(wet_compaction_liquid_input_m - sum(max(hourly melt_raw_m, 0)) - rain_retained_m - rain_released_m) <= 1e-12 m` | Exact-source reconstruction tolerance only. It does not authorize clamping, inferred routing/storage aliases, coefficient changes, or a second density input. |
 | TOL-SNOWFREEZE-018 | Schema-v6 tuple reconstruction and endpoint closure (`INV-SNOWFREEZE-096`) | flux: `max(1e-10 W m^-2, 1e-12 * sum_abs_operands)`; mass: `max(1e-12 kg m^-2, 1e-12 * sum_abs_operands)`; energy/cold: `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)` | Consumer reconstruction only. It does not authorize producer correction, canonicalization, dropped tuples, or replacement of exact same-state `to_bits` endpoint equality. |
 | TOL-SNOWFREEZE-019 | Operator-reconciliation sign, predecessor, and support classification (`INV-SNOWFREEZE-096`) | absolute zero/sign threshold `1e-6 J m^-2`; Snowbird predecessor median tolerance `1e-7 MJ m^-2`; each contributing water-year bridge uses `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)`; support materiality ratio threshold `0.05` | Frozen classification tolerances, not physics-fit thresholds. Exact-zero denominator makes the support ratio N/A; it is never coerced to zero. |
+| TOL-SNOWFREEZE-020 | Forcing-matched schema-v4/schema-v6 aggregate predecessor bridge (`INV-SNOWFREEZE-097`) | each of 35 paired Snowbird water-year aggregate differences: `max(1e-6 J m^-2, 1e-12 * sum_abs_operands)`; Python `statistics.median` of the 35 paired differences: `1e-7 MJ m^-2` | Both all-water-year and median gates are mandatory and use the exact same forcing SHA-256. This is evidence-custody tolerance only, not a physics-fit threshold; it cannot support primitive/schema-v4 or mismatched-forcing causal claims. |
 
 ## Stage 3 Evaluation Shadow Authority Addendum
 
@@ -1678,24 +1706,29 @@ only the prefix `[0, common_support)`, splitting the final tuple exactly at the
 boundary without interpolation. All-evaluated and common-support summaries
 remain separate. At tuple, hour, water-year window, and each median input, the
 legacy bridge must close as `legacy Q complete = comparable Q external + Q
-active internal conduction`. The frozen predecessor is the Python
-`statistics.median` of the 35 Snowbird WY1990--2024 October-1-through-observed-
-peak window sums and equals `+170.2536089 MJ m^-2` within
-`TOL-SNOWFREEZE-019`; WY2025 is right-censored.
+active internal conduction`. Under the v130 correction, predecessor
+reproduction is forcing-parameterized by `INV-SNOWFREEZE-097`: every one of the
+35 paired water-year aggregate differences and their median must close under
+`TOL-SNOWFREEZE-020` for the exact forcing SHA-256 of the `S/F/Q` estimand.
+The documentary E00 old/canonical median is `+170.2536089 MJ m^-2`; it cannot
+gate an E11 development-forcing `S/F/Q` class. WY2025 is right-censored.
 
 On identical three-way common support, `delta_projection = F - S` and
 `delta_evolution = Q - F`. With `tol = 1e-6 J m^-2`, projection reconciles the
 sign contradiction only when the Snowbird median satisfies `S < -tol`,
 `F > +tol`, and `Q > +tol`; evolution reconciles it only when `S < -tol`,
-`F < -tol`, and `Q > +tol`. Both require predecessor reproduction, every
+`F < -tol`, and `Q > +tol`. Both require forcing-matched predecessor
+reproduction for the exact `S/F/Q` forcing under `INV-SNOWFREEZE-097`, every
 bridge/reconstruction/delta closure, and invariant shortwave. Q remaining
 positive does not turn a qualifying projection crossing into an evolution
 crossing.
 
 The remaining class predicates are exact. `PREDECESSOR_NOT_REPRODUCED` applies
-when the reconstructed legacy-bridge Snowbird median differs from
-`+170.2536089 MJ m^-2` by more than `1e-7 MJ m^-2` or any contributing
-water-year bridge exceeds its `TOL-SNOWFREEZE-019` scale-aware tolerance.
+only to a fixed-forcing comparison when the reconstructed current-versus-old
+legacy-bridge Snowbird median differs by more than `1e-7 MJ m^-2` or any of the
+35 paired water-year bridges exceeds its `TOL-SNOWFREEZE-020` scale-aware
+tolerance. A comparison with different forcing SHA-256 values instead emits
+`FORCING_IDENTITY_DIFFERENCE` and cannot support source/state attribution.
 `LEGACY_ESTIMAND_INTERNAL_CONDUCTION_SIGN_DIFFERENCE` applies only when the
 reconstructed legacy sequential total is positive, the comparable sequential
 external subset is non-positive, and the external-plus-active-conduction
@@ -1742,6 +1775,72 @@ decision predicate may change after result inspection. Every conclusion stays
 operator-mechanics characterization; seasonal chronology, carrier validation,
 persistence, terminal receipt, calibration, promotion, CoE retirement, and
 cutover remain prohibited.
+
+## Stage 3 Forcing-Matched Predecessor Bridge Correction Addendum
+
+The v129 predecessor scalar combined two distinct forcings: old source
+`2d035638a9819961a393207cd4813712d64bddcf` used canonical climate SHA-256
+`10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7`,
+while current source `5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5` used development
+climate SHA-256
+`c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb`.
+Their direct difference is not a same-forcing source/state effect.
+
+The frozen aggregate cells are E00 old/canonical, E01 old/development, E10
+current/canonical, and E11 current/development. For each of the 35 paired water
+years, compute `source_canonical=E10-E00`,
+`source_development=E11-E01`, `forcing_old=E01-E00`,
+`forcing_current=E11-E10`, and
+`interaction=(E11-E10)-(E01-E00)` before applying Python
+`statistics.median`. Subtracting separately reduced medians is prohibited.
+`VERSIONED_ESTIMANDS_RECONCILED` means exact algebraic aggregate custody
+accounting only; it is not a mechanistic explanation.
+
+Schema v4 contributes only the common aggregate estimand. Its exact custody
+fields are `schema`, `day_index`, `lane_index`, `stage3_energy_enabled`,
+`stage3_shadow_hourly_complete_energy_j_m2`,
+`stage3_shadow_complete_energy_j_m2`, and
+`stage3_shadow_maximum_energy_closure_residual_j_m2`. The 24 hourly values must
+sum to the daily value under `TOL-SNOWFREEZE-020`. Historical numeric zero is
+an aggregate value, not proof of tuple support or N/A. Schema-v4 evidence
+cannot establish primitive terms, support, mass/cold closure, active/lower
+conduction cancellation, or a causal source transition.
+
+Schema v6 contributes the same aggregate through ordered tuple
+`legacy_sequential_complete_j_m2`, independently reconstructed as
+`complete_external_flux_w_m2 * duration_seconds +
+internal_active_lower_conduction_j_m2`; it additionally retains all primitive,
+support, mass, and cold-content gates in `INV-SNOWFREEZE-096` and
+`TOL-SNOWFREEZE-018`. A forcing-matched predecessor class `H` requires every
+paired water-year difference at `H` plus their median to close under
+`TOL-SNOWFREEZE-020`. The prior development-forcing `S/F/Q` estimand therefore
+requires E11 versus E01. E10 versus E00 cannot unlock it. Canonical `S/F/Q`
+cannot be adjudicated unless canonical S, F, and Q are separately executed.
+
+Checkpoint localization runs every prospectively frozen build-input digest in
+each forcing lane whose source contrast fails any paired water year or its
+median. Instrumented parent/child twins must each match their uninstrumented
+endpoint before localization. Descriptive classes, in temporal precedence, are
+`FIRST_DIVERGENCE_DAILY_RESET`,
+`FIRST_DIVERGENCE_INITIAL_CONTROL_VOLUME_PROJECTION`,
+`FIRST_DIVERGENCE_SURFACE_TERMS`,
+`FIRST_DIVERGENCE_ACTIVE_INTERNAL_CONDUCTION`,
+`FIRST_DIVERGENCE_STATE_APPLICATION_REMOVAL`,
+`FIRST_DIVERGENCE_TRANSITION_PREPARATION_CADENCE`, then
+`FIRST_DIVERGENCE_MULTIPLE_OR_UNOBSERVED`.
+
+The six corresponding causal classes replace `FIRST_DIVERGENCE_` with no
+prefix and append `_CAUSAL`: `DAILY_RESET_CAUSAL`,
+`INITIAL_CONTROL_VOLUME_PROJECTION_CAUSAL`, `SURFACE_TERMS_CAUSAL`,
+`ACTIVE_INTERNAL_CONDUCTION_CAUSAL`, `STATE_APPLICATION_REMOVAL_CAUSAL`, and
+`TRANSITION_PREPARATION_CADENCE_CAUSAL`. A causal class requires exact forcing,
+fixture, selector, date/window, and upstream `to_bits` identity; exactly one
+parent transition replaced by its child counterpart; closure at every affected
+tuple, day, all 35 water years, and median; and failure of all alternative
+single-axis substitutions. Zero or multiple closing substitutions, or
+different first intervals/axes across triggering forcing lanes, emits only
+`MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY`; the forcing-dependent result
+may additionally carry `SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE`.
 
 ## Wet-Compaction Operand Authority And Duplicate-Alias Closure Addendum
 
@@ -3775,6 +3874,7 @@ no-regression/conservation gates pass; zero residual closure is not required.
 | `SNOWFREEZE-STAGE3-EVALUATION-SHADOW` | SNOW-STAGE3-EVALUATION-SHADOW-AUTHORITY package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-094, OBL-SNOWFREEZE-P-067, OBL-SNOWFREEZE-C-009` | `dual-review` | Two tagged default-off evaluation operators are admitted with evaluator-only custody. Runtime implementation remains under hard governance `HOLD`; cross-interval persistence, seasonal/terminal claims, production consumers, and cutover remain held. |
 | `SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY` | SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-095, OBL-SNOWFREEZE-P-068, OBL-SNOWFREEZE-C-010` | `dual-review` | The bounded operators may be realized behind a typed default-off request with enabled-only internal schema-v5 evidence. Exact disabled schema v4, evaluator custody, typed primitive errors, module-size closure, and real-consumer anti-alias reconstruction are binding; persistence, physical chronology, seasonal/terminal claims, production consumers, and cutover remain held. |
 | `SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION package and canonical reconciliation addendum | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-096, OBL-SNOWFREEZE-P-069, OBL-SNOWFREEZE-C-011` | `flagged-binding-addition` | Additive enabled-only schema-v6 tuples and one shared turbulent solver may expose exact carrier/state lineage for independent `S/F/Q` operator reconciliation; `TOL-SNOWFREEZE-018` and `TOL-SNOWFREEZE-019` remain linked through the invariant and obligations. Exact disabled schema v4, historical schema-v5 semantics, public APIs, all production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain binding; independent science review is mandatory before implementation. |
+| `SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE` | SNOW-STAGE3-LEGACY-PREDECESSOR-BRIDGE-RECONCILIATION package and forcing-matched correction addendum | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-097, OBL-SNOWFREEZE-P-070, OBL-SNOWFREEZE-C-012` | `flagged-binding-addition` | `TOL-SNOWFREEZE-020` binds all-WY-plus-median predecessor reproduction to the exact S/F/Q forcing hash. Schema v4 supplies aggregate custody only; primitive/causal claims require behavior-neutral instrumented twins. This corrects v129 custody without changing production behavior or any physics/ownership/seasonal/terminal/cutover hold. |
 
 ## Known Gaps
 
@@ -3792,6 +3892,7 @@ no-regression/conservation gates pass; zero residual closure is not required.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-06` | `130` | `Codex` | SNOW-STAGE3-LEGACY-PREDECESSOR-BRIDGE-RECONCILIATION correction: added `REF-SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE`, `INV-SNOWFREEZE-097`, `OBL-SNOWFREEZE-P-070`, `OBL-SNOWFREEZE-C-012`, and `TOL-SNOWFREEZE-020`; bound predecessor reproduction to the exact S/F/Q forcing hash and all 35 paired water years plus their median; narrowed schema-v4 evidence to aggregate custody; froze the 2x2 source/forcing decomposition and conditional localization/causality rules. Production physics, schemas, defaults, outputs, CoE ownership, and seasonal/terminal/cutover holds are unchanged. |
 | `2026-08-06` | `129` | `Codex` | SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION amendment: added `REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION`, `INV-SNOWFREEZE-096`, `OBL-SNOWFREEZE-P-069`, `OBL-SNOWFREEZE-C-011`, and `TOL-SNOWFREEZE-018/019`; admitted an additive enabled-only boxed companion and schema-v6 ordered substep observability through one shared private turbulent solver; and canonically bound exact fields/units, applicability and meltout N/A, turbulent termination, endpoint equations, legacy bridge, common support, frozen `S/F/Q` estimands, decision precedence, and sign/materiality predicates. Disabled schema v4, historical schema-v5 semantics, existing public APIs, production physics/defaults/outputs, CoE ownership, and seasonal/terminal/cutover holds remain unchanged. |
 | `2026-08-06` | `128` | `Codex` | Runtime evidence closure: closed the bounded portion of `GAP-SNOWFREEZE-007` after exact disabled schema-v4 and authoritative WAT/HBP/PASS identity, typed evaluator-only custody, per-term/fingerprint/support reconstruction through the real schema-v5 consumer, typed-error preservation, module-size compliance, dual review, and independent consumer QA passed. Cross-day persistence, complete physical chronology, seasonal/terminal claims, receiving-surface disposition, production ownership, and cutover remain held. |
 | `2026-08-06` | `128` | `Codex` | SNOW-STAGE3-SHADOW-SOLVER-EXTRACTION-AND-OBSERVABILITY amendment: added `REF-SNOWFREEZE-STAGE3-SHADOW-OBSERVABILITY`, `INV-SNOWFREEZE-095`, `OBL-SNOWFREEZE-P-068`, and `OBL-SNOWFREEZE-C-010`; admitted bounded runtime realization of the two v127 evaluation operators behind a typed default-off request; bound exact disabled schema-v4 identity, enabled internal schema-v5 component/fingerprint/support evidence, typed turbulent-error custody, real-consumer anti-alias reconstruction, and solver modularization. CoE remains authoritative; persistence, complete physical chronology, seasonal/terminal claims, ground-flux inference, production consumers, and cutover remain held. |
