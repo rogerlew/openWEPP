@@ -23,3 +23,19 @@ Static: disposition before Phase-B contract edits or result execution.
 Admission disposition: `GO-WITH-AMENDMENTS` to Phase B only. Result-bearing
 execution remains blocked until the contract amendment, independent contract
 reviews, and pre-implementation contract gate pass on a clean bound commit.
+
+## Phase-B Disposition
+
+| Finding | Source | Decision | Closure |
+| --- | --- | --- | --- |
+| Canonical raw/bounded conflict | science | `accepted` | v9 names `m_v,raw` separately from bounded `m_v` and binds raw/bounded latent semantics. |
+| Exact chronology underbound | science/Rust | `accepted` | v9 gives the complete characterization-only `C0/G/C1/E_raw` through melt/unallocated chronology and claim limit. |
+| Text-only/tautological tests | consumer | `accepted` | Added independent test-local literal vectors including endpoint-preserving alias rejection. |
+| Partially unscoped anti-evasion checks | Rust | `accepted` | New IDs, equations, and classes are asserted within their normative sections. |
+| Incomplete frozen gate inventory | Rust | `accepted` | Added strict Binding Exposure, exact Markdown, JSON, and diff commands. |
+
+Final independent dispositions: science `GO`, Rust `GO`, and
+consumer/reconstruction `GO`. The clean pre-implementation contract gate
+passes at `5e353b8c8bc56c9d36301743119dbe1c76a0e9a0`; Phase C package-local
+consumer implementation is authorized, while result execution remains blocked
+until its own tests pass.

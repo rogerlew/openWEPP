@@ -25,3 +25,15 @@ boundaries intact. No Rust observability expansion is justified.
 
 Targeted re-review closed the operator-order melt formula. Its final residual
 about mixed capacity/evidence disposition was accepted and corrected.
+
+## Phase-B Re-Review
+
+Static + Ran: final `GO` at `5e353b8c8`.
+
+The first re-review requested section-scoped anti-evasion assertions and an
+explicit inventory of Binding Exposure, Markdown, JSON, and diff checks. Both
+findings were accepted. The final review verified scoped normative bindings,
+independent raw/bounded and operator-order arithmetic vectors, Nextest `27/27`,
+formatting, warnings-denied Clippy, both strict Binding Exposure checks, all
+three Markdown checks, protocol JSON, and diff hygiene. No Phase-B finding or
+follow-up remains.

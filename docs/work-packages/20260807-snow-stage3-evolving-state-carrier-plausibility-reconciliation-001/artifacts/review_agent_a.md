@@ -18,3 +18,14 @@ Findings:
    persistence are blocked.
 
 The current admission permits contract/test work only.
+
+## Phase-B Re-Review
+
+Static + Ran: `GO` at contract/test identity `5e353b8c8`.
+
+Raw/bounded alias and unit mappings are now distinct; v9 binds raw latent,
+bounded latent, truncation energy, and the exact characterization-only
+cold/melt chronology. All version-sensitive targets use v9/v131, duplicate S/F
+wording is removed, and protected production/persistence/CoE/cutover boundaries
+remain intact. Focused tests, formatting, warnings-denied Clippy, and diff
+hygiene passed. No blocking science-contract finding remains.

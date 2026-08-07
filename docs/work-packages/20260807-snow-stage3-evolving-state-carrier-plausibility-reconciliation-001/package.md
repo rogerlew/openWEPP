@@ -38,7 +38,9 @@ over any owner.
 - [x] (2026-08-07 14:12Z) Completed result-blind authority, exact trace/cohort,
   estimator, mass/energy reconstruction, predicate, and zero-arm
   counterfactual freeze; independent admission reviews dispositioned.
-- [ ] Amend canonical contract authority and contract-derived tests as needed.
+- [x] (2026-08-07 15:06Z) Amended Snow Energy to v9 and Snow/Freeze to v131,
+  added independent contract-derived arithmetic/adversarial vectors, and passed
+  the clean pre-implementation gate at `5e353b8c8`.
 - [ ] Implement or prove the independent consumer and any strictly necessary
   default-off observability.
 - [ ] Execute the frozen four-site audit and independent reconstruction once.
