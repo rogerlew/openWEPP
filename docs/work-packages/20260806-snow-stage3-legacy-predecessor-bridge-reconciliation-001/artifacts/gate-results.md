@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `execution/reconstruction/review PASS / terminal workspace gates pending`.
+Status: `technical closure PASS / dual terminal verification pending`.
 
 Evidence mode: `Ran`.
 
@@ -24,7 +24,11 @@ Evidence mode: `Ran`.
 | First terminal quick attempt | `FAIL / finding accepted` | Exact clean `de3c14933`; 908 passed, 2 stale v129 version-pin failures, then fail-fast at 910 run; no science/runtime failure |
 | First 37-binary focused reconciliation | `FAIL / finding accepted` | 34 passed, 1 stale registry-index v129/narrative assertion failed, 123 not run after fail-fast; registry-row repair prospectively scoped |
 | Final 37-binary stale-guard reconciliation | `PASS` | Dedicated binary `6/6`; all 37 changed binaries `158/158` in `282.131 s` with no fail-fast |
-| Terminal quick/frost/full workspace | `NOT RUN` | Required after post-result review |
+| Terminal quick workspace | `PASS` | Exact clean `5b620524a`; `2235/2235`, 40 skipped, `2305.216 s` |
+| Terminal frost workspace | `PASS` | Exact clean `5b620524a`; `360/360`, 1969 skipped, `534.602 s` |
+| Terminal full workspace | `PASS` | Exact clean `5b620524a`; `2284/2284`, 33 skipped, `2293.316 s` |
+| Formatting/Clippy/doctests/dependency policy | `PASS` | Workspace all-target warnings denied; doctests and `cargo deny check` pass |
+| Exact-head focused/static closure | `PASS` | Contracts `12/12`; stale guards `158/158`; package `42/42`; Binding Exposure, SC units, Markdown `41` files, seven changed JSON documents, diff hygiene, staged assurance build/check, review-draft drift, and export guard pass |
 | Dual terminal verification | `NOT RUN` | Required at exact clean closure candidate |
 
 Retained output root size is `32,038,680,276` bytes. The complete manifest has
@@ -39,4 +43,17 @@ contract's latest version remained v129. The package prospectively expanded
 its test-only write set before any correction. The admitted mechanical repair
 keeps each test's invariant, obligation, behavior, and package markers while
 binding canonical contract identity instead of a perpetually stale latest
-revision number. A complete fresh quick/frost/full run is required.
+revision number. The fresh complete quick/frost/full run passes.
+
+The comparator batch accidentally queued `cargo test --workspace` after the
+canonical Nextest profiles. It was deliberately interrupted after `222.146 s`
+and is recorded as an aborted, non-applicable legacy-harness observation: repo
+policy requires that harness only for libtest-specific behavior, which this
+package does not change. It is not reported as a gate pass or failure.
+
+The full-tree raw-unit observation reported 11 existing literals in two
+production Rust files outside the 98-path package diff. No production Rust or
+conversion literal changed, and the package requires the passing scoped SC
+unit gate rather than remediation of unrelated baseline debt. This observation
+is recorded, not reported as a package gate pass. Terminal logs are under
+`target/local-ci-history/predecessor-bridge-5b620524a/`.

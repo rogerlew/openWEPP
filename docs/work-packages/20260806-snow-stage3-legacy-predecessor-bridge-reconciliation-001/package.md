@@ -1,6 +1,6 @@
 # Stage 3 Legacy Predecessor Bridge Reconciliation
 
-Status: `executed / bridge reconciled / post-result review PASS / terminal gates pending`
+Status: `executed / bridge reconciled / terminal gates PASS / verification pending`
 
 Date: `2026-08-06`
 
@@ -411,7 +411,10 @@ the package namespace and content-hashed.
 - [x] (2026-08-06) Independent prospective review passed the registry-row
   amendment; the dedicated binary passed `6/6` and all 37 changed integration
   binaries passed `158/158` without fail-fast.
-- [ ] Complete terminal validation/verification and close.
+- [x] (2026-08-06) Exact clean `5b620524a` passed quick `2235/2235`,
+  frost `360/360`, full `2284/2284`, and all applicable static, dependency,
+  contract, documentation, and DRAFT assurance gates.
+- [ ] Complete dual exact-head verification and close.
 
 ## Surprises & Discoveries
 
