@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `contract review PASS / second tool review HOLD amended / re-review pending`.
+Status: `contract review PASS / third tool review HOLD amended / re-review pending`.
 
 Evidence class: `Static`.
 
@@ -80,3 +80,19 @@ inspecting new results. Both returned `HOLD`.
 
 No result execution is admitted until fresh exact-commit Agent A and Agent B
 review returns `PASS/PASS`.
+
+## Third Tool Review
+
+Agent A returned `HOLD` and Agent B returned `PASS` at exact clean commit
+`c02e854f4afed038c934bd61e7d9f29a41c864c3`. Neither reviewer ran a model
+cell or inspected new result evidence.
+
+| Finding | Disposition | Result-blind amendment |
+| --- | --- | --- |
+| Conditional-path tests did not directly execute checkpoint reconstruction | `accepted` | Added full synthetic `reconstruct_checkpoints` coverage for zero, one, and both lanes; same/different intervals; cumulative no-adjacent-divergence; and endpoint-anchor rejection |
+| No-divergence and forcing-specific interval differences lacked frozen dispositions | `accepted` | No adjacent divergence emits `MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY`; differing two-lane intervals additionally emit `SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE` |
+| Independent consumer trusted common fixture inventory and hashes | `accepted` | Require the exact frozen six common files plus the lane forcing, with no missing/extra files and exact SHA-256 for each |
+| Independent consumer trusted protected-output receipt Booleans | `accepted` | Independently locate and hash the sole HBP, WAT, and loss outputs for every control/enabled endpoint and checkpoint pair before reduction/localization |
+
+No result execution is admitted until both reviewers return `PASS` on the
+amended exact clean commit.

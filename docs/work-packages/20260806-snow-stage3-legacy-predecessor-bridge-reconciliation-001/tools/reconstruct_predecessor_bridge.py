@@ -423,6 +423,43 @@ def trace_path(cell: str, mode: str) -> Path:
     return OUTPUT / "runs" / cell / mode / TRACE_NAME
 
 
+def validate_frozen_fixture(
+    fixture: Path, forcing: str, frozen: dict[str, Any]
+) -> None:
+    if not fixture.is_dir():
+        raise ReconstructionError(f"{forcing} fixture directory is absent")
+    expected = dict(frozen["common_fixture_sha256"])
+    expected["p8.cli"] = frozen["forcings"][forcing]["sha256"]
+    actual_names = {
+        path.name for path in fixture.iterdir() if path.is_file()
+    }
+    if actual_names != set(expected):
+        raise ReconstructionError(f"{forcing} fixture inventory differs from freeze")
+    for name, expected_sha256 in expected.items():
+        path = fixture / name
+        if not path.is_file() or sha256(path) != expected_sha256:
+            raise ReconstructionError(f"{forcing} fixture differs: {name}")
+
+
+def compare_protected_outputs(
+    control_dir: Path, enabled_dir: Path, *, context: str
+) -> dict[str, bool]:
+    if not control_dir.is_dir() or not enabled_dir.is_dir():
+        raise ReconstructionError(f"{context} protected output directory is absent")
+    comparisons = {}
+    for suffix in (".hbp", ".wat.parquet", ".loss.json"):
+        control = [path for path in control_dir.iterdir() if path.name.endswith(suffix)]
+        enabled = [path for path in enabled_dir.iterdir() if path.name.endswith(suffix)]
+        if len(control) != 1 or len(enabled) != 1:
+            raise ReconstructionError(
+                f"{context} protected {suffix} inventory differs"
+            )
+        comparisons[suffix] = sha256(control[0]) == sha256(enabled[0])
+    if set(comparisons.values()) != {True}:
+        raise ReconstructionError(f"{context} protected output bytes differ")
+    return comparisons
+
+
 def validate_execution_receipt(
     receipt: dict[str, Any], frozen: dict[str, Any]
 ) -> dict[tuple[str, str], str]:
@@ -440,6 +477,7 @@ def validate_execution_receipt(
         raise ReconstructionError("execution cell inventory differs")
     trace_hashes = {}
     for cell, (source_name, forcing) in expected_cells.items():
+        validate_frozen_fixture(OUTPUT / "fixtures" / forcing, forcing, frozen)
         modes = cells[cell]
         expected_modes = {"control", "legacy", "explicit"} if source_name == "current" else {"control", "legacy"}
         if not isinstance(modes, dict) or set(modes) != expected_modes:
@@ -483,6 +521,15 @@ def validate_execution_receipt(
                 or set(checks.values()) != {True}
             ):
                 raise ReconstructionError(f"protected output custody differs for {cell}/{mode}")
+            actual = compare_protected_outputs(
+                OUTPUT / "runs" / cell / "control",
+                OUTPUT / "runs" / cell / mode,
+                context=f"endpoint {cell}/{mode}",
+            )
+            if actual != checks:
+                raise ReconstructionError(
+                    f"protected output receipt differs for {cell}/{mode}"
+                )
     if receipt.get("forcing_matched_semantic_checks") != {
         "canonical": {"control": True, "legacy": True},
         "development": {"control": True, "legacy": True},
@@ -943,10 +990,9 @@ def validate_checkpoint_execution_receipt(
     for forcing in lanes:
         if list(runs[forcing]) != checkpoint_ids:
             raise ReconstructionError(f"checkpoint run ordering differs for {forcing}")
+        fixture_dir = OUTPUT / "fixtures" / forcing
+        validate_frozen_fixture(fixture_dir, forcing, frozen)
         forcing_sha = frozen["forcings"][forcing]["sha256"]
-        fixture = OUTPUT / "fixtures" / forcing / "p8.cli"
-        if not fixture.is_file() or sha256(fixture) != forcing_sha:
-            raise ReconstructionError(f"checkpoint fixture differs for {forcing}")
         for checkpoint_id, (source_sha, _) in zip(checkpoint_ids, checkpoints):
             item = runs[forcing][checkpoint_id]
             if item.get("source_sha") != source_sha:
@@ -961,6 +1007,23 @@ def validate_checkpoint_execution_receipt(
                 or set(protected.values()) != {True}
             ):
                 raise ReconstructionError(f"checkpoint protected outputs differ at {forcing}/{checkpoint_id}")
+            actual_protected = compare_protected_outputs(
+                OUTPUT
+                / "checkpoint-search/runs"
+                / forcing
+                / checkpoint_id
+                / "control",
+                OUTPUT
+                / "checkpoint-search/runs"
+                / forcing
+                / checkpoint_id
+                / "legacy",
+                context=f"checkpoint {forcing}/{checkpoint_id}",
+            )
+            if actual_protected != protected:
+                raise ReconstructionError(
+                    f"checkpoint protected output receipt differs at {forcing}/{checkpoint_id}"
+                )
             for mode in ("control", "legacy"):
                 arm = modes[mode]
                 if (
@@ -983,7 +1046,7 @@ def validate_checkpoint_execution_receipt(
                     source_sha=source_sha,
                     forcing=forcing,
                     mode=mode,
-                    fixture=OUTPUT / "fixtures" / forcing,
+                    fixture=fixture_dir,
                     runfile=run_dir / "snowbird-predecessor-bridge.run",
                     frozen=frozen,
                 )
@@ -1046,6 +1109,30 @@ def first_divergent_transition(
     return next((item for item in transitions if not item.get("pass")), None)
 
 
+def checkpoint_decision_classes(
+    lanes: list[str], first_divergent: dict[str, dict[str, Any] | None]
+) -> list[str]:
+    signatures = {
+        forcing: (
+            None
+            if first_divergent[forcing] is None
+            else (
+                first_divergent[forcing].get("left"),
+                first_divergent[forcing].get("right"),
+            )
+        )
+        for forcing in lanes
+    }
+    classes = []
+    if any(signature is None for signature in signatures.values()):
+        classes.append("MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY")
+    if len(lanes) == 2 and len(set(signatures.values())) != 1:
+        if "MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY" not in classes:
+            classes.append("MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY")
+        classes.append("SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE")
+    return classes
+
+
 def reconstruct_checkpoints() -> None:
     destination = OUTPUT / "checkpoint-search"
     execution_path = destination / "execution-receipt.json"
@@ -1083,6 +1170,7 @@ def reconstruct_checkpoints() -> None:
             "status": "not_triggered",
             "triggered_lanes": [],
             "first_divergent_transition": {},
+            "decision_classes": [],
         }
         write_json(output_path, result)
         write_json(OUTPUT / "retained-artifact-manifest.json", retained_manifest(OUTPUT))
@@ -1171,6 +1259,7 @@ def reconstruct_checkpoints() -> None:
         "status": "reconstructed",
         "triggered_lanes": lanes,
         "first_divergent_transition": first_divergent,
+        "decision_classes": checkpoint_decision_classes(lanes, first_divergent),
         "lanes": lane_results,
         "claim_limit": "descriptive build-input localization only",
     }

@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `second tool review amendments complete / result execution not started`.
+Status: `third tool review amendments complete / result execution not started`.
 
 Evidence mode: `model-free tests run; model results remain blinded`.
 
@@ -26,7 +26,7 @@ Ran before result execution:
 
 ```text
 .venv/bin/python -m unittest discover -s <package-tools> -p 'test_*.py'
-Ran 35 tests in 0.097s
+Ran 42 tests in 0.142s
 OK
 
 .venv/bin/python -m py_compile <package tools/*.py>
@@ -39,7 +39,11 @@ custody, per-WY/median gates, malformed checkpoint receipts, environment and
 HEAD drift, malformed matrices and arms, selector normalization, exact
 protected-output keys, binary hash/size drift, semantic-input mutation,
 complete inventory additions, overwrite refusal, checkpoint digests, and
-trigger tests. A model-free digest check found and corrected one missing
+trigger tests. Full synthetic conditional-path tests cover no trigger, one
+triggered lane with no adjacent divergence, two lanes localizing the same or
+different intervals, and endpoint-anchor rejection. Independent mutation tests
+cover every frozen common fixture and actual protected-output bytes. A
+model-free digest check found and corrected one missing
 hexadecimal digit in the prospectively frozen `2be275fa...` build-input digest
 before any result execution.
 

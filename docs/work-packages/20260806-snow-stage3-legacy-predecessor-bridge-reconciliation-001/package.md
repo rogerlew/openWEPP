@@ -1,6 +1,6 @@
 # Stage 3 Legacy Predecessor Bridge Reconciliation
 
-Status: `executing / v130 dual-review PASS / second tool HOLD amendments awaiting re-review`
+Status: `executing / v130 dual-review PASS / third tool HOLD amendments awaiting re-review`
 
 Date: `2026-08-06`
 

@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TOOL = Path(__file__).with_name("reconstruct_predecessor_bridge.py")
 SPEC = importlib.util.spec_from_file_location("predecessor_bridge_consumer", TOOL)
@@ -81,6 +82,123 @@ def v6_row(day_index: int) -> dict[str, object]:
 
 
 class ConsumerTests(unittest.TestCase):
+    def run_synthetic_checkpoint_reconstruction(
+        self,
+        lanes: list[str],
+        values: dict[str, list[float]],
+        *,
+        current_anchor_offset: dict[str, float] | None = None,
+    ) -> dict[str, object]:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        checkpoints = frozen["checkpoint_grouping"]["checkpoints"]
+        stamp = dt.date(2000, 1, 1)
+        current_anchor_offset = current_anchor_offset or {}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "checkpoint-search").mkdir(parents=True)
+            (root / "results").mkdir()
+            (root / "execution-receipt.json").write_text("{}", encoding="utf-8")
+            result = {
+                "execution_head": "a" * 40,
+                "checkpoint_lanes_triggered": lanes,
+            }
+            (root / "results/predecessor-bridge-results.json").write_text(
+                json.dumps(result), encoding="utf-8"
+            )
+            runs = {}
+            for forcing in lanes:
+                runs[forcing] = {}
+                for index, (source_sha, _) in enumerate(checkpoints):
+                    checkpoint_id = f"{index:02d}-{source_sha}"
+                    runs[forcing][checkpoint_id] = {
+                        "modes": {
+                            "legacy": {
+                                "outputs": {
+                                    "files": [
+                                        {
+                                            "path": consumer.TRACE_NAME,
+                                            "sha256": "b" * 64,
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+            execution = {"status": "executed", "runs": runs}
+            if not lanes:
+                execution = {"status": "not_triggered", "runs": {}}
+            (root / "checkpoint-search/execution-receipt.json").write_text(
+                json.dumps(execution), encoding="utf-8"
+            )
+            fixture_sha = {}
+            for forcing in lanes:
+                fixture = root / "fixtures" / forcing
+                fixture.mkdir(parents=True)
+                climate = fixture / "p8.cli"
+                climate.write_bytes(forcing.encode())
+                fixture_sha[forcing] = consumer.sha256(climate)
+                frozen["forcings"][forcing]["sha256"] = fixture_sha[forcing]
+            frozen["forcings"]["date_count"] = 1
+            frozen["forcings"]["first_date"] = stamp.isoformat()
+            frozen["forcings"]["last_date"] = stamp.isoformat()
+            freeze_path = root / "protocol-freeze.json"
+            freeze_path.write_text(json.dumps(frozen), encoding="utf-8")
+
+            def parse_trace(
+                path: Path, dates: list[dt.date], expected_sha256: str
+            ) -> dict[dt.date, float]:
+                del dates, expected_sha256
+                parts = path.parts
+                if "checkpoint-search" in parts:
+                    forcing = parts[parts.index("runs") + 1]
+                    checkpoint_id = parts[parts.index("runs") + 2]
+                    return {stamp: values[forcing][int(checkpoint_id[:2])]}
+                cell = parts[parts.index("runs") + 1]
+                forcing = "canonical" if cell in {"E00", "E10"} else "development"
+                if cell in {"E00", "E01"}:
+                    return {stamp: values[forcing][0]}
+                return {
+                    stamp: values[forcing][-1]
+                    + current_anchor_offset.get(forcing, 0.0)
+                }
+
+            def annualize_one(
+                daily: dict[dt.date, float], windows: object
+            ) -> dict[int, float]:
+                del windows
+                value = daily[stamp]
+                return {year: value for year in range(1990, 2025)}
+
+            trace_hashes = {
+                (cell, "legacy"): "c" * 64
+                for cell in ("E00", "E01", "E10", "E11")
+            }
+            with (
+                mock.patch.object(consumer, "OUTPUT", root),
+                mock.patch.object(consumer, "FREEZE_PATH", freeze_path),
+                mock.patch.object(
+                    consumer,
+                    "validate_execution_receipt",
+                    return_value=trace_hashes,
+                ),
+                mock.patch.object(
+                    consumer,
+                    "validate_checkpoint_execution_receipt",
+                    return_value=lanes,
+                ),
+                mock.patch.object(consumer, "climate_dates", return_value=[stamp]),
+                mock.patch.object(
+                    consumer, "parse_checkpoint_trace", side_effect=parse_trace
+                ),
+                mock.patch.object(consumer, "annualize", side_effect=annualize_one),
+            ):
+                consumer.reconstruct_checkpoints()
+            return json.loads(
+                (root / "checkpoint-search/checkpoint-results.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+
     def test_v4_aggregate_custody_closes_without_primitive_aliases(self) -> None:
         dates = [dt.date(2000, 1, 1), dt.date(2000, 1, 2)]
         with tempfile.TemporaryDirectory() as temporary:
@@ -319,6 +437,106 @@ class ConsumerTests(unittest.TestCase):
                     endpoint_result_path,
                     frozen,
                 )
+
+    def test_full_checkpoint_reconstruction_no_trigger(self) -> None:
+        result = self.run_synthetic_checkpoint_reconstruction([], {})
+        self.assertEqual(result["status"], "not_triggered")
+        self.assertEqual(result["decision_classes"], [])
+
+    def test_full_checkpoint_reconstruction_one_lane_no_divergence(self) -> None:
+        cumulative_subtolerance = [1.0 + 9.0e-7 * index for index in range(14)]
+        result = self.run_synthetic_checkpoint_reconstruction(
+            ["canonical"], {"canonical": cumulative_subtolerance}
+        )
+        self.assertIsNone(result["first_divergent_transition"]["canonical"])
+        self.assertEqual(
+            result["decision_classes"],
+            ["MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY"],
+        )
+
+    def test_full_checkpoint_reconstruction_both_lanes_different_intervals(self) -> None:
+        canonical = [1.0] * 3 + [2.0] * 11
+        development = [1.0] * 5 + [2.0] * 9
+        result = self.run_synthetic_checkpoint_reconstruction(
+            ["canonical", "development"],
+            {"canonical": canonical, "development": development},
+        )
+        self.assertNotEqual(
+            result["first_divergent_transition"]["canonical"]["right"],
+            result["first_divergent_transition"]["development"]["right"],
+        )
+        self.assertEqual(
+            result["decision_classes"],
+            [
+                "MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY",
+                "SOURCE_BY_FORCING_INTERACTION_DESCRIPTIVE",
+            ],
+        )
+
+    def test_full_checkpoint_reconstruction_both_lanes_same_interval(self) -> None:
+        canonical = [1.0] * 3 + [2.0] * 11
+        development = [3.0] * 3 + [4.0] * 11
+        result = self.run_synthetic_checkpoint_reconstruction(
+            ["canonical", "development"],
+            {"canonical": canonical, "development": development},
+        )
+        self.assertEqual(
+            result["first_divergent_transition"]["canonical"]["right"],
+            result["first_divergent_transition"]["development"]["right"],
+        )
+        self.assertEqual(result["decision_classes"], [])
+
+    def test_full_checkpoint_reconstruction_rejects_endpoint_anchor_drift(self) -> None:
+        with self.assertRaises(consumer.ReconstructionError):
+            self.run_synthetic_checkpoint_reconstruction(
+                ["canonical"],
+                {"canonical": [1.0] * 13 + [2.0]},
+                current_anchor_offset={"canonical": 1.0},
+            )
+
+    def test_common_fixture_validation_rejects_mutation(self) -> None:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = Path(temporary)
+            expected = dict(frozen["common_fixture_sha256"])
+            expected["p8.cli"] = frozen["forcings"]["canonical"]["sha256"]
+            for name in expected:
+                if name == "p8.cli":
+                    source = consumer.REPO / frozen["forcings"]["canonical"]["path"]
+                else:
+                    source = (
+                        consumer.REPO
+                        / "target/snow_stage3_operator_reconciliation_v3/fixtures"
+                        / "snotel_snowbird_ut"
+                        / name
+                    )
+                (fixture / name).write_bytes(source.read_bytes())
+            consumer.validate_frozen_fixture(fixture, "canonical", frozen)
+            (fixture / "p8.sol").write_bytes(b"mutated")
+            with self.assertRaises(consumer.ReconstructionError):
+                consumer.validate_frozen_fixture(fixture, "canonical", frozen)
+
+    def test_protected_output_comparison_rejects_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            control = root / "control"
+            legacy = root / "legacy"
+            control.mkdir()
+            legacy.mkdir()
+            for suffix in (".hbp", ".wat.parquet", ".loss.json"):
+                (control / f"case{suffix}").write_bytes(b"same")
+                (legacy / f"case{suffix}").write_bytes(b"same")
+            self.assertEqual(
+                set(
+                    consumer.compare_protected_outputs(
+                        control, legacy, context="test"
+                    ).values()
+                ),
+                {True},
+            )
+            (legacy / "case.hbp").write_bytes(b"different")
+            with self.assertRaises(consumer.ReconstructionError):
+                consumer.compare_protected_outputs(control, legacy, context="test")
 
 
 if __name__ == "__main__":
