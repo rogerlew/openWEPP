@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `contract review PASS / first tool review HOLD amended / re-review pending`.
+Status: `contract review PASS / second tool review HOLD amended / re-review pending`.
 
 Evidence class: `Static`.
 
@@ -61,3 +61,22 @@ inspecting new results. Both returned `HOLD`.
 
 No result execution is admitted until fresh Agent A and Agent B review the
 amended exact clean commit and both return `PASS`.
+
+## Second Tool Review
+
+Agent A and Agent B reviewed exact clean commit
+`6f2d01814196850917a262636389005d5ede9c7a` without running the model or
+inspecting new results. Both returned `HOLD`.
+
+| Finding | Disposition | Result-blind amendment |
+| --- | --- | --- |
+| Replay failure could coexist with source/predecessor success classes | `accepted` | Replay failure now returns only `INPUT_OR_ENDPOINT_REPLAY_FAILURE` and forcing-identity context before any downstream success classification |
+| Intermediate schema v5 had no frozen adapter | `accepted` | Added an explicit conditional-checkpoint-only v5 aggregate custody adapter with the same closure fields and prohibited primitive/causal claims as v4 |
+| Checkpoint localization was not anchored to the endpoint matrix | `accepted` | First and last checkpoint traces must replay the forcing-matched old/current endpoint cells daily, per WY, and at the paired median before transition localization |
+| Checkpoint consumer receipt/input custody was incomplete | `accepted` | Independently validate the exact trigger, 14 builds, source digests, run order, arms, binaries, fixtures, protected outputs, and complete normalized semantic inputs |
+| Checkpoint execution verification was optional | `accepted` | Once endpoint reconstruction exists, both the checkpoint execution receipt and independent checkpoint result are mandatory, including the explicit no-trigger receipt |
+| Endpoint and checkpoint arms were not bound to exact retained build binaries | `accepted` | Require exact binary hash and retained size where available for every build and arm; require exact source/forcing/mode/return-code identity |
+| Direct negative verifier tests were incomplete | `accepted` | Added fail-closed tests for HEAD drift, missing checkpoint phase, arm identity, binary hash/size, protected keys, semantic inputs, added inventory, overwrite refusal, and malformed checkpoint custody |
+
+No result execution is admitted until fresh exact-commit Agent A and Agent B
+review returns `PASS/PASS`.

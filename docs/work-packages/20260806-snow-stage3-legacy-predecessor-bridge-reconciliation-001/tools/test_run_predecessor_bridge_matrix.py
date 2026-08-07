@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TOOL = Path(__file__).with_name("run_predecessor_bridge_matrix.py")
 SPEC = importlib.util.spec_from_file_location("predecessor_bridge_runner", TOOL)
@@ -194,6 +195,111 @@ class RunnerCustodyTests(unittest.TestCase):
         self.assertEqual(len(checkpoints), 14)
         self.assertEqual(checkpoints[0][0], frozen["sources"]["old"])
         self.assertEqual(checkpoints[-1][0], frozen["sources"]["current"])
+
+    def test_checkpoint_phase_is_mandatory_after_endpoint_result(self) -> None:
+        frozen = json.loads(runner.FREEZE_PATH.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "results").mkdir()
+            (root / "results/predecessor-bridge-results.json").write_text(
+                "{}", encoding="utf-8"
+            )
+            with mock.patch.object(runner, "OUTPUT", root):
+                with self.assertRaises(runner.CustodyError):
+                    runner.verify_checkpoint_search(frozen, "a" * 40)
+
+    def test_clean_head_rejects_current_head_drift(self) -> None:
+        with mock.patch.object(runner, "git_output", return_value="b" * 40):
+            with self.assertRaises(runner.CustodyError):
+                runner.require_clean_head("a" * 40)
+
+    def test_arm_identity_rejects_source_forcing_and_returncode_drift(self) -> None:
+        valid = {
+            "cell": "E00",
+            "mode": "legacy",
+            "source_sha": "a" * 40,
+            "forcing": "canonical",
+            "returncode": 0,
+        }
+        runner.require_arm_identity(
+            valid,
+            cell="E00",
+            mode="legacy",
+            source_sha="a" * 40,
+            forcing="canonical",
+            context="test",
+        )
+        for key, value in (
+            ("source_sha", "b" * 40),
+            ("forcing", "development"),
+            ("returncode", 1),
+        ):
+            malformed = dict(valid)
+            malformed[key] = value
+            with self.assertRaises(runner.CustodyError):
+                runner.require_arm_identity(
+                    malformed,
+                    cell="E00",
+                    mode="legacy",
+                    source_sha="a" * 40,
+                    forcing="canonical",
+                    context="test",
+                )
+
+    def test_protected_output_receipt_requires_exact_three_keys(self) -> None:
+        exact = {".hbp": True, ".wat.parquet": True, ".loss.json": True}
+        runner.require_protected_output_receipt(exact, context="test")
+        malformed = dict(exact)
+        malformed["extra"] = True
+        with self.assertRaises(runner.CustodyError):
+            runner.require_protected_output_receipt(malformed, context="test")
+
+    def test_execution_refuses_existing_output_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with mock.patch.object(runner, "OUTPUT", root):
+                with self.assertRaises(runner.CustodyError):
+                    runner.execute_endpoint_body("a" * 40)
+
+    def test_file_manifest_detects_added_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "one").write_bytes(b"1")
+            before = runner.file_manifest(root)
+            (root / "two").write_bytes(b"2")
+            after = runner.file_manifest(root)
+        self.assertNotEqual(before, after)
+        self.assertEqual(after["file_count"], 2)
+
+    def test_binary_match_rejects_hash_and_size_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            binary = Path(temporary) / "binary"
+            binary.write_bytes(b"admitted")
+            runner.require_binary_match(
+                binary,
+                runner.sha256(binary),
+                expected_size_bytes=8,
+                context="test",
+            )
+            with self.assertRaises(runner.CustodyError):
+                runner.require_binary_match(binary, "0" * 64, context="test")
+            with self.assertRaises(runner.CustodyError):
+                runner.require_binary_match(
+                    binary,
+                    runner.sha256(binary),
+                    expected_size_bytes=9,
+                    context="test",
+                )
+
+    def test_semantic_input_receipt_rejects_mutation(self) -> None:
+        admitted = {"source_sha": "a" * 40, "forcing": "canonical"}
+        runner.require_semantic_input_receipt(admitted, admitted, context="test")
+        mutated = dict(admitted)
+        mutated["forcing"] = "development"
+        with self.assertRaises(runner.CustodyError):
+            runner.require_semantic_input_receipt(
+                mutated, admitted, context="test"
+            )
 
 
 if __name__ == "__main__":

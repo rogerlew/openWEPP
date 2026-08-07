@@ -455,11 +455,15 @@ def validate_execution_receipt(
             ):
                 raise ReconstructionError(f"execution arm identity differs for {cell}/{mode}")
             semantic = arm.get("normalized_semantic_inputs", {})
-            if (
-                semantic.get("forcing") != forcing
-                or semantic.get("forcing_sha256") != frozen["forcings"][forcing]["sha256"]
-                or semantic.get("source_sha") != frozen["sources"][source_name]
-            ):
+            expected_semantic = semantic_input_manifest(
+                source_sha=frozen["sources"][source_name],
+                forcing=forcing,
+                mode=mode,
+                fixture=OUTPUT / "fixtures" / forcing,
+                runfile=OUTPUT / "runs" / cell / mode / "snowbird-predecessor-bridge.run",
+                frozen=frozen,
+            )
+            if semantic != expected_semantic:
                 raise ReconstructionError(f"semantic input identity differs for {cell}/{mode}")
             if mode != "control":
                 matches = [
@@ -635,7 +639,7 @@ def classify(
     classes = []
     replay_pass = all(item["pass"] for item in replay.values())
     if not replay_pass:
-        classes.append("INPUT_OR_ENDPOINT_REPLAY_FAILURE")
+        return ["INPUT_OR_ENDPOINT_REPLAY_FAILURE", "FORCING_IDENTITY_DIFFERENCE"]
     classes.append("FORCING_IDENTITY_DIFFERENCE")
     if replay_pass:
         classes.append("FORCING_STRATIFIED_ENDPOINTS_RECONCILED")
@@ -677,6 +681,71 @@ def write_json(path: Path, value: Any) -> None:
         json.dumps(value, allow_nan=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def semantic_input_manifest(
+    *,
+    source_sha: str,
+    forcing: str,
+    mode: str,
+    fixture: Path,
+    runfile: Path,
+    frozen: dict[str, Any],
+) -> dict[str, Any]:
+    selectors = {
+        key: value
+        for key, value in frozen["selectors"].items()
+        if key.startswith("OPENWEPP_")
+        and key
+        not in {
+            "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW",
+            "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR",
+        }
+    }
+    if mode == "legacy":
+        selectors["OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW"] = "enabled"
+    elif mode == "explicit":
+        selectors["OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR"] = (
+            "sequential_resolved_shadow_v1"
+        )
+    elif mode != "control":
+        raise ReconstructionError(f"unsupported semantic-input mode {mode}")
+    if mode != "control":
+        selectors["OPENWEPP_R7H_SNOW_TRACE_PATH"] = f"<{TRACE_NAME}>"
+    fixture_inputs = {
+        path.name: {"sha256": sha256(path), "size_bytes": path.stat().st_size}
+        for path in sorted(candidate for candidate in fixture.iterdir() if candidate.is_file())
+    }
+    window_bytes = (
+        json.dumps(
+            frozen["windows"], allow_nan=False, indent=2, sort_keys=True
+        )
+        + "\n"
+    ).encode()
+    return {
+        "source_sha": source_sha,
+        "forcing": forcing,
+        "forcing_sha256": frozen["forcings"][forcing]["sha256"],
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "fixture_inputs": fixture_inputs,
+        "runfile_semantics": {
+            "schema": "openwepp-hillslope-runfile-v1",
+            "run_name": "snowbird-predecessor-bridge",
+            "unit_system": "metric",
+            "wepp_ui": False,
+            "input_bindings": ["soil", "management", "slope", "climate"],
+            "output_bindings": ["pass", "loss", "wat"],
+            "raw_sha256": sha256(runfile),
+        },
+        "science_selectors": dict(sorted(selectors.items())),
+        "scheduler": "daily",
+        "snow_evaluation_forcing_cadence": "hourly",
+        "executor": "direct-production-executor",
+        "date_count": frozen["forcings"]["date_count"],
+        "first_date": frozen["forcings"]["first_date"],
+        "last_date": frozen["forcings"]["last_date"],
+        "windows_sha256": hashlib.sha256(window_bytes).hexdigest(),
+    }
 
 
 def reconstruct() -> None:
@@ -798,6 +867,134 @@ def checkpoint_trace_hash(arm: dict[str, Any]) -> str:
     return matches[0]["sha256"]
 
 
+def validate_checkpoint_execution_receipt(
+    execution: dict[str, Any],
+    endpoint_receipt: dict[str, Any],
+    endpoint_receipt_path: Path,
+    endpoint_result: dict[str, Any],
+    endpoint_result_path: Path,
+    frozen: dict[str, Any],
+) -> list[str]:
+    lanes = endpoint_result.get("checkpoint_lanes_triggered")
+    if not isinstance(lanes, list) or any(
+        lane not in {"canonical", "development"} for lane in lanes
+    ):
+        raise ReconstructionError("checkpoint trigger lane inventory differs")
+    exact = {
+        "schema_version": 1,
+        "execution_head": endpoint_receipt.get("execution_head"),
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "endpoint_execution_receipt_sha256": sha256(endpoint_receipt_path),
+        "endpoint_result_sha256": sha256(endpoint_result_path),
+        "triggered_lanes": lanes,
+        "checkpoint_count": 14,
+    }
+    for key, expected in exact.items():
+        if execution.get(key) != expected:
+            raise ReconstructionError(f"checkpoint execution {key} differs")
+    if endpoint_result.get("execution_head") != endpoint_receipt.get("execution_head"):
+        raise ReconstructionError("endpoint result/execution HEAD differs")
+    if not lanes:
+        if (
+            execution.get("status") != "not_triggered"
+            or execution.get("builds") != {}
+            or execution.get("runs") != {}
+        ):
+            raise ReconstructionError("untriggered checkpoint receipt differs")
+        return lanes
+    if execution.get("status") != "executed":
+        raise ReconstructionError("triggered checkpoint status differs")
+    checkpoints = frozen["checkpoint_grouping"]["checkpoints"]
+    checkpoint_ids = [
+        f"{index:02d}-{source_sha}"
+        for index, (source_sha, _) in enumerate(checkpoints)
+    ]
+    builds = execution.get("builds")
+    if not isinstance(builds, dict) or set(builds) != {
+        source_sha for source_sha, _ in checkpoints
+    }:
+        raise ReconstructionError("checkpoint build inventory differs")
+    for source_sha, expected_digest in checkpoints:
+        build = builds[source_sha]
+        if (
+            build.get("returncode") != 0
+            or build.get("source_sha") != source_sha
+            or build.get("build_input_digest") != expected_digest
+        ):
+            raise ReconstructionError(f"checkpoint build custody differs at {source_sha}")
+        binary_item = build.get("binary")
+        if not isinstance(binary_item, dict):
+            raise ReconstructionError(f"checkpoint binary receipt differs at {source_sha}")
+        expected_binary_path = (
+            f"checkpoint-search/binaries/{source_sha}/openwepp-cli-hill"
+        )
+        if binary_item.get("path") != expected_binary_path:
+            raise ReconstructionError(f"checkpoint binary path differs at {source_sha}")
+        binary = OUTPUT / str(binary_item.get("path", ""))
+        if (
+            not binary.is_file()
+            or sha256(binary) != binary_item.get("sha256")
+            or binary.stat().st_size != binary_item.get("size_bytes")
+        ):
+            raise ReconstructionError(f"checkpoint binary custody differs at {source_sha}")
+    runs = execution.get("runs")
+    if not isinstance(runs, dict) or set(runs) != set(lanes):
+        raise ReconstructionError("checkpoint run lane inventory differs")
+    for forcing in lanes:
+        if list(runs[forcing]) != checkpoint_ids:
+            raise ReconstructionError(f"checkpoint run ordering differs for {forcing}")
+        forcing_sha = frozen["forcings"][forcing]["sha256"]
+        fixture = OUTPUT / "fixtures" / forcing / "p8.cli"
+        if not fixture.is_file() or sha256(fixture) != forcing_sha:
+            raise ReconstructionError(f"checkpoint fixture differs for {forcing}")
+        for checkpoint_id, (source_sha, _) in zip(checkpoint_ids, checkpoints):
+            item = runs[forcing][checkpoint_id]
+            if item.get("source_sha") != source_sha:
+                raise ReconstructionError(f"checkpoint source differs at {forcing}/{checkpoint_id}")
+            modes = item.get("modes")
+            if not isinstance(modes, dict) or set(modes) != {"control", "legacy"}:
+                raise ReconstructionError(f"checkpoint modes differ at {forcing}/{checkpoint_id}")
+            protected = item.get("protected_outputs")
+            if (
+                not isinstance(protected, dict)
+                or set(protected) != {".hbp", ".wat.parquet", ".loss.json"}
+                or set(protected.values()) != {True}
+            ):
+                raise ReconstructionError(f"checkpoint protected outputs differ at {forcing}/{checkpoint_id}")
+            for mode in ("control", "legacy"):
+                arm = modes[mode]
+                if (
+                    arm.get("cell") != checkpoint_id
+                    or arm.get("mode") != mode
+                    or arm.get("source_sha") != source_sha
+                    or arm.get("forcing") != forcing
+                    or arm.get("returncode") != 0
+                ):
+                    raise ReconstructionError(f"checkpoint arm identity differs at {forcing}/{checkpoint_id}/{mode}")
+                semantic = arm.get("normalized_semantic_inputs")
+                run_dir = (
+                    OUTPUT
+                    / "checkpoint-search/runs"
+                    / forcing
+                    / checkpoint_id
+                    / mode
+                )
+                expected_semantic = semantic_input_manifest(
+                    source_sha=source_sha,
+                    forcing=forcing,
+                    mode=mode,
+                    fixture=OUTPUT / "fixtures" / forcing,
+                    runfile=run_dir / "snowbird-predecessor-bridge.run",
+                    frozen=frozen,
+                )
+                if semantic != expected_semantic:
+                    raise ReconstructionError(f"checkpoint semantic input differs at {forcing}/{checkpoint_id}/{mode}")
+                binary = run_dir / "bin/openwepp-cli-hill"
+                if not binary.is_file() or sha256(binary) != builds[source_sha]["binary"]["sha256"]:
+                    raise ReconstructionError(f"checkpoint arm binary differs at {forcing}/{checkpoint_id}/{mode}")
+    return lanes
+
+
 def parse_checkpoint_trace(
     path: Path, dates: list[dt.date], expected_sha256: str
 ) -> dict[dt.date, float]:
@@ -843,23 +1040,41 @@ def annual_difference_gate(
     }
 
 
+def first_divergent_transition(
+    transitions: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    return next((item for item in transitions if not item.get("pass")), None)
+
+
 def reconstruct_checkpoints() -> None:
     destination = OUTPUT / "checkpoint-search"
     execution_path = destination / "execution-receipt.json"
+    endpoint_receipt_path = OUTPUT / "execution-receipt.json"
     result_path = OUTPUT / "results/predecessor-bridge-results.json"
     output_path = destination / "checkpoint-results.json"
     if output_path.exists():
         raise ReconstructionError(f"refusing to overwrite {output_path}")
-    if not execution_path.is_file() or not result_path.is_file():
-        raise ReconstructionError("checkpoint execution and endpoint result are required")
+    if (
+        not execution_path.is_file()
+        or not endpoint_receipt_path.is_file()
+        or not result_path.is_file()
+    ):
+        raise ReconstructionError(
+            "checkpoint execution, endpoint execution, and endpoint result are required"
+        )
     execution = json.loads(execution_path.read_text(encoding="utf-8"))
+    endpoint_receipt = json.loads(endpoint_receipt_path.read_text(encoding="utf-8"))
     endpoint_result = json.loads(result_path.read_text(encoding="utf-8"))
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
-    lanes = endpoint_result.get("checkpoint_lanes_triggered")
-    if execution.get("triggered_lanes") != lanes:
-        raise ReconstructionError("checkpoint execution trigger differs")
-    if execution.get("endpoint_result_sha256") != sha256(result_path):
-        raise ReconstructionError("checkpoint endpoint-result binding differs")
+    endpoint_trace_hashes = validate_execution_receipt(endpoint_receipt, frozen)
+    lanes = validate_checkpoint_execution_receipt(
+        execution,
+        endpoint_receipt,
+        endpoint_receipt_path,
+        endpoint_result,
+        result_path,
+        frozen,
+    )
     if not lanes:
         if execution.get("status") != "not_triggered" or execution.get("runs") != {}:
             raise ReconstructionError("untriggered checkpoint receipt differs")
@@ -872,45 +1087,83 @@ def reconstruct_checkpoints() -> None:
         write_json(output_path, result)
         write_json(OUTPUT / "retained-artifact-manifest.json", retained_manifest(OUTPUT))
         return
-    if execution.get("status") != "executed" or not isinstance(lanes, list):
-        raise ReconstructionError("triggered checkpoint execution receipt differs")
     checkpoints = frozen["checkpoint_grouping"]["checkpoints"]
     checkpoint_ids = [f"{index:02d}-{source_sha}" for index, (source_sha, _) in enumerate(checkpoints)]
-    dates = {
-        forcing: climate_dates(OUTPUT / "fixtures" / forcing / "p8.cli")
-        for forcing in lanes
-    }
+    dates = {}
+    for forcing in lanes:
+        climate = OUTPUT / "fixtures" / forcing / "p8.cli"
+        stamps = climate_dates(climate)
+        forcing_freeze = frozen["forcings"]
+        if (
+            sha256(climate) != forcing_freeze[forcing]["sha256"]
+            or len(stamps) != forcing_freeze["date_count"]
+            or stamps[0].isoformat() != forcing_freeze["first_date"]
+            or stamps[-1].isoformat() != forcing_freeze["last_date"]
+        ):
+            raise ReconstructionError(
+                f"checkpoint {forcing} chronology differs from freeze"
+            )
+        dates[forcing] = stamps
     lane_results = {}
     first_divergent = {}
+    frozen_windows = windows(frozen)
     for forcing in lanes:
         retained_runs = execution.get("runs", {}).get(forcing)
-        if not isinstance(retained_runs, dict) or list(retained_runs) != checkpoint_ids:
-            raise ReconstructionError(f"checkpoint ordering differs for {forcing}")
         annual_by_checkpoint = {}
+        endpoint_checkpoint_daily = {}
         for checkpoint_id in checkpoint_ids:
             item = retained_runs[checkpoint_id]
-            modes = item.get("modes")
-            if not isinstance(modes, dict) or set(modes) != {"control", "legacy"}:
-                raise ReconstructionError(f"checkpoint modes differ for {forcing}/{checkpoint_id}")
-            if set(item.get("protected_outputs", {}).values()) != {True}:
-                raise ReconstructionError(f"checkpoint protected outputs differ for {forcing}/{checkpoint_id}")
-            arm = modes["legacy"]
+            arm = item["modes"]["legacy"]
             trace = destination / "runs" / forcing / checkpoint_id / "legacy" / TRACE_NAME
             daily = parse_checkpoint_trace(trace, dates[forcing], checkpoint_trace_hash(arm))
-            annual_by_checkpoint[checkpoint_id] = annualize(daily, windows(frozen))
+            annual_by_checkpoint[checkpoint_id] = annualize(daily, frozen_windows)
+            if checkpoint_id in {checkpoint_ids[0], checkpoint_ids[-1]}:
+                endpoint_checkpoint_daily[checkpoint_id] = daily
+        endpoint_cells = {
+            "canonical": ("E00", "E10"),
+            "development": ("E01", "E11"),
+        }
+        old_cell, current_cell = endpoint_cells[forcing]
+        old_endpoint = parse_checkpoint_trace(
+            trace_path(old_cell, "legacy"),
+            dates[forcing],
+            endpoint_trace_hashes[(old_cell, "legacy")],
+        )
+        current_endpoint = parse_checkpoint_trace(
+            trace_path(current_cell, "legacy"),
+            dates[forcing],
+            endpoint_trace_hashes[(current_cell, "legacy")],
+        )
+        endpoint_anchor_replay = {
+            "old_endpoint": replay_gate(
+                endpoint_checkpoint_daily[checkpoint_ids[0]],
+                old_endpoint,
+                frozen_windows,
+            ),
+            "current_endpoint": replay_gate(
+                endpoint_checkpoint_daily[checkpoint_ids[-1]],
+                current_endpoint,
+                frozen_windows,
+            ),
+        }
+        if not all(gate["pass"] for gate in endpoint_anchor_replay.values()):
+            raise ReconstructionError(
+                f"checkpoint endpoint anchor replay differs for {forcing}"
+            )
         transitions = []
         for left_id, right_id in zip(checkpoint_ids, checkpoint_ids[1:]):
             gate = annual_difference_gate(
                 annual_by_checkpoint[left_id], annual_by_checkpoint[right_id]
             )
             transitions.append({"left": left_id, "right": right_id, **gate})
-        divergent = next((item for item in transitions if not item["pass"]), None)
+        divergent = first_divergent_transition(transitions)
         first_divergent[forcing] = divergent
         lane_results[forcing] = {
             "checkpoint_medians_mj_m2": {
                 checkpoint_id: statistics.median(values.values()) / 1.0e6
                 for checkpoint_id, values in annual_by_checkpoint.items()
             },
+            "endpoint_anchor_replay": endpoint_anchor_replay,
             "transitions": transitions,
         }
     result = {
@@ -947,9 +1200,12 @@ def verify_existing() -> None:
         or trigger.get("triggered_lanes") != result.get("checkpoint_lanes_triggered")
     ):
         raise ReconstructionError("retained checkpoint trigger differs")
+    checkpoint_execution = OUTPUT / "checkpoint-search/execution-receipt.json"
     checkpoint_result = OUTPUT / "checkpoint-search/checkpoint-results.json"
-    if (OUTPUT / "checkpoint-search/execution-receipt.json").exists() and not checkpoint_result.is_file():
-        raise ReconstructionError("checkpoint execution lacks independent reconstruction")
+    if not checkpoint_execution.is_file() or not checkpoint_result.is_file():
+        raise ReconstructionError(
+            "endpoint reconstruction lacks mandatory checkpoint execution/reconstruction"
+        )
     print(f"PASS verified {manifest['file_count']} retained artifacts")
 
 

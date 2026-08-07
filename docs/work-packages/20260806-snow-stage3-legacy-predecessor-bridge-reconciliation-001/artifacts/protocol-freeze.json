@@ -137,6 +137,18 @@
       "closure": "sum exactly 24 hourly complete energy values equals daily complete energy within energy_tolerance_j_m2",
       "prohibited_claims": ["primitive term closure", "tuple support identity", "mass closure", "cold-content closure", "active/lower conduction cancellation", "causal localization"]
     },
+    "v5_checkpoint_aggregate_custody_only": {
+      "scope": "conditional build-input checkpoint localization only; not an E00/E01/E10/E11 endpoint adapter",
+      "schema_value": "openwepp-r7h-direct-production-snow-trace-v5",
+      "identity_fields": ["day_index", "lane_index"],
+      "applicability_context": "stage3_energy_enabled is retained context; zero hourly/daily aggregate values do not prove support or N/A",
+      "hourly_field": "stage3_shadow_hourly_complete_energy_j_m2",
+      "daily_field": "stage3_shadow_complete_energy_j_m2",
+      "check_only_field": "stage3_shadow_maximum_energy_closure_residual_j_m2",
+      "sign_units": "positive toward snow; J m^-2 for hourly-bin energy and daily energy",
+      "closure": "sum exactly 24 hourly complete energy values equals daily complete energy within energy_tolerance_j_m2",
+      "prohibited_claims": ["primitive term closure", "tuple support identity", "mass closure", "cold-content closure", "active/lower conduction cancellation", "causal localization"]
+    },
     "v6_primitive_and_aggregate": {
       "schema_field": "stage3_operator_reconciliation.schema_version",
       "schema_value": 6,

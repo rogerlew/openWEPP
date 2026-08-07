@@ -297,6 +297,7 @@ def build_source(
     (log_root / "stderr.txt").write_text(completed.stderr, encoding="utf-8")
     binary = cargo_target / target_triple / "release/openwepp-cli-hill"
     receipt = {
+        "source_sha": source_sha,
         "argv": argv,
         "cwd": str(clone),
         "returncode": completed.returncode,
@@ -705,6 +706,59 @@ def output_hash(run_dir: Path, suffix: str) -> str:
     return sha256(matches[0])
 
 
+def require_arm_identity(
+    arm: dict[str, Any],
+    *,
+    cell: str,
+    mode: str,
+    source_sha: str,
+    forcing: str,
+    context: str,
+) -> None:
+    if (
+        arm.get("cell") != cell
+        or arm.get("mode") != mode
+        or arm.get("source_sha") != source_sha
+        or arm.get("forcing") != forcing
+        or arm.get("returncode") != 0
+    ):
+        raise CustodyError(f"{context} arm identity differs: {cell}/{mode}")
+
+
+def require_protected_output_receipt(value: Any, *, context: str) -> None:
+    if (
+        not isinstance(value, dict)
+        or set(value) != {".hbp", ".wat.parquet", ".loss.json"}
+        or set(value.values()) != {True}
+    ):
+        raise CustodyError(f"{context} protected output receipt differs")
+
+
+def require_binary_match(
+    path: Path,
+    expected_sha256: str,
+    *,
+    context: str,
+    expected_size_bytes: int | None = None,
+) -> None:
+    if (
+        not path.is_file()
+        or sha256(path) != expected_sha256
+        or (
+            expected_size_bytes is not None
+            and path.stat().st_size != expected_size_bytes
+        )
+    ):
+        raise CustodyError(f"{context} binary differs")
+
+
+def require_semantic_input_receipt(
+    actual: Any, expected: dict[str, Any], *, context: str
+) -> None:
+    if actual != expected:
+        raise CustodyError(f"{context} semantic input receipt differs")
+
+
 def protected_output_checks(cells: dict[str, dict[str, Any]]) -> dict[str, Any]:
     checks: dict[str, Any] = {}
     for cell, modes in cells.items():
@@ -923,11 +977,15 @@ def execute(expected_head: str) -> None:
 def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
     destination = OUTPUT / "checkpoint-search"
     receipt_path = destination / "execution-receipt.json"
+    endpoint_result = OUTPUT / "results/predecessor-bridge-results.json"
     if not receipt_path.exists():
+        if endpoint_result.is_file():
+            raise CustodyError(
+                "endpoint result lacks mandatory checkpoint execution receipt"
+            )
         return
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     endpoint_receipt = OUTPUT / "execution-receipt.json"
-    endpoint_result = OUTPUT / "results/predecessor-bridge-results.json"
     consumer_trigger = OUTPUT / "results/checkpoint-trigger-receipt.json"
     if not endpoint_result.is_file() or not consumer_trigger.is_file():
         raise CustodyError("checkpoint search lacks endpoint result/trigger custody")
@@ -944,6 +1002,8 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
     for key, expected in exact.items():
         if receipt.get(key) != expected:
             raise CustodyError(f"checkpoint receipt {key} differs")
+    if receipt.get("schema_version") != 1:
+        raise CustodyError("checkpoint receipt schema differs")
     local_trigger = destination / "trigger-receipt.json"
     if not local_trigger.is_file():
         raise CustodyError("checkpoint local trigger receipt is absent")
@@ -977,11 +1037,23 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
     for index, (source_sha, expected_digest) in enumerate(checkpoints):
         checkpoint_id = expected_ids[index]
         build = builds[source_sha]
-        if build.get("build_input_digest") != expected_digest or build.get("returncode") != 0:
+        if (
+            build.get("source_sha") != source_sha
+            or build.get("build_input_digest") != expected_digest
+            or build.get("returncode") != 0
+        ):
             raise CustodyError(f"checkpoint build differs at {source_sha}")
         binary = OUTPUT / build["binary"]["path"]
-        if not binary.is_file() or sha256(binary) != build["binary"]["sha256"]:
-            raise CustodyError(f"checkpoint binary differs at {source_sha}")
+        if build["binary"]["path"] != (
+            f"checkpoint-search/binaries/{source_sha}/openwepp-cli-hill"
+        ):
+            raise CustodyError(f"checkpoint binary path differs at {source_sha}")
+        require_binary_match(
+            binary,
+            build["binary"]["sha256"],
+            expected_size_bytes=build["binary"]["size_bytes"],
+            context=f"checkpoint retained {source_sha}",
+        )
         clone = destination / "sources" / checkpoint_id
         require_clone_identity(clone, source_sha, "checkpoint verification")
         target = destination / "cargo-targets" / checkpoint_id
@@ -999,12 +1071,24 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
         for checkpoint_id in expected_ids:
             item = runs[forcing][checkpoint_id]
             source_sha = item.get("source_sha")
+            if source_sha != checkpoint_id.split("-", 1)[1]:
+                raise CustodyError(
+                    f"checkpoint source identity differs at {forcing}/{checkpoint_id}"
+                )
             modes = item.get("modes")
             if not isinstance(modes, dict) or set(modes) != {"control", "legacy"}:
                 raise CustodyError(f"checkpoint modes differ at {forcing}/{checkpoint_id}")
             for mode in ("control", "legacy"):
                 arm = modes[mode]
                 run_dir = destination / "runs" / forcing / checkpoint_id / mode
+                require_arm_identity(
+                    arm,
+                    cell=checkpoint_id,
+                    mode=mode,
+                    source_sha=source_sha,
+                    forcing=forcing,
+                    context=f"checkpoint {forcing}",
+                )
                 if json.loads((run_dir / "arm-receipt.json").read_text(encoding="utf-8")) != arm:
                     raise CustodyError(f"checkpoint arm receipt differs at {forcing}/{checkpoint_id}/{mode}")
                 if file_manifest(run_dir, exclude=frozenset({"arm-receipt.json"})) != arm.get("outputs"):
@@ -1015,6 +1099,11 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
                 if mode == "legacy" and (not trace.is_file() or trace.stat().st_size == 0):
                     raise CustodyError(f"checkpoint legacy trace absent at {forcing}/{checkpoint_id}")
                 binary = run_dir / "bin/openwepp-cli-hill"
+                require_binary_match(
+                    binary,
+                    builds[source_sha]["binary"]["sha256"],
+                    context=f"checkpoint arm {forcing}/{checkpoint_id}/{mode}",
+                )
                 runtime = validate_run_manifest(
                     run_dir=run_dir,
                     fixture=OUTPUT / "fixtures" / forcing,
@@ -1027,6 +1116,19 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
                 )
                 if runtime != arm.get("runtime_manifest"):
                     raise CustodyError(f"checkpoint runtime manifest differs at {forcing}/{checkpoint_id}/{mode}")
+                semantic = normalized_semantic_input_manifest(
+                    source_sha=source_sha,
+                    forcing=forcing,
+                    fixture=OUTPUT / "fixtures" / forcing,
+                    runfile=run_dir / f"{RUN_STEM}.run",
+                    effective=arm["effective_openwepp_environment"],
+                    frozen=frozen,
+                )
+                require_semantic_input_receipt(
+                    arm.get("normalized_semantic_inputs"),
+                    semantic,
+                    context=f"checkpoint {forcing}/{checkpoint_id}/{mode}",
+                )
             protected = {
                 suffix: output_hash(
                     destination / "runs" / forcing / checkpoint_id / "control", suffix
@@ -1036,7 +1138,11 @@ def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
                 )
                 for suffix in (".hbp", ".wat.parquet", ".loss.json")
             }
-            if protected != item.get("protected_outputs") or not all(protected.values()):
+            require_protected_output_receipt(
+                item.get("protected_outputs"),
+                context=f"checkpoint {forcing}/{checkpoint_id}",
+            )
+            if protected != item.get("protected_outputs"):
                 raise CustodyError(f"checkpoint protected outputs differ at {forcing}/{checkpoint_id}")
 
 
@@ -1186,15 +1292,19 @@ def verify_existing() -> None:
     for source_name in ("old", "current"):
         source_sha = frozen["sources"][source_name]
         build = builds[source_name]
-        if build.get("returncode") != 0 or build.get("build_input_digest") != build_input_digest(source_sha):
+        if (
+            build.get("source_sha") != source_sha
+            or build.get("returncode") != 0
+            or build.get("build_input_digest") != build_input_digest(source_sha)
+        ):
             raise CustodyError(f"build receipt differs for {source_name}")
         binary = OUTPUT / build["binary"]["path"]
-        if (
-            not binary.is_file()
-            or sha256(binary) != build["binary"]["sha256"]
-            or binary.stat().st_size != build["binary"]["size_bytes"]
-        ):
-            raise CustodyError(f"retained binary differs for {source_name}")
+        require_binary_match(
+            binary,
+            build["binary"]["sha256"],
+            expected_size_bytes=build["binary"]["size_bytes"],
+            context=f"endpoint retained {source_name}",
+        )
         clone = OUTPUT / "checkpoints" / source_sha / "source"
         require_clone_identity(clone, source_sha, "verification")
         target = OUTPUT / "checkpoints" / source_sha / "cargo-target"
@@ -1220,14 +1330,14 @@ def verify_existing() -> None:
             arm_receipt = run_dir / "arm-receipt.json"
             if not arm_receipt.is_file() or json.loads(arm_receipt.read_text(encoding="utf-8")) != arm:
                 raise CustodyError(f"arm receipt differs: {cell}/{mode}")
-            if (
-                arm.get("cell") != cell
-                or arm.get("mode") != mode
-                or arm.get("source_sha") != source_sha
-                or arm.get("forcing") != forcing
-                or arm.get("returncode") != 0
-            ):
-                raise CustodyError(f"arm identity differs: {cell}/{mode}")
+            require_arm_identity(
+                arm,
+                cell=cell,
+                mode=mode,
+                source_sha=source_sha,
+                forcing=forcing,
+                context="endpoint",
+            )
             actual_outputs = file_manifest(run_dir, exclude=frozenset({"arm-receipt.json"}))
             if actual_outputs != arm.get("outputs"):
                 raise CustodyError(f"complete run manifest differs: {cell}/{mode}")
@@ -1241,6 +1351,11 @@ def verify_existing() -> None:
             if mode != "control" and (not trace.is_file() or trace.stat().st_size == 0):
                 raise CustodyError(f"enabled trace absent: {cell}/{mode}")
             binary = run_dir / "bin/openwepp-cli-hill"
+            require_binary_match(
+                binary,
+                builds[source_name]["binary"]["sha256"],
+                context=f"endpoint arm {cell}/{mode}",
+            )
             runtime = validate_run_manifest(
                 run_dir=run_dir,
                 fixture=OUTPUT / "fixtures" / forcing,
@@ -1261,8 +1376,11 @@ def verify_existing() -> None:
                 effective=arm["effective_openwepp_environment"],
                 frozen=frozen,
             )
-            if semantic != arm.get("normalized_semantic_inputs"):
-                raise CustodyError(f"semantic input manifest differs: {cell}/{mode}")
+            require_semantic_input_receipt(
+                arm.get("normalized_semantic_inputs"),
+                semantic,
+                context=f"endpoint {cell}/{mode}",
+            )
     if forcing_matched_semantic_checks(cells) != receipt.get("forcing_matched_semantic_checks"):
         raise CustodyError("forcing-matched semantic checks differ")
     if current_selector_semantic_checks(cells) != receipt.get("current_selector_semantic_checks"):

@@ -223,6 +223,103 @@ class ConsumerTests(unittest.TestCase):
         self.assertIn(f"SOURCE_INVARIANT_WITHIN_FORCING[{canonical_sha}]", classes)
         self.assertIn(f"PREDECESSOR_NOT_REPRODUCED[{development_sha}]", classes)
 
+    def test_replay_failure_suppresses_source_success_classes(self) -> None:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        classes = consumer.classify(
+            {"pass": True},
+            {"pass": True},
+            {"historical": {"pass": False}, "current": {"pass": True}},
+            frozen,
+        )
+        self.assertEqual(
+            classes,
+            ["INPUT_OR_ENDPOINT_REPLAY_FAILURE", "FORCING_IDENTITY_DIFFERENCE"],
+        )
+
+    def test_v5_aggregate_adapter_is_checkpoint_only(self) -> None:
+        dates = [dt.date(2000, 1, 1)]
+        row = v4_row(0, [1.0] * 24)
+        row["schema"] = "openwepp-r7h-direct-production-snow-trace-v5"
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "v5.jsonl"
+            write_jsonl(path, [row])
+            digest = consumer.sha256(path)
+            parsed = consumer.parse_checkpoint_trace(path, dates, digest)
+            with self.assertRaises(consumer.ReconstructionError):
+                consumer.parse_v4(path, dates, expected_sha256=digest)
+        self.assertEqual(parsed[dates[0]], 24.0)
+
+    def test_annual_difference_gate_checks_each_year_and_median(self) -> None:
+        left = {year: 1.0e12 for year in range(1990, 2025)}
+        right = dict(left)
+        self.assertTrue(consumer.annual_difference_gate(left, right)["pass"])
+        right[2000] += 3.0
+        gate = consumer.annual_difference_gate(left, right)
+        self.assertFalse(gate["pass"])
+        self.assertEqual(gate["water_year_failures"], [2000])
+
+    def test_first_divergent_transition_is_ordered_and_nullable(self) -> None:
+        self.assertIsNone(
+            consumer.first_divergent_transition([{"pass": True}, {"pass": True}])
+        )
+        second = {"pass": False, "left": "01", "right": "02"}
+        self.assertIs(
+            consumer.first_divergent_transition([{"pass": True}, second]), second
+        )
+
+    def test_checkpoint_receipt_rejects_malformed_untriggered_custody(self) -> None:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            endpoint_receipt_path = root / "endpoint.json"
+            endpoint_result_path = root / "result.json"
+            endpoint_receipt = {"execution_head": "a" * 40}
+            endpoint_result = {
+                "execution_head": "a" * 40,
+                "checkpoint_lanes_triggered": [],
+            }
+            endpoint_receipt_path.write_text(
+                json.dumps(endpoint_receipt), encoding="utf-8"
+            )
+            endpoint_result_path.write_text(
+                json.dumps(endpoint_result), encoding="utf-8"
+            )
+            execution = {
+                "schema_version": 1,
+                "execution_head": "a" * 40,
+                "protocol_sha256": consumer.sha256(consumer.FREEZE_PATH),
+                "endpoint_execution_receipt_sha256": consumer.sha256(
+                    endpoint_receipt_path
+                ),
+                "endpoint_result_sha256": consumer.sha256(endpoint_result_path),
+                "triggered_lanes": [],
+                "checkpoint_count": 14,
+                "status": "not_triggered",
+                "builds": {},
+                "runs": {},
+            }
+            self.assertEqual(
+                consumer.validate_checkpoint_execution_receipt(
+                    execution,
+                    endpoint_receipt,
+                    endpoint_receipt_path,
+                    endpoint_result,
+                    endpoint_result_path,
+                    frozen,
+                ),
+                [],
+            )
+            execution["runs"] = {"development": {}}
+            with self.assertRaises(consumer.ReconstructionError):
+                consumer.validate_checkpoint_execution_receipt(
+                    execution,
+                    endpoint_receipt,
+                    endpoint_receipt_path,
+                    endpoint_result,
+                    endpoint_result_path,
+                    frozen,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
