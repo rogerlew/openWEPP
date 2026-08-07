@@ -12,11 +12,12 @@
 ## Reusable Execution Plans And Templates
 
 - `20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/` —
-  EXECUTING / RESULT-BLIND SCAFFOLD REVIEW: reconcile the exact Snowbird
-  schema-v5 `+170.2536` and schema-v6 legacy `+188.8725 MJ m^-2` estimands by
-  source checkpoint, daily reset, first projection, substep transition, and
-  active-conduction lineage. This is evidence-custody characterization only;
-  CoE, physics, persistence, outputs, promotion, and cutover remain unchanged.
+  EXECUTING / PROSPECTIVE PROTOCOL CORRECTION: static custody proved the
+  Snowbird schema-v4 `+170.2536` and schema-v6 legacy `+188.8725 MJ m^-2`
+  anchors used different climate forcings. The corrected design crosses both
+  sources with both forcings before source/state attribution. This is
+  evidence-custody characterization only; CoE, physics, persistence, outputs,
+  promotion, and cutover remain unchanged.
 
 - `20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/`
   — EXECUTED / OPERATOR MECHANICS CHARACTERIZED / PREDECESSOR BRIDGE HOLD:

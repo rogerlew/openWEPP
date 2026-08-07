@@ -22,9 +22,10 @@ Required-reading budget: approximately `500000` local pre-edit bytes, `WARN`;
 the large package catalog is mandatory core routing. Map:
 `artifacts/required-reading-map.md`.
 
-Task: reproduce or reject the exact Snowbird schema-v5 predecessor bridge,
-localize the first divergence before reduction, and close the package within
-its frozen claim limits.
+Task: reconcile the Snowbird schema-v4 predecessor and schema-v6 legacy
+estimands through the frozen two-source by two-forcing endpoint matrix. Compute
+per-water-year source, forcing, and interaction effects before medians. Only if
+a fixed-forcing source effect remains may checkpoint localization proceed.
 
 Constraints: contract-first sequencing for any canonical/Rust diagnostic;
 typed guards; no silent defaults; no domain canonicalize-and-proceed; no
@@ -32,8 +33,21 @@ surrogate physics; no fitting; no production/default/output/ownership change.
 Agreement with the predecessor is evidence identity, not correctness.
 
 Conservation/output acceptance: freeze operand lineage and rejected aliases;
-require independent daily/window reconstruction, term/state closure, and real
-retained evidence. Self-consistency or one-sided checks alone cannot close.
+require a consumer independent of runner reduction helpers, per-water-year
+daily/window reconstruction, term/state/mass/cold-content closure, internal
+conduction cancellation, paired disabled controls, and real retained evidence.
+Self-consistency or one-sided checks alone cannot close.
+
+Custody acceptance: use isolated local clones below the package target, scrub
+ambient selector/compiler variables, build `--locked --offline` with distinct
+Cargo targets, use the legacy selector consistently, prove current legacy vs
+explicit selector equivalence, preserve failures, and never overwrite evidence.
+The historical binary is not retained; label rebuilt history semantic replay.
+
+Authority sequencing: amend SC-SNOWFREEZE-001 prospectively before results so
+predecessor reproduction binds forcing identity. Technical PASS may coexist
+with causal HOLD; missing in-scope tools/tests/instrumentation cannot justify
+HOLD.
 
 Subagent requirement: REQUIRED. Spawn `comparator_suite_runner` for exact
 source-checkpoint/cohort and heavy workspace closure runs. This prompt

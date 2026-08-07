@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "status": "prospectively_frozen_before_result_execution",
+  "no_tuning": "No result-driven change to sources, forcings, fixtures, selectors, windows, adapters, tolerances, aggregation, checkpoint grouping, or decision predicates is permitted in this namespace.",
+  "sources": {
+    "old": "2d035638a9819961a393207cd4813712d64bddcf",
+    "current": "5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5",
+    "ancestry": "first-parent linear; 62 commits including endpoints"
+  },
+  "forcings": {
+    "canonical": {
+      "path": "tests/fixtures/snotel_observed/snotel_snowbird_ut/p8.cli",
+      "sha256": "10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7"
+    },
+    "development": {
+      "path": "tests/fixtures/snotel_observed/snotel_snowbird_ut/development/precip_x1p2155576/p8.cli",
+      "sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb"
+    },
+    "date_count": 14245,
+    "first_date": "1986-01-01",
+    "last_date": "2024-12-31"
+  },
+  "endpoint_matrix": {
+    "E00": ["old", "canonical"],
+    "E01": ["old", "development"],
+    "E10": ["current", "canonical"],
+    "E11": ["current", "development"],
+    "paired_control": "every enabled cell has a same-source/same-forcing disabled control",
+    "current_selector_equivalence": "current/development and current/canonical each prove legacy selector equals explicit sequential_resolved_shadow_v1"
+  },
+  "factorial_effects_per_water_year": {
+    "source_canonical": "E10-E00",
+    "source_development": "E11-E01",
+    "forcing_old": "E01-E00",
+    "forcing_current": "E11-E10",
+    "interaction": "(E11-E10)-(E01-E00)",
+    "aggregation_order": "compute each effect for each WY first; summarize effect samples with Python statistics.median; never subtract separately reduced medians"
+  },
+  "retained_custody": {
+    "historical_trace": {
+      "schema": "openwepp-r7h-direct-production-snow-trace-v4",
+      "path": "target/snow_stage3_complete_carrier_shadow_melt/runs/snotel_snowbird_ut/snowbird-shadow-corrected.snow.jsonl",
+      "sha256": "621bd3f91076403aac45737c387954e89c4760a12698e36952dec6dd72b94716",
+      "size_bytes": 708373737,
+      "manifest_sha256": "c96dfe253f7ef21602aad9bdae2d1219ecc69bf36cf89be255620b10e896de5c",
+      "runfile_sha256": "2d878b176c9074d9e66e8cde24d328402c843a6326de890b521bef028c24c0fc",
+      "reported_binary_sha256": "7e3cc80d0f80cf05a2e3ff6a343ed891a2eb69f4bc3d3ee1fc2b66d68ec95f0a",
+      "reported_binary_sidecar_sha256": "a400ac255fe90681a4fbbf0ecfb38a225cfc705d39e97cd918fbd7c066e4daa5",
+      "binary_disposition": "HISTORICAL_BINARY_NOT_RETAINED"
+    },
+    "current_trace": {
+      "schema": "openwepp-r7h-direct-production-snow-trace-v6",
+      "path": "target/snow_stage3_operator_reconciliation_v3/runs/snotel_snowbird_ut/sequential/snotel_snowbird_ut-operator-reconciliation.snow.jsonl",
+      "sha256": "10b46159748657e9ffa304400eac2e474158c5fadc37890432112c5fbc3ae32a",
+      "size_bytes": 5850261821,
+      "execution_receipt_sha256": "61564035575b165722213abe0657a4dc70b04a1d72c1200b1bb5e35d435fdc9e",
+      "retained_manifest_sha256": "b0c161e7915a8fc52d5da12fb3b17d189480cceae0114cc9fda7d34fd7dedfcf",
+      "runfile_sha256": "8bd8fc7aa01f6b09bfca56ec2f360bf395a94d02b9b9f942d7581eba53b979ed",
+      "binary_sha256": "c8d433af71911befb174c17c843a0b4a77a95936702683e54bc9569746782b09",
+      "raw_result_sha256": "3b885fa0f04201744da5c24766d413cd2e74f1273021a1a35d6fd0f7227f691e"
+    },
+    "observation": {
+      "path": "tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+      "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+    }
+  },
+  "common_fixture_sha256": {
+    "p8.sol": "e53a8e58d23ee452a3979ffc7fa55f3aa8c528b15aedb3316057eff8716fd18a",
+    "p8.man": "21c435275d13d9ce8faccd3f807b34c941175446cf3add8e4532c2024fe2e9c5",
+    "p8.slp": "f8e11413f6a9ac23adfee608a02354a6217129e21f51397c41d8d05585ef89e6",
+    "pmetpara.txt": "57cce528f58530463e6606613c47122f44065d2e64e88bb5bb071b1736e498a6",
+    "gwcoeff.txt": "ec23463aad0cd1e3000d68b6af5a1a85a327d4952a239c92efeba060007eb7e8",
+    "snow.txt": "0465a415097472d551346bbab1be43f440101a9cfd1be67cde44ff47d14c5ef2"
+  },
+  "selectors": {
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL": "layered_thermal_liquid_v1",
+    "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "physics_bulk_multilayer_density_v1",
+    "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL": "harder_pomeroy_hourly",
+    "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "coe_liquid_holding_capacity_v1",
+    "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL": "dilley_unsworth_subcanopy_v1",
+    "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL": "disabled",
+    "legacy_enabled": "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW=enabled",
+    "legacy_disabled": "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW absent",
+    "legacy_arm_explicit_selector": "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR absent",
+    "explicit_equivalence": "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR=sequential_resolved_shadow_v1 with legacy selector absent"
+  },
+  "build_custody": {
+    "namespace": "target/snow_stage3_legacy_predecessor_bridge_reconciliation",
+    "checkout": "isolated shared local clone below namespace; detached exact SHA; clean verification",
+    "command": "cargo build --locked --offline --release -p openwepp-runner --bin openwepp-cli-hill",
+    "environment": "scrub OPENWEPP_*, RUSTFLAGS, CARGO_ENCODED_RUSTFLAGS; set CARGO_NET_OFFLINE=true and checkpoint-specific CARGO_TARGET_DIR",
+    "runtime_cwd": "exact checkpoint clone",
+    "overwrite": "prohibited; verify-existing is read-only",
+    "record": ["Cargo.lock SHA-256", "build-input digest", "rustc -Vv", "cargo -V", "target triple", "OS", "linker", "sanitized environment", "binary size/hash", "argv", "cwd", "stdout/stderr hashes", "exit status", "generated runfile hash", "normalized semantic input manifest"]
+  },
+  "checkpoint_grouping": {
+    "enumeration": "git rev-list --first-parent --reverse 2d035638a9819961a393207cd4813712d64bddcf^..5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5",
+    "digest": "LC_ALL=C git ls-tree -r REV -- Cargo.toml Cargo.lock rust-toolchain.toml .cargo crates | sha256sum",
+    "selection": "retain base and first commit at each consecutive digest transition; execute only if a fixed-forcing source effect remains",
+    "checkpoints": [
+      ["2d035638a9819961a393207cd4813712d64bddcf", "8174ba35e6d8a64e1be96073138f5e9a88806660dba2ebb5d2595db5d755cd30"],
+      ["1ee68fb1625ce5470ad5dfb51e88ed32187d968e", "6ecef44c79730ac5fe3288be16b3517d9a6112848de905199cca8efa7a40afc6"],
+      ["9a8628845b71d401ca5d2cb1d3ae25e053515ba5", "7f18cd9a9e372c5c1d0b0dd6a1854dcc1f654587270c63ce7bddad8729369282"],
+      ["7be69889aab8848865d4fd8d652ebd750408058d", "44f02fb5793d87f38484bb4dadc77cbb5be5821277d2f40f572b12459dda80db"],
+      ["19bd7aa816644f7c244337c06cf6d275d2e5cedc", "c0dd652ebfc9585cbd510dbec9d882f51eefa2b39e71fc1e52fbf9641a27d220"],
+      ["4bb44004130914117078ec124e117619907375d6", "8483f1cfd1fe1bad6a1e51607df65cd9037df38b22c38859cb143ca7a042372a"],
+      ["05bd1c07cbc89543fc3094364f878398b554d49f", "680e07ab1a0bcf0a2a8ad57b00f0fb4d20b71ee2b085315f6808de63e2beefe2"],
+      ["6506da5d4b917c676683613d68e0556d467fed30", "678f7858d3551020daa63f4c946d722987dd5168deeb0039d7f66869d635d6a6"],
+      ["46d7f8996e043ee5842616cfcd06d07e623b2a2e", "1d47b26343f89c7c9f8f198f4e64553103223686db5c54d73380e408fcdc08e9"],
+      ["f5202ee65f8b40d2c0244d92fd5c2843077e9997", "7d1917eb903e8ecfffe161606b4d15cf0d59c432d5b6226607b2ab41eb70bb45"],
+      ["ee86ac6a872ee00c925bc391175df712880db734", "ebf5783aa3732f6ed913c9ea4da4bae16acd7e7ca7017414b3d46539f0d9ff77"],
+      ["2be275fa19b61ccbed479dc92cc28b993091945b", "294c6ece758c7f4496b46b3eb059b25ec23b5aa197ebc63bad02da9973d5c32"],
+      ["3fbcdfddeff1b25f3e9384120b04857af66d96da", "4edca338209e2efc31d00ad0411f39b875b616134845839a1bcda72f7a27c1cf"],
+      ["5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5", "2e408671c67b49df9134960eb4ae7a6a7a7bc9b604c83881e99114faa8b26795"]
+    ]
+  },
+  "reconstruction": {
+    "historical_estimand": "schema-v4 stage3_shadow_complete_energy_j_m2 daily values summed from October 1 through earliest maximum positive observed SWE date inclusive, then Python statistics.median across WY1990-2024",
+    "current_estimand": "schema-v6 ordered sequential tuple external complete energy plus active internal conduction, independently reconstructed at tuple/hour/day/WY levels",
+    "tuple_flux_tolerance_w_m2": "max(1e-10, 1e-12 * sum_abs_operands)",
+    "tuple_mass_tolerance_kg_m2": "max(1e-12, 1e-12 * sum_abs_operands)",
+    "energy_tolerance_j_m2": "max(1e-6, 1e-12 * sum_abs_operands)",
+    "median_tolerance_mj_m2": 0.0000001,
+    "date_join": "exact unique date; reject duplicate, missing, unordered, or out-of-cohort rows",
+    "adversarial_rejections": ["daily external-only alias", "surface-only complete alias", "double-counted conduction", "CoE melt alias", "unused-positive-energy alias", "median-of-medians arithmetic", "mixed forcing identity", "duplicate/missing date", "noncontiguous tuple", "zero alias for absent support"]
+  },
+  "windows": [
+    [1990,"1989-10-01","1990-04-30"],[1991,"1990-10-01","1991-05-04"],[1992,"1991-10-01","1992-03-31"],[1993,"1992-10-01","1993-05-11"],[1994,"1993-10-01","1994-01-09"],[1995,"1994-10-01","1995-05-14"],[1996,"1995-10-01","1996-04-22"],[1997,"1996-10-01","1997-05-04"],[1998,"1997-10-01","1998-04-27"],[1999,"1998-10-01","1999-05-15"],[2000,"1999-10-01","2000-04-26"],[2001,"2000-10-01","2001-04-24"],[2002,"2001-10-01","2002-04-30"],[2003,"2002-10-01","2003-05-11"],[2004,"2003-10-01","2004-04-27"],[2005,"2004-10-01","2005-04-19"],[2006,"2005-10-01","2006-04-17"],[2007,"2006-10-01","2007-04-24"],[2008,"2007-10-01","2008-05-01"],[2009,"2008-10-01","2009-04-20"],[2010,"2009-10-01","2010-05-15"],[2011,"2010-10-01","2011-05-22"],[2012,"2011-10-01","2012-04-20"],[2013,"2012-10-01","2013-04-22"],[2014,"2013-10-01","2014-04-06"],[2015,"2014-10-01","2015-03-06"],[2016,"2015-10-01","2016-03-31"],[2017,"2016-10-01","2017-05-02"],[2018,"2017-10-01","2018-04-21"],[2019,"2018-10-01","2019-04-21"],[2020,"2019-10-01","2020-04-23"],[2021,"2020-10-01","2021-04-27"],[2022,"2021-10-01","2022-04-24"],[2023,"2022-10-01","2023-04-06"],[2024,"2023-10-01","2024-04-07"]
+  ],
+  "decision_precedence": [
+    "INPUT_OR_ENDPOINT_REPLAY_FAILURE",
+    "FORCING_IDENTITY_DIFFERENCE",
+    "FORCING_STRATIFIED_ENDPOINTS_RECONCILED",
+    "SOURCE_INVARIANT_WITHIN_FORCING",
+    "VERSIONED_ESTIMANDS_RECONCILED",
+    "CURRENT_V6_FORCING_MATCHED_PREDECESSOR_REPRODUCED",
+    "CONTROLLED_SOURCE_OR_STATE_CLASS",
+    "MULTIFACTOR_OR_UNOBSERVED_PREDECESSOR_BOUNDARY"
+  ],
+  "hold_legitimacy": {
+    "allowed": ["immutable required input absent", "historical executable absent and exact-source semantic replay impossible", "exact source cannot build or execute after frozen compatibility procedure", "genuinely unobserved boundary after all in-scope instrumentation and tests"],
+    "prohibited": ["missing package tool", "missing package test", "incomplete checkpoint execution", "required in-scope instrumentation not implemented", "undispositioned review finding"]
+  }
+}

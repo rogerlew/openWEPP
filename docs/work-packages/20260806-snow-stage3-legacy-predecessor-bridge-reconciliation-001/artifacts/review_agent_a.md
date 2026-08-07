@@ -1,8 +1,11 @@
 # Review Agent A
 
-Status: `queued / result-blind science and protocol review`.
+Status: `HOLD on initial scaffold / corrected protocol re-review pending`.
 
-Evidence class: `not reviewed`.
+Evidence class: `Static at 19e8c5cde`.
 
-Return severity-ranked findings, required corrections, claim-limit review, gate
-legitimacy, and PASS/HOLD. Do not inspect result values before protocol freeze.
+Initial review found missing estimand identity, deterministic checkpointing,
+executable causal predicates, historical instrumentation neutrality,
+independent conservation reconstruction, controls, and HOLD legitimacy. All
+findings are accepted in `review-disposition.md`; the corrected protocol
+requires a fresh result-blind PASS before execution.
