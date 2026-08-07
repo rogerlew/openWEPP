@@ -5,7 +5,7 @@ Status: `closure candidate reconciled`.
 Evidence mode: `Static + Ran`.
 
 Compared package admission commit `3e9a62c4a` with the closure candidate. The
-diff contains 45 paths, 2,557 insertions, and 226 deletions:
+diff contains 55 paths, 2,944 insertions, and 131 deletions:
 
 - two canonical snow contracts and their index;
 - three registered contract-test targets;

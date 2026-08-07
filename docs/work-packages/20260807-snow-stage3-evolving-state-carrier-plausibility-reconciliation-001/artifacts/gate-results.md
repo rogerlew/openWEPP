@@ -76,5 +76,15 @@ Ran on the reconciled closure candidate:
 The first workspace quick run stopped after `916` passes on one roadmap
 string-contract failure caused by the closure update. The roadmap was corrected
 to preserve the required conditional phrase, and the exact failed test then
-passed `1/1`. Full-workspace correctness and dual terminal verification remain
-pending at this evidence checkpoint.
+passed `1/1`.
+
+The required comparator runner then executed both exact clean-head workspace
+profiles at `fae6f8a187c475a0213ef6d83cbedc14c5c5baa5`:
+
+- full: `2,288/2,288 PASS`, 33 skipped, `2,332.11 s`, maximum RSS
+  `868,016 KiB`;
+- quick: `2,239/2,239 PASS`, 40 skipped, `2,327.97 s`, maximum RSS
+  `867,172 KiB`.
+
+Both exit codes were zero. The complete quick rerun supersedes the interrupted
+attempt; no selected correctness gate remains incomplete.
