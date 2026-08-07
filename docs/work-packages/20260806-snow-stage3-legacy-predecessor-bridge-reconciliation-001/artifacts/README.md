@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `execution and post-result review PASS / terminal gates pending`.
+Status: `complete / terminal gates and verification PASS`.
 
 This directory owns protocol, authority, operand, custody, implementation,
 review, execution, reconstruction, validation, assurance-impact, terminal, and

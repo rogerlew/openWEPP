@@ -1,6 +1,6 @@
 # Terminal Diff Reconciliation
 
-Status: `PASS at terminal validation head / closure-candidate verification pending`.
+Status: `PASS / dual verification complete`.
 
 Evidence mode: `Ran`.
 
@@ -23,6 +23,8 @@ Evidence mode: `Ran`.
   stale guards `158/158`, contracts `12/12`, package tests `42/42`, and all
   applicable static/dependency/assurance/documentation checks pass.
 
-The closure candidate adds only this terminal evidence and prompt archival.
-Dual independent verification must bind its exact clean commit and recheck the
-98-path inventory before closure.
+Closure candidate `75d9e7ceb00e6b7cfc53c3712168ad6c291c39a3` added only
+terminal evidence and prompt archival. Verifier B passed its exact 98-path
+inventory. Verifier A found one count typo in a non-applicable baseline
+observation; exact clean child `1b8e5a72e4540705ae5441685b74e252b160cf04`
+corrects `11` to the retained `12` without changing any gate or result.

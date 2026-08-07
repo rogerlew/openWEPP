@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `technical closure PASS / dual terminal verification pending`.
+Status: `technical closure and dual terminal verification PASS`.
 
 Evidence mode: `Ran`.
 
@@ -29,7 +29,7 @@ Evidence mode: `Ran`.
 | Terminal full workspace | `PASS` | Exact clean `5b620524a`; `2284/2284`, 33 skipped, `2293.316 s` |
 | Formatting/Clippy/doctests/dependency policy | `PASS` | Workspace all-target warnings denied; doctests and `cargo deny check` pass |
 | Exact-head focused/static closure | `PASS` | Contracts `12/12`; stale guards `158/158`; package `42/42`; Binding Exposure, SC units, Markdown `41` files, seven changed JSON documents, diff hygiene, staged assurance build/check, review-draft drift, and export guard pass |
-| Dual terminal verification | `NOT RUN` | Required at exact clean closure candidate |
+| Dual terminal verification | `PASS/PASS` | Science/result verifier cleared one count correction at `1b8e5a72e`; custody/governance verifier passed the 98-path candidate |
 
 Retained output root size is `32,038,680,276` bytes. The complete manifest has
 SHA-256 `a0e2a9ed1b08a41712980a8354b8471bf290faf1d9e7e164ab4858a43a05c4c6`.

@@ -1,6 +1,6 @@
 # Stage 3 Legacy Predecessor Bridge Reconciliation
 
-Status: `executed / bridge reconciled / terminal gates PASS / verification pending`
+Status: `complete / forcing bridge reconciled / verification PASS`
 
 Date: `2026-08-06`
 
@@ -414,7 +414,9 @@ the package namespace and content-hashed.
 - [x] (2026-08-06) Exact clean `5b620524a` passed quick `2235/2235`,
   frost `360/360`, full `2284/2284`, and all applicable static, dependency,
   contract, documentation, and DRAFT assurance gates.
-- [ ] Complete dual exact-head verification and close.
+- [x] (2026-08-06) Dual terminal verification passed. Verifier A's sole
+  evidence-count finding was accepted and cleared at `1b8e5a72e`; Verifier B
+  passed the exact 98-path custody/governance closure.
 
 ## Surprises & Discoveries
 
