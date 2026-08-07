@@ -19,6 +19,19 @@ consumer = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = consumer
 SPEC.loader.exec_module(consumer)
 
+UPSTREAM_TEST = consumer.REPO / (
+    "docs/work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-"
+    "operator-reconciliation-001/tools/test_run_operator_reconciliation.py"
+)
+UPSTREAM_SPEC = importlib.util.spec_from_file_location(
+    "predecessor_bridge_reviewed_v6_fixtures", UPSTREAM_TEST
+)
+if UPSTREAM_SPEC is None or UPSTREAM_SPEC.loader is None:
+    raise RuntimeError(f"cannot load {UPSTREAM_TEST}")
+upstream = importlib.util.module_from_spec(UPSTREAM_SPEC)
+sys.modules[UPSTREAM_SPEC.name] = upstream
+UPSTREAM_SPEC.loader.exec_module(upstream)
+
 
 def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
@@ -36,51 +49,35 @@ def v4_row(day_index: int, hourly: list[float]) -> dict[str, object]:
     }
 
 
-def v6_tuple() -> dict[str, object]:
-    return {
-        "applicable": True,
-        "applicability_reason": "evaluated",
-        "hour_index": 0,
-        "substep_index": 0,
-        "elapsed_start_seconds": 0.0,
-        "duration_seconds": 3600.0,
-        "net_shortwave_w_m2": 10.0,
-        "net_longwave_w_m2": -4.0,
-        "sensible_flux_w_m2": -1.0,
-        "latent_flux_w_m2": -2.0,
-        "precipitation_advected_flux_w_m2": 0.0,
-        "complete_external_flux_w_m2": 3.0,
-        "internal_active_lower_conduction_j_m2": 5.0,
-        "legacy_sequential_complete_j_m2": 10_805.0,
-        "total_ice_mass_before_kg_m2": 10.0,
-        "melt_kg_m2": 1.0,
-        "sublimation_kg_m2": 0.25,
-        "deposition_kg_m2": 0.5,
-        "total_ice_mass_after_kg_m2": 9.25,
-        "total_cold_before_j_m2": 100.0,
-        "active_cold_energy_change_j_m2": 10.0,
-        "lower_cold_energy_change_j_m2": -2.0,
-        "cold_content_export_j_m2": 3.0,
-        "total_cold_after_j_m2": 89.0,
-    }
-
-
 def v6_row(day_index: int) -> dict[str, object]:
-    statuses = [
-        {"evaluated": hour == 0, "reason": "evaluated" if hour == 0 else "operator_not_selected"}
-        for hour in range(24)
-    ]
-    return {
-        "schema": "openwepp-r7h-direct-production-snow-trace-v6",
-        "day_index": day_index,
-        "lane_index": 0,
-        "stage3_shadow_complete_energy_j_m2": 10_805.0,
-        "stage3_operator_reconciliation": {
-            "schema_version": 6,
-            "hourly_status": statuses,
-            "tuples": [v6_tuple()],
-        },
-    }
+    tuple_row = upstream.synthetic_tuple("sequential_resolved_shadow_v1")
+    row = upstream.v6_row(tuple_row, "sequential_resolved_shadow_v1")
+    row["day_index"] = day_index
+    duration = float(tuple_row["duration_seconds"])
+    total = float(tuple_row["legacy_sequential_complete_j_m2"])
+    row.update(
+        {
+            "stage3_evaluation_carrier_id": "stage3_complete_carrier_v1",
+            "stage3_evaluation_cadence_id": "stage3_dynamic_substep_with_hourly_forcing_v1",
+            "stage3_evaluation_claim_class": "bounded_response_experiment",
+            "stage3_evaluation_complete_arm_shortwave_j_m2": float(tuple_row["net_shortwave_w_m2"]) * duration,
+            "stage3_evaluation_complete_arm_longwave_j_m2": float(tuple_row["net_longwave_w_m2"]) * duration,
+            "stage3_evaluation_complete_arm_sensible_j_m2": float(tuple_row["sensible_flux_w_m2"]) * duration,
+            "stage3_evaluation_complete_arm_latent_j_m2": float(tuple_row["latent_flux_w_m2"]) * duration,
+            "stage3_evaluation_complete_arm_advected_j_m2": float(tuple_row["precipitation_advected_flux_w_m2"]) * duration,
+            "stage3_evaluation_complete_arm_internal_active_lower_conduction_j_m2": float(tuple_row["internal_active_lower_conduction_j_m2"]),
+            "stage3_evaluation_complete_arm_total_j_m2": total,
+            "stage3_evaluation_hourly_complete_energy_j_m2": [total] + [0.0] * 23,
+            "stage3_evaluation_hourly_evaluated_seconds": [duration] + [0.0] * 23,
+            "stage3_evaluation_hourly_requested_seconds": [3_600.0] * 24,
+            "stage3_evaluation_hourly_complete_carrier_evaluated": [True] + [False] * 23,
+            "stage3_evaluation_evaluated_seconds": duration,
+            "stage3_evaluation_requested_seconds": 86_400.0,
+            "stage3_evaluation_coverage_fraction": duration / 86_400.0,
+            "stage3_maximum_conduction_cancellation_residual_j_m2": 0.0,
+        }
+    )
+    return row
 
 
 class ConsumerTests(unittest.TestCase):
@@ -110,7 +107,12 @@ class ConsumerTests(unittest.TestCase):
             path = Path(temporary) / "v6.jsonl"
             write_jsonl(path, [v6_row(0)])
             parsed = consumer.parse_v6(path, dates)
-        self.assertEqual(parsed[dates[0]], 10_805.0)
+        row = v6_row(0)
+        self.assertAlmostEqual(
+            parsed[dates[0]],
+            row["stage3_evaluation_complete_arm_total_j_m2"],
+            places=8,
+        )
 
     def test_v6_rejects_double_counted_conduction(self) -> None:
         dates = [dt.date(2000, 1, 1)]
@@ -120,9 +122,27 @@ class ConsumerTests(unittest.TestCase):
         tuples = companion["tuples"]
         assert isinstance(tuples, list)
         assert isinstance(tuples[0], dict)
-        tuples[0]["legacy_sequential_complete_j_m2"] = 10_810.0
+        tuples[0]["legacy_sequential_complete_j_m2"] = float(
+            tuples[0]["legacy_sequential_complete_j_m2"]
+        ) + 5.0
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "double.jsonl"
+            write_jsonl(path, [row])
+            with self.assertRaises(consumer.ReconstructionError):
+                consumer.parse_v6(path, dates)
+
+    def test_v6_rejects_primitive_derived_mismatch(self) -> None:
+        dates = [dt.date(2000, 1, 1)]
+        row = v6_row(0)
+        companion = row["stage3_operator_reconciliation"]
+        assert isinstance(companion, dict)
+        tuples = companion["tuples"]
+        assert isinstance(tuples, list) and isinstance(tuples[0], dict)
+        tuples[0]["hourly_radiation_mj_m2"] = float(
+            tuples[0]["hourly_radiation_mj_m2"]
+        ) + 0.25
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "primitive-mismatch.jsonl"
             write_jsonl(path, [row])
             with self.assertRaises(consumer.ReconstructionError):
                 consumer.parse_v6(path, dates)
@@ -157,6 +177,41 @@ class ConsumerTests(unittest.TestCase):
         self.assertEqual(gate["water_year_failures"], [])
         self.assertFalse(gate["pass"])
         self.assertTrue(gate["checkpoint_trigger"])
+
+    def test_execution_receipt_rejects_empty_matrix(self) -> None:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        receipt = {
+            "status": "endpoint_matrix_executed",
+            "sources": frozen["sources"],
+            "cells": {},
+        }
+        with self.assertRaises(consumer.ReconstructionError):
+            consumer.validate_execution_receipt(receipt, frozen)
+
+    def test_replay_gate_detects_daily_anchor_difference(self) -> None:
+        stamp = dt.date(2000, 1, 1)
+        gate = consumer.replay_gate(
+            {stamp: 2.0},
+            {stamp: 1.0},
+            [(2000, stamp, stamp)],
+        )
+        self.assertFalse(gate["pass"])
+        self.assertEqual(gate["daily_failure_examples"], ["2000-01-01"])
+
+    def test_classification_uses_forcing_sha_and_failure_class(self) -> None:
+        frozen = json.loads(consumer.FREEZE_PATH.read_text(encoding="utf-8"))
+        passed = {"pass": True}
+        failed = {"pass": False}
+        classes = consumer.classify(
+            passed,
+            failed,
+            {"historical": {"pass": True}, "current": {"pass": True}},
+            frozen,
+        )
+        canonical_sha = frozen["forcings"]["canonical"]["sha256"]
+        development_sha = frozen["forcings"]["development"]["sha256"]
+        self.assertIn(f"SOURCE_INVARIANT_WITHIN_FORCING[{canonical_sha}]", classes)
+        self.assertIn(f"PREDECESSOR_NOT_REPRODUCED[{development_sha}]", classes)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,9 @@ class RunnerCustodyTests(unittest.TestCase):
             os.environ["RUSTFLAGS"] = "-C target-cpu=native"
             os.environ["CARGO_ENCODED_RUSTFLAGS"] = "bad"
             os.environ["CARGO_HOME"] = "/ambient"
+            os.environ["RUSTC_WRAPPER"] = "/untrusted/wrapper"
+            os.environ["CC"] = "/untrusted/cc"
+            os.environ["CARGO_BUILD_TARGET"] = "untrusted-target"
             environment, removed = runner.sanitized_environment(
                 cargo_home=Path("/tmp/local-cargo"),
                 cargo_target=Path("/tmp/local-target"),
@@ -38,6 +41,9 @@ class RunnerCustodyTests(unittest.TestCase):
         self.assertNotIn("OPENWEPP_BAD_SELECTOR", environment)
         self.assertNotIn("RUSTFLAGS", environment)
         self.assertNotIn("CARGO_ENCODED_RUSTFLAGS", environment)
+        self.assertNotIn("RUSTC_WRAPPER", environment)
+        self.assertNotIn("CC", environment)
+        self.assertNotIn("CARGO_BUILD_TARGET", environment)
         self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
         self.assertIn("OPENWEPP_BAD_SELECTOR", removed)
 
@@ -126,7 +132,8 @@ class RunnerCustodyTests(unittest.TestCase):
                 runner.FREEZE_PATH = old_freeze
         self.assertEqual(result["forcing_sha256"], frozen["forcings"]["development"]["sha256"])
         self.assertEqual(result["date_count"], 14245)
-        self.assertEqual(result["scheduler"], "hourly")
+        self.assertEqual(result["scheduler"], "daily")
+        self.assertEqual(result["snow_evaluation_forcing_cadence"], "hourly")
         self.assertEqual(result["science_selectors"], {"OPENWEPP_TEST": "enabled"})
 
     def test_path_checksum_requires_exact_resolved_binding(self) -> None:
@@ -146,6 +153,47 @@ class RunnerCustodyTests(unittest.TestCase):
                     runner.sha256(path),
                     "test",
                 )
+
+    def test_malformed_endpoint_matrix_is_rejected(self) -> None:
+        frozen = json.loads(runner.FREEZE_PATH.read_text(encoding="utf-8"))
+        frozen["endpoint_matrix"]["E11"] = ["old", "development"]
+        with self.assertRaises(runner.CustodyError):
+            runner.endpoint_cells(frozen)
+
+    def test_checkpoint_trigger_requires_exact_derived_lane_list(self) -> None:
+        result = {
+            "source_gates": {
+                "canonical": {"checkpoint_trigger": False},
+                "development": {"checkpoint_trigger": True},
+            },
+            "checkpoint_lanes_triggered": ["development"],
+        }
+        self.assertEqual(runner.checkpoint_trigger_lanes(result), ["development"])
+        result["checkpoint_lanes_triggered"] = []
+        with self.assertRaises(runner.CustodyError):
+            runner.checkpoint_trigger_lanes(result)
+
+    def test_legacy_and_explicit_selectors_normalize_to_same_operator(self) -> None:
+        base = {
+            "source_sha": "0" * 40,
+            "runfile_semantics": {"raw_sha256": "1" * 64},
+            "science_selectors": {"OPENWEPP_R7H_SNOW_TRACE_PATH": "<trace>"},
+        }
+        legacy = json.loads(json.dumps(base))
+        explicit = json.loads(json.dumps(base))
+        legacy["science_selectors"]["OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW"] = "enabled"
+        explicit["science_selectors"]["OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR"] = "sequential_resolved_shadow_v1"
+        self.assertEqual(
+            runner.normalized_operator_semantics(legacy),
+            runner.normalized_operator_semantics(explicit),
+        )
+
+    def test_all_fourteen_frozen_checkpoints_have_exact_build_digests(self) -> None:
+        frozen = json.loads(runner.FREEZE_PATH.read_text(encoding="utf-8"))
+        checkpoints = runner.frozen_checkpoints(frozen)
+        self.assertEqual(len(checkpoints), 14)
+        self.assertEqual(checkpoints[0][0], frozen["sources"]["old"])
+        self.assertEqual(checkpoints[-1][0], frozen["sources"]["current"])
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `all findings closed / exact-commit dual verification PASS`.
+Status: `contract review PASS / first tool review HOLD amended / re-review pending`.
 
 Evidence class: `Static`.
 
@@ -37,3 +37,25 @@ Agent A and Agent B independently verified every accepted amendment at exact
 clean commit `8135e3b90ec8f1d696c603ece588e868ca000f3c`; both returned `PASS` and
 focused contract tests passed `12/12`. Tool implementation is admitted. Model
 execution remains gated by tool tests and custody verification.
+
+## First Tool Review
+
+Agent A and Agent B reviewed exact clean commit
+`1b035592d48fedf2a214b7e01c76d717dbd25c6c` without running the model or
+inspecting new results. Both returned `HOLD`.
+
+| Finding | Disposition | Result-blind amendment |
+| --- | --- | --- |
+| Multi-gigabyte traces were materialized | `accepted` | Stream JSONL bytes in exact date order and retain only daily scalars |
+| V6 reconstruction trusted producer-derived terms | `accepted` | Bind the prior reviewed independent primitive radiation, turbulent, precipitation-advection, mass, cold, support, cadence, and continuity consumer; add an adversarial primitive/derived mutation |
+| Current daily comparison used the superseded shadow scalar | `accepted` | Reconstruct `legacy_sequential_complete_j_m2` from independent external terms plus active conduction and close it to the v6 complete-arm/hourly publication |
+| Retained v4/v6 endpoint replay was absent | `accepted` | Stream and hash both immutable anchors; prove fresh E00 and E11 daily/WY/median replay before versioned-estimand classes |
+| Classification omitted exact forcing hashes and failure classes | `accepted` | Parameterize success/failure classes by exact forcing SHA and retain frozen precedence |
+| Verifier trusted receipt-provided inventory | `accepted` | Independently require all cells/modes, builds, clones, Cargo manifests/targets, fixtures, arms, runtime manifests, sidecars, traces, protected outputs, semantic inputs, current HEAD, and allowed artifact roots |
+| Conditional checkpoint obligation had no executable path | `accepted` | Add independent trigger receipt, exact 14-checkpoint build/run command, per-checkpoint controls, streaming reconstruction, first-transition localization, and retained verification |
+| Build-affecting ambient environment was incompletely scrubbed | `accepted` | Scrub Rust/Cargo/C/linker overrides, select and record an explicit host target and linker, and recheck clones after build, run, and verification |
+| Legacy/explicit semantic equivalence was result-only | `accepted` | Normalize both selector spellings to the same effective operator and prove every other semantic input equal before execution |
+| Frozen `2be275fa...` digest had 63 characters | `accepted` | Corrected result-blind to the independently recomputed 64-character digest `294c6ece758c7f4496b46b3eb059b25ec23cb5aa197ebc63bad02da9973d5c32` |
+
+No result execution is admitted until fresh Agent A and Agent B review the
+amended exact clean commit and both return `PASS`.

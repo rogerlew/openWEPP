@@ -24,6 +24,20 @@ From a clean admitted HEAD, execute:
   --reconstruct
 ```
 
+Always execute the frozen checkpoint decision after endpoint reconstruction.
+When neither source gate triggers, this writes an explicit no-op receipt. When
+one or both trigger, it builds and runs all 14 frozen build-input checkpoints
+for exactly those forcing lanes:
+
+```bash
+.venv/bin/python \
+  docs/work-packages/20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/tools/run_predecessor_bridge_matrix.py \
+  --execute-checkpoints --expected-head <full-sha>
+.venv/bin/python \
+  docs/work-packages/20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/tools/reconstruct_predecessor_bridge.py \
+  --reconstruct-checkpoints
+```
+
 Then verify every retained byte without model execution:
 
 ```bash
@@ -43,6 +57,7 @@ Run model-free tests with:
   docs/work-packages/20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/tools/test_reconstruct_predecessor_bridge.py
 ```
 
-If either forcing-matched source gate triggers, stop endpoint disposition and
-execute all frozen build-input checkpoints for the affected forcing lane. The
-endpoint runner does not silently narrow that conditional obligation.
+If a checkpoint lane identifies a first divergent build-input transition, stop
+causal disposition until the package's contract-first twin instrumentation has
+localized that transition. A no-trigger receipt permits endpoint disposition
+without checkpoint builds.

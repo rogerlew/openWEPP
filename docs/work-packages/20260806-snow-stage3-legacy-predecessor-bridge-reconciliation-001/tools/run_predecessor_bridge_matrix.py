@@ -100,11 +100,29 @@ def sanitized_environment(
     *, cargo_home: Path | None = None, cargo_target: Path | None = None
 ) -> tuple[dict[str, str], list[str]]:
     environment = dict(os.environ)
+    exact_build_overrides = {
+        "AR",
+        "CC",
+        "CFLAGS",
+        "CPPFLAGS",
+        "LDFLAGS",
+        "RUSTC",
+        "RUSTC_WRAPPER",
+        "RUSTC_WORKSPACE_WRAPPER",
+        "RUSTDOCFLAGS",
+        "RUSTFLAGS",
+        "CARGO_ENCODED_RUSTFLAGS",
+        "CARGO_HOME",
+        "CARGO_INCREMENTAL",
+    }
     removed = sorted(
         key
         for key in environment
         if key.startswith("OPENWEPP_")
-        or key in {"RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_HOME"}
+        or key in exact_build_overrides
+        or key.startswith("CARGO_BUILD_")
+        or key.startswith("CARGO_PROFILE_")
+        or key.startswith("CARGO_TARGET_")
     )
     for key in removed:
         environment.pop(key, None)
@@ -158,12 +176,15 @@ def seed_cargo_home(target: Path) -> dict[str, Any]:
     return manifest
 
 
-def file_manifest(root: Path) -> dict[str, Any]:
+def file_manifest(root: Path, *, exclude: frozenset[str] = frozenset()) -> dict[str, Any]:
     files = []
     for path in sorted(candidate for candidate in root.rglob("*") if candidate.is_file()):
+        relative = path.relative_to(root).as_posix()
+        if relative in exclude:
+            continue
         files.append(
             {
-                "path": path.relative_to(root).as_posix(),
+                "path": relative,
                 "sha256": sha256(path),
                 "size_bytes": path.stat().st_size,
             }
@@ -190,6 +211,13 @@ def clone_source(source_sha: str, destination: Path) -> dict[str, Any]:
     if actual != source_sha or status:
         raise CustodyError(f"detached clone identity failed for {source_sha}")
     return {"source_sha": actual, "clean": True, "path": str(destination)}
+
+
+def require_clone_identity(clone: Path, source_sha: str, phase: str) -> None:
+    actual = git_output(["rev-parse", "HEAD"], cwd=clone)
+    status = git_output(["status", "--porcelain"], cwd=clone)
+    if actual != source_sha or status:
+        raise CustodyError(f"clone identity changed during {phase}: {clone}")
 
 
 def build_input_digest(source_sha: str) -> str:
@@ -225,16 +253,32 @@ def build_source(
     clone: Path,
     cargo_home: Path,
     cargo_target: Path,
+    *,
+    artifact_group: str = "builds",
+    binary_group: str = "binaries",
 ) -> dict[str, Any]:
     environment, removed = sanitized_environment(
         cargo_home=cargo_home, cargo_target=cargo_target
     )
+    rustc_vv = run(["rustc", "-Vv"], cwd=clone, env=environment).stdout
+    host_match = re.search(r"^host: ([A-Za-z0-9_.-]+)$", rustc_vv, re.MULTILINE)
+    if host_match is None:
+        raise CustodyError("rustc did not report a host target")
+    target_triple = host_match.group(1)
+    linker_raw = shutil.which("cc", path=environment.get("PATH"))
+    if linker_raw is None:
+        raise CustodyError("required explicit C linker 'cc' is unavailable")
+    linker = Path(linker_raw).resolve()
+    linker_key = f"CARGO_TARGET_{target_triple.upper().replace('-', '_')}_LINKER"
+    environment[linker_key] = str(linker)
     argv = [
         "cargo",
         "build",
         "--locked",
         "--offline",
         "--release",
+        "--target",
+        target_triple,
         "-p",
         "openwepp-runner",
         "--bin",
@@ -243,11 +287,11 @@ def build_source(
     started = time.perf_counter()
     completed = run(argv, cwd=clone, env=environment, check=False)
     elapsed = time.perf_counter() - started
-    log_root = OUTPUT / "builds" / source_sha
+    log_root = OUTPUT / artifact_group / source_sha
     log_root.mkdir(parents=True, exist_ok=True)
     (log_root / "stdout.txt").write_text(completed.stdout, encoding="utf-8")
     (log_root / "stderr.txt").write_text(completed.stderr, encoding="utf-8")
-    binary = cargo_target / "release/openwepp-cli-hill"
+    binary = cargo_target / target_triple / "release/openwepp-cli-hill"
     receipt = {
         "argv": argv,
         "cwd": str(clone),
@@ -258,14 +302,22 @@ def build_source(
         "removed_environment_keys": removed,
         "effective_cargo_home": str(cargo_home.resolve()),
         "effective_cargo_target_dir": str(cargo_target.resolve()),
+        "effective_target_triple": target_triple,
+        "effective_linker": {
+            "path": str(linker),
+            "sha256": sha256(linker),
+            "version": run([str(linker), "--version"], cwd=clone, env=environment)
+            .stdout.splitlines()[0],
+        },
         "cargo_lock_sha256": sha256(clone / "Cargo.lock"),
         "build_input_digest": build_input_digest(source_sha),
         "toolchain": toolchain_receipt(environment),
     }
+    require_clone_identity(clone, source_sha, "build")
     if completed.returncode or not binary.is_file():
         write_json(log_root / "build-receipt.json", receipt)
         raise CustodyError(f"release build failed for {source_sha}")
-    retained = OUTPUT / "binaries" / source_sha / "openwepp-cli-hill"
+    retained = OUTPUT / binary_group / source_sha / "openwepp-cli-hill"
     retained.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(binary, retained)
     receipt["binary"] = {
@@ -273,6 +325,7 @@ def build_source(
         "sha256": sha256(retained),
         "size_bytes": retained.stat().st_size,
     }
+    receipt["cargo_target_manifest"] = file_manifest(cargo_target)
     write_json(log_root / "build-receipt.json", receipt)
     return receipt
 
@@ -370,7 +423,8 @@ def normalized_semantic_input_manifest(
             "raw_sha256": sha256(runfile),
         },
         "science_selectors": normalized_selectors,
-        "scheduler": "hourly",
+        "scheduler": "daily",
+        "snow_evaluation_forcing_cadence": "hourly",
         "executor": "direct-production-executor",
         "date_count": frozen["forcings"]["date_count"],
         "first_date": frozen["forcings"]["first_date"],
@@ -400,6 +454,38 @@ def forcing_matched_semantic_checks(cells: dict[str, dict[str, Any]]) -> dict[st
             checks[forcing][mode] = passed
             if not passed:
                 raise CustodyError(f"forcing-matched semantic inputs differ for {forcing}/{mode}")
+    return checks
+
+
+def normalized_operator_semantics(manifest: dict[str, Any]) -> dict[str, Any]:
+    normalized = json.loads(json.dumps(manifest))
+    normalized.pop("source_sha")
+    normalized["runfile_semantics"].pop("raw_sha256")
+    selectors = normalized["science_selectors"]
+    legacy = selectors.pop("OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW", None)
+    explicit = selectors.pop("OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR", None)
+    if (legacy, explicit) not in {
+        ("enabled", None),
+        (None, "sequential_resolved_shadow_v1"),
+    }:
+        raise CustodyError("operator activation does not select the frozen sequential operator")
+    normalized["effective_evaluation_operator"] = "sequential_resolved_shadow_v1"
+    return normalized
+
+
+def current_selector_semantic_checks(cells: dict[str, dict[str, Any]]) -> dict[str, bool]:
+    checks = {}
+    for cell in ("E10", "E11"):
+        legacy = normalized_operator_semantics(
+            cells[cell]["legacy"]["normalized_semantic_inputs"]
+        )
+        explicit = normalized_operator_semantics(
+            cells[cell]["explicit"]["normalized_semantic_inputs"]
+        )
+        passed = legacy == explicit
+        checks[cell] = passed
+        if not passed:
+            raise CustodyError(f"legacy/explicit semantic inputs differ for {cell}")
     return checks
 
 
@@ -449,7 +535,7 @@ def validate_run_manifest(
     if manifest.get("runtime_selection", {}).get("selected") != "direct-production-executor":
         raise CustodyError(f"runtime executor differs under {run_dir}")
     timestep = manifest.get("timestep_policy", {})
-    if timestep.get("scheduler_mode") != "hourly" or timestep.get("timestep_seconds") != 3600:
+    if timestep.get("scheduler_mode") != "daily" or timestep.get("timestep_seconds") != 86_400:
         raise CustodyError(f"runtime timestep policy differs under {run_dir}")
 
     input_checksums = manifest.get("input_checksums")
@@ -511,8 +597,9 @@ def run_arm(
     binary: Path,
     fixture: Path,
     frozen: dict[str, Any],
+    destination: Path | None = None,
 ) -> dict[str, Any]:
-    run_dir = OUTPUT / "runs" / cell / mode
+    run_dir = destination if destination is not None else OUTPUT / "runs" / cell / mode
     if run_dir.exists():
         raise CustodyError(f"refusing to overwrite run {cell}/{mode}")
     run_dir.mkdir(parents=True)
@@ -555,6 +642,7 @@ def run_arm(
     stdout_path.write_text(completed.stdout, encoding="utf-8")
     stderr_path.write_text(completed.stderr, encoding="utf-8")
     binary_after = sha256(arm_binary)
+    require_clone_identity(clone, source_sha, f"run {cell}/{mode}")
     if binary_after != binary_before or binary_after != sha256(binary):
         raise CustodyError(f"runtime binary changed for {cell}/{mode}")
     runtime_manifest = None
@@ -645,8 +733,310 @@ def retained_anchor_checks(frozen: dict[str, Any]) -> dict[str, Any]:
     return checks
 
 
+def endpoint_cells(frozen: dict[str, Any]) -> dict[str, list[str]]:
+    values = frozen.get("endpoint_matrix")
+    expected = {
+        "E00": ["old", "canonical"],
+        "E01": ["old", "development"],
+        "E10": ["current", "canonical"],
+        "E11": ["current", "development"],
+    }
+    if not isinstance(values, dict):
+        raise CustodyError("endpoint matrix is absent")
+    actual = {key: values.get(key) for key in expected}
+    if actual != expected:
+        raise CustodyError("endpoint matrix differs from the frozen 2x2 design")
+    return expected
+
+
+def checkpoint_trigger_lanes(result: dict[str, Any]) -> list[str]:
+    gates = result.get("source_gates")
+    if not isinstance(gates, dict) or set(gates) != {"canonical", "development"}:
+        raise CustodyError("result source-gate inventory differs")
+    derived = []
+    for forcing in ("canonical", "development"):
+        gate = gates[forcing]
+        if not isinstance(gate, dict) or not isinstance(gate.get("checkpoint_trigger"), bool):
+            raise CustodyError(f"result checkpoint predicate differs for {forcing}")
+        if gate["checkpoint_trigger"]:
+            derived.append(forcing)
+    if result.get("checkpoint_lanes_triggered") != derived:
+        raise CustodyError("result checkpoint lane list differs from source gates")
+    return derived
+
+
+def frozen_checkpoints(frozen: dict[str, Any]) -> list[tuple[str, str]]:
+    values = frozen.get("checkpoint_grouping", {}).get("checkpoints")
+    if not isinstance(values, list) or len(values) != 14:
+        raise CustodyError("frozen checkpoint inventory differs")
+    checkpoints = []
+    for value in values:
+        if (
+            not isinstance(value, list)
+            or len(value) != 2
+            or not re.fullmatch(r"[0-9a-f]{40}", value[0])
+            or not re.fullmatch(r"[0-9a-f]{64}", value[1])
+        ):
+            raise CustodyError("malformed frozen checkpoint")
+        if build_input_digest(value[0]) != value[1]:
+            raise CustodyError(f"frozen checkpoint digest differs at {value[0]}")
+        checkpoints.append((value[0], value[1]))
+    return checkpoints
+
+
+def execute_checkpoints(expected_head: str) -> None:
+    require_clean_head(expected_head)
+    receipt_path = OUTPUT / "execution-receipt.json"
+    result_path = OUTPUT / "results/predecessor-bridge-results.json"
+    consumer_trigger_path = OUTPUT / "results/checkpoint-trigger-receipt.json"
+    destination = OUTPUT / "checkpoint-search"
+    if destination.exists():
+        raise CustodyError(f"refusing to overwrite {destination}")
+    if not receipt_path.is_file() or not result_path.is_file() or not consumer_trigger_path.is_file():
+        raise CustodyError("endpoint execution and reconstruction are required first")
+    execution = json.loads(receipt_path.read_text(encoding="utf-8"))
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    consumer_trigger = json.loads(consumer_trigger_path.read_text(encoding="utf-8"))
+    if execution.get("execution_head") != expected_head or result.get("execution_head") != expected_head:
+        raise CustodyError("checkpoint execution HEAD differs from endpoint custody")
+    frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
+    if execution.get("protocol_sha256") != sha256(FREEZE_PATH):
+        raise CustodyError("checkpoint protocol differs from endpoint execution")
+    checkpoints = frozen_checkpoints(frozen)
+    lanes = checkpoint_trigger_lanes(result)
+    expected_trigger = {
+        "schema_version": 1,
+        "execution_head": expected_head,
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "endpoint_execution_receipt_sha256": sha256(receipt_path),
+        "endpoint_result_sha256": sha256(result_path),
+        "triggered_lanes": lanes,
+    }
+    if consumer_trigger != expected_trigger:
+        raise CustodyError("independent consumer checkpoint trigger receipt differs")
+    destination.mkdir(parents=True)
+    trigger_receipt = {
+        "schema_version": 1,
+        "execution_head": expected_head,
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "endpoint_execution_receipt_sha256": sha256(receipt_path),
+        "endpoint_result_sha256": sha256(result_path),
+        "triggered_lanes": lanes,
+        "checkpoint_count": len(checkpoints),
+    }
+    write_json(destination / "trigger-receipt.json", trigger_receipt)
+    if not lanes:
+        checkpoint_cargo_manifest = file_manifest(OUTPUT / "cargo-home")
+        write_json(destination / "cargo-home-final-manifest.json", checkpoint_cargo_manifest)
+        write_json(
+            destination / "execution-receipt.json",
+            {
+                **trigger_receipt,
+                "status": "not_triggered",
+                "cargo_home_final_manifest_sha256": checkpoint_cargo_manifest["manifest_sha256"],
+                "builds": {},
+                "runs": {},
+            },
+        )
+        require_clean_head(expected_head)
+        return
+
+    cargo_home = OUTPUT / "cargo-home"
+    if not cargo_home.is_dir():
+        raise CustodyError("endpoint Cargo home is absent")
+    builds: dict[str, Any] = {}
+    clones: dict[str, Path] = {}
+    for index, (source_sha, expected_digest) in enumerate(checkpoints):
+        checkpoint_id = f"{index:02d}-{source_sha}"
+        clone = destination / "sources" / checkpoint_id
+        clone_source(source_sha, clone)
+        clones[source_sha] = clone
+        receipt = build_source(
+            source_sha,
+            clone,
+            cargo_home,
+            destination / "cargo-targets" / checkpoint_id,
+            artifact_group="checkpoint-search/builds",
+            binary_group="checkpoint-search/binaries",
+        )
+        if receipt["build_input_digest"] != expected_digest:
+            raise CustodyError(f"checkpoint build digest differs at {source_sha}")
+        builds[source_sha] = receipt
+
+    runs: dict[str, Any] = {}
+    for forcing in lanes:
+        fixture = OUTPUT / "fixtures" / forcing
+        runs[forcing] = {}
+        for index, (source_sha, _) in enumerate(checkpoints):
+            checkpoint_id = f"{index:02d}-{source_sha}"
+            binary = OUTPUT / builds[source_sha]["binary"]["path"]
+            modes = {}
+            for mode in ("control", "legacy"):
+                modes[mode] = run_arm(
+                    cell=checkpoint_id,
+                    mode=mode,
+                    forcing=forcing,
+                    source_sha=source_sha,
+                    clone=clones[source_sha],
+                    binary=binary,
+                    fixture=fixture,
+                    frozen=frozen,
+                    destination=destination / "runs" / forcing / checkpoint_id / mode,
+                )
+            control = destination / "runs" / forcing / checkpoint_id / "control"
+            enabled = destination / "runs" / forcing / checkpoint_id / "legacy"
+            protected = {
+                suffix: output_hash(control, suffix) == output_hash(enabled, suffix)
+                for suffix in (".hbp", ".wat.parquet", ".loss.json")
+            }
+            if not all(protected.values()):
+                raise CustodyError(f"checkpoint protected output differs at {forcing}/{source_sha}")
+            runs[forcing][checkpoint_id] = {
+                "source_sha": source_sha,
+                "modes": modes,
+                "protected_outputs": protected,
+            }
+    checkpoint_cargo_manifest = file_manifest(cargo_home)
+    write_json(destination / "cargo-home-final-manifest.json", checkpoint_cargo_manifest)
+    write_json(
+        destination / "execution-receipt.json",
+        {
+            **trigger_receipt,
+            "status": "executed",
+            "cargo_home_final_manifest_sha256": checkpoint_cargo_manifest["manifest_sha256"],
+            "builds": builds,
+            "runs": runs,
+        },
+    )
+    require_clean_head(expected_head)
+
+
 def execute(expected_head: str) -> None:
     require_clean_head(expected_head)
+    execute_endpoint_body(expected_head)
+
+
+def verify_checkpoint_search(frozen: dict[str, Any], current_head: str) -> None:
+    destination = OUTPUT / "checkpoint-search"
+    receipt_path = destination / "execution-receipt.json"
+    if not receipt_path.exists():
+        return
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    endpoint_receipt = OUTPUT / "execution-receipt.json"
+    endpoint_result = OUTPUT / "results/predecessor-bridge-results.json"
+    consumer_trigger = OUTPUT / "results/checkpoint-trigger-receipt.json"
+    if not endpoint_result.is_file() or not consumer_trigger.is_file():
+        raise CustodyError("checkpoint search lacks endpoint result/trigger custody")
+    result = json.loads(endpoint_result.read_text(encoding="utf-8"))
+    lanes = checkpoint_trigger_lanes(result)
+    exact = {
+        "execution_head": current_head,
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "endpoint_execution_receipt_sha256": sha256(endpoint_receipt),
+        "endpoint_result_sha256": sha256(endpoint_result),
+        "triggered_lanes": lanes,
+        "checkpoint_count": 14,
+    }
+    for key, expected in exact.items():
+        if receipt.get(key) != expected:
+            raise CustodyError(f"checkpoint receipt {key} differs")
+    local_trigger = destination / "trigger-receipt.json"
+    if not local_trigger.is_file():
+        raise CustodyError("checkpoint local trigger receipt is absent")
+    expected_local_trigger = {
+        "schema_version": 1,
+        **exact,
+    }
+    if json.loads(local_trigger.read_text(encoding="utf-8")) != expected_local_trigger:
+        raise CustodyError("checkpoint local trigger receipt differs")
+    trigger_expected = {
+        "schema_version": 1,
+        "execution_head": current_head,
+        "protocol_sha256": sha256(FREEZE_PATH),
+        "endpoint_execution_receipt_sha256": sha256(endpoint_receipt),
+        "endpoint_result_sha256": sha256(endpoint_result),
+        "triggered_lanes": lanes,
+    }
+    if json.loads(consumer_trigger.read_text(encoding="utf-8")) != trigger_expected:
+        raise CustodyError("consumer checkpoint trigger differs")
+    if not lanes:
+        if receipt.get("status") != "not_triggered" or receipt.get("builds") != {} or receipt.get("runs") != {}:
+            raise CustodyError("untriggered checkpoint receipt differs")
+        return
+    if receipt.get("status") != "executed":
+        raise CustodyError("triggered checkpoint status differs")
+    checkpoints = frozen_checkpoints(frozen)
+    expected_ids = [f"{index:02d}-{source_sha}" for index, (source_sha, _) in enumerate(checkpoints)]
+    builds = receipt.get("builds")
+    if not isinstance(builds, dict) or set(builds) != {source_sha for source_sha, _ in checkpoints}:
+        raise CustodyError("checkpoint build inventory differs")
+    for index, (source_sha, expected_digest) in enumerate(checkpoints):
+        checkpoint_id = expected_ids[index]
+        build = builds[source_sha]
+        if build.get("build_input_digest") != expected_digest or build.get("returncode") != 0:
+            raise CustodyError(f"checkpoint build differs at {source_sha}")
+        binary = OUTPUT / build["binary"]["path"]
+        if not binary.is_file() or sha256(binary) != build["binary"]["sha256"]:
+            raise CustodyError(f"checkpoint binary differs at {source_sha}")
+        clone = destination / "sources" / checkpoint_id
+        require_clone_identity(clone, source_sha, "checkpoint verification")
+        target = destination / "cargo-targets" / checkpoint_id
+        if file_manifest(target) != build.get("cargo_target_manifest"):
+            raise CustodyError(f"checkpoint Cargo target differs at {source_sha}")
+        build_receipt = destination / "builds" / source_sha / "build-receipt.json"
+        if json.loads(build_receipt.read_text(encoding="utf-8")) != build:
+            raise CustodyError(f"checkpoint build receipt differs at {source_sha}")
+    runs = receipt.get("runs")
+    if not isinstance(runs, dict) or set(runs) != set(lanes):
+        raise CustodyError("checkpoint forcing-lane inventory differs")
+    for forcing in lanes:
+        if list(runs[forcing]) != expected_ids:
+            raise CustodyError(f"checkpoint ordering differs for {forcing}")
+        for checkpoint_id in expected_ids:
+            item = runs[forcing][checkpoint_id]
+            source_sha = item.get("source_sha")
+            modes = item.get("modes")
+            if not isinstance(modes, dict) or set(modes) != {"control", "legacy"}:
+                raise CustodyError(f"checkpoint modes differ at {forcing}/{checkpoint_id}")
+            for mode in ("control", "legacy"):
+                arm = modes[mode]
+                run_dir = destination / "runs" / forcing / checkpoint_id / mode
+                if json.loads((run_dir / "arm-receipt.json").read_text(encoding="utf-8")) != arm:
+                    raise CustodyError(f"checkpoint arm receipt differs at {forcing}/{checkpoint_id}/{mode}")
+                if file_manifest(run_dir, exclude=frozenset({"arm-receipt.json"})) != arm.get("outputs"):
+                    raise CustodyError(f"checkpoint run manifest differs at {forcing}/{checkpoint_id}/{mode}")
+                trace = run_dir / TRACE_NAME
+                if mode == "control" and trace.exists():
+                    raise CustodyError(f"checkpoint control trace exists at {forcing}/{checkpoint_id}")
+                if mode == "legacy" and (not trace.is_file() or trace.stat().st_size == 0):
+                    raise CustodyError(f"checkpoint legacy trace absent at {forcing}/{checkpoint_id}")
+                binary = run_dir / "bin/openwepp-cli-hill"
+                runtime = validate_run_manifest(
+                    run_dir=run_dir,
+                    fixture=OUTPUT / "fixtures" / forcing,
+                    runfile=run_dir / f"{RUN_STEM}.run",
+                    arm_binary=binary,
+                    binary_sha=sha256(binary),
+                    source_sha=source_sha,
+                    argv=arm["argv"],
+                    frozen=frozen,
+                )
+                if runtime != arm.get("runtime_manifest"):
+                    raise CustodyError(f"checkpoint runtime manifest differs at {forcing}/{checkpoint_id}/{mode}")
+            protected = {
+                suffix: output_hash(
+                    destination / "runs" / forcing / checkpoint_id / "control", suffix
+                )
+                == output_hash(
+                    destination / "runs" / forcing / checkpoint_id / "legacy", suffix
+                )
+                for suffix in (".hbp", ".wat.parquet", ".loss.json")
+            }
+            if protected != item.get("protected_outputs") or not all(protected.values()):
+                raise CustodyError(f"checkpoint protected outputs differ at {forcing}/{checkpoint_id}")
+
+
+def execute_endpoint_body(expected_head: str) -> None:
     if OUTPUT.exists():
         raise CustodyError(f"refusing to overwrite {OUTPUT}")
     frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
@@ -677,9 +1067,7 @@ def execute(expected_head: str) -> None:
     for forcing in ("canonical", "development"):
         fixtures[forcing], fixture_receipts[forcing] = prepare_fixture(forcing, frozen)
     cells: dict[str, dict[str, Any]] = {}
-    for cell, value in frozen["endpoint_matrix"].items():
-        if not re.fullmatch(r"E[01][01]", cell) or not isinstance(value, list) or len(value) != 2:
-            continue
+    for cell, value in endpoint_cells(frozen).items():
         source_name, forcing = value
         source_sha = sources[source_name]
         binary = OUTPUT / builds[source_name]["binary"]["path"]
@@ -707,21 +1095,26 @@ def execute(expected_head: str) -> None:
                 frozen=frozen,
             )
     semantic_checks = forcing_matched_semantic_checks(cells)
+    selector_semantic_checks = current_selector_semantic_checks(cells)
     protected = protected_output_checks(cells)
     retained_after = retained_anchor_checks(frozen)
     if retained_before != retained_after:
         raise CustodyError("retained anchor changed during execution")
+    cargo_final_manifest = file_manifest(cargo_home)
+    write_json(OUTPUT / "cargo-home-final-manifest.json", cargo_final_manifest)
     receipt = {
         "schema_version": 1,
         "status": "endpoint_matrix_executed",
         "execution_head": expected_head,
         "protocol_sha256": sha256(FREEZE_PATH),
         "cargo_home_manifest_sha256": cargo_manifest["manifest_sha256"],
+        "cargo_home_final_manifest_sha256": cargo_final_manifest["manifest_sha256"],
         "sources": sources,
         "builds": builds,
         "fixtures": fixture_receipts,
         "cells": cells,
         "forcing_matched_semantic_checks": semantic_checks,
+        "current_selector_semantic_checks": selector_semantic_checks,
         "protected_outputs": protected,
         "retained_before": retained_before,
         "retained_after": retained_after,
@@ -737,19 +1130,153 @@ def verify_existing() -> None:
     if not receipt_path.is_file():
         raise CustodyError("missing execution receipt")
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
+    current_head = git_output(["rev-parse", "HEAD"])
+    if receipt.get("status") != "endpoint_matrix_executed":
+        raise CustodyError("execution receipt status differs")
+    if receipt.get("execution_head") != current_head:
+        raise CustodyError("execution receipt HEAD differs from current HEAD")
     if receipt.get("protocol_sha256") != sha256(FREEZE_PATH):
         raise CustodyError("protocol freeze differs from execution")
-    for cell, modes in receipt["cells"].items():
-        for mode, arm in modes.items():
+    copied_protocol = OUTPUT / "inputs/protocol-freeze.json"
+    if not copied_protocol.is_file() or sha256(copied_protocol) != sha256(FREEZE_PATH):
+        raise CustodyError("copied protocol freeze differs")
+    if receipt.get("sources") != frozen["sources"]:
+        raise CustodyError("execution source inventory differs")
+
+    cargo_initial_path = OUTPUT / "cargo-home-manifest.json"
+    checkpoint_cargo_final = OUTPUT / "checkpoint-search/cargo-home-final-manifest.json"
+    cargo_final_path = (
+        checkpoint_cargo_final
+        if checkpoint_cargo_final.is_file()
+        else OUTPUT / "cargo-home-final-manifest.json"
+    )
+    if not cargo_initial_path.is_file() or not cargo_final_path.is_file():
+        raise CustodyError("Cargo-home manifests are absent")
+    cargo_initial = json.loads(cargo_initial_path.read_text(encoding="utf-8"))
+    cargo_final = json.loads(cargo_final_path.read_text(encoding="utf-8"))
+    if receipt.get("cargo_home_manifest_sha256") != cargo_initial.get("manifest_sha256"):
+        raise CustodyError("initial Cargo-home manifest differs")
+    expected_cargo_hash = receipt.get("cargo_home_final_manifest_sha256")
+    checkpoint_execution_path = OUTPUT / "checkpoint-search/execution-receipt.json"
+    if checkpoint_execution_path.is_file():
+        checkpoint_execution = json.loads(
+            checkpoint_execution_path.read_text(encoding="utf-8")
+        )
+        expected_cargo_hash = checkpoint_execution.get("cargo_home_final_manifest_sha256")
+    if expected_cargo_hash != cargo_final.get("manifest_sha256"):
+        raise CustodyError("final Cargo-home manifest binding differs")
+    if file_manifest(OUTPUT / "cargo-home") != cargo_final:
+        raise CustodyError("retained Cargo home differs from final manifest")
+
+    for forcing in ("canonical", "development"):
+        fixture = OUTPUT / "fixtures" / forcing
+        if file_manifest(fixture) != receipt.get("fixtures", {}).get(forcing):
+            raise CustodyError(f"fixture manifest differs for {forcing}")
+        if sha256(fixture / "p8.cli") != frozen["forcings"][forcing]["sha256"]:
+            raise CustodyError(f"fixture forcing differs for {forcing}")
+
+    builds = receipt.get("builds")
+    if not isinstance(builds, dict) or set(builds) != {"old", "current"}:
+        raise CustodyError("endpoint build inventory differs")
+    for source_name in ("old", "current"):
+        source_sha = frozen["sources"][source_name]
+        build = builds[source_name]
+        if build.get("returncode") != 0 or build.get("build_input_digest") != build_input_digest(source_sha):
+            raise CustodyError(f"build receipt differs for {source_name}")
+        binary = OUTPUT / build["binary"]["path"]
+        if (
+            not binary.is_file()
+            or sha256(binary) != build["binary"]["sha256"]
+            or binary.stat().st_size != build["binary"]["size_bytes"]
+        ):
+            raise CustodyError(f"retained binary differs for {source_name}")
+        clone = OUTPUT / "checkpoints" / source_sha / "source"
+        require_clone_identity(clone, source_sha, "verification")
+        target = OUTPUT / "checkpoints" / source_sha / "cargo-target"
+        if file_manifest(target) != build.get("cargo_target_manifest"):
+            raise CustodyError(f"Cargo target manifest differs for {source_name}")
+        build_receipt = OUTPUT / "builds" / source_sha / "build-receipt.json"
+        if json.loads(build_receipt.read_text(encoding="utf-8")) != build:
+            raise CustodyError(f"retained build receipt differs for {source_name}")
+
+    expected_cells = endpoint_cells(frozen)
+    cells = receipt.get("cells")
+    if not isinstance(cells, dict) or set(cells) != set(expected_cells):
+        raise CustodyError("endpoint cell inventory differs")
+    for cell, (source_name, forcing) in expected_cells.items():
+        modes = cells[cell]
+        expected_modes = {"control", "legacy", "explicit"} if source_name == "current" else {"control", "legacy"}
+        if not isinstance(modes, dict) or set(modes) != expected_modes:
+            raise CustodyError(f"endpoint mode inventory differs for {cell}")
+        source_sha = frozen["sources"][source_name]
+        for mode in sorted(expected_modes):
+            arm = modes[mode]
             run_dir = OUTPUT / "runs" / cell / mode
+            arm_receipt = run_dir / "arm-receipt.json"
+            if not arm_receipt.is_file() or json.loads(arm_receipt.read_text(encoding="utf-8")) != arm:
+                raise CustodyError(f"arm receipt differs: {cell}/{mode}")
+            if (
+                arm.get("cell") != cell
+                or arm.get("mode") != mode
+                or arm.get("source_sha") != source_sha
+                or arm.get("forcing") != forcing
+                or arm.get("returncode") != 0
+            ):
+                raise CustodyError(f"arm identity differs: {cell}/{mode}")
+            actual_outputs = file_manifest(run_dir, exclude=frozenset({"arm-receipt.json"}))
+            if actual_outputs != arm.get("outputs"):
+                raise CustodyError(f"complete run manifest differs: {cell}/{mode}")
             for item in arm["outputs"]["files"]:
                 path = run_dir / item["path"]
                 if not path.is_file() or sha256(path) != item["sha256"] or path.stat().st_size != item["size_bytes"]:
                     raise CustodyError(f"retained artifact differs: {cell}/{mode}/{item['path']}")
-    protected_output_checks(receipt["cells"])
-    frozen = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
+            trace = run_dir / TRACE_NAME
+            if mode == "control" and trace.exists():
+                raise CustodyError(f"control trace exists: {cell}")
+            if mode != "control" and (not trace.is_file() or trace.stat().st_size == 0):
+                raise CustodyError(f"enabled trace absent: {cell}/{mode}")
+            binary = run_dir / "bin/openwepp-cli-hill"
+            runtime = validate_run_manifest(
+                run_dir=run_dir,
+                fixture=OUTPUT / "fixtures" / forcing,
+                runfile=run_dir / f"{RUN_STEM}.run",
+                arm_binary=binary,
+                binary_sha=sha256(binary),
+                source_sha=source_sha,
+                argv=arm["argv"],
+                frozen=frozen,
+            )
+            if runtime != arm.get("runtime_manifest"):
+                raise CustodyError(f"runtime manifest receipt differs: {cell}/{mode}")
+            semantic = normalized_semantic_input_manifest(
+                source_sha=source_sha,
+                forcing=forcing,
+                fixture=OUTPUT / "fixtures" / forcing,
+                runfile=run_dir / f"{RUN_STEM}.run",
+                effective=arm["effective_openwepp_environment"],
+                frozen=frozen,
+            )
+            if semantic != arm.get("normalized_semantic_inputs"):
+                raise CustodyError(f"semantic input manifest differs: {cell}/{mode}")
+    if forcing_matched_semantic_checks(cells) != receipt.get("forcing_matched_semantic_checks"):
+        raise CustodyError("forcing-matched semantic checks differ")
+    if current_selector_semantic_checks(cells) != receipt.get("current_selector_semantic_checks"):
+        raise CustodyError("current selector semantic checks differ")
+    if protected_output_checks(cells) != receipt.get("protected_outputs"):
+        raise CustodyError("protected output receipt differs")
     if retained_anchor_checks(frozen) != receipt["retained_after"]:
         raise CustodyError("retained anchor custody differs")
+    verify_checkpoint_search(frozen, current_head)
+    allowed_top = {
+        "binaries", "builds", "cargo-home", "cargo-home-final-manifest.json",
+        "cargo-home-manifest.json", "checkpoints", "execution-receipt.json",
+        "fixtures", "inputs", "runs", "results", "retained-artifact-manifest.json",
+        "checkpoint-search",
+    }
+    unexpected = {path.name for path in OUTPUT.iterdir()} - allowed_top
+    if unexpected:
+        raise CustodyError(f"unexpected retained top-level artifacts: {sorted(unexpected)}")
     print("PASS verified predecessor endpoint matrix custody")
 
 
@@ -757,6 +1284,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--execute", action="store_true")
+    group.add_argument("--execute-checkpoints", action="store_true")
     group.add_argument("--verify-existing", action="store_true")
     parser.add_argument("--expected-head")
     return parser.parse_args()
@@ -765,10 +1293,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
-        if args.execute:
+        if args.execute or args.execute_checkpoints:
             if args.expected_head is None:
-                raise CustodyError("--expected-head is required with --execute")
-            execute(args.expected_head)
+                raise CustodyError("--expected-head is required with execution")
+            if args.execute:
+                execute(args.expected_head)
+            else:
+                execute_checkpoints(args.expected_head)
         else:
             verify_existing()
     except CustodyError as error:
