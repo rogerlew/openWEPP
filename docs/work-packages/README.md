@@ -510,13 +510,13 @@
 State as of `2026-08-07 UTC`:
 
 - `20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/`
-  - QUEUED / SCAFFOLDED / AUTHORITY RECONCILIATION: trace exact GRIDMET-to-CLI
-    custody, correct nominal 10 m versus virtual 5 m authority, and decide
-    forest-snow exposure applicability without fitting attenuation. A neutral
-    static bound predicts only about 21% turbulent-product inflation, so
-    exposure representativeness—not height conversion alone—retains the major
-    leverage. No production correction, canopy operator, persistence, or
-    cutover is authorized.
+  - COMPLETE / AUTHORITY RECONCILED / PERSISTENCE HOLD: raw CLI wind reaches
+    Stage 3 unchanged and PMET-local 2 m wind does not. Nominal GRIDMET 10 m
+    source height is distinct from virtual Stage 3 5 m geometry. Exact retained
+    generator/pixel/transform receipts and forest-exposure linkage are absent,
+    so every site is `AUTHORITY_MISSING`. Independent neutral bounds reproduce
+    10.077%/21.170%; no fitted attenuation, canopy operator, production
+    correction, persistence, or cutover is authorized.
 
 - `20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/`
   - EXECUTED / PERSISTENCE HOLD / MULTIFACTOR OR INCONCLUSIVE: immutable

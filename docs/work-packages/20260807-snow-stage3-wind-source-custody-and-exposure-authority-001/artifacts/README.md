@@ -1,9 +1,10 @@
 # Artifacts
 
-Status: `queued`.
+Status: `complete`.
 
-Evidence mode: `not-run`.
+Evidence mode: `Static + Ran`.
 
-This directory owns source custody, height/geometry, exposure applicability,
+This directory contains completed source custody, height/geometry, exposure,
 contract/test, gate, review, verification, disposition, and handoff evidence.
-Package evidence does not replace canonical science authority.
+The package closes its authority objective while retaining scientific
+persistence `HOLD`; canonical contracts remain the authority.

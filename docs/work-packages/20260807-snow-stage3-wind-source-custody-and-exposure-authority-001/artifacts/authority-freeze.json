@@ -1,0 +1,58 @@
+{
+  "schema": "snow-stage3-wind-custody-authority-freeze-v1",
+  "frozen_at_utc": "2026-08-07T22:00:00Z",
+  "intake_git_head": "8ca6fc6bb9ccdc211020f16a35ef68b9437de94d",
+  "intake_git_status": "clean before this package's first edit",
+  "result_blind_status": "FROZEN_BEFORE_WIND_VALUE_OR_CARRIER_RESULT_COMPARISON",
+  "known_predecessor_evidence_boundary": "The predecessor disposition, protocol, wind custody, and handoff were required inputs and were read before this freeze. Their published qualitative conclusions and retained hashes are known. No new wind-value series, carrier residual, energy-balance result, or fitted comparison may alter this freeze.",
+  "implementation_intent": "documentation/authority with contract-test impact possible",
+  "selected_write_set": ["this package tree", "docs/ROADMAP.md", "snow campaign roadmap", "docs/work-packages/README.md", "SC-SNOWENERGY-001", "SC-SNOWFREEZE-001", "science-contract index if lifecycle metadata changes", "existing contract-derived tests selected after instruction discovery", "conditional DRAFT assurance records selected by assurance impact analysis"],
+  "protected_boundaries": ["production Rust", "climate fixtures and retained observations", "schemas and public outputs", "defaults and runtime selectors", "WAT/HBP/PASS", "CoE ownership, persistence, promotion, and cutover"],
+  "cohort": {
+    "canonical": ["snotel_mica_creek_st_joe_id", "snotel_niwot_co", "snotel_paradise_wa"],
+    "development_non_decisive": "snotel_snowbird_ut"
+  },
+  "accepted_primary_authority": {
+    "gridmet_gee_asset_metadata": "https://developers.google.com/earth-engine/datasets/catalog/IDAHO_EPSCOR_GRIDMET; asset ID IDAHO_EPSCOR/GRIDMET; accessed 2026-08-07; authority only for that distribution asset's daily cadence, 4638.3 m pixel size, status property, units, and nominal 10 m `vs` description",
+    "gridmet_native_product": "Abatzoglou 2013, Development of gridded surface meteorological data for ecological applications and modelling, International Journal of Climatology 33:121-131, DOI 10.1002/joc.3413; producer/paper authority for native method claims, not retained request identity",
+    "nldas2": "https://ldas.gsfc.nasa.gov/nldas/v2/forcing; NASA GSFC NLDAS-2 forcing documentation; accessed 2026-08-07; corroborating upstream product semantics only, not retained GRIDMET cell, wind exposure, or site applicability",
+    "runtime": "local source and retained exact execution/fixture manifests",
+    "site_exposure": "only site- or product-specific primary metadata that explicitly establishes wind support and exposure class"
+  },
+  "required_custody_fields": ["retained CLI path and SHA-256", "generator code/config identity and hashes", "request coordinates and CRS", "GRIDMET product/asset and version/status", "variable, units, and native-versus-derived wind magnitude rule", "grid cell/pixel index or unambiguous sampling geometry", "spatial support and resolution", "native cadence", "timezone and day-boundary convention", "missing/fill-value policy", "temporal aggregation/transformation", "spatial extraction/interpolation/sampling method", "CLI serialization/rounding", "physical reference height and datum", "exposure metadata", "runtime consumer"],
+  "height_symbols": {
+    "z_gridmet_u_m": "nominal GRIDMET wind reference height above the GRIDMET land/model surface; expected 10 m only when actual GRIDMET identity is established; it is not height above instantaneous snow",
+    "u_gridmet_m_s": "daily gridded wind speed before CLI serialization",
+    "u_cli_m_s": "daily CLI w-vl value consumed as raw runtime vwind_m_s",
+    "u_pmet_2m_m_s": "PMET-local FAO-56 10 m-to-2 m adjusted wind; not a Stage 3 input",
+    "u_height_adjusted_diagnostic_m_s": "a separately labeled authority-only height diagnostic, never raw CLI forcing, production correction, or exposure evidence",
+    "z_snow_surface_above_ground_m": "instantaneous snow-surface height relative to ground; required if translating a ground-referenced forcing height to snow-surface-relative height",
+    "z_T_virtual_m": "Stage 3 virtual air-temperature transfer geometry",
+    "z_q_virtual_m": "Stage 3 virtual humidity transfer geometry",
+    "z_u_virtual_m": "Stage 3 virtual momentum transfer geometry",
+    "d_m": "displacement height used by an admitted diagnostic geometry; its value/formula must have independent provenance and cannot be inferred from desired results",
+    "z0_aero_m": "snow aerodynamic roughness length"
+  },
+  "exposure_categories": ["OPEN", "ABOVE_CANOPY", "WITHIN_CANOPY", "SUB_CANOPY", "UNRESOLVED"],
+  "decision_rules": {
+    "APPLICABLE": "complete source custody; authoritative classification of forcing support/exposure; authoritative classification of modeled target snow-surface/canopy class and spatial/temporal claim; and authoritative linkage establishing representativeness",
+    "INAPPLICABLE": "the same two-sided classifications plus authoritative linkage establishing a conflict for the stated spatial/temporal claim",
+    "AUTHORITY_MISSING": "any material product/cell/transformation/reference-height/exposure fact is absent or authority does not adjudicate representativeness",
+    "no_fitting": "wind values, carrier residuals, energy balance, and desired Stage 3 behavior cannot establish exposure or choose attenuation",
+    "height_claim_limit": "a valid reference-height conversion cannot establish sub-canopy exposure applicability and cannot license a canopy operator"
+  },
+  "per_site_questions": {
+    "snotel_mica_creek_st_joe_id": "For modeled centroid 47.14867,-116.26324 and retained 1986-2024 forest hillslope claim, identify exact product/version/pixel/extraction/transform into the retained CLI and authoritative forcing/target exposure linkage.",
+    "snotel_niwot_co": "For modeled centroid 40.03686,-105.54218 and retained 1980-2024 forest hillslope claim, identify exact product/version/pixel/extraction/transform into the retained CLI and authoritative forcing/target exposure linkage.",
+    "snotel_paradise_wa": "For modeled centroid 46.78357,-121.74879 and retained 1980-2024 forest hillslope claim, identify exact product/version/pixel/extraction/transform into the retained CLI and authoritative forcing/target exposure linkage.",
+    "snotel_snowbird_ut_development": "For modeled centroid 40.57124,-111.66052 and the explicitly non-decisive precipitation-scaled development forcing, identify exact original wind custody and authoritative exposure linkage without treating the derivative as canonical."
+  },
+  "retained_cli_identity": {
+    "snotel_mica_creek_st_joe_id": {"path":"target/snow_stage3_operator_reconciliation_v3/fixtures/snotel_mica_creek_st_joe_id/p1.cli","sha256":"e8470ae78711f85cc84045052467fa5d75fc8ec4ca1f92ce49b1af9ecf95fb63","role":"canonical"},
+    "snotel_niwot_co": {"path":"target/snow_stage3_operator_reconciliation_v3/fixtures/snotel_niwot_co/p2.cli","sha256":"841d6390b511c3b6ad613e166788fd0b3c48b1d83317779ecd7ba2cfd7916ead","role":"canonical"},
+    "snotel_paradise_wa": {"path":"target/snow_stage3_operator_reconciliation_v3/fixtures/snotel_paradise_wa/p2.cli","sha256":"6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c","role":"canonical"},
+    "snotel_snowbird_ut_canonical_reference": {"path":"tests/fixtures/snotel_observed/snotel_snowbird_ut/p8.cli","sha256":"10c1ede130f697ccec01a4fb076d937213f0699e2f6c100492c7a4ef28ec11a7","role":"canonical reference; not the retained predecessor estimand"},
+    "snotel_snowbird_ut_retained_development": {"path":"target/snow_stage3_operator_reconciliation_v3/fixtures/snotel_snowbird_ut/p8.cli","sha256":"c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb","role":"development-only non-decisive precipitation-scaled derivative retained by predecessor; never canonical"}
+  },
+  "frozen_intake_gap": "Retained manifests label wind GRIDMET but do not retain the generator request, asset/version/status, pixel identity, extraction/interpolation, temporal transform, CLI rounding, or exposure metadata. Missing fields remain AUTHORITY_MISSING unless direct authority is found; they cannot be reconstructed from values."
+}

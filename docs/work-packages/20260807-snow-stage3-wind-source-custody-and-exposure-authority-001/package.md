@@ -1,6 +1,6 @@
 # Stage 3 Wind Source Custody And Exposure Authority
 
-Status: `queued / scaffolded / authority reconciliation`
+Status: `complete / authority reconciled / persistence HOLD`
 
 Date: `2026-08-07`
 
@@ -33,12 +33,12 @@ promote Stage 3, retire CoE, or cut over outputs.
 
 - [x] (2026-08-07) Scaffolded from the completed plausibility handoff and
   quantified neutral-height sanity check.
-- [ ] Freeze exact source, custody, transformation, height, and exposure
+- [x] (2026-08-07) Froze exact source, custody, transformation, height, and exposure
   questions before reading any new result-bearing comparison.
-- [ ] Reconcile canonical contract authority and contract-derived tests before
+- [x] (2026-08-07) Reconciled canonical contract authority and contract-derived tests before
   any permitted implementation edit.
-- [ ] Execute source-custody and exposure-applicability evidence collection.
-- [ ] Complete dual review, finding disposition, dual verification, exact diff,
+- [x] (2026-08-07) Executed source-custody and exposure-applicability evidence collection.
+- [x] (2026-08-07) Completed dual review, finding disposition, dual verification, exact diff,
   assurance impact, and final disposition.
 
 ## Surprises & Discoveries
@@ -71,10 +71,14 @@ promote Stage 3, retire CoE, or cut over outputs.
 
 ## Outcomes & Retrospective
 
-Queued. Completion must state whether the forcing is applicable at each site,
-what authority remains missing, and whether the bounded height mismatch changes
-the prior plausibility disposition. `AUTHORITY_MISSING` is a valid scientific
-outcome; a fitted value is not.
+Authority reconciliation completed. Raw CLI wind reaches Stage 3 unchanged and
+PMET's 2 m adjustment remains local. Canonical contracts now separate nominal
+GRIDMET 10 m source height from virtual Stage 3 5 m transfer geometry. Exact
+retained generator/pixel/transform receipts and forcing-to-forest exposure
+linkage are absent, so every site is `AUTHORITY_MISSING`. The independently
+reproduced 10.077%/21.170% neutral bounds do not resolve the prior larger
+plausibility concern. No production correction or canopy operator was added;
+persistence remains `HOLD`.
 
 ## Context And Orientation
 

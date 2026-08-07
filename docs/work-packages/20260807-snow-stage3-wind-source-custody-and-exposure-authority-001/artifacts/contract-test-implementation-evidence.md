@@ -1,8 +1,11 @@
 # Contract-Test Implementation Evidence
 
-Status: `queued`.
+Status: `complete`.
 
-Evidence mode: `not-run`.
+Evidence mode: `Ran`.
 
-Record literal and adversarial tests distinguishing 10 m source wind, 2 m PMET
-wind, 5 m virtual geometry, displacement/roughness, and rejected aliases.
+Added `tests/integration/snow_stage3_wind_source_custody_contract.rs` and its
+explicit `Cargo.toml` target. Three tests require v10/v132 literals, source/raw/
+PMET/virtual-height separation, `AUTHORITY_MISSING`, anti-fit/canopy/correction
+guards, and actual parser -> runtime -> Stage 3 custody with negative
+`fwv_m_s` reachability. Ran: `3 passed; 0 failed`.

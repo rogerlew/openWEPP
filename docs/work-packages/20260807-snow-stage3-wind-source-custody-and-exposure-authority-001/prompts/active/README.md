@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: `queued`.
+Status: `empty after execution`.
 
-- `20260807-snow-stage3-wind-source-custody-and-exposure-authority-001_kickoff_agent_prompt.md`
+The kickoff is archived byte-identically under `../archived/`.
