@@ -2,7 +2,7 @@
   "schema_version": 1,
   "report_id": "snow-and-frozen-soil-process-evaluation",
   "report_version": "1.0.0",
-  "source_root_sha256": "52ddb70fa8fb03d1e6701d490441fb62700ddf370dc49e22ef8acdd6d820a89b",
+  "source_root_sha256": "6c7fabfe23e708cc42a87190fedf43b8d7266cfe4f8b8d8e35930937f3394791",
   "assembly_tool": "openwepp-assurance-assembly:1",
   "files": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "path": "research-objects/SC-SNOWFREEZE-001.md",
-      "sha256": "f6f1fcb580167e01fb6e963a3936c49ad1d800408eea5fcff210505c437187db"
+      "sha256": "e6392c597e1396338c99f9013e82ae6ad5c488450bc3bae4b8a8ac87a67d274d"
     },
     {
       "path": "research-objects/agent-assistance-packet.json",

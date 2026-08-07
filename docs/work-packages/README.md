@@ -12,12 +12,15 @@
 ## Reusable Execution Plans And Templates
 
 - `20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/` —
-  EXECUTING / PROSPECTIVE PROTOCOL CORRECTION: static custody proved the
-  Snowbird schema-v4 `+170.2536` and schema-v6 legacy `+188.8725 MJ m^-2`
-  anchors used different climate forcings. The corrected design crosses both
-  sources with both forcings before source/state attribution. This is
-  evidence-custody characterization only; CoE, physics, persistence, outputs,
-  promotion, and cutover remain unchanged.
+  EXECUTED / FORCING IDENTITY RECONCILED / OPERATOR CLASS ADMITTED: the exact
+  two-source by two-forcing matrix reproduces canonical `+170.2536` and
+  development `+188.8725 MJ m^-2` endpoints at both sources. Both same-forcing
+  source gates pass every water year, so the historical discrepancy is a
+  forcing-lineage difference and source checkpoints are not triggered. The
+  frozen four-site result now admits initial projection difference followed by
+  state-evolution sign reconciliation. This is operator mechanics, not
+  physical validation; CoE, physics, persistence, outputs, promotion, and
+  cutover remain unchanged.
 
 - `20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/`
   — EXECUTED / OPERATOR MECHANICS CHARACTERIZED / PREDECESSOR BRIDGE HOLD:

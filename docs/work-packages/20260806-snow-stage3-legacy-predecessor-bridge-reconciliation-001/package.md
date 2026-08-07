@@ -1,6 +1,6 @@
 # Stage 3 Legacy Predecessor Bridge Reconciliation
 
-Status: `executing / v130 dual-review PASS / third tool HOLD amendments awaiting re-review`
+Status: `executed / bridge reconciled / post-result review pending`
 
 Date: `2026-08-06`
 
@@ -377,9 +377,14 @@ the package namespace and content-hashed.
   contract tests `12/12`.
 - [x] (2026-08-06) Authored mandatory forcing-matched SC-SNOWFREEZE-001 v130
   and binding test; focused contract gate passed `11/11` before results.
-- [ ] Implement and test the independent bridge search.
-- [ ] Complete any necessary contract-first diagnostic increment.
-- [ ] Execute, reconstruct, review, validate, verify, roadmap, and close.
+- [x] (2026-08-06) Implemented and tested the independent bridge search; final
+  result-blind tool review passed `PASS/PASS` at `cb31e6f4d`.
+- [x] (2026-08-06) Executed and independently reconstructed all four endpoints;
+  both same-forcing source gates passed and no diagnostic/checkpoint increment
+  triggered.
+- [x] (2026-08-06) Adjudicated the existing development-forcing S/F/Q evidence
+  as `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION` under v130.
+- [ ] Complete post-result review, terminal validation/verification, and close.
 
 ## Surprises & Discoveries
 
@@ -389,6 +394,13 @@ the package namespace and content-hashed.
   source revision or transition preparation.
 - Observation: the predecessor used canonical forcing `10c1ede1...`; v3 used
   development forcing `c673145e...`. All other fixture inputs are byte-identical.
+- Observation: source revision changes neither forcing-matched estimand. The
+  paired-source median is approximately `-1e-7 J m^-2` in both lanes with no
+  failed water year; the historical `18.62 MJ m^-2` scalar gap was confounded
+  entirely by forcing identity.
+- Observation: the per-WY forcing-effect median is `11.899053450648978 MJ m^-2`
+  at both sources. It is intentionally not the difference of the separately
+  reduced cell medians.
 
 ## Decision Log
 
@@ -404,7 +416,29 @@ the package namespace and content-hashed.
   binds forcing-matched predecessor reproduction rather than an unqualified
   scalar. Rationale: package evidence cannot override canonical policy.
   Date/Author: 2026-08-06 / Codex.
+- Decision: do not traverse build-input checkpoints. Rationale: neither frozen
+  WY-or-median source predicate triggered; checkpointing would be a
+  result-dependent protocol violation. Date/Author: 2026-08-06 / Codex.
+- Decision: admit only the existing state-evolution operator-mechanics class,
+  not carrier plausibility or persistence. Rationale: v130 closes the exact
+  development predecessor gate, while the prior S/F/Q signs already isolate
+  the sign crossing to later evolution; no evidence establishes physical
+  correctness. Date/Author: 2026-08-06 / Codex.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+The frozen four-cell bridge closes. Exact-source semantic replay at canonical
+forcing is `170.25360893091587` versus `170.25360893091576 MJ m^-2`; at
+development forcing it is `188.87252883560674` versus
+`188.87252883560654 MJ m^-2`. All 35 paired water years pass both source gates,
+retained E00/E11 replay is exact, current legacy/explicit selectors are daily
+identical, controls preserve HBP/WAT/loss bytes, and the conditional checkpoint
+phase correctly records `not_triggered`.
+
+The result replaces the stale unqualified `PREDECESSOR_NOT_REPRODUCED` reading
+with forcing-stratified reproduction. Applied to the immutable four-site
+operator result, it admits `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` and
+`STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`. This is a bounded mechanics
+result only. CoE and every production/public output remain unchanged; carrier
+plausibility, persistence, terminal disposition, promotion, retirement, and
+cutover remain held.

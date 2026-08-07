@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "adjudicated",
+  "claim_class": "operator_mechanics_only",
+  "forcing": {
+    "name": "development",
+    "sha256": "c673145ee7fd41e71e3f2e21c529fba2d12691abd5f0f055444e621fb0b80afb"
+  },
+  "bridge_result": {
+    "path": "target/snow_stage3_legacy_predecessor_bridge_reconciliation/results/predecessor-bridge-results.json",
+    "sha256": "ca79b7392ee1abfea113bea2bea87d5193ba12ee8ad084b135a74c1d09e6c0e9",
+    "old_source_median_mj_m2": 188.87252883560674,
+    "current_source_median_mj_m2": 188.87252883560654,
+    "paired_difference_median_j_m2": -1.043081283569336e-7,
+    "water_year_failure_count": 0,
+    "source_gate_pass": true,
+    "retained_current_replay_pass": true
+  },
+  "operator_result": {
+    "path": "target/snow_stage3_operator_reconciliation_v3/results/operator-reconciliation-results.json",
+    "sha256": "3b885fa0f04201744da5c24766d413cd2e74f1273021a1a35d6fd0f7227f691e",
+    "sample_count": 35,
+    "eligible_sample_count": 35,
+    "lineage_identity_pass": true,
+    "reconstruction_closure_pass": true,
+    "delta_closure_pass": true,
+    "shortwave_invariance_pass": true,
+    "initial_projection_difference_observed": true,
+    "same_state_median_j_m2": -1086474818.493409,
+    "frozen_active_median_j_m2": -742021651.464931,
+    "sequential_median_j_m2": 179594922.52446085,
+    "legacy_sequential_median_j_m2": 188872528.8356066,
+    "support_omission_ratio": 0.005180178657866289,
+    "support_delta_sign_changed": false
+  },
+  "predicate": {
+    "predecessor_reproduced_at_exact_forcing": true,
+    "same_state_below_negative_tolerance": true,
+    "frozen_active_below_negative_tolerance": true,
+    "sequential_above_positive_tolerance": true,
+    "support_censoring_material": false
+  },
+  "decision_classes_in_order": [
+    "INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE",
+    "STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION"
+  ],
+  "superseded_class": "PREDECESSOR_NOT_REPRODUCED",
+  "claim_limits": [
+    "not carrier physical plausibility or validation",
+    "not coefficient or flux correction authority",
+    "not persistent state, terminal energy, promotion, CoE retirement, or cutover"
+  ]
+}

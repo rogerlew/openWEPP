@@ -1,6 +1,5 @@
 # Prompts
 
-Status: `active kickoff queued`.
+Status: `kickoff archived`.
 
-The exact execution prompt starts under `active/` and moves by 100%-similarity
-rename to `archived/` only after disposition.
+The exact user kickoff is retained under `archived/` after execution.
