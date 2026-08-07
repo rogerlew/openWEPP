@@ -509,6 +509,11 @@
 
 State as of `2026-08-07 UTC`:
 
+- `20260807-snow-stage3-paradise-wy2015-support-resolution-001/`
+  - ACTIVE / NON-BLOCKING DIAGNOSTIC RESOLUTION: localize the frozen Paradise
+    WY2015 support omissions without retuning the threshold, calling them noise
+    without direct evidence, or assigning a physical pass/fail claim.
+
 - `20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/`
   - COMPLETE / AUTHORITY RECONCILED / PERSISTENCE HOLD: raw CLI wind reaches
     Stage 3 unchanged and PMET-local 2 m wind does not. Nominal GRIDMET 10 m

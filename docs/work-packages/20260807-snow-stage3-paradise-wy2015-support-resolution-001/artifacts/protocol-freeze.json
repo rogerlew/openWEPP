@@ -1,0 +1,45 @@
+{
+  "schema": "snow-stage3-paradise-wy2015-support-resolution-freeze-v1",
+  "source_head": "624d169ea6b860f5d6c0972ddc9ef023c1e6a98c",
+  "site": "snotel_paradise_wa",
+  "water_year": 2015,
+  "support_threshold": 0.05,
+  "expected_parent": {
+    "unmatched_hour_count": 183,
+    "partial_support_hour_count": 19,
+    "omitted_magnitude_j_m2": 98075671.33551113,
+    "support_omission_ratio": 0.06217301915749281
+  },
+  "inputs": {
+    "parent_result": {
+      "path": "target/snow_stage3_evolving_state_carrier_plausibility_reconciliation/attempt-004/results/evolving-carrier-plausibility-results.json",
+      "sha256": "7bd19a24b63375dba9f61e8d522afcc43b42b9f9a8dd8d6156cbe9fad1fbbbff"
+    },
+    "operator_receipt": {
+      "path": "target/snow_stage3_operator_reconciliation_v3/execution-receipt.json",
+      "sha256": "61564035575b165722213abe0657a4dc70b04a1d72c1200b1bb5e35d435fdc9e"
+    },
+    "paired_trace": {
+      "path": "target/snow_stage3_operator_reconciliation_v3/runs/snotel_paradise_wa/paired/snotel_paradise_wa-operator-reconciliation.snow.jsonl",
+      "sha256": "5b6b7d87c18fe6db040e6ac8049ba947530cc1b3e274197f4a8c82daf38558a0"
+    },
+    "sequential_trace": {
+      "path": "target/snow_stage3_operator_reconciliation_v3/runs/snotel_paradise_wa/sequential/snotel_paradise_wa-operator-reconciliation.snow.jsonl",
+      "sha256": "b500e1b41a6d17722940322e4446b87ac71afee5cd80cea2879eb4c2bb2b7688"
+    }
+  },
+  "classification": {
+    "unmatched": "exactly one operator has evaluated tuples for the hour",
+    "partial": "both operators have tuples but common support is below 3600 seconds",
+    "transition": "descriptive before/after ice and applicability evidence only",
+    "cause": "DIRECT only when tuple/status/state evidence uniquely entails the omission; otherwise DESCRIPTIVE or UNKNOWN",
+    "noise": "PROHIBITED without direct causal evidence"
+  },
+  "protected": [
+    "support threshold",
+    "historical failure",
+    "production Rust and physics",
+    "fixtures and observations",
+    "persistence and cutover"
+  ]
+}
