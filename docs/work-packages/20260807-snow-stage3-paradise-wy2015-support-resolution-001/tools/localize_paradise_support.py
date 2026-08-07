@@ -96,6 +96,17 @@ def classify(s_rows: list[dict[str, Any]], q_rows: list[dict[str, Any]]) -> str 
     return "PARTIAL_COMMON_SUPPORT" if support < 3600.0 else None
 
 
+def hourly_status(row: dict[str, Any], hour: int) -> dict[str, Any]:
+    companion = row.get("stage3_operator_reconciliation")
+    statuses = companion.get("hourly_status") if isinstance(companion, dict) else None
+    if not isinstance(statuses, list) or len(statuses) != 24:
+        raise RuntimeError("missing 24-hour operator status")
+    status = statuses[hour]
+    if not isinstance(status, dict):
+        raise RuntimeError("malformed operator status")
+    return {"evaluated": bool(status.get("evaluated")), "reason": str(status.get("reason"))}
+
+
 def localize(freeze: dict[str, Any]) -> dict[str, Any]:
     parent = load_module("paradise_parent_analyzer", PARENT_TOOL)
     predecessor = parent.load_module("paradise_predecessor", parent.PREDECESSOR)
@@ -178,6 +189,8 @@ def localize(freeze: dict[str, Any]) -> dict[str, Any]:
                         "date": stamp.isoformat(),
                         "hour_index": hour,
                         "support_class": support_class,
+                        "S_status": hourly_status(p_row, hour),
+                        "Q_status": hourly_status(q_row, hour),
                         "S": tuple_summary(s_hours[hour]),
                         "Q": tuple_summary(q_hours[hour]),
                         "omitted_by_term_j_m2": omitted_terms,

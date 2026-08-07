@@ -36,6 +36,19 @@ def test_tuple_summary_preserves_state_boundary() -> None:
     assert summary["ice_after_kg_m2"] == 2.0
 
 
+def test_hourly_status_is_exactly_24_entries() -> None:
+    row_value = {
+        "stage3_operator_reconciliation": {
+            "hourly_status": [
+                {"evaluated": index < 3, "reason": "evaluated" if index < 3 else "no_snow"}
+                for index in range(24)
+            ]
+        }
+    }
+    assert MODULE.hourly_status(row_value, 2) == {"evaluated": True, "reason": "evaluated"}
+    assert MODULE.hourly_status(row_value, 3) == {"evaluated": False, "reason": "no_snow"}
+
+
 def test_threshold_cannot_alias_observed_ratio() -> None:
     result = {
         "counts": {"unmatched_hour_count": 1, "partial_support_hour_count": 0},
