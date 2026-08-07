@@ -200,6 +200,7 @@ successor package must materialize and validate the derivative before using it.
 | 26 | [`SNOW-STAGE3-FOUR-SITE-CARRIER-TERM-AUDIT`](../work-packages/20260806-snow-stage3-four-site-carrier-term-audit-001/package.md) — **executed / carrier screen fail / persistent shadow blocked** | Exact schema-v5 reconstruction passes across 154 screen-eligible water-year condition samples, but all canonical site medians fail `[-5,+5] W m^-2`: Mica `-60.63`, Niwot `-123.32`, Paradise `-54.30`; non-decisive Snowbird is `-67.23`. Surface radiation stays positive; turbulent terms dominate complete-arm-only deltas of `-68` to `-145 W m^-2`. | Same-state condition samples do not establish seasonal energy. CoE stays authoritative. Persistence, terminal receipt, land-surface energy, promotion, and cutover remain held behind carrier/operator reconciliation. |
 | 27 | [`SNOW-STAGE3-TURBULENT-CARRIER-LINEAGE-AND-OPERATOR-RECONCILIATION`](../work-packages/20260806-snow-stage3-turbulent-carrier-lineage-and-operator-reconciliation-001/package.md) — **executed / operator mechanics characterized / predecessor hold superseded** | Schema v6 closes primitive fluxes, exact support, state endpoints, and operator deltas across all four sites. Every site has `S<0`, `F<0`, `Q>0`; Snowbird is `-1086.47`, `-742.02`, and `+179.59 MJ m^-2`. Omitted support is below one percent and protected HBP/PASS/WAT bytes remain exact. | Order 28 subsequently reconciled the apparent predecessor mismatch as a forcing-identity difference and admitted the frozen operator class. This row retains the result state at its own closure; CoE remains authoritative. |
 | 28 | [`SNOW-STAGE3-LEGACY-PREDECESSOR-BRIDGE-RECONCILIATION`](../work-packages/20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/package.md) — **executed / forcing identity reconciled / operator class admitted** | The two-source by two-forcing matrix reproduces canonical `+170.2536089` and development `+188.8725288 MJ m^-2` endpoints at both sources. Both same-forcing source gates pass all 35 water years; checkpoint localization is not triggered. Per-WY forcing effect is `+11.8990535 MJ m^-2` median and interaction is numerically zero. | The four-site result now admits `INITIAL_CONTROL_VOLUME_PROJECTION_DIFFERENCE` followed by `STATE_EVOLUTION_RECONCILES_SIGN_CONTRADICTION`. This is operator mechanics, not physical validation. Prospectively audit evolving-state carrier plausibility across four sites before persistence; no fitting, promotion, ownership change, or cutover. |
+| 29 | [`SNOW-STAGE3-EVOLVING-STATE-CARRIER-PLAUSIBILITY-RECONCILIATION`](../work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/package.md) — **queued / scaffolded / result-blind admission required** | Decide whether the evolving carrier is physically plausible by proving GRIDMET/CLI wind exposure, separating virtual geometry from measurement claims, reconstructing raw vapor opportunity versus bounded transfer, and auditing canopy aerodynamics, displacement-aware stability, and active-state feedback across three canonical sites plus non-decisive Snowbird. | Freeze comparable physical envelopes before new results. No scalar wind attenuation, fitting, production correction, persistence, promotion, ownership change, or cutover. Persistent shadow advances only on a full canonical-site plausibility pass. |
 
 EB-04B assigned all captured failures and correction authority. EB-04C closes
 the 22 thermal failures, and EB-04D closes both isolated geometry failures.
@@ -295,13 +296,18 @@ sub-threshold snow-to-water precedent but no error-controlled terminal event;
 pinned WEPP `tmpadj` supplies a frost surface-temperature driver but no closed
 general land-surface energy ledger.
 
-The predecessor complete-carrier execution materially changes the order. Its
-corrected frozen Snowbird screen remains `+170.2536 MJ m^-2`, while daily
-post-CoE reinitialization makes the chronology predictions not evaluable. The
-near-zero resolved-domain `Q_unallocated_after_exhaustion` is only a
-pre-vapor-debit allocation result above the thin-pack cutoff; it does not close
-whole-shadow state energy or terminal meltout. A receiving-surface subsystem
-cannot repair this upstream carrier plausibility failure.
+The predecessor complete-carrier execution materially changes the order. The
+forcing bridge now proves that the historic `+170.2536` and current
+`+188.8725 MJ m^-2` Snowbird medians differ by forcing identity, not source
+revision. On identical support all four sites retain `S<0`, `F<0`, and `Q>0`;
+shortwave is exact-invariant and the sign crossing is concentrated in
+state-dependent sensible and latent exchange. The retained raw vapor totals
+are not automatically actual mass loss, and the Stage 3 turbulent call applies
+the supplied GRIDMET/CLI wind without a canopy operand while longwave does use
+canopy state. Wind exposure, canopy-aerodynamic authority, bounded transfer,
+stability geometry, and state feedback must therefore be reconciled before a
+persistent carrier can be admitted. A receiving-surface subsystem cannot
+repair this upstream carrier plausibility boundary.
 
 The revised sequence is therefore:
 
@@ -312,14 +318,19 @@ The revised sequence is therefore:
    operands through the real internal consumer;
 3. completed: run a frozen paired-window per-term audit at Mica Creek, Niwot,
    Paradise, and the governed non-decisive Snowbird development lane;
-4. next: reconcile every external term in the strongly negative same-state
-   carrier with the positive independently reinitialized predecessor carrier
-   on identical initial states and forcing while tracking state divergence;
-5. admit and run persistent accumulation-season shadow state only if that
-   reconciliation yields a mutually interpretable, plausible carrier;
-6. admit terminal enthalpy-event numerics separately from the first-class
+4. completed: reconcile the same-state, frozen-active, and within-day
+   sequential operators on identical source states, forcing, geometry, and
+   support, then close the historical predecessor forcing bridge;
+5. next: prospectively audit evolving-state physical plausibility by proving
+   wind exposure, separating raw vapor opportunity from bounded transfer, and
+   dispositioning canopy aerodynamics, displacement-aware stability geometry,
+   and active-state feedback across all four sites without fitting;
+6. admit and run persistent accumulation-season shadow state only if all three
+   canonical sites pass that frozen plausibility gate; Snowbird remains
+   non-decisive;
+7. admit terminal enthalpy-event numerics separately from the first-class
    snow-free land-surface energy subsystem; and
-7. consider one atomic CoE retirement only after all owner, consumer, default,
+8. consider one atomic CoE retirement only after all owner, consumer, default,
    rollback, assurance, terminal, and receiving-surface gates pass.
 
 The land-surface subsystem remains necessary for post-meltout continuation and

@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-08-06
+Last updated: 2026-08-07
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,8 +31,8 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `SNOW-STAGE3-EVOLVING-STATE-CARRIER-PLAUSIBILITY-RECONCILIATION` | Snow surface-energy-balance campaign | `next / prospective four-site audit required` | Audit, without fitting, the state-dependent longwave, sensible, latent, vapor-mass, advected, surface-temperature, roughness/instrument-geometry, stability, and active-layer evolution responsible for the frozen-to-sequential sign crossing. Bind four-site physical plausibility criteria before results; distinguish operator-mechanics reconciliation from physical validation. |
-| `SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW` | Snow surface-energy-balance campaign | `held / evolving-state plausibility dependent` | Advance only after the evolving-state carrier passes a prospectively frozen four-site plausibility gate. Persist the admitted evaluation state across days with snowfall, liquid, restart, reappearance, and exact linked mass/energy custody; censor claims at unresolved terminal or receiving-surface boundaries. |
+| [`SNOW-STAGE3-EVOLVING-STATE-CARRIER-PLAUSIBILITY-RECONCILIATION`](work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/package.md) | Snow surface-energy-balance campaign | `next / scaffolded / result-blind admission required` | Prove per-site GRIDMET/CLI wind provenance and exposure; separate virtual-instrument metadata from physical measurement claims; reconcile raw vapor opportunity against bounded sublimation/deposition; audit canopy-aerodynamic absence, `z/L` versus `(z-d)/L`, stability, and active-state feedback. Bind four-site physical envelopes before new results. No fixed wind multiplier, fitting, production correction, persistence, or cutover. |
+| `SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW` | Snow surface-energy-balance campaign | `held / evolving-state plausibility dependent` | Advance only after all three canonical sites pass the prospectively frozen evolving-state plausibility gate with wind exposure, canopy aerodynamics, raw/bounded vapor transfer, geometry, support, and energy/mass closure resolved. Snowbird remains non-decisive. Then persist the admitted evaluation state across days with snowfall, liquid, restart, reappearance, and exact linked mass/energy custody; censor claims at unresolved terminal or receiving-surface boundaries. |
 | `SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS` | Snow and land-surface numerics | `held / separate contract required` | Admit an error-controlled shallow-snow enthalpy solve and localized solid-exhaustion event independently of the receiving land-surface subsystem. Event-local snow ledger closure does not authorize post-snow energy disposition. |
 | `LAND-SURFACE-ENERGY-BALANCE-AUTHORITY` | Cross-domain land-surface architecture | `queued / independent subsystem` | Define the snow-free radiation, turbulent, evaporation, precipitation, surface-water, unfrozen-soil, soil-temperature, frost, and ET states and ledgers as a first-class subsystem. This is required for post-meltout continuation and cutover, but is not a prerequisite for the upstream carrier audit. |
 | `SNOW-COE-STAGE3-ATOMIC-CUTOVER` | Snow surface-energy-balance campaign | `held / terminal increment` | Advance only after carrier plausibility, persistent evaluation, terminal numerics, receiving-surface energy, exact-one ownership, real-consumer publication, defaults, rollback, assurance, and release gates pass. Keep CoE authoritative until the same stable increment retires it. |

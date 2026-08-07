@@ -507,7 +507,16 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-06 UTC`:
+State as of `2026-08-07 UTC`:
+
+- `20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/`
+  - QUEUED / SCAFFOLDED / RESULT-BLIND ADMISSION REQUIRED: reconcile the
+    physical plausibility of the evolving Stage 3 carrier before persistence.
+    The package binds GRIDMET/CLI wind exposure, canopy-aerodynamic authority,
+    raw vapor opportunity versus bounded transfer, Monin-Obukhov displacement
+    geometry, state feedback, and prospective four-site envelopes. Fixed wind
+    attenuation, fitting, production correction, persistence, promotion, CoE
+    retirement, and cutover are excluded.
 
 - `20260805-assurance-single-approver-draft-return-001/` -
   SCAFFOLDED / AUTHORIZED: remove producer/co-approval ambiguity from assurance
