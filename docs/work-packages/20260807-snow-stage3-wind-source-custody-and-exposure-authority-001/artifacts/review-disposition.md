@@ -14,6 +14,8 @@ Evidence mode: `Static + Ran`.
 | Displacement provenance | accepted | runtime constant/formula/source cited |
 | Rust test line count | accepted | corrected to 81 |
 | Prompt archival | accepted | byte-identical SHA `a8a60064...` verified |
+| Provider request/product authority overclaim | accepted | direct retained-value evidence separated from nearby-source static reconstruction; deployed request remains `AUTHORITY_MISSING`; corrected contracts re-adopted and gates rerun |
 
-No finding is rejected, deferred, follow-up, or open. Reviewer A returned final
-`GO`; reviewer B's conditional `GO` prerequisites are all satisfied.
+No finding is rejected, deferred, follow-up, or open. Both follow-on amendment
+re-reviews returned final `GO`; both independent terminal verifications returned
+`VERIFIED` on the exact current diff.

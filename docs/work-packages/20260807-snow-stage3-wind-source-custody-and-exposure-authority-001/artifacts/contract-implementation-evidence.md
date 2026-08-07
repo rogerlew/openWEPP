@@ -12,3 +12,9 @@ validation/binding exposure, gap, and revision history. Both preserve virtual
 `5 m` model geometry while separating nominal GRIDMET `10 m`, raw CLI wind,
 and PMET-local `2 m`. Claim limits forbid exposure inference, fitted
 attenuation, canopy licensing, and production correction.
+
+The user-directed provider follow-on advances the contracts to
+`SC-SNOWENERGY-001 v11` and `SC-SNOWFREEZE-001 v133`. It binds recovered
+WEPPpy retained-value custody, classifies nearby-source request/transform
+semantics as static reconstruction, and narrows but does not lift the deployed/
+server and two-sided exposure authority gap. No production behavior changes.

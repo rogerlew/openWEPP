@@ -513,8 +513,11 @@ State as of `2026-08-07 UTC`:
   - COMPLETE / AUTHORITY RECONCILED / PERSISTENCE HOLD: raw CLI wind reaches
     Stage 3 unchanged and PMET-local 2 m wind does not. Nominal GRIDMET 10 m
     source height is distinct from virtual Stage 3 5 m geometry. Exact retained
-    generator/pixel/transform receipts and forest-exposure linkage are absent,
-    so every site is `AUTHORITY_MISSING`. Independent neutral bounds reproduce
+    provider recovery directly proves source-run hashes, retained centroids and
+    GRIDMET flags, daily parquet wind, and parquet-to-CLI equality. Nearby
+    source only reconstructs request/product/sharing/serialization semantics.
+    Deployed request and server pixel/version/time policy plus forest-exposure linkage remain absent,
+    so every site is still `AUTHORITY_MISSING`. Independent neutral bounds reproduce
     10.077%/21.170%; no fitted attenuation, canopy operator, production
     correction, persistence, or cutover is authorized.
 

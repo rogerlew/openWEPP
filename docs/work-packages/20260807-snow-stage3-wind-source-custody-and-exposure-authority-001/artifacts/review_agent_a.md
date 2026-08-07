@@ -14,3 +14,11 @@ assurance text. The primary restored v132, completed both typed adoptions, and
 corrected those artifacts. Final re-review independently confirmed affected
 tests `30/30`, diff hygiene, typed assurance, archive identity, v132 authority,
 and protected boundaries; no findings remain.
+
+Follow-on provider review returned `GO-WITH-AMENDMENTS` with one high finding:
+the draft treated nearby-source reconstruction as proof of the deployed
+historical request. The primary accepted the finding, separated direct retained
+value evidence from static request/transform reconstruction throughout the
+contracts, package, tests, and roadmaps, and retained deployed-request authority
+as missing. Corrected typed adoption and gates passed. Independent re-review
+returned `GO` with no remaining findings.

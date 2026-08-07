@@ -13,6 +13,8 @@ Evidence mode: `Static`.
 | predecessor artifacts and real source/consumer paths | On-demand | custody and handoff evidence | when tracing corresponding surface |
 | primary external dataset metadata | On-demand | source height/exposure authority | when admitting source fact |
 | assurance graph | On-demand | DRAFT source adoption | if identified source changes |
+| `/workdir/wepppy/AGENTS.md`, GRIDMET/Daymet clients, climate build helpers, CLIGEN serializer, and git history | Follow-on core | provider request/transform authority | user identified WEPPpy as CLI provider |
+| `/wc1/runs/{li/listed-scar,de/deathless-wangle,op/open-source-thirtieth,ba/barred-pro}` run records | Follow-on evidence | exact retained provider lineage, coordinates, target intent, and hashes | provider recovery |
 
 Core local byte budget at scaffold: `454777`, `WARN`; the required work-package
 catalog dominates the excess above the `400000` OK threshold.
@@ -30,3 +32,8 @@ on demand comprises Google Earth Engine `IDAHO_EPSCOR/GRIDMET`, NASA GSFC
 NLDAS-2 forcing documentation, and Abatzoglou (2013), DOI
 `10.1002/joc.3413`, accessed 2026-08-07. General product semantics do not prove
 the identity or exposure of retained fixture cells.
+
+Follow-on static and ran evidence uses the surviving WEPPpy source/run records
+under the strict split between recovered generator custody and unresolved
+aerodynamic exposure; no files in the provider repository or run roots were
+modified.

@@ -10,12 +10,12 @@ const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENE
 const SNOW: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 
 #[test]
-fn v10_v132_separate_source_adjusted_and_virtual_wind() {
+fn v11_v133_separate_source_adjusted_and_virtual_wind() {
     let energy = read(ENERGY);
     let snow = read(SNOW);
 
     for required in [
-        "contract_version: 10",
+        "contract_version: 11",
         "INV-SNOWENERGY-033",
         "`z_u,source`",
         "nominal `10 m`",
@@ -24,15 +24,18 @@ fn v10_v132_separate_source_adjusted_and_virtual_wind() {
         "virtual `z_u=5 m`",
         "never a Stage 3 input",
         "AUTHORITY_MISSING",
+        "nearest pre-build code statically reconstructs",
+        "one-decimal formatting",
     ] {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 132",
+        "contract_version: 133",
         "INV-SNOWFREEZE-099",
         "`fwv_m_s` is local and cannot feed snow",
         "never measurement height",
-        "authoritative linkage before `APPLICABLE` or `INAPPLICABLE`",
+        "authoritative linkage are still required before `APPLICABLE` or `INAPPLICABLE`",
+        "Modeled evergreen forest with `cancov=0.9` establishes target model intent only",
     ] {
         assert!(snow.contains(required), "{SNOW} missing {required}");
     }

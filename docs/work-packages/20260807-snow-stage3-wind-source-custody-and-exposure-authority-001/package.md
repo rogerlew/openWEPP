@@ -40,6 +40,9 @@ promote Stage 3, retire CoE, or cut over outputs.
 - [x] (2026-08-07) Executed source-custody and exposure-applicability evidence collection.
 - [x] (2026-08-07) Completed dual review, finding disposition, dual verification, exact diff,
   assurance impact, and final disposition.
+- [x] (2026-08-07) Reopened by user direction and recovered provider-side
+  GRIDMET-to-CLI custody from byte-identical `/wc1` WEPPpy runs; narrowed the
+  remaining hold to unretained server/pixel policy and exposure applicability.
 
 ## Surprises & Discoveries
 
@@ -73,9 +76,14 @@ promote Stage 3, retire CoE, or cut over outputs.
 
 Authority reconciliation completed. Raw CLI wind reaches Stage 3 unchanged and
 PMET's 2 m adjustment remains local. Canonical contracts now separate nominal
-GRIDMET 10 m source height from virtual Stage 3 5 m transfer geometry. Exact
-retained generator/pixel/transform receipts and forcing-to-forest exposure
-linkage are absent, so every site is `AUTHORITY_MISSING`. The independently
+GRIDMET 10 m source height from virtual Stage 3 5 m transfer geometry. Follow-on
+provider recovery directly proves byte-identical `/wc1` source runs, retained
+watershed centroids and GRIDMET flags, daily parquet wind, and exact
+parquet-to-CLI equality. Nearby pre-build source only statically reconstructs
+the GRIDMET request/product, run-level sharing, and one-decimal transform.
+Exact deployed request/code identity, server-side pixel/version/timezone/fill
+policy, and forcing-to-forest exposure linkage remain absent, so every site is
+still `AUTHORITY_MISSING`. The independently
 reproduced 10.077%/21.170% neutral bounds do not resolve the prior larger
 plausibility concern. No production correction or canopy operator was added;
 persistence remains `HOLD`.
