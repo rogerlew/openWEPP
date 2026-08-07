@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: `GO-WITH-AMENDMENTS at 4ff3fc8b3 / amendments implemented`.
+Status: `PASS verification at 8135e3b90`.
 
 Evidence class: `Static at 19e8c5cde`.
 
@@ -14,4 +14,6 @@ PASS before execution.
 The v130 custody review required explicit INV-097 guard and boundary rows,
 alignment of checkpoint median triggering, removal of the superseded TOL-019
 predecessor clauses, and section-scoped tests. All four are implemented
-prospectively; exact-commit verification remains required.
+prospectively. Exact-commit verification closed every finding; protocol JSON,
+diff hygiene, and focused contract tests `12/12` passed. No model result was run
+or inspected. Agent B admits tool implementation.

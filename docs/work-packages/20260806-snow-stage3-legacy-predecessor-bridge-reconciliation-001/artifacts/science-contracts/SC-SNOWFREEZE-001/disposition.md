@@ -1,6 +1,6 @@
 # SC-SNOWFREEZE-001 Review Disposition
 
-Status: `all findings accepted and implemented / verification pending`.
+Status: `all findings closed / dual verification PASS`.
 
 | finding_id | source | severity | decision | action_taken | artifact_ref | rationale |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -10,3 +10,6 @@ Status: `all findings accepted and implemented / verification pending`.
 | `A-4/B-4` | agent_a + agent_b | medium | accepted | Added section-scoped anti-drop assertions and all class/interaction predicates | contract test | Presence-only checks could miss structural binding loss |
 
 No finding is rejected, deferred, or routed to follow-up.
+
+Both independent reviewers verified every row closed at exact clean commit
+`8135e3b90ec8f1d696c603ece588e868ca000f3c`.

@@ -1,6 +1,6 @@
 # Review Disposition
 
-Status: `all initial findings accepted / corrected prospectively / re-review pending`.
+Status: `all findings closed / exact-commit dual verification PASS`.
 
 Evidence class: `Static`.
 
@@ -32,3 +32,8 @@ Evidence class: `Static`.
 | TOL-019 retained superseded predecessor tolerance | `accepted` | Narrowed TOL-019 to sign/support; TOL-020 solely owns predecessor reproduction | Reverification pending |
 
 No result execution may begin with an undispositioned review finding.
+
+Agent A and Agent B independently verified every accepted amendment at exact
+clean commit `8135e3b90ec8f1d696c603ece588e868ca000f3c`; both returned `PASS` and
+focused contract tests passed `12/12`. Tool implementation is admitted. Model
+execution remains gated by tool tests and custody verification.

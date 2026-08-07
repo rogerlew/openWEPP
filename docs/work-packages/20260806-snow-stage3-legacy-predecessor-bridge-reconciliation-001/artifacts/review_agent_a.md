@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: `GO-WITH-AMENDMENTS at 4ff3fc8b3 / amendments implemented`.
+Status: `PASS verification at 8135e3b90`.
 
 Evidence class: `Static at 19e8c5cde`.
 
@@ -13,4 +13,6 @@ requires a fresh result-blind PASS before execution.
 The v130 review accepted the science but required a WY-or-median checkpoint
 trigger, an INV-097 guard-map row, TOL-019/020 disambiguation including v4 daily
 closure, and section-scoped anti-drop tests. All four are implemented
-prospectively; exact-commit verification remains required.
+prospectively. Exact-commit verification closed every finding and reran the
+focused contract gate `12/12` PASS. No model result was run or inspected. Agent
+A admits tool implementation.
