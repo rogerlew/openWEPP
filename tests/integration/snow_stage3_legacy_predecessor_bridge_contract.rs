@@ -25,7 +25,7 @@ fn v130_binds_forcing_matched_predecessor_reproduction() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 130",
+        "contract_version: 131",
         "REF-SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE",
         "INV-SNOWFREEZE-097",
         "OBL-SNOWFREEZE-P-070",
@@ -113,7 +113,7 @@ fn v130_protocol_and_registry_retain_claim_limits() {
     let protocol = read(PROTOCOL);
 
     for required in [
-        "v130",
+        "v131",
         "exact S/F/Q forcing hash",
         "schema-v4 evidence to aggregate custody",
         "CoE ownership",
