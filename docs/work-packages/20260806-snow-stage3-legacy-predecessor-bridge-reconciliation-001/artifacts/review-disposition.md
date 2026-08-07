@@ -56,6 +56,8 @@ inspecting new results. Both returned `HOLD`.
 | Build-affecting ambient environment was incompletely scrubbed | `accepted` | Scrub Rust/Cargo/C/linker overrides, select and record an explicit host target and linker, and recheck clones after build, run, and verification |
 | Legacy/explicit semantic equivalence was result-only | `accepted` | Normalize both selector spellings to the same effective operator and prove every other semantic input equal before execution |
 | Frozen `2be275fa...` digest had 63 characters | `accepted` | Corrected result-blind to the independently recomputed 64-character digest `294c6ece758c7f4496b46b3eb059b25ec23cb5aa197ebc63bad02da9973d5c32` |
+| V4 applicability context was incorrectly required true | `accepted` | Retain the typed Boolean as context while allowing legitimate false/no-snow rows; zero remains a numeric aggregate rather than proof of support |
+| Environment scrub remained denylist-shaped | `accepted` | Replace it with a minimal runtime/build allowlist, deterministic locale, explicit Cargo home/target/host/linker, and sanitized Git/LFS execution |
 
 No result execution is admitted until fresh Agent A and Agent B review the
 amended exact clean commit and both return `PASS`.

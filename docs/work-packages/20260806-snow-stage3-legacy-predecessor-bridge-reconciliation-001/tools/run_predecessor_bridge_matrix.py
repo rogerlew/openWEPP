@@ -83,7 +83,9 @@ def run(
 
 
 def git_output(argv: list[str], *, cwd: Path = REPO) -> str:
-    return run(["git", *argv], cwd=cwd).stdout.strip()
+    environment, _ = sanitized_environment()
+    environment["GIT_LFS_SKIP_SMUDGE"] = "1"
+    return run(["git", *argv], cwd=cwd, env=environment).stdout.strip()
 
 
 def require_clean_head(expected_head: str) -> None:
@@ -99,33 +101,29 @@ def require_clean_head(expected_head: str) -> None:
 def sanitized_environment(
     *, cargo_home: Path | None = None, cargo_target: Path | None = None
 ) -> tuple[dict[str, str], list[str]]:
-    environment = dict(os.environ)
-    exact_build_overrides = {
-        "AR",
-        "CC",
-        "CFLAGS",
-        "CPPFLAGS",
-        "LDFLAGS",
-        "RUSTC",
-        "RUSTC_WRAPPER",
-        "RUSTC_WORKSPACE_WRAPPER",
-        "RUSTDOCFLAGS",
-        "RUSTFLAGS",
-        "CARGO_ENCODED_RUSTFLAGS",
-        "CARGO_HOME",
-        "CARGO_INCREMENTAL",
+    ambient = dict(os.environ)
+    allowed_exact = {
+        "HOME",
+        "LANG",
+        "LD_LIBRARY_PATH",
+        "LOGNAME",
+        "PATH",
+        "RUSTUP_HOME",
+        "SHELL",
+        "TEMP",
+        "TERM",
+        "TMP",
+        "TMPDIR",
+        "TZ",
+        "USER",
     }
-    removed = sorted(
-        key
-        for key in environment
-        if key.startswith("OPENWEPP_")
-        or key in exact_build_overrides
-        or key.startswith("CARGO_BUILD_")
-        or key.startswith("CARGO_PROFILE_")
-        or key.startswith("CARGO_TARGET_")
-    )
-    for key in removed:
-        environment.pop(key, None)
+    environment = {
+        key: value
+        for key, value in ambient.items()
+        if key in allowed_exact or key.startswith("LC_")
+    }
+    removed = sorted(set(ambient) - set(environment))
+    environment["LC_ALL"] = "C"
     if cargo_home is not None:
         environment["CARGO_HOME"] = str(cargo_home.resolve())
         environment["CARGO_NET_OFFLINE"] = "true"
@@ -201,11 +199,14 @@ def clone_source(source_sha: str, destination: Path) -> dict[str, Any]:
     if destination.exists():
         raise CustodyError(f"refusing to overwrite clone {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
+    environment, _ = sanitized_environment()
+    environment["GIT_LFS_SKIP_SMUDGE"] = "1"
     run(
         ["git", "clone", "--shared", "--no-checkout", str(REPO), str(destination)],
         cwd=REPO,
+        env=environment,
     )
-    run(["git", "checkout", "--detach", source_sha], cwd=destination)
+    run(["git", "checkout", "--detach", source_sha], cwd=destination, env=environment)
     actual = git_output(["rev-parse", "HEAD"], cwd=destination)
     status = git_output(["status", "--porcelain"], cwd=destination)
     if actual != source_sha or status:
@@ -221,6 +222,8 @@ def require_clone_identity(clone: Path, source_sha: str, phase: str) -> None:
 
 
 def build_input_digest(source_sha: str) -> str:
+    environment, _ = sanitized_environment()
+    environment["GIT_LFS_SKIP_SMUDGE"] = "1"
     tree = run(
         [
             "git",
@@ -235,6 +238,7 @@ def build_input_digest(source_sha: str) -> str:
             "crates",
         ],
         cwd=REPO,
+        env=environment,
     ).stdout.encode()
     return hashlib.sha256(tree).hexdigest()
 

@@ -171,8 +171,7 @@ def parse_v4(
             raise ReconstructionError(f"unexpected aggregate schema at {stamp}")
         if integer(row, "day_index") != expected_index or integer(row, "lane_index") != 0:
             raise ReconstructionError(f"v4 daily identity mismatch at {stamp}")
-        if boolean(row, "stage3_energy_enabled") is not True:
-            raise ReconstructionError(f"v4 predecessor disabled at {stamp}")
+        boolean(row, "stage3_energy_enabled")
         hourly = required(row, "stage3_shadow_hourly_complete_energy_j_m2")
         if not isinstance(hourly, list) or len(hourly) != 24:
             raise ReconstructionError(f"v4 hourly shape mismatch at {stamp}")

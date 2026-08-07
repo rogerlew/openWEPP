@@ -101,6 +101,16 @@ class ConsumerTests(unittest.TestCase):
             with self.assertRaises(consumer.ReconstructionError):
                 consumer.parse_v4(path, dates)
 
+    def test_v4_retains_false_applicability_context_without_zero_alias(self) -> None:
+        dates = [dt.date(2000, 1, 1)]
+        row = v4_row(0, [0.0] * 24)
+        row["stage3_energy_enabled"] = False
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "inactive-context.jsonl"
+            write_jsonl(path, [row])
+            parsed = consumer.parse_v4(path, dates)
+        self.assertEqual(parsed[dates[0]], 0.0)
+
     def test_v6_reconstructs_primitives_mass_cold_and_support(self) -> None:
         dates = [dt.date(2000, 1, 1)]
         with tempfile.TemporaryDirectory() as temporary:

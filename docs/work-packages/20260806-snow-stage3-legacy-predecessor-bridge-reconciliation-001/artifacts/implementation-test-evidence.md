@@ -20,7 +20,7 @@ Ran before result execution:
 
 ```text
 .venv/bin/python -m unittest <runner-test> <consumer-test>
-Ran 21 tests in 0.098s
+Ran 22 tests in 0.091s
 OK
 
 .venv/bin/python -m py_compile <package tools/*.py>
