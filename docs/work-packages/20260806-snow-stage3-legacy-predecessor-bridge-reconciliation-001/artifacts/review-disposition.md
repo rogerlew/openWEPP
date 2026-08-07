@@ -21,5 +21,7 @@ Evidence class: `Static`.
 | Historical boundary could be invisible to current-only instrumentation | `accepted` | If needed, instrument parent/child twins identically and prove neutrality against unmodified endpoints | Conditional |
 | Conservation/anti-tautology placeholders | `accepted` | Independent consumer, primitive/mass/cold/conduction closure, per-WY effects, adversarial aliases required | Tool/tests pending |
 | HOLD legitimacy absent | `accepted` | Explicit allowed/prohibited state machine frozen | None |
+| Ambient `CARGO_HOME` remained writable | `accepted` | Package-local content-hashed non-credential cache seed and recorded identity required | Runner implementation pending |
+| Conditional checkpoint trigger/lane ambiguous | `accepted` | Any out-of-tolerance per-WY source delta triggers the affected forcing lane; both lanes run if both trigger | Endpoint execution pending |
 
 No result execution may begin with an undispositioned review finding.

@@ -88,15 +88,16 @@
     "namespace": "target/snow_stage3_legacy_predecessor_bridge_reconciliation",
     "checkout": "isolated shared local clone below namespace; detached exact SHA; clean verification",
     "command": "cargo build --locked --offline --release -p openwepp-runner --bin openwepp-cli-hill",
-    "environment": "scrub OPENWEPP_*, RUSTFLAGS, CARGO_ENCODED_RUSTFLAGS; set CARGO_NET_OFFLINE=true and checkpoint-specific CARGO_TARGET_DIR",
+    "cargo_home_seed": "copy only registry/{cache,index,src} and git/{checkouts,db} from the ambient read-only Cargo home into namespace/cargo-home; exclude credentials, credentials.toml, config, config.toml, env, and installed-bin metadata; record a sorted path/size/SHA-256 manifest and aggregate manifest SHA-256 before use",
+    "environment": "scrub OPENWEPP_*, RUSTFLAGS, CARGO_ENCODED_RUSTFLAGS; set CARGO_NET_OFFLINE=true, package-local CARGO_HOME, and checkpoint-specific CARGO_TARGET_DIR",
     "runtime_cwd": "exact checkpoint clone",
     "overwrite": "prohibited; verify-existing is read-only",
-    "record": ["Cargo.lock SHA-256", "build-input digest", "rustc -Vv", "cargo -V", "target triple", "OS", "linker", "sanitized environment", "binary size/hash", "argv", "cwd", "stdout/stderr hashes", "exit status", "generated runfile hash", "normalized semantic input manifest"]
+    "record": ["Cargo.lock SHA-256", "build-input digest", "package-local Cargo home manifest and aggregate SHA-256", "rustc -Vv", "cargo -V", "target triple", "OS", "linker", "sanitized environment", "binary size/hash", "argv", "cwd", "stdout/stderr hashes", "exit status", "generated runfile hash", "normalized semantic input manifest"]
   },
   "checkpoint_grouping": {
     "enumeration": "git rev-list --first-parent --reverse 2d035638a9819961a393207cd4813712d64bddcf^..5ebfc5135b80d250cb6b38d1b6241a7d2a72d6c5",
     "digest": "LC_ALL=C git ls-tree -r REV -- Cargo.toml Cargo.lock rust-toolchain.toml .cargo crates | sha256sum",
-    "selection": "retain base and first commit at each consecutive digest transition; execute only if a fixed-forcing source effect remains",
+    "selection": "retain base and first commit at each consecutive digest transition; canonical lane executes iff any WY E10-E00 exceeds max(1e-6 J m^-2, 1e-12*sum_abs_operands); development lane executes iff any WY E11-E01 exceeds that tolerance; execute both when both trigger",
     "checkpoints": [
       ["2d035638a9819961a393207cd4813712d64bddcf", "8174ba35e6d8a64e1be96073138f5e9a88806660dba2ebb5d2595db5d755cd30"],
       ["1ee68fb1625ce5470ad5dfb51e88ed32187d968e", "6ecef44c79730ac5fe3288be16b3517d9a6112848de905199cca8efa7a40afc6"],

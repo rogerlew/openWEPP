@@ -6,7 +6,9 @@ Evidence class: `Static`.
 
 Local source/history and ignored evidence only. Historical inputs are read-only.
 Checkpoint builds use isolated shared local clones under the package target,
-`--locked --offline`, distinct Cargo targets, and a scrubbed environment.
+`--locked --offline`, distinct Cargo targets, a content-hashed package-local
+Cargo home seeded only from non-credential ambient registry/git caches, and a
+scrubbed environment.
 Subprocesses use explicit argv/workdirs; generated runfiles rewrite all seven
 absolute input/output paths into their cell namespace. Execution refuses
 overwrite and retains failures. No secrets, network, protected data, external

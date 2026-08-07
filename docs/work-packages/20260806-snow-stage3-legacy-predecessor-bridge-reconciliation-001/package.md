@@ -116,6 +116,7 @@ from disabled/public output.
   - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
   - `docs/specifications/science-contracts/index.md`
   - `Cargo.toml`
+  - `tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs`
   - `tests/integration/snow_stage3_legacy_predecessor_bridge_contract.rs`
 - conditional default-off diagnostic files:
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
@@ -145,8 +146,11 @@ write.
    selector, date/window, unit, duration, schema-adapter, tolerance,
    aggregation-order, and operand-lineage identities before reading results.
 2. Create isolated local clones below the target namespace at each exact source
-   SHA. Build with a scrubbed environment, checkpoint-specific
-   `CARGO_TARGET_DIR`, and `cargo build --locked --offline --release -p
+   SHA. Seed a content-hashed package-local `CARGO_HOME` from only the ambient
+   read-only registry/git caches, excluding credentials and config, and record
+   its full manifest before use. Build with a scrubbed environment,
+   checkpoint-specific `CARGO_TARGET_DIR`, package-local `CARGO_HOME`, and
+   `cargo build --locked --offline --release -p
    openwepp-runner --bin openwepp-cli-hill`. Record the build-input digest,
    `Cargo.lock`, toolchain/target/linker/OS identity, binary size/hash, argv,
    cwd, stdout/stderr hashes, exit status, and generated runfile/semantic-input
@@ -167,9 +171,10 @@ write.
    `forcing_old=E01-E00`, `forcing_current=E11-E10`, and
    `interaction=(E11-E10)-(E01-E00)`. Do not algebraically combine medians of
    separately reduced distributions.
-6. Only when at least one fixed-forcing source effect remains outside the
-   frozen tolerance, traverse every prospectively frozen distinct binary
-   build-input closure on one fixed forcing. Collapse commits only when the
+6. If any water-year `E10-E00` source delta exceeds its scale-aware energy
+   tolerance, traverse every prospectively frozen distinct binary build-input
+   closure on canonical forcing. Apply the same rule to `E11-E01` and the
+   development forcing; if both trigger, traverse both lanes. Collapse commits only when the
    recorded closure digest is identical; never select a checkpoint from result
    values and never assume monotonicity.
 7. Within a first divergent source interval, compare the earliest evaluated
