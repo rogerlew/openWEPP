@@ -21,7 +21,7 @@ fn table_row<'a>(contract: &'a str, symbol: &str) -> &'a str {
 }
 
 #[test]
-fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
+fn v134_preserves_one_production_state_and_scopes_persistent_exception() {
     let contract = read(CONTRACT);
 
     for required in [
@@ -40,7 +40,7 @@ fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
         "independent initial-plus-flux-to-final mass, enthalpy, and liquid ledger closure",
         "typed, default-off request",
         "evaluator has exclusive custody",
-        "cannot seed another shadow or production interval",
+        "Absent the sole named exception in `INV-SNOWFREEZE-100`",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
@@ -48,7 +48,7 @@ fn v128_preserves_one_production_state_and_admits_only_two_shadow_operators() {
     let operator_row = table_row(&contract, "snow_evaluation_operator");
     assert_eq!(
         operator_row,
-        "| `snow_evaluation_operator` | `enum` | Evaluation-only operator identity: `same_state_paired_carrier_v1` or `sequential_resolved_shadow_v1`. Absence means no evaluation shadow. Unsupported or ambiguous values fail the evaluation request without changing production. | typed evaluation request | evaluation runner and evidence consumer only |"
+        "| `snow_evaluation_operator` | `enum` | Evaluation-only operator identity: `same_state_paired_carrier_v1`, `sequential_resolved_shadow_v1`, or `persistent_accumulation_shadow_v1`. Absence means no evaluation shadow. Unsupported or ambiguous values fail the evaluation request without changing production. | typed evaluation request | evaluation runner and evidence consumer only |"
     );
 
     let inv091_row = table_row(&contract, "INV-SNOWFREEZE-091");
@@ -74,7 +74,7 @@ fn authority_rejects_production_reachability_and_overbroad_claims() {
         "third/generic-operator rejection",
         "otherwise the result is only a bounded response experiment",
         "Daily or independently reinitialized shadows cannot support accumulation-season",
-        "Persistence and terminal/receiving-surface authority require separate amendments",
+        "terminal/receiving-surface and physically interpreted persistence remain held",
         "by itself authorizes no runtime implementation or CoE ownership change",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
@@ -109,7 +109,7 @@ fn draft_assurance_subject_tracks_v127_without_review_or_approval_authority() {
 }
 
 #[test]
-fn roadmap_orders_observability_before_result_bearing_audit_and_persistence() {
+fn roadmap_orders_observability_before_result_bearing_audit_and_persistent_mechanics() {
     let roadmap = read(ROADMAP);
     let authority = roadmap
         .find("scope a declared evaluation shadow under `INV-SNOWFREEZE-091`")
@@ -121,8 +121,8 @@ fn roadmap_orders_observability_before_result_bearing_audit_and_persistence() {
         .find("run a frozen paired-window per-term audit")
         .expect("roadmap must name the four-site audit third");
     let persistence = roadmap
-        .find("admit and run persistent accumulation-season shadow state only if that")
-        .expect("roadmap must keep persistence conditional");
+        .find("implemented the default-off persistent continuity experiment")
+        .expect("roadmap must record completed persistent mechanics");
 
     assert!(authority < observability);
     assert!(observability < audit);

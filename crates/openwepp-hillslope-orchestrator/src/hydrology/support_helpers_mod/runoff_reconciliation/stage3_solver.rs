@@ -4,6 +4,444 @@ use super::*;
 mod evaluation;
 
 impl Wb11HydrologyKernel {
+    pub fn initialize_stage3_persistent_state(
+        lane_id: u32,
+        layers: Vec<DirectSnowLayerState>,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        Self::initialize_stage3_persistent_state_with_retained_liquid(lane_id, layers, 0.0)
+    }
+
+    pub fn initialize_stage3_persistent_state_with_retained_liquid(
+        lane_id: u32,
+        layers: Vec<DirectSnowLayerState>,
+        detached_retained_liquid_kg_m2: f64,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        let initial_ice_kg_m2 =
+            Self::stage3_total_ice_mass_swe_m(&layers) * STAGE3_RHO_WATER_KG_M3;
+        let initial_retained_liquid_kg_m2 = layers
+            .iter()
+            .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
+            .sum::<f64>()
+            + detached_retained_liquid_kg_m2;
+        let state = DirectSnowStage3PersistentState {
+            schema_version: 1,
+            fingerprint: 0,
+            lane_id,
+            next_interval_index: 0,
+            layers,
+            detached_retained_liquid_kg_m2,
+            initial_ice_kg_m2,
+            initial_retained_liquid_kg_m2,
+            cumulative_snowfall_kg_m2: 0.0,
+            cumulative_external_liquid_kg_m2: 0.0,
+            cumulative_deposition_kg_m2: 0.0,
+            cumulative_sublimation_kg_m2: 0.0,
+            cumulative_melt_kg_m2: 0.0,
+            cumulative_unresolved_liquid_kg_m2: 0.0,
+            cumulative_complete_energy_j_m2: 0.0,
+            cumulative_cold_energy_change_j_m2: 0.0,
+            cumulative_terminal_unallocated_energy_j_m2: 0.0,
+        };
+        let mut state = state;
+        state.fingerprint = Self::stage3_persistent_state_fingerprint(&state);
+        Self::validate_stage3_persistent_state(&state)?;
+        Ok(state)
+    }
+
+    pub fn restore_stage3_persistent_state(
+        snapshot: DirectSnowStage3PersistentState,
+        lane_id: u32,
+        next_interval_index: u64,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(&snapshot)?;
+        if snapshot.lane_id != lane_id || snapshot.next_interval_index != next_interval_index {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_restore_identity_or_order",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        Ok(snapshot)
+    }
+
+    pub fn serialize_stage3_persistent_state(
+        state: &DirectSnowStage3PersistentState,
+    ) -> Result<Vec<u8>, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        serde_json::to_vec(state).map_err(|_| {
+            Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_snapshot_serialize",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into()
+        })
+    }
+
+    pub fn restore_stage3_persistent_state_json(
+        snapshot: &[u8],
+        lane_id: u32,
+        next_interval_index: u64,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        let state: DirectSnowStage3PersistentState =
+            serde_json::from_slice(snapshot).map_err(|_| {
+                Self::stage3_domain_error(
+                    HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    "snow.stage3_persistent_snapshot_deserialize",
+                    1.0,
+                    Some(0.0),
+                    Some(0.0),
+                )
+            })?;
+        Self::restore_stage3_persistent_state(state, lane_id, next_interval_index)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub fn evaluate_stage3_persistent_day(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        if state.lane_id != lane_id || state.next_interval_index != interval_index {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_identity_or_order",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        let tag = Stage3EvaluationTag::new(
+            SnowStage3EvaluationOperator::PersistentAccumulationShadowV1,
+        );
+        let start_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&state.layers)
+            * STAGE3_RHO_WATER_KG_M3;
+        let start_retained_liquid_kg_m2 = state
+            .layers
+            .iter()
+            .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
+            .sum::<f64>()
+            + state.detached_retained_liquid_kg_m2;
+        let cold_content = state
+            .layers
+            .iter()
+            .map(Self::stage3_layer_cold_content_j_m2)
+            .collect();
+        let summary = Self::evaluate_stage3_sequential_melt_shadow(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            tag,
+            inputs,
+            state.layers.clone(),
+            cold_content,
+        )?;
+        Self::validate_stage3_shadow_summary(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            &summary,
+        )?;
+        let snowfall_kg_m2 = inputs
+            .hourly
+            .iter()
+            .map(|hour| hour.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3)
+            .sum::<f64>();
+        let external_liquid_kg_m2 = inputs
+            .hourly
+            .iter()
+            .map(|hour| hour.rain_m * STAGE3_RHO_WATER_KG_M3)
+            .sum::<f64>();
+        let deposition_kg_m2 = summary
+            .reconciliation
+            .tuples
+            .iter()
+            .filter_map(|tuple| tuple.deposition_kg_m2)
+            .sum::<f64>();
+        let end_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&summary.final_layers)
+            * STAGE3_RHO_WATER_KG_M3;
+        let end_retained_liquid_kg_m2 = summary
+            .final_layers
+            .iter()
+            .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
+            .sum::<f64>();
+        let retained_liquid_censored_loss_kg_m2 =
+            (start_retained_liquid_kg_m2 - end_retained_liquid_kg_m2).max(0.0);
+        let unresolved_liquid_kg_m2 = external_liquid_kg_m2
+            + summary.melt_kg_m2
+            + retained_liquid_censored_loss_kg_m2;
+        let residual = start_ice_kg_m2 + snowfall_kg_m2 + deposition_kg_m2
+            - summary.sublimation_kg_m2
+            - summary.melt_kg_m2
+            - end_ice_kg_m2;
+        let ice_tolerance = 1.0e-12_f64.max(
+            1.0e-12
+                * (start_ice_kg_m2
+                    + snowfall_kg_m2
+                    + deposition_kg_m2
+                    + summary.sublimation_kg_m2
+                    + summary.melt_kg_m2
+                    + end_ice_kg_m2),
+        );
+        Self::require_direct_typed_snow_value_with(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            || BoundarySymbol::from("snow.stage3_persistent_mass_residual_kg_m2"),
+            residual.abs(),
+            Some(0.0),
+            Some(ice_tolerance),
+        )?;
+        let total_water_residual = start_ice_kg_m2
+            + start_retained_liquid_kg_m2
+            + snowfall_kg_m2
+            + external_liquid_kg_m2
+            + deposition_kg_m2
+            - summary.sublimation_kg_m2
+            - unresolved_liquid_kg_m2
+            - end_ice_kg_m2
+            - end_retained_liquid_kg_m2;
+        let water_tolerance = 1.0e-12_f64.max(
+            1.0e-12
+                * (start_ice_kg_m2
+                    + start_retained_liquid_kg_m2
+                    + snowfall_kg_m2
+                    + external_liquid_kg_m2
+                    + deposition_kg_m2
+                    + summary.sublimation_kg_m2
+                    + unresolved_liquid_kg_m2
+                    + end_ice_kg_m2
+                    + end_retained_liquid_kg_m2),
+        );
+        Self::require_direct_typed_snow_value_with(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            || BoundarySymbol::from("snow.stage3_persistent_total_water_residual_kg_m2"),
+            total_water_residual.abs(),
+            Some(0.0),
+            Some(water_tolerance),
+        )?;
+        let lifecycle = match (start_ice_kg_m2 > 0.0, end_ice_kg_m2 > 0.0) {
+            (false, false) => "dormant",
+            (false, true) => "reappeared",
+            (true, false) => "disappeared",
+            (true, true) => "active",
+        };
+        let mut next = state.clone();
+        next.next_interval_index = next.next_interval_index.checked_add(1).ok_or_else(|| {
+            Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_interval_overflow",
+                f64::MAX,
+                Some(0.0),
+                None,
+            )
+        })?;
+        next.layers.clone_from(&summary.final_layers);
+        next.detached_retained_liquid_kg_m2 = 0.0;
+        next.cumulative_snowfall_kg_m2 += snowfall_kg_m2;
+        next.cumulative_external_liquid_kg_m2 += external_liquid_kg_m2;
+        next.cumulative_deposition_kg_m2 += deposition_kg_m2;
+        next.cumulative_sublimation_kg_m2 += summary.sublimation_kg_m2;
+        next.cumulative_melt_kg_m2 += summary.melt_kg_m2;
+        next.cumulative_unresolved_liquid_kg_m2 += unresolved_liquid_kg_m2;
+        next.cumulative_complete_energy_j_m2 += summary.complete_energy_j_m2;
+        next.cumulative_cold_energy_change_j_m2 += summary.cold_energy_change_j_m2;
+        next.cumulative_terminal_unallocated_energy_j_m2 +=
+            summary.unallocated_after_exhaustion_j_m2;
+        next.fingerprint = Self::stage3_persistent_state_fingerprint(&next);
+        Self::validate_stage3_persistent_state(&next)?;
+        let cumulative_energy_residual = next.cumulative_complete_energy_j_m2
+            - next.cumulative_cold_energy_change_j_m2
+            - STAGE3_LATENT_HEAT_FUSION_J_KG * next.cumulative_melt_kg_m2
+            - next.cumulative_terminal_unallocated_energy_j_m2;
+        let cumulative_energy_scale = next.cumulative_complete_energy_j_m2.abs()
+            + next.cumulative_cold_energy_change_j_m2.abs()
+            + (STAGE3_LATENT_HEAT_FUSION_J_KG * next.cumulative_melt_kg_m2).abs()
+            + next.cumulative_terminal_unallocated_energy_j_m2.abs();
+        Self::require_direct_typed_snow_value_with(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            || BoundarySymbol::from("snow.stage3_persistent_cumulative_energy_residual_j_m2"),
+            cumulative_energy_residual.abs(),
+            Some(0.0),
+            Some(1.0e-6_f64.max(1.0e-12 * cumulative_energy_scale)),
+        )?;
+        let cumulative_residual = next.initial_ice_kg_m2
+            + next.initial_retained_liquid_kg_m2
+            + next.cumulative_snowfall_kg_m2
+            + next.cumulative_external_liquid_kg_m2
+            + next.cumulative_deposition_kg_m2
+            - next.cumulative_sublimation_kg_m2
+            - next.cumulative_unresolved_liquid_kg_m2
+            - end_ice_kg_m2
+            - end_retained_liquid_kg_m2;
+        let cumulative_scale = next.initial_ice_kg_m2
+            + next.initial_retained_liquid_kg_m2
+            + next.cumulative_snowfall_kg_m2
+            + next.cumulative_external_liquid_kg_m2
+            + next.cumulative_deposition_kg_m2
+            + next.cumulative_sublimation_kg_m2
+            + next.cumulative_unresolved_liquid_kg_m2
+            + end_ice_kg_m2
+            + end_retained_liquid_kg_m2;
+        Self::require_direct_typed_snow_value_with(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            || BoundarySymbol::from("snow.stage3_persistent_cumulative_water_residual_kg_m2"),
+            cumulative_residual.abs(),
+            Some(0.0),
+            Some(1.0e-12_f64.max(1.0e-12 * cumulative_scale)),
+        )?;
+        let end_state_fingerprint = next.fingerprint;
+        Ok(DirectSnowStage3PersistentDayResult {
+            start_state: Box::new(state.clone()),
+            state: next,
+            evaluation: Self::stage3_evaluation_diagnostics(&summary),
+            reconciliation: Box::new(summary.reconciliation),
+            lifecycle,
+            start_state_fingerprint: state.fingerprint,
+            end_state_fingerprint,
+            start_ice_kg_m2,
+            start_retained_liquid_kg_m2,
+            snowfall_kg_m2,
+            external_liquid_kg_m2,
+            deposition_kg_m2,
+            sublimation_kg_m2: summary.sublimation_kg_m2,
+            melt_kg_m2: summary.melt_kg_m2,
+            end_ice_kg_m2,
+            end_retained_liquid_kg_m2,
+            retained_liquid_censored_loss_kg_m2,
+            ice_mass_closure_residual_kg_m2: residual,
+            total_water_closure_residual_kg_m2: total_water_residual,
+            unresolved_liquid_kg_m2,
+            terminal_unallocated_energy_j_m2: summary.unallocated_after_exhaustion_j_m2,
+        })
+    }
+
+    fn validate_stage3_persistent_state(
+        state: &DirectSnowStage3PersistentState,
+    ) -> Result<(), DirectSnowStage3EvaluationError> {
+        let phase = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        if state.schema_version != 1 {
+            return Err(Self::stage3_domain_error(
+                phase,
+                "snow.stage3_persistent_snapshot_version",
+                f64::from(state.schema_version),
+                Some(1.0),
+                Some(1.0),
+            )
+            .into());
+        }
+        if state.fingerprint != Self::stage3_persistent_state_fingerprint(state) {
+            return Err(Self::stage3_domain_error(
+                phase,
+                "snow.stage3_persistent_snapshot_fingerprint",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        for layer in &state.layers {
+            Self::validate_stage3_layer(phase, layer)?;
+        }
+        for (symbol, value) in [
+            (
+                "snow.stage3_persistent_detached_retained_liquid",
+                state.detached_retained_liquid_kg_m2,
+            ),
+            ("snow.stage3_persistent_initial_ice", state.initial_ice_kg_m2),
+            (
+                "snow.stage3_persistent_initial_retained_liquid",
+                state.initial_retained_liquid_kg_m2,
+            ),
+            ("snow.stage3_persistent_cumulative_snowfall", state.cumulative_snowfall_kg_m2),
+            ("snow.stage3_persistent_cumulative_external_liquid", state.cumulative_external_liquid_kg_m2),
+            ("snow.stage3_persistent_cumulative_deposition", state.cumulative_deposition_kg_m2),
+            ("snow.stage3_persistent_cumulative_sublimation", state.cumulative_sublimation_kg_m2),
+            ("snow.stage3_persistent_cumulative_melt", state.cumulative_melt_kg_m2),
+            ("snow.stage3_persistent_cumulative_unresolved_liquid", state.cumulative_unresolved_liquid_kg_m2),
+        ] {
+            Self::require_direct_typed_snow_value_with(
+                phase,
+                || BoundarySymbol::from(symbol),
+                value,
+                Some(0.0),
+                None,
+            )?;
+        }
+        for (symbol, value) in [
+            (
+                "snow.stage3_persistent_cumulative_complete_energy",
+                state.cumulative_complete_energy_j_m2,
+            ),
+            (
+                "snow.stage3_persistent_cumulative_cold_energy_change",
+                state.cumulative_cold_energy_change_j_m2,
+            ),
+        ] {
+            Self::require_direct_typed_snow_value_with(
+                phase,
+                || BoundarySymbol::from(symbol),
+                value,
+                None,
+                None,
+            )?;
+        }
+        Self::require_direct_typed_snow_value_with(
+            phase,
+            || BoundarySymbol::from("snow.stage3_persistent_cumulative_terminal_unallocated_energy"),
+            state.cumulative_terminal_unallocated_energy_j_m2,
+            Some(0.0),
+            None,
+        )?;
+        Ok(())
+    }
+
+    fn stage3_persistent_state_fingerprint(state: &DirectSnowStage3PersistentState) -> u64 {
+        let mut fingerprint = Self::stage3_fnv1a_start();
+        fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.schema_version));
+        fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.lane_id));
+        fingerprint = Self::stage3_fnv1a_u64(fingerprint, state.next_interval_index);
+        for value in [
+            state.cumulative_snowfall_kg_m2,
+            state.cumulative_external_liquid_kg_m2,
+            state.cumulative_deposition_kg_m2,
+            state.cumulative_sublimation_kg_m2,
+            state.cumulative_melt_kg_m2,
+            state.cumulative_unresolved_liquid_kg_m2,
+            state.initial_ice_kg_m2,
+            state.initial_retained_liquid_kg_m2,
+            state.detached_retained_liquid_kg_m2,
+            state.cumulative_complete_energy_j_m2,
+            state.cumulative_cold_energy_change_j_m2,
+            state.cumulative_terminal_unallocated_energy_j_m2,
+        ] {
+            fingerprint = Self::stage3_fnv1a_u64(
+                fingerprint,
+                if value == 0.0 { 0 } else { value.to_bits() },
+            );
+        }
+        for layer in &state.layers {
+            for value in [
+                layer.mass_swe_m,
+                layer.thickness_m,
+                layer.density_kg_m3,
+                layer.settle_day_count,
+                layer.temperature_c,
+                layer.liquid_water_m,
+                layer.cold_content_j_m2,
+                layer.refrozen_liquid_m,
+            ] {
+                fingerprint = Self::stage3_fnv1a_u64(
+                    fingerprint,
+                    if value == 0.0 { 0 } else { value.to_bits() },
+                );
+            }
+        }
+        fingerprint
+    }
+
     #[allow(clippy::too_many_lines)]
     pub(super) fn resolve_stage3_liquid_routing(
         phase_class: HillslopeKernelPhaseClass,
@@ -635,11 +1073,26 @@ impl Wb11HydrologyKernel {
         evaluation_operator: Option<SnowStage3EvaluationOperator>,
     ) -> Result<Option<SnowStage3EvaluationOperator>, Wb11HydrologyKernelGuardError> {
         match (complete_carrier_shadow, evaluation_operator) {
+            (false, Some(SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)) => {
+                Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_persistent_requires_stateful_api",
+                    1.0,
+                    Some(0.0),
+                    Some(0.0),
+                ))
+            }
             (false, operator) => Ok(operator),
             (true, None | Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)) => {
                 Ok(Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1))
             }
-            (true, Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)) => {
+            (
+                true,
+                Some(
+                    SnowStage3EvaluationOperator::SameStatePairedCarrierV1
+                    | SnowStage3EvaluationOperator::PersistentAccumulationShadowV1,
+                ),
+            ) => {
                 Err(Self::stage3_domain_error(
                     phase_class,
                     "snow.stage3_evaluation_request_conflict",
@@ -1438,6 +1891,13 @@ impl Wb11HydrologyKernel {
             layer.density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+        Self::require_direct_typed_snow_value_with(
+            phase_class,
+            || BoundarySymbol::from("snow.stage3_layer_settle_day_count"),
+            layer.settle_day_count,
+            Some(0.0),
+            None,
         )?;
         Self::require_direct_typed_snow_value_with(
             phase_class,
@@ -2403,4 +2863,6 @@ mod stage3_evaluation_validation_tests {
             !status.evaluated && status.reason == "no_resolved_snow_at_day_start"
         }));
     }
+    #[path = "persistent_tests.rs"]
+    mod persistent_tests;
 }

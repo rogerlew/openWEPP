@@ -316,6 +316,7 @@ impl Default for DirectSnowTurbulentGeometry {
 pub enum SnowStage3EvaluationOperator {
     SameStatePairedCarrierV1,
     SequentialResolvedShadowV1,
+    PersistentAccumulationShadowV1,
 }
 
 impl SnowStage3EvaluationOperator {
@@ -324,6 +325,7 @@ impl SnowStage3EvaluationOperator {
         match self {
             Self::SameStatePairedCarrierV1 => "same_state_paired_carrier_v1",
             Self::SequentialResolvedShadowV1 => "sequential_resolved_shadow_v1",
+            Self::PersistentAccumulationShadowV1 => "persistent_accumulation_shadow_v1",
         }
     }
 
@@ -332,8 +334,56 @@ impl SnowStage3EvaluationOperator {
         match self {
             Self::SameStatePairedCarrierV1 => "carrier_component_comparison",
             Self::SequentialResolvedShadowV1 => "bounded_response_experiment",
+            Self::PersistentAccumulationShadowV1 => "persistent_state_continuity_experiment",
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectSnowStage3PersistentState {
+    pub schema_version: u16,
+    pub fingerprint: u64,
+    pub lane_id: u32,
+    pub next_interval_index: u64,
+    pub layers: Vec<DirectSnowLayerState>,
+    pub detached_retained_liquid_kg_m2: f64,
+    pub initial_ice_kg_m2: f64,
+    pub initial_retained_liquid_kg_m2: f64,
+    pub cumulative_snowfall_kg_m2: f64,
+    pub cumulative_external_liquid_kg_m2: f64,
+    pub cumulative_deposition_kg_m2: f64,
+    pub cumulative_sublimation_kg_m2: f64,
+    pub cumulative_melt_kg_m2: f64,
+    pub cumulative_unresolved_liquid_kg_m2: f64,
+    pub cumulative_complete_energy_j_m2: f64,
+    pub cumulative_cold_energy_change_j_m2: f64,
+    pub cumulative_terminal_unallocated_energy_j_m2: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectSnowStage3PersistentDayResult {
+    pub start_state: Box<DirectSnowStage3PersistentState>,
+    pub state: DirectSnowStage3PersistentState,
+    pub evaluation: DirectSnowStage3EvaluationDiagnostics,
+    pub reconciliation: Box<DirectSnowStage3OperatorReconciliation>,
+    pub lifecycle: &'static str,
+    pub start_state_fingerprint: u64,
+    pub end_state_fingerprint: u64,
+    pub start_ice_kg_m2: f64,
+    pub start_retained_liquid_kg_m2: f64,
+    pub snowfall_kg_m2: f64,
+    pub external_liquid_kg_m2: f64,
+    pub deposition_kg_m2: f64,
+    pub sublimation_kg_m2: f64,
+    pub melt_kg_m2: f64,
+    pub end_ice_kg_m2: f64,
+    pub end_retained_liquid_kg_m2: f64,
+    pub retained_liquid_censored_loss_kg_m2: f64,
+    pub ice_mass_closure_residual_kg_m2: f64,
+    pub total_water_closure_residual_kg_m2: f64,
+    pub unresolved_liquid_kg_m2: f64,
+    pub terminal_unallocated_energy_j_m2: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

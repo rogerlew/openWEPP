@@ -23,3 +23,5 @@ openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }
 openwepp-topology = { path = "../openwepp-topology", version = "0.1.0" }
 openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }
 openwepp-meteorology = { path = "../openwepp-meteorology", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }

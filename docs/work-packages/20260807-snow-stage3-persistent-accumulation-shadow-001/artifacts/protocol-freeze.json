@@ -1,0 +1,10 @@
+{
+  "schema": "openwepp-snow-stage3-persistent-shadow-protocol-v1",
+  "package_id": "20260807-snow-stage3-persistent-accumulation-shadow-001",
+  "operator": "persistent_accumulation_shadow_v1",
+  "state_schema_version": 1,
+  "trace_schema_version": 7,
+  "mass_tolerance": "max(1e-12 kg m^-2, 1e-12 * sum_abs_operands)",
+  "energy_tolerance": "max(1e-6 J m^-2, 1e-12 * sum_abs_operands)",
+  "claims": "mechanics-only; physical efficacy, production, and cutover held"
+}

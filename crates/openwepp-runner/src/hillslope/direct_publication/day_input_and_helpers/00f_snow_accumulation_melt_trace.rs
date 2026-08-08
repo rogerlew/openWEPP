@@ -66,6 +66,39 @@ fn direct_snow_trace_accumulation_melt_fields(
     )
 }
 
+fn direct_snow_trace_persistent_state(
+    state: &openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState,
+) -> String {
+    let layers = state.layers.iter().map(|layer| format!(
+        "{{\"mass_swe_m\":{},\"thickness_m\":{},\"density_kg_m3\":{},\"settle_day_count\":{},\"temperature_c\":{},\"liquid_water_m\":{},\"cold_content_j_m2\":{},\"refrozen_liquid_m\":{}}}",
+        direct_production_trace_number(layer.mass_swe_m),
+        direct_production_trace_number(layer.thickness_m),
+        direct_production_trace_number(layer.density_kg_m3),
+        direct_production_trace_number(layer.settle_day_count),
+        direct_production_trace_number(layer.temperature_c),
+        direct_production_trace_number(layer.liquid_water_m),
+        direct_production_trace_number(layer.cold_content_j_m2),
+        direct_production_trace_number(layer.refrozen_liquid_m),
+    )).collect::<Vec<_>>().join(",");
+    format!(
+        "{{\"schema_version\":{},\"fingerprint\":\"{:016x}\",\"lane_id\":{},\"next_interval_index\":{},\"layers\":[{}],\"detached_retained_liquid_kg_m2\":{},\"initial_ice_kg_m2\":{},\"initial_retained_liquid_kg_m2\":{},\"cumulative_snowfall_kg_m2\":{},\"cumulative_external_liquid_kg_m2\":{},\"cumulative_deposition_kg_m2\":{},\"cumulative_sublimation_kg_m2\":{},\"cumulative_melt_kg_m2\":{},\"cumulative_unresolved_liquid_kg_m2\":{},\"cumulative_complete_energy_j_m2\":{},\"cumulative_cold_energy_change_j_m2\":{},\"cumulative_terminal_unallocated_energy_j_m2\":{}}}",
+        state.schema_version, state.fingerprint, state.lane_id, state.next_interval_index, layers,
+        direct_production_trace_number(state.detached_retained_liquid_kg_m2),
+        direct_production_trace_number(state.initial_ice_kg_m2),
+        direct_production_trace_number(state.initial_retained_liquid_kg_m2),
+        direct_production_trace_number(state.cumulative_snowfall_kg_m2),
+        direct_production_trace_number(state.cumulative_external_liquid_kg_m2),
+        direct_production_trace_number(state.cumulative_deposition_kg_m2),
+        direct_production_trace_number(state.cumulative_sublimation_kg_m2),
+        direct_production_trace_number(state.cumulative_melt_kg_m2),
+        direct_production_trace_number(state.cumulative_unresolved_liquid_kg_m2),
+        direct_production_trace_number(state.cumulative_complete_energy_j_m2),
+        direct_production_trace_number(state.cumulative_cold_energy_change_j_m2),
+        direct_production_trace_number(state.cumulative_terminal_unallocated_energy_j_m2),
+    )
+}
+
+#[allow(clippy::format_in_format_args)]
 fn direct_snow_trace_diagnostic_suffix(
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     verbose_diagnostics: &openwepp_hillslope_orchestrator::DirectSnowVerboseDiagnostics,
@@ -73,6 +106,9 @@ fn direct_snow_trace_diagnostic_suffix(
     evaluation: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
     reconciliation: Option<
         &openwepp_hillslope_orchestrator::DirectSnowStage3OperatorReconciliation,
+    >,
+    persistent: Option<
+        &openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult,
     >,
 ) -> String {
     let base = format!(
@@ -89,16 +125,88 @@ fn direct_snow_trace_diagnostic_suffix(
         ),
         direct_snow_trace_thermal_fields(thermal)
     );
+    let persistent = persistent.map(|value| {
+        let start_state = direct_snow_trace_persistent_state(&value.start_state);
+        let end_state = direct_snow_trace_persistent_state(&value.state);
+        let layers = value
+            .state
+            .layers
+            .iter()
+            .map(|layer| format!(
+                "{{\"mass_swe_m\":{},\"thickness_m\":{},\"density_kg_m3\":{},\"settle_day_count\":{},\"temperature_c\":{},\"liquid_water_m\":{},\"cold_content_j_m2\":{},\"refrozen_liquid_m\":{}}}",
+                direct_production_trace_number(layer.mass_swe_m),
+                direct_production_trace_number(layer.thickness_m),
+                direct_production_trace_number(layer.density_kg_m3),
+                direct_production_trace_number(layer.settle_day_count),
+                direct_production_trace_number(layer.temperature_c),
+                direct_production_trace_number(layer.liquid_water_m),
+                direct_production_trace_number(layer.cold_content_j_m2),
+                direct_production_trace_number(layer.refrozen_liquid_m),
+            ))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+        "\"stage3_persistent_start_state\":{},\"stage3_persistent_end_state\":{},{}",
+        start_state,
+        end_state,
+        format!(
+        "\"stage3_persistent_state_schema_version\":{},\"stage3_persistent_lane_id\":{},\"stage3_persistent_next_interval_index\":{},\"stage3_persistent_start_state_fingerprint\":\"{:016x}\",\"stage3_persistent_end_state_fingerprint\":\"{:016x}\",\"stage3_persistent_state_layers\":[{}],\"stage3_persistent_initial_ice_kg_m2\":{},\"stage3_persistent_initial_retained_liquid_kg_m2\":{},\"stage3_persistent_cumulative_snowfall_kg_m2\":{},\"stage3_persistent_cumulative_external_liquid_kg_m2\":{},\"stage3_persistent_cumulative_deposition_kg_m2\":{},\"stage3_persistent_cumulative_sublimation_kg_m2\":{},\"stage3_persistent_cumulative_melt_kg_m2\":{},\"stage3_persistent_cumulative_unresolved_liquid_kg_m2\":{},\"stage3_persistent_cumulative_complete_energy_j_m2\":{},\"stage3_persistent_cumulative_terminal_unallocated_energy_j_m2\":{},\"stage3_persistent_lifecycle\":\"{}\",\"stage3_persistent_start_ice_kg_m2\":{},\"stage3_persistent_start_retained_liquid_kg_m2\":{},\"stage3_persistent_snowfall_kg_m2\":{},\"stage3_persistent_external_liquid_kg_m2\":{},\"stage3_persistent_deposition_kg_m2\":{},\"stage3_persistent_sublimation_kg_m2\":{},\"stage3_persistent_melt_kg_m2\":{},\"stage3_persistent_end_ice_kg_m2\":{},\"stage3_persistent_end_retained_liquid_kg_m2\":{},\"stage3_persistent_retained_liquid_censored_loss_kg_m2\":{},\"stage3_persistent_ice_mass_closure_residual_kg_m2\":{},\"stage3_persistent_total_water_closure_residual_kg_m2\":{},\"stage3_persistent_unresolved_liquid_kg_m2\":{},\"stage3_persistent_terminal_unallocated_energy_j_m2\":{}",
+        value.state.schema_version,
+        value.state.lane_id,
+        value.state.next_interval_index,
+        value.start_state_fingerprint,
+        value.end_state_fingerprint,
+        layers,
+        direct_production_trace_number(value.state.initial_ice_kg_m2),
+        direct_production_trace_number(value.state.initial_retained_liquid_kg_m2),
+        direct_production_trace_number(value.state.cumulative_snowfall_kg_m2),
+        direct_production_trace_number(value.state.cumulative_external_liquid_kg_m2),
+        direct_production_trace_number(value.state.cumulative_deposition_kg_m2),
+        direct_production_trace_number(value.state.cumulative_sublimation_kg_m2),
+        direct_production_trace_number(value.state.cumulative_melt_kg_m2),
+        direct_production_trace_number(value.state.cumulative_unresolved_liquid_kg_m2),
+        direct_production_trace_number(value.state.cumulative_complete_energy_j_m2),
+        direct_production_trace_number(
+            value.state.cumulative_terminal_unallocated_energy_j_m2,
+        ),
+        value.lifecycle,
+        direct_production_trace_number(value.start_ice_kg_m2),
+        direct_production_trace_number(value.start_retained_liquid_kg_m2),
+        direct_production_trace_number(value.snowfall_kg_m2),
+        direct_production_trace_number(value.external_liquid_kg_m2),
+        direct_production_trace_number(value.deposition_kg_m2),
+        direct_production_trace_number(value.sublimation_kg_m2),
+        direct_production_trace_number(value.melt_kg_m2),
+        direct_production_trace_number(value.end_ice_kg_m2),
+        direct_production_trace_number(value.end_retained_liquid_kg_m2),
+        direct_production_trace_number(value.retained_liquid_censored_loss_kg_m2),
+        direct_production_trace_number(value.ice_mass_closure_residual_kg_m2),
+        direct_production_trace_number(value.total_water_closure_residual_kg_m2),
+        direct_production_trace_number(value.unresolved_liquid_kg_m2),
+        direct_production_trace_number(value.terminal_unallocated_energy_j_m2),
+    ))
+    });
     match (
         evaluation.map(direct_snow_trace_stage3_evaluation_fields),
         reconciliation.map(direct_snow_trace_stage3_reconciliation_fields),
+        persistent,
     ) {
-        (Some(evaluation), Some(reconciliation)) => {
+        (Some(evaluation), Some(reconciliation), Some(persistent)) => {
+            format!("{base},{evaluation},{reconciliation},{persistent}}}")
+        }
+        (Some(evaluation), None, Some(persistent)) => {
+            format!("{base},{evaluation},{persistent}}}")
+        }
+        (None, Some(reconciliation), Some(persistent)) => {
+            format!("{base},{reconciliation},{persistent}}}")
+        }
+        (None, None, Some(persistent)) => format!("{base},{persistent}}}"),
+        (Some(evaluation), Some(reconciliation), None) => {
             format!("{base},{evaluation},{reconciliation}}}")
         }
-        (Some(evaluation), None) => format!("{base},{evaluation}}}"),
-        (None, None) => format!("{base}}}"),
-        (None, Some(reconciliation)) => format!("{base},{reconciliation}}}"),
+        (Some(evaluation), None, None) => format!("{base},{evaluation}}}"),
+        (None, None, None) => format!("{base}}}"),
+        (None, Some(reconciliation), None) => format!("{base},{reconciliation}}}"),
     }
 }
 

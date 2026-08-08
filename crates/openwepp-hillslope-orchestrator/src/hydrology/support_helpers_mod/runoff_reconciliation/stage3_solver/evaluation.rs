@@ -26,6 +26,32 @@ impl Wb11HydrologyKernel {
             > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
         let mut prepared_active_layer_count = None;
         for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
+            if tag.operator == SnowStage3EvaluationOperator::PersistentAccumulationShadowV1
+                && hourly.snowfall_m > 0.0
+            {
+                let mass_swe_m = hourly.snowfall_m * 0.1;
+                let density_kg_m3 = inputs.newsnw_kg_m3;
+                // The existing carrier applies snowfall advection once during
+                // this hour. Insert at the 0 C reference state so subfreezing
+                // hydrometeor enthalpy is not also preloaded as cold content.
+                let temperature_c = 0.0;
+                let cold_content_j_m2 = 0.0;
+                layers.insert(
+                    0,
+                    DirectSnowLayerState {
+                        mass_swe_m,
+                        thickness_m: mass_swe_m * STAGE3_RHO_WATER_KG_M3 / density_kg_m3,
+                        density_kg_m3,
+                        settle_day_count: 0.0,
+                        temperature_c,
+                        liquid_water_m: 0.0,
+                        cold_content_j_m2,
+                        refrozen_liquid_m: 0.0,
+                    },
+                );
+                cold_content_by_layer.insert(0, cold_content_j_m2);
+                prepared_active_layer_count = None;
+            }
             let mut elapsed_seconds = 0.0;
             let mut substep_index = 0;
             while elapsed_seconds < STAGE3_SECONDS_PER_HOUR && !layers.is_empty() {
@@ -284,6 +310,15 @@ impl Wb11HydrologyKernel {
                     };
             }
         }
+        for (layer, cold_content_j_m2) in layers
+            .iter_mut()
+            .zip(cold_content_by_layer.iter().copied())
+        {
+            layer.cold_content_j_m2 = cold_content_j_m2;
+            layer.temperature_c =
+                Self::stage3_temperature_from_cold_content_values(layer.mass_swe_m, cold_content_j_m2);
+        }
+        summary.final_layers = layers;
         Ok(summary)
     }
 
@@ -543,11 +578,11 @@ impl Wb11HydrologyKernel {
         summary.non_formulation_fingerprint = combined;
     }
 
-    const fn stage3_fnv1a_start() -> u64 {
+    pub(super) const fn stage3_fnv1a_start() -> u64 {
         0xcbf2_9ce4_8422_2325
     }
 
-    fn stage3_fnv1a_u64(mut hash: u64, value: u64) -> u64 {
+    pub(super) fn stage3_fnv1a_u64(mut hash: u64, value: u64) -> u64 {
         for byte in value.to_le_bytes() {
             hash ^= u64::from(byte);
             hash = hash.wrapping_mul(0x0000_0100_0000_01b3);

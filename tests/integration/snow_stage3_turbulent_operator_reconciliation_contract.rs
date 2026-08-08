@@ -246,7 +246,7 @@ fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 133",
+        "contract_version: 134",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -295,12 +295,7 @@ fn v130_retains_production_and_claim_holds() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    for required in [
-        "v133",
-        "exact S/F/Q forcing hash",
-        "schema-v4 evidence to aggregate custody",
-        "CoE ownership",
-    ] {
+    for required in ["v134", "schema-v7 evidence", "production", "cutover"] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
 }
@@ -481,7 +476,7 @@ fn inactive_operator_lifecycle_returns_before_hourly_forcing_acquisition() {
         .find("if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?")
         .expect("inactive guard");
     let inactive_return = function
-        .find("return Ok(inactive_direct_snow_evaluation_result(")
+        .find("return Ok(DirectProductionSnowPartitionResult {")
         .expect("inactive return");
     let forcing_acquisition = function
         .find(".direct_winter_hourly_forcing(")
@@ -490,7 +485,7 @@ fn inactive_operator_lifecycle_returns_before_hourly_forcing_acquisition() {
     assert!(inactive_guard < inactive_return);
     assert!(inactive_return < forcing_acquisition);
     assert!(function.contains("self.snow_stage3_evaluation_operator,"));
-    assert!(!function.contains("&& self.snow_stage3_evaluation_operator.is_none()"));
+    assert!(function.contains("&& !persistent_requested"));
 }
 
 #[test]
@@ -560,7 +555,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
     assert_v131_normative_sections(&snow, &energy);
 
     for required in [
-        "contract_version: 133",
+        "contract_version: 134",
         "INV-SNOWFREEZE-098",
         "OBL-SNOWFREEZE-P-071",
         "OBL-SNOWFREEZE-C-013",
@@ -728,6 +723,10 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(energy.contains("makes no production correction"));
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
-    assert!(index.contains("v133 binds direct retained-value custody"));
+    assert!(
+        index.contains(
+            "v134 admits only default-off evaluator-owned persistent continuity mechanics"
+        )
+    );
     assert!(index.contains("v11 recovers direct retained-value custody"));
 }

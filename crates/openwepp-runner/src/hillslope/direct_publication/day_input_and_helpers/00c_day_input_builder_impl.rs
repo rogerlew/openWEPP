@@ -140,6 +140,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             .collect::<Vec<_>>();
         let forest_canopy_state = vec![None; lane_authority.len()];
         let canopy_research_pending = vec![None; lane_authority.len()];
+        let persistent_enabled = lane_authority.iter().any(|authority| {
+            authority.snow_frost.snow_stage3_evaluation_operator
+                == Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
+        });
+        let persistent_lane_count = lane_authority.len();
         Ok(Self {
             climate_request,
             climate_span,
@@ -147,6 +152,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             residue_cover_state: std::cell::RefCell::new(residue_cover_state),
             forest_canopy_state: std::cell::RefCell::new(forest_canopy_state),
             canopy_research_pending: std::cell::RefCell::new(canopy_research_pending),
+            snow_stage3_persistent_state: persistent_enabled
+                .then(|| std::cell::RefCell::new(vec![None; persistent_lane_count])),
             winter_hourly_geometry: seed_authority.winter_hourly_geometry,
             sturm_climate_class,
         })
@@ -202,6 +209,9 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
         let snow_diagnostic_capture =
             DirectSnowDiagnosticCaptureRequest::resolve(day_index, lane_index);
+        let persistent_state = self.snow_stage3_persistent_state.as_ref().and_then(|states| {
+            states.borrow().get(lane_index).cloned().flatten()
+        });
         let snow_result = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
@@ -213,9 +223,22 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             sturm_day_of_year,
             self.winter_hourly_geometry,
             snow_diagnostic_capture.capture,
+            lane_index,
+            u64::try_from(day_index).map_err(|_| direct_production_executor_blocked(
+                "day index cannot be represented by persistent snow shadow",
+            ))?,
+            persistent_state.as_ref(),
         )?;
-        let snow_reconciliation = snow_result.reconciliation;
-        let snow_evaluation = snow_result.result;
+        let persistent_day = snow_result.persistent;
+        let persistent_next_state = persistent_day
+            .as_ref()
+            .map(|persistent| persistent.state.clone());
+        let mut snow_reconciliation = snow_result.standard.reconciliation;
+        let mut snow_evaluation = snow_result.standard.result;
+        if let Some(persistent) = persistent_day.as_ref() {
+            snow_evaluation.evaluation = Some(persistent.evaluation);
+            snow_reconciliation = Some(persistent.reconciliation.clone());
+        }
         let snow_liquid = snow_evaluation.authoritative;
         let snow_trace_row = DirectSnowTraceRowContext {
             day_index,
@@ -227,11 +250,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_liquid: &snow_liquid,
             stage3_evaluation: snow_evaluation.evaluation.as_ref(),
             stage3_reconciliation: snow_reconciliation.as_deref(),
+            stage3_persistent: persistent_day.as_ref(),
         };
-        maybe_write_r7h_direct_production_snow_trace(
-            &snow_diagnostic_capture,
-            &snow_trace_row,
-        )?;
         let frost_context = authority.snow_frost.frost_day_context(
             self.climate_request,
             day_index,
@@ -421,6 +441,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         apply_direct_production_frost_context(&mut day_input, frost_context);
         day_input.frost_runtime_carry =
             direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost);
+        maybe_write_r7h_direct_production_snow_trace(
+            &snow_diagnostic_capture,
+            &snow_trace_row,
+        )?;
+        if let (Some(states), Some(next_state)) =
+            (&self.snow_stage3_persistent_state, persistent_next_state)
+        {
+            states.borrow_mut()[lane_index] = Some(next_state);
+        }
         Ok(day_input)
     }
 
@@ -1161,12 +1190,17 @@ fn r7h_direct_production_snow_trace_line(
         snow_liquid,
         stage3_evaluation,
         stage3_reconciliation,
+        stage3_persistent,
     } = *context;
     let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
     let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
-    let schema = direct_snow_trace_schema(stage3_evaluation, stage3_reconciliation);
+    let schema = direct_snow_trace_schema(
+        stage3_evaluation,
+        stage3_reconciliation,
+        stage3_persistent,
+    );
     let line = format!(
         "{{\"schema\":\"{schema}\",\
 \"day_index\":{day_index},\
@@ -1264,6 +1298,7 @@ fn r7h_direct_production_snow_trace_line(
             &thermal,
             stage3_evaluation,
             stage3_reconciliation,
+            stage3_persistent,
         )
     )
 }
@@ -1741,11 +1776,11 @@ mod stage3_trace_field_tests {
             "0000000000000044"
         );
         assert_eq!(
-            direct_snow_trace_schema(None, None),
+            direct_snow_trace_schema(None, None, None),
             "openwepp-r7h-direct-production-snow-trace-v4"
         );
         assert_eq!(
-            direct_snow_trace_schema(Some(&evaluation), None),
+            direct_snow_trace_schema(Some(&evaluation), None, None),
             "openwepp-r7h-direct-production-snow-trace-v5"
         );
     }
@@ -2308,11 +2343,14 @@ fn snow_stage3_evaluation_operator_from_values(
             "sequential_resolved_shadow_v1" => {
                 Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
             }
+            "persistent_accumulation_shadow_v1" => {
+                Some(SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
+            }
             observed => {
                 return Err(HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "direct_production_snow_stage3_evaluation_operator",
                     detail: format!(
-                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be disabled, same_state_paired_carrier_v1, sequential_resolved_shadow_v1, or empty default, observed {observed}"
+                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be disabled, same_state_paired_carrier_v1, sequential_resolved_shadow_v1, persistent_accumulation_shadow_v1, or empty default, observed {observed}"
                     ),
                 });
             }
@@ -2373,6 +2411,14 @@ mod stage3_evaluation_operator_tests {
             )
             .expect("typed paired request"),
             Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)
+        );
+        assert_eq!(
+            snow_stage3_evaluation_operator_from_values(
+                Some("persistent_accumulation_shadow_v1"),
+                None,
+            )
+            .expect("typed persistent request"),
+            Some(SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
         );
     }
 

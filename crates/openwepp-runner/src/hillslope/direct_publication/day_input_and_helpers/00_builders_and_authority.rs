@@ -13,8 +13,16 @@ struct DirectProductionDayInputBuilder<'a> {
     forest_canopy_state:
         std::cell::RefCell<Vec<Option<openwepp_plant_phenology::ForestCanopyState>>>,
     canopy_research_pending: std::cell::RefCell<Vec<Option<NativeCanopyBuilderTrace>>>,
+    snow_stage3_persistent_state: Option<std::cell::RefCell<Vec<Option<
+        openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState,
+    >>>>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
+}
+
+struct DirectProductionSnowPartitionResult {
+    standard: openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult,
+    persistent: Option<openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

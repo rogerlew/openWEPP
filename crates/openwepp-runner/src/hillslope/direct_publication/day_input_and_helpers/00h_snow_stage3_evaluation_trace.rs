@@ -388,6 +388,7 @@ mod stage3_evaluation_real_consumer_tests {
             snow_liquid: &partition,
             stage3_evaluation: evaluation.as_ref(),
             stage3_reconciliation: reconciliation.as_deref(),
+            stage3_persistent: None,
         };
         let verbose = partition
             .verbose_diagnostics
@@ -431,6 +432,345 @@ mod stage3_evaluation_real_consumer_tests {
             hash ^= u64::from(*byte);
             hash.wrapping_mul(0x0000_0100_0000_01b3)
         })
+    }
+
+    fn persistent_state_fingerprint(value: &serde_json::Value) -> u64 {
+        fn add(mut hash: u64, value: u64) -> u64 {
+            for byte in value.to_le_bytes() {
+                hash ^= u64::from(byte);
+                hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+            }
+            hash
+        }
+        let mut hash = 0xcbf2_9ce4_8422_2325;
+        for integer in ["schema_version", "lane_id", "next_interval_index"] {
+            hash = add(hash, value[integer].as_u64().expect("integer state field"));
+        }
+        for field in [
+            "cumulative_snowfall_kg_m2",
+            "cumulative_external_liquid_kg_m2",
+            "cumulative_deposition_kg_m2",
+            "cumulative_sublimation_kg_m2",
+            "cumulative_melt_kg_m2",
+            "cumulative_unresolved_liquid_kg_m2",
+            "initial_ice_kg_m2",
+            "initial_retained_liquid_kg_m2",
+            "detached_retained_liquid_kg_m2",
+            "cumulative_complete_energy_j_m2",
+            "cumulative_cold_energy_change_j_m2",
+            "cumulative_terminal_unallocated_energy_j_m2",
+        ] {
+            let number = number(value, field);
+            hash = add(hash, if number == 0.0 { 0 } else { number.to_bits() });
+        }
+        for layer in value["layers"].as_array().expect("state layers") {
+            for field in [
+                "mass_swe_m", "thickness_m", "density_kg_m3", "settle_day_count",
+                "temperature_c", "liquid_water_m", "cold_content_j_m2", "refrozen_liquid_m",
+            ] {
+                let number = number(layer, field);
+                hash = add(hash, if number == 0.0 { 0 } else { number.to_bits() });
+            }
+        }
+        hash
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn consume_persistent_v7(value: &serde_json::Value) -> Result<(), &'static str> {
+        if value["schema"] != "openwepp-r7h-direct-production-snow-trace-v7" {
+            return Err("unknown trace schema");
+        }
+        if value["stage3_evaluation_operator_id"] != "persistent_accumulation_shadow_v1" {
+            return Err("adjacent evaluation operator");
+        }
+        for (field, expected) in [
+            ("stage3_evaluation_source_snapshot_id", "pre_interval_authoritative_initial_snapshot_v1"),
+            ("stage3_evaluation_support_id", "stage3_persistent_daily_24_hour_support_v1"),
+            ("stage3_evaluation_cadence_id", "stage3_dynamic_substep_with_hourly_forcing_v1"),
+            ("stage3_evaluation_carrier_id", "stage3_complete_carrier_v1"),
+            ("stage3_evaluation_claim_class", "persistent_state_continuity_experiment"),
+            ("stage3_evaluation_unresolved_boundaries_id", "snow_ground_cross_day_terminal_recipient_unresolved_v1"),
+        ] {
+            if value[field] != expected {
+                return Err("persistent evaluation tag mismatch");
+            }
+        }
+        if value["stage3_evaluation_arm_ids"]
+            != serde_json::json!(["stage3_complete_carrier_v1", "not_applicable"])
+            || value["stage3_evaluation_arm_count"] != 1
+            || !value["stage3_evaluation_pairing_id"].is_null()
+        {
+            return Err("persistent evaluation arm mismatch");
+        }
+        let start = &value["stage3_persistent_start_state"];
+        let end = &value["stage3_persistent_end_state"];
+        if start["schema_version"] != 1 || end["schema_version"] != 1 {
+            return Err("unknown state schema");
+        }
+        if end["next_interval_index"].as_u64()
+            != start["next_interval_index"]
+                .as_u64()
+                .and_then(|value| value.checked_add(1))
+        {
+            return Err("out-of-order state");
+        }
+        if value["stage3_persistent_lane_id"] != start["lane_id"]
+            || start["lane_id"] != end["lane_id"]
+            || value["stage3_persistent_start_state_fingerprint"] != start["fingerprint"]
+            || value["stage3_persistent_end_state_fingerprint"] != end["fingerprint"]
+        {
+            return Err("top-level state alias mismatch");
+        }
+        if value["stage3_persistent_next_interval_index"] != end["next_interval_index"] {
+            return Err("top-level interval alias mismatch");
+        }
+        for field in [
+            "snowfall_kg_m2",
+            "external_liquid_kg_m2",
+            "deposition_kg_m2",
+            "sublimation_kg_m2",
+            "melt_kg_m2",
+            "unresolved_liquid_kg_m2",
+        ] {
+            let top = format!("stage3_persistent_cumulative_{field}");
+            let nested = format!("cumulative_{field}");
+            if value[&top] != end[&nested] {
+                return Err("top-level cumulative alias mismatch");
+            }
+        }
+        for (cumulative, daily) in [
+            ("cumulative_snowfall_kg_m2", "stage3_persistent_snowfall_kg_m2"),
+            ("cumulative_external_liquid_kg_m2", "stage3_persistent_external_liquid_kg_m2"),
+            ("cumulative_deposition_kg_m2", "stage3_persistent_deposition_kg_m2"),
+            ("cumulative_sublimation_kg_m2", "stage3_persistent_sublimation_kg_m2"),
+            ("cumulative_melt_kg_m2", "stage3_persistent_melt_kg_m2"),
+            ("cumulative_unresolved_liquid_kg_m2", "stage3_persistent_unresolved_liquid_kg_m2"),
+        ] {
+            let end_value = number(end, cumulative);
+            let start_value = number(start, cumulative);
+            let daily_value = number(value, daily);
+            let tolerance =
+                1.0e-12_f64.max(1.0e-12 * (end_value.abs() + start_value.abs() + daily_value.abs()));
+            if (end_value - start_value - daily_value).abs() > tolerance
+            {
+                return Err("daily cumulative delta mismatch");
+            }
+        }
+        let unresolved = number(value, "stage3_persistent_unresolved_liquid_kg_m2");
+        let external = number(value, "stage3_persistent_external_liquid_kg_m2");
+        let melt_liquid = number(value, "stage3_persistent_melt_kg_m2");
+        let retained_loss =
+            number(value, "stage3_persistent_retained_liquid_censored_loss_kg_m2");
+        if (unresolved - external - melt_liquid - retained_loss).abs()
+            > 1.0e-12_f64.max(
+                1.0e-12
+                    * (unresolved.abs()
+                        + external.abs()
+                        + melt_liquid.abs()
+                        + retained_loss.abs()),
+            )
+        {
+            return Err("unresolved liquid decomposition mismatch");
+        }
+        let lifecycle = match (
+            number(value, "stage3_persistent_start_ice_kg_m2") > 0.0,
+            number(value, "stage3_persistent_end_ice_kg_m2") > 0.0,
+        ) {
+            (false, false) => "dormant",
+            (false, true) => "reappeared",
+            (true, false) => "disappeared",
+            (true, true) => "active",
+        };
+        if value["stage3_persistent_lifecycle"] != lifecycle {
+            return Err("lifecycle mismatch");
+        }
+        for (state, ice_field, liquid_field) in [
+            (start, "stage3_persistent_start_ice_kg_m2", "stage3_persistent_start_retained_liquid_kg_m2"),
+            (end, "stage3_persistent_end_ice_kg_m2", "stage3_persistent_end_retained_liquid_kg_m2"),
+        ] {
+            let layers = state["layers"].as_array().ok_or("missing state layers")?;
+            let ice = layers.iter().map(|layer| number(layer, "mass_swe_m") * 1_000.0).sum::<f64>();
+            let liquid = layers.iter().map(|layer| number(layer, "liquid_water_m") * 1_000.0).sum::<f64>()
+                + number(state, "detached_retained_liquid_kg_m2");
+            if (ice - number(value, ice_field)).abs() > 1.0e-12_f64.max(1.0e-12 * ice.abs())
+                || (liquid - number(value, liquid_field)).abs()
+                    > 1.0e-12_f64.max(1.0e-12 * liquid.abs())
+            {
+                return Err("state endpoint alias mismatch");
+            }
+        }
+        for state in [start, end] {
+            let expected = format!("{:016x}", persistent_state_fingerprint(state));
+            if state["fingerprint"].as_str() != Some(expected.as_str()) {
+                return Err("state fingerprint mismatch");
+            }
+        }
+        let mass_scale = [
+            "stage3_persistent_start_ice_kg_m2",
+            "stage3_persistent_start_retained_liquid_kg_m2",
+            "stage3_persistent_snowfall_kg_m2",
+            "stage3_persistent_external_liquid_kg_m2",
+            "stage3_persistent_deposition_kg_m2",
+            "stage3_persistent_sublimation_kg_m2",
+            "stage3_persistent_melt_kg_m2",
+            "stage3_persistent_end_ice_kg_m2",
+            "stage3_persistent_end_retained_liquid_kg_m2",
+            "stage3_persistent_unresolved_liquid_kg_m2",
+        ]
+        .iter()
+        .map(|field| number(value, field).abs())
+        .sum::<f64>();
+        let mass_tolerance = 1.0e-12_f64.max(1.0e-12 * mass_scale);
+        let ice_residual = number(value, "stage3_persistent_start_ice_kg_m2")
+            + number(value, "stage3_persistent_snowfall_kg_m2")
+            + number(value, "stage3_persistent_deposition_kg_m2")
+            - number(value, "stage3_persistent_sublimation_kg_m2")
+            - number(value, "stage3_persistent_melt_kg_m2")
+            - number(value, "stage3_persistent_end_ice_kg_m2");
+        let water_residual = number(value, "stage3_persistent_start_ice_kg_m2")
+            + number(value, "stage3_persistent_start_retained_liquid_kg_m2")
+            + number(value, "stage3_persistent_snowfall_kg_m2")
+            + number(value, "stage3_persistent_external_liquid_kg_m2")
+            + number(value, "stage3_persistent_deposition_kg_m2")
+            - number(value, "stage3_persistent_sublimation_kg_m2")
+            - number(value, "stage3_persistent_unresolved_liquid_kg_m2")
+            - number(value, "stage3_persistent_end_ice_kg_m2")
+            - number(value, "stage3_persistent_end_retained_liquid_kg_m2");
+        if ice_residual.abs() > mass_tolerance
+            || water_residual.abs() > mass_tolerance
+            || number(value, "stage3_persistent_ice_mass_closure_residual_kg_m2").abs()
+                > mass_tolerance
+            || number(value, "stage3_persistent_total_water_closure_residual_kg_m2").abs()
+                > mass_tolerance
+        {
+            return Err("producer residual rejected");
+        }
+        let end_ice = end["layers"]
+            .as_array()
+            .ok_or("missing end layers")?
+            .iter()
+            .map(|layer| number(layer, "mass_swe_m") * 1_000.0)
+            .sum::<f64>();
+        let end_liquid = end["layers"]
+            .as_array()
+            .ok_or("missing end layers")?
+            .iter()
+            .map(|layer| number(layer, "liquid_water_m") * 1_000.0)
+            .sum::<f64>()
+            + number(end, "detached_retained_liquid_kg_m2");
+        let cumulative_water_residual = number(end, "initial_ice_kg_m2")
+            + number(end, "initial_retained_liquid_kg_m2")
+            + number(end, "cumulative_snowfall_kg_m2")
+            + number(end, "cumulative_external_liquid_kg_m2")
+            + number(end, "cumulative_deposition_kg_m2")
+            - number(end, "cumulative_sublimation_kg_m2")
+            - number(end, "cumulative_unresolved_liquid_kg_m2")
+            - end_ice
+            - end_liquid;
+        let cumulative_mass_scale = [
+            "initial_ice_kg_m2",
+            "initial_retained_liquid_kg_m2",
+            "cumulative_snowfall_kg_m2",
+            "cumulative_external_liquid_kg_m2",
+            "cumulative_deposition_kg_m2",
+            "cumulative_sublimation_kg_m2",
+            "cumulative_unresolved_liquid_kg_m2",
+        ]
+        .iter()
+        .map(|field| number(end, field).abs())
+        .sum::<f64>()
+            + end_ice.abs()
+            + end_liquid.abs();
+        if cumulative_water_residual.abs()
+            > 1.0e-12_f64.max(1.0e-12 * cumulative_mass_scale)
+        {
+            return Err("cumulative water residual rejected");
+        }
+        let complete = number(end, "cumulative_complete_energy_j_m2")
+            - number(start, "cumulative_complete_energy_j_m2");
+        let cold = number(end, "cumulative_cold_energy_change_j_m2")
+            - number(start, "cumulative_cold_energy_change_j_m2");
+        let melt = number(end, "cumulative_melt_kg_m2")
+            - number(start, "cumulative_melt_kg_m2");
+        let terminal = number(end, "cumulative_terminal_unallocated_energy_j_m2")
+            - number(start, "cumulative_terminal_unallocated_energy_j_m2");
+        let energy_residual = complete - cold - 333_600.0 * melt - terminal;
+        let energy_scale = complete.abs() + cold.abs() + (333_600.0 * melt).abs() + terminal.abs();
+        if energy_residual.abs() > 1.0e-6_f64.max(1.0e-12 * energy_scale) {
+            return Err("daily energy residual rejected");
+        }
+        for (hourly, expected, absolute_floor) in [
+            ("stage3_evaluation_hourly_complete_energy_j_m2", complete, 1.0e-6_f64),
+            ("stage3_evaluation_hourly_cold_energy_change_j_m2", cold, 1.0e-6_f64),
+            ("stage3_evaluation_hourly_melt_kg_m2", melt, 1.0e-12_f64),
+            ("stage3_evaluation_hourly_terminal_unallocated_j_m2", terminal, 1.0e-6_f64),
+        ] {
+            let hourly_values = numbers(value, hourly);
+            let sum = hourly_values.iter().sum::<f64>();
+            let sum_abs = hourly_values.iter().map(|operand| operand.abs()).sum::<f64>();
+            if (sum - expected).abs()
+                > absolute_floor.max(1.0e-12 * (sum_abs + expected.abs()))
+            {
+                return Err("hourly primitive reconstruction mismatch");
+            }
+        }
+        let evaluated_seconds = numbers(value, "stage3_evaluation_hourly_evaluated_seconds")
+            .iter()
+            .sum::<f64>();
+        if (evaluated_seconds - number(value, "stage3_evaluation_evaluated_seconds")).abs()
+            > 1.0e-9
+        {
+            return Err("support reconstruction mismatch");
+        }
+        let hourly_requested = numbers(value, "stage3_evaluation_hourly_requested_seconds");
+        let requested_seconds = hourly_requested.iter().sum::<f64>();
+        let requested_total = number(value, "stage3_evaluation_requested_seconds");
+        let coverage = number(value, "stage3_evaluation_coverage_fraction");
+        let hourly_evaluated = numbers(value, "stage3_evaluation_hourly_evaluated_seconds");
+        if (requested_total - 86_400.0).abs() > 1.0e-9
+            || hourly_requested.iter().any(|seconds| (*seconds - 3_600.0).abs() > 1.0e-9)
+            || hourly_evaluated
+                .iter()
+                .zip(&hourly_requested)
+                .any(|(evaluated, requested)| evaluated < &0.0 || evaluated > requested)
+            || (requested_seconds - requested_total).abs() > 1.0e-9
+            || (coverage - evaluated_seconds / requested_total).abs() > 1.0e-12
+        {
+            return Err("requested support reconstruction mismatch");
+        }
+        let evaluated_flags = value["stage3_evaluation_hourly_complete_carrier_evaluated"]
+            .as_array()
+            .ok_or("missing evaluated flags")?;
+        if evaluated_flags.iter().zip(hourly_evaluated).any(|(flag, seconds)| {
+            flag.as_bool() != Some(seconds > 0.0)
+        }) {
+            return Err("hourly support flag mismatch");
+        }
+        Ok(())
+    }
+
+    fn consume_persistent_v7_sequence(rows: &[serde_json::Value]) -> Result<(), &'static str> {
+        let mut prior_end = std::collections::BTreeMap::<u64, (String, u64)>::new();
+        for row in rows {
+            consume_persistent_v7(row)?;
+            let start = &row["stage3_persistent_start_state"];
+            let lane = start["lane_id"].as_u64().ok_or("missing start lane")?;
+            if let Some((fingerprint, interval)) = prior_end.get(&lane)
+                && (start["fingerprint"].as_str() != Some(fingerprint.as_str())
+                    || start["next_interval_index"].as_u64() != Some(*interval))
+            {
+                return Err("cross-row continuity mismatch");
+            }
+            let end = &row["stage3_persistent_end_state"];
+            prior_end.insert(
+                end["lane_id"].as_u64().ok_or("missing end lane")?,
+                (
+                end["fingerprint"].as_str().ok_or("missing end fingerprint")?.to_owned(),
+                end["next_interval_index"].as_u64().ok_or("missing end interval")?,
+                ),
+            );
+        }
+        Ok(())
     }
 
     #[test]
@@ -899,6 +1239,7 @@ mod stage3_evaluation_real_consumer_tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn inactive_day_emits_declared_v6_evaluation_without_mutating_authority() {
         let lane = DirectSnowLaneState::zero();
         let disabled = inactive_direct_snow_evaluation_result(
@@ -920,7 +1261,7 @@ mod stage3_evaluation_real_consumer_tests {
         assert!(disabled.result.evaluation.is_none());
         assert!(disabled.reconciliation.is_none());
         assert_eq!(
-            direct_snow_trace_schema(None, None),
+            direct_snow_trace_schema(None, None, None),
             "openwepp-r7h-direct-production-snow-trace-v4"
         );
 
@@ -934,8 +1275,279 @@ mod stage3_evaluation_real_consumer_tests {
             .as_deref()
             .expect("enabled inactive reconciliation");
         assert_eq!(
-            direct_snow_trace_schema(Some(evaluation), Some(reconciliation)),
+            direct_snow_trace_schema(Some(evaluation), Some(reconciliation), None),
             "openwepp-r7h-direct-production-snow-trace-v6"
+        );
+        let mut persistent_evaluation = *evaluation;
+        persistent_evaluation.operator = SnowStage3EvaluationOperator::PersistentAccumulationShadowV1;
+        persistent_evaluation.source_snapshot_id = "pre_interval_authoritative_initial_snapshot_v1";
+        persistent_evaluation.support_id = "stage3_persistent_daily_24_hour_support_v1";
+        persistent_evaluation.cadence_id = "stage3_dynamic_substep_with_hourly_forcing_v1";
+        persistent_evaluation.carrier_id = "stage3_complete_carrier_v1";
+        persistent_evaluation.claim_class = "persistent_state_continuity_experiment";
+        persistent_evaluation.pairing_id = None;
+        persistent_evaluation.arm_ids = ["stage3_complete_carrier_v1", "not_applicable"];
+        persistent_evaluation.arm_count = 1;
+        persistent_evaluation.requested_seconds = 86_400.0;
+        persistent_evaluation.evaluated_seconds = 3_600.0;
+        persistent_evaluation.coverage_fraction = 1.0 / 24.0;
+        persistent_evaluation.complete_arm_applicable = true;
+        persistent_evaluation.complete_arm_total_j_m2 = 583_819.0;
+        persistent_evaluation.complete_arm_cold_energy_change_j_m2 = 2.0;
+        persistent_evaluation.complete_arm_melt_kg_m2 = 1.75;
+        persistent_evaluation.complete_arm_terminal_unallocated_j_m2 = 17.0;
+        persistent_evaluation.complete_arm_terminal_unallocated_applicable = true;
+        persistent_evaluation.hourly[0].complete_energy_j_m2 = 583_819.0;
+        persistent_evaluation.hourly[0].cold_energy_change_j_m2 = 2.0;
+        persistent_evaluation.hourly[0].melt_kg_m2 = 1.75;
+        persistent_evaluation.hourly[0].unallocated_after_exhaustion_j_m2 = 17.0;
+        persistent_evaluation.hourly[0].requested_seconds = 3_600.0;
+        persistent_evaluation.hourly[0].evaluated_seconds = 3_600.0;
+        persistent_evaluation.hourly[0].complete_carrier_evaluated = true;
+        let persistent = openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult {
+            start_state: Box::new(
+                openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
+                    schema_version: 1,
+                    fingerprint: 0x5bcd_7547_4b65_2ea4,
+                    lane_id: 0,
+                    next_interval_index: 0,
+                    layers: Vec::new(),
+                    detached_retained_liquid_kg_m2: 0.0,
+                    initial_ice_kg_m2: 0.0,
+                    initial_retained_liquid_kg_m2: 0.0,
+                    cumulative_snowfall_kg_m2: 0.0,
+                    cumulative_external_liquid_kg_m2: 0.0,
+                    cumulative_deposition_kg_m2: 0.0,
+                    cumulative_sublimation_kg_m2: 0.0,
+                    cumulative_melt_kg_m2: 0.0,
+                    cumulative_unresolved_liquid_kg_m2: 0.0,
+                    cumulative_complete_energy_j_m2: 0.0,
+                    cumulative_cold_energy_change_j_m2: 0.0,
+                    cumulative_terminal_unallocated_energy_j_m2: 0.0,
+                },
+            ),
+            state: openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
+                schema_version: 1,
+                fingerprint: 0x7428_f289_6003_8068,
+                lane_id: 0,
+                next_interval_index: 1,
+                layers: Vec::new(),
+                detached_retained_liquid_kg_m2: 0.0,
+                initial_ice_kg_m2: 0.0,
+                initial_retained_liquid_kg_m2: 0.0,
+                cumulative_snowfall_kg_m2: 2.0,
+                cumulative_external_liquid_kg_m2: 3.0,
+                cumulative_deposition_kg_m2: 0.0,
+                cumulative_sublimation_kg_m2: 0.25,
+                cumulative_melt_kg_m2: 1.75,
+                cumulative_unresolved_liquid_kg_m2: 4.75,
+                cumulative_complete_energy_j_m2: 583_819.0,
+                cumulative_cold_energy_change_j_m2: 2.0,
+                cumulative_terminal_unallocated_energy_j_m2: 17.0,
+            },
+            evaluation: persistent_evaluation,
+            reconciliation: Box::new(reconciliation.clone()),
+            lifecycle: "dormant",
+            start_state_fingerprint: 0x5bcd_7547_4b65_2ea4,
+            end_state_fingerprint: 0x7428_f289_6003_8068,
+            start_ice_kg_m2: 0.0,
+            start_retained_liquid_kg_m2: 0.0,
+            snowfall_kg_m2: 2.0,
+            external_liquid_kg_m2: 3.0,
+            deposition_kg_m2: 0.0,
+            sublimation_kg_m2: 0.25,
+            melt_kg_m2: 1.75,
+            end_ice_kg_m2: 0.0,
+            end_retained_liquid_kg_m2: 0.0,
+            retained_liquid_censored_loss_kg_m2: 0.0,
+            ice_mass_closure_residual_kg_m2: 0.0,
+            total_water_closure_residual_kg_m2: 0.0,
+            unresolved_liquid_kg_m2: 4.75,
+            terminal_unallocated_energy_j_m2: 17.0,
+        };
+        assert_eq!(
+            direct_snow_trace_schema(
+                Some(&persistent.evaluation),
+                Some(reconciliation),
+                Some(&persistent),
+            ),
+            "openwepp-r7h-direct-production-snow-trace-v7"
+        );
+        let context = DirectSnowTraceRowContext {
+            day_index: 0,
+            lane_index: 0,
+            hyetograph_rainfall_m: 0.003,
+            snow_lane_state: &lane,
+            snow_melt_model: SnowMeltModel::LegacyCoe,
+            snow_phase_model: SnowPhasePartitionModel::LegacyRst,
+            snow_liquid: &enabled.result.authoritative,
+            stage3_evaluation: Some(&persistent.evaluation),
+            stage3_reconciliation: Some(reconciliation),
+            stage3_persistent: Some(&persistent),
+        };
+        let verbose = enabled
+            .result
+            .authoritative
+            .verbose_diagnostics
+            .as_deref()
+            .expect("verbose inactive diagnostics");
+        let row = r7h_direct_production_snow_trace_line(&context, verbose);
+        let consumed: serde_json::Value =
+            serde_json::from_str(row.trim()).expect("schema-v7 row is valid JSON");
+        assert_eq!(
+            consumed["schema"],
+            "openwepp-r7h-direct-production-snow-trace-v7"
+        );
+        assert_eq!(
+            format!(
+                "{:016x}",
+                persistent_state_fingerprint(&consumed["stage3_persistent_end_state"])
+            ),
+            consumed["stage3_persistent_end_state"]["fingerprint"]
+                .as_str()
+                .expect("end fingerprint"),
+        );
+        let mut unknown = consumed.clone();
+        unknown["schema"] = serde_json::json!("openwepp-r7h-direct-production-snow-trace-v8");
+        assert_eq!(consume_persistent_v7(&unknown), Err("unknown trace schema"));
+        let mut poisoned = consumed.clone();
+        poisoned["stage3_persistent_total_water_closure_residual_kg_m2"] =
+            serde_json::json!(1.0);
+        assert_eq!(consume_persistent_v7(&poisoned), Err("producer residual rejected"));
+        assert_eq!(
+            consume_persistent_v7_sequence(&[consumed.clone(), consumed.clone()]),
+            Err("cross-row continuity mismatch")
+        );
+        let mut continuation = consumed.clone();
+        continuation["stage3_persistent_start_state"] =
+            consumed["stage3_persistent_end_state"].clone();
+        continuation["stage3_persistent_end_state"] =
+            consumed["stage3_persistent_end_state"].clone();
+        continuation["stage3_persistent_end_state"]["next_interval_index"] =
+            serde_json::json!(2);
+        let continuation_end_fingerprint = format!(
+            "{:016x}",
+            persistent_state_fingerprint(&continuation["stage3_persistent_end_state"])
+        );
+        continuation["stage3_persistent_end_state"]["fingerprint"] =
+            serde_json::json!(continuation_end_fingerprint);
+        continuation["stage3_persistent_start_state_fingerprint"] =
+            consumed["stage3_persistent_end_state_fingerprint"].clone();
+        continuation["stage3_persistent_end_state_fingerprint"] =
+            continuation["stage3_persistent_end_state"]["fingerprint"].clone();
+        continuation["stage3_persistent_next_interval_index"] = serde_json::json!(2);
+        for field in [
+            "stage3_persistent_snowfall_kg_m2",
+            "stage3_persistent_external_liquid_kg_m2",
+            "stage3_persistent_deposition_kg_m2",
+            "stage3_persistent_sublimation_kg_m2",
+            "stage3_persistent_melt_kg_m2",
+            "stage3_persistent_unresolved_liquid_kg_m2",
+            "stage3_persistent_terminal_unallocated_energy_j_m2",
+        ] {
+            continuation[field] = serde_json::json!(0.0);
+        }
+        for field in [
+            "stage3_evaluation_complete_arm_total_j_m2",
+            "stage3_evaluation_complete_arm_cold_energy_change_j_m2",
+            "stage3_evaluation_complete_arm_melt_kg_m2",
+            "stage3_evaluation_complete_arm_terminal_unallocated_j_m2",
+        ] {
+            continuation[field] = serde_json::json!(0.0);
+        }
+        for field in [
+            "stage3_evaluation_hourly_complete_energy_j_m2",
+            "stage3_evaluation_hourly_cold_energy_change_j_m2",
+            "stage3_evaluation_hourly_melt_kg_m2",
+            "stage3_evaluation_hourly_terminal_unallocated_j_m2",
+        ] {
+            continuation[field] =
+                serde_json::Value::Array(vec![serde_json::json!(0.0); 24]);
+        }
+        let mut lane_one = consumed.clone();
+        lane_one["stage3_persistent_lane_id"] = serde_json::json!(1);
+        for state_field in ["stage3_persistent_start_state", "stage3_persistent_end_state"] {
+            lane_one[state_field]["lane_id"] = serde_json::json!(1);
+            let fingerprint = format!(
+                "{:016x}",
+                persistent_state_fingerprint(&lane_one[state_field])
+            );
+            lane_one[state_field]["fingerprint"] = serde_json::json!(fingerprint);
+        }
+        lane_one["stage3_persistent_start_state_fingerprint"] =
+            lane_one["stage3_persistent_start_state"]["fingerprint"].clone();
+        lane_one["stage3_persistent_end_state_fingerprint"] =
+            lane_one["stage3_persistent_end_state"]["fingerprint"].clone();
+        consume_persistent_v7_sequence(&[consumed.clone(), lane_one, continuation])
+            .expect("interleaved per-lane continuity");
+        assert_eq!(consumed["stage3_persistent_start_state_fingerprint"], "5bcd75474b652ea4");
+        assert_eq!(consumed["stage3_persistent_end_state_fingerprint"], "7428f28960038068");
+        assert!(consumed["stage3_persistent_state_layers"].as_array().is_some());
+        assert_eq!(consumed["stage3_persistent_start_state"]["next_interval_index"], 0);
+        assert_eq!(consumed["stage3_persistent_end_state"]["next_interval_index"], 1);
+        let end_state = &consumed["stage3_persistent_end_state"];
+        let start_state = &consumed["stage3_persistent_start_state"];
+        assert_eq!(start_state["schema_version"], 1);
+        assert_eq!(end_state["schema_version"], 1);
+        assert_eq!(
+            format!("{:016x}", persistent_state_fingerprint(start_state)),
+            start_state["fingerprint"].as_str().expect("start fingerprint"),
+        );
+        assert_eq!(
+            format!("{:016x}", persistent_state_fingerprint(end_state)),
+            end_state["fingerprint"].as_str().expect("end fingerprint"),
+        );
+        consume_persistent_v7(&consumed).expect("valid schema-v7 persistent row");
+        let cumulative_end = number(end_state, "initial_ice_kg_m2")
+            + number(end_state, "initial_retained_liquid_kg_m2")
+            + number(end_state, "cumulative_snowfall_kg_m2")
+            + number(end_state, "cumulative_external_liquid_kg_m2")
+            + number(end_state, "cumulative_deposition_kg_m2")
+            - number(end_state, "cumulative_sublimation_kg_m2")
+            - number(end_state, "cumulative_unresolved_liquid_kg_m2");
+        assert_close(cumulative_end, 0.0, "independent cumulative water closure");
+        assert_ne!(
+            number(end_state, "cumulative_complete_energy_j_m2").to_bits(),
+            number(end_state, "cumulative_terminal_unallocated_energy_j_m2").to_bits(),
+            "terminal energy must not alias complete carrier energy",
+        );
+        assert_close(
+            number(end_state, "cumulative_complete_energy_j_m2")
+                - number(end_state, "cumulative_cold_energy_change_j_m2")
+                - 333_600.0 * number(end_state, "cumulative_melt_kg_m2")
+                - number(end_state, "cumulative_terminal_unallocated_energy_j_m2"),
+            0.0,
+            "independent cumulative energy closure",
+        );
+        let reconstructed_end = number(&consumed, "stage3_persistent_start_ice_kg_m2")
+            + number(&consumed, "stage3_persistent_snowfall_kg_m2")
+            + number(&consumed, "stage3_persistent_deposition_kg_m2")
+            - number(&consumed, "stage3_persistent_sublimation_kg_m2")
+            - number(&consumed, "stage3_persistent_melt_kg_m2");
+        assert_close(
+            reconstructed_end,
+            number(&consumed, "stage3_persistent_end_ice_kg_m2"),
+            "independent schema-v7 daily ice reconstruction",
+        );
+        assert_close(
+            number(&consumed, "stage3_persistent_external_liquid_kg_m2")
+                + number(&consumed, "stage3_persistent_melt_kg_m2")
+                + number(
+                    &consumed,
+                    "stage3_persistent_retained_liquid_censored_loss_kg_m2",
+                ),
+            number(&consumed, "stage3_persistent_unresolved_liquid_kg_m2"),
+            "all liquid without a recipient is censored",
+        );
+        assert_ne!(
+            number(&consumed, "stage3_persistent_external_liquid_kg_m2").to_bits(),
+            number(&consumed, "stage3_persistent_snowfall_kg_m2").to_bits(),
+            "liquid and snowfall aliases must remain distinguishable",
+        );
+        assert_eq!(
+            number(&consumed, "stage3_persistent_cumulative_external_liquid_kg_m2")
+                .to_bits(),
+            3.0_f64.to_bits(),
         );
         assert_eq!(evaluation.requested_seconds.to_bits(), 86_400.0_f64.to_bits());
         assert_eq!(evaluation.evaluated_seconds.to_bits(), 0.0_f64.to_bits());

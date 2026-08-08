@@ -10,7 +10,7 @@ const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENE
 const SNOW: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 
 #[test]
-fn v11_v133_separate_source_adjusted_and_virtual_wind() {
+fn v11_v134_separate_source_adjusted_and_virtual_wind() {
     let energy = read(ENERGY);
     let snow = read(SNOW);
 
@@ -30,7 +30,7 @@ fn v11_v133_separate_source_adjusted_and_virtual_wind() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 133",
+        "contract_version: 134",
         "INV-SNOWFREEZE-099",
         "`fwv_m_s` is local and cannot feed snow",
         "never measurement height",

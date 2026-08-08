@@ -510,7 +510,7 @@
 State as of `2026-08-07 UTC`:
 
 - `20260807-snow-stage3-persistent-accumulation-shadow-001/`
-  - EXECUTING / USER-AUTHORIZED: implement a typed, default-off, per-lane
+  - COMPLETE / PHYSICAL CLAIMS HELD: implemented a typed, default-off, per-lane
     accumulation-season Stage 3 evaluation state with snowfall/liquid custody,
     disappearance/reappearance, restart equivalence, and independent mass and
     energy reconstruction. Wind/exposure/geometry/magnitude uncertainties are

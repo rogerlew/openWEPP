@@ -72,7 +72,7 @@ impl DirectProductionSnowFrostAuthority {
         Ok(hyetograph_rainfall_m > 1.0e-12 || runtime_swe_m > 1.0e-12)
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn frost_day_context(
         &self,
         climate_request: &HillslopeClimateRuntimeRequest,
@@ -375,7 +375,7 @@ impl DirectProductionSnowFrostAuthority {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn snow_liquid_partition(
         &self,
         climate_request: &HillslopeClimateRuntimeRequest,
@@ -388,23 +388,27 @@ impl DirectProductionSnowFrostAuthority {
         sturm_day_of_year: Option<f64>,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
-    ) -> Result<
-        openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult,
-        HillslopeCliError,
-    > {
-        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
-            return Ok(inactive_direct_snow_evaluation_result(
+        lane_index: usize,
+        interval_index: u64,
+        persistent_state: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState>,
+    ) -> Result<DirectProductionSnowPartitionResult, HillslopeCliError> {
+        let persistent_requested = self.snow_stage3_evaluation_operator
+            == Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1);
+        if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?
+            && !persistent_requested
+        {
+            return Ok(DirectProductionSnowPartitionResult {
+                standard: inactive_direct_snow_evaluation_result(
                 self.snow_density_model,
                 hyetograph_rainfall_m,
                 snow_lane_state,
                 capture,
                 self.snow_stage3_evaluation_operator,
-            ));
+                ),
+                persistent: None,
+            });
         }
-        let hourly = climate_request
-            .direct_winter_hourly_forcing(
-                day_index,
-                DirectWinterHourlyContext {
+        let hourly_context = DirectWinterHourlyContext {
                     snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
                     frost_runtime_depth_m: 0.0,
                     frost_runtime_frozen_water_m: 0.0,
@@ -414,8 +418,14 @@ impl DirectProductionSnowFrostAuthority {
                     azimuth: winter_hourly_geometry.azimuth,
                     snow_rst_c: self.snow_rst_c,
                     snow_phase_model: self.snow_phase_model,
-                },
-            )
+                };
+        let hourly = if persistent_requested {
+            climate_request
+                .diagnostic_winter_hourly_forcing(day_index, hourly_context)
+                .map(Some)
+        } else {
+            climate_request.direct_winter_hourly_forcing(day_index, hourly_context)
+        }
             .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
                 detail: format!(
@@ -482,15 +492,49 @@ impl DirectProductionSnowFrostAuthority {
             underlying_surface_albedo: 0.2,
             hourly: snow_hourly,
         };
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
+        let standard = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
             &partition_inputs,
             capture,
-            self.snow_stage3_evaluation_operator,
+            (!persistent_requested).then_some(self.snow_stage3_evaluation_operator).flatten(),
         )
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",
             detail: format!("{SIMOUT_GUARD_ID} direct production typed snow partition failed: {source}"),
-        })
+        })?;
+        let persistent = if persistent_requested {
+            let initialized;
+            let state = if let Some(state) = persistent_state {
+                state
+            } else {
+                initialized = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_retained_liquid(
+                    u32::try_from(lane_index).map_err(|_| direct_production_executor_blocked(
+                        "lane index cannot be represented by persistent snow shadow",
+                    ))?,
+                    snow_lane_state.layers.clone(),
+                    snow_lane_state.liquid_water_retained_m * 1_000.0,
+                )
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!("{SIMOUT_GUARD_ID} persistent snow initialization failed: {source}"),
+                })?;
+                &initialized
+            };
+            Some(Wb11HydrologyKernel::evaluate_stage3_persistent_day(
+                &partition_inputs,
+                state,
+                u32::try_from(lane_index).map_err(|_| direct_production_executor_blocked(
+                    "lane index cannot be represented by persistent snow shadow",
+                ))?,
+                interval_index,
+            )
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!("{SIMOUT_GUARD_ID} persistent snow evaluation failed: {source}"),
+            })?)
+        } else {
+            None
+        };
+        Ok(DirectProductionSnowPartitionResult { standard, persistent })
     }
 }
 

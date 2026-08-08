@@ -134,10 +134,14 @@ fn runtime_uses_typed_operators_and_bounded_extracted_modules() {
     ] {
         assert!(solver.contains(required), "{SOLVER} missing {required}");
     }
-    let tag_position = solver
+    let bounded_solver = solver
+        .split("pub(super) fn resolve_stage3_liquid_routing")
+        .nth(1)
+        .expect("bounded Stage 3 solver body");
+    let tag_position = bounded_solver
         .find("let tag = Stage3EvaluationTag::new(operator)")
         .expect("typed tag construction");
-    let clone_position = solver
+    let clone_position = bounded_solver
         .find("layers.clone()")
         .expect("bounded sequential clone");
     assert!(

@@ -1,4 +1,3 @@
 # Active Prompt
 
-Contains the current end-to-end execution prompt.
-
+No active prompt remains after package completion.

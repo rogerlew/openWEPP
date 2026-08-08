@@ -39,7 +39,8 @@ pub struct DirectSnowLaneState {
     pub layers: Vec<DirectSnowLayerState>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DirectSnowLayerState {
     pub mass_swe_m: f64,
     pub thickness_m: f64,

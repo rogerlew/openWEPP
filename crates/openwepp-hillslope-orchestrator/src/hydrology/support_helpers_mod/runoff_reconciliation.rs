@@ -242,10 +242,22 @@ impl Stage3EvaluationTag {
             operator,
             SnowStage3EvaluationOperator::SameStatePairedCarrierV1
         );
+        let persistent = matches!(
+            operator,
+            SnowStage3EvaluationOperator::PersistentAccumulationShadowV1
+        );
         Self {
             operator,
-            source_snapshot_id: "post_coe_daily_initial_snapshot_v1",
-            support_id: "stage3_daily_24_hour_support_v1",
+            source_snapshot_id: if persistent {
+                "pre_interval_authoritative_initial_snapshot_v1"
+            } else {
+                "post_coe_daily_initial_snapshot_v1"
+            },
+            support_id: if persistent {
+                "stage3_persistent_daily_24_hour_support_v1"
+            } else {
+                "stage3_daily_24_hour_support_v1"
+            },
             cadence_id: if paired {
                 "stage3_fixed_hourly_immutable_snapshot_v1"
             } else {
@@ -308,6 +320,7 @@ struct Stage3ShadowSummary {
     maximum_energy_closure_residual_j_m2: f64,
     hourly: [DirectSnowStage3EvaluationHourDiagnostics; 24],
     reconciliation: DirectSnowStage3OperatorReconciliation,
+    final_layers: Vec<DirectSnowLayerState>,
 }
 
 impl Stage3ShadowSummary {
@@ -348,6 +361,7 @@ impl Stage3ShadowSummary {
             hourly_status: [DirectSnowStage3ReconciliationHourStatus::not_selected(); 24],
             tuples: Vec::new(),
         },
+        final_layers: Vec::new(),
         }
     }
 }

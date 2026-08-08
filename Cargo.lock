@@ -1038,6 +1038,8 @@ dependencies = [
  "openwepp-sim-contract",
  "openwepp-topology",
  "openwepp-unit-boundary",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

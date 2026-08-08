@@ -327,11 +327,11 @@ The revised sequence is therefore:
    physical plausibility, closing raw/bounded transfer and active-state
    reconstruction while leaving wind exposure, Paradise support, and physical
    magnitude/geometry envelopes unresolved;
-6. admit and run persistent accumulation-season shadow state only if that
-   supported canonical evidence closes wind exposure/applicability, canopy
-   relevance, geometry, and physical magnitude authority; Paradise WY2015 stays
-   censored from physical pass/fail claims without independently blocking, and
-   Snowbird remains non-decisive;
+6. completed: implemented the default-off persistent continuity experiment,
+   snowfall/liquid custody, dormancy/reappearance, restart, and schema-v7
+   reconstruction. Wind/exposure, canopy, geometry, magnitude, terminal-
+   recipient, and physical-efficacy questions remain claim limits rather than
+   blockers to the isolated mechanics;
 7. admit terminal enthalpy-event numerics separately from the first-class
    snow-free land-surface energy subsystem; and
 8. consider one atomic CoE retirement only after all owner, consumer, default,

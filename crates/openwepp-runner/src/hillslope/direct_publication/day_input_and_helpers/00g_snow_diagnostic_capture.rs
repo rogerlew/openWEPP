@@ -17,6 +17,8 @@ struct DirectSnowTraceRowContext<'a> {
         Option<&'a openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationDiagnostics>,
     stage3_reconciliation:
         Option<&'a openwepp_hillslope_orchestrator::DirectSnowStage3OperatorReconciliation>,
+    stage3_persistent:
+        Option<&'a openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult>,
 }
 
 impl DirectSnowDiagnosticCaptureRequest {
