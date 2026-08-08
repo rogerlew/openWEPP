@@ -13,7 +13,7 @@ concept → work-package → contract-authoring promotion path.
 - `complete` — superseded by completed work; **prune candidate** (move detail to the
   execution log and delete the note).
 
-Last updated: 2026-08-07 (Codex — added canopy peak-runoff discontinuity).
+Last updated: 2026-08-08 (Codex — added RHESSys-derived vegetation crate concept and provenance posture).
 
 | Item | State | Gate / blocker | Notes |
 |---|---|---|---|
@@ -29,6 +29,7 @@ Last updated: 2026-08-07 (Codex — added canopy peak-runoff discontinuity).
 | [Native-vegetation evapotranspiration process model](20260803-native-vegetation-et-process-model.md) | `concept` | Vendor Stevens Canyon cohort; admit component-resolved forest authority; amend `SC-EVAP-001` | Replace agricultural LAI/crop-coefficient partitioning in explicit native mode with conservative live-canopy transpiration, soil evaporation, and canopy/litter interception processes. Legacy remains compatibility/diagnostic behavior, not native truth. |
 | [Canopy mutation peak-runoff discontinuity](20260807-canopy-peak-runoff-discontinuity.md) | `concept` | Promote to defect-closure work package; vendor frozen Hill 106 pair; instrument legacy peak-runoff path | High-priority suspected kernel defect: denser canopy increased the 1986-02-15 Hill 106 peak by 82.7x while runoff volume changed only 1.3%; derived `EffDur` collapsed as a consequence. |
 | [Frost / daylength canopy decline + leaf-on/leaf-off + residue cover](20260626-frost-daylength-canopy-decline-hemisphere-robust.md) | `staged` | empirical calibration and assurance under the [canopy phenology assurance roadmap](../planning/canopy-phenology-assurance-roadmap.md) | **Mechanics implemented:** dynamic residue coupling and `CANOPY-PHENOLOGY-02` native GSI leaf-on/leaf-off, canopy, LAI, litter, and real-consumer integration are complete. Remaining: Bill Elliot reproduction, field calibration, litter-source adjudication, canopy-gradient congruence, independent Southern Hemisphere evaluation, and `CANOPY-ASSURE-01`. |
+| [RHESSys-derived vegetation crate](20260806-rhessys-derived-vegetation-crate.md) | `concept` | provenance ledger, sanitized source-analysis rules, stratum contract, and synthetic soil-water boundary | Literature-derived independent implementation may proceed; unresolved RHESSys licensing blocks only direct/code-derived translation. Native management owns explicit configuration and openWEPP retains soil hydrology. |
 | [Canopy snow interception / sublimation](20260627-canopy-snow-interception-sublimation.md) | `concept` | not load-bearing yet | The canopy side of sublimation (distinct from the surface-pack side below). |
 | [Stream water temperature — surface energy balance](20260627-stream-water-temperature-surface-energy-balance.md) | `breadcrumb` | prerequisites met; not being planned | Surface-EB foundation + opt-in meltwater-temperature source exist. Open question on pickup: can hourly water+temperature serialize across HBP and be consumed by `openwepp-cli-watershed`. |
 | [Multilayer surface-EB sublimation + longwave](20260629-multilayer-surface-sublimation-longwave.md) | `breadcrumb` | sequenced after frost | Surface-pack sublimation via the per-layer surface energy balance; the streamflow/ET-tuning case makes it more defect-shaped than a fidelity nicety. |
