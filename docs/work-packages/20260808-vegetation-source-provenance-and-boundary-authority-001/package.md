@@ -1,6 +1,6 @@
 # Vegetation Source-Provenance And Boundary Authority
 
-Status: `queued`
+Status: `terminal_verification`
 
 Date: `2026-08-08`
 
@@ -130,8 +130,10 @@ production target.
   ownership/compatibility amendments to the named adjacent contracts.
 - One focused contract-derived integration test and `Cargo.toml`
   registration.
-- Assurance DRAFT locks/receipts only if exact source validation proves an
-  existing assurance subject is affected.
+- Assurance DRAFT locks/receipts, plus the exact machine-rendered DRAFT report
+  manifest required by the typed source-adoption transaction, only if exact
+  source validation proves an existing assurance subject is affected. No
+  authored report-prose or lifecycle-authority edit is permitted.
 
 Any Rust production/test-support module, management schema, parser, fixture,
 parameter dataset, observed dataset, runtime trace, output schema, comparator
@@ -243,6 +245,16 @@ expression before receiving the passing sanitized artifact.
 - [x] (2026-08-08) User authorized package scaffolding.
 - [x] (2026-08-08) Scaffolded the package and prepared the local scaffold
   commit; the source-analysis request remains queued for execution.
-- [ ] Freeze the source-analysis request and execute the sanitized firewall.
-- [ ] Execute source firewall and author canonical boundary authority.
-- [ ] Complete reviews, exact-head gates, verification, and disposition.
+- [x] (2026-08-08) Froze the bounded behavior-oriented source-analysis request
+  and parent/source-aware write separation before delegated inspection.
+- [x] (2026-08-08) Executed the source-aware inventory and independent
+  compliance review; the digest-bound sanitized artifact passed with one
+  non-blocking citation-label caution.
+- [x] (2026-08-08) Exact source validation triggered two typed DRAFT assurance
+  source-adoption transactions; explicitly reconciled the required
+  machine-rendered manifest output without changing report authority.
+- [x] (2026-08-08) Authored the canonical vegetation boundary authority and
+  reconciled adjacent ownership without production Rust changes.
+- [ ] (2026-08-08) Complete dual terminal verification against the reviewed
+  commit, then record lifecycle reconciliation and final disposition. Dual
+  review, prompt archival, and all preceding gates are complete.

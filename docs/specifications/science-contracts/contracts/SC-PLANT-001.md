@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 25
+contract_version: 26
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-28
+last_reviewed: 2026-08-08
 supersedes: []
 superseded_by: []
 ---
@@ -383,6 +383,7 @@ algorithm.
 | INV-PLANT-036 | Native real-consumer ordering: one post-phenology daily state supplies snow canopy attenuation, ET LAI/canopy, WB15 interception, erosion-facing canopy, and the plant-to-residue litter handoff before residue depth/frost publication. Static initial canopy, crop-GDD senescence, producer-only shadow state, and `jdharv` litter windows cannot carry the native integration claim. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-CH9-COUPLING, REF-PLANT-CH11-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-037 | Hemisphere phase-transform law: over a complete cyclic year, negating latitude and shifting an identical NH daily forcing sequence by one half-year (182 days for a 365-day vector, with cyclic wrap) shifts the native GSI/canopy trajectory to the corresponding SH seasonal phase. Full post-warmup canopy values remain within the declared numeric tolerance and the first leaf-on and leaf-off limbs map within one transformed calendar day with order preserved. This is a deterministic symmetry test, not independent SH observational validation. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-038 | Native canopy-height coherence law: the current native total above-ground canopy biomass is the checked sum `Bt=Bs+Bf`, where `Bs` is the persistent structural pool and `Bf` is the same-day post-GSI foliar pool. The same projection computes `Hc=(1-exp(-bbb*Bt))*hmax` before consumer publication. Native `bbb` and `hmax` are finite and strictly positive; checked addition and multiplication must reject overflow/non-finite intermediates; and the result must be finite in `[0,hmax]` under floating-point evaluation (the real-valued equation is `<hmax`). Exact `Bt=0` publishes `Hc=0`; any `Bt>0` must publish `Hc>0` or hard-fail, including positive-product underflow to zero. `Bt` is an internal height-projection operand, while `Bf` remains the foliar/interception biomass handoff. Pre-GSI height, static seeds, compatibility values, and fallback height cannot carry the native claim. | hard-fail | REF-PLANT-CH8-CANOPY, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-INITGR, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-040 | Future native-stratum configuration, parameter sets, initial state, and evolving state remain distinct; any aggregate canopy/phenology/litter compatibility field is read-only and cannot replace current CP-GSI02 authority until one atomic real-consumer cutover proves the new consumer and retires the old owner. | governance-hold | INV-PLANT-036, SC-VEGETATION-001#INV-VEGETATION-001, SC-VEGETATION-001#INV-VEGETATION-040, SC-VEGETATION-001#INV-VEGETATION-041 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -497,6 +498,7 @@ algorithm.
 | `INV-PLANT-037` | contract test | Phase-shifted forcing at negated latitude | Test failure on phase/order mismatch; no empirical verdict | CP-GSI02 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-038` | runtime + integration | Native canopy realization, direct-production state builder, and real-consumer handoff | Typed hard failure on missing/non-finite/non-positive `bbb` or `hmax`, checked-sum/product overflow, non-finite/negative `Bt` or `Hc`, or `Bt>0` with `Hc<=0`; package `HOLD` if a consumer reads stale/static/compatibility height | CP-GSI02 height-coherence gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-039` | YAML/path parser + runtime + integration | Authenticated external native-forest litter boundary | Typed hard failure on invalid material/applicability/support/digest/CSV/spatial binding, interval-as-daily use, or outside-support access; package `HOLD` if external material is portrayed as predictive canopy output | CANOPY-LITTER-SOURCE-AUTHORITY-01 gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-040` | governance + future integration | Native-stratum adapter and real-consumer cutover gate | Explicit `HOLD` on native-state feedback from an aggregate adapter, duplicate old/new ownership, or cutover without real downstream consumption and negative old-path proof | VEGETATION-BOUNDARY-AUTHORITY gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1052,6 +1054,7 @@ sum independently; and prove the real residue/depth/frost/erosion consumers.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-08` | `26` | `Codex` | VEGETATION-BOUNDARY-AUTHORITY amendment: retained CP-GSI02 as active production ownership and constrained any future native-stratum compatibility adapter and atomic real-consumer cutover. |
 | `2026-07-27` | `24` | `Codex` | CAL04B-NATIVE-001 contract-first amendment: defined checked native total above-ground biomass `Bt=Bs+Bf`, bound Chapter 8 Eq. 8.2.8 and the pinned source expression to same-day native `Hc`, required positive `bbb/hmax`, added `INV-PLANT-038`, explicit native branch/checked-arithmetic/producer/guard/alias/unit obligations, six height vectors, and the missing GSI Binding Exposure Index. |
 | `2026-07-28` | `25` | `Codex` | CANOPY-LITTER-SOURCE-AUTHORITY-01 amendment: added `INV-PLANT-039`, the authenticated prescribed/exhaustive-daily needle/fine-wood external boundary, digest/material/support/spatial guards, separate source operands, test vectors, and the predictive-physics hold. |
 | `2026-07-20` | `23` | `Codex` | Review amendment: defined no-transfer first realization without aggregate-`vdmt` aliasing, continuous native schedules, strict positive `bb`, fail-on-any-negative VPD, full wrapped NH-to-SH phase evidence, and bit-identical repeated-cycle totals. |

@@ -1,5 +1,16 @@
 # SC-VEGETATION-001 Contract Reference
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: Static on 2026-08-08.
+
+- Canonical contract:
+  `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`.
+- Registry:
+  `docs/specifications/science-contracts/index.md`.
+- Contract version: `1`; status: `in_review`; maturity: `draft`;
+  last reviewed: `2026-08-08`.
+- Scope: boundary authority only; no constitutive physiology or runtime
+  implementation.
+- Focused contract suite:
+  `tests/integration/vegetation_boundary_authority_contract.rs`.

@@ -23,3 +23,10 @@ Evidence mode: Ran
 Total: `548581` bytes. Adjacent `SC-*` contracts and subsystem source are On
 Demand and excluded from mandatory pre-read. Scaffold disposition: `WARN` and
 below `REQUIRES-JUSTIFICATION`.
+
+Execution intake: `tools/agents/find-agents --for` was run for the package,
+canonical contract paths, focused integration test, workspace manifest,
+roadmap, tracker, and concept backlog. Applicable chains were root plus
+`docs/work-packages/AGENTS.md`, `docs/specifications/science-contracts/AGENTS.md`,
+or `tests/AGENTS.md` according to write path. The conditional contract-authoring
+set was read because this package creates and amends canonical authority.

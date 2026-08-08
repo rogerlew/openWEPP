@@ -510,11 +510,13 @@
 State as of `2026-08-08 UTC`:
 
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
-  - ACTIVE / SCAFFOLDED AUTHORITY PACKAGE: promote the RHESSys-derived
-    vegetation concept through a sanitized source/provenance firewall, native
-    canopy-stratum semantics, and typed Stage A/B/C vegetation-hydrology
-    arbitration authority. Production Rust, direct RHESSys translation,
-    calibration, runtime selection, and default activation are excluded.
+  - TERMINAL VERIFICATION / AUTHORITY ONLY: independently structured
+    `SC-VEGETATION-001`, native canopy-stratum semantics, typed Stage A/B/C
+    vegetation-hydrology arbitration, cross-domain ownership, and a sanitized
+    source/provenance firewall are admitted subject to final dual verification.
+    Production Rust, direct RHESSys translation,
+    independent constitutive physiology, calibration, runtime selection, and
+    default activation remain excluded or authority-gated.
 
 - `20260808-land-surface-energy-balance-authority-001/`
   - COMPLETE / AUTHORITY ONLY: admitted `SC-LANDSURFACEENERGY-001` control-volume

@@ -13,7 +13,7 @@ reader_metadata:
   assessed_quantity: Daily GSI, foliage, LAI, canopy cover, litter and residue mass, transition timing, and bounded downstream responses
   realization: openWEPP native-forest evidence through CAL-07F at c42dde3136bbbf2b9c8a62ffe96ca6d28d77e615
   related_model_narrative: openwepp-canopy-phenology.md
-  manuscript_date: "2026-07-29"
+  manuscript_date: 2026-07-29
 authorship:
   id: CANOPY-AUTHORSHIP
   title: CANOPY-ASSURE-01 draft authorship and accountability
@@ -754,7 +754,7 @@ units:
   quantity: Time
   definition: Calendar-day timing difference or aggregate error.
 - id: percent
-  symbol: "%"
+  symbol: '%'
   quantity: Fractional coverage
   definition: One hundred times a dimensionless fraction.
 - id: pair_count
@@ -1062,38 +1062,262 @@ results:
   provenance: Fresh deterministic reconstruction from retained predecessor CSVs.
   creation_procedure: Execute CANOPY-METHOD-SYNTHESIS.
 value_bindings:
-- {id: CANOPY-V-SEARCHED-CONFIGURATIONS, title: Searched GSI configurations, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: searched_configuration_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-ACCEPTED-MEMBERS, title: Accepted timing members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_member_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-DOUBLE-BOUNDARY, title: Double-boundary accepted members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_double_boundary_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-UPPER-BOUNDARY, title: Upper-support-boundary accepted members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: accepted_upper_boundary_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-HARVARD-MIN, title: Minimum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_min_days, unit_id: day, transform: absolute, display: "fixed:2"}
-- {id: CANOPY-V-HARVARD-MAX, title: Maximum Harvard aggregate error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_score_max_days, unit_id: day, transform: absolute, display: "fixed:2"}
-- {id: CANOPY-V-HARVARD-ZERO-COVERAGE, title: Harvard zero-coverage members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_zero_coverage_members, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-HARVARD-MAX-COVERAGE, title: Maximum Harvard interval coverage, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: harvard_max_coverage_percent, unit_id: percent, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-RIDGE-PAIRS, title: Litter ridge pairs, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: litter_ridge_pair_count, unit_id: pair_count, transform: identity, display: integer}
-- {id: CANOPY-V-RIDGE-STOCK, title: Litter ridge target stock, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: litter_ridge_target_stock, unit_id: kg_m2, transform: identity, display: "fixed:3"}
-- {id: CANOPY-V-RIDGE-MAX-DIFF, title: Litter ridge maximum difference, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: litter_ridge_max_difference, unit_id: kg_m2, transform: identity, display: "scientific:2"}
-- {id: CANOPY-V-GRADIENT-RUNS, title: Canopy-gradient runs, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: gradient_run_count, unit_id: run_count, transform: identity, display: integer}
-- {id: CANOPY-V-GRADIENT-ORDERING, title: Members retaining canopy ordering, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: gradient_ordering_member_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-BEZA-COMPLETE, title: Complete Bezà members, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: beza_complete_member_count, unit_id: member_count, transform: identity, display: integer}
-- {id: CANOPY-V-BEZA-MEAN-HITS, title: Best gcc_mean interval hits, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: beza_mean_interval_hits, unit_id: transition_count, transform: identity, display: integer}
-- {id: CANOPY-V-BEZA-GCC90-HITS, title: Best gcc_90 interval hits, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: beza_gcc90_interval_hits, unit_id: transition_count, transform: identity, display: integer}
-- {id: CANOPY-V-BEZA-MEAN-ERROR, title: Best gcc_mean penalized error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: beza_mean_penalized_error_days, unit_id: day, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-BEZA-GCC90-ERROR, title: Best gcc_90 penalized error, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: beza_gcc90_penalized_error_days, unit_id: day, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-ELLIOT-TARGETS, title: Elliot comparison targets, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: elliot_compared_target_count, unit_id: target_count, transform: identity, display: integer}
-- {id: CANOPY-V-ELLIOT-CONTRADICTED, title: Elliot contradicted targets, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: elliot_contradicted_target_count, unit_id: target_count, transform: identity, display: integer}
-- {id: CANOPY-V-TMIN-INACTIVE-MIN, title: Minimum inactive-temperature threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: minimum_temperature_inactive_c_min, unit_id: degC, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-TMIN-INACTIVE-MAX, title: Maximum inactive-temperature threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: minimum_temperature_inactive_c_max, unit_id: degC, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-TMIN-UNCONSTRAINED-MIN, title: Minimum unconstrained-temperature threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: minimum_temperature_unconstrained_c_min, unit_id: degC, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-TMIN-UNCONSTRAINED-MAX, title: Maximum unconstrained-temperature threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: minimum_temperature_unconstrained_c_max, unit_id: degC, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-VPD-UNCONSTRAINED-MIN, title: Minimum unconstrained-VPD threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: vapor_pressure_deficit_unconstrained_pa_min, unit_id: Pa, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-VPD-UNCONSTRAINED-MAX, title: Maximum unconstrained-VPD threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: vapor_pressure_deficit_unconstrained_pa_max, unit_id: Pa, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-VPD-INACTIVE-MIN, title: Minimum inactive-VPD threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: vapor_pressure_deficit_inactive_pa_min, unit_id: Pa, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-VPD-INACTIVE-MAX, title: Maximum inactive-VPD threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: vapor_pressure_deficit_inactive_pa_max, unit_id: Pa, transform: identity, display: "fixed:2"}
-- {id: CANOPY-V-PHOTOPERIOD-INACTIVE-MIN, title: Minimum inactive-photoperiod threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: photoperiod_inactive_hours_min, unit_id: hour, transform: identity, display: "fixed:3"}
-- {id: CANOPY-V-PHOTOPERIOD-INACTIVE-MAX, title: Maximum inactive-photoperiod threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: photoperiod_inactive_hours_max, unit_id: hour, transform: identity, display: "fixed:3"}
-- {id: CANOPY-V-PHOTOPERIOD-UNCONSTRAINED-MIN, title: Minimum unconstrained-photoperiod threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: photoperiod_unconstrained_hours_min, unit_id: hour, transform: identity, display: "fixed:3"}
-- {id: CANOPY-V-PHOTOPERIOD-UNCONSTRAINED-MAX, title: Maximum unconstrained-photoperiod threshold, owner: CAL-09 method steward, result_id: CANOPY-RESULT-SYNTHESIS, value_id: photoperiod_unconstrained_hours_max, unit_id: hour, transform: identity, display: "fixed:3"}
+- id: CANOPY-V-SEARCHED-CONFIGURATIONS
+  title: Searched GSI configurations
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: searched_configuration_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-ACCEPTED-MEMBERS
+  title: Accepted timing members
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: accepted_member_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-DOUBLE-BOUNDARY
+  title: Double-boundary accepted members
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: accepted_double_boundary_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-UPPER-BOUNDARY
+  title: Upper-support-boundary accepted members
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: accepted_upper_boundary_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-HARVARD-MIN
+  title: Minimum Harvard aggregate error
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: harvard_score_min_days
+  unit_id: day
+  transform: absolute
+  display: fixed:2
+- id: CANOPY-V-HARVARD-MAX
+  title: Maximum Harvard aggregate error
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: harvard_score_max_days
+  unit_id: day
+  transform: absolute
+  display: fixed:2
+- id: CANOPY-V-HARVARD-ZERO-COVERAGE
+  title: Harvard zero-coverage members
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: harvard_zero_coverage_members
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-HARVARD-MAX-COVERAGE
+  title: Maximum Harvard interval coverage
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: harvard_max_coverage_percent
+  unit_id: percent
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-RIDGE-PAIRS
+  title: Litter ridge pairs
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: litter_ridge_pair_count
+  unit_id: pair_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-RIDGE-STOCK
+  title: Litter ridge target stock
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: litter_ridge_target_stock
+  unit_id: kg_m2
+  transform: identity
+  display: fixed:3
+- id: CANOPY-V-RIDGE-MAX-DIFF
+  title: Litter ridge maximum difference
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: litter_ridge_max_difference
+  unit_id: kg_m2
+  transform: identity
+  display: scientific:2
+- id: CANOPY-V-GRADIENT-RUNS
+  title: Canopy-gradient runs
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: gradient_run_count
+  unit_id: run_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-GRADIENT-ORDERING
+  title: Members retaining canopy ordering
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: gradient_ordering_member_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-BEZA-COMPLETE
+  title: Complete Bezà members
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: beza_complete_member_count
+  unit_id: member_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-BEZA-MEAN-HITS
+  title: Best gcc_mean interval hits
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: beza_mean_interval_hits
+  unit_id: transition_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-BEZA-GCC90-HITS
+  title: Best gcc_90 interval hits
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: beza_gcc90_interval_hits
+  unit_id: transition_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-BEZA-MEAN-ERROR
+  title: Best gcc_mean penalized error
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: beza_mean_penalized_error_days
+  unit_id: day
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-BEZA-GCC90-ERROR
+  title: Best gcc_90 penalized error
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: beza_gcc90_penalized_error_days
+  unit_id: day
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-ELLIOT-TARGETS
+  title: Elliot comparison targets
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: elliot_compared_target_count
+  unit_id: target_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-ELLIOT-CONTRADICTED
+  title: Elliot contradicted targets
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: elliot_contradicted_target_count
+  unit_id: target_count
+  transform: identity
+  display: integer
+- id: CANOPY-V-TMIN-INACTIVE-MIN
+  title: Minimum inactive-temperature threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: minimum_temperature_inactive_c_min
+  unit_id: degC
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-TMIN-INACTIVE-MAX
+  title: Maximum inactive-temperature threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: minimum_temperature_inactive_c_max
+  unit_id: degC
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-TMIN-UNCONSTRAINED-MIN
+  title: Minimum unconstrained-temperature threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: minimum_temperature_unconstrained_c_min
+  unit_id: degC
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-TMIN-UNCONSTRAINED-MAX
+  title: Maximum unconstrained-temperature threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: minimum_temperature_unconstrained_c_max
+  unit_id: degC
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-VPD-UNCONSTRAINED-MIN
+  title: Minimum unconstrained-VPD threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: vapor_pressure_deficit_unconstrained_pa_min
+  unit_id: Pa
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-VPD-UNCONSTRAINED-MAX
+  title: Maximum unconstrained-VPD threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: vapor_pressure_deficit_unconstrained_pa_max
+  unit_id: Pa
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-VPD-INACTIVE-MIN
+  title: Minimum inactive-VPD threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: vapor_pressure_deficit_inactive_pa_min
+  unit_id: Pa
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-VPD-INACTIVE-MAX
+  title: Maximum inactive-VPD threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: vapor_pressure_deficit_inactive_pa_max
+  unit_id: Pa
+  transform: identity
+  display: fixed:2
+- id: CANOPY-V-PHOTOPERIOD-INACTIVE-MIN
+  title: Minimum inactive-photoperiod threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: photoperiod_inactive_hours_min
+  unit_id: hour
+  transform: identity
+  display: fixed:3
+- id: CANOPY-V-PHOTOPERIOD-INACTIVE-MAX
+  title: Maximum inactive-photoperiod threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: photoperiod_inactive_hours_max
+  unit_id: hour
+  transform: identity
+  display: fixed:3
+- id: CANOPY-V-PHOTOPERIOD-UNCONSTRAINED-MIN
+  title: Minimum unconstrained-photoperiod threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: photoperiod_unconstrained_hours_min
+  unit_id: hour
+  transform: identity
+  display: fixed:3
+- id: CANOPY-V-PHOTOPERIOD-UNCONSTRAINED-MAX
+  title: Maximum unconstrained-photoperiod threshold
+  owner: CAL-09 method steward
+  result_id: CANOPY-RESULT-SYNTHESIS
+  value_id: photoperiod_unconstrained_hours_max
+  unit_id: hour
+  transform: identity
+  display: fixed:3
 tables:
 - id: CANOPY-TABLE-TRANSFER
   title: Independent Harvard aggregate timing-error range
@@ -1102,8 +1326,10 @@ tables:
   alternative_text: Harvard aggregate timing errors ranged from 43.48 to 72.46 days across 37 frozen members.
   row_header: Evaluation
   columns:
-  - {label: Minimum, unit_id: day}
-  - {label: Maximum, unit_id: day}
+  - label: Minimum
+    unit_id: day
+  - label: Maximum
+    unit_id: day
   rows:
   - label: Harvard no-refit holdout
     value_binding_ids:
@@ -1317,44 +1543,565 @@ references:
   license: publisher_terms
   dependency_id: CANOPY-DEP-QUALLS
 research_objects:
-- {id: CANOPY-OBJECT-RESULT, title: Strict canopy synthesis result, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-SYNTHESIS], dependency_ids: [CANOPY-DEP-RESULT], reproduction_instructions: Run CANOPY-OBJECT-REPRODUCER and compare bytes.}
-- {id: CANOPY-OBJECT-REPRODUCER, title: Canopy synthesis reproduction procedure, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/procedures/reproduce_canopy_synthesis.py, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-SYNTHESIS], dependency_ids: [CANOPY-DEP-REPRODUCER], reproduction_instructions: Execute with the seven declared CSV dependencies as documented in the supplement.}
-- {id: CANOPY-OBJECT-ACCEPTED, title: Frozen accepted ensemble rows, owner: CAL-04B evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/accepted-calibration-ensemble.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-ACCEPTED], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-HARVARD, title: Harvard holdout rows, owner: CAL-04B evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/harvard-holdout-results.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-HARVARD], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-RIDGE, title: Litter source-decay ridge rows, owner: CAL-05 evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/artifacts/terminal-stock-equifinality.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-LITTER], dependency_ids: [CANOPY-DEP-RIDGE], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-GRADIENT, title: Canopy-gradient ensemble rows, owner: CAL-06 evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/artifacts/ensemble-summary.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-GRADIENT], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-BEZA, title: Bezà member comparison rows, owner: CAL-07F evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/artifacts/member-summary.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-BEZA], dependency_ids: [CANOPY-DEP-BEZA], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-ELLIOT, title: Elliot comparison rows, owner: CAL-02 evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/report-comparison.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-ELLIOT], dependency_ids: [CANOPY-DEP-ELLIOT], reproduction_instructions: Supply unchanged to the synthesis procedure.}
-- {id: CANOPY-OBJECT-FIGURE-BUILDER, title: Time-series figure builder, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/tools/build_candidate_figures.py, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-FIGURES], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER], reproduction_instructions: Execute from the repository root using the environment named in the figure-build record.}
-- {id: CANOPY-OBJECT-FIGURE-MANIFEST, title: Time-series figure source manifest, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/source-manifest.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-FIGURES], dependency_ids: [CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Verify every retained source digest before rebuilding figures.}
-- {id: CANOPY-OBJECT-DAILY-CLIMATOLOGY, title: Daily canopy-gradient climatology rows, owner: CAL-06 evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/artifacts/daily-climatology.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-DAILY-CLIMATOLOGY], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-CONFIGURATIONS, title: Complete timing candidate configurations, owner: CAL-04B evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/candidate-configurations.csv, restriction_reason: null, review_role: null, result_ids: [CANOPY-RESULT-SYNTHESIS], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-CONFIGURATIONS], reproduction_instructions: Supply unchanged to the synthesis procedure and figure builder.}
-- {id: CANOPY-OBJECT-RIDGE-DESIGN, title: Source-decay ridge design rows, owner: CAL-05 evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/artifacts/terminal-stock-ridge-design.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-LITTER], dependency_ids: [CANOPY-DEP-RIDGE-DESIGN], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-SOUTHERN-DAILY, title: Southern Hemisphere daily ensemble rows, owner: CAL-07C evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/artifacts/ensemble-daily.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-SOUTHERN-DIAGNOSTIC], dependency_ids: [CANOPY-DEP-SOUTHERN-DAILY], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-BEZA-CURVES, title: Bezà daily camera-product curves, owner: CAL-07F evidence steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/artifacts/daily-product-curves.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-BEZA], dependency_ids: [CANOPY-DEP-BEZA-CURVES], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-HARVARD-SNOW, title: Harvard snow observations, owner: CAL-06 evidence steward, access: public_safe, license: repository_license, path: tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-HARVARD-SNOW], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-MARCELL-SNOW, title: Marcell snow observations, owner: CAL-06 evidence steward, access: public_safe, license: repository_license, path: tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-MARCELL-SNOW], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-F1-DATA, title: F1 exemplar coefficient rows, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-exemplar-coefficients.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-F1-DATA], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER.}
-- {id: CANOPY-OBJECT-F4-DATA, title: F4 temperate timing summary rows, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-timing-summary.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-F4-DATA], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-F6-DATA, title: F6 observed snow climatology rows, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-observed-snow-climatology.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-F6-DATA], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER.}
-- {id: CANOPY-OBJECT-F1, title: Accepted coefficient-response time series, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-coefficient-response.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F2, title: Forest-class seasonality time series, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f2-forest-class-seasonality.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F3, title: Litter residue and frost time series, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f3-litter-residue-frost.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F4, title: Temperate observed-modeled chronology, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-observed-modeled-timing.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F5, title: Source-decay trajectory ridge, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f5-source-decay-trajectories.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-LITTER], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F6, title: Canopy-gradient snow response, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-canopy-gradient-snow-response.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F7, title: Southern Hemisphere relative seasonality, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-hemisphere-seasonality.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-SOUTHERN-DIAGNOSTIC], dependency_ids: [CANOPY-DEP-F7-DATA, CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F8, title: Bezà observed-modeled chronology, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f8-beza-observed-modeled.svg, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-BEZA], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.}
-- {id: CANOPY-OBJECT-F1-SIDECAR, title: F1 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-coefficient-response.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F1.}
-- {id: CANOPY-OBJECT-F2-SIDECAR, title: F2 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f2-forest-class-seasonality.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F2.}
-- {id: CANOPY-OBJECT-F3-SIDECAR, title: F3 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f3-litter-residue-frost.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F3.}
-- {id: CANOPY-OBJECT-F4-SIDECAR, title: F4 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-observed-modeled-timing.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-TIMING], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F4.}
-- {id: CANOPY-OBJECT-F5-SIDECAR, title: F5 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f5-source-decay-trajectories.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-LITTER], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F5.}
-- {id: CANOPY-OBJECT-F6-SIDECAR, title: F6 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-canopy-gradient-snow-response.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-GRADIENT], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F6.}
-- {id: CANOPY-OBJECT-F7-SIDECAR, title: F7 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-hemisphere-seasonality.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-SOUTHERN-DIAGNOSTIC], dependency_ids: [CANOPY-DEP-F7-DATA, CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F7.}
-- {id: CANOPY-OBJECT-F7-DATA, title: F7 relative-seasonality source rows, owner: CAL-09 method steward, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-relative-seasonality.csv, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-SOUTHERN-DIAGNOSTIC], dependency_ids: [CANOPY-DEP-F7-DATA], reproduction_instructions: Supply unchanged to the time-series figure builder.}
-- {id: CANOPY-OBJECT-F8-SIDECAR, title: F8 caption and ancillary information, owner: CAL-09 report lead, access: public_safe, license: repository_license, path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f8-beza-observed-modeled.md, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-BEZA], dependency_ids: [CANOPY-DEP-FIGURE-BUILDER, CANOPY-DEP-FIGURE-MANIFEST], reproduction_instructions: Read with CANOPY-OBJECT-F8.}
-- {id: CANOPY-OBJECT-AGENT-PACKET, title: CAL-09 agent-assistance disclosure, owner: openWEPP assurance steward, access: public_safe, license: repository_license, path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/evidence/agent-assistance-packet.json, restriction_reason: null, review_role: null, result_ids: [], method_ids: [CANOPY-METHOD-SYNTHESIS], dependency_ids: [CANOPY-DEP-AGENT-PACKET], reproduction_instructions: Retain with the exact draft source reviewed by humans.}
+- id: CANOPY-OBJECT-RESULT
+  title: Strict canopy synthesis result
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-SYNTHESIS
+  dependency_ids:
+  - CANOPY-DEP-RESULT
+  reproduction_instructions: Run CANOPY-OBJECT-REPRODUCER and compare bytes.
+- id: CANOPY-OBJECT-REPRODUCER
+  title: Canopy synthesis reproduction procedure
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/procedures/reproduce_canopy_synthesis.py
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-SYNTHESIS
+  dependency_ids:
+  - CANOPY-DEP-REPRODUCER
+  reproduction_instructions: Execute with the seven declared CSV dependencies as documented in the supplement.
+- id: CANOPY-OBJECT-ACCEPTED
+  title: Frozen accepted ensemble rows
+  owner: CAL-04B evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/accepted-calibration-ensemble.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-ACCEPTED
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-HARVARD
+  title: Harvard holdout rows
+  owner: CAL-04B evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/harvard-holdout-results.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-HARVARD
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-RIDGE
+  title: Litter source-decay ridge rows
+  owner: CAL-05 evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/artifacts/terminal-stock-equifinality.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-LITTER
+  dependency_ids:
+  - CANOPY-DEP-RIDGE
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-GRADIENT
+  title: Canopy-gradient ensemble rows
+  owner: CAL-06 evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/artifacts/ensemble-summary.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-GRADIENT
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-BEZA
+  title: Bezà member comparison rows
+  owner: CAL-07F evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/artifacts/member-summary.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-BEZA
+  dependency_ids:
+  - CANOPY-DEP-BEZA
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-ELLIOT
+  title: Elliot comparison rows
+  owner: CAL-02 evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/report-comparison.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-ELLIOT
+  dependency_ids:
+  - CANOPY-DEP-ELLIOT
+  reproduction_instructions: Supply unchanged to the synthesis procedure.
+- id: CANOPY-OBJECT-FIGURE-BUILDER
+  title: Time-series figure builder
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/tools/build_candidate_figures.py
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-FIGURES
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  reproduction_instructions: Execute from the repository root using the environment named in the figure-build record.
+- id: CANOPY-OBJECT-FIGURE-MANIFEST
+  title: Time-series figure source manifest
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/source-manifest.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-FIGURES
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Verify every retained source digest before rebuilding figures.
+- id: CANOPY-OBJECT-DAILY-CLIMATOLOGY
+  title: Daily canopy-gradient climatology rows
+  owner: CAL-06 evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260728-canopy-cal-06-canopy-gradient-congruence-001/artifacts/daily-climatology.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-DAILY-CLIMATOLOGY
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-CONFIGURATIONS
+  title: Complete timing candidate configurations
+  owner: CAL-04B evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/candidate-configurations.csv
+  restriction_reason: null
+  review_role: null
+  result_ids:
+  - CANOPY-RESULT-SYNTHESIS
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-CONFIGURATIONS
+  reproduction_instructions: Supply unchanged to the synthesis procedure and figure builder.
+- id: CANOPY-OBJECT-RIDGE-DESIGN
+  title: Source-decay ridge design rows
+  owner: CAL-05 evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260728-canopy-cal-05-litter-source-decomposition-readiness-001/artifacts/terminal-stock-ridge-design.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-LITTER
+  dependency_ids:
+  - CANOPY-DEP-RIDGE-DESIGN
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-SOUTHERN-DAILY
+  title: Southern Hemisphere daily ensemble rows
+  owner: CAL-07C evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260728-canopy-cal-07c-hourly-vpd-forcing-reconstruction-001/artifacts/ensemble-daily.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-SOUTHERN-DIAGNOSTIC
+  dependency_ids:
+  - CANOPY-DEP-SOUTHERN-DAILY
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-BEZA-CURVES
+  title: Bezà daily camera-product curves
+  owner: CAL-07F evidence steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-07f-observation-product-operator-audit-001/artifacts/daily-product-curves.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-BEZA
+  dependency_ids:
+  - CANOPY-DEP-BEZA-CURVES
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-HARVARD-SNOW
+  title: Harvard snow observations
+  owner: CAL-06 evidence steward
+  access: public_safe
+  license: repository_license
+  path: tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-HARVARD-SNOW
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-MARCELL-SNOW
+  title: Marcell snow observations
+  owner: CAL-06 evidence steward
+  access: public_safe
+  license: repository_license
+  path: tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-MARCELL-SNOW
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-F1-DATA
+  title: F1 exemplar coefficient rows
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-exemplar-coefficients.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-F1-DATA
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER.
+- id: CANOPY-OBJECT-F4-DATA
+  title: F4 temperate timing summary rows
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-timing-summary.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-F4-DATA
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-F6-DATA
+  title: F6 observed snow climatology rows
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-observed-snow-climatology.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-F6-DATA
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER.
+- id: CANOPY-OBJECT-F1
+  title: Accepted coefficient-response time series
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-coefficient-response.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F2
+  title: Forest-class seasonality time series
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f2-forest-class-seasonality.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F3
+  title: Litter residue and frost time series
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f3-litter-residue-frost.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F4
+  title: Temperate observed-modeled chronology
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-observed-modeled-timing.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F5
+  title: Source-decay trajectory ridge
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f5-source-decay-trajectories.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-LITTER
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F6
+  title: Canopy-gradient snow response
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-canopy-gradient-snow-response.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F7
+  title: Southern Hemisphere relative seasonality
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-hemisphere-seasonality.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-SOUTHERN-DIAGNOSTIC
+  dependency_ids:
+  - CANOPY-DEP-F7-DATA
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F8
+  title: Bezà observed-modeled chronology
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f8-beza-observed-modeled.svg
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-BEZA
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Rebuild with CANOPY-OBJECT-FIGURE-BUILDER; read the same-basename Markdown sidecar for caption and limitations.
+- id: CANOPY-OBJECT-F1-SIDECAR
+  title: F1 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f1-coefficient-response.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F1.
+- id: CANOPY-OBJECT-F2-SIDECAR
+  title: F2 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f2-forest-class-seasonality.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F2.
+- id: CANOPY-OBJECT-F3-SIDECAR
+  title: F3 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f3-litter-residue-frost.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F3.
+- id: CANOPY-OBJECT-F4-SIDECAR
+  title: F4 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f4-temperate-observed-modeled-timing.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-TIMING
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F4.
+- id: CANOPY-OBJECT-F5-SIDECAR
+  title: F5 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f5-source-decay-trajectories.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-LITTER
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F5.
+- id: CANOPY-OBJECT-F6-SIDECAR
+  title: F6 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f6-canopy-gradient-snow-response.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-GRADIENT
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F6.
+- id: CANOPY-OBJECT-F7-SIDECAR
+  title: F7 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-hemisphere-seasonality.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-SOUTHERN-DIAGNOSTIC
+  dependency_ids:
+  - CANOPY-DEP-F7-DATA
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F7.
+- id: CANOPY-OBJECT-F7-DATA
+  title: F7 relative-seasonality source rows
+  owner: CAL-09 method steward
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f7-relative-seasonality.csv
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-SOUTHERN-DIAGNOSTIC
+  dependency_ids:
+  - CANOPY-DEP-F7-DATA
+  reproduction_instructions: Supply unchanged to the time-series figure builder.
+- id: CANOPY-OBJECT-F8-SIDECAR
+  title: F8 caption and ancillary information
+  owner: CAL-09 report lead
+  access: public_safe
+  license: repository_license
+  path: docs/work-packages/20260729-canopy-cal-09-assurance-report-001/artifacts/figure-candidates/f8-beza-observed-modeled.md
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-BEZA
+  dependency_ids:
+  - CANOPY-DEP-FIGURE-BUILDER
+  - CANOPY-DEP-FIGURE-MANIFEST
+  reproduction_instructions: Read with CANOPY-OBJECT-F8.
+- id: CANOPY-OBJECT-AGENT-PACKET
+  title: CAL-09 agent-assistance disclosure
+  owner: openWEPP assurance steward
+  access: public_safe
+  license: repository_license
+  path: assurance/v2/reports/native-forest-canopy-phenology-evaluation/evidence/agent-assistance-packet.json
+  restriction_reason: null
+  review_role: null
+  result_ids: []
+  method_ids:
+  - CANOPY-METHOD-SYNTHESIS
+  dependency_ids:
+  - CANOPY-DEP-AGENT-PACKET
+  reproduction_instructions: Retain with the exact draft source reviewed by humans.
 review:
   id: CANOPY-REVIEW
   title: Native-forest canopy evaluation review state

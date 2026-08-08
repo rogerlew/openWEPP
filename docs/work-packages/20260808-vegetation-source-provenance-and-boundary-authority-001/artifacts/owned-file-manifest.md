@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: frozen for scaffold
+Status: reconciled after typed assurance impact
 
 Evidence mode: Static
 
@@ -11,7 +11,10 @@ Evidence mode: Static
 - New canonical `SC-VEGETATION-001`, contract index, and minimal ownership
   amendments to the named adjacent contracts.
 - One focused contract-derived integration test and `Cargo.toml` registration.
-- Assurance DRAFT locks/receipts only if exact source validation requires them.
+- Assurance DRAFT locks/receipts and the exact machine-rendered
+  `native-forest-canopy-phenology-evaluation/report.yaml` emitted by the typed
+  source-adoption transaction because exact source validation required it. No
+  authored report-prose or lifecycle-authority change is authorized.
 
 Production/test-support Rust modules, management schemas, parsers, fixtures,
 parameter or observed datasets, runtime traces, output schemas, and external

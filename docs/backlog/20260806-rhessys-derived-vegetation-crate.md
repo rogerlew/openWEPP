@@ -2,23 +2,24 @@
 
 ## Status
 
-- `state`: **promoting through authority package** - high-value
-  ecosystem-process architecture; not authorized for kernel implementation or
-  default activation
+- `state`: **staged; boundary authority admitted** - high-value
+  ecosystem-process architecture; not yet authorized for kernel implementation
+  or default activation
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
   provenance, not necessarily the permanent public crate name)
 - `origin`: static comparison of openWEPP, WEPP-forest, and RHESSys vegetation,
   ET, radiation, litter, snow, hydrology, and biogeochemistry implementations
-- `promotion trigger`: complete a process/state provenance ledger, adopt the
-  sanitized source-analysis rules below, define an explicit native-management
-  stratum contract, and approve a synthetic soil-water coupling contract;
-  unresolved RHESSys licensing blocks direct/code-derived translation but does
-  not block literature-derived independent implementation
+- `promotion trigger`: **complete** - the process/state provenance ledger,
+  sanitized source-analysis rules, explicit native-management stratum
+  contract, and synthetic soil-water coupling contract are admitted by
+  `SC-VEGETATION-001`; the next slice still requires independent constitutive
+  authority, and unresolved RHESSys licensing blocks direct/code-derived
+  translation but not literature-derived independent implementation
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
-- `active authority package`:
+- `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
 
 ## Summary

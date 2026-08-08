@@ -4,14 +4,14 @@ title: Land-Surface Energy-Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 1
+contract_version: 2
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static
-last_reviewed: pending
+last_reviewed: 2026-08-08
 supersedes: []
 superseded_by: []
 ---
@@ -215,6 +215,8 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-032` | Producer-only, skeleton-only, or serialized ledger evidence cannot prove a runtime path; a real downstream consumer must read and act on the result. | governance | `[DIRECT][Static]` | consumer gate | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-040` | No production implementation is promotable while any required family is `AUTHORITY_MISSING`. | REF-003-010 | `[DIRECT][Static] + [INFERENCE][Static]` | governance gate | `NON_PROMOTABLE` |
 | `INV-LANDSURFACEENERGY-041` | Comparator agreement, current helper code, or silent legacy clamps cannot substitute for canonical physics authority and typed guards. | ADR-0017, REF-010 | `[DIRECT][Static]` | review/gate | hard `HOLD` |
+| `INV-LANDSURFACEENERGY-042` | Future vegetation radiation receipts remain recipient-specific across canopy strata, ground, litter, snow, soil, ponded water, and atmosphere; no recipient is an alias or residual bucket for another. | SC-VEGETATION-001#INV-VEGETATION-021 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
+| `INV-LANDSURFACEENERGY-043` | Interval-integrated Stage C transpiration mass and its latent-energy debit share one transaction, stratum, area, interval, lineage, and authority-tagged `h_v`, satisfying `Q_T,s=-h_v*T_s` exactly once. | SC-VEGETATION-001#INV-VEGETATION-014 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -241,6 +243,8 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-032` | real-consumer reachability gate | governance | blocked promotion | `GAP-LANDSURFACEENERGY-004` |
 | `INV-LANDSURFACEENERGY-040` | gap-label assertion and package disposition | governance | `NON_PROMOTABLE` | focused test + disposition |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
+| `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
+| `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -384,4 +388,5 @@ production coupling requires later authority and a real process consumer.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-08 | 2 | Codex | VEGETATION-BOUNDARY-AUTHORITY amendment: separated canopy/ground/litter/snow/soil radiation lineage and bound actual transpiration to one independently reconstructed latent-energy debit without admitting constitutive physics. |
 | 2026-08-08 | 1 | Codex | Initial control-volume, custody, conservation, ownership, guard, test-vector, and non-promotable authority-gap contract. |

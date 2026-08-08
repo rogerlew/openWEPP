@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 25
+contract_version: 27
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Plant-growth and residue-state consumers influenced by ET stress signals
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-06-04
+last_reviewed: 2026-08-08
 supersedes: []
 superseded_by: []
 ---
@@ -234,6 +234,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-025 | HPHYS0281 EVAPPM condensation-return invariant: when the migrated PMET seed computes negative `es`/`potes` under pinned `evappm.for:461-472` condensation semantics, production must not publish material-negative `pmet.es_m` or hide the quantity through output clamping. The producer must publish `pmet.es_m = 0` plus positive `pmet.es_storage_return_m = -es_raw`, and the WB17 ET phase must add that return to top-layer `wb18_perc_theta_0001` before residue split and soil extraction. When the same condensation regime produces negative raw `ep`, production must publish non-negative `pmet.ep_m = 0` and `wb11_et_demand = 0` rather than forwarding negative transpiration demand; this `ep` canonicalization is an openWEPP guard-consistency decision under semantic-not-bit parity, not a bit-faithful baseline clamp port. The existing WB11 guards against material-negative `pmet.es_m` and `pmet.ep_m` remain authoritative. | hard-fail | REF-EVAP-LEGACY-PMET-SEAM, INV-EVAP-021, INV-EVAP-022, SC-WATBAL-001#INV-WATBAL-050 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-026 | HPHYS0286 post-ET upper-limit redistribution invariant: WB17 ET phase completion must preserve baseline `watbal_hourly.for:564-590` retention semantics by moving any lower-layer `st(i)`/`wb18_perc_theta_i` above its active upper cap into the next higher layer before WB19 drainage/lateral and before aggregate storage publication. The active cap is `max(ul(i)-frzw(i),0)` when same-pass outside water is present (`fin > 1.0e-6`) and `ul(i)` otherwise. This seam must conserve layer liquid storage across the redistribution, except for prior ET extraction, and cannot be replaced by a discard clamp, scalar `wb11_soil_water` correction, or publication-only WB13 compensation. | hard-fail | REF-EVAP-LEGACY-POST-ET-UL, INV-EVAP-015, SC-PERC-001#INV-PERC-018, SC-WATBAL-001#INV-WATBAL-061 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-027 | HPHYS0295 cumulative storage-budget ET ownership invariant: after HPHYS0294 closes local WB18/WB19 identities, any production change to WB17 `Ep`/`Es` or ET storage mutation must be backed by cumulative row-to-row budget evidence that joins candidate/baseline `Ep`, `Es`, `Er`, `Total-Soil`, `SoilWaterTotal`, WB18 `D`, WB19 `latqcc`, and HPHYS0293 excluded snow/`RM` masks. A same-day `Ep`/`Es` residual is not sufficient to patch WB17 unless cumulative storage-accounting proves ET extraction magnitude or ordering is the residual owner after percolation, lateral, and snow masks are separated. | governance-hold | INV-EVAP-018, INV-EVAP-023, INV-EVAP-024, INV-EVAP-026, SC-WATBAL-001#INV-WATBAL-070 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-028 | Current WB17/PMET/`swu` ET authority remains active until atomic real-consumer cutover. A future vegetation transaction emits layer-resolved potential demand in Stage A, hydrology alone accepts and mutates layer withdrawals in Stage B, and vegetation finalizes interval-integrated actual transpiration in Stage C exactly equal to accepted withdrawals; a compatibility `Ep` is read-only and cannot be a second ET model. | governance-hold | INV-EVAP-016, SC-VEGETATION-001#INV-VEGETATION-010, SC-VEGETATION-001#INV-VEGETATION-011, SC-VEGETATION-001#INV-VEGETATION-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -265,6 +266,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-024` | governance | Post-lateral/pre-SWU stress-threshold classifier spanning `Etp`, `Ep`, `ΣUi`, `Ws`, effective `pltol`, `ul_i`, `pltol*ul_i`, post-lateral `theta_i`, and WB19 withdrawal overlap | Explicit `HOLD` when WB17 identities close and no baseline-authoritative stress-threshold defect is proven | HPHYS0267 stress-threshold lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-026` | runtime + governance | Post-ET lower-layer upper-limit redistribution before WB19 and aggregate writeback | Typed hard error / explicit `HOLD` when lower-layer excess remains below WB19, is discarded, or uses stale/non-authoritative outside-water/frozen-water lineage | HPHYS0286 layer-retention/WB17-WB18 coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-027` | governance | Cumulative row-to-row storage-budget classifier for ET ownership across `Ep`, `Es`, `Er`, storage, `D`, `latqcc`, snow, and `RM` masks | Explicit `HOLD` when WB17 ownership is asserted from same-day comparator deltas without cumulative budget evidence separating percolation, lateral, and excluded snow producer residuals | HPHYS0295 cumulative storage-budget gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-028` | governance + future integration | Vegetation Stage A/B/C ownership and compatibility-cutover validator | Explicit `HOLD` on vegetation soil mutation, potential-as-actual aliasing, duplicate ET debit, writable adapter feedback, or cutover without a real consumer and old-owner retirement | VEGETATION-BOUNDARY-AUTHORITY gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -621,6 +623,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-08` | `27` | `Codex` | VEGETATION-BOUNDARY-AUTHORITY amendment: added `INV-EVAP-028` to bind future native vegetation to Stage A demand, hydrology-owned Stage B withdrawals, exact Stage C transpiration, and retained current WB17 authority until real-consumer cutover. |
 | `2026-06-05` | `26` | `Codex` | HPHYS0295 amendment: added cumulative storage-budget ET ownership classifier requiring row-to-row storage accounting across ET, percolation, lateral, and excluded snow/`RM` masks before WB17 production edits. |
 | `2026-06-04` | `25` | `Codex` | HPHYS0286 amendment: added `INV-EVAP-026` requiring baseline `watbal_hourly.for` post-ET lower-layer upper-limit redistribution before WB19 and aggregate storage publication. |
 | `2026-06-03` | `15` | `Codex` | HPHYS0262 amendment: added `INV-EVAP-020` requiring PMET sidecar, selected `kcb`/`rawp`, fallback status, and actual ET-demand seed-branch lineage before closing H1/H7/H39 `Ep` magnitude residuals; baseline `evappm.for` migration is required for PMET closure. |

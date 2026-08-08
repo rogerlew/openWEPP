@@ -1,10 +1,25 @@
 # Process And State Provenance Manifest
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Required columns include process/state family, source coordinates and commit,
-external literature authority, evidence label, inputs/outputs/units/cadence,
-mutation/ordering, openWEPP owner/consumer, licensing disposition, and
-`adopt / independently re-derive / compare / reject / defer` outcome.
+Frozen comparison source: RHESSys commit
+`f9d1bbf8d161aa55b6a51061dc320188ead44962`. Approved semantic artifact:
+`afd6044612f15ec0838bafd1c3ed63a5e06f912b0dc3224c5249eb656a6e988b`.
+
+| Family | Audit coordinates | External authority | Evidence | Inputs / outputs / units / cadence | Mutation and order | openWEPP owner -> consumer | Licensing | Outcome |
+|---|---|---|---|---|---|---|---|---|
+| strata/geometry/root envelope | `rhessys/init/construct_canopy_strata.c` (`construct_canopy_strata`); `rhessys/util/sort_patch_layers.c` (`sort_patch_layers`) | Chen et al. (1999) is a discovery lead only | `CODE-OBSERVED` + `INFERENCE` | identity, cover, height/root depth `m`, area indexes `m2 m-2`; configuration + daily state | configure, then order tall-to-short; root layer vector absent | management/vegetation -> energy/hydrology/snow/residue/orchestrator | inspection only; cited concept may be independently derived | adopt typed topology; independently re-derive geometry/rooting |
+| radiation | `rhessys/rad/compute_direct_radiative_fluxes.c`; `compute_diffuse_radiative_fluxes.c`; `rhessys/cycle/surface_daily_F.c` | Norman/Chen anchors are discovery leads; `SC-LANDSURFACEENERGY-001` owns custody | `CODE-OBSERVED` + `INFERENCE` | spectral/thermal energy per ground area per day | top-to-bottom canopy then distinct ground recipients | LSE -> vegetation/snow/residue/soil | literature derivation only after separate admission | adopt recipient ledger; independently re-derive all physics |
+| liquid interception | `rhessys/hydro/compute_potential_rain_interception.c`; `compute_rain_stored.c` | Gash (1979) independently cataloged; Helvey/Ogee leads unadmitted | `CODE-OBSERVED` + `INFERENCE` | incident/storage/release water depth; daily | canopy store before downstream release | vegetation -> LSE/hydrology/snow/residue | no direct translation | adopt store/handoff; independently re-derive capacity/evaporation; defer stemflow |
+| conductance/water demand | `rhessys/hydro/compute_vascular_stratum_conductance.c`; `penman_monteith.c`; `rhessys/cycle/patch_daily_F.c` | Penman-Monteith/Jarvis and named response studies are discovery leads; Shuttleworth-Wallace is cataloged precedent | `CODE-OBSERVED` + `INFERENCE` | conductance, resistance, potential water depth, water-status feedback; daily | potential response, shared water arbitration, finalization | vegetation -> hydrology -> vegetation/LSE | literature-based independent derivation only | adopt Stage A/B/C; reject soil mutation; re-derive physiology |
+| phenology/carbon/allocation/turnover | `rhessys/cn/update_phenology.c`; `compute_farq_psn.c`; `compute_maint_resp.c`; `allocate_daily_growth.c` | Jolly et al. is already admitted for current GSI; all other named physiology is discovery-only | `CODE-OBSERVED` + `INFERENCE` | C/N areal pools and daily fluxes; geometry; daily/seasonal | phenology before potential response; hydrology before final allocation | vegetation -> residue/LSE/hydrology | no source formula/default | adopt state-machine boundary; defer/re-derive all constitutive laws |
+| carbon/nitrogen custody | `rhessys/cn/update_C_stratum_daily.c`; `update_N_stratum_daily.c`; `compute_leaf_litfall.c` | BIOME-BGC/Thornton/Nambiar leads not independently admitted | `CODE-OBSERVED` + `INFERENCE` | `kg C m-2`, `kg N m-2`, dead-material transfer; daily | donor state then receiver receipt | vegetation -> residue/biogeochemistry | inspection only | adopt immutable transfer; reject cross-owner mutation; defer soil biogeochemistry |
+| canopy snow | `rhessys/hydro/compute_potential_snow_interception.c`; `compute_snow_stored.c`; `compute_snow_sublimation.c`; `snowpack_daily_F.c` | Hedstrom-Pomeroy/Storck/etc. are backlog or discovery leads, not v1 formula authority | `CODE-OBSERVED` + `INFERENCE` | canopy SWE storage/releases/sublimation; daily | canopy store/release before separate ground snow | vegetation -> snow/frost + LSE | no direct translation | adopt single-owner split; defer all constitutive physics |
+| Stage order | `rhessys/cycle/patch_daily_I.c`; `patch_daily_F.c`; `canopy_stratum_growth.c` | physical custody + adjacent openWEPP contracts | `CODE-OBSERVED` + `INFERENCE` | same-interval states, requests, allocations, receipts | input -> A -> B -> C -> closure | orchestrator coordinates all owners | inspection/comparison only | adopt transaction; reject scalar feedback as layer authority |
+| guards/closure | `rhessys/util/sort_patch_layers.c`; `compute_farq_psn.c`; `patch_daily_F.c` | openWEPP typed-failure/conservation governance | `CODE-OBSERVED` + `INFERENCE` | domain states and water/C/N residuals | validate at each owner; atomic publication | every owner -> orchestrator | inspection only | adopt typed failures; reject silent clipping, perturbation, termination |
+| compatibility views | `rhessys/cycle/patch_daily_I.c`; `patch_daily_F.c`; `rhessys/output/output_patch.c` | adjacent openWEPP consumer contracts | `CODE-OBSERVED` + `INFERENCE` | finalized aggregate cover/LAI/height/water/element state | only after Stage C | vegetation adapter -> orchestrator/current consumers | inspection only | adopt read-only field-specific reduction; reject second model/cutover claim |
+
+Every source-reported citation is a discovery lead. No source equation,
+constant, threshold, default, name, or control flow is implementation authority.

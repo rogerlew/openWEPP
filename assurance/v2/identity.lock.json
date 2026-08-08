@@ -7,7 +7,7 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "4ce026c0baef927aecc932721441c6b3b3fd4bcdf7c5c7388be902d131ce62bd",
+  "previous_generation_id": "22b4fda37bc176ae4fedc04fdeb13900304a13f72eb6c920194e422627af6817",
   "sources": {
     "assurance/v2/README.md": "44a10480c37ac73435885bad01d26688bcd8da43c749991a21fd68ac00bd5942",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
@@ -29,7 +29,7 @@
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/evidence/agent-assistance-packet.json": "0948d2e2703a242ba4261b7b1a0289ca169240c4acd8441196f48d1c55e8dad7",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/manuscript.md": "30e3167417bcd027bf0b89fde4247708e628bdc58f50a327e9b3c93377b2958f",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/procedures/reproduce_canopy_synthesis.py": "80c9af19d4aac382ca8019726b2aef93caa4b9d14afd26cfd9ea3e7bbb35a110",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml": "8cf763adae6dc81fabecaed569afc88233d333ef15e61a666e0190e1d9b3d480",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/report.yaml": "d87918b4f29f6951060363e550e09fd330b56805aa562bee5769adeef2d57c61",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/results/canopy-synthesis.json": "515344ded0cc73b344cc40f7972439a2036adef39401443c432f79f72d605dba",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/supplement.md": "b5ae941a0513225f00f8e67cced8392dfff18b58c216296389b34250d2be06f6",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/evidence/agent-assistance-packet.json": "ecac488a9758797f86a9b20e2911f73787f858a44a29fbf6444dd88459b08b49",
@@ -68,8 +68,8 @@
     "crates/openwepp-runner/src/hillslope/snowbench_jennings_phase.rs": "fde95cdc7bb56f244c40f61af098d618e45dcf8215ec795f5676b097b35ea1f3",
     "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60",
     "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
-    "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "3eca7860a4e936ff09b5a250058c287b696fc4f199341f909d8719ee501cae53",
-    "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "5fb5abca137b25f929629703f5809513dc67fb4a0e8679d64d89c40bdca3dfc7",
+    "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c",
+    "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991",
     "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "95b52d75170c1a3f588c2ab0b801508e147bc27d4a2aed562ed7262c945f2468",
     "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "a562f128a7ff613594831c41749383c1ad47014432415169e3606fe56e3fdb5d",
     "docs/work-packages/20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/artifacts/non_snotel_rubric_baseline.json": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930",
@@ -134,8 +134,8 @@
   },
   "review_locks": {
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "ac2dc30278685b4e3dc6e50b49dcf0960ffe1eaaa10bef29a335e4d455d71b31",
-    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "f54c56f40f9f8a4d00b513b88e48c8254b0dcf7959ee2b22cdc89d9a4a9e95f6",
+    "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "5595ad882d3a5248693a5a272af489768241fce002e5e935772f7bfd4ff1de8b",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "abf9186842a03c8de148e4dae22a5b66c50881230287ed9ca7a3198aa4e533f9"
   },
-  "generation_id": "9cef8536aa42bcdaf01584c01ea44e76a718df2ea85e2a2de4eb7931ddd64a84"
+  "generation_id": "90313e7b476cb5366605a1a708c29b5c2eeb68ecac36f90b00b9160b882c4fd8"
 }
