@@ -509,6 +509,13 @@
 
 State as of `2026-08-07 UTC`:
 
+- `20260807-snow-stage3-persistent-accumulation-shadow-001/`
+  - EXECUTING / USER-AUTHORIZED: implement a typed, default-off, per-lane
+    accumulation-season Stage 3 evaluation state with snowfall/liquid custody,
+    disappearance/reappearance, restart equivalence, and independent mass and
+    energy reconstruction. Wind/exposure/geometry/magnitude uncertainties are
+    explicit claim limits, not blockers to the isolated evaluation mechanism.
+
 - `20260807-snow-stage3-paradise-wy2015-support-resolution-001/`
   - COMPLETE / SUPPORT CAUSE LOCALIZED / NON-BLOCKING DIAGNOSTIC: 19 partial
     sequential hours terminate at the no-resolved-surface boundary and are
