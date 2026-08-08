@@ -769,6 +769,10 @@ name = "snow_stage3_wind_source_custody_contract"
 path = "tests/integration/snow_stage3_wind_source_custody_contract.rs"
 
 [[test]]
+name = "land_surface_energy_balance_authority_contract"
+path = "tests/integration/land_surface_energy_balance_authority_contract.rs"
+
+[[test]]
 name = "snow_wet_compaction_operand_authority"
 path = "tests/integration/snow_wet_compaction_operand_authority.rs"
 

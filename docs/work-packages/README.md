@@ -510,11 +510,11 @@
 State as of `2026-08-08 UTC`:
 
 - `20260808-land-surface-energy-balance-authority-001/`
-  - ACTIVE / CONTRACT AUTHORITY ADMISSION: define the first-class land-surface
-    energy control volume, water/energy custody, branch ordering, typed guards,
-    cross-domain ownership, and implementation-ready test obligations. No
-    production physics, snow-terminal handoff consumption, default, publication,
-    or cutover is authorized in this package.
+  - COMPLETE / AUTHORITY ONLY: admitted `SC-LANDSURFACEENERGY-001` control-volume
+    conservation, exact-one water/energy custody, branch ordering, typed future
+    guards, and cross-domain ownership. Complete constitutive physics, runtime
+    state/consumer work, and snow-terminal receipt remain explicitly
+    `AUTHORITY_MISSING` or `IMPLEMENTATION_MISSING` and `NON_PROMOTABLE`.
 
 - `20260807-snow-terminal-enthalpy-event-numerics-001/`
   - COMPLETE / INTERNAL EVALUATION ONLY: implemented an error-controlled,

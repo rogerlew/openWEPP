@@ -1,6 +1,6 @@
 # Land-Surface Energy-Balance Authority
 
-Status: `queued`
+Status: `complete`
 
 Date: `2026-08-08`
 
@@ -135,6 +135,7 @@ exact commands/counts, finding closure, and verification verdicts.
 ## Progress
 
 - [x] (2026-08-08) User authorized scaffold and end-to-end execution.
-- [ ] Scaffold and commit the authority package.
-- [ ] Author and gate canonical contract authority.
-- [ ] Complete reviews, exact-head gates, verification, and disposition.
+- [x] (2026-08-08) Scaffolded and committed the authority package.
+- [x] (2026-08-08) Authored and gated canonical contract authority.
+- [x] (2026-08-08) Completed dual review and exact frozen quick/full gates;
+  terminal verification is recorded in package artifacts.

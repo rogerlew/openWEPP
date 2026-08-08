@@ -1,3 +1,3 @@
 # Active Prompts
 
-The kickoff prompt remains active until terminal verification passes.
+No active prompt remains. The kickoff prompt was archived after execution.

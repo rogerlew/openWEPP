@@ -1,5 +1,8 @@
 # Line-Count Governance
 
-Status: queued
+Status: not applicable
 
-Evidence mode: not-run
+Evidence mode: Static
+
+No production Rust file was created or modified. Line-count governance for a
+production implementation is deferred to the later scoped package.
