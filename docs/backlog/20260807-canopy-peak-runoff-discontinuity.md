@@ -117,6 +117,123 @@ Interactions matter. The investigation must trace the full management-to-peak
 dependency chain rather than varying LAI, cover, roughness, or geometry in
 isolation and assuming additivity.
 
+## Static Review of the openWEPP Default Solver
+
+### Scope and evidence level
+
+This section records a static source review of openWEPP revision
+`c979f2fbd8d9e482d66f74ee84ea003d654e17cc`. No runtime experiment has yet
+validated the conclusions below. They identify what the default WB16 path does
+and does not share with the inspected WEPP-Forest path; they do not establish
+that openWEPP's peak predictions are physically correct.
+
+The principal implementation is
+`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs`, with
+publication logic in
+`crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`.
+
+### Legacy defects not reproduced literally
+
+The openWEPP default solver does not appear to contain either of the two
+specific mechanisms identified in the WEPP-Forest investigation:
+
+1. **No positive-excess-only duration concentration.** WEPP-Forest distributes
+   daily surface-saturation surplus over only those storm intervals having
+   positive rainfall excess. Changing surface Ksat can consequently change
+   both the daily surplus and the selected duration, artificially concentrating
+   nearly the same runoff volume into a shorter interval. openWEPP instead sets
+   `effdrr_s` to the elapsed time from the first to the last hyetograph point and
+   computes the mean runoff rate as `q_runoff_m / effdrr_s`. Surface Ksat does
+   not select a smaller subset of positive-excess intervals in this WB16 path.
+2. **No `APPMTH`/`HDRIVE` sentinel switch.** The reviewed Rust path has no
+   `HDRIVE` implementation or `tp(2)` sentinel controlling a switch between two
+   peak solvers. `direct_peak_runoff_branch` implements dimensionless
+   approximate-method branches that are algebraically continuous at their
+   intended boundaries, subject to runtime confirmation.
+
+This narrows the defect hypothesis: the exact WEPP-Forest concentration and
+solver-regime defects are not visibly carried into openWEPP, but related timing
+and publication defects remain possible.
+
+### Confirmed structural concern: WB16 ignores the modeled runoff timing
+
+openWEPP already constructs an hourly surface-runoff shape in
+`dc01_surface_runoff_hourly_weights`. Those weights combine hourly WB14
+infiltration excess, hourly surface-saturation carry, routed melt, and runon.
+They are then used for inter-OFE transfer, hourly erosion forcing, and HBP
+serialization.
+
+The default WB16 peak calculation does not consume that hourly runoff shape.
+Instead, it uses:
+
+- total daily runoff depth, including saturation addback;
+- the full rainfall-hyetograph elapsed duration; and
+- maximum raw rainfall intensity.
+
+Consequently, WB16 assigns saturation-excess, melt, and runon timing from a
+rainfall-envelope surrogate rather than from the runoff sources that the model
+actually calculated. Distinct hourly runoff hydrographs can therefore produce
+the same WB16 peak when their daily totals and rainfall operands match. A long
+storm can spread a short saturation pulse, while saturation-, melt-, or
+runon-driven runoff without corresponding rainfall has no physically faithful
+timing representation. This avoids the specific WEPP-Forest artificial
+concentration mechanism, but it can introduce artificial spreading or
+mistiming of peaks.
+
+### Confirmed publication-unit inconsistency
+
+The internal WB16 calculation divides runoff depth in meters by duration in
+seconds and multiplies by a dimensionless peak factor. Its result therefore has
+units of meters per second. The later duration calculation,
+`q_runoff_m / peakro_raw`, confirms that dimensional interpretation.
+
+The value is nevertheless named `peak_runoff_m3_s` and published as cubic
+meters per second. The publication path converts runoff depth to event volume
+using hillslope area but passes the peak value through unchanged; no area or
+unit-width conversion was found in the reviewed path. The current science
+contract is also internally inconsistent: it describes peak discharge per unit
+width in square meters per second in one place and an exported volumetric rate
+in cubic meters per second in another.
+
+Unless an unreviewed downstream boundary supplies the missing conversion, the
+default output is a depth rate labeled as a volumetric discharge. This is a
+separate, confirmed static defect from the Hill 106 canopy discontinuity and
+must be resolved before peak magnitudes can be interpreted or compared.
+
+### `EffDur` remains derived, not causal
+
+The Rust path calculates peak first and then sets runoff duration to daily
+runoff depth divided by peak rate, capped at 86,400 seconds. Thus openWEPP also
+uses a rectangular-equivalent duration after the peak calculation. A collapsed
+reported duration is a symptom of a large peak, not evidence that a shorter
+physical runoff pulse caused it.
+
+### Implications for this backlog
+
+The static review changes the openWEPP-specific investigation target. It should
+not begin by searching for the exact WEPP-Forest `tp(2)` switch or
+positive-excess interval selection. It should determine whether the default
+solver's rainfall-envelope surrogate, dimensionless peak branches, or unit
+publication path can produce the Hill 106 reversal or other nonphysical
+responses.
+
+The defect-closure work package must additionally:
+
+1. make the existing hourly surface-runoff hydrograph, or a scientifically
+   justified subhourly equivalent, authoritative for peak timing;
+2. decide explicitly whether peak output is a depth rate (`m/s`), unit-width
+   discharge (`m2/s`), or volumetric discharge (`m3/s`), apply spatial
+   conversion exactly once, and align names, schemas, aliases, and contracts;
+3. retain `Q / peak` only as a clearly labeled rectangular-equivalent duration;
+4. add cases in which equal daily runoff totals but different hourly
+   saturation-excess shapes produce distinct, physically ordered peaks;
+5. add saturation-only, melt-only, and runon-only timing cases;
+6. verify area scaling and dimensional closure for every published peak field;
+7. test that increasing hydraulic resistance at fixed forcing and runoff does
+   not increase peak without a traced physical mechanism; and
+8. expose the selected method, branch, operands, source-timing distribution,
+   clamps, and conversions in event diagnostics.
+
 ## Required Investigation
 
 ### 1. Establish deterministic reproduction
