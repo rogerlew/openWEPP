@@ -1,3 +1,3 @@
 # Archived Prompts
 
-The byte-identical kickoff prompt moves here at terminal disposition.
+Contains the byte-identical kickoff prompt retained at terminal disposition.

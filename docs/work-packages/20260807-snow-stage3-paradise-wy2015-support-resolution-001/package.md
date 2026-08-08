@@ -25,8 +25,8 @@ threshold, or let this one censored diagnostic carry a physical pass/fail claim.
 - [x] (2026-08-07) Scaffolded from campaign row 31 and predecessor evidence.
 - [x] (2026-08-07) Froze exact inputs, algorithms, claims, and write set.
 - [x] (2026-08-07) Implemented and tested the independent localization consumer.
-- [x] (2026-08-07) Executed immutable attempt 002 and reconciled all totals.
-- [ ] Complete dual review, gates, dual verification, and disposition.
+- [x] (2026-08-07) Executed custody-complete immutable attempt 004 and reconciled all totals.
+- [x] (2026-08-07) Completed gates, dual review, dual verification, and disposition.
 
 ## Implementation Intent
 
@@ -40,8 +40,11 @@ alter production behavior. Existing schema-v6 traces are the only result input.
 - Parent result:
   `target/snow_stage3_evolving_state_carrier_plausibility_reconciliation/attempt-004/results/evolving-carrier-plausibility-results.json`, SHA-256
   `7bd19a24b63375dba9f61e8d522afcc43b42b9f9a8dd8d6156cbe9fad1fbbbff`.
-- Parent execution receipt:
+- Contextual parent analysis receipt (not consumed by this analyzer):
   `target/snow_stage3_evolving_state_carrier_plausibility_reconciliation/attempt-004/execution-receipt.json`.
+- Consumed retained operator receipt:
+  `target/snow_stage3_operator_reconciliation_v3/execution-receipt.json`,
+  SHA-256 `61564035575b165722213abe0657a4dc70b04a1d72c1200b1bb5e35d435fdc9e`.
 - Exact Paradise paired/sequential schema-v6 traces and their hashes are bound
   by the parent protocol freeze and operator-reconciliation receipt.
 - Target row: `snotel_paradise_wa`, water year `2015`, observation-window end

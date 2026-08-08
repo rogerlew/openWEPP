@@ -4,13 +4,20 @@ Status: `PASS / exact support cause localized`.
 
 Evidence mode: `Ran`.
 
-Immutable attempt 002 at `167e2021a` reconciles the parent row exactly:
+Custody-complete immutable attempt 004 at `21194b658` reconciles the parent row exactly:
 
 - affected hours: `202` = `19` partial + `183` unmatched;
 - omitted magnitude: `98,075,671.33551113 J m^-2`;
 - support ratio remains `0.06217301915749281` against frozen `0.05`;
-- result SHA-256: `871122d75395adb1ae3b0c735d782f8611b052ec14cd0a8c95c9ea3b5a4af1f4`;
-- receipt SHA-256: `b388c495d0cb99f3da198d17d5a16b4d7e6f62772845ecd50e38016924bc6e41`.
+- result SHA-256: `ceb93420963f3cc7a628f65ab41fe31f2c8c62493237365c10058091c2ef2081`;
+- receipt SHA-256: `a6a98988cb25cd59885089eac8b8717f6d6e806199b3f732155045b441500c9e`.
+
+The protocol binds both traces, the parent result, the consumed retained
+operator receipt, climate calendar, observation series, and the prospectively
+frozen `2015-04-14` window end. The parent analysis receipt is contextual and
+is not consumed by this analyzer.
+Per-hour and aggregate term closure, aggregate support-class closure, and
+unique `(date, hour)` identity all pass.
 
 ## Direct Cause Evidence
 
