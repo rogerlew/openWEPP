@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "package_id": "20260807-snow-terminal-enthalpy-event-numerics-001",
+  "operator": "persistent_accumulation_shadow_v1",
+  "claim": "event_local_snow_domain_numerics",
+  "receiving_surface": "unresolved_censored_handoff",
+  "production_activation": false,
+  "calibration": false
+}

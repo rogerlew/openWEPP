@@ -332,8 +332,8 @@ The revised sequence is therefore:
    reconstruction. Wind/exposure, canopy, geometry, magnitude, terminal-
    recipient, and physical-efficacy questions remain claim limits rather than
    blockers to the isolated mechanics;
-7. admit terminal enthalpy-event numerics separately from the first-class
-   snow-free land-surface energy subsystem; and
+7. executing: admit and implement terminal enthalpy-event numerics separately
+   from the first-class snow-free land-surface energy subsystem; and
 8. consider one atomic CoE retirement only after all owner, consumer, default,
    rollback, assurance, terminal, and receiving-surface gates pass.
 

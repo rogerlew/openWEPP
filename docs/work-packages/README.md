@@ -509,6 +509,12 @@
 
 State as of `2026-08-07 UTC`:
 
+- `20260807-snow-terminal-enthalpy-event-numerics-001/`
+  - EXECUTING / CONTRACT-FIRST: implement an error-controlled, evaluation-only
+    shallow-snow enthalpy solve and localized solid-exhaustion event. Snow-side
+    event closure is current scope; post-snow receiving-surface disposition,
+    production ownership, defaults, publication, and cutover remain excluded.
+
 - `20260807-snow-stage3-persistent-accumulation-shadow-001/`
   - COMPLETE / PHYSICAL CLAIMS HELD: implemented a typed, default-off, per-lane
     accumulation-season Stage 3 evaluation state with snowfall/liquid custody,
