@@ -3,6 +3,7 @@
   "source_head": "624d169ea6b860f5d6c0972ddc9ef023c1e6a98c",
   "site": "snotel_paradise_wa",
   "water_year": 2015,
+  "window_end": "2015-04-14",
   "support_threshold": 0.05,
   "expected_parent": {
     "unmatched_hour_count": 183,
@@ -26,6 +27,14 @@
     "sequential_trace": {
       "path": "target/snow_stage3_operator_reconciliation_v3/runs/snotel_paradise_wa/sequential/snotel_paradise_wa-operator-reconciliation.snow.jsonl",
       "sha256": "b500e1b41a6d17722940322e4446b87ac71afee5cd80cea2879eb4c2bb2b7688"
+    },
+    "climate": {
+      "path": "target/snow_stage3_operator_reconciliation_v3/fixtures/snotel_paradise_wa/p2.cli",
+      "sha256": "6e0c874e38825a7f4def18b87d81e61be9c59496a25e5f5affa9d25755db173c"
+    },
+    "observation": {
+      "path": "target/snow_stage3_operator_reconciliation_v3/inputs/observations/snotel_paradise_wa.csv",
+      "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
     }
   },
   "classification": {

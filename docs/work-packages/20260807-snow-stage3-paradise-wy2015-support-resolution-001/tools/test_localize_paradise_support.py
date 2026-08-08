@@ -1,5 +1,6 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+import hashlib
 
 
 PATH = Path(__file__).with_name("localize_paradise_support.py")
@@ -52,8 +53,20 @@ def test_hourly_status_is_exactly_24_entries() -> None:
 def test_threshold_cannot_alias_observed_ratio() -> None:
     result = {
         "counts": {"unmatched_hour_count": 1, "partial_support_hour_count": 0},
-        "affected_hours": [{}],
-        "totals": {"omitted_magnitude_j_m2": 5.0},
+        "affected_hours": [
+            {
+                "date": "2000-01-01",
+                "hour_index": 1,
+                "omitted_magnitude_j_m2": 5.0,
+                "omitted_by_term_j_m2": {"sensible": 5.0},
+            }
+        ],
+        "totals": {
+            "omitted_magnitude_j_m2": 5.0,
+            "omitted_sensible_j_m2": 5.0,
+            "omitted_PARTIAL_COMMON_SUPPORT_j_m2": 0.0,
+            "omitted_UNMATCHED_S_ONLY_j_m2": 5.0,
+        },
     }
     freeze = {
         "support_threshold": 0.1,
@@ -70,3 +83,94 @@ def test_threshold_cannot_alias_observed_ratio() -> None:
         assert "threshold was aliased" in str(error)
     else:
         raise AssertionError("threshold alias must fail")
+
+
+def test_term_closure_rejects_signed_cancellation() -> None:
+    result = {
+        "counts": {"unmatched_hour_count": 1, "partial_support_hour_count": 0},
+        "affected_hours": [
+            {
+                "date": "2000-01-01",
+                "hour_index": 1,
+                "omitted_magnitude_j_m2": 5.0,
+                "omitted_by_term_j_m2": {"sensible": 8.0, "latent": -3.0},
+            }
+        ],
+        "totals": {
+            "omitted_magnitude_j_m2": 5.0,
+            "omitted_sensible_j_m2": 8.0,
+            "omitted_latent_j_m2": -3.0,
+            "omitted_PARTIAL_COMMON_SUPPORT_j_m2": 0.0,
+            "omitted_UNMATCHED_S_ONLY_j_m2": 5.0,
+        },
+    }
+    freeze = {
+        "support_threshold": 0.05,
+        "expected_parent": {
+            "unmatched_hour_count": 1,
+            "partial_support_hour_count": 0,
+            "omitted_magnitude_j_m2": 5.0,
+            "support_omission_ratio": 0.1,
+        },
+    }
+    try:
+        MODULE.validate(result, freeze)
+    except RuntimeError as error:
+        assert "omitted-term closure" in str(error)
+    else:
+        raise AssertionError("signed term cancellation must fail")
+
+
+def test_duplicate_hour_identity_fails() -> None:
+    row_result = {
+        "date": "2000-01-01",
+        "hour_index": 1,
+        "omitted_magnitude_j_m2": 2.5,
+        "omitted_by_term_j_m2": {"sensible": 2.5},
+    }
+    result = {
+        "counts": {"unmatched_hour_count": 2, "partial_support_hour_count": 0},
+        "affected_hours": [row_result, dict(row_result)],
+        "totals": {
+            "omitted_magnitude_j_m2": 5.0,
+            "omitted_sensible_j_m2": 5.0,
+            "omitted_PARTIAL_COMMON_SUPPORT_j_m2": 0.0,
+            "omitted_UNMATCHED_S_ONLY_j_m2": 5.0,
+        },
+    }
+    freeze = {
+        "support_threshold": 0.05,
+        "expected_parent": {
+            "unmatched_hour_count": 2,
+            "partial_support_hour_count": 0,
+            "omitted_magnitude_j_m2": 5.0,
+            "support_omission_ratio": 0.1,
+        },
+    }
+    try:
+        MODULE.validate(result, freeze)
+    except RuntimeError as error:
+        assert "duplicate identities" in str(error)
+    else:
+        raise AssertionError("duplicate hour identity must fail")
+
+
+def test_input_custody_rejects_tamper(tmp_path: Path) -> None:
+    path = tmp_path / "input.txt"
+    path.write_text("original", encoding="utf-8")
+    freeze = {
+        "inputs": {
+            "sample": {
+                "path": "input.txt",
+                "sha256": hashlib.sha256(b"original").hexdigest(),
+            }
+        }
+    }
+    MODULE.verify_inputs(freeze, tmp_path)
+    path.write_text("tampered", encoding="utf-8")
+    try:
+        MODULE.verify_inputs(freeze, tmp_path)
+    except RuntimeError as error:
+        assert "custody mismatch" in str(error)
+    else:
+        raise AssertionError("tampered input must fail custody")

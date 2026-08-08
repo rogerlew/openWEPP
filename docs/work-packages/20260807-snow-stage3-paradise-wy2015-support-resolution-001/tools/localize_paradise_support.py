@@ -44,6 +44,13 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_inputs(freeze: dict[str, Any], root: Path = REPO) -> None:
+    for item in freeze["inputs"].values():
+        path = root / item["path"]
+        if sha256(path) != item["sha256"]:
+            raise RuntimeError(f"custody mismatch: {path}")
+
+
 def require_close(label: str, actual: float, expected: float) -> None:
     tolerance = max(1.0e-6, 1.0e-12 * (abs(actual) + abs(expected)))
     if abs(actual - expected) > tolerance:
@@ -126,6 +133,8 @@ def localize(freeze: dict[str, Any]) -> dict[str, Any]:
     dates = carrier.climate_dates(climate_path)
     peaks, _ = carrier.observed_peaks(observation)
     peak = peaks[freeze["water_year"]][0]
+    if peak.isoformat() != freeze["window_end"]:
+        raise RuntimeError("observation-selected window end differs from freeze")
     affected: list[dict[str, Any]] = []
     totals: defaultdict[str, float] = defaultdict(float)
     counts: Counter[str] = Counter()
@@ -182,6 +191,7 @@ def localize(freeze: dict[str, Any]) -> dict[str, Any]:
                     totals[f"omitted_{term}_j_m2"] += omitted_term
                 omitted = float(reduced["omitted_magnitude_j_m2"])
                 totals["omitted_magnitude_j_m2"] += omitted
+                totals[f"omitted_{support_class}_j_m2"] += omitted
                 counts[support_class] += 1
                 affected.append(
                     {
@@ -224,6 +234,42 @@ def validate(result: dict[str, Any], freeze: dict[str, Any]) -> None:
         float(result["totals"]["omitted_magnitude_j_m2"]),
         float(expected["omitted_magnitude_j_m2"]),
     )
+    identities = [(row["date"], row["hour_index"]) for row in result["affected_hours"]]
+    if len(set(identities)) != len(identities):
+        raise RuntimeError("affected-hour inventory contains duplicate identities")
+    for row_value in result["affected_hours"]:
+        if any(
+            float(value) < -1.0e-9
+            for value in row_value["omitted_by_term_j_m2"].values()
+        ):
+            raise RuntimeError("hour omitted-term closure contains negative magnitude")
+        require_close(
+            "hour omitted-term closure",
+            sum(float(value) for value in row_value["omitted_by_term_j_m2"].values()),
+            float(row_value["omitted_magnitude_j_m2"]),
+        )
+    require_close(
+        "aggregate omitted-term closure",
+        sum(
+            float(value)
+            for key, value in result["totals"].items()
+            if key.startswith("omitted_")
+            and key.endswith("_j_m2")
+            and key
+            not in {
+                "omitted_magnitude_j_m2",
+                "omitted_PARTIAL_COMMON_SUPPORT_j_m2",
+                "omitted_UNMATCHED_S_ONLY_j_m2",
+            }
+        ),
+        float(result["totals"]["omitted_magnitude_j_m2"]),
+    )
+    require_close(
+        "aggregate omitted-class closure",
+        float(result["totals"]["omitted_PARTIAL_COMMON_SUPPORT_j_m2"])
+        + float(result["totals"]["omitted_UNMATCHED_S_ONLY_j_m2"]),
+        float(result["totals"]["omitted_magnitude_j_m2"]),
+    )
     if math.isclose(freeze["support_threshold"], expected["support_omission_ratio"]):
         raise RuntimeError("threshold was aliased to the observed ratio")
 
@@ -247,10 +293,7 @@ def main() -> None:
     if tracked:
         raise RuntimeError("result-bearing execution requires clean tracked files")
     freeze = json.loads(FREEZE.read_text(encoding="utf-8"))
-    for item in freeze["inputs"].values():
-        path = REPO / item["path"]
-        if sha256(path) != item["sha256"]:
-            raise RuntimeError(f"custody mismatch: {path}")
+    verify_inputs(freeze)
     result = localize(freeze)
     validate(result, freeze)
     result["analysis_head"] = subprocess.run(
