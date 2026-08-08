@@ -2,8 +2,9 @@
 
 ## Status
 
-- `state`: **concept** - high-value ecosystem-process architecture; not
-  authorized for kernel implementation or default activation
+- `state`: **promoting through authority package** - high-value
+  ecosystem-process architecture; not authorized for kernel implementation or
+  default activation
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
@@ -17,6 +18,8 @@
   not block literature-derived independent implementation
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
+- `active authority package`:
+  [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
 
 ## Summary
 
