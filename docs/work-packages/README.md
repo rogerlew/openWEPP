@@ -510,11 +510,11 @@
 State as of `2026-08-08 UTC`:
 
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
-  - TERMINAL VERIFICATION / AUTHORITY ONLY: independently structured
+  - COMPLETE / AUTHORITY ONLY: independently structured
     `SC-VEGETATION-001`, native canopy-stratum semantics, typed Stage A/B/C
     vegetation-hydrology arbitration, cross-domain ownership, and a sanitized
-    source/provenance firewall are admitted subject to final dual verification.
-    Production Rust, direct RHESSys translation,
+    source/provenance firewall are admitted after dual verification. Production
+    Rust, direct RHESSys translation,
     independent constitutive physiology, calibration, runtime selection, and
     default activation remain excluded or authority-gated.
 

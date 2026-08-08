@@ -1,6 +1,6 @@
 # Vegetation Source-Provenance And Boundary Authority
 
-Status: `terminal_verification`
+Status: `complete`
 
 Date: `2026-08-08`
 
@@ -255,6 +255,6 @@ expression before receiving the passing sanitized artifact.
   machine-rendered manifest output without changing report authority.
 - [x] (2026-08-08) Authored the canonical vegetation boundary authority and
   reconciled adjacent ownership without production Rust changes.
-- [ ] (2026-08-08) Complete dual terminal verification against the reviewed
-  commit, then record lifecycle reconciliation and final disposition. Dual
-  review, prompt archival, and all preceding gates are complete.
+- [x] (2026-08-08) Completed dual terminal verification against reviewed
+  substantive commit `40d431618419e6b2e962e2844a1d3c4317b38e0b`, lifecycle
+  reconciliation, prompt archival, and final disposition.
