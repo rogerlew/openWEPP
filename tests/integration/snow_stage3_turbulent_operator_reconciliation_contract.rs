@@ -246,7 +246,7 @@ fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 134",
+        "contract_version: 135",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -295,7 +295,7 @@ fn v130_retains_production_and_claim_holds() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    for required in ["v134", "schema-v7 evidence", "production", "cutover"] {
+    for required in ["v135", "schema-v8", "production", "cutover"] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
 }
@@ -555,7 +555,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
     assert_v131_normative_sections(&snow, &energy);
 
     for required in [
-        "contract_version: 134",
+        "contract_version: 135",
         "INV-SNOWFREEZE-098",
         "OBL-SNOWFREEZE-P-071",
         "OBL-SNOWFREEZE-C-013",
@@ -567,7 +567,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 11",
+        "contract_version: 12",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
         "INV-SNOWENERGY-032",
@@ -723,10 +723,6 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(energy.contains("makes no production correction"));
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
-    assert!(
-        index.contains(
-            "v134 admits only default-off evaluator-owned persistent continuity mechanics"
-        )
-    );
-    assert!(index.contains("v11 recovers direct retained-value custody"));
+    assert!(index.contains("v135 admits a fingerprint-bound terminal-event extension"));
+    assert!(index.contains("v12 admits evaluation-only shallow-pack enthalpy"));
 }

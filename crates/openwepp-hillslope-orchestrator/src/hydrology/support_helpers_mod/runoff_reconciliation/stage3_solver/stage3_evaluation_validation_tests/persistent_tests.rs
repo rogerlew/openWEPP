@@ -167,3 +167,93 @@ fn persistent_shadow_disappears_dorms_and_reappears() {
     ).unwrap();
     assert_eq!(reappeared.lifecycle, "reappeared");
 }
+
+#[test]
+fn terminal_event_request_is_state_bound_and_censors_remaining_time() {
+    let mut inputs = reconciliation_inputs();
+    inputs.snow_layers.truncate(1);
+    inputs.snow_layers[0].mass_swe_m = 0.000_6;
+    inputs.snow_layers[0].thickness_m = 0.001_2;
+    inputs.snow_layers[0].cold_content_j_m2 = 0.0;
+    inputs.snow_layers[0].temperature_c = 0.0;
+    inputs.hourly = [DirectSnowHourlyForcing {
+        radiation_mj_m2: 1_000.0,
+        air_temperature_c: 0.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    inputs.surface_energy_options.daily_solar_radiation_mj_m2 = 48.0;
+    let ordinary = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+        12,
+        inputs.snow_layers.clone(),
+    )
+    .unwrap();
+    assert!(Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
+        &inputs,
+        &ordinary,
+        12,
+        0,
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .is_err());
+    let terminal = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
+        12,
+        inputs.snow_layers.clone(),
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .unwrap();
+    assert!(Wb11HydrologyKernel::evaluate_stage3_persistent_day(
+        &inputs, &terminal, 12, 0,
+    )
+    .is_err());
+    let day = Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
+        &inputs,
+        &terminal,
+        12,
+        0,
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .unwrap();
+    let event = day.terminal_event.expect("localized exhaustion event");
+    assert!(event.event_occurred);
+    assert!(event.evaluated_seconds > 0.0);
+    assert!(event.unevaluated_seconds > 0.0);
+    assert!(day.end_ice_kg_m2.abs() <= f64::EPSILON);
+    assert!(day.state.layers.is_empty());
+    assert!(event.solid_mass_closure_residual_kg_m2.abs() <= 1.0e-9);
+    assert!(event.liquid_mass_closure_residual_kg_m2.abs() <= 1.0e-9);
+    assert!(event.energy_closure_residual_j_m2.abs() <= 1.0e-6);
+}
+
+#[test]
+fn terminal_no_event_refreeze_closes_persistent_day() {
+    let mut inputs = reconciliation_inputs();
+    inputs.snow_layers.truncate(1);
+    inputs.snow_layers[0].mass_swe_m = 0.000_6;
+    inputs.snow_layers[0].thickness_m = 0.001_2;
+    inputs.snow_layers[0].liquid_water_m = 0.000_1;
+    inputs.snow_layers[0].cold_content_j_m2 = 50_000.0;
+    inputs.snow_layers[0].temperature_c = -5.0;
+    inputs.hourly = [DirectSnowHourlyForcing {
+        air_temperature_c: -10.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    let initial = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
+        14,
+        inputs.snow_layers.clone(),
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .unwrap();
+    let day = Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
+        &inputs,
+        &initial,
+        14,
+        0,
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .unwrap();
+    assert!(day.refrozen_kg_m2 > 0.0);
+    assert!(day.ice_mass_closure_residual_kg_m2.abs() <= 1.0e-12);
+    assert!(day.total_water_closure_residual_kg_m2.abs() <= 1.0e-12);
+    assert!(!day.terminal_intervals.is_empty());
+    assert!(!day.terminal_intervals.last().unwrap().event_occurred);
+}

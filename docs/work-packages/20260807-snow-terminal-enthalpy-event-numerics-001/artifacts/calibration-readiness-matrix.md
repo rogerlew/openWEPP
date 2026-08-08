@@ -2,7 +2,7 @@
 
 Status: frozen / calibration not applicable
 
-- `science_implementation_status`: `NOT_IMPLEMENTED` at scaffold.
+- `science_implementation_status`: `IMPLEMENTED`.
 - `calibration_evidence_status`: `NOT_APPLICABLE`.
 - `identifiability_status`: `NOT_APPLICABLE`.
 

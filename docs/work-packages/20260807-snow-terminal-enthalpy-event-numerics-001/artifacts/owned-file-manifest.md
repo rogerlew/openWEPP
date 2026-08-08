@@ -1,10 +1,17 @@
 # Owned File Manifest
 
-Status: frozen prospectively
+Status: frozen before production edits
 
 Evidence mode: Static
 
-Owned paths are the exact package write set declared in `package.md`. Source
-paths will be narrowed to existing Stage 3 evaluator, state, runner trace, and
-focused test files before production edits. No receiving-surface module is
-owned.
+Owned production/test paths are narrowed to:
+
+- orchestrator Stage 3 support types, evaluator module wiring, new
+  `evaluation/terminal_event.rs`, and focused terminal tests;
+- runner persistent request/state handoff, new schema-v8 trace/consumer module,
+  and focused tests;
+- canonical snow contracts/index and focused contract tests;
+- package, roadmap/catalog, and DRAFT assurance source-adoption artifacts.
+
+No receiving-surface, soil, frost, routing, evaporation, public-output, or
+production CoE module is owned.

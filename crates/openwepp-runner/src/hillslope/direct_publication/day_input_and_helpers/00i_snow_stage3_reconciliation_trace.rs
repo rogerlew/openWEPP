@@ -15,7 +15,9 @@ fn direct_snow_trace_schema(
         &openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult,
     >,
 ) -> &'static str {
-    if persistent.is_some() {
+    if persistent.is_some_and(|value| value.state.schema_version == 2) {
+        "openwepp-r7h-direct-production-snow-trace-v8"
+    } else if persistent.is_some() {
         "openwepp-r7h-direct-production-snow-trace-v7"
     } else if reconciliation.is_some() {
         "openwepp-r7h-direct-production-snow-trace-v6"

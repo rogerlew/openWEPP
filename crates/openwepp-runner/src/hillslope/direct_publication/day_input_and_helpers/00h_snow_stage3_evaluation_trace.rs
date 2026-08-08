@@ -1308,6 +1308,7 @@ mod stage3_evaluation_real_consumer_tests {
             start_state: Box::new(
                 openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
                     schema_version: 1,
+                    terminal_event_model: None,
                     fingerprint: 0x5bcd_7547_4b65_2ea4,
                     lane_id: 0,
                     next_interval_index: 0,
@@ -1328,6 +1329,7 @@ mod stage3_evaluation_real_consumer_tests {
             ),
             state: openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
                 schema_version: 1,
+                terminal_event_model: None,
                 fingerprint: 0x7428_f289_6003_8068,
                 lane_id: 0,
                 next_interval_index: 1,
@@ -1355,6 +1357,7 @@ mod stage3_evaluation_real_consumer_tests {
             snowfall_kg_m2: 2.0,
             external_liquid_kg_m2: 3.0,
             deposition_kg_m2: 0.0,
+            refrozen_kg_m2: 0.0,
             sublimation_kg_m2: 0.25,
             melt_kg_m2: 1.75,
             end_ice_kg_m2: 0.0,
@@ -1364,6 +1367,8 @@ mod stage3_evaluation_real_consumer_tests {
             total_water_closure_residual_kg_m2: 0.0,
             unresolved_liquid_kg_m2: 4.75,
             terminal_unallocated_energy_j_m2: 17.0,
+            terminal_event: None,
+            terminal_intervals: Vec::new(),
         };
         assert_eq!(
             direct_snow_trace_schema(
@@ -1398,6 +1403,8 @@ mod stage3_evaluation_real_consumer_tests {
             consumed["schema"],
             "openwepp-r7h-direct-production-snow-trace-v7"
         );
+        assert!(consumed.get("stage3_terminal_event_model").is_none());
+        assert!(consumed.get("stage3_terminal_event").is_none());
         assert_eq!(
             format!(
                 "{:016x}",

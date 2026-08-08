@@ -2,6 +2,7 @@
 use super::*;
 
 mod evaluation;
+mod terminal_event;
 
 impl Wb11HydrologyKernel {
     pub fn initialize_stage3_persistent_state(
@@ -9,6 +10,34 @@ impl Wb11HydrologyKernel {
         layers: Vec<DirectSnowLayerState>,
     ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
         Self::initialize_stage3_persistent_state_with_retained_liquid(lane_id, layers, 0.0)
+    }
+
+    pub fn initialize_stage3_persistent_state_with_terminal_event(
+        lane_id: u32,
+        layers: Vec<DirectSnowLayerState>,
+        request: DirectSnowTerminalEventRequest,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        Self::initialize_stage3_persistent_state_with_retained_liquid_and_terminal_event(
+            lane_id, layers, 0.0, request,
+        )
+    }
+
+    pub fn initialize_stage3_persistent_state_with_retained_liquid_and_terminal_event(
+        lane_id: u32,
+        layers: Vec<DirectSnowLayerState>,
+        detached_retained_liquid_kg_m2: f64,
+        request: DirectSnowTerminalEventRequest,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        let mut state = Self::initialize_stage3_persistent_state_with_retained_liquid(
+            lane_id,
+            layers,
+            detached_retained_liquid_kg_m2,
+        )?;
+        state.schema_version = 2;
+        state.terminal_event_model = Some(request.model);
+        state.fingerprint = Self::stage3_persistent_state_fingerprint(&state);
+        Self::validate_stage3_persistent_state(&state)?;
+        Ok(state)
     }
 
     pub fn initialize_stage3_persistent_state_with_retained_liquid(
@@ -25,6 +54,7 @@ impl Wb11HydrologyKernel {
             + detached_retained_liquid_kg_m2;
         let state = DirectSnowStage3PersistentState {
             schema_version: 1,
+            terminal_event_model: None,
             fingerprint: 0,
             lane_id,
             next_interval_index: 0,
@@ -108,6 +138,53 @@ impl Wb11HydrologyKernel {
         lane_id: u32,
         interval_index: u64,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        if state.schema_version != 1 {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_request_state_mismatch",
+                f64::from(state.schema_version),
+                Some(1.0),
+                Some(1.0),
+            )
+            .into());
+        }
+        Self::evaluate_stage3_persistent_day_internal(inputs, state, lane_id, interval_index, None)
+    }
+
+    pub fn evaluate_stage3_persistent_day_with_terminal_event(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        request: DirectSnowTerminalEventRequest,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        if state.schema_version != 2 || state.terminal_event_model != Some(request.model) {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_persistent_request_state_mismatch",
+                f64::from(state.schema_version),
+                Some(2.0),
+                Some(2.0),
+            )
+            .into());
+        }
+        Self::evaluate_stage3_persistent_day_internal(
+            inputs,
+            state,
+            lane_id,
+            interval_index,
+            Some(request),
+        )
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn evaluate_stage3_persistent_day_internal(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        terminal_request: Option<DirectSnowTerminalEventRequest>,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
         if state.lane_id != lane_id || state.next_interval_index != interval_index {
             return Err(Self::stage3_domain_error(
@@ -141,6 +218,8 @@ impl Wb11HydrologyKernel {
             inputs,
             state.layers.clone(),
             cold_content,
+            terminal_request,
+            state.detached_retained_liquid_kg_m2,
         )?;
         Self::validate_stage3_shadow_summary(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -161,7 +240,9 @@ impl Wb11HydrologyKernel {
             .tuples
             .iter()
             .filter_map(|tuple| tuple.deposition_kg_m2)
-            .sum::<f64>();
+            .sum::<f64>()
+            + summary.terminal_deposition_kg_m2;
+        let refrozen_kg_m2 = summary.terminal_refrozen_kg_m2;
         let end_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&summary.final_layers)
             * STAGE3_RHO_WATER_KG_M3;
         let end_retained_liquid_kg_m2 = summary
@@ -171,10 +252,17 @@ impl Wb11HydrologyKernel {
             .sum::<f64>();
         let retained_liquid_censored_loss_kg_m2 =
             (start_retained_liquid_kg_m2 - end_retained_liquid_kg_m2).max(0.0);
-        let unresolved_liquid_kg_m2 = external_liquid_kg_m2
-            + summary.melt_kg_m2
-            + retained_liquid_censored_loss_kg_m2;
-        let residual = start_ice_kg_m2 + snowfall_kg_m2 + deposition_kg_m2
+        let unresolved_liquid_kg_m2 = if terminal_request.is_some() {
+            (external_liquid_kg_m2 + summary.melt_kg_m2 + start_retained_liquid_kg_m2
+                - refrozen_kg_m2
+                - end_retained_liquid_kg_m2)
+                .max(0.0)
+        } else {
+            external_liquid_kg_m2
+                + summary.melt_kg_m2
+                + retained_liquid_censored_loss_kg_m2
+        };
+        let residual = start_ice_kg_m2 + snowfall_kg_m2 + deposition_kg_m2 + refrozen_kg_m2
             - summary.sublimation_kg_m2
             - summary.melt_kg_m2
             - end_ice_kg_m2;
@@ -306,6 +394,7 @@ impl Wb11HydrologyKernel {
             snowfall_kg_m2,
             external_liquid_kg_m2,
             deposition_kg_m2,
+            refrozen_kg_m2,
             sublimation_kg_m2: summary.sublimation_kg_m2,
             melt_kg_m2: summary.melt_kg_m2,
             end_ice_kg_m2,
@@ -315,6 +404,8 @@ impl Wb11HydrologyKernel {
             total_water_closure_residual_kg_m2: total_water_residual,
             unresolved_liquid_kg_m2,
             terminal_unallocated_energy_j_m2: summary.unallocated_after_exhaustion_j_m2,
+            terminal_event: summary.terminal_event,
+            terminal_intervals: summary.terminal_intervals,
         })
     }
 
@@ -322,13 +413,27 @@ impl Wb11HydrologyKernel {
         state: &DirectSnowStage3PersistentState,
     ) -> Result<(), DirectSnowStage3EvaluationError> {
         let phase = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
-        if state.schema_version != 1 {
+        if !matches!(state.schema_version, 1 | 2) {
             return Err(Self::stage3_domain_error(
                 phase,
                 "snow.stage3_persistent_snapshot_version",
                 f64::from(state.schema_version),
                 Some(1.0),
-                Some(1.0),
+                Some(2.0),
+            )
+            .into());
+        }
+        if (state.schema_version == 1 && state.terminal_event_model.is_some())
+            || (state.schema_version == 2
+                && state.terminal_event_model
+                    != Some(DirectSnowTerminalEventModel::EnthalpyEventV1))
+        {
+            return Err(Self::stage3_domain_error(
+                phase,
+                "snow.stage3_persistent_terminal_model_binding",
+                f64::from(state.schema_version),
+                Some(0.0),
+                Some(0.0),
             )
             .into());
         }
@@ -403,6 +508,14 @@ impl Wb11HydrologyKernel {
         fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.schema_version));
         fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.lane_id));
         fingerprint = Self::stage3_fnv1a_u64(fingerprint, state.next_interval_index);
+        if let Some(model) = state.terminal_event_model {
+            fingerprint = Self::stage3_fnv1a_u64(
+                fingerprint,
+                match model {
+                    DirectSnowTerminalEventModel::EnthalpyEventV1 => 1,
+                },
+            );
+        }
         for value in [
             state.cumulative_snowfall_kg_m2,
             state.cumulative_external_liquid_kg_m2,
@@ -558,6 +671,8 @@ impl Wb11HydrologyKernel {
                         inputs,
                         layers.clone(),
                         cold_content_by_layer.clone(),
+                        None,
+                        0.0,
                     )?;
                     Self::validate_stage3_shadow_summary(phase_class, &summary)?;
                     Some(summary)
@@ -1597,10 +1712,19 @@ impl Wb11HydrologyKernel {
         }
         for hour_index in 0..24 {
             let status = reconciliation.hourly_status[hour_index];
-            if status.evaluated != (count_by_hour[hour_index] > 0)
+            let terminal_status = summary.terminal_event.is_some_and(|event| {
+                (hour_index == event.hour_index
+                    && status.evaluated
+                    && status.reason == "terminal_enthalpy_event_v1")
+                    || (hour_index > event.hour_index
+                        && !status.evaluated
+                        && status.reason == "post_terminal_event_censored")
+            });
+            if (!terminal_status && status.evaluated != (count_by_hour[hour_index] > 0))
                 || elapsed_by_hour[hour_index] > STAGE3_SECONDS_PER_HOUR
-                || (status.evaluated && status.reason != "evaluated")
+                || (!terminal_status && status.evaluated && status.reason != "evaluated")
                 || (!status.evaluated
+                    && !terminal_status
                     && !matches!(
                         status.reason,
                         "no_resolved_snow_at_day_start"
@@ -2775,6 +2899,8 @@ mod stage3_evaluation_validation_tests {
             &inputs,
             inputs.snow_layers.clone(),
             cold,
+            None,
+            0.0,
         )
         .expect("valid sequential reconciliation");
         Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary)
@@ -2806,6 +2932,8 @@ mod stage3_evaluation_validation_tests {
             &inputs,
             inputs.snow_layers.clone(),
             cold,
+            None,
+            0.0,
         )
         .expect("valid sequential reconciliation");
         assert!(summary.reconciliation.tuples.len() > 1);

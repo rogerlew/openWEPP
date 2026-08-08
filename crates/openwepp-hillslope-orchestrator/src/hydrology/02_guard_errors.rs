@@ -531,9 +531,28 @@ impl Error for Wb11HydrologyKernelGuardError {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum SnowTerminalNumericsFailure {
+    DomainOrNonFinite,
+    StepUnderflow,
+    RejectionLimit,
+    InvalidEventBracket,
+    EventIterationLimit,
+    Closure,
+}
+
+impl fmt::Display for SnowTerminalNumericsFailure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "snow terminal numerics failure: {self:?}")
+    }
+}
+
+impl Error for SnowTerminalNumericsFailure {}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum DirectSnowStage3EvaluationError {
     Kernel(Box<Wb11HydrologyKernelGuardError>),
     TurbulentTransfer(Box<SnowStage3TurbulentTransferError>),
+    TerminalNumerics(SnowTerminalNumericsFailure),
 }
 
 impl From<Wb11HydrologyKernelGuardError> for DirectSnowStage3EvaluationError {
@@ -561,6 +580,7 @@ impl fmt::Display for DirectSnowStage3EvaluationError {
                 snapshot.surface_vapor_pressure_pa,
                 snapshot.geometry,
             ),
+            Self::TerminalNumerics(source) => source.fmt(f),
         }
     }
 }
@@ -570,6 +590,7 @@ impl Error for DirectSnowStage3EvaluationError {
         match self {
             Self::Kernel(source) => Some(source.as_ref()),
             Self::TurbulentTransfer(snapshot) => Some(&snapshot.source),
+            Self::TerminalNumerics(source) => Some(source),
         }
     }
 }

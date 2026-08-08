@@ -9,7 +9,6 @@ const SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV: &str =
     "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW";
 const SNOW_STAGE3_EVALUATION_OPERATOR_ENV: &str =
     "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR";
-
 #[derive(Clone, Debug)]
 struct CanopyResearchTraceConfig {
     path: std::ffi::OsString,
@@ -1151,7 +1150,29 @@ fn maybe_write_r7h_direct_production_snow_trace(
             detail: format!("{SIMOUT_GUARD_ID} selected snow trace path was lost"),
         }
     })?;
+    if let Some(persistent) = context.stage3_persistent {
+        if persistent.state.schema_version == 2 {
+            validate_snow_terminal_event_trace_consumer(persistent).map_err(|detail| {
+                HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_production_snow_terminal_event_trace",
+                    detail: format!("{SIMOUT_GUARD_ID} {detail}"),
+                }
+            })?;
+        }
+    }
 
+    let line = r7h_direct_production_snow_trace_line(context, verbose_diagnostics);
+    if context
+        .stage3_persistent
+        .is_some_and(|persistent| persistent.state.schema_version == 2)
+    {
+        validate_snow_terminal_event_trace_row(&line).map_err(|detail| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_terminal_event_trace",
+                detail: format!("{SIMOUT_GUARD_ID} {detail}"),
+            }
+        })?;
+    }
     let mut file = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
@@ -1163,7 +1184,6 @@ fn maybe_write_r7h_direct_production_snow_trace(
                 std::path::PathBuf::from(&path).display()
             ),
         })?;
-    let line = r7h_direct_production_snow_trace_line(context, verbose_diagnostics);
     std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_trace",

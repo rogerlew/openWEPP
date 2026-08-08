@@ -15,7 +15,7 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
     let snow = read(SNOW);
 
     for required in [
-        "contract_version: 11",
+        "contract_version: 12",
         "INV-SNOWENERGY-033",
         "`z_u,source`",
         "nominal `10 m`",
@@ -30,7 +30,7 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 134",
+        "contract_version: 135",
         "INV-SNOWFREEZE-099",
         "`fwv_m_s` is local and cannot feed snow",
         "never measurement height",

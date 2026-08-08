@@ -1242,6 +1242,9 @@ fn complete_carrier_shadow_fails_closed_on_incomplete_or_invalid_geometry() {
         openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationError::Kernel(error) => {
             panic!("expected typed turbulent transfer error, observed {error}")
         }
+        openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationError::TerminalNumerics(
+            error,
+        ) => panic!("expected typed turbulent transfer error, observed {error}"),
     }
 }
 

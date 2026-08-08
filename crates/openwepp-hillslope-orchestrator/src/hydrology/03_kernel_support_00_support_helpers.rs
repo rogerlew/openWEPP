@@ -343,6 +343,8 @@ impl SnowStage3EvaluationOperator {
 #[serde(deny_unknown_fields)]
 pub struct DirectSnowStage3PersistentState {
     pub schema_version: u16,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_event_model: Option<DirectSnowTerminalEventModel>,
     pub fingerprint: u64,
     pub lane_id: u32,
     pub next_interval_index: u64,
@@ -375,6 +377,7 @@ pub struct DirectSnowStage3PersistentDayResult {
     pub snowfall_kg_m2: f64,
     pub external_liquid_kg_m2: f64,
     pub deposition_kg_m2: f64,
+    pub refrozen_kg_m2: f64,
     pub sublimation_kg_m2: f64,
     pub melt_kg_m2: f64,
     pub end_ice_kg_m2: f64,
@@ -384,6 +387,86 @@ pub struct DirectSnowStage3PersistentDayResult {
     pub total_water_closure_residual_kg_m2: f64,
     pub unresolved_liquid_kg_m2: f64,
     pub terminal_unallocated_energy_j_m2: f64,
+    pub terminal_event: Option<DirectSnowTerminalEventResult>,
+    pub terminal_intervals: Vec<DirectSnowTerminalEventResult>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum DirectSnowTerminalEventModel {
+    EnthalpyEventV1,
+}
+
+impl DirectSnowTerminalEventModel {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::EnthalpyEventV1 => "enthalpy_event_v1",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectSnowTerminalEventRequest {
+    pub model: DirectSnowTerminalEventModel,
+}
+
+impl DirectSnowTerminalEventRequest {
+    pub const ENTHALPY_EVENT_V1: Self = Self {
+        model: DirectSnowTerminalEventModel::EnthalpyEventV1,
+    };
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
+pub struct DirectSnowTerminalEventResult {
+    pub model: DirectSnowTerminalEventModel,
+    pub event_occurred: bool,
+    pub hour_index: usize,
+    pub terminal_entry_offset_seconds: f64,
+    pub requested_seconds: f64,
+    pub entry_solid_precipitation_kg_m2: f64,
+    pub hour_offset_seconds: f64,
+    pub evaluated_seconds: f64,
+    pub unevaluated_seconds: f64,
+    pub start_ice_kg_m2: f64,
+    pub start_liquid_kg_m2: f64,
+    pub start_cold_content_j_m2: f64,
+    pub end_ice_kg_m2: f64,
+    pub terminal_liquid_kg_m2: f64,
+    pub end_cold_content_j_m2: f64,
+    pub complete_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64,
+    pub longwave_energy_j_m2: f64,
+    pub sensible_energy_j_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub advected_energy_j_m2: f64,
+    pub external_liquid_kg_m2: f64,
+    pub cold_energy_change_j_m2: f64,
+    pub refrozen_kg_m2: f64,
+    pub deposition_kg_m2: f64,
+    pub sublimation_kg_m2: f64,
+    pub melt_kg_m2: f64,
+    pub terminal_unallocated_energy_j_m2: f64,
+    pub solid_mass_closure_residual_kg_m2: f64,
+    pub liquid_mass_closure_residual_kg_m2: f64,
+    pub energy_closure_residual_j_m2: f64,
+    pub event_bracket_width_seconds: f64,
+    pub event_bracket_lower_seconds: f64,
+    pub event_bracket_upper_seconds: f64,
+    pub event_bracket_lower_solid_kg_m2: f64,
+    pub event_bracket_upper_solid_kg_m2: f64,
+    pub lte_coarse_ice_kg_m2: f64,
+    pub lte_fine_ice_kg_m2: f64,
+    pub lte_coarse_liquid_kg_m2: f64,
+    pub lte_fine_liquid_kg_m2: f64,
+    pub lte_coarse_cold_content_j_m2: f64,
+    pub lte_fine_cold_content_j_m2: f64,
+    pub lte_coarse_complete_energy_j_m2: f64,
+    pub lte_fine_complete_energy_j_m2: f64,
+    pub lte_coarse_unallocated_energy_j_m2: f64,
+    pub lte_fine_unallocated_energy_j_m2: f64,
+    pub accepted_trials: u32,
+    pub rejected_trials: u32,
+    pub maximum_scaled_error: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -738,6 +821,7 @@ pub struct DirectSnowStage3ReconciliationTuple {
     pub active_ice_mass_after_kg_m2: Option<f64>,
     pub total_ice_mass_before_kg_m2: f64,
     pub total_ice_mass_after_kg_m2: f64,
+    pub total_retained_liquid_after_kg_m2: f64,
     pub active_depth_before_m: f64,
     pub active_depth_after_m: Option<f64>,
     pub active_density_before_kg_m3: f64,

@@ -394,6 +394,11 @@ impl DirectProductionSnowFrostAuthority {
     ) -> Result<DirectProductionSnowPartitionResult, HillslopeCliError> {
         let persistent_requested = self.snow_stage3_evaluation_operator
             == Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1);
+        if self.snow_terminal_enthalpy_event_requested && !persistent_requested {
+            return Err(direct_production_executor_blocked(
+                "terminal snow enthalpy event requires persistent_accumulation_shadow_v1",
+            ));
+        }
         if !Self::active_forcing(hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)?
             && !persistent_requested
         {
@@ -506,27 +511,53 @@ impl DirectProductionSnowFrostAuthority {
             let state = if let Some(state) = persistent_state {
                 state
             } else {
-                initialized = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_retained_liquid(
-                    u32::try_from(lane_index).map_err(|_| direct_production_executor_blocked(
+                let lane_id = u32::try_from(lane_index).map_err(|_| {
+                    direct_production_executor_blocked(
                         "lane index cannot be represented by persistent snow shadow",
-                    ))?,
-                    snow_lane_state.layers.clone(),
-                    snow_lane_state.liquid_water_retained_m * 1_000.0,
-                )
+                    )
+                })?;
+                initialized = if self.snow_terminal_enthalpy_event_requested {
+                    Wb11HydrologyKernel::initialize_stage3_persistent_state_with_retained_liquid_and_terminal_event(
+                        lane_id,
+                        snow_lane_state.layers.clone(),
+                        snow_lane_state.liquid_water_retained_m * 1_000.0,
+                        openwepp_hillslope_orchestrator::DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+                    )
+                } else {
+                    Wb11HydrologyKernel::initialize_stage3_persistent_state_with_retained_liquid(
+                        lane_id,
+                        snow_lane_state.layers.clone(),
+                        snow_lane_state.liquid_water_retained_m * 1_000.0,
+                    )
+                }
                 .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "direct_publication_frame",
                     detail: format!("{SIMOUT_GUARD_ID} persistent snow initialization failed: {source}"),
                 })?;
                 &initialized
             };
-            Some(Wb11HydrologyKernel::evaluate_stage3_persistent_day(
-                &partition_inputs,
-                state,
-                u32::try_from(lane_index).map_err(|_| direct_production_executor_blocked(
+            let lane_id = u32::try_from(lane_index).map_err(|_| {
+                direct_production_executor_blocked(
                     "lane index cannot be represented by persistent snow shadow",
-                ))?,
-                interval_index,
-            )
+                )
+            })?;
+            let evaluated = if self.snow_terminal_enthalpy_event_requested {
+                Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
+                    &partition_inputs,
+                    state,
+                    lane_id,
+                    interval_index,
+                    openwepp_hillslope_orchestrator::DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+                )
+            } else {
+                Wb11HydrologyKernel::evaluate_stage3_persistent_day(
+                    &partition_inputs,
+                    state,
+                    lane_id,
+                    interval_index,
+                )
+            };
+            Some(evaluated
             .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
                 detail: format!("{SIMOUT_GUARD_ID} persistent snow evaluation failed: {source}"),

@@ -13,7 +13,7 @@ fn read(path: &str) -> String {
 fn v134_admits_exactly_one_mechanics_only_persistent_operator() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 134",
+        "contract_version: 135",
         "INV-SNOWFREEZE-100",
         "OBL-SNOWFREEZE-P-072",
         "OBL-SNOWFREEZE-C-014",
@@ -28,11 +28,7 @@ fn v134_admits_exactly_one_mechanics_only_persistent_operator() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    assert!(
-        read(INDEX).contains(
-            "v134 admits only default-off evaluator-owned persistent continuity mechanics"
-        )
-    );
+    assert!(read(INDEX).contains("v135 admits a fingerprint-bound terminal-event extension"));
     assert!(read(PACKAGE).contains("Wind\nexposure"));
 }
 

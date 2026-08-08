@@ -1,6 +1,6 @@
 # Snow Terminal Enthalpy Event Numerics
 
-Status: `queued`
+Status: `complete`
 
 Date: `2026-08-07`
 
@@ -152,7 +152,11 @@ verification verdicts.
 ## Progress
 
 - [x] (2026-08-07) User authorized scaffold and end-to-end execution.
-- [ ] Freeze and commit scaffold.
-- [ ] Complete contract-first authority and pre-implementation gate.
-- [ ] Implement and validate event-local terminal numerics.
-- [ ] Complete reviews, exact-head gates, verification, and disposition.
+- [x] (2026-08-07) Froze and committed scaffold `c979f2fbd`.
+- [x] (2026-08-07) Completed contract-first authority and 36-test
+  pre-implementation gate after independent sign/endpoint corrections.
+- [x] (2026-08-08) Implemented and validated event-local terminal numerics,
+  typed failures, schema-v8 evidence, and the rejecting internal consumer.
+- [x] (2026-08-08) Completed numerical, Rust, and QA reviews; exact-head full
+  workspace, focused, Clippy, formatting, assurance, and governance gates; and
+  terminal verification/disposition.

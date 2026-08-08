@@ -136,6 +136,7 @@ struct Stage3ReconciliationState {
     effective_input_fingerprint: u64,
     active_ice_mass_kg_m2: f64,
     total_ice_mass_kg_m2: f64,
+    total_retained_liquid_kg_m2: f64,
     active_depth_m: f64,
     active_density_kg_m3: f64,
     active_cold_j_m2: f64,
@@ -321,6 +322,10 @@ struct Stage3ShadowSummary {
     hourly: [DirectSnowStage3EvaluationHourDiagnostics; 24],
     reconciliation: DirectSnowStage3OperatorReconciliation,
     final_layers: Vec<DirectSnowLayerState>,
+    terminal_event: Option<DirectSnowTerminalEventResult>,
+    terminal_intervals: Vec<DirectSnowTerminalEventResult>,
+    terminal_refrozen_kg_m2: f64,
+    terminal_deposition_kg_m2: f64,
 }
 
 impl Stage3ShadowSummary {
@@ -362,6 +367,10 @@ impl Stage3ShadowSummary {
             tuples: Vec::new(),
         },
         final_layers: Vec::new(),
+        terminal_event: None,
+        terminal_intervals: Vec::new(),
+        terminal_refrozen_kg_m2: 0.0,
+        terminal_deposition_kg_m2: 0.0,
         }
     }
 }
@@ -590,6 +599,12 @@ impl Wb11HydrologyKernel {
                     value: snapshot.wind_speed_m_s,
                     minimum: Some(0.0),
                     maximum: None,
+                },
+            ),
+            Err(DirectSnowStage3EvaluationError::TerminalNumerics(_)) => Err(
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    symbol: BoundarySymbol::from("snow.unreachable_terminal_numerics"),
                 },
             ),
         }
