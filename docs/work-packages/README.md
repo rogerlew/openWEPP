@@ -509,6 +509,13 @@
 
 State as of `2026-08-08 UTC`:
 
+- `20260808-vegetation-radiation-interception-conductance-slice-001/`
+  - QUEUED / SCAFFOLDED: independently admit one coherent Stage A canopy
+    radiation, liquid-interception, conductance, potential-transpiration, and
+    layer-demand chain, then implement it in a separately testable default-off
+    `openwepp-vegetation` crate. Stage B/C, soil mutation, production consumers,
+    runtime selection, empirical calibration, output, and cutover are excluded.
+
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
   - COMPLETE / AUTHORITY ONLY: independently structured
     `SC-VEGETATION-001`, native canopy-stratum semantics, typed Stage A/B/C

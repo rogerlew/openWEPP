@@ -2,9 +2,10 @@
 
 ## Status
 
-- `state`: **staged; boundary authority admitted** - high-value
-  ecosystem-process architecture; not yet authorized for kernel implementation
-  or default activation
+- `state`: **staged; first implementation package scaffolded** - high-value
+  ecosystem-process architecture; constitutive implementation is authorized
+  only inside the linked authority-first default-off package, and default
+  activation remains prohibited
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
@@ -21,6 +22,8 @@
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
+- `scaffolded implementation package`:
+  [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
 
 ## Summary
 
