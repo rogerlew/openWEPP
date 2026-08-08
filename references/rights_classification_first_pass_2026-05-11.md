@@ -123,12 +123,15 @@ affirmative-license rule as the first pass.
 | `copyrighted/MOD16_User_Guide_V6.pdf` | `copyrighted/` | Official NASA-hosted Version 2.2 user guide, but the PDF states no affirmative redistribution permission; SHA-256 `a43b47bc33256cad2c7f61566bcf32cd8365383a0eee4b6f02f93042fdcdb687`. |
 | `copyrighted/Pereira2016_WetCanopy.pdf` | `copyrighted/` | Accepted manuscript states CC BY-NC-ND 4.0. The noncommercial/no-derivatives terms are conservatively treated as local-cache-only; DOI `10.1016/j.jhydrol.2016.01.035`; SHA-256 `634d235c0a82e0723dcc5144ecaabed18cb7b426542ee2b783aa64f53a2abca0`. |
 | `copyrighted/Cain1998_ModellingEvaporationPlantCanopies.pdf` | `copyrighted/` | Institute of Hydrology Report No. 132 states Institute copyright and no affirmative redistribution permission; SHA-256 `066e8c836786963748bd39601ad3dbea5abfc6a5c8cea53a209aee0f0474538d`. |
+| `copyrighted/gash1979.pdf` (+ `gash1979.md` transcription) | `copyrighted/` | Operator-supplied Wiley/Royal Meteorological Society journal article with no affirmative redistribution license; DOI `10.1002/qj.49710544304`; PDF SHA-256 `920091bea907032133bf3f56d1171ba3b59a8957acaeaecc3043a73924388f22`; Markdown SHA-256 `c90d6c3dc8f78e82de0519815bbdffc1efa53f1b3f4514c6dd09da3ee55aff2b`. |
+| `copyrighted/jarvis1976.pdf` (+ `jarvis1976.md` transcription) | `copyrighted/` | Operator-supplied article whose PDF states Royal Society copyright; DOI `10.1098/rstb.1976.0035`; PDF SHA-256 `c8f683110be5b0ce033106466f237f21ff28b2fb02f4f3c9640f1838930ccb10`; Markdown SHA-256 `e4ae72367fbae040b0791c661340b1349089f948c637147e2063e93c3ecd9ae5`. |
+| `copyrighted/stewart1988.pdf` (+ `stewart1988.md` transcription) | `copyrighted/` | Operator-supplied Elsevier journal article with no affirmative redistribution license; DOI `10.1016/0168-1923(88)90003-2`; PDF SHA-256 `df1719eb3c7b6f78c3d2d55509b077565bc7fef0e7744d67d80c6b907d06c598`; Markdown SHA-256 `ec0ef1e89187472a5428daa8d62c7dea77b76250fa3f2dc925ec76f5a1dc5652`. |
+| `copyrighted/kelliher1995.pdf` (+ `kelliher1995.md` transcription) | `copyrighted/` | Operator-supplied Elsevier journal article with no affirmative redistribution license; DOI `10.1016/0168-1923(94)02178-M`; PDF SHA-256 `84dbc68328d6ea8686753057e95242deb7eff1f266cc6a72943f0e318c57b95b`; Markdown SHA-256 `ffe32d37153ccbd87663f6633d21635145588b4da8068b8972c64f7612020a99`. |
 
-Gash (1979), Jarvis (1976), Stewart (1988), and Kelliher et al. (1995) were
-not vendored. Publisher pages or remote copies were sufficient for discovery
-and preliminary incompatibility review, but not for local primary-source
-admission. Any operator-supplied copies belong in `copyrighted/` unless a
-specific artifact carries affirmative redistribution permission.
+The four operator-supplied papers and their Markdown transcriptions are locally
+available for primary-source review but are not Git-vendored or distributed.
+The ignored cache follows the affirmative-license rule for both originals and
+full-text derivatives.
 
 ## Addendum 2026-07-10 (WSHED-W11A channel-sediment authority acquisitions)
 

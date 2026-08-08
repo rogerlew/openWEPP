@@ -7,9 +7,9 @@ Evidence mode: `Static`
 ## Permitted Sources Inspected
 
 - Peer-reviewed open articles R-131 and R-136 through R-139.
-- Locally cached publication/report artifacts R-129, R-132, R-140, and R-145.
+- Locally cached publication/report artifacts R-128, R-129, R-132, R-140
+  through R-143, and R-145.
 - Repository-hosted remote full text R-144.
-- Publisher metadata and abstracts for R-128 and R-141 through R-143.
 - Existing canonical openWEPP contracts only for boundary/ownership context.
 
 Detailed citation locators, checksums, and rights posture are recorded in

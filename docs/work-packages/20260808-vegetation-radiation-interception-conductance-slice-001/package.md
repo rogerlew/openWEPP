@@ -382,6 +382,9 @@ second returns an initial report.
 - [x] (2026-08-08) Recorded `AUTHORITY_PARTIAL`: bounded candidates exist for
   radiation, interception, and layer participation, while conductance and its
   dependent potential-transpiration chain remain blocked.
+- [x] (2026-08-08) Acquired and reviewed the requested Gash, Jarvis, Stewart,
+  and Kelliher primary articles and transcriptions in the copyrighted cache;
+  reclassified Jarvis-Stewart as `CANDIDATE_DOMAIN_LIMITED`, not admitted.
 - [ ] Freeze the exact implementation intent and independent authority set.
 - [ ] Complete contract-first admission and the pre-implementation gate.
 - [ ] Implement and validate the default-off Stage A crate slice.
@@ -403,6 +406,16 @@ second returns an initial report.
   parameters and humidity-diagnosed wetness; Jarvis-style ponderosa-pine
   conductance has published vapor-pressure-deficit counterevidence.
   Evidence: R-132 Sect. 2.5.1 and R-144.
+- Observation: Stewart's empirical dry-canopy pine formulation validated well
+  across alternate days from one pooled data set but underestimated total
+  transpiration by 14% and 11% when 1976 parameters were transferred to 1974
+  and 1975; Jarvis also reports species/season parameter differences.
+  Evidence: R-142 Eqs. 12 and 17-24, Tables 2-3, and Conclusions; R-141
+  Sect. 3 and Table 1.
+- Observation: Kelliher's leaf, canopy, and bulk-surface conductances are not
+  interchangeable; bulk surface conductance can include soil evaporation at
+  low LAI.
+  Evidence: R-143 Eqs. 3-10 and Sect. 3.
 - Observation: an open forest-light study makes extinction-coefficient
   transferability a first-class domain issue; the coefficient varies with
   species, architecture, structure, and period.
@@ -437,19 +450,30 @@ second returns an initial report.
   Rationale: the reviewed sources demonstrate domain and model dependence, and
   the package prohibits invented or silently transferred physiological bounds.
   Date/Author: 2026-08-08 / Codex.
+- Decision: Treat the reviewed Jarvis-Stewart family as a domain-limited
+  empirical candidate rather than either rejecting it for lack of primary text
+  or admitting it as a universal forest law.
+  Rationale: the sources provide an explicit equation chain and validation,
+  while also documenting scale ambiguity, parameter dependence, and degraded
+  cross-year transfer.
+  Date/Author: 2026-08-08 / Codex.
 
 ## Outcomes & Retrospective
 
 Research outcome: the package now has an independent literature dossier, a
-tracked rights/provenance intake, five licensed source PDFs, and a precise
+tracked rights/provenance intake, five licensed source PDFs, four restricted
+primary articles with transcriptions in the ignored cache, and a precise
 conductance authority decision point. The research eliminated an unsafe quick
 route: stitching MOD16 conductance into JULES storage/root equations would mix
-daily remote-sensing, prognostic-storage, and layer-extraction assumptions.
+daily remote-sensing, prognostic-storage, and layer-extraction assumptions. It
+also establishes Jarvis-Stewart as a real empirical candidate whose domain and
+scale must be chosen explicitly rather than a universal default.
 
 No science contract, suite, fixture, manifest, Rust, runtime, or test
 implementation has been performed. The contract-first gate remains closed
-pending primary-source adjudication of empirical conductance or a prospective
-scope decision to include coupled photosynthesis and plant hydraulics.
+pending a domain/scale decision for empirical conductance or a prospective
+scope decision to include coupled photosynthesis and plant hydraulics, plus
+selection of aerodynamic conductance authority.
 
 ## Idempotence And Recovery
 
@@ -467,3 +491,7 @@ vegetation boundary handoff and current roadmap objective.
 Revision note (2026-08-08): independent literature intake completed to
 `AUTHORITY_PARTIAL`; licensed sources vendored and conductance authority gap
 recorded before canonical or production edits.
+
+Revision note (2026-08-08): operator-supplied Gash, Jarvis, Stewart, and
+Kelliher primary texts reviewed; the missing-source gap is closed and the
+remaining conductance blocker is an explicit domain/scale authority decision.

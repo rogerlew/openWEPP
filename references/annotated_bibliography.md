@@ -1456,13 +1456,19 @@ full-text artifact was added during concept intake. Rights default to
 ## R-128: Gash (1979) forest rainfall interception
 
 **Citation**: Gash, J. H. C. (1979). "An analytical model of rainfall interception by forests." *Quarterly Journal of the Royal Meteorological Society*, 105, 43-55. https://doi.org/10.1002/qj.49710544304
-**Local path**: `not-acquired`; the official Wiley article page was reviewed,
-but automated full-text retrieval was denied.
-**Reference quality**: `verified-primary-peer-reviewed`.
+**Local path**: `copyrighted/gash1979.pdf` and the operator-supplied
+transcription `copyrighted/gash1979.md`. SHA-256: PDF
+`920091bea907032133bf3f56d1171ba3b59a8957acaeaecc3043a73924388f22`;
+Markdown
+`c90d6c3dc8f78e82de0519815bbdffc1efa53f1b3f4514c6dd09da3ee55aff2b`.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Forest-canopy wetting, saturation, drainage, and drying with independent wet-canopy evaporation.
-**openWEPP role**: Candidate authority for explicit canopy-interception storage and flux separation.
-**Rights / distribution**: `restricted`; remote DOI metadata only. An
-operator-supplied copy remains a track-down item.
+**openWEPP role**: Primary event-scale authority for separating canopy
+wetting, saturated evaporation, small storms, stemflow, and post-storm drying.
+Its discrete-storm and complete-drying assumptions prevent direct substitution
+for an arbitrary finite-timestep prognostic store without an explicit bridge.
+**Rights / distribution**: `copyrighted-cache`; no affirmative redistribution
+license appears in either supplied artifact. Both remain gitignored.
 
 ## R-129: Shuttleworth and Wallace (1985) two-source ET
 
@@ -1647,33 +1653,47 @@ noncommercial/no-derivatives policy.
 leaf water potential and stomatal conductance found in canopies in the
 field." *Philosophical Transactions of the Royal Society B*, 273(927),
 593-610. https://doi.org/10.1098/rstb.1976.0035
-**Local path**: `not-acquired`; official metadata and a remote full-text copy
-were reviewed.
-**Reference quality**: `verified-primary-peer-reviewed`.
+**Local path**: `copyrighted/jarvis1976.pdf` and the operator-supplied
+transcription `copyrighted/jarvis1976.md`. SHA-256: PDF
+`c8f683110be5b0ce033106466f237f21ff28b2fb02f4f3c9640f1838930ccb10`;
+Markdown
+`e4ae72367fbae040b0791c661340b1349089f948c637147e2063e93c3ecd9ae5`.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Multiplicative empirical stomatal response to irradiance,
 temperature, humidity deficit, leaf water status, and carbon dioxide.
-**openWEPP role**: Original lead for a no-photosynthesis conductance option;
-not admitted without the original article, scaling rule, parameter authority,
-and validation-domain reconciliation.
-**Rights / distribution**: `restricted`; an operator-supplied copy remains a
-track-down item for the gitignored local cache.
+**openWEPP role**: Primary leaf-scale authority for the descriptive product of
+bounded light, temperature, vapour-pressure-deficit, leaf-water-potential, and
+carbon-dioxide responses (Eqs. 4-9). The article explicitly treats the product
+assumption as provisional, fits parameters from field data, and reports
+species/season differences; it does not supply canopy aggregation or
+transferable defaults.
+**Rights / distribution**: `copyrighted-cache`; the PDF states Royal Society
+copyright and no affirmative redistribution license. Both files remain
+gitignored.
 
 ## R-142: Stewart (1988) pine-forest surface conductance
 
 **Citation**: Stewart, J. B. (1988). "Modelling surface conductance of pine
 forest." *Agricultural and Forest Meteorology*, 43(1), 19-35.
 https://doi.org/10.1016/0168-1923(88)90003-2
-**Local path**: `not-acquired`; publisher abstract and secondary equation
-descriptions were reviewed.
-**Reference quality**: `verified-primary-peer-reviewed-metadata-only`.
+**Local path**: `copyrighted/stewart1988.pdf` and the operator-supplied
+transcription `copyrighted/stewart1988.md`. SHA-256: PDF
+`df1719eb3c7b6f78c3d2d55509b077565bc7fef0e7744d67d80c6b907d06c598`;
+Markdown
+`ec0ef1e89187472a5428daa8d62c7dea77b76250fa3f2dc925ec76f5a1dc5652`.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Jarvis-style pine-forest surface conductance driven by solar
 radiation, humidity deficit, temperature, and soil moisture deficit, with
 separate calibration and validation subsets.
-**openWEPP role**: Highest-priority track-down item for deciding whether the
-current package can admit a bounded empirical forest-conductance law without
-adding photosynthesis and plant hydraulics.
-**Rights / distribution**: `restricted`; no redistributable full text was
-found.
+**openWEPP role**: Primary stand-scale authority for a dry-canopy empirical
+candidate, `g_s = L K_1 g(S_t) g(delta q) g(T) g(delta theta)` (Eqs. 12 and
+17-24). Alternate-day validation reproduced total transpiration within 1%, but
+parameters fitted to 1976 underestimated 1974 and 1975 totals by 14% and 11%
+and biased low/high conductance. Admission must therefore remain limited to a
+stated pine-forest domain with calibrated parameters; the paper does not
+support universal defaults.
+**Rights / distribution**: `copyrighted-cache`; the Elsevier journal artifact
+states no affirmative redistribution license. Both files remain gitignored.
 
 ## R-143: Kelliher et al. (1995) maximum vegetation conductance
 
@@ -1681,15 +1701,22 @@ found.
 (1995). "Maximum conductances for evaporation from global vegetation types."
 *Agricultural and Forest Meteorology*, 73(1-2), 1-16.
 https://doi.org/10.1016/0168-1923(94)02178-M
-**Local path**: `not-acquired`; publisher abstract and institutional metadata
-were reviewed.
-**Reference quality**: `verified-primary-peer-reviewed-metadata-only`.
+**Local path**: `copyrighted/kelliher1995.pdf` and the operator-supplied
+transcription `copyrighted/kelliher1995.md`. SHA-256: PDF
+`84dbc68328d6ea8686753057e95242deb7eff1f266cc6a72943f0e318c57b95b`;
+Markdown
+`ffe32d37153ccbd87663f6633d21635145588b4da8068b8972c64f7612020a99`.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Observed maximum stomatal and bulk surface conductances across
 vegetation types and their relationship to leaf area index.
-**openWEPP role**: Required parameter-scale and aggregation check for any
-MOD16- or Jarvis-Stewart-derived empirical conductance option.
-**Rights / distribution**: `restricted`; no redistributable full text was
-found.
+**openWEPP role**: Primary scale and parameter check for empirical conductance.
+It distinguishes leaf stomatal, bulk canopy, and bulk surface conductance;
+integrates leaf conductance over LAI (Eqs. 3-7); and finds maximum values near
+6 and 18 mm s-1 for natural-vegetation leaf and surface scales versus 12 and
+32 mm s-1 for crops. These literature means are observational context, not
+transferable production defaults.
+**Rights / distribution**: `copyrighted-cache`; the Elsevier journal artifact
+states no affirmative redistribution license. Both files remain gitignored.
 
 ## R-144: Misson, Panek, and Goldstein (2004) ponderosa-pine conductance
 

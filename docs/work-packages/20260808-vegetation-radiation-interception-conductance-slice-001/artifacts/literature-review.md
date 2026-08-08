@@ -13,14 +13,14 @@ canopy radiation receipt, explicit liquid-canopy storage and throughfall,
 store-limited wet-canopy evaporation, and normalized layer participation.
 It does **not** yet support one internally coherent production chain satisfying
 the package's conductance, potential-transpiration, and aerodynamic requirements
-without crossing an excluded photosynthesis/plant-hydraulics boundary or
-admitting an empirical remote-sensing surrogate.
+without either crossing an excluded photosynthesis/plant-hydraulics boundary or
+making an explicit domain-limited empirical-authority decision.
 
 Disposition is `AUTHORITY_PARTIAL`. Do not amend canonical constitutive
 authority, create A3 fixtures, or begin production Rust until the conductance
-route is selected and its primary sources are reviewed. This is not a lack-of-
-calibration-data hold; it is a missing/contradictory science-authority hold at
-the package's contract-first gate.
+route and its intended domain are selected. The requested primary sources have
+now been reviewed. This is not a lack-of-calibration-data hold; it is an
+unresolved science-authority choice at the package's contract-first gate.
 
 ## Review Boundary
 
@@ -47,10 +47,10 @@ the package's contract-first gate.
 | R-140 Pereira et al. (2016) | local cache | CC BY-NC-ND 4.0 | wet-canopy aerodynamic-regime evidence |
 | R-145 Cain (1998) | local cache | Institute copyright | secondary discovery and parameter-transfer warnings |
 | R-144 Misson et al. (2004) | remote repository full text | publisher copyright | ponderosa-pine comparison and counterevidence |
-| R-128 Gash (1979) | metadata/abstract only | restricted | primary interception track-down item |
-| R-141 Jarvis (1976) | remote full text | restricted | original empirical conductance track-down item |
-| R-142 Stewart (1988) | metadata/abstract only | restricted | primary pine-forest conductance track-down item |
-| R-143 Kelliher et al. (1995) | metadata/abstract only | restricted | maximum-conductance scale/aggregation track-down item |
+| R-128 Gash (1979) | local PDF and Markdown cache | restricted | primary event-interception equations and assumptions |
+| R-141 Jarvis (1976) | local PDF and Markdown cache | Royal Society copyright | original leaf-response equations and parameter-fitting limits |
+| R-142 Stewart (1988) | local PDF and Markdown cache | restricted Elsevier article | pine-forest surface-conductance equations and validation |
+| R-143 Kelliher et al. (1995) | local PDF and Markdown cache | restricted Elsevier article | leaf/canopy/surface scaling and maximum-conductance synthesis |
 
 Checksums and detailed rights bases are recorded in
 `references/annotated_bibliography.md` and
@@ -61,10 +61,10 @@ Checksums and detailed rights bases are recorded in
 | Required family | Best available locator | Candidate contribution | Disposition |
 |---|---|---|---|
 | Component-specific canopy radiation | R-137 Eq. 1 and Sect. 2.2; R-139 Sect. 2.1.3 | absorbed fraction `1 - exp(-k L)` and top-down layer receipt | `CANDIDATE`, domain-limited |
-| Canopy liquid input/storage/release | R-136 Sect. 4.1, Eqs. 46-47 | finite-interval throughfall and storage update using explicit capacity | `CANDIDATE` |
+| Canopy liquid input/storage/release | R-136 Sect. 4.1, Eqs. 46-47; R-128 Sects. 3-6 | finite-interval storage candidate plus event-scale wetting/saturation/stemflow authority | `CANDIDATE` |
 | Wet-canopy evaporation | R-136 Sect. 2.3; R-140 | evaporation is capped by the available store; Penman-Monteith suitability depends on ventilation | `CANDIDATE`, branch details incomplete |
 | Aerodynamic conductance | R-136 Sect. 2.1; R-129; R-140; R-145 Sect. 3.2 | Monin-Obukhov/resistance-network lineage and terrain/ventilation sensitivity | `BLOCKED` |
-| Canopy/stomatal conductance | R-138; R-139 Sect. 2.1.3; R-132 Sect. 2.5.1; R-144 | mechanistic coupled options and empirical uncoupled options | `BLOCKED` |
+| Canopy/stomatal conductance | R-141 Eqs. 4-9; R-142 Eqs. 9-24; R-143 Eqs. 3-11; R-138; R-139; R-144 | explicit empirical chain is available but domain-limited; mechanistic alternatives cross scope | `CANDIDATE_DOMAIN_LIMITED`, not admitted |
 | Potential transpiration | R-129; R-132 Sects. 2.4-2.5 | Penman-Monteith canopy demand after conductance selection | `BLOCKED_BY_CONDUCTANCE` |
 | Layer participation/demand | R-136 Sect. 4.2, Eqs. 50-52 | non-negative normalized root-share times moisture-availability weighting | `CANDIDATE`, semantic review required |
 
@@ -101,8 +101,17 @@ transpiration pathway while retaining energy-balance consistency.
 This is materially closer to the package boundary than MOD16, whose wet-canopy
 fraction is diagnosed from relative humidity rather than from a prognostic
 liquid store. GLEAM independently corroborates separating interception loss
-from transpiration and using the Gash lineage, but its overview paper does not
-provide enough equation detail to replace the Gash primary article.
+from transpiration and using the Gash lineage.
+
+Gash now supplies the primary event-scale equations. It divides events into
+storms that do and do not saturate the canopy, explicitly accounts for free
+throughfall, canopy and trunk storage, stemflow, wetting-up, saturated
+evaporation, and post-event drying, and derives the rainfall needed for canopy
+saturation in Eq. 13. Its central assumption is that discrete storms are
+separated by intervals long enough for canopy and trunk stores to dry; mean
+rainfall and evaporation rates replace within-storm variation. Gash therefore
+strengthens event-scale authority and tests, but it cannot be silently treated
+as the update law for an arbitrary finite timestep with carry-over storage.
 
 Pereira et al. establishes a required regime distinction: a Penman-Monteith
 wet-canopy calculation is defensible for canopies that are not fully ventilated,
@@ -128,16 +137,40 @@ Two uncoupled empirical alternatives were examined:
    needed by this slice. Combining it with JULES storage and root weighting
    would mix scales and state definitions without primary compatibility
    evidence.
-2. The Jarvis-Stewart family multiplies a maximum/reference conductance by
-   radiation, humidity-deficit, temperature, and water-stress responses.
-   Stewart evaluated a stand-scale form for pine forest. However, Cain reports
-   weak parameter transfer between forests, and Misson et al. found systematic
-   vapor-pressure-deficit error for a Jarvis implementation in drought-stressed
-   ponderosa pine. Misson et al.'s better-performing alternative was coupled to
-   photosynthesis.
+2. Jarvis Eqs. 4-9 multiply leaf-scale maximum conductance by bounded light,
+   temperature, vapour-pressure-deficit, leaf-water-potential, and carbon-
+   dioxide responses. Jarvis calls the model descriptive, identifies the
+   product interaction as the simplest hypothesis needing further tests, and
+   reports parameter differences between Sitka spruce and Douglas fir data.
+   This is primary authority for the functional family, not for canopy scaling
+   or universal coefficients.
 
-Consequently, neither empirical route can be admitted merely because it fits
-the current package boundary. Doing so would be a surrogate-physics decision.
+Stewart supplies the missing stand-scale bridge for a dry pine canopy. Its
+Eq. 12 is `g_s = L K_1 g(S_t) g(delta q) g(T) g(delta theta)`, with the
+nonlinear response functions in Eqs. 17-24. The derived surface conductance can
+include litter and understorey evaporation, so it is not automatically equal
+to pine stomatal conductance. Alternate-day calibration/validation on the same
+three-year sample reproduced summed transpiration within 1%, but fitting 1976
+and testing 1974/1975 underestimated totals by 14% and 11% and biased hourly
+extremes. The paper attributes this to a missing variable or year-varying
+responses.
+
+Kelliher et al. makes the scale distinctions explicit. Canopy conductance is
+the parallel integral of leaf stomatal conductance over LAI (Eq. 3); a
+light-attenuated hyperbolic response yields Eqs. 4-7; and bulk surface
+conductance inferred by Penman-Monteith may exceed canopy conductance at low
+LAI because soil evaporation contributes (Eqs. 8-10). Its cross-study maximum
+values are observational summaries under optimum conditions, not general
+response parameters or defaults.
+
+Consequently, the primary-source gap is closed, and Jarvis-Stewart is now a
+real `CANDIDATE_DOMAIN_LIMITED` route. It still cannot be admitted merely
+because it fits the package boundary. Admission would have to state that it is
+an empirical dry-canopy law, define whether the API represents leaf, canopy, or
+bulk surface conductance, bind parameter provenance and calibration domain,
+map soil state to Stewart's metre-integrated deficit without aliasing leaf
+water potential, and reject unsupported transfer. That is an authority/domain
+decision, not a missing-article problem.
 
 ## Aerodynamic And Potential-Demand Findings
 
@@ -202,11 +235,12 @@ rule. Silent normalization is prohibited.
 
 The next contract step must choose one of two honest routes:
 
-1. **Empirical bounded slice**: admit a Jarvis-Stewart-style conductance only
-   after reviewing the original Stewart/Jarvis equations, scale conversion,
-   parameter provenance, forest/domain limits, failure behavior, and the
-   counterevidence. This route remains an empirical constitutive law and cannot
-   be described as mechanistic forest physiology.
+1. **Empirical bounded slice**: prospectively constrain the slice to a named
+   dry-canopy forest domain, then admit the reviewed Jarvis-Stewart equation
+   family with an explicit Kelliher-consistent scale definition, parameter
+   provenance, state mapping, failure behavior, and transferability limits.
+   This route remains empirical and cannot be described as mechanistic forest
+   physiology.
 2. **Mechanistic forest slice**: amend scope to include photosynthesis and
    plant hydraulics, then select a coupled formulation from the JULES/Bonan/4C
    family. This is scientifically stronger but materially larger than the
@@ -214,23 +248,14 @@ The next contract step must choose one of two honest routes:
 
 MOD16 is retained as a comparison source, not a default third route.
 
-## Requested Articles
+## Acquired Primary Articles
 
-Operator help would materially improve the authority decision. Priority order:
-
-1. Stewart (1988), DOI `10.1016/0168-1923(88)90003-2` - full equation set,
-   parameter table, canopy scaling, calibration/validation split, and domain.
-2. Kelliher et al. (1995), DOI `10.1016/0168-1923(94)02178-M` - maximum leaf
-   versus bulk conductance data and aggregation assumptions.
-3. Jarvis (1976), DOI `10.1098/rstb.1976.0035` - original response-function
-   definitions and assumptions.
-4. Gash (1979), DOI `10.1002/qj.49710544304` - original event-interception
-   equations and assumptions; lower urgency because open sources already
-   support a finite-timestep storage candidate.
-
-Publisher PDFs or author manuscripts are useful. Unless the supplied artifact
-states an affirmative redistribution license, place it under
-`references/copyrighted/`; do not add it to `references/vendorable/` or Git.
+The operator supplied the requested Gash (1979), Jarvis (1976), Stewart (1988),
+and Kelliher et al. (1995) PDFs and Markdown transcriptions on 2026-08-08. All
+eight artifacts were identity- and checksum-verified and placed under the
+gitignored `references/copyrighted/` cache because none carries affirmative
+redistribution permission. No further article track-down is needed for this
+specific empirical-route adjudication.
 
 ## Documentation Validation
 
@@ -246,6 +271,8 @@ states an affirmative redistribution license, place it under
 
 ## Next Permitted Action
 
-Continue only with source acquisition and equation-level adjudication. The
-contract-first production gate remains closed. No production Rust, A3 fixture,
-or canonical constitutive amendment is authorized by this review alone.
+Select the intended conductance route and domain, then perform the formal
+contract-level compatibility admission, including aerodynamic conductance.
+The contract-first production gate remains closed. No production Rust, A3
+fixture, or canonical constitutive amendment is authorized by this review
+alone.

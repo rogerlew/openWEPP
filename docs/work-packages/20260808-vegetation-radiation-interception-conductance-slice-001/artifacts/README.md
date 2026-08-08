@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `literature-intake-in-progress`
+Status: `literature-intake-complete-authority-partial`
 
 Evidence mode: `Static`
 
@@ -16,7 +16,7 @@ successor handoff.
 Current research records:
 
 - `literature-review.md` - independent-source synthesis, equation-family
-  coverage, rights posture, incompatibilities, and track-down requests;
+  coverage, rights posture, primary-source adjudication, and incompatibilities;
 - `constitutive-authority-admission.md` - partial candidate matrix and the
   closed contract-first gate; and
 - `independent-derivation-compliance.md` - source-firewall evidence.
