@@ -171,16 +171,15 @@ def localize(freeze: dict[str, Any]) -> dict[str, Any]:
                 counts.update(reduced_counts)
                 omitted_terms = {}
                 for term in TERMS:
-                    full = sum(
-                        abs(float(reduced.get(f"{prefix}_all_{term}_j_m2", 0.0)))
+                    omitted_term = sum(
+                        abs(
+                            float(reduced.get(f"{prefix}_all_{term}_j_m2", 0.0))
+                            - float(reduced.get(f"{prefix}_{term}_j_m2", 0.0))
+                        )
                         for prefix in ("S", "Q")
                     )
-                    kept = sum(
-                        abs(float(reduced.get(f"{prefix}_{term}_j_m2", 0.0)))
-                        for prefix in ("S", "Q")
-                    )
-                    omitted_terms[term] = full - kept
-                    totals[f"omitted_{term}_j_m2"] += full - kept
+                    omitted_terms[term] = omitted_term
+                    totals[f"omitted_{term}_j_m2"] += omitted_term
                 omitted = float(reduced["omitted_magnitude_j_m2"])
                 totals["omitted_magnitude_j_m2"] += omitted
                 counts[support_class] += 1

@@ -1,6 +1,6 @@
 # Paradise WY2015 Support Resolution
 
-Status: `active / diagnostic localization`
+Status: `complete / support cause localized / non-blocking diagnostic`
 
 Date: `2026-08-07`
 
@@ -23,9 +23,9 @@ threshold, or let this one censored diagnostic carry a physical pass/fail claim.
 ## Progress
 
 - [x] (2026-08-07) Scaffolded from campaign row 31 and predecessor evidence.
-- [ ] Freeze exact inputs, algorithms, claims, and write set.
-- [ ] Implement and test the package-local independent localization consumer.
-- [ ] Execute one immutable retained-trace analysis and reconcile all totals.
+- [x] (2026-08-07) Froze exact inputs, algorithms, claims, and write set.
+- [x] (2026-08-07) Implemented and tested the independent localization consumer.
+- [x] (2026-08-07) Executed immutable attempt 002 and reconciled all totals.
 - [ ] Complete dual review, gates, dual verification, and disposition.
 
 ## Implementation Intent
@@ -111,4 +111,13 @@ verification artifacts; write access is read-only.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+Paradise WY2015 contains exactly 19 daily thin-pack termination episodes. Each
+episode begins with one partial sequential hour (`300--3300 s`) whose final
+tuple reports `post_substep_no_resolved_surface` with `0.9560--0.9999 kg m^-2`
+ice remaining, followed by 183 same-state-only hours for which sequential
+status is directly `thin_pack_boundary_reached`. Thus the support topology has
+a direct evaluator-state cause: within-day sequential evaluation reaches its
+thin-pack/no-resolved-surface boundary while the immutable same-state arm
+continues. This explains the missing support, not whether the boundary or
+underlying physics is correct. The historical `0.0621730192 > 0.05` failure
+remains, as do all physical-authority and persistence holds.
