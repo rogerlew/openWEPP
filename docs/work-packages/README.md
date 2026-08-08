@@ -507,12 +507,20 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-07 UTC`:
+State as of `2026-08-08 UTC`:
+
+- `20260808-land-surface-energy-balance-authority-001/`
+  - ACTIVE / CONTRACT AUTHORITY ADMISSION: define the first-class land-surface
+    energy control volume, water/energy custody, branch ordering, typed guards,
+    cross-domain ownership, and implementation-ready test obligations. No
+    production physics, snow-terminal handoff consumption, default, publication,
+    or cutover is authorized in this package.
 
 - `20260807-snow-terminal-enthalpy-event-numerics-001/`
-  - EXECUTING / CONTRACT-FIRST: implement an error-controlled, evaluation-only
-    shallow-snow enthalpy solve and localized solid-exhaustion event. Snow-side
-    event closure is current scope; post-snow receiving-surface disposition,
+  - COMPLETE / INTERNAL EVALUATION ONLY: implemented an error-controlled,
+    evaluation-only shallow-snow enthalpy solve with localized solid exhaustion,
+    typed failure, persistent-state binding, schema-v8 evidence, and independent
+    consumer reconstruction. Post-snow receiving-surface disposition,
     production ownership, defaults, publication, and cutover remain excluded.
 
 - `20260807-snow-stage3-persistent-accumulation-shadow-001/`
