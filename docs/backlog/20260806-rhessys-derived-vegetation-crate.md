@@ -22,7 +22,7 @@
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
-- `scaffolded implementation package`:
+- `active authority-research package`:
   [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
 
 ## Summary

@@ -510,11 +510,14 @@
 State as of `2026-08-08 UTC`:
 
 - `20260808-vegetation-radiation-interception-conductance-slice-001/`
-  - QUEUED / SCAFFOLDED: independently admit one coherent Stage A canopy
-    radiation, liquid-interception, conductance, potential-transpiration, and
-    layer-demand chain, then implement it in a separately testable default-off
-    `openwepp-vegetation` crate. Stage B/C, soil mutation, production consumers,
-    runtime selection, empirical calibration, output, and cutover are excluded.
+  - RESEARCHING / AUTHORITY PARTIAL: independent literature intake found
+    bounded radiation, interception, and layer-participation candidates, but
+    the conductance and dependent potential-transpiration chain remains blocked
+    between an empirical Jarvis-Stewart route and a larger
+    photosynthesis/hydraulics-coupled route. Five CC-BY sources are vendored;
+    restricted sources remain local-only. No contract or Rust implementation
+    has started. Stage B/C, soil mutation, production consumers, runtime
+    selection, empirical calibration, output, and cutover are excluded.
 
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
   - COMPLETE / AUTHORITY ONLY: independently structured

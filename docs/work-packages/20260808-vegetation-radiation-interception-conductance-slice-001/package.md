@@ -1,6 +1,6 @@
 # Vegetation Radiation, Interception, And Conductance Slice
 
-Status: `queued`
+Status: `researching-authority-partial`
 
 Date: `2026-08-08`
 
@@ -374,6 +374,14 @@ second returns an initial report.
 - [x] (2026-08-08) User authorized package scaffolding.
 - [x] (2026-08-08) Package specification, queued artifacts, active kickoff
   prompt, and lifecycle links scaffolded for a local commit.
+- [x] (2026-08-08) Independently reviewed available radiation, interception,
+  wet-canopy evaporation, conductance, potential-demand, and layer-allocation
+  sources without inspecting RHESSys source expression.
+- [x] (2026-08-08) Vendored five explicitly CC-BY articles and placed four
+  restricted or rights-ambiguous artifacts in the gitignored copyrighted cache.
+- [x] (2026-08-08) Recorded `AUTHORITY_PARTIAL`: bounded candidates exist for
+  radiation, interception, and layer participation, while conductance and its
+  dependent potential-transpiration chain remain blocked.
 - [ ] Freeze the exact implementation intent and independent authority set.
 - [ ] Complete contract-first admission and the pre-implementation gate.
 - [ ] Implement and validate the default-off Stage A crate slice.
@@ -386,6 +394,19 @@ second returns an initial report.
   intentionally leaves every constitutive family in this slice
   `AUTHORITY_MISSING`.
   Evidence: predecessor handoff and `GAP-VEGETATION-002/004/008/009`.
+- Observation: the strongest open forest-model sources couple stomatal
+  conductance to photosynthesis and/or plant hydraulics, both excluded from the
+  current package.
+  Evidence: R-136 Sect. 2.2, R-138, and R-139 Sect. 2.1.3.
+- Observation: the superficially simpler uncoupled alternatives are not clean
+  substitutes. MOD16 is a daily remote-sensing algorithm with biome lookup
+  parameters and humidity-diagnosed wetness; Jarvis-style ponderosa-pine
+  conductance has published vapor-pressure-deficit counterevidence.
+  Evidence: R-132 Sect. 2.5.1 and R-144.
+- Observation: an open forest-light study makes extinction-coefficient
+  transferability a first-class domain issue; the coefficient varies with
+  species, architecture, structure, and period.
+  Evidence: R-137 Eq. 1, Sect. 2.2, and results.
 
 ## Decision Log
 
@@ -404,12 +425,31 @@ second returns an initial report.
   Rationale: runtime selection and consumer integration belong to later roadmap
   items and are explicitly excluded here.
   Date/Author: 2026-08-08 / Codex.
+- Decision: Stop at `AUTHORITY_PARTIAL` after the independent literature
+  intake; do not select MOD16 merely because it avoids photosynthesis.
+  Rationale: its temporal scale, wetness state, parameter topology, and
+  empirical remote-sensing purpose are incompatible with the other candidate
+  equations absent a reviewed authority bridge.
+  Date/Author: 2026-08-08 / Codex.
+- Decision: Preserve the radiation extinction coefficient and all conductance
+  parameters as explicit provenance-tagged inputs; admit no literature table
+  value as a production default during research.
+  Rationale: the reviewed sources demonstrate domain and model dependence, and
+  the package prohibits invented or silently transferred physiological bounds.
+  Date/Author: 2026-08-08 / Codex.
 
 ## Outcomes & Retrospective
 
-Scaffold outcome: an autonomous, authority-first execution specification now
-exists. No science contract, suite, fixture, manifest, Rust, runtime, or test
-implementation has been performed by scaffolding.
+Research outcome: the package now has an independent literature dossier, a
+tracked rights/provenance intake, five licensed source PDFs, and a precise
+conductance authority decision point. The research eliminated an unsafe quick
+route: stitching MOD16 conductance into JULES storage/root equations would mix
+daily remote-sensing, prognostic-storage, and layer-extraction assumptions.
+
+No science contract, suite, fixture, manifest, Rust, runtime, or test
+implementation has been performed. The contract-first gate remains closed
+pending primary-source adjudication of empirical conductance or a prospective
+scope decision to include coupled photosynthesis and plant hydraulics.
 
 ## Idempotence And Recovery
 
@@ -423,3 +463,7 @@ strategy.
 
 Revision note (2026-08-08): initial scaffold created from the admitted
 vegetation boundary handoff and current roadmap objective.
+
+Revision note (2026-08-08): independent literature intake completed to
+`AUTHORITY_PARTIAL`; licensed sources vendored and conductance authority gap
+recorded before canonical or production edits.

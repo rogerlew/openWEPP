@@ -106,6 +106,30 @@ sits in `vendorable/`.)
 - Check the NTRS rights statement for doc 19840021490 (R-102) for possible
   `vendorable/` reclassification.
 
+## Addendum 2026-08-08 (vegetation constitutive-source intake)
+
+The following files were acquired for independent review of the vegetation
+radiation/interception/conductance slice. Classification follows the same
+affirmative-license rule as the first pass.
+
+| File | Classification | Basis |
+|---|---|---|
+| `vendorable/Best2011_JULES_Part1.pdf` | `vendorable` | Article text states Creative Commons Attribution 3.0; DOI `10.5194/gmd-4-677-2011`; SHA-256 `84a909165937108a48d566ecce6a46d4b4c1fa3a3640c7a4b3d65a41c67355a7`. |
+| `vendorable/Forrester2014_LightAbsorption.pdf` | `vendorable` | Article text states Creative Commons Attribution 4.0; DOI `10.1186/s40663-014-0017-0`; SHA-256 `e37b393b6f05f9b202c3c4ac2a8c19a60cb1f84945bc51118aa13098f2d9dbb0`. |
+| `vendorable/Bonan2014_StomatalConductance.pdf` | `vendorable` | Article text states Creative Commons Attribution 3.0; DOI `10.5194/gmd-7-2193-2014`; SHA-256 `f30cf69192383fd10e231f858c81e5ad9a5649e653bef419c638b428a4b32fe0`. |
+| `vendorable/Martens2017_GLEAMv3.pdf` | `vendorable` | Article text states Creative Commons Attribution 3.0; DOI `10.5194/gmd-10-1903-2017`; SHA-256 `51eb4aa1a69bfea44fe06d41d5891f18ec44d0635e6370a34fd4770119ff5eb2`. |
+| `vendorable/LaschBorn2020_4C_v2_2.pdf` | `vendorable` | Article text states Creative Commons Attribution 4.0; DOI `10.5194/gmd-13-5311-2020`; SHA-256 `2a82f7123cbf262c2845be2ac87c41b998a308f8f28f4b55cb376fe6c61d4e19`. |
+| `copyrighted/ShuttleworthWallace1985_NERC_Report.pdf` | `copyrighted/` | NERC report scan includes the full Shuttleworth-Wallace article as Appendix IV but states no affirmative redistribution permission; SHA-256 `b761d661f007a52a5f6c7dcbf0c7d3e9a82698b6e79c6290844c6cefec278626`. |
+| `copyrighted/MOD16_User_Guide_V6.pdf` | `copyrighted/` | Official NASA-hosted Version 2.2 user guide, but the PDF states no affirmative redistribution permission; SHA-256 `a43b47bc33256cad2c7f61566bcf32cd8365383a0eee4b6f02f93042fdcdb687`. |
+| `copyrighted/Pereira2016_WetCanopy.pdf` | `copyrighted/` | Accepted manuscript states CC BY-NC-ND 4.0. The noncommercial/no-derivatives terms are conservatively treated as local-cache-only; DOI `10.1016/j.jhydrol.2016.01.035`; SHA-256 `634d235c0a82e0723dcc5144ecaabed18cb7b426542ee2b783aa64f53a2abca0`. |
+| `copyrighted/Cain1998_ModellingEvaporationPlantCanopies.pdf` | `copyrighted/` | Institute of Hydrology Report No. 132 states Institute copyright and no affirmative redistribution permission; SHA-256 `066e8c836786963748bd39601ad3dbea5abfc6a5c8cea53a209aee0f0474538d`. |
+
+Gash (1979), Jarvis (1976), Stewart (1988), and Kelliher et al. (1995) were
+not vendored. Publisher pages or remote copies were sufficient for discovery
+and preliminary incompatibility review, but not for local primary-source
+admission. Any operator-supplied copies belong in `copyrighted/` unless a
+specific artifact carries affirmative redistribution permission.
+
 ## Addendum 2026-07-10 (WSHED-W11A channel-sediment authority acquisitions)
 
 | File | First-pass classification | Basis |

@@ -1456,20 +1456,29 @@ full-text artifact was added during concept intake. Rights default to
 ## R-128: Gash (1979) forest rainfall interception
 
 **Citation**: Gash, J. H. C. (1979). "An analytical model of rainfall interception by forests." *Quarterly Journal of the Royal Meteorological Society*, 105, 43-55. https://doi.org/10.1002/qj.49710544304
-**Local path**: `not-acquired`.
+**Local path**: `not-acquired`; the official Wiley article page was reviewed,
+but automated full-text retrieval was denied.
 **Reference quality**: `verified-primary-peer-reviewed`.
 **Topic**: Forest-canopy wetting, saturation, drainage, and drying with independent wet-canopy evaporation.
 **openWEPP role**: Candidate authority for explicit canopy-interception storage and flux separation.
-**Rights / distribution**: `restricted`; remote DOI metadata only.
+**Rights / distribution**: `restricted`; remote DOI metadata only. An
+operator-supplied copy remains a track-down item.
 
 ## R-129: Shuttleworth and Wallace (1985) two-source ET
 
 **Citation**: Shuttleworth, W. J., and J. S. Wallace (1985). "Evaporation from sparse crops—an energy combination theory." *Quarterly Journal of the Royal Meteorological Society*, 111, 839-855. https://doi.org/10.1002/qj.49711146910
-**Local path**: `not-acquired`.
+**Local path**:
+`copyrighted/ShuttleworthWallace1985_NERC_Report.pdf`, Appendix IV, pp. 105
+onward in Wallace et al., *Measurement and Prediction of Actual Evaporation
+from Sparse Dryland Crops*, Institute of Hydrology Report OD 149/1 (1985).
+SHA-256:
+`b761d661f007a52a5f6c7dcbf0c7d3e9a82698b6e79c6290844c6cefec278626`.
 **Reference quality**: `verified-primary-peer-reviewed`.
 **Topic**: Coupled soil and canopy resistance network spanning bare ground through closed canopy.
 **openWEPP role**: Preferred conceptual foundation for separately constrained live-canopy transpiration and soil evaporation.
-**Rights / distribution**: `restricted`; remote DOI metadata only.
+**Rights / distribution**: `restricted`; the full article is locally cached
+inside a NERC report, whose scanned artifact does not state redistribution
+permission. The cache is gitignored and is not vendored.
 
 ## R-130: Fisher, Tu, and Baldocchi (2008) PT-JPL partition
 
@@ -1483,20 +1492,26 @@ full-text artifact was added during concept intake. Rights default to
 ## R-131: Martens et al. (2017) GLEAM v3
 
 **Citation**: Martens, B., et al. (2017). "GLEAM v3: satellite-based land evaporation and root-zone soil moisture." *Geoscientific Model Development*, 10, 1903-1925. https://doi.org/10.5194/gmd-10-1903-2017
-**Local path**: `not-acquired`; open article at DOI.
+**Local path**: `vendorable/Martens2017_GLEAMv3.pdf`. SHA-256:
+`51eb4aa1a69bfea44fe06d41d5891f18ec44d0635e6370a34fd4770119ff5eb2`.
 **Reference quality**: `verified-primary-peer-reviewed-open-access`.
 **Topic**: Separate transpiration, bare-soil evaporation, interception, open-water evaporation, and sublimation with surface/root-zone moisture constraints.
 **openWEPP role**: Modular precedent for Gash interception and distinct surface-versus-root moisture stress.
-**Rights / distribution**: Open-access article; exact local redistribution intake not yet performed.
+**Rights / distribution**: `vendorable`; article text states Creative Commons
+Attribution 3.0.
 
 ## R-132: NASA MOD16 terrestrial ET algorithm
 
 **Citation**: Mu, Q., M. Zhao, and S. W. Running. *MODIS Global Terrestrial Evapotranspiration Algorithm Theoretical Basis Document* and MOD16 user guide. https://modis-land.gsfc.nasa.gov/ET.html
-**Local path**: `not-acquired`; official NASA documentation at cited URL.
+**Local path**: `copyrighted/MOD16_User_Guide_V6.pdf`; official Version 2.2
+user guide, dated 2019-06-10. SHA-256:
+`a43b47bc33256cad2c7f61566bcf32cd8365383a0eee4b6f02f93042fdcdb687`.
 **Reference quality**: `verified-primary-government-algorithm-documentation`.
 **Topic**: Wet-canopy evaporation, dry-canopy transpiration, and soil evaporation with biome-dependent resistance and stress parameters.
 **openWEPP role**: Forest plant-functional-type parameter and three-component architecture reference; not a wholesale implementation target.
-**Rights / distribution**: U.S. government-hosted documentation; redistribution status still requires intake review.
+**Rights / distribution**: `restricted-pending-review`; the NASA-hosted PDF
+does not include an explicit redistribution statement. It is conservatively
+cached under the gitignored copyrighted tree.
 
 ## R-133: Zhang, Dawes, and Walker (2001) vegetation-change ET
 
@@ -1524,3 +1539,191 @@ full-text artifact was added during concept intake. Rights default to
 **Topic**: Pre-/post-fire transpiration, canopy interception, soil evaporation, total ET, and recovery.
 **openWEPP role**: Component-partition authority showing that post-fire soil evaporation can rise while total ET declines.
 **Rights / distribution**: `restricted`; remote DOI metadata only.
+
+## Vegetation Constitutive Slice Reference Intake (2026-08-08)
+
+These references were reviewed independently for the
+`20260808-vegetation-radiation-interception-conductance-slice-001` work
+package. RHESSys source expression was not inspected. Open copies are
+vendored only where the artifact states an affirmative redistribution license;
+all other acquired full text remains in the gitignored copyrighted cache.
+
+## R-136: Best et al. (2011) JULES energy and water fluxes
+
+**Citation**: Best, M. J., et al. (2011). "The Joint UK Land Environment
+Simulator (JULES), model description - Part 1: Energy and water fluxes."
+*Geoscientific Model Development*, 4, 677-699.
+https://doi.org/10.5194/gmd-4-677-2011
+**Local path**: `vendorable/Best2011_JULES_Part1.pdf`. SHA-256:
+`84a909165937108a48d566ecce6a46d4b4c1fa3a3640c7a4b3d65a41c67355a7`.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`.
+**Topic**: Surface energy balance, photosynthesis-linked conductance,
+store-limited wet-canopy evaporation, finite-timestep throughfall and canopy
+storage, and layer-resolved root-zone extraction.
+**openWEPP role**: Equation-level candidate authority for canopy liquid
+storage and throughfall (Eqs. 46-47) and normalized layer participation
+(Eqs. 50-52); incompatibility evidence for a conductance slice that excludes
+photosynthesis (Sect. 2.2).
+**Rights / distribution**: `vendorable`; article text states Creative Commons
+Attribution 3.0.
+
+## R-137: Forrester et al. (2014) forest light absorption
+
+**Citation**: Forrester, D. I., R. Guisasola, X. Tang, A. T. Albrecht,
+T. L. Dong, and G. le Maire (2014). "Using a stand-level model to predict
+light absorption in stands with vertically and horizontally heterogeneous
+canopies." *Forest Ecosystems*, 1, 17.
+https://doi.org/10.1186/s40663-014-0017-0
+**Local path**: `vendorable/Forrester2014_LightAbsorption.pdf`. SHA-256:
+`e37b393b6f05f9b202c3c4ac2a8c19a60cb1f84945bc51118aa13098f2d9dbb0`.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`.
+**Topic**: Lambert-Beer absorbed-radiation fraction, top-down canopy-layer
+allocation, and limitations caused by horizontal and vertical heterogeneity.
+**openWEPP role**: Equation-level candidate for component-specific canopy
+radiation receipt (Eq. 1) and evidence that extinction coefficients are
+species-, architecture-, and period-specific inputs rather than universal
+defaults (Sect. 2.2 and Eq. 2).
+**Rights / distribution**: `vendorable`; article text states Creative Commons
+Attribution 4.0.
+
+## R-138: Bonan et al. (2014) stomatal conductance and hydraulics
+
+**Citation**: Bonan, G. B., M. Williams, R. A. Fisher, and K. W. Oleson
+(2014). "Modeling stomatal conductance in the earth system: linking leaf
+water-use efficiency and water transport along the soil-plant-atmosphere
+continuum." *Geoscientific Model Development*, 7, 2193-2222.
+https://doi.org/10.5194/gmd-7-2193-2014
+**Local path**: `vendorable/Bonan2014_StomatalConductance.pdf`. SHA-256:
+`f30cf69192383fd10e231f858c81e5ad9a5649e653bef419c638b428a4b32fe0`.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`.
+**Topic**: Ball-Berry and soil-plant-atmosphere conductance models, canopy
+radiation, root hydraulics, water-use efficiency, and hydraulic safety.
+**openWEPP role**: Strong incompatibility and scope evidence: the evaluated
+mechanistic forest-conductance formulations require photosynthesis and/or
+plant hydraulics that the current slice excludes.
+**Rights / distribution**: `vendorable`; article text states Creative Commons
+Attribution 3.0.
+
+## R-139: Lasch-Born et al. (2020) forest model 4C v2.2
+
+**Citation**: Lasch-Born, P., et al. (2020). "Description and evaluation of
+the process-based forest model 4C v2.2 at four European forest sites."
+*Geoscientific Model Development*, 13, 5311-5343.
+https://doi.org/10.5194/gmd-13-5311-2020
+**Local path**: `vendorable/LaschBorn2020_4C_v2_2.pdf`. SHA-256:
+`2a82f7123cbf262c2845be2ac87c41b998a308f8f28f4b55cb376fe6c61d4e19`.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`.
+**Topic**: Cohort forest radiation, interception, photosynthesis-linked
+stomatal conductance, potential transpiration, and layer root shares.
+**openWEPP role**: Cross-model corroboration for the process topology and
+evidence that a forest-mechanistic conductance chain normally crosses the
+current package's photosynthesis exclusion.
+**Rights / distribution**: `vendorable`; article text states Creative Commons
+Attribution 4.0.
+
+## R-140: Pereira et al. (2016) wet-canopy evaporation
+
+**Citation**: Pereira, F. L., F. Valente, J. S. David, N. Jackson,
+F. Minunno, and J. H. Gash (2016). "Rainfall interception modelling: is the
+wet bulb approach adequate to estimate mean evaporation rate from
+wet/saturated canopies in all forest types?" *Journal of Hydrology*, 534,
+606-615. https://doi.org/10.1016/j.jhydrol.2016.01.035
+**Local path**: `copyrighted/Pereira2016_WetCanopy.pdf`, accepted manuscript.
+SHA-256:
+`634d235c0a82e0723dcc5144ecaabed18cb7b426542ee2b783aa64f53a2abca0`.
+**Reference quality**: `verified-primary-peer-reviewed-author-manuscript`.
+**Topic**: Wet-canopy evaporation in Gash interception modeling; comparison
+of Penman-Monteith and wet-bulb approaches across ventilation regimes.
+**openWEPP role**: Regime guard: Penman-Monteith is appropriate for canopies
+that are not fully ventilated, while sparse, fully ventilated canopies require
+separate treatment; canopy cover alone does not identify the regime.
+**Rights / distribution**: `copyrighted-cache`; accepted manuscript states
+CC BY-NC-ND 4.0. It is kept gitignored under the repository's conservative
+noncommercial/no-derivatives policy.
+
+## R-141: Jarvis (1976) environmental stomatal response
+
+**Citation**: Jarvis, P. G. (1976). "The interpretation of the variations in
+leaf water potential and stomatal conductance found in canopies in the
+field." *Philosophical Transactions of the Royal Society B*, 273(927),
+593-610. https://doi.org/10.1098/rstb.1976.0035
+**Local path**: `not-acquired`; official metadata and a remote full-text copy
+were reviewed.
+**Reference quality**: `verified-primary-peer-reviewed`.
+**Topic**: Multiplicative empirical stomatal response to irradiance,
+temperature, humidity deficit, leaf water status, and carbon dioxide.
+**openWEPP role**: Original lead for a no-photosynthesis conductance option;
+not admitted without the original article, scaling rule, parameter authority,
+and validation-domain reconciliation.
+**Rights / distribution**: `restricted`; an operator-supplied copy remains a
+track-down item for the gitignored local cache.
+
+## R-142: Stewart (1988) pine-forest surface conductance
+
+**Citation**: Stewart, J. B. (1988). "Modelling surface conductance of pine
+forest." *Agricultural and Forest Meteorology*, 43(1), 19-35.
+https://doi.org/10.1016/0168-1923(88)90003-2
+**Local path**: `not-acquired`; publisher abstract and secondary equation
+descriptions were reviewed.
+**Reference quality**: `verified-primary-peer-reviewed-metadata-only`.
+**Topic**: Jarvis-style pine-forest surface conductance driven by solar
+radiation, humidity deficit, temperature, and soil moisture deficit, with
+separate calibration and validation subsets.
+**openWEPP role**: Highest-priority track-down item for deciding whether the
+current package can admit a bounded empirical forest-conductance law without
+adding photosynthesis and plant hydraulics.
+**Rights / distribution**: `restricted`; no redistributable full text was
+found.
+
+## R-143: Kelliher et al. (1995) maximum vegetation conductance
+
+**Citation**: Kelliher, F. M., R. Leuning, M. R. Raupach, and E.-D. Schulze
+(1995). "Maximum conductances for evaporation from global vegetation types."
+*Agricultural and Forest Meteorology*, 73(1-2), 1-16.
+https://doi.org/10.1016/0168-1923(94)02178-M
+**Local path**: `not-acquired`; publisher abstract and institutional metadata
+were reviewed.
+**Reference quality**: `verified-primary-peer-reviewed-metadata-only`.
+**Topic**: Observed maximum stomatal and bulk surface conductances across
+vegetation types and their relationship to leaf area index.
+**openWEPP role**: Required parameter-scale and aggregation check for any
+MOD16- or Jarvis-Stewart-derived empirical conductance option.
+**Rights / distribution**: `restricted`; no redistributable full text was
+found.
+
+## R-144: Misson, Panek, and Goldstein (2004) ponderosa-pine conductance
+
+**Citation**: Misson, L., J. A. Panek, and A. H. Goldstein (2004). "A
+comparison of three approaches to modeling leaf gas exchange in annually
+drought-stressed ponderosa pine forests." *Tree Physiology*, 24(5), 529-541.
+https://doi.org/10.1093/treephys/24.5.529
+**Local path**: `not-acquired`; full text reviewed through the University of
+California eScholarship record https://escholarship.org/uc/item/96747965.
+**Reference quality**: `verified-primary-peer-reviewed-repository-full-text`.
+**Topic**: Independent calibration/validation comparison of Jarvis,
+Ball-Berry, and soil-plant-atmosphere conductance models for drought-stressed
+ponderosa pine.
+**openWEPP role**: Counterevidence against casually adopting the simple
+Jarvis option: the paper reports systematic vapor-pressure-deficit error and
+better performance from a photosynthesis-coupled model for its domain.
+**Rights / distribution**: `restricted`; article states Heron Publishing
+copyright and was not vendored.
+
+## R-145: Cain (1998) plant-canopy evaporation review
+
+**Citation**: Cain, J. D. (1998). *Modelling Evaporation from Plant Canopies*.
+Institute of Hydrology Report No. 132. ISBN 0-948540-85-0.
+https://nora.nerc.ac.uk/id/eprint/7373/
+**Local path**:
+`copyrighted/Cain1998_ModellingEvaporationPlantCanopies.pdf`. SHA-256:
+`066e8c836786963748bd39601ad3dbea5abfc6a5c8cea53a209aee0f0474538d`.
+**Reference quality**: `verified-secondary-government-technical-report`.
+**Topic**: Review of Penman-Monteith variables, Jarvis-Stewart conductance,
+aerodynamic resistance, radiation attenuation, multilayer and sparse-canopy
+models, and forest parameter transferability.
+**openWEPP role**: Discovery and incompatibility map only. It warns that
+conductance parameters are model-specific, canopy scaling is nontrivial, and
+aerodynamic resistance depends on roughness, source height, stability, and
+canopy structure; it is not a substitute for primary equation authority.
+**Rights / distribution**: `copyrighted-cache`; the report states Institute
+of Hydrology copyright and no affirmative redistribution permission.
