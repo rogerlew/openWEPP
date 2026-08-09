@@ -126,6 +126,11 @@
 - Run cheap deterministic checks before expensive work: package/write-set
   reconciliation, diff hygiene, documentation/schema checks, required artifact
   presence, prompt state, and line-count governance.
+- When overriding `TMPDIR`, follow
+  [Temporary Directory Placement](../standards/local-ci-gate-selection.md#temporary-directory-placement):
+  use an absolute scratch directory outside the checkout, never `target/` or
+  another repository descendant. Assurance publication fixtures intentionally
+  reject repository/staging/public/snapshot root overlap.
 
 ## Consumer-Path Closure Rule
 - A package that claims `endpoint`, `direct`, `cutover`, `publication`,

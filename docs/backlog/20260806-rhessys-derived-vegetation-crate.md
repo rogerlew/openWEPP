@@ -2,11 +2,14 @@
 
 ## Status
 
-- `state`: **blocked; integrated authority admission executed-hold** -
-  source-aware implementation remains closed on residual
-  `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015`; `AUTH-RHEC-016` authority is
-  admitted but its implementation/tests remain a successor obligation; default
-  activation remains prohibited
+- `state`: **blocked; authority reframe complete** - site-specific stratum
+  values and compatible initial state are caller configuration rather than
+  universal-value blockers. Source-aware implementation remains closed on the
+  complete schema and selected constitutive families; `AUTH-RHEC-016` authority
+  is admitted but its implementation/tests remain a successor obligation;
+  default activation remains prohibited. The reframe and exact-head full
+  workspace pass; remaining blockers are the complete schema and selected
+  constitutive families plus their contract-first implementation gates.
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
@@ -26,6 +29,10 @@
   [RHESSYS-EAST-COAST-CODE-LITERATURE-AUTHORITY-AUDIT](../work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/package.md)
 - `executed-hold authority-admission package`:
   [RHESSYS-EAST-COAST-VEGETATION-AUTHORITY-ADMISSION](../work-packages/20260808-rhessys-east-coast-vegetation-authority-admission-001/package.md)
+- `executed-hold authority-closure package`:
+  [RHESSYS-EAST-COAST-VEGETATION-AUTHORITY-CLOSURE](../work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/package.md)
+- `completed authority-reframe package`:
+  [NATIVE-FOREST-ECOHYDROLOGY-AUTHORITY-REFRAME](../work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/package.md)
 - `queued implementation package`:
   [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)
 
@@ -49,6 +56,14 @@ This concept broadens the
 Native ET remains a primary motivation, but it should be delivered as part of a
 coherent vegetation state machine rather than as another stand-alone
 demand-partition formula.
+
+The native-forest route specifically rejects the agricultural WEPP
+`Kcb`/LAI PMET partition, which structurally transfers reduced canopy demand to
+soil evaporation. It must instead close canopy transpiration, wet-canopy
+evaporation, forest-floor evaporation, and layer-resolved root uptake as
+independent components. Penman-Monteith is eligible only as a completely
+admitted component equation; it is neither the mandatory architecture nor
+broadly prohibited.
 
 ## Why This Exists
 

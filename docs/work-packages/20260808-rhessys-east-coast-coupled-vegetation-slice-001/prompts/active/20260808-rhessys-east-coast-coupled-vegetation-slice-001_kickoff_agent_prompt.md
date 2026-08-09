@@ -11,17 +11,21 @@ Precondition: do not execute this prompt until
 `20260808-rhessys-east-coast-code-literature-authority-audit-001` has a passing
 terminal disposition, has amended this package, and leaves no required
 `BLOCK_SUCCESSOR` row, and
-`20260808-rhessys-east-coast-vegetation-authority-admission-001` has passed all
-three authority gates and explicitly released implementation. If the
-precondition is unmet, stop without edits and report the predecessor dependency.
+`20260809-native-forest-ecohydrology-authority-reframe-001` has a complete,
+passing terminal disposition, and every constitutive family selected for this
+slice has complete canonical authority and passing contract-first tests. The
+executed-hold authority-closure package is historical input, not a requirement
+to select universal site values. If the process-authority precondition is
+unmet, stop without production edits and report the exact dependency.
 
 The completed authority-admission amendment admits `AUTH-RHEC-016` at the
-authority level, while residual `AUTH-RHEC-001..011` plus
-`AUTH-RHEC-014/015` keep this prompt intentionally non-executable for
-production work. After those residual blockers close and the contract-first
-gate passes, this successor must implement and test the already-admitted strict
-acquisition boundary. Source licensing and audit completion do not satisfy the
-release condition.
+authority level. `SC-VEGETATION-001` version 4 assigns site-specific stratum
+values and complete compatible initial state to caller configuration, so value
+selection is not a release condition. This prompt remains non-executable for
+production work until the complete schema and selected process equations,
+units, domains, guards, ownership, and independent vectors are admitted. After
+that contract-first gate, implement and test caller configuration/state and the
+already-admitted strict acquisition boundary.
 
 After release, execute every phase in `package.md` sequentially through terminal
 disposition or a proven declared hold. Begin by verifying the predecessor's
@@ -33,6 +37,10 @@ User constraints are binding: support deciduous and mixed forests; accept
 existing valid RHESSys vegetation definition files; do not narrow scope merely
 to avoid coupled photosynthesis/conductance work. Mixed forest is explicit
 multistratum composition, never an undocumented averaged parameter profile.
+Users determine appropriate site values. Demonstration fixtures must use
+deliberately distinct, domain-valid `ASSUMED_FOR_EXECUTION` values and prove
+parsing, stratum identity, behavioral response, limiting cases, and closure
+without claiming calibration, validation, or transferability.
 
 Source-aware posture: direct adaptation from the two pinned MIT repositories is
 authorized only within the predecessor's accepted boundary. Preserve exact
@@ -40,9 +48,14 @@ source coordinates and the MIT notice. Do not reopen a concordance or migration
 disposition without new evidence and prospective package reconciliation.
 
 Coupling language must match the accepted precursor record for Jarvis-style
-conductance, Penman-Monteith water flux, Farquhar photosynthesis, phenology,
-canopy state, and root demand. Do not imply bidirectional assimilation-solved
-stomata unless the precursor evidence and admitted contract prove that behavior.
+conductance, source Penman-Monteith water flux, Farquhar photosynthesis,
+phenology, canopy state, and root demand. Do not port the defective source PM
+routine or preserve the agricultural WEPP `Kcb`/LAI PMET partition. The native
+target requires independent canopy transpiration, wet-canopy evaporation,
+forest-floor evaporation, and layer-root components; canopy-demand loss cannot
+be donated automatically to forest-floor evaporation. Penman-Monteith is
+neither required nor broadly prohibited when a complete component equation is
+independently admitted.
 
 ## Required Reading
 
@@ -61,6 +74,13 @@ stomata unless the precursor evidence and admitted contract prove that behavior.
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/code-literature-concordance-matrix.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/authority-gap-register.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/package.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/disposition.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/worker-handoff.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/package.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/disposition.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/authority-boundary-decision.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/stevens-canyon-invariant-map.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/artifacts/worker-handoff.md`
 - `/home/workdir/openWEPP/docs/specifications/science-contracts/AGENTS.md`
 - `/home/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`
@@ -100,21 +120,23 @@ stomata unless the precursor evidence and admitted contract prove that behavior.
 - External-authority templates, registries, obligations, and adjacent Rust/test
   sources when their authoring phase begins.
 
-Required-reading budget: `677241` local Core bytes, `WARN` (`>400000` and
+Required-reading budget: `708970` local Core bytes, `WARN` (`>400000` and
 `<=800000`). External source files and on-demand literature are excluded until
 their trigger applies. Record the recomputed terminal budget in package evidence
 if Core files change.
 
 ## Execution
 
-1. Verify the precursor's terminal identity, accepted reviews, complete audit
-   matrices, successor amendments, source identities, and absence of required
-   `BLOCK_SUCCESSOR` rows. Record the openWEPP base/diff, instruction chain,
-   write set, and required-reading budget.
-2. Close the precursor's required `AUTH-RHEC-*` rows through reviewed canonical
-   authority; then reconcile the admitted boundary with the concrete Rust API and fixtures;
-   prospectively amend the package before implementation if a new dependency
-   appears.
+1. Verify the audit, admission, authority-closure, and authority-reframe terminal
+   identities, accepted reviews, matrices, canonical amendments, and source
+   identities. Retain the executed-hold closure package's source/gap evidence;
+   do not require an implementation release it never issued. Record the
+   openWEPP base/diff, instruction chain, write set, and reading budget.
+2. Consume the authority reframe's accepted boundary for caller-owned values
+   and state plus the independent native-forest flux target. Reconcile that
+   boundary with the concrete Rust API and fixtures. Do not decide residual
+   science inside this implementation package; prospectively amend or hold if a
+   new authority dependency appears.
 3. Amend canonical contracts as still needed, add contract-derived tests and
    locked fixtures, define the required A3 suite, and complete independent
    review and the pre-implementation gate.

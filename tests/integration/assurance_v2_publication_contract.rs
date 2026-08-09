@@ -528,6 +528,7 @@ fn draft_subject_root_is_stable_but_cannot_publish() {
     assert_eq!(first.release_transfer_root, None);
     let usersum = prepared_usersum("assure04d-draft-usersum");
     let snapshots = Scratch::new("assure04d-draft-snapshots");
+    let prior_public = capture_tree(&usersum.path);
     let options = V2PublicationOptions::new(
         stage.path.clone(),
         usersum.path.clone(),
@@ -538,11 +539,27 @@ fn draft_subject_root_is_stable_but_cannot_publish() {
         )
         .unwrap(),
     );
-    assert!(matches!(
-        repository.publish_report(REPORT_ID, &options),
-        Err(AssuranceError::Invalid(message)) if message.contains("DRAFT")
-    ));
-    assert!(!usersum.path.join("assurance/catalog.json").exists());
+    let error = repository
+        .publish_report(REPORT_ID, &options)
+        .expect_err("a DRAFT report must not publish");
+    match error {
+        AssuranceError::Invalid(message) => assert_eq!(
+            message,
+            format!("report '{REPORT_ID}' is DRAFT; publication requires APPROVED"),
+            "DRAFT publication returned the wrong invalid-state error"
+        ),
+        other => panic!("DRAFT publication returned the wrong error type: {other:?}"),
+    }
+    assert_eq!(
+        capture_tree(&usersum.path),
+        prior_public,
+        "DRAFT rejection must not mutate the public tree"
+    );
+    assert_eq!(
+        fs::read_dir(&snapshots.path).unwrap().count(),
+        0,
+        "DRAFT rejection must not create a snapshot or receipt"
+    );
 }
 
 #[test]

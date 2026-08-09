@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-08
+last_reviewed: 2026-08-09
 supersedes: []
 superseded_by: []
 ---
@@ -27,11 +27,12 @@ Evidence mode: `Static`
 ## Purpose
 
 Define canonical openWEPP ownership, state, ordering, units, conservation, and
-failure semantics for a future native vegetation subsystem. Version 3 admits
-typed boundary architecture plus the strict local-definition acquisition and
-typed-schema rules below. It admits no vegetation kernel,
-physiological formula, empirical parameter value, runtime selector, management
-schema, compatibility cutover, output, calibration, or default.
+failure semantics for a future native vegetation subsystem. Version 4 admits
+typed boundary architecture, strict local-definition acquisition, typed-schema
+rules, caller-owned site configuration, and native-forest component-flux
+separation. It admits no vegetation kernel, physiological formula, empirical
+default, runtime selector, management schema, compatibility cutover, output,
+calibration, or recommended site value.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -41,6 +42,8 @@ In scope:
   deterministic ordering;
 - immutable configuration and initial-state references distinct from evolving
   vegetation state;
+- caller-supplied site-specific stratum values, topology, and compatible
+  initial state constrained by canonical schema semantics and guards;
 - vegetation-owned liquid interception state, live/standing-dead elemental
   state, potential response, and finalization;
 - Stage A potential response, Stage B hydrologic arbitration, and Stage C
@@ -59,7 +62,10 @@ Out of scope:
   equation not already admitted by a named canonical owner;
 - source-derived formulas, constants, bounds, defaults, naming, or control
   flow remain out of scope unless independently adjudicated; this includes
-  RHESSysEastCoast behavior and GIS2RHESSys profile values;
+  RHESSysEastCoast behavior and any claim that GIS2RHESSys profile values are
+  defaults, calibrated, validated, or transferable;
+- the agricultural WEPP `Kcb`/LAI PMET partition as a future native-forest
+  implementation target;
 - soil-layer liquid/frozen storage mutation by vegetation;
 - ground snow, litter/residue, soil carbon/nitrogen, infiltration, runoff,
   drainage, percolation, lateral flow, erosion, routing, or publication
@@ -88,6 +94,12 @@ Out of scope:
 | `REF-VEGETATION-015` | Authority-admission package `20260808-rhessys-east-coast-vegetation-authority-admission-001` | Exact selected-field ledger, targeted replacement-authority attempts, and strict acquisition/schema adjudication. | `[DIRECT][Static]` |
 | `REF-VEGETATION-016` | White et al. (2000), *Earth Interactions* 4(3), Appendix A; ORNL DAAC dataset DOI `10.3334/ORNLDAAC/652` | Defines documented BIOME-BGC parameter families and their units/biome domains; does not by itself authorize the selected GIS cells or a stand initial state. | `[DIRECT][Static]` |
 | `REF-VEGETATION-017` | Hwang et al. (2009), WRR DOI `10.1029/2009WR007775`, Tables 2-3; Ford et al. (2010), *Ecohydrology*, Tables I-V | Coweeta species/catchment parameter and dated stand-observation evidence; also direct evidence that some allocation/phenology inputs were not species-level and that the pine and hardwood observations are from adjacent, distinct watersheds. | `[DIRECT][Static]` |
+| `REF-VEGETATION-018` | wepppy Stevens Canyon peak-flow inversion investigation dated 2026-08-03, including PMET calibration, legacy-ET ablation, and water-balance attribution | Diagnostic mechanism evidence that the agricultural complementary `K_Ep/K_Es` partition structurally donates reduced canopy demand to soil evaporation and that disabling PMET alone does not recover the target. It is not calibration or validation authority. | `[DIRECT][Static]` |
+| `REF-VEGETATION-019` | Gash (1979), *QJRMS* 105:43-55, DOI `10.1002/qj.49710544304` | Primary process precedent for finite wet-canopy interception storage and evaporation as a distinct component; no complete formula family is admitted here. | `[DIRECT][Static]` |
+| `REF-VEGETATION-020` | Shuttleworth and Wallace (1985), *QJRMS* 111:839-855 | Primary process precedent for separately constrained canopy and soil resistance/flux components; no complete formula family is admitted here. | `[DIRECT][Static]` |
+| `REF-VEGETATION-021` | Javaux et al. (2013), DOI `10.2136/vzj2013.02.0042`; Cai et al. (2018), DOI `10.5194/hess-22-2449-2018` | Primary process leads for root-distribution and soil-state controls on root uptake; the selected layer request law remains authority-missing. | `[DIRECT][Static]` |
+| `REF-VEGETATION-022` | Verstraete (1988), NASA NTRS `19880062508` | Primary process lead for multilayer canopy radiative transfer; the selected operator remains authority-missing. | `[DIRECT][Static]` |
+| `REF-VEGETATION-023` | Medlyn et al. (2002), DOI `10.1046/j.1365-3040.2002.00891.x`; Bernacchi et al. (2013), DOI `10.1111/pce.12118`; Samanta et al. (2008), DOI `10.1029/2007WR006761` | Primary process leads for C3 temperature response and canopy-conductance scale; the selected complete families and site values remain separate decisions. | `[DIRECT][Static]` |
 
 Source-reported literature names in `REF-VEGETATION-009`,
 `REF-VEGETATION-012`, or `REF-VEGETATION-013` are discovery leads only. They
@@ -112,7 +124,7 @@ explicitly declared.
 | `LAI_s`, `WAI_s` | `m^2 m^-2` | leaf and woody area per ground area | vegetation |
 | `r_s,l` | fraction | root participation fraction for stratum `s`, soil layer `l` | native management / vegetation |
 | `S_liq,s` | `kg m^-2` | liquid water stored on stratum `s` | vegetation |
-| `S_snow,s` | `kg m^-2` | future intercepted canopy-snow water-equivalent store | vegetation; constitutive behavior non-promotable in versions 2-3 |
+| `S_snow,s` | `kg m^-2` | future intercepted canopy-snow water-equivalent store | vegetation; constitutive behavior non-promotable in versions 2-4 |
 | `P_liq,s` | `kg m^-2` | interval-integrated liquid incident on stratum `s` | upstream canopy/forcing handoff |
 | `E_int,s` | `kg m^-2` | interval-integrated actual evaporation from canopy liquid store | vegetation + energy join |
 | `R_down,s` | `kg m^-2` | interval-integrated typed total downward liquid release | vegetation |
@@ -123,6 +135,7 @@ explicitly declared.
 | `A_l` | `kg m^-2` | same-snapshot layer liquid admissible to all Stage B withdrawals on the transaction area basis | soil hydrology |
 | `W_comp,l` | `kg m^-2` | interval-integrated non-vegetation competing withdrawal accepted from layer `l` | soil hydrology |
 | `T_s` | `kg m^-2` | interval-integrated Stage C actual transpiration | vegetation |
+| `E_floor,j` | `kg m^-2` | interval-integrated actual evaporation from explicit forest-floor recipient `j`, such as litter or mineral soil | owning forest-floor water/energy component, never a complement of `T_s` |
 | `h_v` | `J kg^-1` | authority-tagged vaporization enthalpy for the accepted state | land-surface energy |
 | `Q_T,s` | `J m^-2` | interval-integrated latent-energy debit paired with `T_s` | land-surface energy |
 | `M_C,p`, `M_N,p` | `kg C m^-2`, `kg N m^-2` | vegetation elemental pool `p` | vegetation |
@@ -159,6 +172,8 @@ unit and integrate through `dt` before entering these amount ledgers.
 - Stage B allocation receipt with `U_s,l`, availability lineage, and one reason
   code per request;
 - Stage C accepted vegetation state and actual water/energy/elemental ledgers;
+- separate actual canopy transpiration, wet-canopy evaporation, and explicit
+  forest-floor evaporation ledgers without a complementary-demand identity;
 - receiving-owner receipts or typed rejection; and
 - optional compatibility values with a field-specific reduction receipt.
 
@@ -189,7 +204,11 @@ every owner state byte-identical.
    typed error, never a biomass or cover perturbation.
 4. **Assemble Stage A.** Freeze beginning snapshots. Vegetation may compute
    only contract-authorized potential responses. It emits `D_s,l >= 0`, canopy
-   transfer proposals, and sufficient operands for independent reconstruction.
+   transfer proposals, separately identified wet-canopy evaporation and
+   canopy-transpiration candidates, and sufficient operands for independent
+   reconstruction. Any forest-floor owner constructs its own evaporation
+   candidate from its own state and available-energy lineage; it does not
+   receive a residual canopy demand.
    It does not mutate hydrologic/frozen state or publish actual transpiration,
    assimilation, or litter receipt.
 5. **Assemble Stage B.** Hydrology evaluates all same-`tau` demands and
@@ -218,9 +237,11 @@ every owner state byte-identical.
    candidate states and expose adapter/publication candidates.
 10. **Iteration if later authorized.** A successor contract must state iterate
     variables, ordering, norm, dimensional tolerances, maximum iterations, and
-    failure rollback. Version 3 preserves the version-2 prohibition on
+    failure rollback. Version 4 preserves the version-2 prohibition on
     fixed-point iteration and authorizes no
-    fallback flux.
+    fallback flux. Penman-Monteith is neither required nor prohibited: if a
+    component selects it, that component must admit the complete equation,
+    constants, units, resistance scale, domains, guards, and limiting vectors.
 
 This sequence is implementation-authoritative for boundary transactionality,
 not for any missing constitutive response.
@@ -232,6 +253,8 @@ not for any missing constitutive response.
 | empty stand with zero vegetation stores | valid degenerate; zero vegetation demands/transfers | none |
 | invalid/ambiguous topology, units, digest, or parameter class | reject before Stage A | `VEG-E-001/002/003` |
 | missing constitutive authority for a requested process | reject; do not substitute proxy physics | `VEG-E-060` |
+| agricultural `Kcb`/LAI PMET partition requested for native forest | reject before component flux construction | `VEG-E-061` |
+| canopy-demand loss is reassigned to forest-floor evaporation | reject the coupled candidates | `VEG-E-061` |
 | stale/mismatched `tau`, state, area, or layer identity | reject before mutation | `VEG-E-010` |
 | missing/duplicate shared lineage | reject | `VEG-E-011` |
 | Stage A canopy/radiation proposal fails closure | reject | `VEG-E-012` |
@@ -241,7 +264,7 @@ not for any missing constitutive response.
 | `T_s != sum_l U_s,l` | reject both candidate states | `VEG-E-030` |
 | missing/mismatched `h_v` or duplicate latent debit | reject | `VEG-E-031` |
 | water/energy/carbon/nitrogen/material closure fails | reject atomically | `VEG-E-032` |
-| canopy-snow constitutive execution requested under versions 2-3 | reject; boundary concept only | `VEG-E-040` |
+| canopy-snow constitutive execution requested under versions 2-4 | reject; boundary concept only | `VEG-E-040` |
 | iterative feedback requested without successor authority | reject without partial publication | `VEG-E-041` |
 | compatibility adapter invoked before Stage C/receipt closure | reject | `VEG-E-050` |
 
@@ -261,7 +284,7 @@ not for any missing constitutive response.
 | `INV-VEGETATION-015` | Failed or non-converged transactions publish and mutate nothing. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | atomic commit | `VEG-E-032/041` |
 | `INV-VEGETATION-020` | Canopy liquid start plus interval-integrated incident water equals end storage plus interval-integrated actual evaporation and named releases. | `REF-VEGETATION-002`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[DIRECT][Static] + [INFERENCE][Static]` | dual reconstruction | `VEG-E-012/032` |
 | `INV-VEGETATION-021` | Canopy, ground, litter, snow, soil, ponded-water, and atmospheric radiation/latent terms remain distinct. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | alias/poison test | `VEG-E-011/032` |
-| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; v1 admits no canopy-snow constitutive law, and versions 2-3 preserve that prohibition. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
+| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; v1 admits no canopy-snow constitutive law, and versions 2-4 preserve that prohibition. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
 | `INV-VEGETATION-030` | Live/standing-dead plant pools remain vegetation-owned until an accepted exact-once material/element transfer. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | receipt test | `VEG-E-032` |
 | `INV-VEGETATION-031` | Vegetation and residue/biogeochemistry independently reconstruct identical dry-matter, carbon, and nitrogen transfers. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | dual reconstruction | `VEG-E-032` |
 | `INV-VEGETATION-040` | Every compatibility field has an explicit reduction, area basis, unit conversion, missing-state rule, and contributing-strata receipt. | `REF-VEGETATION-004`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | adapter test | `VEG-E-050` |
@@ -272,7 +295,12 @@ not for any missing constitutive response.
 | `INV-VEGETATION-053` | Definition acquisition accepts caller-supplied local bytes only when repository, immutable commit, repository-relative path, and SHA-256 all match; mutable references, network schemes, and runtime fallback acquisition are rejected before parsing. | `REF-VEGETATION-013`, `REF-VEGETATION-014`, `REF-VEGETATION-015` | `[DIRECT][Static] + [INFERENCE][Static]` | acquisition/runtime/test | `VEG-E-003` |
 | `INV-VEGETATION-054` | The immutable raw definition and resolved typed parameter set are distinct objects. Raw bytes and exact lexical key/value records remain reconstructible; resolution cannot rewrite the evidence object. | `REF-VEGETATION-013`, `REF-VEGETATION-014`, `REF-VEGETATION-015` | `[DIRECT][Static] + [INFERENCE][Static]` | schema/runtime/test | `VEG-E-003` |
 | `INV-VEGETATION-055` | Every consumed field is declared by a versioned schema entry with canonical symbol, source key, explicit aliases, type, units, cadence, area/scale basis, parameter class, finite domain, missing/sentinel policy, authority, ecosystem domain, and prohibited extrapolations. Schema admission does not admit an empirical value. | `REF-VEGETATION-014`, `REF-VEGETATION-015`, `REF-VEGETATION-016` | `[DIRECT][Static] + [INFERENCE][Static]` | schema/runtime/test | `VEG-E-003/060` |
-| `INV-VEGETATION-056` | Initial state is a dated stand/plot observation or independently authorized synthesis tied to area, topology, age/size structure, profile identity, and observation operator; it is never intrinsic to a species-profile label. | `REF-VEGETATION-015`, `REF-VEGETATION-017` | `[DIRECT][Static] + [INFERENCE][Static]` | initialization/runtime/test | `VEG-E-060` |
+| `INV-VEGETATION-056` | Initial state is a distinct, complete, versioned site object tied to date, area, topology, profile identity, units, and every required pool/geometry field; it is never intrinsic to a species-profile label. | `REF-VEGETATION-015`, `REF-VEGETATION-017` | `[DIRECT][Static] + [INFERENCE][Static]` | initialization/runtime/test | `VEG-E-060` |
+| `INV-VEGETATION-057` | Site-specific parameter values are caller-supplied `external_configuration`. A0 authority governs field meaning, units, cadence, basis, mathematical domain, process role, required presence, and guards; accepting a finite in-domain value makes no calibration, validation, ecosystem applicability, or transferability claim. | `REF-VEGETATION-004`, `REF-VEGETATION-010`, `REF-VEGETATION-015` | `[INFERENCE][Static]` | schema/runtime/test | `VEG-E-003/060` |
+| `INV-VEGETATION-058` | A compatible initial state may be caller-supplied `initial_state` without being an observation or openWEPP synthesis. It must be complete, finite, domain-valid, dated, area/topology/profile-bound, and versioned; empirical provenance is additionally required only for an observation, calibration, validation, or transferability claim. | `REF-VEGETATION-001`, `REF-VEGETATION-010`, `REF-VEGETATION-017` | `[INFERENCE][Static]` | initialization/runtime/test | `VEG-E-060` |
+| `INV-VEGETATION-059` | The future native-forest path represents canopy transpiration, wet-canopy evaporation, and forest-floor evaporation as separately owned, independently reconstructible component fluxes. The Agricultural `Kcb`/LAI PMET partition is not an admissible native-forest implementation target. | `REF-VEGETATION-003`, `REF-VEGETATION-018`, `REF-VEGETATION-019`, `REF-VEGETATION-020` | `[DIRECT][Static] + [INFERENCE][Static]` | governance/runtime/test | `VEG-E-061` |
+| `INV-VEGETATION-060` | A reduction in canopy area, conductance, or energy must not automatically reassign lost canopy demand to forest-floor evaporation. Each component responds only through its own admitted operands, state, resistances, and energy/water limits. | `REF-VEGETATION-007`, `REF-VEGETATION-010`, `REF-VEGETATION-018`, `REF-VEGETATION-020` | `[DIRECT][Static] + [INFERENCE][Static]` | independent reconstruction/poison test | `VEG-E-061` |
+| `INV-VEGETATION-061` | Contract demonstrations use deliberately distinct `ASSUMED_FOR_EXECUTION` fixtures to prove schema rejection, stratum separation, component independence, layer-resolved root requests, limiting behavior, and closure. Such fixtures make no site-suitability claim and cannot be distributed as recommended defaults. | `REF-VEGETATION-010`, `REF-VEGETATION-011`, `REF-VEGETATION-021` | `[INFERENCE][Static]` | test/governance | hard `HOLD` on overclaim |
 
 ### Invariant Guard Map
 
@@ -300,8 +328,13 @@ not for any missing constitutive response.
 | `INV-VEGETATION-052` | strict definition/schema/alias validator | runtime/test | `VEG-E-003/060`; currently `HOLD` | `GAP-VEGETATION-011/012` |
 | `INV-VEGETATION-053` | local-byte identity validator | runtime/test | `VEG-E-003`; implementation missing | `GAP-VEGETATION-001/008` |
 | `INV-VEGETATION-054` | raw/resolved object separation and round-trip vector | runtime/test | `VEG-E-003`; implementation missing | `GAP-VEGETATION-001/008` |
-| `INV-VEGETATION-055` | schema-manifest completeness validator | runtime/test | `VEG-E-003/060`; selected values remain held | `GAP-VEGETATION-011/012/013` |
-| `INV-VEGETATION-056` | dated-state identity and observation-operator validator | runtime/test | `VEG-E-060`; authority missing | `GAP-VEGETATION-018/022` |
+| `INV-VEGETATION-055` | schema-manifest completeness validator | runtime/test | `VEG-E-003/060`; caller values required | `GAP-VEGETATION-011/012/013` |
+| `INV-VEGETATION-056` | complete dated-state identity validator | runtime/test | `VEG-E-060`; implementation missing | `GAP-VEGETATION-018/022` |
+| `INV-VEGETATION-057` | site-value classification and schema-domain validator | runtime/test | `VEG-E-003/060`; implementation missing | `GAP-VEGETATION-001/012/013` |
+| `INV-VEGETATION-058` | caller-state completeness/domain validator | runtime/test | `VEG-E-060`; implementation missing | `GAP-VEGETATION-018/022` |
+| `INV-VEGETATION-059` | native-forest component ledger and prohibited-path guard | governance/runtime/test | `VEG-E-061`; implementation missing | `GAP-VEGETATION-004/023` |
+| `INV-VEGETATION-060` | independent component reconstruction and canopy-loss poison vector | test | `VEG-E-061`; implementation missing | `GAP-VEGETATION-004/023` |
+| `INV-VEGETATION-061` | fixture metadata/claim guard and layer-response vectors | test/governance | blocked promotion on overclaim | future implementation package |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -315,6 +348,11 @@ not for any missing constitutive response.
   transfer includes owner, recipient, interval, area, units, and lineage.
 - `OBL-VEGETATION-P-005`: receiving owners accept/reject immutable proposals
   and independently reconstruct their side before commit.
+- `OBL-VEGETATION-P-006`: callers supply every required site value and initial
+  state explicitly; openWEPP validates the canonical schema and never replaces
+  missing values with profile, parser, or biome defaults.
+- `OBL-VEGETATION-P-007`: native-forest canopy, wet-canopy, forest-floor, and
+  layer-root components preserve distinct operands, state, lineage, and closure.
 - `OBL-VEGETATION-C-001`: the orchestrator preserves stage order and commits or
   rolls back all owner candidates atomically.
 - `OBL-VEGETATION-C-002`: land-surface energy supplies the authorized latent
@@ -336,6 +374,7 @@ not for any missing constitutive response.
 | `z_s` | future `canhgt` adapter | compatibility only | `m`; reduction authority missing | this contract / `SC-PLANT-001` |
 | `T_s` | future `Ep_compat` | compatibility only | named `kg m^-2` to `mm water` conversion | this contract / `SC-EVAP-001` |
 | `D_s,l`, `U_s,l` | not aliases of legacy `UPi`, `Ui` | future layer exchange | explicit migration/cutover required | this contract / `SC-EVAP-001` |
+| `E_floor,j` | not legacy PMET `Es` and not `Kcb_adjusted - Ep` | future native forest only | explicit recipient, state, resistance, and energy lineage | this contract / `SC-LANDSURFACEENERGY-001` |
 | `L_DM,c` | not an alias of `L_C,c` or `L_N,c` | dead-material receipt | independent unit/stoichiometry fields | this contract / `SC-RESIDUE-001` |
 | `S_snow,s` | not ground SWE or snow depth | future canopy store | `kg m^-2` water equivalent; no runtime alias | this contract / `SC-SNOWFREEZE-001` |
 | `Q_rad,k,j` | not a universal ground/net-radiation scalar | energy receipt | interval-integrated `J m^-2`; recipient-specific | `SC-LANDSURFACEENERGY-001` |
@@ -343,12 +382,21 @@ not for any missing constitutive response.
 ## Constants and Parameters with Provenance Anchors
 
 Version 1 admits no vegetation-process numerical constant or empirical default,
-and versions 2-3 preserve that prohibition. No source default, profile value,
-physiological bound, or parameter set is admitted. Every later parameter entry must be one
+and versions 2-4 preserve that prohibition. No source default, recommended
+profile value, physiological bound, or parameter set is admitted. Every later parameter entry must be one
 of `fixed_science`, `calibratable`, `external_configuration`, or
 `initial_state`; carry units, validity domain, evidence bounds, version,
 SHA-256, authority, ecosystem applicability, and prohibited extrapolations; and
 distinguish any `ASSUMED_FOR_EXECUTION` value from science or calibration.
+
+Site-specific parameter values are caller-supplied `external_configuration`;
+their admissibility is schema- and domain-based, not a claim that openWEPP chose
+the appropriate value for the site. A compatible initial state may be
+caller-supplied `initial_state` under `INV-VEGETATION-058`. Empirical authority
+is required when openWEPP distributes a recommended default, assigns an
+observation role, or makes a calibration, validation, ecosystem applicability,
+or transferability claim. `ASSUMED_FOR_EXECUTION` fixtures demonstrate typed
+behavior only and make no calibration, validation, ecosystem applicability, or transferability claim.
 
 The only equations admitted here are exact configuration definitions and
 physical bookkeeping identities. They are not constitutive physiology.
@@ -376,12 +424,15 @@ authorize a profile value or runtime implementation.
    unknown key as diagnostic-only and non-consumed.
 5. Each consumed-field declaration contains the metadata required by
    `INV-VEGETATION-055`. No parser default fills an absent field. A schema can
-   admit the type and meaning of an external input while its selected value
-   remains `PARAMETER_AUTHORITY_MISSING`.
-6. Initial-state references use the same immutable identity discipline but are
-   separate from parameter definitions. They additionally require observation
-   time, stand/plot identity, horizontal area and topology, age/size structure,
-   observation operator, units, uncertainty, and pool/geometry coverage.
+   admit the type and meaning of an external input while requiring the caller to
+   provide its site-specific value. The value is `CALLER_CONFIGURATION`, not a
+   source default or openWEPP transferability claim.
+6. Initial state may be caller-supplied site state and uses the same immutable
+   identity discipline while remaining separate from parameter definitions. It
+   requires date, horizontal area and topology, profile identity, units, and
+   complete pool/geometry coverage. Stand/plot identity, observation operator,
+   and uncertainty become mandatory when the caller or openWEPP assigns an
+   observational, calibration, validation, or transferability role.
 7. Mixed vegetation is a topology containing separately identified resolved
    strata. It cannot be created by averaging raw or resolved parameter records.
 
@@ -407,7 +458,7 @@ No runtime symbol, registry, or output metadata changes are authorized here.
 ## Tolerance and Numeric Notes
 
 - Conservation and representation tolerances are distinct.
-- Version 3 preserves the version-2 rule that no numerical tolerance is
+- Version 4 preserves the version-2 rule that no numerical tolerance is
   admitted. Exact mathematical identities must
   be tested with separately authorized scale-aware floating predicates in a
   future implementation package.
@@ -431,6 +482,8 @@ observation operators are independently admitted. No current parameter,
 dataset, observation operator, objective, calibration, validation, synthetic
 recovery, identifiability result, or transferability claim is admitted.
 Comparator agreement and source-reported defaults are prohibited evidence.
+Caller-supplied configuration is usable before calibration readiness because it
+makes no suitability claim; it must not be mislabeled as calibrated or validated.
 
 ## Test-Vector Obligations
 
@@ -451,10 +504,15 @@ Comparator agreement and source-reported defaults are prohibited evidence.
 | canopy liquid store | independently reconstruct start + incident - evaporation - every release = end | `INV-VEGETATION-020` |
 | canopy/ground/litter/snow/soil poison aliases | omitted, duplicated, or swapped recipient fails | `INV-VEGETATION-021`, `VEG-E-011/032` |
 | dry matter/C/N transfer | donor and receiver reconstruct same three distinct operands | `INV-VEGETATION-030`, `INV-VEGETATION-031` |
-| canopy snow request | ownership visible but constitutive execution rejected under versions 2-3 | `INV-VEGETATION-022`, `VEG-E-040` |
+| canopy snow request | ownership visible but constitutive execution rejected under versions 2-4 | `INV-VEGETATION-022`, `VEG-E-040` |
 | unbounded/failed iteration | no partial mutation or publication | `INV-VEGETATION-015`, `VEG-E-041` |
 | compatibility adapter | field-specific receipt, read-only, no native feedback | `INV-VEGETATION-040`, `INV-VEGETATION-041` |
 | source-derived constant/proxy physiology | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | `INV-VEGETATION-050`, `INV-VEGETATION-051` |
+| distinct caller stratum values | both parse and remain separately reconstructible; no averaging or default substitution | `INV-VEGETATION-052`, `INV-VEGETATION-057`, `INV-VEGETATION-061` |
+| complete caller initial state / one missing pool | accept the complete state; reject the incomplete state without synthesis | `INV-VEGETATION-056`, `INV-VEGETATION-058` |
+| native-forest component poison vector | all-distinct canopy transpiration, wet-canopy evaporation, and forest-floor evaporation close independently | `INV-VEGETATION-059`, `INV-VEGETATION-060` |
+| canopy-area reduction with unchanged floor operands | canopy response changes; floor evaporation is not increased by the lost canopy demand | `INV-VEGETATION-060`, `VEG-E-061` |
+| two layer-root profiles under one soil snapshot | distinct layer-resolved root requests and hydrology receipts; no single-depth alias | `INV-VEGETATION-004`, `INV-VEGETATION-061` |
 
 Future fixtures must use deliberately distinct canopy, ground, litter, snow,
 soil, ponded-water, layer, dry-matter, carbon, and nitrogen operands so wrong
@@ -468,15 +526,16 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-001` | Version 1 native vegetation boundary admission | `active` | `maps-to-existing-INV` | `INV-VEGETATION-001, INV-VEGETATION-010, INV-VEGETATION-011, INV-VEGETATION-013, INV-VEGETATION-014, INV-VEGETATION-022, INV-VEGETATION-041, INV-VEGETATION-050, INV-VEGETATION-051` | `flagged-binding-addition` | Initial authority is consolidated in this contract; package artifacts remain evidence rather than separate binding authority. |
 | `BEI-VEGETATION-002` | `20260808-rhessys-east-coast-code-literature-authority-audit-001` audit sidecar population | `active` | `maps-to-existing-INV` | `INV-VEGETATION-050, INV-VEGETATION-051, INV-VEGETATION-052` | `flagged-binding-addition` | Version 2 admits licensed provenance and a strict definition/schema obligation only; the audit's constitutive findings remain explicit gaps and require the package's dual review/disposition/verification cycle. |
 | `BEI-VEGETATION-003` | `20260808-rhessys-east-coast-vegetation-authority-admission-001` strict acquisition/schema admission | `active` | `maps-to-existing-INV` | `INV-VEGETATION-052, INV-VEGETATION-053, INV-VEGETATION-054, INV-VEGETATION-055, INV-VEGETATION-056` | `flagged-binding-addition` | Version 3 closes acquisition and schema-form authority only. Selected values, aliases lacking unit/semantic proof, initial state, constitutive science, implementation, and cutover remain non-promotable. |
+| `BEI-VEGETATION-004` | `20260809-native-forest-ecohydrology-authority-reframe-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-055, INV-VEGETATION-056, INV-VEGETATION-057, INV-VEGETATION-058, INV-VEGETATION-059, INV-VEGETATION-060, INV-VEGETATION-061` | `flagged-binding-addition` | Version 4 assigns site values/state to caller configuration, constrains demonstration claims, and prohibits the agricultural PMET partition as the native-forest target while retaining complete constitutive-authority requirements. |
 
 ## Gap Register and Promotability Labels
 
 | Gap ID | Gap | Required closure | Label |
 |---|---|---|---|
 | `GAP-VEGETATION-001` | No implemented native topology/configuration/state surface exists. | Versioned schema, typed state, digest/provenance validation, and topology vectors. | `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-002` | No independently authorized layer root profile or dynamic remapping law exists. | Literature/observed authority, units, layers, frozen exclusions, remapping closure, tests. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-002` | No selected layer root-uptake response/remapping law exists. Site root-profile values may be caller configuration, but depth alone is not a layer profile. | Admit the response law, units, layer mapping, frozen/dry exclusions, hydrologic arbitration, closure, and tests; require callers to supply profile values. | `CONSTITUTIVE_AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-003` | Stage B competition/fairness/priority policy is unspecified. | Named hydrology policy, reason codes, admissibility, conservation, and adversarial vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-004` | Radiation, liquid interception detail, conductance, transpiration demand, photosynthesis, respiration, allocation, turnover, mortality, rooting, and nutrient constitutive laws are not admitted. | Independent literature authority, domains, parameters, units, guards, and tests per family. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-004` | Radiation, liquid interception detail, conductance, separate native-forest component demands, photosynthesis, respiration, allocation, turnover, mortality, rooting, and nutrient constitutive laws are not admitted. | Independent literature authority, complete equations, parameter classifications, units, domains, guards, ownership, and tests per family. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted constitutive law or atomic amendment with snow/frost. | Independent authority plus joint vegetation/snow/LSE contract and mass-energy vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-006` | Elemental/dead-material transfer classes and receiving biogeochemistry are incomplete. | Material taxonomy, stoichiometry authority, exact receiver contracts, and closure tests. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-007` | Every compatibility reduction except exact tile-union cover lacks reviewed operator/cutover evidence. | Field-specific reductions, unit helpers, real consumers, negative old-path proof. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
@@ -484,20 +543,22 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-009` | Calibration/identifiability authority and independent observations are absent. | Prospective data roles, observation operators, readiness analysis, calibration, and held-out validation. | `NOT_CALIBRATION_READY`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-010` | The earlier repository-license gap is closed only for the two pinned Laurence Lin repositories in `REF-VEGETATION-012/013`; the separate official RHESSys repository remains outside this route. | Preserve exact commit/file lineage and the MIT notice for distributed source-derived material. Licensing never substitutes for scientific authority; historical `DIRECT_TRANSLATION_PROHIBITED` remains applicable outside the admitted pinned route. | `LICENSE_ADMITTED`, `SCIENCE_AUTHORITY_UNCHANGED` |
 | `GAP-VEGETATION-011` | Pinned GIS definitions contain five keys that do not match the pinned C parser: SLA, all-sided LAI ratio, both VPD thresholds, and mortality. | A versioned explicit alias/correction decision, raw-value preservation, strict vectors, and no legacy hidden-default behavior. | `FORMAT_MISMATCH`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-012` | The parser reads 53 parameters absent from all 32 GIS profiles and silently supplies defaults. | Enumerate every selected dependency in the typed schema with units, domain, authority, and missing-value failure. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-013` | The minimum generic and East-Coast deciduous/evergreen profile candidates have no cell-level source, calibration-domain, or transferability map. | Admit every selected value independently or replace it with an authority-backed value; do not average profiles into a mixed default. | `PARAMETER_AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-014` | The audited aerodynamic and Jarvis conductance chain has unresolved scale/domain authority, unsupported Tmin/CO2/Tavg branches, sentinels, and a nonzero floor. | Select leaf/canopy scale and domain; admit or reject every factor, threshold, sentinel, and floor; supply independent vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-012` | The parser reads 53 parameters absent from all 32 GIS profiles and silently supplies defaults. | Enumerate every consumed dependency in the typed schema with units, basis, parameter class, finite domain, and missing-value failure; require callers to supply every site value. | `SCHEMA_INCOMPLETE`, `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-013` | The minimum generic and East-Coast deciduous/evergreen profile candidates have no cell-level source, calibration-domain, or transferability map. | Do not distribute or recommend them as defaults. Permit explicit caller values after schema/domain validation, preserve stratum identity, and label demonstration fixtures `ASSUMED_FOR_EXECUTION`. | `CALLER_CONFIGURATION`, `DEFAULT_AND_TRANSFERABILITY_CLAIM_PROHIBITED` |
+| `GAP-VEGETATION-014` | The audited aerodynamic and Jarvis conductance chain has unresolved equation/scale/domain authority, unsupported Tmin/CO2/Tavg branches, sentinels, and a nonzero floor. | Select and admit the law and leaf/canopy scale; classify site thresholds as caller values where appropriate; reject source sentinels/floors and supply independent vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-015` | The audited Farquhar path recognizes core C3 equations but hardcodes C3 for every profile and lacks complete authority for capacity constants, canopy scaling, and fixed growth-respiration iteration. | Contract the selected C3 route and parameters; explicitly exclude C4 profiles or separately admit a C4 route; define convergence/failure. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-016` | Source root demand is a single-depth saturated/unsaturated split with direct patch-store coupling rather than explicit layer requests and hydrology-authorized withdrawals. | Layer-profile authority, observation mapping, dry/frozen and zero-participation branches, Stage B policy, and dual closure vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-016` | Source root demand is a single-depth saturated/unsaturated split with direct patch-store coupling rather than explicit layer requests and hydrology-authorized withdrawals. | Admit the root-response and layer-mapping laws; accept caller-supplied layer-profile values; specify dry/frozen/zero-participation branches, Stage B policy, and dual closure vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-017` | The audited available-energy chain uses a homogeneous air-temperature canopy slab, deletes warm-period negative net longwave, applies dimensionally inconsistent surface-heat storage branches, and contains an erroneous day/night negative-energy assignment. | Admit distinct canopy/ground longwave and storage-heat owners, units, scale, sign and condensation policies, component ledger, and independent limiting/closure vectors before any Penman-Monteith use. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-018` | The audited worldfile generators construct initial C/N pools and root depth with fixed row indices, unproven ratios/constants, contradictory deadwood C:N rules, and an SLA identity that diverges from the runtime parser. | Define a versioned, dated, typed initializer with exact profile/key identity, area basis, admitted equations/values/domains, finite guards, and independent mass/LAI reconstruction. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-019` | The audited Penman-Monteith routine omits the water/air molecular-mass ratio from the psychrometric constant, despite defining it and using the correct factor in another source routine. | Independently re-derive the complete PM equation, constants, units, resistance scale, phase/enthalpy, and limiting vectors; never port the defective expression. | `SILENT_DEVIATION`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-018` | The audited worldfile generators construct initial C/N pools and root depth with fixed row indices, unproven ratios/constants, contradictory deadwood C:N rules, and an SLA identity that diverges from the runtime parser. | Reject those synthesis paths. Implement complete, versioned, dated caller-state ingestion with exact profile/key identity, area basis, domains, finite guards, and independent mass/LAI reconstruction. | `CALLER_STATE_REQUIRED`, `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-019` | The audited Penman-Monteith routine omits the water/air molecular-mass ratio from the psychrometric constant, despite defining it and using the correct factor in another source routine. | Never port the defective expression. Penman-Monteith is neither required nor prohibited; any component selecting it must independently admit the complete equation, constants, units, resistance scale, phase/enthalpy, guards, and limiting vectors. | `SOURCE_ROUTINE_REJECTED`, `CONSTITUTIVE_AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-020` | Strict local-byte acquisition authority is now admitted by `INV-VEGETATION-053/054`, but no runtime validator implements it. The audited generator still fetches mutable raw `master` parameter collections and is prohibited. | Implement the exact tuple/digest checks and negative vectors without importing the audited fallback path. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-021` | The audited canopy path ignores parsed absorptance/transmittance and diffuse extinction, while nine profile optical triples fail exact unit closure. | Contract an authoritative component operator and error policy with all operands consumed exactly once; preserve raw invalid values but never silently normalize them. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-022` | No selected stand/plot/date/topology exists for the candidate pine and oak profiles, and the inspected Coweeta evidence does not jointly observe every required C/N/root/geometry pool on one compatible state surface. | Select the simulation stand(s), date, topology, area, and age/size structure; then admit complete observation operators or a separately authoritative synthesis with uncertainty and closure. | `INITIAL_STATE_AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-022` | The inspected Coweeta evidence does not jointly observe every required C/N/root/geometry pool on one compatible state surface. | This does not block caller-supplied state. Require a complete caller state for execution; require observation operators, uncertainty, and compatible measurements only before an empirical calibration, validation, or transferability claim. | `CALLER_STATE_REQUIRED`, `EMPIRICAL_CLAIM_NOT_READY` |
+| `GAP-VEGETATION-023` | Existing agricultural PMET couples canopy and soil demand through complementary LAI factors, so canopy-demand loss is structurally donated to soil evaporation; the Stevens Canyon investigation found parameter search and legacy-ET ablation insufficient. | Admit and implement separately owned canopy transpiration, wet-canopy evaporation, forest-floor evaporation, and layer-root response equations with independent operands, resistance/energy lineage, poison vectors, and closure. | `NATIVE_FOREST_PMET_PARTITION_PROHIBITED`, `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
-radiation/interception/conductance inputs and layer-resolved potential demand.
+caller configuration/state, radiation/interception/conductance inputs,
+independent native-forest flux components, and layer-resolved potential demand.
 It must independently admit every implemented constitutive relationship, remain
 default-off and non-publishing, mutate no soil store, and make no runtime or
 cutover claim.
@@ -508,4 +569,5 @@ cutover claim.
 |---|---:|---|---|
 | 2026-08-08 | 2 | Codex | Admitted the exact licensed-source provenance boundary without promoting source science; added strict-definition invariant `INV-VEGETATION-052` and audit-proven format, hidden-default, parameter, conductance, photosynthesis, root-demand, available-energy, and initialization gaps. |
 | 2026-08-08 | 3 | Codex | Admitted strict caller-supplied local acquisition, immutable raw/resolved separation, typed schema-form requirements, and dated initial-state identity; retained every selected value, alias, initializer, constitutive, implementation, and cutover gap. |
+| 2026-08-09 | 4 | Codex | Reclassified site-specific values and complete compatible state as caller configuration, bounded demonstration claims, prohibited agricultural PMET redistribution in the native-forest target, and required independent canopy/wet-canopy/forest-floor/root component closure. |
 | 2026-08-08 | 1 | Codex | Initial native-stratum, Stage A/B/C, ownership, transaction, conservation, compatibility, firewall, and non-promotable-gap authority. |

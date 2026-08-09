@@ -1,0 +1,21 @@
+# Artifact Index
+
+- `required-reading-map.md`
+- `pre-implementation-intent.md`
+- `authority-boundary-decision.md`
+- `primary-source-ledger.md`
+- `stevens-canyon-invariant-map.md`
+- `contract-test-implementation-evidence.md`
+- `contract-implementation-evidence.md`
+- `pre-implementation-contract-gate.md`
+- `calibration-readiness-matrix.md`
+- `gate-results.md`
+- `full-workspace-nextest.log`, `full-workspace-nextest-summary.json`
+- `full-workspace-nextest-rerun.log`
+- `terminal-diff-reconciliation.md`
+- `line-count-governance.md`
+- `assurance-impact.md`
+- `review_agent_a.md`, `review_agent_b.md`, `review-disposition.md`
+- `verification_agent_a.md`, `verification_agent_b.md`
+- `worker-handoff.md`, `disposition.md`
+- `science-contract-cycle/`

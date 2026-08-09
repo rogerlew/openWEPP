@@ -507,7 +507,35 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-08 UTC`:
+State as of `2026-08-09 UTC`:
+
+- `20260809-assurance-draft-publication-defect-closure-001/`
+  - COMPLETE / DUAL TERMINAL VERIFIED: the stable DRAFT-publication failure
+    was caused by placing `TMPDIR` below the repository, which correctly
+    triggered root confinement before lifecycle validation. The isolated case
+    passes with external `/home/workdir/openwepp-task-tmp`; production code is
+    unchanged, test diagnostics are strengthened, and the corrected exact-head
+    full workspace passed 2,325/2,325 selected tests. Reviews are dispositioned
+    and the prompt is archived; both terminal verifiers pass with no open
+    finding.
+
+- `20260809-native-forest-ecohydrology-authority-reframe-001/`
+  - COMPLETE / EXACT-HEAD FULL-WORKSPACE PASS: corrects the value/state authority boundary so
+    users supply site-specific strata and compatible initial state, and
+    replaces the future native-forest agricultural PMET target with independent
+    canopy transpiration, wet-canopy evaporation, forest-floor evaporation,
+    and layer-root closure obligations. Direct gates and review disposition
+    pass; the separately authorized assurance closure proved the old invocation
+    had an in-repository scratch root and the corrected full workspace passed.
+    No production Rust is in scope.
+
+- `20260809-rhessys-east-coast-vegetation-authority-closure-001/`
+  - EXECUTED-HOLD / AUTHORITY MISSING: all four lanes ran. Named Coweeta and
+    Harvard/Hubbard routes do not supply a co-located mixed state, a selected
+    cell-level provenance map, or complete water-energy/carbon-root constitutive
+    cycles. Exact per-ID source/data/model-selection lift conditions are in the
+    hold audit. `AUTH-RHEC-016` remains admitted; no contract, test, production,
+    or successor-release change was made.
 
 - `20260808-vegetation-radiation-interception-conductance-slice-001/`
   - EXECUTED-HOLD / SUPERSEDED: independent literature and rights intake
@@ -517,11 +545,11 @@ State as of `2026-08-08 UTC`:
     is retained as scientific counterevidence and parameter-domain context.
 
 - `20260808-rhessys-east-coast-coupled-vegetation-slice-001/`
-  - HELD / AUTHORITY ADMISSION REQUIRED: licensed source-aware implementation
+  - HELD / CONSTITUTIVE AUTHORITY REQUIRED: licensed source-aware implementation
     successor using pinned RHESSysEastCoast commit `375c75b1` and GIS2RHESSys
-    commit `6b20883d`. It may begin only after the audit and authority-admission
-    predecessors pass and release the exact selected boundary. It remains
-    blocked by residual `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015`.
+    commit `6b20883d`. Site values/state are caller configuration and do not
+    require universal empirical selection. It remains blocked by incomplete
+    schema and constitutive authority plus its contract-first gate.
     `AUTH-RHEC-016` authority is admitted, but its implementation and tests
     remain obligations of this successor. Existing vegetation-file
     compatibility and explicit

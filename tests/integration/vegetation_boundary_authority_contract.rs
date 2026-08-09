@@ -99,8 +99,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         "| `in_review` | `draft` |",
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-08` |",
-        "Native stratum topology, Stage A/B/C custody, shared ledgers",
+        "| `static` | `2026-08-09` |",
+        "Native stratum topology, Stage A/B/C custody, caller-supplied site configuration/state",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -119,7 +119,7 @@ fn local_definition_acquisition_and_typed_schema_are_fail_closed() {
         "Duplicate\n   keys are evidence and a resolution error",
         "No parser default fills an absent field",
         "Schema admission does not admit an empirical value",
-        "Initial state is a dated stand/plot observation",
+        "Initial state may be caller-supplied site state",
         "cannot be created by averaging raw or resolved parameter records",
         "one-bit digest",
         "mismatch; mutable reference",
@@ -128,8 +128,37 @@ fn local_definition_acquisition_and_typed_schema_are_fail_closed() {
         "INV-VEGETATION-054",
         "INV-VEGETATION-055",
         "INV-VEGETATION-056",
+        "INV-VEGETATION-057",
+        "INV-VEGETATION-058",
         "AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING",
-        "INITIAL_STATE_AUTHORITY_MISSING",
+        "CALLER_CONFIGURATION",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
+fn native_forest_values_and_flux_components_have_the_correct_authority_boundary() {
+    let contract = read(CONTRACT);
+
+    for required in [
+        "Site-specific parameter values are caller-supplied `external_configuration`",
+        "compatible initial state may be caller-supplied",
+        "`ASSUMED_FOR_EXECUTION` fixtures",
+        "no calibration, validation, ecosystem applicability, or transferability claim",
+        "Agricultural `Kcb`/LAI PMET partition",
+        "canopy transpiration, wet-canopy evaporation, and forest-floor evaporation",
+        "must not automatically reassign lost canopy demand to forest-floor evaporation",
+        "layer-resolved root requests",
+        "Penman-Monteith is neither required nor prohibited",
+        "Stevens Canyon",
+        "INV-VEGETATION-057",
+        "INV-VEGETATION-058",
+        "INV-VEGETATION-059",
+        "INV-VEGETATION-060",
+        "INV-VEGETATION-061",
+        "CALLER_CONFIGURATION",
+        "NATIVE_FOREST_PMET_PARTITION_PROHIBITED",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }

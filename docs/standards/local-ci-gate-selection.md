@@ -70,6 +70,33 @@ implementation of the amendment machinery remains an implementation package
 and must pass its full correctness closure. Coverage/CRAP is observational
 unless that package explicitly declares a metric-focused objective.
 
+## Temporary Directory Placement
+
+When overriding `TMPDIR` for Cargo/Nextest, choose a writable absolute
+directory outside the repository and outside every publication, staging, or
+output root under test. Assurance fixtures derive scratch paths from the
+process temporary directory, and publication validation intentionally requires
+repository, staging, public, and snapshot roots to be unrelated.
+
+Do not use a path below the checkout, including `target/`, such as
+`/home/workdir/openWEPP/target/task-tmp`. Under that topology, an error such as
+`staging and repository roots must be unrelated` is the expected confinement
+result and may mask the later assertion the test intended to exercise.
+
+If system `/tmp` lacks space, create an external sibling or mounted scratch
+directory and record the override:
+
+```bash
+OPENWEPP_TEST_TMP=/home/workdir/openwepp-task-tmp
+mkdir -p "$OPENWEPP_TEST_TMP"
+TMPDIR="$OPENWEPP_TEST_TMP" cargo nextest run --workspace --profile full
+```
+
+Before an expensive gate, resolve the repository and temporary paths and
+confirm neither contains the other. Keep the external scratch location
+task-specific; do not weaken confinement checks to accommodate an
+in-repository temporary directory.
+
 ## Timing Diagnostics
 
 Use `tools/local_ci/nextest_timing.py` for expensive nextest runs:

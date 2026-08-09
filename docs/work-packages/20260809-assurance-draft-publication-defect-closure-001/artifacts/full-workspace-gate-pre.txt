@@ -1,0 +1,119 @@
+pre-run-start 2026-08-09T18:41:45Z
+HEAD=4237552aa8dbc84a8baeff800014b23c7e75be9f
+HEAD_ABBREV=4237552aa
+ASSURANCE_FILE_HASH=07e65f289049cfa6a96617a9922f70a06d8f5165
+STATUS=
+ M docs/ROADMAP.md
+ M docs/backlog/20260806-rhessys-derived-vegetation-crate.md
+ M docs/backlog/TRACKER.md
+ M docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+ M docs/specifications/science-contracts/index.md
+ M docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/artifacts/vegetation-profile-field-audit.md
+ M docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/artifacts/worker-handoff.md
+ M docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md
+ M docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/prompts/active/20260808-rhessys-east-coast-coupled-vegetation-slice-001_kickoff_agent_prompt.md
+ M docs/work-packages/README.md
+ M tests/integration/assurance_v2_publication_contract.rs
+ M tests/integration/vegetation_boundary_authority_contract.rs
+?? docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/
+?? docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/
+?? docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/
+DIFF_NAME_STATUS=
+M	docs/ROADMAP.md
+M	docs/backlog/20260806-rhessys-derived-vegetation-crate.md
+M	docs/backlog/TRACKER.md
+M	docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+M	docs/specifications/science-contracts/index.md
+M	docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/artifacts/vegetation-profile-field-audit.md
+M	docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/artifacts/worker-handoff.md
+M	docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md
+M	docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/prompts/active/20260808-rhessys-east-coast-coupled-vegetation-slice-001_kickoff_agent_prompt.md
+M	docs/work-packages/README.md
+M	tests/integration/assurance_v2_publication_contract.rs
+M	tests/integration/vegetation_boundary_authority_contract.rs
+UNTRACKED=
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/README.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/README.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/failure-reproduction-and-diagnosis.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/full-workspace-gate-pre.txt
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/full-workspace-gate.log
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/gate-results.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/rust_code_review.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/artifacts/rust_qa_review.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/package.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/prompts/README.md
+docs/work-packages/20260809-assurance-draft-publication-defect-closure-001/prompts/active/20260809-assurance-draft-publication-defect-closure-001_kickoff_agent_prompt.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/README.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/README.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/assurance-impact.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/authority-boundary-decision.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/calibration-readiness-matrix.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/contract-implementation-evidence.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/contract-test-implementation-evidence.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/disposition.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/full-workspace-nextest-rerun.log
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/full-workspace-nextest-summary.json
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/full-workspace-nextest.log
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/gate-results.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/line-count-governance.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/pre-implementation-contract-gate.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/pre-implementation-intent.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/primary-source-ledger.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/required-reading-map.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/review-disposition.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/review_agent_a.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/review_agent_b.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/01-authority-inventory.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/02-invariant-ownership-draft.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/03-reconstruction-test-design.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/04-canonical-amendment.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/05-dual-science-review.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/06-terminal-verification.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/science-contract-cycle/README.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/stevens-canyon-invariant-map.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/terminal-diff-reconciliation.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/verification_agent_a.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/verification_agent_b.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/artifacts/worker-handoff.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/package.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/prompts/README.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/prompts/active/README.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/prompts/completed/20260809-native-forest-ecohydrology-authority-reframe-001_kickoff_agent_prompt.md
+docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/prompts/completed/README.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/README.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/assurance-impact.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/authority-gap-disposition.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/authority-route-attempts.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/calibration-readiness-matrix.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/carbon-root-authority.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/contract-gate.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/disposition.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/gate-results.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/hold-legitimacy-audit.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/initial-state-authority.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/line-count-governance.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/pre-implementation-intent.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/required-reading-map.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/review-disposition.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/review_agent_a.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/review_agent_b.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/contract_ref.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/disposition.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/review_agent_a.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/review_agent_b.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/verification_agent_a.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/science-contracts/SC-VEGETATION-001/verification_agent_b.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/selected-field-authority-ledger.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/source-and-rights-manifest.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/target-boundary-selection.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/terminal-diff-reconciliation.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/verification_agent_a.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/verification_agent_b.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/water-energy-authority.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/artifacts/worker-handoff.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/package.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/prompts/README.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/prompts/active/README.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/prompts/archived/20260809-rhessys-east-coast-vegetation-authority-closure-001_kickoff_agent_prompt.md
+docs/work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/prompts/archived/README.md
+DIFF_FINGERPRINT=4243658ad03b52e20ff621b8c957664abd549b65cbb0b6feb20aa3957546360d

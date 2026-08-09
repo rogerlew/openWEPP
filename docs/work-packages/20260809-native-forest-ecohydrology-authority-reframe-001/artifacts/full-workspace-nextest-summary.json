@@ -1,0 +1,20 @@
+{
+  "package": "docs/work-packages/20260809-native-forest-ecohydrology-authority-reframe-001",
+  "command": "TMPDIR=/home/workdir/openWEPP/target/task-tmp cargo nextest run --workspace --profile full",
+  "status": "failed",
+  "exit_code": 100,
+  "duration_seconds": 180.583,
+  "tests": {
+    "run": 2325,
+    "passed": 2006,
+    "failed": 319,
+    "skipped": 33,
+    "slow": 3
+  },
+  "first_failures": [
+    "openwepp::assurance_v2_amendment_contract focused_runner_rejects_forged_receipt_matrix",
+    "openwepp::assurance_v2_amendment_contract focused_runner_rejects_an_off_archive_receipt",
+    "openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates"
+  ],
+  "blocking_error": "No space left on device (os error 28) while creating fixture/temp directories and rustc temp dirs"
+}
