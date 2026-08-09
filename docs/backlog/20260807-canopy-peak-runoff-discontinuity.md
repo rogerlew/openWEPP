@@ -2,12 +2,15 @@
 
 ## Status
 
-- `state`: **concept — high-priority suspected kernel defect**
+- `state`: **promoted — executing as hourly peak-runoff authority closure**
 - `date`: 2026-08-07
 - `owner`: openWEPP maintainers + hillslope hydrology reviewer
 - `origin`: Topanga 2025 fire investigation, Hill 106 high-ET screen
-- `promotion trigger`: prioritize a defect-closure work package that vendors the
-  frozen reproducer into openWEPP and instruments the legacy peak-runoff path
+- `promotion`: [`20260809-hourly-peak-runoff-authority-closure-001`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/package.md)
+- `scope amendment`: the 2026-08-09 Topanga census establishes the general
+  legacy defect strongly enough that legacy replication is no longer required;
+  closure instead makes openWEPP's modeled hourly runoff timing authoritative
+  and reruns the frozen small-mutation hillslope design with openWEPP
 - `default eligibility`: no new or migrated peak-runoff implementation may be
   treated as scientifically closed while it reproduces this unexplained
   discontinuity
