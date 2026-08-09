@@ -621,18 +621,6 @@ fn maybe_write_frost_residue_cover_trace(
     })
 }
 
-impl DirectProductionPeakRunoffAuthority {
-    fn inputs(&self, hyetograph: Vec<DirectWb14HyetographInterval>) -> DirectPeakRunoffInputs {
-        DirectPeakRunoffInputs {
-            hyetograph,
-            irrigation_rate_m_s: self.irrigation_rate_m_s,
-            efflen_m: self.efflen_m,
-            ealpha: self.ealpha,
-            exponent_m: self.exponent_m,
-        }
-    }
-}
-
 fn direct_production_positive_frost_conductivity_limit_m_s(
     frost_infcap_m_s: Option<f64>,
     seeded_effective_conductivity_m_s: Option<f64>,
@@ -650,6 +638,7 @@ impl DirectProductionInfiltrationAuthority {
         lane_index: usize,
         layers: &[DirectSubsurfaceLayerState],
         hyetograph: Vec<DirectWb14HyetographInterval>,
+        hourly_additional_supply_m: [f64; 24],
         frost_infcap_m_s: Option<f64>,
     ) -> Result<DirectInfiltrationDepressionInputs, HillslopeCliError> {
         direct_production_validate_layers(lane_index, layers)?;
@@ -685,7 +674,7 @@ impl DirectProductionInfiltrationAuthority {
             cumulative_infiltration_handoff_m: 0.0,
             depression_storage_delta_handoff_m: 0.0,
             producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
-                runon_hourly_supply_m: [0.0; 24],
+                hourly_additional_supply_m,
                 hyetograph,
                 effective_conductivity_m_s,
                 matric_potential_m,

@@ -41,12 +41,15 @@ hourly surface return, sums it to daily `surdra`, and assigns new timing over a
 selected duration; a solver switch adds another discontinuity. This makes
 additional legacy replication unnecessary for this package.
 
-openWEPP already retains the source-complete 24-bin runoff shape:
-WB14 infiltration excess + hourly surface-saturation carry + routed melt/runon.
-The defect is that WB16 ignores that modeled timing and reconstructs a peak from
-daily runoff, rainfall elapsed duration, and maximum rainfall intensity. The
-same value is then mislabeled internally as `m3/s` even though its computation
-is a depth rate; publication does not apply area.
+openWEPP already retains the ingredients for a closing 24-bin post-partition
+runoff ledger: WB14 infiltration excess, hourly surface-saturation return, and
+producer-timed routed melt/runon supplies. The initial implementation review
+exposed an important ownership correction: melt and runon must enter WB14
+infiltration/depression partition once and cannot also be appended as raw
+runoff limbs. The defect is that WB16 ignores the resulting modeled timing and
+reconstructs a peak from daily runoff, rainfall elapsed duration, and maximum
+rainfall intensity. The same value is then mislabeled internally as `m3/s`
+even though its computation is a depth rate; publication does not apply area.
 
 ## Correction Authority Envelope
 
@@ -72,13 +75,18 @@ is a depth rate; publication does not apply area.
 - this package tree, backlog note/tracker, and `docs/work-packages/README.md`
 
 Adjacent same-process files may be added before first edit with a Decision Log
-entry. Changes to watershed routing equations, infiltration, ET, canopy,
-management, Ksat, erosion coefficients, or calibration values are prohibited.
+entry. Changes to watershed routing equations, Green-Ampt process equations,
+ET, canopy, management, Ksat, erosion coefficients, or calibration values are
+prohibited. Hourly melt/runon supply admission and post-partition ledger
+closure at the existing WB14 boundary are explicitly in scope.
 
 ### Allowed production edits
 
-- Make the existing source-complete 24-bin runoff depths the sole WB16 timing
+- Make the closing post-partition 24-bin runoff depths the sole WB16 timing
   input and take the maximum hourly mean depth rate (`bin depth / 3600 s`).
+- Admit producer-timed routed melt and resolved surface/lateral runon through
+  WB14 infiltration/depression partition exactly once; do not append either
+  daily source as a post-partition runoff limb.
 - Preserve hourly saturation-return water in its modeled hour; no rain-window,
   positive-excess-window, or storm-duration reassignment.
 - Fail closed for positive runoff without a reconstructible hourly series;
@@ -98,8 +106,9 @@ published quantity is the maximum hourly mean hillslope flow.
 1. Contract-first authority defines the 24-bin operands, units, spatial basis,
    peak definition, return-flow timing, dry behavior, guards, and provenance.
 2. Anti-tautology tests distinguish concentrated versus spread hourly shapes
-   with equal daily runoff and cover saturation-only, melt-only, runon-only,
-   and positive-runoff/missing-shape cases.
+   with equal daily runoff and cover saturation-only, melt-supply-only,
+   runon-supply-only, infiltrating-melt, and positive-runoff/missing-shape
+   cases.
 3. The real erosion and public-output consumers read the hourly-derived peak;
    the rainfall-envelope WB16 branch no longer carries the production claim.
 4. Hourly depths independently sum to event runoff within the existing closure
@@ -204,6 +213,9 @@ independent science reviewers for the hydrologic authority and claim boundary.
   pre-implementation red gate.
 - [x] (2026-08-09) Implemented the shared-hour peak, source-timing custody,
   internal depth-rate naming, and exactly-once public area conversion.
+- [x] (2026-08-09) Corrected the initial raw-source assembly after independent
+  review: routed melt and runon now enter WB14 supply once, and peak/transfer/
+  erosion/HBP consume the closing post-partition hourly ledger.
 - [ ] Execute focused and Topanga cohort validation.
 - [ ] Complete Critical closure, review, verification, and disposition.
 
@@ -216,6 +228,22 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - A native Topanga probe exposed positive subtraction roundoff with no hourly
   source. Source-informed canonicalization is required at the runoff partition,
   not a peak floor: only `<=1e-12 m` source-free residuals become exact zero.
+- Initial review exposed that appending raw routed melt after partition would
+  double count melt that can infiltrate. The corrected design admits melt and
+  runon as hourly WB14 supply and derives weights only after hourly/daily
+  closure.
+- WB14 independently accumulates up to 24 interval results; their arithmetic
+  ledger can differ from the daily scalar by at most the contract-declared
+  `TOL-WATBAL-009`. Material mismatch remains a typed hard failure.
+- The first full cohort attempt completed case execution but its summary write
+  exposed heterogeneous scalar/dictionary mutation values in one Arrow column.
+  The harness now stores those plan operands as stable JSON strings and has a
+  focused Parquet-construction regression.
+- A generated-watershed test carried a dry second day after its runoff day;
+  HBP correctly publishes the latest state when no sediment event qualifies,
+  so the old nonzero assertion depended on accidental peak-driven erosion.
+  The fixture now uses one explicit runoff day and continues to prove generated
+  HBP inventory and downstream routing without that accidental threshold.
 
 ## Decision Log
 
@@ -228,6 +256,18 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - Decision: surface return remains in the WB19-produced hour.
   Rationale: it preserves modeled process timing and mass without synthetic
   reassignment to rainfall intervals.
+- Decision: routed melt and runon are hourly WB14 supply, not runoff limbs.
+  Rationale: each source must receive infiltration and depression-storage
+  opportunity exactly once before its residual can contribute to a peak.
+- Decision: use `/home/workdir/openwepp-task-tmp` for heavy local gates.
+  Rationale: it is an absolute external scratch directory consistent with the
+  canonical temporary-directory guidance and avoids repository-root
+  confinement failures. Reuse this pattern in later packages rather than an
+  in-checkout `target/` descendant.
+- Decision: normalize mutation-plan source/expected operands to JSON strings in
+  the event-pair Parquet.
+  Rationale: Ksat trials use scalars while paired-cover trials use objects; a
+  stable JSON column preserves both without Arrow type inference failure.
 - Decision: add `SC-INFILE-HBP-001.md` to the adjacent consumer-contract write
   set before editing it, and add
   `crates/openwepp-hillslope-output/src/hillslope_pass.rs` for the matching

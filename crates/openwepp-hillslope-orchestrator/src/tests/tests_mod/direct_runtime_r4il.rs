@@ -372,7 +372,7 @@ fn r4k_wb14_producer_feeds_runoff_percolation_and_et_lineage() {
         cumulative_infiltration_handoff_m: 0.0,
         depression_storage_delta_handoff_m: 0.0,
         producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -507,7 +507,7 @@ fn r4k_wb14_producer_rejects_malformed_hyetograph() {
         cumulative_infiltration_handoff_m: 0.0,
         depression_storage_delta_handoff_m: 0.0,
         producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 60.0,
                 end_s: 30.0,

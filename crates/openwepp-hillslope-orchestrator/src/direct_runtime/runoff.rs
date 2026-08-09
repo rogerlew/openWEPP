@@ -14,6 +14,10 @@ use super::{
     validate_finite, validate_nonnegative_direct_m,
 };
 
+/// Per-interval arithmetic allowance for the 24-bin WB14 ledger
+/// (`SC-WATBAL-001#TOL-WATBAL-009`).
+const WB14_INTERVAL_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+
 fn r7h_runoff_trace_number(value: f64) -> String {
     if value.is_finite() {
         format!("{value:.17}")
@@ -204,7 +208,7 @@ impl DirectDayFrame {
     pub fn run_r4k_infiltration_depression_span(
         &mut self,
     ) -> Result<DirectInfiltrationDepressionSpanReport, DirectRuntimeError> {
-        self.apply_dc01_runon_supply_admission();
+        self.apply_dc01_runon_supply_admission()?;
         DIRECT_AUDIT.record_phase_span_run();
         let phase_count = DIRECT_R4K_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
@@ -226,6 +230,13 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         let same_pass_infiltration_m =
             self.resolve_r4m_same_pass_infiltration_m(infiltration_depression)?;
+        let additional_same_pass_infiltration_m =
+            (same_pass_infiltration_m - infiltration_depression.cumulative_infiltration_m).max(0.0);
+        remove_depth_from_hour_bins_earliest(
+            &mut self.wb14_hourly_excess_m,
+            additional_same_pass_infiltration_m,
+            "infiltration_depression.hourly_same_pass_runoff_m",
+        )?;
         let infiltration_depression = DirectInfiltrationDepressionState {
             cumulative_infiltration_m: same_pass_infiltration_m,
             depression_storage_delta_m: infiltration_depression.depression_storage_delta_m,
@@ -638,26 +649,46 @@ impl DirectDayFrame {
     }
 
     /// DC01 (INV-RUNOFFPART-031): distribute the R4J-resolved runon totals
-    /// onto hour bins — surface via the published upstream hourly weights
-    /// (uniform fallback), lateral via the hourly lateral-carry shape — and
+    /// onto hour bins — surface via the published upstream hourly weights,
+    /// lateral via the hourly lateral-carry shape — and
     /// inject them into the WB14 producer inputs before the R4K compute.
     /// Using the R4J-resolved totals keeps the partition identity consistent
     /// by construction. Zero-runon (single-OFE) lanes are untouched.
-    fn apply_dc01_runon_supply_admission(&mut self) {
+    fn apply_dc01_runon_supply_admission(&mut self) -> Result<(), DirectRuntimeError> {
         let surface_total_m = self.runon_carry_downstream_operands.runon_input_m;
         let lateral_total_m = self.runon_carry_downstream_operands.subsurface_carry_m;
-        if surface_total_m + lateral_total_m <= WB11_ZERO_THRESHOLD {
-            return;
+        if surface_total_m + lateral_total_m <= WB11_ZERO_THRESHOLD
+            || self
+                .infiltration_depression_inputs
+                .producer_inputs
+                .is_none()
+        {
+            return Ok(());
         }
         let supply = Self::dc01_distribute_runon_supply(
             surface_total_m,
             lateral_total_m,
             &self.transfer.surface_hourly_weights,
             &self.transfer.lateral_carry_m,
-        );
+        )?;
         if let Some(producer_inputs) = &mut self.infiltration_depression_inputs.producer_inputs {
-            producer_inputs.runon_hourly_supply_m = supply;
+            for (hourly_supply_m, runon_supply_m) in producer_inputs
+                .hourly_additional_supply_m
+                .iter_mut()
+                .zip(supply)
+            {
+                validate_nonnegative_direct_m(
+                    "infiltration_depression.hourly_additional_supply_m",
+                    *hourly_supply_m,
+                )?;
+                *hourly_supply_m += runon_supply_m;
+                validate_finite(
+                    "infiltration_depression.hourly_additional_supply_m",
+                    *hourly_supply_m,
+                )?;
+            }
         }
+        Ok(())
     }
 
     pub(crate) fn dc01_distribute_runon_supply(
@@ -665,34 +696,41 @@ impl DirectDayFrame {
         lateral_total_m: f64,
         surface_hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
         lateral_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-    ) -> [f64; DC01_HOUR_BIN_COUNT] {
+    ) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
         // (shared-shape note: the SURFACE weights consumed here are produced
         // by `dc01_surface_runoff_hourly_weights` below — one authority.)
-        let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
+        validate_nonnegative_direct_m("runon_admission.surface_total_m", surface_total_m)?;
+        validate_nonnegative_direct_m("runon_admission.lateral_total_m", lateral_total_m)?;
         let mut supply = [0.0_f64; DC01_HOUR_BIN_COUNT];
-        let weight_total: f64 = surface_hourly_weights.iter().map(|w| w.max(0.0)).sum();
+        let weight_total = sum_nonnegative_direct_m(
+            "runon_admission.surface_hourly_weights",
+            surface_hourly_weights,
+        )?;
         if surface_total_m > 0.0 {
+            if weight_total <= 0.0 {
+                return Err(DirectRuntimeError::MissingDirectUpstream {
+                    upstream: "hourly surface-runon transfer shape",
+                });
+            }
             for (hour, slot) in supply.iter_mut().enumerate() {
-                let weight = if weight_total > 0.0 {
-                    surface_hourly_weights[hour].max(0.0) / weight_total
-                } else {
-                    uniform
-                };
+                let weight = surface_hourly_weights[hour] / weight_total;
                 *slot += surface_total_m * weight;
             }
         }
-        let lateral_shape_total_m: f64 = lateral_carry_m.iter().map(|value| value.max(0.0)).sum();
+        let lateral_shape_total_m =
+            sum_nonnegative_direct_m("runon_admission.lateral_carry_m", lateral_carry_m)?;
         if lateral_total_m > 0.0 {
+            if lateral_shape_total_m <= 0.0 {
+                return Err(DirectRuntimeError::MissingDirectUpstream {
+                    upstream: "hourly lateral-runon transfer shape",
+                });
+            }
             for (hour, slot) in supply.iter_mut().enumerate() {
-                let weight = if lateral_shape_total_m > 0.0 {
-                    lateral_carry_m[hour].max(0.0) / lateral_shape_total_m
-                } else {
-                    uniform
-                };
+                let weight = lateral_carry_m[hour] / lateral_shape_total_m;
                 *slot += lateral_total_m * weight;
             }
         }
-        supply
+        Ok(supply)
     }
 
     fn compute_r4l_saturation_addback(
@@ -738,7 +776,7 @@ impl DirectDayFrame {
     }
 
     fn compute_r4a_runoff_partition(
-        &self,
+        &mut self,
     ) -> Result<DirectRunoffPartitionState, DirectRuntimeError> {
         self.ensure_r4il_runoff_inputs_ready()?;
         self.validate_r4a_runoff_partition_domain()?;
@@ -756,6 +794,19 @@ impl DirectDayFrame {
         )?;
         validate_finite("runoff_partition.partition_runoff_m", partition_runoff_m)?;
         validate_nonnegative_direct_m("runoff_partition.partition_runoff_m", partition_runoff_m)?;
+        let partition_runoff_m = if self
+            .infiltration_depression_inputs
+            .producer_inputs
+            .is_some()
+        {
+            reconcile_hourly_partition_runoff_profile(
+                &mut self.wb14_hourly_excess_m,
+                partition_runoff_m,
+                inputs.frost_retained_local_liquid_m,
+            )?
+        } else {
+            partition_runoff_m
+        };
         let q_runoff_m = partition_runoff_m + inputs.surface_saturation_runoff_m;
         validate_finite("runoff_partition.q_runoff_m", q_runoff_m)?;
         validate_nonnegative_direct_m("runoff_partition.q_runoff_m", q_runoff_m)?;
@@ -786,7 +837,8 @@ impl DirectDayFrame {
             },
         )?;
         let q_runoff_m = runoff.q_runoff_m;
-        validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)?;
+        validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)
+            .map_err(map_wb16_peak_guard)?;
         if q_runoff_m == 0.0 {
             return Ok(DirectPeakRunoffState {
                 q_runoff_m,
@@ -805,16 +857,11 @@ impl DirectDayFrame {
                 upstream: "R4O hourly saturation-return producer",
             },
         )?;
-        let routed_melt = self
-            .snow_coupling_downstream_operands
-            .hourly_routed_melt_m
-            .as_ref();
         let (peak_runoff_rate_m_s, runoff_duration_s, peak_hour_index) =
             source_complete_hourly_peak_runoff_depth_rate_m_s(
                 q_runoff_m,
                 &self.wb14_hourly_excess_m,
                 &subsurface.hourly_saturation_carry_m,
-                routed_melt,
             )?;
 
         Ok(DirectPeakRunoffState {
@@ -1374,12 +1421,86 @@ pub(crate) fn source_informed_partition_runoff_canonicalization(
     Ok(partition_runoff_m)
 }
 
+fn scale_aware_depth_closure_tolerance_m(values: &[f64]) -> f64 {
+    let scale_m = values
+        .iter()
+        .copied()
+        .fold(1.0_f64, |scale, value| scale.max(value.abs()));
+    WB11_ZERO_THRESHOLD * scale_m
+}
+
+/// Reconcile the WB14 post-depression hourly lineage to the R4A local runoff
+/// operand. The only authorized material removal between those two surfaces
+/// is frost-retained local liquid. Its daily amount has no finer producer
+/// clock, so it is allocated proportionally over the already-produced WB14
+/// runoff hours; this is temporal bookkeeping, not a second runoff solve.
+pub(super) fn reconcile_hourly_partition_runoff_profile(
+    hourly_runoff_m: &mut [f64; DC01_HOUR_BIN_COUNT],
+    partition_runoff_m: f64,
+    frost_retained_local_liquid_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m("runoff_partition.partition_runoff_m", partition_runoff_m)?;
+    validate_nonnegative_direct_m(
+        "runoff_partition.frost_retained_local_liquid_m",
+        frost_retained_local_liquid_m,
+    )?;
+    let before_m = sum_nonnegative_direct_m(
+        "runoff_partition.hourly_post_depression_runoff_m",
+        hourly_runoff_m,
+    )?;
+    // WB14 solves as many as 24 interval bins and permits 1e-9 m interval
+    // arithmetic closure. This explicit aggregate bound reconciles only the
+    // independently accumulated daily scalar; the hourly ledger remains the
+    // authoritative runoff operand.
+    let tolerance_m = WB14_INTERVAL_CLOSURE_TOLERANCE_M
+        * DC01_HOUR_BIN_COUNT_F64
+        * [before_m, partition_runoff_m, frost_retained_local_liquid_m]
+            .iter()
+            .copied()
+            .fold(1.0_f64, |scale, value| scale.max(value.abs()));
+    if before_m == 0.0 && partition_runoff_m <= tolerance_m {
+        *hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
+        return Ok(0.0);
+    }
+    let hourly_partition_runoff_m = (before_m - frost_retained_local_liquid_m).max(0.0);
+    if (hourly_partition_runoff_m - partition_runoff_m).abs() > tolerance_m {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "runoff_partition.hourly_partition_runoff_m",
+        });
+    }
+    let retained_fraction = (frost_retained_local_liquid_m / before_m).min(1.0);
+    for hourly_m in hourly_runoff_m.iter_mut() {
+        *hourly_m *= 1.0 - retained_fraction;
+    }
+    let after_m: f64 = hourly_runoff_m.iter().sum();
+    let residual_m = hourly_partition_runoff_m - after_m;
+    if residual_m.abs() <= tolerance_m {
+        if let Some((_, peak_bin_m)) = hourly_runoff_m
+            .iter_mut()
+            .enumerate()
+            .max_by(|(_, left), (_, right)| left.total_cmp(right))
+        {
+            *peak_bin_m += residual_m;
+        }
+    }
+    let final_m = sum_nonnegative_direct_m(
+        "runoff_partition.hourly_partition_runoff_m",
+        hourly_runoff_m,
+    )?;
+    if (final_m - hourly_partition_runoff_m).abs() > tolerance_m {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "runoff_partition.hourly_partition_runoff_m",
+        });
+    }
+    Ok(hourly_partition_runoff_m)
+}
+
 /// ADR-0036 `REF-SED-DC01-SHAPE`: the SINGLE hourly-runoff shape authority.
 /// Unit-normalized hourly distribution of the day's surface runoff (WB14
-/// infiltration-excess profile + hourly saturation carry + producer-owned
-/// hourly routed snowmelt/liquid). Uniform fallback when the day has runoff
-/// without a profile shape (the ratified INV-RUNOFFPART-031 synthesized-time-
-/// base case); all-zero when there is no runoff. Consumed by (1) the MOFE
+/// post-partition runoff profile + hourly saturation return). Routed melt and
+/// runon have already passed through WB14 and are therefore not separate
+/// runoff limbs. Positive runoff without a closing profile fails closed;
+/// all-zero when there is no runoff. Consumed by (1) the MOFE
 /// dynamic-transfer publication, (2) the hydrograph-resolved Wave-1 erosion
 /// substrate (`INV-SED-013`), and (3) the serialized `V_h` HBP surface
 /// (`V_h = runvol · w_h`) — one shape, three consumers, so the solve, the
@@ -1388,41 +1509,17 @@ pub(crate) fn dc01_surface_runoff_hourly_weights(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
 ) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
-    let mut weights = [0.0_f64; DC01_HOUR_BIN_COUNT];
     validate_nonnegative_direct_m("dc01_surface_shape.q_runoff_m", q_runoff_m)?;
-    let mut raw_total_m = 0.0_f64;
-    for hour in 0..DC01_HOUR_BIN_COUNT {
-        validate_nonnegative_direct_m(
-            "dc01_surface_shape.wb14_hourly_excess_m",
-            wb14_hourly_excess_m[hour],
-        )?;
-        validate_nonnegative_direct_m(
-            "dc01_surface_shape.hourly_saturation_carry_m",
-            hourly_saturation_carry_m[hour],
-        )?;
-        validate_nonnegative_direct_m(
-            "dc01_surface_shape.hourly_routed_melt_m",
-            hourly_routed_melt_m[hour],
-        )?;
-        let raw = wb14_hourly_excess_m[hour]
-            + hourly_saturation_carry_m[hour]
-            + hourly_routed_melt_m[hour];
-        validate_finite("dc01_surface_shape.raw_hourly_source_m", raw)?;
-        weights[hour] = raw;
-        raw_total_m += raw;
-        validate_finite("dc01_surface_shape.raw_total_m", raw_total_m)?;
-    }
-    if q_runoff_m <= 0.0 {
+    let (hourly_runoff_m, source_total_m) =
+        closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m)?;
+    ensure_hourly_runoff_source_closure(q_runoff_m, source_total_m)?;
+    if q_runoff_m == 0.0 {
         return Ok([0.0; DC01_HOUR_BIN_COUNT]);
     }
-    if raw_total_m <= 0.0 {
-        let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
-        return Ok([uniform; DC01_HOUR_BIN_COUNT]);
-    }
-    for weight in &mut weights {
-        *weight /= raw_total_m;
+    let mut weights = [0.0; DC01_HOUR_BIN_COUNT];
+    for (weight, hourly_m) in weights.iter_mut().zip(hourly_runoff_m) {
+        *weight = hourly_m / source_total_m;
     }
     Ok(weights)
 }
@@ -1431,7 +1528,19 @@ pub(crate) fn source_complete_hourly_peak_runoff_depth_rate_m_s(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    source_complete_hourly_peak_runoff_depth_rate_impl_m_s(
+        q_runoff_m,
+        wb14_hourly_excess_m,
+        hourly_saturation_carry_m,
+    )
+    .map_err(map_wb16_peak_guard)
+}
+
+fn source_complete_hourly_peak_runoff_depth_rate_impl_m_s(
+    q_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
 ) -> Result<(f64, f64, usize), DirectRuntimeError> {
     validate_finite("peak_runoff.q_runoff_m", q_runoff_m)?;
     if q_runoff_m <= 0.0 {
@@ -1439,30 +1548,32 @@ pub(crate) fn source_complete_hourly_peak_runoff_depth_rate_m_s(
             field: "peak_runoff.q_runoff_m",
         });
     }
-    let source_total_m = hourly_runoff_source_total_m(
-        wb14_hourly_excess_m,
-        hourly_saturation_carry_m,
-        hourly_routed_melt_m,
-    )?;
-    if source_total_m <= 0.0 {
-        return Err(DirectRuntimeError::MissingDirectUpstream {
-            upstream: "source-complete hourly runoff timing for positive runoff",
-        });
-    }
-    let weights = dc01_surface_runoff_hourly_weights(
-        q_runoff_m,
-        wb14_hourly_excess_m,
-        hourly_saturation_carry_m,
-        hourly_routed_melt_m,
-    )?;
-    hourly_peak_runoff_depth_rate_m_s(q_runoff_m, &weights)
+    let (hourly_runoff_m, source_total_m) =
+        closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m)?;
+    ensure_hourly_runoff_source_closure(q_runoff_m, source_total_m)?;
+    hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_runoff_m)
 }
 
-fn hourly_runoff_source_total_m(
+fn map_wb16_peak_guard(error: DirectRuntimeError) -> DirectRuntimeError {
+    let code = match &error {
+        DirectRuntimeError::MissingDirectUpstream { .. } => "HKERNEL-WB16-PEAK-E-001",
+        DirectRuntimeError::NonFiniteDirectValue { .. } => "HKERNEL-WB16-PEAK-E-002",
+        DirectRuntimeError::NegativeDirectValue { .. }
+        | DirectRuntimeError::DirectDomainViolation { .. }
+        | DirectRuntimeError::DirectClosureToleranceExceeded { .. } => "HKERNEL-WB16-PEAK-E-003",
+        _ => return error,
+    };
+    DirectRuntimeError::DirectKernelGuardFailure {
+        phase: code,
+        detail: error.to_string(),
+    }
+}
+
+fn closing_hourly_runoff_depths_m(
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> Result<f64, DirectRuntimeError> {
+) -> Result<([f64; DC01_HOUR_BIN_COUNT], f64), DirectRuntimeError> {
+    let mut hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
     let mut total_m = 0.0;
     for hour in 0..DC01_HOUR_BIN_COUNT {
         for (field, value) in [
@@ -1474,19 +1585,71 @@ fn hourly_runoff_source_total_m(
                 "peak_runoff.hourly_saturation_carry_m",
                 hourly_saturation_carry_m[hour],
             ),
-            (
-                "peak_runoff.hourly_routed_melt_m",
-                hourly_routed_melt_m[hour],
-            ),
         ] {
             validate_nonnegative_direct_m(field, value)?;
             total_m += value;
             validate_finite("peak_runoff.hourly_source_total_m", total_m)?;
         }
+        hourly_runoff_m[hour] = wb14_hourly_excess_m[hour] + hourly_saturation_carry_m[hour];
     }
-    Ok(total_m)
+    Ok((hourly_runoff_m, total_m))
 }
 
+fn ensure_hourly_runoff_source_closure(
+    q_runoff_m: f64,
+    source_total_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    let tolerance_m = scale_aware_depth_closure_tolerance_m(&[q_runoff_m, source_total_m]);
+    if q_runoff_m > 0.0 && source_total_m <= 0.0 {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "post-partition hourly runoff timing for positive runoff",
+        });
+    }
+    if (source_total_m - q_runoff_m).abs() > tolerance_m {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.hourly_source_total_m",
+        });
+    }
+    Ok(())
+}
+
+fn hourly_peak_runoff_from_closing_depths_m_s(
+    q_runoff_m: f64,
+    hourly_runoff_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    let mut peak_rate_m_s = 0.0;
+    let mut peak_hour_index = 0;
+    for (hour, hourly_depth_m) in hourly_runoff_m.iter().copied().enumerate() {
+        validate_nonnegative_direct_m("peak_runoff.hourly_depth_m", hourly_depth_m)?;
+        let hourly_rate_m_s = hourly_depth_m / DC01_HOUR_BIN_SECONDS;
+        validate_nonnegative_direct_m("peak_runoff.hourly_rate_m_s", hourly_rate_m_s)?;
+        if hourly_rate_m_s > peak_rate_m_s {
+            peak_rate_m_s = hourly_rate_m_s;
+            peak_hour_index = hour;
+        }
+    }
+    if peak_rate_m_s <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.peak_runoff_rate_m_s",
+        });
+    }
+    let runoff_duration_s = q_runoff_m / peak_rate_m_s;
+    validate_finite("peak_runoff.runoff_duration_s", runoff_duration_s)?;
+    if runoff_duration_s <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.runoff_duration_s",
+        });
+    }
+    let maximum_duration_s = DC01_HOUR_BIN_SECONDS * DC01_HOUR_BIN_COUNT_F64;
+    if runoff_duration_s > maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD) {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.runoff_duration_s",
+        });
+    }
+    Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
+}
+
+#[cfg(test)]
 pub(crate) fn hourly_peak_runoff_depth_rate_m_s(
     q_runoff_m: f64,
     hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
@@ -1579,7 +1742,7 @@ fn dc01_add_depth_to_hour_bins(
 
 pub(crate) fn dc01_hourly_supply_basis(
     hyetograph: &[DirectWb14HyetographInterval],
-    runon_hourly_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_additional_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
 ) -> Vec<DirectWb14HyetographInterval> {
     let mut bins = [0.0_f64; DC01_HOUR_BIN_COUNT];
     for interval in hyetograph {
@@ -1593,7 +1756,7 @@ pub(crate) fn dc01_hourly_supply_basis(
             );
         }
     }
-    for (bin, runon_m) in bins.iter_mut().zip(runon_hourly_supply_m.iter()) {
+    for (bin, runon_m) in bins.iter_mut().zip(hourly_additional_supply_m.iter()) {
         *bin += runon_m.max(0.0);
     }
     bins.iter()
@@ -1628,7 +1791,7 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     let mut hourly_rainfall_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
     for interval in &inputs.hyetograph {
         let duration_s = interval.end_s - interval.start_s;
-        if duration_s <= WB11_ZERO_THRESHOLD || interval.intensity_m_s <= WB11_ZERO_THRESHOLD {
+        if duration_s <= 0.0 || interval.intensity_m_s <= 0.0 {
             continue;
         }
         dc01_add_depth_to_hour_bins(
@@ -1639,26 +1802,24 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         );
     }
 
-    // DC01 (INV-RUNOFFPART-031): with material runon, the supply is re-binned
-    // to a 24 x 1 h basis (local hyetograph depth per hour + runon per hour) —
-    // the baseline's hourly xfin loop shape. Zero-runon lanes keep the exact
-    // interval basis, preserving single-OFE behavior bit-identically.
-    let runon_total_m: f64 = inputs.runon_hourly_supply_m.iter().sum();
+    // With material additional supply, re-bin onto the 24 x 1 h basis: local
+    // hyetograph depth plus producer-timed routed melt and inter-OFE runon.
+    // This is the baseline hourly xfin loop shape. A direct-rain-only lane
+    // keeps its exact interval basis.
+    let additional_supply_total_m: f64 = inputs.hourly_additional_supply_m.iter().sum();
     let hourly_basis: Vec<DirectWb14HyetographInterval>;
-    let intervals: &[DirectWb14HyetographInterval] = if runon_total_m > WB11_ZERO_THRESHOLD {
-        // DC01 M5 decomposition diagnostic (env-gated): admit runon as
-        // appended hourly intervals WITHOUT re-binning the local rain, to
-        // separate the admission effect from the hourly-basis intensity
-        // effect. Default path re-bins everything (baseline hourly shape).
-        hourly_basis = dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m);
-        &hourly_basis
-    } else {
-        &inputs.hyetograph
-    };
+    let intervals: &[DirectWb14HyetographInterval] =
+        if additional_supply_total_m > WB11_ZERO_THRESHOLD {
+            hourly_basis =
+                dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.hourly_additional_supply_m);
+            &hourly_basis
+        } else {
+            &inputs.hyetograph
+        };
 
     for interval in intervals {
         let duration_s = interval.end_s - interval.start_s;
-        if duration_s <= WB11_ZERO_THRESHOLD || interval.intensity_m_s <= WB11_ZERO_THRESHOLD {
+        if duration_s <= 0.0 || interval.intensity_m_s <= 0.0 {
             continue;
         }
         let rainfall_m = interval.intensity_m_s * duration_s;
@@ -1716,6 +1877,15 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         "infiltration_depression.depression_storage_delta_m",
         depression_storage_delta_m,
     )?;
+    // Depression storage is filled by the earliest non-infiltrated supply.
+    // Remove that retained depth from the hourly runoff lineage here so the
+    // profile, rather than a later normalized proxy, closes to the WB14
+    // post-depression runoff operand.
+    remove_depth_from_hour_bins_earliest(
+        &mut hourly_excess_m,
+        depression_storage_delta_m,
+        "infiltration_depression.hourly_post_depression_runoff_m",
+    )?;
     Ok(DirectWb14OutcomeWithProfile {
         state: DirectInfiltrationDepressionState {
             cumulative_infiltration_m,
@@ -1724,6 +1894,29 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         hourly_excess_m,
         hourly_rainfall_m,
     })
+}
+
+fn remove_depth_from_hour_bins_earliest(
+    bins: &mut [f64; DC01_HOUR_BIN_COUNT],
+    depth_m: f64,
+    field: &'static str,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m(field, depth_m)?;
+    let mut remaining_m = depth_m;
+    for bin_m in bins {
+        validate_nonnegative_direct_m(field, *bin_m)?;
+        let removed_m = remaining_m.min(*bin_m);
+        *bin_m -= removed_m;
+        remaining_m -= removed_m;
+        if remaining_m <= WB11_ZERO_THRESHOLD {
+            remaining_m = 0.0;
+            break;
+        }
+    }
+    if remaining_m > WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded { field });
+    }
+    Ok(())
 }
 
 fn validate_wb14_infiltration_inputs(
@@ -2067,10 +2260,11 @@ impl DirectCanopyInterceptionState {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWb14InfiltrationProducerInputs {
     pub hyetograph: Vec<DirectWb14HyetographInterval>,
-    /// DC01 (INV-RUNOFFPART-031): the day's inter-OFE runon distributed onto
-    /// hour bins; admitted into the WB14 supply when non-zero. Injected at
-    /// R4K from the R4J-resolved totals; zero on single-OFE lanes.
-    pub runon_hourly_supply_m: [f64; DC01_HOUR_BIN_COUNT],
+    /// Producer-owned hourly liquid supplied in addition to direct rain.
+    /// Routed melt is seeded by the runner before WB14; inter-OFE runon is
+    /// added at R4K from the R4J-resolved totals. Both pass through the same
+    /// infiltration/depression partition before any runoff timing is claimed.
+    pub hourly_additional_supply_m: [f64; DC01_HOUR_BIN_COUNT],
     pub effective_conductivity_m_s: f64,
     pub matric_potential_m: f64,
     pub storage_capacity_m: f64,
@@ -2391,28 +2585,6 @@ pub struct DirectRunoffShadowProjection {
     pub partition_runoff_m: f64,
     pub q_runoff_m: f64,
     pub closure_residual_m: f64,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct DirectPeakRunoffInputs {
-    pub hyetograph: Vec<DirectWb14HyetographInterval>,
-    pub irrigation_rate_m_s: f64,
-    pub efflen_m: f64,
-    pub ealpha: f64,
-    pub exponent_m: f64,
-}
-
-impl DirectPeakRunoffInputs {
-    #[must_use]
-    pub fn zero() -> Self {
-        Self {
-            hyetograph: Vec::new(),
-            irrigation_rate_m_s: 0.0,
-            efflen_m: 0.0,
-            ealpha: 0.0,
-            exponent_m: 0.0,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

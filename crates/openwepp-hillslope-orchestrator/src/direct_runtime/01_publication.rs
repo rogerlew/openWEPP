@@ -41,7 +41,6 @@ pub struct DirectPublicationDayInput {
     pub liquid_input_inputs: Option<DirectLiquidInputInputs>,
     pub percolation_inputs: Option<DirectPercolationInputs>,
     pub infiltration_depression_inputs: Option<DirectInfiltrationDepressionInputs>,
-    pub peak_runoff_inputs: Option<DirectPeakRunoffInputs>,
     pub subsurface_compute_inputs: Option<DirectSubsurfaceComputeInputs>,
     pub decomposition_inputs: Option<DirectDecompositionInputs>,
     pub residue_partition_inputs: Option<DirectResiduePartitionInputs>,
@@ -75,7 +74,6 @@ impl DirectPublicationDayInput {
             liquid_input_inputs: None,
             percolation_inputs: None,
             infiltration_depression_inputs: None,
-            peak_runoff_inputs: None,
             subsurface_compute_inputs: None,
             decomposition_inputs: None,
             residue_partition_inputs: None,
@@ -274,10 +272,10 @@ pub struct DirectPublicationDayRow {
 }
 
 /// The lane's OWN surface-runoff hourly weights for the seam shadow:
-/// the DC01 M2 distribution over the lane's own WB14 excess + saturation
-/// carry + routed melt/liquid limb, against its own runoff total. Zero-vector on no-runoff days;
-/// uniform when runoff exists with no hourly shape (the DC01 lump-only
-/// day class).
+/// the DC01 M2 distribution over the lane's own post-partition WB14 runoff
+/// plus saturation return, against its own runoff total. Routed melt and
+/// runon already passed through WB14. Positive runoff without timing fails
+/// closed.
 fn direct_publication_own_surface_hourly_weights(
     day_frame: &DirectDayFrame,
 ) -> Result<[f64; DIRECT_TRANSFER_HOUR_COUNT], DirectRuntimeError> {
@@ -296,10 +294,6 @@ fn direct_publication_own_surface_hourly_weights(
         runoff.q_runoff_m,
         &day_frame.wb14_hourly_excess_m,
         &subsurface.hourly_saturation_carry_m,
-        day_frame
-            .snow_coupling_downstream_operands
-            .hourly_routed_melt_m
-            .as_ref(),
     )
 }
 
@@ -593,13 +587,40 @@ fn direct_publication_peak_runoff_operands(
         });
     }
     if let Some(peak_runoff) = day_frame.peak_runoff_shadow_projection.as_ref() {
+        validate_finite(
+            "publication.runoff.shadow_q_runoff_m",
+            peak_runoff.q_runoff_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "publication.runoff.shadow_q_runoff_m",
+            peak_runoff.q_runoff_m,
+        )?;
         if peak_runoff.q_runoff_m == 0.0 {
+            if q_runoff_m > 0.0 {
+                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "publication.runoff.peak_runoff_basis_m",
+                });
+            }
             return Ok((Some(0.0), Some(0.0)));
         }
         validate_finite(
             "publication.runoff.peak_runoff_rate_m_s",
             peak_runoff.peak_runoff_rate_m_s,
         )?;
+        if peak_runoff.peak_runoff_rate_m_s <= 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.runoff.peak_runoff_rate_m_s",
+            });
+        }
+        validate_finite(
+            "publication.runoff.runoff_duration_s",
+            peak_runoff.runoff_duration_s,
+        )?;
+        if peak_runoff.runoff_duration_s <= 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.runoff.runoff_duration_s",
+            });
+        }
         let peak_runoff_rate_m_s = peak_runoff.peak_runoff_rate_m_s * q_runoff_m
             / peak_runoff.q_runoff_m;
         validate_finite(
@@ -914,6 +935,41 @@ mod cqr_publication_tests {
             DirectPublicationErosionOperands::absent_authority()
         );
 
+        direct_publication_storage_operands(&day).expect("zero storage operands");
+        direct_publication_water_temperature_operands(&day).expect("absent melt temperature");
+        assert!(matches!(
+            direct_publication_own_surface_hourly_weights(&day),
+            Err(DirectRuntimeError::MissingDirectUpstream { .. })
+        ));
+
+        day.groundwater_output = DirectGroundwaterDayOutput {
+            enabled: true,
+            recharge_m3: 1.0,
+            storage_before_m3: 4.0,
+            storage_after_m3: 4.0,
+            storage_delta_m3: 0.0,
+            baseflow_m3: 2.0,
+            deep_seepage_m3: 3.0,
+            baseflow_threshold_area_ha: None,
+        };
+        assert!(
+            (direct_publication_terminal_groundwater_output(&day, lane).baseflow_m3 - 2.0).abs()
+                < f64::EPSILON
+        );
+        let mut upstream_lane = lane.clone();
+        upstream_lane.downstream_lane_id = 2;
+        assert!(
+            direct_publication_terminal_groundwater_output(&day, &upstream_lane)
+                .baseflow_m3
+                .abs()
+                < f64::EPSILON
+        );
+    }
+
+    #[test]
+    fn publication_peak_scales_area_once_and_guards_its_boundary() {
+        let run_identity = identity(1, 1);
+        let mut day = DirectDayFrame::seed(run_identity, 0, 0).expect("publication day");
         assert_eq!(
             direct_publication_peak_runoff_operands(&day, 0.0, 1.0).expect("dry peak"),
             (Some(0.0), Some(0.0))
@@ -951,37 +1007,20 @@ mod cqr_publication_tests {
             (2.0 * peak_100_m3_s.expect("public peak")).to_bits()
         );
         assert_eq!(duration_100_s, duration_200_s);
+        for invalid_area_m2 in [-1.0, f64::NAN, f64::INFINITY] {
+            assert!(direct_publication_peak_runoff_operands(&day, 0.01, invalid_area_m2).is_err());
+        }
         assert!(direct_publication_peak_runoff_operands(&day, f64::NAN, 1.0).is_err());
-
-        direct_publication_storage_operands(&day).expect("zero storage operands");
-        direct_publication_water_temperature_operands(&day).expect("absent melt temperature");
+        day.peak_runoff_shadow_projection
+            .as_mut()
+            .expect("peak shadow")
+            .q_runoff_m = 0.0;
         assert!(matches!(
-            direct_publication_own_surface_hourly_weights(&day),
-            Err(DirectRuntimeError::MissingDirectUpstream { .. })
+            direct_publication_peak_runoff_operands(&day, 0.01, 1.0),
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "publication.runoff.peak_runoff_basis_m"
+            })
         ));
-
-        day.groundwater_output = DirectGroundwaterDayOutput {
-            enabled: true,
-            recharge_m3: 1.0,
-            storage_before_m3: 4.0,
-            storage_after_m3: 4.0,
-            storage_delta_m3: 0.0,
-            baseflow_m3: 2.0,
-            deep_seepage_m3: 3.0,
-            baseflow_threshold_area_ha: None,
-        };
-        assert!(
-            (direct_publication_terminal_groundwater_output(&day, lane).baseflow_m3 - 2.0).abs()
-                < f64::EPSILON
-        );
-        let mut upstream_lane = lane.clone();
-        upstream_lane.downstream_lane_id = 2;
-        assert!(
-            direct_publication_terminal_groundwater_output(&day, &upstream_lane)
-                .baseflow_m3
-                .abs()
-                < f64::EPSILON
-        );
     }
 
     fn snow_ledgers_with_temperature(
@@ -1092,6 +1131,22 @@ mod cqr_publication_tests {
         direct_publication_storage_operands(&day).expect("valid storage operands after guards");
     }
 
+    fn seed_single_hour_runoff_and_peak(day: &mut DirectDayFrame, runoff_m: f64) {
+        day.runoff_shadow_projection
+            .as_mut()
+            .expect("runoff producer")
+            .q_runoff_m = runoff_m;
+        day.wb14_hourly_excess_m[0] = runoff_m;
+        let peak = day
+            .peak_runoff_shadow_projection
+            .as_mut()
+            .expect("peak producer");
+        peak.q_runoff_m = runoff_m;
+        peak.peak_runoff_rate_m_s = runoff_m / 3_600.0;
+        peak.runoff_duration_s = 3_600.0;
+        peak.peak_hour_index = Some(0);
+    }
+
     #[test]
     fn cqr_day_row_reconstructs_distinct_operands_and_rejects_storage_alias_mismatch() {
         let run_identity = identity(1, 1);
@@ -1144,10 +1199,7 @@ mod cqr_publication_tests {
                         deep_seepage_m3: 5.0,
                         baseflow_threshold_area_ha: Some(0.01),
                     };
-                    day.runoff_shadow_projection
-                        .as_mut()
-                        .expect("runoff producer")
-                        .q_runoff_m = 0.004;
+                    seed_single_hour_runoff_and_peak(&mut day, 0.004);
                     let error = DirectPublicationDayRow::from_day_frame(&day, &input, &lane)
                         .expect_err("distinct WB13 storage aliases must be rejected");
                     assert!(matches!(

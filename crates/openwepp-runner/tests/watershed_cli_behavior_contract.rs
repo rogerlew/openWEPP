@@ -208,6 +208,7 @@ fn wshedw2_watershed_cli_serial_supervisor_generates_pass_inventory_and_routes()
     let run_dir = build_watershed_fixture_dir("wshedw2_serial_supervisor");
     prepare_output_guard_fixture(&run_dir);
     write_hillslope_source_runfile_fixture(&run_dir, 1);
+    prepare_single_day_generated_runoff_fixture(&run_dir.join("H1.cli"));
     write_generated_watershed_runfile(&run_dir, &[1]);
 
     let output_dir = run_dir.join("out");
@@ -2274,6 +2275,30 @@ plot = "unused/H{hillslope_id}.plot.parquet"
     );
     fs::write(run_dir.join(format!("H{hillslope_id}.source.run")), payload)
         .expect("hillslope source runfile should be writable");
+}
+
+fn prepare_single_day_generated_runoff_fixture(climate_path: &Path) {
+    let climate = fs::read_to_string(climate_path).expect("generated climate should be readable");
+    let amplified = climate
+        .replacen(
+            "1 1 2000 10.0 2.0 0.25 3.0",
+            "1 1 2000 80.0 2.0 0.25 3.0",
+            1,
+        )
+        .replacen(
+            "2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0\n",
+            "",
+            1,
+        );
+    assert_ne!(
+        climate, amplified,
+        "generated watershed fixture must contain the expected storm and dry tail rows"
+    );
+    assert!(
+        !amplified.contains("2 1 2000 0.0 0.0 0.0 0.0"),
+        "the dry tail must be removed so the generated HBP latest state is the runoff day"
+    );
+    fs::write(climate_path, amplified).expect("single-day generated climate should be writable");
 }
 
 fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize, area_m2: f64) {

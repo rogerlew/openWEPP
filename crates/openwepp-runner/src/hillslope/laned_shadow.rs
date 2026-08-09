@@ -114,9 +114,8 @@ pub(crate) struct LanedShadowSummary {
     pub max_supply_reconstruction_rel: f64,
     pub total_source_m3: f64,
     pub total_routed_outlet_m3: f64,
-    /// Days whose weights had no hourly shape (uniform fallback — the
-    /// DC01 lump-only class, e.g. melt-sourced runoff outside the two
-    /// GAP-006 D1 limbs). Surfaced as a labeled seam-coverage finding.
+    /// Days whose produced hourly weights are uniform. A uniform result can
+    /// be physical; this observational counter does not imply fallback timing.
     pub days_uniform_shape: u64,
     pub days_uniform_shape_with_routed_melt: u64,
     pub days_uniform_shape_without_routed_melt: u64,
@@ -260,9 +259,8 @@ impl LanedShadowCollector {
         let local_runoff_m = row.runoff.runvol_m3 / area_m2;
         let mut depths = [0.0_f64; SEAM_HOUR_BINS];
         if local_runoff_m > 0.0 {
-            // Uniform weights = the DC01 lump-only fallback (runoff with
-            // no hourly shape from the two D1 limbs — e.g. melt-sourced):
-            // count the day-class; the routed series still consumes it.
+            // Classify a produced uniform shape observationally; do not infer
+            // that it was synthesized or that producer timing was absent.
             let uniform = 1.0 / 24.0;
             if row
                 .dc01_surface_hourly_weights

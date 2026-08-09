@@ -16,8 +16,11 @@ fn contract_owns_hourly_peak_return_timing_and_public_units() {
         "`INV-WATBAL-102`",
         "`INV-WATBAL-103`",
         "`INV-WATBAL-104`",
+        "TOL-WATBAL-009",
         "peakro_depth = max_h(q_hourly(h)/Δt)",
-        "No daily-return retiming or synthetic uniform fallback",
+        "No daily-return",
+        "synthetic uniform fallback",
+        "enter the WB14 hourly supply exactly once",
         "same `Area` used to convert runoff depth to `runvol`",
         "rectangular-equivalent duration",
     ] {

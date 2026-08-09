@@ -77,7 +77,7 @@ pub use direct_runtime::{
     DirectLiquidInputShadowProjection, DirectLiquidInputSpanReport, DirectLiquidInputState,
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
     DirectNormalizationShadowProjection, DirectNormalizationSpanReport, DirectNormalizationState,
-    DirectPeakRunoffDownstreamOperands, DirectPeakRunoffInputs, DirectPeakRunoffShadowProjection,
+    DirectPeakRunoffDownstreamOperands, DirectPeakRunoffShadowProjection,
     DirectPeakRunoffSpanReport, DirectPeakRunoffState, DirectPercolationDownstreamOperands,
     DirectPercolationInputs, DirectPercolationShadowProjection, DirectPercolationSpanReport,
     DirectPercolationState, DirectPercolationTraceEvent, DirectPhaseKind,

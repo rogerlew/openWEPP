@@ -1,11 +1,12 @@
 use crate::{
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationPmetInputs, DirectExecutorMode,
-    DirectFrameExecutor, DirectHydrologyProjectionInputs, DirectLanedActiveConfig,
-    DirectLanedActiveLaneConfig, DirectLanedActiveMeshPolicy, DirectLanedActiveTraceDetailFilter,
-    DirectLiquidInputInputs, DirectPeakRunoffInputs, DirectPercolationInputs,
+    DirectFrameExecutor, DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
+    DirectLanedActiveConfig, DirectLanedActiveLaneConfig, DirectLanedActiveMeshPolicy,
+    DirectLanedActiveTraceDetailFilter, DirectLiquidInputInputs, DirectPercolationInputs,
     DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
     DirectRunFrame, DirectRunIdentity, DirectRuntimeError, DirectSubsurfaceComputeInputs,
     DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs,
 };
 
 fn active_config(lane_count: usize, trace_enabled: bool) -> DirectLanedActiveConfig {
@@ -114,16 +115,21 @@ fn publication_day(theta_m: f64, wet: bool) -> DirectPublicationDayInput {
         profile_field_capacity_m: Some(0.100),
         profile_wilting_point_m: Some(0.050),
     });
-    day.peak_runoff_inputs = Some(DirectPeakRunoffInputs {
-        hyetograph: vec![DirectWb14HyetographInterval {
-            start_s: 0.0,
-            end_s: 3_600.0,
-            intensity_m_s: 1.0e-5,
-        }],
-        irrigation_rate_m_s: 0.0,
-        efflen_m: 1.0,
-        ealpha: 1.0,
-        exponent_m: 1.0,
+    day.infiltration_depression_inputs = Some(DirectInfiltrationDepressionInputs {
+        cumulative_infiltration_handoff_m: 0.0,
+        depression_storage_delta_handoff_m: 0.0,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: day.precipitation_m / 3_600.0,
+            }],
+            hourly_additional_supply_m: [0.0; 24],
+            effective_conductivity_m_s: 1.0e-10,
+            matric_potential_m: 0.0,
+            storage_capacity_m: 0.0,
+            depression_storage_capacity_m: 0.0,
+        }),
     });
     day
 }

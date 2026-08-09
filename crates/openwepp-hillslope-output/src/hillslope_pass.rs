@@ -450,6 +450,36 @@ mod tests {
             runvol_field.metadata().get("units").map(String::as_str),
             Some("m^3")
         );
+        let peakro_field = schema
+            .fields()
+            .iter()
+            .find(|field| field.name() == "peakro")
+            .expect("peakro field should exist in parquet schema");
+        assert_eq!(peakro_field.data_type(), &DataType::Float64);
+        assert!(!peakro_field.is_nullable());
+        assert_eq!(
+            peakro_field.metadata().get("units").map(String::as_str),
+            Some("m^3/s")
+        );
+        assert_eq!(
+            peakro_field
+                .metadata()
+                .get("description")
+                .map(String::as_str),
+            Some("Maximum hourly mean runoff flow")
+        );
+        let mut reader = builder.build().expect("build parquet reader");
+        let batch = reader
+            .next()
+            .expect("one record batch")
+            .expect("read record batch");
+        let peakro_index = batch.schema().index_of("peakro").expect("peakro index");
+        let peakro = batch
+            .column(peakro_index)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .expect("peakro Float64 array");
+        assert_eq!(peakro.value(0).to_bits(), 0.125_f64.to_bits());
 
         let _ = fs::remove_file(output_path);
     }

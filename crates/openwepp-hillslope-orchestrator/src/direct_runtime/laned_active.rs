@@ -641,10 +641,6 @@ pub(crate) fn laned_active_lane_source(
         q_runoff_m,
         &day_frame.wb14_hourly_excess_m,
         &subsurface.hourly_saturation_carry_m,
-        day_frame
-            .snow_coupling_downstream_operands
-            .hourly_routed_melt_m
-            .as_ref(),
     )?;
     let mut depths_m = [0.0_f64; SEAM_HOUR_BINS];
     let mut uniform_shape = false;
@@ -1395,15 +1391,12 @@ mod tests {
             0.0_f64.to_bits()
         );
 
-        let uniform =
-            laned_active_lane_source(&day_with_lane_source(0.024)).expect("uniform residual class");
-        assert!(uniform.uniform_shape);
-        assert!(
-            uniform
-                .depths_m
-                .iter()
-                .all(|depth| depth.to_bits() == (0.024_f64 / 24.0).to_bits())
-        );
+        assert!(matches!(
+            laned_active_lane_source(&day_with_lane_source(0.024)),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "post-partition hourly runoff timing for positive runoff"
+            })
+        ));
     }
 
     #[test]

@@ -25,79 +25,32 @@ fn dc01_hourly_supply_basis_merges_rain_and_runon() {
 }
 
 #[test]
-fn dc01_runon_supply_distribution_uses_shapes_with_uniform_fallback() {
+fn dc01_runon_supply_distribution_uses_produced_shapes_and_rejects_missing_shapes() {
     let mut weights = [0.0_f64; 24];
     weights[3] = 0.75;
     weights[10] = 0.25;
     let mut lateral = [0.0_f64; 24];
     lateral[8] = 0.002;
-    let supply = DirectDayFrame::dc01_distribute_runon_supply(0.01, 0.004, &weights, &lateral);
+    let supply = DirectDayFrame::dc01_distribute_runon_supply(0.01, 0.004, &weights, &lateral)
+        .expect("produced runon shapes should distribute");
     assert!((supply[3] - 0.0075).abs() < 1.0e-15);
     assert!((supply[10] - 0.0025).abs() < 1.0e-15);
     assert!((supply[8] - 0.004).abs() < 1.0e-15);
     let total: f64 = supply.iter().sum();
     assert!((total - 0.014).abs() < 1.0e-12);
-    let uniform_supply =
-        DirectDayFrame::dc01_distribute_runon_supply(0.024, 0.0, &[0.0; 24], &[0.0; 24]);
-    assert!((uniform_supply[0] - 0.001).abs() < 1.0e-15);
-    assert!((uniform_supply[23] - 0.001).abs() < 1.0e-15);
+    assert_eq!(
+        DirectDayFrame::dc01_distribute_runon_supply(0.024, 0.0, &[0.0; 24], &[0.0; 24],)
+            .expect_err("positive runon without an hourly shape must fail closed"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly surface-runon transfer shape"
+        }
+    );
 }
 
 #[test]
-fn dc01_surface_shape_uses_routed_melt_limb_without_uniform_fallback() {
-    let wb14 = [0.0_f64; 24];
-    let saturation = [0.0_f64; 24];
-    let mut melt = [0.0_f64; 24];
-    melt[6] = 0.003;
-    melt[7] = 0.001;
-
-    let weights = crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-        0.002,
-        &wb14,
-        &saturation,
-        &melt,
-    )
-    .expect("melt-only source shape should normalize");
-
-    assert!((weights[6] - 0.75).abs() < 1.0e-15);
-    assert!((weights[7] - 0.25).abs() < 1.0e-15);
-    assert!((weights.iter().sum::<f64>() - 1.0).abs() < 1.0e-15);
-    assert_ne!(weights, [1.0 / 24.0; 24]);
-    let (_, duration_s, peak_hour) =
-        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
-            0.002,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect("melt-only source must carry production peak timing");
-    assert!((duration_s - 4_800.0).abs() < 1.0e-9);
-    assert_eq!(peak_hour, 6);
-}
-
-#[test]
-fn hourly_peak_uses_saturation_return_in_its_produced_hour() {
-    let wb14 = [0.0_f64; 24];
-    let mut saturation = [0.0_f64; 24];
-    let melt = [0.0_f64; 24];
-    saturation[11] = 0.004;
-    let (peak_rate_m_s, duration_s, peak_hour) =
-        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
-            0.004,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect("saturation-only source must carry production peak timing");
-    assert!((peak_rate_m_s - 0.004 / 3_600.0).abs() < 1.0e-15);
-    assert!((duration_s - 3_600.0).abs() < 1.0e-9);
-    assert_eq!(peak_hour, 11);
-}
-
-#[test]
-fn hourly_peak_uses_runon_only_wb14_excess_timing() {
+fn routed_melt_enters_wb14_once_and_carries_peak_timing_after_partition() {
     let mut inputs = DirectWb14InfiltrationProducerInputs {
-        runon_hourly_supply_m: [0.0; 24],
+        hourly_additional_supply_m: [0.0; 24],
         hyetograph: vec![DirectWb14HyetographInterval {
             start_s: 0.0,
             end_s: 3_600.0,
@@ -108,14 +61,93 @@ fn hourly_peak_uses_runon_only_wb14_excess_timing() {
         storage_capacity_m: 0.0,
         depression_storage_capacity_m: 0.0,
     };
-    inputs.runon_hourly_supply_m[8] = 0.003;
+    inputs.hourly_additional_supply_m[6] = 0.003;
+    inputs.hourly_additional_supply_m[7] = 0.001;
+    let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("melt-only WB14 supply should partition");
+    let saturation = [0.0_f64; 24];
+
+    let weights = crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
+        0.004,
+        &outcome.hourly_excess_m,
+        &saturation,
+    )
+    .expect("post-partition melt supply should close");
+
+    assert!((weights[6] - 0.75).abs() < 1.0e-15);
+    assert!((weights[7] - 0.25).abs() < 1.0e-15);
+    assert!((weights.iter().sum::<f64>() - 1.0).abs() < 1.0e-15);
+    assert_ne!(weights, [1.0 / 24.0; 24]);
+    let (_, duration_s, peak_hour) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.004,
+            &outcome.hourly_excess_m,
+            &saturation,
+        )
+        .expect("melt-only source must carry production peak timing");
+    assert!((duration_s - 4_800.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 6);
+}
+
+#[test]
+fn routed_melt_can_infiltrate_without_creating_a_runoff_limb() {
+    let mut inputs = DirectWb14InfiltrationProducerInputs {
+        hourly_additional_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 0.0,
+        }],
+        effective_conductivity_m_s: 1.0e-4,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.5,
+        depression_storage_capacity_m: 0.0,
+    };
+    inputs.hourly_additional_supply_m[6] = 0.004;
+    let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("melt-only supply should pass WB14");
+    assert!((outcome.state.cumulative_infiltration_m - 0.004).abs() < 1.0e-12);
+    assert_eq!(outcome.hourly_excess_m, [0.0; 24]);
+}
+
+#[test]
+fn hourly_peak_uses_saturation_return_in_its_produced_hour() {
+    let wb14 = [0.0_f64; 24];
+    let mut saturation = [0.0_f64; 24];
+    saturation[11] = 0.004;
+    let (peak_rate_m_s, duration_s, peak_hour) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.004,
+            &wb14,
+            &saturation,
+        )
+        .expect("saturation-only source must carry production peak timing");
+    assert!((peak_rate_m_s - 0.004 / 3_600.0).abs() < 1.0e-15);
+    assert!((duration_s - 3_600.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 11);
+}
+
+#[test]
+fn hourly_peak_uses_runon_only_wb14_excess_timing() {
+    let mut inputs = DirectWb14InfiltrationProducerInputs {
+        hourly_additional_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 0.0,
+        }],
+        effective_conductivity_m_s: 1.0e-6,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.0,
+        depression_storage_capacity_m: 0.0,
+    };
+    inputs.hourly_additional_supply_m[8] = 0.003;
     let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
         .expect("runon-only WB14 must compute");
     let (peak_rate_m_s, duration_s, peak_hour) =
         crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
             0.003,
             &outcome.hourly_excess_m,
-            &[0.0; 24],
             &[0.0; 24],
         )
         .expect("runon-only excess must carry production peak timing");
@@ -126,15 +158,16 @@ fn hourly_peak_uses_runon_only_wb14_excess_timing() {
 
 #[test]
 fn hourly_peak_fails_closed_for_positive_runoff_without_source_timing() {
-    assert_eq!(
-        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
-            0.003, &[0.0; 24], &[0.0; 24], &[0.0; 24],
-        )
-        .expect_err("positive runoff without source timing must fail closed"),
-        DirectRuntimeError::MissingDirectUpstream {
-            upstream: "source-complete hourly runoff timing for positive runoff"
-        }
+    let error = crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+        0.003, &[0.0; 24], &[0.0; 24],
     );
+    assert!(matches!(
+        error.expect_err("positive runoff without source timing must fail closed"),
+        DirectRuntimeError::DirectKernelGuardFailure {
+            phase: "HKERNEL-WB16-PEAK-E-001",
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -169,22 +202,68 @@ fn partition_runoff_only_canonicalizes_source_free_roundoff() {
 }
 
 #[test]
-fn dc01_surface_shape_rejects_invalid_routed_melt_limb() {
-    let wb14 = [0.0_f64; 24];
+fn hourly_partition_reconciliation_debits_frost_without_retiming_runoff() {
+    let mut hourly = [0.0; 24];
+    hourly[2] = 0.006;
+    hourly[8] = 0.004;
+    let reconciled_m = crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+        &mut hourly,
+        0.008,
+        0.002,
+    )
+    .expect("frost retention should reconcile against produced runoff hours");
+
+    assert!((reconciled_m - 0.008).abs() < 1.0e-15);
+    assert!((hourly[2] - 0.0048).abs() < 1.0e-15);
+    assert!((hourly[8] - 0.0032).abs() < 1.0e-15);
+    assert!(
+        hourly
+            .iter()
+            .enumerate()
+            .all(|(hour, depth_m)| matches!(hour, 2 | 8) || *depth_m == 0.0),
+        "the daily frost debit must not invent runoff hours"
+    );
+}
+
+#[test]
+fn hourly_partition_reconciliation_is_bounded_and_hourly_authoritative() {
+    let mut within_bound = [0.0; 24];
+    within_bound[4] = 0.01;
+    let reconciled_m = crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+        &mut within_bound,
+        0.01 + 1.0e-9,
+        0.0,
+    )
+    .expect("one-interval arithmetic difference is within TOL-WATBAL-009");
+    assert_eq!(reconciled_m.to_bits(), 0.01_f64.to_bits());
+    assert_eq!(within_bound[4].to_bits(), 0.01_f64.to_bits());
+
+    let mut material_mismatch = [0.0; 24];
+    material_mismatch[4] = 0.01;
+    assert_eq!(
+        crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+            &mut material_mismatch,
+            0.011,
+            0.0,
+        )
+        .expect_err("material daily/hourly mismatch must fail closed"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "runoff_partition.hourly_partition_runoff_m"
+        }
+    );
+}
+
+#[test]
+fn dc01_surface_shape_rejects_hourly_source_total_mismatch() {
+    let mut wb14 = [0.0_f64; 24];
+    wb14[3] = 0.004;
     let saturation = [0.0_f64; 24];
-    let mut melt = [0.0_f64; 24];
-    melt[3] = -1.0e-6;
 
     assert_eq!(
-        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-            0.002,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect_err("negative melt limb must fail closed"),
-        DirectRuntimeError::NegativeDirectValue {
-            field: "dc01_surface_shape.hourly_routed_melt_m"
+        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(0.002, &wb14, &saturation,)
+            .expect_err("hourly runoff depths must independently close to Q"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.hourly_source_total_m"
         }
     );
 }
@@ -193,14 +272,12 @@ fn dc01_surface_shape_rejects_invalid_routed_melt_limb() {
 fn dc01_surface_shape_rejects_nonfinite_inputs() {
     let mut wb14 = [0.0_f64; 24];
     let mut saturation = [0.0_f64; 24];
-    let mut melt = [0.0_f64; 24];
 
     assert_eq!(
         crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
             f64::NAN,
             &wb14,
             &saturation,
-            &melt,
         )
         .expect_err("nonfinite runoff scalar must fail closed"),
         DirectRuntimeError::NonFiniteDirectValue {
@@ -210,64 +287,32 @@ fn dc01_surface_shape_rejects_nonfinite_inputs() {
 
     wb14[0] = f64::INFINITY;
     assert_eq!(
-        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-            0.001,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect_err("nonfinite WB14 limb must fail closed"),
+        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(0.001, &wb14, &saturation,)
+            .expect_err("nonfinite WB14 limb must fail closed"),
         DirectRuntimeError::NonFiniteDirectValue {
-            field: "dc01_surface_shape.wb14_hourly_excess_m"
+            field: "peak_runoff.wb14_hourly_excess_m"
         }
     );
     wb14[0] = 0.0;
 
     saturation[1] = f64::NAN;
     assert_eq!(
-        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-            0.001,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect_err("nonfinite saturation-carry limb must fail closed"),
+        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(0.001, &wb14, &saturation,)
+            .expect_err("nonfinite saturation-carry limb must fail closed"),
         DirectRuntimeError::NonFiniteDirectValue {
-            field: "dc01_surface_shape.hourly_saturation_carry_m"
-        }
-    );
-    saturation[1] = 0.0;
-
-    melt[2] = f64::INFINITY;
-    assert_eq!(
-        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-            0.001,
-            &wb14,
-            &saturation,
-            &melt,
-        )
-        .expect_err("nonfinite routed-melt limb must fail closed"),
-        DirectRuntimeError::NonFiniteDirectValue {
-            field: "dc01_surface_shape.hourly_routed_melt_m"
+            field: "peak_runoff.hourly_saturation_carry_m"
         }
     );
 }
 
 #[test]
-fn dc01_surface_shape_returns_zero_weights_without_runoff() {
-    let mut wb14 = [0.0_f64; 24];
+fn dc01_surface_shape_returns_zero_weights_without_runoff_and_sources() {
+    let wb14 = [0.0_f64; 24];
     let saturation = [0.0_f64; 24];
-    let mut melt = [0.0_f64; 24];
-    wb14[1] = 0.001;
-    melt[4] = 0.002;
 
-    let weights = crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(
-        0.0,
-        &wb14,
-        &saturation,
-        &melt,
-    )
-    .expect("dry runoff surface should still validate source limbs");
+    let weights =
+        crate::direct_runtime::dc01_test_surface_runoff_hourly_weights(0.0, &wb14, &saturation)
+            .expect("dry runoff surface should still validate source limbs");
 
     assert_eq!(weights, [0.0; 24]);
 }
@@ -345,7 +390,7 @@ fn r4g_rejects_hourly_routed_melt_daily_nonclosure() {
 #[test]
 fn dc01_wb14_supply_admission_increases_infiltration_with_runon() {
     let base_inputs = DirectWb14InfiltrationProducerInputs {
-        runon_hourly_supply_m: [0.0; 24],
+        hourly_additional_supply_m: [0.0; 24],
         hyetograph: vec![DirectWb14HyetographInterval {
             start_s: 0.0,
             end_s: 3_600.0,
@@ -359,7 +404,7 @@ fn dc01_wb14_supply_admission_increases_infiltration_with_runon() {
     let without = crate::direct_runtime::dc01_test_wb14_with_profile(&base_inputs)
         .expect("baseline WB14 must compute");
     let mut with_runon = base_inputs;
-    with_runon.runon_hourly_supply_m[2] = 0.004;
+    with_runon.hourly_additional_supply_m[2] = 0.004;
     let with = crate::direct_runtime::dc01_test_wb14_with_profile(&with_runon)
         .expect("runon WB14 must compute");
     assert!(
@@ -379,7 +424,7 @@ fn dc01_wb14_supply_admission_increases_infiltration_with_runon() {
 #[test]
 fn dc01_dry_runon_day_still_infiltrates() {
     let mut inputs = DirectWb14InfiltrationProducerInputs {
-        runon_hourly_supply_m: [0.0; 24],
+        hourly_additional_supply_m: [0.0; 24],
         hyetograph: vec![DirectWb14HyetographInterval {
             start_s: 0.0,
             end_s: 3_600.0,
@@ -393,7 +438,7 @@ fn dc01_dry_runon_day_still_infiltrates() {
     let dry =
         crate::direct_runtime::dc01_test_wb14_with_profile(&inputs).expect("dry day computes");
     assert_eq!(dry.state.cumulative_infiltration_m, 0.0);
-    inputs.runon_hourly_supply_m[6] = 0.005;
+    inputs.hourly_additional_supply_m[6] = 0.005;
     let with_runon = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
         .expect("dry-runon day computes");
     assert!(
@@ -411,7 +456,7 @@ fn dc01_dry_runon_day_still_infiltrates() {
 #[test]
 fn dc01_zero_storage_capacity_preserves_all_supply_as_hourly_excess() {
     let inputs = DirectWb14InfiltrationProducerInputs {
-        runon_hourly_supply_m: [0.0; 24],
+        hourly_additional_supply_m: [0.0; 24],
         hyetograph: vec![DirectWb14HyetographInterval {
             start_s: 7_200.0,
             end_s: 10_800.0,

@@ -169,7 +169,6 @@ struct DirectProductionLaneSeedAuthority {
 #[derive(Clone)]
 struct DirectProductionTypedLaneSeedAuthority {
     constructor: DirectProductionLaneConstructorSeed,
-    peak_runoff: DirectProductionPeakRunoffAuthority,
     percolation: DirectPercolationInputs,
     subsurface: DirectSubsurfaceComputeInputs,
     hydrology_projection: DirectHydrologyProjectionInputs,
@@ -200,7 +199,6 @@ struct DirectProductionTypedLayerSeed {
 
 #[derive(Clone)]
 struct DirectProductionLaneDayInputAuthority {
-    peak_runoff: DirectProductionPeakRunoffAuthority,
     percolation: DirectPercolationInputs,
     subsurface: DirectSubsurfaceComputeInputs,
     infiltration: DirectProductionInfiltrationAuthority,
@@ -214,11 +212,8 @@ struct DirectProductionLaneDayInputAuthority {
 }
 
 #[derive(Clone)]
-struct DirectProductionPeakRunoffAuthority {
-    irrigation_rate_m_s: f64,
+struct DirectProductionErosionGeometryAuthority {
     efflen_m: f64,
-    ealpha: f64,
-    exponent_m: f64,
 }
 
 #[derive(Clone)]
@@ -707,7 +702,6 @@ fn direct_production_day_input_authority_from_typed_seed(
     seed: DirectProductionTypedLaneSeedAuthority,
 ) -> DirectProductionLaneDayInputAuthority {
     DirectProductionLaneDayInputAuthority {
-        peak_runoff: seed.peak_runoff,
         percolation: seed.percolation,
         subsurface: seed.subsurface,
         infiltration: seed.infiltration,
@@ -796,14 +790,13 @@ fn direct_production_typed_lane_seed_authority(
         }
     })?;
     let lane_substeps = project_typed_wb11_lane_substeps(execution_lane, contributor_ofe_count)?;
-    let peak_runoff =
-        direct_production_typed_peak_runoff_authority(&slope_projection, &management_projection)?;
+    let erosion_geometry = direct_production_typed_erosion_geometry_authority(&slope_projection)?;
     let erosion = direct_production_typed_erosion_authority(
         soil,
         &soil_projection,
         &slope_projection,
         &management_projection,
-        &peak_runoff,
+        &erosion_geometry,
         direct_production_management_has_active_tillage(management),
         direct_production_schedule_lanuse_is_cropland(management)?,
     )?;
@@ -815,7 +808,6 @@ fn direct_production_typed_lane_seed_authority(
             &optional_defaults,
             &snow_projection,
         )?,
-        peak_runoff,
         percolation: direct_production_typed_percolation_inputs(
             &soil_projection,
             &layer_seed,
@@ -1062,129 +1054,16 @@ fn validate_direct_production_routing_coefficient_authority(
     Ok(())
 }
 
-fn direct_production_typed_peak_runoff_authority(
+fn direct_production_typed_erosion_geometry_authority(
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
-    management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
-) -> Result<DirectProductionPeakRunoffAuthority, HillslopeCliError> {
+) -> Result<DirectProductionErosionGeometryAuthority, HillslopeCliError> {
     let first_ofe = slope.ofes.first().ok_or_else(|| {
         direct_production_executor_blocked("typed peak-runoff seed requires at least one slope OFE")
     })?;
     let efflen_and_m = project_typed_wb11_efflen_and_m(None, first_ofe.slplen_m, None)?;
-    let ealpha =
-        direct_production_typed_wb16_ealpha(slope, management_projection, efflen_and_m.exponent_m)?
-            .map_or(1.0, |projection| projection.ealpha);
-    Ok(DirectProductionPeakRunoffAuthority {
-        irrigation_rate_m_s: 0.0,
+    Ok(DirectProductionErosionGeometryAuthority {
         efflen_m: efflen_and_m.efflen_m,
-        ealpha,
-        exponent_m: efflen_and_m.exponent_m,
     })
-}
-
-fn direct_production_typed_wb16_ealpha(
-    slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
-    management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
-    exponent_m: f64,
-) -> Result<Option<TypedWb16EalphaProducerProjection>, HillslopeCliError> {
-    let mut ofes = Vec::with_capacity(slope.ofes.len());
-    for (ofe_offset, slope_ofe) in slope.ofes.iter().enumerate() {
-        let ofe_index = ofe_offset + 1;
-        let Some(inrcov) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "inrcov",
-        ) else {
-            return Ok(None);
-        };
-        let Some(rilcov) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "rilcov",
-        ) else {
-            return Ok(None);
-        };
-        let Some(rrinit) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "rrinit",
-        ) else {
-            return Ok(None);
-        };
-        let Some(rspace) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "rspace",
-        ) else {
-            return Ok(None);
-        };
-        let Some(width) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "width",
-        ) else {
-            return Ok(None);
-        };
-        let Some(rtyp) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "rtyp",
-        ) else {
-            return Ok(None);
-        };
-        let Some(cancov) = direct_production_pl_projection_optional_ofe_scalar(
-            management_projection,
-            ofe_index,
-            "cancov",
-        ) else {
-            return Ok(None);
-        };
-        let Some(bb) =
-            direct_production_typed_wb16_canopy_scalar(management_projection, ofe_index, "bb")
-        else {
-            return Ok(None);
-        };
-        let Some(bbb) =
-            direct_production_typed_wb16_canopy_scalar(management_projection, ofe_index, "bbb")
-        else {
-            return Ok(None);
-        };
-        let Some(flivmx) =
-            direct_production_typed_wb16_canopy_scalar(management_projection, ofe_index, "flivmx")
-        else {
-            return Ok(None);
-        };
-        let Some(hmax) =
-            direct_production_typed_wb16_canopy_scalar(management_projection, ofe_index, "hmax")
-        else {
-            return Ok(None);
-        };
-        ofes.push(TypedWb16OfeEalphaInput {
-            avgslp: slope_ofe.avgslp,
-            slplen: slope_ofe.slplen_m,
-            inrcov,
-            rilcov,
-            rrinit,
-            rspace,
-            width,
-            rtyp,
-            cancov,
-            bb,
-            bbb,
-            flivmx,
-            hmax,
-            rrc: direct_production_pl_projection_optional_ofe_scalar(
-                management_projection,
-                ofe_index,
-                "rrc",
-            ),
-            canhgt: direct_production_pl_projection_optional_ofe_scalar(
-                management_projection,
-                ofe_index,
-                "canhgt",
-            ),
-        });
-    }
-    project_typed_wb16_ealpha_producer(&TypedWb16EalphaProducerInput { exponent_m, ofes }).map(Some)
 }
 
 fn direct_production_typed_wb16_canopy_scalar(
@@ -1495,7 +1374,7 @@ fn direct_production_wave1_operand_seed(
     soil_projection: &TypedSoilWb11RuntimeProjection,
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
-    peak_runoff: &DirectProductionPeakRunoffAuthority,
+    erosion_geometry: &DirectProductionErosionGeometryAuthority,
     is_cropland: bool,
 ) -> Result<openwepp_hillslope_orchestrator::DirectWave1OperandSeed, HillslopeCliError> {
     // The management PL projection indexes OFEs 1-based (`ofe1_*` / primary
@@ -1634,7 +1513,7 @@ fn direct_production_wave1_operand_seed(
         is_cropland,
         segments,
         slplen_m: slope_ofe.slplen_m,
-        efflen_m: peak_runoff.efflen_m,
+        efflen_m: erosion_geometry.efflen_m,
         cntlen_m: slope_ofe.slplen_m,
         rspace_m,
         field_width_m: slope_ofe.fwidth_m,
@@ -1769,7 +1648,7 @@ fn direct_production_typed_erosion_authority(
     soil: &TypedSoilWb11RuntimeProjection,
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
-    peak_runoff: &DirectProductionPeakRunoffAuthority,
+    erosion_geometry: &DirectProductionErosionGeometryAuthority,
     management_has_active_tillage: bool,
     lanuse_is_cropland: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
@@ -1795,7 +1674,7 @@ fn direct_production_typed_erosion_authority(
         soil,
         slope,
         management_projection,
-        peak_runoff,
+        erosion_geometry,
         lanuse_is_cropland,
     )?;
     // E.3 activation gate: Wave-1 enables on EVERY no-tillage lane —

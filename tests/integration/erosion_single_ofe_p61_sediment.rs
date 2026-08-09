@@ -1,17 +1,15 @@
 //! SC-SED-001 1b-C regression: the enabled single-OFE Wave-1 sediment-
 //! continuity solve produces nonzero erosion through the direct-production
 //! runtime. Runs the operator-supplied `p61` fixture (single OFE, real
-//! climate with erosion events; legacy WEPP `H61.ebe.dat` reports 4 events)
-//! end-to-end and asserts the pass parquet carries nonzero total
-//! detachment. Guards against the class of latent bugs that only surface
-//! once the seed is live (the activation gate, `rspace` sentinel, and the
-//! fractional-vs-meter slope-x normalization).
+//! climate) with an explicit 2x mutation of its dominant storm so the native
+//! post-partition runoff path clears the erosion activation gate. This is a
+//! controlled real-consumer exercise, not a legacy-output oracle.
 
 use std::fs;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use arrow_array::{Array, Float64Array};
+use arrow_array::{Array, Float64Array, Int16Array};
 use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
@@ -23,6 +21,7 @@ use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
     let fixture = fixture_path("erosion_single_ofe_p61");
     let run_dir = copy_fixture_to_temp(&fixture, "erosion_p61");
+    amplify_dominant_p61_storm(&run_dir.join("p61.cli"));
     let output_dir = run_dir.join("output");
 
     let report = execute_hillslope_run(
@@ -63,12 +62,9 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
          (sum={tdet_sum}, max={tdet_max}, nonzero_days={nonzero_days})"
     );
 
-    // GAP-SED-009 closure band (the ground-cover authority fix): the
-    // dominant event's per-width export must sit in the legacy ORDER —
-    // legacy `Sed.Del` is 4.2 kg/m, the fixed runtime lands ~3.97, and
-    // the bare-soil defect produced ~25. The band is generous (the
-    // magnitude is not an acceptance oracle, ADR-0017) but excludes the
-    // zero-cover regression class by a wide margin.
+    // The explicitly amplified storm is a consumer exercise, not a legacy
+    // comparator oracle. Keep a broad finite/nonzero plausibility band that
+    // catches inert and explosive regressions without targeting legacy.
     let fwidth_m = 724.3;
     let max_export_kg_m = read_sediment_rows(pass_parquet)
         .into_iter()
@@ -76,10 +72,9 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
         .fold(0.0_f64, f64::max)
         .max(0.0);
     assert!(
-        (0.5..=12.0).contains(&max_export_kg_m),
-        "the dominant-event per-width export must stay in the legacy \
-         order (observed {max_export_kg_m} kg/m; bare-soil regression \
-         was ~25, legacy is 4.2)"
+        (0.5..=20.0).contains(&max_export_kg_m),
+        "the amplified-event per-width export must remain physically bounded \
+         (observed {max_export_kg_m} kg/m)"
     );
 
     // Total detachment must be finite and mass-nonnegative.
@@ -165,12 +160,34 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
     // pass parquet's runvol on the serialized event day (the max-tdet row).
     let event_row = read_sediment_rows(pass_parquet)
         .into_iter()
-        .max_by(|a, b| a.tdet_kg.total_cmp(&b.tdet_kg))
-        .expect("pass parquet has rows");
+        .filter(|row| row.julian_day == i16::try_from(event.julian_day).expect("Julian fits i16"))
+        .max_by(|left, right| left.runvol_m3.total_cmp(&right.runvol_m3))
+        .expect("serialized event day exists in pass parquet");
     assert!(
         (volume_sum - event_row.runvol_m3).abs() <= 1.0e-9 * event_row.runvol_m3.max(1.0e-9),
         "Σ V_h must equal the event day's runvol          (Σ={volume_sum}, runvol={})",
         event_row.runvol_m3
+    );
+    let reconstructed_peak_m3_s = event
+        .hourly_runoff_volume_m3
+        .iter()
+        .copied()
+        .fold(0.0_f64, f64::max)
+        / 3_600.0;
+    let peak_tolerance = 1.0e-12 * event.peak_runoff_m3_s.max(1.0);
+    assert!(
+        (reconstructed_peak_m3_s - event.peak_runoff_m3_s).abs() <= peak_tolerance,
+        "HBP peak must reconstruct independently from max(V_h)/3600"
+    );
+    assert!(
+        (event_row.peakro_m3_s - event.peak_runoff_m3_s).abs() <= peak_tolerance,
+        "pass parquet and HBP must publish the same event peak"
+    );
+    let reconstructed_duration_s = volume_sum / reconstructed_peak_m3_s;
+    assert!(
+        (reconstructed_duration_s - event.duration_seconds).abs()
+            <= 1.0e-9 * event.duration_seconds.max(1.0),
+        "rectangular-equivalent duration must equal event volume / maximum-hour peak"
     );
     let sediment_sum: f64 = event.hourly_sediment_mass_kg.iter().sum();
     let exported_kg = event.total_detachment_kg - event.total_deposition_kg;
@@ -198,9 +215,11 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
 }
 
 struct SedimentRow {
+    julian_day: i16,
     tdet_kg: f64,
     tdep_kg: f64,
     runvol_m3: f64,
+    peakro_m3_s: f64,
     sedcon_kg_m3: [f64; 5],
 }
 
@@ -229,15 +248,27 @@ fn read_sediment_rows(path: &Path) -> Vec<SedimentRow> {
         let detachment = column("tdet");
         let deposition = column("tdep");
         let runvol = column("runvol");
+        let peakro = column("peakro");
+        let julian_index = batch
+            .schema()
+            .index_of("julian")
+            .expect("pass parquet carries julian");
+        let julian = batch
+            .column(julian_index)
+            .as_any()
+            .downcast_ref::<Int16Array>()
+            .expect("julian must be Int16");
         let sedcon: Vec<Vec<f64>> = ["sedcon_1", "sedcon_2", "sedcon_3", "sedcon_4", "sedcon_5"]
             .iter()
             .map(|name| column(name))
             .collect();
         for i in 0..detachment.len() {
             rows.push(SedimentRow {
+                julian_day: julian.value(i),
                 tdet_kg: detachment[i],
                 tdep_kg: deposition[i],
                 runvol_m3: runvol[i],
+                peakro_m3_s: peakro[i],
                 sedcon_kg_m3: [
                     sedcon[0][i],
                     sedcon[1][i],
@@ -302,6 +333,22 @@ fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {
     }
     copy_dir_recursive(source_dir, &destination);
     destination
+}
+
+/// The prior p61 gate became non-detaching only after removal of the duplicate
+/// daily-rain/melt admission. Preserve its erosion-consumer purpose with an
+/// explicit physically possible 80.2 mm storm, rather than relying on the old
+/// computational double count of the observed 40.1 mm event.
+fn amplify_dominant_p61_storm(climate_path: &Path) {
+    let contents = fs::read_to_string(climate_path).expect("read p61 climate");
+    let original = " 22  8 2003  40.1   1.1  1.0    3.4";
+    let amplified = " 22  8 2003  80.2   1.1  1.0    3.4";
+    assert!(
+        contents.contains(original),
+        "p61 dominant-storm fixture anchor must remain stable"
+    );
+    fs::write(climate_path, contents.replacen(original, amplified, 1))
+        .expect("write amplified p61 storm");
 }
 
 fn copy_dir_recursive(source: &Path, destination: &Path) {

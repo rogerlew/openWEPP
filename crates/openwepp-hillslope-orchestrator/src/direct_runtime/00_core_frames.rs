@@ -485,7 +485,6 @@ pub struct DirectDayConstructorInputs {
     pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,
     pub saturation_addback_inputs: DirectSaturationAddbackInputs,
     pub runoff_partition_inputs: DirectRunoffPartitionInputs,
-    pub peak_runoff_inputs: DirectPeakRunoffInputs,
     pub percolation_inputs: DirectPercolationInputs,
     pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,
     pub deep_seepage_inputs: DirectDeepSeepageInputs,
@@ -522,7 +521,6 @@ impl DirectDayConstructorInputs {
             infiltration_depression_inputs: DirectInfiltrationDepressionInputs::zero(),
             saturation_addback_inputs: DirectSaturationAddbackInputs::zero(),
             runoff_partition_inputs: DirectRunoffPartitionInputs::zero(),
-            peak_runoff_inputs: DirectPeakRunoffInputs::zero(),
             percolation_inputs: DirectPercolationInputs::neutral(),
             subsurface_compute_inputs: DirectSubsurfaceComputeInputs::neutral(),
             deep_seepage_inputs: DirectDeepSeepageInputs::zero(),
@@ -1273,7 +1271,6 @@ pub struct DirectDayFrame {
     pub runoff_partition: DirectRunoffPartitionState,
     pub runoff_downstream_operands: DirectRunoffDownstreamOperands,
     pub runoff_shadow_projection: Option<DirectRunoffShadowProjection>,
-    pub peak_runoff_inputs: DirectPeakRunoffInputs,
     pub peak_runoff: DirectPeakRunoffState,
     pub peak_runoff_downstream_operands: DirectPeakRunoffDownstreamOperands,
     pub peak_runoff_shadow_projection: Option<DirectPeakRunoffShadowProjection>,
@@ -1427,7 +1424,6 @@ impl DirectDayFrame {
             runoff_partition: DirectRunoffPartitionState::zero(),
             runoff_downstream_operands: DirectRunoffDownstreamOperands::zero(),
             runoff_shadow_projection: None,
-            peak_runoff_inputs: DirectPeakRunoffInputs::zero(),
             peak_runoff: DirectPeakRunoffState::zero(),
             peak_runoff_downstream_operands: DirectPeakRunoffDownstreamOperands::zero(),
             peak_runoff_shadow_projection: None,
@@ -1530,7 +1526,6 @@ impl DirectDayFrame {
         self.infiltration_depression_inputs = inputs.infiltration_depression_inputs;
         self.saturation_addback_inputs = inputs.saturation_addback_inputs;
         self.runoff_partition_inputs = inputs.runoff_partition_inputs;
-        self.peak_runoff_inputs = inputs.peak_runoff_inputs;
         self.percolation_inputs = inputs.percolation_inputs;
         self.subsurface_compute_inputs = inputs.subsurface_compute_inputs;
         self.deep_seepage_inputs = inputs.deep_seepage_inputs;

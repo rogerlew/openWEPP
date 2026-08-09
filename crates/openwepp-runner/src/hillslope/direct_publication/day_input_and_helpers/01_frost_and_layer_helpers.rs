@@ -512,58 +512,6 @@ fn direct_publication_scaled_hyetograph_to_rainfall(
     direct_publication_scaled_hyetograph(hyetograph, target_rainfall_m / source_rainfall_m)
 }
 
-fn direct_publication_hyetograph_with_added_daily_depth(
-    hyetograph: &[DirectWb14HyetographInterval],
-    added_depth_m: f64,
-) -> Result<Vec<DirectWb14HyetographInterval>, HillslopeCliError> {
-    if !added_depth_m.is_finite() || added_depth_m < 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_publication_frame",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} direct WB15 added daily liquid depth must be finite and >= 0.0, observed {added_depth_m}"
-            ),
-        });
-    }
-    if added_depth_m <= 0.0 {
-        return Ok(hyetograph.to_vec());
-    }
-    let mut total_duration_s = 0.0_f64;
-    for interval in hyetograph {
-        let duration_s = interval.end_s - interval.start_s;
-        if duration_s > 0.0 {
-            total_duration_s += duration_s;
-        }
-    }
-    if !total_duration_s.is_finite() || total_duration_s <= 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_publication_frame",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} direct WB15 added daily liquid depth requires positive hyetograph duration"
-            ),
-        });
-    }
-    let added_intensity_m_s = added_depth_m / total_duration_s;
-    hyetograph
-        .iter()
-        .map(|interval| {
-            let intensity_m_s = interval.intensity_m_s + added_intensity_m_s;
-            if !intensity_m_s.is_finite() || intensity_m_s < 0.0 {
-                return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "direct_publication_frame",
-                    detail: format!(
-                        "{SIMOUT_GUARD_ID} direct WB15 liquid hyetograph intensity must be finite and >= 0.0, observed {intensity_m_s}"
-                    ),
-                });
-            }
-            Ok(DirectWb14HyetographInterval {
-                start_s: interval.start_s,
-                end_s: interval.end_s,
-                intensity_m_s,
-            })
-        })
-        .collect()
-}
-
 fn direct_publication_wb14_top_storage_capacity(
     layers: &[DirectSubsurfaceLayerState],
 ) -> Result<f64, HillslopeCliError> {

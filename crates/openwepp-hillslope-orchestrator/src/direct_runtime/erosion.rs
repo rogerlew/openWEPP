@@ -425,9 +425,6 @@ impl DirectDayFrame {
             q_runoff_m,
             &self.wb14_hourly_excess_m,
             &saturation_carry_m,
-            self.snow_coupling_downstream_operands
-                .hourly_routed_melt_m
-                .as_ref(),
         )
     }
 

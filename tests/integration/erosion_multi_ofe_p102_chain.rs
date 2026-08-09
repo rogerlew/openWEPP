@@ -85,13 +85,29 @@ fn erosion_multi_ofe_p102_wave1_chain_routes_sediment() {
     let rows = read_outlet_rows(pass_parquet);
     let event_row = rows
         .iter()
-        .find(|row| row.julian == i64::from(event.julian_day) && row.runvol_m3 > 0.0)
+        .filter(|row| row.julian == i64::from(event.julian_day) && row.runvol_m3 > 0.0)
+        .max_by(|left, right| left.runvol_m3.total_cmp(&right.runvol_m3))
         .expect("the serialized event day must exist in the pass parquet");
     let volume_sum: f64 = event.hourly_runoff_volume_m3.iter().sum();
     assert!(
         (volume_sum - event_row.runvol_m3).abs() <= 1.0e-9 * event_row.runvol_m3.max(1.0e-9),
         "Σ V_h must equal the outlet event-day runvol (Σ={volume_sum}, runvol={})",
         event_row.runvol_m3
+    );
+    let reconstructed_peak_m3_s = event
+        .hourly_runoff_volume_m3
+        .iter()
+        .copied()
+        .fold(0.0_f64, f64::max)
+        / 3_600.0;
+    let peak_tolerance = 1.0e-12 * event.peak_runoff_m3_s.max(1.0);
+    assert!(
+        (reconstructed_peak_m3_s - event.peak_runoff_m3_s).abs() <= peak_tolerance,
+        "multi-OFE HBP peak must reconstruct from the routed outlet V_h series"
+    );
+    assert!(
+        (event_row.peakro_m3_s - event.peak_runoff_m3_s).abs() <= peak_tolerance,
+        "outlet pass parquet and HBP must publish the same routed event peak"
     );
 
     // The chain totals must be at least the outlet row's own totals
@@ -206,6 +222,7 @@ fn coarsen_second_ofe_soil(soil_path: &Path) {
 struct OutletRow {
     julian: i64,
     runvol_m3: f64,
+    peakro_m3_s: f64,
     tdet_kg: f64,
 }
 
@@ -220,11 +237,13 @@ fn read_outlet_rows(path: &Path) -> Vec<OutletRow> {
         let batch = batch.expect("read record batch");
         let julian = column_i16(&batch, "julian");
         let runvol = column_f64(&batch, "runvol");
+        let peakro = column_f64(&batch, "peakro");
         let tdet = column_f64(&batch, "tdet");
         for i in 0..batch.num_rows() {
             rows.push(OutletRow {
                 julian: i64::from(julian.value(i)),
                 runvol_m3: runvol.value(i),
+                peakro_m3_s: peakro.value(i),
                 tdet_kg: tdet.value(i),
             });
         }

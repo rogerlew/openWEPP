@@ -131,6 +131,8 @@ mod direct_production_ksatadj_tests {
 
     #[test]
     fn active_ksatadj_supplies_wb14_effective_conductivity_before_base_fallback() {
+        let mut hourly_routed_melt_m = [0.0; 24];
+        hourly_routed_melt_m[7] = 0.0025;
         let authority = DirectProductionInfiltrationAuthority {
             effective_conductivity_m_s: Some(9.0e-4),
             ksatadj_policy: Some(ksatadj_policy(9002.0)),
@@ -138,7 +140,13 @@ mod direct_production_ksatadj_tests {
             depression_storage_capacity_m: 0.0,
         };
         let inputs = authority
-            .inputs(0, &ksatadj_layers(), Vec::new(), Some(8.0e-4))
+            .inputs(
+                0,
+                &ksatadj_layers(),
+                Vec::new(),
+                hourly_routed_melt_m,
+                Some(8.0e-4),
+            )
             .expect("active ksatadj should build WB14 inputs");
         let producer = inputs
             .producer_inputs
@@ -149,6 +157,17 @@ mod direct_production_ksatadj_tests {
         let expected_m_s = (2.5e-6 * 3.6e6 * sat_frac.powf(exponent)) / 3.6e6;
 
         assert_close(producer.effective_conductivity_m_s, expected_m_s);
+        for (actual_m, expected_m) in producer
+            .hourly_additional_supply_m
+            .iter()
+            .zip(hourly_routed_melt_m)
+        {
+            assert_eq!(
+                actual_m.to_bits(),
+                expected_m.to_bits(),
+                "routed melt must seed WB14 hourly supply rather than a post-partition peak limb"
+            );
+        }
         assert!(
             (producer.effective_conductivity_m_s - 8.0e-4).abs() > 1.0e-6,
             "active ksatadj must not inherit the frost fallback conductivity"
@@ -164,7 +183,13 @@ mod direct_production_ksatadj_tests {
             depression_storage_capacity_m: 0.0,
         };
         let inputs = authority
-            .inputs(0, &ksatadj_layers(), Vec::new(), Some(1.0e-9))
+            .inputs(
+                0,
+                &ksatadj_layers(),
+                Vec::new(),
+                [0.0; 24],
+                Some(1.0e-9),
+            )
             .expect("active ksatadj should build WB14 inputs under frost cap");
         let producer = inputs
             .producer_inputs

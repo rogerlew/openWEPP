@@ -353,10 +353,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &post_winter_hyetograph,
             interception_state.rainfall_scale,
         )?;
-        hyetograph = direct_publication_hyetograph_with_added_daily_depth(
-            &post_interception_hyetograph,
-            snow_liquid.solid_to_liquid_ledger().liquid_handoff_m,
-        )?;
+        hyetograph = post_interception_hyetograph;
+        let hourly_routed_melt_m = snow_liquid.hourly_routed_melt_m;
         let hydrology_layers = frost_context
             .as_ref()
             .map_or(lane.subsurface_layers.as_slice(), |context| {
@@ -398,12 +396,12 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
             snow_layers_after: snow_liquid.snow_layers_after.clone(),
         });
-        day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
             authority.infiltration.inputs(
                 lane_index,
                 hydrology_layers,
                 hyetograph,
+                hourly_routed_melt_m,
                 frost_context
                     .as_ref()
                     .map(|context| context.frozen_infiltration_capacity_m_s),

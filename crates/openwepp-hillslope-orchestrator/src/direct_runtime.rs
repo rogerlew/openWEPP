@@ -259,22 +259,20 @@ pub use projection::{
 #[cfg(test)]
 pub(crate) fn dc01_test_hourly_supply_basis(
     hyetograph: &[DirectWb14HyetographInterval],
-    runon_hourly_supply_m: &[f64; 24],
+    hourly_additional_supply_m: &[f64; 24],
 ) -> Vec<DirectWb14HyetographInterval> {
-    runoff::dc01_hourly_supply_basis(hyetograph, runon_hourly_supply_m)
+    runoff::dc01_hourly_supply_basis(hyetograph, hourly_additional_supply_m)
 }
 #[cfg(test)]
 pub(crate) fn dc01_test_surface_runoff_hourly_weights(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; 24],
     hourly_saturation_carry_m: &[f64; 24],
-    hourly_routed_melt_m: &[f64; 24],
 ) -> Result<[f64; 24], DirectRuntimeError> {
     runoff::dc01_surface_runoff_hourly_weights(
         q_runoff_m,
         wb14_hourly_excess_m,
         hourly_saturation_carry_m,
-        hourly_routed_melt_m,
     )
 }
 #[cfg(test)]
@@ -289,13 +287,11 @@ pub(crate) fn test_source_complete_hourly_peak_runoff_depth_rate_m_s(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; 24],
     hourly_saturation_carry_m: &[f64; 24],
-    hourly_routed_melt_m: &[f64; 24],
 ) -> Result<(f64, f64, usize), DirectRuntimeError> {
     runoff::source_complete_hourly_peak_runoff_depth_rate_m_s(
         q_runoff_m,
         wb14_hourly_excess_m,
         hourly_saturation_carry_m,
-        hourly_routed_melt_m,
     )
 }
 #[cfg(test)]
@@ -306,6 +302,18 @@ pub(crate) fn test_source_informed_partition_runoff_canonicalization(
     runoff::source_informed_partition_runoff_canonicalization(
         partition_runoff_m,
         wb14_hourly_excess_m,
+    )
+}
+#[cfg(test)]
+pub(crate) fn test_reconcile_hourly_partition_runoff_profile(
+    hourly_runoff_m: &mut [f64; 24],
+    partition_runoff_m: f64,
+    frost_retained_local_liquid_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    runoff::reconcile_hourly_partition_runoff_profile(
+        hourly_runoff_m,
+        partition_runoff_m,
+        frost_retained_local_liquid_m,
     )
 }
 #[cfg(test)]
@@ -320,14 +328,14 @@ pub use runoff::{
     DirectInfiltrationDepressionShadowProjection, DirectInfiltrationDepressionSpanReport,
     DirectInfiltrationDepressionState, DirectLiquidInputDownstreamOperands,
     DirectLiquidInputInputs, DirectLiquidInputShadowProjection, DirectLiquidInputSpanReport,
-    DirectLiquidInputState, DirectPeakRunoffDownstreamOperands, DirectPeakRunoffInputs,
-    DirectPeakRunoffShadowProjection, DirectPeakRunoffSpanReport, DirectPeakRunoffState,
-    DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs, DirectRunoffPartitionSpanReport,
-    DirectRunoffPartitionState, DirectRunoffShadowProjection, DirectRunonCarryDownstreamOperands,
-    DirectRunonCarryInputs, DirectRunonCarryShadowProjection, DirectRunonCarrySpanReport,
-    DirectRunonCarryState, DirectSaturationAddbackDownstreamOperands,
-    DirectSaturationAddbackInputs, DirectSaturationAddbackShadowProjection,
-    DirectSaturationAddbackSpanReport, DirectSaturationAddbackState, DirectWb14HyetographInterval,
+    DirectLiquidInputState, DirectPeakRunoffDownstreamOperands, DirectPeakRunoffShadowProjection,
+    DirectPeakRunoffSpanReport, DirectPeakRunoffState, DirectRunoffDownstreamOperands,
+    DirectRunoffPartitionInputs, DirectRunoffPartitionSpanReport, DirectRunoffPartitionState,
+    DirectRunoffShadowProjection, DirectRunonCarryDownstreamOperands, DirectRunonCarryInputs,
+    DirectRunonCarryShadowProjection, DirectRunonCarrySpanReport, DirectRunonCarryState,
+    DirectSaturationAddbackDownstreamOperands, DirectSaturationAddbackInputs,
+    DirectSaturationAddbackShadowProjection, DirectSaturationAddbackSpanReport,
+    DirectSaturationAddbackState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };

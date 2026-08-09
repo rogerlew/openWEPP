@@ -26,14 +26,14 @@ use crate::{
     DirectInputAccountingState, DirectLaneConstructorInputs, DirectLaneTransferLedger,
     DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
-    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPeakRunoffInputs,
-    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
-    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
-    DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
-    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
-    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
+    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
+    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
+    DirectRunTransferShadowProjection, DirectRunoffPartitionInputs, DirectRunonCarryInputs,
+    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
+    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputInputs,
@@ -797,7 +797,7 @@ fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectP
                 end_s: 3_600.0,
                 intensity_m_s: if carry_enabled { 0.050 / 3_600.0 } else { 0.0 },
             }],
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             effective_conductivity_m_s: 1.0e-5,
             matric_potential_m: 0.05,
             storage_capacity_m: 0.0,
@@ -806,41 +806,25 @@ fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectP
     });
     day.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
     day.hydrology_projection_inputs = Some(r6f_typed_process_projection());
-    day.peak_runoff_inputs = Some(r7d4_peak_runoff_inputs());
     day
 }
 
 fn r5a_peak_runoff_day_inputs() -> DirectDayConstructorInputs {
     let mut inputs = DirectDayConstructorInputs::zero();
-    inputs.peak_runoff_inputs = r7d4_peak_runoff_inputs();
     inputs.infiltration_depression_inputs.producer_inputs =
         Some(crate::DirectWb14InfiltrationProducerInputs {
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
-                intensity_m_s: 1.0e-5,
+                intensity_m_s: 0.0,
             }],
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             effective_conductivity_m_s: 1.0e-5,
             matric_potential_m: 0.05,
             storage_capacity_m: 0.0,
             depression_storage_capacity_m: 0.0,
         });
     inputs
-}
-
-fn r7d4_peak_runoff_inputs() -> DirectPeakRunoffInputs {
-    DirectPeakRunoffInputs {
-        hyetograph: vec![DirectWb14HyetographInterval {
-            start_s: 0.0,
-            end_s: 3_600.0,
-            intensity_m_s: 1.0e-5,
-        }],
-        irrigation_rate_m_s: 0.0,
-        efflen_m: 1.0,
-        ealpha: 1.0,
-        exponent_m: 1.0,
-    }
 }
 
 fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
@@ -1114,6 +1098,7 @@ fn r5a_direct_skeleton_commits_day_state_back_to_lane_state() {
         DirectRunFrame::skeleton(identity).expect("direct skeleton frame should construct");
     frame.lanes[0].transfer.surface_carry_m[5] = 0.25;
     frame.lanes[0].transfer.upstream_flow_m = 0.125;
+    frame.lanes[0].transfer.surface_hourly_weights[5] = 1.0;
     frame.lanes[0].day_inputs = vec![r5a_peak_runoff_day_inputs(); 3];
     let executor = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly);
 

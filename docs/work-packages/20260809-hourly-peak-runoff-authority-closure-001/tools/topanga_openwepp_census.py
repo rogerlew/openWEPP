@@ -22,6 +22,10 @@ import pyarrow.parquet as pq
 HOUR_SECONDS = 3_600.0
 SHAPE_MIN = 1.0 / 24.0
 NUMERIC_TOLERANCE = 1.0e-10
+RECORD_SCHEMA = "openwepp-topanga-case-record-v2"
+CANONICAL_PLAN_SHA256 = "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756"
+CANONICAL_ELIGIBLE_TRIALS = 1_088
+CANONICAL_BASELINES = 280
 
 
 @dataclass(frozen=True)
@@ -32,6 +36,12 @@ class Case:
     source_dir: Path
     record_path: Path
     trial: dict | None
+
+
+@dataclass(frozen=True)
+class Provenance:
+    plan_sha256: str
+    binary_sha256: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -104,8 +114,56 @@ def load_record(path: Path) -> dict[str, np.ndarray]:
         return {name: record[name].copy() for name in record.files}
 
 
-def run_case(case: Case, binary: Path, stage_root: Path, resume: bool) -> dict:
-    if resume and case.record_path.is_file():
+def case_input_hashes(case: Case) -> str:
+    paths = [
+        input_path(case.source_dir, case.hillslope_id, suffix)
+        for suffix in ["sol", "man", "slp", "cli"]
+    ]
+    for optional in [case.source_dir / "pmetpara.txt", case.source_dir / "wepp_ui.txt"]:
+        if optional.is_file():
+            paths.append(optional.resolve())
+    return json.dumps(
+        {str(path): sha256(path) for path in sorted(paths)}, sort_keys=True
+    )
+
+
+def record_matches(path: Path, case: Case, provenance: Provenance) -> bool:
+    try:
+        record = load_record(path)
+        expected = {
+            "record_schema": RECORD_SCHEMA,
+            "case_id": case.case_id,
+            "plan_sha256": provenance.plan_sha256,
+            "binary_sha256": provenance.binary_sha256,
+            "input_hashes_json": case_input_hashes(case),
+        }
+        for name, value in expected.items():
+            if name not in record or str(record[name].item()) != value:
+                return False
+        required_arrays = ["year", "julian", "runvol_m3", "peakro_m3_s"]
+        lengths = {len(record[name]) for name in required_arrays}
+        if len(lengths) != 1:
+            return False
+        runvol = record["runvol_m3"]
+        peakro = record["peakro_m3_s"]
+        return bool(
+            np.isfinite(runvol).all()
+            and np.isfinite(peakro).all()
+            and (runvol >= 0.0).all()
+            and (peakro >= 0.0).all()
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def run_case(
+    case: Case,
+    binary: Path,
+    stage_root: Path,
+    resume: bool,
+    provenance: Provenance,
+) -> dict:
+    if resume and case.record_path.is_file() and record_matches(case.record_path, case, provenance):
         return {"case_id": case.case_id, "status": "reused", "runtime_s": 0.0}
 
     stage_dir = stage_root / case.case_id
@@ -130,9 +188,13 @@ def run_case(case: Case, binary: Path, stage_root: Path, resume: bool) -> dict:
     started = time.monotonic()
     completed = subprocess.run(command, text=True, capture_output=True, check=False)
     runtime_s = time.monotonic() - started
+    (stage_dir / "command.json").write_text(
+        json.dumps({"command": command, "returncode": completed.returncode}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (stage_dir / "stdout.log").write_text(completed.stdout, encoding="utf-8")
+    (stage_dir / "stderr.log").write_text(completed.stderr, encoding="utf-8")
     if completed.returncode != 0 or not parquet_path.is_file():
-        (stage_dir / "stdout.log").write_text(completed.stdout, encoding="utf-8")
-        (stage_dir / "stderr.log").write_text(completed.stderr, encoding="utf-8")
         raise RuntimeError(
             f"{case.case_id} failed rc={completed.returncode}; retained at {stage_dir}"
         )
@@ -147,13 +209,20 @@ def run_case(case: Case, binary: Path, stage_root: Path, resume: bool) -> dict:
     if (runvol < 0.0).any() or (peakro < 0.0).any():
         raise RuntimeError(f"{case.case_id} emitted negative runoff operands")
     case.record_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_record_path = case.record_path.with_suffix(".tmp.npz")
     np.savez_compressed(
-        case.record_path,
+        temporary_record_path,
+        record_schema=np.asarray(RECORD_SCHEMA),
+        case_id=np.asarray(case.case_id),
+        plan_sha256=np.asarray(provenance.plan_sha256),
+        binary_sha256=np.asarray(provenance.binary_sha256),
+        input_hashes_json=np.asarray(case_input_hashes(case)),
         year=year,
         julian=julian,
         runvol_m3=runvol,
         peakro_m3_s=peakro,
     )
+    temporary_record_path.replace(case.record_path)
     shutil.rmtree(stage_dir)
     return {
         "case_id": case.case_id,
@@ -164,11 +233,18 @@ def run_case(case: Case, binary: Path, stage_root: Path, resume: bool) -> dict:
     }
 
 
-def run_batch(cases: list[Case], args: argparse.Namespace, stage_root: Path) -> list[dict]:
+def run_batch(
+    cases: list[Case],
+    args: argparse.Namespace,
+    stage_root: Path,
+    provenance: Provenance,
+) -> list[dict]:
     results: list[dict] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as executor:
         futures = {
-            executor.submit(run_case, case, args.binary, stage_root, args.resume): case
+            executor.submit(
+                run_case, case, args.binary, stage_root, args.resume, provenance
+            ): case
             for case in cases
         }
         for future in concurrent.futures.as_completed(futures):
@@ -242,8 +318,8 @@ def paired_event_rows(trial: dict, baseline_path: Path, mutation_path: Path) -> 
                 "hillslope_id": trial["hillslope_id"],
                 "family": trial["family"],
                 "direction": trial["direction"],
-                "source_value": trial["source_value"],
-                "expected_value": trial["expected_value"],
+                "source_value_json": json.dumps(trial["source_value"], sort_keys=True),
+                "expected_value_json": json.dumps(trial["expected_value"], sort_keys=True),
                 "year": int(baseline["year"][index]),
                 "julian": int(baseline["julian"][index]),
                 "baseline_runvol_m3": base_volume,
@@ -366,8 +442,13 @@ def main() -> int:
     if not args.binary.is_file():
         raise FileNotFoundError(args.binary)
     plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    plan_sha256 = sha256(args.plan)
+    binary_sha256 = sha256(args.binary)
+    provenance = Provenance(plan_sha256=plan_sha256, binary_sha256=binary_sha256)
     eligible = [trial for trial in plan["trials"] if trial["eligibility"] == "eligible"]
     eligible.sort(key=lambda trial: trial["trial_id"])
+    if len({trial["trial_id"] for trial in eligible}) != len(eligible):
+        raise ValueError("eligible trial IDs must be unique")
     selected = eligible[: args.limit] if args.limit is not None else eligible
 
     records = args.evidence_root / "records"
@@ -400,12 +481,13 @@ def main() -> int:
     ]
 
     started = time.monotonic()
-    baseline_results = run_batch(baselines, args, stage_root)
-    trial_results = run_batch(trials, args, stage_root)
+    baseline_results = run_batch(baselines, args, stage_root, provenance)
+    trial_results = run_batch(trials, args, stage_root, provenance)
     event_rows: list[dict] = []
     for case in trials:
         trial = case.trial
-        assert trial is not None
+        if trial is None:
+            raise RuntimeError(f"trial metadata missing for {case.case_id}")
         baseline_path = records / "baselines" / f"{case.scenario}-h{case.hillslope_id}.npz"
         event_rows.extend(paired_event_rows(trial, baseline_path, case.record_path))
     validation = validate_event_rows(event_rows)
@@ -413,11 +495,17 @@ def main() -> int:
     pq.write_table(pa.Table.from_pylist(event_rows), event_path, compression="zstd")
     summary = {
         "schema": "openwepp-topanga-hourly-peak-mutation-census-v1",
-        "plan_sha256": sha256(args.plan),
-        "binary_sha256": sha256(args.binary),
+        "plan_sha256": plan_sha256,
+        "binary_sha256": binary_sha256,
         "eligible_trials_in_plan": len(eligible),
         "selected_trials": len(selected),
-        "complete_frozen_cohort": len(selected) == len(eligible),
+        "complete_frozen_cohort": (
+            args.limit is None
+            and plan_sha256 == CANONICAL_PLAN_SHA256
+            and len(eligible) == CANONICAL_ELIGIBLE_TRIALS
+            and len(selected) == CANONICAL_ELIGIBLE_TRIALS
+            and len(baselines) == CANONICAL_BASELINES
+        ),
         "unique_baselines": len(baselines),
         "jobs": args.jobs,
         "elapsed_s": time.monotonic() - started,

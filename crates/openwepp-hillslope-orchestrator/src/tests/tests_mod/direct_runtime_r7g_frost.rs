@@ -367,7 +367,7 @@ fn r7h_r4a_frost_uses_local_partition_excess_without_rewriting_wb14_capacity() {
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -476,7 +476,7 @@ fn r7h_winter_local_liquid_projects_after_surface_et_before_saturation() {
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -628,7 +628,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -768,7 +768,7 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
-            runon_hourly_supply_m: [0.0; 24],
+            hourly_additional_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -875,6 +875,7 @@ fn r7h_r4a_no_material_rainfall_excess_remains_runoff() {
     day.percolation.layer_state_after = vec![sample_layer(base_soil_water_m)];
     let storage_before_m = aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.infiltration_depression_inputs.producer_inputs = None;
 
     day.run_r4i_liquid_input_span()
         .expect("liquid input upstream span should execute");
@@ -941,6 +942,7 @@ fn r7h_r4a_material_frost_retained_liquid_projects_to_storage_layers() {
     ));
     let storage_before_m = aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.infiltration_depression_inputs.producer_inputs = None;
 
     day.run_r4i_liquid_input_span()
         .expect("liquid input upstream span should execute");

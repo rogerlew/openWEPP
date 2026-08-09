@@ -870,9 +870,6 @@ impl DirectFrameExecutor {
         if let Some(infiltration_depression_inputs) = &day_input.infiltration_depression_inputs {
             day_frame.infiltration_depression_inputs = infiltration_depression_inputs.clone();
         }
-        if let Some(peak_runoff_inputs) = &day_input.peak_runoff_inputs {
-            day_frame.peak_runoff_inputs = peak_runoff_inputs.clone();
-        }
         Self::apply_publication_subsurface_input(day_frame, day_input)?;
         if let Some(evapotranspiration_compute_inputs) =
             day_input.evapotranspiration_compute_inputs.clone()
@@ -985,8 +982,8 @@ impl DirectFrameExecutor {
     }
 
     /// DC01: unit-normalized hourly distribution of the day's surface runoff
-    /// (WB14 excess profile + saturation carry). Uniform fallback when the day
-    /// has runoff without a profile shape; all-zero when there is no runoff.
+    /// (WB14 post-partition runoff + saturation carry). Positive runoff
+    /// without a closing profile fails closed; all-zero when there is no runoff.
     /// Delegates to the shared shape authority
     /// (`runoff::dc01_surface_runoff_hourly_weights`, ADR-0036
     /// `REF-SED-DC01-SHAPE`) so the transfer publication and the
@@ -995,13 +992,11 @@ impl DirectFrameExecutor {
         q_runoff_m: f64,
         wb14_hourly_excess_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
         hourly_saturation_carry_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
-        hourly_routed_melt_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
     ) -> Result<[f64; DIRECT_TRANSFER_HOUR_COUNT], DirectRuntimeError> {
         crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
             q_runoff_m,
             wb14_hourly_excess_m,
             hourly_saturation_carry_m,
-            hourly_routed_melt_m,
         )
     }
 
@@ -1180,10 +1175,6 @@ impl DirectFrameExecutor {
                 runoff.q_runoff_m,
                 &day_frame.wb14_hourly_excess_m,
                 &subsurface.hourly_saturation_carry_m,
-                day_frame
-                    .snow_coupling_downstream_operands
-                    .hourly_routed_melt_m
-                    .as_ref(),
             )?
         };
         for (target, source) in lateral_carry_m
@@ -1309,7 +1300,7 @@ impl DirectFrameExecutor {
     /// The day pipeline through the hydrology projection (everything before
     /// the erosion span). D15A (rev 27): split point for the active owner —
     /// the routed source operands (`wb14_hourly_excess`, the R4O hourly
-    /// carries, routed melt, `q_runoff`) are all committed here, and the
+    /// carries, `q_runoff`) are all committed here, and the
     /// routing step must run after this half and before the erosion half so
     /// the D13 consumer sees the routed shape. The default path calls both
     /// halves back-to-back (identical span sequence).
@@ -1401,7 +1392,6 @@ mod cqr_executor_tests {
         input.liquid_input_inputs = Some(day.liquid_input_inputs);
         input.percolation_inputs = Some(DirectPercolationInputs::neutral());
         input.infiltration_depression_inputs = Some(day.infiltration_depression_inputs.clone());
-        input.peak_runoff_inputs = Some(day.peak_runoff_inputs.clone());
         input.subsurface_compute_inputs = Some(DirectSubsurfaceComputeInputs::neutral());
         input.decomposition_inputs = Some(day.decomposition_inputs);
         input.residue_partition_inputs = Some(day.residue_partition_inputs);
