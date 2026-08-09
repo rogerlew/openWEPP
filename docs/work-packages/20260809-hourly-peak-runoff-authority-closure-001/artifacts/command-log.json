@@ -1,0 +1,25 @@
+{
+  "commands": [
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 68,
+      "start_ts": 1786308222,
+      "end_ts": 1786308290
+    },
+    {
+      "command": "/home/workdir/openWEPP/.venv/bin/python docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py --plan /workdir/wepppy/docs/work-packages/20260808_peakflow_topanga_census_prep/artifacts/topanga-trial-plan.json --source-root /home/workdir/peakflow-topanga-census-evidence/b575fde4a28cf85f1d28e0dfff305472b5419fd9b3639d39dc437600617080de --evidence-root /home/workdir/openwepp-hourly-peak-topanga-probe --binary target/release/openwepp-cli-hill --jobs 1 --limit 1 --resume",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 4,
+      "start_ts": 1786308290,
+      "end_ts": 1786308294
+    }
+  ],
+  "artifacts": {
+    "build_log": "/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/comparator-probe-build.log",
+    "run_log": "/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-run.log",
+    "summary_json": "/home/workdir/openwepp-hourly-peak-topanga-probe/summary.json"
+  }
+}

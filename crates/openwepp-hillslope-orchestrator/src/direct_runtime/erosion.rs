@@ -151,7 +151,7 @@ pub struct DirectErod13Inputs {
     pub tc_k: f64,
     pub tc_m: f64,
     pub q_runoff_m: f64,
-    pub peakro_m3_s: f64,
+    pub peakro_m_s: f64,
     pub watdur_s: f64,
 }
 
@@ -185,7 +185,7 @@ impl DirectErod13Inputs {
             tc_k: 0.0,
             tc_m: 0.0,
             q_runoff_m: 0.0,
-            peakro_m3_s: 0.0,
+            peakro_m_s: 0.0,
             watdur_s: 0.0,
         }
     }
@@ -538,7 +538,7 @@ impl DirectDayFrame {
         let precipitation_m = self.forcing.precipitation_m;
 
         let daily = DirectWave1DailyState {
-            peakro_m_s: peak.map_or(0.0, |p| p.peak_runoff_m3_s),
+            peakro_m_s: peak.map_or(0.0, |p| p.peak_runoff_rate_m_s),
             runoff_depth_m: peak.map_or(0.0, |p| p.q_runoff_m),
             effdrn_s: peak.map_or(0.0, |p| p.runoff_duration_s),
             qin_m2_s: 0.0,
@@ -996,7 +996,7 @@ impl DirectDayFrame {
         )?;
         if inputs.wave1_enabled {
             inputs.wave1.q_runoff_m = peak_runoff.q_runoff_m;
-            inputs.wave1.peakro_m3_s = peak_runoff.peak_runoff_m3_s;
+            inputs.wave1.peakro_m_s = peak_runoff.peak_runoff_rate_m_s;
             inputs.wave1.watdur_s = peak_runoff.runoff_duration_s;
         }
         // SC-SED-001 1b-C: `wave1_continuity` is now fully populated by the
@@ -1107,10 +1107,10 @@ fn validate_erod13_runoff_duration_closure(
     inputs: &DirectErod13Inputs,
 ) -> Result<(), DirectRuntimeError> {
     validate_erod13_strict_positive("erosion.erod13.q_runoff_m", inputs.q_runoff_m)?;
-    validate_erod13_strict_positive("erosion.erod13.peakro_m3_s", inputs.peakro_m3_s)?;
+    validate_erod13_strict_positive("erosion.erod13.peakro_m_s", inputs.peakro_m_s)?;
     validate_erod13_strict_positive("erosion.erod13.watdur_s", inputs.watdur_s)?;
 
-    let expected_watdur_s = inputs.q_runoff_m / inputs.peakro_m3_s;
+    let expected_watdur_s = inputs.q_runoff_m / inputs.peakro_m_s;
     if (inputs.watdur_s - expected_watdur_s).abs()
         > DIRECT_EROD13_CONTINUITY_TOLERANCE + WB11_ZERO_THRESHOLD
     {
@@ -1241,7 +1241,7 @@ pub(crate) fn direct_wave1_publication_projection(
     }
 
     Ok(DirectPublicationErosionOperands {
-        peak_runoff_m3_s: Some(inputs.peakro_m_s),
+        peak_runoff_rate_m_s: Some(inputs.peakro_m_s),
         runoff_duration_s: Some(inputs.effdrn_s),
         total_detachment_kg: Some(state.total_detachment_kg),
         total_deposition_kg: Some(state.total_deposition_kg),

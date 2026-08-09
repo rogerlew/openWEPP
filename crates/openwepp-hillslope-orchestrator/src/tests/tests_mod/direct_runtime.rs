@@ -31,10 +31,9 @@ use crate::{
     DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
     DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
     DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffPartitionInputs, DirectRunoffShadowProjection, DirectRunonCarryInputs,
-    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
-    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
-    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
+    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
+    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputInputs,
@@ -687,45 +686,21 @@ fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer
 }
 
 #[test]
-fn r7g_peak_runoff_tiny_average_rate_uses_floor_instead_of_domain_error() {
+fn r7g_peak_runoff_tiny_hourly_depth_retains_positive_rate_without_floor() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     reset_direct_runtime_audit_counters();
 
-    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
-        .expect("valid direct publication identity should construct");
-    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
-    day.runoff_shadow_projection = Some(DirectRunoffShadowProjection {
-        lane_index: 0,
-        day_index: 0,
-        liquid_input_m: 1.0e-8,
-        runon_input_m: 0.0,
-        cumulative_infiltration_m: 0.0,
-        depression_storage_delta_m: 0.0,
-        surface_saturation_runoff_m: 0.0,
-        partition_runoff_m: 1.0e-8,
-        q_runoff_m: 1.0e-8,
-        closure_residual_m: 0.0,
-    });
-    day.peak_runoff_inputs = DirectPeakRunoffInputs {
-        hyetograph: vec![DirectWb14HyetographInterval {
-            start_s: 0.0,
-            end_s: 86_400.0,
-            intensity_m_s: 1.0e-12,
-        }],
-        irrigation_rate_m_s: 0.0,
-        efflen_m: 1.0,
-        ealpha: 1.0,
-        exponent_m: 1.0,
-    };
+    let mut weights = [0.0; 24];
+    weights[6] = 1.0;
+    let (peak_rate_m_s, duration_s, peak_hour) =
+        crate::direct_runtime::test_hourly_peak_runoff_depth_rate_m_s(1.0e-15, &weights)
+            .expect("positive near-zero hourly runoff remains representable");
 
-    day.run_r7d6_peak_runoff_span()
-        .expect("tiny average runoff rate should floor peak runoff");
-
-    assert_eq!(day.peak_runoff.q_runoff_m, 1.0e-8);
-    assert_eq!(day.peak_runoff.peak_runoff_m3_s, 3.63e-8);
-    assert_eq!(day.peak_runoff.runoff_duration_s, 0.0);
+    assert!((peak_rate_m_s - 1.0e-15 / 3_600.0).abs() < f64::EPSILON);
+    assert!((duration_s - 3_600.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 6);
 }
 
 #[test]
@@ -813,6 +788,22 @@ fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectP
         drain_diameter_m: 0.1,
         layers: vec![layer_inputs],
     });
+    day.infiltration_depression_inputs = Some(DirectInfiltrationDepressionInputs {
+        cumulative_infiltration_handoff_m: 0.0,
+        depression_storage_delta_handoff_m: 0.0,
+        producer_inputs: Some(crate::DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: if carry_enabled { 0.050 / 3_600.0 } else { 0.0 },
+            }],
+            runon_hourly_supply_m: [0.0; 24],
+            effective_conductivity_m_s: 1.0e-5,
+            matric_potential_m: 0.05,
+            storage_capacity_m: 0.0,
+            depression_storage_capacity_m: 0.0,
+        }),
+    });
     day.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
     day.hydrology_projection_inputs = Some(r6f_typed_process_projection());
     day.peak_runoff_inputs = Some(r7d4_peak_runoff_inputs());
@@ -822,6 +813,19 @@ fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectP
 fn r5a_peak_runoff_day_inputs() -> DirectDayConstructorInputs {
     let mut inputs = DirectDayConstructorInputs::zero();
     inputs.peak_runoff_inputs = r7d4_peak_runoff_inputs();
+    inputs.infiltration_depression_inputs.producer_inputs =
+        Some(crate::DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: 1.0e-5,
+            }],
+            runon_hourly_supply_m: [0.0; 24],
+            effective_conductivity_m_s: 1.0e-5,
+            matric_potential_m: 0.05,
+            storage_capacity_m: 0.0,
+            depression_storage_capacity_m: 0.0,
+        });
     inputs
 }
 
@@ -873,7 +877,7 @@ fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
             tc_k: 2.0,
             tc_m: 1.0,
             q_runoff_m: 0.01,
-            peakro_m3_s: 0.001,
+            peakro_m_s: 0.001,
             watdur_s: 10.0,
         },
     }

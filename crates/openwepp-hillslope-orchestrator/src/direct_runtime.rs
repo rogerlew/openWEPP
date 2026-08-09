@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::constants::{WB11_ZERO_THRESHOLD, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
+use crate::constants::WB11_ZERO_THRESHOLD;
 #[cfg(test)]
 use crate::hydrology::{
     DirectSnowLiquidDispositionLedger, DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome,
@@ -275,6 +275,37 @@ pub(crate) fn dc01_test_surface_runoff_hourly_weights(
         wb14_hourly_excess_m,
         hourly_saturation_carry_m,
         hourly_routed_melt_m,
+    )
+}
+#[cfg(test)]
+pub(crate) fn test_hourly_peak_runoff_depth_rate_m_s(
+    q_runoff_m: f64,
+    hourly_weights: &[f64; 24],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    runoff::hourly_peak_runoff_depth_rate_m_s(q_runoff_m, hourly_weights)
+}
+#[cfg(test)]
+pub(crate) fn test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+    q_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; 24],
+    hourly_saturation_carry_m: &[f64; 24],
+    hourly_routed_melt_m: &[f64; 24],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    runoff::source_complete_hourly_peak_runoff_depth_rate_m_s(
+        q_runoff_m,
+        wb14_hourly_excess_m,
+        hourly_saturation_carry_m,
+        hourly_routed_melt_m,
+    )
+}
+#[cfg(test)]
+pub(crate) fn test_source_informed_partition_runoff_canonicalization(
+    partition_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; 24],
+) -> Result<f64, DirectRuntimeError> {
+    runoff::source_informed_partition_runoff_canonicalization(
+        partition_runoff_m,
+        wb14_hourly_excess_m,
     )
 }
 #[cfg(test)]

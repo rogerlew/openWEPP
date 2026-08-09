@@ -1888,7 +1888,7 @@ mod tests {
                 interception_storage_mm: Some(0.5),
             },
             erosion: DirectPublicationErosionOperands {
-                peak_runoff_m3_s: Some(0.75),
+                peak_runoff_rate_m_s: Some(0.75),
                 runoff_duration_s: Some(1800.0),
                 total_detachment_kg: Some(2.25),
                 total_deposition_kg: Some(1.25),
@@ -2041,7 +2041,7 @@ mod tests {
                 interception_storage_mm: Some(0.5 + offset),
             },
             erosion: DirectPublicationErosionOperands {
-                peak_runoff_m3_s: Some(0.75 + offset),
+                peak_runoff_rate_m_s: Some(0.75 + offset),
                 runoff_duration_s: Some(1800.0 + offset),
                 total_detachment_kg: Some(2.25 + offset),
                 total_deposition_kg: Some(1.25 + offset),

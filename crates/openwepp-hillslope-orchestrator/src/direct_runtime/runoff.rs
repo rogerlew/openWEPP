@@ -1,7 +1,6 @@
 use crate::constants::{
     WB11_ZERO_THRESHOLD, WB15_BIOMASS_TO_KG_HA, WB15_CANCOV_MAX, WB15_INTERCEPT_BIOMASS_MAX_KG_HA,
     WB15_INTERCEPT_LINEAR_COEFF, WB15_INTERCEPT_MM_TO_M, WB15_INTERCEPT_QUADRATIC_COEFF,
-    WB16_MAX_DURATION_S, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD,
 };
 use crate::hydrology::{DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome};
 use crate::winter_column::DirectFrostLaneState;
@@ -468,8 +467,9 @@ impl DirectDayFrame {
             lane_index: self.lane_index,
             day_index: self.day_index,
             q_runoff_m: self.peak_runoff_downstream_operands.q_runoff_m,
-            peak_runoff_m3_s: self.peak_runoff_downstream_operands.peak_runoff_m3_s,
+            peak_runoff_rate_m_s: self.peak_runoff_downstream_operands.peak_runoff_rate_m_s,
             runoff_duration_s: self.peak_runoff_downstream_operands.runoff_duration_s,
+            peak_hour_index: self.peak_runoff_downstream_operands.peak_hour_index,
             method_branch: self.peak_runoff_downstream_operands.method_branch,
             tstar: self.peak_runoff_downstream_operands.tstar,
             qpstar: self.peak_runoff_downstream_operands.qpstar,
@@ -750,6 +750,10 @@ impl DirectDayFrame {
                 - inputs.depression_storage_delta_m
                 - inputs.frost_retained_local_liquid_m,
         )?;
+        let partition_runoff_m = source_informed_partition_runoff_canonicalization(
+            partition_runoff_m,
+            &self.wb14_hourly_excess_m,
+        )?;
         validate_finite("runoff_partition.partition_runoff_m", partition_runoff_m)?;
         validate_nonnegative_direct_m("runoff_partition.partition_runoff_m", partition_runoff_m)?;
         let q_runoff_m = partition_runoff_m + inputs.surface_saturation_runoff_m;
@@ -783,95 +787,45 @@ impl DirectDayFrame {
         )?;
         let q_runoff_m = runoff.q_runoff_m;
         validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)?;
-        if q_runoff_m < WB16_RUNOFF_NEAR_ZERO_THRESHOLD {
+        if q_runoff_m == 0.0 {
             return Ok(DirectPeakRunoffState {
                 q_runoff_m,
-                peak_runoff_m3_s: WB16_PEAKRO_FLOOR,
+                peak_runoff_rate_m_s: 0.0,
                 runoff_duration_s: 0.0,
-                method_branch: 1.0,
+                peak_hour_index: None,
+                method_branch: 5.0,
                 tstar: 0.0,
                 qpstar: 0.0,
                 vstar: 0.0,
             });
         }
 
-        validate_peak_runoff_inputs(&self.peak_runoff_inputs)?;
-        let first = self.peak_runoff_inputs.hyetograph.first().ok_or(
-            DirectRuntimeError::DirectDomainViolation {
-                field: "peak_runoff.hyetograph",
+        let subsurface = self.subsurface_compute_shadow_projection.as_ref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4O hourly saturation-return producer",
             },
         )?;
-        let last = self.peak_runoff_inputs.hyetograph.last().ok_or(
-            DirectRuntimeError::DirectDomainViolation {
-                field: "peak_runoff.hyetograph",
-            },
-        )?;
-        let effdrr_s = last.end_s - first.start_s;
-        validate_positive_direct("peak_runoff.effdrr_s", effdrr_s)?;
-
-        let vave = q_runoff_m / effdrr_s;
-        validate_finite("peak_runoff.vave", vave)?;
-        if vave <= WB11_ZERO_THRESHOLD {
-            return Ok(DirectPeakRunoffState {
+        let routed_melt = self
+            .snow_coupling_downstream_operands
+            .hourly_routed_melt_m
+            .as_ref();
+        let (peak_runoff_rate_m_s, runoff_duration_s, peak_hour_index) =
+            source_complete_hourly_peak_runoff_depth_rate_m_s(
                 q_runoff_m,
-                peak_runoff_m3_s: WB16_PEAKRO_FLOOR,
-                runoff_duration_s: 0.0,
-                method_branch: 1.0,
-                tstar: 0.0,
-                qpstar: 0.0,
-                vstar: 0.0,
-            });
-        }
-        let remax = self
-            .peak_runoff_inputs
-            .hyetograph
-            .iter()
-            .map(|interval| interval.intensity_m_s)
-            .fold(0.0_f64, f64::max)
-            + self.peak_runoff_inputs.irrigation_rate_m_s;
-        validate_finite("peak_runoff.remax", remax)?;
-        if remax <= WB11_ZERO_THRESHOLD {
-            return Ok(DirectPeakRunoffState {
-                q_runoff_m,
-                peak_runoff_m3_s: WB16_PEAKRO_FLOOR,
-                runoff_duration_s: 0.0,
-                method_branch: 1.0,
-                tstar: 0.0,
-                qpstar: 0.0,
-                vstar: 0.0,
-            });
-        }
-
-        let vstar = vave / remax;
-        validate_positive_direct("peak_runoff.vstar", vstar)?;
-        let vave_power = vave.powf(self.peak_runoff_inputs.exponent_m - 1.0);
-        validate_positive_direct("peak_runoff.vave_power", vave_power)?;
-        let te_base =
-            self.peak_runoff_inputs.efflen_m / (self.peak_runoff_inputs.ealpha * vave_power);
-        validate_positive_direct("peak_runoff.te_base", te_base)?;
-        let te = te_base.powf(1.0 / self.peak_runoff_inputs.exponent_m);
-        validate_positive_direct("peak_runoff.te", te)?;
-        let tstar = te / effdrr_s;
-        validate_positive_direct("peak_runoff.tstar", tstar)?;
-
-        let (method_branch, qpstar) =
-            direct_peak_runoff_branch(tstar, vstar, self.peak_runoff_inputs.exponent_m)?;
-        validate_positive_direct("peak_runoff.qpstar", qpstar)?;
-        let peakro_raw = vave * qpstar;
-        validate_finite("peak_runoff.peakro_raw", peakro_raw)?;
-        let peak_runoff_m3_s = peakro_raw.max(WB16_PEAKRO_FLOOR);
-        validate_positive_direct("peak_runoff.peak_runoff_m3_s", peak_runoff_m3_s)?;
-        let runoff_duration_s = (q_runoff_m / peak_runoff_m3_s).min(WB16_MAX_DURATION_S);
-        validate_nonnegative_direct_m("peak_runoff.runoff_duration_s", runoff_duration_s)?;
+                &self.wb14_hourly_excess_m,
+                &subsurface.hourly_saturation_carry_m,
+                routed_melt,
+            )?;
 
         Ok(DirectPeakRunoffState {
             q_runoff_m,
-            peak_runoff_m3_s,
+            peak_runoff_rate_m_s,
             runoff_duration_s,
-            method_branch,
-            tstar,
-            qpstar,
-            vstar,
+            peak_hour_index: Some(peak_hour_index),
+            method_branch: 5.0,
+            tstar: 0.0,
+            qpstar: 0.0,
+            vstar: 0.0,
         })
     }
 
@@ -1405,6 +1359,21 @@ fn normalize_r4a_nonnegative_depth(
     Ok(value)
 }
 
+pub(crate) fn source_informed_partition_runoff_canonicalization(
+    partition_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m("runoff_partition.partition_runoff_m", partition_runoff_m)?;
+    let hourly_excess_total_m = sum_nonnegative_direct_m(
+        "runoff_partition.wb14_hourly_excess_m",
+        wb14_hourly_excess_m,
+    )?;
+    if partition_runoff_m <= WB11_ZERO_THRESHOLD && hourly_excess_total_m == 0.0 {
+        return Ok(0.0);
+    }
+    Ok(partition_runoff_m)
+}
+
 /// ADR-0036 `REF-SED-DC01-SHAPE`: the SINGLE hourly-runoff shape authority.
 /// Unit-normalized hourly distribution of the day's surface runoff (WB14
 /// infiltration-excess profile + hourly saturation carry + producer-owned
@@ -1456,6 +1425,118 @@ pub(crate) fn dc01_surface_runoff_hourly_weights(
         *weight /= raw_total_m;
     }
     Ok(weights)
+}
+
+pub(crate) fn source_complete_hourly_peak_runoff_depth_rate_m_s(
+    q_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    validate_finite("peak_runoff.q_runoff_m", q_runoff_m)?;
+    if q_runoff_m <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.q_runoff_m",
+        });
+    }
+    let source_total_m = hourly_runoff_source_total_m(
+        wb14_hourly_excess_m,
+        hourly_saturation_carry_m,
+        hourly_routed_melt_m,
+    )?;
+    if source_total_m <= 0.0 {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "source-complete hourly runoff timing for positive runoff",
+        });
+    }
+    let weights = dc01_surface_runoff_hourly_weights(
+        q_runoff_m,
+        wb14_hourly_excess_m,
+        hourly_saturation_carry_m,
+        hourly_routed_melt_m,
+    )?;
+    hourly_peak_runoff_depth_rate_m_s(q_runoff_m, &weights)
+}
+
+fn hourly_runoff_source_total_m(
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<f64, DirectRuntimeError> {
+    let mut total_m = 0.0;
+    for hour in 0..DC01_HOUR_BIN_COUNT {
+        for (field, value) in [
+            (
+                "peak_runoff.wb14_hourly_excess_m",
+                wb14_hourly_excess_m[hour],
+            ),
+            (
+                "peak_runoff.hourly_saturation_carry_m",
+                hourly_saturation_carry_m[hour],
+            ),
+            (
+                "peak_runoff.hourly_routed_melt_m",
+                hourly_routed_melt_m[hour],
+            ),
+        ] {
+            validate_nonnegative_direct_m(field, value)?;
+            total_m += value;
+            validate_finite("peak_runoff.hourly_source_total_m", total_m)?;
+        }
+    }
+    Ok(total_m)
+}
+
+pub(crate) fn hourly_peak_runoff_depth_rate_m_s(
+    q_runoff_m: f64,
+    hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<(f64, f64, usize), DirectRuntimeError> {
+    validate_finite("peak_runoff.q_runoff_m", q_runoff_m)?;
+    if q_runoff_m <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.q_runoff_m",
+        });
+    }
+    let mut weight_total = 0.0;
+    let mut peak_rate_m_s = 0.0;
+    let mut peak_hour_index = 0;
+    for (hour, weight) in hourly_weights.iter().copied().enumerate() {
+        validate_nonnegative_direct_m("peak_runoff.hourly_weight", weight)?;
+        weight_total += weight;
+        validate_finite("peak_runoff.hourly_weight_total", weight_total)?;
+        let hourly_depth_m = q_runoff_m * weight;
+        validate_nonnegative_direct_m("peak_runoff.hourly_depth_m", hourly_depth_m)?;
+        let hourly_rate_m_s = hourly_depth_m / DC01_HOUR_BIN_SECONDS;
+        validate_nonnegative_direct_m("peak_runoff.hourly_rate_m_s", hourly_rate_m_s)?;
+        if hourly_rate_m_s > peak_rate_m_s {
+            peak_rate_m_s = hourly_rate_m_s;
+            peak_hour_index = hour;
+        }
+    }
+    if (weight_total - 1.0).abs() > WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.hourly_weight_total",
+        });
+    }
+    if peak_rate_m_s <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.peak_runoff_rate_m_s",
+        });
+    }
+    let runoff_duration_s = q_runoff_m / peak_rate_m_s;
+    validate_finite("peak_runoff.runoff_duration_s", runoff_duration_s)?;
+    if runoff_duration_s <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "peak_runoff.runoff_duration_s",
+        });
+    }
+    let maximum_duration_s = DC01_HOUR_BIN_SECONDS * DC01_HOUR_BIN_COUNT_F64;
+    if runoff_duration_s > maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD) {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.runoff_duration_s",
+        });
+    }
+    Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
 }
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
@@ -1589,6 +1670,12 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         )?;
         let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
         if remaining_storage_m <= WB11_ZERO_THRESHOLD {
+            dc01_add_depth_to_hour_bins(
+                &mut hourly_excess_m,
+                interval.start_s,
+                interval.end_s,
+                rainfall_m,
+            );
             continue;
         }
         let interval_infiltration_m = compute_green_ampt_interval_infiltration(
@@ -1786,67 +1873,6 @@ fn green_ampt_integral(
     let value_m = (end_m - start_m) - matric_potential_m * (numerator_m / denominator_m).ln();
     validate_finite("infiltration_depression.green_ampt_integral_m", value_m)?;
     Ok(value_m.max(0.0))
-}
-
-fn direct_peak_runoff_branch(
-    tstar: f64,
-    vstar: f64,
-    exponent_m: f64,
-) -> Result<(f64, f64), DirectRuntimeError> {
-    if tstar >= 1.0 {
-        return Ok((1.0, 1.0 / tstar.powf(exponent_m)));
-    }
-    if vstar < 1.0 {
-        let tc_discriminant = 1.0 - (2.4 * (1.0 - vstar) * vstar);
-        validate_nonnegative_direct_m("peak_runoff.tc_discriminant", tc_discriminant)?;
-        let tc_denominator = 1.2 * (1.0 - vstar);
-        validate_positive_direct("peak_runoff.tc_denominator", tc_denominator)?;
-        let tc = (1.0 - tc_discriminant.sqrt()) / tc_denominator;
-        validate_positive_direct("peak_runoff.tc", tc)?;
-        if tstar > tc {
-            return Ok((2.0, 1.0 / tstar));
-        }
-        return Ok((3.0, (1.0 / vstar) - 0.6 * (((1.0 - vstar) / vstar) * tstar)));
-    }
-    Ok((4.0, 1.0))
-}
-
-fn validate_peak_runoff_inputs(inputs: &DirectPeakRunoffInputs) -> Result<(), DirectRuntimeError> {
-    if inputs.hyetograph.is_empty() {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.hyetograph",
-        });
-    }
-    validate_nonnegative_direct_m(
-        "peak_runoff.irrigation_rate_m_s",
-        inputs.irrigation_rate_m_s,
-    )?;
-    validate_positive_direct("peak_runoff.efflen_m", inputs.efflen_m)?;
-    validate_positive_direct("peak_runoff.ealpha", inputs.ealpha)?;
-    validate_positive_direct("peak_runoff.exponent_m", inputs.exponent_m)?;
-    let mut previous_end_s = None;
-    for interval in &inputs.hyetograph {
-        validate_finite("peak_runoff.hyetograph_start_s", interval.start_s)?;
-        validate_finite("peak_runoff.hyetograph_end_s", interval.end_s)?;
-        validate_nonnegative_direct_m(
-            "peak_runoff.hyetograph_intensity_m_s",
-            interval.intensity_m_s,
-        )?;
-        if interval.end_s < interval.start_s {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "peak_runoff.hyetograph_time_s",
-            });
-        }
-        if previous_end_s
-            .is_some_and(|previous_end_s| interval.start_s < previous_end_s - WB11_ZERO_THRESHOLD)
-        {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "peak_runoff.hyetograph_time_s",
-            });
-        }
-        previous_end_s = Some(interval.end_s);
-    }
-    Ok(())
 }
 
 fn validate_positive_direct(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
@@ -2392,8 +2418,9 @@ impl DirectPeakRunoffInputs {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectPeakRunoffState {
     pub q_runoff_m: f64,
-    pub peak_runoff_m3_s: f64,
+    pub peak_runoff_rate_m_s: f64,
     pub runoff_duration_s: f64,
+    pub peak_hour_index: Option<usize>,
     pub method_branch: f64,
     pub tstar: f64,
     pub qpstar: f64,
@@ -2405,8 +2432,9 @@ impl DirectPeakRunoffState {
     pub const fn zero() -> Self {
         Self {
             q_runoff_m: 0.0,
-            peak_runoff_m3_s: 0.0,
+            peak_runoff_rate_m_s: 0.0,
             runoff_duration_s: 0.0,
+            peak_hour_index: None,
             method_branch: 0.0,
             tstar: 0.0,
             qpstar: 0.0,
@@ -2418,8 +2446,9 @@ impl DirectPeakRunoffState {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectPeakRunoffDownstreamOperands {
     pub q_runoff_m: f64,
-    pub peak_runoff_m3_s: f64,
+    pub peak_runoff_rate_m_s: f64,
     pub runoff_duration_s: f64,
+    pub peak_hour_index: Option<usize>,
     pub method_branch: f64,
     pub tstar: f64,
     pub qpstar: f64,
@@ -2431,8 +2460,9 @@ impl DirectPeakRunoffDownstreamOperands {
     pub const fn zero() -> Self {
         Self {
             q_runoff_m: 0.0,
-            peak_runoff_m3_s: 0.0,
+            peak_runoff_rate_m_s: 0.0,
             runoff_duration_s: 0.0,
+            peak_hour_index: None,
             method_branch: 0.0,
             tstar: 0.0,
             qpstar: 0.0,
@@ -2445,8 +2475,9 @@ impl From<DirectPeakRunoffState> for DirectPeakRunoffDownstreamOperands {
     fn from(state: DirectPeakRunoffState) -> Self {
         Self {
             q_runoff_m: state.q_runoff_m,
-            peak_runoff_m3_s: state.peak_runoff_m3_s,
+            peak_runoff_rate_m_s: state.peak_runoff_rate_m_s,
             runoff_duration_s: state.runoff_duration_s,
+            peak_hour_index: state.peak_hour_index,
             method_branch: state.method_branch,
             tstar: state.tstar,
             qpstar: state.qpstar,
@@ -2460,8 +2491,9 @@ pub struct DirectPeakRunoffShadowProjection {
     pub lane_index: usize,
     pub day_index: usize,
     pub q_runoff_m: f64,
-    pub peak_runoff_m3_s: f64,
+    pub peak_runoff_rate_m_s: f64,
     pub runoff_duration_s: f64,
+    pub peak_hour_index: Option<usize>,
     pub method_branch: f64,
     pub tstar: f64,
     pub qpstar: f64,

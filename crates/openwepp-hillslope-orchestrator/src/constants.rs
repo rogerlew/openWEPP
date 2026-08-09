@@ -93,8 +93,6 @@ pub(crate) const WB14_SYMBOL_TMAX: HillslopeProductionStateSymbol =
 pub(crate) const WB14_SYMBOL_TMIN: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb14Tmin;
 pub(crate) const WB16_RUNOFF_NEAR_ZERO_THRESHOLD: f64 = 1.0e-8;
-pub(crate) const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
-pub(crate) const WB16_MAX_DURATION_S: f64 = 86_400.0;
 pub(crate) const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 pub(crate) const WB18_PERC_MIN_FX: f64 = 0.002;
 pub(crate) const WB18_PERC_BI_COEFFICIENT: f64 = 2.655;

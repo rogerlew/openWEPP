@@ -378,7 +378,6 @@ struct HbpEventSedimentSurfaces {
     particle_diameter_m: Vec<f64>,
     hourly_runoff_volume_m3: Option<[f64; 24]>,
     hourly_sediment_mass_kg: Option<[f64; 24]>,
-    peak_scale_m2: f64,
 }
 
 fn build_hbp_output_from_direct_publication_summary(
@@ -404,10 +403,9 @@ fn build_hbp_output_from_direct_publication_summary(
     // serializes payload minor 1 — npart = 5 per-class arrays, true-m3
     // hourly volumes `V_h = w_h * runvol` (the SAME runvol basis the pass
     // parquet publishes, so `SUM V_h = runvol` closes by construction),
-    // hour-integrated sediment mass, and a TRUE volumetric peak
-    // (depth-rate * hillslope area — the minor-0 depth-rate basis is a
-    // labeled legacy caveat). Lanes without the surfaces (Wave-2 multi-OFE
-    // or disabled seeds) keep the byte-stable minor-0 single-class shape.
+    // hour-integrated sediment mass. WB16 publication already supplies the
+    // true volumetric hourly peak for every payload minor, so HBP must not
+    // apply another area multiplier.
     let hourly_pair = match (
         sediment_row.erosion.hourly_runoff_fraction,
         sediment_row.erosion.hourly_sediment_mass_kg,
@@ -422,7 +420,7 @@ fn build_hbp_output_from_direct_publication_summary(
     };
 
     let surfaces =
-        assemble_hbp_event_sediment_surfaces(summary, sediment_row, inputs, hourly_pair.as_ref())?;
+        assemble_hbp_event_sediment_surfaces(sediment_row, inputs, hourly_pair.as_ref())?;
 
     // Codex E.2 round-1 (Medium): a minor-1 EVENT is single-row-sourced —
     // julian day, peak, duration, water volume, sediment totals, and the
@@ -440,12 +438,9 @@ fn build_hbp_output_from_direct_publication_summary(
         nofe,
         julian_day: event_row.calendar.julian_day,
         peak_runoff_m3_s: direct_publication_required_erosion_scalar(
-            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
-            event_row
-                .runoff
-                .peak_runoff_m3_s
-                .or(event_row.erosion.peak_runoff_m3_s),
-        )? * surfaces.peak_scale_m2,
+            "runoff.peak_runoff_m3_s",
+            event_row.runoff.peak_runoff_m3_s,
+        )?,
         duration_seconds: direct_publication_required_erosion_scalar(
             "runoff.runoff_duration_s or erosion.runoff_duration_s",
             event_row
@@ -487,10 +482,9 @@ fn build_hbp_output_from_direct_publication_summary(
 }
 
 /// ADR-0036 D2 sediment-surface assembly for the HBP EVENT: minor-1 lanes
-/// get the npart = 5 arrays, `V_h = w_h * runvol`, and the true-volumetric
-/// peak scale; minor-0 lanes keep the byte-stable single-class shape.
+/// get the npart = 5 arrays and `V_h = w_h * runvol`; minor-0 lanes keep the
+/// single-class shape. Peak units are already closed by WB16 publication.
 fn assemble_hbp_event_sediment_surfaces(
-    summary: &DirectPublicationOutputSummary,
     sediment_row: &DirectPublicationDayRow,
     inputs: &ParsedHillslopeRunInputs,
     hourly_pair: Option<&([f64; 24], [f64; 24])>,
@@ -501,7 +495,6 @@ fn assemble_hbp_event_sediment_surfaces(
         particle_diameter_m,
         hourly_runoff_volume_m3,
         hourly_sediment_mass_kg,
-        peak_scale_m2,
     ) = if let Some((fractions, hourly_sediment)) = hourly_pair.copied() {
         let sedcon = direct_publication_required_sediment_concentration(
             sediment_row.erosion.sediment_concentration_kg_m3,
@@ -532,7 +525,6 @@ fn assemble_hbp_event_sediment_surfaces(
             classes.iter().map(|class| class.dia_m).collect(),
             Some(hourly_volume),
             Some(hourly_sediment),
-            summary.publication_area_m2(),
         )
     } else {
         let scalar = sediment_row
@@ -558,7 +550,6 @@ fn assemble_hbp_event_sediment_surfaces(
             vec![HBP_DEFAULT_PARTICLE_DIAMETER_M],
             None,
             None,
-            1.0,
         )
     };
     Ok(HbpEventSedimentSurfaces {
@@ -567,7 +558,6 @@ fn assemble_hbp_event_sediment_surfaces(
         particle_diameter_m,
         hourly_runoff_volume_m3,
         hourly_sediment_mass_kg,
-        peak_scale_m2,
     })
 }
 

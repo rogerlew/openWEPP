@@ -142,7 +142,7 @@ pub fn hillslope_pass_schema(
                 DataType::Float64,
                 false,
                 Some("m^3/s"),
-                Some("Peak runoff diagnostic"),
+                Some("Maximum hourly mean runoff flow"),
             ),
             field_with_meta(
                 "tdet",

@@ -200,8 +200,10 @@ independent science reviewers for the hydrologic authority and claim boundary.
   legacy daily-return retiming defect plus structured mutation tail.
 - [x] (2026-08-09) Scoped hourly authority, return timing, units, publication,
   and the full openWEPP mutation cohort into one closure envelope.
-- [ ] Complete contract-first authority and red tests.
-- [ ] Implement the real consumer path and public conversion.
+- [x] (2026-08-09) Completed contract-first authority and captured the expected
+  pre-implementation red gate.
+- [x] (2026-08-09) Implemented the shared-hour peak, source-timing custody,
+  internal depth-rate naming, and exactly-once public area conversion.
 - [ ] Execute focused and Topanga cohort validation.
 - [ ] Complete Critical closure, review, verification, and disposition.
 
@@ -211,6 +213,9 @@ independent science reviewers for the hydrologic authority and claim boundary.
   transfer, hourly erosion, and HBP serialization; WB16 alone ignores it.
 - The current internal field name says `m3/s`, but the computation and
   `Q / peak` duration prove the stored value is `m/s`.
+- A native Topanga probe exposed positive subtraction roundoff with no hourly
+  source. Source-informed canonicalization is required at the runoff partition,
+  not a peak floor: only `<=1e-12 m` source-free residuals become exact zero.
 
 ## Decision Log
 
@@ -223,6 +228,14 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - Decision: surface return remains in the WB19-produced hour.
   Rationale: it preserves modeled process timing and mass without synthetic
   reassignment to rainfall intervals.
+- Decision: add `SC-INFILE-HBP-001.md` to the adjacent consumer-contract write
+  set before editing it, and add
+  `crates/openwepp-hillslope-output/src/hillslope_pass.rs` for the matching
+  public Parquet field metadata.
+  Rationale: the HBP contract still mislabeled rectangular-equivalent duration
+  as storm duration and did not state maximum-hour peak reconstruction from its
+  own minor-1 hourly volumes; leaving that stale would contradict the corrected
+  producer and public schema; the Parquet metadata must name the same quantity.
 
 ## Outcomes And Retrospective
 

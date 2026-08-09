@@ -1,0 +1,5 @@
+__COMMAND: TMPDIR=/home/workdir/openwepp-task-tmp cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+__COMMAND_EXIT:0
+__COMMAND_DURATION_SECONDS:68
+__COMMAND_START_TS:1786308222
+__COMMAND_END_TS:1786308290

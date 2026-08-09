@@ -63,6 +63,109 @@ fn dc01_surface_shape_uses_routed_melt_limb_without_uniform_fallback() {
     assert!((weights[7] - 0.25).abs() < 1.0e-15);
     assert!((weights.iter().sum::<f64>() - 1.0).abs() < 1.0e-15);
     assert_ne!(weights, [1.0 / 24.0; 24]);
+    let (_, duration_s, peak_hour) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.002,
+            &wb14,
+            &saturation,
+            &melt,
+        )
+        .expect("melt-only source must carry production peak timing");
+    assert!((duration_s - 4_800.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 6);
+}
+
+#[test]
+fn hourly_peak_uses_saturation_return_in_its_produced_hour() {
+    let wb14 = [0.0_f64; 24];
+    let mut saturation = [0.0_f64; 24];
+    let melt = [0.0_f64; 24];
+    saturation[11] = 0.004;
+    let (peak_rate_m_s, duration_s, peak_hour) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.004,
+            &wb14,
+            &saturation,
+            &melt,
+        )
+        .expect("saturation-only source must carry production peak timing");
+    assert!((peak_rate_m_s - 0.004 / 3_600.0).abs() < 1.0e-15);
+    assert!((duration_s - 3_600.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 11);
+}
+
+#[test]
+fn hourly_peak_uses_runon_only_wb14_excess_timing() {
+    let mut inputs = DirectWb14InfiltrationProducerInputs {
+        runon_hourly_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 0.0,
+        }],
+        effective_conductivity_m_s: 1.0e-6,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.0,
+        depression_storage_capacity_m: 0.0,
+    };
+    inputs.runon_hourly_supply_m[8] = 0.003;
+    let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("runon-only WB14 must compute");
+    let (peak_rate_m_s, duration_s, peak_hour) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.003,
+            &outcome.hourly_excess_m,
+            &[0.0; 24],
+            &[0.0; 24],
+        )
+        .expect("runon-only excess must carry production peak timing");
+    assert!((peak_rate_m_s - 0.003 / 3_600.0).abs() < 1.0e-15);
+    assert!((duration_s - 3_600.0).abs() < 1.0e-9);
+    assert_eq!(peak_hour, 8);
+}
+
+#[test]
+fn hourly_peak_fails_closed_for_positive_runoff_without_source_timing() {
+    assert_eq!(
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.003, &[0.0; 24], &[0.0; 24], &[0.0; 24],
+        )
+        .expect_err("positive runoff without source timing must fail closed"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "source-complete hourly runoff timing for positive runoff"
+        }
+    );
+}
+
+#[test]
+fn partition_runoff_only_canonicalizes_source_free_roundoff() {
+    let zero_source = [0.0; 24];
+    assert_eq!(
+        crate::direct_runtime::test_source_informed_partition_runoff_canonicalization(
+            5.0e-13,
+            &zero_source,
+        )
+        .expect("source-free roundoff canonicalization"),
+        0.0
+    );
+    let mut tiny_source = [0.0; 24];
+    tiny_source[4] = 5.0e-13;
+    assert_eq!(
+        crate::direct_runtime::test_source_informed_partition_runoff_canonicalization(
+            5.0e-13,
+            &tiny_source,
+        )
+        .expect("source-backed tiny runoff remains represented"),
+        5.0e-13
+    );
+    assert_eq!(
+        crate::direct_runtime::test_source_informed_partition_runoff_canonicalization(
+            2.0e-12,
+            &zero_source,
+        )
+        .expect("material source-free runoff remains for peak fail-closed handling"),
+        2.0e-12
+    );
 }
 
 #[test]
@@ -170,6 +273,42 @@ fn dc01_surface_shape_returns_zero_weights_without_runoff() {
 }
 
 #[test]
+fn hourly_peak_orders_equal_volume_concentrated_and_spread_shapes() {
+    let q_runoff_m = 0.024;
+    let mut concentrated = [0.0; 24];
+    concentrated[7] = 1.0;
+    let spread = [1.0 / 24.0; 24];
+
+    let (concentrated_rate, concentrated_duration, concentrated_hour) =
+        crate::direct_runtime::test_hourly_peak_runoff_depth_rate_m_s(q_runoff_m, &concentrated)
+            .expect("concentrated hourly peak");
+    let (spread_rate, spread_duration, spread_hour) =
+        crate::direct_runtime::test_hourly_peak_runoff_depth_rate_m_s(q_runoff_m, &spread)
+            .expect("spread hourly peak");
+
+    assert!((concentrated_rate - q_runoff_m / 3_600.0).abs() < 1.0e-15);
+    assert!((spread_rate - q_runoff_m / 86_400.0).abs() < 1.0e-15);
+    assert!((concentrated_rate / spread_rate - 24.0).abs() < 1.0e-12);
+    assert!((concentrated_duration - 3_600.0).abs() < 1.0e-9);
+    assert!((spread_duration - 86_400.0).abs() < 1.0e-9);
+    assert_eq!(concentrated_hour, 7);
+    assert_eq!(spread_hour, 0, "ties select the earliest hour");
+}
+
+#[test]
+fn hourly_peak_fails_closed_when_weights_do_not_reconstruct_event_runoff() {
+    let mut incomplete = [0.0; 24];
+    incomplete[2] = 0.4;
+    assert_eq!(
+        crate::direct_runtime::test_hourly_peak_runoff_depth_rate_m_s(0.01, &incomplete)
+            .expect_err("incomplete weights must fail closed"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "peak_runoff.hourly_weight_total"
+        }
+    );
+}
+
+#[test]
 fn r4g_rejects_hourly_routed_melt_daily_nonclosure() {
     let identity =
         DirectRunIdentity::new(912, 2637, 1, 1).expect("valid direct identity should construct");
@@ -266,5 +405,32 @@ fn dc01_dry_runon_day_still_infiltrates() {
     assert!(
         (0.005 - with_runon.state.cumulative_infiltration_m - excess).abs() < 1.0e-12,
         "runon must split exactly into infiltration + excess on a dry day"
+    );
+}
+
+#[test]
+fn dc01_zero_storage_capacity_preserves_all_supply_as_hourly_excess() {
+    let inputs = DirectWb14InfiltrationProducerInputs {
+        runon_hourly_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 7_200.0,
+            end_s: 10_800.0,
+            intensity_m_s: 0.006 / 3_600.0,
+        }],
+        effective_conductivity_m_s: 1.0e-6,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.0,
+        depression_storage_capacity_m: 0.0,
+    };
+    let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("zero-capacity WB14 must compute");
+    assert_eq!(outcome.state.cumulative_infiltration_m, 0.0);
+    assert!((outcome.hourly_excess_m[2] - 0.006).abs() < 1.0e-12);
+    assert!(
+        outcome
+            .hourly_excess_m
+            .iter()
+            .enumerate()
+            .all(|(hour, depth)| hour == 2 || *depth == 0.0)
     );
 }

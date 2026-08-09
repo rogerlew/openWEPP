@@ -761,7 +761,14 @@ fn require_direct_publication_output_family_authority_row(
         row.climate.precipitation_mm,
     )?;
     require_finite_nonnegative_direct_publication_scalar("runoff.runvol_m3", row.runoff.runvol_m3)?;
-    require_direct_publication_option("erosion.peak_runoff_m3_s", row.erosion.peak_runoff_m3_s)?;
+    require_direct_publication_option(
+        "runoff.peak_runoff_m3_s",
+        row.runoff.peak_runoff_m3_s,
+    )?;
+    require_direct_publication_option(
+        "erosion.peak_runoff_rate_m_s",
+        row.erosion.peak_runoff_rate_m_s,
+    )?;
     require_direct_publication_option("erosion.runoff_duration_s", row.erosion.runoff_duration_s)?;
     require_direct_publication_option(
         "erosion.total_detachment_kg",
@@ -912,7 +919,7 @@ fn direct_publication_has_only_zero_or_absent_operands(
             row.profile.fc_store_mm,
             row.profile.wp_store_mm,
             row.interception.interception_storage_mm,
-            row.erosion.peak_runoff_m3_s,
+            row.erosion.peak_runoff_rate_m_s,
             row.erosion.runoff_duration_s,
             row.erosion.total_detachment_kg,
             row.erosion.total_deposition_kg,
@@ -971,7 +978,7 @@ fn direct_publication_row_lacks_parity_grade_output_producers(
         row.profile.fc_store_mm,
         row.profile.wp_store_mm,
         row.interception.interception_storage_mm,
-        row.erosion.peak_runoff_m3_s,
+        row.erosion.peak_runoff_rate_m_s,
         row.erosion.runoff_duration_s,
         row.erosion.total_detachment_kg,
         row.erosion.total_deposition_kg,

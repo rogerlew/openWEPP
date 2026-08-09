@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 165
+contract_version: 166
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-08-08
+last_reviewed: 2026-08-09
 supersedes: []
 superseded_by: []
 ---
@@ -79,6 +79,7 @@ Out of scope:
 | REF-WATBAL-LEGACY-HOURLY-SSH | `/workdir/wepp-forest_260430_baseline/src/input.for:753-761,836-844,927-928`, `/workdir/wepp-forest_260430_baseline/src/tilage.for:571-656`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:705-715` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly WB19 `latqcc` lineage uses `ui_ssh(i)` horizontal conductivity assembled from `ssc2*ui_anisrt`, preserving vertical `ssc(i)` for percolation/drainage and daily lateral lanes. | `[DIRECT][Static]` |
 | REF-WATBAL-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract requested/effective `wepp_ui` mode propagation authority from parser boundary to runtime lane selection. | `[DIRECT][Static]` |
 | REF-WATBAL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes and bounded stress factors required for physically valid accounting. | `[INFERENCE][Static]` |
+| REF-WATBAL-HOURLY-PEAK | `SC-RUNOFFPART-001#INV-RUNOFFPART-031`, ADR-0036 shared hourly runoff-shape authority, and dimensional/conservation invariants | A peak asserted at hourly resolution must consume the source-complete modeled hourly runoff depths, preserve hourly saturation-return timing, close to event runoff, and convert depth rate to volume rate exactly once with area. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
 
@@ -123,6 +124,10 @@ Out of scope:
 | `InterceptionStorage` | `mm` | WB13/hillslope WAT interception-storage publication term. | interception publication | hillslope WAT output |
 | `ui_SUrunf(1:24)`, `ui_SCrunf(1:24)` | `m` per hourly substep | Saturation-runoff carry arrays: upstream OFE input (`ui_SUrunf`) and current OFE output (`ui_SCrunf`) in baseline hourly water-balance lanes. | previous/current hourly OFE water-balance carry state | downstream OFE hourly `xfin`, WB12/WB13 carry publication |
 | `ui_LfUrf(1:24)`, `ui_LfCrf(1:24)` | `m` per hourly substep | Subsurface lateral-flow carry arrays: upstream OFE input (`ui_LfUrf`) and current OFE output (`ui_LfCrf`) in baseline hourly water-balance lanes. | WB19/lateral hourly substep runtime | downstream OFE hourly `xfin`, WB12/WB13 carry publication |
+| `q_hourly(h)` | `m` per one-hour bin | Source-complete modeled surface-runoff depth for hour `h`: the normalized WB14 infiltration-excess, hourly surface-saturation return, routed melt/liquid, and runon shape multiplied by reconciled event runoff depth. | WB14/WB19/winter/runon hourly runoff-shape authority | WB16 maximum-hourly-mean peak and hourly erosion/transfer/interchange consumers |
+| `peakro_depth` | `m s^-1` | Maximum hourly mean runoff depth rate, `max_h(q_hourly(h) / 3600 s)`; not an instantaneous or subhourly peak. | WB16 hourly peak operator | erosion and public area conversion |
+| `peakro` | `m^3 s^-1` | Public maximum hourly mean hillslope flow, produced once as `peakro_depth * Area` on the same event-runoff depth/area basis used by `runvol`. | WB13/publication boundary | hillslope output and routing consumers |
+| `watdur_rect` | `s` | Rectangular-equivalent duration `Q / peakro_depth`; derived after peak and not rainfall duration, hydrograph duration, or time to peak. | WB16 hourly peak operator | diagnostic/public duration consumer |
 | `pei` | `m d^-1` | Percolation rate through layer `i`. | percolation routine | lower-layer routing and `D` term assembly |
 | `ti`, `Δt` | `s` | Travel time through layer `i` and travel interval. | percolation routine | percolation step update |
 | `Ksi`, `Ksai`, `Bi` | `m s^-1`, `m s^-1`, `fraction` | Saturated and adjusted hydraulic conductivity with conductivity-shape parameter. | soil/percolation routine | percolation routing |
@@ -288,6 +293,9 @@ lateral/drainage).
 | INV-WATBAL-099 | MOFE01 M-G erosion `qin` water-balance boundary invariant: water-balance transfer closure may expose `UpStrmQ`, `SubRIn`, `TransferInput`, `TransferOutput`, hourly carry arrays, `Q`, `QOFE`, and water-derived `erod14_qin` compatibility provenance, but it cannot by itself close downstream erosion/sediment coupling. Accepted downstream `erod14_qin` for OFE `i > 1` requires prior-OFE erosion `qout` and particle/class-fraction lineage owned by `SC-SED-001`; public WB13/WAT rows or aggregate runoff surfaces may not synthesize that acceptance. Manifests must label water-transfer-only seeding with `erod14_qin_source_policy = "water-transfer-only-mofe01-mg-sediment-coupling-follow-on"` and `erod14_qin_sediment_coupled = false` until the follow-on closes. | governance-hold | REF-WATBAL-LEGACY-HOURLY-CARRY, INV-WATBAL-096, INV-WATBAL-098, SC-RUNOFFPART-001#INV-RUNOFFPART-030, SC-SED-001#INV-SED-012, SC-SYSTEM-001#INV-SYSTEM-032 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-100 | MOFE01 M-I hillslope-total identity and scheduler-lifecycle retirement invariant: multi-OFE WB13/H.wat publication may close only when the runner computes a hillslope-total residual from internal per-OFE storage/flux/transfer records and OFE areas before publication. The residual is `Σ_i((external_in_i - external_out_i - ΔS_i) * area_i) / Σ_i area_i`, where external input is local liquid input plus explicit frost internal adjustment, external output includes interception, ET, percolation, tile/drain, frost overflow, and only the outlet OFE's surface/lateral hillslope exports. Internal `UpStrmQ`, `SubRIn`, non-outlet routed surface runoff, and non-outlet lateral handoff are excluded because they must cancel inside the hillslope boundary; downstream transfer depths must therefore use the upstream-area/current-area ratio from the same OFE area basis used by this residual. The residual must be published as provenance, must close within `TOL-WATBAL-008`, and acceptance evidence must show nonzero-at-noise behavior on at least one active MOFE ladder case; an all-exact-zero hillslope-total residual suite is a tautology hold. Multi-OFE execution must not also run the aggregate scheduler lifecycle for a discarded surface; the persistent per-OFE lifecycle is the sole multi-OFE source of WB13/WAT publication, while single-OFE runs keep the aggregate scheduler lifecycle specialization. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-WB13, INV-WATBAL-096, INV-WATBAL-097, INV-WATBAL-098, INV-WATBAL-099, SC-SYSTEM-001#INV-SYSTEM-031 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-101 | Soil hydrology is the sole Stage B owner of candidate layer-liquid mutations for future vegetation requests. For every layer on one horizontal area and transaction basis, each accepted interval amount satisfies `0 <= U_s,l <= D_s,l` and aggregate vegetation plus competing withdrawal satisfies `Σ_s U_s,l + W_comp,l <= A_l`; every request has one limitation reason, both owners reconstruct accepted withdrawal, and no candidate commits on mismatch. | governance-hold | INV-WATBAL-002, SC-VEGETATION-001#INV-VEGETATION-010, SC-VEGETATION-001#INV-VEGETATION-011, SC-VEGETATION-001#INV-VEGETATION-012, SC-VEGETATION-001#INV-VEGETATION-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-102` | WB16 hourly peak authority: for positive reconciled runoff, the production peak operator consumes the same source-complete 24-bin runoff shape used by hourly erosion, inter-OFE transfer, and HBP serialization; hourly depths sum to `Q`, and `peakro_depth = max_h(q_hourly(h)/3600 s)`. Rainfall elapsed duration, maximum rainfall intensity, APPMTH dimensionless branches, and a uniform synthetic-time fallback cannot carry the production peak claim. Dry runoff emits zero peak and zero rectangular-equivalent duration. Positive runoff without reconstructible hourly timing hard-fails. The only positive-side runoff canonicalization is the source-informed `TOL-WATBAL-006` roundoff case; any positive hourly source preserves its runoff, however small. | hard-fail | REF-WATBAL-HOURLY-PEAK, SC-RUNOFFPART-001#INV-RUNOFFPART-031 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-103` | Hourly surface-return custody: each nonnegative `ui_SCrunf(h)`-lineage surface-saturation return depth remains in its WB19-produced hour when assembling `q_hourly(h)`. It may not be collapsed to daily `surdra`, reassigned to positive rainfall-excess intervals, spread over a storm duration, or assigned a 24-hour fallback. Saturation-only, melt-only, and runon-only positive runoff retain their own modeled hourly timing. | hard-fail | REF-WATBAL-HOURLY-PEAK, REF-WATBAL-LEGACY-HOURLY-CARRY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-104` | Peak unit/publication closure: internal WB16 and erosion coupling use `peakro_depth` in `m s^-1`; public `peakro` uses `m^3 s^-1` and equals the hourly depth rate on the published event-runoff basis times the same `Area` used to convert runoff depth to `runvol`. Area is applied exactly once. Public peak scales linearly with area while internal depth rate is area-invariant. `watdur_rect = Q/peakro_depth` is explicitly rectangular-equivalent and cannot be labeled physical rainfall or hydrograph duration. | hard-fail | REF-WATBAL-HOURLY-PEAK | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Binding Exposure Index
 
@@ -324,8 +332,8 @@ This index is intentionally conservative. It does not relocate addendum narrativ
 | `WB15-DETERMINISTIC-COUPLING-RULES` | `lines 1107-1163` `WB15 Deterministic Coupling Rules` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT03 batch 4 narrower HOLD: WB15 deterministic interception equation, cap/canonicalization, closure integration, and typed guard semantics require exact exposure. Owner: SCSTRUCT03-WB15-BEI-PROMOTION. Next gate: promote/map before relocation. |
 | `IRRIG10-IRRIGATION-STORAGE-COUPLING-ADDENDUM` | `lines 1164-1165` `IRRIG10 Irrigation Storage-Coupling Addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT03 batch 4 narrower HOLD: live irrigation storage-coupling authority is not fully exposed by current WATBAL rows. Owner: SCSTRUCT03-IRRIG10-BEI-PROMOTION. Next gate: promote/map irrigation schedule/depth, runoff/storage equations, guard codes, and vectors before relocation. |
 | `IRRIG10-REQUIRED-COUPLING-SURFACES` | `lines 1166-1201` `IRRIG10 Required Coupling Surfaces` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT03 batch 4 narrower HOLD: IRRIG10 required surfaces and coupled runoff/storage semantics require exact canonical exposure. Owner: SCSTRUCT03-IRRIG10-BEI-PROMOTION. Next gate: flagged binding promotion or complete mapping proof before relocation. |
-| `WB16-PEAK-RUNOFF-CLOSURE-DIAGNOSTICS-ADDENDUM` | `lines 1202-1203` `WB16 Peak Runoff Closure-Diagnostics Addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT03 batch 3 narrower HOLD: live WB16 peak-runoff authority is not fully exposed by current invariant rows. Owner: SCSTRUCT03-WB16-BEI-PROMOTION. Next gate: promote precise WB16 peakro/watdur branch, domain, provenance, and guard-map invariant(s), or prove complete existing mapping before relocation. |
-| `WB16-REQUIRED-COUPLING-SURFACES` | `lines 1204-1307` `WB16 Required Coupling Surfaces` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT03 batch 3 narrower HOLD: live WB16 required surfaces, branch equations, guard codes, and contract-test vectors must remain in core until promoted/mapped. Owner: SCSTRUCT03-WB16-BEI-PROMOTION. Next gate: flagged binding promotion or complete mapping proof before relocation. |
+| `WB16-PEAK-RUNOFF-CLOSURE-DIAGNOSTICS-ADDENDUM` | `lines 1202-1203` `WB16 Peak Runoff Closure-Diagnostics Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-102, INV-WATBAL-103, INV-WATBAL-104` | `none` | PEAK-HOURLY promoted the live shared-hourly peak, source-timing custody, unit, guard, and closure authority into canonical invariant rows. |
+| `WB16-REQUIRED-COUPLING-SURFACES` | `lines 1204-1307` `WB16 Required Coupling Surfaces` | `active` | `maps-to-existing-INV` | `INV-WATBAL-102, INV-WATBAL-103, INV-WATBAL-104` | `none` | PEAK-HOURLY maps the retained hourly coupling surfaces, deterministic rules, guard codes, and contract-test vectors to canonical peak invariants. |
 | `WB13-DAILY-OUTPUT-SURFACE-AUTHORITY-ADDENDUM` | `lines 1308-1480` `WB13 Daily Output-Surface Authority Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-026, INV-WATBAL-029, INV-WATBAL-064` | `none` | SCSTRUCT03 batch 3: retained in core. The section includes active WB13 schema/order/guard/test-vector and lineage-register authority beyond the preliminary mapped IDs; not sidecar-eligible until exact binding exposure is proven or promoted. |
 | `HPHYS0202-PROFILEFC-PROFILEWP-LAYER-AGGREGATION-LINEAGE-CLOSURE-HISTORIC` | `provenance/SC-WATBAL-001-provenance.md#hphys0202-profilefc-profilewp-layer-aggregation-lineage-closure-historic` `HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure (Historical)` | `superseded` | `historical-or-superseded` | `INV-WATBAL-041, INV-WATBAL-042` | `none` | SCSTRUCT03 batch 1: narrative relocated; live residue conserved by cited binding IDs and retained HPARITY02 core rules. |
 | `HPHYS0205-CORRECTED-LAYER-AUTHORITY-CLOSURE-HISTORICAL` | `provenance/SC-WATBAL-001-provenance.md#hphys0205-corrected-layer-authority-closure-historical` `HPHYS0205 Corrected-Layer Authority Closure (Historical)` | `superseded` | `historical-or-superseded` | `INV-WATBAL-041, INV-WATBAL-042` | `none` | SCSTRUCT03 batch 1: narrative relocated; live residue conserved by cited binding IDs and retained HPARITY02 core rules. |
@@ -497,6 +505,9 @@ all `HOLD` dispositions must name a scoped owner and follow-on gate.
 | `INV-WATBAL-099` | runtime + governance | EROD14 `qin` water-balance boundary provenance publisher plus sediment-coupling acceptance gate | Explicit `HOLD` when water-balance transfer evidence is treated as sediment-coupled `qin` acceptance, downstream `erod14_qin` is synthesized from public WB13/WAT or aggregate runoff without prior-OFE erosion `qout` plus class-fraction lineage, or manifests omit the M-G water-transfer-only source policy | MOFE01 M-G erosion `qin`/sediment coupling boundary gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-100` | runtime + governance | M-I independent hillslope-total water-balance residual publisher and multi-OFE scheduler-lifecycle exclusivity gate | Typed hard error / explicit `HOLD` when the hillslope-total residual is computed from published WAT aliases, includes internal `UpStrmQ`/`SubRIn` or non-outlet routed handoff as external flux, omits OFE areas, exceeds `TOL-WATBAL-008`, produces an all-exact-zero active-suite signature, omits `hillslope_total_identity_max_abs_mm` provenance, or multi-OFE execution also runs the aggregate scheduler lifecycle for a discarded surface | MOFE01 M-I hillslope-total closure and double-execution retirement gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-101` | governance + future integration | Stage B layer-snapshot allocation, sole-mutator, reason-code, dual-reconstruction, and atomic-commit gate | Explicit `HOLD` on per-request over-allocation, aggregate same-layer overbooking, mixed area/transaction identity, missing reason, vegetation soil mutation, or partial commit | VEGETATION-BOUNDARY-AUTHORITY gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-102` | runtime + governance | Source-complete shared 24-bin runoff assembly and maximum-hour depth-rate operator | Typed hard error / explicit `HOLD` when positive runoff lacks reconstructible hourly timing, hourly closure fails, a rainfall-envelope/APMTH branch controls peak, or a synthetic uniform fallback is used | PEAK-HOURLY hourly peak authority gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-103` | runtime + governance | Hour-preserving WB19 surface-return, runon, and melt custody in the shared runoff series | Typed hard error / explicit `HOLD` when a source limb is negative/non-finite, surface return is retimed, or positive source depth is lost from hourly closure | PEAK-HOURLY source-timing custody gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-104` | runtime + governance | Internal peak depth-rate and public area-converted volumetric peak publication boundary | Typed hard error / explicit `HOLD` when area is absent/nonpositive, area is applied more than once, public peak and event volume use different runoff bases, or duration is mislabeled as physical storm duration | PEAK-HOURLY unit/publication closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -571,21 +582,23 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `anisrt`, `ddrain`, `sdrain`, `drdiam` | `wb19_lateral_anisotropy_ratio`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter` | WB19 lateral/drainage geometry + anisotropy control surfaces | declared units preserved (`-`, `m`, `m`, `m`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qdd`, `Qd` (WB19) | `Qdd`, `Qd` | WB19 drainage and aggregate subsurface-loss outputs consumed by closure | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ws` | `Ws` (identity) | plant-stress coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
-| `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | WB16 peak-duration diagnostics used by erosion/routing consumers | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | WB16 branch-traceability surfaces for downstream contract diagnostics | branch metadata + scalar continuity diagnostics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `peakro_depth`, `watdur_rect` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | Internal WB16 maximum-hour depth rate and rectangular-equivalent duration used by erosion consumers | `m s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| public `peakro` | `DirectPublicationRunoffOperands::peak_runoff_m3_s` | WB13/publication-boundary maximum hourly mean volumetric flow | `peakro_depth * Area` -> `m^3 s^-1` exactly once | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb16_peak_method`, `wb16_peak_hour` | `DirectPeakRunoffShadowProjection::{method_branch,peak_hour_index}` | Hourly-maximum method identity and earliest maximizing zero-based hour | method code `5`; hour in `[0,23]` for positive runoff | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | Historical schema-only rainfall-envelope diagnostics | exact zero; no production peak authority | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD11 Alias Ownership Register
 
 | Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
 |---|---|---|---|---|---|
-| `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-WATBAL-001` via WB12/WB16 kernel outputs | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-001` | `Q`, `peakro_depth`, `watdur_rect`, `wb16_peak_method`, `wb16_peak_hour` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch}`; `DirectPeakRunoffShadowProjection::peak_hour_index` | `SC-WATBAL-001` via WB12/WB16 kernel outputs | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-005` | `D`, `Qd`, `ET`, `I` (daily closure companions) | `HillslopeProductionFluxSymbol::{Wb11PercLossD,Wb11SubhydQd,Wb11Et,Wb15InterceptionI}` | `SC-WATBAL-001` | downstream hydrology consumers and closure diagnostics | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD12 Cross-Domain Ownership and Guard Closure Addendum
 
 | Cross-domain lane | Producer ownership | Consumer guard ownership | Closure posture | Evidence |
 |---|---|---|---|---|
-| WB12/WB16 runoff + peak-duration export (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-WATBAL-001` (`INV-WATBAL-007`, `INV-WATBAL-016`) | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001`, `SC-HYDRAULICS-001` | Required Wave-0 erosion-lane hydrology boundary ownership and guard semantics are explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB12/WB16 runoff + peak-duration export (`Q`, `peakro_depth`, `watdur_rect`, hourly method/hour) | `SC-WATBAL-001` (`INV-WATBAL-007`, `INV-WATBAL-102..104`) | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001`, `SC-HYDRAULICS-001` | Required Wave-0 erosion-lane hourly hydrology boundary ownership and guard semantics are explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Daily closure companion export (`D`, `Qd`, `ET`, `I`) | `SC-WATBAL-001` | downstream hydrology/system consumers (`SC-SUBHYD-001`, `SC-SYSTEM-001`) | Cross-domain closure companion ownership and guard mapping remain explicit for consumed surfaces. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
@@ -854,7 +867,7 @@ parity). Contract-specific tolerances used for comparator interpretation:
 | TOL-WATBAL-003 | Layer percolation non-negativity comparator tolerance (`pei`) | lower bound `>= -1e-12 m d^-1` | Negative values beyond tolerance are invalid-state failures. |
 | TOL-WATBAL-004 | Stress-factor bound tolerance for `Ws` | `abs(bound violation) <= 1e-12` | Domain expectation remains `[0,1]`. |
 | TOL-WATBAL-005 | Zero-demand transpiration threshold for denominator guard | `Etp <= 1e-12 m d^-1` treated as zero-demand branch | Runtime still requires explicit `Σ Ui = 0` and `Ws = 1` behavior. |
-| TOL-WATBAL-006 | WB12/WB14 reconciled runoff near-zero canonicalization tolerance (`Q`, `wb12_runoff_reconciled`) | normalize to `0` when `-1e-12 m <= value < 0` before writeback/publication; `value < -1e-12 m` is domain-invalid | Explicit roundoff canonicalization only; not a fallback for material negative runoff. |
+| TOL-WATBAL-006 | WB12/WB14 reconciled runoff near-zero canonicalization tolerance (`Q`, `wb12_runoff_reconciled`) | normalize to `0` when `-1e-12 m <= value < 0`; a positive `0 < value <= 1e-12 m` may normalize to zero only when the source-complete WB14 hourly-excess sum is exact zero. Preserve every positive source-backed value. | Explicit source-informed roundoff canonicalization only; not a peak floor, not a fallback for material runoff, and not permission to discard a positive hourly source. |
 | TOL-WATBAL-007 | MOFE01 internal per-OFE WB13 conservation residual tolerance | `<= 1e-11 mm` | Applies to M-E4-REDO per-element storage, adjacent transfer, and internal-transfer cancellation checks. Residuals must be computed from independently sourced dynamic-state snapshots and adjacent transfer records; exact-zero alias/self-built checks are not acceptance evidence. |
 | TOL-WATBAL-008 | MOFE01 M-I area-weighted hillslope-total residual tolerance | `<= 1e-9 mm` | Applies to the runner-computed hillslope-total residual normalized by total hillslope area after internal `UpStrmQ`/`SubRIn` and non-outlet handoff terms are excluded. This is a publication/acceptance proof tolerance for accumulated floating-point noise, not a license to absorb missing fluxes. |
 
@@ -1226,71 +1239,40 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 | Surface | Symbols |
 |---|---|
-| Closure-diagnostics required inputs | `Q`, `timem_####`, `intsty_####`, `efflen`, `ealpha`, `m`, `I`, `irrigation.runtime_rate_m_per_s` |
-| Closure-diagnostics peak outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
-| Closure-diagnostics provenance outputs | `wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy` |
+| Required inputs | reconciled `Q`; source-complete `q_hourly(1:24)` on the shared ADR-0036 time basis |
+| Internal peak outputs | `peakro_depth`, `watdur_rect`, `wb16_peak_method = hourly_max`, `wb16_peak_hour` |
+| Public outputs | `peakro = peakro_depth * Area` on the published event-runoff basis; `watdur_rect` |
+| Provenance outputs | 24 hourly depths or their named shared-shape lineage, source-total reconstruction residual, selected peak hour, bin duration, depth/area basis, and exactly-once area conversion |
 
 ### WB16 Deterministic Peak-Flow Rules
 
-1. WB16 executes at closure diagnostics and consumes reconciled runoff depth
-   `Q` from WB14 plus coupled runtime forcing metadata from the accepted event.
-2. Baseline-authoritative near-zero runoff branch from
-   `/workdir/wepp-forest_260430_baseline/src/appmth.for` applies first:
-   - if `Q < 1.0e-8`, emit `peakro_raw = 0`, then canonicalize
-     `peakro = 3.63e-8` and `watdur = 0`.
-3. Event duration for WB16 is derived from hyetograph elapsed time:
-   - `effdrr = timem_last - timem_first` (`s`)
-4. Mean runoff rate and runoff-maximum ratio terms are:
-   - `vave = Q / effdrr`
-   - `remax = max(intsty_####) + irrigation.runtime_rate_m_per_s`
-   - `vstar = vave / remax`
-5. Kinematic-wave time ratio and branch selector terms follow Chapter-4
-   lineage (`appmth.for`):
-   - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
-   - `tstar = te / effdrr`
-   - if `vstar < 1`, `tc = (1 - sqrt(1 - 2.4 * (1 - vstar) * vstar)) / (1.2 * (1 - vstar))`
-6. Peak-runoff nondimensional ratio `qpstar` is branch-authoritative:
-   - partial-equilibrium branch (`tstar >= 1`): `qpstar = 1 / tstar^m`
-   - quasi-equilibrium branch A (`vstar < 1` and `tc < tstar < 1`):
-     `qpstar = 1 / tstar`
-   - quasi-equilibrium branch B (`vstar < 1` and `0 < tstar <= tc`):
-     `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
-   - constant-excess branch (`vstar >= 1` and `tstar < 1`): `qpstar = 1`
-7. Peak runoff and duration outputs are:
-   - `peakro_raw = vave * qpstar`
-   - `peakro = max(peakro_raw, 3.63e-8)` (legacy minimum-flow floor from
-     `conrun.for`)
-   - `watdur = Q / peakro`
-8. Duration cap rule is explicit:
-   - if `watdur > 86400`, set `watdur = 86400`.
-9. WB16 domain posture is hard-fail for missing/non-finite/out-of-domain
-   symbols and non-physical intermediates (`effdrr <= 0`, `vave <= 0`,
-   `remax <= 0`, `vstar <= 0`, `m <= 0`, `ealpha <= 0`, `efflen <= 0`,
-   negative `tc` discriminant for `vstar < 1`, or non-finite `peakro`/`watdur`).
-   No fallback/default branch is allowed.
-10. Positive near-zero WB16 intermediates are valid and must not hard-fail
-    solely due epsilon-threshold comparisons prior to baseline floor
-    canonicalization.
-11. `m` producer authority is baseline-canonical and constant:
-    `/workdir/wepp-forest_260430_baseline/src/rdat.for` assigns `m = 1.5`
-    (Chezy depth-discharge exponent), and runtime producers must preserve this
-    value unless superseded by canonical contract amendment.
-12. `ealpha` producer authority is baseline-canonical as a chain:
-    `frcfac -> rdat(alpha) -> alphay -> eplane(optional multi-OFE projection)`
-    (`/workdir/wepp-forest_260430_baseline/src/frcfac.for`,
-    `rdat.for`, `irs.for`, `eplane.for`).
-13. Runtime lanes with complete producer inputs must publish baseline-lineage
-    `ealpha` from the authoritative producer chain with explicit provenance:
-    - `wb16_ealpha_compatibility_seed_used = false`
-    - `wb16_ealpha_seed_policy = "runtime_provided"`
-14. Compatibility seeding (`ealpha = 1.0`) is allowed only as a typed
-    degradation branch when required producer inputs are unavailable, and only
-    with explicit provenance publication and warning:
-    - `wb16_ealpha_compatibility_seed_used = true`
-    - `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`
-    - warning text containing `SIMPIPE-W-003`
-    Compatibility-seed runs are non-promotable for full WB16
-    input-provenance parity closure.
+1. WB16 executes after reconciled runoff and hourly source producers. It uses
+   the same source-complete 24-bin runoff shape as hourly erosion, transfer,
+   and HBP serialization.
+2. For `Q = 0`, every hourly depth, `peakro_depth`, public `peakro`, and
+   `watdur_rect` is zero. No nonzero minimum-flow floor is published.
+3. For `Q > 0`, all 24 hourly depths must be finite and nonnegative and their
+   sum must reconstruct `Q` within the owning runoff closure tolerance.
+4. Each hourly depth is the shared normalized source shape multiplied by the
+   accepted event runoff depth. Hourly WB19 saturation return remains in its
+   producer hour. No daily-return retiming or synthetic uniform fallback is
+   allowed for a production peak.
+5. With `Δt = 3600 s`, `peakro_depth = max_h(q_hourly(h)/Δt)`. The earliest
+   maximum hour is published deterministically as `wb16_peak_hour`.
+6. `watdur_rect = Q / peakro_depth`. It is derived after peak, cannot exceed
+   the 24-hour support when hourly volume closes, and is labeled rectangular-
+   equivalent duration.
+7. Public `peakro` is computed at the publication boundary as the peak depth
+   rate on the public event-runoff depth basis times the exact `Area` used for
+   event volume. The area multiplier occurs exactly once.
+8. Rainfall duration/intensity, `tstar`, `vstar`, `qpstar`, `ealpha`, `m`, and
+   APPMTH branches are retired as production WB16 peak operands. They may remain
+   only in explicitly diagnostic historical schemas and cannot carry a runtime
+   or publication claim.
+9. Missing hourly timing on positive runoff, non-finite/negative hourly depth,
+   hourly/event volume mismatch, nonpositive bin duration, non-finite peak,
+   or non-finite/nonpositive public area hard-fails. No fallback/default branch
+   is allowed.
 
 ### WB16 Guard Codes
 
@@ -1300,31 +1282,22 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 ### WB16 Contract-Test Vectors
 
-1. Nominal WB16 vector emits finite `peakro` and `watdur` with continuity
-   `watdur = Q/peakro` and one authoritative method branch id.
-2. Branch-selector vectors independently trigger:
-   - `tstar >= 1`,
-   - `vstar < 1` with `tc < tstar < 1`,
-   - `vstar < 1` with `0 < tstar <= tc`,
-   - `vstar >= 1` with `tstar < 1`.
-3. Missing required WB16 symbol hard-fails in closure diagnostics with
+1. Equal-volume concentrated and spread hourly vectors emit distinct,
+   physically ordered peak rates while both close exactly to event runoff.
+2. Saturation-only, melt-only, and runon-only vectors retain the modeled source
+   hour and select the corresponding peak hour.
+3. Missing hourly timing for positive runoff hard-fails with
    `HKERNEL-WB16-PEAK-E-001`.
-4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
-5. Domain-invalid WB16 symbol/intermediate hard-fails with
+4. Non-finite hourly depth hard-fails with `HKERNEL-WB16-PEAK-E-002`.
+5. Negative depth, volume mismatch, or invalid bin/area basis hard-fails with
    `HKERNEL-WB16-PEAK-E-003`.
-6. Near-zero positive runoff vector (`0 < Q < 1.0e-8`) executes the
-   baseline-authoritative branch, emits `peakro = 3.63e-8`, `watdur = 0`,
-   and does not hard-fail.
-7. Runtime-producer provenance vector: when required producer symbols are
-   available, runtime emits
-   `wb16_ealpha_compatibility_seed_used = false`,
-   `wb16_ealpha_seed_policy = "runtime_provided"`, and no `SIMPIPE-W-003`
-   warning.
-8. Compatibility-seed provenance vector: when `ealpha` is not
-   runtime-produced and compatibility seeding is invoked, runtime emits
-   `wb16_ealpha_compatibility_seed_used = true`,
-   `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`, and warning id
-   `SIMPIPE-W-003`.
+6. Dry runoff emits exact zero peak and duration; positive near-zero runoff
+   remains represented by its hourly series without a legacy floor.
+7. Two publication areas with identical hourly depth rates produce identical
+   internal rates and linearly scaled public `m3/s` values.
+8. Independent reconstruction from produced hourly operands and area matches
+   both event volume and public peak and rejects the old rainfall-envelope,
+   adjacent diagnostic, and missing-area formulas.
 
 ## WB13 Daily Output-Surface Authority Addendum
 
@@ -2468,6 +2441,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-09` | `166` | `Codex` | PEAK-HOURLY closure amendment: retired rainfall-envelope/APPMTH production peak authority, made the shared 24-bin source-complete runoff series and in-hour surface return authoritative, defined maximum hourly mean depth/flow rates, removed the dry-flow peak floor and uniform timing fallback, restricted positive near-zero runoff canonicalization to source-free WB14 roundoff under `TOL-WATBAL-006`, and required exactly-once public area conversion plus independent volume/peak reconstruction (`INV-WATBAL-102..104`). |
 | `2026-08-08` | `165` | `Codex` | VEGETATION-BOUNDARY-AUTHORITY amendment: established hydrology-only Stage B mutation, aggregate same-layer admissibility, bounded reason-coded allocations, dual reconstruction, and atomic vegetation/hydrology commit; declared the existing WAT `Interception` publication alias to close unit-registry mapping. |
 | `2026-07-04` | `164` | `Claude Code` | E.3 stage 2e (Codex round-2): the EROD14/EROD15 binding-exposure REGISTRY rows flipped `active` → `deleted-historical` (the body-addendum banners landed in the prior revision; the registry posture now matches — no live obligations, SCSTRUCT promotion gates void). |
 | `2026-07-04` | `163` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |

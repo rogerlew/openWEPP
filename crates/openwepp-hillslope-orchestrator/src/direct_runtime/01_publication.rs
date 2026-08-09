@@ -474,7 +474,7 @@ fn direct_publication_runoff_operands(
     validate_nonnegative_direct_m("publication.runoff.runvol_basis_m", runvol_basis_m)?;
     let qofe_publication_mm = q_publication_mm;
     let (peak_runoff_m3_s, runoff_duration_s) =
-        direct_publication_peak_runoff_operands(day_frame, runvol_basis_m)?;
+        direct_publication_peak_runoff_operands(day_frame, runvol_basis_m, lane.area_m2)?;
     Ok(DirectPublicationRunoffOperands {
         q_mm: q_publication_mm,
         qofe_mm: qofe_publication_mm,
@@ -582,17 +582,39 @@ fn direct_publication_erosion_operands(
 fn direct_publication_peak_runoff_operands(
     day_frame: &DirectDayFrame,
     q_runoff_m: f64,
+    area_m2: f64,
 ) -> Result<(Option<f64>, Option<f64>), DirectRuntimeError> {
     validate_finite("publication.runoff.q_runoff_m", q_runoff_m)?;
     validate_nonnegative_direct_m("publication.runoff.q_runoff_m", q_runoff_m)?;
+    validate_finite("publication.runoff.area_m2", area_m2)?;
+    if area_m2 <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "publication.runoff.area_m2",
+        });
+    }
     if let Some(peak_runoff) = day_frame.peak_runoff_shadow_projection.as_ref() {
+        if peak_runoff.q_runoff_m == 0.0 {
+            return Ok((Some(0.0), Some(0.0)));
+        }
+        validate_finite(
+            "publication.runoff.peak_runoff_rate_m_s",
+            peak_runoff.peak_runoff_rate_m_s,
+        )?;
+        let peak_runoff_rate_m_s = peak_runoff.peak_runoff_rate_m_s * q_runoff_m
+            / peak_runoff.q_runoff_m;
+        validate_finite(
+            "publication.runoff.basis_adjusted_peak_runoff_rate_m_s",
+            peak_runoff_rate_m_s,
+        )?;
+        let peak_runoff_m3_s = peak_runoff_rate_m_s * area_m2;
+        validate_finite("publication.runoff.peak_runoff_m3_s", peak_runoff_m3_s)?;
         return Ok((
-            Some(peak_runoff.peak_runoff_m3_s),
+            Some(peak_runoff_m3_s),
             Some(peak_runoff.runoff_duration_s),
         ));
     }
-    if q_runoff_m < WB16_RUNOFF_NEAR_ZERO_THRESHOLD {
-        return Ok((Some(WB16_PEAKRO_FLOOR), Some(0.0)));
+    if q_runoff_m == 0.0 {
+        return Ok((Some(0.0), Some(0.0)));
     }
     Ok((None, None))
 }
@@ -674,7 +696,7 @@ pub struct DirectPublicationInterceptionOperands {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectPublicationErosionOperands {
-    pub peak_runoff_m3_s: Option<f64>,
+    pub peak_runoff_rate_m_s: Option<f64>,
     pub runoff_duration_s: Option<f64>,
     pub total_detachment_kg: Option<f64>,
     pub total_deposition_kg: Option<f64>,
@@ -700,7 +722,7 @@ impl DirectPublicationErosionOperands {
     #[must_use]
     pub const fn absent_authority() -> Self {
         Self {
-            peak_runoff_m3_s: None,
+            peak_runoff_rate_m_s: None,
             runoff_duration_s: None,
             total_detachment_kg: None,
             total_deposition_kg: None,
@@ -717,7 +739,7 @@ impl DirectPublicationErosionOperands {
     #[must_use]
     pub const fn zero_authority() -> Self {
         Self {
-            peak_runoff_m3_s: Some(0.0),
+            peak_runoff_rate_m_s: Some(0.0),
             runoff_duration_s: Some(0.0),
             total_detachment_kg: Some(0.0),
             total_deposition_kg: Some(0.0),
@@ -893,14 +915,43 @@ mod cqr_publication_tests {
         );
 
         assert_eq!(
-            direct_publication_peak_runoff_operands(&day, 0.0).expect("dry peak"),
-            (Some(WB16_PEAKRO_FLOOR), Some(0.0))
+            direct_publication_peak_runoff_operands(&day, 0.0, 1.0).expect("dry peak"),
+            (Some(0.0), Some(0.0))
         );
         assert_eq!(
-            direct_publication_peak_runoff_operands(&day, 0.01).expect("missing wet peak"),
+            direct_publication_peak_runoff_operands(&day, 0.01, 1.0)
+                .expect("missing wet peak"),
             (None, None)
         );
-        assert!(direct_publication_peak_runoff_operands(&day, f64::NAN).is_err());
+        day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            q_runoff_m: 0.02,
+            peak_runoff_rate_m_s: 0.002 / 3_600.0,
+            runoff_duration_s: 36_000.0,
+            peak_hour_index: Some(4),
+            method_branch: 5.0,
+            tstar: 0.0,
+            qpstar: 0.0,
+            vstar: 0.0,
+        });
+        let (peak_100_m3_s, duration_100_s) =
+            direct_publication_peak_runoff_operands(&day, 0.01, 100.0)
+                .expect("basis-adjusted public peak");
+        let (peak_200_m3_s, duration_200_s) =
+            direct_publication_peak_runoff_operands(&day, 0.01, 200.0)
+                .expect("area-scaled public peak");
+        assert!(
+            (peak_100_m3_s.expect("public peak") - (0.002 / 3_600.0) * 0.5 * 100.0)
+                .abs()
+                < 1.0e-15
+        );
+        assert_eq!(
+            peak_200_m3_s.expect("public peak").to_bits(),
+            (2.0 * peak_100_m3_s.expect("public peak")).to_bits()
+        );
+        assert_eq!(duration_100_s, duration_200_s);
+        assert!(direct_publication_peak_runoff_operands(&day, f64::NAN, 1.0).is_err());
 
         direct_publication_storage_operands(&day).expect("zero storage operands");
         direct_publication_water_temperature_operands(&day).expect("absent melt temperature");

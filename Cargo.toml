@@ -777,6 +777,10 @@ name = "vegetation_boundary_authority_contract"
 path = "tests/integration/vegetation_boundary_authority_contract.rs"
 
 [[test]]
+name = "peak_hourly_authority_contract"
+path = "tests/integration/peak_hourly_authority_contract.rs"
+
+[[test]]
 name = "snow_wet_compaction_operand_authority"
 path = "tests/integration/snow_wet_compaction_operand_authority.rs"
 

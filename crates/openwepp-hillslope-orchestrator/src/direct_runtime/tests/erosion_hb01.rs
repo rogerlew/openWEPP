@@ -38,7 +38,7 @@ fn nominal_inputs() -> DirectErod13Inputs {
         tc_k: 2.0,
         tc_m: 1.0,
         q_runoff_m: 0.01,
-        peakro_m3_s: 0.001,
+        peakro_m_s: 0.001,
         watdur_s: 10.0,
     }
 }
@@ -95,7 +95,7 @@ fn hb01_b_d_h_every_strict_positive_input_rejects_zero_with_exact_field() {
         ("erosion.erod13.tc_k", |v| v.tc_k = 0.0),
         ("erosion.erod13.tc_m", |v| v.tc_m = 0.0),
         ("erosion.erod13.q_runoff_m", |v| v.q_runoff_m = 0.0),
-        ("erosion.erod13.peakro_m3_s", |v| v.peakro_m3_s = 0.0),
+        ("erosion.erod13.peakro_m_s", |v| v.peakro_m_s = 0.0),
         ("erosion.erod13.watdur_s", |v| v.watdur_s = 0.0),
     ];
     for (field, mutate) in cases {
@@ -153,7 +153,7 @@ fn hb01_f_h_every_required_scalar_rejects_all_nonfinite_values() {
         ("erosion.erod13.tc_k", |v, x| v.tc_k = x),
         ("erosion.erod13.tc_m", |v, x| v.tc_m = x),
         ("erosion.erod13.q_runoff_m", |v, x| v.q_runoff_m = x),
-        ("erosion.erod13.peakro_m3_s", |v, x| v.peakro_m3_s = x),
+        ("erosion.erod13.peakro_m_s", |v, x| v.peakro_m_s = x),
         ("erosion.erod13.watdur_s", |v, x| v.watdur_s = x),
     ];
     for (field, mutate) in fields {
@@ -213,8 +213,9 @@ fn hb01_a_real_r7d6_consumer_publishes_wave1_state_and_operands() {
         lane_index: 0,
         day_index: 0,
         q_runoff_m: 0.01,
-        peak_runoff_m3_s: 0.001,
+        peak_runoff_rate_m_s: 0.001,
         runoff_duration_s: 10.0,
+        peak_hour_index: Some(0),
         method_branch: 1.0,
         tstar: 0.0,
         qpstar: 0.0,
@@ -243,8 +244,9 @@ fn r7d6_day_with_authoritative_runoff(q_runoff_m: f64) -> DirectDayFrame {
         lane_index: 0,
         day_index: 0,
         q_runoff_m,
-        peak_runoff_m3_s: 0.001,
+        peak_runoff_rate_m_s: 0.001,
         runoff_duration_s: 10.0,
+        peak_hour_index: Some(0),
         method_branch: 1.0,
         tstar: 0.0,
         qpstar: 0.0,

@@ -635,11 +635,8 @@ fn build_hbp_output_from_direct_publication(
         nofe,
         julian_day: latest_row.calendar.julian_day,
         peak_runoff_m3_s: direct_publication_required_erosion_scalar(
-            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
-            latest_row
-                .runoff
-                .peak_runoff_m3_s
-                .or(latest_row.erosion.peak_runoff_m3_s),
+            "runoff.peak_runoff_m3_s",
+            latest_row.runoff.peak_runoff_m3_s,
         )?,
         duration_seconds: direct_publication_required_erosion_scalar(
             "runoff.runoff_duration_s or erosion.runoff_duration_s",
@@ -945,10 +942,8 @@ fn build_hillslope_pass_row_from_direct_publication(
         runvol_m3: row.runoff.runvol_m3,
         sbrunv_m3: row.subsurface.sbrunv_m3,
         peakro_m3_s: direct_publication_required_erosion_scalar(
-            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
-            row.runoff
-                .peak_runoff_m3_s
-                .or(row.erosion.peak_runoff_m3_s),
+            "runoff.peak_runoff_m3_s",
+            row.runoff.peak_runoff_m3_s,
         )?,
         // SC-SED-001 1b-C: surface the Wave-1 sediment-continuity totals
         // when the single-OFE solve is active; `None` (disabled / multi-OFE

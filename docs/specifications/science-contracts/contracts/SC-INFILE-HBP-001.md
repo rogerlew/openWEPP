@@ -4,9 +4,9 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.3
+contract_version: 0.2.4
 evidence_mode: Static
-last_updated_utc: 2026-07-09T00:00:00Z
+last_updated_utc: 2026-08-09T00:00:00Z
 ---
 
 # SC-INFILE-HBP-001 Hillslope Binary Pass Input Parser Contract
@@ -113,10 +113,10 @@ the payload end (no silent skip of unknown bytes). Fields by
 
 | Canonical symbol | Minor | Units | Type / encoding | Semantics |
 | --- | --- | --- | --- | --- |
-| `event.duration_seconds` | >=0 | s | f64 | event/storm duration |
+| `event.duration_seconds` | >=0 | s | f64 | Rectangular-equivalent runoff duration (`event runoff volume / event.peak_runoff_m3_s`); not physical rainfall duration, hydrograph duration, or time to peak. |
 | `event.time_of_concentration_hours` | >=0 | h | f64 | reserved/fixed on the direct writer |
 | `event.overland_flow_alpha` | >=0 | none | f64 | reserved/fixed on the direct writer |
-| `event.peak_runoff_m3_s` | >=0 | m³/s | f64 | **minor >= 1: true volumetric discharge** (`depth_rate × hillslope area`). Minor-0 payloads from the direct writer carried the WB16 depth-rate basis (m/s) under this name — a labeled legacy-basis caveat for minor-0 consumers. |
+| `event.peak_runoff_m3_s` | >=0 | m³/s | f64 | **minor >= 1: maximum hourly mean volumetric discharge**, equal to `max(event.hourly_runoff_volume_m3[hour]) / 3600 s` and to the internal maximum-hour depth rate times hillslope area exactly once. Minor-0 payloads from the direct writer carried the WB16 depth-rate basis (m/s) under this name — a labeled legacy-basis caveat for minor-0 consumers. |
 | `event.total_detachment_kg` / `event.total_deposition_kg` | >=0 | kg | i64 ×1e9 | event totals (true kg per `SC-SED-001` E.1) |
 | `event.sediment_concentration_kg_m3[npart]` | >=0 | kg/m³ | u32 count + f64[] | per-class exit concentration; count must equal `npart` (production writes `npart = 5` from minor 1; earlier direct shards wrote `npart = 1`) |
 | `event.particle_flow_fraction[npart]` | >=0 | none | u32 count + f64[] | per-class exiting fractions (`SC-SED-001` GAP-SED-007 basis) |
@@ -237,8 +237,12 @@ No silent fallback to legacy text pass family is permitted.
    single- and multi-OFE shards. The
    water-side closure `Σ hourly_runoff_volume_m3 = runvol` is a
    **producer-side** (writer) obligation on the same `runvol` basis the pass
-   parquet publishes; a concentration × volume reconstruction is NOT a valid
-   intake gate (it would embed the producer's `efflen`/`slplen` geometry).
+   parquet publishes. The producer must also close
+   `event.peak_runoff_m3_s = max(hourly_runoff_volume_m3) / 3600 s` and
+   `event.duration_seconds = runvol / event.peak_runoff_m3_s` for positive
+   runoff, with exact zero peak/duration for zero runoff. A concentration ×
+   volume reconstruction is NOT a valid intake gate (it would embed the
+   producer's `efflen`/`slplen` geometry).
    Parser-local validation stays structural (`HBP-E-015`).
 6. Latest-day no-event intake (run-level, WSHED-W9): watershed pass inventory
    must consume `HbpLatestEventState`, not `Option<HbpLatestEventPayload>`, so
@@ -304,6 +308,7 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-08-09` | `0.2.4` | PEAK-HOURLY producer amendment: defined minor-1 peak as maximum hourly mean flow reconstructed from hourly runoff volumes, relabeled duration as rectangular-equivalent, and bound peak/duration to the event-volume basis. |
 | `2026-07-09` | `0.2.3` | WSHED-W9 amendment: added typed latest-day no-event/non-runoff parser state, source event-kind preservation, no stale prior-`EVENT` reuse after later `NO_EVENT`/`SUBEVENT`, and `G-HBP-013` watershed inventory handoff authority. |
 | `2026-07-09` | `0.2.2` | M-T2 baseflow export closure: named the existing final runoff-EVENT scaled integer pair as `event.baseflow_volume_m3` (`gwbfv`) and `event.deep_seepage_volume_m3` (`gwdsv`) under `SC-GWBASEFLOW-001`, added parser boundary mapping and `G-HBP-012`; layout/order unchanged. |
 | `2026-07-04` | `0.2.1` | E.3 chain-form amendment: Section 8.5 intake closure generalized — multi-OFE EVENT totals are chain-aggregated (Σ across OFEs, event day) with the EXIT-scoped hourly sediment surface, keeping the single identity `Σ S_h = tdet − tdep` valid for both single- and multi-OFE shards (`SC-SED-001#INV-SED-016` (e)). |

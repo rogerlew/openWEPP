@@ -1,0 +1,5 @@
+__COMMAND:/home/workdir/openWEPP/.venv/bin/python docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py --plan /workdir/wepppy/docs/work-packages/20260808_peakflow_topanga_census_prep/artifacts/topanga-trial-plan.json --source-root /home/workdir/peakflow-topanga-census-evidence/b575fde4a28cf85f1d28e0dfff305472b5419fd9b3639d39dc437600617080de --evidence-root /home/workdir/openwepp-hourly-peak-topanga-probe --binary target/release/openwepp-cli-hill --jobs 1 --limit 1 --resume
+__COMMAND_EXIT:0
+__COMMAND_DURATION_SECONDS:4
+__COMMAND_START_TS:1786308290
+__COMMAND_END_TS:1786308294
