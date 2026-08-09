@@ -1,10 +1,9 @@
 # Vegetation Profile And Field Audit
 
-Status: `queued`
+Status: `predecessor-owned / awaiting accepted artifact`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Audit all 71 fields and 32 profiles in pinned `GIS2RHESSys/vegCollection.csv`,
-plus generated `stratum_*.def` behavior. Record spelling, units, requiredness,
-default/sentinel behavior, source citation, completeness, typed target,
-deciduous/evergreen/mixed role, and `ADOPT`/`ADAPT`/`RE-DERIVE`/`DEFER`/`REJECT`.
+The code-to-literature authority-audit precursor owns the 71-field/32-profile
+audit. Replace this placeholder with its accepted matrix identity and the exact
+profiles selected for implementation only after precursor closure.

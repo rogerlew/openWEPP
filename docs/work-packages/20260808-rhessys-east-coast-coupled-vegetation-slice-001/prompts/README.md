@@ -1,6 +1,6 @@
 # Prompt Lifecycle
 
-Status: `active`
+Status: `queued / precursor blocked`
 
 The executable kickoff prompt begins in `active/`. At terminal disposition,
 move it byte-for-byte to `archived/` and update both directory indexes.

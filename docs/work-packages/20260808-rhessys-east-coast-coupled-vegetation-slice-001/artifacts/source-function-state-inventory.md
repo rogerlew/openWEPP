@@ -1,10 +1,9 @@
 # Source Function And State Inventory
 
-Status: `queued`
+Status: `predecessor-owned / awaiting accepted artifact`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Inventory the exact RHESSysEastCoast callers, callees, inputs, outputs, units,
-cadence, mutation, feedback direction, citations, defaults, sentinels, floors,
-branches, and openWEPP disposition for radiation, interception, conductance,
-Penman-Monteith, Farquhar photosynthesis, phenology, roots, and dependencies.
+The code-to-literature authority-audit precursor owns the exact inventory.
+Replace this placeholder with its accepted artifact identity and bounded
+successor subset only after the precursor passes review and verification.

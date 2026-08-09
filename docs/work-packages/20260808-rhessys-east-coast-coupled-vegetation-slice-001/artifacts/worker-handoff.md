@@ -4,7 +4,7 @@ Status: `queued`
 
 Evidence mode: `not-run`
 
-First action: complete `source-function-state-inventory.md` and
-`vegetation-profile-field-audit.md` against the pinned clean checkouts. Do not
-start canonical contract or production edits until the coherent boundary is
-selected and the package is prospectively reconciled.
+First action after release: verify the precursor's final source/profile,
+concordance, deviation, authority-gap, contract, successor-amendment, review,
+and verification evidence. Do not start canonical contract or production edits
+while a required `BLOCK_SUCCESSOR` row remains.

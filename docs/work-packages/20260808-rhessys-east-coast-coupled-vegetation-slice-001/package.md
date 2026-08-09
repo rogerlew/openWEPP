@@ -1,6 +1,6 @@
 # RHESSys East Coast Coupled Vegetation Slice
 
-Status: `active / licensed-source audit next`
+Status: `queued / blocked on code-to-literature authority audit`
 
 Date: `2026-08-08`
 
@@ -10,7 +10,8 @@ Plan class: `Critical source-aware constitutive migration and compatibility`
 
 ## Objective
 
-Admit and implement the first default-off `openwepp-vegetation` slice from the
+After the code-to-literature precursor is complete, admit and implement the
+first default-off `openwepp-vegetation` slice from the
 pinned MIT-licensed RHESSysEastCoast source and GIS2RHESSys vegetation profiles.
 The implementation must preserve the coupled process and state relationships
 needed for deciduous, evergreen, and mixed forests, accept existing RHESSys
@@ -24,6 +25,9 @@ does not want scope constrained merely to keep the earlier slice small, requires
 deciduous and mixed-forest behavior, and wants to reuse existing RHESSys
 vegetation files. The predecessor literature-only package is therefore
 superseded rather than forced to choose an isolated empirical conductance law.
+The user subsequently directed the source-versus-literature audit into a
+separate hard-gate precursor so implementation does not discover authority gaps
+after Rust work begins.
 
 This package does not presume that every source branch or parameter is correct.
 It separates three authorities:
@@ -53,9 +57,23 @@ the pinned MIT source directly, but production behavior still requires
 contract-first admission. Default activation, empirical calibration, and
 production cutover are excluded.
 
-The first phase is an audit, not production coding. It must determine the
-smallest coherent process boundary from evidence rather than assume that a
-single function is independently meaningful.
+The precursor owns source, citation, parameter, concordance, deviation, and
+authority-gap auditing. This package may start only after that predecessor has
+a terminal disposition and has prospectively amended this package to the exact
+verified implementation boundary.
+
+## Precursor Hard Dependency
+
+Required predecessor:
+`../20260808-rhessys-east-coast-code-literature-authority-audit-001/`.
+
+Before executing this package, verify that the precursor provides a complete
+function/state inventory, 71-field/32-profile parameter matrix,
+code-to-literature concordance matrix, deviation and authority-gap registers,
+canonical authority/gap amendments, successor amendment report, accepted dual
+review disposition, and passing terminal verification. Any required
+`BLOCK_SUCCESSOR` row keeps this package queued until its named authority need
+is closed or this package is prospectively narrowed with severability evidence.
 
 ## Required Coupling Interpretation
 
@@ -66,9 +84,9 @@ Penman-Monteith water-flux path and the Farquhar photosynthesis path. That is a
 coupled water/conductance/carbon implementation, but it is not automatically a
 Bonan-style bidirectional assimilation-solved stomatal formulation.
 
-The source inventory must record exact dependency direction, state cadence,
-iteration, and mutation. Documentation and contracts must not use “coupled” as
-a stronger claim than the source and tests support.
+The accepted precursor inventory must record exact dependency direction, state
+cadence, iteration, and mutation. Documentation and contracts must not use
+“coupled” as a stronger claim than the audited source and tests support.
 
 ## Deciduous And Mixed-Forest Acceptance
 
@@ -83,8 +101,9 @@ The supported data model is explicitly multistratum:
 
 `GIS2RHESSys/vegCollection.csv` currently exposes 71 fields and 32 profiles,
 including generic and East Coast species profiles. These counts are intake
-facts, not a claim that all rows are complete or validated. The parameter audit
-must disposition each field and each candidate first-slice profile.
+facts, not a claim that all rows are complete or validated. The precursor
+parameter audit must disposition each field and each candidate first-slice
+profile before this package begins.
 
 ## Existing Vegetation-File Compatibility
 
@@ -105,12 +124,12 @@ files can be used; it does not require preserving accidental parser behavior.
 
 ## Included Scope
 
-- Exact source/function/state/call inventory for RHESSysEastCoast canopy
-  radiation, interception, conductance, Penman-Monteith, Farquhar
-  photosynthesis, phenology, root demand, and the minimum coupled dependencies.
-- Exact field/profile/citation/default inventory for GIS2RHESSys
-  `vegCollection.csv` and generated stratum definition behavior.
-- MIT notice custody and per-surface provenance records.
+- Consume and preserve the precursor's accepted source/function/state/call,
+  field/profile, code/literature concordance, deviation, authority-gap, and MIT
+  notice/provenance records.
+- Close only implementation-phase authority questions newly exposed by the
+  exact selected API/test design; any material expansion requires prospective
+  package amendment and the same audit standard.
 - Canonical contract amendments needed for the selected coherent slice.
 - Contract-derived tests and one required Level-4 external-authority suite
   created before production Rust.
@@ -149,7 +168,8 @@ files can be used; it does not require preserving accidental parser behavior.
 
 ## Source-Aware Admission Rubric
 
-Every candidate surface receives a recorded score and disposition:
+The precursor applies this rubric to every candidate surface. This package
+must preserve the accepted result and may not reopen it without new evidence:
 
 | Criterion | Pass condition |
 |---|---|
@@ -167,31 +187,33 @@ may enter production Rust with an unresolved rubric row.
 
 ## Phase Plan
 
-1. Freeze pre-implementation intent, exact base/diff, instruction map, source
-   commits, license digests, required-reading budget, and owned write set.
-2. Produce the function/state/call inventory and 71-field/32-profile audit.
-   Identify source defects, implicit defaults, citations, units, and coupling.
-3. Select the smallest coherent coupled boundary that satisfies deciduous and
-   mixed-forest acceptance. Amend this package prospectively if its exact write
-   set changes.
-4. Amend canonical contracts; add contract-derived tests, locked fixtures, and
-   the required A3 suite; complete the pre-implementation contract gate.
-5. Implement the strict loader and default-off Rust slice with typed errors and
+1. Verify the precursor's terminal identity, reviews, concordance/gap closure,
+   successor amendment report, and absence of required `BLOCK_SUCCESSOR` rows.
+   Freeze pre-implementation intent, exact base/diff, selected boundary,
+   instruction map, source commits, required-reading budget, and owned write set.
+2. Reconcile the audited boundary with the concrete Rust API and fixture design;
+   prospectively amend this package before implementation if new dependencies
+   appear.
+3. Amend canonical contracts as still required; add contract-derived tests,
+   locked fixtures, and the required A3 suite; complete the pre-implementation
+   contract gate.
+4. Implement the strict loader and default-off Rust slice with typed errors and
    explicit source/provenance identities.
-6. Add deciduous, evergreen, mixed-stratum, limiting, negative, property,
+5. Add deciduous, evergreen, mixed-stratum, limiting, negative, property,
    conservation, independent-reconstruction, and source-differential tests.
-7. Complete calibration-readiness analysis and classify all parameter claims.
-8. Reconcile the exact diff and run every applicable focused, source-quality,
+6. Complete calibration-readiness analysis and classify all parameter claims.
+7. Reconcile the exact diff and run every applicable focused, source-quality,
    A0/A1/A3, anti-evasion, dependency, security/license, quick, and Critical
    full-workspace requirement.
-9. Complete independent science/source and Rust reviews, disposition findings,
+8. Complete independent science/source and Rust reviews, disposition findings,
    rerun invalidated gates, then perform independent terminal verification.
-10. Archive the kickoff prompt, update lifecycle records, disposition the
-    package, and commit/push the stable increment when authorized.
+9. Archive the kickoff prompt, update lifecycle records, disposition the
+   package, and commit/push the stable increment when authorized.
 
 ## Contract-First Hard Gate
 
-No production Rust may be authored until canonical contract text,
+No production Rust may be authored until the precursor dependency is complete,
+no required `BLOCK_SUCCESSOR` row remains, and canonical contract text,
 contract-derived tests, source/profile provenance fixtures, and the required A3
 suite bind every selected equation, parameter, unit, guard, and compatibility
 transformation. An incomplete source inventory, unresolved scientific-authority
@@ -216,8 +238,9 @@ and unrelated crates are excluded. Amend the package before touching them.
 
 ## Validation Plan
 
-The execution package must refine exact test names after source audit and before
-production edits. Minimum expected terminal commands include:
+The execution package must refine exact test names from the accepted precursor
+and concrete API before production edits. Minimum expected terminal commands
+include:
 
     cargo fmt --all -- --check
     cargo clippy -p openwepp-vegetation --all-targets -- -D warnings
@@ -239,7 +262,9 @@ observational QA for this non-CQR package.
 ## Exit Criteria
 
 - Both source identities and MIT notices are preserved and auditable.
-- The selected source/profile inventory has no unresolved rubric row.
+- The precursor has a passing terminal disposition and the selected
+  source/profile/concordance inventory has no unresolved or required
+  `BLOCK_SUCCESSOR` row.
 - Canonical contracts and pre-implementation tests predate production Rust.
 - Valid pinned vegetation definitions parse deterministically; invalid,
   incomplete, duplicate, sentinel, and non-finite inputs fail as typed errors.
@@ -256,8 +281,8 @@ observational QA for this non-CQR package.
 
 ## Review And Delegation Requirements
 
-Subagent authorization: this package explicitly authorizes spawning/delegating
-to two independent read-only science/source reviewers, one
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent read-only science/source reviewers, one
 `rust_code_reviewer`, one `rust_qa_reviewer`, one
 `comparator_suite_runner`, and two independent read-only terminal verifiers.
 Expected outputs are the named review, review-disposition, gate, and verification
@@ -278,7 +303,11 @@ If unavailable, record the block and do not claim the required review or gate.
   while retaining its evidence.
 - [x] (2026-08-08) Scaffolded this package, prompt, evidence placeholders, and
   lifecycle/backlog/reference updates.
-- [ ] Complete source/function/state and field/profile inventories.
+- [x] (2026-08-08) User moved the code-to-literature authority audit into
+  `../20260808-rhessys-east-coast-code-literature-authority-audit-001/` as a
+  hard precursor.
+- [ ] Wait for the precursor's concordance, gap closure, successor amendment,
+  reviews, and terminal verification.
 - [ ] Select and admit the exact coherent first implementation boundary.
 - [ ] Pass the contract-first gate before production Rust.
 - [ ] Implement, validate, review, verify, and disposition the slice.
@@ -313,19 +342,31 @@ If unavailable, record the block and do not claim the required review or gate.
   Rationale: package size is subordinate to a coherent source and state
   boundary; actual implementation remains contract-gated.
   Date/Author: 2026-08-08 / user and Codex.
+- Decision: Move the complete code-to-literature audit into a separately
+  dispositioned hard precursor.
+  Rationale: the implementation package should begin from reviewed concordance
+  and authority-gap evidence rather than encounter missing or contradictory
+  science after production edits begin.
+  Date/Author: 2026-08-08 / user and Codex.
 
 ## Outcomes And Retrospective
 
 Planning/scaffold outcome only. No canonical science contract, Rust source,
 fixture, external-authority suite, production consumer, or runtime default has
-changed. The next actionable step is the pinned source and parameter inventory.
+changed. The next actionable work is the separate code-to-literature authority
+audit; this package remains queued until that predecessor amends and releases
+it.
 
 ## Idempotence And Recovery
 
-Source audits are read-only against pinned clean checkouts. Record hashes before
-and after any extracted fixture. Do not modify either external checkout. If the
-contract-first gate fails, preserve the audit and close `executed-hold` without
-production Rust. Never reset unrelated user work.
+Consume the precursor's pinned read-only audit without modifying either external
+checkout. If its accepted authority boundary cannot support implementation,
+keep this package queued or close `executed-hold` without production Rust.
+Never reset unrelated user work.
 
 Revision note (2026-08-08): initial licensed-source successor scaffolded from
 the user's deciduous/mixed-forest and vegetation-file compatibility direction.
+
+Revision note (2026-08-08): execution queued behind a distinct
+code-to-literature authority-audit precursor; source inventory and authority-gap
+closure moved out of this implementation package.

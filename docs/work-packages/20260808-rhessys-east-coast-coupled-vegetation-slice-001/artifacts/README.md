@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `queued / source audit next`
+Status: `queued / precursor blocked`
 
 Evidence mode: `Static`
 
@@ -9,9 +9,9 @@ that an audit, implementation, review, gate, or verification has run.
 
 - `source-and-license-manifest.md` — pinned repositories, files, digests,
   notices, and per-surface provenance roles.
-- `source-function-state-inventory.md` — coupled call/state/cadence inventory.
-- `vegetation-profile-field-audit.md` — 71-field/32-profile compatibility and
-  scientific-provenance disposition.
+- `source-function-state-inventory.md` and
+  `vegetation-profile-field-audit.md` — successor copies/pointers to the
+  precursor's accepted inventories; they are not independently executed here.
 - `coupling-boundary-admission.md` — selected coherent slice and rubric verdicts.
 - `pre-implementation-intent.md` and `pre-implementation-contract-gate.md` —
   exact source/diff and contract-before-code evidence.

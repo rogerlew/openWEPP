@@ -7,29 +7,32 @@ publish, send external messages, or touch files outside the declared write set.
 
 Execution mode: package-end-to-end.
 
-Execute every phase in `package.md` sequentially through terminal disposition
-or a proven declared hold. The first actionable phase is the licensed source,
-state, call, field, profile, citation, default, and numerical-behavior audit.
-Do not begin canonical contract edits until the coherent coupled boundary is
-selected. Do not begin production Rust until the contract-first gate passes.
+Precondition: do not execute this prompt until
+`20260808-rhessys-east-coast-code-literature-authority-audit-001` has a passing
+terminal disposition, has amended this package, and leaves no required
+`BLOCK_SUCCESSOR` row. If the precondition is unmet, stop without edits and
+report the predecessor dependency.
+
+After release, execute every phase in `package.md` sequentially through terminal
+disposition or a proven declared hold. Begin by verifying the predecessor's
+accepted inventory, concordance, deviations, parameter matrix, authority gaps,
+contract amendments, reviews, and successor-amendment report. Do not begin
+production Rust until the package's independent contract-first gate passes.
 
 User constraints are binding: support deciduous and mixed forests; accept
 existing valid RHESSys vegetation definition files; do not narrow scope merely
 to avoid coupled photosynthesis/conductance work. Mixed forest is explicit
 multistratum composition, never an undocumented averaged parameter profile.
 
-Source-aware posture: direct inspection and adaptation from the two pinned MIT
-repositories is authorized. Record exact source coordinates and preserve the
-MIT notice. Licensing does not make implementation behavior or parameter rows
-scientific authority. Adjudicate every sentinel, implicit default, numerical
-floor, branch, unit, citation, and parameter domain through canonical contracts
-and typed openWEPP behavior.
+Source-aware posture: direct adaptation from the two pinned MIT repositories is
+authorized only within the predecessor's accepted boundary. Preserve exact
+source coordinates and the MIT notice. Do not reopen a concordance or migration
+disposition without new evidence and prospective package reconciliation.
 
-Coupling language must be exact. Determine the actual direction among
-Jarvis-style conductance, Penman-Monteith water flux, Farquhar photosynthesis,
-phenology, canopy state, and root demand. Do not imply bidirectional
-assimilation-solved stomata unless the pinned source and admitted contract prove
-that behavior.
+Coupling language must match the accepted precursor record for Jarvis-style
+conductance, Penman-Monteith water flux, Farquhar photosynthesis, phenology,
+canopy state, and root demand. Do not imply bidirectional assimilation-solved
+stomata unless the precursor evidence and admitted contract prove that behavior.
 
 ## Required Reading
 
@@ -39,6 +42,10 @@ that behavior.
 - `/home/workdir/openWEPP/docs/codex_exec_plans.md`
 - `/home/workdir/openWEPP/docs/work-packages/AGENTS.md`
 - `/home/workdir/openWEPP/docs/work-packages/README.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/package.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/disposition.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/worker-handoff.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/successor-amendment-report.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/artifacts/worker-handoff.md`
 - `/home/workdir/openWEPP/docs/specifications/science-contracts/AGENTS.md`
@@ -68,50 +75,48 @@ that behavior.
 
 ### On Demand
 
-- RHESSysEastCoast source files only as their process/call dependencies enter
-  the inventory; begin with stratum defaults, canopy daily/hourly flows,
-  conductance response curves, Penman-Monteith, Farquhar photosynthesis,
-  phenology, and root-demand paths.
-- GIS2RHESSys `vegCollection.csv` and the exact R scripts that read it and emit
-  `stratum_*.def` files.
+- RHESSysEastCoast and GIS2RHESSys source files named by accepted precursor rows
+  only when implementation or differential-test work requires their exact
+  expression.
 - `SC-LANDSURFACEENERGY-001`, `SC-EVAP-001`, `SC-WATBAL-001`, `SC-PLANT-001`,
   management, and residue contracts only when the selected boundary touches
   their ownership or shared lineage.
-- Literature cited by a selected source equation or parameter. Read the actual
-  primary source before treating it as scientific authority.
+- Primary literature named by an accepted precursor row when implementing or
+  reviewing that exact behavior.
 - External-authority templates, registries, obligations, and adjacent Rust/test
   sources when their authoring phase begins.
 
-Required-reading budget: `560923` local Core bytes, `WARN` (`>400000` and
+Required-reading budget: `586599` local Core bytes, `WARN` (`>400000` and
 `<=800000`). External source files and on-demand literature are excluded until
-their trigger applies. Record the recomputed terminal budget in package
-evidence if Core files change.
+their trigger applies. Record the recomputed terminal budget in package evidence
+if Core files change.
 
 ## Execution
 
-1. Record exact openWEPP base/diff, instruction chain, source commits/worktree
-   state, license digests, write set, and required-reading budget.
-2. Complete both inventories without editing production code. Classify every
-   candidate with the package rubric and preserve source coordinates.
-3. Select the smallest coherent boundary satisfying deciduous, evergreen, and
-   mixed-stratum acceptance. Prospectively reconcile package/write-set impacts.
-4. Amend canonical contracts, add contract-derived tests and locked fixtures,
-   define the required A3 suite, and complete independent review and the
-   pre-implementation gate.
-5. Implement the strict vegetation-file loader and coupled default-off Rust
+1. Verify the precursor's terminal identity, accepted reviews, complete audit
+   matrices, successor amendments, source identities, and absence of required
+   `BLOCK_SUCCESSOR` rows. Record the openWEPP base/diff, instruction chain,
+   write set, and required-reading budget.
+2. Reconcile the audited boundary with the concrete Rust API and fixtures;
+   prospectively amend the package before implementation if a new dependency
+   appears.
+3. Amend canonical contracts as still needed, add contract-derived tests and
+   locked fixtures, define the required A3 suite, and complete independent
+   review and the pre-implementation gate.
+4. Implement the strict vegetation-file loader and coupled default-off Rust
    slice with typed errors and source/provenance identities.
-6. Prove conservation, operand lineage, source-differential behavior, invalid
+5. Prove conservation, operand lineage, source-differential behavior, invalid
    input handling, default-off boundaries, and calibration readiness.
-7. Reconcile the exact diff and run every applicable directly selected focused,
+6. Reconcile the exact diff and run every applicable directly selected focused,
    contract, A0/A1/A3, anti-evasion, dependency, security/license, quick, and
    Critical full-workspace gate.
-8. Complete required independent science/source and Rust reviews, disposition
+7. Complete required independent science/source and Rust reviews, disposition
    all findings, rerun invalidated gates, and complete terminal verification.
-9. Archive this prompt byte-for-byte, update lifecycle records, disposition the
+8. Archive this prompt byte-for-byte, update lifecycle records, disposition the
    package truthfully, and commit/push the stable increment when authorized.
 
-Subagent authorization: this package explicitly authorizes spawning/delegating
-to two independent read-only science/source reviewers, one
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent read-only science/source reviewers, one
 `rust_code_reviewer`, one `rust_qa_reviewer`, one
 `comparator_suite_runner` for Critical heavy gates, and two independent
 read-only terminal verifiers. Expected outputs are the named package review,

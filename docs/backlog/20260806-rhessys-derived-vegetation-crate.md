@@ -2,25 +2,27 @@
 
 ## Status
 
-- `state`: **active; licensed-source successor scaffolded** - source-aware
-  migration may proceed inside the linked coupled-vegetation package; default
-  activation remains prohibited
+- `state`: **active; code-to-literature audit precursor** - source-aware
+  implementation is queued until the audit verifies, closes, or explicitly
+  blocks every required authority row; default activation remains prohibited
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
   provenance, not necessarily the permanent public crate name)
 - `origin`: static comparison of openWEPP, WEPP-forest, and RHESSys vegetation,
   ET, radiation, litter, snow, hydrology, and biogeochemistry implementations
-- `promotion trigger`: **complete** - the process/state boundary is admitted by
-  `SC-VEGETATION-001`, and pinned MIT-licensed RHESSysEastCoast/GIS2RHESSys
-  sources now provide an authorized source-aware implementation route
+- `implementation release trigger`: complete the active code-to-literature
+  precursor with passing reviews/verification, a prospectively amended coupled
+  boundary, and no required `BLOCK_SUCCESSOR` authority row
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
 - `superseded research package`:
   [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
-- `active implementation-planning package`:
+- `active authority-audit precursor`:
+  [RHESSYS-EAST-COAST-CODE-LITERATURE-AUTHORITY-AUDIT](../work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/package.md)
+- `queued implementation package`:
   [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)
 
 ## Summary
@@ -391,10 +393,12 @@ fit cannot become a vegetation-class default without out-of-sample evidence.
 
 ## Phased Delivery
 
-1. **Licensed source and profile audit** - freeze both MIT license grants,
-   produce the RHESSysEastCoast function/state inventory and GIS2RHESSys
-   71-field/32-profile inventory, and classify source, format, parameter,
-   comparator, and scientific-authority roles.
+1. **Code-to-literature authority audit precursor** - freeze both MIT license
+   grants; produce the RHESSysEastCoast function/state/call inventory and
+   GIS2RHESSys 71-field/32-profile matrix; verify equations, parameters, units,
+   domains, defaults, sentinels, and branches against primary literature;
+   classify deviations; close admissible gaps; and amend the implementation
+   package before Rust work.
 2. **Boundary contract** - define native strata, units, state ownership,
    coupling cadence, allocation arbitration, errors, and conservation ledgers.
 3. **Independent crate skeleton** - typed state and synthetic soil boundary
@@ -421,6 +425,9 @@ amendment or creation of the applicable `SC-*` contracts.
 
 Promote a source-aware implementation increment only when:
 
+- the code-to-literature precursor has a passing reviewed/verified disposition,
+  has amended the exact successor boundary, and leaves no required
+  `BLOCK_SUCCESSOR` row;
 - every source-derived surface is tied to one of the two pinned MIT repositories
   and its notice-custody path is declared;
 - the function/state and field/profile inventories identify the exact coupled

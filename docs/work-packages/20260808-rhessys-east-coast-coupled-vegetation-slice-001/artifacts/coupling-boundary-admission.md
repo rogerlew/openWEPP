@@ -1,9 +1,9 @@
 # Coupling Boundary Admission
 
-Status: `queued`
+Status: `predecessor-owned / awaiting accepted artifact`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Select the smallest coherent coupled boundary only after both source inventories
-are complete. Score every surface against the package rubric and bind the exact
-contract, test, fixture, and claim disposition before production Rust.
+The code-to-literature authority-audit precursor selects and documents the
+coherent boundary. This package must bind the accepted subset to exact contracts,
+tests, fixtures, and claims before production Rust.
