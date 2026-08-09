@@ -10,14 +10,18 @@ Execution mode: package-end-to-end.
 Precondition: do not execute this prompt until
 `20260808-rhessys-east-coast-code-literature-authority-audit-001` has a passing
 terminal disposition, has amended this package, and leaves no required
-`BLOCK_SUCCESSOR` row. If the precondition is unmet, stop without edits and
-report the predecessor dependency.
+`BLOCK_SUCCESSOR` row, and
+`20260808-rhessys-east-coast-vegetation-authority-admission-001` has passed all
+three authority gates and explicitly released implementation. If the
+precondition is unmet, stop without edits and report the predecessor dependency.
 
-The precursor's 2026-08-08 audit amendment records required
-`AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` blockers, so this prompt is
-intentionally non-executable for production work until a reviewed
-authority-admission amendment closes them. Source licensing and audit
-completion do not satisfy that condition.
+The completed authority-admission amendment admits `AUTH-RHEC-016` at the
+authority level, while residual `AUTH-RHEC-001..011` plus
+`AUTH-RHEC-014/015` keep this prompt intentionally non-executable for
+production work. After those residual blockers close and the contract-first
+gate passes, this successor must implement and test the already-admitted strict
+acquisition boundary. Source licensing and audit completion do not satisfy the
+release condition.
 
 After release, execute every phase in `package.md` sequentially through terminal
 disposition or a proven declared hold. Begin by verifying the predecessor's

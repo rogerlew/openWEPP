@@ -64,8 +64,10 @@ verified implementation boundary.
 
 ## Precursor Hard Dependency
 
-Required predecessor:
-`../20260808-rhessys-east-coast-code-literature-authority-audit-001/`.
+Required predecessors:
+
+- `../20260808-rhessys-east-coast-code-literature-authority-audit-001/`;
+- `../20260808-rhessys-east-coast-vegetation-authority-admission-001/`.
 
 Before executing this package, verify that the precursor provides a complete
 function/state inventory, 71-field/32-profile parameter matrix,
@@ -74,6 +76,10 @@ canonical authority/gap amendments, successor amendment report, accepted dual
 review disposition, and passing terminal verification. Any required
 `BLOCK_SUCCESSOR` row keeps this package held until its named authority need
 is closed or this package is prospectively narrowed with severability evidence.
+The authority-admission predecessor must also pass all three of its internal
+gates and release this package explicitly. An `executed-hold`, partial safe
+schema decision, or unscoped parameter-table citation does not satisfy that
+dependency.
 
 ## Precursor Audit Result (Prospective Amendment)
 
@@ -363,8 +369,10 @@ If unavailable, record the block and do not claim the required review or gate.
   hard precursor.
 - [x] (2026-08-08) Precursor completed concordance, gap classification,
   successor amendment, dual review, validation, and terminal verification.
-- [ ] Close required `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` blocker
-  families; the 2026-08-08 audit did not release production implementation.
+- [ ] Close residual `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015` authority
+  blockers; `AUTH-RHEC-016` authority is admitted, but this successor must
+  implement and test its strict acquisition boundary after the contract-first
+  gate passes.
 - [ ] Select and admit the exact coherent first implementation boundary.
 - [ ] Pass the contract-first gate before production Rust.
 - [ ] Implement, validate, review, verify, and disposition the slice.
@@ -409,12 +417,14 @@ If unavailable, record the block and do not claim the required review or gate.
 ## Outcomes And Retrospective
 
 The precursor audit is complete and amended this package, but did not release
-production. `SC-VEGETATION-001` version 2 now records licensed provenance,
-strict schema identity, and explicit gaps; no constitutive law or profile set
-was admitted. No Rust source, fixture, external-authority suite, production
-consumer, or runtime default changed. The next action is reviewed canonical
-closure of `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016`; this package remains
-held until those blockers and its contract-first gate pass.
+production. `SC-VEGETATION-001` version 3 now records licensed provenance,
+strict schema identity, admitted local acquisition authority, and explicit
+gaps; no constitutive law or profile set was admitted. No Rust source, fixture,
+external-authority suite, production consumer, or runtime default changed. The
+next action is reviewed canonical closure of residual `AUTH-RHEC-001..011` plus
+`AUTH-RHEC-014/015`; this package remains held until those blockers and its
+contract-first gate pass. It must then implement and test the already-admitted
+`AUTH-RHEC-016` boundary.
 
 ## Idempotence And Recovery
 
@@ -427,6 +437,16 @@ Revision note (2026-08-08): initial licensed-source successor scaffolded from
 the user's deciduous/mixed-forest and vegetation-file compatibility direction.
 
 Revision note (2026-08-08): the distinct code-to-literature authority-audit
-precursor completed and amended this package. Implementation remains held until
-required `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` authority admission and
-the contract-first gate pass.
+precursor completed and amended this package. The later authority-admission
+package admitted `AUTH-RHEC-016`; implementation remains held until residual
+`AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015` authority admission and the
+contract-first gate pass.
+
+Revision note (2026-08-08): the integrated authority-admission predecessor was
+added as a second hard dependency. Its selected profile/initializer Gate 1 must
+pass before this package can execute.
+
+Revision note (2026-08-08): that authority-admission predecessor closed
+`executed-hold`. It admitted strict acquisition/schema form only; residual
+selected manifest/value/state and Gate 2-3 constitutive gaps keep this package
+held pending a newly authorized authority-closure package.

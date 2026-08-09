@@ -107,6 +107,35 @@ fn canonical_schema_and_registry_entry_are_bound() {
 }
 
 #[test]
+fn local_definition_acquisition_and_typed_schema_are_fail_closed() {
+    let contract = read(CONTRACT);
+
+    for required in [
+        "The schema-form portion of `AUTH-RHEC-001` and all authority requirements of",
+        "complete selected\nconsumed-field manifest and aliases remain missing",
+        "(repository, immutable_commit,\n   repository_relative_path, sha256)",
+        "caller-supplied local bytes",
+        "HTTP, HTTPS, FTP, mutable branch names such as `master`",
+        "Duplicate\n   keys are evidence and a resolution error",
+        "No parser default fills an absent field",
+        "Schema admission does not admit an empirical value",
+        "Initial state is a dated stand/plot observation",
+        "cannot be created by averaging raw or resolved parameter records",
+        "one-bit digest",
+        "mismatch; mutable reference",
+        "rejected cadence/unit alias",
+        "INV-VEGETATION-053",
+        "INV-VEGETATION-054",
+        "INV-VEGETATION-055",
+        "INV-VEGETATION-056",
+        "AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING",
+        "INITIAL_STATE_AUTHORITY_MISSING",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
 fn native_strata_topology_and_configuration_separation_are_explicit() {
     let contract = read(CONTRACT);
 

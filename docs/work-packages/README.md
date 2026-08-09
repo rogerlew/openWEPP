@@ -519,9 +519,12 @@ State as of `2026-08-08 UTC`:
 - `20260808-rhessys-east-coast-coupled-vegetation-slice-001/`
   - HELD / AUTHORITY ADMISSION REQUIRED: licensed source-aware implementation
     successor using pinned RHESSysEastCoast commit `375c75b1` and GIS2RHESSys
-    commit `6b20883d`. It may begin only after the precursor passes review and
-    verification. It remains blocked by required `AUTH-RHEC-001..011` and
-    `014..016`. Existing vegetation-file compatibility and explicit
+    commit `6b20883d`. It may begin only after the audit and authority-admission
+    predecessors pass and release the exact selected boundary. It remains
+    blocked by residual `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015`.
+    `AUTH-RHEC-016` authority is admitted, but its implementation and tests
+    remain obligations of this successor. Existing vegetation-file
+    compatibility and explicit
     deciduous/evergreen/mixed strata remain the target; activation and cutover
     remain excluded.
 
@@ -2331,14 +2334,25 @@ artifacts remain factual; do not dispatch or resume them independently.
 
 ## Execution Log
 
+- `20260808-rhessys-east-coast-vegetation-authority-admission-001/` closed
+  `executed-hold` after an integrated three-gate authority attempt. It admitted
+  strict local acquisition and schema form in `SC-VEGETATION-001` version 3,
+  including all authority requirements of `AUTH-RHEC-016`, but no complete
+  selected manifest/aliases, pine/oak values, compatible selected
+  stand/date/topology/state, constitutive chain, production Rust, or cutover.
+  Residual `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015` and independent Gate
+  2-3 gaps keep the implementation successor held; that successor must
+  implement and test the already-admitted `AUTH-RHEC-016` boundary.
+
 - `20260808-rhessys-east-coast-code-literature-authority-audit-001/` is
   complete as a docs-only code-to-literature authority audit. It enumerated 71
   CSV fields, 32 profiles, 53 parser-only defaults, 31 source groups, 35
   concordance rows, 30 deviations, and 16 gaps; amended
   `SC-VEGETATION-001` version 2 and the coupled successor; and passed dual
   review and verification. No production behavior or parameter set was
-  admitted. The successor remains blocked on `AUTH-RHEC-001..011` and
-  `AUTH-RHEC-014..016`.
+  admitted. At audit close, the successor remained blocked on
+  `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016`; the later authority-admission
+  package admitted `AUTH-RHEC-016` while retaining the other residual blockers.
 
 - `20260707-laned-router-tier1-local-numerics-001/` is complete as LANED ROUTER
   TIER-1 LOCAL NUMERICS. Result:

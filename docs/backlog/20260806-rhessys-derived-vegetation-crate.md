@@ -2,9 +2,11 @@
 
 ## Status
 
-- `state`: **blocked; audit complete, authority admission required** -
-  source-aware implementation remains closed on `AUTH-RHEC-001..011` and
-  `AUTH-RHEC-014..016`; default activation remains prohibited
+- `state`: **blocked; integrated authority admission executed-hold** -
+  source-aware implementation remains closed on residual
+  `AUTH-RHEC-001..011` plus `AUTH-RHEC-014/015`; `AUTH-RHEC-016` authority is
+  admitted but its implementation/tests remain a successor obligation; default
+  activation remains prohibited
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
@@ -22,6 +24,8 @@
   [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
 - `completed authority-audit precursor`:
   [RHESSYS-EAST-COAST-CODE-LITERATURE-AUTHORITY-AUDIT](../work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/package.md)
+- `executed-hold authority-admission package`:
+  [RHESSYS-EAST-COAST-VEGETATION-AUTHORITY-ADMISSION](../work-packages/20260808-rhessys-east-coast-vegetation-authority-admission-001/package.md)
 - `queued implementation package`:
   [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)
 
