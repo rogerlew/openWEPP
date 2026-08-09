@@ -216,6 +216,8 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - [x] (2026-08-09) Corrected the initial raw-source assembly after independent
   review: routed melt and runon now enter WB14 supply once, and peak/transfer/
   erosion/HBP consume the closing post-partition hourly ledger.
+- [x] (2026-08-09) Built exact anchor `949349e70` and passed a fresh
+  provenance-bound one-baseline/one-mutation Topanga probe.
 - [ ] Execute focused and Topanga cohort validation.
 - [ ] Complete Critical closure, review, verification, and disposition.
 
@@ -235,6 +237,17 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - WB14 independently accumulates up to 24 interval results; their arithmetic
   ledger can differ from the daily scalar by at most the contract-declared
   `TOL-WATBAL-009`. Material mismatch remains a typed hard failure.
+- Independent science review rejected distributing a daily-only frost debit
+  across positive hourly runoff as proxy timing. Complete retention may clear
+  the local series, but partial retention leaving runoff now requires an hourly
+  producer and otherwise fails closed.
+- Rust review exposed the same ownership problem for a local-only same-pass
+  infiltration correction applied after local liquid and runon had merged.
+  Mixed supply now requires source-tagged hourly debit custody and otherwise
+  fails closed; local-only execution retains its modeled producer hours.
+- HBP EVENT output had retained a fixed fixture calendar year, making a
+  multi-year Parquet join ambiguous. It now publishes the selected producer
+  row's calendar identity, and p61/p102 join on year plus Julian day.
 - The first full cohort attempt completed case execution but its summary write
   exposed heterogeneous scalar/dictionary mutation values in one Arrow column.
   The harness now stores those plan operands as stable JSON strings and has a
@@ -259,6 +272,16 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - Decision: routed melt and runon are hourly WB14 supply, not runoff limbs.
   Rationale: each source must receive infiltration and depression-storage
   opportunity exactly once before its residual can contribute to a peak.
+- Decision: never allocate a daily frost-retention scalar across hourly runoff.
+  Rationale: mass closure cannot manufacture subdaily process timing. The
+  current producer can prove complete retention, while partial positive
+  retention remains a typed missing-upstream failure until hourly custody is
+  implemented by an authorized follow-on.
+- Decision: do not apply a local-only daily infiltration correction to a
+  merged local/runon ledger.
+  Rationale: source ownership is part of timing authority. Mixed supply needs
+  source-tagged hourly debit operands; absence is a typed missing-upstream
+  failure, not permission to debit the earliest merged bin.
 - Decision: use `/home/workdir/openwepp-task-tmp` for heavy local gates.
   Rationale: it is an absolute external scratch directory consistent with the
   canonical temporary-directory guidance and avoids repository-root

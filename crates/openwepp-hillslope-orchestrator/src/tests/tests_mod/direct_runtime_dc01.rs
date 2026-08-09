@@ -1,6 +1,6 @@
 use crate::{
-    DirectDayFrame, DirectRunIdentity, DirectRuntimeError, DirectSnowCouplingInputs,
-    DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
+    DirectDayFrame, DirectRunIdentity, DirectRunonCarryDownstreamOperands, DirectRuntimeError,
+    DirectSnowCouplingInputs, DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
     DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs,
 };
@@ -111,6 +111,35 @@ fn routed_melt_can_infiltrate_without_creating_a_runoff_limb() {
 }
 
 #[test]
+fn wb14_preserves_tiny_positive_supply_and_rejects_invalid_supply_bins() {
+    let mut inputs = DirectWb14InfiltrationProducerInputs {
+        hourly_additional_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 0.0,
+        }],
+        effective_conductivity_m_s: 1.0e-6,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.0,
+        depression_storage_capacity_m: 0.0,
+    };
+    inputs.hourly_additional_supply_m[9] = 1.0e-15;
+    let outcome = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("every positive source-backed depth remains represented");
+    assert_eq!(outcome.hourly_excess_m[9].to_bits(), 1.0e-15_f64.to_bits());
+
+    for invalid in [-1.0e-15, f64::NAN] {
+        inputs.hourly_additional_supply_m = [0.0; 24];
+        inputs.hourly_additional_supply_m[9] = invalid;
+        assert!(
+            crate::direct_runtime::dc01_test_wb14_with_profile(&inputs).is_err(),
+            "invalid hourly additional supply {invalid} must fail"
+        );
+    }
+}
+
+#[test]
 fn hourly_peak_uses_saturation_return_in_its_produced_hour() {
     let wb14 = [0.0_f64; 24];
     let mut saturation = [0.0_f64; 24];
@@ -161,13 +190,41 @@ fn hourly_peak_fails_closed_for_positive_runoff_without_source_timing() {
     let error = crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
         0.003, &[0.0; 24], &[0.0; 24],
     );
-    assert!(matches!(
-        error.expect_err("positive runoff without source timing must fail closed"),
-        DirectRuntimeError::DirectKernelGuardFailure {
-            phase: "HKERNEL-WB16-PEAK-E-001",
-            ..
-        }
-    ));
+    let DirectRuntimeError::HydrologyKernelGuard(source) =
+        error.expect_err("positive runoff without source timing must fail closed")
+    else {
+        panic!("WB16 missing timing must use the typed hydrology guard")
+    };
+    assert_eq!(source.code(), "HKERNEL-WB16-PEAK-E-001");
+}
+
+#[test]
+fn hourly_peak_typed_guard_covers_nonfinite_and_closure_failures() {
+    let mut nonfinite = [0.0; 24];
+    nonfinite[3] = f64::NAN;
+    let DirectRuntimeError::HydrologyKernelGuard(nonfinite_guard) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.003, &nonfinite, &[0.0; 24],
+        )
+        .expect_err("non-finite hourly depth must fail")
+    else {
+        panic!("WB16 non-finite depth must use the typed hydrology guard")
+    };
+    assert_eq!(nonfinite_guard.code(), "HKERNEL-WB16-PEAK-E-002");
+
+    let mut nonclosing = [0.0; 24];
+    nonclosing[3] = 0.002;
+    let DirectRuntimeError::HydrologyKernelGuard(closure_guard) =
+        crate::direct_runtime::test_source_complete_hourly_peak_runoff_depth_rate_m_s(
+            0.003,
+            &nonclosing,
+            &[0.0; 24],
+        )
+        .expect_err("non-closing hourly depth must fail")
+    else {
+        panic!("WB16 closure failure must use the typed hydrology guard")
+    };
+    assert_eq!(closure_guard.code(), "HKERNEL-WB16-PEAK-E-003");
 }
 
 #[test]
@@ -202,51 +259,110 @@ fn partition_runoff_only_canonicalizes_source_free_roundoff() {
 }
 
 #[test]
-fn hourly_partition_reconciliation_debits_frost_without_retiming_runoff() {
+fn hourly_partition_reconciliation_clears_full_frost_retention_without_timing() {
     let mut hourly = [0.0; 24];
     hourly[2] = 0.006;
     hourly[8] = 0.004;
     let reconciled_m = crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
         &mut hourly,
-        0.008,
-        0.002,
+        0.0,
+        0.01,
     )
-    .expect("frost retention should reconcile against produced runoff hours");
+    .expect("full frost retention leaves no positive peak timing to claim");
 
-    assert!((reconciled_m - 0.008).abs() < 1.0e-15);
-    assert!((hourly[2] - 0.0048).abs() < 1.0e-15);
-    assert!((hourly[8] - 0.0032).abs() < 1.0e-15);
-    assert!(
-        hourly
-            .iter()
-            .enumerate()
-            .all(|(hour, depth_m)| matches!(hour, 2 | 8) || *depth_m == 0.0),
-        "the daily frost debit must not invent runoff hours"
+    assert_eq!(reconciled_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(hourly, [0.0; 24]);
+}
+
+#[test]
+fn hourly_partition_reconciliation_rejects_partial_daily_frost_timing() {
+    let mut hourly = [0.0; 24];
+    hourly[2] = 0.006;
+    hourly[8] = 0.004;
+    assert_eq!(
+        crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+            &mut hourly,
+            0.008,
+            0.002,
+        )
+        .expect_err("partial daily frost retention cannot invent positive runoff timing"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly frost-retention timing for partial positive runoff"
+        }
+    );
+}
+
+#[test]
+fn hourly_partition_reconciliation_rejects_positive_empty_ledger() {
+    for partition_runoff_m in [2.0e-12, 24.0e-9] {
+        let mut hourly = [0.0; 24];
+        assert_eq!(
+            crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+                &mut hourly,
+                partition_runoff_m,
+                0.0,
+            )
+            .expect_err("a positive daily scalar cannot supply missing hourly timing"),
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "hourly WB14 runoff ledger for positive partition runoff"
+            }
+        );
+    }
+}
+
+#[test]
+fn mixed_local_same_pass_infiltration_and_runon_requires_source_tagged_timing() {
+    assert_eq!(
+        crate::direct_runtime::test_ensure_hourly_same_pass_source_custody(0.002, 0.003)
+            .expect_err("a local-only daily debit cannot be applied to merged runon"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly source-tagged local/runon same-pass infiltration custody"
+        }
+    );
+    crate::direct_runtime::test_ensure_hourly_same_pass_source_custody(0.002, 0.0)
+        .expect("a local-only ledger preserves source custody");
+}
+
+#[test]
+fn positive_runon_without_a_wb14_producer_fails_closed() {
+    let identity = DirectRunIdentity::new(1, 1, 1, 1).expect("identity");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("day frame");
+    day.runon_carry_downstream_operands = DirectRunonCarryDownstreamOperands {
+        runon_input_m: 1.0e-15,
+        subsurface_carry_m: 0.0,
+    };
+    assert_eq!(
+        day.run_r4k_infiltration_depression_span()
+            .expect_err("positive runon requires a WB14 producer"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "WB14 producer for positive hourly runon supply"
+        }
     );
 }
 
 #[test]
 fn hourly_partition_reconciliation_is_bounded_and_hourly_authoritative() {
-    let mut within_bound = [0.0; 24];
-    within_bound[4] = 0.01;
+    let aggregate_bound_m = 24.0e-9;
+    let mut at_bound = [0.0; 24];
+    at_bound[4] = 0.01;
     let reconciled_m = crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
-        &mut within_bound,
-        0.01 + 1.0e-9,
+        &mut at_bound,
+        0.01 + aggregate_bound_m,
         0.0,
     )
-    .expect("one-interval arithmetic difference is within TOL-WATBAL-009");
+    .expect("the exact 24-interval aggregate bound is within TOL-WATBAL-009");
     assert_eq!(reconciled_m.to_bits(), 0.01_f64.to_bits());
-    assert_eq!(within_bound[4].to_bits(), 0.01_f64.to_bits());
+    assert_eq!(at_bound[4].to_bits(), 0.01_f64.to_bits());
 
-    let mut material_mismatch = [0.0; 24];
-    material_mismatch[4] = 0.01;
+    let mut outside_bound = [0.0; 24];
+    outside_bound[4] = 0.01;
     assert_eq!(
         crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
-            &mut material_mismatch,
-            0.011,
+            &mut outside_bound,
+            0.01 + aggregate_bound_m + 1.0e-12,
             0.0,
         )
-        .expect_err("material daily/hourly mismatch must fail closed"),
+        .expect_err("a daily/hourly mismatch outside the bound must fail closed"),
         DirectRuntimeError::DirectClosureToleranceExceeded {
             field: "runoff_partition.hourly_partition_runoff_m"
         }

@@ -332,6 +332,9 @@ fn r4il_runoff_input_producers_reject_invalid_inputs() {
     negative_infiltration
         .infiltration_depression_inputs
         .cumulative_infiltration_handoff_m = -0.25;
+    negative_infiltration
+        .infiltration_depression_inputs
+        .producer_inputs = None;
     assert_eq!(
         negative_infiltration
             .run_r4k_infiltration_depression_span()
@@ -366,6 +369,9 @@ fn r4k_wb14_producer_feeds_runoff_percolation_and_et_lineage() {
     day.liquid_input_inputs.liquid_input_handoff_m = 0.03;
     day.runon_carry_inputs.surface_runon_handoff_m = 0.0;
     day.runon_carry_inputs.subsurface_carry_handoff_m = 0.0;
+    day.transfer.surface_carry_m = [0.0; 24];
+    day.transfer.surface_hourly_weights = [0.0; 24];
+    day.transfer.lateral_carry_m = [0.0; 24];
     day.saturation_addback_inputs
         .surface_saturation_runoff_handoff_m = 0.0;
     day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
@@ -621,12 +627,18 @@ fn r4a_runoff_partition_rejects_invalid_values() {
     roundoff_overdraw
         .runon_carry_inputs
         .subsurface_carry_handoff_m = 0.0;
+    roundoff_overdraw.transfer.surface_carry_m = [0.0; 24];
+    roundoff_overdraw.transfer.surface_hourly_weights = [0.0; 24];
+    roundoff_overdraw.transfer.lateral_carry_m = [0.0; 24];
     roundoff_overdraw
         .infiltration_depression_inputs
         .cumulative_infiltration_handoff_m = 0.013_362_787_233_174_11;
     roundoff_overdraw
         .infiltration_depression_inputs
         .depression_storage_delta_handoff_m = 0.0;
+    roundoff_overdraw
+        .infiltration_depression_inputs
+        .producer_inputs = None;
     roundoff_overdraw
         .saturation_addback_inputs
         .surface_saturation_runoff_handoff_m = 0.0;
@@ -667,6 +679,9 @@ fn r4a_runoff_partition_rejects_invalid_values() {
         .saturation_addback_inputs
         .surface_saturation_runoff_handoff_m = f64::MAX;
     run_r4il_producers(&mut runoff_overflow);
+    runoff_overflow
+        .infiltration_depression_inputs
+        .producer_inputs = None;
     assert_eq!(
         runoff_overflow
             .run_r4a_runoff_partition_span()
@@ -707,10 +722,24 @@ fn r4il_seed_day() -> DirectDayFrame {
         surface_runon_handoff_m: 0.125,
         subsurface_carry_handoff_m: 0.015_625,
     };
+    day.transfer.surface_carry_m[1] = 0.125;
+    day.transfer.surface_hourly_weights[1] = 1.0;
+    day.transfer.lateral_carry_m[2] = 0.015_625;
     day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
         cumulative_infiltration_handoff_m: 0.25,
         depression_storage_delta_handoff_m: 0.0625,
-        producer_inputs: None,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hourly_additional_supply_m: [0.0; 24],
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: 0.5 / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0,
+            matric_potential_m: 0.2,
+            storage_capacity_m: 0.25,
+            depression_storage_capacity_m: 0.0625,
+        }),
     };
     day.saturation_addback_inputs = DirectSaturationAddbackInputs {
         surface_saturation_runoff_handoff_m: 0.03125,

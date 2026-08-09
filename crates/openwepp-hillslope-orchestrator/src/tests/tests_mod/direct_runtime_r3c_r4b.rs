@@ -1,4 +1,5 @@
 use super::*;
+use crate::{DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs};
 
 #[test]
 fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
@@ -622,10 +623,24 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         surface_runon_handoff_m: 0.125,
         subsurface_carry_handoff_m: 0.015_625,
     };
+    day.transfer.surface_carry_m[1] = 0.125;
+    day.transfer.surface_hourly_weights[1] = 1.0;
+    day.transfer.lateral_carry_m[2] = 0.015_625;
     day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
         cumulative_infiltration_handoff_m: 0.25,
         depression_storage_delta_handoff_m: 0.0625,
-        producer_inputs: None,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hourly_additional_supply_m: [0.0; 24],
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: 0.5 / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0,
+            matric_potential_m: 0.2,
+            storage_capacity_m: 0.25,
+            depression_storage_capacity_m: 0.0625,
+        }),
     };
     day.saturation_addback_inputs = DirectSaturationAddbackInputs {
         surface_saturation_runoff_handoff_m: 0.0,

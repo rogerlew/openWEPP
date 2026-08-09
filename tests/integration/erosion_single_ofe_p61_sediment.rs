@@ -158,9 +158,13 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
     assert!(volume_sum > 0.0, "the event day carries hourly volume");
     // Writer-side water closure (SC-INFILE-HBP-001 §8.5): Σ V_h equals the
     // pass parquet's runvol on the serialized event day (the max-tdet row).
+    let event_sim_year = event.calendar_year - climate_start_year(&run_dir.join("p61.cli")) + 1;
     let event_row = read_sediment_rows(pass_parquet)
         .into_iter()
-        .filter(|row| row.julian_day == i16::try_from(event.julian_day).expect("Julian fits i16"))
+        .filter(|row| {
+            row.sim_year_index == i16::try_from(event_sim_year).expect("simulation year fits i16")
+                && row.julian_day == i16::try_from(event.julian_day).expect("Julian fits i16")
+        })
         .max_by(|left, right| left.runvol_m3.total_cmp(&right.runvol_m3))
         .expect("serialized event day exists in pass parquet");
     assert!(
@@ -215,6 +219,7 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
 }
 
 struct SedimentRow {
+    sim_year_index: i16,
     julian_day: i16,
     tdet_kg: f64,
     tdep_kg: f64,
@@ -249,6 +254,15 @@ fn read_sediment_rows(path: &Path) -> Vec<SedimentRow> {
         let deposition = column("tdep");
         let runvol = column("runvol");
         let peakro = column("peakro");
+        let year_index = batch
+            .schema()
+            .index_of("year")
+            .expect("pass parquet carries year");
+        let year = batch
+            .column(year_index)
+            .as_any()
+            .downcast_ref::<Int16Array>()
+            .expect("year must be Int16");
         let julian_index = batch
             .schema()
             .index_of("julian")
@@ -264,6 +278,7 @@ fn read_sediment_rows(path: &Path) -> Vec<SedimentRow> {
             .collect();
         for i in 0..detachment.len() {
             rows.push(SedimentRow {
+                sim_year_index: year.value(i),
                 julian_day: julian.value(i),
                 tdet_kg: detachment[i],
                 tdep_kg: deposition[i],
@@ -324,6 +339,23 @@ fn fixture_path(name: &str) -> PathBuf {
         .join("tests")
         .join("fixtures")
         .join(name)
+}
+
+fn climate_start_year(path: &Path) -> i32 {
+    fs::read_to_string(path)
+        .expect("read fixture climate")
+        .lines()
+        .find_map(|line| {
+            let fields: Vec<_> = line.split_whitespace().take(3).collect();
+            let [day, month, year] = fields.as_slice() else {
+                return None;
+            };
+            let day = day.parse::<u8>().ok()?;
+            let month = month.parse::<u8>().ok()?;
+            let year = year.parse::<i32>().ok()?;
+            ((1..=31).contains(&day) && (1..=12).contains(&month) && year >= 1).then_some(year)
+        })
+        .expect("fixture climate contains a daily calendar row")
 }
 
 fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {

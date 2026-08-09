@@ -2,156 +2,145 @@
 
 Status: `complete`
 
-Review target: `c7dbfefe7c7c67137101ddd2c63cd4c4c2e062fa`, against the
-declared pre-implementation base
-`a65cc3973ddd04b07cad108fcb33d83a8c161abb`.
-
-Evidence:
-
-- Static: reviewed the committed production, runner, schema, integration-test,
-  contract, and mutation-census changes. Concurrent uncommitted workspace edits
-  were excluded from this review.
-- Ran, exact isolated target snapshot: `cargo fmt --all -- --check` passed.
-- Ran, exact isolated target snapshot:
-  `cargo clippy -p openwepp-hillslope-orchestrator -p openwepp-runner -p openwepp-hillslope-output --tests -- -D warnings`
-  failed on `clippy::too_many_lines`.
-- Ran, exact isolated target snapshot: five focused hourly-peak/source tests
-  passed under Nextest.
-- Ran, exact isolated target snapshot: all four tests in
-  `peak_hourly_authority_contract` passed under Nextest.
-- Not run by this reviewer: full-workspace quick/full/doctest gates and the
-  1,088-trial Topanga cohort; those remain separate package closure evidence.
+Review target: exact commit
+`949349e7055c5d19277eeb708401c4614a52cd77`, against the declared
+pre-implementation base `a65cc3973ddd04b07cad108fcb33d83a8c161abb`.
 
 ## Findings
 
-### HIGH — warnings-denied Clippy is red
-
-Path: `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:866`
-
-The affected-crate Clippy command fails because
-`cqr_publication_helpers_cover_guards_and_optional_authority_branches` is 113
-lines against the configured 100-line limit. This is a required gate failure,
-not optional cleanup. Split the mixed storage, erosion, peak-publication, and
-groundwater checks into cohesive tests; adding a lint suppression would retain
-the readability problem and is not the preferred disposition.
-
-### HIGH — the public hourly-peak claim lacks independent real-consumer reconstruction
+### HIGH — resumable census records omit model-active sidecar provenance
 
 Paths:
 
-- `tests/integration/peak_hourly_authority_contract.rs:31`
-- `tests/integration/erosion_single_ofe_p61_sediment.rs:150`
-- `tests/integration/erosion_multi_ofe_p102_chain.rs:55`
-- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py:140`
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py:117`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs:917`
 
-The package's new dedicated integration test checks source-text markers only.
-It can pass when the named implementation is dead, bypassed, duplicated, or
-arithmetically wrong. The real p61 and p102 consumer tests prove that the 24 HBP
-volumes sum to public `runvol`, but neither reconstructs
-`max(hourly_runoff_volume_m3) / 3600` and compares it with both the HBP EVENT
-peak and the same event's Parquet `peakro`.
+The census command enables `--legacy-sidecar-discovery`, and the runner then
+resolves and parses `snow.txt`, `frost.txt`, `wepp_ui.txt`, `pmetpara.txt`, and
+`gwcoeff.txt`. The frozen Topanga source tree contains `snow.txt` and
+`gwcoeff.txt`, so both are part of the executable input surface. However,
+`case_input_hashes` binds only the four primary `p<ID>` inputs plus optional
+`pmetpara.txt` and `wepp_ui.txt`.
 
-The census does not close this gap. It reads only final `runvol` and `peakro`,
-defines the maximum-hour fraction from those two values, and then checks the
-identity `peak_ratio = volume_ratio * shape_ratio`. That decomposition is true
-by construction and does not independently observe an hourly source bin.
+Changing `snow.txt` or `gwcoeff.txt` therefore leaves `record_matches` true and
+allows `--resume` to reuse stale output under new active inputs. The new tests
+mutate only `p1.sol`; none mutates a discovered sidecar or drives the actual
+`run_case(..., resume=True, ...)` reuse branch. Plan SHA, binary SHA, record
+schema, canonical cohort counts, corrupt-record rejection, atomic replacement,
+and heterogeneous plan-value serialization are now covered, but the prior
+provenance/resume blocker is only partially resolved. Bind every resolved
+sidecar (or a canonical resolved-input manifest) and test sidecar mutation plus
+the end-to-end resume control flow before closure.
 
-Add a real downstream test that parses the emitted HBP, independently computes
-the maximum hourly mean from its 24 volumes, and compares it with HBP
-`peak_runoff_m3_s`, Parquet `peakro`, event-volume closure, and
-rectangular-equivalent duration on the same keyed event. Its fixture must
-distinguish concentrated from spread runoff and reject daily-return retiming,
-uniform fallback, omitted area conversion, and duplicate area conversion.
-Without that evidence, acceptance criterion 4 and the package's
-anti-tautology/conservation requirements are not closed.
-
-### HIGH — census resume and “complete cohort” claims are not provenance-bound
-
-Path:
-`docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py:107`
-
-`--resume` trusts only that a record path exists and returns `reused` without
-opening or validating the NPZ. Records contain output arrays but no case ID,
-trial/input identity, plan hash, binary hash, tool/schema version, or source-file
-hashes. The terminal summary then stamps the current plan and binary hashes,
-which can misattribute stale output from a different executable or input set.
-Calendar equality alone also permits a wrong-case record with the same dates to
-be paired silently.
-
-In addition, `complete_frozen_cohort` means only “selected every eligible row in
-the supplied JSON.” An empty, truncated, duplicated, or substituted plan can
-therefore claim completion; the runner does not enforce the canonical plan
-identity, exactly 1,088 unique eligible trials, or the expected
-scenario/hillslope/family/direction inventory.
-
-Persist and validate an atomic per-case receipt binding the case and input-file
-hashes to the plan, binary, tool/schema, and expected output shape. Recompute or
-fail on any mismatch or corrupt record. Gate the completion flag on the
-canonical plan hash and exact unique cohort inventory, not merely the supplied
-list length. Add tests for valid reuse, corrupt records, and invalidation after
-binary, plan, case, and source-input changes.
-
-### MEDIUM — census failures and interruptions do not retain reproducible diagnostics
-
-Path:
-`docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py:131`
-
-Stdout and stderr are retained only for a nonzero process return or missing
-Parquet. Parquet read/schema/cast errors and finite/nonnegative validation
-failures lose the captured process diagnostics. NPZ output is written directly
-to its final path rather than by atomic temporary-file replacement, while
-resume accepts any final-path file. On the first future error, cancellation
-does not terminate already-running subprocesses, and no terminal partial/error
-summary records the cases that completed or remained active.
-
-Always retain command, return code, stdout, and stderr before parsing; write an
-atomic success or error receipt; replace records atomically; and produce a
-terminal partial summary with controlled subprocess shutdown. Exercise
-process, missing-file, corrupt-Parquet, numerical, interrupted-write, and
-multi-worker failure paths.
-
-### MEDIUM — public schema semantics and publication-boundary guards are under-tested
+### HIGH — daily frost retention manufactures hourly timing
 
 Paths:
 
-- `crates/openwepp-hillslope-output/src/hillslope_pass.rs:420`
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:582`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1432`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:204`
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:297`
 
-The changed `peakro` description is not asserted: the writer test inspects only
-the `runvol` unit. Assert the actual Arrow/Parquet `peakro` field name, type,
-nullability, `m^3/s` unit, maximum-hour description, and written value readback.
-The peak-publication helper test covers dry/wet optionality, two positive areas,
-and nonfinite public runoff depth, but does not cover negative/nonfinite area or
-invalid shadow `q_runoff_m`, depth-rate, and duration operands. Production
-currently relies on upstream construction and later consumer validation for
-part of that boundary. Add typed-error tests, including contradictory
-positive-public-runoff/zero-shadow-runoff input, so malformed public values
-fail at the publication seam.
+The exact commit proportionally removes a daily-only
+`frost_retained_local_liquid_m` scalar from every positive WB14 hourly runoff
+bin, then applies floating residual to the largest bin. The focused test
+ratifies the synthetic 60/40 debit, but there is no producer-hour frost custody
+surface or frost-active real-consumer fixture proving that distribution. This
+changes the closing hourly depths and potentially the published peak based on
+timing that the implementation explicitly says the producer does not have.
+
+Local `INV-WATBAL-103` text was amended to authorize the proportional debit,
+but it supplies no baseline or external physics provenance. That remains at
+odds with the repository prohibition on heuristic production-physics timing
+and with `INV-WATBAL-102`'s rule that normalized weights may not manufacture
+hourly depths from a daily scalar. Preserve producer-hour custody or fail
+closed when a material daily frost debit cannot be reconciled without
+retiming; do not use a synthetic proportional allocation as closure evidence.
+
+### MEDIUM — p61/p102 Parquet comparisons do not use the full event key
+
+Paths:
+
+- `tests/integration/erosion_single_ofe_p61_sediment.rs:161`
+- `tests/integration/erosion_multi_ofe_p102_chain.rs:85`
+
+Both real-consumer tests independently reconstruct HBP peak as
+`max(V_h) / 3600` and compare it with HBP and Parquet `peakro`, which is a major
+improvement. However, each selects the Parquet row by Julian day alone and
+takes the maximum `runvol` among matches. The HBP event exposes
+`sim_year_index` and `calendar_year`, and both fixtures span multiple years, so
+Julian day is not a unique event key. A wrong-year Parquet row can satisfy the
+comparison. Include year (and the outlet identity where applicable) in the
+row model and select exactly one row by the full HBP event key.
+
+### MEDIUM — line-count governance misses touched warning files and split intent
+
+Paths:
+
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/line-count-governance.md:1`
+- `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs:1`
+- `crates/openwepp-runner/src/hillslope/03_tests.rs:1`
+
+The exact terminal diff touches seven Rust files at or above the 2,000-line
+warning threshold, but the governance artifact lists only five. It omits
+`watershed_cli_behavior_contract.rs` at 2,996 lines and `03_tests.rs` at 2,892
+lines. It also labels the listed rows retained debt without the required
+decomposition rationale and follow-on split intent for each warning file.
+No touched file reaches the 3,000-line blocking threshold, but the package's
+maintainability disposition is incomplete under `crates/AGENTS.md`.
+
+## Resolved prior blockers and exact evidence
+
+- Ran, isolated archive of the exact target:
+  `cargo fmt --all -- --check` passed.
+- Ran, isolated archive of the exact target:
+  `cargo clippy -p openwepp-hillslope-orchestrator -p openwepp-runner -p openwepp-hillslope-output --tests -- -D warnings`
+  passed. The former overlong publication test is now split coherently.
+- Ran, isolated archive of the exact target: the p61, p102, and four
+  `peak_hourly_authority_contract` tests passed under Nextest (`6/6`). The real
+  HBP consumers reconstruct `max(V_h) / 3600`, event-volume closure, and public
+  Parquet peak; p61 also reconstructs rectangular-equivalent duration.
+- Ran, isolated archive of the exact target:
+  `publication_peak_scales_area_once_and_guards_its_boundary` passed (`1/1`).
+  Its 100/200 m2 cases independently distinguish exactly-once area scaling,
+  and the negative/nonfinite area plus contradictory runoff-basis guards are
+  exercised.
+- Ran, isolated archive of the exact target:
+  `writer_emits_valid_parquet_file_with_schema_metadata` passed in both owning
+  test binaries (`2/2`). It asserts `peakro` name, `Float64`, non-nullability,
+  `m^3/s`, maximum-hour description, and serialized value readback.
+- Ran, isolated archive of the exact target:
+  `.venv/bin/python -B .../tools/test_topanga_openwepp_census.py` passed
+  (`4/4`). Corrupt, binary-changed, primary-source-changed, nonfinite, negative,
+  and structured plan-value cases are covered.
+- Static, exact target: canonical plan SHA and exact 1,088 eligible / 280
+  baseline counts gate `complete_frozen_cohort`; trial IDs are required unique;
+  logs precede parsing; successful NPZ replacement is atomic.
+- Static, exact diff: `git diff --check` passed.
+- Not rerun by this reviewer: full-workspace quick/full/doctest/deny gates or
+  the heavy 1,088-trial census. Those remain separate exact-anchor package
+  evidence. A supplemental owning-crate quick run passed `467/467`, but it was
+  not used for this verdict because concurrent workspace edits made it
+  non-exact.
 
 ## Non-blocking debt and follow-ups
 
-- Internal kernel coverage is otherwise strong: melt-only, saturation-only,
-  runon-only, missing-source, source-backed and source-free tiny runoff,
-  nonfinite/negative limbs, exact zero, concentrated-versus-spread shape,
-  earliest-hour tie behavior, and weight nonclosure are directly exercised.
-- Two touched Rust files exceed the 2,000-line warning threshold:
-  `crates/openwepp-runner/src/hillslope/03_tests.rs` is 2,892 lines (unchanged
-  from base), and
-  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs` is 2,589
-  lines (2,541 at base). No touched file reaches the 3,000-line blocking
-  threshold, but closure still requires an explicit boundary rationale and
-  follow-on split intent. Peak/source-shape logic and its tests provide a
-  natural decomposition seam.
-- The 436-line census script combines execution, persistence, provenance,
-  pairing, statistics, and reporting. Separating record/provenance handling
-  from analysis would make the required failure-mode tests substantially
-  easier to maintain.
+- Add direct cases for nonfinite/negative shadow runoff depth, peak depth-rate,
+  and rectangular duration at the publication seam. Production has typed
+  guards, but the focused boundary test does not exercise those operands.
+- The 524-line census tool combines execution, process lifecycle, persistence,
+  provenance, pairing, statistics, and reporting. Splitting record/provenance
+  handling from execution and analysis would make failure-path tests easier to
+  maintain.
+- On batch failure, cancelling futures does not terminate already-running
+  subprocesses or emit a terminal partial-run summary. This is operational
+  debt rather than a successful-record correctness issue.
 
 ## QA Verdict
 
-`HOLD — NOT ACCEPTABLE FOR CRITICAL CLOSURE.` Focused behavior is promising and
-the internal numerical edge cases are well covered, but the exact reviewed
-commit fails warnings-denied Clippy and lacks independent public-path peak
-reconstruction plus trustworthy resumable census evidence. Re-review is
-required after the HIGH findings are resolved and the package's pending full
-gates are recorded.
+`HOLD — NOT ACCEPTABLE FOR CRITICAL CLOSURE.` Warnings-denied Clippy, public
+HBP/Parquet reconstruction, output metadata, canonical completion identity,
+atomic record replacement, and structured mutation values now pass focused
+review. Closure remains blocked by incomplete model-input provenance for
+resumed census records and unsupported daily-to-hourly frost retiming. The
+event-key and line-count dispositions should also be corrected before the
+package is accepted.

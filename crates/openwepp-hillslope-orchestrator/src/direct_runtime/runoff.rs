@@ -2,7 +2,10 @@ use crate::constants::{
     WB11_ZERO_THRESHOLD, WB15_BIOMASS_TO_KG_HA, WB15_CANCOV_MAX, WB15_INTERCEPT_BIOMASS_MAX_KG_HA,
     WB15_INTERCEPT_LINEAR_COEFF, WB15_INTERCEPT_MM_TO_M, WB15_INTERCEPT_QUADRATIC_COEFF,
 };
-use crate::hydrology::{DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome};
+use crate::hydrology::{
+    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome,
+    Wb11HydrologyKernelGuardError,
+};
 use crate::winter_column::DirectFrostLaneState;
 
 use super::{
@@ -232,6 +235,10 @@ impl DirectDayFrame {
             self.resolve_r4m_same_pass_infiltration_m(infiltration_depression)?;
         let additional_same_pass_infiltration_m =
             (same_pass_infiltration_m - infiltration_depression.cumulative_infiltration_m).max(0.0);
+        ensure_hourly_same_pass_source_custody(
+            additional_same_pass_infiltration_m,
+            self.runoff_partition_inputs.runon_input_m,
+        )?;
         remove_depth_from_hour_bins_earliest(
             &mut self.wb14_hourly_excess_m,
             additional_same_pass_infiltration_m,
@@ -657,13 +664,19 @@ impl DirectDayFrame {
     fn apply_dc01_runon_supply_admission(&mut self) -> Result<(), DirectRuntimeError> {
         let surface_total_m = self.runon_carry_downstream_operands.runon_input_m;
         let lateral_total_m = self.runon_carry_downstream_operands.subsurface_carry_m;
-        if surface_total_m + lateral_total_m <= WB11_ZERO_THRESHOLD
-            || self
-                .infiltration_depression_inputs
-                .producer_inputs
-                .is_none()
-        {
+        validate_nonnegative_direct_m("runon_admission.surface_total_m", surface_total_m)?;
+        validate_nonnegative_direct_m("runon_admission.lateral_total_m", lateral_total_m)?;
+        if surface_total_m == 0.0 && lateral_total_m == 0.0 {
             return Ok(());
+        }
+        if self
+            .infiltration_depression_inputs
+            .producer_inputs
+            .is_none()
+        {
+            return Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "WB14 producer for positive hourly runon supply",
+            });
         }
         let supply = Self::dc01_distribute_runon_supply(
             surface_total_m,
@@ -831,14 +844,18 @@ impl DirectDayFrame {
     }
 
     fn compute_r7d6_peak_runoff(&self) -> Result<DirectPeakRunoffState, DirectRuntimeError> {
+        self.compute_r7d6_peak_runoff_impl()
+            .map_err(map_wb16_peak_guard)
+    }
+
+    fn compute_r7d6_peak_runoff_impl(&self) -> Result<DirectPeakRunoffState, DirectRuntimeError> {
         let runoff = self.runoff_shadow_projection.as_ref().ok_or(
             DirectRuntimeError::MissingDirectUpstream {
                 upstream: "R4A runoff partition",
             },
         )?;
         let q_runoff_m = runoff.q_runoff_m;
-        validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)
-            .map_err(map_wb16_peak_guard)?;
+        validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)?;
         if q_runoff_m == 0.0 {
             return Ok(DirectPeakRunoffState {
                 q_runoff_m,
@@ -1421,6 +1438,23 @@ pub(crate) fn source_informed_partition_runoff_canonicalization(
     Ok(partition_runoff_m)
 }
 
+pub(super) fn ensure_hourly_same_pass_source_custody(
+    additional_local_infiltration_m: f64,
+    runon_input_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "infiltration_depression.additional_local_infiltration_m",
+        additional_local_infiltration_m,
+    )?;
+    validate_nonnegative_direct_m("infiltration_depression.runon_input_m", runon_input_m)?;
+    if additional_local_infiltration_m > 0.0 && runon_input_m > 0.0 {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly source-tagged local/runon same-pass infiltration custody",
+        });
+    }
+    Ok(())
+}
+
 fn scale_aware_depth_closure_tolerance_m(values: &[f64]) -> f64 {
     let scale_m = values
         .iter()
@@ -1430,10 +1464,10 @@ fn scale_aware_depth_closure_tolerance_m(values: &[f64]) -> f64 {
 }
 
 /// Reconcile the WB14 post-depression hourly lineage to the R4A local runoff
-/// operand. The only authorized material removal between those two surfaces
-/// is frost-retained local liquid. Its daily amount has no finer producer
-/// clock, so it is allocated proportionally over the already-produced WB14
-/// runoff hours; this is temporal bookkeeping, not a second runoff solve.
+/// operand. A daily-only frost-retention amount may clear the entire hourly
+/// surface series, because no peak timing remains to claim. Partial retention
+/// with positive residual runoff requires an hourly frost-retention producer
+/// and fails closed here; distributing a daily debit would invent peak timing.
 pub(super) fn reconcile_hourly_partition_runoff_profile(
     hourly_runoff_m: &mut [f64; DC01_HOUR_BIN_COUNT],
     partition_runoff_m: f64,
@@ -1458,9 +1492,15 @@ pub(super) fn reconcile_hourly_partition_runoff_profile(
             .iter()
             .copied()
             .fold(1.0_f64, |scale, value| scale.max(value.abs()));
-    if before_m == 0.0 && partition_runoff_m <= tolerance_m {
+    if before_m == 0.0 && partition_runoff_m == 0.0 && frost_retained_local_liquid_m <= tolerance_m
+    {
         *hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
         return Ok(0.0);
+    }
+    if before_m == 0.0 && partition_runoff_m > 0.0 {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly WB14 runoff ledger for positive partition runoff",
+        });
     }
     let hourly_partition_runoff_m = (before_m - frost_retained_local_liquid_m).max(0.0);
     if (hourly_partition_runoff_m - partition_runoff_m).abs() > tolerance_m {
@@ -1468,31 +1508,16 @@ pub(super) fn reconcile_hourly_partition_runoff_profile(
             field: "runoff_partition.hourly_partition_runoff_m",
         });
     }
-    let retained_fraction = (frost_retained_local_liquid_m / before_m).min(1.0);
-    for hourly_m in hourly_runoff_m.iter_mut() {
-        *hourly_m *= 1.0 - retained_fraction;
-    }
-    let after_m: f64 = hourly_runoff_m.iter().sum();
-    let residual_m = hourly_partition_runoff_m - after_m;
-    if residual_m.abs() <= tolerance_m {
-        if let Some((_, peak_bin_m)) = hourly_runoff_m
-            .iter_mut()
-            .enumerate()
-            .max_by(|(_, left), (_, right)| left.total_cmp(right))
-        {
-            *peak_bin_m += residual_m;
+    if frost_retained_local_liquid_m > tolerance_m {
+        if hourly_partition_runoff_m <= tolerance_m {
+            *hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
+            return Ok(0.0);
         }
-    }
-    let final_m = sum_nonnegative_direct_m(
-        "runoff_partition.hourly_partition_runoff_m",
-        hourly_runoff_m,
-    )?;
-    if (final_m - hourly_partition_runoff_m).abs() > tolerance_m {
-        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-            field: "runoff_partition.hourly_partition_runoff_m",
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly frost-retention timing for partial positive runoff",
         });
     }
-    Ok(hourly_partition_runoff_m)
+    Ok(before_m)
 }
 
 /// ADR-0036 `REF-SED-DC01-SHAPE`: the SINGLE hourly-runoff shape authority.
@@ -1555,18 +1580,23 @@ fn source_complete_hourly_peak_runoff_depth_rate_impl_m_s(
 }
 
 fn map_wb16_peak_guard(error: DirectRuntimeError) -> DirectRuntimeError {
-    let code = match &error {
-        DirectRuntimeError::MissingDirectUpstream { .. } => "HKERNEL-WB16-PEAK-E-001",
-        DirectRuntimeError::NonFiniteDirectValue { .. } => "HKERNEL-WB16-PEAK-E-002",
-        DirectRuntimeError::NegativeDirectValue { .. }
-        | DirectRuntimeError::DirectDomainViolation { .. }
-        | DirectRuntimeError::DirectClosureToleranceExceeded { .. } => "HKERNEL-WB16-PEAK-E-003",
+    let guard = match error {
+        DirectRuntimeError::MissingDirectUpstream { upstream } => {
+            Wb11HydrologyKernelGuardError::peak_missing_flux(upstream)
+        }
+        DirectRuntimeError::NonFiniteDirectValue { field } => {
+            Wb11HydrologyKernelGuardError::peak_nonfinite_flux(field, f64::NAN)
+        }
+        DirectRuntimeError::NegativeDirectValue { field } => {
+            Wb11HydrologyKernelGuardError::peak_flux_out_of_range(field, -1.0, Some(0.0), None)
+        }
+        DirectRuntimeError::DirectDomainViolation { field }
+        | DirectRuntimeError::DirectClosureToleranceExceeded { field } => {
+            Wb11HydrologyKernelGuardError::peak_flux_out_of_range(field, 1.0, None, None)
+        }
         _ => return error,
     };
-    DirectRuntimeError::DirectKernelGuardFailure {
-        phase: code,
-        detail: error.to_string(),
-    }
+    DirectRuntimeError::HydrologyKernelGuard(Box::new(guard))
 }
 
 fn closing_hourly_runoff_depths_m(
@@ -1661,45 +1691,20 @@ pub(crate) fn hourly_peak_runoff_depth_rate_m_s(
         });
     }
     let mut weight_total = 0.0;
-    let mut peak_rate_m_s = 0.0;
-    let mut peak_hour_index = 0;
+    let mut hourly_depths_m = [0.0; DC01_HOUR_BIN_COUNT];
     for (hour, weight) in hourly_weights.iter().copied().enumerate() {
         validate_nonnegative_direct_m("peak_runoff.hourly_weight", weight)?;
         weight_total += weight;
         validate_finite("peak_runoff.hourly_weight_total", weight_total)?;
-        let hourly_depth_m = q_runoff_m * weight;
-        validate_nonnegative_direct_m("peak_runoff.hourly_depth_m", hourly_depth_m)?;
-        let hourly_rate_m_s = hourly_depth_m / DC01_HOUR_BIN_SECONDS;
-        validate_nonnegative_direct_m("peak_runoff.hourly_rate_m_s", hourly_rate_m_s)?;
-        if hourly_rate_m_s > peak_rate_m_s {
-            peak_rate_m_s = hourly_rate_m_s;
-            peak_hour_index = hour;
-        }
+        hourly_depths_m[hour] = q_runoff_m * weight;
+        validate_nonnegative_direct_m("peak_runoff.hourly_depth_m", hourly_depths_m[hour])?;
     }
     if (weight_total - 1.0).abs() > WB11_ZERO_THRESHOLD {
         return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
             field: "peak_runoff.hourly_weight_total",
         });
     }
-    if peak_rate_m_s <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.peak_runoff_rate_m_s",
-        });
-    }
-    let runoff_duration_s = q_runoff_m / peak_rate_m_s;
-    validate_finite("peak_runoff.runoff_duration_s", runoff_duration_s)?;
-    if runoff_duration_s <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.runoff_duration_s",
-        });
-    }
-    let maximum_duration_s = DC01_HOUR_BIN_SECONDS * DC01_HOUR_BIN_COUNT_F64;
-    if runoff_duration_s > maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD) {
-        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-            field: "peak_runoff.runoff_duration_s",
-        });
-    }
-    Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
+    hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_depths_m)
 }
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
@@ -1757,7 +1762,7 @@ pub(crate) fn dc01_hourly_supply_basis(
         }
     }
     for (bin, runon_m) in bins.iter_mut().zip(hourly_additional_supply_m.iter()) {
-        *bin += runon_m.max(0.0);
+        *bin += runon_m;
     }
     bins.iter()
         .enumerate()
@@ -1775,6 +1780,24 @@ fn compute_wb14_infiltration_depression(
     Ok(compute_wb14_infiltration_depression_with_profile(inputs)?.state)
 }
 
+fn wb14_hourly_local_rainfall_m(
+    hyetograph: &[DirectWb14HyetographInterval],
+) -> [f64; DC01_HOUR_BIN_COUNT] {
+    let mut hourly_rainfall_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    for interval in hyetograph {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s > 0.0 && interval.intensity_m_s > 0.0 {
+            dc01_add_depth_to_hour_bins(
+                &mut hourly_rainfall_m,
+                interval.start_s,
+                interval.end_s,
+                interval.intensity_m_s * duration_s,
+            );
+        }
+    }
+    hourly_rainfall_m
+}
+
 pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<DirectWb14OutcomeWithProfile, DirectRuntimeError> {
@@ -1788,34 +1811,24 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     // driver). Bin it from the local hyetograph directly, independent of
     // the runon-combined excess basis below — otherwise a downstream OFE's
     // runon would contaminate `effint` (a MOFE-erosion prerequisite).
-    let mut hourly_rainfall_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
-    for interval in &inputs.hyetograph {
-        let duration_s = interval.end_s - interval.start_s;
-        if duration_s <= 0.0 || interval.intensity_m_s <= 0.0 {
-            continue;
-        }
-        dc01_add_depth_to_hour_bins(
-            &mut hourly_rainfall_m,
-            interval.start_s,
-            interval.end_s,
-            interval.intensity_m_s * duration_s,
-        );
-    }
+    let hourly_rainfall_m = wb14_hourly_local_rainfall_m(&inputs.hyetograph);
 
     // With material additional supply, re-bin onto the 24 x 1 h basis: local
     // hyetograph depth plus producer-timed routed melt and inter-OFE runon.
     // This is the baseline hourly xfin loop shape. A direct-rain-only lane
     // keeps its exact interval basis.
-    let additional_supply_total_m: f64 = inputs.hourly_additional_supply_m.iter().sum();
+    let additional_supply_total_m = sum_nonnegative_direct_m(
+        "infiltration_depression.hourly_additional_supply_m",
+        &inputs.hourly_additional_supply_m,
+    )?;
     let hourly_basis: Vec<DirectWb14HyetographInterval>;
-    let intervals: &[DirectWb14HyetographInterval] =
-        if additional_supply_total_m > WB11_ZERO_THRESHOLD {
-            hourly_basis =
-                dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.hourly_additional_supply_m);
-            &hourly_basis
-        } else {
-            &inputs.hyetograph
-        };
+    let intervals: &[DirectWb14HyetographInterval] = if additional_supply_total_m > 0.0 {
+        hourly_basis =
+            dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.hourly_additional_supply_m);
+        &hourly_basis
+    } else {
+        &inputs.hyetograph
+    };
 
     for interval in intervals {
         let duration_s = interval.end_s - interval.start_s;
@@ -1942,6 +1955,10 @@ fn validate_wb14_infiltration_inputs(
     validate_nonnegative_direct_m(
         "infiltration_depression.depression_storage_capacity_m",
         inputs.depression_storage_capacity_m,
+    )?;
+    sum_nonnegative_direct_m(
+        "infiltration_depression.hourly_additional_supply_m",
+        &inputs.hourly_additional_supply_m,
     )?;
     let mut previous_end_s = None;
     for interval in &inputs.hyetograph {

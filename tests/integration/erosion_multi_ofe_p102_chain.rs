@@ -83,9 +83,14 @@ fn erosion_multi_ofe_p102_wave1_chain_routes_sediment() {
     // Writer-side water closure on the OUTLET row of the serialized event
     // day: Σ V_h = runvol (pass rows are outlet-scoped by construction).
     let rows = read_outlet_rows(pass_parquet);
+    let event_sim_year = event.calendar_year - climate_start_year(&run_dir.join("p102.cli")) + 1;
     let event_row = rows
         .iter()
-        .filter(|row| row.julian == i64::from(event.julian_day) && row.runvol_m3 > 0.0)
+        .filter(|row| {
+            row.sim_year_index == i64::from(event_sim_year)
+                && row.julian == i64::from(event.julian_day)
+                && row.runvol_m3 > 0.0
+        })
         .max_by(|left, right| left.runvol_m3.total_cmp(&right.runvol_m3))
         .expect("the serialized event day must exist in the pass parquet");
     let volume_sum: f64 = event.hourly_runoff_volume_m3.iter().sum();
@@ -220,6 +225,7 @@ fn coarsen_second_ofe_soil(soil_path: &Path) {
 }
 
 struct OutletRow {
+    sim_year_index: i64,
     julian: i64,
     runvol_m3: f64,
     peakro_m3_s: f64,
@@ -235,12 +241,14 @@ fn read_outlet_rows(path: &Path) -> Vec<OutletRow> {
     let mut rows = Vec::new();
     for batch in reader {
         let batch = batch.expect("read record batch");
+        let year = column_i16(&batch, "year");
         let julian = column_i16(&batch, "julian");
         let runvol = column_f64(&batch, "runvol");
         let peakro = column_f64(&batch, "peakro");
         let tdet = column_f64(&batch, "tdet");
         for i in 0..batch.num_rows() {
             rows.push(OutletRow {
+                sim_year_index: i64::from(year.value(i)),
                 julian: i64::from(julian.value(i)),
                 runvol_m3: runvol.value(i),
                 peakro_m3_s: peakro.value(i),
@@ -308,6 +316,23 @@ fn fixture_path(name: &str) -> PathBuf {
         .join("tests")
         .join("fixtures")
         .join(name)
+}
+
+fn climate_start_year(path: &Path) -> i32 {
+    fs::read_to_string(path)
+        .expect("read fixture climate")
+        .lines()
+        .find_map(|line| {
+            let fields: Vec<_> = line.split_whitespace().take(3).collect();
+            let [day, month, year] = fields.as_slice() else {
+                return None;
+            };
+            let day = day.parse::<u8>().ok()?;
+            let month = month.parse::<u8>().ok()?;
+            let year = year.parse::<i32>().ok()?;
+            ((1..=31).contains(&day) && (1..=12).contains(&month) && year >= 1).then_some(year)
+        })
+        .expect("fixture climate contains a daily calendar row")
 }
 
 fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {

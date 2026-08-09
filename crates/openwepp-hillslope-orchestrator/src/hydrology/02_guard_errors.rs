@@ -138,6 +138,39 @@ pub enum Wb11HydrologyKernelGuardError {
 
 impl Wb11HydrologyKernelGuardError {
     #[must_use]
+    pub fn peak_missing_flux(symbol: impl Into<BoundarySymbol>) -> Self {
+        Self::MissingRequiredFluxSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+            symbol: symbol.into(),
+        }
+    }
+
+    #[must_use]
+    pub fn peak_nonfinite_flux(symbol: impl Into<BoundarySymbol>, value: f64) -> Self {
+        Self::NonFiniteFluxSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+            symbol: symbol.into(),
+            value,
+        }
+    }
+
+    #[must_use]
+    pub fn peak_flux_out_of_range(
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Self {
+        Self::FluxSymbolOutOfRange {
+            phase_class: HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+            symbol: symbol.into(),
+            value,
+            minimum,
+            maximum,
+        }
+    }
+
+    #[must_use]
     pub const fn boundary_class(&self) -> BoundaryClass {
         match self {
             Self::MissingRequiredStateSymbol { .. }

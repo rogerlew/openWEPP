@@ -1,116 +1,107 @@
-# Independent Hydrology / Science Review A
+# Independent Hydrology / Science Re-Review A
 
 Status: `executed`
 
-Evidence class: `Static exact-commit review + Ran artifact inspection`
+Reviewed identity: `949349e7055c5d19277eeb708401c4614a52cd77`
 
-Reviewed identity: `c7dbfefe7c7c67137101ddd2c63cd4c4c2e062fa`
+Evidence class:
 
-Verdict: `HOLD`
+- `Static`: exact-commit source, contracts, tests, package artifacts, and
+  publication/interchange consumer inspection.
+- `Ran`: `cargo nextest run --test erosion_single_ofe_p61_sediment --test
+  erosion_multi_ofe_p102_chain --profile quick` at the reviewed identity;
+  2 tests passed, 0 skipped, nextest run
+  `848d6234-80b0-436a-8cb9-2a517c2c306e`.
+- `Ran (package-recorded, not independently rerun in this review)`: the focused
+  corrected gates listed in `artifacts/implementation-test-evidence.md`.
 
-Reviewer B output was not consulted. Review covered `SC-WATBAL-001` version
-166, `SC-INFILE-HBP-001` version 0.2.4, the direct-runtime runoff producer,
-erosion and publication consumers, focused tests, package evidence, and the
-in-progress Topanga run.
+Verdict: `PASS`
 
 ## Findings
 
-### `REVIEW-A-CRITICAL-001` — source depths do not independently close to event runoff
+No remaining Critical, Major, or Minor hydrology/science finding.
 
-- Evidence:
-  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1393-1427,
-  1430-1458,1490-1539`;
-  `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:47-75`;
-  `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1254-1259`.
-- Finding: the producer sums WB14 excess, hourly saturation return, and routed
-  melt only to prove the source total is positive, normalizes those operands to
-  weights, then multiplies the normalized weights by `q_runoff_m`. It never
-  checks that the independently produced source-depth total reconstructs
-  `q_runoff_m`. The melt-only test makes the defect explicit: `0.004 m` of
-  source depths is accepted for `0.002 m` event runoff and silently scaled to
-  weights `0.75/0.25`. Thus the asserted hourly/event closure is true by
-  construction, not independent mass closure, and an arbitrarily inconsistent
-  source ledger can determine the peak hour and magnitude.
-- Impact: violates the package's anti-tautology acceptance, `INV-WATBAL-102`,
-  the operand-lineage claim that the normalized hourly runoff depth is
-  authoritative after closure, and HBP's claim that hourly volumes reconstruct
-  the event runoff. It also leaves the physical role of `hourly_routed_melt_m`
-  ambiguous: if it is runoff, scaling changes mass; if it is pre-infiltration
-  supply, it is not an authoritative runoff-depth limb.
-- Proposed disposition: `accepted`. Define each source limb at one common
-  post-partition runoff lineage, require `sum(source limbs) ~= Q` under an
-  explicit scale-aware tolerance, and compute the peak directly from those
-  closing hourly depths. If routed melt is supply rather than runoff, route it
-  through the hourly partition before peak assembly. Add a negative vector for
-  the current `0.004 m` source / `0.002 m` event mismatch.
+## Prior Finding Resolution
 
-### `REVIEW-A-MAJOR-002` — “source-free” positive-roundoff rule does not inspect every source limb
+### `REVIEW-A-CRITICAL-001` — resolved
 
-- Evidence:
-  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:740-760,
-  1362-1375`;
-  `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:141-168`;
-  `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:296`.
-- Finding: positive partition runoff at or below `1e-12 m` is changed to exact
-  zero whenever the WB14 hourly-excess sum is zero. The decision function is
-  not given hourly routed melt, runon provenance, or any other positive source
-  lineage. Saturation return is added later and therefore survives, but the
-  implementation cannot prove the partition residual is source-free across the
-  full source inventory required by the contract. The focused test proves only
-  preservation of a WB14-excess-backed value.
-- Impact: a small positive source-backed runoff can be erased even though
-  `INV-WATBAL-102` states that any positive hourly source must preserve its
-  runoff, however small. This is a source-custody and mass-loss defect, not a
-  harmless peak floor.
-- Proposed disposition: `accepted`. Make canonicalization consume and verify
-  the complete source ledger (or a producer-certified exact source-free flag),
-  and add sub-tolerance routed-melt-only and runon-only vectors. Do not infer
-  source absence from WB14 excess alone.
+Routed melt and inter-OFE runon are now producer-timed liquid supplies admitted
+to WB14 before infiltration and depression-storage partitioning, not raw
+post-partition runoff limbs. The runner adds routed melt to
+`hourly_additional_supply_m`; the direct runtime adds runon to the same input,
+and WB14 produces the only post-partition hourly excess ledger
+(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:651-733,
+1743-1769,1778-1896`). The melt vectors prove both zero-capacity in-hour runoff
+and complete infiltration without a fabricated runoff limb
+(`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:50-111`).
 
-### `REVIEW-A-MAJOR-003` — inter-OFE runon still has invented uniform timing
+The peak and shared transfer weights consume only WB14 post-partition depths plus
+WB19 saturation return. `closing_hourly_runoff_depths_m` independently sums
+those depths; `ensure_hourly_runoff_source_closure` rejects mismatch against
+daily `Q`; only after closure may normalized weights be derived
+(`direct_runtime/runoff.rs:1498-1555,1572-1614`). The peak itself is calculated
+directly from the closing hourly depths, not from `Q * normalized_weight`
+(`direct_runtime/runoff.rs:1616-1650`). Material mismatch has a negative vector
+at `direct_runtime_dc01.rs:256-276`.
 
-- Evidence:
-  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:640-680`;
-  `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:28-43`;
-  `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:297,1257-1275`.
-- Finding: positive surface or lateral runon with no reconstructible upstream
-  hourly shape is distributed uniformly over 24 hours. The code and retained
-  test explicitly call this a “uniform fallback.” That invented time base then
-  enters WB14 and may carry the production peak, contrary to the new
-  fail-closed source-custody rule and the claim that runon-only runoff retains
-  its modeled hour.
-- Impact: multi-OFE peak timing can still be synthetic even though the package
-  claims the same source-complete shape serves transfer, erosion, HBP, and
-  peak. A single-OFE Topanga cohort cannot close this multi-OFE source-path
-  defect.
-- Proposed disposition: `accepted`. Require a closing upstream hourly surface
-  and lateral handoff for positive runon; hard-fail when it is absent. Replace
-  the uniform-fallback test with missing-shape rejection and explicit in-hour
-  runon custody tests through the real multi-OFE handoff.
+`SC-WATBAL-001` version 167 accurately owns this post-partition boundary in
+`q_hourly`, `INV-WATBAL-102/103`, and `TOL-WATBAL-009`
+(`docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:127,
+296-297,873`). The tolerance is bounded to the documented 24 interval-ledger
+arithmetic allowance; material mismatch hard-fails, and the within-bound
+residual is applied once to an existing largest runoff bin rather than creating
+a new source hour (`direct_runtime/runoff.rs:1432-1495`).
 
-## Confirmed Correct Boundaries
+### `REVIEW-A-MAJOR-002` — resolved
 
-- The scientific quantity is legitimately the maximum of 24 modeled hourly
-  mean depth rates, with earliest-hour tie resolution. It is not described as
-  an instantaneous or subhourly peak (`SC-WATBAL-001.md:128-130,1260-1264`).
-- WB19 saturation-return depths are read from
-  `hourly_saturation_carry_m` and retain their produced hour in peak assembly
-  (`direct_runtime/runoff.rs:803-818`; saturation-only vector at
-  `direct_runtime_dc01.rs:79-95`).
-- Erosion consumes the internal `m s^-1` depth rate, while public hillslope
-  output applies area once to produce `m^3 s^-1`
-  (`direct_runtime/erosion.rs:520-543`;
-  `direct_runtime/01_publication.rs:582-614`). The HBP minor-1 contract then
-  reconstructs the same volumetric maximum from hourly volumes and does not
-  apply area again (`SC-INFILE-HBP-001.md:116-123,238-243`).
-- Rectangular-equivalent duration is correctly distinguished from rainfall
-  duration, hydrograph duration, and time to peak.
-- The package and Topanga artifacts remain hillslope-only, diagnostic/cohort
-  evidence with no coefficient fitting, observed-flow validation, legacy
-  parity, watershed-routing, or instantaneous-peak claim. At review time the
-  full 1,088-trial log was still running, and the retained summary truthfully
-  labels only the bounded probe as passed; no premature complete-cohort claim
-  was found.
+The source-free positive-roundoff decision is now evaluated against the WB14
+post-partition ledger after melt and runon have already entered WB14 exactly
+once. Therefore a positive melt- or runon-backed runoff necessarily appears in
+`wb14_hourly_excess_m` and is not source-free. The canonicalizer preserves every
+positive WB14-backed value, while zero-source sub-tolerance arithmetic becomes
+exact zero (`direct_runtime/runoff.rs:778-810,1409-1422`;
+`direct_runtime_dc01.rs:173-202`). `TOL-WATBAL-009` separately reconciles the
+independent daily/hourly accumulations without authorizing loss of a positive
+hourly source.
 
-The three material findings prevent acceptance of the mass/source-custody
-claims and therefore require `HOLD` until corrected and independently tested.
+### `REVIEW-A-MAJOR-003` — resolved
+
+No uniform runon fallback remains. Positive surface runon with a zero hourly
+surface shape and positive lateral runon with a zero lateral carry both return
+typed `MissingDirectUpstream`; valid shapes retain their produced-hour weights
+before entering WB14 (`direct_runtime/runoff.rs:694-733`;
+`direct_runtime_dc01.rs:1-48`). This closes the multi-OFE source-custody defect.
+
+## Physical And Consumer Acceptance
+
+- WB19 saturation-return water is added only from
+  `hourly_saturation_carry_m[hour]` and therefore remains in its produced hour;
+  the saturation-only vector selects hour 11 exactly
+  (`direct_runtime/runoff.rs:855-865,1572-1595`;
+  `direct_runtime_dc01.rs:113-128`).
+- The internal quantity is the maximum one-hour mean depth rate in `m s^-1`,
+  with no instantaneous/subhourly claim. Rectangular-equivalent duration remains
+  `Q / peak_depth_rate` and is not rainfall duration, hydrograph duration, or
+  time to peak.
+- Publication validates a positive area, adjusts only to the published runoff
+  depth basis, and applies area once to obtain `m^3 s^-1`
+  (`crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:576-640`).
+- `SC-INFILE-HBP-001` version 0.2.4 correctly defines minor-1 peak as
+  `max(hourly_runoff_volume_m3)/3600`, requires hourly-volume sum to equal
+  `runvol`, and binds duration to `runvol/peak` without another area multiplier
+  (`docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md:114-124,
+  238-246`).
+- Ran: the real single-OFE p61 consumer independently reconstructed hourly
+  volume, pass-Parquet/HBP peak equality, and rectangular duration. The real
+  routed multi-OFE p102 consumer independently reconstructed outlet `runvol`,
+  maximum-hour HBP peak, and pass-Parquet peak from the routed outlet hourly
+  series (`tests/integration/erosion_single_ofe_p61_sediment.rs:155-191`;
+  `tests/integration/erosion_multi_ofe_p102_chain.rs:55-110`). Both tests passed
+  in this re-review.
+- Package claims remain hillslope-scale, non-calibrated, non-watershed-routing,
+  and maximum-hourly-mean only. No observed-flow validation, legacy parity, or
+  instantaneous-peak claim was found.
+
+The prior closure blockers are resolved at the exact reviewed commit. The
+hourly/daily mass ledger, source timing, units, area conversion, and real
+consumer evidence support `PASS`.

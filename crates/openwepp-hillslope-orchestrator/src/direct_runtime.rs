@@ -9,6 +9,7 @@ use crate::hydrology::{
 };
 use crate::hydrology::{
     DirectSnowMassTransitionLedgerError, DirectSnowMassTransitionLedgers, SnowAlbedoState,
+    Wb11HydrologyKernelGuardError,
 };
 use crate::winter_column::{
     DirectFrostFineLayerState, DirectFrostLaneState, DirectFrostLayerShadowState,
@@ -315,6 +316,13 @@ pub(crate) fn test_reconcile_hourly_partition_runoff_profile(
         partition_runoff_m,
         frost_retained_local_liquid_m,
     )
+}
+#[cfg(test)]
+pub(crate) fn test_ensure_hourly_same_pass_source_custody(
+    additional_local_infiltration_m: f64,
+    runon_input_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    runoff::ensure_hourly_same_pass_source_custody(additional_local_infiltration_m, runon_input_m)
 }
 #[cfg(test)]
 pub(crate) fn dc01_test_wb14_with_profile(

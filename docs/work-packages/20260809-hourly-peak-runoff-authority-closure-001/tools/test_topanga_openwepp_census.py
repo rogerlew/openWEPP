@@ -24,8 +24,11 @@ class RecordProvenanceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
-        for suffix in ["sol", "man", "slp", "cli"]:
+        for suffix in ["sol", "man", "slp"]:
             (self.root / f"p1.{suffix}").write_text(suffix, encoding="utf-8")
+        (self.root / "p1.cli").write_text(
+            "header\n  1  1 2001  0.0\n  2  1 2001  1.0\n", encoding="utf-8"
+        )
         self.record_path = self.root / "record.npz"
         self.case = CENSUS.Case(
             case_id="case-1",
@@ -43,6 +46,7 @@ class RecordProvenanceTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def write_record(self) -> None:
+        year, julian = CENSUS.expected_calendar(self.case)
         np.savez_compressed(
             self.record_path,
             record_schema=np.asarray(CENSUS.RECORD_SCHEMA),
@@ -50,10 +54,12 @@ class RecordProvenanceTests(unittest.TestCase):
             plan_sha256=np.asarray(self.provenance.plan_sha256),
             binary_sha256=np.asarray(self.provenance.binary_sha256),
             input_hashes_json=np.asarray(CENSUS.case_input_hashes(self.case)),
-            year=np.asarray([1], dtype=np.int16),
-            julian=np.asarray([1], dtype=np.int16),
-            runvol_m3=np.asarray([1.0]),
-            peakro_m3_s=np.asarray([1.0 / 3_600.0]),
+            expected_row_count=np.asarray(len(year)),
+            calendar_sha256=np.asarray(CENSUS.calendar_sha256(year, julian)),
+            year=year,
+            julian=julian,
+            runvol_m3=np.asarray([1.0, 0.0]),
+            peakro_m3_s=np.asarray([1.0 / 3_600.0, 0.0]),
         )
 
     def test_valid_record_reuses(self) -> None:
@@ -78,6 +84,11 @@ class RecordProvenanceTests(unittest.TestCase):
         self.assertFalse(
             CENSUS.record_matches(self.record_path, self.case, self.provenance)
         )
+        self.write_record()
+        (self.root / "snow.txt").write_text("active sidecar", encoding="utf-8")
+        self.assertFalse(
+            CENSUS.record_matches(self.record_path, self.case, self.provenance)
+        )
 
     def test_nonfinite_or_negative_record_values_invalidate(self) -> None:
         self.write_record()
@@ -89,11 +100,45 @@ class RecordProvenanceTests(unittest.TestCase):
             CENSUS.record_matches(self.record_path, self.case, self.provenance)
         )
         record["peakro_m3_s"] = np.asarray([1.0 / 3_600.0])
-        record["runvol_m3"] = np.asarray([-1.0])
+        record["runvol_m3"] = np.asarray([-1.0, 0.0])
         np.savez_compressed(self.record_path, **record)
         self.assertFalse(
             CENSUS.record_matches(self.record_path, self.case, self.provenance)
         )
+
+    def test_empty_truncated_and_wrong_calendar_records_invalidate(self) -> None:
+        self.write_record()
+        with np.load(self.record_path) as source:
+            valid = {name: source[name].copy() for name in source.files}
+        for name in ["year", "julian", "runvol_m3", "peakro_m3_s"]:
+            valid[name] = valid[name][:0]
+        np.savez_compressed(self.record_path, **valid)
+        self.assertFalse(
+            CENSUS.record_matches(self.record_path, self.case, self.provenance)
+        )
+
+        self.write_record()
+        with np.load(self.record_path) as source:
+            truncated = {name: source[name].copy() for name in source.files}
+        for name in ["year", "julian", "runvol_m3", "peakro_m3_s"]:
+            truncated[name] = truncated[name][:-1]
+        np.savez_compressed(self.record_path, **truncated)
+        self.assertFalse(
+            CENSUS.record_matches(self.record_path, self.case, self.provenance)
+        )
+
+        self.write_record()
+        with np.load(self.record_path) as source:
+            wrong_calendar = {name: source[name].copy() for name in source.files}
+        wrong_calendar["julian"][1] = 3
+        np.savez_compressed(self.record_path, **wrong_calendar)
+        self.assertFalse(
+            CENSUS.record_matches(self.record_path, self.case, self.provenance)
+        )
+
+    def test_empty_paired_event_evidence_rejected(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "no paired runoff events"):
+            CENSUS.validate_event_rows([])
 
     def test_paired_rows_normalize_structured_mutation_values_for_parquet(self) -> None:
         self.write_record()

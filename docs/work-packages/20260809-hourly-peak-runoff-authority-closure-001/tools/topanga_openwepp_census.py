@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import datetime
 import hashlib
 import json
 import math
@@ -22,10 +23,24 @@ import pyarrow.parquet as pq
 HOUR_SECONDS = 3_600.0
 SHAPE_MIN = 1.0 / 24.0
 NUMERIC_TOLERANCE = 1.0e-10
-RECORD_SCHEMA = "openwepp-topanga-case-record-v2"
+RECORD_SCHEMA = "openwepp-topanga-case-record-v3"
 CANONICAL_PLAN_SHA256 = "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756"
 CANONICAL_ELIGIBLE_TRIALS = 1_088
 CANONICAL_BASELINES = 280
+DISCOVERED_SIDECARS = (
+    "frost.txt",
+    "snow.txt",
+    "wepp_ui.txt",
+    "pmetpara.txt",
+    "irrigation_depletion.txt",
+    "irrigation_fixeddate.ifd",
+    "gwcoeff.txt",
+    "phosphorus.txt",
+    "tc.txt",
+    "tcr.txt",
+    "lcwb.txt",
+    "chan.inp",
+)
 
 
 @dataclass(frozen=True)
@@ -119,7 +134,8 @@ def case_input_hashes(case: Case) -> str:
         input_path(case.source_dir, case.hillslope_id, suffix)
         for suffix in ["sol", "man", "slp", "cli"]
     ]
-    for optional in [case.source_dir / "pmetpara.txt", case.source_dir / "wepp_ui.txt"]:
+    for name in DISCOVERED_SIDECARS:
+        optional = case.source_dir / name
         if optional.is_file():
             paths.append(optional.resolve())
     return json.dumps(
@@ -127,22 +143,60 @@ def case_input_hashes(case: Case) -> str:
     )
 
 
+def expected_calendar(case: Case) -> tuple[np.ndarray, np.ndarray]:
+    years: list[int] = []
+    julians: list[int] = []
+    simulation_year_by_calendar_year: dict[int, int] = {}
+    climate_path = input_path(case.source_dir, case.hillslope_id, "cli")
+    for line in climate_path.read_text(encoding="utf-8").splitlines():
+        fields = line.split()
+        if len(fields) < 3:
+            continue
+        try:
+            day, month, year = (int(fields[index]) for index in range(3))
+            calendar_day = datetime.date(year, month, day)
+        except (ValueError, OverflowError):
+            continue
+        simulation_year = simulation_year_by_calendar_year.setdefault(
+            year, len(simulation_year_by_calendar_year) + 1
+        )
+        years.append(simulation_year)
+        julians.append(calendar_day.timetuple().tm_yday)
+    if not years:
+        raise ValueError(f"{case.case_id} climate contains no daily calendar rows")
+    return np.asarray(years, dtype=np.int16), np.asarray(julians, dtype=np.int16)
+
+
+def calendar_sha256(year: np.ndarray, julian: np.ndarray) -> str:
+    digest = hashlib.sha256()
+    digest.update(np.asarray(year, dtype="<i2").tobytes())
+    digest.update(np.asarray(julian, dtype="<i2").tobytes())
+    return digest.hexdigest()
+
+
 def record_matches(path: Path, case: Case, provenance: Provenance) -> bool:
     try:
         record = load_record(path)
+        expected_year, expected_julian = expected_calendar(case)
         expected = {
             "record_schema": RECORD_SCHEMA,
             "case_id": case.case_id,
             "plan_sha256": provenance.plan_sha256,
             "binary_sha256": provenance.binary_sha256,
             "input_hashes_json": case_input_hashes(case),
+            "expected_row_count": len(expected_year),
+            "calendar_sha256": calendar_sha256(expected_year, expected_julian),
         }
         for name, value in expected.items():
-            if name not in record or str(record[name].item()) != value:
+            if name not in record or str(record[name].item()) != str(value):
                 return False
         required_arrays = ["year", "julian", "runvol_m3", "peakro_m3_s"]
         lengths = {len(record[name]) for name in required_arrays}
-        if len(lengths) != 1:
+        if lengths != {len(expected_year)}:
+            return False
+        if not np.array_equal(record["year"], expected_year) or not np.array_equal(
+            record["julian"], expected_julian
+        ):
             return False
         runvol = record["runvol_m3"]
         peakro = record["peakro_m3_s"]
@@ -204,6 +258,11 @@ def run_case(
     julian = table.column("julian").to_numpy(zero_copy_only=False).astype(np.int16)
     runvol = table.column("runvol").to_numpy(zero_copy_only=False).astype(np.float64)
     peakro = table.column("peakro").to_numpy(zero_copy_only=False).astype(np.float64)
+    expected_year, expected_julian = expected_calendar(case)
+    if not np.array_equal(year, expected_year) or not np.array_equal(
+        julian, expected_julian
+    ):
+        raise RuntimeError(f"{case.case_id} output calendar does not match climate input")
     if not (np.isfinite(runvol).all() and np.isfinite(peakro).all()):
         raise RuntimeError(f"{case.case_id} emitted non-finite runoff operands")
     if (runvol < 0.0).any() or (peakro < 0.0).any():
@@ -217,6 +276,8 @@ def run_case(
         plan_sha256=np.asarray(provenance.plan_sha256),
         binary_sha256=np.asarray(provenance.binary_sha256),
         input_hashes_json=np.asarray(case_input_hashes(case)),
+        expected_row_count=np.asarray(len(expected_year)),
+        calendar_sha256=np.asarray(calendar_sha256(expected_year, expected_julian)),
         year=year,
         julian=julian,
         runvol_m3=runvol,
@@ -354,6 +415,8 @@ def paired_event_rows(trial: dict, baseline_path: Path, mutation_path: Path) -> 
 
 
 def validate_event_rows(rows: list[dict]) -> dict:
+    if not rows:
+        raise RuntimeError("mutation census produced no paired runoff events")
     zero_topology_mismatches = sum(
         (row["baseline_runvol_m3"] == 0.0) != (row["baseline_peakro_m3_s"] == 0.0)
         or (row["mutated_runvol_m3"] == 0.0) != (row["mutated_peakro_m3_s"] == 0.0)

@@ -1,8 +1,8 @@
-# Independent Hydrology/Science Review B
+# Independent Hydrology/Science Re-Review B
 
 Status: `executed`
 
-Evidence class: `Static: commit c7dbfefe7 contract, implementation, tests, real publication/HBP/pass consumers, and package evidence`
+Evidence class: `Static: exact commit 949349e7055c5d19277eeb708401c4614a52cd77 contract, implementation, tests, package evidence, and HBP/pass consumers`
 
 Verdict: `HOLD`
 
@@ -10,125 +10,112 @@ Reviewer independence: Reviewer A's output was not read before this verdict.
 
 ## Severity-Ranked Findings
 
-### `SCI-B-001` — CRITICAL — positive runon can still receive synthetic uniform timing
+### `SCI-B2-001` — CRITICAL — proportional frost-retention timing is proxy physics
 
-The corrected contract hard-fails positive runoff without reconstructible
-hourly timing and explicitly prohibits a synthetic uniform fallback
-(`docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:508-510`).
-Production still manufactures a uniform surface-runon distribution when
-`surface_total_m > 0` but upstream surface weights sum to zero, and likewise a
-uniform lateral-runon distribution when lateral carry has no positive hourly
-shape
-(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:640-695`).
-The behavior is directly ratified by
-`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:27-44`.
-That synthesized supply is then injected into WB14, so WB14 creates a positive
-hourly excess series and the later positive-runoff/missing-shape guard sees an
-apparently reconstructible source. The guard at `runoff.rs:1430-1458` therefore
-cannot detect the original timing loss. The same shared shape helper also still
-returns uniform weights for positive runoff with no raw source
-(`runoff.rs:1377-1427`), and publication/executor comments continue to describe
-that production fallback
-(`direct_runtime/01_publication.rs:276-303`;
-`direct_runtime/03_executor.rs:987-1005`).
+The amended contract now authorizes a daily
+`frost_retained_local_liquid_m` debit to be allocated proportionally over all
+positive WB14 runoff bins solely because no finer producer clock exists
+(`docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:297`). The
+implementation applies exactly that proportional reduction
+(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1432-1474`),
+and the focused test ratifies a 60/40 proportional split
+(`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:204-225`).
 
-This is proxy timing, not preservation of modeled timing, and it directly
-violates the package correction envelope (`package.md:80-85`) and
-`INV-WATBAL-102/103`.
+Absence of finer timing authority does not establish that frost retention acts
+proportionally across runoff hours. This allocation preserves the set of
+nonzero hours but can change every hourly depth and the maximum-hour magnitude;
+it is therefore a temporal process assumption, not merely arithmetic
+bookkeeping. The cited anchors in `INV-WATBAL-103` establish hourly liquid/carry
+custody and runoff partitioning, but no cited source establishes the
+proportional frost debit. Calling the result authoritative hourly runoff turns
+missing timing into a production peak through a heuristic, contrary to the
+package's no-proxy/no-synthetic-timing boundary.
 
-Proposed disposition: `accepted / closure-blocking`. Make positive surface or
-lateral runon with a missing/zero hourly source shape a typed failure before
-WB14 admission. Remove the uniform branches from production helpers and replace
-the uniform-fallback test with negative fail-closed vectors through the real
-multi-OFE runon path. Retain exact zero vectors only for exact zero runoff.
+Proposed disposition: `accepted / closure-blocking`. Produce the frost-retained
+debit at hourly resolution in the owning frost/WB14 interaction and subtract it
+in the modeled hour, or hold the hourly peak claim on days with a material
+daily-only frost debit. If a proportional allocation is retained only for a
+diagnostic, label it non-authoritative and prohibit it from erosion, HBP/pass,
+or public peak claims. A science-contract assertion cannot by itself supply the
+missing physical timing authority.
 
-### `SCI-B-002` — CRITICAL — routed melt is counted twice in the peak-shape operand mixture
+### `SCI-B2-002` — MEDIUM — `TOL-WATBAL-009` is numerically bounded but its stated provenance is incomplete
 
-The runner adds daily routed-melt handoff depth to the post-interception
-hyetograph before WB14 infiltration
-(`crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs:348-359,376-410`).
-WB14's `hourly_excess_m` consequently already contains the non-infiltrated
-portion of routed melt on the runoff side of the infiltration calculation.
-The peak/shared-shape assembler then adds the full
-`hourly_routed_melt_m` array again to WB14 hourly excess and saturation return
-before normalizing
-(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1377-1415,1430-1458`).
+`TOL-WATBAL-009` permits an aggregate difference of
+`24 * 1e-9 m * max(1, scale)` and applies the residual to the largest runoff bin
+(`SC-WATBAL-001.md:873`; `runoff.rs:1451-1495`). The bound is small for ordinary
+hillslope depths, material differences hard-fail, and the tests distinguish a
+`1e-9 m` accepted discrepancy from a `1e-3 m` rejection
+(`direct_runtime_dc01.rs:228-253`). That is a plausible floating-ledger
+reconciliation posture.
 
-This double counts melt as a shape operand and, more importantly, gives
-infiltrated melt direct influence over runoff timing. Normalization back to
-daily `q_runoff_m` preserves volume but does not repair the distorted temporal
-distribution. The melt-only test is tautologically constructed with zero WB14
-excess plus an arbitrary positive runoff scalar
-(`direct_runtime_dc01.rs:46-76`); it does not execute the real runner path where
-melt first enters WB14. The operand ledger's claim that WB14 excess and hourly
-routed melt are two independent authoritative source limbs
-(`artifacts/operand-lineage.md:7-10`) is therefore false for the implemented
-lineage.
+However, the contract states that "the WB14 interval solve permits `1e-9 m`"
+without a specific authority anchor or an implementation-derived error bound,
+and multiplying by all 24 bins is conservative even when only one interval
+contributes. Applying the residual to the largest bin intentionally changes the
+peak operand. This is acceptable only as explicitly bounded numerical
+reconciliation, not physical normalization, and it must remain independently
+observable.
 
-Proposed disposition: `accepted / closure-blocking`. Define and implement a
-non-overlapping decomposition. The simplest authority-consistent route is for
-WB14 hourly excess to carry the timing of all supply that actually becomes
-infiltration-excess, with hourly saturation return added separately; do not add
-gross routed melt again. If a distinct melt limb is retained, WB14 must expose
-source-tagged excess components proving the melt contribution is excluded from
-the generic excess limb. Add a real runner-path rain/melt test in which part of
-melt infiltrates and independently reconstruct the hourly runoff series.
+Proposed disposition: `accepted`. Add the exact source/derivation for the
+per-interval `1e-9 m` allowance and publish the signed reconciliation residual
+and adjusted bin in provenance. Add boundary tests at just below/above the full
+24-bin tolerance and a vector where the correction could change a near-tied
+peak hour. This finding becomes closure-blocking if the residual is not exposed
+or the tolerance cannot be grounded.
 
-### `SCI-B-003` — MEDIUM — the public claim boundary is broader than the proved peak surface
+## Prior Blocker Rechecks
 
-`SC-WATBAL-001.md:127-130` and `artifacts/operand-lineage.md:10-13` call the
-published quantity a hillslope maximum-hourly flow. Implementation computes a
-per-lane depth-rate peak, rescales it to that lane's `runvol_basis_m`, and
-multiplies by that lane's area
-(`direct_runtime/01_publication.rs:452-488,582-614`). HBP selects the outlet
-sediment row and reconstructs hourly volume from that row's runoff volume and
-fractions (`crates/openwepp-runner/src/hillslope/04_direct_publication.rs:383-480,484-528`).
-This is potentially a valid multi-OFE exit-flow construction because runon is
-carried through the outlet lane, but the package supplies no independent
-multi-OFE proof that outlet-row hourly volume equals the complete routed
-hillslope exit hydrograph or that the per-lane basis adjustment preserves its
-maximum. The Topanga claim explicitly excludes routed-watershed validation
-(`package.md:111-125`) and the reported probe is only one baseline/mutation
-limit (`artifacts/summary.md:7-25`).
+### Synthetic runon timing — `PASS`
 
-Proposed disposition: `accepted`. Narrow closure claims to the demonstrated
-single-OFE/per-lane maximum-hour surface unless an active multi-OFE fixture
-independently reconstructs outlet hourly volumes from upstream carry plus local
-runoff, verifies HBP/pass equality, and distinguishes this from watershed or
-channel-routed peak flow. Continue to prohibit any instantaneous or routed-
-watershed peak claim.
+Positive surface or lateral runon with no hourly source now returns a typed
+`MissingDirectUpstream`; the uniform branches are gone
+(`runoff.rs:651-733`). Runon is added to WB14 hourly supply and the focused test
+now rejects missing positive shape
+(`direct_runtime_dc01.rs:27-48`). The downstream peak guard therefore no longer
+receives a manufactured uniform hydrograph.
 
-## Adversarial Checks Without Additional Findings
+### Melt double counting — `PASS`
 
-- Equal-volume concentrated versus spread shapes correctly produce a 24:1 peak
-  ordering and rectangular-equivalent durations of 3,600 versus 86,400 seconds
-  (`direct_runtime_dc01.rs:275-295`). The duration is consistently labeled as
-  `Q / peak_depth_rate`, not rainfall duration, hydrograph duration, or time to
-  peak (`SC-WATBAL-001.md:127-130`;
-  `SC-INFILE-HBP-001.md:116-124,238-243`).
-- Saturation-only timing is preserved in its produced hour and positive runoff
-  with all three peak inputs exactly zero fails at the direct helper
-  (`direct_runtime_dc01.rs:78-95,127-138`). Those focused checks are valid but
-  do not cure the upstream proxy and melt-overlap defects above.
-- Internal units are correctly depth rate (`m/s`), public conversion is one
-  multiplication by a positive `area_m2`, and publication rescales the peak to
-  the same run-volume depth basis before applying area
-  (`direct_runtime/01_publication.rs:452-488,582-614`). No second area multiply
-  occurs in HBP (`04_direct_publication.rs:401-408,436-480`).
-- HBP minor-1 semantics and pass metadata correctly say maximum hourly mean
-  volumetric flow, and HBP reconstructs `max(hourly_volume)/3600` on its event
-  volume basis (`SC-INFILE-HBP-001.md:116-124,238-243`;
-  `crates/openwepp-hillslope-output/src/hillslope_pass.rs:141-145`).
-- The near-zero canonicalization is source-informed and bounded to
-  `<=1e-12 m`, rather than a positive peak floor
-  (`runoff.rs:1362-1375`; `SC-WATBAL-001.md:863-871`).
+Routed melt is now an hourly additional liquid supply admitted to WB14 once.
+The post-partition peak assembler consumes only WB14 excess plus WB19
+saturation return; routed melt is no longer appended as a runoff limb
+(`runoff.rs:1498-1553`;
+`artifacts/operand-lineage.md:5-19`). Tests demonstrate both a melt-supply
+hydrograph that becomes runoff and a melt supply that fully infiltrates without
+creating runoff (`direct_runtime_dc01.rs:50-111`). This closes the prior
+source-overlap defect.
+
+### Routed multi-OFE outlet HBP peak — `PASS`
+
+The real multi-OFE integration test reads the outlet pass row, independently
+checks `sum(V_h) = runvol`, reconstructs HBP peak as
+`max(V_h) / 3600 s`, and proves pass/HBP peak equality
+(`tests/integration/erosion_multi_ofe_p102_chain.rs:83-110`). This is adequate
+for the routed hillslope-exit hourly-mean claim. It does not establish an
+instantaneous, channel-routed, or watershed-outlet peak, and the package
+continues to exclude those broader claims.
+
+## Additional No-Finding Results
+
+- Equal-volume concentrated/spread ordering, saturation-only timing, positive
+  runoff/missing-timing failure, rectangular-equivalent duration semantics,
+  and exact-zero dry behavior remain correctly tested and contract-bound.
+- Internal peak units remain `m s^-1`; public pass/HBP units are `m^3 s^-1`;
+  publication adjusts to the run-volume depth basis and applies positive area
+  exactly once.
+- HBP and pass consumers use the same outlet event basis and correctly describe
+  maximum hourly mean flow, not an instantaneous peak.
+- Normalized weights are now derived only after the post-partition hourly depth
+  ledger closes; they no longer manufacture timing from the daily runoff
+  scalar.
 
 ## Verdict Rationale
 
-`HOLD` is mandatory. `SCI-B-001` retains explicitly prohibited synthetic
-runon timing, while `SCI-B-002` distorts the hydrograph by overlapping gross
-routed melt with WB14 excess that already consumed melt. Both can change the
-maximum hour and peak magnitude while preserving daily volume, defeating the
-core authority claim. They require production and contract/test reconciliation
-before review can pass. `SCI-B-003` must be resolved by evidence or claim
-narrowing before multi-OFE hillslope publication is claimed closed.
+The corrective work closes the three prior blockers and materially improves
+source custody. `HOLD` remains necessary because a material frost-retention
+debit with no hourly producer is allocated proportionally by assumption and
+then allowed to control erosion and public peak claims. That is precisely the
+kind of missing-timing proxy the package set out to remove. Resolve
+`SCI-B2-001`, and ground/expose the bounded arithmetic adjustment in
+`SCI-B2-002`, before claiming hourly peak authority complete.

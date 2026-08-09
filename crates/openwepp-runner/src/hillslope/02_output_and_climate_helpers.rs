@@ -6,6 +6,7 @@
 struct HbpEventFixtureInput {
     hillslope_id: u32,
     nofe: u16,
+    calendar_year: i32,
     julian_day: u16,
     peak_runoff_m3_s: f64,
     duration_seconds: f64,
@@ -57,7 +58,6 @@ const HBP_SUPPORTED_MAJOR_V1: u16 = 1;
 const HBP_DIM_SCALAR: u8 = 0;
 const HBP_DIM_NOFE: u8 = 1;
 const HBP_DIM_NOFE_LAYERS: u8 = 2;
-const HBP_DEFAULT_CALENDAR_YEAR: i32 = 2004;
 const HBP_DEFAULT_PARTICLE_DIAMETER_M: f64 = 0.001;
 const HBP_SCALE_INV_I64: f64 = 1.0e9;
 const HBP_I64_MIN_F64: f64 = -9_223_372_036_854_775_808.0;
@@ -170,14 +170,14 @@ fn build_schema1_hbp_event_fixture(
         hillslope_id: input.hillslope_id,
         nofe: input.nofe,
         nyear: 1,
-        begin_year: HBP_DEFAULT_CALENDAR_YEAR,
+        begin_year: input.calendar_year,
         julian_day: input.julian_day,
         particle_diameter_m: input.particle_diameter_m.clone(),
     })?;
     let payload = build_hbp_event_payload(&HbpEventPayloadInput {
         nofe: input.nofe,
         sim_year_index: 1,
-        calendar_year: HBP_DEFAULT_CALENDAR_YEAR,
+        calendar_year: input.calendar_year,
         julian_day: input.julian_day,
         peak_runoff_m3_s: input.peak_runoff_m3_s,
         duration_seconds: input.duration_seconds,
@@ -211,7 +211,7 @@ fn build_schema1_hbp_event_fixture(
     let mut directory = Vec::new();
     put_u32(&mut directory, 1);
     put_u32(&mut directory, 1);
-    put_i32(&mut directory, HBP_DEFAULT_CALENDAR_YEAR);
+    put_i32(&mut directory, input.calendar_year);
     put_u16(&mut directory, input.julian_day);
     put_u8(&mut directory, 2);
     put_u64(&mut directory, payload_offset_u64);
@@ -633,6 +633,7 @@ fn build_hbp_output_from_direct_publication(
     build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
         nofe,
+        calendar_year: latest_row.calendar.year,
         julian_day: latest_row.calendar.julian_day,
         peak_runoff_m3_s: direct_publication_required_erosion_scalar(
             "runoff.peak_runoff_m3_s",

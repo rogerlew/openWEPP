@@ -267,6 +267,7 @@ pub enum DirectRuntimeError {
         phase: &'static str,
         detail: String,
     },
+    HydrologyKernelGuard(Box<Wb11HydrologyKernelGuardError>),
     PublicationDayInputBuildFailure {
         detail: String,
     },
@@ -369,6 +370,9 @@ impl DirectRuntimeError {
                 detail: detail.as_str(),
             }
             .into(),
+            Self::HydrologyKernelGuard(source) => {
+                DirectRuntimeErrorDisplay::HydrologyGuard(source.as_ref())
+            }
             Self::PublicationDayInputBuildFailure { detail } => {
                 Guard::DayInputBuildFailure(detail.as_str()).into()
             }
@@ -393,6 +397,7 @@ enum DirectRuntimeErrorDisplay<'a> {
     Identity(DirectRuntimeIdentityDisplay),
     Publication(DirectRuntimePublicationDisplay),
     Guard(DirectRuntimeGuardDisplay<'a>),
+    HydrologyGuard(&'a Wb11HydrologyKernelGuardError),
 }
 
 impl From<DirectRuntimeIdentityDisplay> for DirectRuntimeErrorDisplay<'_> {
@@ -419,6 +424,7 @@ impl fmt::Display for DirectRuntimeErrorDisplay<'_> {
             Self::Identity(display) => display.fmt(formatter),
             Self::Publication(display) => display.fmt(formatter),
             Self::Guard(display) => display.fmt(formatter),
+            Self::HydrologyGuard(display) => display.fmt(formatter),
         }
     }
 }
@@ -651,6 +657,7 @@ impl Error for DirectRuntimeError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::SnowMassTransitionLedger(source) => Some(source),
+            Self::HydrologyKernelGuard(source) => Some(source.as_ref()),
             _ => None,
         }
     }

@@ -436,6 +436,7 @@ fn build_hbp_output_from_direct_publication_summary(
     build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
         nofe,
+        calendar_year: event_row.calendar.year,
         julian_day: event_row.calendar.julian_day,
         peak_runoff_m3_s: direct_publication_required_erosion_scalar(
             "runoff.peak_runoff_m3_s",

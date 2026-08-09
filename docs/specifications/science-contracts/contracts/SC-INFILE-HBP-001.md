@@ -4,7 +4,7 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.4
+contract_version: 0.2.5
 evidence_mode: Static
 last_updated_utc: 2026-08-09T00:00:00Z
 ---
@@ -244,7 +244,11 @@ No silent fallback to legacy text pass family is permitted.
    volume reconstruction is NOT a valid intake gate (it would embed the
    producer's `efflen`/`slplen` geometry).
    Parser-local validation stays structural (`HBP-E-015`).
-6. Latest-day no-event intake (run-level, WSHED-W9): watershed pass inventory
+6. EVENT calendar identity: the day-directory and payload `calendar_year` and
+   `julian_day` must identify the same producer row as the pass-Parquet
+   simulation-year/day key. A fixed fixture year or Julian-only consumer join
+   is invalid for multi-year output.
+7. Latest-day no-event intake (run-level, WSHED-W9): watershed pass inventory
    must consume `HbpLatestEventState`, not `Option<HbpLatestEventPayload>`, so
    valid `NO_EVENT`/`SUBEVENT` records are distinguishable from missing or
    malformed payload state. Surface runoff/sediment zeros are valid only when
@@ -308,6 +312,7 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-08-09` | `0.2.5` | PEAK-HOURLY consumer-key closure: required HBP EVENT calendar identity to come from the selected producer row and required real consumers to join HBP and pass-Parquet events by year plus Julian day, eliminating the fixed fixture-year and Julian-only ambiguity on multi-year runs. |
 | `2026-08-09` | `0.2.4` | PEAK-HOURLY producer amendment: defined minor-1 peak as maximum hourly mean flow reconstructed from hourly runoff volumes, relabeled duration as rectangular-equivalent, and bound peak/duration to the event-volume basis. |
 | `2026-07-09` | `0.2.3` | WSHED-W9 amendment: added typed latest-day no-event/non-runoff parser state, source event-kind preservation, no stale prior-`EVENT` reuse after later `NO_EVENT`/`SUBEVENT`, and `G-HBP-013` watershed inventory handoff authority. |
 | `2026-07-09` | `0.2.2` | M-T2 baseflow export closure: named the existing final runoff-EVENT scaled integer pair as `event.baseflow_volume_m3` (`gwbfv`) and `event.deep_seepage_volume_m3` (`gwdsv`) under `SC-GWBASEFLOW-001`, added parser boundary mapping and `G-HBP-012`; layout/order unchanged. |

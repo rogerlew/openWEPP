@@ -603,6 +603,11 @@ fn direct_publication_peak_runoff_operands(
             }
             return Ok((Some(0.0), Some(0.0)));
         }
+        if q_runoff_m == 0.0 {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "publication.runoff.peak_runoff_basis_m",
+            });
+        }
         validate_finite(
             "publication.runoff.peak_runoff_rate_m_s",
             peak_runoff.peak_runoff_rate_m_s,
@@ -1017,6 +1022,16 @@ mod cqr_publication_tests {
             .q_runoff_m = 0.0;
         assert!(matches!(
             direct_publication_peak_runoff_operands(&day, 0.01, 1.0),
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "publication.runoff.peak_runoff_basis_m"
+            })
+        ));
+        day.peak_runoff_shadow_projection
+            .as_mut()
+            .expect("peak shadow")
+            .q_runoff_m = 0.02;
+        assert!(matches!(
+            direct_publication_peak_runoff_operands(&day, 0.0, 1.0),
             Err(DirectRuntimeError::DirectClosureToleranceExceeded {
                 field: "publication.runoff.peak_runoff_basis_m"
             })
