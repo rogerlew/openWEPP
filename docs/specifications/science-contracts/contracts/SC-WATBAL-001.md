@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 169
+contract_version: 170
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -2438,13 +2438,14 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 | GAP-WATBAL-002 | Companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are authored but retain open implementation-promotability gaps for full WB11 ET/soil-water runtime closure. | Cross-contract ownership is explicit, but promotable runtime closure remains provisional pending SIMIMPL22/SIMIMPL23 execution. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-WATBAL-003 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-WATBAL-004 | Chapter-5 validation caveat (stronger near-surface than full-profile agreement) remains and is explicitly retained as a documented limitation with governance risk acceptance. | Deep-profile closure confidence remains lower than near-surface Tier-A signals and requires explicit interpretation in governance decisions; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-WATBAL-005 | WB16 baseline-authoritative `ealpha` producer chain (`frcfac -> rdat(alpha) -> alphay -> eplane`) is now implemented in production runtime surfaces for runtime-projection-complete lanes, with explicit runtime/compatibility provenance policy. | Producer-chain migration closure is complete for scoped runtime lanes; compatibility branch remains explicitly non-promotable and warning-gated when required producer symbols are absent. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-WATBAL-005 | Historical closure record: the former rainfall-envelope WB16 `ealpha` producer chain (`frcfac -> rdat(alpha) -> alphay -> eplane`) was once migrated, but the APPMTH/rainfall-envelope peak operator was superseded and retired by `INV-WATBAL-102`. | No active peak producer or compatibility branch consumes `ealpha`; retained manifest fields publish `wb16_ealpha_compatibility_seed_used=false` and `wb16_ealpha_seed_policy=retired_not_applicable` solely for historical schema lineage. | closed — superseded | `[DIRECT][Static] + [Ran]` |
 | GAP-WATBAL-006 | HPHYS0260 adds trace-grade WB17/WB18/final-storage residual classification authority but does not itself change hydrology physics. | Full water-balance parity remains `HOLD` when identities close but H1..H39 semantic residuals persist; follow-on work must target baseline-authoritative magnitude or initialization lineage. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-09` | `170` | `Codex` | PEAK-HOURLY provenance reconciliation: marked historical `GAP-WATBAL-005` superseded by `INV-WATBAL-102`, removed its stale active `ealpha` producer/compatibility claim, and bound retained manifest fields to `false`/`retired_not_applicable`. |
 | `2026-08-09` | `169` | `Codex` | PEAK-HOURLY final source-custody correction: made WB14 the sole owner of cumulative same-pass infiltration and hourly excess, and prohibited the later daily-only snow-infiltration reconstruction from debiting any hourly runoff bin, including local-only supply. |
 | `2026-08-09` | `168` | `Codex` | PEAK-HOURLY review closure: prohibited proportional or residual allocation across hourly bins; required source-tagged hourly custody for mixed local same-pass/runon debits and producer-timed custody for partial positive frost retention, otherwise hard-fail; retained only exact full-series clearing for complete frost retention; preserved every finite positive hourly supply; prohibited using an empty hourly ledger for positive daily runoff; and anchored the unchanged 24-interval arithmetic reconciliation to `SC-RUNOFFPART-001#TOL-RUNOFFPART-007` with explicit boundary behavior. |
 | `2026-08-09` | `167` | `Codex` | PEAK-HOURLY post-partition correction: made WB14/WB19 closing hourly depths authoritative, required routed melt and runon to enter WB14 hourly supply exactly once rather than being appended as runoff limbs, prohibited scalar-to-shape reconstruction, and added bounded 24-interval hourly/daily reconciliation authority (`TOL-WATBAL-009`) with positive-source preservation and material-mismatch hard failure. |

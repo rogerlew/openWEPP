@@ -23,6 +23,9 @@ fn contract_owns_hourly_peak_return_timing_and_public_units() {
         "enter the WB14 hourly supply exactly once",
         "same `Area` used to convert runoff depth to `runvol`",
         "rectangular-equivalent duration",
+        "GAP-WATBAL-005",
+        "closed — superseded",
+        "wb16_ealpha_seed_policy=retired_not_applicable",
     ] {
         assert!(
             contract.contains(required),

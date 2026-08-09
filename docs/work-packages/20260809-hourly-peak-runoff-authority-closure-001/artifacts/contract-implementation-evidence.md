@@ -4,7 +4,7 @@ Status: `complete`
 
 Evidence mode: `Static`
 
-`SC-WATBAL-001` v169 adds `INV-WATBAL-102..104` and replaces the WB16
+`SC-WATBAL-001` v170 adds `INV-WATBAL-102..104` and replaces the WB16
 rainfall-envelope/APPMTH production rules with a closing post-partition hourly
 peak, in-hour surface-return custody, exact dry-zero behavior, depth-rate
 internals, exactly-once public area conversion, and rectangular-equivalent
@@ -34,3 +34,6 @@ selected producer row. The p61 and p102 consumers join the Parquet event by
 simulation year plus Julian day before reconstructing volume and peak.
 
 The lifecycle registry is current at `2026-08-09`.
+Historical `GAP-WATBAL-005` is explicitly superseded: no active peak path
+consumes `ealpha`, and retained manifest fields report
+`false`/`retired_not_applicable` only for schema lineage.
