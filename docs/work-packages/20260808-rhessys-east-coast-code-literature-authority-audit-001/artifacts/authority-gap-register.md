@@ -1,9 +1,29 @@
 # Authority-Gap Register
 
-Status: `queued`
+Status: `audit-complete / explicit successor blockers`
 
-Evidence mode: `not-run`
+Evidence mode: `Static + Ran`
 
-For every gap, record the affected source coordinates and successor dependency,
-authority routes attempted, evidence, result, and terminal `ADOPT`, `ADAPT`,
-`RE_DERIVE`, `DEFER`, `REJECT`, or `BLOCK_SUCCESSOR` disposition.
+| Gap | Required surface | Routes attempted | Result/evidence | Terminal disposition and lift condition |
+| --- | --- | --- | --- | --- |
+| `AUTH-RHEC-001` | strict profile compatibility | exact generator/parser comparison; MIT source inspection | five mismatched keys and 53 hidden defaults | `BLOCK_SUCCESSOR`: versioned strict schema, explicit aliases, no hidden defaults, vectors for all selected keys |
+| `AUTH-RHEC-002` | selected deciduous/evergreen profile values | CSV header leads; White (2000) parameter-family tables; bibliography search | no cell-level source/measurement/domain map | `BLOCK_SUCCESSOR`: admit each selected value with locator/domain or replace with separately authorized parameters |
+| `AUTH-RHEC-003` | multistratum cover/order/radiation | full direct/diffuse use trace; Forrester and de Pury/Farquhar; optical-triple reconstruction | absorptance/transmittance are dead, diffuse extinction is ignored, nine triples fail closure, and incomplete source citations do not authorize the empirical operator | `BLOCK_SUCCESSOR`: contract equation, exact components, closure/error policy, sparse/mixed validity, and independent vectors |
+| `AUTH-RHEC-004` | interception/storage/stemflow/drainage | Gash and JULES review; source comparison | storage candidate exists; stemflow, arbitrary-timestep carry, ventilation branch incomplete | `BLOCK_SUCCESSOR`: select one cadence/regime with complete mass ledger |
+| `AUTH-RHEC-005` | aerodynamic conductance | JULES, Shuttleworth-Wallace, Pereira; source citations | no single domain-bounded overstory/understory/sparse formulation and parameter source | `BLOCK_SUCCESSOR`: admit roughness/displacement/reference-height/stability/regime law |
+| `AUTH-RHEC-006` | stomatal/canopy conductance | Jarvis, Stewart, Kelliher, White; exact source audit | empirical family exists, but source curve mix, scale, cell parameters, sentinels, Tavg omission, Tmin/CO2 laws, and floor are unsupported | `BLOCK_SUCCESSOR`: choose named leaf/canopy scale and domain; reject or admit every factor/threshold |
+| `AUTH-RHEC-007` | Penman-Monteith demand | primary algebra review, source unit reconstruction, and internal snow-sublimation cross-check | executed psychrometric constant omits `EPS`, and resistance/energy/area/cadence chain is unresolved | `BLOCK_SUCCESSOR`: close `004-006/014`, independently re-derive gamma, name energy/enthalpy operands, and add numeric reconstruction |
+| `AUTH-RHEC-008` | Farquhar carbon | Farquhar 1980, de Pury/Farquhar 1997, Wullschleger lead, source audit | core C3 equations recognizable; constants, `Jmax`, forced C3, ten-pass feedback, scaling, profile N parameters incomplete | `BLOCK_SUCCESSOR`: contract complete C3 route and selected parameters; explicitly exclude C4 profiles or admit C4 |
+| `AUTH-RHEC-009` | phenology and future LAI | Jolly lead; source/CSV inspection; existing `SC-PLANT-001` retained | all profiles request static dates without cell provenance; dynamic GSI inputs are hidden defaults | `BLOCK_SUCCESSOR`: selected phenology authority and non-duplicative relationship to current GSI |
+| `AUTH-RHEC-010` | layer root demand and feedback | JULES layer-weight candidate; source root/LWP tracing; canonical Stage A/B/C boundary | source has one root depth and sat/unsat split, not layer requests or authorized withdrawals | `BLOCK_SUCCESSOR`: explicit root fractions, observation operator, frozen/dry behavior, zero-denominator rule, hydrology arbitration |
+| `AUTH-RHEC-011` | respiration/allocation/turnover dependencies | BIOME-BGC/White/Ryan leads and full source call closure | family-level evidence only; profile parameter origins, cadence, receivers, and iteration incomplete; minimum C allocation/turnover feeds future LAI and roots | `BLOCK_SUCCESSOR` for respiration and the minimum selected C state transition; alternate allocation, N competition, and material receivers may `DEFER` only to a named `VEGETATION-CARBON-NUTRIENT-MATERIAL` package behind an immutable-N/no-material first-slice contract |
+| `AUTH-RHEC-012` | canopy snow | source trace and canonical ownership review | ownership boundary exists, constitutive law does not | `DEFER`: joint vegetation/snow/LSE contract amendment before any canopy-snow code |
+| `AUTH-RHEC-013` | licensed direct source route | exact commits and MIT license digests | affirmative permission is present for both pinned repositories | `ADOPT` licensing/provenance only; closes obsolete `GAP-VEGETATION-010` statement |
+| `AUTH-RHEC-014` | canopy/ground available-energy chain | longwave and surface-heat source reconstruction; PM dimensional review; physical component closure | homogeneous canopy slab, warm negative-longwave deletion, dimensionally inconsistent heat storage, and erroneous day/night clamp cannot establish an energy operand | `BLOCK_SUCCESSOR`: select canonical longwave and storage/ground-heat owners, units, sign convention, condensation policy, exact component ledger, and independent branch/closure vectors |
+| `AUTH-RHEC-015` | compatible initial vegetation state | both GIS worldfile initializer traces; CSV/parser comparison; White family-level review | C/N pools, root depth, zero states, 5% allocation, and deadwood C:N have no adequate authority; SLA identity diverges across initialization/runtime | `BLOCK_SUCCESSOR`: versioned dated initializer with explicit area basis, selected equations/values/domains, strict profile identities, non-finite guards, and mass/LAI reconstruction vectors |
+| `AUTH-RHEC-016` | reproducible definition acquisition | both GIS default-input branches and pinned repository manifest | accepted entry scripts can bypass the pinned checkout by fetching mutable raw `master` CSVs | `BLOCK_SUCCESSOR`: accept only explicit local bytes with repository/commit/file digest provenance; no network fallback |
+
+No operator acquisition request is required to close this audit. The missing
+items are now exact successor authority/admission decisions and parameter
+provenance obligations, not unidentified reading tasks. Every required gap is
+therefore visible as `BLOCK_SUCCESSOR`; no proxy implementation is allowed.

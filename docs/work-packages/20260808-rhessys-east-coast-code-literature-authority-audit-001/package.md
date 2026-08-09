@@ -1,6 +1,6 @@
 # RHESSys East Coast Code-To-Literature Authority Audit
 
-Status: `active / precursor audit`
+Status: `complete / audit passed / successor blocked on authority`
 
 Date: `2026-08-08`
 
@@ -227,7 +227,7 @@ cannot be obtained. Do not ask the user to collect a broad reading list.
 - `SC-VEGETATION-001` Stage A/B/C ownership and its adjacent-contract map.
 - The independent literature dossier and rights intake from
   `../20260808-vegetation-radiation-interception-conductance-slice-001/`.
-- The queued successor
+- The held successor
   `../20260808-rhessys-east-coast-coupled-vegetation-slice-001/`.
 - ADR-0011 architecture-first authority, ADR-0017 comparator distrust, ADR-0042
   science/calibration readiness, and ADR-0043 direct validation.
@@ -368,11 +368,15 @@ No observed dataset or personal data is authorized.
   separate precursor to the coupled vegetation implementation package.
 - [x] (2026-08-08) Scaffolded package scope, artifacts, active prompt, and
   lifecycle dependency edits.
-- [ ] Freeze the exact audit identity and inventory universe.
-- [ ] Complete source/citation and field/profile inventories.
-- [ ] Verify code-to-literature concordance and close admissible gaps.
-- [ ] Amend canonical authority and the successor package as warranted.
-- [ ] Complete review, validation, verification, and disposition.
+- [x] (2026-08-08) Froze the exact audit identity and inventory universe.
+- [x] (2026-08-08) Completed source/citation, 71-field, 32-profile, and
+  53-parser-only-default inventories.
+- [x] (2026-08-08) Completed concordance/deviation review and made every
+  authority gap explicit.
+- [x] (2026-08-08) Amended canonical authority and the successor without
+  admitting source physics or parameter values.
+- [x] (2026-08-08) Completed dual review, direct validation, dual terminal
+  verification, disposition, and handoff.
 
 ## Decision Log
 
@@ -392,9 +396,19 @@ No observed dataset or personal data is authorized.
 
 ## Outcomes And Retrospective
 
-Scaffold outcome only. No audit row, literature match, contract authority,
-parameter value, or implementation behavior has yet been verified by this
-package. The first actionable step is the exact source/citation inventory.
+The docs-only audit completed. It found 31 grouped transitive source surfaces,
+35 concordance rows, 30 source/literature deviations, and 16 authority gaps.
+Key defects include five key mismatches, 53 hidden defaults, mutable `master`
+fallbacks, dead/ignored optics and nine non-closing profiles, defective PM
+gamma, dimensionally inconsistent heat storage, longwave/energy clamps,
+unbounded LAI iteration, unsupported initialization, and incomplete persistent
+carbon/root coupling.
+
+`SC-VEGETATION-001` version 2 admits only the exact licensed-provenance and
+strict-schema boundary while recording explicit non-promotable gaps. The
+coupled implementation successor remains blocked on `AUTH-RHEC-001..011` and
+`AUTH-RHEC-014..016`. No Rust, runtime, calibration, validation, parity,
+activation, publication, or cutover work occurred.
 
 ## Idempotence And Recovery
 

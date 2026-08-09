@@ -1,10 +1,11 @@
 # Operator Source Request
 
-Status: `empty / create only if blocking`
+Status: `not-required`
 
 Evidence mode: `Static`
 
-No article request is known at scaffold time. If inaccessible material blocks a
-required successor row, record only the exact citation/DOI, needed equation or
-parameter, source coordinates, acquisition attempts, and implementation
-consequence. Do not produce a broad reading list.
+No inaccessible article prevents this precursor from truthfully completing its
+audit. Required implementation surfaces with missing, contradictory, or
+unscoped authority are explicit `BLOCK_SUCCESSOR` rows. The successor must not
+begin production implementation until those named admissions are closed; no
+broad literature request or proxy parameter is substituted.

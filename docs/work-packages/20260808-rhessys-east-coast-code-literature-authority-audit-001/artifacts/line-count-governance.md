@@ -1,8 +1,10 @@
 # Line-Count Governance
 
-Status: `not-applicable unless Rust unexpectedly appears`
+Status: `pass / no Rust touched`
 
 Evidence mode: `Static`
 
-Production Rust is outside scope. Any `.rs` diff is an unauthorized-scope
-failure and must be removed before disposition; otherwise record no touched Rust.
+Production Rust is outside scope. The terminal changed-path scan must continue
+to show no `.rs`, Cargo, runtime, fixture, or test-source path. Because no Rust
+appears in the audit diff, line-count and module-size escalation are not
+applicable.

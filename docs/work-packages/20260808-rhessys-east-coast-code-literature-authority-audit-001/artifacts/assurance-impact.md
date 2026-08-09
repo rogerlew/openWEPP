@@ -1,9 +1,11 @@
 # Assurance Impact
 
-Status: `queued`
+Status: `not-applicable`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Determine assurance-subject impact from the exact documentation/contract diff.
-Do not modify governed assurance evidence unless an affected subject and
-authorized lifecycle operation are proven.
+The exact change adds audit evidence, bibliography/rights metadata, explicit
+non-promotable contract gaps, and blocked successor planning. It changes no
+implemented or published assurance subject, evidence root, generation,
+approval, release, or public report. No assurance lifecycle operation is
+authorized or required.

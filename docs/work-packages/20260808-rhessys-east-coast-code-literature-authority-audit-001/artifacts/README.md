@@ -1,11 +1,13 @@
 # Artifacts
 
-Status: `queued / audit next`
+Status: `complete / terminal evidence populated`
 
 Evidence mode: `Static`
 
-Queued files are obligations, not evidence that an audit, authority admission,
-review, validation, or verification has occurred.
+The inventory, literature, gap, contract, successor-amendment, review,
+validation, reconciliation, verification, disposition, and handoff artifacts
+are populated. Each artifact's own evidence class and claim limit remains
+controlling.
 
 - `pre-implementation-intent.md`, `required-reading-map.md`,
   `source-and-license-manifest.md`, and `owned-file-manifest.md` freeze scope.

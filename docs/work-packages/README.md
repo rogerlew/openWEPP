@@ -516,20 +516,12 @@ State as of `2026-08-08 UTC`:
     RHESSysEastCoast/GIS2RHESSys route for deciduous and mixed forests. Evidence
     is retained as scientific counterevidence and parameter-domain context.
 
-- `20260808-rhessys-east-coast-code-literature-authority-audit-001/`
-  - ACTIVE / PRECURSOR AUDIT: verify the vegetation-relevant
-    RHESSysEastCoast/GIS2RHESSys source, state, call, equation, parameter, unit,
-    domain, default, and branch surfaces against primary literature and
-    openWEPP authority before implementation. Close admissible gaps, classify
-    every deviation, acquire sources under open/copyrighted conventions, and
-    amend the coupled successor. Production Rust is prohibited.
-
 - `20260808-rhessys-east-coast-coupled-vegetation-slice-001/`
-  - QUEUED / AUTHORITY-AUDIT DEPENDENCY: licensed source-aware implementation
+  - HELD / AUTHORITY ADMISSION REQUIRED: licensed source-aware implementation
     successor using pinned RHESSysEastCoast commit `375c75b1` and GIS2RHESSys
     commit `6b20883d`. It may begin only after the precursor passes review and
-    verification, amends the exact coherent boundary, and leaves no required
-    `BLOCK_SUCCESSOR` row. Existing vegetation-file compatibility and explicit
+    verification. It remains blocked by required `AUTH-RHEC-001..011` and
+    `014..016`. Existing vegetation-file compatibility and explicit
     deciduous/evergreen/mixed strata remain the target; activation and cutover
     remain excluded.
 
@@ -2338,6 +2330,15 @@ artifacts remain factual; do not dispatch or resume them independently.
   coordinated terminal deletion instead of continuing the held slices.
 
 ## Execution Log
+
+- `20260808-rhessys-east-coast-code-literature-authority-audit-001/` is
+  complete as a docs-only code-to-literature authority audit. It enumerated 71
+  CSV fields, 32 profiles, 53 parser-only defaults, 31 source groups, 35
+  concordance rows, 30 deviations, and 16 gaps; amended
+  `SC-VEGETATION-001` version 2 and the coupled successor; and passed dual
+  review and verification. No production behavior or parameter set was
+  admitted. The successor remains blocked on `AUTH-RHEC-001..011` and
+  `AUTH-RHEC-014..016`.
 
 - `20260707-laned-router-tier1-local-numerics-001/` is complete as LANED ROUTER
   TIER-1 LOCAL NUMERICS. Result:

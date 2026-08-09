@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `queued / precursor blocked`
+Status: `held / audit complete / authority admission required`
 
 Evidence mode: `Static`
 

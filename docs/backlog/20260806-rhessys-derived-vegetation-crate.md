@@ -2,25 +2,25 @@
 
 ## Status
 
-- `state`: **active; code-to-literature audit precursor** - source-aware
-  implementation is queued until the audit verifies, closes, or explicitly
-  blocks every required authority row; default activation remains prohibited
+- `state`: **blocked; audit complete, authority admission required** -
+  source-aware implementation remains closed on `AUTH-RHEC-001..011` and
+  `AUTH-RHEC-014..016`; default activation remains prohibited
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
   provenance, not necessarily the permanent public crate name)
 - `origin`: static comparison of openWEPP, WEPP-forest, and RHESSys vegetation,
   ET, radiation, litter, snow, hydrology, and biogeochemistry implementations
-- `implementation release trigger`: complete the active code-to-literature
-  precursor with passing reviews/verification, a prospectively amended coupled
-  boundary, and no required `BLOCK_SUCCESSOR` authority row
+- `implementation release trigger`: close every required audit blocker through
+  reviewed canonical authority, prospectively reconcile the coupled package,
+  and pass its contract-first gate
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
 - `superseded research package`:
   [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
-- `active authority-audit precursor`:
+- `completed authority-audit precursor`:
   [RHESSYS-EAST-COAST-CODE-LITERATURE-AUTHORITY-AUDIT](../work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/package.md)
 - `queued implementation package`:
   [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)

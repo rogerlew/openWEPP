@@ -1,8 +1,13 @@
 # Kernel-Profile Compliance
 
-Status: `queued / conditional on contract amendment`
+Status: `pass for bounded non-constitutive amendment`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Check every amended canonical contract against the kernel process profile. Mark
-`NOT_APPLICABLE` with exact-diff evidence if no canonical contract changes.
+The amendment changes no production kernel behavior and admits no constitutive
+algorithm. Existing required contract sections remain present. The touched
+strict-definition behavior maps to `INV-VEGETATION-052`, runtime/test guard
+class, typed failures `VEG-E-003/060`, and gaps
+`GAP-VEGETATION-011/012`. Units and numerical parameter authority remain
+explicitly missing/non-promotable. Calibration posture and test-vector
+obligations remain visible. No profile requirement is waived.

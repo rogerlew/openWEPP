@@ -13,6 +13,12 @@ terminal disposition, has amended this package, and leaves no required
 `BLOCK_SUCCESSOR` row. If the precondition is unmet, stop without edits and
 report the predecessor dependency.
 
+The precursor's 2026-08-08 audit amendment records required
+`AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` blockers, so this prompt is
+intentionally non-executable for production work until a reviewed
+authority-admission amendment closes them. Source licensing and audit
+completion do not satisfy that condition.
+
 After release, execute every phase in `package.md` sequentially through terminal
 disposition or a proven declared hold. Begin by verifying the predecessor's
 accepted inventory, concordance, deviations, parameter matrix, authority gaps,
@@ -46,6 +52,10 @@ stomata unless the precursor evidence and admitted contract prove that behavior.
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/disposition.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/worker-handoff.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/successor-amendment-report.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/source-function-state-inventory.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/parameter-authority-matrix.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/code-literature-concordance-matrix.md`
+- `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-code-literature-authority-audit-001/artifacts/authority-gap-register.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md`
 - `/home/workdir/openWEPP/docs/work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/artifacts/worker-handoff.md`
 - `/home/workdir/openWEPP/docs/specifications/science-contracts/AGENTS.md`
@@ -86,7 +96,7 @@ stomata unless the precursor evidence and admitted contract prove that behavior.
 - External-authority templates, registries, obligations, and adjacent Rust/test
   sources when their authoring phase begins.
 
-Required-reading budget: `586599` local Core bytes, `WARN` (`>400000` and
+Required-reading budget: `677241` local Core bytes, `WARN` (`>400000` and
 `<=800000`). External source files and on-demand literature are excluded until
 their trigger applies. Record the recomputed terminal budget in package evidence
 if Core files change.
@@ -97,7 +107,8 @@ if Core files change.
    matrices, successor amendments, source identities, and absence of required
    `BLOCK_SUCCESSOR` rows. Record the openWEPP base/diff, instruction chain,
    write set, and required-reading budget.
-2. Reconcile the audited boundary with the concrete Rust API and fixtures;
+2. Close the precursor's required `AUTH-RHEC-*` rows through reviewed canonical
+   authority; then reconcile the admitted boundary with the concrete Rust API and fixtures;
    prospectively amend the package before implementation if a new dependency
    appears.
 3. Amend canonical contracts as still needed, add contract-derived tests and

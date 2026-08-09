@@ -1791,3 +1791,74 @@ Every consumed field and candidate profile requires a typed unit/domain,
 citation/default audit, and deterministic compatibility disposition.
 **Rights / distribution**: `MIT-vendorable`; repository `LICENSE` copyright
 2021 Laurence Lin, same SHA-256 as R-146.
+
+## R-148: Farquhar, von Caemmerer, and Berry (1980) C3 photosynthesis
+
+**Citation**: Farquhar, G. D., S. von Caemmerer, and J. A. Berry (1980). "A
+biochemical model of photosynthetic CO2 assimilation in leaves of C3 species."
+*Planta*, 149, 78-90. https://doi.org/10.1007/BF00386231
+**Local path**: `not-acquired`; full text reviewed 2026-08-08 from
+https://biocycle.atmos.colostate.edu/Documents/SiB/Farquhar_1980.pdf; remote
+bytes were not retained/checksummed.
+**Reference quality**: `primary-remote-reviewed / non-binding-concordance`.
+**Topic**: Leaf-scale Rubisco, electron-transport, photorespiration, and gas-
+exchange equations for C3 assimilation.
+**openWEPP role**: Primary authority check for the recognizable core of
+RHESSysEastCoast `compute_farq_psn`. It does not authorize the source's fixed
+`Jmax/Vmax` ratio, hard-coded C3 selection for all profiles, ten-pass growth-
+respiration feedback, canopy aggregation, or profile parameters.
+**Rights / distribution**: `restricted`; Springer journal copyright is visible
+in the article and no affirmative redistribution license was found.
+
+## R-149: de Pury and Farquhar (1997) sun/shade canopy photosynthesis
+
+**Citation**: de Pury, D. G. G., and G. D. Farquhar (1997). "Simple scaling of
+photosynthesis from leaves to canopies without the errors of big-leaf models."
+*Plant, Cell & Environment*, 20, 537-557.
+https://doi.org/10.1111/j.1365-3040.1997.00094.x
+**Local path**: `not-acquired`; full text reviewed 2026-08-08 from
+https://biocycle.atmos.colostate.edu/Documents/SiB/De_Pury_1997_Plant_Cell_%26_Environment.pdf;
+remote bytes were not retained/checksummed.
+**Reference quality**: `primary-remote-reviewed / non-binding-concordance`.
+**Topic**: Separate sunlit/shaded integration of absorbed irradiance,
+photosynthetic capacity, and C3 leaf equations.
+**openWEPP role**: Primary scale and structure check for source sun/shade
+assimilation. The paper shows why an undifferentiated big-leaf shortcut and a
+fixed empirical curvature correction are not generally adequate.
+**Rights / distribution**: `restricted`; journal copyright and no affirmative
+redistribution license.
+
+## R-150: White et al. (2000) BIOME-BGC parameterization
+
+**Citation**: White, M. A., P. E. Thornton, S. W. Running, and R. R. Nemani
+(2000). "Parameterization and sensitivity analysis of the BIOME-BGC terrestrial
+ecosystem model: Net primary production controls." *Earth Interactions*, 4(3),
+1-85. https://doi.org/10.1175/1087-3562(2000)004%3C0003:PASAOT%3E2.0.CO;2
+**Local path**: `not-acquired`; DOI/author full text reviewed 2026-08-08;
+remote bytes were not retained/checksummed.
+**Reference quality**: `primary-remote-reviewed / family-level-lead`.
+**Topic**: Literature-derived biome parameter families for turnover,
+allocation, C:N, litter chemistry, morphology, conductance, interception,
+extinction, and Rubisco nitrogen fraction, with sensitivity analysis.
+**openWEPP role**: Family-level authority and unit/domain lead for the GIS
+profile audit. It does not provide a field-to-cell provenance map for the 32
+GIS2RHESSys columns and does not authorize hidden parser defaults or key
+mismatches.
+**Rights / distribution**: `restricted`; journal copyright is stated and no
+affirmative redistribution license was confirmed.
+
+## R-151: Wullschleger (1993) C3 capacity synthesis
+
+**Citation**: Wullschleger, S. D. (1993). "Biochemical limitations to carbon
+assimilation in C3 plants: A retrospective analysis of the A/Ci curves from 109
+species." *Journal of Experimental Botany*, 44(5), 907-920.
+https://doi.org/10.1093/jxb/44.5.907
+**Local path**: `not-acquired`; DOI primary full text reviewed 2026-08-08;
+remote bytes were not retained/checksummed.
+**Reference quality**: `primary-remote-reviewed / discovery-lead`.
+**Topic**: Cross-species analysis of Farquhar-model biochemical capacity.
+**openWEPP role**: Discovery and parameter-domain check. RHESSysEastCoast
+comments explicitly replace an older Wullschleger relationship with a fixed
+`Jmax = 2.1 Vmax`, so this citation cannot support the executed expression.
+**Rights / distribution**: `restricted`; Oxford journal article with no
+affirmative redistribution license found.

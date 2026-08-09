@@ -1,10 +1,211 @@
 # Parameter Authority Matrix
 
-Status: `queued`
+Status: `audit-complete / successor-blocking gaps retained`
 
-Evidence mode: `not-run`
+Evidence mode: `Ran + Static`
 
-Disposition every one of the 71 GIS2RHESSys vegetation fields and 32 profile
-columns. Record units, mathematical domain, empirical/calibration domain,
-default/sentinel behavior, citation locator, completeness, deciduous/evergreen/
-mixed role, and migration disposition.
+The pinned CSV has exactly 71 parameter rows and 32 profile columns; every row has 34 cells and no profile cell is blank or `NA`. Completeness here means rectangular data only. The generator writes each selected column verbatim as `value<TAB>key`, while the C parser silently substitutes defaults for absent or mismatched keys. All cell values remain `PARAMETER_DATA` unless a row below names stronger authority.
+
+## Field Inventory (71/71)
+
+| # | Exact CSV key | Family | Units/domain audit | Parser/completeness result | Citation authority | Evidence | Disposition |
+| ---: | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `stratum_default_ID` | identity | integer profile identity; uniqueness/domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no identity registry | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 2 | `K_absorptance` | radiation/optics | dimensionless/fraction; admissible domain not enforced | parsed but dead in audited canopy radiation; nine optical profile triples fail closure | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` source use; `BLOCK_SUCCESSOR` optics |
+| 3 | `K_reflectance` | radiation/optics | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 4 | `K_transmittance` | radiation/optics | dimensionless/fraction; admissible domain not enforced | parsed but dead in audited canopy radiation; transmission is calculated from reflectance/operator residual | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` source use; `BLOCK_SUCCESSOR` optics |
+| 5 | `PAR_absorptance` | radiation/optics | dimensionless/fraction; admissible domain not enforced | parsed but dead in audited canopy radiation; one PAR triple fails closure | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` source use; `BLOCK_SUCCESSOR` optics |
+| 6 | `PAR_reflectance` | radiation/optics | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 7 | `PAR_transmittance` | radiation/optics | dimensionless/fraction; admissible domain not enforced | parsed but dead in audited canopy radiation | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` source use; `BLOCK_SUCCESSOR` optics |
+| 8 | `epc.alloc_crootc_stemc` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 9 | `epc.alloc_frootc_leafc` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 10 | `epc.alloc_livewoodc_woodc` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 11 | `epc.alloc_prop_day_growth` | allocation/growth | dimensionless or source-specific; unresolved; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 12 | `epc.alloc_stemc_leafc` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 13 | `epc.allocation_flag` | allocation/growth | enum token; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 14 | `epc.daily_fire_turnover` | turnover/litter/CN | day^-1 as parsed/stored/used; no annual-to-daily conversion; admissible domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 15 | `epc.day_leafoff` | phenology | day-of-year; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 16 | `epc.day_leafon` | phenology | day-of-year; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 17 | `epc.deadwood_fcel` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 18 | `epc.deadwood_flig` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 19 | `epc.ext_coef` | radiation/optics | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 20 | `epc.flnr` | photosynthesis | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 21 | `epc.froot_cn` | turnover/litter/CN | kg C kg N^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 22 | `epc.froot_turnover` | turnover/litter/CN | yr^-1 in profile; parser may divide by 365; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 23 | `epc.frootlitr_fcel` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 24 | `epc.frootlitr_flab` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 25 | `epc.frootlitr_flig` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 26 | `epc.gl_c` | conductance | m s^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 27 | `epc.gl_smax` | conductance | m s^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 28 | `epc.gr_perc` | allocation/growth | dimensionless fraction; executed in Farquhar feedback and C/N allocation | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is family-level only | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 29 | `epc.height_to_stem_coef` | canopy structure | allometry coefficient yielding m from stem-C input; input area basis unresolved | drives canopy height, layer sorting, and aerodynamics | CSV header bundle; no cell/allometry-domain locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 30 | `epc.height_to_stem_exp` | canopy structure | dimensionless allometry exponent | drives canopy height, layer sorting, and aerodynamics | CSV header bundle; no cell/allometry-domain locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 31 | `epc.kfrag_base` | turnover/litter/CN | day^-1 as parsed/stored/used; no annual-to-daily conversion; admissible domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 32 | `epc.lai_ratio (allside_oneside)` | canopy structure | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | `SILENT_DEVIATION`: parser asks for `epc.lai_ratio`; CSV value is ignored and a hidden default is used | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 33 | `epc.leaf_cn` | turnover/litter/CN | kg C kg N^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 34 | `epc.leaf_turnover` | turnover/litter/CN | yr^-1 stored unchanged by parser and consumed by annual litterfall/state logic | exact key is read; no conversion/domain guard | CSV header bundle; White et al. 2000 is family-level only | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` for persistent C/LAI state |
+| 35 | `epc.leaflitr_cn` | turnover/litter/CN | kg C kg N^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 36 | `epc.leaflitr_fcel` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 37 | `epc.leaflitr_flab` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 38 | `epc.leaflitr_flig` | turnover/litter/CN | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 39 | `epc.livewood_cn` | turnover/litter/CN | kg C kg N^-1; admissible numeric/enum domain not enforced by generator | parsed, then unconditionally overwritten with `epc.froot_cn` | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` |
+| 40 | `epc.livewood_turnover` | turnover/litter/CN | yr^-1 in profile; parser may divide by 365; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 41 | `epc.max_lai` | canopy structure | m^2 m^-2; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 42 | `epc.maxlgf` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 43 | `epc.ndays_expand` | phenology | day; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 44 | `epc.ndays_litfall` | phenology | day; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 45 | `epc.phenology.type` | phenology | enum token; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 46 | `epc.phenology_flag` | phenology | enum token; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 47 | `epc.ppfd_coef` | conductance | m^2 s umol^-1; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 48 | `epc.proj_sla m2_kgC` | canopy structure | m^2 kg C^-1; admissible numeric/enum domain not enforced by generator | `SILENT_DEVIATION`: parser asks for `epc.proj_sla`; CSV value is ignored and a hidden default is used | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 49 | `epc.proj_swa` | canopy structure | m^2 kgC^-1 all-sided specific stem-wood area | feeds SAI, PAI, radiation, and aerodynamic geometry | CSV header bundle; White et al. 2000 is family-level only | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 50 | `epc.psi_close` | conductance | MPa; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 51 | `epc.psi_open` | conductance | MPa; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 52 | `epc.storage_transfer_prop` | allocation/growth | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 53 | `epc.tcoef` | conductance | deg C^-1 (code-shape inference); admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 54 | `epc.tmax` | conductance | deg C; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 55 | `epc.topt` | conductance | deg C; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 56 | `epc.veg.type` | identity | enum token; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 57 | `epc.vpd_close (x1000)` | conductance | Pa (header text is not a conversion); admissible numeric/enum domain not enforced by generator | `SILENT_DEVIATION`: parser asks for `epc.vpd_close`; CSV value is ignored and a hidden default is used | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 58 | `epc.vpd_open (x1000)` | conductance | Pa (header text is not a conversion); admissible numeric/enum domain not enforced by generator | `SILENT_DEVIATION`: parser asks for `epc.vpd_open`; CSV value is ignored and a hidden default is used | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 59 | `gsurf_intercept` | conductance | m s^-1; executed nonvascular/wet-surface conductance intercept, then reciprocated for PM resistance | exact key is read; no finite/domain guard | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 60 | `gsurf_slope` | conductance | m s^-1 per relative storage (source struct inconsistently labels dimensionless) | executed conductance slope, then reciprocated for PM resistance | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 61 | `lai_stomatal_fraction` | conductance | dimensionless multiplier, not a bounded fraction: CSV includes 1.1539 and 1.45 | scales vascular conductance and gates transpiration | CSV header bundle; White et al. 2000 is family-level only | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 62 | `max_heat_capacity` | energy/storage | J m^-3 K^-1 in parser struct and heat-flux declaration; finite/nonnegative/order domain not enforced | exact key is read; source parser still permits hidden default if omitted; executed wet branch is dimensionally defective | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 63 | `min_heat_capacity` | energy/storage | J m^-3 K^-1 in parser struct and heat-flux declaration; finite/nonnegative/order domain not enforced | exact key is read; source parser still permits hidden default if omitted; executed heat-storage law lacks authority | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 64 | `mortality` | respiration/mortality | yr^-1 in profile; parser may divide by 365; admissible numeric/enum domain not enforced by generator | `SILENT_DEVIATION`: parser asks for `epc.daily_mortality_turnover`; CSV value is ignored and a hidden default is used | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `REJECT` |
+| 65 | `mrc.per_N` | respiration/mortality | kg C kg N^-1 day^-1 at reference T; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 66 | `mrc.q10` | respiration/mortality | dimensionless; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 67 | `specific_rain_capacity` | interception | m water per all-sided PAI; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 68 | `specific_snow_capacity` | interception | m water per all-sided PAI; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle; White et al. 2000 is a family-level lead, not cell provenance | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` |
+| 69 | `ustar_overu` | aerodynamics | dimensionless/fraction; admissible numeric/enum domain not enforced by generator | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 70 | `wind_attenuation_coef` | aerodynamics | source struct says m^-1 while use combines canopy geometry; dimensional contract unresolved | exact key is read; source parser still permits hidden default if omitted | CSV header bundle is unscoped; no row-to-source locator | `PARAMETER_DATA` + `CODE_OBSERVED` | `BLOCK_SUCCESSOR` |
+| 71 | `epc.branch_turnover` | turnover/litter/CN | yr^-1 input converted by parser to day^-1 | exact key is read and divided by 365; input/domain guard absent | CSV header bundle; White et al. 2000 is family-level only | `PARAMETER_DATA` + `CODE_OBSERVED` | `DEFER` to material/mortality owner |
+
+Five keys are incompatible with the pinned parser. In addition, the parser
+reads the following 53 keys absent from the CSV. Default values are literal
+parser expressions; units are source-declared where available and otherwise
+explicitly unresolved. Every row is `CODE_OBSERVED`, never parameter authority.
+
+## Parser-Only Hidden Defaults (53/53)
+
+| # | Exact parser key | Hidden default | Units and executed consumer/branch | Migration disposition |
+| ---: | --- | --- | --- | --- |
+| 1 | `epc.vpd_open` | `0.0` | Pa; vascular VPD curve; mismatched CSV alias | `REJECT`; `BLOCK_SUCCESSOR` |
+| 2 | `epc.vpd_close` | `3500.0` | Pa; vascular VPD curve; mismatched CSV alias | `REJECT`; `BLOCK_SUCCESSOR` |
+| 3 | `epc.proj_sla` | `9.0` | m^2 kgC^-1; LAI/initialization; mismatched CSV alias | `REJECT`; `BLOCK_SUCCESSOR` |
+| 4 | `epc.lai_ratio` | `2.6` | dimensionless; projected/all-sided LAI/PAI; mismatched CSV alias | `REJECT`; `BLOCK_SUCCESSOR` |
+| 5 | `epc.max_height` | `25.0` | m; height/allocation cap | `REJECT`; `BLOCK_SUCCESSOR` |
+| 6 | `epc.max_root_depth` | `1.0` | m; root-depth cap | `REJECT`; `BLOCK_SUCCESSOR` |
+| 7 | `liter1_soil1_ratio` | `0.58` | dimensionless transfer ratio; litter/soil receiver | `REJECT`; `DEFER` to material owner |
+| 8 | `liter2_soil2_ratio` | `0.36` | dimensionless transfer ratio; litter/soil receiver | `REJECT`; `DEFER` to material owner |
+| 9 | `liter4_soil3_ratio` | `0.25` | dimensionless transfer ratio; litter/soil receiver | `REJECT`; `DEFER` to material owner |
+| 10 | `soil3_soil4_ratio` | `0.70` | dimensionless transfer ratio; soil C/N receiver | `REJECT`; `DEFER` to material owner |
+| 11 | `epc.deadleaf_turnover` | `1.0` | yr^-1; annual standing-dead turnover | `REJECT`; `DEFER` outside selected tree state |
+| 12 | `epc.daily_mortality_turnover` | `0.005/365` | day^-1 after parser conversion; background mortality | `REJECT`; `BLOCK_SUCCESSOR` if selected state advances |
+| 13 | `epc.dyn_alloc_prop_day_growth` | `0` | enum/bool; dynamic daily-allocation branch | `REJECT`; `BLOCK_SUCCESSOR` |
+| 14 | `epc.min_leaf_carbon` | `0.0005` | kgC source declaration; death/resprout guard; area basis unresolved | `REJECT`; `BLOCK_SUCCESSOR` |
+| 15 | `epc.max_years_resprout` | `1` | year count; resprout branch | `REJECT`; `DEFER` to disturbance owner |
+| 16 | `epc.resprout_leaf_carbon` | `0.001` | kgC source declaration; area basis unresolved; resprout branch | `REJECT`; `DEFER` to disturbance owner |
+| 17 | `epc.litter_gsurf_slope` | `0.0` | conductance per relative storage; litter evaporation | `REJECT`; `DEFER` to litter/LSE owner |
+| 18 | `epc.litter_gsurf_intercept` | `100000000` | m s^-1 in executed conductance sum; source comment inconsistent | `REJECT`; `DEFER` to litter/LSE owner |
+| 19 | `epc.coef_CO2` | `1.0` | dimensionless; vascular CO2 multiplier | `REJECT`; `BLOCK_SUCCESSOR` |
+| 20 | `epc.root_growth_direction` | `0.8` | fraction; Arora-Boer-style root update | `REJECT`; `BLOCK_SUCCESSOR` |
+| 21 | `epc.root_distrib_parm` | `8.0` | parameter used with kg m^-2 root biomass; exact dimensions unresolved | `REJECT`; `BLOCK_SUCCESSOR` |
+| 22 | `epc.crown_ratio` | `0.6` | dimensionless; crown/layer/aerodynamic geometry | `REJECT`; `BLOCK_SUCCESSOR` |
+| 23 | `epc.gs_tmin` | `-2.0` | deg C; dynamic-GSI lower threshold | `REJECT`; `AUTH-RHEC-009` |
+| 24 | `epc.gs_tmax` | `5.0` | deg C; dynamic-GSI upper threshold | `REJECT`; `AUTH-RHEC-009` |
+| 25 | `epc.gs_vpd_min` | `900` | Pa; dynamic-GSI lower threshold | `REJECT`; `AUTH-RHEC-009` |
+| 26 | `epc.gs_vpd_max` | `4100` | Pa; dynamic-GSI upper threshold | `REJECT`; `AUTH-RHEC-009` |
+| 27 | `epc.gs_dayl_min` | `36000` | s; dynamic-GSI lower threshold | `REJECT`; `AUTH-RHEC-009` |
+| 28 | `epc.gs_dayl_max` | `39600` | s; dynamic-GSI upper threshold | `REJECT`; `AUTH-RHEC-009` |
+| 29 | `epc.gs_psi_min` | `-15.0` | source labels mPa; soil-potential unit is contradictory; dynamic GSI | `REJECT`; `AUTH-RHEC-009` |
+| 30 | `epc.gs_psi_max` | `-14.0` | source labels mPa; soil-potential unit is contradictory; dynamic GSI | `REJECT`; `AUTH-RHEC-009` |
+| 31 | `epc.gs_ravg_days` | `6` | day; rolling GSI window | `REJECT`; `AUTH-RHEC-009` |
+| 32 | `epc.gs_threshold_on` | `0.5` | dimensionless; leaf-on trigger | `REJECT`; `AUTH-RHEC-009` |
+| 33 | `epc.gs_threshold_off` | `0.5` | dimensionless; leaf-off trigger | `REJECT`; `AUTH-RHEC-009` |
+| 34 | `epc.gs_window_on` | `30` | day; leaf-on search window | `REJECT`; `AUTH-RHEC-009` |
+| 35 | `epc.gs_window_off` | `30` | day; leaf-off search window | `REJECT`; `AUTH-RHEC-009` |
+| 36 | `epc.max_storage_percent` | `0.2` | fraction; annual storage/allocation cap | `REJECT`; `BLOCK_SUCCESSOR` |
+| 37 | `epc.min_percent_leafg` | `epc.leaf_turnover` | fraction; allocation lower bound coupled to another value | `REJECT`; `BLOCK_SUCCESSOR` |
+| 38 | `epc.dickenson_pa` | `0.25` | allometric coefficient; allocation branch | `REJECT`; `BLOCK_SUCCESSOR` |
+| 39 | `epc.waring_pa` | `0.8` | allometric coefficient; allocation branch | `REJECT`; `BLOCK_SUCCESSOR` |
+| 40 | `epc.waring_pb` | `2.5` | allometric exponent; allocation branch | `REJECT`; `BLOCK_SUCCESSOR` |
+| 41 | `epc.Tacclim` | `0` | enum/bool; respiration acclimation selector | `REJECT`; `BLOCK_SUCCESSOR` |
+| 42 | `epc.Tacclim_intercpt` | `3.22` | Q10 intercept; respiration acclimation | `REJECT`; `BLOCK_SUCCESSOR` |
+| 43 | `epc.Tacclim_slp` | `0.046` | Q10 per deg C; respiration acclimation | `REJECT`; `BLOCK_SUCCESSOR` |
+| 44 | `epc.Tacclim_days` | `30` | day; respiration temperature average | `REJECT`; `BLOCK_SUCCESSOR` |
+| 45 | `epc.litter_moist_coef` | `2.0/1000.0` | m kg^-1; litter water capacity | `REJECT`; `DEFER` to litter/LSE owner |
+| 46 | `epc.litter_density` | `100.0/2.0` | kg m^-1 on unit area; litter depth | `REJECT`; `DEFER` to litter/material owner |
+| 47 | `epc.nfix` | `0` | enum/bool; nitrogen fixation branch | `REJECT`; `DEFER` to nutrient owner |
+| 48 | `epc.edible` | `1` | enum/bool; grazing branch | `REJECT`; `DEFER` to disturbance owner |
+| 49 | `epc.psi_curve` | `0` | enum; vascular LWP-curve selector | `REJECT`; `BLOCK_SUCCESSOR` |
+| 50 | `epc.psi_threshold` | `-1` | MPa; alternate LWP curve threshold | `REJECT`; `BLOCK_SUCCESSOR` |
+| 51 | `epc.psi_slp` | `0.2` | MPa^-1; alternate LWP curve slope | `REJECT`; `BLOCK_SUCCESSOR` |
+| 52 | `epc.psi_intercpt` | `1.0` | dimensionless; alternate LWP curve intercept | `REJECT`; `BLOCK_SUCCESSOR` |
+| 53 | `epc.shade_sla_mult` | `1.0` | dimensionless; shade SLA/LAI/photosynthesis scaling | `REJECT`; `BLOCK_SUCCESSOR` |
+
+Thus 119 unique parser keys comprise 66 exact CSV overlaps and 53 parser-only
+keys; five additional CSV keys miss their intended parser names. The corpus is
+rectangular but not runtime-complete.
+
+Exact optical closure reconstruction found nine profile violations:
+`shrub` K=1.03, `deciduousBESBGC` K=1.02669094,
+`cwt rhododendron.bgc` K=1.03, `Tulip.poplar.bgc` K=1.03,
+`chestnut.oak.bgc` K=1.03, `localdeciduous` K=1.00428571,
+`white oak` K=1.03, `sugar maple` PAR=1.01, and `red oak` K=1.03.
+No tolerance or normalization is authorized.
+
+## Profile Inventory (32/32)
+
+| # | Exact profile | ID | Location | Scientific-name metadata | Lifeform | Phenology | Completeness | Mixed-stand role | Evidence | Disposition |
+| ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `evergreen` | 1 | default | NA | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `BLOCK_SUCCESSOR` |
+| 2 | `deciduous` | 2 | default | NA | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `BLOCK_SUCCESSOR` |
+| 3 | `grass` | 3 | default | NA | `GRASS` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 4 | `nonveg` | 4 | default | NA | `NON_VEG` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 5 | `shrub` | 6 | default | NA | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 6 | `garden` | 5 | BES | NA | `GRASS` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 7 | `deciduousBES` | 103 | BES | NA | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 8 | `deciduousBESBGC` | 102 | BES | NA | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 9 | `crop` | 7 | default | NA | `GRASS` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 10 | `evergreenBGC` | 101 | default | NA | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 11 | `eastern.hemlock.bgc` | 801 | cwt | not supplied | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 12 | `cwt rhododendron.bgc` | 802 | cwt | not supplied | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 13 | `Tulip.poplar.bgc` | 804 | cwt | not supplied | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 14 | `chestnut.oak.bgc` | 805 | cwt | not supplied | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `BLOCK_SUCCESSOR` |
+| 15 | `red.maple.bgc` | 806 | cwt | not supplied | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 16 | `eastern.white.pine` | 807 | cwt | not supplied | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `BLOCK_SUCCESSOR` |
+| 17 | `localevergreen` | 401 | WSC | not supplied | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 18 | `localdeciduous` | 402 | WSC | not supplied | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 19 | `sweet gum` | 411 | WSC | Liquidambar styraciflua | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 20 | `Tulip poplar` | 412 | WSC | Liriodendron tulipifera | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 21 | `lobolly pine` | 413 | WSC | pinus taeda | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 22 | `virginia pine` | 414 | WSC | pinus virginiana | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 23 | `green ash` | 415 | WSC | Fraxinus pennsylvanica | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 24 | `nonstocked` | 416 | WSC | Cornus florida | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 25 | `hackberry` | 417 | WSC | Celtis occidentalis | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 26 | `cherrybark oak` | 418 | WSC | Quercus pagoda | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 27 | `white oak` | 419 | WSC | Quercus alba | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 28 | `sugar maple` | 305 | NYC | Acer saccharum | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 29 | `red oak` | 306 | NYC | Quercus rubra | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 30 | `Oak Spp` | 304 | NYC | Quercus Spp | `TREE` | `DECID` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 31 | `red spruce` | 307 | NYC | Picea rubens | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+| 32 | `Balsam Fir` | 308 | NYC | Abies balsamea | `TREE` | `EVERGREEN` | 71/71 cells, but five key mismatches and 53 hidden parser defaults affect every generated file | explicit component profile; never average with another profile | `PARAMETER_DATA`; header citation bundle has no cell mapping | `DEFER` |
+
+## Terminal Interpretation
+
+The four `BLOCK_SUCCESSOR` profiles are the minimum generic and East-Coast deciduous/evergreen candidates needed to demonstrate explicit mixed composition. They are blocked as scientific parameter sets: profile existence and complete cells do not establish per-cell provenance, calibration domain, or transferability, and the serialization/parser mismatch changes their runtime meaning. Other profiles are safely `DEFER`red to a later profile-admission boundary; this does not authorize their values. No synthetic mixed profile may be formed by averaging columns.
+
+Required successor action: define a versioned strict schema, correct or explicitly map the five incompatible keys, make every selected dependency explicit instead of using any of the 53 hidden defaults, and admit each selected profile value/domain before production use.
+
+## Deferral Custody
+
+The 28 non-selected profiles are excluded from every initial selector and file
+acceptance claim. Their owner is a future `VEGETATION-PROFILE-ADMISSION`
+package, triggered only after the strict schema and initializer are admitted
+and a user requests one of those exact profile identities. Allocation,
+turnover, litter/C:N, nonvascular, and canopy-snow fields marked `DEFER` remain
+raw compatibility data only; they cannot enter runtime state. A later process
+package must re-audit its selected fields and profiles before widening the
+selector. This is severability evidence, not authority for the deferred cells.

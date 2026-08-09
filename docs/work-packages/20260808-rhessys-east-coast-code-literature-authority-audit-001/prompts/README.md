@@ -1,6 +1,6 @@
 # Prompt Lifecycle
 
-Status: `active`
+Status: `archived / complete`
 
-The executable audit prompt begins in `active/`. At terminal disposition, move
-it byte-for-byte to `archived/` and update both directory indexes.
+The completed kickoff prompt is archived byte-for-byte with SHA-256
+`ba3f67b7fbc9950debe44adaced8260f0e472f9e22dcdd39ee6556592d8b1288`.

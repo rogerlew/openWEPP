@@ -146,6 +146,19 @@ with the MIT copyright and permission notice, exact commit/file provenance, and
 contract-adjudicated scientific role. This classification does not apply to the
 separate official RHESSys repository lacking a license.
 
+## Addendum 2026-08-08 (RHESSys code-to-literature remote review)
+
+| Reference | Classification | Basis |
+| --- | --- | --- |
+| Farquhar, von Caemmerer, and Berry (1980), DOI `10.1007/BF00386231` | `restricted / remote-only` | Springer journal copyright is visible; no affirmative redistribution license. Indexed as R-148. |
+| de Pury and Farquhar (1997), DOI `10.1111/j.1365-3040.1997.00094.x` | `restricted / remote-only` | Journal article has no affirmative redistribution license. Indexed as R-149. |
+| White et al. (2000), DOI `10.1175/1087-3562(2000)004<0003:PASAOT>2.0.CO;2` | `restricted / remote-only` | Journal copyright is stated; no affirmative redistribution license was confirmed. Indexed as R-150. |
+| Wullschleger (1993), DOI `10.1093/jxb/44.5.907` | `restricted / remote-only` | Oxford journal article; no affirmative redistribution license found. Indexed as R-151. |
+
+The full text was read remotely for scientific adjudication and was not added
+to the repository or local cache. Tracked records contain metadata and audit
+conclusions only.
+
 ## Addendum 2026-07-10 (WSHED-W11A channel-sediment authority acquisitions)
 
 | File | First-pass classification | Basis |

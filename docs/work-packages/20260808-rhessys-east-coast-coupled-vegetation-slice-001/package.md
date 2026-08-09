@@ -1,6 +1,6 @@
 # RHESSys East Coast Coupled Vegetation Slice
 
-Status: `queued / blocked on code-to-literature authority audit`
+Status: `held / audit complete / authority admission required`
 
 Date: `2026-08-08`
 
@@ -72,8 +72,47 @@ function/state inventory, 71-field/32-profile parameter matrix,
 code-to-literature concordance matrix, deviation and authority-gap registers,
 canonical authority/gap amendments, successor amendment report, accepted dual
 review disposition, and passing terminal verification. Any required
-`BLOCK_SUCCESSOR` row keeps this package queued until its named authority need
+`BLOCK_SUCCESSOR` row keeps this package held until its named authority need
 is closed or this package is prospectively narrowed with severability evidence.
+
+## Precursor Audit Result (Prospective Amendment)
+
+The precursor completed the population audit but did not release production
+implementation. Its accepted boundary is licensed source/format provenance,
+explicit multistratum identity, canonical Stage A/B/C ownership, and a strict
+typed compatibility requirement. No constitutive process or profile parameter
+set is admitted merely from source behavior.
+
+The following required blocker families must be closed before Phase 2 or any
+production Rust: `AUTH-RHEC-001` strict schema/key aliases and 53 hidden
+defaults; `AUTH-RHEC-002` selected profile cell provenance; `AUTH-RHEC-003`
+mixed/top-down radiation; `AUTH-RHEC-004` liquid interception cadence and
+release taxonomy; `AUTH-RHEC-005/006` aerodynamic and stomatal/canopy
+conductance; `AUTH-RHEC-007` the complete Penman-Monteith operand chain;
+`AUTH-RHEC-008` C3 photosynthesis and capacity/iteration authority;
+`AUTH-RHEC-009` selected phenology; `AUTH-RHEC-010` layer root demand and
+hydrologic arbitration; and the respiration portion of `AUTH-RHEC-011`.
+Required blockers also include `AUTH-RHEC-014` available-energy ownership and
+closure, `AUTH-RHEC-015` initial vegetation state, and `AUTH-RHEC-016`
+digest-bound local definition acquisition. `AUTH-RHEC-012` remains a deferred
+canopy-snow boundary; `AUTH-RHEC-013` admits licensing/provenance only.
+
+The audit rejects the source's hidden defaults, five incompatible GIS/parser
+keys, `livewood_cn` overwrite, `9999.0`/`-999.9` sentinels, nonzero conductance
+floor, unsupported Tmin/CO2 laws, omitted Tavg multiplier, forced-C3 branch,
+fixed ten-pass respiration feedback, PM psychrometric-constant omission,
+dead/ignored optical parameters, non-closing optical triples, unbounded LAI
+iteration, dimensionally inconsistent heat storage, longwave/energy clamps,
+mutable `master` fetch, unsupported initial-state synthesis, direct soil-store
+mutation, and warn/clamp/exit failure posture. Do not recreate these behaviors
+for compatibility.
+
+Generic `evergreen`, generic `deciduous`, `eastern.white.pine`, and
+`chestnut.oak.bgc` are the minimum candidate profiles for later
+evergreen/deciduous/mixed fixtures, but all four remain `BLOCK_SUCCESSOR` until
+each selected value has an exact authority/domain disposition. The other 28
+profiles are safely deferred to a separately reviewed profile-admission
+boundary and remain readable only as raw compatibility data.
 
 ## Required Coupling Interpretation
 
@@ -191,7 +230,9 @@ may enter production Rust with an unresolved rubric row.
    successor amendment report, and absence of required `BLOCK_SUCCESSOR` rows.
    Freeze pre-implementation intent, exact base/diff, selected boundary,
    instruction map, source commits, required-reading budget, and owned write set.
-2. Reconcile the audited boundary with the concrete Rust API and fixture design;
+2. Close every required `AUTH-RHEC-*` blocker contract-first in an authorized
+   authority-admission amendment. Reconcile the admitted boundary with the
+   concrete Rust API and fixture design;
    prospectively amend this package before implementation if new dependencies
    appear.
 3. Amend canonical contracts as still required; add contract-derived tests,
@@ -255,6 +296,20 @@ include:
     markdown-doc lint --path docs/work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001 --format plain
     git diff --check
 
+Before the pre-implementation gate, contract-derived fixtures must also prove
+exact recognition or explicit aliasing of all 71 raw keys; typed failure for
+every selected missing/duplicate/non-finite/domain-invalid/sentinel value;
+negative proof that none of the 53 source defaults can enter implicitly;
+explicit preservation of all 32 raw profile identities; non-averaged mixed
+composition; exact rejection of the nine non-closing optical triples unless
+independently replaced; digest-bound local inputs with no network fallback;
+distinct leaf/canopy/surface conductance scales; PM gamma reconstruction with
+`EPS`; canopy/ground energy and storage-heat component closure; dated initial
+C/N/LAI mass reconstruction; bounded LAI iteration failure; a C3-only guard
+for the selected photosynthesis route; and layer-demand/hydrology dual
+reconstruction. These are prospective obligations, not evidence that the
+blocked gate has passed.
+
 Critical full correctness, contract, external-authority, and exact-diff gates
 are non-deferrable once implementation begins. Coverage/CRAP remains optional
 observational QA for this non-CQR package.
@@ -306,8 +361,10 @@ If unavailable, record the block and do not claim the required review or gate.
 - [x] (2026-08-08) User moved the code-to-literature authority audit into
   `../20260808-rhessys-east-coast-code-literature-authority-audit-001/` as a
   hard precursor.
-- [ ] Wait for the precursor's concordance, gap closure, successor amendment,
-  reviews, and terminal verification.
+- [x] (2026-08-08) Precursor completed concordance, gap classification,
+  successor amendment, dual review, validation, and terminal verification.
+- [ ] Close required `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` blocker
+  families; the 2026-08-08 audit did not release production implementation.
 - [ ] Select and admit the exact coherent first implementation boundary.
 - [ ] Pass the contract-first gate before production Rust.
 - [ ] Implement, validate, review, verify, and disposition the slice.
@@ -351,22 +408,25 @@ If unavailable, record the block and do not claim the required review or gate.
 
 ## Outcomes And Retrospective
 
-Planning/scaffold outcome only. No canonical science contract, Rust source,
-fixture, external-authority suite, production consumer, or runtime default has
-changed. The next actionable work is the separate code-to-literature authority
-audit; this package remains queued until that predecessor amends and releases
-it.
+The precursor audit is complete and amended this package, but did not release
+production. `SC-VEGETATION-001` version 2 now records licensed provenance,
+strict schema identity, and explicit gaps; no constitutive law or profile set
+was admitted. No Rust source, fixture, external-authority suite, production
+consumer, or runtime default changed. The next action is reviewed canonical
+closure of `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016`; this package remains
+held until those blockers and its contract-first gate pass.
 
 ## Idempotence And Recovery
 
 Consume the precursor's pinned read-only audit without modifying either external
 checkout. If its accepted authority boundary cannot support implementation,
-keep this package queued or close `executed-hold` without production Rust.
+keep this package held or close `executed-hold` without production Rust.
 Never reset unrelated user work.
 
 Revision note (2026-08-08): initial licensed-source successor scaffolded from
 the user's deciduous/mixed-forest and vegetation-file compatibility direction.
 
-Revision note (2026-08-08): execution queued behind a distinct
-code-to-literature authority-audit precursor; source inventory and authority-gap
-closure moved out of this implementation package.
+Revision note (2026-08-08): the distinct code-to-literature authority-audit
+precursor completed and amended this package. Implementation remains held until
+required `AUTH-RHEC-001..011` and `AUTH-RHEC-014..016` authority admission and
+the contract-first gate pass.
