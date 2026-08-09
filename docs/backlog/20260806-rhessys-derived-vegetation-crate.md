@@ -2,9 +2,8 @@
 
 ## Status
 
-- `state`: **staged; first implementation package scaffolded** - high-value
-  ecosystem-process architecture; constitutive implementation is authorized
-  only inside the linked authority-first default-off package, and default
+- `state`: **active; licensed-source successor scaffolded** - source-aware
+  migration may proceed inside the linked coupled-vegetation package; default
   activation remains prohibited
 - `date`: 2026-08-06
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
@@ -12,18 +11,17 @@
   provenance, not necessarily the permanent public crate name)
 - `origin`: static comparison of openWEPP, WEPP-forest, and RHESSys vegetation,
   ET, radiation, litter, snow, hydrology, and biogeochemistry implementations
-- `promotion trigger`: **complete** - the process/state provenance ledger,
-  sanitized source-analysis rules, explicit native-management stratum
-  contract, and synthetic soil-water coupling contract are admitted by
-  `SC-VEGETATION-001`; the next slice still requires independent constitutive
-  authority, and unresolved RHESSys licensing blocks direct/code-derived
-  translation but not literature-derived independent implementation
+- `promotion trigger`: **complete** - the process/state boundary is admitted by
+  `SC-VEGETATION-001`, and pinned MIT-licensed RHESSysEastCoast/GIS2RHESSys
+  sources now provide an authorized source-aware implementation route
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
   [VEGETATION-SOURCE-PROVENANCE-AND-BOUNDARY-AUTHORITY](../work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001/package.md)
-- `active authority-research package`:
+- `superseded research package`:
   [VEGETATION-RADIATION-INTERCEPTION-CONDUCTANCE-SLICE](../work-packages/20260808-vegetation-radiation-interception-conductance-slice-001/package.md)
+- `active implementation-planning package`:
+  [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)
 
 ## Summary
 
@@ -60,8 +58,9 @@ RHESSys already demonstrates a higher-fidelity ecosystem organization:
 - vertically ordered radiation and aerodynamic transfer;
 - wet-canopy evaporation, transpiration, and soil evaporation as distinct
   fluxes;
-- stomatal conductance coupled to radiation, vapor-pressure deficit,
-  temperature, leaf water potential, and photosynthetic state;
+- stomatal conductance driven by radiation, vapor-pressure deficit,
+  temperature, leaf water potential, and atmospheric CO2, with shared canopy
+  state feeding both water flux and photosynthesis;
 - layer-aware root water demand and realized uptake;
 - evergreen and deciduous phenology with leaf and fine-root allocation and
   turnover;
@@ -75,96 +74,68 @@ adjudicated kernels while retaining openWEPP's typed boundaries, conservation
 ledgers, tests, native input authority, hillslope hydrology, erosion, routing,
 and operational feedback through WEPPcloud.
 
-## Source and Licensing Posture
+## Source And Licensing Posture
 
-The static reference inspected for this concept is:
+The selected implementation and compatibility sources are pinned:
 
-- repository: `https://github.com/RHESSys/RHESSys`
-- local checkout: `/Users/roger/src/RHESSys`
-- inspected commit: `f9d1bbf8d161aa55b6a51061dc320188ead44962`
+| Role | Repository and local checkout | Commit | License evidence |
+|---|---|---|---|
+| Coupled vegetation implementation provenance | `https://github.com/laurencelin/RHESSysEastCoast`; `/workdir/RHESSysEastCoast` | `375c75b1cd2202217651dff43aa113d80b9c1118` | MIT `LICENSE`, Laurence Lin (2021); SHA-256 `4fd4ecf2fd01cf53c99754bcac5a6dbee255a0be0539dd84ffe12e06808374be` |
+| Vegetation-profile and file-generation compatibility | `https://github.com/laurencelin/GIS2RHESSys`; `/workdir/GIS2RHESSys` | `6b20883dea7c9fd92f71ec69eaca015ebf6dfe18` | MIT `LICENSE`, Laurence Lin (2021); same SHA-256 |
 
-RHESSys is publicly available, and the official RHESSys site lists
-[`Completely open source`](https://rhessys.github.io/) under "Advantages of
-RHESSys." The inspected repository nevertheless has no formal `LICENSE`,
-`COPYING`, or equivalent grant. External registries have reported uncertain or
-historical MIT status, but those reports are not a license attached to the
-current source.
-The repository's public [License? issue #150](https://github.com/RHESSys/RHESSys/issues/150),
-opened 2021-08-07, remains open with no maintainer response as of 2026-08-08.
-This demonstrates that the ambiguity has been visible for years without a
-project-level resolution. It neither supplies a license nor makes a second
-inquiry a useful prerequisite for scientific work.
+These grants permit source inspection, adaptation, translation, tests, and
+redistribution subject to preservation of the MIT copyright and permission
+notice. The successor must vendor or otherwise preserve the notice with any
+source-derived material it distributes and record exact file/function lineage.
 
-RHESSys has also accumulated contributions from researchers at multiple
-institutions. The absence of a formal license is plausibly an institutional and
-contributor-provenance problem rather than evidence that the community intends
-to prohibit scientific reuse. Community practice and statements are relevant
-context, but they are not substitutes for a copyright grant.
+The separate official checkout formerly inspected at commit
+`f9d1bbf8d161aa55b6a51061dc320188ead44962` still lacks a repository license.
+It is not interchangeable with the two licensed forks and remains outside the
+direct-translation route unless separately licensed.
 
-Consequences:
+## Licensed Source-Aware Migration Protocol
 
-- Static inspection, sanitized process mapping, and scientific comparison may
-  inform planning and contract authoring.
-- Literature equations may be implemented independently under their scientific
-  provenance after contract adjudication. This work does not wait for a RHESSys
-  repository license.
-- RHESSys may be used as a behavioral comparator and source of black-box test
-  vectors without making its implementation the target authority.
-- Direct or closely translated RHESSys code must not enter a distributable
-  openWEPP crate until maintainers or institutional counsel establish an
-  adequate license or permission grant.
-- Every promoted kernel must distinguish `RHESSys-code-derived`,
-  `literature-derived`, `openWEPP-derived`, and `independently re-derived`
-  provenance.
-- Absence of a formal license blocks only direct/code-derived translation and
-  incorporation. It is not a blanket blocker on the vegetation crate.
+The former sanitized clean-room protocol is superseded for the two pinned MIT
+repositories. Source-aware implementation is allowed, but licensing does not
+turn source behavior into scientific truth. For every migrated surface:
 
-## Sanitized Source-Analysis Protocol
+1. Record the exact repository, commit, file, function or data row, and license.
+2. Classify its role as `IMPLEMENTATION_PROVENANCE`, `FORMAT_COMPATIBILITY`,
+   `PARAMETER_DATA`, `COMPARATOR`, or `SCIENTIFIC_AUTHORITY`.
+3. Trace cited literature and physical/conservation invariants for constitutive
+   equations and parameter domains; label gaps rather than inventing authority.
+4. Reconcile the behavior with `SC-VEGETATION-001` ownership and typed error
+   rules before production code.
+5. Preserve intentional compatibility while rejecting accidental C-source
+   artifacts such as sentinels, implicit defaults, unexplained conductance
+   floors, commented experimental branches, and silent canonicalization.
+6. Use source differential vectors as comparator evidence, never as the sole
+   production-promotion criterion.
 
-Use a lightweight agent-operated provenance firewall when RHESSys source is
-consulted. This is an independent-authorship control, not a claim of a legally
-dispositive clean room and not a human-in-the-loop workflow.
+This path is source-aware and auditable, not a line-for-line port obligation.
+Rust structure may follow openWEPP conventions while behavior and deviations
+remain traceable.
 
-1. The implementation agent authors a bounded source-analysis request.
-2. A source-aware analyst writes a quarantined artifact and returns only its
-   path and digest.
-3. An independent compliance agent reviews the request and response.
-4. Only a passing, sanitized artifact is handed to the implementation agent.
-5. A separate source-aware reviewer may compare the completed implementation
-   behavior but must not patch or mechanically translate it.
+## Existing RHESSys Vegetation-File Compatibility
 
-Allowed requests and approved artifacts may describe:
+`GIS2RHESSys/vegCollection.csv` is the initial compatibility corpus: 71 fields
+across 32 profiles, including generic evergreen and deciduous vegetation plus
+East Coast deciduous, evergreen, shrub, and grass taxa. It contains phenology,
+optical, interception, aerodynamic, stomatal, hydraulic-stress,
+photosynthesis, allocation, turnover, and rooting operands used to generate
+`stratum_*.def` files.
 
-- process inputs, outputs, state, units, cadence, and ownership;
-- scientific equations with external literature citations;
-- observable state transitions, conservation identities, and process ordering;
-- boundary conditions, limiting cases, defects, and black-box vectors;
-- source coordinates and commit hashes for auditability;
-- evidence explicitly labeled `LITERATURE`, `CODE-OBSERVED`, or `INFERENCE`.
+The compatibility target is both generated `stratum_*.def` files and the
+collection table from the pinned commit. Parsing must be strict and
+provenance-preserving: unknown fields may be retained diagnostically, but a
+missing required field, duplicate key, invalid unit/domain, or unsupported
+sentinel must not silently receive a RHESSys parser default.
 
-They must not contain or request:
-
-- source excerpts or statement-by-statement descriptions;
-- line-by-line translation, mechanically reversible pseudocode, or patches;
-- distinctive comments, naming, or nonessential control-flow structure;
-- code-only formulas or constants presented as scientific authority;
-- instructions for reproducing a named RHESSys function exactly.
-
-The auditable handoff bundle is intentionally small:
-
-```text
-request.md
-approved-spec.md
-compliance-review.md
-provenance-manifest.md
-implementation-prompt.md
-```
-
-The compliance decision asks whether the request targets behavior rather than
-translation, whether the response conveys semantics rather than source
-expression, whether equations/constants have correctly labeled authority, and
-whether the artifact permits an independently structured Rust implementation.
-No human prompt adjudication is required for the routine path.
+Mixed forest is a composition, not a synthetic average profile. Represent it
+with two or more explicit strata or cohorts carrying their own parameter-set
+identity, cover fraction, LAI/state, height/vertical order, and root profile.
+Acceptance must include deciduous-only, evergreen-only, and mixed
+deciduous-evergreen cases with overlapping vertical layers.
 
 ## Existing Native-Management Fit
 
@@ -211,12 +182,12 @@ shape is:
 
 ```yaml
 vegetation:
-  model: rhessys_ecophysiology_v1
+  model: rhessys_east_coast_v1
   strata:
     - id: overstory
       vertical_layer: 1
       lifeform: tree
-      parameter_set: northern_hardwood_deciduous
+      parameter_set: gis2rhessys:chestnut_oak
       cover_fraction: 0.72
       height_m: 18.0
       initial_state: northern_hardwood_mature_v1
@@ -224,7 +195,7 @@ vegetation:
     - id: understory
       vertical_layer: 2
       lifeform: shrub
-      parameter_set: temperate_deciduous_shrub
+      parameter_set: gis2rhessys:rhododendron
       cover_fraction: 0.35
       height_m: 1.5
       initial_state: shrub_understory_v1
@@ -246,6 +217,8 @@ Required semantics:
   tool that records its equation, assumptions, and source values.
 - Missing required physiology or state fails closed. The runtime does not fill
   gaps from hidden RHESSys defaults.
+- A mixed stand retains each component profile and stratum; the loader does not
+  average deciduous and evergreen parameter rows into a fabricated default.
 
 ## Ownership Boundary
 
@@ -357,17 +330,18 @@ physics into active paths.
 
 ## Provenance and Kernel Selection
 
-Before code authoring, build a function-level RHESSys process inventory. For
+Before code authoring, build a function-level RHESSysEastCoast process inventory
+and a field-level GIS2RHESSys profile inventory. For
 each candidate kernel record:
 
-- RHESSys file/function and inspected commit;
+- repository, file/function or CSV field/profile, and pinned commit;
 - scientific citation or lack of one;
 - inputs, outputs, units, state mutation, and call ordering;
 - dependencies on patch, zone, stratum, soil, carbon, nitrogen, and snow state;
 - known code defects, ambiguous branches, and numerical safeguards;
 - applicable openWEPP contract and existing consumer;
 - disposition: adopt, re-derive from literature, adapt, reject, or defer;
-- licensing disposition.
+- licensing disposition and required MIT notice custody.
 
 RHESSys behavior is evidence, not automatic scientific authority. Static
 agreement with RHESSys is a comparator signal. Production promotion requires
@@ -417,17 +391,18 @@ fit cannot become a vegetation-class default without out-of-sample evidence.
 
 ## Phased Delivery
 
-1. **Source and provenance audit** - record the unresolved license posture,
-   produce the RHESSys function/state inventory, and identify whether each
-   candidate is literature-derived, independently re-derived, or prohibited
-   code-derived translation. Do not make a definitive repository license a
-   prerequisite for literature-derived work.
+1. **Licensed source and profile audit** - freeze both MIT license grants,
+   produce the RHESSysEastCoast function/state inventory and GIS2RHESSys
+   71-field/32-profile inventory, and classify source, format, parameter,
+   comparator, and scientific-authority roles.
 2. **Boundary contract** - define native strata, units, state ownership,
    coupling cadence, allocation arbitration, errors, and conservation ledgers.
 3. **Independent crate skeleton** - typed state and synthetic soil boundary
    with no production activation and no placeholder physics.
-4. **Vertical slices** - implement one contract-authorized process group at a
-   time, beginning with radiation/interception and conductance/water demand.
+4. **Coupled vertical slices** - implement one contract-authorized process group
+   at a time without severing required conductance, Penman-Monteith,
+   photosynthesis, phenology, multistratum, or root-demand feedback merely to
+   preserve the superseded narrow scope.
 5. **Carbon and phenology integration** - reconcile or replace the existing GSI
    canopy state without duplicate leaf/litter ownership.
 6. **Hydrology integration** - activate the two-stage soil-water protocol in a
@@ -444,13 +419,12 @@ amendment or creation of the applicable `SC-*` contracts.
 
 ## Promotion Criteria
 
-Promote this concept to work-package planning only when:
+Promote a source-aware implementation increment only when:
 
-- the proposed implementation method is literature-derived or independently
-  re-derived, or RHESSys licensing/permission is sufficient for any explicitly
-  proposed code-derived material;
-- the sanitized source-analysis request, compliance, and handoff rules are
-  bound into the work package when source-aware agents are used;
+- every source-derived surface is tied to one of the two pinned MIT repositories
+  and its notice-custody path is declared;
+- the function/state and field/profile inventories identify the exact coupled
+  boundary and distinguish compatibility from scientific authority;
 - the function/state provenance inventory identifies a bounded first vertical
   slice;
 - `SC-PLANT-001`, `SC-EVAP-001`, `SC-RESIDUE-001`, management-input authority,
@@ -470,10 +444,10 @@ and complete water/energy/carbon ledger evidence.
 
 - Should the public crate be `openwepp-vegetation`, with RHESSys-derived kernels
   as modules, rather than a source-branded crate?
-- Which RHESSys revision and configuration represent the reference behavior?
-- Will RHESSys issue #150 eventually produce an explicit license or permission
-  grant for direct translation and redistribution? This remains useful but is
-  not a prerequisite for independent implementation.
+- Which RHESSysEastCoast executable configuration and GIS2RHESSys-generated
+  definition set will become the first pinned comparator fixture?
+- Which of the 32 profile columns are internally complete for the first coupled
+  slice, and which cited parameter values need independent source verification?
 - Which process slice provides the most value without prematurely importing the
   full C/N system?
 - Should photosynthesis and stomatal conductance be finalized before or after
@@ -493,15 +467,19 @@ and complete water/energy/carbon ledger evidence.
 
 ## Initial References
 
-- RHESSys source at commit
-  `f9d1bbf8d161aa55b6a51061dc320188ead44962`.
-- RHESSys [License? issue #150](https://github.com/RHESSys/RHESSys/issues/150),
-  opened 2021-08-07 and still unanswered as of 2026-08-08.
+- RHESSysEastCoast source at commit
+  `375c75b1cd2202217651dff43aa113d80b9c1118` (MIT).
+- GIS2RHESSys source and `vegCollection.csv` at commit
+  `6b20883dea7c9fd92f71ec69eaca015ebf6dfe18` (MIT).
+- The separately inspected official RHESSys source at commit
+  `f9d1bbf8d161aa55b6a51061dc320188ead44962` remains licensing context only,
+  not a direct-translation source.
 - Tague, C. L., Band, L. E. (2004). RHESSys: Regional Hydro-Ecologic Simulation
   System - An object-oriented approach to spatially distributed modeling of
   carbon, water, and nutrient cycling.
-- RHESSys/BGC vegetation, canopy-stratum, radiation, hydrology, and carbon-
-  nitrogen process implementations, subject to the licensing posture above.
+- RHESSysEastCoast canopy-stratum, radiation, interception, conductance,
+  Penman-Monteith, Farquhar photosynthesis, phenology, rooting, and allocation
+  implementations, subject to contract adjudication above.
 - `SC-PLANT-001`, `SC-EVAP-001`, `SC-RESIDUE-001`, `SC-WATBAL-001`,
   `SC-SNOWFREEZE-001`, and native management input contracts.
 - `crates/openwepp-management-schema`, `crates/openwepp-plant-phenology`,

@@ -133,6 +133,19 @@ available for primary-source review but are not Git-vendored or distributed.
 The ignored cache follows the affirmative-license rule for both originals and
 full-text derivatives.
 
+## Addendum 2026-08-08 (licensed RHESSys East Coast source intake)
+
+| Source | Classification | Basis |
+|---|---|---|
+| `laurencelin/RHESSysEastCoast` at `375c75b1cd2202217651dff43aa113d80b9c1118` | `vendorable-source` | Repository `LICENSE` is MIT, copyright 2021 Laurence Lin; SHA-256 `4fd4ecf2fd01cf53c99754bcac5a6dbee255a0be0539dd84ffe12e06808374be`. Local checkout: `/workdir/RHESSysEastCoast`. |
+| `laurencelin/GIS2RHESSys` at `6b20883dea7c9fd92f71ec69eaca015ebf6dfe18` | `vendorable-source-and-data` | Repository `LICENSE` is the same MIT text and digest. Local checkout: `/workdir/GIS2RHESSys`; `vegCollection.csv` and definition-generation logic are covered by the repository license. |
+
+No source files are vendored by this docs-only increment. A later implementation
+increment may vendor bounded source-derived fixtures or compatibility data only
+with the MIT copyright and permission notice, exact commit/file provenance, and
+contract-adjudicated scientific role. This classification does not apply to the
+separate official RHESSys repository lacking a license.
+
 ## Addendum 2026-07-10 (WSHED-W11A channel-sediment authority acquisitions)
 
 | File | First-pass classification | Basis |

@@ -1754,3 +1754,40 @@ aerodynamic resistance depends on roughness, source height, stability, and
 canopy structure; it is not a substitute for primary equation authority.
 **Rights / distribution**: `copyrighted-cache`; the report states Institute
 of Hydrology copyright and no affirmative redistribution permission.
+
+## R-146: RHESSysEastCoast licensed implementation source
+
+**Citation**: Lin, L. (2021-). *RHESSysEastCoast* source repository.
+https://github.com/laurencelin/RHESSysEastCoast
+**Local path**: `/workdir/RHESSysEastCoast` at commit
+`375c75b1cd2202217651dff43aa113d80b9c1118`.
+**Reference quality**: `verified-primary-implementation-source`.
+**Topic**: East Coast RHESSys canopy strata, radiation, interception,
+Jarvis-style conductance response curves, Penman-Monteith water flux, Farquhar
+photosynthesis, phenology, roots, allocation, and coupled state orchestration.
+**openWEPP role**: Licensed implementation provenance and source-differential
+comparator for the coupled vegetation successor. Exact source behavior is not
+automatic scientific authority; cited equations, parameter domains, defaults,
+sentinels, numerical floors, and experimental branches require contract
+adjudication.
+**Rights / distribution**: `MIT-vendorable`; repository `LICENSE` copyright
+2021 Laurence Lin, SHA-256
+`4fd4ecf2fd01cf53c99754bcac5a6dbee255a0be0539dd84ffe12e06808374be`.
+
+## R-147: GIS2RHESSys vegetation profiles and definition generation
+
+**Citation**: Lin, L. (2021-). *GIS2RHESSys* source repository.
+https://github.com/laurencelin/GIS2RHESSys
+**Local path**: `/workdir/GIS2RHESSys` at commit
+`6b20883dea7c9fd92f71ec69eaca015ebf6dfe18`.
+**Reference quality**: `verified-primary-format-and-parameter-source`.
+**Topic**: `vegCollection.csv` vegetation profiles and R generation of RHESSys
+`stratum_*.def` files. Intake found 71 fields and 32 profiles spanning generic
+and East Coast deciduous, evergreen, shrub, grass, and no-vegetation classes.
+**openWEPP role**: Format-compatibility corpus and parameter-provenance input.
+Mixed forest must compose explicit profile-bearing strata; profile presence is
+not empirical calibration, universal transferability, or scientific validation.
+Every consumed field and candidate profile requires a typed unit/domain,
+citation/default audit, and deterministic compatibility disposition.
+**Rights / distribution**: `MIT-vendorable`; repository `LICENSE` copyright
+2021 Laurence Lin, same SHA-256 as R-146.

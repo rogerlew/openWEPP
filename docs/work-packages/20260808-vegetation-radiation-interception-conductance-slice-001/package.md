@@ -1,6 +1,6 @@
 # Vegetation Radiation, Interception, And Conductance Slice
 
-Status: `researching-authority-partial`
+Status: `executed-hold / superseded by licensed-source successor`
 
 Date: `2026-08-08`
 
@@ -83,7 +83,8 @@ surrogate, heuristic, or silent default.
 ## Included Scope
 
 - Independent literature and canonical-authority review for the bounded
-  constitutive chain above; no RHESSys source-expression inspection.
+  constitutive chain above; no RHESSys source-expression inspection under this
+  package's original provenance firewall.
 - Contract-first amendment of `SC-VEGETATION-001` and only the minimum adjacent
   `SC-LANDSURFACEENERGY-001`, `SC-EVAP-001`, or `SC-WATBAL-001` ownership text
   needed to make the slice unambiguous.
@@ -385,11 +386,14 @@ second returns an initial report.
 - [x] (2026-08-08) Acquired and reviewed the requested Gash, Jarvis, Stewart,
   and Kelliher primary articles and transcriptions in the copyrighted cache;
   reclassified Jarvis-Stewart as `CANDIDATE_DOMAIN_LIMITED`, not admitted.
-- [ ] Freeze the exact implementation intent and independent authority set.
-- [ ] Complete contract-first admission and the pre-implementation gate.
-- [ ] Implement and validate the default-off Stage A crate slice.
-- [ ] Complete reviews, Critical gates, verification, lifecycle updates, and
-  disposition.
+- [x] (2026-08-08) User selected the MIT-licensed RHESSysEastCoast and
+  GIS2RHESSys source-aware route, with deciduous and mixed-forest support and
+  no artificial prohibition on coupled photosynthesis/conductance scope.
+- [x] (2026-08-08) Closed this narrower independent-derivation package at its
+  declared authority boundary and transferred implementation to
+  `../20260808-rhessys-east-coast-coupled-vegetation-slice-001/`.
+- [ ] Contract-first admission and production implementation were intentionally
+  not performed in this superseded package.
 
 ## Surprises & Discoveries
 
@@ -457,6 +461,15 @@ second returns an initial report.
   while also documenting scale ambiguity, parameter dependence, and degraded
   cross-year transfer.
   Date/Author: 2026-08-08 / Codex.
+- Decision: Terminate this package as `executed-hold` and replace it with the
+  licensed-source-aware RHESSys East Coast successor.
+  Rationale: the user's required deciduous/mixed-forest target and existing
+  RHESSys vegetation-file compatibility require a broader, coupled parameter,
+  phenology, conductance, photosynthesis, and multistratum boundary than this
+  package authorizes. Both selected source repositories carry MIT licenses, so
+  the original no-source-expression firewall is no longer the correct
+  implementation posture.
+  Date/Author: 2026-08-08 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -470,10 +483,17 @@ also establishes Jarvis-Stewart as a real empirical candidate whose domain and
 scale must be chosen explicitly rather than a universal default.
 
 No science contract, suite, fixture, manifest, Rust, runtime, or test
-implementation has been performed. The contract-first gate remains closed
-pending a domain/scale decision for empirical conductance or a prospective
-scope decision to include coupled photosynthesis and plant hydraulics, plus
-selection of aerodynamic conductance authority.
+implementation was performed. The user resolved the former scope decision in
+favor of a source-aware, coupled successor using pinned MIT-licensed
+RHESSysEastCoast and GIS2RHESSys sources. The literature dossier remains
+independent scientific evidence and a check against blindly treating source
+behavior or parameter tables as universal authority.
+
+The successor must distinguish source compatibility, scientific authority, and
+openWEPP ownership. In particular, it may translate licensed implementation
+behavior, but it must adjudicate source sentinels, implicit defaults, numerical
+floors, experimental branches, and parameter provenance before admitting them
+to typed production paths.
 
 ## Idempotence And Recovery
 
@@ -495,3 +515,7 @@ recorded before canonical or production edits.
 Revision note (2026-08-08): operator-supplied Gash, Jarvis, Stewart, and
 Kelliher primary texts reviewed; the missing-source gap is closed and the
 remaining conductance blocker is an explicit domain/scale authority decision.
+
+Revision note (2026-08-08): user selected the pinned MIT-licensed
+RHESSysEastCoast/GIS2RHESSys route for deciduous and mixed forests. This narrow
+package closed `executed-hold`; implementation moved to the coupled successor.

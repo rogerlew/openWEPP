@@ -64,3 +64,12 @@ See `literature-review.md` for the full synthesis, rights matrix, primary-source
 adjudication, and incompatibility analysis.
 
 RHESSys source expression is prohibited evidence and was not inspected.
+
+## Supersession Addendum
+
+This admission verdict remains historically accurate for the narrow package:
+no candidate was admitted and its contract-first gate never opened. The user
+subsequently selected the MIT-licensed RHESSysEastCoast/GIS2RHESSys source-aware
+successor. Source inspection and coupled scope are authorized only in that new
+package; this artifact must not be read as prohibiting its pinned licensed
+sources or as admitting their behavior without contract adjudication.

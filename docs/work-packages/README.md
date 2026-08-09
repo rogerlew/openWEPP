@@ -510,14 +510,20 @@
 State as of `2026-08-08 UTC`:
 
 - `20260808-vegetation-radiation-interception-conductance-slice-001/`
-  - RESEARCHING / AUTHORITY PARTIAL: independent literature intake found
-    bounded radiation, interception, and layer-participation candidates, but
-    the conductance and dependent potential-transpiration chain remains blocked
-    between an empirical Jarvis-Stewart route and a larger
-    photosynthesis/hydraulics-coupled route. Five CC-BY sources are vendored;
-    restricted sources remain local-only. No contract or Rust implementation
-    has started. Stage B/C, soil mutation, production consumers, runtime
-    selection, empirical calibration, output, and cutover are excluded.
+  - EXECUTED-HOLD / SUPERSEDED: independent literature and rights intake
+    completed, but no constitutive chain, contract, suite, or Rust implementation
+    was admitted. The user selected the broader pinned MIT-licensed
+    RHESSysEastCoast/GIS2RHESSys route for deciduous and mixed forests. Evidence
+    is retained as scientific counterevidence and parameter-domain context.
+
+- `20260808-rhessys-east-coast-coupled-vegetation-slice-001/`
+  - ACTIVE / LICENSED-SOURCE AUDIT NEXT: source-aware successor using pinned
+    RHESSysEastCoast commit `375c75b1` and GIS2RHESSys commit `6b20883d` under
+    their MIT licenses. Inventory the coupled conductance, Penman-Monteith,
+    Farquhar, phenology, radiation, interception, and root-demand paths plus all
+    71 vegetation fields/32 profiles before contract or Rust work. The target
+    accepts existing valid stratum definition files and represents mixed forest
+    as explicit strata; default activation and production cutover are excluded.
 
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
   - COMPLETE / AUTHORITY ONLY: independently structured

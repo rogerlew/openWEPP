@@ -1,6 +1,5 @@
 # Active Prompts
 
-Status: `queued`
+Status: `empty / superseded`
 
-- `20260808-vegetation-radiation-interception-conductance-slice-001_kickoff_agent_prompt.md`
-  — execute the authority-first default-off vegetation Stage A slice end to end.
+No active prompt remains. See `../archived/` and the licensed-source successor.

@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: `literature-intake-complete-authority-partial`
+Status: `executed-hold / superseded`
 
 Evidence mode: `Static`
 
@@ -21,4 +21,6 @@ Current research records:
   closed contract-first gate; and
 - `independent-derivation-compliance.md` - source-firewall evidence.
 
-No artifact currently claims constitutive admission or implementation.
+No artifact claims constitutive admission or implementation. The package
+closed after research because the user selected a broader source-aware route;
+see `disposition.md` and `worker-handoff.md`.

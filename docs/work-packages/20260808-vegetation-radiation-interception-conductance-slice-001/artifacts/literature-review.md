@@ -276,3 +276,13 @@ contract-level compatibility admission, including aerodynamic conductance.
 The contract-first production gate remains closed. No production Rust, A3
 fixture, or canonical constitutive amendment is authorized by this review
 alone.
+
+## Supersession Addendum
+
+On 2026-08-08 the user selected the broader source-aware route based on pinned
+MIT-licensed RHESSysEastCoast and GIS2RHESSys repositories, with required
+deciduous and mixed-forest support. This resolves the package-level choice by
+superseding this narrow implementation scope; it does not retroactively admit
+any candidate in this literature matrix. The independent review remains
+scientific counterevidence and parameter/domain context for
+`../../20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md`.

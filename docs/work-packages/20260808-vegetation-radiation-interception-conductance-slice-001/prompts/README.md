@@ -1,6 +1,6 @@
 # Prompt Lifecycle
 
-Status: `queued`
+Status: `archived / superseded`
 
-The executable kickoff prompt begins in `active/`. At terminal disposition,
-move it byte-for-byte to `archived/` and update both directory indexes.
+The original executable kickoff prompt is archived byte-for-byte. The package
+closed `executed-hold` after the licensed-source successor was selected.
