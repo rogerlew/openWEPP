@@ -721,6 +721,79 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
 }
 
 #[test]
+fn r7h_pure_melt_r4k_preserves_wb14_capacity_and_residual_hour() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(98, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let liquid_input_m = 0.010;
+    let mut hourly_routed_melt_m = [0.0; 24];
+    hourly_routed_melt_m[5] = liquid_input_m;
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: liquid_input_m,
+        snow_state_projected: true,
+        active_snow_coupling: true,
+        mass_transition_ledgers: Box::new(
+            DirectSnowMassTransitionLedgers::try_from_parts(
+                DirectSnowSolidToLiquidLedger {
+                    snowpack_swe_loss_m: liquid_input_m,
+                    liquid_handoff_m: liquid_input_m,
+                    ..DirectSnowSolidToLiquidLedger::default()
+                },
+                DirectSnowLiquidDispositionLedger::default(),
+                DirectSnowStage3Outcome::default(),
+            )
+            .expect("valid disabled Stage-3 mass transition"),
+        ),
+        hourly_routed_melt_m,
+        post_winter_rain_m: 0.0,
+        ..DirectSnowCouplingInputs::zero()
+    };
+    day.infiltration_depression_inputs.producer_inputs =
+        Some(DirectWb14InfiltrationProducerInputs {
+            hourly_additional_supply_m: hourly_routed_melt_m,
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: 0.0,
+            }],
+            effective_conductivity_m_s: 1.0e-9,
+            matric_potential_m: 0.100,
+            storage_capacity_m: 0.020,
+            depression_storage_capacity_m: 0.0,
+        });
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("pure-melt infiltration/depression span should execute");
+
+    let infiltration_m = day.runoff_partition_inputs.cumulative_infiltration_m;
+    assert!(infiltration_m > 0.0 && infiltration_m < liquid_input_m);
+    assert_eq!(
+        day.percolation_inputs.same_pass_infiltration_m.to_bits(),
+        infiltration_m.to_bits(),
+        "R4K must publish WB14 infiltration without a daily snow override"
+    );
+    let hourly_residual_m: f64 = day.wb14_hourly_excess_m.iter().sum();
+    assert!((hourly_residual_m - (liquid_input_m - infiltration_m)).abs() <= 1.0e-12);
+    assert!(day.wb14_hourly_excess_m[5] > 0.0);
+    for (hour, residual_m) in day.wb14_hourly_excess_m.iter().enumerate() {
+        if hour != 5 {
+            assert_eq!(residual_m.to_bits(), 0.0_f64.to_bits());
+        }
+    }
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
     let _audit_guard = direct_runtime_test_lock()
