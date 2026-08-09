@@ -4,7 +4,7 @@ Status: `complete`
 
 Evidence mode: `Static`
 
-`SC-WATBAL-001` v168 adds `INV-WATBAL-102..104` and replaces the WB16
+`SC-WATBAL-001` v169 adds `INV-WATBAL-102..104` and replaces the WB16
 rainfall-envelope/APPMTH production rules with a closing post-partition hourly
 peak, in-hour surface-return custody, exact dry-zero behavior, depth-rate
 internals, exactly-once public area conversion, and rectangular-equivalent
@@ -22,11 +22,12 @@ runoff is zero. Partial frost retention leaving positive runoff has no lawful
 hourly timing in the current producer and therefore hard-fails instead of
 being allocated across runoff bins.
 
-A local-only daily same-pass infiltration correction likewise cannot debit a
-merged local/runon ledger: mixed supply now requires source-tagged hourly
-custody and otherwise hard-fails. Every finite positive additional-supply bin
-enters WB14, invalid bins fail, and an empty hourly ledger can never satisfy a
-positive daily runoff scalar through `TOL-WATBAL-009`.
+WB14 is the sole owner of cumulative same-pass infiltration and hourly excess.
+The former daily-only snow infiltration reconstruction is retired rather than
+debiting earliest hourly bins without a producer clock; this prohibition also
+applies to local-only supply. Every finite positive additional-supply bin enters
+WB14, invalid bins fail, and an empty hourly ledger can never satisfy a positive
+daily runoff scalar through `TOL-WATBAL-009`.
 
 `SC-INFILE-HBP-001` v0.2.5 also binds EVENT calendar year and Julian day to the
 selected producer row. The p61 and p102 consumers join the Parquet event by

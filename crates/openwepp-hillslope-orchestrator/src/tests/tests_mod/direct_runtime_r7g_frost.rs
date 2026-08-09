@@ -634,7 +634,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
                 end_s: 3_600.0,
                 intensity_m_s: liquid_input_m / 3_600.0,
             }],
-            effective_conductivity_m_s: 1.0e-9,
+            effective_conductivity_m_s: 1.0,
             matric_potential_m: 0.100,
             storage_capacity_m: 0.020,
             depression_storage_capacity_m: 0.0,
@@ -650,19 +650,19 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
     assert_eq!(
         cumulative_infiltration_m.to_bits(),
         liquid_input_m.to_bits(),
-        "active snowmelt must promote reconstructed same-pass infiltration to the downstream cumulative operand"
+        "active snowmelt must use WB14 infiltration on the routed-melt producer clock"
     );
     assert_eq!(
         day.percolation_inputs.same_pass_infiltration_m.to_bits(),
         liquid_input_m.to_bits(),
-        "active snowmelt WB18 same-pass must use direct liquid input after depression storage"
+        "active snowmelt WB18 same-pass must use WB14 cumulative infiltration"
     );
     assert_eq!(
         day.evapotranspiration_compute_inputs
             .same_pass_infiltration_m
             .to_bits(),
         liquid_input_m.to_bits(),
-        "active snowmelt ET same-pass must use the same reconstructed liquid input"
+        "active snowmelt ET same-pass must use the same WB14 infiltration"
     );
 
     let surface = DirectEvapotranspirationSurfaceState {

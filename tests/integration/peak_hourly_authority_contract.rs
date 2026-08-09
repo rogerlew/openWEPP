@@ -50,6 +50,17 @@ fn production_peak_consumes_shared_hourly_shape_and_depth_rate_units() {
         !runoff.contains("let (method_branch, qpstar) =\n            direct_peak_runoff_branch"),
         "the rainfall-envelope APPMTH branch still carries the production peak"
     );
+    assert!(
+        !runoff.contains("snow_reconstructed_same_pass_infiltration_m"),
+        "daily-only snow infiltration reconstruction can retime hourly runoff"
+    );
+
+    let runner = read("crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs");
+    assert!(
+        runner.contains("WB16_EALPHA_SEED_POLICY_RETIRED_NOT_APPLICABLE"),
+        "retired ealpha manifest provenance must not claim a runtime producer"
+    );
+    assert!(!runner.contains("WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED"));
 }
 
 #[test]

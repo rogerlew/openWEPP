@@ -408,7 +408,7 @@ struct HillslopeHydoutEquivalentCouplingProvenance {
     closure_within_tolerance: bool,
 }
 
-const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
+const WB16_EALPHA_SEED_POLICY_RETIRED_NOT_APPLICABLE: &str = "retired_not_applicable";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
 const MOFE_HOURLY_CARRY_ARRAY_COUNT: usize = 24;
 const MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT: &str = "ui_SUrunf";

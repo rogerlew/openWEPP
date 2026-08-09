@@ -2,7 +2,7 @@ use crate::{
     DirectDayFrame, DirectRunIdentity, DirectRunonCarryDownstreamOperands, DirectRuntimeError,
     DirectSnowCouplingInputs, DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgers,
     DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectWb14HyetographInterval,
-    DirectWb14InfiltrationProducerInputs,
+    DirectWb14InfiltrationProducerInputs, Wb11HydrologyKernelGuardError,
 };
 
 #[test]
@@ -211,6 +211,10 @@ fn hourly_peak_typed_guard_covers_nonfinite_and_closure_failures() {
         panic!("WB16 non-finite depth must use the typed hydrology guard")
     };
     assert_eq!(nonfinite_guard.code(), "HKERNEL-WB16-PEAK-E-002");
+    let Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol { value, .. } = *nonfinite_guard else {
+        panic!("WB16 E-002 must retain the observed non-finite flux")
+    };
+    assert!(value.is_nan());
 
     let mut nonclosing = [0.0; 24];
     nonclosing[3] = 0.002;
@@ -225,6 +229,18 @@ fn hourly_peak_typed_guard_covers_nonfinite_and_closure_failures() {
         panic!("WB16 closure failure must use the typed hydrology guard")
     };
     assert_eq!(closure_guard.code(), "HKERNEL-WB16-PEAK-E-003");
+    let Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+        value,
+        minimum,
+        maximum,
+        ..
+    } = *closure_guard
+    else {
+        panic!("WB16 E-003 must retain the observed closure operand and bounds")
+    };
+    assert_eq!(value.to_bits(), 0.002_f64.to_bits());
+    assert!(minimum.is_some_and(|bound| bound < 0.003));
+    assert!(maximum.is_some_and(|bound| bound > 0.003));
 }
 
 #[test]
@@ -290,6 +306,23 @@ fn hourly_partition_reconciliation_rejects_partial_daily_frost_timing() {
             upstream: "hourly frost-retention timing for partial positive runoff"
         }
     );
+
+    let mut tiny_residual = [0.0; 24];
+    tiny_residual[2] = 0.006;
+    tiny_residual[8] = 0.004;
+    assert_eq!(
+        crate::direct_runtime::test_reconcile_hourly_partition_runoff_profile(
+            &mut tiny_residual,
+            5.0e-13,
+            0.01 - 5.0e-13,
+        )
+        .expect_err("every positive frost residual requires producer-timed custody"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "hourly frost-retention timing for partial positive runoff"
+        }
+    );
+    assert_eq!(tiny_residual[2].to_bits(), 0.006_f64.to_bits());
+    assert_eq!(tiny_residual[8].to_bits(), 0.004_f64.to_bits());
 }
 
 #[test]
@@ -308,19 +341,6 @@ fn hourly_partition_reconciliation_rejects_positive_empty_ledger() {
             }
         );
     }
-}
-
-#[test]
-fn mixed_local_same_pass_infiltration_and_runon_requires_source_tagged_timing() {
-    assert_eq!(
-        crate::direct_runtime::test_ensure_hourly_same_pass_source_custody(0.002, 0.003)
-            .expect_err("a local-only daily debit cannot be applied to merged runon"),
-        DirectRuntimeError::MissingDirectUpstream {
-            upstream: "hourly source-tagged local/runon same-pass infiltration custody"
-        }
-    );
-    crate::direct_runtime::test_ensure_hourly_same_pass_source_custody(0.002, 0.0)
-        .expect("a local-only ledger preserves source custody");
 }
 
 #[test]

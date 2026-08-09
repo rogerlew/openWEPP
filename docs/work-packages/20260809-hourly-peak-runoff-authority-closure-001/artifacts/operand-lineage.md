@@ -8,7 +8,7 @@ Status: `implemented / terminal verification pending`
 | hourly saturation carry | m/bin | WB19 production hour | depth over OFE | authoritative return source | include without retiming |
 | hourly routed melt/liquid | m/bin | producer-modeled hour | depth over OFE | authoritative liquid supply | admit to WB14 once; never append as runoff |
 | hourly surface/lateral runon | m/bin | produced upstream carry hour | depth over OFE | authoritative liquid supply | admit to WB14 once; missing positive shape hard-fails |
-| local-only same-pass infiltration debit | m/day unless source-tagged | no lawful merged-source clock | depth over OFE | daily local closure only | may debit a local-only ledger; mixed local/runon supply requires hourly source tags or hard-fails |
+| later daily same-pass infiltration reconstruction | m/day | no lawful hourly clock | depth over OFE | rejected alias | cannot override WB14 infiltration or debit any hourly runoff bin, including local-only supply |
 | closing hourly runoff depth | m/bin | 24 one-hour bins | runoff-volume area basis | authoritative after `TOL-WATBAL-009` reconciliation | peak input; normalized weights are derivative only |
 | maximum hourly mean depth rate | m/s | one-hour mean | depth basis | derived | internal peak |
 | hillslope maximum hourly mean flow | m3/s | one-hour mean | event-runoff area | derived once | public peak |

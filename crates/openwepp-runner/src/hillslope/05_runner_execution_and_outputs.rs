@@ -631,7 +631,7 @@ fn erod14_qin_source_policy(multi_ofe_wave1_chained: bool) -> &'static str {
 
 fn wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used: bool) -> String {
     debug_assert!(!wb16_ealpha_compatibility_seed_used);
-    WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED.to_string()
+    WB16_EALPHA_SEED_POLICY_RETIRED_NOT_APPLICABLE.to_string()
 }
 
 fn build_hillslope_publication_provenance(

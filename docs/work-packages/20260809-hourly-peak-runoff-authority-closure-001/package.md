@@ -241,10 +241,10 @@ independent science reviewers for the hydrologic authority and claim boundary.
   across positive hourly runoff as proxy timing. Complete retention may clear
   the local series, but partial retention leaving runoff now requires an hourly
   producer and otherwise fails closed.
-- Rust review exposed the same ownership problem for a local-only same-pass
-  infiltration correction applied after local liquid and runon had merged.
-  Mixed supply now requires source-tagged hourly debit custody and otherwise
-  fails closed; local-only execution retains its modeled producer hours.
+- Independent science review exposed that even a local-only daily same-pass
+  infiltration correction invents timing when it debits earliest hourly bins.
+  The correction is retired: WB14 now solely owns cumulative infiltration and
+  hourly residuals for rainfall, routed melt, and runon.
 - HBP EVENT output had retained a fixed fixture calendar year, making a
   multi-year Parquet join ambiguous. It now publishes the selected producer
   row's calendar identity, and p61/p102 join on year plus Julian day.
@@ -277,11 +277,11 @@ independent science reviewers for the hydrologic authority and claim boundary.
   current producer can prove complete retention, while partial positive
   retention remains a typed missing-upstream failure until hourly custody is
   implemented by an authorized follow-on.
-- Decision: do not apply a local-only daily infiltration correction to a
-  merged local/runon ledger.
-  Rationale: source ownership is part of timing authority. Mixed supply needs
-  source-tagged hourly debit operands; absence is a typed missing-upstream
-  failure, not permission to debit the earliest merged bin.
+- Decision: do not apply any later daily-only infiltration reconstruction to
+  hourly WB14 runoff, including a local-only snowmelt case.
+  Rationale: WB14 already consumes producer-timed rainfall, melt, and runon and
+  owns cumulative infiltration. A later daily debit has no lawful hour and
+  would manufacture peak timing.
 - Decision: use `/home/workdir/openwepp-task-tmp` for heavy local gates.
   Rationale: it is an absolute external scratch directory consistent with the
   canonical temporary-directory guidance and avoids repository-root

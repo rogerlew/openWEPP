@@ -231,23 +231,11 @@ impl DirectDayFrame {
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
-        let same_pass_infiltration_m =
-            self.resolve_r4m_same_pass_infiltration_m(infiltration_depression)?;
-        let additional_same_pass_infiltration_m =
-            (same_pass_infiltration_m - infiltration_depression.cumulative_infiltration_m).max(0.0);
-        ensure_hourly_same_pass_source_custody(
-            additional_same_pass_infiltration_m,
-            self.runoff_partition_inputs.runon_input_m,
-        )?;
-        remove_depth_from_hour_bins_earliest(
-            &mut self.wb14_hourly_excess_m,
-            additional_same_pass_infiltration_m,
-            "infiltration_depression.hourly_same_pass_runoff_m",
-        )?;
-        let infiltration_depression = DirectInfiltrationDepressionState {
-            cumulative_infiltration_m: same_pass_infiltration_m,
-            depression_storage_delta_m: infiltration_depression.depression_storage_delta_m,
-        };
+        // WB14 owns both the daily infiltration total and its hourly runoff
+        // residual. A later daily-only snow reconstruction cannot increase
+        // infiltration without inventing which hourly runoff supply was
+        // removed. Routed melt already enters WB14 on its producer clock.
+        let same_pass_infiltration_m = infiltration_depression.cumulative_infiltration_m;
         self.infiltration_depression = infiltration_depression;
         self.runoff_partition_inputs.cumulative_infiltration_m =
             infiltration_depression.cumulative_infiltration_m;
@@ -516,60 +504,6 @@ impl DirectDayFrame {
         Ok(DirectLiquidInputState {
             liquid_input_m: self.liquid_input_inputs.liquid_input_handoff_m,
         })
-    }
-
-    fn resolve_r4m_same_pass_infiltration_m(
-        &self,
-        infiltration_depression: DirectInfiltrationDepressionState,
-    ) -> Result<f64, DirectRuntimeError> {
-        let cumulative_infiltration_m = infiltration_depression.cumulative_infiltration_m;
-        validate_nonnegative_direct_m(
-            "infiltration_depression.cumulative_infiltration_m",
-            cumulative_infiltration_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "infiltration_depression.depression_storage_delta_m",
-            infiltration_depression.depression_storage_delta_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "liquid_input.liquid_input_m",
-            self.liquid_input.liquid_input_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "snow_coupling.routed_melt_m",
-            self.snow_coupling_inputs
-                .mass_transition_ledgers
-                .solid_to_liquid()
-                .liquid_handoff_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "snow_coupling.post_winter_rain_m",
-            self.snow_coupling_inputs.post_winter_rain_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.precip_input_m",
-            self.storage_reconciliation_inputs.precip_input_m,
-        )?;
-        if self.snow_coupling_inputs.active_snow_coupling
-            && self
-                .snow_coupling_inputs
-                .mass_transition_ledgers
-                .solid_to_liquid()
-                .liquid_handoff_m
-                > WB11_ZERO_THRESHOLD
-            && self.snow_coupling_inputs.post_winter_rain_m <= WB11_ZERO_THRESHOLD
-            && self.storage_reconciliation_inputs.precip_input_m <= WB11_ZERO_THRESHOLD
-        {
-            let snow_reconstructed_same_pass_m = normalize_r4a_nonnegative_depth(
-                "percolation.snow_reconstructed_same_pass_infiltration_m",
-                self.liquid_input.liquid_input_m
-                    - infiltration_depression.depression_storage_delta_m,
-            )?;
-            if snow_reconstructed_same_pass_m > cumulative_infiltration_m {
-                return Ok(snow_reconstructed_same_pass_m);
-            }
-        }
-        Ok(cumulative_infiltration_m)
     }
 
     fn compute_r4j_runon_carry(&self) -> Result<DirectRunonCarryState, DirectRuntimeError> {
@@ -844,18 +778,14 @@ impl DirectDayFrame {
     }
 
     fn compute_r7d6_peak_runoff(&self) -> Result<DirectPeakRunoffState, DirectRuntimeError> {
-        self.compute_r7d6_peak_runoff_impl()
-            .map_err(map_wb16_peak_guard)
-    }
-
-    fn compute_r7d6_peak_runoff_impl(&self) -> Result<DirectPeakRunoffState, DirectRuntimeError> {
-        let runoff = self.runoff_shadow_projection.as_ref().ok_or(
-            DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4A runoff partition",
-            },
-        )?;
+        let runoff = self.runoff_shadow_projection.as_ref().ok_or_else(|| {
+            DirectRuntimeError::HydrologyKernelGuard(Box::new(
+                Wb11HydrologyKernelGuardError::peak_missing_flux("R4A runoff partition"),
+            ))
+        })?;
         let q_runoff_m = runoff.q_runoff_m;
-        validate_nonnegative_direct_m("peak_runoff.q_runoff_m", q_runoff_m)?;
+        wb16_validate_nonnegative_flux("peak_runoff.q_runoff_m", q_runoff_m)
+            .map_err(|guard| DirectRuntimeError::HydrologyKernelGuard(Box::new(guard)))?;
         if q_runoff_m == 0.0 {
             return Ok(DirectPeakRunoffState {
                 q_runoff_m,
@@ -869,11 +799,16 @@ impl DirectDayFrame {
             });
         }
 
-        let subsurface = self.subsurface_compute_shadow_projection.as_ref().ok_or(
-            DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4O hourly saturation-return producer",
-            },
-        )?;
+        let subsurface = self
+            .subsurface_compute_shadow_projection
+            .as_ref()
+            .ok_or_else(|| {
+                DirectRuntimeError::HydrologyKernelGuard(Box::new(
+                    Wb11HydrologyKernelGuardError::peak_missing_flux(
+                        "R4O hourly saturation-return producer",
+                    ),
+                ))
+            })?;
         let (peak_runoff_rate_m_s, runoff_duration_s, peak_hour_index) =
             source_complete_hourly_peak_runoff_depth_rate_m_s(
                 q_runoff_m,
@@ -1438,23 +1373,6 @@ pub(crate) fn source_informed_partition_runoff_canonicalization(
     Ok(partition_runoff_m)
 }
 
-pub(super) fn ensure_hourly_same_pass_source_custody(
-    additional_local_infiltration_m: f64,
-    runon_input_m: f64,
-) -> Result<(), DirectRuntimeError> {
-    validate_nonnegative_direct_m(
-        "infiltration_depression.additional_local_infiltration_m",
-        additional_local_infiltration_m,
-    )?;
-    validate_nonnegative_direct_m("infiltration_depression.runon_input_m", runon_input_m)?;
-    if additional_local_infiltration_m > 0.0 && runon_input_m > 0.0 {
-        return Err(DirectRuntimeError::MissingDirectUpstream {
-            upstream: "hourly source-tagged local/runon same-pass infiltration custody",
-        });
-    }
-    Ok(())
-}
-
 fn scale_aware_depth_closure_tolerance_m(values: &[f64]) -> f64 {
     let scale_m = values
         .iter()
@@ -1509,7 +1427,7 @@ pub(super) fn reconcile_hourly_partition_runoff_profile(
         });
     }
     if frost_retained_local_liquid_m > tolerance_m {
-        if hourly_partition_runoff_m <= tolerance_m {
+        if partition_runoff_m == 0.0 {
             *hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
             return Ok(0.0);
         }
@@ -1554,59 +1472,68 @@ pub(crate) fn source_complete_hourly_peak_runoff_depth_rate_m_s(
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
 ) -> Result<(f64, f64, usize), DirectRuntimeError> {
-    source_complete_hourly_peak_runoff_depth_rate_impl_m_s(
+    wb16_source_complete_hourly_peak_runoff_depth_rate_m_s(
         q_runoff_m,
         wb14_hourly_excess_m,
         hourly_saturation_carry_m,
     )
-    .map_err(map_wb16_peak_guard)
+    .map_err(|guard| DirectRuntimeError::HydrologyKernelGuard(Box::new(guard)))
 }
 
-fn source_complete_hourly_peak_runoff_depth_rate_impl_m_s(
+fn wb16_source_complete_hourly_peak_runoff_depth_rate_m_s(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> Result<(f64, f64, usize), DirectRuntimeError> {
-    validate_finite("peak_runoff.q_runoff_m", q_runoff_m)?;
+) -> Result<(f64, f64, usize), Wb11HydrologyKernelGuardError> {
+    wb16_validate_finite_flux("peak_runoff.q_runoff_m", q_runoff_m)?;
     if q_runoff_m <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.q_runoff_m",
-        });
+        return Err(Wb11HydrologyKernelGuardError::peak_flux_out_of_range(
+            "peak_runoff.q_runoff_m",
+            q_runoff_m,
+            Some(f64::MIN_POSITIVE),
+            None,
+        ));
     }
     let (hourly_runoff_m, source_total_m) =
-        closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m)?;
-    ensure_hourly_runoff_source_closure(q_runoff_m, source_total_m)?;
-    hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_runoff_m)
+        wb16_closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m)?;
+    wb16_ensure_hourly_runoff_source_closure(q_runoff_m, source_total_m)?;
+    wb16_hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_runoff_m)
 }
 
-fn map_wb16_peak_guard(error: DirectRuntimeError) -> DirectRuntimeError {
-    let guard = match error {
-        DirectRuntimeError::MissingDirectUpstream { upstream } => {
-            Wb11HydrologyKernelGuardError::peak_missing_flux(upstream)
-        }
-        DirectRuntimeError::NonFiniteDirectValue { field } => {
-            Wb11HydrologyKernelGuardError::peak_nonfinite_flux(field, f64::NAN)
-        }
-        DirectRuntimeError::NegativeDirectValue { field } => {
-            Wb11HydrologyKernelGuardError::peak_flux_out_of_range(field, -1.0, Some(0.0), None)
-        }
-        DirectRuntimeError::DirectDomainViolation { field }
-        | DirectRuntimeError::DirectClosureToleranceExceeded { field } => {
-            Wb11HydrologyKernelGuardError::peak_flux_out_of_range(field, 1.0, None, None)
-        }
-        _ => return error,
-    };
-    DirectRuntimeError::HydrologyKernelGuard(Box::new(guard))
+fn wb16_validate_finite_flux(
+    symbol: &'static str,
+    value: f64,
+) -> Result<(), Wb11HydrologyKernelGuardError> {
+    if value.is_finite() {
+        return Ok(());
+    }
+    Err(Wb11HydrologyKernelGuardError::peak_nonfinite_flux(
+        symbol, value,
+    ))
 }
 
-fn closing_hourly_runoff_depths_m(
+fn wb16_validate_nonnegative_flux(
+    symbol: &'static str,
+    value: f64,
+) -> Result<(), Wb11HydrologyKernelGuardError> {
+    wb16_validate_finite_flux(symbol, value)?;
+    if value >= 0.0 {
+        return Ok(());
+    }
+    Err(Wb11HydrologyKernelGuardError::peak_flux_out_of_range(
+        symbol,
+        value,
+        Some(0.0),
+        None,
+    ))
+}
+
+fn wb16_closing_hourly_runoff_depths_m(
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> Result<([f64; DC01_HOUR_BIN_COUNT], f64), DirectRuntimeError> {
-    let mut hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
-    let mut total_m = 0.0;
+) -> Result<([f64; DC01_HOUR_BIN_COUNT], f64), Wb11HydrologyKernelGuardError> {
     for hour in 0..DC01_HOUR_BIN_COUNT {
-        for (field, value) in [
+        for (symbol, value) in [
             (
                 "peak_runoff.wb14_hourly_excess_m",
                 wb14_hourly_excess_m[hour],
@@ -1616,13 +1543,101 @@ fn closing_hourly_runoff_depths_m(
                 hourly_saturation_carry_m[hour],
             ),
         ] {
-            validate_nonnegative_direct_m(field, value)?;
-            total_m += value;
-            validate_finite("peak_runoff.hourly_source_total_m", total_m)?;
+            wb16_validate_nonnegative_flux(symbol, value)?;
         }
-        hourly_runoff_m[hour] = wb14_hourly_excess_m[hour] + hourly_saturation_carry_m[hour];
     }
+    let (hourly_runoff_m, total_m) =
+        assemble_closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m);
+    wb16_validate_finite_flux("peak_runoff.hourly_source_total_m", total_m)?;
     Ok((hourly_runoff_m, total_m))
+}
+
+fn wb16_ensure_hourly_runoff_source_closure(
+    q_runoff_m: f64,
+    source_total_m: f64,
+) -> Result<(), Wb11HydrologyKernelGuardError> {
+    let tolerance_m = scale_aware_depth_closure_tolerance_m(&[q_runoff_m, source_total_m]);
+    if q_runoff_m > 0.0 && source_total_m <= 0.0 {
+        return Err(Wb11HydrologyKernelGuardError::peak_missing_flux(
+            "post-partition hourly runoff timing for positive runoff",
+        ));
+    }
+    if (source_total_m - q_runoff_m).abs() > tolerance_m {
+        return Err(Wb11HydrologyKernelGuardError::peak_flux_out_of_range(
+            "peak_runoff.hourly_source_total_m",
+            source_total_m,
+            Some(q_runoff_m - tolerance_m),
+            Some(q_runoff_m + tolerance_m),
+        ));
+    }
+    Ok(())
+}
+
+fn wb16_hourly_peak_runoff_from_closing_depths_m_s(
+    q_runoff_m: f64,
+    hourly_runoff_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<(f64, f64, usize), Wb11HydrologyKernelGuardError> {
+    let mut peak_rate_m_s = 0.0;
+    let mut peak_hour_index = 0;
+    for (hour, hourly_depth_m) in hourly_runoff_m.iter().copied().enumerate() {
+        wb16_validate_nonnegative_flux("peak_runoff.hourly_depth_m", hourly_depth_m)?;
+        let hourly_rate_m_s = hourly_depth_m / DC01_HOUR_BIN_SECONDS;
+        wb16_validate_nonnegative_flux("peak_runoff.hourly_rate_m_s", hourly_rate_m_s)?;
+        if hourly_rate_m_s > peak_rate_m_s {
+            peak_rate_m_s = hourly_rate_m_s;
+            peak_hour_index = hour;
+        }
+    }
+    if peak_rate_m_s <= 0.0 {
+        return Err(Wb11HydrologyKernelGuardError::peak_flux_out_of_range(
+            "peak_runoff.peak_runoff_rate_m_s",
+            peak_rate_m_s,
+            Some(f64::MIN_POSITIVE),
+            None,
+        ));
+    }
+    let runoff_duration_s = q_runoff_m / peak_rate_m_s;
+    wb16_validate_finite_flux("peak_runoff.runoff_duration_s", runoff_duration_s)?;
+    let maximum_duration_s = DC01_HOUR_BIN_SECONDS * DC01_HOUR_BIN_COUNT_F64;
+    if runoff_duration_s <= 0.0
+        || runoff_duration_s > maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD)
+    {
+        return Err(Wb11HydrologyKernelGuardError::peak_flux_out_of_range(
+            "peak_runoff.runoff_duration_s",
+            runoff_duration_s,
+            Some(f64::MIN_POSITIVE),
+            Some(maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD)),
+        ));
+    }
+    Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
+}
+
+fn closing_hourly_runoff_depths_m(
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<([f64; DC01_HOUR_BIN_COUNT], f64), DirectRuntimeError> {
+    sum_nonnegative_direct_m("peak_runoff.wb14_hourly_excess_m", wb14_hourly_excess_m)?;
+    sum_nonnegative_direct_m(
+        "peak_runoff.hourly_saturation_carry_m",
+        hourly_saturation_carry_m,
+    )?;
+    let (hourly_runoff_m, total_m) =
+        assemble_closing_hourly_runoff_depths_m(wb14_hourly_excess_m, hourly_saturation_carry_m);
+    validate_finite("peak_runoff.hourly_source_total_m", total_m)?;
+    Ok((hourly_runoff_m, total_m))
+}
+
+fn assemble_closing_hourly_runoff_depths_m(
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> ([f64; DC01_HOUR_BIN_COUNT], f64) {
+    let mut hourly_runoff_m = [0.0; DC01_HOUR_BIN_COUNT];
+    let mut total_m = 0.0;
+    for hour in 0..DC01_HOUR_BIN_COUNT {
+        hourly_runoff_m[hour] = wb14_hourly_excess_m[hour] + hourly_saturation_carry_m[hour];
+        total_m += hourly_runoff_m[hour];
+    }
+    (hourly_runoff_m, total_m)
 }
 
 fn ensure_hourly_runoff_source_closure(
@@ -1641,42 +1656,6 @@ fn ensure_hourly_runoff_source_closure(
         });
     }
     Ok(())
-}
-
-fn hourly_peak_runoff_from_closing_depths_m_s(
-    q_runoff_m: f64,
-    hourly_runoff_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> Result<(f64, f64, usize), DirectRuntimeError> {
-    let mut peak_rate_m_s = 0.0;
-    let mut peak_hour_index = 0;
-    for (hour, hourly_depth_m) in hourly_runoff_m.iter().copied().enumerate() {
-        validate_nonnegative_direct_m("peak_runoff.hourly_depth_m", hourly_depth_m)?;
-        let hourly_rate_m_s = hourly_depth_m / DC01_HOUR_BIN_SECONDS;
-        validate_nonnegative_direct_m("peak_runoff.hourly_rate_m_s", hourly_rate_m_s)?;
-        if hourly_rate_m_s > peak_rate_m_s {
-            peak_rate_m_s = hourly_rate_m_s;
-            peak_hour_index = hour;
-        }
-    }
-    if peak_rate_m_s <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.peak_runoff_rate_m_s",
-        });
-    }
-    let runoff_duration_s = q_runoff_m / peak_rate_m_s;
-    validate_finite("peak_runoff.runoff_duration_s", runoff_duration_s)?;
-    if runoff_duration_s <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "peak_runoff.runoff_duration_s",
-        });
-    }
-    let maximum_duration_s = DC01_HOUR_BIN_SECONDS * DC01_HOUR_BIN_COUNT_F64;
-    if runoff_duration_s > maximum_duration_s * (1.0 + WB11_ZERO_THRESHOLD) {
-        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-            field: "peak_runoff.runoff_duration_s",
-        });
-    }
-    Ok((peak_rate_m_s, runoff_duration_s, peak_hour_index))
 }
 
 #[cfg(test)]
@@ -1704,7 +1683,8 @@ pub(crate) fn hourly_peak_runoff_depth_rate_m_s(
             field: "peak_runoff.hourly_weight_total",
         });
     }
-    hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_depths_m)
+    wb16_hourly_peak_runoff_from_closing_depths_m_s(q_runoff_m, &hourly_depths_m)
+        .map_err(|guard| DirectRuntimeError::HydrologyKernelGuard(Box::new(guard)))
 }
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;

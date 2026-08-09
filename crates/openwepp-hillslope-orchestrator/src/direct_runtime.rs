@@ -318,13 +318,6 @@ pub(crate) fn test_reconcile_hourly_partition_runoff_profile(
     )
 }
 #[cfg(test)]
-pub(crate) fn test_ensure_hourly_same_pass_source_custody(
-    additional_local_infiltration_m: f64,
-    runon_input_m: f64,
-) -> Result<(), DirectRuntimeError> {
-    runoff::ensure_hourly_same_pass_source_custody(additional_local_infiltration_m, runon_input_m)
-}
-#[cfg(test)]
 pub(crate) fn dc01_test_wb14_with_profile(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<runoff::DirectWb14OutcomeWithProfile, DirectRuntimeError> {

@@ -446,7 +446,7 @@ element = "output/H1.element.parquet"
 }
 
 #[test]
-fn cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance() {
+fn cli03_fixture_run_publishes_retired_wb16_ealpha_provenance() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
 run_name = "cli03-wb16-ealpha-provenance"
@@ -473,7 +473,7 @@ loss = "output/H1.loss.json"
             .sidecar_warnings
             .iter()
             .all(|warning| !warning.contains("SIMPIPE-W-003")),
-        "did not expect WB16 ealpha compatibility warning when runtime producer is present: {:?}",
+        "did not expect a compatibility warning for the retired WB16 ealpha path: {:?}",
         report.sidecar_warnings
     );
 
@@ -484,8 +484,8 @@ loss = "output/H1.loss.json"
         "expected wb16_ealpha_compatibility_seed_used=false in manifest execution provenance"
     );
     assert!(
-        manifest_payload.contains("\"wb16_ealpha_seed_policy\": \"runtime_provided\""),
-        "expected wb16_ealpha_seed_policy=runtime_provided in manifest execution provenance"
+        manifest_payload.contains("\"wb16_ealpha_seed_policy\": \"retired_not_applicable\""),
+        "expected retired WB16 ealpha policy in manifest execution provenance"
     );
 }
 
