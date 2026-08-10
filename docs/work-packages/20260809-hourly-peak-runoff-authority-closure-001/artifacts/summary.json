@@ -3,6 +3,7 @@
   "runner": "comparator_suite_runner (complete frozen cohort with validated resume)",
   "status": "PASS",
   "implementation_commit": "33831787b7029b28b0716c8458f08a11899db446",
+  "verified_closure_candidate": "d5320fafbe15001a64d9d0ba2274f527c36a61ba",
   "binary_sha256": "ac8790faf32a5b98993427b636084c04ba468955458c4fc18f3874cea709c4c3",
   "plan_sha256": "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756",
   "duration_seconds": 498,
@@ -36,6 +37,11 @@
     "quick_only_count": 0,
     "quick_subset_of_full": true,
     "workspace_doctests": "PASS"
+  },
+  "terminal_verification": {
+    "verifier_a": "PASS",
+    "verifier_b": "PASS",
+    "open_findings": 0
   },
   "evidence_summary": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/summary.json",
   "event_pairs_parquet": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/topanga-openwepp-event-pairs.parquet"

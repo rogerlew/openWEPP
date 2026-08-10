@@ -99,7 +99,7 @@ docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/v
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/worker-handoff.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/package.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/prompts/README.md
-docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/prompts/active/20260809-hourly-peak-runoff-authority-closure-001_kickoff_agent_prompt.md
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/prompts/archived/20260809-hourly-peak-runoff-authority-closure-001_kickoff_agent_prompt.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/prompts/active/README.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/prompts/archived/README.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/test_topanga_openwepp_census.py

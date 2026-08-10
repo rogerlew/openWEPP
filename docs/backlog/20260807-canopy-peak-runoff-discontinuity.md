@@ -2,7 +2,7 @@
 
 ## Status
 
-- `state`: **promoted — closure candidate pending terminal verification**
+- `state`: **complete — superseded by hourly peak-runoff authority closure**
 - `date`: 2026-08-07
 - `owner`: openWEPP maintainers + hillslope hydrology reviewer
 - `origin`: Topanga 2025 fire investigation, Hill 106 high-ET screen
@@ -27,8 +27,8 @@ hour, and converts the internal `m/s` depth rate to public `m3/s` exactly once.
 The complete frozen design ran against openWEPP: 280 baselines, 1,088
 mutations, and 1,913,199 paired event rows. It found zero cases with event
 runoff volume within 5% and peak at least 2x, zero invalid maximum-hour
-fractions, and zero runoff/peak topology mismatches. Exact-head workspace and
-review gates passed; terminal verification remains. See the promoted package's
+fractions, and zero runoff/peak topology mismatches. Exact-head workspace,
+review, and dual terminal verification gates passed. See the promoted package's
 [`summary.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/summary.md)
 and [`disposition.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/disposition.md).
 
@@ -357,8 +357,8 @@ openWEPP implementation to use modeled hourly runoff, preserve source timing
 and mass, publish unambiguous units and derivation provenance, pass the complete
 frozen 1,088-mutation design without an unexplained volume-stable
 discontinuity, reconcile controlling science contracts, and pass Critical
-review and verification. The implementation, cohort, workspace, and review
-criteria are complete; terminal verification remains in the promoted package.
+review and verification. Those amended criteria are complete in the promoted
+package.
 
 ## Historical Promotion Requirements
 

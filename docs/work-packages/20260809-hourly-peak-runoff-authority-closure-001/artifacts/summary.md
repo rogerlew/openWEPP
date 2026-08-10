@@ -53,6 +53,10 @@ ordinary skips in 8,454.483 seconds (run ID
 inventory is a subset of that admitted full inventory, so no quick-only
 execution delta exists; exact-head workspace doctests also pass.
 
+Both independent terminal verifiers returned PASS at corrected closure
+candidate `d5320fafb`; verifier A's sole stale-handoff finding was corrected
+before its final verdict.
+
 The supported claim is a maximum hourly mean hillslope runoff flow. This
 package does not claim an instantaneous/subhourly peak, legacy numerical
 parity, calibration, observed-flow validation, or routed watershed/channel

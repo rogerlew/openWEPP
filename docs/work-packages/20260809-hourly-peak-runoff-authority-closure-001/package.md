@@ -1,6 +1,6 @@
 # Hourly Peak-Runoff Authority Closure
 
-Status: `closure candidate — terminal verification pending`
+Status: `executed — PASS`
 
 Date: `2026-08-09`
 
@@ -229,7 +229,9 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - [x] (2026-08-09) Passed the exact-head Critical full-workspace regression
   (2,346/2,346), reconciled the quick-profile inventory against that complete
   receipt, and passed workspace doctests.
-- [ ] Complete dual terminal verification and final disposition.
+- [x] (2026-08-09) Completed dual terminal verification at corrected closure
+  candidate `d5320fafb`, archived the executed kickoff prompt with its digest,
+  and recorded final PASS disposition.
 
 ## Surprises And Discoveries
 
@@ -346,8 +348,7 @@ denominator and did not represent a volume-stable discontinuity.
 Critical closure passed 2,346/2,346 exact-head workspace tests, focused
 consumer and authority gates, warnings-denied Clippy, formatting, doctests,
 anti-evasion checks, documentation checks, two independent science reviews,
-Rust correctness and QA reviews. Dual terminal verification is the remaining
-closure step.
+Rust correctness and QA reviews, and two independent terminal verifications.
 The supported result is a maximum hourly mean hillslope runoff flow. It is not
 an instantaneous/subhourly peak, legacy-parity result, calibrated or observed
 flow validation, or routed watershed/channel-flow claim.

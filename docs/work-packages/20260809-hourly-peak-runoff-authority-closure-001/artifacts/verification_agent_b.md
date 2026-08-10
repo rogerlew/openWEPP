@@ -6,7 +6,7 @@ Evidence class: `Static + Ran`
 
 Verdict: `PASS`
 
-Candidate identity: `e0e6d9e7ca38fc75b209881eb0adcb9cbf0b6e05`.
+Candidate identity: `d5320fafbe15001a64d9d0ba2274f527c36a61ba`.
 
 Implementation/contract/test identity:
 `33831787b7029b28b0716c8458f08a11899db446`.
@@ -59,6 +59,10 @@ identified.
   candidate — terminal verification pending`, with the kickoff active until
   both terminal receipts are recorded. Final status/prompt archival is the
   executor's next lifecycle write, not evidence missing from this candidate.
+- The only candidate delta after `e0e6d9e7c` is this verifier receipt and the
+  corrected `worker-handoff.md`. The handoff now truthfully says all three
+  defects are closed, names no false successor work, and limits the remaining
+  steps to package-local terminal receipts and lifecycle archival.
 
 ## Replayed Commands
 
@@ -66,12 +70,12 @@ Ran from `/home/workdir/openWEPP`; no full or cohort workload was rerun.
 
 ```text
 git rev-parse HEAD
-  e0e6d9e7ca38fc75b209881eb0adcb9cbf0b6e05
+  d5320fafbe15001a64d9d0ba2274f527c36a61ba
 git status --short
   PASS: clean
-git merge-base --is-ancestor 33831787b... e0e6d9e7c...
+git merge-base --is-ancestor 33831787b... d5320fafb...
   PASS
-git diff --check a65cc3973...e0e6d9e7c
+git diff --check a65cc3973...d5320fafb
   PASS
 markdown-doc lint --path docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001 --format plain
   PASS: 28 files, 0 errors, 0 warnings
