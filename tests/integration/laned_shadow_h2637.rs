@@ -8,11 +8,14 @@
 //! `OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M`, plus the abandoned implicit
 //! selector env var) so inherited shell state cannot leak in (CR-M2, T3-QA-M3).
 //!
-//! Lane D activation guard — the REAL-H2637 legacy executed vector
+//! Lane D activation guard — the H2637 legacy management/slope/soil executed
+//! vector with a test-local frost-free temperature envelope
 //! (`SC-OFEROUTE-001#INV-OFEROUTE-012`): the opt-in seam shadow must fail
 //! closed when a legacy management lacks native `routing_coefficients`
-//! authority. The shadow-off path remains runnable and produces no Lane D
-//! manifest block.
+//! authority. The temperature-only mutation prevents the unrelated WB16
+//! partial-frost missing-clock guard from preempting this routing-boundary
+//! test; precipitation and every routing input remain unchanged. The
+//! shadow-off path remains runnable and produces no Lane D manifest block.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -36,7 +39,34 @@ fn copy_fixture_to_temp(tag: &str) -> PathBuf {
         let entry = entry.expect("fixture entry");
         fs::copy(entry.path(), destination.join(entry.file_name())).expect("fixture copy");
     }
+    warm_climate_for_routing_seam(&destination);
     destination
+}
+
+fn warm_climate_for_routing_seam(run_dir: &Path) {
+    let path = run_dir.join("p2637.cli");
+    let text = fs::read_to_string(&path).expect("climate fixture readable");
+    let mut rendered = String::with_capacity(text.len());
+    let mut warmed_rows = 0_usize;
+    for line in text.lines() {
+        let mut fields: Vec<&str> = line.split_whitespace().collect();
+        let is_daily_row = fields.len() == 13
+            && fields[0].parse::<u16>().is_ok()
+            && fields[1].parse::<u8>().is_ok()
+            && fields[2].parse::<i32>().is_ok();
+        if is_daily_row {
+            fields[7] = "20.0";
+            fields[8] = "10.0";
+            fields[12] = "8.0";
+            rendered.push_str(&fields.join(" "));
+            warmed_rows += 1;
+        } else {
+            rendered.push_str(line);
+        }
+        rendered.push('\n');
+    }
+    assert!(warmed_rows > 0, "climate fixture must contain daily rows");
+    fs::write(path, rendered).expect("warmed climate fixture writable");
 }
 
 struct AbandonedImplicitEnvCleanup;

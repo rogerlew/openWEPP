@@ -623,18 +623,24 @@ fn read_storm_days(pass_parquet: &Path, fwidth_m: f64, efflen_m: f64) -> Vec<Sto
     {
         let row = row.expect("pass parquet row should decode");
         let runvol_m3 = row_f64_value(&row, "runvol");
-        let peakro = row_f64_value(&row, "peakro");
+        let peakro_m3_s = row_f64_value(&row, "peakro");
+        let area_m2 = fwidth_m * efflen_m;
         let runoff_depth_m = runvol_m3 / (fwidth_m * efflen_m);
+        // Public PASS `peakro` is the maximum hourly mean volumetric flow.
+        // Erosion consumes the internal depth-rate basis, so remove the same
+        // hillslope area exactly once before applying the legacy passby gate
+        // or constructing Wave-1 operands.
+        let peakro_m_s = peakro_m3_s / area_m2;
         // Legacy `passby` gate: route sediment only when the event crosses
         // either bound (`contin.for:977`).
         if runoff_depth_m > 0.0
-            && peakro > 0.0
-            && !(runoff_depth_m <= PASSBY_RUNOFF_M && peakro <= PASSBY_PEAKRO_M_S)
+            && peakro_m_s > 0.0
+            && !(runoff_depth_m <= PASSBY_RUNOFF_M && peakro_m_s <= PASSBY_PEAKRO_M_S)
         {
             storm_days.push(StormDay {
                 sim_day_index: index,
                 runoff_depth_m,
-                peakro_m_s: peakro,
+                peakro_m_s,
             });
         }
     }
