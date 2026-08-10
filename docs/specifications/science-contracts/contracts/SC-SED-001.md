@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 61
+contract_version: 62
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -371,6 +371,7 @@ bit-for-bit parity).
 
 | TOL-SED-007 | Wave-1 publication telescoping closure: `(exported - inflow) - (detachment - deposition)` | `abs(residual) <= 1e-9 * max(abs(exported), abs(inflow), abs(detachment), abs(deposition), 1e-9)` in denormalized `kg m^-1` operands | Exact conservation identity evaluated from boundary loads and signed per-cell changes; this is the mass-balance law and is never replaced by the flux diagnostic. | `[INFERENCE][Static] + [Ran]` |
 | TOL-SED-008 | Wave-1 flux discretization consistency over eligible same-sub-march, same-region, unclamped blocks | `sum(abs(delta_G_block - quadrature(rate_block))) <= 5e-3 * max(sum(abs(delta_G_cell)) over those same eligible blocks, 1e-9)` in nondimensional load space | Quadrature uses non-overlapping Simpson `1/3` pairs and Simpson `3/8` triples; only a one-interval block uses trapezoid. The numerator and denominator cover the identical eligible interval population, so excluded seams/clamps cannot dilute the diagnostic. Exceedance is a typed refusal, contributes zero sediment, and increments `flux_refused_quanta`; it is not a mass residual. | `[INFERENCE][Static] + [Ran]` |
+| TOL-SED-009 | Rectangular-equivalent duration custody check | `abs(watdur - Q / peakro_depth) <= 1e-9 s * max(1, abs(watdur), abs(Q / peakro_depth))` | Seconds-only f64 reconstruction check for a value derived once by WB16 and carried unchanged to erosion. It is not a sediment-continuity tolerance and cannot absorb missing or mismatched hydrology operands. | `[INFERENCE][Static] + [Ran]` |
 
 ## WB16 Hydrologic Peak/Duration Intake Addendum
 
@@ -387,7 +388,7 @@ bit-for-bit parity).
    `watdur` for erosion forcing derived from Chapter-11 hydrologic inputs.
 2. `peakro_depth = max_h(V_h / Area / 3600 s)` in `m/s`, and the
    rectangular-equivalent duration is `watdur = Q / peakro_depth` within
-   tolerance. Public publication alone converts the peak to `m3/s` as
+   `TOL-SED-009`. Public publication alone converts the peak to `m3/s` as
    `peakro = peakro_depth · Area`.
 3. The closing hourly runoff depths, `peak_hour_index`, and `method_branch`
    retain source and derivation custody. Retired APPMTH scalar diagnostics are
@@ -439,7 +440,7 @@ bit-for-bit parity).
      are mandatory and finite.
 2. Validate hydrology-forcing continuity (`INV-SED-004`):
    - `Q > 0`, `peakro_depth > 0`, `watdur > 0`, `Ie >= 0`, `te > 0`,
-   - `abs(watdur - (Q / peakro_depth)) <= TOL-SED-001`.
+   - `abs(watdur - (Q / peakro_depth)) <= TOL-SED-009`.
 3. Compute shear partition (`INV-SED-005`):
    - require `ft > 0`, `0 <= fs <= ft`,
    - compute `tau_f = taufe * (fs/ft)`.
@@ -792,6 +793,7 @@ tolerance.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-09` | `62` | `Codex` | Review correction: added the seconds-dimensional `TOL-SED-009` custody check for rectangular-equivalent duration and removed the erroneous reuse of sediment mass-flux tolerance `TOL-SED-001`. |
 | `2026-08-09` | `61` | `Codex` | Hourly peak-runoff authority closure: replaced the stale analytical/volumetric erosion peak with the source-complete maximum-hour depth rate, bound rectangular-equivalent duration and public area conversion, removed obsolete APPMTH diagnostic obligations, and prohibited synthetic hourly-shape fallback. |
 | `2026-08-02` | `60` | `Codex` | EB-04W2C revision-59 review correction: mapped the active EROD13 Wave-1 diagnostic/refusal residue to `INV-SED-016` in the Binding Exposure Index; no runtime/output schema or behavior changed. |
 | `2026-08-02` | `59` | `Codex` | EB-04W2C revision-58 review correction: added step-local pre/postconditions and zero-eligible behavior, exact unit-governance schema/code ownership, canonical ADR-0042 fields, and the six-row Binding Exposure Index; no runtime behavior changed. |
