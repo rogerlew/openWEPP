@@ -124,6 +124,29 @@ fn publication_applies_area_once_and_erosion_consumes_depth_rate() {
             "SC-SED-001 retains retired erosion peak authority: {retired}"
         );
     }
+
+    let adr = read("docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md");
+    for required in [
+        "production WB16 peak is the maximum hourly mean",
+        "peakro_depth = max_h(q_hourly(h) / 3600 s)",
+        "`peakro` is not an independent analytical estimator",
+        "retain only an explicit compatibility fallback",
+    ] {
+        assert!(
+            adr.contains(required),
+            "ADR-0036 is missing reconciled hourly-peak authority: {required}"
+        );
+    }
+    for retired in [
+        "WB16 `peakro` is a **separate analytical\nestimator**",
+        "`max(V_h/3600) ≠ peakro` is **not** an error",
+        "Rescale the hourly profile so `max(hourly) = peakro`",
+    ] {
+        assert!(
+            !adr.contains(retired),
+            "ADR-0036 retains contradicted independent-peak authority: {retired}"
+        );
+    }
 }
 
 #[test]

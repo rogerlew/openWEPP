@@ -11,15 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260809-hourly-peak-runoff-authority-closure-001/` — EXECUTED / CRITICAL
-  DEFECT CLOSURE PASS: WB16 now uses the modeled 24-bin surface-runoff series,
+- `20260809-hourly-peak-runoff-authority-closure-001/` — EXECUTING / CRITICAL
+  ADR AUTHORITY RECONCILIATION: WB16 uses the modeled 24-bin surface-runoff series,
   soil-water return retains its modeled hour, and public `m3/s` applies area
   once to the internal maximum-hour `m/s` depth rate. The exact-head workspace
   passed 2,346/2,346 tests; 280 baselines and all 1,088 Topanga mutations
   completed with zero unexplained volume-stable peak discontinuities. Dual
-  science, Rust, and dual terminal verification gates passed. The claim is
-  maximum hourly mean hillslope flow, not instantaneous peak or observed
-  validation.
+  science, Rust, and dual terminal verification gates previously passed. A
+  stale ADR-0036 independent-peak statement reopens closure until its decision
+  authority and a source guard match the implemented hourly maximum. The claim
+  remains maximum hourly mean hillslope flow, not instantaneous peak or
+  observed validation.
 
 - `20260806-snow-stage3-legacy-predecessor-bridge-reconciliation-001/` —
   EXECUTED / FORCING IDENTITY RECONCILED / OPERATOR CLASS ADMITTED: the exact

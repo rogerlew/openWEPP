@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `CLOSED — PASS`
+Status: `reopened — ADR-0036 authority reconciliation pending`
 
 Defects `PEAK-HOURLY-001`, `PEAK-RETURN-002`, and `PEAK-UNITS-003` are closed.
 The production path consumes the closing 24-bin post-partition hourly runoff
@@ -23,6 +23,11 @@ closed in candidate `d5320fafb`.
 The executed kickoff prompt is archived with SHA-256
 `c971e828559b515f433efd2d951972df9d0702219cf95369f476f8a31034c63b`.
 
-The admitted claim is maximum hourly mean hillslope runoff flow. This package
-does not claim instantaneous/subhourly peak flow, legacy numerical parity,
-calibration, empirical accuracy, or routed watershed/channel flow.
+The admitted claim remains maximum hourly mean hillslope runoff flow. This
+package does not claim instantaneous/subhourly peak flow, legacy numerical
+parity, calibration, empirical accuracy, or routed watershed/channel flow.
+
+This disposition was reopened after ADR-0036 D4 and Alternative 4 were found
+to retain the contradictory independent-analytical-peak authority. The source
+and canonical SC-* contracts remain aligned; closure is blocked only until the
+ratified ADR, regression guard, and proportional re-review evidence agree.

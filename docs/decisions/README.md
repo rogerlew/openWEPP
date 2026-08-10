@@ -39,7 +39,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0033](0033-ofe-by-ofe-overland-flow-routing.md) | OFE-by-OFE overland-flow routing (Papanicolaou 2018) | Accepted |
 | [0034](0034-management-file-lanuse-input-authority.md) | Management-file `lanuse` input authority (first-class landuse modes) | Accepted |
 | [0035](0035-hillslope-erosion-sediment-continuity-port.md) | Hillslope erosion sediment-continuity direct-runtime port | Accepted |
-| [0036](0036-hydrograph-resolved-sediment-transport-and-routing.md) | Hydrograph-resolved sediment transport and channel routing | Accepted |
+| [0036](0036-hydrograph-resolved-sediment-transport-and-routing.md) | Hydrograph-resolved sediment transport and channel routing | Accepted (amended 2026-08-09: native WB16 peak is hourly-derived) |
 | [0037](0037-abandon-hybrid-implicit-stepping.md) | Abandon hybrid implicit-explicit kinematic-wave stepping | Accepted |
 | [0038](0038-manuscript-first-scientific-assurance-publication.md) | Manuscript-first scientific assurance publication | Accepted 2026-07-14 |
 | [0039](0039-campaign-scoped-risk-based-testing-and-assurance-gates.md) | Campaign-scoped, risk-based testing and assurance gates | Accepted 2026-07-17 |

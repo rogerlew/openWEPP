@@ -1,6 +1,6 @@
 # Hourly Peak-Runoff Authority Closure
 
-Status: `executed — PASS`
+Status: `executing — ADR-0036 authority reconciliation`
 
 Date: `2026-08-09`
 
@@ -67,6 +67,8 @@ even though its computation is a depth rate; publication does not apply area.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
 - `docs/specifications/science-contracts/contracts/SC-SED-001.md`
 - `docs/specifications/science-contracts/index.md`
+- `docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md`
+- `docs/decisions/README.md`
 - peak/hourly-runoff code and types under
   `crates/openwepp-hillslope-orchestrator/src/direct_runtime/`
 - direct-publication and run-input wiring under `crates/openwepp-runner/src/hillslope/`
@@ -125,6 +127,10 @@ published quantity is the maximum hourly mean hillslope flow.
    tail is source-traced from hourly depths and separately dispositioned.
 9. Critical focused, quick, full-workspace, formatting, Clippy, doctest,
    documentation, line-count, dual-review, and dual-verification gates pass.
+10. ADR-0036's current minor-1/hillslope decision authority agrees that WB16
+    peak is the maximum hourly mean, not an independent analytical estimator;
+    legacy-shard compatibility is explicitly bounded and source guards reject
+    the retired contrary language.
 
 ### Protected boundaries
 
@@ -232,6 +238,9 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - [x] (2026-08-09) Completed dual terminal verification at corrected closure
   candidate `d5320fafb`, archived the executed kickoff prompt with its digest,
   and recorded final PASS disposition.
+- [ ] Reconcile the subsequently discovered ADR-0036 D4/Alternative-4
+  contradiction, add an ADR-level source guard, and rerun the required closure
+  evidence and review.
 
 ## Surprises And Discoveries
 
@@ -326,6 +335,21 @@ independent science reviewers for the hydrologic authority and claim boundary.
   by WB16 and passed unchanged; any independent check must compare seconds to
   seconds, cannot borrow an unrelated conservation tolerance, and cannot use a
   seconds-squared scale expression.
+- Decision: reopen this package to amend ADR-0036 and its source guard.
+  Rationale: ADR-0036 D4 and Alternative 4 still declared `peakro` an
+  independent analytical estimator even though the canonical SC-WATBAL and
+  SC-SED contracts, production code, and public output now bind it to the
+  maximum modeled hourly mean. Because SC-SED cites the ADR as decision
+  authority, the discrepancy is a closure-blocking authority defect rather
+  than historical narrative.
+- Decision: update the ADR catalog row with the amendment state.
+  Rationale: the ADR catalog is the decision discovery surface; leaving it as
+  unqualified `Accepted` would obscure the active 2026-08-09 reconciliation.
+- Decision: execute this narrow authority follow-on from the user's direct
+  instruction without reactivating the archived kickoff prompt.
+  Rationale: the prompt remains an immutable record of the completed original
+  implementation; this correction stays within the package objective and write
+  set, and the package lifecycle records the reopened scope explicitly.
 
 ## Outcomes And Retrospective
 
@@ -345,10 +369,12 @@ zero zero-runoff topology mismatches, and zero cases with runoff volume within
 `4.440892098500626e-16`; the extreme raw peak ratio came only from a near-zero
 denominator and did not represent a volume-stable discontinuity.
 
-Critical closure passed 2,346/2,346 exact-head workspace tests, focused
+The initially admitted Critical closure passed 2,346/2,346 exact-head workspace tests, focused
 consumer and authority gates, warnings-denied Clippy, formatting, doctests,
 anti-evasion checks, documentation checks, two independent science reviews,
 Rust correctness and QA reviews, and two independent terminal verifications.
+That disposition was reopened after ADR-0036's contradictory peak authority
+was discovered; the final authority-reconciliation receipt remains pending.
 The supported result is a maximum hourly mean hillslope runoff flow. It is not
 an instantaneous/subhourly peak, legacy-parity result, calibrated or observed
 flow validation, or routed watershed/channel-flow claim.

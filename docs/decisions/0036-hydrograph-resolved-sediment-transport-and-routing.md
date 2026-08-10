@@ -10,6 +10,14 @@ wording-only). Contract-first sequencing binds: the SC-SED-001 /
 SC-INFILE-HBP-001 / SC-ROUTE-001 amendments this ADR mandates are authored
 **before** any code.
 
+Amendment (2026-08-09, `20260809-hourly-peak-runoff-authority-closure-001`):
+the native WB16/public peak is no longer an independent analytical estimator.
+For a current hourly-surface payload, it is the maximum modeled hourly mean
+derived from the closing post-partition runoff ledger. This amendment reconciles
+D2--D5 and Alternative 4 with `SC-WATBAL-001#INV-WATBAL-102..104` and
+`SC-SED-001#INV-SED-014`; legacy shards without the paired hourly water surface
+retain only explicit compatibility fallback semantics.
+
 Deciders: Roger Lew, Claude Code
 
 Provenance:
@@ -161,9 +169,9 @@ Bundled into the same single migration:
 
 - the npart-resolved `sedcon`/`frcflw` per-class event surfaces (E.1
   deferral);
-- the peak-discharge unit clarification (serialize a true m³/s or an
-  explicitly-named depth-rate — resolved in the SC-INFILE-HBP-001
-  amendment, with the frame-side misnomer renamed at the same boundary);
+- the peak-discharge unit clarification: the frame-internal maximum hourly
+  mean is a depth rate in `m/s`, and public/HBP `peakro` is the same maximum
+  hourly mean converted once to `m³/s` using the event-runoff area;
 - a generic hourly-surface container shape (named channels over a shared
   24-slot base), so the stream-temperature backlog (`20260627`) rides the
   same extension rather than a second migration.
@@ -184,27 +192,37 @@ triangular reconstruction (with event-aggregate sediment) only for shards
 lacking the surfaces. `INV-ROUTE-005` is amended from "the triangular procedure must be
 used" (hard-fail) to a **conditional**: modeled-hydrograph superposition when
 the surface is present, triangular as the explicit legacy-shard fallback. The
-peak/volume summaries remain serialized (diagnostics + fallback inputs).
+For a current hourly-surface payload, the serialized peak summary is derived
+from the same hourly water surface (`max_h(V_h / 3600 s)`); it is not an
+independent peak authority. A shard lacking the paired hourly water surface may
+retain a scalar peak only as an explicitly labeled compatibility fallback input.
 
-### D4 — Conservation policy: the integrals tie, the peak does not
+### D4 — Conservation and peak policy: the integrals and peak tie
 
 The hard gates tying the hourly surfaces to the closed balances are the two
 **integral closures**: `Σ_h V_h = runvol` (m³, exact) and `Σ_h S_h =` the
 event exported sediment mass (kg). The extension refines closed balances; it
-adds no degree of freedom. WB16 `peakro` is a **separate analytical
-estimator** (`vave·qpstar`), not the max of the hourly profile:
-`max(V_h/3600) ≠ peakro` is **not** an error, and the hourly profile is
-**not rescaled** to reconcile with it — a rescale would fabricate flow to
-match a diagnostic. `peakro` remains a diagnostic / fallback surface with its
-own WB16 lineage.
+adds no degree of freedom. For a current minor-1 hourly water surface, the
+production WB16 peak is the maximum hourly mean:
+
+`peakro_depth = max_h(q_hourly(h) / 3600 s)` in `m/s`, and public/HBP
+`peakro = max_h(V_h / 3600 s)` in `m³/s` after exactly one area conversion.
+
+`peakro` is not an independent analytical estimator; `vave·qpstar`,
+rainfall-envelope operands, and APPMTH branches are retired from the native
+production peak path. No hourly profile is rescaled toward a separate peak,
+because the peak is derived from that profile. Legacy shards lacking the paired
+hourly water surface retain only an explicit compatibility fallback; they cannot
+establish native WB16 peak authority or a current hourly-peak acceptance claim.
 
 ### D5 — Comparator posture: Investigation tier
 
-Routing the modeled shape will diverge from the legacy triangular result **even
-when both are correct**. All legacy comparisons on hydrograph-shape-affected
-surfaces (outlet peaks, event sediment, channel deposition) are
-**Investigation-tier flags** (ADR-0017), never acceptance gates. The retained
-peak-based arm (D1) is the transition cross-check inside openWEPP itself.
+Routing the modeled shape may diverge from the legacy triangular result. All
+legacy comparisons on hydrograph-shape-affected surfaces (outlet peaks, event
+sediment, channel deposition) are Investigation-tier flags (ADR-0017), never
+acceptance gates. A legacy-shard scalar peak or any retained sediment comparator
+arm is diagnostic only; neither may replace the native hourly-derived WB16
+peak.
 
 ## Consequences
 
@@ -222,7 +240,8 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
   Increment-2 entry gate §7 (shadow-first, conservation-hard-stop, non-hourly
   consumers byte-stable via the fallback until the flip).
 - **Single-OFE production numbers change** when the hourly form becomes the
-  production solve (hourly mean rates ≠ the peak): p61 / DFF-WS3 magnitudes
+  production solve (per-hour mean rates vary, and their maximum defines the
+  published peak): p61 / DFF-WS3 magnitudes
   shift. Acceptance is carried by the conservation gates, the per-hour closure,
   the directional burn law, and the E.1 reconstruction identity
   (`tdet = Σ sedcon × runvol` on zero-deposition days holds for daily
@@ -251,9 +270,11 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
 3. **Sub-hourly / dynamic-wave hydraulics.** Rejected as a non-goal: the
    OFE/segment/channel topology and the daily/event tick are preserved; this
    ADR refines the within-event discharge representation only.
-4. **Rescale the hourly profile so `max(hourly) = peakro`.** Rejected: peakro
-   is an independent analytical estimator; forcing agreement fabricates flow
-   and would distort a valid modeled hydrograph (D4).
+4. **Treat a separate analytical peak as equal native authority.** Rejected:
+   the current native peak is derived from the modeled hourly profile, so a
+   separate estimator would reintroduce the timing/units split this ADR's
+   hourly surfaces and the WB16 authority correction remove. Legacy scalar
+   peak values remain compatibility diagnostics only (D4).
 5. **Serialize per-OFE hydrographs now.** Deferred: the serialized consumer
    (routing) needs the hillslope exit only; per-OFE stays on the frame. An
    additive minor extension remains open if E.3 falsifies this.

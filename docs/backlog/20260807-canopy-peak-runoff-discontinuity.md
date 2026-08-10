@@ -2,7 +2,7 @@
 
 ## Status
 
-- `state`: **complete — superseded by hourly peak-runoff authority closure**
+- `state`: **staged — ADR-0036 authority reconciliation executing**
 - `date`: 2026-08-07
 - `owner`: openWEPP maintainers + hillslope hydrology reviewer
 - `origin`: Topanga 2025 fire investigation, Hill 106 high-ET screen
@@ -28,7 +28,8 @@ The complete frozen design ran against openWEPP: 280 baselines, 1,088
 mutations, and 1,913,199 paired event rows. It found zero cases with event
 runoff volume within 5% and peak at least 2x, zero invalid maximum-hour
 fractions, and zero runoff/peak topology mismatches. Exact-head workspace,
-review, and dual terminal verification gates passed. See the promoted package's
+review, and dual terminal verification gates passed. The package was reopened
+for a stale ADR-0036 peak-authority contradiction. See the promoted package's
 [`summary.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/summary.md)
 and [`disposition.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/disposition.md).
 
