@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260810-five-minute-generation-power-equivalent-cutover-001/` — QUEUED /
+  CRITICAL CONDITIONAL ADOPTION: scaffolds the supplied five-minute
+  runoff-generation water-output and power-equivalent erosion-forcing ExecPlan.
+  It preserves hourly water, WB16/public peak, HBP, and routing authority;
+  production erosion cutover is permitted only after preregistered authority,
+  source-completeness, real-consumer, full Topanga, and Critical closure gates.
+
 - `20260809-hourly-peak-runoff-authority-closure-001/` — EXECUTING / CRITICAL
   ADR AUTHORITY RECONCILIATION: WB16 uses the modeled 24-bin surface-runoff series,
   soil-water return retains its modeled hour, and public `m3/s` applies area
