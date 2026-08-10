@@ -84,6 +84,14 @@ fn publication_applies_area_once_and_erosion_consumes_depth_rate() {
         erosion.contains("peak_runoff_rate_m_s"),
         "erosion must consume the internal depth-rate peak"
     );
+    assert!(
+        erosion.contains("DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S: f64 = 1.001e-9"),
+        "erosion must name the absolute seconds duration custody tolerance"
+    );
+    assert!(
+        erosion.contains("> DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S"),
+        "the live duration guard must consume its seconds-specific tolerance"
+    );
 
     let contract = read("docs/specifications/science-contracts/contracts/SC-SED-001.md");
     for required in [
@@ -91,7 +99,8 @@ fn publication_applies_area_once_and_erosion_consumes_depth_rate() {
         "peakro = peakro_depth · Area",
         "rectangular-equivalent duration",
         "TOL-SED-009",
-        "1e-9 s * max(1, abs(watdur), abs(Q / peakro_depth))",
+        "abs(watdur - Q / peakro_depth) <= 1.001e-9 s",
+        "matching the active erosion guard",
         "It is not a sediment-continuity tolerance",
         "never the public volumetric value or a separate analytical estimator",
         "no uniform or rainfall-window fallback is authorized",
@@ -108,6 +117,7 @@ fn publication_applies_area_once_and_erosion_consumes_depth_rate() {
         "wb16_vstar",
         "watdur = Q/peakro`",
         "watdur - (Q / peakro_depth)) <= TOL-SED-001",
+        "1e-9 s * max(1, abs(watdur), abs(Q / peakro_depth))",
     ] {
         assert!(
             !contract.contains(retired),

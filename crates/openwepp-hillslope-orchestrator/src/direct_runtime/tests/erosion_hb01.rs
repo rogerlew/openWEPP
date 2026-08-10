@@ -190,6 +190,29 @@ fn hb01_g_h_watdur_and_sediment_residuals_fail_closed() {
 }
 
 #[test]
+fn hb01_g_duration_custody_uses_absolute_seconds_at_multiple_scales() {
+    for expected_duration_s in [0.25, 10.0, 80_000.0] {
+        let mut within = nominal_inputs();
+        within.peakro_m_s = 0.001;
+        within.q_runoff_m = expected_duration_s * within.peakro_m_s;
+        within.watdur_s = expected_duration_s + 0.5 * DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S;
+        compute_direct_erod13(&within).expect("sub-threshold seconds residual must pass");
+
+        let mut beyond = nominal_inputs();
+        beyond.peakro_m_s = 0.001;
+        beyond.q_runoff_m = expected_duration_s * beyond.peakro_m_s;
+        beyond.watdur_s = expected_duration_s + 2.0 * DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S;
+        assert_eq!(
+            compute_direct_erod13(&beyond),
+            Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "erosion.erod13.watdur_s"
+            }),
+            "supra-threshold seconds residual must fail at {expected_duration_s} s"
+        );
+    }
+}
+
+#[test]
 fn hb01_h_first_invalid_input_retains_guard_priority() {
     let mut inputs = nominal_inputs();
     inputs.ie_m_s = f64::NAN;

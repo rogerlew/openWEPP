@@ -315,11 +315,13 @@ independent science reviewers for the hydrologic authority and claim boundary.
   operand, rectangular-equivalent duration, public-only area conversion, and
   no-fallback posture before an exact-head gate can be admitted.
 - Decision: give erosion's independent rectangular-duration reconstruction a
-  seconds-dimensional custody tolerance (`TOL-SED-009`).
+  seconds-dimensional absolute custody tolerance (`TOL-SED-009`) matching the
+  active erosion guard (`1.001e-9 s`).
   Rationale: the first SC-SED reconciliation incorrectly reused
   `TOL-SED-001`, whose units are sediment mass flux. Duration is derived once
   by WB16 and passed unchanged; any independent check must compare seconds to
-  seconds and cannot borrow an unrelated conservation tolerance.
+  seconds, cannot borrow an unrelated conservation tolerance, and cannot use a
+  seconds-squared scale expression.
 
 ## Outcomes And Retrospective
 

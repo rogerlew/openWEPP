@@ -75,6 +75,8 @@ fn build_erosion_excess_intervals(
 
 const DIRECT_EROSION_CLASS_LIMIT: usize = 5;
 const DIRECT_EROD13_CONTINUITY_TOLERANCE: f64 = 1.0e-9;
+/// Absolute WB16-to-erosion rectangular-duration custody tolerance (s).
+const DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S: f64 = 1.001e-9;
 const DIRECT_EROD13_MIN_TCADJF: f64 = 0.30;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1108,9 +1110,7 @@ fn validate_erod13_runoff_duration_closure(
     validate_erod13_strict_positive("erosion.erod13.watdur_s", inputs.watdur_s)?;
 
     let expected_watdur_s = inputs.q_runoff_m / inputs.peakro_m_s;
-    if (inputs.watdur_s - expected_watdur_s).abs()
-        > DIRECT_EROD13_CONTINUITY_TOLERANCE + WB11_ZERO_THRESHOLD
-    {
+    if (inputs.watdur_s - expected_watdur_s).abs() > DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S {
         return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
             field: "erosion.erod13.watdur_s",
         });
