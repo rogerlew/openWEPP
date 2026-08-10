@@ -2,175 +2,290 @@
 
 Status: `complete`
 
-Review target: exact commit
-`7820953c1b5258564200bd167e0c4994a69b3065`, against the declared
+Review target: exact terminal commit
+`33831787b7029b28b0716c8458f08a11899db446`, against the declared
 pre-implementation base `a65cc3973ddd04b07cad108fcb33d83a8c161abb`.
+
+Evidence class: `Static + Ran`. The terminal contract/test reconciliation was
+inspected from the exact Git objects and checked in the exact checkout. Prior
+exact-archive evidence remains reusable across its bounded predecessor deltas.
+Concurrent package-evidence edits and untracked suite logs were excluded from
+source conclusions and inspected only for gate disposition.
 
 ## Findings
 
-### HIGH — near-complete frost retention still erases positive timed runoff
+No blocking QA findings remain at the reviewed commit.
+
+### RESOLVED — TOL-SED-009 is dimensionally valid and matches runtime
 
 Paths:
 
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1505`
-- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:261`
-- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:874`
+- `docs/specifications/science-contracts/contracts/SC-SED-001.md:374`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs:1110`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/tests/erosion_hb01.rs:192`
+- `tests/integration/peak_hourly_authority_contract.rs:84`
 
-The proportional frost allocation is gone and material partial retention now
-fails closed. However, the replacement clears the complete hourly series when
-`hourly_partition_runoff_m <= tolerance_m`, not only when no positive runoff
-remains. A valid counterexample is `before_m = 0.01`,
-`frost_retained_local_liquid_m = 0.00999999`, and
-`partition_runoff_m = before_m - frost`: the positive residual is about
-`1.0e-8 m`, below the `2.4e-8 m` aggregate tolerance, so lines 1511-1514 erase
-the produced hourly depth and return zero.
+SC-SED rev63 replaces the seconds-squared expression with the absolute,
+dimensionally valid bound
+`abs(watdur - Q / peakro_depth) <= 1.001e-9 s`. Production names that same
+threshold as `DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S` and the live duration
+guard consumes the named constant directly. The contract, implementation, and
+source-level guard therefore describe the same custody rule.
 
-That contradicts `INV-WATBAL-102`'s positive-source preservation and
-`TOL-WATBAL-009`'s statement that the tolerance never authorizes loss of
-positive hourly runoff and permits full-series clearing only when reconciled
-runoff is zero. The tests cover exact full retention and material partial
-retention but omit this positive-within-tolerance boundary. Clear only an exact
-zero residual; any positive partial residual without hourly frost custody must
-take the typed missing-upstream path. Add just-below/at/above-tolerance positive
-residual vectors.
+The behavioral test checks sub-threshold acceptance and supra-threshold refusal
+at 0.25, 10, and 80,000 seconds, proving the tolerance is absolute rather than
+scale-relative. That focused test passed in nextest run `3856c183` (`1/1`), and
+the expanded contract/source binding passed in run `381239de` (`4/4`).
 
-### HIGH — local-only daily infiltration still controls hourly timing by position
+### RESOLVED — H2637 source-complete routing oracle matches the warmed fixture
 
-Paths:
+Path: `tests/integration/laned_shadow_h2637.rs:39`
 
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:234`
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:521`
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1912`
-- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:313`
+The initial ignored-test diagnostic correctly exposed that the shared warming
+mutation changed the D12 routing population: 731 days routed rather than the
+historical 622. The terminal reconciliation renames that test to describe its
+source-complete purpose and updates the coupled manifest counters together:
+731 days seen, 731 days routed, zero uniform-shape days, and zero uniform days
+in both melt subclasses. The assertions now describe the fixture actually
+being exercised rather than preserving a pre-mutation classification.
 
-The new source-custody guard correctly rejects a daily local-only same-pass
-infiltration correction after local and runon supplies have merged. It still
-accepts the same daily correction on a local-only melt ledger, then
-`remove_depth_from_hour_bins_earliest` subtracts it from the earliest positive
-bins. The daily reconstruction at lines 521-570 has no producer-hour operand;
-choosing earliest bins can change the peak hour and magnitude for multi-hour
-melt by assumption.
+All ten H2637 tests, including both ignored campaign tests, passed at exact
+`0d5fa08b2` in nextest run `ccdec8be` (388.545 seconds). The prior failing
+diagnostic run remains useful evidence that the new assertions were prompted by
+an observed fixture effect, not weakened speculatively.
 
-The focused test calls only the guard and explicitly blesses the local-only
-case. The melt tests exercise WB14's genuine hourly infiltration, not the
-nonzero daily reconstruction branch, so no fixture proves this second debit's
-timing. Contract text permitting a local-only daily correction does not provide
-the missing process clock. Carry producer-timed infiltration custody through
-this branch or fail closed whenever a material daily correction would modify a
-positive hourly series.
+## Prior Finding Rechecks
 
-### HIGH — exact-head terminal evidence is absent or anchored to the prior commit
+### PASS — positive frost residuals are no longer tolerance-cleared
 
 Paths:
 
-- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/gate-results.md:1`
-- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/mutation-study.md:1`
-- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/summary.md:1`
-- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/rust_code_review.md:1`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1385`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1423`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:277`
 
-At exact commit `7820953c`, `gate-results.md` remains `queued` / `not-run`,
-the mutation study says the complete cohort is still running, and both the
-mutation study and summary identify `949349e70` as their binary/source anchor.
-The committed primary Rust and two science reviews also review `949349e70`,
-before the source, contract, HBP calendar, census receipt, and fixture changes
-in this target.
+Complete daily-only frost retention clears the hourly series only when the
+reconciled `partition_runoff_m` is exactly zero. Every positive reconciled
+residual with material daily frost retention, including the `5e-13 m` vector,
+takes the typed missing-hourly-producer path without mutating the source bins.
+The aggregate reconciliation tolerance adjudicates the independently summed
+ledgers; it no longer authorizes erasing positive timed runoff.
 
-The committed full-census log cannot replace those stale identities, and an
-untracked in-progress `topanga-openwepp-census-full-v3.log` was excluded from
-this exact-commit review. Critical closure requires exact-head full-census and
-terminal gate receipts plus refreshed required reviews. The focused evidence
-below is useful QA, not a substitute for the package's declared quick/full,
-doctest, deny, and exact-head cohort requirements.
+### PASS — the post-WB14 daily same-pass retiming alias is retired
 
-### MEDIUM — line-count inventory is complete, but production split rationale is not
+Paths:
+
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:207`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r7g_frost.rs:724`
+- `tests/integration/peak_hourly_authority_contract.rs:43`
+
+R4K now publishes WB14's own cumulative infiltration and hourly excess without
+a later snow-derived daily reconstruction or an earliest-bin debit. The added
+real-span R4I -> R4J -> R4K pure-melt vector uses limited infiltration capacity,
+proves partial infiltration, independently closes the residual depth, and
+proves the positive residual remains solely in the producer's hour. Separate
+source-complete peak tests prove that same melt residual selects its produced
+peak hour. The remaining earliest-bin helper is internal to WB14's chronological
+depression-storage solve and is not a post-partition timing reconstruction.
+
+### PASS — census receipts bind the complete reusable input and calendar
+
+Paths:
+
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py:26`
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/test_topanga_openwepp_census.py:1`
+
+Record schema v3 binds case, plan, binary, all four primary input hashes, and
+all 12 discoverable runner sidecars: frost, snow, WEPP UI, PMETPARA, both
+irrigation forms, groundwater coefficients, phosphorus, `tc`, `tcr`, `lcwb`,
+and channel input. It also binds expected row count, calendar digest, and exact
+simulation-year/Julian arrays. Reuse rejects corrupt, empty, truncated,
+wrong-calendar, changed-binary, changed-primary, changed-sidecar, non-finite,
+and negative records. Output ingestion independently checks the Parquet
+calendar before publishing the receipt.
+
+### PASS — HBP and Parquet consumers use the event's complete day identity
+
+Paths:
+
+- `crates/openwepp-runner/src/hillslope/04_direct_publication.rs:436`
+- `tests/integration/erosion_single_ofe_p61_sediment.rs:154`
+- `tests/integration/erosion_multi_ofe_p102_chain.rs:84`
+
+The HBP EVENT carries the selected producer row's calendar year and Julian day.
+Both real consumers derive the simulation year from that calendar year, join
+Parquet by simulation year plus Julian day, and independently reconstruct
+`sum(V_h) = runvol` and `max(V_h) / 3600 = peakro`; p61 also reconstructs the
+rectangular-equivalent duration. The p61 test explicitly identifies its copied
+climate's controlled 2x dominant-storm mutation, treats it as a real-consumer
+exercise rather than a legacy oracle, and applies a broad physical plausibility
+band. The p102 soil mutation is likewise performed only in a copied fixture and
+documents the intended per-OFE provenance probe.
+
+### PASS — typed WB16 guards retain their actual operands
+
+Paths:
+
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:1477`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_dc01.rs:188`
+
+WB16 now constructs typed hydrology guards at the validation sites. Non-finite
+errors retain the observed non-finite value; closure errors retain the observed
+hourly total and meaningful lower/upper bounds. Focused tests destructure the
+typed variants and assert those values instead of checking only message codes.
+
+### PASS — retired `ealpha` provenance and authority agree
+
+Paths:
+
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs:411`
+- `crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs:545`
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:2441`
+- `tests/integration/cli03_runner_contract_derived_tests.rs:449`
+
+No active peak path consumes `ealpha`. Retained manifest lineage publishes
+`wb16_ealpha_compatibility_seed_used=false` and
+`wb16_ealpha_seed_policy=retired_not_applicable`. Contract v170 marks the old
+`GAP-WATBAL-005` producer-chain claim `closed — superseded`, and contract plus
+fixture tests bind the new disposition.
+
+### PASS — line-count governance is complete and actionable
 
 Path:
 `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/line-count-governance.md:1`
 
-The corrected artifact now lists all seven touched Rust files at or above the
-2,000-line warning threshold, with exact counts, and none reaches 3,000 lines.
-Its follow-up describes test extraction from the two large test files, but it
-does not give the required decomposition rationale and concrete split intent
-for the five production files: `00_core_frames.rs`, `laned_active.rs`,
-`runoff.rs`, `00_builders_and_authority.rs`, and
-`00c_day_input_builder_impl.rs`. Add a concise per-file or explicitly grouped
-mapping from current cohesion boundary to intended extraction seam.
+Independent exact-commit counts match all seven changed Rust files at or above
+2,000 lines: 2,996, 2,981, 2,892, 2,760, 2,742, 2,707, and 2,028 lines. No file
+reaches 3,000 lines. The artifact provides a concrete extraction seam for each
+production and test file rather than a generic split promise.
 
-## Resolved prior findings
+### PASS — terminal EROD16 correction preserves the acceptance bar
 
-- Census sidecar provenance now matches all 12 names in the runner's legacy
-  sidecar contract. Record schema v3 binds case, plan, binary, complete input
-  hashes, expected row count, calendar digest, and exact year/Julian arrays.
-  Empty, truncated, wrong-calendar, corrupt, binary-changed, primary-input,
-  sidecar, nonfinite, negative, and heterogeneous-plan-value cases are covered.
-- The prior proportional daily frost debit is removed. Exact full retention
-  clears the series, while ordinary material partial retention takes a typed
-  missing-upstream error. The remaining positive-within-tolerance defect is
-  narrower but still closure-blocking.
-- HBP EVENT output now carries the selected producer row's calendar year.
-  Both p61 and p102 derive the corresponding simulation year and join Parquet
-  by year plus Julian day before independently reconstructing `sum(V_h)`,
-  `max(V_h) / 3600`, public `peakro`, and p61 duration.
-- Warnings-denied Clippy remains green. The publication zero-basis mismatch is
-  symmetric, and WB16 errors now use the typed hydrology guard family and share
-  the production peak arithmetic.
-- The line-count artifact no longer omits `03_tests.rs` or
-  `watershed_cli_behavior_contract.rs`.
+Paths:
 
-## Exact evidence run by this reviewer
+- `tests/integration/erod16_wave1_continuity_fixture_conservation.rs:623`
 
-- Ran in an isolated sparse archive of the exact target:
-  `cargo fmt --all -- --check` — PASS.
-- Ran in the exact archive:
-  `cargo clippy -p openwepp-hillslope-orchestrator -p openwepp-runner -p openwepp-hillslope-output --tests -- -D warnings`
-  — PASS.
-- Ran in the exact archive: warnings-denied Clippy for the three changed root
-  integration binaries — PASS. A broader root-test Clippy attempt was not
-  counted because the deliberately sparse archive omitted unrelated
-  `include_str!` work-package fixtures.
-- Ran in the exact archive: p61, p102, and the four
-  `peak_hourly_authority_contract` tests — PASS (`6/6`).
-- Ran in the exact archive: seven focused frost reconciliation, mixed-source
-  custody, missing-WB14-producer, and public peak-boundary tests — PASS (`7/7`).
-- Ran in the exact archive: output schema metadata/readback tests — PASS
-  (`2/2`).
-- Ran in the exact archive:
-  `.venv/bin/python -B .../tools/test_topanga_openwepp_census.py` — PASS
-  (`6/6`).
-- Ran against the exact base-to-target diff: `git diff --check` — PASS. The
-  declared terminal diff touches 83 files.
-- Not run by this reviewer: full-workspace quick/full, doctest, cargo-deny, or
-  the 1,088-trial cohort. Concurrent tracked edits and the untracked v3 cohort
-  log were excluded from all exact-target conclusions.
+The terminal delta is test-only. EROD16 now reads public PASS `peakro` as
+`m3/s`, divides by `area_m2 = fwidth_m * efflen_m` exactly once, and supplies
+the resulting `m/s` depth rate to both the legacy passby gate and Wave-1
+operands. This is the inverse of production's exactly-once public area
+conversion. The concave profile, independent cell-ledger reconstruction,
+per-day `1e-9` conservation bounds, nonzero deposition requirement, deposition
+engagement bar (`depositing_days * 4 >= clean_days`), and bounded refusal bar
+(`refusals <= 20%`) are unchanged by the delta.
 
-## Non-blocking debt and follow-ups
+The H2637 helper still copies the canonical fixture before mutation.
+Independent token inspection found exactly 731 daily rows. The helper changes
+only zero-based
+fields 7, 8, and 12 (`tmax`, `tmin`, and dewpoint) to `20`, `10`, and `8 C`;
+date, precipitation, duration, peak timing/intensity, radiation, wind, row
+count, and ordering remain unchanged. It does not disable or weaken the
+production partial-frost guard. Its derived routing effects are now represented
+by the source-complete D12 manifest assertions described above.
 
+### PASS — full-gate failures have bounded, evidence-preserving dispositions
+
+Paths:
+
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/gate-results.md:1`
+- `docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-full-v4-nextest-full-retry-threads2.log:1`
+
+The default-concurrency quick run's two 600-second assurance timeouts and the
+operator-interrupted scheduling probes are correctly non-admitted; no timeout,
+selection, or assertion was relaxed. The completed two-thread full run reached
+all 2,345 selected tests and reported 2,339 passes plus six failures:
+
+- Four peak-authority source-reading failures came from a cached test binary
+  whose compile-time `CARGO_MANIFEST_DIR` named a deleted exact-review archive.
+  They are shared-target contamination, not source behavior; a clean target is
+  the correct disposition.
+- EROD16 exposed the test's stale use of public volumetric peak as an internal
+  depth rate. The df41 correction restores units without changing the
+  conservation/deposition acceptance bar.
+- H2637 exposed an unrelated, intentionally fail-closed partial-frost guard
+  before the Lane-D boundary under test. The copied-fixture thermal envelope
+  isolates the intended test authority without changing production. The first
+  ignored-test run then exposed its derived routing-population effect; the
+  `0d5fa08b2` assertions reconcile all affected counters together.
+
+The exact terminal non-ignored fresh-target focused receipt is green: four peak-authority
+tests plus the EROD16 test and eight non-ignored H2637 tests passed (`13/13`;
+the two explicitly ignored campaign tests remained skipped). The subsequent
+diagnostic run-ignored receipt failed `1/2` and identified the stale D12 oracle.
+After reconciliation, a terminal all-H2637 receipt passed all ten tests,
+including both ignored campaign tests. Terminal full and quick workspace
+receipts remain separately required for package closure.
+
+## Exact Evidence Assessed By This Reviewer
+
+- `cargo fmt --all -- --check` — PASS at exact `33831787b`.
+- Warnings-denied Clippy for `peak_hourly_authority_contract` and all
+  `openwepp-hillslope-orchestrator` test targets — PASS at exact `33831787b`.
+- The broader warnings-denied Clippy receipt for unchanged production and
+  affected crates remains PASS from exact predecessor `d934ab9b`.
+- Five focused pure-melt, frost-boundary, typed-guard, and peak-hour tests —
+  PASS (`5/5`) on unchanged exact source.
+- `peak_hourly_authority_contract`, p61, p102, and retired-`ealpha` fixture
+  coverage — PASS (`7/7`) on unchanged exact source/tests.
+- Exact terminal EROD16, non-ignored H2637, and peak-authority fresh-target
+  receipt — PASS (`13/13`, two explicit campaign tests skipped).
+- Initial H2637 run-ignored diagnostic — FAIL (`1/2`): D16 active-owner passed;
+  D12 observed 731 routed days against the stale 622 expectation.
+- Reconciled exact-terminal H2637 receipt — PASS (`10/10`, including both
+  ignored campaign tests), nextest run `ccdec8be` in 388.545 seconds.
+- Exact-terminal absolute-duration behavioral coverage — PASS (`1/1`), nextest
+  run `3856c183`.
+- Exact-terminal `peak_hourly_authority_contract` — PASS (`4/4`), nextest run
+  `381239de`; the guard now binds both the rev63 contract text and live named
+  runtime constant.
+- Census receipt/provenance tests — PASS (`6/6`) on unchanged exact tooling.
+- `git diff --check a65cc3973..33831787b` — PASS. The exact terminal diff
+  touches 88 files.
+- An initial archive-root attempt was excluded because a shared cached test
+  binary retained a deleted archive's compile-time manifest path. The rerun
+  resolved that path to the exact archive and passed; this was an isolation
+  setup issue, not a repository test failure.
+- Not run by this reviewer: full-workspace quick/full, doctests, `cargo deny`,
+  or the complete 1,088-trial cohort. Their pending suite-runner status remains
+  required package evidence but is not represented here as a source defect.
+
+## Non-Blocking Debt And Follow-Ups
+
+- `runoff.rs` retains parallel generic-error and typed-WB16 validation/closure
+  adapters around a shared hourly-depth assembler. Consolidate the semantic
+  checks behind one typed operator so transfer-shape and peak consumers cannot
+  drift while preserving caller-appropriate error conversion.
+- The new real-span pure-melt test ends at R4K and composes with separate R4A /
+  WB16 peak tests. A single R4I-through-R7D6 test would make that cross-span
+  proof easier to diagnose if future orchestration changes break the chain.
 - `test_valid_record_reuses` exercises `record_matches`, not the actual
-  `run_case(..., resume=True, ...)` control flow. Add a subprocess-spy test that
-  proves valid receipts bypass execution and every mismatch executes anew.
-- `DISCOVERED_SIDECARS` duplicates the runner contract in Python. Add a
-  source-level parity test or hash a canonical resolved-input manifest so a new
-  runner sidecar cannot silently escape future receipts.
-- The p61 test intentionally doubles one storm in a copied climate, but the
-  fixture README still describes an unmodified real-climate erosion fixture.
-  Document the controlled mutation and avoid calling its resulting values an
-  untouched real-input result.
-- The p61/p102 joins use the full year/Julian key but still select `max_by`
-  rather than asserting exactly one matching public row. An explicit uniqueness
-  assertion would prevent duplicate-row defects from being masked.
-- `map_wb16_peak_guard` fabricates `NaN`, `-1.0`, or `1.0` observed values when
-  adapting errors, and the tests assert only codes. Preserve actual operands or
-  use variants that do not claim an observed value; assert boundary class,
-  symbol, and diagnostic text.
-- On census batch failure, canceling futures does not terminate already
-  running subprocesses or emit a terminal partial-run receipt.
+  `run_case(..., resume=True, ...)` bypass. Add a subprocess-spy test proving a
+  valid receipt skips execution and every mismatch executes anew.
+- `DISCOVERED_SIDECARS` duplicates the runner contract in Python. Add a parity
+  test or canonical resolved-input manifest so a new runner sidecar cannot
+  silently escape future receipts.
+- The p61/p102 joins use the complete year/Julian key but select `max_by` rather
+  than asserting exactly one matching public row. Assert uniqueness so a
+  duplicate-day publication cannot be masked.
+- The contract authority test is intentionally lightweight source inspection.
+  Its independent marker substrings can match unrelated sections; a scoped
+  `GAP-WATBAL-005` row assertion would better guard the exact superseded status.
+- Retained `ealpha` manifest fields are historical schema debt. A future schema
+  version should remove the dormant compatibility boolean and the helper's
+  boolean parameter rather than carry an impossible state indefinitely.
+- On census batch failure, canceling futures does not terminate already running
+  subprocesses or emit a terminal partial-run receipt.
+- Before terminal disposition, `gate-results.md` and related receipts must bind
+  `33831787b`, record the completed 2,339/2,345 diagnostic run and all six
+  dispositions, and publish complete clean-target full/quick results. Their
+  current `executing` state is accurate but not closure evidence.
 
 ## QA Verdict
 
-`HOLD — NOT ACCEPTABLE FOR CRITICAL CLOSURE.` Exact focused formatting,
-warnings-denied Clippy, consumer, schema, receipt, calendar, and boundary tests
-are green, and most prior QA findings are materially resolved. Commit
-`7820953c` still erases a positive frost residual within tolerance, retains an
-unsupported daily-to-hourly local infiltration debit, and lacks exact-head
-terminal evidence. Re-review is required after those blockers and the exact
-closure artifacts are corrected.
+`PASS — ACCEPTABLE FOR IMPLEMENTATION QA.` SC-SED rev63 duration custody,
+EROD16 units and conservation, H2637 source-complete campaign assertions,
+formatting, warnings-denied Clippy, source custody, frost boundary, typed
+guards, real HBP consumer, calendar, provenance, and focused receipts are green
+at `33831787b7029b28b0716c8458f08a11899db446`. Complete exact-head full and
+quick workspace receipts remain a separate package-closure obligation, not an
+open implementation QA defect.

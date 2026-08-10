@@ -1,6 +1,6 @@
 # Hourly Peak-Runoff Authority Closure
 
-Status: `executing`
+Status: `closure candidate — terminal verification pending`
 
 Date: `2026-08-09`
 
@@ -224,10 +224,12 @@ independent science reviewers for the hydrologic authority and claim boundary.
   volume-stable peak discontinuity.
 - [x] (2026-08-09) Completed dual science review at implementation/test commit
   `df41f3526`; Rust review then exposed stale `SC-SED-001` peak authority and
-  warmed-fixture H2637 evidence-counter drift. Both findings are reconciled in
-  the next exact-head contract/test increment and await re-review.
-- [ ] Complete Critical workspace gates, terminal verification, and
-  disposition.
+  warmed-fixture H2637 evidence-counter drift. Both findings were reconciled
+  and independently re-reviewed at `33831787b`.
+- [x] (2026-08-09) Passed the exact-head Critical full-workspace regression
+  (2,346/2,346), reconciled the quick-profile inventory against that complete
+  receipt, and passed workspace doctests.
+- [ ] Complete dual terminal verification and final disposition.
 
 ## Surprises And Discoveries
 
@@ -325,4 +327,27 @@ independent science reviewers for the hydrologic authority and claim boundary.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+WB16 now publishes the maximum hourly mean flow derived from the closing
+post-partition 24-bin runoff ledger. WB14 owns infiltration and hourly residual
+timing for rainfall, routed melt, and runon; WB19 surface return remains in its
+modeled hour. The internal peak is a depth rate in `m/s`, and public hillslope
+flow applies area exactly once to obtain `m3/s`. Missing positive hourly
+custody fails closed; APPMTH/rainfall-envelope timing and synthetic uniform
+shape fallbacks are not production authority.
+
+The exact release binary at implementation/contract/test commit `33831787b`
+completed 280 baselines and all 1,088 frozen Topanga mutations. Across
+1,913,199 paired event rows, there were zero invalid maximum-hour fractions,
+zero zero-runoff topology mismatches, and zero cases with runoff volume within
+5% but peak at least 2x. The largest ratio-decomposition residual was
+`4.440892098500626e-16`; the extreme raw peak ratio came only from a near-zero
+denominator and did not represent a volume-stable discontinuity.
+
+Critical closure passed 2,346/2,346 exact-head workspace tests, focused
+consumer and authority gates, warnings-denied Clippy, formatting, doctests,
+anti-evasion checks, documentation checks, two independent science reviews,
+Rust correctness and QA reviews. Dual terminal verification is the remaining
+closure step.
+The supported result is a maximum hourly mean hillslope runoff flow. It is not
+an instantaneous/subhourly peak, legacy-parity result, calibrated or observed
+flow validation, or routed watershed/channel-flow claim.

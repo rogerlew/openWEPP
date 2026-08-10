@@ -2,7 +2,7 @@
 
 ## Status
 
-- `state`: **promoted — executing as hourly peak-runoff authority closure**
+- `state`: **promoted — closure candidate pending terminal verification**
 - `date`: 2026-08-07
 - `owner`: openWEPP maintainers + hillslope hydrology reviewer
 - `origin`: Topanga 2025 fire investigation, Hill 106 high-ET screen
@@ -14,6 +14,23 @@
 - `default eligibility`: no new or migrated peak-runoff implementation may be
   treated as scientifically closed while it reproduces this unexplained
   discontinuity
+
+## Closure Outcome
+
+The promoted work package closed this item without reproducing the legacy Hill
+106 branch. The newer 1,088-trial legacy audit had already established the
+general daily-return retiming defect, so legacy replication and parity were
+retired as correctness targets. openWEPP now derives peak flow from its modeled
+closing hourly runoff ledger, retains soil-water surface return in its produced
+hour, and converts the internal `m/s` depth rate to public `m3/s` exactly once.
+
+The complete frozen design ran against openWEPP: 280 baselines, 1,088
+mutations, and 1,913,199 paired event rows. It found zero cases with event
+runoff volume within 5% and peak at least 2x, zero invalid maximum-hour
+fractions, and zero runoff/peak topology mismatches. Exact-head workspace and
+review gates passed; terminal verification remains. See the promoted package's
+[`summary.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/summary.md)
+and [`disposition.md`](../work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/disposition.md).
 
 ## Executive Summary
 
@@ -334,28 +351,21 @@ The work package must define exact tolerances, but at minimum:
 
 ## Acceptance and Closure Criteria
 
-This item is not closed by reproducing legacy output. Closure requires all of
-the following:
+The 2026-08-09 scope amendment superseded the original legacy-replication and
+Hill 106 preservation requirements. Closure required the corrected native
+openWEPP implementation to use modeled hourly runoff, preserve source timing
+and mass, publish unambiguous units and derivation provenance, pass the complete
+frozen 1,088-mutation design without an unexplained volume-stable
+discontinuity, reconcile controlling science contracts, and pass Critical
+review and verification. The implementation, cohort, workspace, and review
+criteria are complete; terminal verification remains in the promoted package.
 
-- the exact branch or numerical mechanism causing the 82.7x jump is identified;
-- the explanation is supported by an operand-complete event trace;
-- the behavior is classified as valid physics, implementation defect, numeric
-  defect, state-lifecycle defect, or output/reporting defect;
-- if valid, independent physical authority and hydrograph closure justify the
-  magnitude and direction;
-- if defective, the corrected implementation passes the controlled mutation
-  sweep without an unexplained discontinuity;
-- regression tests preserve the Hill 106 pair and the bracketed transition;
-- peak, volume, timing, and effective-duration outputs carry unambiguous units
-  and derivation provenance;
-- broader hillslope and watershed checks show the correction does not merely
-  move the anomaly elsewhere; and
-- the applicable peak-runoff science contract records the governing equations,
-  branches, invariants, provenance, and known applicability limits.
+## Historical Promotion Requirements
 
-## Promotion Requirements
-
-When prioritized, create a dedicated defect-closure work package. It must:
+The original note required a dedicated defect-closure work package and listed
+the following prospective requirements. The promoted package amended items 1
+and 2 when the newer audit retired legacy replication; the remaining authority,
+call-chain, contract, and independent-review requirements were completed.
 
 1. vendor the frozen input decks and discovery outputs into its own artifacts;
 2. pin the authoritative legacy source revision and binary hashes;

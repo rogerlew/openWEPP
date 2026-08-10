@@ -2,109 +2,185 @@
 
 Status: `executed`
 
-Evidence class: `Static: exact implementation commit 7820953c1b5258564200bd167e0c4994a69b3065, base-to-anchor diff a65cc3973..7820953c, contracts, focused tests, consumer paths, and committed package evidence`
+Evidence class: `Static: base a65cc3973 through exact terminal authority/runtime/test commit 33831787b7029b28b0716c8458f08a11899db446; contracts, runtime source, focused and integration tests, publication consumers, and package evidence. Ran: focused DC01 suite at f9082926, pure-melt regression at 2d8367f0, peak-authority contract at d934ab9b, corrected EROD16/H2637 integrations at df41f352, and duration/runtime authority checks at 33831787.`
 
-Verdict: `HOLD`
+Verdict: `PASS`
 
 Reviewer independence: Reviewer A's report was not consulted in reaching this verdict.
 
-## Severity-Ranked Findings
+## Findings
 
-### `SCI-B3-001` — CRITICAL — daily same-pass infiltration still manufactures hourly timing
+No closure-blocking science, hydrology, unit, or claim-boundary finding remains
+in the reviewed implementation.
 
-The runtime computes a daily `additional_same_pass_infiltration_m` correction
-after the hourly WB14 excess profile has already been produced, then removes
-that daily depth from the earliest positive hourly bins
-(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:234-246`
-and `:1912-1932`). The new custody guard correctly hard-fails when runon is
-mixed into that ledger, but it permits the same earliest-bin operation for a
-local-only ledger.
+## Prior Critical Recheck — `PASS`
 
-This is not source custody at producer resolution. A daily correction contains
-no evidence that infiltration occurred in the earliest runoff hours. Selecting
-those hours can reduce or eliminate an early maximum, move the maximum to a
-later hour, and change the HBP/pass peak while preserving daily volume. It is
-therefore a temporal process assumption rather than arithmetic reconciliation.
-It also conflicts with the operative wording of `INV-WATBAL-103`, which says
-that neither daily debit may be distributed across positive bins to manufacture
-a peak. The sentence permitting a local-only daily correction does not supply
-authority for an earliest-hour allocation.
+The local-only daily same-pass infiltration correction is fully retired, not
+merely protected by a mixed-source guard. The R4K span now writes WB14's own
+`cumulative_infiltration_m` through as the same-pass infiltration operand
+(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs:231-246`).
+The former snow-derived daily reconstruction method, additional-infiltration
+calculation, source-custody guard, and post-WB14 earliest-bin debit call are
+deleted. The source-level authority test also rejects reintroduction of the
+former `snow_reconstructed_same_pass_infiltration_m` path
+(`tests/integration/peak_hourly_authority_contract.rs:49-56`). The sole
+`f9082926..2d8367f0` delta adds a real R4I -> R4J -> R4K regression with
+`0.010 m` of pure routed melt in producer hour 5 and limited infiltration
+capacity. It proves that WB14 publishes a positive infiltration strictly below
+the melt supply, percolation consumes that exact WB14 value without a daily
+snow override, the residual closes to `melt - infiltration`, and every residual
+bin except producer hour 5 remains exact zero
+(`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r7g_frost.rs:723-798`).
+There is no production-source or contract change in that test-only delta.
 
-Proposed disposition: `accepted / closure-blocking`. Produce the additional
-same-pass infiltration debit within the hourly WB14 owner and retain its
-producer-timed hourly ledger. Until that exists, hard-fail authoritative hourly
-peak publication whenever the daily-only correction is material and positive.
-Do not substitute proportional, earliest-first, latest-first, or largest-bin
-allocation.
+The later `2d8367f0..d934ab9b` delta also makes no production change. Contract
+v170 correctly reclassifies historical `GAP-WATBAL-005` as
+`closed — superseded`: the rainfall-envelope/APPMTH `ealpha` chain is not an
+active peak producer, and retained manifest values are explicitly limited to
+`false`/`retired_not_applicable` schema lineage. This reconciles stale
+provenance without reviving or broadening the retired peak authority.
 
-### `SCI-B3-002` — HIGH — the complete mutation census is not reconciled to the exact anchor
+The terminal `d934ab9b..df41f352` delta is test-only and does not weaken an
+assertion. EROD16 now recognizes PASS `peakro` as `m^3 s^-1`, divides by the
+same `fwidth * efflen` area exactly once, and applies the legacy passby gate and
+Wave-1 fixture operands on the required internal `m s^-1` basis. The H2637
+routing test changes only temperature/dewpoint fields in its copied climate
+fixture, leaving precipitation and routing inputs unchanged, so the unrelated
+partial-frost missing-clock guard no longer preempts the routing-authority
+assertions. This is valid test isolation, not suppression of the production
+frost guard.
 
-The committed `artifacts/mutation-study.md` remains explicitly bounded to a
-single corrected probe at implementation anchor `949349e70` and states that
-the complete cohort is still running. That wording is appropriately
-disciplined and does not overclaim acceptance. The committed full-census log
-does end successfully and contains 1,913,199 paired event rows, zero invalid
-maximum-hour fractions, zero zero-runoff topology mismatches, and zero cases
-with volume within five percent while peak changes by at least twofold.
-However, the log itself contains no exact source commit, binary hash/path, or
-input-manifest identity tying those results to `7820953c`; the mutation-study
-artifact does not adopt or interpret it.
+The `df41f352..33831787` authority/runtime sequence aligns the adjacent erosion
+contract with the implemented consumer. SC-SED rev61/63 names the
+source-complete maximum-hour depth rate in `m s^-1`, public-only area
+conversion to `m^3 s^-1`, rectangular-equivalent duration, and the prohibition
+on uniform/rainfall-window/analytical fallback. The active erosion guard
+independently reconstructs `Q / peakro_depth` and applies the contract-matching
+absolute `1.001e-9 s` custody threshold. This replaces both the stale sediment
+mass tolerance and rev62's dimensionally invalid relative expression. Tests
+prove sub-threshold acceptance and supra-threshold failure at `0.25 s`, `10 s`,
+and `80,000 s`; the allowance does not grow with event duration.
 
-Proposed disposition: `accepted / closure-blocking for package evidence`. Run
-or positively identify the full cohort against an exact-anchor release binary,
-record source commit, binary path/hash, cohort/input identity, command and exit
-status, then reconcile the required acceptance metrics in
-`artifacts/mutation-study.md`. The raw log alone is not exact-anchor evidence.
+The warmed H2637 evidence assertion is internally consistent: the copied
+fixture changes temperature/dewpoint only, the shadow expects all 731 days seen
+and routed, and all three uniform-shape counters remain zero. Those counters
+support source-complete shape custody for this isolated evidence vector; they
+do not erase the production frost guard or generalize to an unwarmed climate.
 
-## Prior Blocker Rechecks
+The surviving `remove_depth_from_hour_bins_earliest` call is not the retired
+daily correction. It executes inside WB14's own chronological infiltration and
+depression-storage producer and removes the bucket-filling depression-storage
+depth from the earliest producer excess (`runoff.rs:1867-1888`). For a
+non-draining daily depression-storage bucket, that chronological ownership is
+physically consistent and does not reconstruct timing after partition.
 
-### Partial frost-retention timing — `PASS`
+## Source and Closure Review
 
-The proportional allocation is gone. A complete frost debit may clear the
-entire hourly series only when no positive local runoff remains; a material
-partial debit that leaves positive runoff now returns typed
-`MissingDirectUpstream` for producer-timed frost retention. Focused tests cover
-both full clearing and partial-positive rejection. No daily-only frost scalar
-is allowed to shape an authoritative positive peak.
+### WB14 rain, routed melt, and runon ownership — `PASS`
 
-### `TOL-WATBAL-009` provenance and behavior — `PASS`
+Local rain retains its explicit hyetograph. Producer-timed routed melt enters
+`hourly_additional_supply_m`; surface and lateral runon require nonempty
+producer shapes and are added to that same hourly supply before WB14 executes
+(`runoff.rs:592-680`). When additional supply exists, WB14 constructs a shared
+24-hour liquid-supply basis, performs infiltration interval by interval, and
+emits the residual excess into the corresponding hour
+(`runoff.rs:1744-1754,1781-1864`). These supplies are not later appended as
+runoff limbs. Tests establish melt-only timed runoff, complete melt
+infiltration, runon-driven infiltration, missing-shape failure, and preservation
+of tiny positive source-backed supply.
 
-The aggregate `24 * 1e-9 m` bound is now explicitly derived from the 24 WB14
-intervals and `SC-RUNOFFPART-001#TOL-RUNOFFPART-007`. Reconciliation compares
-two independently accumulated ledgers only; it neither fills an empty ledger
-nor mutates an hourly bin. The exact aggregate boundary is accepted, a value
-just above it hard-fails, and tests confirm the accepted ledger remains
-unchanged. This is bounded numerical adjudication, not process timing.
+### Frost retention — `PASS`
 
-### Synthetic runon timing and mixed-source custody — `PASS`
+No positive frost residual is tolerance-cleared. Complete daily-only frost
+retention clears the hourly series only when `partition_runoff_m == 0.0`
+exactly. Every positive residual, including `5e-13 m`, requires producer-timed
+hourly frost custody and otherwise hard-fails
+(`runoff.rs:1423-1438`; `direct_runtime_dc01.rs:277-326`). The aggregate WB14
+roundoff tolerance only compares independently accumulated ledgers and does not
+mutate a positive hourly bin.
 
-Positive runon requires a producer hourly shape, is admitted to WB14 exactly
-once, and cannot fall back to a uniform or rainfall-derived distribution. The
-new mixed local/runon same-pass guard also prevents a daily local correction
-from being applied to a merged source ledger. This does not cure
-`SCI-B3-001` for the remaining local-only path.
+### WB19 return and peak closure — `PASS`
 
-### Melt and WB19 subsurface-return timing — `PASS`
+The closing hourly series is WB14 post-depression excess plus the WB19
+producer's same-hour saturation return. Each operand is validated finite and
+nonnegative, its sum must close to positive daily runoff, and missing or
+materially mismatched timing yields a typed WB16 hydrology guard. Normalized
+weights are derived only after closing depths exist. Dry runoff publishes zero;
+positive runoff cannot use an empty, uniform, rainfall-duration, or daily-scalar
+fallback.
 
-Routed melt is an hourly liquid supply entering WB14 once, rather than a
-post-partition runoff limb. WB19 surface-saturation return retains its produced
-hour in the shared series. Tests cover melt that becomes runoff and melt that
-fully infiltrates, preventing the former double count.
+### Units, area, consumers, and claim boundary — `PASS`
 
-### Consumer area and unit custody — `PASS`
+The internal peak remains maximum hourly-mean depth rate in `m s^-1`. Public
+publication reconciles the peak to the event run-volume depth basis and
+multiplies by the same positive lane area exactly once to obtain `m^3 s^-1`
+(`crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:576-640`).
+Erosion consumes depth rate. The multi-OFE integration independently proves
+outlet `sum(V_h) = runvol`, reconstructs `max(V_h) / 3600 s`, and compares that
+value with both HBP and pass output. Contracts accurately limit the claim to
+maximum hourly mean hillslope-event discharge and label duration as
+rectangular-equivalent, not instantaneous/channel/watershed peak or physical
+hydrograph duration.
 
-The internal peak is depth rate (`m s^-1`). Outlet publication reconciles it
-to the same run-volume depth basis and multiplies by the positive lane area
-once to obtain `m^3 s^-1`; HBP/pass serialization consumes that value without
-a second area conversion. The multi-OFE integration reconstructs outlet volume
-and `max(hourly volume) / 3600 s` from the real pass row.
+## Executed Evidence
+
+Ran at exact commit `f9082926f369036cbb5ab5a51a21c284599285f7`:
+
+```text
+cargo nextest run -p openwepp-hillslope-orchestrator direct_runtime_dc01
+24 tests run: 24 passed, 447 skipped
+```
+
+Ran at exact terminal commit
+`2d8367f0ea03f6b21a41dda5efcd4f02595a2adf`:
+
+```text
+cargo nextest run -p openwepp-hillslope-orchestrator \
+  r7h_pure_melt_r4k_preserves_wb14_capacity_and_residual_hour
+1 test run: 1 passed, 471 skipped
+```
+
+Ran at exact terminal commit
+`d934ab9b033b245502ecf91b57e6df5edd583528`:
+
+```text
+cargo nextest run --test peak_hourly_authority_contract
+4 tests run: 4 passed, 0 skipped
+```
+
+Ran at exact terminal commit
+`df41f3526dd61eb801d2c9a244bef197c1f169ed`:
+
+```text
+cargo nextest run --test erod16_wave1_continuity_fixture_conservation \
+  --test laned_shadow_h2637
+9 tests run: 9 passed, 2 skipped
+```
+
+Ran at exact terminal commit
+`33831787b7029b28b0716c8458f08a11899db446`:
+
+```text
+cargo nextest run -p openwepp-hillslope-orchestrator \
+  hb01_g_duration_custody_uses_absolute_seconds_at_multiple_scales
+1 test run: 1 passed, 472 skipped
+
+cargo nextest run --test peak_hourly_authority_contract
+4 tests run: 4 passed, 0 skipped
+```
+
+## Evidence Status
+
+The remaining cohort and broader gate work is package evidence status, not an
+implementation science defect. It must still be reconciled to the exact release
+anchor with the provenance required by the package before closure; this review
+does not convert pending evidence into a pass claim.
 
 ## Verdict Rationale
 
-Commit `7820953c1b5258564200bd167e0c4994a69b3065` genuinely closes the prior
-proportional-frost and tolerance-provenance findings and preserves runon, melt,
-WB19 return, area, and consumer custody. `HOLD` remains because the local-only
-daily same-pass infiltration correction still selects runoff hours without a
-producer clock and can directly determine the public maximum-hour flow. The
-full mutation evidence also remains unbound to the exact reviewed anchor in
-the governing artifact.
+Exact terminal commit `33831787b7029b28b0716c8458f08a11899db446` retains the removal of the last
+unauthorized daily-to-hourly infiltration allocation and leaves WB14 as the
+single owner of hourly supply, infiltration, depression storage, and residual
+excess. Frost, subsurface-return timing, positive-source preservation, area
+conversion, and consumer semantics remain fail-closed and contract-consistent.
+The implementation therefore passes independent hydrologic science review.

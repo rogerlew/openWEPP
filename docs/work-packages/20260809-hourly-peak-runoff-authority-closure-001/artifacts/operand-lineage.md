@@ -1,6 +1,6 @@
 # Peak Operand Lineage
 
-Status: `implemented / terminal verification pending`
+Status: `implemented / verified`
 
 | Operand | Units | Time basis | Spatial basis | Authority | Disposition |
 |---|---|---|---|---|---|

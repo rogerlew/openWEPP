@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 6b283852-256e-469b-8a7d-a586766bff31 with nextest profile: full
+    Starting 2345 tests across 210 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+  Cancelling due to interrupt: 4 tests still running
+      SIGINT [   1.643s] (  47/2345) openwepp::assurance_v2_amendment_contract manifest_adoption_rejects_invalid_new_external_sources_without_mutation
+      SIGINT [  82.839s] (  48/2345) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+      SIGINT [  94.910s] (  49/2345) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+      SIGINT [  91.404s] (  50/2345) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+────────────
+     Summary [  95.727s] 50/2345 tests run: 46 passed, 4 failed, 33 skipped
+warning: 2295/2345 tests were not run due to interrupt
+error: test run failed

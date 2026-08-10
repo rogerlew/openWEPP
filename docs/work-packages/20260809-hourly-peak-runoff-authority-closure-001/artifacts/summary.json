@@ -1,26 +1,42 @@
 {
   "package": "20260809-hourly-peak-runoff-authority-closure-001",
-  "runner": "comparator_suite_runner (bounded probe with resume)",
+  "runner": "comparator_suite_runner (complete frozen cohort with validated resume)",
   "status": "PASS",
-  "duration_seconds": 72,
-  "commands_total": 2,
-  "commands_passed": 2,
-  "commands_failed": 0,
+  "implementation_commit": "33831787b7029b28b0716c8458f08a11899db446",
+  "binary_sha256": "ac8790faf32a5b98993427b636084c04ba468955458c4fc18f3874cea709c4c3",
+  "plan_sha256": "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756",
+  "duration_seconds": 498,
   "cases_ran": {
-    "baseline": 1,
-    "trial": 1
+    "unique_baselines": 280,
+    "eligible_trials": 1088,
+    "selected_trials": 1088
   },
   "validation": {
-    "event_pair_rows": 638,
-    "finite_positive_peak_pairs": 638,
+    "event_pair_rows": 1913199,
+    "finite_positive_peak_pairs": 1913158,
     "invalid_max_hour_fraction_count": 0,
-    "max_abs_ratio_decomposition_residual": 3.3306690738754696e-16,
-    "max_hour_fraction_ratio_max": 1.0350812903034823,
-    "max_hour_fraction_ratio_p99": 1.0032257023174906,
-    "peak_ratio_max": 6.830159847318132,
-    "peak_ratio_p99": 1.2569430238083918,
+    "max_abs_ratio_decomposition_relative_residual": 4.440892098500626e-16,
+    "max_hour_fraction_ratio_max": 2.755595239734283,
+    "max_hour_fraction_ratio_p99": 1.0000004332094452,
+    "peak_ratio_max": 12965889426731.332,
+    "peak_ratio_p99": 1.0000000000000002,
     "volume_within_5pct_peak_at_least_2x_count": 0,
     "zero_runoff_peak_topology_mismatch_count": 0
   },
-  "evidence_summary": "/home/workdir/openwepp-hourly-peak-topanga-probe/summary.json"
+  "complete_frozen_cohort": true,
+  "workspace_validation": {
+    "profile": "full",
+    "run_id": "2a4b4f2c-d6c6-4bd6-a22f-e61bdb8f4576",
+    "tests_passed": 2346,
+    "tests_failed": 0,
+    "tests_skipped": 33,
+    "duration_seconds": 8454.483,
+    "full_inventory_count": 2346,
+    "quick_inventory_count": 2297,
+    "quick_only_count": 0,
+    "quick_subset_of_full": true,
+    "workspace_doctests": "PASS"
+  },
+  "evidence_summary": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/summary.json",
+  "event_pairs_parquet": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/topanga-openwepp-event-pairs.parquet"
 }

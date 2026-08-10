@@ -1,25 +1,85 @@
 {
+  "implementation_commit": "33831787b7029b28b0716c8458f08a11899db446",
   "commands": [
     {
       "command": "TMPDIR=/home/workdir/openwepp-task-tmp cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
       "exit_code": 0,
       "status": "PASS",
-      "duration_seconds": 68,
-      "start_ts": 1786308222,
-      "end_ts": 1786308290
+      "duration_seconds": 68
     },
     {
-      "command": "/home/workdir/openWEPP/.venv/bin/python docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py --plan /workdir/wepppy/docs/work-packages/20260808_peakflow_topanga_census_prep/artifacts/topanga-trial-plan.json --source-root /home/workdir/peakflow-topanga-census-evidence/b575fde4a28cf85f1d28e0dfff305472b5419fd9b3639d39dc437600617080de --evidence-root /home/workdir/openwepp-hourly-peak-topanga-probe --binary target/release/openwepp-cli-hill --jobs 1 --limit 1 --resume",
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp .venv/bin/python docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/tools/topanga_openwepp_census.py --plan /workdir/wepppy/docs/work-packages/20260808_peakflow_topanga_census_prep/artifacts/topanga-trial-plan.json --source-root /home/workdir/peakflow-topanga-census-evidence/b575fde4a28cf85f1d28e0dfff305472b5419fd9b3639d39dc437600617080de --evidence-root /home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5 --binary target/release/openwepp-cli-hill --jobs 8 --resume",
       "exit_code": 0,
       "status": "PASS",
-      "duration_seconds": 4,
-      "start_ts": 1786308290,
-      "end_ts": 1786308294
+      "duration_seconds": 498,
+      "selected_trials": 1088,
+      "unique_baselines": 280
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/hourly-peak-focused-clean-target cargo nextest run --test laned_shadow_h2637 --run-ignored all",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 388.545,
+      "tests_passed": 10
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/hourly-peak-focused-clean-target cargo nextest run --test peak_hourly_authority_contract",
+      "exit_code": 0,
+      "status": "PASS",
+      "run_id": "381239de-a2e0-45eb-b5f5-8cfba0f06c75",
+      "tests_passed": 4
+    },
+    {
+      "command": "bash tools/release/check_authority_suite_antievasion.sh",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/hourly-peak-authority-guard-target cargo nextest run --test auth11_required_suite_obligation_guards_contract",
+      "exit_code": 0,
+      "status": "PASS",
+      "run_id": "61185931-8682-4fd4-9495-fb7923847f3c",
+      "tests_passed": 3
+    },
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/hourly-peak-focused-clean-target cargo nextest run --workspace --profile full --no-fail-fast --test-threads 2",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 8454.483,
+      "run_id": "2a4b4f2c-d6c6-4bd6-a22f-e61bdb8f4576",
+      "tests_passed": 2346,
+      "tests_skipped": 33
+    },
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/target-full cargo nextest list --workspace --profile full",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 2,
+      "inventory_count": 2346
+    },
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/target-quick cargo nextest list --workspace --profile quick",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 2,
+      "inventory_count": 2297,
+      "quick_only_count": 0
+    },
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-tmp CARGO_TARGET_DIR=/home/workdir/openwepp-task-tmp/target-doc cargo test --workspace --doc",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 45,
+      "executable_doctests": 0
     }
   ],
   "artifacts": {
-    "build_log": "/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/comparator-probe-build.log",
-    "run_log": "/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-run.log",
-    "summary_json": "/home/workdir/openwepp-hourly-peak-topanga-probe/summary.json"
+    "build_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/comparator-probe-build-v5.log",
+    "run_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-full-v5.log",
+    "summary_json": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/summary.json",
+    "event_pairs_parquet": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/topanga-openwepp-event-pairs.parquet",
+    "full_workspace_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-full-v4-nextest-full-clean-target-33831787b.log",
+    "inventory_delta_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/full-vs-quick-summary.log",
+    "doctest_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/cargo-test-workspace-doc.log"
   }
 }

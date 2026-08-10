@@ -1,0 +1,53 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 067d1a3e-18ff-4c09-8099-deb5d8c61fab with nextest profile: quick
+    Starting 2296 tests across 202 binaries (40 tests and 13 binaries skipped, including 35 tests and 13 binaries via profile.quick.default-filter)
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>300.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [>300.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract role_assignment_is_typed_receipted_and_idempotent
+        SLOW [>420.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract canopy_named_and_all_builds_are_byte_equivalent_and_complete
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract real_cli_selects_v2_staging_without_weakening_zero_public_operations
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract real_named_and_all_builds_are_deterministic_equivalent_and_checkable
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+  Cancelling due to interrupt: 2 tests still running
+      SIGINT [  55.578s] (  91/2296) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+      SIGINT [   6.066s] (  92/2296) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+────────────
+     Summary [ 894.537s] 92/2296 tests run: 90 passed (17 slow), 2 failed, 40 skipped
+warning: 2204/2296 tests were not run due to interrupt
+error: test run failed

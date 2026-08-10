@@ -1,0 +1,3 @@
+cargo test --workspace --doc
+exit_code=0
+duration_s=45

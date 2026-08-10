@@ -1,0 +1,34 @@
+   Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+   Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.20s
+────────────
+ Nextest run ID db93ec47-13bb-4159-a144-0bef9e8dfc04 with nextest profile: full
+    Starting 2345 tests across 210 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+  Cancelling due to interrupt: 2 tests still running
+      SIGINT [ 204.871s] (  46/2345) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+      SIGINT [  58.277s] (  47/2345) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+────────────
+     Summary [ 229.097s] 47/2345 tests run: 45 passed (1 slow), 2 failed, 33 skipped
+warning: 2298/2345 tests were not run due to interrupt
+error: test run failed
