@@ -84,6 +84,32 @@ fn publication_applies_area_once_and_erosion_consumes_depth_rate() {
         erosion.contains("peak_runoff_rate_m_s"),
         "erosion must consume the internal depth-rate peak"
     );
+
+    let contract = read("docs/specifications/science-contracts/contracts/SC-SED-001.md");
+    for required in [
+        "peakro_depth = max_h(V_h / Area / 3600 s)",
+        "peakro = peakro_depth · Area",
+        "rectangular-equivalent duration",
+        "never the public volumetric value or a separate analytical estimator",
+        "no uniform or rainfall-window fallback is authorized",
+    ] {
+        assert!(
+            contract.contains(required),
+            "SC-SED-001 is missing corrected erosion peak authority: {required}"
+        );
+    }
+    for retired in [
+        "max(V_h/3600) ≠ peakro",
+        "wb16_tstar",
+        "wb16_qpstar",
+        "wb16_vstar",
+        "watdur = Q/peakro`",
+    ] {
+        assert!(
+            !contract.contains(retired),
+            "SC-SED-001 retains retired erosion peak authority: {retired}"
+        );
+    }
 }
 
 #[test]

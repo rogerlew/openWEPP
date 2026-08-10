@@ -359,7 +359,7 @@ fn h2637_legacy_shadow_fails_closed_without_routing_coefficients() {
 
 #[test]
 #[ignore = "D12 H2637 shadow evidence: runs the full H2637 fixture twice"]
-fn h2637_native_shadow_classifies_uniform_shape_after_d12() {
+fn h2637_native_shadow_preserves_source_complete_shape_after_d12() {
     let (_dir_off, manifest_off, pass_off, parquet_off) =
         run_h2637_native_routing("native_off", false)
             .expect("native-routed H2637 must run with Lane D shadow disabled");
@@ -393,10 +393,10 @@ fn h2637_native_shadow_classifies_uniform_shape_after_d12() {
             .and_then(serde_json::Value::as_u64)
             .expect("manifest should report days_uniform_shape_without_routed_melt");
     assert_eq!(days_seen, 731);
-    assert_eq!(days_routed, 622);
-    assert_eq!(days_uniform_shape, 6);
+    assert_eq!(days_routed, 731);
+    assert_eq!(days_uniform_shape, 0);
     assert_eq!(days_uniform_shape_with_routed_melt, 0);
-    assert_eq!(days_uniform_shape_without_routed_melt, 6);
+    assert_eq!(days_uniform_shape_without_routed_melt, 0);
 }
 
 // ---------------------------------------------------------------------------

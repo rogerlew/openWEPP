@@ -65,6 +65,7 @@ even though its computation is a depth rate; publication does not apply area.
 ### In-scope write set
 
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
+- `docs/specifications/science-contracts/contracts/SC-SED-001.md`
 - `docs/specifications/science-contracts/index.md`
 - peak/hourly-runoff code and types under
   `crates/openwepp-hillslope-orchestrator/src/direct_runtime/`
@@ -218,8 +219,15 @@ independent science reviewers for the hydrologic authority and claim boundary.
   erosion/HBP consume the closing post-partition hourly ledger.
 - [x] (2026-08-09) Built exact anchor `949349e70` and passed a fresh
   provenance-bound one-baseline/one-mutation Topanga probe.
-- [ ] Execute focused and Topanga cohort validation.
-- [ ] Complete Critical closure, review, verification, and disposition.
+- [x] (2026-08-09) Passed focused implementation and real-consumer validation;
+  executed all 1,088 frozen Topanga trials and found no unexplained
+  volume-stable peak discontinuity.
+- [x] (2026-08-09) Completed dual science review at implementation/test commit
+  `df41f3526`; Rust review then exposed stale `SC-SED-001` peak authority and
+  warmed-fixture H2637 evidence-counter drift. Both findings are reconciled in
+  the next exact-head contract/test increment and await re-review.
+- [ ] Complete Critical workspace gates, terminal verification, and
+  disposition.
 
 ## Surprises And Discoveries
 
@@ -299,6 +307,13 @@ independent science reviewers for the hydrologic authority and claim boundary.
   as storm duration and did not state maximum-hour peak reconstruction from its
   own minor-1 hourly volumes; leaving that stale would contradict the corrected
   producer and public schema; the Parquet metadata must name the same quantity.
+- Decision: add `SC-SED-001.md` to the adjacent consumer-contract write set
+  after the full consumer gate exposed stale analytical and volumetric peak
+  authority in the erosion contract.
+  Rationale: erosion already consumes the corrected internal maximum-hour
+  depth rate. Closure requires its active authority to name the same `m/s`
+  operand, rectangular-equivalent duration, public-only area conversion, and
+  no-fallback posture before an exact-head gate can be admitted.
 
 ## Outcomes And Retrospective
 
