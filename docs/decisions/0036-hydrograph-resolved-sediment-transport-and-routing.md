@@ -191,7 +191,8 @@ inflows at channel inlets on the shared time base — and falls back to the
 triangular reconstruction (with event-aggregate sediment) only for shards
 lacking the surfaces. `INV-ROUTE-005` is amended from "the triangular procedure must be
 used" (hard-fail) to a **conditional**: modeled-hydrograph superposition when
-the surface is present, triangular as the explicit legacy-shard fallback. The
+the surface is present, triangular as the explicit legacy-shard fallback.
+
 For a current hourly-surface payload, the serialized peak summary is derived
 from the same hourly water surface (`max_h(V_h / 3600 s)`); it is not an
 independent peak authority. A shard lacking the paired hourly water surface may

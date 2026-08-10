@@ -2,7 +2,7 @@
 
 Status: `executed`
 
-Evidence class: `Static: base a65cc3973 through exact terminal authority/runtime/test commit 33831787b7029b28b0716c8458f08a11899db446; contracts, runtime source, focused and integration tests, publication consumers, and package evidence. Ran: focused DC01 suite at f9082926, pure-melt regression at 2d8367f0, peak-authority contract at d934ab9b, corrected EROD16/H2637 integrations at df41f352, and duration/runtime authority checks at 33831787.`
+Evidence class: `Static: base a65cc3973 through exact reopened authority/test commit 669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2; ADR-0036, contracts, runtime source, focused and integration tests, publication consumers, and package evidence. Ran: prior implementation/consumer suites through 33831787 plus the reopened ADR source guard and ADR Markdown validation at 669269ee.`
 
 Verdict: `PASS`
 
@@ -66,6 +66,29 @@ fixture changes temperature/dewpoint only, the shadow expects all 731 days seen
 and routed, and all three uniform-shape counters remain zero. Those counters
 support source-complete shape custody for this isolated evidence vector; they
 do not erase the production frost guard or generalize to an unwarmed climate.
+
+The reopened `33831787..669269ee` delta closes the remaining decision-authority
+contradiction. ADR-0036 now states that a current hourly-surface payload has one
+native peak authority: `max_h(q_hourly(h) / 3600 s)` internally and
+`max_h(V_h / 3600 s)` publicly after exactly one area conversion. It explicitly
+retires `vave * qpstar`, rainfall-envelope operands, and APPMTH branches from
+the native production peak; it also prohibits rescaling the hourly profile
+toward a separate estimator.
+
+The retained scalar/triangular path is narrowly and correctly bounded to
+legacy shards that lack the paired hourly water surface. It is labeled a
+compatibility fallback/diagnostic and cannot establish native WB16 authority or
+a current hourly-peak acceptance claim. This preserves historical readability
+without weakening current minor-1 hillslope authority. The ADR's maximum-hour
+claim remains an hourly mean, not an instantaneous, sub-hourly, channel, or
+watershed peak.
+
+The binding source guard requires the reconciled native formulas and
+compatibility boundary and rejects the three prior contradictory formulations:
+the separate analytical estimator, the statement that hourly maximum mismatch
+is not an error, and the rescale-to-independent-peak alternative. This is a
+useful regression guard for the exact authority seam and does not substitute
+for the semantic contract/runtime review recorded above.
 
 The surviving `remove_depth_from_hour_bins_earliest` call is not the retired
 daily correction. It executes inside WB14's own chronological infiltration and
@@ -148,6 +171,19 @@ cargo nextest run --test peak_hourly_authority_contract
 4 tests run: 4 passed, 0 skipped
 ```
 
+Ran at exact reopened authority/test commit
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`:
+
+```text
+cargo nextest run --test peak_hourly_authority_contract
+4 tests run: 4 passed, 0 skipped
+
+markdown-doc lint --path \
+  docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md \
+  --format plain
+1 file validated, 0 errors, 0 warnings
+```
+
 Ran at exact terminal commit
 `df41f3526dd61eb801d2c9a244bef197c1f169ed`:
 
@@ -178,7 +214,7 @@ does not convert pending evidence into a pass claim.
 
 ## Verdict Rationale
 
-Exact terminal commit `33831787b7029b28b0716c8458f08a11899db446` retains the removal of the last
+Exact reopened authority/test commit `669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2` retains the removal of the last
 unauthorized daily-to-hourly infiltration allocation and leaves WB14 as the
 single owner of hourly supply, infiltration, depression storage, and residual
 excess. Frost, subsurface-return timing, positive-source preservation, area

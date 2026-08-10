@@ -3,18 +3,53 @@
 Status: `complete`
 
 Review target: exact terminal commit
-`33831787b7029b28b0716c8458f08a11899db446`, against the declared
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`, against the declared
 pre-implementation base `a65cc3973ddd04b07cad108fcb33d83a8c161abb`.
 
-Evidence class: `Static + Ran`. The terminal contract/test reconciliation was
+Evidence class: `Static + Ran`. The narrow ADR/test reconciliation was
 inspected from the exact Git objects and checked in the exact checkout. Prior
-exact-archive evidence remains reusable across its bounded predecessor deltas.
-Concurrent package-evidence edits and untracked suite logs were excluded from
-source conclusions and inspected only for gate disposition.
+exact-head implementation evidence remains reusable because the reopened delta
+does not change runtime code. Concurrent package-evidence edits and untracked
+suite logs were excluded from source conclusions and inspected only for gate
+disposition.
 
 ## Findings
 
 No blocking QA findings remain at the reviewed commit.
+
+### LOW — ADR-0036 D3 contains a stranded sentence fragment
+
+Path:
+`docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md:194`
+
+The amendment leaves `The` at the end of the fallback sentence and begins the
+next line with `For`, rendering as “The For a current hourly-surface payload”.
+This does not alter the decision or evade the guard, but it interrupts the
+canonical ADR's consumer-boundary explanation. Remove the stranded `The` in a
+documentation-only cleanup.
+
+### PASS — ADR-0036 and its source guard bind one native peak authority
+
+Paths:
+
+- `docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md:13`
+- `docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md:198`
+- `docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md:273`
+- `tests/integration/peak_hourly_authority_contract.rs:127`
+
+The amendment reconciles D2 through D5 and Alternative 4 with the canonical
+SC-WATBAL/SC-SED authority. For current hourly-surface payloads, internal peak
+is the maximum modeled hourly mean depth rate and public/HBP peak is the same
+maximum after exactly one area conversion. A separate analytical estimator is
+explicitly retired from native authority; scalar peak fallback is restricted
+to legacy shards that lack the paired hourly water surface and cannot support a
+current hourly-peak acceptance claim.
+
+The source guard requires the maximum-hour equation, the rejection of
+independent peak authority, and the legacy-only compatibility boundary. It also
+rejects the three exact former contradictory statements from D4 and
+Alternative 4. The focused binary passed all four tests in reviewer-run nextest
+run `413d3124-bf58-4973-9abf-4e4a725d736e`.
 
 ### RESOLVED — TOL-SED-009 is dimensionally valid and matches runtime
 
@@ -218,9 +253,12 @@ receipts remain separately required for package closure.
 
 ## Exact Evidence Assessed By This Reviewer
 
-- `cargo fmt --all -- --check` — PASS at exact `33831787b`.
-- Warnings-denied Clippy for `peak_hourly_authority_contract` and all
-  `openwepp-hillslope-orchestrator` test targets — PASS at exact `33831787b`.
+- `cargo fmt --all -- --check` — PASS at exact `669269ee4`.
+- Warnings-denied Clippy for `peak_hourly_authority_contract` — PASS at exact
+  `669269ee4`.
+- Warnings-denied Clippy for all `openwepp-hillslope-orchestrator` test targets
+  remains PASS from `33831787b`; runtime and hillslope test source are unchanged
+  by the intervening closure/reopen commits.
 - The broader warnings-denied Clippy receipt for unchanged production and
   affected crates remains PASS from exact predecessor `d934ab9b`.
 - Five focused pure-melt, frost-boundary, typed-guard, and peak-hour tests —
@@ -236,18 +274,21 @@ receipts remain separately required for package closure.
 - Exact-terminal absolute-duration behavioral coverage — PASS (`1/1`), nextest
   run `3856c183`.
 - Exact-terminal `peak_hourly_authority_contract` — PASS (`4/4`), nextest run
-  `381239de`; the guard now binds both the rev63 contract text and live named
-  runtime constant.
+  `413d3124-bf58-4973-9abf-4e4a725d736e`; the guard binds rev63, its live named
+  runtime constant, and amended ADR-0036 authority.
 - Census receipt/provenance tests — PASS (`6/6`) on unchanged exact tooling.
-- `git diff --check a65cc3973..33831787b` — PASS. The exact terminal diff
-  touches 88 files.
+- `git diff --check 33831787b..669269ee4` and
+  `git diff --check a65cc3973..669269ee4` — PASS. The reopened delta touches 53
+  files, and the complete exact terminal diff touches 113 files.
 - An initial archive-root attempt was excluded because a shared cached test
   binary retained a deleted archive's compile-time manifest path. The rerun
   resolved that path to the exact archive and passed; this was an isolation
   setup issue, not a repository test failure.
-- Not run by this reviewer: full-workspace quick/full, doctests, `cargo deny`,
-  or the complete 1,088-trial cohort. Their pending suite-runner status remains
-  required package evidence but is not represented here as a source defect.
+- Not rerun by this reviewer for the narrow documentation/source-guard delta:
+  full-workspace quick/full, doctests, `cargo deny`, or the complete 1,088-trial
+  cohort. The previously admitted closure evidence remains applicable to
+  unchanged runtime behavior; its reuse and final package disposition are
+  separately owned lifecycle evidence.
 
 ## Non-Blocking Debt And Follow-Ups
 
@@ -267,25 +308,28 @@ receipts remain separately required for package closure.
 - The p61/p102 joins use the complete year/Julian key but select `max_by` rather
   than asserting exactly one matching public row. Assert uniqueness so a
   duplicate-day publication cannot be masked.
-- The contract authority test is intentionally lightweight source inspection.
-  Its independent marker substrings can match unrelated sections; a scoped
-  `GAP-WATBAL-005` row assertion would better guard the exact superseded status.
+- The contract/ADR authority test is intentionally lightweight source
+  inspection. Required ADR markers can occur outside D4 or Alternative 4, and
+  retired markers are sensitive to harmless wrapping changes. A small Markdown
+  section extractor would bind each assertion to the authoritative section and
+  make future failures easier to diagnose. The exact former contradictions are
+  nevertheless guarded today.
 - Retained `ealpha` manifest fields are historical schema debt. A future schema
   version should remove the dormant compatibility boolean and the helper's
   boolean parameter rather than carry an impossible state indefinitely.
 - On census batch failure, canceling futures does not terminate already running
   subprocesses or emit a terminal partial-run receipt.
-- Before terminal disposition, `gate-results.md` and related receipts must bind
-  `33831787b`, record the completed 2,339/2,345 diagnostic run and all six
-  dispositions, and publish complete clean-target full/quick results. Their
-  current `executing` state is accurate but not closure evidence.
+- Before the reopened package returns to terminal disposition, its lifecycle
+  artifacts must bind `669269ee4`, record the ADR guard receipt and proportional
+  re-reviews, and explicitly disposition reuse of the previously admitted
+  runtime/campaign evidence.
 
 ## QA Verdict
 
-`PASS — ACCEPTABLE FOR IMPLEMENTATION QA.` SC-SED rev63 duration custody,
-EROD16 units and conservation, H2637 source-complete campaign assertions,
-formatting, warnings-denied Clippy, source custody, frost boundary, typed
-guards, real HBP consumer, calendar, provenance, and focused receipts are green
-at `33831787b7029b28b0716c8458f08a11899db446`. Complete exact-head full and
-quick workspace receipts remain a separate package-closure obligation, not an
-open implementation QA defect.
+`PASS — ACCEPTABLE FOR ADR-GUARD QA.` ADR-0036, canonical SC-* authority, the
+source guard, and focused evidence agree at
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`. The guard's section-insensitive
+implementation is maintainability debt, not a present coverage blocker: it
+requires the corrected native/legacy authority markers and rejects every exact
+former contradiction. Final lifecycle evidence and package disposition remain
+separately owned closure obligations.

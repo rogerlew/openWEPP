@@ -5,87 +5,103 @@ Status: `complete`
 Verdict: `PASS`
 
 Evidence class: `Static` for exact commit
-`33831787b7029b28b0716c8458f08a11899db446`; `Ran` checks below were executed
-at that exact `HEAD` unless explicitly identified as package-reported.
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`; `Ran` checks below were executed
+at that exact `HEAD`.
 
-Review range:
-`a65cc3973ddd04b07cad108fcb33d83a8c161abb..33831787b7029b28b0716c8458f08a11899db446`.
-The reviewed hold-lift increment is
-`ff7c918466dff144f13cb3aba6d3d39f736c1497..33831787b7029b28b0716c8458f08a11899db446`.
+Narrow reopen range:
+`36cd4ca04..669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`.
+Prior implementation/contract/test correctness remains bound to reviewed
+commit `33831787b7029b28b0716c8458f08a11899db446` and is unchanged by this
+ADR/source-guard increment.
 
 ## Findings
 
-No Critical, High, Medium, or Low Rust/science-contract correctness findings
-remain at the reviewed identity.
+No Critical, High, Medium, or Low Rust/science-authority correctness finding
+was identified in the narrow reopen scope.
 
-## Resolved Prior High Finding
+## ADR-0036 Amendment Assessment
 
-### Duration custody now has one dimensionally valid contract/runtime authority
+The amendment at
+`docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md:13-19`
+truthfully reconciles the accepted decision with
+`SC-WATBAL-001#INV-WATBAL-102..104` and `SC-SED-001#INV-SED-014`. It limits
+legacy shards without paired hourly water to explicit compatibility fallback
+semantics rather than allowing a scalar legacy peak to regain native
+authority.
 
-`docs/specifications/science-contracts/contracts/SC-SED-001.md:374` now defines
-`TOL-SED-009` as the absolute-seconds rule
-`abs(watdur - Q / peakro_depth) <= 1.001e-9 s`. It explicitly excludes
-scale-relative interpretation, sediment-continuity reuse, and absorption of
-missing or mismatched hydrology operands. Revision 63 and the lifecycle index
-describe the same active absolute-seconds authority.
+The affected decision sections remain mutually consistent:
 
-The live erosion consumer defines the separately named
-`DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S` at
-`crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs:78-79`.
-`validate_erod13_runoff_duration_closure` uses that constant directly at
-`erosion.rs:1105-1117`; the previous addition of sediment-continuity and
-water-depth constants is removed. Runtime failure uses `residual > tolerance`,
-which exactly preserves the contract's `residual <= tolerance` admission
-boundary. Guard precedence is unchanged: non-finite and non-positive depth,
-peak, and duration operands fail before the custody comparison.
+- D2 (`ADR-0036:172-174`) distinguishes the frame-internal maximum-hour depth
+  rate in `m/s` from the exactly-once public/HBP area conversion to `m3/s`.
+- D3 (`ADR-0036:186-198`) retains triangular reconstruction only for shards
+  lacking the modeled hourly pair and requires a current serialized peak to be
+  derived from `max_h(V_h / 3600 s)`.
+- D4 (`ADR-0036:200-216`) makes the water/sediment integrals and peak derive
+  from the same hourly payload, retires the analytical APPMTH/rainfall-envelope
+  operator, prohibits rescaling toward another peak, and excludes legacy
+  fallback from a current acceptance claim.
+- D5 (`ADR-0036:218-225`) preserves ADR-0017 Investigation-tier comparator
+  posture without permitting a comparator or legacy scalar to replace native
+  WB16 authority.
+- Alternative 4 (`ADR-0036:273-277`) now rejects a separate analytical peak as
+  equal native authority instead of describing it as the reason for a second
+  peak value.
 
-The behavioral regression at
-`crates/openwepp-hillslope-orchestrator/src/direct_runtime/tests/erosion_hb01.rs:192-213`
-exercises sub-threshold acceptance and supra-threshold typed failure at 0.25,
-10, and 80,000 seconds. This distinguishes the absolute rule from rev62's
-scale-relative expression. The contract regression at
-`tests/integration/peak_hourly_authority_contract.rs:82-125` binds the named
-source constant, its live comparison, rev63's exact seconds equation, and the
-absence of both prior malformed tolerance forms. The former contract/runtime
-drift is closed without a clamp, default, or error-taxonomy change.
+The equations and units match the canonical contracts and production boundary:
+internal `peakro_depth = max_h(q_hourly(h) / 3600 s)` and public
+`peakro = max_h(V_h / 3600 s)` after one area conversion. No production
+arithmetic, guard precedence, typed error, serialization layout, or fallback
+implementation changes in this increment.
 
-## Confirmed Unchanged Corrections
+## Integration Source-Guard Assessment
 
-Revision 63 preserves revision 61's correct internal `peakro_depth` in `m/s`,
-public `peakro` in `m3/s`, shared maximum-hour authority,
-rectangular-equivalent duration, source custody, public area conversion, and
-no-fallback posture. The terminal source change is confined to centralizing
-the duration tolerance and using it in the existing guard; it does not alter
-WB14/WB16 arithmetic, serialization, H2637 routing isolation, calendar
-identity, census behavior, or any other typed-error path. No substantial
-duplicate science logic is introduced.
+`tests/integration/peak_hourly_authority_contract.rs:128-149` adds assertions
+without removing or weakening the existing runtime, contract, duration, unit,
+and public-area checks in the same test.
+
+The positive assertions bind the ADR's current maximum-hour production rule,
+internal depth-rate equation, rejection of an independent estimator, and
+compatibility-only fallback. The negative assertions reject the former
+separate-estimator paragraph, allowed-inequality statement, and rescaling
+alternative. The required and retired checks cover different sides of the
+authority transition, so deleting only the old wording or adding only a loose
+hourly-peak phrase cannot satisfy the guard.
+
+Static inspection confirms the asserted phrases occur in the authoritative
+amendment/D4 text and that none of the retired authority remains elsewhere in
+the ADR. The guard is deterministic and local-only, and its placement in the
+existing integration target introduces no new harness or dependency surface.
 
 ## Ran Evidence
 
-- Reviewer-run duration boundary test: PASS, 1/1; nextest run
-  `588da33e-a258-4924-bb2b-b21bd29f7150`.
-- Reviewer-run `peak_hourly_authority_contract`: PASS, 4/4; nextest run
-  `0e221cff-f96c-4066-8369-3e5411bdbc46`.
-- Package-reported exact-head focused runs: duration boundary PASS, 1/1,
-  nextest run `3856c183`; contract guard PASS, 4/4, nextest run `381239de`.
+- `cargo nextest run --test peak_hourly_authority_contract`: PASS, 4/4;
+  nextest run `10c3d308-0135-454b-8a96-4155a41cbb44`.
+- `markdown-doc lint --path
+  docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md
+  --format plain`: PASS, 0 errors and 0 warnings.
 - `cargo fmt --all -- --check`: PASS.
-- `git diff --check` passes for both `a65cc3973..33831787b` and the hold-lift
-  increment `ff7c91846..33831787b`.
+- `git diff --check 36cd4ca04..669269ee4`: PASS.
 
 ## Residual Risk And Missing Tests
 
-- The multi-scale behavioral test perturbs duration above the reconstructed
-  value. Static review confirms the live guard uses `abs`, but adding symmetric
-  below-value perturbations would strengthen future regression detection.
-- The warmed H2637 suite remains routing-focused and does not establish
-  frost-active Lane D/WB16 coupling. The real pure-melt proof also remains
-  split across R4K and downstream WB16 tests rather than one end-to-end vector.
-- Terminal package disposition separately depends on its required exact-head
-  workspace, doctest, cohort, verification, and disposition evidence.
+- The ADR assertions search the whole document rather than extracting D4 by
+  heading. Exact retired-string checks plus static review are adequate for the
+  current change, but a heading-scoped helper would reduce the chance that
+  unrelated future prose satisfies a required marker.
+- The ADR checks share the publication/erosion test function. A separate test
+  would improve failure localization without changing coverage.
+- `ADR-0036:194-195` retains a dangling `The` before the new D3 paragraph
+  (`The For a current...`). This is a non-blocking editorial cleanup: the
+  conditional fallback and peak authority on the surrounding lines remain
+  explicit and unambiguous.
+- Previously recorded scope limits remain: the warmed H2637 suite does not
+  prove frost-active Lane D/WB16 coupling, and pure-melt coverage is split
+  across R4K and downstream WB16 tests rather than one end-to-end vector.
 
 ## Approval
 
-`PASS` for Rust/science-contract correctness at exact commit
-`33831787b7029b28b0716c8458f08a11899db446`. The seconds-dimensional equation,
-named runtime tolerance, live guard, behavioral boundary test, and
-source-binding contract regression now agree. No code-review blocker remains.
+`PASS` for Rust integration-test and ADR science-authority correctness at exact
+commit `669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`. The amended decision matches
+the canonical maximum-hour/unit/fallback contract, and the new source guard
+protects both required authority and removal of the contradicted text. No
+code-review blocker remains.

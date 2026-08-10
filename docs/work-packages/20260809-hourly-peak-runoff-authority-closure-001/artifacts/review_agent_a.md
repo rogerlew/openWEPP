@@ -2,16 +2,16 @@
 
 Status: `executed`
 
-Reviewed identity: `33831787b7029b28b0716c8458f08a11899db446`
+Reviewed identity: `669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`
 
-Reviewed range: `a65cc3973..33831787b7029b28b0716c8458f08a11899db446`
+Reviewed range: `a65cc3973..669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`
 
 Evidence class:
 
 - `Static`: terminal base-to-implementation diff; exact source, contracts,
   tests, package artifacts, publication, manifest, and downstream consumers.
 - `Ran`: `git diff --check
-  a65cc3973..33831787b7029b28b0716c8458f08a11899db446`; PASS.
+  a65cc3973..669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`; PASS.
 - `Ran`: focused WB14/WB16 source-custody, frost, melt/runon, and typed-guard
   expression; 8 passed, 463 skipped, nextest run
   `a41e5d84-25fe-4d1e-a660-90361fdb375e`.
@@ -38,6 +38,8 @@ Evidence class:
 - `Ran`: exact-commit absolute-seconds duration behavior at 0.25 s, 10 s,
   and 80,000 s scales; 1 passed, 472 skipped, nextest run
   `453394d5-e94d-46f2-a1d1-1d0817efe2f8`.
+- `Ran`: exact-commit ADR-0036 hourly-peak authority source guard; 1 passed,
+  3 skipped, nextest run `8793c483-6ccf-43f4-9321-47b10fffcc77`.
 - `Static/package-recorded`: remaining package gates and census evidence were
   inspected but not independently rerun by this reviewer.
 
@@ -66,6 +68,26 @@ passed.
 
 No other Critical, Major, or Minor hydrology/science finding remains at the
 exact reviewed implementation/contract/test commit.
+
+### ADR-0036 amendment — accepted
+
+The 2026-08-09 amendment reconciles the accepted decision with current
+SC-WATBAL/SC-SED authority. For current minor-1 hourly payloads, internal
+`peakro_depth = max_h(q_hourly(h) / 3600 s)` in `m/s` and public/HBP
+`peakro = max_h(V_h / 3600 s)` in `m3/s`; these are the same maximum hourly
+mean after exactly one event-runoff-area conversion. The peak is derived from
+the closing post-partition hourly ledger, so the ADR correctly prohibits
+rescaling that ledger toward a separate estimator and retires `vave*qpstar`,
+rainfall-envelope operands, and APPMTH branches from native authority.
+
+The retained scalar treatment is narrowly bounded to legacy shards without
+the paired hourly water surface, is explicitly labeled compatibility fallback,
+and cannot establish native WB16 authority or a current hourly-peak acceptance
+claim. D4, D5, Alternative 4, the amendment header, and the ADR catalog now
+agree on that boundary. The source guard requires the maximum-hour equation,
+the rejection of independent analytical authority, and the compatibility-only
+qualification, while rejecting the three former contradictory formulations.
+It passed at the reviewed identity.
 
 ### `REVIEW-A-MAJOR-004` — resolved
 
@@ -181,16 +203,8 @@ maximum-hourly-mean runoff peak. It does not support an instantaneous peak,
 subhourly timing, watershed/channel routing, observed-flow validation, or
 legacy numerical parity.
 
-Separately, package closure evidence remains unreconciled to this exact commit:
-`implementation-test-evidence.md` says terminal gates are pending;
-`mutation-study.md` and `summary.md` identify anchor `949349e7055c5d19277eeb708401c4614a52cd77`;
-`gate-results.md` is queued; and `disposition.md` remains executing. An untracked
-`topanga-openwepp-census-full-v4.log` was present and was not treated as
-reviewable committed evidence. These evidence gaps do not create the
-implementation finding above, but they independently preclude a package-close
-claim.
-
 Implementation and canonical authority are acceptable on all reviewed science
-axes, including rev63's peak units, timing, duration custody, area conversion,
-and fallback posture. Terminal package disposition remains outside this
-review's PASS until its separate exact-anchor evidence is reconciled.
+axes, including the amended ADR's peak units, timing, area conversion, and
+compatibility boundary. This narrow reopened review did not rerun the retained
+heavy workspace or Topanga gates; their committed terminal receipts remain
+package evidence rather than new `Ran` evidence from this reviewer.
