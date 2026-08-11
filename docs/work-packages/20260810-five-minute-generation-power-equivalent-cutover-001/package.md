@@ -49,10 +49,9 @@ The package must run end-to-end without asking the operator for incremental dire
   boundary under a versioned schema.
 - [x] (2026-08-11) Ran focused failure/success, positive-storage, real-consumer, performance,
   authority, formatting, and lint evidence.
-- [ ] Commit the corrected implementation tree, run the terminal full workspace
-  and doctests against that exact clean commit, refresh all required reviews and
-  terminal verifiers against that identity, and reclose only if every finding
-  passes.
+- [x] (2026-08-11) Committed the corrected implementation tree, ran the terminal
+  full workspace and doctests against an exact clean candidate, and refreshed
+  all four required science/Rust reviews against that identity.
 - [x] (2026-08-11) Committed the corrected implementation, bound enabled
   performance to exact implementation `28297b3a2`, and obtained four fresh
   `PASS / GO` reviews at exact clean candidate `e7851f1a6`.

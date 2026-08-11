@@ -1,6 +1,6 @@
 # Finding Disposition
 
-Status: `reopened — implementation corrections complete; terminal re-review pending`
+Status: `reopened — findings closed; final dual-verifier confirmation pending`
 
 Evidence mode: `Static + Ran`
 

@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reopened increment reconciled — 42/42 paths owned before terminal verifier refresh`
+Status: `reopened increment reconciled — 43/43 paths owned before terminal verifier refresh`
 
 Evidence mode: `Static + Ran`
 
@@ -8,7 +8,7 @@ The prior terminal package-owned set contained 87 changed or added paths. The
 separate predecessor/backlog closure diff is intentionally excluded and is
 owned by package `20260809-hourly-peak-runoff-authority-closure-001`.
 
-## Reopened 2026-08-11 increment (42)
+## Reopened 2026-08-11 increment (43)
 
 Production, tests, authority, and user contracts:
 
@@ -57,6 +57,7 @@ Lifecycle and evidence:
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/rust_code_review.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/rust_qa_review.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/source-completeness.md`
+- `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/worker-handoff.md`
 
 The reopened write set is confined to the accepted corrections: transactional
 publication, schema-v2 water closure, writer-boundary validation, declarative

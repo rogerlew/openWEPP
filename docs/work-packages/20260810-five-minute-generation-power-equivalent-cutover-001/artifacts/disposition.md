@@ -26,3 +26,10 @@ passed 2,396/2,396 full-workspace tests with 33 declared skips, workspace
 doctests with zero failures, and both science plus both Rust reviews with no
 open finding. Only fresh dual terminal verification remains before terminal
 acceptance. Prior terminal receipts are retained only as superseded evidence.
+
+Accepted nonblocking Rust QA residuals are limited to post-commit backup-file
+cleanup reporting, standalone-writer temporary-name unlink semantics after a
+successful hardlink, and numeric-position lookup in one Parquet test. They do
+not weaken the pre-completion transaction, manifest-last completion contract,
+science closure, or current production consumer, and are not blockers for this
+bounded diagnostic release.
