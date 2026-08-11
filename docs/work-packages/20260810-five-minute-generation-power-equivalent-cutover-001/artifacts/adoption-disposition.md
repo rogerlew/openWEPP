@@ -1,6 +1,6 @@
 # Adoption Disposition
 
-Status: `DIAGNOSTIC_ONLY accepted through exact campaign; terminal verifiers pending; erosion NO_ADOPTION`
+Status: `FINAL — WAT5 DIAGNOSTIC_ONLY; erosion NO_ADOPTION`
 
 Evidence mode: `Static + Ran`
 
@@ -9,8 +9,8 @@ source-complete local-rain hyetographs, with hourly saturation return labeled
 as a zero-order hold. It passed real streaming-consumer closure, unit/schema,
 transactional publication, protected-byte identity, focused tests, default-path
 performance gates, an enabled 45-year performance measurement, the exact-clean
-2,396-test full campaign, doctests, and four fresh reviews. Terminal acceptance
-remains pending only dual terminal verification.
+2,396-test full campaign, doctests, four fresh reviews, and dual terminal
+verification. It is terminally accepted within this bounded domain.
 
 Positive hourly-only melt/runon is outside V1 and fails explicitly with
 `WAT5-E-001`; p102 and the original winter p61 climate prove this boundary.

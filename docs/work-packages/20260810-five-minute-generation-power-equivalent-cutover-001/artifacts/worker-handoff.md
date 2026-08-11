@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Status: `reopened — closure artifact reconciled; final verifier confirmation pending`
+Status: `complete — terminal PASS`
 
 Evidence mode: `Static + Ran`
 
@@ -14,9 +14,8 @@ Implementation commit `28297b3a2` is unchanged through exact tested/reviewed
 candidate `e7851f1a6`. That candidate passed 2,396/2,396 full-workspace tests
 with 33 declared skips, doctests with zero failures, and four fresh reviews.
 The reopened diff from `689bf3193` reconciles exactly with the owned manifest.
-Terminal Verification B passed; Verification A accepted every substantive
-surface and requested only this stale-artifact reconciliation before its final
-confirmation.
+Terminal Verification A and B both passed after exact lifecycle and ownership
+reconciliation.
 
 Accepted nonblocking residuals from Rust QA are: post-commit backup-deletion
 errors are not surfaced, standalone writer temporary-name unlink can return an
@@ -28,5 +27,4 @@ hardening, not unfinished acceptance work in this package.
 
 Any future expansion into melt/runon timing, multi-OFE propagation, erosion
 power forcing, or Topanga mutation is new authority and requires a separately
-authorized package. The only current action is final dual-verifier confirmation
-and terminal evidence publication.
+authorized package. No package work remains.

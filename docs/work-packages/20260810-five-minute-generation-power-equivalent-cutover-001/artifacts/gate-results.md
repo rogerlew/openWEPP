@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `PASS through exact-clean campaign and four reviews; terminal verifiers pending`
+Status: `COMPLETE — all reopened gates PASS`
 
 Evidence mode: `Static + Ran`
 
@@ -22,7 +22,7 @@ erosion path remains selected.
 | Replacement full workspace | PASS | exact clean `e7851f1a6`; 2,396/2,396 passed, 33 skipped, run `1d377634-740a-48fb-bbff-42c761d5bbcd`, 3,191.710 s; log SHA-256 `493eb06d350644dc11aab12b06c6452fe9342a1e9badaac804c1ada87cb8e18b` |
 | Replacement doctests | PASS | exact clean `e7851f1a6`; zero failures, 6.4 s; log SHA-256 `20171b398b3c2918e3ef0073f18f4225be2885f48eb274f39417e7a7d7e6e093` |
 | Fresh science / Rust reviews | PASS / PASS / PASS / PASS | all four bind exact clean `e7851f1a6`; no open finding |
-| Fresh dual terminal verifiers | PENDING | must audit the tested SHA and closure-evidence commit |
+| Fresh dual terminal verifiers | PASS / PASS | Verification A and B independently accepted exact tested `e7851f1a6`, closure evidence, external receipts, and final lifecycle reconciliation with no finding |
 
 The first `e7851f1a6` full attempt is non-admitted infrastructure evidence:
 2,395 tests passed and one nested coverage build failed after `/tmp` exhausted

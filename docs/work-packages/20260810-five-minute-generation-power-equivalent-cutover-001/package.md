@@ -1,5 +1,5 @@
 # Diagnose, adopt, and cut over five-minute power-equivalent runoff-generation forcing
-Status: `REOPENED / TERMINAL VERIFICATION — implementation and campaign pass`
+Status: `COMPLETE / CRITICAL PASS — DIAGNOSTIC_ONLY water; erosion NO_ADOPTION`
 
 This ExecPlan is a living document. Maintain `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` as execution proceeds.
 
@@ -59,8 +59,9 @@ The package must run end-to-end without asking the operator for incremental dire
   2,396/2,396 passed with 33 declared skips, followed by doctests with zero
   failures. The earlier `/tmp`-exhaustion linker failure is non-admitted; the
   clean retry used the package-declared external scratch posture on `/home`.
-- [ ] Complete fresh dual terminal verification, reconcile closure artifacts,
-  commit the terminal evidence, and push the stable increment.
+- [x] (2026-08-11) Completed fresh dual terminal verification, reconciled the
+  43-path pre-receipt closure diff, and closed every implementation and
+  lifecycle finding. Both verifiers return final `PASS`.
 
 - [x] (2026-08-10) Recorded actual starting source identity, clean worktree,
   applicable `AGENTS.md` chains, and the blocked prerequisite package status.
@@ -320,6 +321,12 @@ The largest execution lesson was that total-preserving proportional binning
 is not a temporal physics replay. Independent reviews caught that distinction
 and drove exact-boundary advancement, exact-positive branch semantics, and
 explicit raw/hour/day guards before acceptance.
+
+The reopened correction replaced partial direct publication with a complete
+output-set transaction, added the depression-storage operand under schema v2,
+made run-file path presence the sole opt-in, hardened public writer chronology
+and closure typing, measured an enabled 45-year workload, and bound the final
+2,396-test campaign plus four reviews and two verifiers to exact clean source.
 
 Terminal verification also exposed that a base=head admission receipt can be
 formally green while observing none of a dirty implementation. Exact worktree

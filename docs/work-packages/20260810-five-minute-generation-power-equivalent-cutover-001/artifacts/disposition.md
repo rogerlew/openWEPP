@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `REOPENED — implementation and exact campaign accepted; terminal verifiers pending`
+Status: `COMPLETE / PASS — DIAGNOSTIC_ONLY water; erosion NO_ADOPTION`
 
 Evidence mode: `Static + Ran`
 
@@ -24,8 +24,10 @@ run-file opt-in provenance, and measures a 45-year enabled workload. Focused
 regressions pass. Exact clean SHA `e7851f1a626c1e6e77d64c2618f26bb772787b36`
 passed 2,396/2,396 full-workspace tests with 33 declared skips, workspace
 doctests with zero failures, and both science plus both Rust reviews with no
-open finding. Only fresh dual terminal verification remains before terminal
-acceptance. Prior terminal receipts are retained only as superseded evidence.
+open finding. Fresh Terminal Verification A and B both return `PASS` after
+exact ownership and lifecycle reconciliation. The corrected WAT5 product is
+terminally accepted within its bounded diagnostic domain. Prior terminal
+receipts are retained only as superseded evidence.
 
 Accepted nonblocking Rust QA residuals are limited to post-commit backup-file
 cleanup reporting, standalone-writer temporary-name unlink semantics after a

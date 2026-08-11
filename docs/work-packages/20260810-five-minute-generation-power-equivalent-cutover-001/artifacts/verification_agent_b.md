@@ -1,8 +1,21 @@
 # Independent Terminal Verification B
 
-Status: `PASS — final post-A0 terminal verification`
+Status: `PASS — final reopened-package terminal verification`
 
 Evidence class: `Static + Ran lightweight verification`
+
+## Reopened final receipt — 2026-08-11
+
+Final verdict: `PASS`. The verifier reviewed exact clean closure head
+`fe92d56d293ca3ea69d991da6fadb0338b429b52` against exact tested/reviewed
+candidate `e7851f1a626c1e6e77d64c2618f26bb772787b36`. It independently confirmed
+the transaction and positive-storage chain, run-file-only selector, performance
+identity, A0, focused receipts, 2,396/2,396 full run, doctests, four reviews,
+the `/tmp` infrastructure-failure classification, all three accepted Low QA
+residuals, and exact 43/43 reopened ownership. Its substantive and final
+confirmation verdicts contain no finding.
+
+The historical receipt below is retained as superseded context.
 
 Verdict: `PASS`
 

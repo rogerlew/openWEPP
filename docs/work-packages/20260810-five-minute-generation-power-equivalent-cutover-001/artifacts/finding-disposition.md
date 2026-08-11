@@ -1,6 +1,6 @@
 # Finding Disposition
 
-Status: `reopened — findings closed; final dual-verifier confirmation pending`
+Status: `COMPLETE — all findings closed; dual terminal PASS`
 
 Evidence mode: `Static + Ran`
 
@@ -47,7 +47,8 @@ Final exact-clean re-review at `e7851f1a626c1e6e77d64c2618f26bb772787b36`
 returned Science A `PASS / GO`, Science B `PASS / GO`, Rust correctness
 `PASS`, and Rust QA `PASS`, with no open finding. The replacement full campaign
 then passed 2,396/2,396 with 33 declared skips and doctests reported zero
-failures. Dual terminal verification remains the sole closure gate.
+failures. Fresh Terminal Verification A and B subsequently returned final
+`PASS`; no closure gate remains open.
 
 ## Rust correctness review
 
