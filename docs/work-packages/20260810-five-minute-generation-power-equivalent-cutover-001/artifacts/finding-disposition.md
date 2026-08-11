@@ -10,7 +10,7 @@ Evidence mode: `Static + Ran`
 |---|---|---|
 | HIGH: WAT5 failure can clobber ordinary WAT/PASS | accepted | Complete requested output set now stages to same-directory transaction paths; preexisting targets are backed up only at commit, outputs publish with rollback, and the manifest publishes last. Existing-WAT5, day-2 source, forced-close, forced-link, missing-manifest, and success regressions pass. |
 | MEDIUM: public rows omit depression storage | accepted | Schema v2 adds per-bin `depression_storage_retention_depth_mm`, renames raw generation to `raw_wb14_post_depression_generation_depth_mm`, and independently reconstructs a positive-storage Parquet fixture. |
-| MEDIUM: terminal evidence not bound to committed SHA | accepted | Old working-tree receipts are historical only. Exact-clean replacement-commit full workspace, doctests, and reviews remain pending. |
+| MEDIUM: terminal evidence not bound to committed SHA | accepted | Old working-tree receipts are historical only. Exact-clean `e7851f1a6` passed 2,396/2,396, doctests, and four fresh reviews. |
 | MEDIUM: enabled performance unmeasured | accepted | A 45-year p1-geometry/source-complete workload measured elapsed, CPU, RSS, rows, compressed bytes, active support, and throughput; user docs carry the 2.15 GB/301 GB planning warning. |
 | LOW: public writer can serialize invalid rows | accepted | Writer-boundary finite/nonnegative, key/clock, duration, raw closure, closing identity, rate, and hourly closure validation now fails before publication. |
 | Run-file-only opt-in | accepted user direction | Presence of `outputs.wat_subhourly` remains the sole user-facing selector and is recorded explicitly in the manifest. |
@@ -32,14 +32,16 @@ Topanga outcome cohort remain accepted without modification.
 The earlier Review A/B `PASS/GO` applies only to the superseded 2026-08-10
 implementation. Reopened Review A retained `PASS/GO`; reopened Review B found
 writer chronology, exact-code, and real positive-storage publication gaps.
-Those corrections now pass focused gates and await fresh exact-SHA re-review.
+At that checkpoint, those corrections passed focused gates and awaited fresh
+exact-SHA re-review.
 
 The first exact-head terminal campaign at `dff48b554` was interrupted and is
 non-admitted after Rust review identified three additional writer/transaction
 findings. Explicit manifest-construction rollback composition, strictly
 advancing cross-day calendar keys, finite derived arithmetic, and distinct
 typed `WAT5-E-003` domain versus `WAT5-E-004` closure failures now pass focused
-regressions. A replacement exact-SHA campaign and re-review remain pending.
+regressions. At that checkpoint, the replacement exact-SHA campaign and
+re-review remained pending.
 
 Final exact-clean re-review at `e7851f1a626c1e6e77d64c2618f26bb772787b36`
 returned Science A `PASS / GO`, Science B `PASS / GO`, Rust correctness
@@ -64,7 +66,8 @@ failures. Dual terminal verification remains the sole closure gate.
 The earlier Rust correctness `PASS` applies only to the superseded 2026-08-10
 implementation. Reopened review found final-name serialization, a concurrent
 WAT5 race, chronology, and real-chain evidence gaps. Those corrections now
-pass focused gates and await fresh exact-SHA re-review. Symlink aliasing remains
+passed focused gates and, at that checkpoint, awaited fresh exact-SHA
+re-review. Symlink aliasing remains
 a documented filesystem-policy residual; direct and lexical aliases are
 rejected.
 
