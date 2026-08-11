@@ -9,20 +9,22 @@ Ran from `/home/workdir/openWEPP` on the reopened implementation diff:
 - Transaction, runner, and writer regressions cover existing-target sentinel
   preservation, concurrent-WAT5 refusal, day-2 source failure, forced WAT5
   close failure, forced publication and staged-unlink rollback, surfaced
-  rollback-cleanup failure, missing-manifest rollback, strict bounded-memory
-  chronology, final-name serialization, and successful output-set/manifest
-  commit: 21/21, nextest `30732108-accb-414b-b324-7a60985b3a65`.
-- Affected orchestrator/output/runner packages: 768/768, nextest
-  `93c7e2bc-46f7-49e2-8d55-4c9a61983df7`.
+  rollback-cleanup failure, manifest-construction rollback composition,
+  missing-manifest rollback, strict bounded-memory calendar chronology,
+  nonfinite/overflow rejection, typed aggregate closure failure, final-name
+  serialization, and successful output-set/manifest commit: 23/23, nextest
+  `b20abbfa-3048-4dee-a5eb-899ea5c1ff71`.
+- Affected orchestrator/output/runner packages: 770/770, nextest
+  `c90da223-0b36-43f6-aca3-2b1f9ed4c0ee`.
 - Named peak/WAT5 contract, property, storage-aware typed roundtrip, and
   HBP-routing exclusion targets: 14/14, nextest
-  `e26fb292-0fc6-47bc-9a90-60ce41ee0fd7`.
+  `8d280f01-9d25-4024-9e5d-454f1ce10c15`.
 - Advisory/direct-authority policy plus required-suite anti-evasion contracts:
-  10/10, nextest `a9ac9af6-7843-4c11-9f26-00ff26562e7f`; shell anti-evasion
+  10/10, nextest `55f669dd-ca01-408c-9491-036164ccae44`; shell anti-evasion
   guard PASS.
 - Exact-worktree A0 admission: 43 contracts, 13 reopened science surfaces,
   authority fingerprint
-  `84494b9e8a10a1cbada449106c9038732cdff9edbb4b76a3703d76a72f7948c7`.
+  `589b9da04d7ddd1424de7c7663a2da00e0acf0612a7cb5e11f32797998cb3893`.
 - Package feasibility tooling: 5/5 in 0.73 seconds.
 - Affected orchestrator/output/runner Clippy with all targets/features and
   `-D warnings`: PASS.

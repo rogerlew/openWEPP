@@ -59,6 +59,7 @@ pub enum HillslopeWatSubhourlyError {
     Parquet { detail: String },
     UnitMetadata { detail: String },
     Validation { detail: String },
+    Closure { detail: String },
 }
 
 impl HillslopeWatSubhourlyError {
@@ -69,6 +70,7 @@ impl HillslopeWatSubhourlyError {
             Self::Parquet { .. } => "OHOUT-WAT5-E-002",
             Self::UnitMetadata { .. } => "OHOUT-WAT5-E-003",
             Self::Validation { .. } => "OHOUT-WAT5-E-004",
+            Self::Closure { .. } => "OHOUT-WAT5-E-005",
         }
     }
 }
@@ -103,6 +105,13 @@ impl fmt::Display for HillslopeWatSubhourlyError {
                     self.code()
                 )
             }
+            Self::Closure { detail } => {
+                write!(
+                    formatter,
+                    "{} WAT5-E-004 public closure failure: {detail}",
+                    self.code()
+                )
+            }
         }
     }
 }
@@ -111,7 +120,10 @@ impl std::error::Error for HillslopeWatSubhourlyError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io { source, .. } => Some(source),
-            Self::Parquet { .. } | Self::UnitMetadata { .. } | Self::Validation { .. } => None,
+            Self::Parquet { .. }
+            | Self::UnitMetadata { .. }
+            | Self::Validation { .. }
+            | Self::Closure { .. } => None,
         }
     }
 }
@@ -475,7 +487,7 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
                 row.hourly_closure_residual_mm,
                 pending.reported_residual_mm,
             ) {
-                return Err(wat5_validation_error(
+                return Err(wat5_closure_error(
                     "hourly authority or residual changes within an hour",
                 ));
             }
@@ -495,7 +507,7 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
             || reconstructed_residual_mm.abs()
                 > WAT5_PUBLICATION_TOLERANCE_MM * pending.authoritative_depth_mm.abs().max(1.0)
         {
-            return Err(wat5_validation_error(
+            return Err(wat5_closure_error(
                 "emitted rows do not close to their hourly authority",
             ));
         }
@@ -507,12 +519,21 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
         row: &HillslopeWatSubhourlyRow,
     ) -> Result<(), HillslopeWatSubhourlyError> {
         let calendar = (row.wepp_id, row.sim_day_index, row.year, row.julian);
-        if self.current_calendar_day.is_some_and(|observed| {
-            observed.0 == row.wepp_id && observed.1 == row.sim_day_index && observed != calendar
-        }) {
-            return Err(wat5_validation_error(
-                "year or julian changes for an existing simulation day",
-            ));
+        if let Some(observed) = self.current_calendar_day {
+            if observed.0 == row.wepp_id && observed.1 == row.sim_day_index && observed != calendar
+            {
+                return Err(wat5_validation_error(
+                    "year or julian changes for an existing simulation day",
+                ));
+            }
+            if observed.0 == row.wepp_id
+                && row.sim_day_index > observed.1
+                && (row.year, row.julian) <= (observed.2, observed.3)
+            {
+                return Err(wat5_validation_error(
+                    "calendar date must advance when simulation day advances",
+                ));
+            }
         }
         self.current_calendar_day = Some(calendar);
 
@@ -554,8 +575,17 @@ fn wat5_validation_error(detail: impl Into<String>) -> HillslopeWatSubhourlyErro
     }
 }
 
+fn wat5_closure_error(detail: impl Into<String>) -> HillslopeWatSubhourlyError {
+    HillslopeWatSubhourlyError::Closure {
+        detail: detail.into(),
+    }
+}
+
 fn approximately_equal(left: f64, right: f64) -> bool {
-    (left - right).abs() <= WAT5_PUBLICATION_TOLERANCE_MM * left.abs().max(right.abs()).max(1.0)
+    left.is_finite()
+        && right.is_finite()
+        && (left - right).abs()
+            <= WAT5_PUBLICATION_TOLERANCE_MM * left.abs().max(right.abs()).max(1.0)
 }
 
 fn require_finite_nonnegative(
@@ -574,6 +604,7 @@ fn require_finite_nonnegative(
 fn validate_row(row: &HillslopeWatSubhourlyRow) -> Result<(), HillslopeWatSubhourlyError> {
     if row.wepp_id <= 0
         || row.ofe_id <= 0
+        || row.year <= 0
         || row.sim_day_index < 0
         || !(1..=366).contains(&row.julian)
         || row.event_ordinal != 0
@@ -659,7 +690,7 @@ fn validate_row(row: &HillslopeWatSubhourlyRow) -> Result<(), HillslopeWatSubhou
             row.hourly_authoritative_runoff_depth_mm,
         )
     {
-        return Err(wat5_validation_error("row closure or rate identity failed"));
+        return Err(wat5_closure_error("row closure or rate identity failed"));
     }
     Ok(())
 }
@@ -890,6 +921,12 @@ mod tests {
         assert_eq!(validation.code(), "OHOUT-WAT5-E-004");
         assert!(validation.to_string().contains("WAT5-E-003"));
         assert!(!validation.to_string().contains("WAT5-E-005"));
+        let closure = HillslopeWatSubhourlyError::Closure {
+            detail: "probe".to_string(),
+        };
+        assert_eq!(closure.code(), "OHOUT-WAT5-E-005");
+        assert!(closure.to_string().contains("WAT5-E-004"));
+        assert!(!closure.to_string().contains("WAT5-E-003"));
     }
 
     #[test]
@@ -963,33 +1000,74 @@ mod tests {
     #[test]
     fn writer_rejects_every_public_contract_violation_class() {
         type RowMutation = Box<dyn Fn(&mut HillslopeWatSubhourlyRow)>;
-        let mut cases: Vec<(&str, RowMutation)> = vec![
-            ("negative", Box::new(|row| row.rainfall_depth_mm = -1.0)),
-            ("identity", Box::new(|row| row.hour_index = 2)),
-            ("duration", Box::new(|row| row.interval_duration_s = 60.0)),
-            ("raw closure", Box::new(|row| row.rainfall_depth_mm += 1.0)),
+        let mut cases: Vec<(&str, RowMutation, &str)> = vec![
+            (
+                "negative",
+                Box::new(|row| row.rainfall_depth_mm = -1.0),
+                "WAT5-E-003",
+            ),
+            ("identity", Box::new(|row| row.hour_index = 2), "WAT5-E-003"),
+            (
+                "duration",
+                Box::new(|row| row.interval_duration_s = 60.0),
+                "WAT5-E-003",
+            ),
+            (
+                "raw closure",
+                Box::new(|row| row.rainfall_depth_mm += 1.0),
+                "WAT5-E-004",
+            ),
             (
                 "closing closure",
                 Box::new(|row| row.closing_surface_generation_depth_mm += 1.0),
+                "WAT5-E-004",
             ),
             (
                 "rate identity",
                 Box::new(|row| row.closing_surface_generation_intensity_mm_h += 1.0),
+                "WAT5-E-004",
             ),
             (
                 "candidate must remain null",
                 Box::new(|row| row.power_exponent = Some(1.5)),
+                "WAT5-E-003",
             ),
             (
                 "method code",
                 Box::new(|row| row.method_code = "candidate".to_string()),
+                "WAT5-E-003",
             ),
             (
                 "source code",
                 Box::new(|row| row.source_completeness_code = "rainfall_complete".to_string()),
+                "WAT5-E-003",
+            ),
+            (
+                "infinite interval start",
+                Box::new(|row| row.interval_start_s = f64::INFINITY),
+                "WAT5-E-003",
+            ),
+            (
+                "finite raw sum overflow",
+                Box::new(|row| {
+                    row.rainfall_depth_mm = f64::MAX;
+                    row.raw_green_ampt_infiltration_depth_mm = f64::MAX;
+                    row.depression_storage_retention_depth_mm = f64::MAX;
+                    row.raw_wb14_post_depression_generation_depth_mm = 0.0;
+                }),
+                "WAT5-E-004",
+            ),
+            (
+                "finite rate product overflow",
+                Box::new(|row| {
+                    row.closed_wb14_generation_depth_mm = f64::MAX;
+                    row.closing_surface_generation_depth_mm = f64::MAX;
+                    row.closing_surface_generation_intensity_mm_h = f64::MAX;
+                }),
+                "WAT5-E-004",
             ),
         ];
-        for (index, (label, mutate)) in cases.drain(..).enumerate() {
+        for (index, (label, mutate, expected_code)) in cases.drain(..).enumerate() {
             let path = std::env::temp_dir().join(format!(
                 "openwepp-wat5-invalid-class-{}-{index}.parquet",
                 std::process::id()
@@ -1001,10 +1079,35 @@ mod tests {
             let error = writer
                 .write_rows(&[row])
                 .expect_err("contract violation must fail");
-            assert!(error.to_string().contains("WAT5-E-003"), "{label}: {error}");
+            assert!(
+                error.to_string().contains(expected_code),
+                "{label}: {error}"
+            );
             drop(writer);
             assert!(!path.exists(), "{label} published a target");
         }
+    }
+
+    #[test]
+    fn writer_rejects_aggregate_hour_closure_before_publication() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-wat5-hour-closure-{}.parquet",
+            std::process::id()
+        ));
+        let mut row = valid_public_row();
+        row.hourly_authoritative_runoff_depth_mm = 2.0;
+        row.hourly_mean_generation_intensity_mm_h = 2.0;
+        row.hourly_closure_residual_mm = -0.5;
+        let mut writer = HillslopeWatSubhourlyParquetRowGroupWriter::create(&path)
+            .expect("create hour-closure writer");
+        writer
+            .write_rows(&[row])
+            .expect("row-level identities remain valid");
+        let error = writer
+            .close()
+            .expect_err("aggregate hour closure must fail");
+        assert!(error.to_string().contains("WAT5-E-004"));
+        assert!(!path.exists());
     }
 
     #[test]
@@ -1037,6 +1140,24 @@ mod tests {
         calendar.year = 2027;
         assert!(calendar_writer.write_rows(&[calendar]).is_err());
         drop(calendar_writer);
+
+        for (label, year, julian) in [("repeated-date", 2026, 1), ("reverse-date", 2025, 365)] {
+            let path = std::env::temp_dir().join(format!(
+                "openwepp-wat5-{label}-{}.parquet",
+                std::process::id()
+            ));
+            let mut writer = HillslopeWatSubhourlyParquetRowGroupWriter::create(&path)
+                .expect("create cross-day calendar writer");
+            writer
+                .write_rows(&[valid_public_row()])
+                .expect("write first simulation day");
+            let mut next_day = valid_public_row();
+            next_day.sim_day_index = 2;
+            next_day.year = year;
+            next_day.julian = julian;
+            assert!(writer.write_rows(&[next_day]).is_err(), "{label}");
+            drop(writer);
+        }
 
         let reentry_path = std::env::temp_dir().join(format!(
             "openwepp-wat5-reentry-{}.parquet",

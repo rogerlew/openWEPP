@@ -12,10 +12,10 @@ erosion path remains selected.
 
 | Requirement | Result | Evidence |
 |---|---|---|
-| Exact-worktree A0 | PASS | 43 contracts, 13 science surfaces, authority fingerprint `84494b9e8a10a1cbada449106c9038732cdff9edbb4b76a3703d76a72f7948c7` |
+| Exact-worktree A0 | PASS | 43 contracts, 13 science surfaces, authority fingerprint `589b9da04d7ddd1424de7c7663a2da00e0acf0612a7cb5e11f32797998cb3893` |
 | Transactional failure integrity | PASS | existing-WAT5 sentinel preservation; day-2 no-partial-set; forced-close sibling preservation; forced-link and manifest rollback; successful commit |
 | Storage-aware schema v2 | PASS | 27 columns; explicit depression retention; renamed raw post-depression generation; positive-storage Parquet reconstruction |
-| Focused implementation | PASS | 21/21 focused regressions, 768/768 affected-package tests, and 14/14 named integration tests |
+| Focused implementation | PASS | 23/23 focused regressions, 770/770 affected-package tests, and 14/14 named integration tests |
 | Authority anti-evasion | PASS | shell guard and 10/10 combined required-suite/direct-policy contracts |
 | Affected Clippy / package Python | PASS | all targets/features with `-D warnings`; 5/5 Python tests |
 | Enabled 45-year workload | PASS as diagnostic measurement | exact `c924aa109`; 4.30 s, 68,240 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |

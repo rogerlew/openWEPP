@@ -151,7 +151,9 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 - `OBL-WAT5-P-003`: stream rows; do not retain the full-run dataset in memory.
 - `OBL-WAT5-P-004`: validate public row invariants at the writer boundary so a
   caller cannot serialize non-finite, negative, chronologically inconsistent,
-  or non-closing records through the public writer API.
+  or non-closing records through the public writer API. Derived closure/rate
+  arithmetic must remain finite, and `(year, julian)` must advance when a
+  simulation day advances for the same WEPP identity.
 - `OBL-WAT5-C-001`: consumers must treat all quantities as diagnostic depths
   or depth rates, never volumetric discharge or instantaneous/routed peak.
 - `OBL-WAT5-C-002`: consumers must honor sparse omitted-zero metadata and the
@@ -162,7 +164,7 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 | Canonical symbol | Boundary/API name | Scope | Units check | Owner contract |
 |---|---|---|---|---|
 | `R5` | `rainfall_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
-| `A5` | `additional_supply_depth_mm` | Parquet | named `m -> mm`; v1 zero | `SC-OUTPUT-WAT5-001` |
+| `A5` | `additional_supply_depth_mm` | Parquet | named `m -> mm`; v2 zero | `SC-OUTPUT-WAT5-001` |
 | `F5` | `raw_green_ampt_infiltration_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `D5` | `depression_storage_retention_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `G5raw` | `raw_wb14_post_depression_generation_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |

@@ -34,6 +34,13 @@ implementation. Reopened Review A retained `PASS/GO`; reopened Review B found
 writer chronology, exact-code, and real positive-storage publication gaps.
 Those corrections now pass focused gates and await fresh exact-SHA re-review.
 
+The first exact-head terminal campaign at `dff48b554` was interrupted and is
+non-admitted after Rust review identified three additional writer/transaction
+findings. Explicit manifest-construction rollback composition, strictly
+advancing cross-day calendar keys, finite derived arithmetic, and distinct
+typed `WAT5-E-003` domain versus `WAT5-E-004` closure failures now pass focused
+regressions. A replacement exact-SHA campaign and re-review remain pending.
+
 ## Rust correctness review
 
 | Finding | Decision and closure |

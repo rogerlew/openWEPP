@@ -189,6 +189,10 @@ impl HillslopeOutputTransaction {
         Ok(())
     }
 
+    pub(super) fn fail_and_rollback(&mut self, primary: HillslopeCliError) -> HillslopeCliError {
+        self.failure_with_rollback(primary)
+    }
+
     fn back_up_existing_targets(&mut self) -> Result<(), HillslopeCliError> {
         for entry in &self.entries {
             if !entry.replace_existing && entry.final_path.exists() {
@@ -631,6 +635,45 @@ mod tests {
             assert_eq!(fs::read(path).expect("read restored target"), b"old");
         }
         assert_eq!(fs::read(manifest).expect("read manifest"), b"old-manifest");
+        fs::remove_dir_all(directory).expect("remove transaction directory");
+    }
+
+    #[test]
+    fn manifest_construction_failure_surfaces_incomplete_rollback() {
+        let directory = test_directory("manifest-construction-rollback");
+        let targets = targets(&directory, false);
+        for path in target_paths(&targets) {
+            fs::write(path, b"old").expect("seed target");
+        }
+        let manifest = directory.join("manifest.json");
+        fs::write(&manifest, b"old-manifest").expect("seed manifest");
+        let mut transaction =
+            HillslopeOutputTransaction::new(&targets, manifest).expect("transaction");
+        write_all_staged(&transaction, b"new");
+        transaction
+            .publish_outputs()
+            .expect("publish staged outputs before manifest construction");
+        let retained_backup = transaction.entries[0].backup_path.clone();
+        transaction.force_rollback_remove_failure_at(0);
+
+        let error = transaction.fail_and_rollback(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "manifest",
+            detail: "forced manifest construction failure".to_string(),
+        });
+
+        let detail = error.to_string();
+        assert!(detail.contains("forced manifest construction failure"));
+        assert!(detail.contains("rollback incomplete"));
+        assert!(detail.contains("retained_backups"));
+        assert_eq!(
+            fs::read(&retained_backup).expect("read retained old output"),
+            b"old"
+        );
+        drop(transaction);
+        assert_eq!(
+            fs::read(&retained_backup).expect("backup survives Drop"),
+            b"old"
+        );
         fs::remove_dir_all(directory).expect("remove transaction directory");
     }
 

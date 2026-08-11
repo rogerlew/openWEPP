@@ -1896,7 +1896,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
         discovery_mode,
         ..
     } = sidecars;
-    write_hillslope_run_manifest(
+    if let Err(error) = write_hillslope_run_manifest(
         HillslopeManifestPublication {
             request,
             argv,
@@ -1918,7 +1918,9 @@ pub fn execute_hillslope_run_with_runtime_policy(
             coupling_vectors: execution.coupling_vectors,
         },
         output_transaction.manifest_staged_path(),
-    )?;
+    ) {
+        return Err(output_transaction.fail_and_rollback(error));
+    }
     output_transaction.publish_manifest()?;
 
     Ok(HillslopeRunReport {

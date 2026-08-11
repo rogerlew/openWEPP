@@ -127,6 +127,11 @@ The package must run end-to-end without asking the operator for incremental dire
   multi-minute assurance cases as the full profile. A dirty-tree attempt was
   stopped after 180 passes and is not evidence; the exact-clean terminal full
   campaign is the admitted superseding run.
+- The first replacement exact-head full campaign at `dff48b554` was stopped
+  after Rust review found manifest-construction rollback errors could hide an
+  incomplete restore, cross-day calendar reversal was not rejected, and
+  nonfinite/overflow closure values shared the domain error class. The stopped
+  run is non-admitted; all three corrections now have focused regressions.
 
 Known observations at plan authoring time:
 
