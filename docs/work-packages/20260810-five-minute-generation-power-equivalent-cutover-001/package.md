@@ -120,7 +120,7 @@ The package must run end-to-end without asking the operator for incremental dire
   The corrected runner stages the complete requested output set and publishes
   the manifest last as the completion marker.
 - A source-complete, continuously active 45-year p1-geometry workload emitted
-  394,488 rows in 4.30 seconds with WAT5 versus 3.02 seconds without it. The
+  394,488 rows in 4.40 seconds with WAT5 versus 2.76 seconds without it. The
   opt-in path therefore has material relative overhead but low absolute cost
   for one hillslope; compressed output was 3,526,518 bytes (8.94 bytes/row).
 - The exact A1 package selection contains 2,028 tests and enters the same

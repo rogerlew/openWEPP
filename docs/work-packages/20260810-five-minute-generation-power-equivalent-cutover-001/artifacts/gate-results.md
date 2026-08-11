@@ -18,7 +18,7 @@ erosion path remains selected.
 | Focused implementation | PASS | 23/23 focused regressions, 770/770 affected-package tests, and 14/14 named integration tests |
 | Authority anti-evasion | PASS | shell guard and 10/10 combined required-suite/direct-policy contracts |
 | Affected Clippy / package Python | PASS | all targets/features with `-D warnings`; 5/5 Python tests |
-| Enabled 45-year workload | PASS as diagnostic measurement | exact `c924aa109`; 4.30 s, 68,240 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |
+| Enabled 45-year workload | PASS as diagnostic measurement | exact `28297b3a2`; 4.40 s, 68,628 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |
 | Replacement full workspace / doctests | PENDING | must run at the exact clean implementation commit |
 | Fresh science, Rust, and terminal reviews | PENDING | must bind directly to the replacement implementation SHA |
 

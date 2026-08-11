@@ -29,13 +29,13 @@ complete enabled run.
 
 | Metric | WAT5 disabled | WAT5 enabled | Delta |
 |---|---:|---:|---:|
-| wall time | `3.02 s` | `4.30 s` | `+42.38%` |
-| user CPU | `2.96 s` | `4.23 s` | `+42.91%` |
-| peak RSS | `44,824 KiB` | `68,240 KiB` | `+52.24%` |
+| wall time | `2.76 s` | `4.40 s` | `+59.42%` |
+| user CPU | `2.68 s` | `4.30 s` | `+60.45%` |
+| peak RSS | `44,820 KiB` | `68,628 KiB` | `+53.12%` |
 | emitted rows | `0` | `394,488` | — |
 | compressed bytes | `0` | `3,526,518` | — |
 | bytes per active row | — | `8.9395` | — |
-| write throughput | — | about `91,741 rows/s`, `0.782 MiB/s` | — |
+| write throughput | — | about `89,656 rows/s`, `0.764 MiB/s` | — |
 
 All 16,437 days emitted an active event span. The sparse file contains 24 of
 288 possible intervals per day, so 8.333% of daily intervals were emitted.
@@ -50,11 +50,11 @@ diagnostic and is not a production-default performance claim. Presence of
 `outputs.wat_subhourly` in the run file is the sole selector; absence retains
 the previously measured default path. Raw timing receipts, inputs, output,
 and checksums are retained under
-`/home/workdir/openwepp-wat5-c924aa10-performance`. The run manifests bind
-source commit `c924aa109417441b38b04746ddf667bb7fe66697`; the release binary
+`/home/workdir/openwepp-wat5-28297b3a-performance`. The run manifests bind
+source commit `28297b3a231a6a4602c0d37fdb6fecc7f0ad3bc5`; the release binary
 SHA-256 is
-`f391b7b36837c06c6c279a88a2aa94d7b598ce297f810d15d5438671cf6fea88`,
+`b1efc07f470a8b4c3a1651258367214812be59e3350fd0892456a0cf03858d63`,
 and the 27-column WAT5 file SHA-256 is
-`9e9396564005bed1e8427d7efe6101e879bd8c68fac2f9d28ec141195dcc5cce`.
+`8eca8eeb8c6cde7744aae9d6c7b5ebccd11afa477338e3f79b0a727b4c518733`.
 The ordinary HBP, loss, PASS, and WAT hashes are pairwise identical between
 the enabled and disabled runs.
