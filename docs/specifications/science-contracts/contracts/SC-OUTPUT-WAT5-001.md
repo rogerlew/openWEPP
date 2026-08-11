@@ -58,7 +58,7 @@ or any daily/hourly-only source.
 | `h` | index `0..23` | Containing authoritative hour, `floor(k/12)`. |
 | `Δt5` | `s` | Exact interval duration, `300`. |
 | `R5(k)` | `mm` | Local rainfall depth overlapping bin `k`. |
-| `A5(k)` | `mm` | Additional-supply depth; version 1 requires exact zero because no 300-second runon/melt authority exists. |
+| `A5(k)` | `mm` | Additional-supply depth; version 2 requires exact zero because no 300-second runon/melt authority exists. |
 | `F5(k)` | `mm` | Raw isolated Green-Ampt infiltration increment. |
 | `D5(k)` | `mm` | Raw post-infiltration excess retained into depression storage, allocated to the earliest generated bins in WB14 order. |
 | `G5raw(k)` | `mm` | Raw WB14 post-depression generation depth. |
@@ -105,7 +105,7 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
    gaps.
 7. Convert `m` runtime depths to `mm` with the named unit helper and derive
    `mm h^-1` intensity with the named 300-second depth-to-rate helper.
-8. The erosion power-equivalent columns are nullable in version 1. Under the
+8. The erosion power-equivalent columns are nullable in version 2. Under the
    frozen erosion `NO_ADOPTION`, publish null exponent/rate/duration and method
    `water_only_no_erosion_adoption`; never fabricate candidate values.
 9. Stage every requested run output in its target directory. Close and validate
@@ -113,7 +113,8 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
    rollback protection for preexisting targets and use the manifest as the last
    completion marker. Any construction, simulation, close, schema,
    checksum, link, or manifest failure preserves the complete pre-run output set
-   and removes incomplete staging files.
+   and removes incomplete staging files. WAT5 is always no-replace: a target
+   that appears during simulation is preserved and aborts the whole commit.
 
 ## Branch and Guard Table
 
@@ -132,12 +133,12 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 | Invariant ID | Statement | Authority | Guard | Failure posture | Evidence |
 |---|---|---|---|---|---|
 | `INV-WAT5-001` | Dataset version `2.0` is optional and separate from WAT, PASS, and HBP; run-file `outputs.wat_subhourly` presence is the sole user-facing opt-in; diagnostics-off preserves protected outputs and state byte-for-byte. | `REF-WAT5-WATBAL` | run-file output config plus noninterference tests | hard-fail/HOLD | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-WAT5-002` | Every row uses exact 300-second support, stable day/OFE keys, `event_ordinal=0`, `hour_index=floor(subinterval_index/12)`, and no gap-based event invention. | `REF-WAT5-OUTPUT-PHYS` | `WAT5-E-003` | typed error | `[INFERENCE][Static]` |
+| `INV-WAT5-002` | Every row uses exact 300-second support, globally ordered and calendar-consistent day/OFE keys, `event_ordinal=0`, `hour_index=floor(subinterval_index/12)`, and an adjacent first-through-last event span with no gap-based event invention or completed-hour re-entry. | `REF-WAT5-OUTPUT-PHYS` | `WAT5-E-003` | typed error | `[INFERENCE][Static]` |
 | `INV-WAT5-003` | Raw diagnostic replay uses unchanged WB14 equations and continuous infiltration; closed bins reconcile each hour to authoritative WB14 without changing it. | `REF-WAT5-RUNOFFPART`, `REF-WAT5-WATBAL` | `WAT5-E-002..004` | typed error | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-004` | Hourly WB19 return is composed only as a labeled twelve-bin zero-order hold, and every hour/day closes to the unchanged 24-bin ledger. | `REF-WAT5-WATBAL` | `WAT5-E-004` | typed error | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-005` | Positive additional supply without 300-second producer timing is rejected; no fallback may invent timing. | `REF-WAT5-WATBAL` | `WAT5-E-001` | typed error | `[DIRECT][Static]` |
 | `INV-WAT5-006` | Sparse output includes first-through-last active bins and metadata declares omitted bins exact zero; a dry day emits no rows. | `REF-WAT5-OUTPUT-PHYS` | writer validation | typed error | `[INFERENCE][Static]` |
-| `INV-WAT5-007` | The dataset never claims discharge, peak, routed flow, or erosion adoption; power-equivalent fields are null under `NO_ADOPTION`. | `REF-WAT5-PACKAGE`, `REF-WAT5-WATBAL` | schema/method tests | hard-fail/HOLD | `[DIRECT][Static]` |
+| `INV-WAT5-007` | The dataset never claims discharge, peak, routed flow, or erosion adoption; power-equivalent fields are null and method/source codes are exact under `NO_ADOPTION`. | `REF-WAT5-PACKAGE`, `REF-WAT5-WATBAL` | writer-boundary schema/method tests | hard-fail/HOLD | `[DIRECT][Static]` |
 | `INV-WAT5-008` | Emitted raw rows expose rainfall, infiltration, depression-storage retention, and post-depression generation so consumers independently reconstruct raw closure. | `REF-WAT5-RUNOFFPART`, `REF-WAT5-OUTPUT-PHYS` | positive-storage Parquet reconstruction | typed error/HOLD | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-009` | WAT5-enabled run publication is all-or-nothing across every requested output and the manifest; any pre-completion failure preserves preexisting bytes, and the manifest is published last. | `REF-WAT5-PACKAGE` | transactional staging, rollback, and injected-failure tests | typed error/HOLD | `[DIRECT][Static]` |
 

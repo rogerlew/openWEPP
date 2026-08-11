@@ -6,24 +6,26 @@ Evidence mode: `Ran`
 
 Ran from `/home/workdir/openWEPP` on the reopened implementation diff:
 
-- Transaction and runner failure regressions cover existing-target sentinel
-  preservation, day-2 source failure, forced WAT5 close failure, forced
-  mid-publication rollback, missing-manifest rollback, and successful
-  output-set/manifest commit. The forced-close runner receipt is nextest
-  `a224551a-a63c-48df-8e83-85fd23afd236`.
-- Affected orchestrator/output/runner packages: 762/762, nextest
-  `c038158b-206b-447c-a90f-ac6fd20a9022`.
+- Transaction, runner, and writer regressions cover existing-target sentinel
+  preservation, concurrent-WAT5 refusal, day-2 source failure, forced WAT5
+  close failure, forced publication and staged-unlink rollback, surfaced
+  rollback-cleanup failure, missing-manifest rollback, strict bounded-memory
+  chronology, final-name serialization, and successful output-set/manifest
+  commit: 21/21, nextest `30732108-accb-414b-b324-7a60985b3a65`.
+- Affected orchestrator/output/runner packages: 768/768, nextest
+  `93c7e2bc-46f7-49e2-8d55-4c9a61983df7`.
 - Named peak/WAT5 contract, property, storage-aware typed roundtrip, and
   HBP-routing exclusion targets: 14/14, nextest
-  `beb9ab04-854d-413e-8b1f-ed6ac0d0a544`.
-- Advisory/direct-authority policy contract: 7/7, nextest
-  `29536d97-dca5-441b-a5c4-04326ee4a8ed`.
-- Required-suite anti-evasion contract: 3/3, nextest
-  `e4407957-0489-48d3-9b70-8999cd06de87`; shell anti-evasion guard PASS.
+  `e26fb292-0fc6-47bc-9a90-60ce41ee0fd7`.
+- Advisory/direct-authority policy plus required-suite anti-evasion contracts:
+  10/10, nextest `a9ac9af6-7843-4c11-9f26-00ff26562e7f`; shell anti-evasion
+  guard PASS.
 - Exact-worktree A0 admission: 43 contracts, 13 reopened science surfaces,
-  fingerprint `134c65ccfe96425cbbfbc822cf6c493a2993e952167fd2f85c24b24ff996c7a4`.
+  authority fingerprint
+  `84494b9e8a10a1cbada449106c9038732cdff9edbb4b76a3703d76a72f7948c7`.
 - Package feasibility tooling: 5/5 in 0.73 seconds.
-- Affected-crate Clippy with all targets/features and `-D warnings`: PASS.
+- Affected orchestrator/output/runner Clippy with all targets/features and
+  `-D warnings`: PASS.
 
 The package-plan commands named `power_equivalent_erosion_contract` and
 `power_equivalent_real_consumer` are not test targets because the prospective

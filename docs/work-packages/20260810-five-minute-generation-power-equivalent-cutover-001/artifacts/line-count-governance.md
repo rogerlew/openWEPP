@@ -11,7 +11,7 @@ Exact changed-Rust line counts:
 | runner `03_tests.rs` | 2,906 | WARN; reopened transaction fixtures were split into `tests03/wat5_output_transaction.rs` to remain below the 3,000-line blocker |
 | orchestrator `runoff.rs` | 2,884 | WARN; split intent: extract WB14 projection/binning helpers by hydrologic responsibility |
 | orchestrator `00_core_frames.rs` | 2,713 | WARN; split intent: move phase-owned frame types into focused direct-runtime modules |
-| runner `05_runner_execution_and_outputs.rs` | 1,937 | PASS |
+| runner `05_runner_execution_and_outputs.rs` | 1,960 | PASS |
 | orchestrator `03_executor.rs` | 1,769 | PASS |
 | sim-contract `output_catalog.rs` | 1,551 | PASS |
 | runner `00_runner_intake_and_lane_setup.rs` | 1,388 | PASS |
@@ -19,10 +19,11 @@ Exact changed-Rust line counts:
 | runner `04_direct_publication.rs` | 1,215 | PASS |
 | `sim_contract_boundary_unit_registry.rs` | 1,155 | PASS |
 | orchestrator `direct_runtime.rs` | 877 | PASS |
-| `hillslope_wat_subhourly.rs` | 856 | PASS; includes public writer-boundary validation and tests |
+| `hillslope_wat_subhourly.rs` | 1,074 | PASS; includes constant-memory chronology and public writer-boundary validation tests |
 | `subhourly_generation.rs` | 658 | PASS |
-| new runner `output_transaction.rs` | 458 | PASS |
-| new runner `tests03/wat5_output_transaction.rs` | 141 | PASS |
+| new runner `output_transaction.rs` | 662 | PASS; includes rollback-failure and concurrent-target regressions |
+| new runner `tests03/wat5_output_transaction.rs` | 241 | PASS; includes real WB14 positive-storage publication reconstruction |
+| runner `tests03/simimpl.rs` | 156 | PASS |
 | runner `runfile_helpers.rs` | 321 | PASS |
 | output `contracts.rs` | 299 | PASS |
 | orchestrator `lib.rs` | 201 | PASS |

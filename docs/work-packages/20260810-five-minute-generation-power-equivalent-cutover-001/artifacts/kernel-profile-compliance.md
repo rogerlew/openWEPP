@@ -6,7 +6,7 @@ Evidence mode: `Static + Ran`
 
 The existing draft `SC-WATBAL-001` names the unchanged WB14/WB19 producer
 surface but remains byte-unchanged by this increment. The approved, active
-`SC-OUTPUT-WAT5-001` version 1 owns the optional diagnostic projection,
+`SC-OUTPUT-WAT5-001` version 2 owns the optional diagnostic projection,
 schema, closure, sparse support, source-completeness, and noninterference obligations.
 The new contract's Binding Exposure Index maps all seven invariants into the
 canonical core; scoped unit compliance and binding-exposure checks pass.

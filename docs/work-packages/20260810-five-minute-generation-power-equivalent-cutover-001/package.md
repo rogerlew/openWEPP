@@ -286,7 +286,7 @@ Add concise observations and evidence here during execution.
 The five-minute water product is accepted as `DIAGNOSTIC_ONLY` for
 source-complete rain-timed inputs. It advances the unchanged WB14 Green-Ampt
 model on exact 300-second boundary pieces, closes raw/hour/day ledgers, labels
-hourly saturation as a zero-order hold, and publishes a sparse version-1
+hourly saturation as a zero-order hold, and publishes a sparse version-2
 Parquet dataset. Positive untimed supply fails typed rather than acquiring an
 invented clock.
 

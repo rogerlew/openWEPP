@@ -132,10 +132,110 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
     let transaction_leftovers = fs::read_dir(&output_dir)
         .expect("read output directory")
         .map(|entry| entry.expect("output entry").file_name())
-        .filter(|name| name.to_string_lossy().contains(".openwepp-transaction-"))
+        .filter(|name| name.to_string_lossy().contains(".openwepp-"))
         .collect::<Vec<_>>();
     assert!(
         transaction_leftovers.is_empty(),
         "transaction leftovers: {transaction_leftovers:?}"
     );
 }
+
+#[test]
+fn production_runner_publishes_positive_depression_storage_for_independent_reconstruction() {
+    let identity = DirectRunIdentity::new(42, 2637, 1, 1).expect("WAT5 test identity");
+    let producer = openwepp_hillslope_orchestrator::DirectWb14InfiltrationProducerInputs {
+        hyetograph: vec![openwepp_hillslope_orchestrator::DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 7_200.0,
+            intensity_m_s: 0.08 / 7_200.0,
+        }],
+        hourly_additional_supply_m: [0.0; 24],
+        effective_conductivity_m_s: 1.0e-8,
+        matric_potential_m: 0.1,
+        storage_capacity_m: 1.0,
+        depression_storage_capacity_m: 0.002,
+    };
+    let mut day = openwepp_hillslope_orchestrator::DirectDayFrame::seed(identity, 0, 0)
+        .expect("seed WAT5 day");
+    day.infiltration_depression_inputs =
+        openwepp_hillslope_orchestrator::DirectInfiltrationDepressionInputs {
+            cumulative_infiltration_handoff_m: 0.0,
+            depression_storage_delta_handoff_m: 0.0,
+            producer_inputs: Some(producer),
+        };
+    day.run_r4k_infiltration_depression_span()
+        .expect("run production WB14 span");
+    day.runoff_downstream_operands.q_runoff_m = day.wb14_hourly_excess_m.iter().sum();
+    day.wat5_subhourly_requested = true;
+    day.run_wat5_subhourly_generation()
+        .expect("run production WAT5 projection");
+
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("test clock")
+        .as_nanos();
+    let output_dir = std::env::temp_dir().join(format!("wat5-real-storage-{nonce}"));
+    fs::create_dir(&output_dir).expect("create WAT5 test output directory");
+    let wat5_path = output_dir.join("H2637.wat-subhourly.parquet");
+    let mut sink = DirectPublicationStreamingSink::create(
+        identity,
+        DirectPublicationRunMetadata {
+            run_name: "wat5-positive-depression-storage".to_string(),
+            runtime_selection: "direct-production-executor".to_string(),
+            output_policy: "test".to_string(),
+        },
+        &DirectPublicationStreamingTargets {
+            wat: None,
+            wat_subhourly: Some(wat5_path.clone()),
+            pass_parquet: None,
+        },
+    )
+    .expect("create real WAT5 streaming sink");
+    let row = r6j_multiofe_publication_row(1, 1);
+    sink.observe_row(&row).expect("observe publication row");
+    sink.observe_subhourly_generation(&row, &day)
+        .expect("map real WAT5 event into public rows");
+    sink.finish().expect("finish real WAT5 streaming sink");
+
+    let batches = ParquetRecordBatchReaderBuilder::try_new(
+        File::open(&wat5_path).expect("open production WAT5 Parquet"),
+    )
+    .expect("read production WAT5 metadata")
+    .build()
+    .expect("build production WAT5 reader")
+    .map(|batch| batch.expect("valid production WAT5 batch"))
+    .collect::<Vec<_>>();
+    let sum_column = |column: usize| {
+        batches
+            .iter()
+            .map(|batch| {
+                batch
+                    .column(column)
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .expect("WAT5 depth column")
+                    .values()
+                    .iter()
+                    .sum::<f64>()
+            })
+            .sum::<f64>()
+    };
+    let rainfall_mm = sum_column(10);
+    let infiltration_mm = sum_column(12);
+    let depression_storage_mm = sum_column(13);
+    let post_depression_generation_mm = sum_column(14);
+    assert!(depression_storage_mm > 0.0);
+    assert!(
+        (rainfall_mm
+            - infiltration_mm
+            - depression_storage_mm
+            - post_depression_generation_mm)
+            .abs()
+            <= 1.0e-9
+    );
+
+    fs::remove_dir_all(output_dir).expect("remove WAT5 test output directory");
+}
+use arrow_array::{Array, Float64Array};
+use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+use std::fs::File;

@@ -9,6 +9,7 @@ struct TransactionEntry {
     final_path: PathBuf,
     staged_path: PathBuf,
     backup_path: PathBuf,
+    replace_existing: bool,
     backed_up: bool,
     published: bool,
 }
@@ -24,6 +25,10 @@ pub(super) struct HillslopeOutputTransaction {
     committed: bool,
     #[cfg(test)]
     forced_publish_failure_index: Option<usize>,
+    #[cfg(test)]
+    forced_stage_unlink_failure_index: Option<usize>,
+    #[cfg(test)]
+    forced_rollback_remove_failure_index: Option<usize>,
 }
 
 impl HillslopeOutputTransaction {
@@ -70,6 +75,7 @@ impl HillslopeOutputTransaction {
                 final_path: final_path.clone(),
                 staged_path,
                 backup_path,
+                replace_existing: final_targets.wat_subhourly.as_ref() != Some(final_path),
                 backed_up: false,
                 published: false,
             });
@@ -91,6 +97,10 @@ impl HillslopeOutputTransaction {
             committed: false,
             #[cfg(test)]
             forced_publish_failure_index: None,
+            #[cfg(test)]
+            forced_stage_unlink_failure_index: None,
+            #[cfg(test)]
+            forced_rollback_remove_failure_index: None,
         })
     }
 
@@ -112,55 +122,83 @@ impl HillslopeOutputTransaction {
             }
         }
         if let Err(error) = self.back_up_existing_targets() {
-            self.rollback();
-            return Err(error);
+            return Err(self.failure_with_rollback(error));
         }
         for index in 0..self.entries.len() {
             #[cfg(test)]
             if self.forced_publish_failure_index == Some(index) {
-                self.rollback();
-                return Err(transaction_error("forced output publication failure"));
+                let error = transaction_error("forced output publication failure");
+                return Err(self.failure_with_rollback(error));
             }
-            let entry = &mut self.entries[index];
-            if let Err(source) = publish_no_replace(&entry.staged_path, &entry.final_path) {
-                let error =
-                    transaction_io_error("publish staged output", &entry.final_path, &source);
-                self.rollback();
-                return Err(error);
+            let entry = &self.entries[index];
+            if let Err(source) = publish_link_no_replace(&entry.staged_path, &entry.final_path) {
+                let error = transaction_io_error(
+                    "link staged output",
+                    &self.entries[index].final_path,
+                    &source,
+                );
+                return Err(self.failure_with_rollback(error));
             }
-            entry.published = true;
+            self.entries[index].published = true;
+            #[cfg(test)]
+            if self.forced_stage_unlink_failure_index == Some(index) {
+                let error = transaction_error("forced staged-name removal failure");
+                return Err(self.failure_with_rollback(error));
+            }
+            if let Err(source) = fs::remove_file(&self.entries[index].staged_path) {
+                let error = transaction_io_error(
+                    "remove published staging name",
+                    &self.entries[index].staged_path,
+                    &source,
+                );
+                return Err(self.failure_with_rollback(error));
+            }
         }
         Ok(())
     }
 
     pub(super) fn publish_manifest(&mut self) -> Result<(), HillslopeCliError> {
         if !self.manifest_staged_path.is_file() {
-            self.rollback();
-            return Err(transaction_error(format!(
+            let error = transaction_error(format!(
                 "staged manifest is missing or invalid at {}",
                 self.manifest_staged_path.display()
-            )));
+            ));
+            return Err(self.failure_with_rollback(error));
         }
         if let Err(source) =
-            publish_no_replace(&self.manifest_staged_path, &self.manifest_final_path)
+            publish_link_no_replace(&self.manifest_staged_path, &self.manifest_final_path)
         {
             let error = transaction_io_error(
-                "publish completion manifest",
+                "link completion manifest",
                 &self.manifest_final_path,
                 &source,
             );
-            self.rollback();
-            return Err(error);
+            return Err(self.failure_with_rollback(error));
         }
         self.manifest_published = true;
+        if let Err(source) = fs::remove_file(&self.manifest_staged_path) {
+            let error = transaction_io_error(
+                "remove published manifest staging name",
+                &self.manifest_staged_path,
+                &source,
+            );
+            return Err(self.failure_with_rollback(error));
+        }
         self.committed = true;
         self.remove_backups_after_commit();
         Ok(())
     }
 
     fn back_up_existing_targets(&mut self) -> Result<(), HillslopeCliError> {
+        for entry in &self.entries {
+            if !entry.replace_existing && entry.final_path.exists() {
+                return Err(transaction_error(
+                    "WAT5-E-005 WAT5 output target appeared during execution; no run output was modified",
+                ));
+            }
+        }
         for entry in &mut self.entries {
-            if entry.final_path.exists() {
+            if entry.replace_existing && entry.final_path.exists() {
                 fs::rename(&entry.final_path, &entry.backup_path).map_err(|source| {
                     transaction_io_error("back up existing output", &entry.final_path, &source)
                 })?;
@@ -182,26 +220,86 @@ impl HillslopeOutputTransaction {
         Ok(())
     }
 
-    fn rollback(&mut self) {
+    fn rollback(&mut self) -> Result<(), HillslopeCliError> {
+        let mut failures = Vec::new();
         if self.manifest_published {
-            let _ = fs::remove_file(&self.manifest_final_path);
-            self.manifest_published = false;
+            match fs::remove_file(&self.manifest_final_path) {
+                Ok(()) => self.manifest_published = false,
+                Err(source) if source.kind() == std::io::ErrorKind::NotFound => {
+                    self.manifest_published = false;
+                }
+                Err(source) => failures.push(format!(
+                    "remove manifest {}: {source}",
+                    self.manifest_final_path.display()
+                )),
+            }
         }
-        for entry in self.entries.iter_mut().rev() {
+        for (index, entry) in self.entries.iter_mut().enumerate().rev() {
+            #[cfg(not(test))]
+            let _ = index;
             if entry.published {
-                let _ = fs::remove_file(&entry.final_path);
-                entry.published = false;
+                #[cfg(test)]
+                if self.forced_rollback_remove_failure_index == Some(index) {
+                    failures.push(format!(
+                        "forced removal failure at {}",
+                        entry.final_path.display()
+                    ));
+                    continue;
+                }
+                match fs::remove_file(&entry.final_path) {
+                    Ok(()) => entry.published = false,
+                    Err(source) if source.kind() == std::io::ErrorKind::NotFound => {
+                        entry.published = false;
+                    }
+                    Err(source) => failures.push(format!(
+                        "remove output {}: {source}",
+                        entry.final_path.display()
+                    )),
+                }
             }
         }
-        if self.manifest_backed_up
-            && fs::rename(&self.manifest_backup_path, &self.manifest_final_path).is_ok()
-        {
-            self.manifest_backed_up = false;
+        if self.manifest_backed_up && !self.manifest_published {
+            match fs::rename(&self.manifest_backup_path, &self.manifest_final_path) {
+                Ok(()) => self.manifest_backed_up = false,
+                Err(source) => failures.push(format!(
+                    "restore manifest backup {}: {source}",
+                    self.manifest_backup_path.display()
+                )),
+            }
         }
         for entry in self.entries.iter_mut().rev() {
-            if entry.backed_up && fs::rename(&entry.backup_path, &entry.final_path).is_ok() {
-                entry.backed_up = false;
+            if entry.backed_up && !entry.published {
+                match fs::rename(&entry.backup_path, &entry.final_path) {
+                    Ok(()) => entry.backed_up = false,
+                    Err(source) => failures.push(format!(
+                        "restore output backup {}: {source}",
+                        entry.backup_path.display()
+                    )),
+                }
             }
+        }
+        if failures.is_empty() {
+            return Ok(());
+        }
+        let retained_backups = self
+            .entries
+            .iter()
+            .filter(|entry| entry.backed_up)
+            .map(|entry| entry.backup_path.display().to_string())
+            .chain(
+                self.manifest_backed_up
+                    .then(|| self.manifest_backup_path.display().to_string()),
+            )
+            .collect::<Vec<_>>();
+        Err(transaction_error(format!(
+            "rollback incomplete; retained_backups={retained_backups:?}; failures={failures:?}"
+        )))
+    }
+
+    fn failure_with_rollback(&mut self, primary: HillslopeCliError) -> HillslopeCliError {
+        match self.rollback() {
+            Ok(()) => primary,
+            Err(rollback) => transaction_error(format!("{primary}; {rollback}")),
         }
     }
 
@@ -222,12 +320,22 @@ impl HillslopeOutputTransaction {
     fn force_publish_failure_at(&mut self, index: usize) {
         self.forced_publish_failure_index = Some(index);
     }
+
+    #[cfg(test)]
+    fn force_stage_unlink_failure_at(&mut self, index: usize) {
+        self.forced_stage_unlink_failure_index = Some(index);
+    }
+
+    #[cfg(test)]
+    fn force_rollback_remove_failure_at(&mut self, index: usize) {
+        self.forced_rollback_remove_failure_index = Some(index);
+    }
 }
 
 impl Drop for HillslopeOutputTransaction {
     fn drop(&mut self) {
         if !self.committed {
-            self.rollback();
+            let _ = self.rollback();
         }
         for entry in &self.entries {
             let _ = fs::remove_file(&entry.staged_path);
@@ -298,13 +406,8 @@ fn ensure_transaction_path_absent(path: &Path) -> Result<(), HillslopeCliError> 
     Ok(())
 }
 
-fn publish_no_replace(staged_path: &Path, final_path: &Path) -> Result<(), std::io::Error> {
-    fs::hard_link(staged_path, final_path)?;
-    if let Err(source) = fs::remove_file(staged_path) {
-        let _ = fs::remove_file(final_path);
-        return Err(source);
-    }
-    Ok(())
+fn publish_link_no_replace(staged_path: &Path, final_path: &Path) -> Result<(), std::io::Error> {
+    fs::hard_link(staged_path, final_path)
 }
 
 fn transaction_io_error(action: &str, path: &Path, source: &std::io::Error) -> HillslopeCliError {
@@ -402,6 +505,107 @@ mod tests {
             assert_eq!(fs::read(path).expect("read restored target"), b"old");
         }
         assert_eq!(fs::read(manifest).expect("read manifest"), b"old-manifest");
+        fs::remove_dir_all(directory).expect("remove transaction directory");
+    }
+
+    #[test]
+    fn wat5_target_created_during_simulation_is_never_replaced() {
+        let directory = test_directory("concurrent-wat5");
+        let targets = targets(&directory, true);
+        for path in target_paths(&targets) {
+            if Some(path.as_path()) != targets.wat_subhourly.as_deref() {
+                fs::write(path, b"old").expect("seed sibling target");
+            }
+        }
+        let manifest = directory.join("manifest.json");
+        fs::write(&manifest, b"old-manifest").expect("seed manifest");
+        let mut transaction =
+            HillslopeOutputTransaction::new(&targets, manifest.clone()).expect("transaction");
+        write_all_staged(&transaction, b"new");
+        let wat5 = targets.wat_subhourly.as_ref().expect("WAT5 target");
+        fs::write(wat5, b"concurrent-success").expect("publish concurrent WAT5");
+
+        let error = transaction
+            .publish_outputs()
+            .expect_err("concurrent WAT5 must reject publication");
+        assert!(error.to_string().contains("appeared during execution"));
+        assert_eq!(
+            fs::read(wat5).expect("read concurrent WAT5"),
+            b"concurrent-success"
+        );
+        for path in target_paths(&targets) {
+            if path != wat5 {
+                assert_eq!(fs::read(path).expect("read sibling target"), b"old");
+            }
+        }
+        assert_eq!(fs::read(manifest).expect("read manifest"), b"old-manifest");
+        fs::remove_dir_all(directory).expect("remove transaction directory");
+    }
+
+    #[test]
+    fn staged_name_removal_failure_rolls_back_linked_output() {
+        let directory = test_directory("unlink-failure");
+        let targets = targets(&directory, false);
+        for path in target_paths(&targets) {
+            fs::write(path, b"old").expect("seed target");
+        }
+        let manifest = directory.join("manifest.json");
+        fs::write(&manifest, b"old-manifest").expect("seed manifest");
+        let mut transaction =
+            HillslopeOutputTransaction::new(&targets, manifest.clone()).expect("transaction");
+        write_all_staged(&transaction, b"new");
+        transaction.force_stage_unlink_failure_at(1);
+        transaction
+            .publish_outputs()
+            .expect_err("forced staged-name removal failure");
+        for path in target_paths(&targets) {
+            assert_eq!(fs::read(path).expect("read restored target"), b"old");
+        }
+        assert_eq!(fs::read(&manifest).expect("read manifest"), b"old-manifest");
+        drop(transaction);
+        let hidden = fs::read_dir(&directory)
+            .expect("read transaction directory")
+            .map(|entry| entry.expect("directory entry").file_name())
+            .filter(|name| name.to_string_lossy().contains(".openwepp-"))
+            .collect::<Vec<_>>();
+        assert!(hidden.is_empty(), "transaction leftovers: {hidden:?}");
+        fs::remove_dir_all(directory).expect("remove transaction directory");
+    }
+
+    #[test]
+    fn rollback_cleanup_failure_is_surfaced_and_retains_backup_bytes() {
+        let directory = test_directory("rollback-cleanup-failure");
+        let targets = targets(&directory, false);
+        for path in target_paths(&targets) {
+            fs::write(path, b"old").expect("seed target");
+        }
+        let manifest = directory.join("manifest.json");
+        fs::write(&manifest, b"old-manifest").expect("seed manifest");
+        let mut transaction =
+            HillslopeOutputTransaction::new(&targets, manifest).expect("transaction");
+        write_all_staged(&transaction, b"new");
+        let retained_backup = transaction.entries[1].backup_path.clone();
+        let affected_final = transaction.entries[1].final_path.clone();
+        transaction.force_stage_unlink_failure_at(1);
+        transaction.force_rollback_remove_failure_at(1);
+        let error = transaction
+            .publish_outputs()
+            .expect_err("rollback cleanup injection must fail");
+        assert!(error.to_string().contains("rollback incomplete"));
+        assert!(error.to_string().contains("retained_backups"));
+        assert_eq!(
+            fs::read(&affected_final).expect("read linked new bytes"),
+            b"new"
+        );
+        assert_eq!(
+            fs::read(&retained_backup).expect("read retained old bytes"),
+            b"old"
+        );
+        drop(transaction);
+        assert_eq!(
+            fs::read(&retained_backup).expect("backup survives Drop"),
+            b"old"
+        );
         fs::remove_dir_all(directory).expect("remove transaction directory");
     }
 

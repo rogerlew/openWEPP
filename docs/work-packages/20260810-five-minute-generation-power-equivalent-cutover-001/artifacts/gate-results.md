@@ -12,11 +12,11 @@ erosion path remains selected.
 
 | Requirement | Result | Evidence |
 |---|---|---|
-| Exact-worktree A0 | PASS | 43 contracts, 13 science surfaces, fingerprint `134c65ccfe96425cbbfbc822cf6c493a2993e952167fd2f85c24b24ff996c7a4` |
+| Exact-worktree A0 | PASS | 43 contracts, 13 science surfaces, authority fingerprint `84494b9e8a10a1cbada449106c9038732cdff9edbb4b76a3703d76a72f7948c7` |
 | Transactional failure integrity | PASS | existing-WAT5 sentinel preservation; day-2 no-partial-set; forced-close sibling preservation; forced-link and manifest rollback; successful commit |
 | Storage-aware schema v2 | PASS | 27 columns; explicit depression retention; renamed raw post-depression generation; positive-storage Parquet reconstruction |
-| Focused implementation | PASS | 762/762 affected-package tests and 14/14 named integration tests |
-| Authority anti-evasion | PASS | shell guard, 3/3 required-suite contract, and 7/7 direct-policy contract |
+| Focused implementation | PASS | 21/21 focused regressions, 768/768 affected-package tests, and 14/14 named integration tests |
+| Authority anti-evasion | PASS | shell guard and 10/10 combined required-suite/direct-policy contracts |
 | Affected Clippy / package Python | PASS | all targets/features with `-D warnings`; 5/5 Python tests |
 | Enabled 45-year workload | PASS as diagnostic measurement | 4.11 s, 68,248 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |
 | Replacement full workspace / doctests | PENDING | must run at the exact clean implementation commit |

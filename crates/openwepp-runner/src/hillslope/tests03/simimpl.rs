@@ -94,6 +94,14 @@ use crate::hillslope::intake_lane_setup::build_execution_lane_context;
             });
         assert!(pass_parse.record_count >= 1);
         assert!(pass_parse.warnings.is_empty());
+        let plot_path = report
+            .optional_outputs
+            .iter()
+            .find(|path| path.file_name().is_some_and(|name| name == "H5.plot.parquet"))
+            .expect("fixture plot output");
+        let plot_text = fs::read_to_string(plot_path).expect("read generic plot output");
+        assert!(plot_text.contains("file=H5.plot.parquet\n"));
+        assert!(!plot_text.contains(".openwepp-"));
 
         let manifest_json = read_manifest_json(&report);
         assert_json_i64(&manifest_json, "/execution_provenance/climate_day_count", 2);

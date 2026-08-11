@@ -58,6 +58,7 @@ pub enum HillslopeWatSubhourlyError {
     Io { path: PathBuf, source: io::Error },
     Parquet { detail: String },
     UnitMetadata { detail: String },
+    Validation { detail: String },
 }
 
 impl HillslopeWatSubhourlyError {
@@ -67,6 +68,7 @@ impl HillslopeWatSubhourlyError {
             Self::Io { .. } => "OHOUT-WAT5-E-001",
             Self::Parquet { .. } => "OHOUT-WAT5-E-002",
             Self::UnitMetadata { .. } => "OHOUT-WAT5-E-003",
+            Self::Validation { .. } => "OHOUT-WAT5-E-004",
         }
     }
 }
@@ -94,6 +96,13 @@ impl fmt::Display for HillslopeWatSubhourlyError {
                     self.code()
                 )
             }
+            Self::Validation { detail } => {
+                write!(
+                    formatter,
+                    "{} WAT5-E-003 invalid public row: {detail}",
+                    self.code()
+                )
+            }
         }
     }
 }
@@ -102,7 +111,7 @@ impl std::error::Error for HillslopeWatSubhourlyError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io { source, .. } => Some(source),
-            Self::Parquet { .. } | Self::UnitMetadata { .. } => None,
+            Self::Parquet { .. } | Self::UnitMetadata { .. } | Self::Validation { .. } => None,
         }
     }
 }
@@ -263,15 +272,24 @@ pub struct HillslopeWatSubhourlyParquetRowGroupWriter {
     temporary_path: PathBuf,
     rows_written: usize,
     pending_hour: Option<Wat5HourValidation>,
+    pending_event: Option<Wat5EventValidation>,
+    current_calendar_day: Option<(i32, i32, i32, i32)>,
+    last_row_key: Option<(i32, i32, i32, i32)>,
 }
 
 #[derive(Clone, Copy)]
 struct Wat5HourValidation {
-    identity: (i32, i32, i32, i32),
+    identity: (i32, i32, i32, i32, i32, i32, i32),
     last_subinterval_index: i32,
     observed_closing_depth_mm: f64,
     authoritative_depth_mm: f64,
     reported_residual_mm: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wat5EventValidation {
+    identity: (i32, i32, i32),
+    last_subinterval_index: i32,
 }
 
 impl HillslopeWatSubhourlyParquetRowGroupWriter {
@@ -319,6 +337,9 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
             temporary_path,
             rows_written: 0,
             pending_hour: None,
+            pending_event: None,
+            current_calendar_day: None,
+            last_row_key: None,
         })
     }
 
@@ -419,7 +440,16 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
     ) -> Result<(), HillslopeWatSubhourlyError> {
         for row in rows {
             validate_row(row)?;
-            let identity = (row.wepp_id, row.ofe_id, row.sim_day_index, row.hour_index);
+            self.validate_row_order(row)?;
+            let identity = (
+                row.wepp_id,
+                row.ofe_id,
+                row.year,
+                row.sim_day_index,
+                row.julian,
+                row.event_ordinal,
+                row.hour_index,
+            );
             if self
                 .pending_hour
                 .is_some_and(|pending| pending.identity != identity)
@@ -471,11 +501,56 @@ impl HillslopeWatSubhourlyParquetRowGroupWriter {
         }
         Ok(())
     }
+
+    fn validate_row_order(
+        &mut self,
+        row: &HillslopeWatSubhourlyRow,
+    ) -> Result<(), HillslopeWatSubhourlyError> {
+        let calendar = (row.wepp_id, row.sim_day_index, row.year, row.julian);
+        if self.current_calendar_day.is_some_and(|observed| {
+            observed.0 == row.wepp_id && observed.1 == row.sim_day_index && observed != calendar
+        }) {
+            return Err(wat5_validation_error(
+                "year or julian changes for an existing simulation day",
+            ));
+        }
+        self.current_calendar_day = Some(calendar);
+
+        let row_key = (
+            row.wepp_id,
+            row.sim_day_index,
+            row.ofe_id,
+            row.subinterval_index,
+        );
+        if self.last_row_key.is_some_and(|last| row_key <= last) {
+            return Err(wat5_validation_error("logical row keys regress or repeat"));
+        }
+
+        let event_identity = (row.wepp_id, row.ofe_id, row.sim_day_index);
+        if self
+            .pending_event
+            .is_some_and(|pending| pending.identity != event_identity)
+        {
+            self.pending_event = None;
+        }
+        let pending = self.pending_event.get_or_insert(Wat5EventValidation {
+            identity: event_identity,
+            last_subinterval_index: row.subinterval_index - 1,
+        });
+        if row.subinterval_index != pending.last_subinterval_index + 1 {
+            return Err(wat5_validation_error(
+                "sparse event support must contain every bin from first through last",
+            ));
+        }
+        pending.last_subinterval_index = row.subinterval_index;
+        self.last_row_key = Some(row_key);
+        Ok(())
+    }
 }
 
 fn wat5_validation_error(detail: impl Into<String>) -> HillslopeWatSubhourlyError {
-    HillslopeWatSubhourlyError::Parquet {
-        detail: format!("WAT5-E-003 invalid public row: {}", detail.into()),
+    HillslopeWatSubhourlyError::Validation {
+        detail: detail.into(),
     }
 }
 
@@ -555,27 +630,17 @@ fn validate_row(row: &HillslopeWatSubhourlyRow) -> Result<(), HillslopeWatSubhou
     }
     if row.additional_supply_depth_mm != 0.0
         || !row.hourly_closure_residual_mm.is_finite()
-        || row.method_code.is_empty()
-        || row.source_completeness_code.is_empty()
+        || row.method_code != "water_only_no_erosion_adoption"
+        || row.source_completeness_code != "rainfall_complete_saturation_hourly_zero_order_hold"
+        || row
+            .hourly_power_equivalent_generation_intensity_mm_h
+            .is_some()
+        || row.hourly_power_equivalent_duration_s.is_some()
+        || row.power_exponent.is_some()
     {
         return Err(wat5_validation_error(
-            "unsupported supply, non-finite residual, or empty method/source code",
+            "unsupported supply, residual, method/source code, or erosion candidate",
         ));
-    }
-    for (value, field) in [
-        (
-            row.hourly_power_equivalent_generation_intensity_mm_h,
-            "hourly_power_equivalent_generation_intensity_mm_h",
-        ),
-        (
-            row.hourly_power_equivalent_duration_s,
-            "hourly_power_equivalent_duration_s",
-        ),
-        (row.power_exponent, "power_exponent"),
-    ] {
-        if let Some(value) = value {
-            require_finite_nonnegative(value, field)?;
-        }
     }
     let raw_accounted_mm = row.raw_green_ampt_infiltration_depth_mm
         + row.depression_storage_retention_depth_mm
@@ -683,6 +748,39 @@ mod tests {
 
     use super::*;
 
+    fn valid_public_row() -> HillslopeWatSubhourlyRow {
+        HillslopeWatSubhourlyRow {
+            wepp_id: 1,
+            ofe_id: 1,
+            year: 2026,
+            sim_day_index: 1,
+            julian: 1,
+            event_ordinal: 0,
+            hour_index: 0,
+            subinterval_index: 0,
+            interval_start_s: 0.0,
+            interval_duration_s: 300.0,
+            rainfall_depth_mm: 2.0,
+            additional_supply_depth_mm: 0.0,
+            raw_green_ampt_infiltration_depth_mm: 0.5,
+            depression_storage_retention_depth_mm: 0.0,
+            raw_wb14_post_depression_generation_depth_mm: 1.5,
+            closed_wb14_generation_depth_mm: 1.5,
+            saturation_return_depth_mm: 0.0,
+            closing_surface_generation_depth_mm: 1.5,
+            closing_surface_generation_intensity_mm_h: 18.0,
+            hourly_authoritative_runoff_depth_mm: 1.5,
+            hourly_mean_generation_intensity_mm_h: 1.5,
+            hourly_power_equivalent_generation_intensity_mm_h: None,
+            hourly_power_equivalent_duration_s: None,
+            power_exponent: None,
+            method_code: "water_only_no_erosion_adoption".to_string(),
+            source_completeness_code: "rainfall_complete_saturation_hourly_zero_order_hold"
+                .to_string(),
+            hourly_closure_residual_mm: 0.0,
+        }
+    }
+
     #[test]
     fn writer_atomically_emits_schema_rows_and_null_candidate_columns() {
         let nonce = std::time::SystemTime::now()
@@ -717,7 +815,8 @@ mod tests {
             hourly_power_equivalent_duration_s: None,
             power_exponent: None,
             method_code: "water_only_no_erosion_adoption".to_string(),
-            source_completeness_code: "rainfall_complete".to_string(),
+            source_completeness_code: "rainfall_complete_saturation_hourly_zero_order_hold"
+                .to_string(),
             hourly_closure_residual_mm: 0.0,
         };
         let mut writer =
@@ -785,6 +884,12 @@ mod tests {
                 .iter()
                 .all(|error| error.to_string().contains("WAT5-E-005"))
         );
+        let validation = HillslopeWatSubhourlyError::Validation {
+            detail: "probe".to_string(),
+        };
+        assert_eq!(validation.code(), "OHOUT-WAT5-E-004");
+        assert!(validation.to_string().contains("WAT5-E-003"));
+        assert!(!validation.to_string().contains("WAT5-E-005"));
     }
 
     #[test]
@@ -840,7 +945,8 @@ mod tests {
             hourly_power_equivalent_duration_s: None,
             power_exponent: None,
             method_code: "water_only_no_erosion_adoption".to_string(),
-            source_completeness_code: "rainfall_complete".to_string(),
+            source_completeness_code: "rainfall_complete_saturation_hourly_zero_order_hold"
+                .to_string(),
             hourly_closure_residual_mm: 0.0,
         };
         row.depression_storage_retention_depth_mm = f64::NAN;
@@ -852,5 +958,117 @@ mod tests {
         assert!(error.to_string().contains("WAT5-E-003"));
         drop(writer);
         assert!(!path.exists());
+    }
+
+    #[test]
+    fn writer_rejects_every_public_contract_violation_class() {
+        type RowMutation = Box<dyn Fn(&mut HillslopeWatSubhourlyRow)>;
+        let mut cases: Vec<(&str, RowMutation)> = vec![
+            ("negative", Box::new(|row| row.rainfall_depth_mm = -1.0)),
+            ("identity", Box::new(|row| row.hour_index = 2)),
+            ("duration", Box::new(|row| row.interval_duration_s = 60.0)),
+            ("raw closure", Box::new(|row| row.rainfall_depth_mm += 1.0)),
+            (
+                "closing closure",
+                Box::new(|row| row.closing_surface_generation_depth_mm += 1.0),
+            ),
+            (
+                "rate identity",
+                Box::new(|row| row.closing_surface_generation_intensity_mm_h += 1.0),
+            ),
+            (
+                "candidate must remain null",
+                Box::new(|row| row.power_exponent = Some(1.5)),
+            ),
+            (
+                "method code",
+                Box::new(|row| row.method_code = "candidate".to_string()),
+            ),
+            (
+                "source code",
+                Box::new(|row| row.source_completeness_code = "rainfall_complete".to_string()),
+            ),
+        ];
+        for (index, (label, mutate)) in cases.drain(..).enumerate() {
+            let path = std::env::temp_dir().join(format!(
+                "openwepp-wat5-invalid-class-{}-{index}.parquet",
+                std::process::id()
+            ));
+            let mut row = valid_public_row();
+            mutate(&mut row);
+            let mut writer = HillslopeWatSubhourlyParquetRowGroupWriter::create(&path)
+                .expect("create invalid-class writer");
+            let error = writer
+                .write_rows(&[row])
+                .expect_err("contract violation must fail");
+            assert!(error.to_string().contains("WAT5-E-003"), "{label}: {error}");
+            drop(writer);
+            assert!(!path.exists(), "{label} published a target");
+        }
+    }
+
+    #[test]
+    fn writer_rejects_sparse_gaps_calendar_drift_and_hour_reentry() {
+        let gap_path =
+            std::env::temp_dir().join(format!("openwepp-wat5-gap-{}.parquet", std::process::id()));
+        let mut gap_writer = HillslopeWatSubhourlyParquetRowGroupWriter::create(&gap_path)
+            .expect("create gap writer");
+        gap_writer
+            .write_rows(&[valid_public_row()])
+            .expect("write first gap row");
+        let mut gap = valid_public_row();
+        gap.subinterval_index = 2;
+        gap.interval_start_s = 600.0;
+        assert!(gap_writer.write_rows(&[gap]).is_err());
+        drop(gap_writer);
+
+        let calendar_path = std::env::temp_dir().join(format!(
+            "openwepp-wat5-calendar-{}.parquet",
+            std::process::id()
+        ));
+        let mut calendar_writer =
+            HillslopeWatSubhourlyParquetRowGroupWriter::create(&calendar_path)
+                .expect("create calendar writer");
+        calendar_writer
+            .write_rows(&[valid_public_row()])
+            .expect("write first calendar row");
+        let mut calendar = valid_public_row();
+        calendar.ofe_id = 2;
+        calendar.year = 2027;
+        assert!(calendar_writer.write_rows(&[calendar]).is_err());
+        drop(calendar_writer);
+
+        let reentry_path = std::env::temp_dir().join(format!(
+            "openwepp-wat5-reentry-{}.parquet",
+            std::process::id()
+        ));
+        let mut reentry_writer = HillslopeWatSubhourlyParquetRowGroupWriter::create(&reentry_path)
+            .expect("create reentry writer");
+        let hour_zero = (0..12)
+            .map(|bin| {
+                let mut row = valid_public_row();
+                row.subinterval_index = bin;
+                row.interval_start_s = f64::from(bin) * 300.0;
+                row.rainfall_depth_mm = 2.0 / 12.0;
+                row.raw_green_ampt_infiltration_depth_mm = 0.5 / 12.0;
+                row.raw_wb14_post_depression_generation_depth_mm = 1.5 / 12.0;
+                row.closed_wb14_generation_depth_mm = 1.5 / 12.0;
+                row.closing_surface_generation_depth_mm = 1.5 / 12.0;
+                row.closing_surface_generation_intensity_mm_h = 1.5;
+                row
+            })
+            .collect::<Vec<_>>();
+        reentry_writer
+            .write_rows(&hour_zero)
+            .expect("write complete first hour");
+        let mut hour_one = valid_public_row();
+        hour_one.hour_index = 1;
+        hour_one.subinterval_index = 12;
+        hour_one.interval_start_s = 3_600.0;
+        reentry_writer
+            .write_rows(&[hour_one])
+            .expect("write next hour");
+        assert!(reentry_writer.write_rows(&[valid_public_row()]).is_err());
+        drop(reentry_writer);
     }
 }

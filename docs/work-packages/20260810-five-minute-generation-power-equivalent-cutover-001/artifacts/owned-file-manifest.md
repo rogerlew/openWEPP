@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reopened implementation increment reconciled — 36/36 paths owned before terminal evidence refresh`
+Status: `reopened implementation increment reconciled — 38/38 paths owned before terminal evidence refresh`
 
 Evidence mode: `Static + Ran`
 
@@ -8,7 +8,7 @@ The prior terminal package-owned set contained 87 changed or added paths. The
 separate predecessor/backlog closure diff is intentionally excluded and is
 owned by package `20260809-hourly-peak-runoff-authority-closure-001`.
 
-## Reopened 2026-08-11 increment (36)
+## Reopened 2026-08-11 increment (38)
 
 Production, tests, authority, and user contracts:
 
@@ -40,10 +40,12 @@ Lifecycle and evidence:
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/package.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/adoption-disposition.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/disposition.md`
+- `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/diagnostic-contract-evidence.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/finding-disposition.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/five-minute-water-closure.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/gate-results.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/kernel-profile-compliance.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/line-count-governance.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/operand-lineage.md`
 - `docs/work-packages/20260810-five-minute-generation-power-equivalent-cutover-001/artifacts/owned-file-manifest.md`

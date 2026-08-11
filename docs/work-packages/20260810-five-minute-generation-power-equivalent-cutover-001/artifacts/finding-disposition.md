@@ -29,8 +29,10 @@ Topanga outcome cohort remain accepted without modification.
 | `WAT5-B-003` hourly-reset bin index | accepted | Published the canonical day-relative bin `0..287`; boundary and real-consumer keys verify it. |
 | historical B exponent/reduction/Topanga scope findings | accepted | Rejected fixed-hour reduction and every exponent, narrowed the screen to one-sided rejection, and retained the Topanga outcome embargo. |
 
-Fresh Review A and Review B both return `PASS/GO` for bounded
-`DIAGNOSTIC_ONLY` water and retain erosion `NO_ADOPTION`.
+The earlier Review A/B `PASS/GO` applies only to the superseded 2026-08-10
+implementation. Reopened Review A retained `PASS/GO`; reopened Review B found
+writer chronology, exact-code, and real positive-storage publication gaps.
+Those corrections now pass focused gates and await fresh exact-SHA re-review.
 
 ## Rust correctness review
 
@@ -46,9 +48,12 @@ Fresh Review A and Review B both return `PASS/GO` for bounded
 | `WAT5-RCR-008` unclassified output errors | accepted; stable `OHOUT-WAT5-E-001..003` codes bind to `WAT5-E-005` |
 | `WAT5-RCR-009` missing completed-file validation | accepted; physical row count and full schema/metadata are checked before publication |
 
-Rust correctness re-review returns `PASS` with no open code finding. Symlink
-aliasing is retained as a documented filesystem-policy residual; direct and
-lexical aliases are rejected.
+The earlier Rust correctness `PASS` applies only to the superseded 2026-08-10
+implementation. Reopened review found final-name serialization, a concurrent
+WAT5 race, chronology, and real-chain evidence gaps. Those corrections now
+pass focused gates and await fresh exact-SHA re-review. Symlink aliasing remains
+a documented filesystem-policy residual; direct and lexical aliases are
+rejected.
 
 ## Rust QA review
 
@@ -59,9 +64,12 @@ lexical aliases are rejected.
 | `WAT5-RQA-HIGH-002` missing HBP/routing exclusion gate | accepted | Added named source guard over HBP assembly, OFE routing, watershed orchestration/output, and runner watershed consumers. |
 | `WAT5-RQA-HIGH-003` stale post-fix real evidence | accepted | Rebuilt release runner; refreshed p61 closure/on-off identity and p102 typed rejection under `/home/workdir/openwepp-wat5-terminal`. |
 
-Rust QA re-review returns `PASS`. Full-workspace, doctest, exact-diff, and
-terminal-verifier receipts remain package closure gates, not open review
-findings.
+The earlier Rust QA `PASS` applies only to the superseded implementation.
+Reopened QA found rollback-cleanup reporting, chronology validation,
+real-chain evidence, stale temporary-file filtering, and evidence-identity
+gaps. The implementation corrections pass focused gates; exact-SHA re-review,
+full-workspace, doctest, exact-diff, and terminal-verifier receipts remain
+closure gates.
 
 ## Terminal authority and usability findings
 

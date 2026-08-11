@@ -4,7 +4,7 @@ Status: `PASS — water diagnostic authority implemented; erosion authority unch
 
 Evidence mode: `Static`
 
-The approved, active `SC-OUTPUT-WAT5-001` version 1 owns the optional
+The approved, active `SC-OUTPUT-WAT5-001` version 2 owns the optional
 post-WB14/WB19 five-minute diagnostic, `TOL-WAT5-001`, separate sparse Parquet
 dataset, 300-second clock, raw/closed/closing semantics, source-completeness
 guards, atomic publication, and nullable erosion-candidate columns. The
