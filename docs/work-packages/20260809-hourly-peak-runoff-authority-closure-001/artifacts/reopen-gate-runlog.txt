@@ -1,0 +1,33 @@
+[2026-08-10T16:14:30Z] START fmt
+CMD fmt: env TMPDIR=/tmp/openwepp-task-a8a96498-tmp CARGO_TARGET_DIR=/tmp/openwepp-task-a8a96498-target/fmt cargo fmt --all -- --check
+[2026-08-10T16:14:33Z] END fmt exit=0 status=PASS elapsed_s=3 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091430-fmt.log
+[2026-08-10T16:14:33Z] START deny
+CMD deny: env TMPDIR=/tmp/openwepp-task-a8a96498-tmp CARGO_TARGET_DIR=/tmp/openwepp-task-a8a96498-target/deny cargo deny check
+[2026-08-10T16:14:41Z] END deny exit=0 status=PASS elapsed_s=8 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091433-deny.log
+[2026-08-10T16:14:41Z] START quick
+CMD quick: env TMPDIR=/tmp/openwepp-task-a8a96498-tmp CARGO_TARGET_DIR=/tmp/openwepp-task-a8a96498-target/quick cargo nextest run --workspace --profile quick --no-fail-fast --test-threads 2
+[2026-08-10T16:15:24Z] END quick exit=101 status=FAIL elapsed_s=43 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091441-quick.log
+[2026-08-10T16:15:36Z] START quick
+[2026-08-10T16:15:36Z] CMD quick: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/quick cargo nextest run --workspace --profile quick --no-fail-fast --test-threads 2
+[2026-08-10T16:19:57Z] END quick exit=100 status=FAIL elapsed_s=261 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091536-quick.log
+[2026-08-10T16:20:08Z] START quick
+[2026-08-10T16:20:08Z] CMD quick: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/quick cargo nextest run --workspace --profile quick --no-fail-fast --test-threads 2
+[2026-08-10T16:39:47Z] END quick exit=100 status=FAIL elapsed_s=1179 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T092008-quick.log
+[2026-08-10T16:39:47Z] START full
+[2026-08-10T16:39:47Z] CMD full: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/full cargo nextest run --workspace --profile full --no-fail-fast --test-threads 2
+[2026-08-10T16:51:45Z] END full exit=137 status=FAIL elapsed_s=718 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T093947-full.log
+[2026-08-10T16:51:45Z] START docs
+[2026-08-10T16:51:45Z] CMD docs: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/doc cargo test --workspace --doc
+[2026-08-10T16:52:29Z] END docs exit=0 status=PASS elapsed_s=44 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095145-docs.log
+[2026-08-10T16:52:29Z] START antiev
+[2026-08-10T16:52:29Z] CMD antiev: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2 bash tools/release/check_authority_suite_antievasion.sh
+[2026-08-10T16:52:30Z] END antiev exit=0 status=PASS elapsed_s=1 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095229-antiev.log
+[2026-08-10T16:52:30Z] START peak
+[2026-08-10T16:52:30Z] CMD peak: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/peak cargo nextest run --test peak_hourly_authority_contract
+[2026-08-10T16:53:17Z] END peak exit=0 status=PASS elapsed_s=47 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095230-peak.log
+[2026-08-10T16:53:17Z] START auth11
+[2026-08-10T16:53:17Z] CMD auth11: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/auth11 cargo nextest run --test auth11_required_suite_obligation_guards_contract
+[2026-08-10T16:53:59Z] END auth11 exit=0 status=PASS elapsed_s=42 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095317-auth11.log
+[2026-08-10T19:06:32Z] START full
+CMD full: env TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/full cargo nextest run --workspace --profile full --no-fail-fast --test-threads 2
+[2026-08-10T21:23:05Z] END full exit=0 status=PASS elapsed_s=8193 log=/home/workdir/openWEPP/docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T121200-full.log

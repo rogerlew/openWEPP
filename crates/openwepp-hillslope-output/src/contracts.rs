@@ -1,5 +1,5 @@
 use std::fmt;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HillslopeOutputConfig {
@@ -7,6 +7,7 @@ pub struct HillslopeOutputConfig {
     pub loss: PathBuf,
     pub pass_parquet: Option<PathBuf>,
     pub wat: Option<PathBuf>,
+    pub wat_subhourly: Option<PathBuf>,
     pub soil: Option<PathBuf>,
     pub plot: Option<PathBuf>,
     pub ebe: Option<PathBuf>,
@@ -23,6 +24,11 @@ pub enum OutputContractError {
         expected: &'static str,
         observed: String,
     },
+    DuplicateOutputPath {
+        first_output_name: &'static str,
+        second_output_name: &'static str,
+        path: PathBuf,
+    },
 }
 
 impl OutputContractError {
@@ -31,6 +37,7 @@ impl OutputContractError {
         match self {
             Self::MissingRequiredPath { .. } => "OHOUT-E-001",
             Self::InvalidExtension { .. } => "OHOUT-E-002",
+            Self::DuplicateOutputPath { .. } => "OHOUT-E-003",
         }
     }
 }
@@ -54,6 +61,16 @@ impl fmt::Display for OutputContractError {
                 "{} output {output_name} expected extension {expected} but observed {observed}",
                 self.code()
             ),
+            Self::DuplicateOutputPath {
+                first_output_name,
+                second_output_name,
+                path,
+            } => write!(
+                f,
+                "{} outputs {first_output_name} and {second_output_name} resolve to the same path {}",
+                self.code(),
+                path.display()
+            ),
         }
     }
 }
@@ -64,11 +81,48 @@ pub fn validate_output_contract(config: &HillslopeOutputConfig) -> Result<(), Ou
     validate_required_path(&config.pass, "pass", ".hbp")?;
     validate_required_path(&config.loss, "loss", ".json")?;
 
-    for (name, path) in configured_optional_outputs(config) {
-        validate_extension(&path, name, ".parquet")?;
+    let optional_outputs = configured_optional_outputs(config);
+    for (name, path) in &optional_outputs {
+        validate_extension(path, name, ".parquet")?;
+    }
+    for (index, (first_name, first_path)) in optional_outputs.iter().enumerate() {
+        for (second_name, second_path) in optional_outputs.iter().skip(index + 1) {
+            let normalized_first = lexically_normalize(first_path);
+            let normalized_second = lexically_normalize(second_path);
+            if normalized_first == normalized_second {
+                return Err(OutputContractError::DuplicateOutputPath {
+                    first_output_name: first_name,
+                    second_output_name: second_name,
+                    path: normalized_first,
+                });
+            }
+        }
     }
 
     Ok(())
+}
+
+fn lexically_normalize(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if matches!(
+                    normalized.components().next_back(),
+                    Some(Component::Normal(_))
+                ) {
+                    normalized.pop();
+                } else if !normalized.has_root() {
+                    normalized.push(component.as_os_str());
+                }
+            }
+            Component::Prefix(_) | Component::RootDir | Component::Normal(_) => {
+                normalized.push(component.as_os_str());
+            }
+        }
+    }
+    normalized
 }
 
 #[must_use]
@@ -78,6 +132,7 @@ pub fn configured_optional_outputs(config: &HillslopeOutputConfig) -> Vec<(&'sta
     for (name, path) in [
         ("pass_parquet", config.pass_parquet.clone()),
         ("wat", config.wat.clone()),
+        ("wat_subhourly", config.wat_subhourly.clone()),
         ("soil", config.soil.clone()),
         ("plot", config.plot.clone()),
         ("ebe", config.ebe.clone()),
@@ -135,6 +190,7 @@ mod tests {
             loss: PathBuf::from("output/H1.loss.json"),
             pass_parquet: Some(PathBuf::from("output/H1.pass.parquet")),
             wat: Some(PathBuf::from("output/H1.wat.parquet")),
+            wat_subhourly: Some(PathBuf::from("output/H1.wat-subhourly.parquet")),
             soil: Some(PathBuf::from("output/H1.soil.parquet")),
             plot: Some(PathBuf::from("output/H1.plot.parquet")),
             ebe: Some(PathBuf::from("output/H1.ebe.parquet")),
@@ -206,6 +262,38 @@ mod tests {
 
         let configured = configured_optional_outputs(&config);
         let names: Vec<&str> = configured.iter().map(|(name, _)| *name).collect();
-        assert_eq!(names, vec!["pass_parquet", "wat", "plot", "element"]);
+        assert_eq!(
+            names,
+            vec!["pass_parquet", "wat", "wat_subhourly", "plot", "element"]
+        );
+    }
+
+    #[test]
+    fn output_contract_rejects_wat5_aliases_before_any_writer_opens() {
+        for aliased_name in ["pass_parquet", "wat"] {
+            let mut config = valid_output_config();
+            let shared = PathBuf::from("output/shared.parquet");
+            config.wat_subhourly = Some(shared.clone());
+            match aliased_name {
+                "pass_parquet" => config.pass_parquet = Some(shared),
+                "wat" => config.wat = Some(shared),
+                _ => unreachable!("fixed test vector"),
+            }
+            let error = validate_output_contract(&config).expect_err("alias must fail");
+            assert_eq!(error.code(), "OHOUT-E-003");
+            assert!(matches!(
+                error,
+                OutputContractError::DuplicateOutputPath { .. }
+            ));
+        }
+    }
+
+    #[test]
+    fn output_contract_rejects_lexical_parent_component_aliases() {
+        let mut config = valid_output_config();
+        config.wat = Some(PathBuf::from("/run/output/shared.parquet"));
+        config.wat_subhourly = Some(PathBuf::from("/run/output/intermediate/../shared.parquet"));
+        let error = validate_output_contract(&config).expect_err("lexical alias must fail");
+        assert_eq!(error.code(), "OHOUT-E-003");
     }
 }

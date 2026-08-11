@@ -42,3 +42,25 @@ representable, and positive frost-adjusted runoff without a producer-timed
 shape hard-fails. The exact corrected probe and complete 1,088-trial cohort
 both passed. See `mutation-study.md` for the complete-cohort provenance and
 metrics.
+
+## Reopened ADR-0036 Closure Evidence
+
+Evidence mode: `Ran + retained identity evidence`
+
+The semantic ADR/source-guard increment is `669269ee4`; review/editorial
+reconciliation is `a8a96498`. Exact-source evidence at `a8a96498` passed:
+
+- full workspace 2,346/2,346, 46 slow, 33 skipped, 8,193.187 seconds, run ID
+  `64cd5e97-d253-4da1-a3cf-3c4e16f83d22`;
+- peak authority 4/4;
+- required-suite obligation guard 3/3;
+- workspace doctests, `cargo deny check`, format, and authority anti-evasion.
+
+The retained quick/full inventories contain 2,297/2,346 identities and zero
+quick-only identities. The admitted full receipt therefore covers every
+quick-selected test. All interrupted/setup attempts in `reopen-gate-runlog.txt`
+and `reopen-gate-manifest.tsv` are non-admitted.
+
+The reopened delta changes no runtime, canonical SC-* contract, serialization,
+release binary, or Topanga input. The admitted runtime/cohort evidence remains
+bound to `33831787b` and is reused, not reported as newly executed.

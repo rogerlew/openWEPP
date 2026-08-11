@@ -1,7 +1,8 @@
 # Pre Cutover Contract Gate
 
-Status: `queued`
+Status: `NOT_APPLICABLE — erosion NO_ADOPTION`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Populate this artifact according to the requirements in `../package.md`.
+No production erosion contract or selector changed; a pre-cutover red gate
+would falsely imply that an exponent had been admitted.

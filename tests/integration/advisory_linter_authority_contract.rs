@@ -182,6 +182,36 @@ fn live_impact_map_has_no_planner_admission_rows() {
         ids.iter().all(|entry_id| !entry_id.starts_with("auth11-")),
         "dead anti-evasion routing rows must not survive"
     );
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|entry| entry["contracts"] == serde_json::json!(["SC-OUTPUT-WAT5-001"]))
+            .count(),
+        17,
+        "every changed WAT5 science-crate path requires an atomic contract binding"
+    );
+    for shared_path in [
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+        "crates/openwepp-runner/src/hillslope/03_tests.rs",
+        "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+    ] {
+        let mut contracts = entries
+            .iter()
+            .filter(|entry| entry["matcher"]["value"] == shared_path)
+            .map(|entry| {
+                entry["contracts"][0]
+                    .as_str()
+                    .expect("atomic contract binding")
+            })
+            .collect::<Vec<_>>();
+        contracts.sort_unstable();
+        assert_eq!(
+            contracts,
+            ["SC-OUTPUT-WAT5-001", "SC-PLANT-001"],
+            "shared runtime path must retain both independent authorities: {shared_path}"
+        );
+    }
 
     let policy_readme = text("tools/release/authority-policy/README.md")
         .split_whitespace()
@@ -218,7 +248,17 @@ fn direct_authority_definitions_are_compact_and_schema_valid() {
             .as_array()
             .expect("definitions")
             .len(),
-        5
+        6
+    );
+    assert!(
+        definitions["definitions"]
+            .as_array()
+            .expect("definitions")
+            .iter()
+            .any(|definition| {
+                definition["gate_definition_id"] == "hard-invariant-wat5-runtime-v1"
+            }),
+        "WAT5 science surfaces require an executable direct A1 definition"
     );
     let encoded = serde_json::to_string(&definitions).expect("encode definitions");
     for forbidden in [
@@ -232,6 +272,24 @@ fn direct_authority_definitions_are_compact_and_schema_valid() {
         assert!(
             !encoded.contains(forbidden),
             "legacy field remains: {forbidden}"
+        );
+    }
+}
+
+#[test]
+fn worktree_admission_fingerprint_includes_every_registry_input() {
+    let admission = text("tools/release/check_science_contract_admission.sh");
+    for required in [
+        "--worktree",
+        "str(input_registry)",
+        "docs/specifications/science-contracts/index.md",
+        "docs/specifications/external-authority/registry.yaml",
+        "tools/release/authority-policy/impact-map.json",
+        "tools/release/authority-policy/gate-definitions.json",
+    ] {
+        assert!(
+            admission.contains(required),
+            "worktree authority fingerprint input is missing: {required}"
         );
     }
 }

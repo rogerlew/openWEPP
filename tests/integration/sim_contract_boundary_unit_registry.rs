@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 
 use openwepp_hillslope_output::hillslope_pass::hillslope_pass_schema;
 use openwepp_hillslope_output::hillslope_wat::{InterchangeVersion, hillslope_wat_schema};
+use openwepp_hillslope_output::hillslope_wat_subhourly::hillslope_wat_subhourly_schema;
 use openwepp_sim_contract::units::{
     BoundaryUnitEntry, BoundaryUnitRegistry, BoundaryUnitRegistryError, DimensionClass,
     DomainClass, OutputUnitAuthority, OutputUnitEntry, OutputUnitRegistry, OutputUnitRegistryError,
@@ -446,6 +447,10 @@ fn hphys0278_output_unit_registry_covers_output_schema_unit_metadata() {
         "hillslope_pass",
         hillslope_pass_schema(InterchangeVersion::default())
             .expect("hillslope PASS schema should construct"),
+    ));
+    schemas.push((
+        "hillslope_wat_subhourly",
+        hillslope_wat_subhourly_schema().expect("hillslope WAT5 schema should construct"),
     ));
     schemas.extend(
         watershed_interchange_schemas().expect("watershed interchange schemas should construct"),

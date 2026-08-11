@@ -1,0 +1,285 @@
+{
+  "admitted_candidates": [],
+  "disposition": "NO_FIXED_EXPONENT_ADMITTED",
+  "material_rate_floor_m_s": 1e-07,
+  "prospective": true,
+  "record_count": 1008,
+  "schema": "openwepp-five-minute-feasibility-v1",
+  "scope_limitations": [
+    "no end-slope shear, kt2, or ktrato response",
+    "no critical-shear, erodibility, qin, or full continuity branch state",
+    "transport branch flag is a coarse any-bin versus rectangle comparison",
+    "rill width is a reset-seed sensitivity diagnostic, not persistent chronology",
+    "no Rust-to-Python parity harness"
+  ],
+  "shape_count": 12,
+  "state_count": 12,
+  "summaries": [
+    {
+      "exponent": 1.0,
+      "method": "fixed_hour",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 0.0,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 143.0,
+          "median": 2.582541329353387,
+          "p95": 143.0
+        },
+        "detachment_driver": {
+          "maximum": 25.443832310787773,
+          "median": 1.0382755047745977,
+          "p95": 20.49943426386613
+        },
+        "shear_pa": {
+          "maximum": 3.4100750847323105,
+          "median": 0.34418828956823766,
+          "p95": 3.056780774142676
+        },
+        "transport_kg_m_s": {
+          "maximum": 1.3500264263735233,
+          "median": 0.15344075345337685,
+          "p95": 1.1159291955005368
+        },
+        "width_m": {
+          "maximum": 4.6518330993562005,
+          "median": 0.4408533143954093,
+          "p95": 4.6518330993562005
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": true,
+      "transport_branch_changes": 0,
+      "volume_error_max": 0.0
+    },
+    {
+      "exponent": 1.3333333333333333,
+      "method": "fixed_hour",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 1.227647215292752e-15,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 76.36903509129498,
+          "median": 2.030427812148985,
+          "p95": 76.36903509129498
+        },
+        "detachment_driver": {
+          "maximum": 20.67366468941906,
+          "median": 0.9672885631382678,
+          "p95": 17.51324771847644
+        },
+        "shear_pa": {
+          "maximum": 4.68785506140347,
+          "median": 0.4397285541013984,
+          "p95": 4.332469060843516
+        },
+        "transport_kg_m_s": {
+          "maximum": 2.5917326367768942,
+          "median": 0.2842411485055791,
+          "p95": 2.419353622336735
+        },
+        "width_m": {
+          "maximum": 5.822402029762534,
+          "median": 0.5116260965055998,
+          "p95": 5.822402029762534
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": false,
+      "transport_branch_changes": 0,
+      "volume_error_max": 0.8612097182042003
+    },
+    {
+      "exponent": 1.3333333333333333,
+      "method": "power_volume",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 4.2026579954424196e-16,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 0.59560418820639,
+          "median": 2.029258757829666e-15,
+          "p95": 0.59560418820639
+        },
+        "detachment_driver": {
+          "maximum": 0.3353603227407609,
+          "median": 1.626374417385764e-15,
+          "p95": 0.32653246106186395
+        },
+        "shear_pa": {
+          "maximum": 0.0655553818935834,
+          "median": 6.089350905212514e-16,
+          "p95": 0.06033148764932674
+        },
+        "transport_kg_m_s": {
+          "maximum": 0.022453883092599405,
+          "median": 6.260745601704501e-16,
+          "p95": 0.015391744716486886
+        },
+        "width_m": {
+          "maximum": 0.13903677075868662,
+          "median": 8.470089259373744e-16,
+          "p95": 0.13903677075868662
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": true,
+      "transport_branch_changes": 0,
+      "volume_error_max": 1.2046690805394493e-16
+    },
+    {
+      "exponent": 1.5,
+      "method": "fixed_hour",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 1.4107720168861823e-15,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 61.897793461013464,
+          "median": 1.8735971104473184,
+          "p95": 61.897793461013464
+        },
+        "detachment_driver": {
+          "maximum": 19.323851093382842,
+          "median": 0.9449993291032825,
+          "p95": 16.55865277375081
+        },
+        "shear_pa": {
+          "maximum": 5.1876165580592835,
+          "median": 0.47478223111135387,
+          "p95": 4.8394664036748525
+        },
+        "transport_kg_m_s": {
+          "maximum": 3.1128486182392803,
+          "median": 0.3342518265995374,
+          "p95": 2.9440198343124093
+        },
+        "width_m": {
+          "maximum": 6.26418062328964,
+          "median": 0.5370259304405038,
+          "p95": 6.26418062328964
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": false,
+      "transport_branch_changes": 0,
+      "volume_error_max": 1.2894284851066655
+    },
+    {
+      "exponent": 1.5,
+      "method": "power_volume",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 2.3528692979286123e-16,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 0.6080232108637955,
+          "median": 4.318438004702329e-16,
+          "p95": 0.6080232108637955
+        },
+        "detachment_driver": {
+          "maximum": 0.3491060124890674,
+          "median": 3.2464725769941335e-16,
+          "p95": 0.34028464364665445
+        },
+        "shear_pa": {
+          "maximum": 0.0741093356599688,
+          "median": 1.744570335185156e-16,
+          "p95": 0.06849440082444842
+        },
+        "transport_kg_m_s": {
+          "maximum": 0.027187235561947947,
+          "median": 2.4736934970416363e-16,
+          "p95": 0.017305583101376688
+        },
+        "width_m": {
+          "maximum": 0.14834496410970394,
+          "median": 2.460810450646023e-16,
+          "p95": 0.14834496410970394
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": true,
+      "transport_branch_changes": 0,
+      "volume_error_max": 1.2046690805394493e-16
+    },
+    {
+      "exponent": 2.0,
+      "method": "fixed_hour",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 2.0424212655630313e-16,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 40.56921938165305,
+          "median": 1.5963236215028938,
+          "p95": 40.56921938165305
+        },
+        "detachment_driver": {
+          "maximum": 16.876754912851403,
+          "median": 0.902885246266624,
+          "p95": 14.926579726194843
+        },
+        "shear_pa": {
+          "maximum": 6.315975064030429,
+          "median": 0.5510919555698149,
+          "p95": 5.999151781591683
+        },
+        "transport_kg_m_s": {
+          "maximum": 4.392467037756446,
+          "median": 0.4466754717471911,
+          "p95": 4.256001419811267
+        },
+        "width_m": {
+          "maximum": 7.235411173236853,
+          "median": 0.5913593628125664,
+          "p95": 7.235411173236853
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": false,
+      "transport_branch_changes": 0,
+      "volume_error_max": 2.464101615137755
+    },
+    {
+      "exponent": 2.0,
+      "method": "power_volume",
+      "passes_screened_response_thresholds": false,
+      "power_error_max": 1.7922246605315601e-16,
+      "responses": {
+        "deposition_driver_s_m": {
+          "maximum": 0.6380522895572012,
+          "median": 2.1138112060725688e-16,
+          "p95": 0.6380522895572012
+        },
+        "detachment_driver": {
+          "maximum": 0.38294909219815504,
+          "median": 2.1347442341553029e-16,
+          "p95": 0.37414539622687243
+        },
+        "shear_pa": {
+          "maximum": 0.09561985919264712,
+          "median": 1.6592856660831394e-16,
+          "p95": 0.08903581749487187
+        },
+        "transport_kg_m_s": {
+          "maximum": 0.0391829505904395,
+          "median": 1.668577800509948e-16,
+          "p95": 0.027459982304651975
+        },
+        "width_m": {
+          "maximum": 0.171675399912641,
+          "median": 1.7773560437299011e-16,
+          "p95": 0.171675399912641
+        }
+      },
+      "sample_count": 144,
+      "structurally_volume_admissible": true,
+      "transport_branch_changes": 0,
+      "volume_error_max": 1.2046690805394493e-16
+    }
+  ],
+  "time_step_s": 300.0,
+  "topanga_input_texture": {
+    "clay": 0.3,
+    "sand": 0.25,
+    "silt": 0.45
+  },
+  "topanga_outcomes_opened": false
+}

@@ -45,6 +45,19 @@ mod tests {
     include!("tests03/eb04w2b_warm_snow.rs");
     include!("tests03/stage3_evaluation_publication_parity.rs");
 
+    #[test]
+    fn wat5_named_unit_conversions_validate_known_vectors_and_domains() {
+        assert!((wat5_depth_mm(0.001).expect("depth conversion") - 1.0).abs() <= f64::EPSILON);
+        assert!((wat5_rate_mm_h(1.0e-6).expect("rate conversion") - 3.6).abs() <= f64::EPSILON);
+        assert!(
+            (wat5_signed_depth_mm(-1.0e-6).expect("signed residual conversion") + 0.001).abs()
+                <= f64::EPSILON
+        );
+        assert!(wat5_depth_mm(-1.0).is_err());
+        assert!(wat5_rate_mm_h(f64::NAN).is_err());
+        assert!(wat5_signed_depth_mm(f64::INFINITY).is_err());
+    }
+
     fn canonical_calendar_day_probe() -> ClimateDayProjection {
         ClimateDayProjection {
             year: 2000,

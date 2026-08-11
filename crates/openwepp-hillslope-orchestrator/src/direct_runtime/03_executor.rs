@@ -850,6 +850,7 @@ impl DirectFrameExecutor {
         day_frame.forcing.precipitation_m = day_input.precipitation_m;
         day_frame.forcing.effective_temperature_c = day_input.effective_temperature_c;
         day_frame.interception_m = day_input.interception_m;
+        day_frame.wat5_subhourly_requested = day_input.wat5_subhourly_requested;
         day_frame.storage_reconciliation_inputs.interception_m = day_input.interception_m;
         if let Some(initial_soil_water_m) = day_input.initial_soil_water_m {
             validate_nonnegative_direct_m(
@@ -1340,6 +1341,7 @@ impl DirectFrameExecutor {
             day_frame.run_r4a_runoff_partition_span_with_winter_frost(winter_frost_compute_inputs)
         );
         record_direct_span_report!(counters, day_frame.run_r7d6_peak_runoff_span());
+        day_frame.run_wat5_subhourly_generation()?;
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
         record_direct_span_report!(counters, day_frame.run_r4pqz_hydrology_projection_span());
 

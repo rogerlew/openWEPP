@@ -57,6 +57,20 @@ Both independent terminal verifiers returned PASS at corrected closure
 candidate `d5320fafb`; verifier A's sole stale-handoff finding was corrected
 before its final verdict.
 
+The package was subsequently reopened for a contradictory ADR-0036 statement.
+Authority/test commit `669269ee4` amended the decision and added a regression
+guard that requires the native maximum-hour rule and rejects the retired
+independent estimator. Both independent science reviewers and both Rust
+reviewers returned PASS for that narrow increment. A fresh 4/4 authority replay
+passed on 2026-08-10. The exact-source reopened full workspace gate then passed
+2,346/2,346 under run ID `64cd5e97-d253-4da1-a3cf-3c4e16f83d22`; every
+quick-selected identity is contained in that full inventory. Workspace
+doctests, deny, format, anti-evasion, and required-suite guards also pass. Both
+fresh independent terminal verifiers returned PASS. The
+original runtime/cohort receipts are reused because the reopen changes no
+runtime, contract, binary, serialized output, or frozen cohort input. The
+reopened package is terminally closed.
+
 The supported claim is a maximum hourly mean hillslope runoff flow. This
 package does not claim an instantaneous/subhourly peak, legacy numerical
 parity, calibration, observed-flow validation, or routed watershed/channel

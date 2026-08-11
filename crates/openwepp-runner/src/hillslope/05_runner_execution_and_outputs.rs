@@ -197,6 +197,7 @@ fn execute_direct_publication_stream(
         metadata.clone(),
         streaming_targets,
     )?;
+    let wat5_subhourly_requested = streaming_targets.wat_subhourly.is_some();
     // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 46): explicit active opt-in
     // or conditional default activation when every scheduled lane carries
     // native routing-coefficient authority. A no-coefficient run remains
@@ -219,6 +220,10 @@ fn execute_direct_publication_stream(
             |frame, day_index, lane_index| {
                 day_input_builder
                     .build(frame, day_index, lane_index)
+                    .map(|mut input| {
+                        input.wat5_subhourly_requested = wat5_subhourly_requested;
+                        input
+                    })
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
             |row, day_frame| {
@@ -242,6 +247,11 @@ fn execute_direct_publication_stream(
                         .map_err(|detail| DirectRuntimeError::PublicationSinkFailure { detail })?;
                 }
                 stream_sink.observe_row(row).map_err(|error| {
+                    DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    }
+                })?;
+                stream_sink.observe_subhourly_generation(row, day_frame).map_err(|error| {
                     DirectRuntimeError::PublicationSinkFailure {
                         detail: error.to_string(),
                     }
@@ -1032,6 +1042,9 @@ fn write_generic_optional_outputs(
         .optional_outputs
         .iter()
         .filter(|path| Some(path.as_path()) != inputs.runfile.output_config.wat.as_deref())
+        .filter(|path| {
+            Some(path.as_path()) != inputs.runfile.output_config.wat_subhourly.as_deref()
+        })
         .filter(|path| Some(path.as_path()) != inputs.runfile.output_config.pass_parquet.as_deref())
     {
         let payload = build_optional_output_payload(
@@ -1784,6 +1797,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     ensure_hillslope_output_parent_directories(&targets)?;
     let streaming_targets = DirectPublicationStreamingTargets {
         wat: inputs.runfile.output_config.wat.clone(),
+        wat_subhourly: inputs.runfile.output_config.wat_subhourly.clone(),
         pass_parquet: inputs.runfile.output_config.pass_parquet.clone(),
     };
     let runtime_resolution = runtime_policy.resolve();

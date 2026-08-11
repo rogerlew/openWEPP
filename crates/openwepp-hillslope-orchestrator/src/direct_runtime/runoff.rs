@@ -218,16 +218,16 @@ impl DirectDayFrame {
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
-        let infiltration_depression = self.compute_r4k_infiltration_depression()?;
+        let infiltration_depression =
+            if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
+                let outcome = compute_wb14_infiltration_depression_with_profile(producer_inputs)?;
+                self.wb14_hourly_excess_m = outcome.hourly_excess_m;
+                self.wb14_hourly_rainfall_m = outcome.hourly_rainfall_m;
+                outcome.state
+            } else {
+                self.compute_r4k_infiltration_depression()?
+            };
         DIRECT_AUDIT.record_direct_compute_operation();
-        // DC01: the WB14 hourly excess profile feeds the downstream surface
-        // transfer publication (INV-RUNOFFPART-031 / M2). The parallel
-        // hourly rainfall profile (SC-SED-001 1b-C) feeds the erosion
-        // `effint`; both are on the same WB14 binning basis.
-        let (wb14_hourly_excess_m, wb14_hourly_rainfall_m) =
-            self.compute_r4k_hourly_excess_and_rainfall_profile()?;
-        self.wb14_hourly_excess_m = wb14_hourly_excess_m;
-        self.wb14_hourly_rainfall_m = wb14_hourly_rainfall_m;
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
@@ -550,25 +550,9 @@ impl DirectDayFrame {
         })
     }
 
-    /// SC-SED-001 1b-C: the WB14 per-hour (excess, rainfall) profiles on the
-    /// same basis — the excess feeds the surface-transfer publication, the
-    /// rainfall feeds the erosion `effint`.
-    fn compute_r4k_hourly_excess_and_rainfall_profile(
-        &self,
-    ) -> Result<([f64; DC01_HOUR_BIN_COUNT], [f64; DC01_HOUR_BIN_COUNT]), DirectRuntimeError> {
-        if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
-            let outcome = compute_wb14_infiltration_depression_with_profile(producer_inputs)?;
-            return Ok((outcome.hourly_excess_m, outcome.hourly_rainfall_m));
-        }
-        Ok(([0.0; DC01_HOUR_BIN_COUNT], [0.0; DC01_HOUR_BIN_COUNT]))
-    }
-
     fn compute_r4k_infiltration_depression(
         &self,
     ) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
-        if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
-            return compute_wb14_infiltration_depression(producer_inputs);
-        }
         validate_nonnegative_direct_m(
             "infiltration_depression.cumulative_infiltration_handoff_m",
             self.infiltration_depression_inputs
@@ -1690,6 +1674,10 @@ pub(crate) fn hourly_peak_runoff_depth_rate_m_s(
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
 pub(crate) const DC01_HOUR_BIN_SECONDS: f64 = 3_600.0;
 pub(crate) const DC01_HOUR_BIN_COUNT_F64: f64 = 24.0;
+pub(crate) const WAT5_INTERVAL_SECONDS: f64 = 300.0;
+pub(crate) const WAT5_INTERVALS_PER_HOUR: usize = 12;
+pub(crate) const WAT5_INTERVALS_PER_DAY: usize = 288;
+const WAT5_DAY_SECONDS: f64 = 86_400.0;
 
 /// DC01 (INV-RUNOFFPART-031): WB14 outcome carrying the per-hour
 /// infiltration-excess profile alongside the classic state. The profile is
@@ -1704,8 +1692,17 @@ pub(crate) struct DirectWb14OutcomeWithProfile {
     pub hourly_rainfall_m: [f64; DC01_HOUR_BIN_COUNT],
 }
 
-fn dc01_add_depth_to_hour_bins(
-    bins: &mut [f64; DC01_HOUR_BIN_COUNT],
+#[allow(clippy::struct_field_names)]
+pub(crate) struct DirectWb14SubhourlyProfile {
+    pub rainfall_m: [f64; WAT5_INTERVALS_PER_DAY],
+    pub infiltration_m: [f64; WAT5_INTERVALS_PER_DAY],
+    pub post_depression_excess_m: [f64; WAT5_INTERVALS_PER_DAY],
+    pub depression_storage_delta_m: f64,
+}
+
+fn add_depth_to_fixed_bins(
+    bins: &mut [f64],
+    bin_duration_s: f64,
     start_s: f64,
     end_s: f64,
     depth_m: f64,
@@ -1715,9 +1712,8 @@ fn dc01_add_depth_to_hour_bins(
         return;
     }
     for (hour, bin) in bins.iter_mut().enumerate() {
-        let bin_start_s =
-            f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS;
-        let bin_end_s = bin_start_s + DC01_HOUR_BIN_SECONDS;
+        let bin_start_s = f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * bin_duration_s;
+        let bin_end_s = bin_start_s + bin_duration_s;
         let overlap_s = (end_s.min(bin_end_s) - start_s.max(bin_start_s)).max(0.0);
         if overlap_s > 0.0 {
             *bin += depth_m * overlap_s / duration_s;
@@ -1733,8 +1729,9 @@ pub(crate) fn dc01_hourly_supply_basis(
     for interval in hyetograph {
         let duration_s = interval.end_s - interval.start_s;
         if duration_s > 0.0 && interval.intensity_m_s > 0.0 {
-            dc01_add_depth_to_hour_bins(
+            add_depth_to_fixed_bins(
                 &mut bins,
+                DC01_HOUR_BIN_SECONDS,
                 interval.start_s,
                 interval.end_s,
                 interval.intensity_m_s * duration_s,
@@ -1754,12 +1751,6 @@ pub(crate) fn dc01_hourly_supply_basis(
         .collect()
 }
 
-fn compute_wb14_infiltration_depression(
-    inputs: &DirectWb14InfiltrationProducerInputs,
-) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
-    Ok(compute_wb14_infiltration_depression_with_profile(inputs)?.state)
-}
-
 fn wb14_hourly_local_rainfall_m(
     hyetograph: &[DirectWb14HyetographInterval],
 ) -> [f64; DC01_HOUR_BIN_COUNT] {
@@ -1767,8 +1758,9 @@ fn wb14_hourly_local_rainfall_m(
     for interval in hyetograph {
         let duration_s = interval.end_s - interval.start_s;
         if duration_s > 0.0 && interval.intensity_m_s > 0.0 {
-            dc01_add_depth_to_hour_bins(
+            add_depth_to_fixed_bins(
                 &mut hourly_rainfall_m,
+                DC01_HOUR_BIN_SECONDS,
                 interval.start_s,
                 interval.end_s,
                 interval.intensity_m_s * duration_s,
@@ -1778,13 +1770,101 @@ fn wb14_hourly_local_rainfall_m(
     hourly_rainfall_m
 }
 
+#[allow(clippy::too_many_lines)]
 pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<DirectWb14OutcomeWithProfile, DirectRuntimeError> {
+    compute_wb14_infiltration_depression_with_optional_subhourly(inputs, false)
+        .map(|(outcome, _)| outcome)
+}
+
+pub(crate) fn compute_wb14_subhourly_profile(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<DirectWb14SubhourlyProfile, DirectRuntimeError> {
+    validate_wb14_infiltration_inputs(inputs)?;
+    if inputs.hyetograph.iter().any(|interval| {
+        interval.start_s < 0.0 || interval.end_s < 0.0 || interval.end_s > WAT5_DAY_SECONDS
+    }) {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "WAT5-E-003 hyetograph support lies outside the simulation day",
+        });
+    }
+    if inputs
+        .hourly_additional_supply_m
+        .iter()
+        .any(|depth_m| *depth_m > 0.0)
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "WAT5-E-001 positive additional supply lacks 300-second timing",
+        });
+    }
+
+    // WAT5 is a chronological Green-Ampt replay, not a proportional
+    // redistribution of whole source-interval outcomes. Split every source
+    // interval at exact 300-second boundaries so each piece advances the
+    // cumulative infiltration state before the next piece is solved.
+    let mut split_inputs = inputs.clone();
+    split_inputs.hyetograph = wat5_boundary_split_hyetograph(&inputs.hyetograph);
+    let (outcome, mut subhourly) =
+        compute_wb14_infiltration_depression_with_optional_subhourly(&split_inputs, true)?;
+    if let Some(profile) = subhourly.as_mut() {
+        profile.depression_storage_delta_m = outcome.state.depression_storage_delta_m;
+    }
+    subhourly.ok_or(DirectRuntimeError::MissingDirectUpstream {
+        upstream: "requested WAT5 subhourly WB14 profile",
+    })
+}
+
+fn wat5_boundary_split_hyetograph(
+    hyetograph: &[DirectWb14HyetographInterval],
+) -> Vec<DirectWb14HyetographInterval> {
+    let mut split = Vec::with_capacity(hyetograph.len());
+    for interval in hyetograph {
+        if interval.end_s <= interval.start_s {
+            split.push(*interval);
+            continue;
+        }
+        let mut piece_start_s = interval.start_s;
+        while piece_start_s < interval.end_s {
+            let next_boundary_s =
+                ((piece_start_s / WAT5_INTERVAL_SECONDS).floor() + 1.0) * WAT5_INTERVAL_SECONDS;
+            let piece_end_s = interval.end_s.min(next_boundary_s);
+            split.push(DirectWb14HyetographInterval {
+                start_s: piece_start_s,
+                end_s: piece_end_s,
+                intensity_m_s: interval.intensity_m_s,
+            });
+            piece_start_s = piece_end_s;
+        }
+    }
+    split
+}
+
+#[allow(clippy::too_many_lines)]
+fn compute_wb14_infiltration_depression_with_optional_subhourly(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+    collect_subhourly: bool,
+) -> Result<
+    (
+        DirectWb14OutcomeWithProfile,
+        Option<DirectWb14SubhourlyProfile>,
+    ),
+    DirectRuntimeError,
+> {
     validate_wb14_infiltration_inputs(inputs)?;
     let mut cumulative_infiltration_m = 0.0_f64;
     let mut total_rainfall_m = 0.0_f64;
     let mut hourly_excess_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    let mut subhourly = if collect_subhourly {
+        Some(DirectWb14SubhourlyProfile {
+            rainfall_m: [0.0; WAT5_INTERVALS_PER_DAY],
+            infiltration_m: [0.0; WAT5_INTERVALS_PER_DAY],
+            post_depression_excess_m: [0.0; WAT5_INTERVALS_PER_DAY],
+            depression_storage_delta_m: 0.0,
+        })
+    } else {
+        None
+    };
 
     // SC-SED-001 1b-C: the erosion rainfall surface is PURE local rainfall
     // (the erosion `effint` is a rainfall-intensity driver, not a supply
@@ -1816,6 +1896,15 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
             continue;
         }
         let rainfall_m = interval.intensity_m_s * duration_s;
+        if let Some(profile) = subhourly.as_mut() {
+            add_depth_to_fixed_bins(
+                &mut profile.rainfall_m,
+                WAT5_INTERVAL_SECONDS,
+                interval.start_s,
+                interval.end_s,
+                rainfall_m,
+            );
+        }
         validate_finite("infiltration_depression.interval_rainfall_m", rainfall_m)?;
         total_rainfall_m += rainfall_m;
         validate_finite(
@@ -1824,12 +1913,22 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         )?;
         let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
         if remaining_storage_m <= WB11_ZERO_THRESHOLD {
-            dc01_add_depth_to_hour_bins(
+            add_depth_to_fixed_bins(
                 &mut hourly_excess_m,
+                DC01_HOUR_BIN_SECONDS,
                 interval.start_s,
                 interval.end_s,
                 rainfall_m,
             );
+            if let Some(profile) = subhourly.as_mut() {
+                add_depth_to_fixed_bins(
+                    &mut profile.post_depression_excess_m,
+                    WAT5_INTERVAL_SECONDS,
+                    interval.start_s,
+                    interval.end_s,
+                    rainfall_m,
+                );
+            }
             continue;
         }
         let interval_infiltration_m = compute_green_ampt_interval_infiltration(
@@ -1856,8 +1955,26 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         )?;
         let interval_excess_m =
             (rainfall_m - (cumulative_infiltration_m - cumulative_before_m)).max(0.0);
-        dc01_add_depth_to_hour_bins(
+        let interval_infiltration_m = rainfall_m - interval_excess_m;
+        if let Some(profile) = subhourly.as_mut() {
+            add_depth_to_fixed_bins(
+                &mut profile.infiltration_m,
+                WAT5_INTERVAL_SECONDS,
+                interval.start_s,
+                interval.end_s,
+                interval_infiltration_m,
+            );
+            add_depth_to_fixed_bins(
+                &mut profile.post_depression_excess_m,
+                WAT5_INTERVAL_SECONDS,
+                interval.start_s,
+                interval.end_s,
+                interval_excess_m,
+            );
+        }
+        add_depth_to_fixed_bins(
             &mut hourly_excess_m,
+            DC01_HOUR_BIN_SECONDS,
             interval.start_s,
             interval.end_s,
             interval_excess_m,
@@ -1874,23 +1991,33 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     // Remove that retained depth from the hourly runoff lineage here so the
     // profile, rather than a later normalized proxy, closes to the WB14
     // post-depression runoff operand.
-    remove_depth_from_hour_bins_earliest(
+    remove_depth_from_bins_earliest(
         &mut hourly_excess_m,
         depression_storage_delta_m,
         "infiltration_depression.hourly_post_depression_runoff_m",
     )?;
-    Ok(DirectWb14OutcomeWithProfile {
-        state: DirectInfiltrationDepressionState {
-            cumulative_infiltration_m,
+    if let Some(profile) = subhourly.as_mut() {
+        remove_depth_from_bins_earliest(
+            &mut profile.post_depression_excess_m,
             depression_storage_delta_m,
+            "infiltration_depression.subhourly_post_depression_runoff_m",
+        )?;
+    }
+    Ok((
+        DirectWb14OutcomeWithProfile {
+            state: DirectInfiltrationDepressionState {
+                cumulative_infiltration_m,
+                depression_storage_delta_m,
+            },
+            hourly_excess_m,
+            hourly_rainfall_m,
         },
-        hourly_excess_m,
-        hourly_rainfall_m,
-    })
+        subhourly,
+    ))
 }
 
-fn remove_depth_from_hour_bins_earliest(
-    bins: &mut [f64; DC01_HOUR_BIN_COUNT],
+fn remove_depth_from_bins_earliest(
+    bins: &mut [f64],
     depth_m: f64,
     field: &'static str,
 ) -> Result<(), DirectRuntimeError> {

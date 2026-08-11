@@ -13,3 +13,10 @@ planner authority rows remain absent.
 Historical generation-17 policy verification uses the immutable Git object
 named by `gate-policy/history/adr0039-generation17.json`; it never derives
 historical identity from these live direct-authority inputs.
+
+Direct admission accepts multiple atomic one-contract entries for a shared
+science path and validates every matched authority and covering A1 gate.
+Duplicate-contract or multi-contract entries fail closed. For an uncommitted
+increment, `check_science_contract_admission.sh --base-ref <commit> --worktree`
+includes tracked and untracked paths and reports a stable fingerprint of the
+complete authority-input surface.

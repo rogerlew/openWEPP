@@ -1,5 +1,7 @@
 {
   "implementation_commit": "33831787b7029b28b0716c8458f08a11899db446",
+  "reopened_authority_test_commit": "669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2",
+  "reopened_review_reconciliation_commit": "a8a96498ee909c4305fbc0a4db562b72e45efd2b",
   "commands": [
     {
       "command": "TMPDIR=/home/workdir/openwepp-task-tmp cargo build --release -p openwepp-runner --bin openwepp-cli-hill",
@@ -71,6 +73,27 @@
       "status": "PASS",
       "duration_seconds": 45,
       "executable_doctests": 0
+    },
+    {
+      "command": "TMPDIR=/home/workdir/openwepp-task-a8a96498-tmp2 CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/full cargo nextest run --workspace --profile full --no-fail-fast --test-threads 2",
+      "source_commit": "a8a96498ee909c4305fbc0a4db562b72e45efd2b",
+      "exit_code": 0,
+      "status": "PASS",
+      "duration_seconds": 8193.187,
+      "run_id": "64cd5e97-d253-4da1-a3cf-3c4e16f83d22",
+      "tests_passed": 2346,
+      "tests_skipped": 33,
+      "slow_tests": 46,
+      "log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T121200-full.log"
+    },
+    {
+      "command": "reopened quick-profile disposition",
+      "exit_code": 0,
+      "status": "PASS_BY_ADMITTED_FULL_SUBSET",
+      "quick_inventory_count": 2297,
+      "full_inventory_count": 2346,
+      "quick_only_count": 0,
+      "non_admitted_attempts_manifest": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-gate-manifest.tsv"
     }
   ],
   "artifacts": {
@@ -80,6 +103,9 @@
     "event_pairs_parquet": "/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5/topanga-openwepp-event-pairs.parquet",
     "full_workspace_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/topanga-openwepp-census-full-v4-nextest-full-clean-target-33831787b.log",
     "inventory_delta_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/full-vs-quick-summary.log",
-    "doctest_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/cargo-test-workspace-doc.log"
+    "doctest_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/cargo-test-workspace-doc.log",
+    "reopened_full_workspace_log": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T121200-full.log",
+    "reopened_gate_manifest": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-gate-manifest.tsv",
+    "reopened_gate_runlog": "docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-gate-runlog.txt"
   }
 }

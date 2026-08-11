@@ -1,5 +1,26 @@
 const DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS: usize = 8192;
 
+fn wat5_depth_mm(value_m: f64) -> Result<f64, HillslopeCliError> {
+    meters_to_millimeters(value_m).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "outputs.wat_subhourly",
+        detail: format!("WAT5 depth conversion failed: {error}"),
+    })
+}
+
+fn wat5_rate_mm_h(value_m_s: f64) -> Result<f64, HillslopeCliError> {
+    ProcessRateMillimetersPerHour::from_meters_per_second(value_m_s)
+        .map(ProcessRateMillimetersPerHour::as_millimeters_per_hour)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat_subhourly",
+            detail: format!("WAT5 rate conversion failed: {error}"),
+        })
+}
+
+fn wat5_signed_depth_mm(value_m: f64) -> Result<f64, HillslopeCliError> {
+    let magnitude_mm = wat5_depth_mm(value_m.abs())?;
+    Ok(magnitude_mm.copysign(value_m))
+}
+
 struct DirectPublicationStreamingSink {
     summary: DirectPublicationOutputSummary,
     expected_row_count: usize,
@@ -8,6 +29,8 @@ struct DirectPublicationStreamingSink {
     wat_writer: Option<HillslopeWatParquetRowGroupWriter>,
     wat_chunk: Vec<HillslopeWatRow>,
     wat_rows_written: usize,
+    wat_subhourly_writer: Option<HillslopeWatSubhourlyParquetRowGroupWriter>,
+    wat_subhourly_chunk: Vec<HillslopeWatSubhourlyRow>,
     pass_writer: Option<HillslopePassParquetRowGroupWriter>,
     pass_chunk: Vec<HillslopePassRow>,
     pass_projection_rows_written: usize,
@@ -56,6 +79,18 @@ impl DirectPublicationStreamingSink {
                     })
             })
             .transpose()?;
+        let wat_subhourly_writer = targets
+            .wat_subhourly
+            .as_deref()
+            .map(|path| {
+                HillslopeWatSubhourlyParquetRowGroupWriter::create(path).map_err(|error| {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "outputs.wat_subhourly",
+                        detail: error.to_string(),
+                    }
+                })
+            })
+            .transpose()?;
         Ok(Self {
             summary: DirectPublicationOutputSummary::new(identity, metadata),
             expected_row_count,
@@ -64,6 +99,8 @@ impl DirectPublicationStreamingSink {
             wat_writer,
             wat_chunk: Vec::with_capacity(DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS),
             wat_rows_written: 0,
+            wat_subhourly_writer,
+            wat_subhourly_chunk: Vec::with_capacity(DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS),
             pass_writer,
             pass_chunk: Vec::with_capacity(DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS),
             pass_projection_rows_written: 0,
@@ -106,6 +143,7 @@ impl DirectPublicationStreamingSink {
         self.summary.validate_complete(self.expected_row_count)?;
         self.flush_wat_chunk()?;
         self.flush_pass_chunk()?;
+        self.flush_wat_subhourly_chunk()?;
         let wat_rows_written = self
             .wat_writer
             .take()
@@ -128,6 +166,15 @@ impl DirectPublicationStreamingSink {
             })
             .transpose()?
             .map(|summary| summary.rows_written);
+        self.wat_subhourly_writer
+            .take()
+            .map(|writer| {
+                writer.close().map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "outputs.wat_subhourly",
+                    detail: error.to_string(),
+                })
+            })
+            .transpose()?;
         Ok(DirectPublicationStreamResult {
             summary: self.summary,
             wat_rows_written,
@@ -176,6 +223,105 @@ impl DirectPublicationStreamingSink {
             .checked_add(self.pass_chunk.len())
             .ok_or_else(|| direct_publication_output_failure("direct PASS row count overflow"))?;
         self.pass_chunk.clear();
+        Ok(())
+    }
+
+    fn observe_subhourly_generation(
+        &mut self,
+        row: &DirectPublicationDayRow,
+        day_frame: &DirectDayFrame,
+    ) -> Result<(), HillslopeCliError> {
+        if self.wat_subhourly_writer.is_none() {
+            return Ok(());
+        }
+        let event = day_frame.wat5_subhourly_generation.as_ref().ok_or_else(|| {
+            direct_publication_output_failure(
+                "outputs.wat_subhourly requested without a runtime WAT5 ledger",
+            )
+        })?;
+        let ofe_id = i32::try_from(row.ofe_id)
+            .map_err(|_| direct_publication_output_failure("WAT5 OFE identity exceeds i32"))?;
+        let event_ordinal = i32::try_from(event.event_ordinal)
+            .map_err(|_| direct_publication_output_failure("WAT5 event ordinal exceeds i32"))?;
+        for interval in &event.intervals {
+            let hour_index = i32::try_from(interval.hour_index)
+                .map_err(|_| direct_publication_output_failure("WAT5 hour index exceeds i32"))?;
+            let subinterval_index = i32::try_from(interval.subinterval_index).map_err(|_| {
+                direct_publication_output_failure("WAT5 subinterval index exceeds i32")
+            })?;
+            self.wat_subhourly_chunk.push(HillslopeWatSubhourlyRow {
+                wepp_id: DIRECT_WAT_WEPP_ID,
+                ofe_id,
+                year: row.calendar.year,
+                sim_day_index: row.sim_day_index,
+                julian: i32::from(row.calendar.julian_day),
+                event_ordinal,
+                hour_index,
+                subinterval_index,
+                interval_start_s: interval.interval_start_s,
+                interval_duration_s: interval.interval_duration_s,
+                rainfall_depth_mm: wat5_depth_mm(interval.rainfall_depth_m)?,
+                additional_supply_depth_mm: wat5_depth_mm(
+                    interval.additional_supply_depth_m,
+                )?,
+                raw_green_ampt_infiltration_depth_mm: wat5_depth_mm(
+                    interval.raw_green_ampt_infiltration_depth_m,
+                )?,
+                raw_green_ampt_generation_depth_mm: wat5_depth_mm(
+                    interval.raw_green_ampt_generation_depth_m,
+                )?,
+                closed_wb14_generation_depth_mm: wat5_depth_mm(
+                    interval.closed_wb14_generation_depth_m,
+                )?,
+                saturation_return_depth_mm: wat5_depth_mm(
+                    interval.saturation_return_depth_m,
+                )?,
+                closing_surface_generation_depth_mm: wat5_depth_mm(
+                    interval.closing_surface_generation_depth_m,
+                )?,
+                closing_surface_generation_intensity_mm_h: wat5_rate_mm_h(
+                    interval.closing_surface_generation_intensity_m_s,
+                )?,
+                hourly_authoritative_runoff_depth_mm: wat5_depth_mm(
+                    interval.hourly_authoritative_runoff_depth_m,
+                )?,
+                hourly_mean_generation_intensity_mm_h: wat5_rate_mm_h(
+                    interval.hourly_mean_generation_intensity_m_s,
+                )?,
+                hourly_power_equivalent_generation_intensity_mm_h: interval
+                    .hourly_power_equivalent_generation_intensity_m_s
+                    .map(wat5_rate_mm_h)
+                    .transpose()?,
+                hourly_power_equivalent_duration_s: interval
+                    .hourly_power_equivalent_duration_s,
+                power_exponent: interval.power_exponent,
+                method_code: interval.method_code.to_string(),
+                source_completeness_code: interval.source_completeness_code.to_string(),
+                hourly_closure_residual_mm: wat5_signed_depth_mm(
+                    interval.hourly_closure_residual_m,
+                )?,
+            });
+            if self.wat_subhourly_chunk.len() >= DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS {
+                self.flush_wat_subhourly_chunk()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn flush_wat_subhourly_chunk(&mut self) -> Result<(), HillslopeCliError> {
+        if self.wat_subhourly_chunk.is_empty() {
+            return Ok(());
+        }
+        let writer = self.wat_subhourly_writer.as_mut().ok_or_else(|| {
+            direct_publication_output_failure("WAT5 chunk exists without its writer")
+        })?;
+        writer
+            .write_rows(&self.wat_subhourly_chunk)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.wat_subhourly",
+                detail: error.to_string(),
+            })?;
+        self.wat_subhourly_chunk.clear();
         Ok(())
     }
 }

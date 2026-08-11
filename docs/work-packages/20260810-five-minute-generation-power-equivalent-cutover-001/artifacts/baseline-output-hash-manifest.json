@@ -1,4 +1,72 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run"
+  "status": "PASS",
+  "evidence_mode": "Ran",
+  "source_commit": "c9f28a7dbe7adf69d8e6d54ebd8da57568af5552",
+  "external_evidence_root": "/home/workdir/openwepp-five-minute-baseline-c9f28a7d",
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "cargo_nextest": "cargo-nextest 0.9.138 (fc97e97bb 2026-06-21)"
+  },
+  "runner": {
+    "path": "/home/workdir/openwepp-five-minute-baseline-c9f28a7d/bin/openwepp-cli-hill",
+    "sha256": "ac8790faf32a5b98993427b636084c04ba468955458c4fc18f3874cea709c4c3",
+    "sidecar_sha256": "019e29af8f089ec052a9a08269320d2017061d663f7f98ed5a70626fd17e4a7b",
+    "sidecar_source_commit": "c9f28a7dbe7adf69d8e6d54ebd8da57568af5552"
+  },
+  "execution": {
+    "cargo_profile": "release",
+    "cargo_features": "default",
+    "sidecar_policy": "compat",
+    "legacy_sidecar_discovery": false,
+    "selected_runtime": "direct-production-executor",
+    "timestep_seconds": 3600,
+    "relevant_environment_overrides": []
+  },
+  "canonical_schema_hashes": {
+    "wat_describe_csv_sha256": "e45f5d5a6fb7bb2d3700167ce0fe08b6c876e059fe6c1eb2c3ed5c49094705d8",
+    "pass_describe_csv_sha256": "906e8aad0a7c6aec199378dd02eb979b70091d3f8e6ae5a2e251cab5ad34fda6"
+  },
+  "fixtures": {
+    "p61_amplified_single_ofe_erosion": {
+      "provenance": "tests/fixtures/erosion_single_ofe_p61 with the contract-test 40.1-to-80.2 mm dominant-storm mutation",
+      "manifest_sha256": "60152a6e5636f46aa932914768774e57f52f84f339cafee1505168569cedf90d",
+      "hbp_sha256": "50d5e1d7f8d5724642b4844845b5636413b0d37438068ca05f60807fd3bef080",
+      "pass_parquet_sha256": "53680da8245281d9a0a9d001893db5e14a4d3203daee94565d5aa4ae892ffb7f",
+      "pass_logical_csv_sha256": "8906839cbcdaa1db300761fd160f9164da441ad0cf1f996a4891291dba9ed757",
+      "wat_parquet_sha256": "09901f85c2f3720a9600132c159d3f4f11d52dd84b3487c5395a0778ebbc3ba4",
+      "wat_logical_csv_sha256": "66d5172f82c1213663722e860c6bf460898f474d8c3c4d0a2cef170990e41ffe",
+      "loss_json_sha256": "7a32a249771295b0eaa53719677fb022ec015ca3a4a851379430eaee12575b25",
+      "row_count": 4018,
+      "max_peakro_m3_s": 0.5928835275622398,
+      "sum_runvol_m3": 2134.3806992241507,
+      "sum_tdet_kg": 10358.434221209915,
+      "sum_tdep_kg": 0.0
+    },
+    "p102_multi_ofe_nonadoption_control": {
+      "provenance": "tests/fixtures/erosion_multi_ofe_p102",
+      "manifest_sha256": "df6f4e280d201c9264523d982a5c2bd4e6f0788f54223e5882a786333e8f7840",
+      "hbp_sha256": "1bade6d405cb806b2d6c7a9ec758879c8d39709fff5d054221d62cfc69cb60b1",
+      "pass_parquet_sha256": "52321bdc84e16b620686237e12e91a5cf88d633c0b3f06de090aae6277c7e177",
+      "pass_logical_csv_sha256": "7900481e50081ee9cbf2ff21ba0d755d70ecc2979a577995b94ecef647fdd89b",
+      "wat_parquet_sha256": "2d51585b0e51a498507413e330b467b0ec238db3cd76b8b3055c17f51cccbbe3",
+      "wat_logical_csv_sha256": "87d36e561edae996ea6b24b056c466c51a750a9a76e54b7625b9a6ff950d6209",
+      "loss_json_sha256": "4d8575d661f8a654d731af8043cc9855b38dd39bac2179152051e18b537fe132",
+      "row_count": 3652,
+      "max_peakro_m3_s": 0.3672596801890863,
+      "sum_runvol_m3": 57634.61014635165,
+      "sum_tdet_kg": 35254.98827207357,
+      "sum_tdep_kg": 19689.601848487167,
+      "hourly_carry_total_m": 5.3760388129466445
+    }
+  },
+  "synthetic_authority_receipts": {
+    "dry": "a179b56d-8752-45de-b4a1-616c2644276b",
+    "nonponding_delayed_ponding_high_intensity_saturation_and_tiny_supply": "73662dee-2492-4d95-aeda-0c79a4336d1c",
+    "rill_width_persistent_state": "383819bd-20ce-477e-8790-3be75c968e9d"
+  },
+  "topanga_baseline_mutation": {
+    "status": "NOT_RUN_NO_ADOPTION",
+    "rationale": "The prospective erosion study admitted no exponent and froze NO_ADOPTION before outcome-bearing Topanga execution. Opening a baseline/mutation pair would violate the frozen outcome embargo and cannot affect the independent water-output decision. Frozen input identities remain in topanga-plan-identity.json."
+  }
 }

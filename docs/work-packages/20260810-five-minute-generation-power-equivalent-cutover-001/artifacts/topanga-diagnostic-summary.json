@@ -1,4 +1,5 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run"
+  "status": "not_applicable_no_erosion_adoption",
+  "evidence_mode": "not_run_by_preregistered_embargo",
+  "outcomes_opened": false
 }

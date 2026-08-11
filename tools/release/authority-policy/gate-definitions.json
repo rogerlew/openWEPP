@@ -96,6 +96,32 @@
         "--package",
         "openwepp-runner"
       ]
+    },
+    {
+      "gate_definition_id": "hard-invariant-wat5-runtime-v1",
+      "authority_class": "A1",
+      "executor": {
+        "kind": "NEXTEST_V1"
+      },
+      "outcome_policy": "BLOCKING",
+      "failure_classification": "HARD_FAIL",
+      "inventory_mode": "EXACT",
+      "inventory_source": "NEXTEST_PACKAGES",
+      "arguments_template": [
+        "cargo",
+        "nextest",
+        "run",
+        "--package",
+        "openwepp",
+        "--package",
+        "openwepp-hillslope-orchestrator",
+        "--package",
+        "openwepp-hillslope-output",
+        "--package",
+        "openwepp-runner",
+        "--package",
+        "openwepp-sim-contract"
+      ]
     }
   ]
 }

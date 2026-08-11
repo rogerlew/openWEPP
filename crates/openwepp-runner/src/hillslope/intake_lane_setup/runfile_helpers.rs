@@ -92,6 +92,11 @@ pub(crate) fn parse_runfile_execution_config(
             runfile.outputs.wat.as_deref(),
             "outputs.wat",
         )?,
+        wat_subhourly: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.wat_subhourly.as_deref(),
+            "outputs.wat_subhourly",
+        )?,
         soil: resolve_optional_runfile_path(
             run_file_path,
             runfile.outputs.soil.as_deref(),

@@ -25,6 +25,7 @@ mod tests {
             loss: PathBuf::from("output/H1.loss.json"),
             pass_parquet: Some(PathBuf::from("output/H1.pass.parquet")),
             wat: Some(PathBuf::from("output/H1.wat.parquet")),
+            wat_subhourly: None,
             soil: None,
             plot: Some(PathBuf::from("output/H1.plot.parquet")),
             ebe: None,

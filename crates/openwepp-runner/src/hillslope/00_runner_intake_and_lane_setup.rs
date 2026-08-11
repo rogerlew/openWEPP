@@ -19,7 +19,7 @@ use openwepp_hillslope_orchestrator::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectCanopyInterceptionInputs, DirectErod13Inputs,
     DirectErosionInputs, DirectEvapotranspirationComputeInputs,
     DirectEvapotranspirationPmetInputs, DirectEvapotranspirationStageState,
-    DirectExecutorMode, DirectFrameExecutor,
+    DirectDayFrame, DirectExecutorMode, DirectFrameExecutor,
     DirectFrostControlInputs, DirectFrostFineLayerProjection, DirectFrostHourlyForcing,
     DirectFrostLaneState, DirectFrostLayerCarryProjection, DirectFrostLayerInput,
     DirectFrostLayerShadowProjection,
@@ -51,6 +51,9 @@ use openwepp_hillslope_output::hillslope_pass::{
 };
 use openwepp_hillslope_output::hillslope_wat::{
     HillslopeWatParquetRowGroupWriter, HillslopeWatRow, InterchangeVersion,
+};
+use openwepp_hillslope_output::hillslope_wat_subhourly::{
+    HillslopeWatSubhourlyParquetRowGroupWriter, HillslopeWatSubhourlyRow,
 };
 use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_checksums};
 use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
@@ -85,6 +88,7 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
+use openwepp_unit_boundary::{ProcessRateMillimetersPerHour, conversions::meters_to_millimeters};
 use serde::{Deserialize, Serialize};
 
 use crate::api::{
@@ -540,6 +544,7 @@ struct HillslopeRunfileOutputs {
     loss: String,
     pass_parquet: Option<String>,
     wat: Option<String>,
+    wat_subhourly: Option<String>,
     soil: Option<String>,
     plot: Option<String>,
     ebe: Option<String>,
@@ -713,6 +718,7 @@ struct DirectPublicationOutputSummary {
 #[derive(Clone)]
 struct DirectPublicationStreamingTargets {
     wat: Option<PathBuf>,
+    wat_subhourly: Option<PathBuf>,
     pass_parquet: Option<PathBuf>,
 }
 

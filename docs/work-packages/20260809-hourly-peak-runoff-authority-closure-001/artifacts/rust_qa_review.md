@@ -333,3 +333,12 @@ implementation is maintainability debt, not a present coverage blocker: it
 requires the corrected native/legacy authority markers and rejects every exact
 former contradiction. Final lifecycle evidence and package disposition remain
 separately owned closure obligations.
+
+## Reconciliation Note
+
+Descendant `a8a96498e` resolves the Rust-review editorial finding and records
+the proportional review receipts without changing the semantic ADR/source-guard
+target at `669269ee4`. The interrupted reopened full-workspace log remains
+non-admitted. The later exact-source full workspace receipt passed 2,346/2,346,
+and both fresh terminal verifiers returned PASS; the separately owned closure
+obligations are complete.

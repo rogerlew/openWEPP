@@ -7,6 +7,9 @@ Evidence mode: `Ran`
 Gate identity for production, authority, and test source:
 `33831787b7029b28b0716c8458f08a11899db446`.
 
+Reopened ADR authority/test identity:
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`.
+
 ## Passed gates
 
 - Owning orchestrator suite before terminal duration-guard addition: PASS,
@@ -34,6 +37,55 @@ Gate identity for production, authority, and test source:
   See `mutation-study.md`.
 - Dual science, Rust correctness, and Rust QA reviews: PASS with no blocking
   findings at the gate identity above.
+- Reopened ADR-0036 authority reconciliation: PASS. The amended decision and
+  source guard are bound to `669269ee4`; both independent science reviews,
+  Rust correctness review, and Rust QA returned PASS.
+- Fresh 2026-08-10 focused replay from the terminal lifecycle worktree:
+  `peak_hourly_authority_contract` PASS 4/4 (run ID
+  `4a896cea-345d-4f8d-b066-3099f980b2b2`), `cargo fmt --all -- --check` PASS,
+  ADR Markdown lint PASS, and `git diff --check` PASS.
+- Exact-source reopened full workspace at `a8a96498`: PASS, 2,346/2,346,
+  46 slow, 33 ordinary skips, 8,193.187 seconds, run ID
+  `64cd5e97-d253-4da1-a3cf-3c4e16f83d22`. Log:
+  `reopen-20260810T121200-full.log`.
+  The detached worktree HEAD is
+  `a8a96498ee909c4305fbc0a4db562b72e45efd2b`. The warm target provenance is
+  direct: the earlier `reopen-20260810T093947-full.log` compiled that same
+  `CARGO_TARGET_DIR=/home/workdir/openwepp-task-a8a96498-target2/full` from
+  `/tmp/openwepp-clean-a8a96498.../crates/...`; the admitted retry reused that
+  target from the same detached worktree. Its 0.35-second build line denotes a
+  warm exact-source target, not a shared-`c9f28a7db` build.
+- Quick disposition: the retained inventories contain 2,297 quick identities,
+  2,346 full identities, and zero quick-only identities. The admitted reopened
+  full receipt therefore executes every quick-selected test. Quick attempts
+  remain non-admitted because of `/tmp` exhaustion, a missing detached-worktree
+  `.venv`, and the profile's known 600-second assurance interruption.
+- Reopened exact-source workspace doctests: PASS in 44 seconds with no
+  executable doctests. `cargo deny check`: PASS. Format: PASS. Authority
+  anti-evasion: PASS. Required-suite obligation guard: PASS 3/3. Peak authority:
+  PASS 4/4.
+
+## Reopened Evidence Reuse Disposition
+
+The reopened delta changes ADR-0036 prose, assertions in the source-reading
+authority integration guard, and package lifecycle/review evidence. It changes
+no production Rust, canonical SC-* contract, serialization schema, frozen
+Topanga input, or release binary. The exact-runtime 2,346/2,346 full-workspace
+receipt, workspace doctest receipt, warnings-denied production Clippy receipts,
+and complete 1,088-trial cohort therefore remain applicable at their recorded
+identities. They are reused evidence, not newly executed evidence. The fresh
+4/4 guard replay directly validates the only executable surface changed by the
+reopen.
+
+## Non-Admitted Reopened Attempts
+
+`nextest-full-669269ee4.log` remains an interrupted 94/2,346 attempt. The
+2026-08-10 retry series also preserves and rejects: a `/tmp` linker-space
+failure, a detached-worktree missing-`.venv` failure, the known quick-profile
+assurance timeout, a monolithic orchestration exit-137 kill, an operator-stopped
+duplicate, and a late source-adjacent fixture write failure while `/tmp` was
+full. None changed source, selection, assertions, or timeouts. After removing
+only task-owned abandoned `/tmp` build scratch, the same full command passed.
 
 ## Workspace scheduling record
 

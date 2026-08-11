@@ -1,6 +1,6 @@
 # Hourly Peak-Runoff Authority Closure
 
-Status: `executing — ADR-0036 authority reconciliation`
+Status: `complete — Critical closure PASS`
 
 Date: `2026-08-09`
 
@@ -238,9 +238,11 @@ independent science reviewers for the hydrologic authority and claim boundary.
 - [x] (2026-08-09) Completed dual terminal verification at corrected closure
   candidate `d5320fafb`, archived the executed kickoff prompt with its digest,
   and recorded final PASS disposition.
-- [ ] Reconcile the subsequently discovered ADR-0036 D4/Alternative-4
-  contradiction, add an ADR-level source guard, and rerun the required closure
-  evidence and review.
+- [x] (2026-08-10) Reconciled the subsequently discovered ADR-0036
+  D4/Alternative-4 contradiction at `669269ee4`, added an ADR-level source
+  guard, completed proportional science and Rust re-review, and replayed the
+  focused authority gate, and passed the exact-source full workspace gate
+  2,346/2,346. Both fresh independent terminal verifiers returned PASS.
 
 ## Surprises And Discoveries
 
@@ -350,6 +352,13 @@ independent science reviewers for the hydrologic authority and claim boundary.
   Rationale: the prompt remains an immutable record of the completed original
   implementation; this correction stays within the package objective and write
   set, and the package lifecycle records the reopened scope explicitly.
+- Decision: rerun the reopened exact-source quick/full workspace gates before
+  terminal closure.
+  Rationale: the retained `nextest-full-669269ee4.log` is interrupted and Rust
+  QA explicitly kept fresh workspace receipts as a closure obligation. The
+  earlier 2,346-test runtime receipt remains valid runtime evidence, but it
+  does not discharge that explicit reopened lifecycle gate by itself.
+  Date/Author: 2026-08-10 / Codex executor under direct user closure authority.
 
 ## Outcomes And Retrospective
 
@@ -374,7 +383,16 @@ consumer and authority gates, warnings-denied Clippy, formatting, doctests,
 anti-evasion checks, documentation checks, two independent science reviews,
 Rust correctness and QA reviews, and two independent terminal verifications.
 That disposition was reopened after ADR-0036's contradictory peak authority
-was discovered; the final authority-reconciliation receipt remains pending.
+was discovered. Commit `669269ee4` amended the decision and added the source
+guard; the two independent science reviews and both Rust reviews accepted the
+narrow correction. A fresh 4/4 authority replay passed on 2026-08-10. Fresh
+reopened full workspace receipt passed 2,346/2,346; the quick inventory is an
+exact subset of that admitted full inventory. Both fresh terminal verifiers
+returned PASS. Because
+the reopened delta changes decision prose and its source-reading integration
+guard but no runtime, contract arithmetic, serialized output, or Topanga
+input, the previously admitted exact-runtime full-workspace and cohort
+receipts remain applicable and are explicitly reused for final closure.
 The supported result is a maximum hourly mean hillslope runoff flow. It is not
 an instantaneous/subhourly peak, legacy-parity result, calibrated or observed
 flow validation, or routed watershed/channel-flow claim.

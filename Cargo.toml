@@ -329,6 +329,22 @@ name = "erosion_multi_ofe_p102_chain"
 path = "tests/integration/erosion_multi_ofe_p102_chain.rs"
 
 [[test]]
+name = "subhourly_generation_contract"
+path = "tests/integration/subhourly_generation_contract.rs"
+
+[[test]]
+name = "subhourly_generation_properties"
+path = "tests/integration/subhourly_generation_properties.rs"
+
+[[test]]
+name = "subhourly_water_output_roundtrip"
+path = "tests/integration/subhourly_water_output_roundtrip.rs"
+
+[[test]]
+name = "hbp_subhourly_exclusion_contract"
+path = "tests/integration/hbp_subhourly_exclusion_contract.rs"
+
+[[test]]
 name = "laned_shadow_h2637"
 path = "tests/integration/laned_shadow_h2637.rs"
 

@@ -4,11 +4,13 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BASE_REF=""
 HEAD_REF="HEAD"
+WORKTREE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --base-ref) BASE_REF="${2:-}"; shift 2 ;;
     --head-ref) HEAD_REF="${2:-}"; shift 2 ;;
+    --worktree) WORKTREE=true; shift ;;
     *) echo "ERROR: unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -20,10 +22,15 @@ fi
 
 cd "${ROOT_DIR}"
 git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null
-git rev-parse --verify "${HEAD_REF}^{commit}" >/dev/null
-git merge-base --is-ancestor "${BASE_REF}" "${HEAD_REF}"
+if [[ "${WORKTREE}" == true ]]; then
+  git merge-base --is-ancestor "${BASE_REF}" HEAD
+else
+  git rev-parse --verify "${HEAD_REF}^{commit}" >/dev/null
+  git merge-base --is-ancestor "${BASE_REF}" "${HEAD_REF}"
+fi
 
-python3 - "${BASE_REF}" "${HEAD_REF}" <<'PY'
+python3 - "${BASE_REF}" "${HEAD_REF}" "${WORKTREE}" <<'PY'
+import hashlib
 import json
 import re
 import subprocess
@@ -31,12 +38,13 @@ import sys
 import tomllib
 from pathlib import Path
 
-base_ref, head_ref = sys.argv[1:]
+base_ref, head_ref, worktree_text = sys.argv[1:]
+worktree = worktree_text == "true"
 index_path = Path("docs/specifications/science-contracts/index.md")
 if not index_path.is_file():
     raise SystemExit("ERROR: science-contract registry is missing")
 
-row_re = re.compile(r"^\| `(?P<id>SC-[A-Z0-9]+-\d{3})` \|")
+row_re = re.compile(r"^\| `(?P<id>SC-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3})` \|")
 field_re = re.compile(r"^(contract_id|status|maturity):\s*(.+?)\s*$")
 rows = []
 in_registry = False
@@ -185,10 +193,22 @@ for line in Path("docs/specifications/external-authority/registry.yaml").read_te
         if key in {"status", "authority_level", "gate_lane", "failure_class"}:
             suite_fields[current][key] = value.strip()
 
-changed = subprocess.check_output(
-    ["git", "diff", "--name-only", "--diff-filter=ACDMRT", base_ref, head_ref],
-    text=True,
-).splitlines()
+if worktree:
+    changed = sorted(set(
+        subprocess.check_output(
+            ["git", "diff", "--name-only", "--diff-filter=ACDMRT", base_ref],
+            text=True,
+        ).splitlines()
+        + subprocess.check_output(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            text=True,
+        ).splitlines()
+    ))
+else:
+    changed = subprocess.check_output(
+        ["git", "diff", "--name-only", "--diff-filter=ACDMRT", base_ref, head_ref],
+        text=True,
+    ).splitlines()
 for changed_path in changed:
     if changed_path.startswith("docs/specifications/science-contracts/contracts/SC-"):
         contract_id = Path(changed_path).stem
@@ -236,71 +256,107 @@ for changed_path in science_paths:
             or changed_path.startswith(matcher["value"].rstrip("/") + "/")
         ):
             matches.append(entry)
-    admitted = [entry for entry in matches if len(entry.get("contracts", [])) == 1]
-    if len(admitted) != 1:
+    malformed = [entry for entry in matches if len(entry.get("contracts", [])) != 1]
+    if malformed:
         raise SystemExit(
-            f"ERROR: {changed_path} requires one current SC contract binding; observed={len(admitted)}"
+            f"ERROR: {changed_path} has non-atomic SC contract bindings: "
+            f"{[entry.get('entry_id') for entry in malformed]}"
         )
-    entry = admitted[0]
-    contract_id = entry["contracts"][0]
-    if contract_id not in active_ids:
-        raise SystemExit(f"ERROR: {changed_path} references unknown contract {contract_id}")
-    if active_metadata[contract_id] != {"status": "approved", "maturity": "active"}:
+    if not matches:
         raise SystemExit(
-            f"ERROR: {changed_path} references provisional contract {contract_id}: "
-            f"{active_metadata[contract_id]}"
+            f"ERROR: {changed_path} requires at least one current SC contract binding"
         )
-    covering_targets = entry.get("covering_test_targets", [])
-    if not covering_targets:
-        raise SystemExit(f"ERROR: {changed_path} has no explicit A1 hard-invariant binding")
-    a1_definitions = [
-        gate_definitions.get(definition_id)
-        for definition_id in entry.get("gate_definition_ids", [])
-    ]
-    for target in covering_targets:
-        valid_a1 = any(
-            definition
-            and definition["authority_class"] == "A1"
-            and definition["executor"]["kind"] == "NEXTEST_V1"
-            and definition["outcome_policy"] == "BLOCKING"
-            and definition["failure_classification"] == "HARD_FAIL"
-            and definition["inventory_mode"] == "EXACT"
-            and definition["inventory_source"].startswith("NEXTEST_")
-            and target in definition["arguments_template"]
-            for definition in a1_definitions
+    contract_ids = [entry["contracts"][0] for entry in matches]
+    if len(contract_ids) != len(set(contract_ids)):
+        raise SystemExit(
+            f"ERROR: {changed_path} has duplicate SC contract bindings: {contract_ids}"
         )
-        if not valid_a1:
+    for entry, contract_id in zip(matches, contract_ids, strict=True):
+        if contract_id not in active_ids:
+            raise SystemExit(f"ERROR: {changed_path} references unknown contract {contract_id}")
+        if active_metadata[contract_id] != {"status": "approved", "maturity": "active"}:
             raise SystemExit(
-                f"ERROR: {changed_path} target {target} is not bound to an executable A1 gate"
+                f"ERROR: {changed_path} references provisional contract {contract_id}: "
+                f"{active_metadata[contract_id]}"
             )
-    suites = entry.get("authority_suites", [])
-    applicable_a3 = sorted(
-        suite for suite, fields in suite_fields.items()
-        if fields == {
-            "status": "active",
-            "authority_level": "4",
-            "gate_lane": "required",
-            "failure_class": "hard-fail",
-        }
-        and any(ref.startswith(f"{contract_id}#") for ref in suite_refs.get(suite, set()))
-    )
-    valid_a3 = [
-        suite for suite in suites
-        if suite_fields.get(suite) == {
-            "status": "active",
-            "authority_level": "4",
-            "gate_lane": "required",
-            "failure_class": "hard-fail",
-        }
-        and any(ref.startswith(f"{contract_id}#") for ref in suite_refs.get(suite, set()))
-    ]
-    if sorted(suites) != applicable_a3 or len(valid_a3) != len(suites):
-        raise SystemExit(
-            f"ERROR: {changed_path} A3 binding differs from applicable registry suites: "
-            f"declared={sorted(suites)} applicable={applicable_a3}"
+        covering_targets = entry.get("covering_test_targets", [])
+        if not covering_targets:
+            raise SystemExit(f"ERROR: {changed_path} has no explicit A1 hard-invariant binding")
+        a1_definitions = [
+            gate_definitions.get(definition_id)
+            for definition_id in entry.get("gate_definition_ids", [])
+        ]
+        for target in covering_targets:
+            valid_a1 = any(
+                definition
+                and definition["authority_class"] == "A1"
+                and definition["executor"]["kind"] == "NEXTEST_V1"
+                and definition["outcome_policy"] == "BLOCKING"
+                and definition["failure_classification"] == "HARD_FAIL"
+                and definition["inventory_mode"] == "EXACT"
+                and definition["inventory_source"].startswith("NEXTEST_")
+                and target in definition["arguments_template"]
+                for definition in a1_definitions
+            )
+            if not valid_a1:
+                raise SystemExit(
+                    f"ERROR: {changed_path} target {target} is not bound to an executable A1 gate"
+                )
+        suites = entry.get("authority_suites", [])
+        applicable_a3 = sorted(
+            suite for suite, fields in suite_fields.items()
+            if fields == {
+                "status": "active",
+                "authority_level": "4",
+                "gate_lane": "required",
+                "failure_class": "hard-fail",
+            }
+            and any(ref.startswith(f"{contract_id}#") for ref in suite_refs.get(suite, set()))
         )
+        valid_a3 = [
+            suite for suite in suites
+            if suite_fields.get(suite) == {
+                "status": "active",
+                "authority_level": "4",
+                "gate_lane": "required",
+                "failure_class": "hard-fail",
+            }
+            and any(ref.startswith(f"{contract_id}#") for ref in suite_refs.get(suite, set()))
+        ]
+        if sorted(suites) != applicable_a3 or len(valid_a3) != len(suites):
+            raise SystemExit(
+                f"ERROR: {changed_path} A3 binding differs from applicable registry suites: "
+                f"declared={sorted(suites)} applicable={applicable_a3}"
+            )
 
 base = subprocess.check_output(["git", "rev-parse", f"{base_ref}^{{commit}}"], text=True).strip()
-head = subprocess.check_output(["git", "rev-parse", f"{head_ref}^{{commit}}"], text=True).strip()
-print(f"A0_ADMITTED contracts={checked} science_surfaces={len(science_paths)} base={base} head={head}")
+if worktree:
+    digest = hashlib.sha256()
+    authority_paths = set(science_paths) | active_paths | {
+        str(path) for path in input_contract_files.values()
+    } | {
+        str(input_registry),
+        "docs/specifications/science-contracts/index.md",
+        "docs/specifications/external-authority/registry.yaml",
+        "tools/release/authority-policy/impact-map.json",
+        "tools/release/authority-policy/gate-definitions.json",
+        "tools/release/check_science_contract_admission.sh",
+    }
+    for authority_path in sorted(authority_paths):
+        digest.update(authority_path.encode("utf-8"))
+        digest.update(b"\0")
+        path = Path(authority_path)
+        digest.update(path.read_bytes() if path.is_file() else b"<deleted>")
+        digest.update(b"\0")
+    head = "WORKTREE"
+    authority_sha256 = digest.hexdigest()
+else:
+    head = subprocess.check_output(
+        ["git", "rev-parse", f"{head_ref}^{{commit}}"], text=True
+    ).strip()
+suffix = f" authority_sha256={authority_sha256}" if worktree else ""
+print(
+    f"A0_ADMITTED contracts={checked} science_surfaces={len(science_paths)} "
+    f"base={base} head={head}{suffix}"
+)
 PY

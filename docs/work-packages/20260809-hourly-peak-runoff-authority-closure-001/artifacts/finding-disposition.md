@@ -39,3 +39,17 @@ Terminal reviews bind exact implementation/contract/test commit
 `33831787b7029b28b0716c8458f08a11899db446`. Both science reviewers, the Rust
 correctness reviewer, and Rust QA returned PASS with no remaining blocking
 findings.
+
+The later ADR-0036 contradiction was accepted as a closure-blocking authority
+finding and corrected at `669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`.
+ADR-0036 now makes the maximum modeled hourly mean the native authority,
+confines reconstruction to bounded compatibility semantics, and rejects a
+second analytical peak. The source guard, both proportional science reviews,
+Rust correctness review, Rust QA review, and fresh 4/4 replay all pass. The
+finding is closed; only non-blocking maintainability suggestions recorded by
+Rust QA remain.
+
+The Rust-review LOW editorial fragment is resolved by descendant `a8a96498e`.
+The exact-source reopened full workspace, focused authority, deny, doctest,
+anti-evasion, and obligation-guard receipts now pass. Both fresh terminal
+verifiers returned PASS; there is no open implementation or authority finding.

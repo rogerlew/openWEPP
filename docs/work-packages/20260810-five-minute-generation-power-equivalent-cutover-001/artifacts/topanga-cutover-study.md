@@ -1,7 +1,8 @@
 # Topanga Cutover Study
 
-Status: `queued`
+Status: `NOT_RUN_NO_CUTOVER`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Populate this artifact according to the requirements in `../package.md`.
+There is no erosion cutover to validate. Running this cohort would violate the
+frozen outcome embargo and could not alter the water diagnostic disposition.

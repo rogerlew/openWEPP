@@ -4,5 +4,6 @@
 pub mod contracts;
 pub mod hillslope_pass;
 pub mod hillslope_wat;
+pub mod hillslope_wat_subhourly;
 pub mod manifest;
 pub mod writers;

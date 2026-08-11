@@ -1,4 +1,32 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run"
+  "status": "identity_retained_outcome_embargo_terminal",
+  "evidence_mode": "static_identity_only_no_outcome_access",
+  "outcomes_opened": false,
+  "plan": {
+    "path": "/workdir/wepppy/docs/work-packages/20260808_peakflow_topanga_census_prep/artifacts/topanga-trial-plan.json",
+    "plan_id": "b575fde4a28cf85f1d28e0dfff305472b5419fd9b3639d39dc437600617080de",
+    "sha256": "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756",
+    "expected_trials": 1088,
+    "expected_baselines": 280
+  },
+  "selection": {
+    "path": "/workdir/wepppy/docs/work-packages/20260809_peakflow_topanga_census_execution/artifacts/topanga-execution-selection.json",
+    "selection_id": "2e450acbaa131c268fab70bd048480e1bc100990094071d74b432bf1579e3e3d",
+    "sha256": "c6184f452ff5d6202c8158a9a02f5c849e63082c5d6cc5a44a6f53a517438c20"
+  },
+  "input_snapshot": {
+    "path": "/workdir/wepppy/docs/work-packages/20260809_peakflow_topanga_census_execution/artifacts/topanga-input-snapshot.json",
+    "snapshot_id": "2006d278ede4da5157e9d344863a64cef746b879106cf17b16c87d9c9a80542d",
+    "file_sha256": "f8b7535ed276d386797c9f7fffba076ee63469e2d9ac0a3260a4531543467f4c",
+    "files_verified": 1408,
+    "missing_or_mismatched": 0,
+    "mutation_directories_verified": 1088
+  },
+  "report": {
+    "wepppy_head_at_intake": "edf1fc4f99cb6aa9977f078fee7f38a40cc4fa9f",
+    "tex_path": "/workdir/wepppy/docs/investigations/2026-08-08-wepp-peak-flow-discontinuity-multi-site-audit/topanga-small-mutation-census-report.tex",
+    "tex_sha256": "20db0ff9491cc045efc1c30629d78dbb7918ae101f490aa2df06cce7554d35e6",
+    "pdf_sha256": "bc7555e49b6daa12ad6b4ad9c29414c6affd31ea0829b614d46c365387bbf016"
+  },
+  "resume_rule": "Re-pin these identities after predecessor closure and before candidate execution; do not reuse prior result roots or binaries."
 }

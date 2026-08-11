@@ -177,6 +177,176 @@
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
     },
     {
+      "entry_id": "wat5-direct-runtime-module",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-direct-core-frames",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-direct-publication",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-direct-executor",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-direct-runoff",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-generation-ledger",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subhourly_generation.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-orchestrator-public-api",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/lib.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-output-contracts",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-output/src/contracts.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-output"],
+      "test_targets": ["openwepp", "openwepp-hillslope-output"], "covering_test_targets": ["openwepp", "openwepp-hillslope-output"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-output-writer",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-output/src/hillslope_wat_subhourly.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-output"],
+      "test_targets": ["openwepp", "openwepp-hillslope-output"], "covering_test_targets": ["openwepp", "openwepp-hillslope-output"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-output-public-api",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-output/src/lib.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-output"],
+      "test_targets": ["openwepp", "openwepp-hillslope-output"], "covering_test_targets": ["openwepp", "openwepp-hillslope-output"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-output-writer-registry",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-output/src/writers.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-output"],
+      "test_targets": ["openwepp", "openwepp-hillslope-output"], "covering_test_targets": ["openwepp", "openwepp-hillslope-output"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-intake",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/03_tests.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-publication",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/04_direct_publication.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-execution",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runfile-helpers",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/intake_lane_setup/runfile_helpers.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-output-unit-catalog",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-sim-contract/src/units_mod/output_catalog.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-sim-contract"],
+      "test_targets": ["openwepp", "openwepp-sim-contract"], "covering_test_targets": ["openwepp", "openwepp-sim-contract"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
       "entry_id": "groundwater-assurance-domain",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs" },
       "owner": "openwepp-groundwater-process-owner",

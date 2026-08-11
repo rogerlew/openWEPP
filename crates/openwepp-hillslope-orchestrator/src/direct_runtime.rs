@@ -166,6 +166,7 @@ mod normalization;
 mod projection;
 mod runoff;
 mod storage;
+mod subhourly_generation;
 mod subsurface;
 
 pub use decomposition::{
@@ -354,6 +355,9 @@ pub use storage::{
     DirectStorageShadowProjection, DirectSubsurfaceLossDownstreamOperands,
     DirectSubsurfaceLossInputs, DirectSubsurfaceLossShadowProjection,
     DirectSubsurfaceLossSpanReport, DirectSubsurfaceLossState,
+};
+pub use subhourly_generation::{
+    DirectFiveMinuteGenerationEvent, DirectFiveMinuteGenerationInterval,
 };
 pub use subsurface::{
     DirectPercolationDownstreamOperands, DirectPercolationInputs,

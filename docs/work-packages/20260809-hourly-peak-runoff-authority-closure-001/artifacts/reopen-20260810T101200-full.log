@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.84s
+────────────
+ Nextest run ID 73a0dfa3-90ac-419d-a0b3-57e31618e83f with nextest profile: full
+    Starting 2346 tests across 210 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+  Cancelling due to interrupt: 2 tests still running
+      SIGINT [  24.992s] (  44/2346) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+      SIGINT [  28.391s] (  45/2346) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+────────────
+     Summary [  44.296s] 45/2346 tests run: 43 passed, 2 failed, 33 skipped
+warning: 2301/2346 tests were not run due to interrupt
+error: test run failed

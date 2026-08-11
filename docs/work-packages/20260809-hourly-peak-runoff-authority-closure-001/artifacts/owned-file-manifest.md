@@ -1,11 +1,21 @@
 # Owned File Manifest
 
-Status: `terminal diff reconciled`
+Status: `terminal diff reconciled — reopened increment included`
 
 Base identity: `a65cc3973ddd04b07cad108fcb33d83a8c161abb`.
 
 Implementation/contract/test identity:
 `33831787b7029b28b0716c8458f08a11899db446`.
+
+Reopened ADR authority/test identity:
+`669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2`.
+
+The reopened increment adds only the already-declared ADR/catalog/source-guard
+surfaces plus proportional review and lifecycle evidence. Commit `a8a96498e`
+contains the review-receipt/editorial reconciliation after `669269ee4`; later
+`c9f28a7db` is the successor package scaffold and does not alter predecessor
+runtime, authority, tests, or evidence. Final predecessor lifecycle edits are
+confined to this package tree and its catalog row.
 
 The terminal package diff contains exactly the paths below. Package-local
 verification artifacts are included because the two verifiers append their
@@ -62,6 +72,8 @@ tests/integration/peak_hourly_authority_contract.rs
 ```text
 docs/backlog/20260807-canopy-peak-runoff-discontinuity.md
 docs/backlog/TRACKER.md
+docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md
+docs/decisions/README.md
 docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md
 docs/specifications/science-contracts/contracts/SC-SED-001.md
 docs/specifications/science-contracts/contracts/SC-WATBAL-001.md
@@ -77,6 +89,7 @@ docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/c
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/contract-implementation-evidence.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/contract-test-implementation-evidence.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/disposition.md
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/doc-test-669269ee4.log
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/finding-disposition.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/gate-results.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/implementation-test-evidence.md
@@ -84,6 +97,8 @@ docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/i
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/kernel-profile-compliance.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/line-count-governance.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/mutation-study.md
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/nextest-full-669269ee4.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/nextest-peak-authority-contract-669269ee4.log
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/operand-lineage.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/owned-file-manifest.md
 docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/pre-implementation-contract-gate.md
@@ -145,3 +160,23 @@ docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/t
 External generated evidence remains outside Git at
 `/home/workdir/openwepp-hourly-peak-topanga-census-20260809-v5`; its hashes and
 paths are bound in `summary.json` and `command-log.json`.
+
+## Reopened Closure Receipts
+
+```text
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091430-fmt.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091433-deny.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091441-quick.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T091536-quick.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T092008-quick.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T093947-full.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095145-docs.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095229-antiev.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095230-peak.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T095317-auth11.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T100900-full.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T101200-full.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-20260810T121200-full.log
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-gate-manifest.tsv
+docs/work-packages/20260809-hourly-peak-runoff-authority-closure-001/artifacts/reopen-gate-runlog.txt
+```

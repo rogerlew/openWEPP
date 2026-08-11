@@ -1,0 +1,272 @@
+CMD: env TMPDIR=/home/workdir/openwepp-task-tmp CARGO_TARGET_DIR=/home/workdir/openwepp-wat5-terminal-target/full cargo nextest run --workspace --profile full --no-fail-fast --test-threads 2
+START_UTC: 2026-08-10T23:18:39Z
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling serde_core v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling serde v1.0.228
+   Compiling version_check v0.9.5
+   Compiling equivalent v1.0.2
+   Compiling ryu v1.0.23
+   Compiling typenum v1.20.0
+   Compiling itoa v1.0.18
+   Compiling hashbrown v0.17.1
+   Compiling unsafe-libyaml v0.2.11
+   Compiling cpufeatures v0.2.17
+   Compiling crc32fast v1.5.0
+   Compiling adler2 v2.0.1
+   Compiling simd-adler32 v0.3.9
+   Compiling libc v0.2.186
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling memchr v2.8.0
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.150
+   Compiling zerocopy v0.8.48
+   Compiling getrandom v0.3.4
+   Compiling shlex v1.3.0
+   Compiling find-msvc-tools v0.1.9
+   Compiling once_cell v1.21.4
+   Compiling lexical-util v1.0.7
+   Compiling pkg-config v0.3.33
+   Compiling bytes v1.11.1
+   Compiling arrow-schema v54.3.1
+   Compiling iana-time-zone v0.1.65
+   Compiling semver v1.0.28
+   Compiling hashbrown v0.15.5
+   Compiling zstd-safe v7.2.4
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling snap v1.1.1
+   Compiling paste v1.0.15
+   Compiling bitflags v1.3.2
+   Compiling winnow v0.7.15
+   Compiling static_assertions v1.1.0
+   Compiling byteorder v1.5.0
+   Compiling toml_write v0.1.2
+   Compiling base64 v0.22.1
+   Compiling integer-encoding v3.0.4
+   Compiling twox-hash v2.1.2
+   Compiling seq-macro v0.3.6
+   Compiling simdutf8 v0.1.5
+   Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling lz4_flex v0.11.6
+   Compiling twox-hash v1.6.3
+   Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+   Compiling miniz_oxide v0.8.9
+   Compiling alloc-stdlib v0.2.2
+   Compiling powerfmt v0.2.0
+   Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling time-core v0.1.8
+   Compiling num-conv v0.2.2
+   Compiling stable_deref_trait v1.2.1
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling smallvec v1.15.2
+   Compiling brotli-decompressor v4.0.3
+   Compiling icu_normalizer_data v2.2.0
+   Compiling icu_properties_data v2.2.0
+   Compiling utf8_iter v1.0.4
+   Compiling pulldown-cmark v0.13.4
+   Compiling parking_lot_core v0.9.12
+   Compiling bitflags v2.13.0
+   Compiling generic-array v0.14.7
+   Compiling ahash v0.8.12
+   Compiling rustc_version v0.4.1
+   Compiling deranged v0.5.8
+   Compiling unicase v2.9.0
+   Compiling ref-cast v1.0.25
+   Compiling regex-syntax v0.8.11
+   Compiling scopeguard v1.2.0
+   Compiling borrow-or-share v0.2.4
+   Compiling allocator-api2 v0.2.21
+   Compiling unicode-general-category v1.1.0
+   Compiling num-traits v0.2.19
+   Compiling foldhash v0.2.0
+   Compiling bit-vec v0.8.0
+   Compiling lock_api v0.4.14
+   Compiling vsimd v0.8.0
+   Compiling outref v0.5.2
+   Compiling percent-encoding v2.3.2
+   Compiling lazy_static v1.5.0
+   Compiling num-cmp v0.1.0
+   Compiling bytecount v0.6.9
+   Compiling data-encoding v2.11.0
+   Compiling lexical-parse-integer v1.0.6
+   Compiling lexical-write-integer v1.0.6
+   Compiling quick-xml v0.41.0
+   Compiling flatbuffers v24.12.23
+   Compiling aho-corasick v1.1.4
+   Compiling flate2 v1.1.9
+   Compiling bit-set v0.8.0
+   Compiling indexmap v2.14.0
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling lexical-parse-float v1.0.6
+   Compiling hashbrown v0.16.1
+   Compiling lexical-write-float v1.0.6
+   Compiling uuid-simd v0.8.0
+   Compiling syn v2.0.117
+   Compiling lexical-core v1.0.6
+   Compiling brotli v7.0.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling jobserver v0.1.34
+   Compiling parking_lot v0.12.5
+   Compiling time v0.3.47
+   Compiling cc v1.2.62
+   Compiling num-integer v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling chrono v0.4.44
+   Compiling ordered-float v2.10.1
+   Compiling atoi v2.0.0
+   Compiling regex-automata v0.4.15
+   Compiling num-bigint v0.4.6
+   Compiling num-iter v0.1.45
+   Compiling thrift v0.17.0
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling num-rational v0.4.2
+   Compiling num v0.4.3
+   Compiling fraction v0.15.4
+   Compiling synstructure v0.13.2
+   Compiling regex v1.13.0
+   Compiling fancy-regex v0.17.0
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.48
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.6
+   Compiling ref-cast-impl v1.0.25
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling zstd v0.13.3
+   Compiling icu_provider v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling fluent-uri v0.4.1
+   Compiling email_address v0.2.9
+   Compiling toml_edit v0.22.27
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+   Compiling toml v0.8.23
+   Compiling half v2.7.1
+   Compiling referencing v0.42.2
+   Compiling arrow-buffer v54.3.1
+   Compiling jsonschema v0.42.2
+   Compiling arrow-data v54.3.1
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling arrow-array v54.3.1
+   Compiling arrow-select v54.3.1
+   Compiling arrow-ipc v54.3.1
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling arrow-cast v54.3.1
+   Compiling parquet v54.3.1
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 52.25s
+────────────
+ Nextest run ID eb241b16-8d4f-496a-8be4-b0648e893915 with nextest profile: full
+    Starting 2379 tests across 214 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>450.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>540.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract bootstrap_empty_directory_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract bootstrap_unowned_readme_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract every_precommit_fault_boundary_preserves_the_prior_public_generation
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract missing_release_transfer_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract named_publication_rejects_unreceipted_prior_catalog_entries
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract narrative_drift_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [>270.000s] (─────────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract reconstructed_production_snapshot_passes_and_forged_roots_fail
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract release_driver_persists_verified_v2_artifacts_and_discovery_sidecar
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract simultaneous_publishers_serialize_and_converge_on_one_generation
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract staging_fifo_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract staging_symlink_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract superseded_report_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract wrong_principal_kind_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract wrong_principal_role_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+        SLOW [> 90.000s] (─────────) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [> 90.000s] (─────────) openwepp-assurance v2::transaction::tests::adoption_selected_source_race_preserves_the_active_generation
+        SLOW [> 90.000s] (─────────) openwepp-assurance v2::transaction::tests::every_precommit_fault_preserves_the_active_generation
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+────────────
+     Summary [8504.074s] 2379 tests run: 2379 passed (47 slow), 33 skipped
+real 8557.61
+user 9950.73
+sys 697.50
+END_UTC: 2026-08-11T01:41:17Z
+EXIT_CODE:0

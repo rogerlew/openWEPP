@@ -90,10 +90,9 @@ existing integration target introduces no new harness or dependency surface.
   unrelated future prose satisfies a required marker.
 - The ADR checks share the publication/erosion test function. A separate test
   would improve failure localization without changing coverage.
-- `ADR-0036:194-195` retains a dangling `The` before the new D3 paragraph
-  (`The For a current...`). This is a non-blocking editorial cleanup: the
-  conditional fallback and peak authority on the surrounding lines remain
-  explicit and unambiguous.
+- The initially reported dangling `The` before the amended D3 paragraph was a
+  non-blocking editorial finding and is resolved by descendant `a8a96498e`.
+  The semantic review target remains `669269ee4`.
 - Previously recorded scope limits remain: the warmed H2637 suite does not
   prove frost-active Lane D/WB16 coupling, and pure-melt coverage is split
   across R4K and downstream WB16 tests rather than one end-to-end vector.

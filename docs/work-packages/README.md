@@ -11,22 +11,33 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260810-five-minute-generation-power-equivalent-cutover-001/` — QUEUED /
-  CRITICAL CONDITIONAL ADOPTION: scaffolds the supplied five-minute
+- `20260810-five-minute-generation-power-equivalent-cutover-001/` — COMPLETE /
+  CRITICAL PASS / DIAGNOSTIC WATER / EROSION NO_ADOPTION: the supplied five-minute
   runoff-generation water-output and power-equivalent erosion-forcing ExecPlan.
   It preserves hourly water, WB16/public peak, HBP, and routing authority;
   production erosion cutover is permitted only after preregistered authority,
   source-completeness, real-consumer, full Topanga, and Critical closure gates.
+  Intake confirmed current peak authority and its 4/4 focused contract test.
+  The required 20260809 predecessor is now terminally closed after a fresh
+  exact-source 2,346/2,346 workspace pass and fresh dual terminal verification,
+  so the independent water-output path resumed at baseline freezing. Package-local prospective
+  feasibility then rejected every fixed erosion exponent before Topanga
+  outcomes were opened. Erosion `NO_ADOPTION` remains binding; the independent
+  five-minute water product is the only implemented arm. The final exact
+  worktree A0 gate admitted 17 science surfaces, the post-repair full campaign
+  passed 2,380/2,380 plus doctests, and both fresh terminal verifiers passed.
 
-- `20260809-hourly-peak-runoff-authority-closure-001/` — EXECUTING / CRITICAL
-  ADR AUTHORITY RECONCILIATION: WB16 uses the modeled 24-bin surface-runoff series,
+- `20260809-hourly-peak-runoff-authority-closure-001/` — COMPLETE / CRITICAL
+  CLOSURE PASS:
+  WB16 uses the modeled 24-bin surface-runoff series,
   soil-water return retains its modeled hour, and public `m3/s` applies area
   once to the internal maximum-hour `m/s` depth rate. The exact-head workspace
   passed 2,346/2,346 tests; 280 baselines and all 1,088 Topanga mutations
   completed with zero unexplained volume-stable peak discontinuities. Dual
-  science, Rust, and dual terminal verification gates previously passed. A
-  stale ADR-0036 independent-peak statement reopens closure until its decision
-  authority and a source guard match the implemented hourly maximum. The claim
+  science, Rust, and dual terminal verification gates passed. The later stale
+  ADR-0036 independent-peak statement was corrected at `669269ee4`; its source
+  guard, proportional reviews, fresh 4/4 focused replay, and exact-source
+  2,346/2,346 full workspace receipt and fresh dual terminal verification pass. The claim
   remains maximum hourly mean hillslope flow, not instantaneous peak or
   observed validation.
 

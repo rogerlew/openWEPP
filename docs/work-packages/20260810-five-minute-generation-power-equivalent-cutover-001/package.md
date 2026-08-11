@@ -1,5 +1,5 @@
 # Diagnose, adopt, and cut over five-minute power-equivalent runoff-generation forcing
-Status: `queued — scaffolded; execution has not begun`
+Status: `COMPLETE / PASS — diagnostic water output; erosion not adopted`
 
 This ExecPlan is a living document. Maintain `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` as execution proceeds.
 
@@ -34,27 +34,64 @@ The package must run end-to-end without asking the operator for incremental dire
 
 ## Progress
 
-- [ ] Record actual starting source identity, worktree state, applicable `AGENTS.md` chain, and prerequisite package status.
-- [ ] Scaffold the package, prompt directories, queued artifacts, and work-package catalog entry.
-- [ ] Freeze baseline output and persistent-state identities before production edits.
-- [ ] Complete the rate/duration consumer map for the current hourly Wave-1 erosion path.
-- [ ] Implement package-local diagnostic feasibility tools without changing production behavior.
-- [ ] Establish or reject a fixed exponent and a mathematically admissible reduction before opening Topanga outcomes.
-- [ ] Freeze the exponent, reduction formula, candidate implementation identity, thresholds, and Topanga plan.
-- [ ] Amend diagnostic water-output and candidate-computation contracts.
-- [ ] Add contract-derived tests and record the required pre-implementation red gate.
-- [ ] Implement the isolated five-minute generation ledger and optional water-output product.
-- [ ] Implement the non-authoritative candidate erosion arm with cloned state.
-- [ ] Prove diagnostics-off and diagnostics-on noninterference.
-- [ ] Execute resolution, bin-phase, analytic, source-completeness, and performance studies.
-- [ ] Execute the frozen 1,088-trial Topanga diagnostic adoption study.
-- [ ] Complete the prospective adoption disposition.
-- [ ] If and only if disposition is `ADOPT`, amend production erosion authority and ADR-0036 before changing the production selector.
-- [ ] Record the production-contract red gate showing that the real consumer still reads the old hourly-mean forcing.
-- [ ] Cut over the eligible production erosion domain to the admitted power-equivalent reduction.
-- [ ] Prove the real Wave-1 consumer reads the admitted forcing and that the shadow and production results agree.
-- [ ] Re-execute the complete Topanga cohort through the real cutover path.
-- [ ] Run Critical exact-head validation, dual review, finding disposition, dual terminal verification, exact-diff reconciliation, and final disposition.
+- [x] (2026-08-10) Recorded actual starting source identity, clean worktree,
+  applicable `AGENTS.md` chains, and the blocked prerequisite package status.
+- [x] (2026-08-10) Confirmed the package, prompt directories, queued artifacts,
+  and work-package catalog entry were scaffolded by `c9f28a7db`.
+- [x] (2026-08-10) Froze exact source/toolchain/runner identities, focused
+  synthetic water and persistent-rill-state receipts, and byte plus logical-row
+  hashes for p61 and p102 WAT/PASS/HBP/manifests before production edits. The
+  Topanga erosion pair remains unopened under the binding `NO_ADOPTION` embargo.
+- [x] (2026-08-10) Completed a static rate/duration consumer map for the
+  current hourly Wave-1 erosion path; retained it as restart evidence without
+  treating it as adoption authority.
+- [x] (2026-08-10) Implemented and tested package-local diagnostic feasibility
+  tools without changing production behavior.
+- [x] (2026-08-10) Rejected every fixed exponent after a prospective
+  constitutive study; identified the two-moment form as structurally necessary
+  but not production-admissible without an exponent.
+- [x] (2026-08-10) Froze `NO_ADOPTION`, the outcome embargo, thresholds, and
+  Topanga input identities; no candidate implementation identity exists.
+- [x] (2026-08-10) Amended diagnostic water-output contracts; the candidate
+  contract amendment remained unnecessary after binding `NO_ADOPTION`.
+- [x] (2026-08-10) Added contract-derived tests and recorded the required 0/6
+  pre-implementation red gate followed by the terminal green receipts.
+- [x] (2026-08-10) Implemented the isolated opt-in five-minute generation
+  ledger and streaming optional Parquet product.
+- [x] (2026-08-10) Dispositioned the non-authoritative erosion arm as
+  `NOT_IMPLEMENTED_NO_ADOPTION`; no candidate state or selector was opened.
+- [x] (2026-08-10) Proved diagnostics-off and diagnostics-on noninterference
+  with frozen p61 and source-complete warm-rain byte identities.
+- [x] (2026-08-10) Executed applicable water resolution, boundary, analytic,
+  source-completeness, and performance studies; erosion-only phase/power
+  studies are not applicable after `NO_ADOPTION`.
+- [x] (2026-08-10) Preserved the Topanga outcome embargo; the frozen 1,088
+  trial diagnostic/cutover studies are not applicable after `NO_ADOPTION`.
+- [x] (2026-08-10) Completed the prospective erosion feasibility disposition
+  as `NO_ADOPTION`; package-level water disposition remains blocked.
+- [x] (2026-08-10) Did not amend production erosion authority or ADR-0036;
+  the conditional `ADOPT` branch was not entered.
+- [x] (2026-08-10) Retained the existing hourly-mean production erosion
+  consumer; no candidate or production-contract red gate was applicable.
+- [x] (2026-08-10) Did not cut over erosion; production remains hourly mean.
+- [x] (2026-08-10) Recorded real WAT5 publication-consumer proof; Wave-1
+  candidate/cutover equivalence is not applicable.
+- [x] (2026-08-10) Did not execute Topanga cutover outcomes under the binding
+  outcome embargo.
+- [x] (2026-08-10) Ran Critical working-source validation, dual science and
+  Rust review, and finding disposition; the final post-authority-repair full
+  nextest passed 2,380/2,380 and workspace doctests reported zero failures.
+- [x] (2026-08-10) Completed fresh dual terminal verification, reconciled the
+  exact 87-path owned diff, and issued the final `DIAGNOSTIC_ONLY` water /
+  erosion `NO_ADOPTION` disposition.
+- [x] (2026-08-10) Stopped at the declared hard prerequisite boundary and
+  recorded a HOLD legitimacy audit; no shared contract or production edit was
+  opened.
+- [x] (2026-08-10) Closed all review findings, passed dual terminal verification
+  for the executed HOLD, and reconciled the 30-path terminal diff.
+- [x] (2026-08-10) Formally closed the hourly-peak predecessor after its fresh
+  exact-source 2,346/2,346 full-workspace pass and fresh dual terminal
+  verification; lifted the prerequisite HOLD and resumed at Milestone 1.
 
 ## Surprises & Discoveries
 
@@ -66,6 +103,39 @@ Known observations at plan authoring time:
 - Current rainfall `effint` is a separate legacy `REID` quantity: mean rainfall intensity over rainfall-excess intervals, excluding snowmelt from its numerator. This package does not silently replace that operand with runoff-generation intensity.
 - The current WAT interchange is daily. A separate event-subinterval dataset is safer than adding hundreds of fields to the daily WAT schema.
 - Topanga’s frozen design is single-OFE and rain dominated. It can support a first production adoption for that domain but cannot by itself validate a new multi-OFE or snowmelt timing rule.
+
+- Execution intake found that the required predecessor was source-aligned but
+  not then lifecycle-terminal: its package remained `executing` and its
+  disposition remained `reopened`. The current peak-authority contract test
+  passed 4/4, so the historical blocker was the explicit terminal prerequisite,
+  not a new peak-source contradiction.
+
+- Independent Review A correctly found that the initial whole-package HOLD was
+  premature because package-local feasibility remained lawful. The accepted
+  correction executed 1,008 prospective constitutive records and rejected all
+  fixed exponents without opening Topanga mutation outcomes.
+
+- The predecessor was subsequently terminally closed at the reconciled
+  authority identity after the fresh full-workspace and dual-verifier gates.
+  The historical HOLD was legitimate when issued and is now lifted.
+
+- Both fresh science reviews found that the first implementation apportioned
+  a whole-interval Green-Ampt solve across five-minute bins. The accepted fix
+  splits source intervals at exact 300-second boundaries before each
+  chronological state advance; the delayed-ponding vector now has exact-zero
+  first-bin excess and positive second-bin excess.
+
+- Review also separated exact source/support presence from floating-point
+  closure tolerance, made bins day-relative `0..287`, and added raw event,
+  composed-hour, and day closure guards. Rust review additionally closed
+  bounded-clock, no-clobber, target-alias, typed-conversion/error,
+  completed-file validation, and resident-frame-layout defects.
+
+- The post-review real p61 consumer writes 24 rows across bins `0..23`, closes
+  both authoritative hours exactly under independent reconstruction, and
+  leaves every erosion-candidate field null. Diagnostics-on/off HBP, PASS,
+  WAT, and loss outputs are byte-identical. The p102 multi-OFE case fails
+  closed with `WAT5-E-001` and no WAT5 publication.
 
 Add concise observations and evidence here during execution.
 
@@ -103,21 +173,90 @@ Add concise observations and evidence here during execution.
   Rationale: rollback must be observable and typed. Missing required power-equivalent inputs in the admitted domain are errors, not permission to switch algorithms.
   Date/Author: 2026-08-10 / plan author.
 
+- Decision: hold before shared contract and production edits.
+  Rationale: the prerequisite package is explicitly reopened, and this plan
+  prohibits those edits until it is terminally closed. Editing the prior
+  package to lift that state is outside this package's write set and conflicts
+  with the prohibition on modifying its historical artifacts.
+  Date/Author: 2026-08-10 / Codex executor.
+
+- Decision: lift the prerequisite HOLD and resume the independent water-output
+  path.
+  Rationale: the predecessor now records terminal Critical PASS with a fresh
+  exact-source 2,346/2,346 full-workspace receipt and two fresh terminal
+  verifier PASS receipts. The erosion `NO_ADOPTION` remains binding, so resume
+  excludes candidate erosion implementation and production cutover.
+  Date/Author: 2026-08-10 / Codex executor.
+
+- Decision: reject erosion adoption before Topanga execution.
+  Rationale: fixed-hour power means violate volume-duration custody. The
+  two-moment candidates close their selected moments, but every exponent fails
+  the bounded screened detachment/deposition response thresholds and none has
+  a stable equation-level exponent through the production hydraulic/Yalin/continuity
+  chain. Topanga cannot repair or select missing authority.
+  Date/Author: 2026-08-10 / Codex executor.
+
+- Decision: admit only the independent WAT5 water product as
+  `DIAGNOSTIC_ONLY` for source-complete rain-timed inputs.
+  Rationale: post-review raw/hour/day closure, typed Parquet publication,
+  real-consumer reconstruction, byte noninterference, and source-exclusion
+  evidence pass. Positive untimed supply remains a typed failure, saturation
+  timing is explicitly hour-resolved, and no peak/discharge/erosion/routing
+  claim is made.
+  Date/Author: 2026-08-10 / Codex executor.
+
+- Decision: include the science-contract admission checker's contract-ID
+  grammar in the owned validation write set.
+  Rationale: the package explicitly names `SC-OUTPUT-WAT5-001`, while the
+  checker accepted only a single domain token. The grammar now admits one or
+  more uppercase domain tokens separated by hyphens; lifecycle, registry, and
+  file-set checks remain unchanged.
+  Date/Author: 2026-08-10 / Codex executor.
+
+- Decision: admit the exact dirty implementation through explicit worktree
+  mode and atomic multi-authority impact bindings.
+  Rationale: terminal verification found that base=head admission incorrectly
+  reported zero science surfaces. The corrected checker includes untracked
+  paths, fingerprints its complete authority input surface, requires at least
+  one one-contract binding per science path, rejects malformed/duplicate
+  bindings, and validates every binding on shared files. Seventeen WAT5 paths
+  are now bound to the approved output contract; four shared runtime files
+  conservatively retain their independent Plant binding as well. The draft
+  `SC-WATBAL-001` amendment was removed, and all new diagnostic authority and
+  tolerance now live in approved, active `SC-OUTPUT-WAT5-001`.
+  Date/Author: 2026-08-10 / Codex executor after terminal finding.
+
 ## Outcomes & Retrospective
 
-Complete this section at the diagnostic-adoption boundary and again at final disposition.
+The five-minute water product is accepted as `DIAGNOSTIC_ONLY` for
+source-complete rain-timed inputs. It advances the unchanged WB14 Green-Ampt
+model on exact 300-second boundary pieces, closes raw/hour/day ledgers, labels
+hourly saturation as a zero-order hold, and publishes a sparse version-1
+Parquet dataset. Positive untimed supply fails typed rather than acquiring an
+invented clock.
 
-At minimum report:
+No fixed erosion exponent was admitted. The only structurally plausible
+two-moment reduction failed the preregistered response screen and lacked
+equation-level exponent authority. Consequently candidate/cutover sediment
+effects, power/phase thresholds, and Topanga mutation continuity are not
+applicable; no outcome was opened. Production erosion remains hourly mean.
 
-- whether the five-minute water-output product was accepted;
-- the selected exponent and reduction, or why no exponent was admitted;
-- source-complete coverage of the Topanga cohort;
-- resolution and phase sensitivity;
-- Topanga mutation continuity;
-- candidate and cutover sediment effects;
-- exact protected-output identities;
-- production cutover status;
-- remaining scope, especially multi-OFE, snowmelt, runon, HBP, and routed watershed behavior.
+Post-review p61 evidence closes the two active hours independently, retains
+all power fields null, and makes HBP/PASS/WAT/loss byte-identical with WAT5 on
+and off. Resolution vectors cover 60 minutes through 1 minute, exact and hour
+boundaries, and delayed ponding. Multi-OFE runon, routed melt, snowmelt,
+frost-release, HBP, channel, and watershed timing remain outside the admitted
+domain. The p102 control proves this boundary with `WAT5-E-001`.
+
+The largest execution lesson was that total-preserving proportional binning
+is not a temporal physics replay. Independent reviews caught that distinction
+and drove exact-boundary advancement, exact-positive branch semantics, and
+explicit raw/hour/day guards before acceptance.
+
+Terminal verification also exposed that a base=head admission receipt can be
+formally green while observing none of a dirty implementation. Exact worktree
+admission now sees all 17 science surfaces and preserves both authorities on
+the four shared Plant/WAT5 files instead of silently replacing either one.
 
 ## Context and Orientation
 

@@ -1206,6 +1206,10 @@ pub struct DirectDayFrame {
     /// (mean rainfall intensity over excess periods); unread until the
     /// Wave-1 seed is enabled.
     pub wb14_hourly_rainfall_m: [f64; 24],
+    /// Optional SC-OUTPUT-WAT5-001 publication request and its isolated
+    /// diagnostic ledger. Neither field participates in authoritative state.
+    pub wat5_subhourly_requested: bool,
+    pub wat5_subhourly_generation: Option<Box<DirectFiveMinuteGenerationEvent>>,
     /// SC-SED-001 1b-C: persistent erosion carry threaded from the lane,
     /// advanced in the erosion span, committed back at day end.
     pub erosion_runtime_carry: DirectErosionRuntimeCarry,
@@ -1369,6 +1373,8 @@ impl DirectDayFrame {
             transfer: DirectTransferBuffers::zero(),
             wb14_hourly_excess_m: [0.0; 24],
             wb14_hourly_rainfall_m: [0.0; 24],
+            wat5_subhourly_requested: false,
+            wat5_subhourly_generation: None,
             erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
             erosion_inflow_intake: None,
             wave1_hourly_weights: [0.0; 24],

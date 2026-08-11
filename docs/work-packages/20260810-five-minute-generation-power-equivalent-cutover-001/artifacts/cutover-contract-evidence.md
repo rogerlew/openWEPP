@@ -1,7 +1,8 @@
 # Cutover Contract Evidence
 
-Status: `queued`
+Status: `NOT_APPLICABLE — erosion NO_ADOPTION`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Populate this artifact according to the requirements in `../package.md`.
+The conditional erosion-cutover branch was not entered. No exponent or
+reduction was admitted, so SC-SED-001 and ADR-0036 remain unchanged.

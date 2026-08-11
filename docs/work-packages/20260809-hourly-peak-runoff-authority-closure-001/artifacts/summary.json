@@ -4,6 +4,9 @@
   "status": "PASS",
   "implementation_commit": "33831787b7029b28b0716c8458f08a11899db446",
   "verified_closure_candidate": "d5320fafbe15001a64d9d0ba2274f527c36a61ba",
+  "reopened_authority_test_commit": "669269ee4fff3aab89ba2d5c72e4fdd34b12b7c2",
+  "reopened_review_reconciliation_commit": "a8a96498ee909c4305fbc0a4db562b72e45efd2b",
+  "reopened_terminal_verification": "PASS",
   "binary_sha256": "ac8790faf32a5b98993427b636084c04ba468955458c4fc18f3874cea709c4c3",
   "plan_sha256": "32e6f5e99a77747fcdd93388302f2a5ffb496a87b764ac4505e09691955db756",
   "duration_seconds": 498,
@@ -37,6 +40,23 @@
     "quick_only_count": 0,
     "quick_subset_of_full": true,
     "workspace_doctests": "PASS"
+  },
+  "reopened_workspace_validation": {
+    "source_commit": "a8a96498ee909c4305fbc0a4db562b72e45efd2b",
+    "profile": "full",
+    "run_id": "64cd5e97-d253-4da1-a3cf-3c4e16f83d22",
+    "tests_passed": 2346,
+    "tests_failed": 0,
+    "tests_skipped": 33,
+    "slow_tests": 46,
+    "duration_seconds": 8193.187,
+    "quick_inventory_count": 2297,
+    "full_inventory_count": 2346,
+    "quick_only_count": 0,
+    "quick_subset_of_full": true,
+    "workspace_doctests": "PASS",
+    "cargo_deny": "PASS",
+    "authority_antievasion": "PASS"
   },
   "terminal_verification": {
     "verifier_a": "PASS",

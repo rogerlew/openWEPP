@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-08-08
+Last updated: 2026-08-10
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -54,6 +54,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 | `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `in_review` | `draft` | openWEPP maintainers + land-surface-energy/hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md` | `static` | `2026-08-08` |  | Snow-free control-volume authority with vegetation transfer-lineage amendments; constitutive families remain non-promotable. |
 | `SC-OFEROUTE-001` | Hillslope OFE-by-OFE Overland-Flow Routing Process Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md` | `static` | `2026-07-11` |  | Ratified D4 prerequisite; amendment history lives in the canonical contract. |
 | `SC-OFEROUTE-002` | Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract | `withdrawn` | `deprecated` | openWEPP maintainers + hydrology reviewer | `abandoned/hybrid-implicit-stepping:docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md` | `static` | `2026-07-07` |  | Withdrawn by ADR-0037; contract deleted from main with final working state archived on branch `abandoned/hybrid-implicit-stepping` at `b1d5fd4410b700012d857ef4056000163e6aa6a0`. |
+| `SC-OUTPUT-WAT5-001` | Five-Minute Hillslope Water Diagnostic Output Contract | `approved` | `active` | openWEPP maintainers + hydrology/output reviewer | `docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md` | `static` | `2026-08-10` |  | Optional version-1 sparse 300-second WB14/WB19 diagnostic; no peak, HBP, routing, or erosion-cutover authority. |
 | `SC-PERC-001` | Percolation Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PERC-001.md` | `static` | `2026-06-02` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-PLANT-001` | Plant Growth Process Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-08-08` |  | CP-GSI02 remains active; future vegetation compatibility requires atomic real-consumer cutover. |
 | `SC-RESIDUE-001` | Residue Management Process Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md` | `static` | `2026-08-08` |  | Current litter authority plus future exact-once vegetation dry-matter/C/N custody. |

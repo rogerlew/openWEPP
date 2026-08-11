@@ -1,0 +1,7 @@
+warning[license-not-encountered]: license was not encountered
+   ┌─ /tmp/openwepp-clean-a8a96498ee909c4305fbc0a4db562b72e45efd2b/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+
+advisories ok, bans ok, licenses ok, sources ok

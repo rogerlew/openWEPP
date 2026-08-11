@@ -1,7 +1,17 @@
 # Diagnostic Contract Evidence
 
-Status: `queued`
+Status: `PASS — water diagnostic authority implemented; erosion authority unchanged`
 
-Evidence mode: `not-run`
+Evidence mode: `Static`
 
-Populate this artifact according to the requirements in `../package.md`.
+The approved, active `SC-OUTPUT-WAT5-001` version 1 owns the optional
+post-WB14/WB19 five-minute diagnostic, `TOL-WAT5-001`, separate sparse Parquet
+dataset, 300-second clock, raw/closed/closing semantics, source-completeness
+guards, atomic publication, and nullable erosion-candidate columns. The
+existing draft `SC-WATBAL-001` remains unchanged and is used only to name the
+already-existing 24-bin producer surface; it is not promoted or used as new
+diagnostic authority by this package.
+
+The science-contract index registers the new contract. `SC-SED-001`, HBP,
+WB16, routing, and the production erosion selector were deliberately not
+amended because the preregistered study returned erosion `NO_ADOPTION`.
