@@ -1,8 +1,23 @@
 # Review Agent A
 
-Status: `PASS — accepted hydrology findings closed on re-review`
+Status: `PASS / GO — reopened final science review at exact clean SHA`
 
 Evidence mode: `Static + Ran`
+
+## Reopened final review — 2026-08-11
+
+Reviewed exact clean SHA
+`e7851f1a626c1e6e77d64c2618f26bb772787b36`. No Critical, High, Medium,
+or Low findings remain. Focused public-contract/closure/chronology regressions
+passed 3/3 (nextest `3e19261b-73ff-4ffc-bd1a-9f0faa340dab`) and explicit
+manifest-construction rollback composition passed 1/1 (nextest
+`9ca1d0ff-3924-41fb-9172-fe878506f7dd`). The final assessment confirms typed
+`WAT5-E-003` domain versus `WAT5-E-004` closure failures, strictly advancing
+calendar keys, finite derived arithmetic, positive-storage real-chain closure,
+transactional no-replace publication, run-file-only opt-in, erosion
+`NO_ADOPTION`, and the unopened Topanga outcome cohort.
+
+The historical review below is retained as superseded context.
 
 This is the final implementation re-review. I independently inspected the
 corrected runtime, contracts, focused vectors, publication path, and refreshed

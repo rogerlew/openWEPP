@@ -34,6 +34,17 @@ The package-plan commands named `power_equivalent_erosion_contract` and
 erosion branch ended at `NO_ADOPTION`; they are non-applicable, not omitted
 passes.
 
+At exact clean candidate `e7851f1a626c1e6e77d64c2618f26bb772787b36`, the
+admitted full-workspace campaign passed 2,396/2,396 with 33 declared skips in
+3,191.710 seconds (nextest `1d377634-740a-48fb-bbff-42c761d5bbcd`; external
+log SHA-256
+`493eb06d350644dc11aab12b06c6452fe9342a1e9badaac804c1ada87cb8e18b`).
+Workspace doctests then completed with zero failures in 6.4 seconds (log
+SHA-256
+`20171b398b3c2918e3ef0073f18f4225be2885f48eb274f39417e7a7d7e6e093`).
+The admitted retry used `TMPDIR=/home/workdir/openwepp-task-tmp-e7851f1a`;
+the preceding `/tmp`-filesystem-exhaustion/SIGBUS attempt is non-admitted.
+
 An attempted dirty-tree A1 package run was deliberately interrupted after 180
 passes when it entered the same long assurance inventory as the terminal full
 campaign. It is non-admitted and will be superseded by the exact-clean full

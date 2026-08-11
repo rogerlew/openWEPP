@@ -4,6 +4,18 @@ Status: `PASS — no open Rust correctness blockers`
 
 Evidence mode: `Static + Ran`
 
+## Reopened final review — 2026-08-11
+
+Exact clean SHA `e7851f1a626c1e6e77d64c2618f26bb772787b36` passed with no
+correctness finding. The reviewer verified manifest-construction
+`fail_and_rollback` error composition and retained-backup coverage, advancing
+calendar keys and positive years, nonfinite/derived-overflow rejection, typed
+`WAT5-E-003` domain versus `WAT5-E-004` closure failures, aggregate-hour
+closure, and the corrected v2 alias. Four independent focused regressions
+passed. Full-workspace and doctest receipts are recorded in `gate-results.md`.
+
+The historical review below is retained as superseded context.
+
 Reviewer independence: the verdict was derived from the package, canonical
 science contracts, actual working-tree diff, production sources, and focused
 tests. No other review artifact was used to determine the findings.

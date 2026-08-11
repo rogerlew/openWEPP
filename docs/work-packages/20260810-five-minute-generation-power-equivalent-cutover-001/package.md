@@ -1,5 +1,5 @@
 # Diagnose, adopt, and cut over five-minute power-equivalent runoff-generation forcing
-Status: `REOPENED / EXECUTING — output-integrity and evidence corrections`
+Status: `REOPENED / TERMINAL VERIFICATION — implementation and campaign pass`
 
 This ExecPlan is a living document. Maintain `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` as execution proceeds.
 
@@ -53,6 +53,15 @@ The package must run end-to-end without asking the operator for incremental dire
   and doctests against that exact clean commit, refresh all required reviews and
   terminal verifiers against that identity, and reclose only if every finding
   passes.
+- [x] (2026-08-11) Committed the corrected implementation, bound enabled
+  performance to exact implementation `28297b3a2`, and obtained four fresh
+  `PASS / GO` reviews at exact clean candidate `e7851f1a6`.
+- [x] (2026-08-11) Ran the admitted exact-clean full workspace at `e7851f1a6`:
+  2,396/2,396 passed with 33 declared skips, followed by doctests with zero
+  failures. The earlier `/tmp`-exhaustion linker failure is non-admitted; the
+  clean retry used the package-declared external scratch posture on `/home`.
+- [ ] Complete fresh dual terminal verification, reconcile closure artifacts,
+  commit the terminal evidence, and push the stable increment.
 
 - [x] (2026-08-10) Recorded actual starting source identity, clean worktree,
   applicable `AGENTS.md` chains, and the blocked prerequisite package status.

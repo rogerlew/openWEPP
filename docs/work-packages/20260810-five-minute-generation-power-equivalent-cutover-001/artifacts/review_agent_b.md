@@ -1,8 +1,22 @@
 # Review Agent B
 
-Status: `complete — PASS; all findings closed`
+Status: `PASS / GO — reopened final science review at exact clean SHA`
 
 Evidence mode: `Static + Ran`
+
+## Reopened final review — 2026-08-11
+
+Reviewed exact clean SHA
+`e7851f1a626c1e6e77d64c2618f26bb772787b36`; no science finding remains.
+The review independently confirmed explicit manifest-construction rollback,
+advancing cross-day calendars, nonfinite/overflow rejection, typed domain and
+closure classes, aggregate-hour prepublication closure, exact null/method/source
+semantics, the real positive-storage runner chain, run-file-only selection,
+noninterference, erosion `NO_ADOPTION`, and the Topanga embargo. Implementation
+commit `28297b3a231a6a4602c0d37fdb6fecc7f0ad3bc5` is unchanged through the
+reviewed evidence SHA and owns the rebound performance receipt.
+
+The historical review below is retained as superseded context.
 
 This is a fresh post-correction hydrology/science review of the actual WAT5
 runtime, output, runner wiring, focused tests, canonical contracts, and

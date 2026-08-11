@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `REOPENED — implementation corrected; terminal acceptance pending`
+Status: `REOPENED — implementation and exact campaign accepted; terminal verifiers pending`
 
 Evidence mode: `Static + Ran`
 
@@ -21,7 +21,8 @@ The reopened implementation now makes the full run output set transactional,
 publishes the manifest last, exposes the depression-storage operand under a v2
 schema, validates public records at the writer boundary, records declarative
 run-file opt-in provenance, and measures a 45-year enabled workload. Focused
-regressions pass. The package is not terminally accepted until the corrected
-tree is committed cleanly and the required full workspace, doctests, fresh
-reviews, and dual terminal verifiers pass against that exact SHA. Prior
-terminal receipts are retained only as superseded evidence.
+regressions pass. Exact clean SHA `e7851f1a626c1e6e77d64c2618f26bb772787b36`
+passed 2,396/2,396 full-workspace tests with 33 declared skips, workspace
+doctests with zero failures, and both science plus both Rust reviews with no
+open finding. Only fresh dual terminal verification remains before terminal
+acceptance. Prior terminal receipts are retained only as superseded evidence.

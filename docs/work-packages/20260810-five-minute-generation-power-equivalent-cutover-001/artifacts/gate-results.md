@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `IN PROGRESS — focused corrections pass; exact-clean terminal campaign pending`
+Status: `PASS through exact-clean campaign and four reviews; terminal verifiers pending`
 
 Evidence mode: `Static + Ran`
 
@@ -19,8 +19,16 @@ erosion path remains selected.
 | Authority anti-evasion | PASS | shell guard and 10/10 combined required-suite/direct-policy contracts |
 | Affected Clippy / package Python | PASS | all targets/features with `-D warnings`; 5/5 Python tests |
 | Enabled 45-year workload | PASS as diagnostic measurement | exact `28297b3a2`; 4.40 s, 68,628 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |
-| Replacement full workspace / doctests | PENDING | must run at the exact clean implementation commit |
-| Fresh science, Rust, and terminal reviews | PENDING | must bind directly to the replacement implementation SHA |
+| Replacement full workspace | PASS | exact clean `e7851f1a6`; 2,396/2,396 passed, 33 skipped, run `1d377634-740a-48fb-bbff-42c761d5bbcd`, 3,191.710 s; log SHA-256 `493eb06d350644dc11aab12b06c6452fe9342a1e9badaac804c1ada87cb8e18b` |
+| Replacement doctests | PASS | exact clean `e7851f1a6`; zero failures, 6.4 s; log SHA-256 `20171b398b3c2918e3ef0073f18f4225be2885f48eb274f39417e7a7d7e6e093` |
+| Fresh science / Rust reviews | PASS / PASS / PASS / PASS | all four bind exact clean `e7851f1a6`; no open finding |
+| Fresh dual terminal verifiers | PENDING | must audit the tested SHA and closure-evidence commit |
+
+The first `e7851f1a6` full attempt is non-admitted infrastructure evidence:
+2,395 tests passed and one nested coverage build failed after `/tmp` exhausted
+the 99%-full root filesystem and its linker received `SIGBUS`. The admitted
+retry set `TMPDIR=/home/workdir/openwepp-task-tmp-e7851f1a` on the 24-TB-free
+`/home` filesystem and passed the entire inventory.
 
 ## Superseded 2026-08-10 closure receipts
 

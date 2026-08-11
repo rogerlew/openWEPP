@@ -1,8 +1,22 @@
 # Rust QA Review
 
-Status: `PASS — Rust implementation QA`
+Status: `PASS — reopened Rust implementation QA at exact clean SHA`
 
 Evidence mode: `Static + Ran`
+
+## Reopened final review — 2026-08-11
+
+Exact clean SHA `e7851f1a626c1e6e77d64c2618f26bb772787b36` passed with no
+High or Medium QA blocker. The review verified explicit manifest-construction
+rollback composition with retained backup paths; split typed domain/closure
+errors; aggregate-hour no-target failure; positive-year, advancing-calendar,
+nonfinite, and overflow guards; correct hardlink/unlink state; real WB14
+positive-storage Parquet closure; exact performance identity; and no observed
+transaction leftovers. Low debt remains limited to post-commit backup-cleanup
+reporting, standalone-writer temporary-unlink semantics, and numeric-column
+test lookup.
+
+The historical review below is retained as superseded context.
 
 Review identity: `HEAD c9f28a7dbe7adf69d8e6d54ebd8da57568af5552`
 plus the current dirty WAT5 implementation and terminal A0 policy correction

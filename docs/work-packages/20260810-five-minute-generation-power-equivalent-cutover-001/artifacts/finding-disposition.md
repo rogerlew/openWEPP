@@ -41,6 +41,12 @@ advancing cross-day calendar keys, finite derived arithmetic, and distinct
 typed `WAT5-E-003` domain versus `WAT5-E-004` closure failures now pass focused
 regressions. A replacement exact-SHA campaign and re-review remain pending.
 
+Final exact-clean re-review at `e7851f1a626c1e6e77d64c2618f26bb772787b36`
+returned Science A `PASS / GO`, Science B `PASS / GO`, Rust correctness
+`PASS`, and Rust QA `PASS`, with no open finding. The replacement full campaign
+then passed 2,396/2,396 with 33 declared skips and doctests reported zero
+failures. Dual terminal verification remains the sole closure gate.
+
 ## Rust correctness review
 
 | Finding | Decision and closure |
