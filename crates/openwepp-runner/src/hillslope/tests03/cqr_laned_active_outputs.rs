@@ -253,6 +253,9 @@ fn trace_targets(path: Option<PathBuf>) -> HillslopeOutputTargets {
         output_pass: PathBuf::from("unused.pass"),
         output_loss: PathBuf::from("unused.loss"),
         optional_outputs: Vec::new(),
+        pass_parquet: None,
+        wat: None,
+        wat_subhourly: None,
         laned_active_trace: path,
         output_hillslope_id: 501,
     }

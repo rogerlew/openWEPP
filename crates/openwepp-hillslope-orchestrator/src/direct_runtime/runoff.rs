@@ -1696,6 +1696,7 @@ pub(crate) struct DirectWb14OutcomeWithProfile {
 pub(crate) struct DirectWb14SubhourlyProfile {
     pub rainfall_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub infiltration_m: [f64; WAT5_INTERVALS_PER_DAY],
+    pub depression_storage_retention_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub post_depression_excess_m: [f64; WAT5_INTERVALS_PER_DAY],
     pub depression_storage_delta_m: f64,
 }
@@ -1859,6 +1860,7 @@ fn compute_wb14_infiltration_depression_with_optional_subhourly(
         Some(DirectWb14SubhourlyProfile {
             rainfall_m: [0.0; WAT5_INTERVALS_PER_DAY],
             infiltration_m: [0.0; WAT5_INTERVALS_PER_DAY],
+            depression_storage_retention_m: [0.0; WAT5_INTERVALS_PER_DAY],
             post_depression_excess_m: [0.0; WAT5_INTERVALS_PER_DAY],
             depression_storage_delta_m: 0.0,
         })
@@ -1997,11 +1999,24 @@ fn compute_wb14_infiltration_depression_with_optional_subhourly(
         "infiltration_depression.hourly_post_depression_runoff_m",
     )?;
     if let Some(profile) = subhourly.as_mut() {
+        let pre_depression_excess_m = profile.post_depression_excess_m;
         remove_depth_from_bins_earliest(
             &mut profile.post_depression_excess_m,
             depression_storage_delta_m,
             "infiltration_depression.subhourly_post_depression_runoff_m",
         )?;
+        for ((retained_m, before_m), after_m) in profile
+            .depression_storage_retention_m
+            .iter_mut()
+            .zip(pre_depression_excess_m)
+            .zip(profile.post_depression_excess_m)
+        {
+            *retained_m = before_m - after_m;
+            validate_nonnegative_direct_m(
+                "infiltration_depression.subhourly_depression_storage_retention_m",
+                *retained_m,
+            )?;
+        }
     }
     Ok((
         DirectWb14OutcomeWithProfile {

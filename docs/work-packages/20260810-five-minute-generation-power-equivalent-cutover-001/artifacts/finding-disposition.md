@@ -1,8 +1,22 @@
 # Finding Disposition
 
-Status: `complete — all review findings accepted and closed`
+Status: `reopened — implementation corrections complete; terminal re-review pending`
 
 Evidence mode: `Static + Ran`
+
+## 2026-08-11 external review disposition
+
+| Finding | Decision | Current closure |
+|---|---|---|
+| HIGH: WAT5 failure can clobber ordinary WAT/PASS | accepted | Complete requested output set now stages to same-directory transaction paths; preexisting targets are backed up only at commit, outputs publish with rollback, and the manifest publishes last. Existing-WAT5, day-2 source, forced-close, forced-link, missing-manifest, and success regressions pass. |
+| MEDIUM: public rows omit depression storage | accepted | Schema v2 adds per-bin `depression_storage_retention_depth_mm`, renames raw generation to `raw_wb14_post_depression_generation_depth_mm`, and independently reconstructs a positive-storage Parquet fixture. |
+| MEDIUM: terminal evidence not bound to committed SHA | accepted | Old working-tree receipts are historical only. Exact-clean replacement-commit full workspace, doctests, and reviews remain pending. |
+| MEDIUM: enabled performance unmeasured | accepted | A 45-year p1-geometry/source-complete workload measured elapsed, CPU, RSS, rows, compressed bytes, active support, and throughput; user docs carry the 2.15 GB/301 GB planning warning. |
+| LOW: public writer can serialize invalid rows | accepted | Writer-boundary finite/nonnegative, key/clock, duration, raw closure, closing identity, rate, and hourly closure validation now fails before publication. |
+| Run-file-only opt-in | accepted user direction | Presence of `outputs.wat_subhourly` remains the sole user-facing selector and is recorded explicitly in the manifest. |
+
+The scientific erosion `NO_ADOPTION` decision and the decision not to open the
+Topanga outcome cohort remain accepted without modification.
 
 ## Science reviews
 

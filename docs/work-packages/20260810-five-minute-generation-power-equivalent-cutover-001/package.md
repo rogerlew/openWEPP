@@ -1,5 +1,5 @@
 # Diagnose, adopt, and cut over five-minute power-equivalent runoff-generation forcing
-Status: `COMPLETE / PASS — diagnostic water output; erosion not adopted`
+Status: `REOPENED / EXECUTING — output-integrity and evidence corrections`
 
 This ExecPlan is a living document. Maintain `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` as execution proceeds.
 
@@ -33,6 +33,26 @@ The package has an explicit adoption branch. Five-minute water output may be acc
 The package must run end-to-end without asking the operator for incremental direction. It must not force adoption merely because implementation exists.
 
 ## Progress
+
+- [x] (2026-08-11) Reopened the package after independent review confirmed a
+  High-severity sibling-output clobber path, a missing public depression-storage
+  operand, exact-clean-commit evidence debt, and unmeasured WAT5-enabled
+  long-run cost. The scientific `NO_ADOPTION` and Topanga outcome embargo remain
+  accepted and unchanged.
+- [x] (2026-08-11) Confirmed the run file is already the sole user-facing WAT5
+  selector: presence of `outputs.wat_subhourly` opts in and supplies the path;
+  absence opts out. No second CLI or environment selector will be introduced.
+- [x] (2026-08-11) Implemented and focused-tested rollback-safe all-or-nothing run-output publication,
+  with the manifest as the last completion marker.
+- [x] (2026-08-11) Published per-bin depression-storage retention, renamed the raw
+  post-depression generation field, and validate public records at the writer
+  boundary under a versioned schema.
+- [x] (2026-08-11) Ran focused failure/success, positive-storage, real-consumer, performance,
+  authority, formatting, and lint evidence.
+- [ ] Commit the corrected implementation tree, run the terminal full workspace
+  and doctests against that exact clean commit, refresh all required reviews and
+  terminal verifiers against that identity, and reclose only if every finding
+  passes.
 
 - [x] (2026-08-10) Recorded actual starting source identity, clean worktree,
   applicable `AGENTS.md` chains, and the blocked prerequisite package status.
@@ -95,6 +115,19 @@ The package must run end-to-end without asking the operator for incremental dire
 
 ## Surprises & Discoveries
 
+- The original WAT5 no-clobber implementation protected only the WAT5 target;
+  ordinary WAT and PASS writers opened their final paths before WAT5 admission.
+  The corrected runner stages the complete requested output set and publishes
+  the manifest last as the completion marker.
+- A source-complete, continuously active 45-year p1-geometry workload emitted
+  394,488 rows in 4.11 seconds with WAT5 versus 2.63 seconds without it. The
+  opt-in path therefore has material relative overhead but low absolute cost
+  for one hillslope; compressed output was 3,526,518 bytes (8.94 bytes/row).
+- The exact A1 package selection contains 2,028 tests and enters the same
+  multi-minute assurance cases as the full profile. A dirty-tree attempt was
+  stopped after 180 passes and is not evidence; the exact-clean terminal full
+  campaign is the admitted superseding run.
+
 Known observations at plan authoring time:
 
 - The existing WB14 code already advances Green–Ampt over piecewise-constant hyetograph intervals and only later projects generated excess into hourly bins. Five-minute work is therefore primarily a temporal projection and output problem, not authorization to replace the Green–Ampt equations.
@@ -140,6 +173,28 @@ Known observations at plan authoring time:
 Add concise observations and evidence here during execution.
 
 ## Decision Log
+
+- Decision: reopen terminal acceptance while retaining the scientific branch.
+  Rationale: commit `689bf3193` preserves the correct erosion `NO_ADOPTION`, but
+  WAT/PASS writers truncate final paths before WAT5 construction and close
+  before WAT5 validation/publication. The existing evidence also omits a
+  positive-storage public reconstruction, exact-clean-commit terminal identity,
+  and representative enabled-product cost.
+  Date/Author: 2026-08-11 / Codex executor after user-accepted review.
+
+- Decision: make the run file the only WAT5 selection authority and retain
+  path-presence semantics.
+  Rationale: `outputs.wat_subhourly` already declaratively supplies both opt-in
+  state and output location. A separate boolean or CLI flag would allow
+  contradictory run specifications.
+  Date/Author: 2026-08-11 / operator direction and Codex reconciliation.
+
+- Decision: publish a version-2 WAT5 schema.
+  Rationale: independently reconstructible raw closure requires a per-bin
+  depression-storage-retention operand, and the existing raw-generation name
+  incorrectly suggests pre-storage Green-Ampt excess. Adding and renaming
+  serialized columns is an intentional breaking schema correction.
+  Date/Author: 2026-08-11 / Codex executor.
 
 - Decision: keep WB16/public peak authority unchanged.
   Rationale: the new quantity is an erosion forcing reduction, not a hydrologic peak. The public peak remains the maximum hourly mean derived from the closing hourly runoff ledger.
@@ -919,13 +974,11 @@ Add a separate optional Parquet output, tentatively named:
 
     hillslope_wat_subhourly.parquet
 
-Use a dedicated CLI/output target, such as:
+Use the declarative hillslope run-file entry
+`outputs.wat_subhourly = "<path>"` as the sole user-facing selector and path.
+Do not add a competing CLI flag or environment selector.
 
-    --output-wat-subhourly <path>
-
-Follow existing naming conventions if repository intake identifies a better canonical flag.
-
-Dataset version begins at `1.0`.
+The corrected public dataset version is `2.0`.
 
 Required row keys and fields:
 
@@ -942,7 +995,8 @@ Required row keys and fields:
 - `rainfall_depth_mm`
 - `additional_supply_depth_mm`
 - `raw_green_ampt_infiltration_depth_mm`
-- `raw_green_ampt_generation_depth_mm`
+- `depression_storage_retention_depth_mm`
+- `raw_wb14_post_depression_generation_depth_mm`
 - `closed_wb14_generation_depth_mm`
 - `saturation_return_depth_mm`
 - `closing_surface_generation_depth_mm`

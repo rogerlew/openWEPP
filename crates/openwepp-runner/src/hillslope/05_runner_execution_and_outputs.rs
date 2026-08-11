@@ -844,7 +844,7 @@ fn write_hillslope_direct_publication_optional_outputs(
     execution: &HillslopeClimateExecution,
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
-    if let Some(wat_output) = inputs.runfile.output_config.wat.as_ref() {
+    if let Some(wat_output) = targets.wat.as_ref() {
         let rows_written = artifacts.wat_rows_written.ok_or_else(|| {
             direct_publication_cutover_blocked(
                 "direct WAT output requested but direct WAT projection rows were not streamed",
@@ -859,7 +859,7 @@ fn write_hillslope_direct_publication_optional_outputs(
             )));
         }
     }
-    if let Some(pass_parquet_output) = inputs.runfile.output_config.pass_parquet.as_ref() {
+    if let Some(pass_parquet_output) = targets.pass_parquet.as_ref() {
         let rows_written = artifacts.pass_projection_rows_written.ok_or_else(|| {
             direct_publication_cutover_blocked(
                 "direct PASS output requested but direct PASS projection rows were not streamed",
@@ -1041,11 +1041,9 @@ fn write_generic_optional_outputs(
     for optional_output in targets
         .optional_outputs
         .iter()
-        .filter(|path| Some(path.as_path()) != inputs.runfile.output_config.wat.as_deref())
-        .filter(|path| {
-            Some(path.as_path()) != inputs.runfile.output_config.wat_subhourly.as_deref()
-        })
-        .filter(|path| Some(path.as_path()) != inputs.runfile.output_config.pass_parquet.as_deref())
+        .filter(|path| Some(path.as_path()) != targets.wat.as_deref())
+        .filter(|path| Some(path.as_path()) != targets.wat_subhourly.as_deref())
+        .filter(|path| Some(path.as_path()) != targets.pass_parquet.as_deref())
     {
         let payload = build_optional_output_payload(
             &inputs.runfile.run_name,
@@ -1465,9 +1463,18 @@ fn validate_required_hillslope_outputs(
     Ok(())
 }
 
+fn hillslope_run_manifest_path(request: &HillslopeRunRequest) -> PathBuf {
+    request.manifest_path.clone().unwrap_or_else(|| {
+        request
+            .output_dir
+            .join("openwepp_hillslope_run_manifest.json")
+    })
+}
+
 fn write_hillslope_run_manifest(
     publication: HillslopeManifestPublication<'_>,
-) -> Result<PathBuf, HillslopeCliError> {
+    destination_path: &Path,
+) -> Result<(), HillslopeCliError> {
     let binary_path = std::env::current_exe().map_err(|source| HillslopeCliError::Io {
         path: PathBuf::from("<current_exe>"),
         source,
@@ -1479,16 +1486,6 @@ fn write_hillslope_run_manifest(
     let input_checksums =
         build_hillslope_input_checksums(publication.inputs, publication.sidecars.input_paths)?;
     let output_checksums = build_hillslope_output_checksums(publication.targets)?;
-    let manifest_path = publication
-        .request
-        .manifest_path
-        .clone()
-        .unwrap_or_else(|| {
-            publication
-                .request
-                .output_dir
-                .join("openwepp_hillslope_run_manifest.json")
-        });
     let manifest = build_hillslope_run_manifest(
         publication,
         &binary_path,
@@ -1499,13 +1496,13 @@ fn write_hillslope_run_manifest(
     )?;
     let manifest_json = serde_json::to_string_pretty(&manifest)
         .map_err(|source| HillslopeCliError::ManifestSerialize { source })?;
-    fs::write(&manifest_path, manifest_json).map_err(|source| {
+    fs::write(destination_path, manifest_json).map_err(|source| {
         HillslopeCliError::ManifestWrite {
-            path: manifest_path.clone(),
+            path: destination_path.to_path_buf(),
             source,
         }
     })?;
-    Ok(manifest_path)
+    Ok(())
 }
 
 fn build_hillslope_input_checksums(
@@ -1612,6 +1609,20 @@ fn build_hillslope_run_manifest(
         resolved_sidecars: publication.sidecars.resolved_sidecars,
         input_checksums,
         output_checksums,
+        wat5_output: HillslopeWat5OutputProvenance {
+            enabled: publication.targets.wat_subhourly.is_some(),
+            selector: "run_file.outputs.wat_subhourly_presence",
+            output_path: publication
+                .targets
+                .wat_subhourly
+                .as_ref()
+                .map(|path| path.display().to_string()),
+            dataset_schema: publication
+                .targets
+                .wat_subhourly
+                .as_ref()
+                .map(|_| HILLSLOPE_WAT_SUBHOURLY_SCHEMA_ID),
+        },
         runtime_selection: publication.runtime_selection,
         mode_selection: publication.sidecars.mode_selection,
         timestep_policy: publication.timestep_policy,
@@ -1771,6 +1782,7 @@ pub fn execute_hillslope_run_with_runtime_selection(
     )
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn execute_hillslope_run_with_runtime_policy(
     request: &HillslopeRunRequest,
     argv: &[String],
@@ -1793,17 +1805,25 @@ pub fn execute_hillslope_run_with_runtime_policy(
     })?;
 
     let inputs = load_hillslope_run_inputs(request)?;
-    let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
-    ensure_hillslope_output_parent_directories(&targets)?;
+    let final_targets = resolve_hillslope_output_targets(&inputs.runfile)?;
+    ensure_hillslope_output_parent_directories(&final_targets)?;
+    let manifest_path = hillslope_run_manifest_path(request);
+    crate::hillslope::intake_lane_setup::ensure_output_parent_directory(&manifest_path)?;
+    let mut output_transaction =
+        crate::hillslope::output_transaction::HillslopeOutputTransaction::new(
+            &final_targets,
+            manifest_path.clone(),
+        )?;
+    let targets = output_transaction.staged_targets().clone();
     let streaming_targets = DirectPublicationStreamingTargets {
-        wat: inputs.runfile.output_config.wat.clone(),
-        wat_subhourly: inputs.runfile.output_config.wat_subhourly.clone(),
-        pass_parquet: inputs.runfile.output_config.pass_parquet.clone(),
+        wat: targets.wat.clone(),
+        wat_subhourly: targets.wat_subhourly.clone(),
+        pass_parquet: targets.pass_parquet.clone(),
     };
     let runtime_resolution = runtime_policy.resolve();
     let runtime_selection = runtime_resolution.selected();
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
-    let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
+    let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &final_targets)?;
     let runtime_setup =
         build_static_hillslope_runtime_setup(request, &inputs, &sidecars, runtime_selection)?;
     let StaticHillslopeRuntimeSetup {
@@ -1824,7 +1844,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     execution.direct_publication = build_direct_publication_artifacts(
         runtime_selection,
         &inputs,
-        &targets,
+        &final_targets,
         &sidecars,
         &mut execution,
     )?;
@@ -1841,6 +1861,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     let (wb13_publication, mofe_hourly_carry) =
         build_hillslope_publication_provenance(&execution, runtime_selection)?;
     write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution, runtime_selection)?;
+    output_transaction.publish_outputs()?;
     let runtime_selection_provenance =
         build_hillslope_runtime_selection_provenance(runtime_resolution, runtime_selection);
 
@@ -1852,31 +1873,35 @@ pub fn execute_hillslope_run_with_runtime_policy(
         discovery_mode,
         ..
     } = sidecars;
-    let manifest_path = write_hillslope_run_manifest(HillslopeManifestPublication {
-        request,
-        argv,
-        inputs: &inputs,
-        targets: &targets,
-        sidecars: HillslopeSidecarManifestInputs {
-            discovery_mode,
-            resolved_sidecars,
-            input_paths: &input_paths,
-            mode_selection,
+    write_hillslope_run_manifest(
+        HillslopeManifestPublication {
+            request,
+            argv,
+            inputs: &inputs,
+            targets: &final_targets,
+            sidecars: HillslopeSidecarManifestInputs {
+                discovery_mode,
+                resolved_sidecars,
+                input_paths: &input_paths,
+                mode_selection,
+            },
+            timestep_policy,
+            adapter_boundary,
+            execution_provenance,
+            wb13_publication,
+            mofe_hourly_carry,
+            runtime_selection: runtime_selection_provenance,
+            direct_runtime_counters,
+            coupling_vectors: execution.coupling_vectors,
         },
-        timestep_policy,
-        adapter_boundary,
-        execution_provenance,
-        wb13_publication,
-        mofe_hourly_carry,
-        runtime_selection: runtime_selection_provenance,
-        direct_runtime_counters,
-        coupling_vectors: execution.coupling_vectors,
-    })?;
+        output_transaction.manifest_staged_path(),
+    )?;
+    output_transaction.publish_manifest()?;
 
     Ok(HillslopeRunReport {
-        output_pass: targets.output_pass,
-        output_loss: targets.output_loss,
-        optional_outputs: targets.optional_outputs,
+        output_pass: final_targets.output_pass,
+        output_loss: final_targets.output_loss,
+        optional_outputs: final_targets.optional_outputs,
         manifest_path,
         sidecar_warnings,
     })

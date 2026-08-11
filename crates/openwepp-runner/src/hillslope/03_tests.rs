@@ -44,6 +44,7 @@ mod tests {
     include!("tests03/canopy_litter_boundary_helpers.rs");
     include!("tests03/eb04w2b_warm_snow.rs");
     include!("tests03/stage3_evaluation_publication_parity.rs");
+    include!("tests03/wat5_output_transaction.rs");
 
     #[test]
     fn wat5_named_unit_conversions_validate_known_vectors_and_domains() {

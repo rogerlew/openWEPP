@@ -1,5 +1,14 @@
 const DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS: usize = 8192;
 
+#[cfg(test)]
+static FORCE_WAT5_CLOSE_FAILURE: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+#[cfg(test)]
+fn force_wat5_close_failure_once() {
+    FORCE_WAT5_CLOSE_FAILURE.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
 fn wat5_depth_mm(value_m: f64) -> Result<f64, HillslopeCliError> {
     meters_to_millimeters(value_m).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
         surface: "outputs.wat_subhourly",
@@ -166,6 +175,15 @@ impl DirectPublicationStreamingSink {
             })
             .transpose()?
             .map(|summary| summary.rows_written);
+        #[cfg(test)]
+        if self.wat_subhourly_writer.is_some()
+            && FORCE_WAT5_CLOSE_FAILURE.swap(false, std::sync::atomic::Ordering::SeqCst)
+        {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.wat_subhourly",
+                detail: "forced WAT5 close failure for output-transaction regression".to_string(),
+            });
+        }
         self.wat_subhourly_writer
             .take()
             .map(|writer| {
@@ -267,8 +285,11 @@ impl DirectPublicationStreamingSink {
                 raw_green_ampt_infiltration_depth_mm: wat5_depth_mm(
                     interval.raw_green_ampt_infiltration_depth_m,
                 )?,
-                raw_green_ampt_generation_depth_mm: wat5_depth_mm(
-                    interval.raw_green_ampt_generation_depth_m,
+                depression_storage_retention_depth_mm: wat5_depth_mm(
+                    interval.depression_storage_retention_depth_m,
+                )?,
+                raw_wb14_post_depression_generation_depth_mm: wat5_depth_mm(
+                    interval.raw_wb14_post_depression_generation_depth_m,
                 )?,
                 closed_wb14_generation_depth_mm: wat5_depth_mm(
                     interval.closed_wb14_generation_depth_m,

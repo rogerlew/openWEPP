@@ -53,7 +53,8 @@ use openwepp_hillslope_output::hillslope_wat::{
     HillslopeWatParquetRowGroupWriter, HillslopeWatRow, InterchangeVersion,
 };
 use openwepp_hillslope_output::hillslope_wat_subhourly::{
-    HillslopeWatSubhourlyParquetRowGroupWriter, HillslopeWatSubhourlyRow,
+    HILLSLOPE_WAT_SUBHOURLY_SCHEMA_ID, HillslopeWatSubhourlyParquetRowGroupWriter,
+    HillslopeWatSubhourlyRow,
 };
 use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_checksums};
 use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
@@ -139,6 +140,7 @@ struct HillslopeRunManifest {
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+    wat5_output: HillslopeWat5OutputProvenance,
     runtime_selection: HillslopeRuntimeSelectionProvenance,
     mode_selection: HillslopeModeSelectionProvenance,
     timestep_policy: HillslopeTimestepPolicyProvenance,
@@ -149,6 +151,14 @@ struct HillslopeRunManifest {
     #[serde(skip_serializing_if = "Option::is_none")]
     direct_runtime_counters: Option<HillslopeDirectRuntimeCounterProvenance>,
     coupling_vectors: HillslopeCouplingVectorProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeWat5OutputProvenance {
+    enabled: bool,
+    selector: &'static str,
+    output_path: Option<String>,
+    dataset_schema: Option<&'static str>,
 }
 
 #[derive(Debug, Serialize)]
@@ -606,10 +616,14 @@ struct ParsedHillslopeRunInputs {
     climate: ClimateFile,
 }
 
+#[derive(Clone)]
 struct HillslopeOutputTargets {
     output_pass: PathBuf,
     output_loss: PathBuf,
     optional_outputs: Vec<PathBuf>,
+    pass_parquet: Option<PathBuf>,
+    wat: Option<PathBuf>,
+    wat_subhourly: Option<PathBuf>,
     laned_active_trace: Option<PathBuf>,
     output_hillslope_id: u32,
 }
@@ -877,6 +891,9 @@ fn resolve_hillslope_output_targets(
         output_pass,
         output_loss,
         optional_outputs,
+        pass_parquet: runfile.output_config.pass_parquet.clone(),
+        wat: runfile.output_config.wat.clone(),
+        wat_subhourly: runfile.output_config.wat_subhourly.clone(),
         laned_active_trace,
         output_hillslope_id,
     })

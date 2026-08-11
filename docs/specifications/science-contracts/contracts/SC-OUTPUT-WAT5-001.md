@@ -4,7 +4,7 @@ title: Five-Minute Hillslope Water Diagnostic Output Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/output reviewer
-contract_version: 1
+contract_version: 2
 producer_scope:
   - Optional hillslope_wat_subhourly Parquet dataset
   - Diagnostic projection of WB14 generation and WB19 saturation return
@@ -12,7 +12,7 @@ consumer_scope:
   - End-user subhourly water diagnostics
   - Noninterference and closure verification
 evidence_level: static
-last_reviewed: 2026-08-10
+last_reviewed: 2026-08-11
 supersedes: []
 superseded_by: []
 ---
@@ -25,7 +25,7 @@ Evidence mode: `Static`
 
 ## Purpose
 
-Define the optional version-1 five-minute hillslope water diagnostic dataset
+Define the optional version-2 five-minute hillslope water diagnostic dataset
 without changing daily water balance, the authoritative 24-hour runoff ledger,
 WB16/public peak, erosion execution, HBP, inter-OFE transfer, or routing.
 
@@ -60,7 +60,8 @@ or any daily/hourly-only source.
 | `R5(k)` | `mm` | Local rainfall depth overlapping bin `k`. |
 | `A5(k)` | `mm` | Additional-supply depth; version 1 requires exact zero because no 300-second runon/melt authority exists. |
 | `F5(k)` | `mm` | Raw isolated Green-Ampt infiltration increment. |
-| `G5raw(k)` | `mm` | Raw post-infiltration/post-depression WB14 generation depth. |
+| `D5(k)` | `mm` | Raw post-infiltration excess retained into depression storage, allocated to the earliest generated bins in WB14 order. |
+| `G5raw(k)` | `mm` | Raw WB14 post-depression generation depth. |
 | `G5closed(k)` | `mm` | Raw shape closed within hour to authoritative WB14 generation. |
 | `S5(k)` | `mm` | One twelfth of authoritative WB19 saturation return in hour `h`. |
 | `Q5(k)` | `mm` | `G5closed(k) + S5(k)` diagnostic closing surface generation. |
@@ -86,7 +87,9 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 3. Split local hyetograph intervals at exact multiples of `300 s`. Advance the
    unchanged WB14 Green-Ampt equations in chronological order with continuous
    cumulative infiltration; allocate depression-storage removal from earliest
-   raw generated bins, matching WB14 ordering.
+   raw generated bins, matching WB14 ordering, and retain that removed depth as
+   `D5(k)`. Validate `sum(R5) = sum(F5) + sum(D5) + sum(G5raw)` independently
+   from the same row operands exposed to consumers.
 4. For each hour, let `R_h = Σ G5raw(k)` and `B_h` be authoritative WB14
    generation. If `B_h = 0`, set all twelve `G5closed` values to zero. If
    `B_h > 0` and `R_h = 0`, fail. Otherwise set
@@ -105,9 +108,12 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 8. The erosion power-equivalent columns are nullable in version 1. Under the
    frozen erosion `NO_ADOPTION`, publish null exponent/rate/duration and method
    `water_only_no_erosion_adoption`; never fabricate candidate values.
-9. Stream rows to a same-directory temporary target and publish with an atomic
-   no-replace hard link only after writer closure and row-count/metadata
-   validation; then remove the temporary link.
+9. Stage every requested run output in its target directory. Close and validate
+   every staged writer before publication. Publish the complete output set with
+   rollback protection for preexisting targets and use the manifest as the last
+   completion marker. Any construction, simulation, close, schema,
+   checksum, link, or manifest failure preserves the complete pre-run output set
+   and removes incomplete staging files.
 
 ## Branch and Guard Table
 
@@ -119,19 +125,21 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 | Positive authoritative WB14 hour with zero raw support | `WAT5-E-002` | Typed closure/source failure. |
 | Non-finite, negative, invalid time order, or invalid key | `WAT5-E-003` | Typed domain failure before publication. |
 | Hour/day closure exceeds tolerance | `WAT5-E-004` | Typed closure failure. |
-| Output target exists, writer/link publication fails, or metadata is incomplete | `WAT5-E-005` | Typed publication failure; preserve existing target. |
+| Writer/link/publication fails or metadata is incomplete | `WAT5-E-005` | Typed publication failure; preserve the complete pre-run output set and publish no partial replacement set. |
 
 ## Invariants and Guard Map
 
 | Invariant ID | Statement | Authority | Guard | Failure posture | Evidence |
 |---|---|---|---|---|---|
-| `INV-WAT5-001` | Dataset version `1.0` is optional and separate from WAT, PASS, and HBP; diagnostics-off preserves protected outputs and state byte-for-byte. | `REF-WAT5-WATBAL` | output config plus noninterference tests | hard-fail/HOLD | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WAT5-001` | Dataset version `2.0` is optional and separate from WAT, PASS, and HBP; run-file `outputs.wat_subhourly` presence is the sole user-facing opt-in; diagnostics-off preserves protected outputs and state byte-for-byte. | `REF-WAT5-WATBAL` | run-file output config plus noninterference tests | hard-fail/HOLD | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-002` | Every row uses exact 300-second support, stable day/OFE keys, `event_ordinal=0`, `hour_index=floor(subinterval_index/12)`, and no gap-based event invention. | `REF-WAT5-OUTPUT-PHYS` | `WAT5-E-003` | typed error | `[INFERENCE][Static]` |
 | `INV-WAT5-003` | Raw diagnostic replay uses unchanged WB14 equations and continuous infiltration; closed bins reconcile each hour to authoritative WB14 without changing it. | `REF-WAT5-RUNOFFPART`, `REF-WAT5-WATBAL` | `WAT5-E-002..004` | typed error | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-004` | Hourly WB19 return is composed only as a labeled twelve-bin zero-order hold, and every hour/day closes to the unchanged 24-bin ledger. | `REF-WAT5-WATBAL` | `WAT5-E-004` | typed error | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WAT5-005` | Positive additional supply without 300-second producer timing is rejected; no fallback may invent timing. | `REF-WAT5-WATBAL` | `WAT5-E-001` | typed error | `[DIRECT][Static]` |
 | `INV-WAT5-006` | Sparse output includes first-through-last active bins and metadata declares omitted bins exact zero; a dry day emits no rows. | `REF-WAT5-OUTPUT-PHYS` | writer validation | typed error | `[INFERENCE][Static]` |
 | `INV-WAT5-007` | The dataset never claims discharge, peak, routed flow, or erosion adoption; power-equivalent fields are null under `NO_ADOPTION`. | `REF-WAT5-PACKAGE`, `REF-WAT5-WATBAL` | schema/method tests | hard-fail/HOLD | `[DIRECT][Static]` |
+| `INV-WAT5-008` | Emitted raw rows expose rainfall, infiltration, depression-storage retention, and post-depression generation so consumers independently reconstruct raw closure. | `REF-WAT5-RUNOFFPART`, `REF-WAT5-OUTPUT-PHYS` | positive-storage Parquet reconstruction | typed error/HOLD | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WAT5-009` | WAT5-enabled run publication is all-or-nothing across every requested output and the manifest; any pre-completion failure preserves preexisting bytes, and the manifest is published last. | `REF-WAT5-PACKAGE` | transactional staging, rollback, and injected-failure tests | typed error/HOLD | `[DIRECT][Static]` |
 
 ## Producer and Consumer Obligations
 
@@ -140,6 +148,9 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 - `OBL-WAT5-P-002`: reconstruct closure independently from emitted rows and
   retain exact noninterference anchors for WAT/PASS/HBP/public peak/state.
 - `OBL-WAT5-P-003`: stream rows; do not retain the full-run dataset in memory.
+- `OBL-WAT5-P-004`: validate public row invariants at the writer boundary so a
+  caller cannot serialize non-finite, negative, chronologically inconsistent,
+  or non-closing records through the public writer API.
 - `OBL-WAT5-C-001`: consumers must treat all quantities as diagnostic depths
   or depth rates, never volumetric discharge or instantaneous/routed peak.
 - `OBL-WAT5-C-002`: consumers must honor sparse omitted-zero metadata and the
@@ -152,7 +163,8 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 | `R5` | `rainfall_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `A5` | `additional_supply_depth_mm` | Parquet | named `m -> mm`; v1 zero | `SC-OUTPUT-WAT5-001` |
 | `F5` | `raw_green_ampt_infiltration_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
-| `G5raw` | `raw_green_ampt_generation_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
+| `D5` | `depression_storage_retention_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
+| `G5raw` | `raw_wb14_post_depression_generation_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `G5closed` | `closed_wb14_generation_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `S5` | `saturation_return_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
 | `Q5` | `closing_surface_generation_depth_mm` | Parquet | named `m -> mm` | `SC-OUTPUT-WAT5-001` |
@@ -166,7 +178,7 @@ algorithm mutates no water, erosion, transfer, routing, or persistent state.
 | `WAT5_INTERVAL_SECONDS` | `300` | `s` | dataset resolution specification |
 | `WAT5_INTERVALS_PER_HOUR` | `12` | count | exact hour partition |
 | `WAT5_INTERVALS_PER_DAY` | `288` | count | exact day partition |
-| `WAT5_DATASET_VERSION` | `1.0` | schema version | this contract |
+| `WAT5_DATASET_VERSION` | `2.0` | schema version | this contract |
 
 No empirical or calibratable parameter is introduced.
 
@@ -203,18 +215,24 @@ with fixed resolution and no fitted parameters.
 3. Saturation-return-only and rain-plus-saturation cases.
 4. Positive additional-supply typed rejection.
 5. Positive authoritative hour with zero raw support typed rejection.
-6. Per-hour/day closure and independent reconstruction from Parquet rows.
+6. Per-hour/day closure and independent reconstruction from Parquet rows,
+   including positive depression-storage retention.
 7. Sparse first/last support and omitted-zero metadata.
 8. Diagnostics-off and diagnostics-on identity for WAT/PASS/HBP/public peak,
    hourly runoff, erosion rows, and persistent rill state.
 9. Real p61 output round trip and p102 non-adoption/source-completeness guard.
 10. Unit registry/schema metadata and null erosion-candidate fields.
+11. Existing-target, day-2 source, forced close/schema/link, and manifest
+    failures preserve all sibling bytes and publish no partial replacement set;
+    success publishes every requested output and the manifest.
+12. Public writer-boundary rejection of invalid numeric, key, chronology,
+    duration, and closure records.
 
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
-| `BEI-WAT5-001` | `20260810-five-minute-generation-power-equivalent-cutover-001` implementation increment | `active` | `maps-to-existing-INV` | `INV-WAT5-001, INV-WAT5-002, INV-WAT5-003, INV-WAT5-004, INV-WAT5-005, INV-WAT5-006, INV-WAT5-007` | `flagged-binding-addition` | Version-1 authority is consolidated in this contract; package artifacts are execution evidence rather than separate binding authority. |
+| `BEI-WAT5-001` | `20260810-five-minute-generation-power-equivalent-cutover-001` implementation increment | `active` | `maps-to-existing-INV` | `INV-WAT5-001, INV-WAT5-002, INV-WAT5-003, INV-WAT5-004, INV-WAT5-005, INV-WAT5-006, INV-WAT5-007, INV-WAT5-008, INV-WAT5-009` | `flagged-binding-addition` | Version-2 authority is consolidated in this contract; package artifacts are execution evidence rather than separate binding authority. |
 
 ## Gap Register and Promotability
 
@@ -229,3 +247,4 @@ with fixed resolution and no fitted parameters.
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-08-10` | `1` | `Codex` | Initial contract for the optional version-1 five-minute diagnostic water dataset, sparse semantics, closure, units, source-completeness failures, noninterference, and erosion `NO_ADOPTION`. |
+| `2026-08-11` | `2` | `Codex` | Reopened output-integrity correction: expose per-bin depression-storage retention, rename post-depression generation, validate public rows, bind run-file-only opt-in, and require rollback-safe run-output-set publication with manifest last. |

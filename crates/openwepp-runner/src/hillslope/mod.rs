@@ -1,5 +1,6 @@
 mod direct_seed_projections;
 mod intake_lane_setup;
+mod output_transaction;
 mod snowbench;
 mod snowbench_coe_density;
 mod snowbench_coe_melt;

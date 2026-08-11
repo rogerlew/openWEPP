@@ -1,14 +1,15 @@
 # Adoption Disposition
 
-Status: `DIAGNOSTIC_ONLY — water accepted in rain-timed domain; erosion NO_ADOPTION`
+Status: `PROVISIONAL DIAGNOSTIC_ONLY — corrected implementation pending terminal reclosure; erosion NO_ADOPTION`
 
 Evidence mode: `Static + Ran`
 
-The optional five-minute water product is accepted as `DIAGNOSTIC_ONLY` for
+The optional five-minute water product remains proposed as `DIAGNOSTIC_ONLY` for
 source-complete local-rain hyetographs, with hourly saturation return labeled
 as a zero-order hold. It passed real streaming-consumer closure, unit/schema,
-atomic publication, protected-byte identity, focused tests, and default-path
-performance gates.
+transactional publication, protected-byte identity, focused tests, default-path
+performance gates, and an enabled 45-year performance measurement. Terminal
+acceptance remains pending exact-clean validation and refreshed reviews.
 
 Positive hourly-only melt/runon is outside V1 and fails explicitly with
 `WAT5-E-001`; p102 and the original winter p61 climate prove this boundary.

@@ -48,13 +48,15 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
    core input bindings,
    optional sidecar override controls, and explicit output configuration:
    required `outputs.pass` (`.hbp`), required `outputs.loss` (`.json`), and
-   optional parquet output paths (`outputs.wat`, `outputs.soil`,
-   `outputs.plot`, `outputs.ebe`, `outputs.element`).
+   optional parquet output paths (`outputs.pass_parquet`, `outputs.wat`,
+   `outputs.wat_subhourly`, `outputs.soil`, `outputs.plot`, `outputs.ebe`,
+   `outputs.element`).
 4. Legacy line-oriented stdin `.run` recipes are out of contract for this
    surface.
 5. Required hillslope outputs are `outputs.pass` (`.hbp`) and `outputs.loss`
    (`.json`); optional parquet outputs are configured as optional `.run`
-   `outputs` paths (`wat`, `soil`, `plot`, `ebe`, `element`).
+   `outputs` paths (`pass_parquet`, `wat`, `wat_subhourly`, `soil`, `plot`,
+   `ebe`, `element`).
 6. Bootstrap-synthesized placeholder include surfaces are prohibited as
    production acceptance semantics.
 7. `run-hillslope` does not accept or negotiate legacy-engine selectors.
@@ -76,6 +78,13 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
     - WAT output semantics for consumer parity (including optional
       `Interception` and `InterceptionStorage`) follow post-`wepp_260430`
       `wepp-forest`/WEPPpy lineage per CLI04 stakeholder authority.
+12. Presence of `.run` `outputs.wat_subhourly` is the sole user-facing WAT5
+    opt-in. It emits the version-2 diagnostic schema governed by
+    `SC-OUTPUT-WAT5-001`; missing five-minute source authority is a typed run
+    failure.
+13. Hillslope publication stages and validates the complete requested output
+    set, preserves preexisting bytes on failure, and publishes the manifest as
+    the final completion marker.
 
 `release lint` requirements:
 

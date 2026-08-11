@@ -4,6 +4,13 @@ Status: `executed — intake scope`
 
 Evidence mode: `Static + Ran`
 
+The 2026-08-11 reopened increment re-read the root, work-package, crate, test,
+science-contract, and testing-standard instructions before edits. It also read
+the run-file, runner, WAT5 science contract, runner CLI specification, output
+writer, direct runtime, and publication/manifest surfaces needed for the
+transactional correction. The `docs-maintainer` skill governed the Markdown
+contract and work-package updates and their terminal lint pass.
+
 | Tier | Paths | Trigger / rationale |
 |---|---|---|
 | Core | `AGENTS.md`; `docs/codex_exec_plans.md`; `docs/work-packages/AGENTS.md`; `docs/work-packages/README.md`; package-local `package.md` | Required before edits. |

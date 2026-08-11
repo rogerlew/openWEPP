@@ -297,8 +297,58 @@
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
     },
     {
+      "entry_id": "wat5-runner-module-registration",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/mod.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-output-transaction",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/output_transaction.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
       "entry_id": "wat5-runner-tests",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/03_tests.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-cqr-output-fixture",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-manifest-fixture",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/tests03/simimpl.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wat5-runner-output-transaction-fixture",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/tests03/wat5_output_transaction.rs" },
       "owner": "openwepp-water-output-owner", "semantic_surface": "five-minute-generation-water-diagnostic", "risk_floor": "CRITICAL",
       "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
       "test_targets": ["openwepp", "openwepp-runner"], "covering_test_targets": ["openwepp", "openwepp-runner"],

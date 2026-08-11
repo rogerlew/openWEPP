@@ -27,7 +27,8 @@ fn row(bin: i32) -> HillslopeWatSubhourlyRow {
         rainfall_depth_mm: closed_mm + 0.05,
         additional_supply_depth_mm: 0.0,
         raw_green_ampt_infiltration_depth_mm: 0.05,
-        raw_green_ampt_generation_depth_mm: closed_mm,
+        depression_storage_retention_depth_mm: 0.0,
+        raw_wb14_post_depression_generation_depth_mm: closed_mm,
         closed_wb14_generation_depth_mm: closed_mm,
         saturation_return_depth_mm: saturation_mm,
         closing_surface_generation_depth_mm: closing_mm,
@@ -61,7 +62,7 @@ fn typed_multi_hour_parquet_roundtrip_preserves_keys_nulls_and_closure() {
     let builder =
         ParquetRecordBatchReaderBuilder::try_new(File::open(&path).expect("open WAT5 output"))
             .expect("read WAT5 metadata");
-    assert_eq!(builder.schema().fields().len(), 26);
+    assert_eq!(builder.schema().fields().len(), 27);
     assert_eq!(
         builder
             .schema()
@@ -97,7 +98,7 @@ fn typed_multi_hour_parquet_roundtrip_preserves_keys_nulls_and_closure() {
             .downcast_ref::<Int32Array>()
             .expect("subinterval index column");
         let closing = batch
-            .column(16)
+            .column(17)
             .as_any()
             .downcast_ref::<Float64Array>()
             .expect("closing depth column");
@@ -107,7 +108,7 @@ fn typed_multi_hour_parquet_roundtrip_preserves_keys_nulls_and_closure() {
             let hour = usize::try_from(hours.value(index)).expect("nonnegative hour");
             hourly_observed_mm[hour] += closing.value(index);
         }
-        for candidate_column in [20, 21, 22] {
+        for candidate_column in [21, 22, 23] {
             assert_eq!(
                 batch.column(candidate_column).null_count(),
                 batch.num_rows()
@@ -130,6 +131,8 @@ fn output_catalog_declares_every_dimensional_wat5_column() {
         "hillslope_wat_subhourly",
         "rainfall_depth_mm",
         "raw_green_ampt_infiltration_depth_mm",
+        "depression_storage_retention_depth_mm",
+        "raw_wb14_post_depression_generation_depth_mm",
         "closed_wb14_generation_depth_mm",
         "closing_surface_generation_intensity_mm_h",
         "hourly_authoritative_runoff_depth_mm",
@@ -140,4 +143,54 @@ fn output_catalog_declares_every_dimensional_wat5_column() {
             "missing output-unit registry entry: {required}"
         );
     }
+}
+
+#[test]
+fn positive_depression_storage_rows_reconstruct_raw_water_closure() {
+    let mut rows: Vec<_> = (0..12).map(row).collect();
+    rows[0].rainfall_depth_mm = 0.20;
+    rows[0].raw_green_ampt_infiltration_depth_mm = 0.05;
+    rows[0].depression_storage_retention_depth_mm = 0.05;
+    rows[0].raw_wb14_post_depression_generation_depth_mm = 0.10;
+
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("test clock")
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!("openwepp-wat5-storage-{nonce}.parquet"));
+    let mut writer =
+        HillslopeWatSubhourlyParquetRowGroupWriter::create(&path).expect("create WAT5 writer");
+    writer
+        .write_rows(&rows)
+        .expect("write positive-storage rows");
+    writer.close().expect("publish positive-storage Parquet");
+
+    let batches = ParquetRecordBatchReaderBuilder::try_new(
+        File::open(&path).expect("open positive-storage Parquet"),
+    )
+    .expect("read positive-storage metadata")
+    .build()
+    .expect("build positive-storage reader")
+    .map(|batch| batch.expect("valid positive-storage batch"))
+    .collect::<Vec<_>>();
+    let sum_column = |column: usize| {
+        batches
+            .iter()
+            .map(|batch| {
+                batch
+                    .column(column)
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .expect("depth column")
+                    .values()
+                    .iter()
+                    .sum::<f64>()
+            })
+            .sum::<f64>()
+    };
+    let rainfall_mm = sum_column(10);
+    let reconstructed_mm = sum_column(12) + sum_column(13) + sum_column(14);
+    assert!((rainfall_mm - reconstructed_mm).abs() <= 1.0e-12);
+    assert!(sum_column(13) > 0.0);
+    fs::remove_file(path).expect("remove positive-storage Parquet");
 }

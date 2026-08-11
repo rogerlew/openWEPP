@@ -187,7 +187,7 @@ fn live_impact_map_has_no_planner_admission_rows() {
             .iter()
             .filter(|entry| entry["contracts"] == serde_json::json!(["SC-OUTPUT-WAT5-001"]))
             .count(),
-        17,
+        22,
         "every changed WAT5 science-crate path requires an atomic contract binding"
     );
     for shared_path in [

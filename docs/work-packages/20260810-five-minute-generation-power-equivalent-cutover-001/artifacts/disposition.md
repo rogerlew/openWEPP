@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `PASS — DIAGNOSTIC WATER OUTPUT, EROSION NOT ADOPTED`
+Status: `REOPENED — implementation corrected; terminal acceptance pending`
 
 Evidence mode: `Static + Ran`
 
@@ -17,9 +17,11 @@ typed sparse Parquet file, and cannot feed peak, erosion, HBP, OFE, channel, or
 watershed routing. Post-review p61 real-consumer closure and diagnostics-on/off
 byte identity pass; p102 fails closed with `WAT5-E-001` as required.
 
-All science, Rust, and terminal findings were accepted and corrected. The
-final exact post-authority-repair workspace run passed 2,380/2,380 with 33
-skipped; doctests reported zero failures; the exact worktree A0 gate admitted
-17 science surfaces; the 87-path owned diff reconciles; and both fresh
-terminal verifiers return PASS. The historical HOLD and pre-repair receipts
-are retained only as superseded evidence.
+The reopened implementation now makes the full run output set transactional,
+publishes the manifest last, exposes the depression-storage operand under a v2
+schema, validates public records at the writer boundary, records declarative
+run-file opt-in provenance, and measures a 45-year enabled workload. Focused
+regressions pass. The package is not terminally accepted until the corrected
+tree is committed cleanly and the required full workspace, doctests, fresh
+reviews, and dual terminal verifiers pass against that exact SHA. Prior
+terminal receipts are retained only as superseded evidence.

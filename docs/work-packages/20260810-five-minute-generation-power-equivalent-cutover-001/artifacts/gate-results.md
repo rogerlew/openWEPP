@@ -1,14 +1,31 @@
 # Gate Results
 
-Status: `PASS — terminal Critical closure complete`
+Status: `IN PROGRESS — focused corrections pass; exact-clean terminal campaign pending`
 
 Evidence mode: `Static + Ran`
 
-The admitted result is the optional `DIAGNOSTIC_ONLY` WAT5 water product and
-the explicit erosion `NO_ADOPTION` branch. The production hourly-mean erosion
-path remains selected. All commands below ran from `/home/workdir/openWEPP`
-against the resumed implementation working source at repository `HEAD`
-`c9f28a7dbe7adf69d8e6d54ebd8da57568af5552`.
+The intended result remains the optional `DIAGNOSTIC_ONLY` WAT5 water product
+and the explicit erosion `NO_ADOPTION` branch. The production hourly-mean
+erosion path remains selected.
+
+## Reopened correction gates
+
+| Requirement | Result | Evidence |
+|---|---|---|
+| Exact-worktree A0 | PASS | 43 contracts, 13 science surfaces, fingerprint `134c65ccfe96425cbbfbc822cf6c493a2993e952167fd2f85c24b24ff996c7a4` |
+| Transactional failure integrity | PASS | existing-WAT5 sentinel preservation; day-2 no-partial-set; forced-close sibling preservation; forced-link and manifest rollback; successful commit |
+| Storage-aware schema v2 | PASS | 27 columns; explicit depression retention; renamed raw post-depression generation; positive-storage Parquet reconstruction |
+| Focused implementation | PASS | 762/762 affected-package tests and 14/14 named integration tests |
+| Authority anti-evasion | PASS | shell guard, 3/3 required-suite contract, and 7/7 direct-policy contract |
+| Affected Clippy / package Python | PASS | all targets/features with `-D warnings`; 5/5 Python tests |
+| Enabled 45-year workload | PASS as diagnostic measurement | 4.11 s, 68,248 KiB peak RSS, 394,488 rows, 3,526,518 compressed bytes |
+| Replacement full workspace / doctests | PENDING | must run at the exact clean implementation commit |
+| Fresh science, Rust, and terminal reviews | PENDING | must bind directly to the replacement implementation SHA |
+
+## Superseded 2026-08-10 closure receipts
+
+The table below records the prior implementation closure. It does not close
+the reopened package or support terminal acceptance of the replacement.
 
 | Requirement | Result | Evidence |
 |---|---|---|

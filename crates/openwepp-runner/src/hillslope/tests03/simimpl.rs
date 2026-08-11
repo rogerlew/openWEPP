@@ -104,6 +104,23 @@ use crate::hillslope::intake_lane_setup::build_execution_lane_context;
         );
         assert_json_i64(&manifest_json, "/wb13_publication/row_count", 2);
         assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 2000);
+        assert_eq!(
+            manifest_json
+                .pointer("/wat5_output/enabled")
+                .and_then(serde_json::Value::as_bool),
+            Some(false)
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/wat5_output/selector")
+                .and_then(serde_json::Value::as_str),
+            Some("run_file.outputs.wat_subhourly_presence")
+        );
+        assert!(
+            manifest_json
+                .pointer("/wat5_output/output_path")
+                .is_some_and(serde_json::Value::is_null)
+        );
         let monotonic = manifest_json
             .pointer("/wb13_publication/sim_day_index_monotonic")
             .and_then(serde_json::Value::as_bool)

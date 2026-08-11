@@ -16,7 +16,8 @@ pub struct DirectFiveMinuteGenerationInterval {
     pub rainfall_depth_m: f64,
     pub additional_supply_depth_m: f64,
     pub raw_green_ampt_infiltration_depth_m: f64,
-    pub raw_green_ampt_generation_depth_m: f64,
+    pub depression_storage_retention_depth_m: f64,
+    pub raw_wb14_post_depression_generation_depth_m: f64,
     pub closed_wb14_generation_depth_m: f64,
     pub saturation_return_depth_m: f64,
     pub closing_surface_generation_depth_m: f64,
@@ -100,8 +101,13 @@ impl DirectDayFrame {
         let raw = compute_wb14_subhourly_profile(producer_inputs)?;
         let raw_supply_m: f64 = raw.rainfall_m.iter().sum();
         let raw_accounted_m: f64 = raw.infiltration_m.iter().sum::<f64>()
-            + raw.post_depression_excess_m.iter().sum::<f64>()
-            + raw.depression_storage_delta_m;
+            + raw.depression_storage_retention_m.iter().sum::<f64>()
+            + raw.post_depression_excess_m.iter().sum::<f64>();
+        validate_wat5_closure(
+            raw.depression_storage_retention_m.iter().sum(),
+            raw.depression_storage_delta_m,
+            "WAT5-E-004 wat5.depression_storage_retention_residual_m",
+        )?;
         validate_wat5_closure(
             raw_accounted_m,
             raw_supply_m,
@@ -211,7 +217,8 @@ impl DirectDayFrame {
                 rainfall_depth_m: raw.rainfall_m[bin],
                 additional_supply_depth_m: 0.0,
                 raw_green_ampt_infiltration_depth_m: raw.infiltration_m[bin],
-                raw_green_ampt_generation_depth_m: raw.post_depression_excess_m[bin],
+                depression_storage_retention_depth_m: raw.depression_storage_retention_m[bin],
+                raw_wb14_post_depression_generation_depth_m: raw.post_depression_excess_m[bin],
                 closed_wb14_generation_depth_m,
                 saturation_return_depth_m,
                 closing_surface_generation_depth_m,
@@ -441,9 +448,16 @@ mod tests {
         let raw = compute_wb14_subhourly_profile(&producer).expect("WAT5 raw replay");
         let rainfall_m: f64 = raw.rainfall_m.iter().sum();
         let accounted_m = raw.infiltration_m.iter().sum::<f64>()
-            + raw.post_depression_excess_m.iter().sum::<f64>()
-            + raw.depression_storage_delta_m;
+            + raw.depression_storage_retention_m.iter().sum::<f64>()
+            + raw.post_depression_excess_m.iter().sum::<f64>();
         assert!(raw.depression_storage_delta_m > 0.0);
+        assert!(raw.depression_storage_retention_m[0] > 0.0);
+        assert!(
+            (raw.depression_storage_retention_m.iter().sum::<f64>()
+                - raw.depression_storage_delta_m)
+                .abs()
+                <= f64::EPSILON
+        );
         validate_wat5_closure(
             accounted_m,
             rainfall_m,

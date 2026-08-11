@@ -139,7 +139,9 @@ hillslope output-family configurability.
 
 `[outputs]` optional keys:
 
+- `pass_parquet` (`string`, optional, must end in `.parquet`)
 - `wat` (`string`, optional, must end in `.parquet`)
+- `wat_subhourly` (`string`, optional, must end in `.parquet`)
 - `soil` (`string`, optional, must end in `.parquet`)
 - `plot` (`string`, optional, must end in `.parquet`)
 - `ebe` (`string`, optional, must end in `.parquet`)
@@ -152,7 +154,9 @@ Required outputs:
 
 Optional outputs:
 
+- `outputs.pass_parquet` when provided
 - `outputs.wat` when provided
+- `outputs.wat_subhourly` when provided
 - `outputs.soil` when provided
 - `outputs.plot` when provided
 - `outputs.ebe` when provided
@@ -168,6 +172,23 @@ Optional outputs:
 - authoritative WAT projection is WB13 canonical daily schema with explicit
   post-`wepp_260430` consumer-lineage extension allowance for optional
   producer-authoritative `Interception` and `InterceptionStorage`.
+
+`outputs.wat_subhourly` semantics (when provided):
+
+- path presence is the sole user-facing opt-in for the five-minute WAT5
+  diagnostic; absence disables it;
+- the version-2 Parquet schema and conservation semantics are governed by
+  `SC-OUTPUT-WAT5-001`;
+- source-incomplete days fail the run instead of inventing five-minute timing;
+- the product is sparse but can still be very large. A continuously active
+  45-year hillslope can emit 4,733,856 rows, and a deliberately conservative
+  prior small-file extrapolation reached approximately 2.15 GB per hillslope
+  or 301 GB for 140 hillslopes. Operators must provision storage and measure
+  their actual climate/domain before enabling it broadly.
+
+All requested outputs are staged and validated before replacement. A failed
+writer, simulation, checksum, or manifest operation preserves the complete
+pre-run output set. The run manifest is the final completion marker.
 
 `crop` output is intentionally excluded from this contract revision because its
 columnar/output authority is not yet ratified.
@@ -233,6 +254,7 @@ kfactor3 = 1.0
 pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 wat = "output/H1.wat.parquet"
+wat_subhourly = "output/H1.wat-subhourly.parquet" # opt-in; potentially large
 soil = "output/H1.soil.parquet"
 plot = "output/H1.plot.parquet"
 element = "output/H1.element.parquet"

@@ -20,6 +20,8 @@ fn canonical_contracts_bind_five_minute_water_without_changing_peak() {
     for required in [
         "`INV-WAT5-001`",
         "`INV-WAT5-007`",
+        "`INV-WAT5-008`",
+        "`INV-WAT5-009`",
         "`TOL-WAT5-001",
         "exact multiples of `300 s`",
         "mutates no water, erosion, transfer, routing, or persistent state",
@@ -27,6 +29,9 @@ fn canonical_contracts_bind_five_minute_water_without_changing_peak() {
         "event_ordinal = 0",
         "omitted leading and trailing bins are exact zero",
         "water_only_no_erosion_adoption",
+        "depression_storage_retention_depth_mm",
+        "raw_wb14_post_depression_generation_depth_mm",
+        "manifest as the last",
         "never claims discharge, peak, routed flow, or erosion adoption",
     ] {
         assert!(
@@ -45,6 +50,8 @@ fn production_has_one_typed_post_wb14_wb19_generation_ledger() {
         "DirectFiveMinuteGenerationEvent",
         "WAT5_INTERVAL_SECONDS",
         "closed_wb14_generation_depth_m",
+        "depression_storage_retention_depth_m",
+        "raw_wb14_post_depression_generation_depth_m",
         "saturation_return_depth_m",
         "closing_surface_generation_depth_m",
         "water_only_no_erosion_adoption",

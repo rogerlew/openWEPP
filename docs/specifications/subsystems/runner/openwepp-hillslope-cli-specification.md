@@ -84,7 +84,8 @@ conforms to `openwepp-hillslope-runfile-v1`:
    - `kfactor3`
 7. `[outputs]` keys:
    - required: `pass` (`.hbp` path), `loss` (`.json` path)
-   - optional string parquet paths: `wat`, `soil`, `plot`, `ebe`, `element`
+   - optional string parquet paths: `pass_parquet`, `wat`, `wat_subhourly`,
+     `soil`, `plot`, `ebe`, `element`
 8. Path semantics:
    - absolute paths are accepted;
    - relative paths are resolved against the directory containing the `.run`
@@ -98,6 +99,11 @@ conforms to `openwepp-hillslope-runfile-v1`:
    - field metadata keys `units` and `description`,
    - dataset metadata keys `dataset_version`, `dataset_version_major`,
      `dataset_version_minor`, `schema_version`.
+12. Presence of `outputs.wat_subhourly` opts into the version-2 WAT5
+    diagnostic. No CLI flag or environment selector may independently enable
+    it. Source-incomplete days fail closed under `SC-OUTPUT-WAT5-001`.
+13. Every requested run output is staged and validated before publication.
+    Failure preserves the pre-run set, and the manifest is published last.
 
 Sidecar semantics:
 
@@ -140,11 +146,18 @@ Required outputs:
 
 Optional parquet outputs when configured in `.run`:
 
-1. `outputs.wat` (`.parquet`)
-2. `outputs.soil` (`.parquet`)
-3. `outputs.plot` (`.parquet`)
-4. `outputs.ebe` (`.parquet`)
-5. `outputs.element` (`.parquet`)
+1. `outputs.pass_parquet` (`.parquet`)
+2. `outputs.wat` (`.parquet`)
+3. `outputs.wat_subhourly` (`.parquet`)
+4. `outputs.soil` (`.parquet`)
+5. `outputs.plot` (`.parquet`)
+6. `outputs.ebe` (`.parquet`)
+7. `outputs.element` (`.parquet`)
+
+`outputs.wat_subhourly` is sparse but operationally large. A continuously
+active 45-year hillslope can emit 4,733,856 rows; the retained conservative
+upper projection is approximately 2.15 GB for one hillslope and 301 GB for 140
+hillslopes. Treat the option as an explicitly provisioned diagnostic product.
 
 `outputs.wat` metadata parity requirements:
 
@@ -269,6 +282,8 @@ Sidecar constraints:
 | `RUNNER-HILL-INV-010` | When configured, `outputs.wat` emission preserves WEPPpy/WEPPpyo3 metadata parity (`units`/`description` field metadata + required dataset metadata version keys). | hard-fail |
 | `RUNNER-HILL-INV-011` | `outputs.wat` schema authority preserves WB13 canonical daily projection and permits optional producer-authoritative `Interception` and `InterceptionStorage` terms per post-`wepp_260430` consumer-lineage authority. | hard-fail + review hold |
 | `RUNNER-HILL-INV-012` | New CLI04 parquet implementation work uses `arrow-rs` crate stack (`parquet`, `arrow-array`, `arrow-schema`) and does not adopt `arrow2`. | hard-fail + package hold |
+| `RUNNER-HILL-INV-013` | `outputs.wat_subhourly` path presence is the only WAT5 opt-in and binds version-2 `SC-OUTPUT-WAT5-001` publication. | hard-fail |
+| `RUNNER-HILL-INV-014` | Requested hillslope outputs publish as one rollback-safe set with the manifest last; any pre-completion failure preserves preexisting bytes. | hard-fail |
 
 ## Implementation Sequencing Requirement
 

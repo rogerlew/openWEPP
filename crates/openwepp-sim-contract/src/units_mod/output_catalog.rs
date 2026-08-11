@@ -57,7 +57,15 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
         ),
         OutputUnitEntry::publication_only(
             "hillslope_wat_subhourly",
-            "raw_green_ampt_generation_depth_mm",
+            "depression_storage_retention_depth_mm",
+            "mm",
+            PUB_ONLY,
+            "SC-OUTPUT-WAT5-001",
+            "SC-OUTPUT-WAT5-001#INV-WAT5-008",
+        ),
+        OutputUnitEntry::publication_only(
+            "hillslope_wat_subhourly",
+            "raw_wb14_post_depression_generation_depth_mm",
             "mm",
             PUB_ONLY,
             "SC-OUTPUT-WAT5-001",

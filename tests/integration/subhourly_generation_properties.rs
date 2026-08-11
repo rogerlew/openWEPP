@@ -19,6 +19,7 @@ fn five_minute_projection_names_closure_and_source_completeness_guards() {
         "hourly_zero_order_hold",
         "first_active_subinterval",
         "last_active_subinterval",
+        "depression_storage_retention_depth_m",
     ] {
         assert!(
             source.contains(required),
@@ -35,7 +36,8 @@ fn five_minute_projection_names_closure_and_source_completeness_guards() {
 fn production_output_does_not_modify_hbp_or_erosion_authority() {
     let output = read("crates/openwepp-hillslope-output/src/hillslope_wat_subhourly.rs");
     assert!(output.contains("HILLSLOPE_WAT_SUBHOURLY_SCHEMA_ID"));
-    assert!(output.contains("openwepp-hillslope-wat-subhourly-v1.0"));
+    assert!(output.contains("openwepp-hillslope-wat-subhourly-v2.0"));
+    assert!(output.contains("validate_rows"));
     assert!(!output.contains("Hbp"));
     assert!(!output.contains("sediment"));
 }
