@@ -1,0 +1,442 @@
+{
+  "all_pass": true,
+  "canonical_state": {
+    "serialized": "{\"beta_hyd\":0.73,\"canopy_air_specific_humidity_kg_kg\":0.009,\"canopy_air_temperature_k\":295.4,\"canopy_liquid_kg_h2o_m2_tile_ground\":0.17,\"dry_stem_temperature_k\":294.8,\"last_accepted_transaction_id\":4,\"root_potential_mm_by_layer\":[[\"soil-1\",-5100.0],[\"soil-2\",-6200.0]],\"shade_ci_pa\":27.1,\"shade_leaf_potential_mm\":-7100.0,\"shade_leaf_temperature_k\":295.0,\"stem_potential_mm\":-6600.0,\"sun_ci_pa\":25.9,\"sun_leaf_potential_mm\":-7400.0,\"sun_leaf_temperature_k\":296.2,\"wet_surface_temperature_k\":294.9}",
+    "sha256": "5cb16721125b5352e4aadb861b5e928f13ce05ff32f34533798648ebc2c4bd4b",
+    "wrong_unit_poison": "typed_unit_mismatch:MPa"
+  },
+  "checks": {
+    "aggregate_incident_poison": true,
+    "aggregate_par_poison": true,
+    "authorization_back_conversion": true,
+    "average_wet_fraction_poison": true,
+    "condensation_second_drainage": true,
+    "controlled_final_release_changes_lower": true,
+    "distinct_beginning_store": true,
+    "distinct_tile_rain": true,
+    "double_ft_poison": true,
+    "duplicate_lane_rejected": true,
+    "empty_tile": true,
+    "heterogeneous_upper_columns": true,
+    "homogeneous_two_tile_reduction": true,
+    "local_and_stand_closure": true,
+    "mineral_n_after_aggregation": true,
+    "missing_lane_rejected": true,
+    "omit_ft_poison": true,
+    "omit_second_drainage_poison": true,
+    "replicated_store_poison": true,
+    "request_weighting": true,
+    "rollback_exact_bytes": true,
+    "shared_cn_once": true,
+    "single_tile_reduction": true,
+    "stemflow_bypass": true,
+    "stemflow_through_foliage_poison": true,
+    "tile_order_permutation": true,
+    "two_rank_routing": true,
+    "unequal_tile_fractions": true,
+    "wrong_area_basis_poison": true,
+    "wrong_authorization_poison": true,
+    "wrong_tile_drainage_poison": true
+  },
+  "empty_tile": {
+    "closure_residual": 0.0,
+    "ground_liquid": 1.3,
+    "occupancies": []
+  },
+  "fractions": {
+    "tile-a": 0.35,
+    "tile-b": 0.65
+  },
+  "heterogeneous_columns": {
+    "tile-a": {
+      "closure_residual": -2.220446049250313e-16,
+      "ground_liquid": 1.287,
+      "occupancies": [
+        {
+          "condensation": 0.0,
+          "incident": 2.4,
+          "initial_drainage": 1.247811914120717,
+          "intercepted": 1.7228119141207168,
+          "second_drainage": 0.0,
+          "stemflow": 0.08126257030551397,
+          "store0": 0.11,
+          "store1": 0.57,
+          "stratum": "upper",
+          "throughfall": 0.5959255155737692,
+          "wet_evaporation": 0.015,
+          "wet_fraction": 1.0
+        },
+        {
+          "condensation": 0.09,
+          "incident": 1.8437374296944862,
+          "initial_drainage": 0.3966411757896733,
+          "intercepted": 1.1246411757896735,
+          "second_drainage": 0.08999999999999997,
+          "stemflow": 0.057527700312385015,
+          "store0": 0.04,
+          "store1": 0.7680000000000002,
+          "stratum": "lower",
+          "throughfall": 0.6615685535924277,
+          "wet_evaporation": 0.0,
+          "wet_fraction": 1.0
+        }
+      ]
+    },
+    "tile-b": {
+      "closure_residual": -5.551115123125783e-17,
+      "ground_liquid": 0.324524136895764,
+      "occupancies": [
+        {
+          "condensation": 0.31,
+          "incident": 0.7,
+          "initial_drainage": 0.2874868082852091,
+          "intercepted": 0.5024868082852091,
+          "second_drainage": 0.31000000000000005,
+          "stemflow": 0.023701583005774903,
+          "store0": 0.37,
+          "store1": 0.585,
+          "stratum": "upper",
+          "throughfall": 0.17381160870901596,
+          "wet_evaporation": 0.0,
+          "wet_fraction": 1.0
+        },
+        {
+          "condensation": 0.0,
+          "incident": 0.7712984169942252,
+          "initial_drainage": 0.0,
+          "intercepted": 0.47047586310423617,
+          "second_drainage": 0.0,
+          "stemflow": 0.02406580431119912,
+          "store0": 0.19,
+          "store1": 0.6204758631042362,
+          "stratum": "lower",
+          "throughfall": 0.27675674957878993,
+          "wet_evaporation": 0.04,
+          "wet_fraction": 0.904337390341013
+        }
+      ]
+    }
+  },
+  "migration": {
+    "nonzero_multitile": "typed_unresolved_occupancy_lanes",
+    "single_tile_coverage_0_35_from_0_07": 0.20000000000000004,
+    "zero_multitile": [
+      0.0,
+      0.0
+    ]
+  },
+  "mineral_n_transaction": {
+    "authorizations": [
+      {
+        "amount": 0.0055,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.0115,
+        "key": [
+          "tx-9",
+          "lower",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.007,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NO3"
+        ]
+      },
+      {
+        "amount": 0.002,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-2",
+          "NH4"
+        ]
+      }
+    ],
+    "ending_inventory": [
+      {
+        "amount": 0.0034000000000000002,
+        "key": [
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.0144,
+        "key": [
+          "soil-1",
+          "NO3"
+        ]
+      },
+      {
+        "amount": 0.00039999999999999996,
+        "key": [
+          "soil-2",
+          "NH4"
+        ]
+      }
+    ],
+    "finalized": [
+      {
+        "amount": 0.0044,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.0092,
+        "key": [
+          "tx-9",
+          "lower",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.005600000000000001,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NO3"
+        ]
+      },
+      {
+        "amount": 0.0016,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-2",
+          "NH4"
+        ]
+      }
+    ],
+    "requests": [
+      {
+        "amount": 0.011,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.023,
+        "key": [
+          "tx-9",
+          "lower",
+          "soil-1",
+          "NH4"
+        ]
+      },
+      {
+        "amount": 0.007,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-1",
+          "NO3"
+        ]
+      },
+      {
+        "amount": 0.005,
+        "key": [
+          "tx-9",
+          "upper",
+          "soil-2",
+          "NH4"
+        ]
+      }
+    ],
+    "wrong_layer_result": "typed_identity_mismatch",
+    "wrong_species_result": "typed_identity_mismatch"
+  },
+  "model_version": "OPENWEPP_C3_WOODY_V2",
+  "nonlinear_locality": {
+    "aggregate_par_fvbc": 13.66797633959598,
+    "averaged_wet_response": 0.0003851819157649661,
+    "weighted_fvbc": 13.10393123300815,
+    "weighted_wet_response": 0.00038553797563890824
+  },
+  "nonlinear_poison": {
+    "aggregate_first_store": 0.68,
+    "difference": -0.13010124077899043,
+    "weighted_local_store": 0.5498987592210096
+  },
+  "owner_rollback": {
+    "after_failure_sha256": "9df96abca940350b2ade5df220281b823e166cb001c0d68e929101c431379a06",
+    "beginning_sha256": "9df96abca940350b2ade5df220281b823e166cb001c0d68e929101c431379a06",
+    "owner_names": [
+      "biogeochemistry",
+      "energy",
+      "vegetation",
+      "water"
+    ]
+  },
+  "potential_and_controlled_final_columns": {
+    "controlled_final": {
+      "closure_residual": 0.0,
+      "ground_liquid": 1.4490000000000003,
+      "occupancies": [
+        {
+          "condensation": 0.06,
+          "incident": 1.8,
+          "initial_drainage": 1.0307157154534212,
+          "intercepted": 1.2507157154534212,
+          "second_drainage": 0.05999999999999994,
+          "stemflow": 0.05492842845465789,
+          "store0": 0.2,
+          "store1": 0.42,
+          "stratum": "upper",
+          "throughfall": 0.49435585609192095,
+          "wet_evaporation": 0.0,
+          "wet_fraction": 0.9999999999999999
+        },
+        {
+          "condensation": 0.0,
+          "incident": 1.5850715715453423,
+          "initial_drainage": 0.6986141953471733,
+          "intercepted": 0.8896141953471732,
+          "second_drainage": 0.0,
+          "stemflow": 0.04868201633387184,
+          "store0": 0.03,
+          "store1": 0.20099999999999998,
+          "stratum": "lower",
+          "throughfall": 0.6467753598642971,
+          "wet_evaporation": 0.02,
+          "wet_fraction": 0.9999999999999999
+        }
+      ]
+    },
+    "potential": {
+      "closure_residual": 2.220446049250313e-16,
+      "ground_liquid": 1.3890000000000002,
+      "occupancies": [
+        {
+          "condensation": 0.0,
+          "incident": 1.8,
+          "initial_drainage": 1.0307157154534212,
+          "intercepted": 1.2507157154534212,
+          "second_drainage": 0.0,
+          "stemflow": 0.05492842845465789,
+          "store0": 0.2,
+          "store1": 0.29999999999999993,
+          "stratum": "upper",
+          "throughfall": 0.49435585609192095,
+          "wet_evaporation": 0.12,
+          "wet_fraction": 0.9999999999999999
+        },
+        {
+          "condensation": 0.0,
+          "incident": 1.5250715715453422,
+          "initial_drainage": 0.6649394688054617,
+          "intercepted": 0.8559394688054617,
+          "second_drainage": 0.0,
+          "stemflow": 0.046839247191791646,
+          "store0": 0.03,
+          "store1": 0.20099999999999998,
+          "stratum": "lower",
+          "throughfall": 0.6222928555480889,
+          "wet_evaporation": 0.02,
+          "wet_fraction": 0.9999999999999999
+        }
+      ]
+    }
+  },
+  "shared_carbon_nitrogen": {
+    "accepted_once": 0.008875,
+    "duplicate_transition_poison": 0.01775,
+    "gpp_stand": 0.01125,
+    "leaf_respiration_stand": 0.002375,
+    "mineral_n_identity": [
+      "soil-1:NH4",
+      "soil-1:NO3",
+      "soil-2:NH4"
+    ]
+  },
+  "stand": {
+    "ending_store": 1.2518593110177536,
+    "ground_liquid": 0.6613906889822465
+  },
+  "water_arbitration_and_routing_control": {
+    "authorizations": [
+      {
+        "amount": 0.06,
+        "key": [
+          "tx-9",
+          "upper",
+          "tile-a",
+          "soil-1",
+          "liquid-water",
+          "stand-ground"
+        ]
+      },
+      {
+        "amount": 0.04,
+        "key": [
+          "tx-9",
+          "lower",
+          "tile-a",
+          "soil-1",
+          "liquid-water",
+          "stand-ground"
+        ]
+      }
+    ],
+    "claim_scope": "topology_causality_only_exogenous_vapor_operands",
+    "complete_coupled_acceptance_gate": "STAGE_B_E11_E15_EXACT_ORACLE",
+    "controlled_final_vapor": -0.06,
+    "controlled_potential_vapor": 0.12,
+    "lower_controlled_final_incident": 1.5850715715453423,
+    "lower_potential_incident": 1.5250715715453422,
+    "potential_requests": [
+      {
+        "amount": 0.12,
+        "key": [
+          "tx-9",
+          "upper",
+          "tile-a",
+          "soil-1",
+          "liquid-water",
+          "stand-ground"
+        ]
+      },
+      {
+        "amount": 0.08,
+        "key": [
+          "tx-9",
+          "lower",
+          "tile-a",
+          "soil-1",
+          "liquid-water",
+          "stand-ground"
+        ]
+      }
+    ],
+    "supply": 0.1,
+    "upper_authorization_fraction": 0.5
+  },
+  "water_transaction": {
+    "authorization_stand": 0.091,
+    "authorization_tile": 0.26,
+    "demand_stand": 0.147,
+    "demand_tile": 0.42,
+    "final_stand": 0.08399999999999999,
+    "final_tile": 0.24
+  }
+}

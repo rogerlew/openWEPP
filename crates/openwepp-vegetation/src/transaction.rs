@@ -374,6 +374,7 @@ pub fn execute_candidate_with_failure(
     failure: Option<FailurePoint>,
 ) -> Result<CoupledCandidate, VegetationError> {
     validate_execution(model, config, beginning, forcing)?;
+    validate_e04_topology_authority(config)?;
     reject_at(failure, FailurePoint::Validation)?;
     let transaction_id = TransactionId(
         beginning
@@ -387,12 +388,6 @@ pub fn execute_candidate_with_failure(
     let mut prepared = Vec::with_capacity(config.strata.len());
     let mut water_requests = Vec::new();
     for stratum in &config.strata {
-        let coverage = stratum_coverage(config, stratum)?;
-        if (coverage - 1.0).abs() > 1e-12 || stratum.tile_ids.len() != 1 {
-            return Err(VegetationError::Unsupported(
-                "E04 heterogeneous-tile liquid-state aggregation authority missing",
-            ));
-        }
         let state = beginning
             .strata
             .get(&stratum.stratum_id)
@@ -650,6 +645,20 @@ pub fn execute_candidate_with_failure(
             gas_hydraulic_mismatch_kg_m2_s: gas_hydraulic_mismatch,
         },
     })
+}
+
+fn validate_e04_topology_authority(
+    config: &VegetationConfiguration,
+) -> Result<(), VegetationError> {
+    for stratum in &config.strata {
+        let coverage = stratum_coverage(config, stratum)?;
+        if (coverage - 1.0).abs() > 1e-12 || stratum.tile_ids.len() != 1 {
+            return Err(VegetationError::Unsupported(
+                "E04 heterogeneous-tile liquid-state aggregation authority missing",
+            ));
+        }
+    }
+    Ok(())
 }
 
 #[derive(Clone)]

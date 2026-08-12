@@ -235,15 +235,15 @@ fn schema_sections_test_vectors_and_registry_are_bound() {
             line.contains("`NON_PROMOTABLE`"),
             "gap {gap} lost NON_PROMOTABLE"
         );
-        if gap != "004" {
-            assert!(
-                line.contains("`AUTHORITY_MISSING`"),
-                "gap {gap} lost AUTHORITY_MISSING"
-            );
-        } else {
+        if gap == "004" {
             assert!(
                 line.contains("`IMPLEMENTATION_MISSING`"),
                 "gap 004 lost IMPLEMENTATION_MISSING"
+            );
+        } else {
+            assert!(
+                line.contains("`AUTHORITY_MISSING`"),
+                "gap {gap} lost AUTHORITY_MISSING"
             );
         }
     }

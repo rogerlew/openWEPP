@@ -11,6 +11,7 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260811-c3-woody-tile-liquid-topology-authority-001/` — COMPLETE / `OPENWEPP_C3_WOODY_V2` IMPLEMENTATION AUTHORITY RELEASED: exact tile-liquid topology authority, dual science review, focused/heavy gates, and dual terminal verification pass; no runtime activation or cutover.
 - `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/` — COMPLETE /
   IMPLEMENTATION AUTHORITY RELEASED: canonically admits one complete
   coupled vascular C3 woody-vegetation stack with persistent C/N state,

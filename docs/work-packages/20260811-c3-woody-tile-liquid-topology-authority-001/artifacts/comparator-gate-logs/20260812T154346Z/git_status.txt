@@ -1,0 +1,12 @@
+## main...origin/main
+ M crates/openwepp-vegetation/src/transaction.rs
+ M docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+ M docs/specifications/science-contracts/index.md
+ M docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/successor-release-decision.md
+ M docs/work-packages/README.md
+ M tests/integration/vegetation_boundary_authority_contract.rs
+?? docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md
+?? docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/
+?? docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v2_definition.json
+?? docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/c3-hold-lift-guidance.md
+---

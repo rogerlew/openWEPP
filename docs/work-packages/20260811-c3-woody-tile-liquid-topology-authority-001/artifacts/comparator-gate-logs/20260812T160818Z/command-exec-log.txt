@@ -1,0 +1,6 @@
+[16:08:18] RUN cargo_clippy
+[16:08:20] RUN cargo_nextest
+[16:38:32] RUN cargo_test_doc
+[16:38:40] RUN cargo_deny
+[16:38:40] RUN cargo_fmt
+[16:38:43] RUN git_diff_check

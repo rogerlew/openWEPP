@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-11
+last_reviewed: 2026-08-12
 supersedes: []
 superseded_by: []
 ---
@@ -27,20 +27,32 @@ Evidence mode: `Static`
 ## Purpose
 
 Define canonical openWEPP ownership, state, ordering, units, conservation, and
-failure semantics for a future native vegetation subsystem. Version 5 admits
+failure semantics for a future native vegetation subsystem. Version 5 admitted
 the indivisible `OPENWEPP_C3_WOODY_V1` constitutive stack: direct/diffuse
 two-stream radiation, sunlit/shaded FvCB--Medlyn gas exchange, explicit leaf
 energy balance, interval-equilibrium plant hydraulics, liquid interception, and persistent
 vegetation C/N dynamics. It releases contract-first implementation authority;
 it admits no production kernel, runtime selector, cutover, output, calibration,
-or recommended site value.
+or recommended site value. Version 6 supersedes V1 for heterogeneous topology
+by admitting `OPENWEPP_C3_WOODY_V2`: tile-resolved occupancy liquid state,
+same-tile column routing, occupancy-local wet-energy/physiology/hydraulics,
+occupancy-preserving water identities, exact area conversion, and fail-closed
+migration. V1 remains immutable historical authority and is not a V2 runtime
+alias.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
 for
 `docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v1_definition.json`.
 That digest freezes fixed constants, selected family IDs, and typed unsupported
-branches; canonical equations and semantics remain in this contract.
+branches for historical V1. The V2 definition and digest are maintained by
+`20260811-c3-woody-tile-liquid-topology-authority-001`; canonical equations and
+semantics remain in this contract.
+
+The immutable V2 definition identity is
+`sha256:38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`
+for
+`docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/openwepp_c3_woody_v2_definition.json`.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -112,6 +124,7 @@ Out of scope:
 | `REF-VEGETATION-027` | CLM5 Technical Note, reviewed bytes SHA-256 `9ca0f0e5b7aff712a0ef7f5198f111c4b250cac4417a4f000e36c6c143f2e363`, Chapters 3, 5, 7, 9, 11, 16--21 | Exact established-model radiation, transfer, interception, gas-exchange, hydraulic and C/N definitions. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
 | `REF-VEGETATION-028` | BIOME-BGC v4.2 theoretical framework, SHA-256 `476dd8d5606941ccfdd59de277d03671e764ac6ceac44d9bebd68bf61f00be85`, pp. 14--31 | Independent established-model C/N pool, respiration, allocation and turnover architecture. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
 | `REF-VEGETATION-029` | `SC-BIOGEOCHEM-001` | Mineral-N arbitration and litter/CWD receiving-owner authority. | `[DIRECT][Static]` |
+| `REF-VEGETATION-030` | `SC-VEGETATIONTRANSACTION-001` | Shared V2 occupancy water/energy identity, receiving-owner reconstruction, and all-owner atomicity. | `[DIRECT][Static]` |
 
 Source-reported literature names in `REF-VEGETATION-009`,
 `REF-VEGETATION-012`, or `REF-VEGETATION-013` are discovery leads only. They
@@ -132,17 +145,23 @@ explicitly declared.
 | `dt` | `s` | strictly positive interval duration | orchestrator |
 | `f_t` | fraction | non-overlapping horizontal topology-tile fraction | native management |
 | `C_s` | fraction | projected ground-area cover of stratum `s` | native management / vegetation state |
+| `o=(s,t)` | typed identity | V2 occupancy: exact stratum/tile pair where `s` is present in `t` | native management / vegetation |
 | `z_s` | `m` | stratum reference height | vegetation |
 | `LAI_s`, `WAI_s` | `m^2 m^-2` | leaf and woody area per ground area | vegetation |
+| `LAI_s,t`, `WAI_s,t` | `m^2 plant m^-2 tile-ground` | V2 conditional occupancy area, exactly `LAI_s/C_s`, `WAI_s/C_s` | vegetation, derived |
 | `r_s,l` | fraction | root participation fraction for stratum `s`, soil layer `l` | native management / vegetation |
 | `S_liq,s` | `kg m^-2` | liquid water stored on stratum `s` | vegetation |
+| `S_liq,s,t` | `kg H2O m^-2 tile-ground` | V2 sole mutable canopy-liquid store for occupancy `(s,t)`; aggregate is derived only | vegetation |
 | `S_snow,s` | `kg m^-2` | future intercepted canopy-snow water-equivalent store | vegetation; constitutive behavior non-promotable in versions 2-4 |
 | `P_liq,s` | `kg m^-2` | interval-integrated liquid incident on stratum `s` | upstream canopy/forcing handoff |
+| `P_liq,s,t`, `E_int,s,t` | `kg H2O m^-2 tile-ground` | V2 occupancy-local incident liquid and accepted wet evaporation/condensation amount | vegetation + energy join |
+| `R_through,s,t`, `R_stem,s,t`, `R_drain,s,t` | `kg H2O m^-2 tile-ground` | V2 local throughfall, stemflow, and explicit initial-plus-second drainage | vegetation |
 | `E_int,s` | `kg m^-2` | interval-integrated actual evaporation from canopy liquid store | vegetation + energy join |
 | `R_down,s` | `kg m^-2` | interval-integrated typed total downward liquid release | vegetation |
 | `R_stem,s`, `R_drip,s` | `kg m^-2` | interval-integrated distinct stemflow and drip/drainage terms | vegetation |
 | `Q_rad,k,j` | `J m^-2` | interval-integrated radiation energy in band/direction `k` received by component `j` | land-surface energy |
 | `D_s,l` | `kg m^-2` | interval-integrated Stage A root-water request | vegetation |
+| `D_W,s,t,l`, `A_W,s,t,l`, `F_W,s,t,l` | `kg H2O m^-2 stand-ground` | V2 occupancy-preserving water request, maximum authorization, and finalized use | vegetation / hydrology |
 | `A_W,s,l`, `F_W,s,l` | `kg m^-2` | maximum hydrologic authorization and finalized withdrawal | soil hydrology / vegetation finalization |
 | `A_l` | `kg m^-2` | same-snapshot layer liquid admissible to all Stage B withdrawals on the transaction area basis | soil hydrology |
 | `W_comp,l` | `kg m^-2` | interval-integrated non-vegetation competing withdrawal accepted from layer `l` | soil hydrology |
@@ -158,7 +177,7 @@ explicitly declared.
 | `A_n,s,c` | `umol CO2 m^-2 leaf s^-1` | net C3 leaf assimilation | vegetation |
 | `g_s,s,c` | `umol H2O m^-2 leaf s^-1` | Medlyn stomatal conductance | vegetation |
 | `T_leaf,s,c` | `K` | converged leaf temperature | vegetation/LSE join |
-| `psi_s,n` | `MPa` | root/xylem/leaf-node water potential | vegetation |
+| `psi_s,n` | `mm H2O` | root/xylem/leaf-node water potential; the exact E14/E15 hydraulic basis | vegetation |
 | `GPP_s`, `R_m,s`, `R_g,s` | `kg C m^-2` | interval carbon gain and respiration | vegetation |
 | `NSC_C,s` | `kg C m^-2` | nonnegative unallocated carbon carried across intervals | vegetation |
 | `D_N,s,l,q`, `A_N,s,l,q`, `F_N,s,l,q` | `kg N m^-2` | mineral-N request, maximum authorization, and finalized use | vegetation / `SC-BIOGEOCHEM-001` |
@@ -170,6 +189,10 @@ conversion uses the version-5 identity `1 mm = 1 kg m^-2`, derived from
 Every transfer above is an amount integrated over `tau`; `interval^-1` is not a
 physical unit. A future rate-producing constitutive owner must declare its time
 unit and integrate through `dt` before entering these amount ledgers.
+
+For V2, tile-local energy is `J m^-2 tile-ground` per interval. Every
+stand-ground aggregate is derived exactly as `sum_t(f_t*X_s,t)`. No local and
+aggregate store may coexist as independent mutable sources.
 
 ## Algorithm State Surfaces
 
@@ -511,6 +534,108 @@ model-definition digest; no last iterate is usable.
 This sequence is implementation-authoritative for boundary transactionality,
 not for any missing constitutive response.
 
+### `OPENWEPP_C3_WOODY_V2` Occupancy Topology Amendment
+
+V2 retains every V1 equation and numerical constant except that all
+heterogeneous-topology E04 state and every nonlinear downstream consumer is
+resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
+
+1. Validate positive, nonoverlapping `f_t` with `sum_t f_t=1`, exact unique
+   occupancies, and `C_s=sum_{t in T_s} f_t>0`. Reject missing, duplicate, extra,
+   or nonmember occupancy state. Do not normalize inconsistent topology.
+2. `LAI_s` and `WAI_s` remain stand-ground shared stratum state. V2 canonically
+   selects uniform conditional density across occupied tiles:
+   `LAI_s,t=LAI_s/C_s`, `WAI_s,t=WAI_s/C_s`. Using stand-area LAI directly in a
+   tile is invalid.
+3. Every occupancy owns exactly one `S_liq,s,t` in
+   `kg H2O m^-2 tile-ground`, its derived wet fraction, accepted local numerical
+   warm starts, and last accepted transaction identity. Aggregated liquid is a
+   read-only diagnostic `S_liq,s,agg=sum_t f_t*S_liq,s,t`.
+4. For each tile, traverse occupancies in deterministic top-to-bottom rank.
+   Begin with tile-local top rain. Execute the complete V1 E04 sequence at each
+   occupancy using local `S0`, incident `P`, conditional `L/S`, and local canopy
+   temperature. Free throughfall and both initial and post-condensation drainage
+   proceed to the next lower occupancy in the same tile. Stemflow bypasses lower
+   foliage and routes directly to that tile's ground liquid recipient. Terminal
+   throughfall/drainage and rain on an empty tile route to that tile's ground.
+   No release crosses tile identity and no stand aggregation precedes terminal
+   routing.
+5. Solve each potential tile column once, top-to-bottom, with `beta_hyd=1` and
+   no owner authorization cap. At each occupancy, solve the complete local
+   gas/energy/hydraulic state, finalize its potential E04 vapor amount and both
+   drainage terms, route those final releases, and only then solve its
+   descendant. The resulting stand-ground layer demands are immutable potential
+   requests `D_W,s,t,l`.
+6. Hydrology arbitrates all potential occupancy requests and competitor demands
+   once against the immutable beginning snapshot. Authorizations remain fixed;
+   no candidate debit occurs.
+7. Rebuild every tile column from the original beginning occupancy states and
+   forcing, again top-to-bottom. Each occupancy solves under its fixed
+   `A_tile=A_W/f_t` caps, finalizes vapor/store/drainage, and routes those newly
+   finalized releases before its descendant is solved. A descendant never uses
+   potential-column release. Its use stays within fixed authorization even if
+   changed upstream liquid would raise unconstrained demand. There is no
+   reauthorization or outer column iteration: this final capped pass is the
+   accepted column. Any infeasible cap or local nonconvergence atomically rejects
+   the transaction.
+8. Local canopy-liquid closure is
+   `S0+P+condensation=S1+wet_evaporation+throughfall+stemflow+initial_drainage+second_drainage`.
+   After internal releases cancel, each tile column and the weighted stand must
+   close independently from exposed operands. A producer-supplied residual is
+   not acceptance evidence.
+9. Radiation remains column-local. Wet/dry area, leaf/stem/wet energy,
+   canopy-air state, sun/shade FvCB--Medlyn exchange, hydraulics, condensation,
+   and active store-cap re-solve are occupancy-local whenever local forcing,
+   radiation, wetness, or authorization differs. PAR, wet fraction,
+   temperature, conductance, or another nonlinear operand is never averaged
+   before its solve. Accepted occupancy fluxes are weighted by `f_t` only after
+   the local solve and then update the single shared stratum C/N state once.
+10. Water request identity is
+   `(tau,stratum,occupancy,layer,resource,amount_basis)`. From tile-ground local
+   demand, `D_W,s,t,l=f_t*D_tile,s,t,l`. Hydrology arbitrates stand-ground
+   amounts against one same-layer snapshot. For the capped local re-solve,
+   `A_tile,s,t,l=A_W,s,t,l/f_t`; finalized use returns as
+   `F_W,s,t,l=f_t*F_tile,s,t,l`, with
+   `0<=F_W<=A_W<=D_W`. Missing/double `f_t`, identity swaps, stale transactions,
+   and duplicate request identities fail before owner mutation.
+11. Occupancy-local warm starts are exactly:
+   `sun_leaf_temperature_k`, `shade_leaf_temperature_k`,
+   `dry_stem_temperature_k`, `wet_surface_temperature_k`,
+   `canopy_air_temperature_k`, `canopy_air_specific_humidity_kg_kg`,
+   `sun_ci_pa`, `shade_ci_pa`, `beta_hyd`, `stem_potential_mm`,
+   `sun_leaf_potential_mm`, `shade_leaf_potential_mm`, and sorted
+   `root_potential_mm_by_layer[]=(layer_id,potential_mm)`. Temperatures and `ci`
+   are finite and positive, humidity is finite/nonnegative, `beta_hyd` is in
+   `[0,1]`, potentials are finite, and every configured root layer occurs once.
+   `last_accepted_transaction_id` is exact null for an initial lane or the
+   immediately preceding accepted transaction. Recursively lexicographic field
+   keys, root-layer ID order, the null marker, and all vector entries define
+   canonical serialization and enter the state digest; displayed prose order is
+   non-normative. Hydraulic potentials use `mm H2O` only, and MPa input is a
+   wrong-unit typed failure rather than an implicit conversion.
+12. Warm starts affect initialization only;
+   alternate valid starts converge to the same accepted state within canonical
+   tolerance. A failed transaction preserves every warm-start byte, and one
+   occupancy's accepted solution is never broadcast to another.
+13. V2 initialization requires exactly one lane per occupancy. Every V1
+   migration requires caller-supplied complete V2 warm starts with null
+   transaction identity; no V1 warm start is copied or broadcast. Given those
+   lanes, V1 exact-zero liquid expands to zero stores, and a V1 store with one
+   occupied tile maps as `S_V2=S_V1/C_s`. A nonzero V1 store over multiple tiles
+   returns an exhaustive unresolved-liquid-lane report. Missing warm starts,
+   uniform distribution, or parser defaults fail.
+14. Shared stratum C/N advances once after final capped columns finish:
+   `GPP_s=sum_t(f_t*GPP_s,t)`,
+   `R_leaf,s=sum_t(f_t*R_leaf,s,t)`, and
+   `T_s=sum_t sum_l F_W,s,t,l`. Shared tissue maintenance, turnover, allocation,
+   and growth respiration execute once on stand-ground pools. Mineral-N demand
+   is stratum/layer/species-level after aggregation, preserves NH4/NO3 and layer
+   identity, and is never duplicated per occupancy. Preaggregating nonlinear
+   physiology operands is prohibited.
+15. V2 model-definition digest and contract-section hashes are exact. V1
+    definition bytes remain immutable and historical; V1 state cannot execute
+    under V2 identity except through the explicit migration operation.
+
 ## Branch and Guard Table
 
 | Condition | Required disposition | Failure |
@@ -529,13 +654,21 @@ not for any missing constitutive response.
 | `T_s != sum_l F_W,s,l` | reject both candidate states | `VEG-E-030` |
 | missing/mismatched `h_v` or duplicate latent debit | reject | `VEG-E-031` |
 | water/energy/carbon/nitrogen/material closure fails | reject atomically | `VEG-E-032` |
-| canopy-snow constitutive execution requested under versions 2-5 | reject; boundary concept only | `VEG-E-040` |
+| canopy-snow constitutive execution requested under versions 2-6 | reject; boundary concept only | `VEG-E-040` |
 | iterative feedback requested without successor authority | reject without partial publication | `VEG-E-041` |
 | compatibility adapter invoked before Stage C/receipt closure | reject | `VEG-E-050` |
 | unsupported lifeform/process or canopy snow | reject before solve | `VEG-E-062` |
 | FvCB/Medlyn/energy/hydraulic domain violation | reject without canonicalization | `VEG-E-063` |
 | any nested solve exceeds its admitted limit | discard all candidates | `VEG-E-064` |
 | missing C/N pool, parameter, initial state, or BGC receipt | reject; no synthesis/source | `VEG-E-065` |
+| invalid tile fractions, coverage, membership, or duplicate occupancy | reject before radiation/E04 | `VEG-E-070` |
+| missing, duplicate, extra, or stale V2 occupancy state lane | reject before calculation | `VEG-E-071` |
+| stand-area plant area used as tile-local area, or `f_t` omitted/applied twice | reject candidate | `VEG-E-072` |
+| liquid release crosses tile or stemflow enters lower foliage | reject routing/ground receipt | `VEG-E-073` |
+| nonlinear occupancy operand aggregated before local solve | reject candidate | `VEG-E-074` |
+| occupancy/layer/transaction/resource/amount-basis request identity mismatch or duplicate | reject before arbitration | `VEG-E-075` |
+| nonzero multi-tile V1 store requested for automatic migration | return exhaustive unresolved occupancy lanes | `VEG-E-076` |
+| V1/V2 digest, schema, or execution identity mixed | reject before calculation | `VEG-E-077` |
 
 ## Invariants and Invariant Guard Map
 
@@ -553,7 +686,7 @@ not for any missing constitutive response.
 | `INV-VEGETATION-015` | Failed or non-converged transactions publish and mutate nothing. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | atomic commit | `VEG-E-032/041` |
 | `INV-VEGETATION-020` | Canopy liquid start plus interval-integrated incident water equals end storage plus interval-integrated actual evaporation and named releases. | `REF-VEGETATION-002`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[DIRECT][Static] + [INFERENCE][Static]` | dual reconstruction | `VEG-E-012/032` |
 | `INV-VEGETATION-021` | Canopy, ground, litter, snow, soil, ponded-water, and atmospheric radiation/latent terms remain distinct. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | alias/poison test | `VEG-E-011/032` |
-| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; versions 1-5 admit no canopy-snow constitutive law. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
+| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; versions 1-6 admit no canopy-snow constitutive law. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
 | `INV-VEGETATION-030` | Live/standing-dead plant pools remain vegetation-owned until an accepted exact-once material/element transfer. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | receipt test | `VEG-E-032` |
 | `INV-VEGETATION-031` | Vegetation and residue/biogeochemistry independently reconstruct identical dry-matter, carbon, and nitrogen transfers. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | dual reconstruction | `VEG-E-032` |
 | `INV-VEGETATION-040` | Every compatibility field has an explicit reduction, area basis, unit conversion, missing-state rule, and contributing-strata receipt. | `REF-VEGETATION-004`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | adapter test | `VEG-E-050` |
@@ -581,6 +714,13 @@ not for any missing constitutive response.
 | `INV-VEGETATION-070` | Mineral-N demand/receipt and litter/CWD C/N/dry material cross only the atomic `SC-BIOGEOCHEM-001` transaction. | `REF-VEGETATION-029` | `[DIRECT][Static]` | dual reconstruction | `VEG-E-032/065` |
 | `INV-VEGETATION-071` | Every site parameter and complete initial state is caller supplied; model constants are versioned/digest bound; no hidden default exists. | `REF-VEGETATION-010/027/028` | `[INFERENCE][Static]` | exhaustive schema | `VEG-E-003/065` |
 | `INV-VEGETATION-072` | `ci`, energy and hydraulic solves use finite, scale-aware, safeguarded algorithms; nonconvergence rolls back byte-identically. | `REF-VEGETATION-010/027` | `[DIRECT+INFERENCE][Static]` | numeric/rollback vector | `VEG-E-064` |
+| `INV-VEGETATION-073` | V2 has exactly one persistent liquid/numerical lane per valid occupancy `(s,t)`; the stand aggregate is derived and never independently mutable. | `REF-VEGETATION-010/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | schema/runtime/test | `VEG-E-070/071/077` |
+| `INV-VEGETATION-074` | Conditional occupancy plant area is exactly `LAI_s/C_s` and `WAI_s/C_s`; local E04 and every nonlinear wet-energy/physiology/hydraulic consumer execute before `f_t` weighting. | `REF-VEGETATION-025/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | area/poison reconstruction | `VEG-E-072/074` |
+| `INV-VEGETATION-075` | Throughfall and both drainage terms remain in the same tile and enter the next lower occupancy; stemflow bypasses foliage to same-tile ground; no lateral mixing or preterminal aggregation occurs. | `REF-VEGETATION-010/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | column-routing reconstruction | `VEG-E-073` |
+| `INV-VEGETATION-076` | Every occupancy and tile column closes canopy liquid locally, and the stand closes only as the weighted sum of independently exposed local operands. | `REF-VEGETATION-010/027` | `[DIRECT+INFERENCE][Static]` | independent local/stand reconstruction | `VEG-E-032/073` |
+| `INV-VEGETATION-077` | V2 water identity preserves transaction, stratum, occupancy, layer, resource, and amount basis; tile demand/authorization/final use cross the stand boundary with exactly one `f_t` conversion each way. | `REF-VEGETATION-005/010/030` plus `OPENWEPP_CANONICAL_SELECTION` | `[INFERENCE][Static]` | hydrology/vegetation dual reconstruction | `VEG-E-072/075` |
+| `INV-VEGETATION-078` | Occupancy warm starts are deterministic numerical state only; alternative valid starts converge equivalently, and failure rolls back every lane byte-identically. | `REF-VEGETATION-010/027` | `[DIRECT+INFERENCE][Static]` | convergence/rollback vectors | `VEG-E-064/071` |
+| `INV-VEGETATION-079` | V1 zero and single-tile stores have only the specified unique migrations; nonzero multi-tile stores require caller-supplied V2 lanes and never receive a silent distribution. | `REF-VEGETATION-010` plus `OPENWEPP_CANONICAL_SELECTION` | `[INFERENCE][Static]` | migration/schema test | `VEG-E-076/077` |
 
 ### Invariant Guard Map
 
@@ -626,6 +766,13 @@ not for any missing constitutive response.
 | `INV-VEGETATION-070` | BGC receipt/atomicity vectors | test | `VEG-E-032/065` | `SC-BIOGEOCHEM-001` |
 | `INV-VEGETATION-071` | exhaustive schema/state validation | governance/test | `VEG-E-003/065` | parameter manifest |
 | `INV-VEGETATION-072` | convergence and rollback vectors | test | `VEG-E-064` | numerical-solver artifact |
+| `INV-VEGETATION-073` | exact occupancy-lane schema/digest validator | runtime/test | `VEG-E-070/071/077` | V2 definition + schema vectors |
+| `INV-VEGETATION-074` | local/stand area-basis and nonlinear-preaggregation poisons | runtime/test | `VEG-E-072/074` | V2 independent oracle |
+| `INV-VEGETATION-075` | same-tile top-to-bottom routing validator | runtime/test | `VEG-E-073` | V2 routing vectors |
+| `INV-VEGETATION-076` | independent occupancy, tile-column, and weighted-stand water reconstruction | test | `VEG-E-032/073` | V2 oracle + owner ledger |
+| `INV-VEGETATION-077` | typed occupancy water request/authorization/final-use validator | runtime/test | `VEG-E-072/075` | `SC-WATBAL-001` join vectors |
+| `INV-VEGETATION-078` | occupancy warm-start equivalence and byte rollback | runtime/test | `VEG-E-064/071` | V2 convergence/rollback vectors |
+| `INV-VEGETATION-079` | explicit V1-to-V2 migration operation | runtime/test | `VEG-E-076/077` | migration poison vectors |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -644,6 +791,10 @@ not for any missing constitutive response.
   missing values with profile, parser, or biome defaults.
 - `OBL-VEGETATION-P-007`: native-forest canopy, wet-canopy, forest-floor, and
   layer-root components preserve distinct operands, state, lineage, and closure.
+- `OBL-VEGETATION-P-008`: V2 producers preserve occupancy identity through
+  local interception, wet-energy/physiology/hydraulics, water arbitration,
+  same-tile descendant routing, weighted stand aggregation, serialization, and
+  rollback; no aggregate mutable store or lateral mixing exists.
 - `OBL-VEGETATION-C-001`: the orchestrator preserves stage order and commits or
   rolls back all owner candidates atomically.
 - `OBL-VEGETATION-C-002`: land-surface energy supplies the authorized latent
@@ -669,11 +820,13 @@ not for any missing constitutive response.
 | `L_DM,c` | not an alias of `L_C,c` or `L_N,c` | dead-material receipt | independent unit/stoichiometry fields | this contract / `SC-RESIDUE-001` |
 | `S_snow,s` | not ground SWE or snow depth | future canopy store | `kg m^-2` water equivalent; no runtime alias | this contract / `SC-SNOWFREEZE-001` |
 | `Q_rad,k,j` | not a universal ground/net-radiation scalar | energy receipt | interval-integrated `J m^-2`; recipient-specific | `SC-LANDSURFACEENERGY-001` |
+| `S_liq,s,t` | not V1 `S_liq,s` and not a mutable weighted aggregate | V2 occupancy state | `kg H2O m^-2 tile-ground`; exact `(s,t)` identity | this contract |
+| `D_W,s,t,l`, `A_W,s,t,l`, `F_W,s,t,l` | not stratum-only or tile-ground owner debits | V2 water exchange | stand-ground interval amount with explicit one-time `f_t` conversion | this contract / `SC-WATBAL-001` |
 
 ## Constants and Parameters with Provenance Anchors
 
 Versions 1--4 admitted no vegetation-process numerical constant or empirical
-default. Version 5 supersedes only the constant prohibition by admitting the
+default. Version 5 superseded only the constant prohibition by admitting the
 explicit fixed constants in its equation set and numerical section. No source default, recommended
 profile value, physiological bound, or parameter set is admitted. Every later parameter entry must be one
 of `fixed_science`, `calibratable`, `external_configuration`, or
@@ -690,7 +843,9 @@ observation role, or makes a calibration, validation, ecosystem applicability,
 or transferability claim. `ASSUMED_FOR_EXECUTION` fixtures demonstrate typed
 behavior only and make no calibration, validation, ecosystem applicability, or transferability claim.
 
-Version-5 fixed constants are: `R=8.31446261815324 J mol^-1 K^-1`, carbon
+V2 preserves every version-5 fixed constitutive constant and numerical
+tolerance. Its new topology/routing/state/resource rules contain no tunable
+constant. Version-5 fixed constants are: `R=8.31446261815324 J mol^-1 K^-1`, carbon
 molar mass `0.012011 kg mol^-1`, stomatal/boundary H2O:CO2 ratios `1.6/1.4`,
 PAR conversion `4.6 umol photon J^-1`, PSII partition `0.5`, oxygen mole
 fraction `0.20`, co-limitation curvatures `0.98/0.95`, electron curvature/yield
@@ -735,7 +890,7 @@ The CLM leaf-angle approximation is admitted only for
 `-0.4<=leaf_angle_chi<=0.6`; values outside that interval are typed unsupported
 configuration, not extrapolated or clamped.
 
-Version 5 admits the constitutive equations above. Earlier-version statements
+Version 6 admits the constitutive equations and topology amendment above. Earlier-version statements
 limiting admission to configuration/bookkeeping are historical and superseded.
 
 ### Definition Acquisition And Typed Schema
@@ -791,6 +946,9 @@ composition proving that neither parameter record was averaged.
 | radiation/latent energy | `J m^-2` per interval | future LSE registry | named flux-duration integration | no final scalar exception | none |
 | dry matter / C / N | `kg dry matter m^-2`, `kg C m^-2`, `kg N m^-2` | future vegetation/residue registry | no implicit stoichiometric conversion | no final scalar exception | none |
 | compatibility `Ep` | `mm` per declared interval | existing daily water family only after named conversion | `kg_m2_to_mm_water` or successor | none | no publication authorized |
+| V2 occupancy water stores/releases | `kg H2O m^-2 tile-ground` | future vegetation occupancy registry | named tile-to-stand weighting only | no scalar exception | none |
+| V2 occupancy water owner exchange | interval `kg H2O m^-2 stand-ground` | future typed resource registry | exactly one multiply/divide by positive `f_t` at boundary | no scalar exception | none |
+| V2 occupancy energy | interval `J m^-2 tile-ground` | future LSE occupancy registry | named `f_t` weighting after local solve | no scalar exception | none |
 
 No runtime symbol, registry, or output metadata changes are authorized here.
 
@@ -799,6 +957,10 @@ No runtime symbol, registry, or output metadata changes are authorized here.
 - Conservation and representation tolerances are distinct.
 - Version 5 numerical tolerances and solver limits are the explicit
   `OPENWEPP_CANONICAL_SELECTION` values in the equation set above.
+- Version 6 retains those tolerances. Topology fractions use the existing
+  separately admitted `1e-12` representation tolerance only for validation;
+  no constitutive operand, negative store, or closure residual is silently
+  normalized through it.
 - Zero snapping, negative-pool clipping, cover perturbation, conductance floors,
   denominator replacement, or unbounded iteration are prohibited absent a
   threshold, units, provenance, tests, and explicit canonical authority.
@@ -813,7 +975,8 @@ calibration_evidence_status = NOT_CALIBRATION_READY
 identifiability_status = NOT_ASSESSED
 ```
 
-Version 5 admits equations, domains and a typed parameter surface, while the
+Version 6 admits equations, domains, occupancy semantics, and a typed parameter
+surface, while the
 canonical runtime remains absent; therefore `science_implementation_status =
 NOT_IMPLEMENTED`.
 No current parameter,
@@ -842,7 +1005,7 @@ makes no suitability claim; it must not be mislabeled as calibrated or validated
 | canopy liquid store | independently reconstruct start + incident - evaporation - every release = end | `INV-VEGETATION-020` |
 | canopy/ground/litter/snow/soil poison aliases | omitted, duplicated, or swapped recipient fails | `INV-VEGETATION-021`, `VEG-E-011/032` |
 | dry matter/C/N transfer | donor and receiver reconstruct same three distinct operands | `INV-VEGETATION-030`, `INV-VEGETATION-031` |
-| canopy snow request | ownership visible but constitutive execution rejected under versions 1-5 | `INV-VEGETATION-022`, `VEG-E-040` |
+| canopy snow request | ownership visible but constitutive execution rejected under versions 1-6 | `INV-VEGETATION-022`, `VEG-E-040` |
 | unbounded/failed iteration | no partial mutation or publication | `INV-VEGETATION-015`, `VEG-E-041` |
 | compatibility adapter | field-specific receipt, read-only, no native feedback | `INV-VEGETATION-040`, `INV-VEGETATION-041` |
 | source-derived constant/proxy physiology | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | `INV-VEGETATION-050`, `INV-VEGETATION-051` |
@@ -856,6 +1019,16 @@ makes no suitability claim; it must not be mislabeled as calibrated or validated
 | deciduous/evergreen/mixed C/N cycles | persistent distinct pools, leaf-C-owned LAI and exact ledgers | `INV-VEGETATION-063/068/069` |
 | N limitation/retranslocation/competition | request-bounded growth and exact vegetation/BGC receipt | `INV-VEGETATION-068/070` |
 | nonconvergence/invalid state | typed error and byte-identical state | `INV-VEGETATION-071/072` |
+| one stratum on unequal tiles with distinct rain/stores | distinct local E04 states and exact weighted aggregate | `INV-VEGETATION-073/074/076` |
+| same stratum below different upper columns | same-tile throughfall/drainage only; no lateral mixing | `INV-VEGETATION-075/076` |
+| two ranks plus stemflow | free liquid/drainage enters lower occupancy; stemflow bypasses to same-tile ground | `INV-VEGETATION-075` |
+| condensation and second drainage in one occupancy | second drainage is explicit and local closure passes | `INV-VEGETATION-074/076` |
+| empty tile and single-tile reduction | rain reaches same-tile ground; V2 local result reduces to V1 E04 | `INV-VEGETATION-075/079` |
+| homogeneous two-tile and tile permutation | expected weighted result and byte-stable order invariance | `INV-VEGETATION-073/076/078` |
+| occupancy water weighting/back-conversion | exactly one `f_t` conversion, bounded finalized use | `INV-VEGETATION-077` |
+| aggregate-first nonlinear poison | at least one accepted operand differs from weighted local execution | `INV-VEGETATION-074` |
+| V1 migration zero/single/nonzero-multitile | exact expansion/conversion/unresolved-lane error | `INV-VEGETATION-079` |
+| tile-local failure after candidate work | every owner and every occupancy warm start byte-identical | `INV-VEGETATION-078` |
 
 Future fixtures must use deliberately distinct canopy, ground, litter, snow,
 soil, ponded-water, layer, dry-matter, carbon, and nitrogen operands so wrong
@@ -871,6 +1044,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-003` | `20260808-rhessys-east-coast-vegetation-authority-admission-001` strict acquisition/schema admission | `active` | `maps-to-existing-INV` | `INV-VEGETATION-052, INV-VEGETATION-053, INV-VEGETATION-054, INV-VEGETATION-055, INV-VEGETATION-056` | `flagged-binding-addition` | Version 3 closes acquisition and schema-form authority only. Selected values, aliases lacking unit/semantic proof, initial state, constitutive science, implementation, and cutover remain non-promotable. |
 | `BEI-VEGETATION-004` | `20260809-native-forest-ecohydrology-authority-reframe-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-055, INV-VEGETATION-056, INV-VEGETATION-057, INV-VEGETATION-058, INV-VEGETATION-059, INV-VEGETATION-060, INV-VEGETATION-061` | `flagged-binding-addition` | Version 4 assigns site values/state to caller configuration, constrains demonstration claims, and prohibits the agricultural PMET partition as the native-forest target while retaining complete constitutive-authority requirements. |
 | `BEI-VEGETATION-005` | `20260811-coupled-c3-forest-vegetation-model-stack-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-062, INV-VEGETATION-063, INV-VEGETATION-064, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-068, INV-VEGETATION-069, INV-VEGETATION-070, INV-VEGETATION-071, INV-VEGETATION-072` | `flagged-binding-addition` | Version 5 releases the indivisible contract-first C3 woody stack; implementation and empirical claims remain separate. |
+| `BEI-VEGETATION-006` | `20260811-c3-woody-tile-liquid-topology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-073, INV-VEGETATION-074, INV-VEGETATION-075, INV-VEGETATION-076, INV-VEGETATION-077, INV-VEGETATION-078, INV-VEGETATION-079` | `flagged-binding-addition` | Version 6 releases immutable V2 occupancy state, routing, area/resource identity, migration, and nonlinear local-solve implementation authority while preserving V1 as historical bytes. |
 
 ## Gap Register and Promotability Labels
 
@@ -899,6 +1073,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-021` | RHESSys optical bypass rejected. | Version 5 selects explicit two-stream band/direction optics with strict closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-022` | The inspected Coweeta evidence does not jointly observe every required C/N/root/geometry pool on one compatible state surface. | This does not block caller-supplied state. Require a complete caller state for execution; require observation operators, uncertainty, and compatible measurements only before an empirical calibration, validation, or transferability claim. | `CALLER_STATE_REQUIRED`, `EMPIRICAL_CLAIM_NOT_READY` |
 | `GAP-VEGETATION-023` | Agricultural PMET donation is prohibited. | Version 5 structurally separates canopy/wet/floor components; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING`, `NATIVE_FOREST_PMET_PARTITION_PROHIBITED` |
+| `GAP-VEGETATION-024` | V1 lacked persistent liquid distribution and descendant routing for a stratum spanning heterogeneous tiles. | Version 6 selects exact occupancy state, same-tile routing, local nonlinear solves, area conversion, migration, and closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
 caller configuration/state, radiation/interception/conductance inputs,
@@ -915,4 +1090,5 @@ cutover claim.
 | 2026-08-08 | 3 | Codex | Admitted strict caller-supplied local acquisition, immutable raw/resolved separation, typed schema-form requirements, and dated initial-state identity; retained every selected value, alias, initializer, constitutive, implementation, and cutover gap. |
 | 2026-08-09 | 4 | Codex | Reclassified site-specific values and complete compatible state as caller configuration, bounded demonstration claims, prohibited agricultural PMET redistribution in the native-forest target, and required independent canopy/wet-canopy/forest-floor/root component closure. |
 | 2026-08-11 | 5 | Codex | Admitted `OPENWEPP_C3_WOODY_V1`, its complete coupled equation/state/numerical authority, caller-only parameter/state posture, and `SC-BIOGEOCHEM-001` transaction boundary; released implementation authority without runtime or empirical claims. |
+| 2026-08-12 | 6 | Codex | Admitted `OPENWEPP_C3_WOODY_V2` tile-resolved occupancy liquid state, same-tile column routing, occupancy-local nonlinear wet-energy/physiology/hydraulics, occupancy-preserving water transactions, exact migration, and local/stand closure; preserved V1 bytes as historical authority. |
 | 2026-08-08 | 1 | Codex | Initial native-stratum, Stage A/B/C, ownership, transaction, conservation, compatibility, firewall, and non-promotable-gap authority. |

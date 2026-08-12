@@ -1,0 +1,6 @@
+cargo_clippy	2026-08-12T15:43:47Z	2026-08-12T15:44:03Z	101	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/cargo_clippy.attempt1.log	FAIL
+cargo_nextest	2026-08-12T15:44:03Z	2026-08-12T16:00:44Z	100	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/cargo_nextest.attempt1.log	FAIL
+cargo_test_doc	2026-08-12T16:00:44Z	2026-08-12T16:00:52Z	0	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/cargo_test_doc.attempt1.log	PASS
+cargo_deny	2026-08-12T16:00:52Z	2026-08-12T16:00:55Z	0	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/cargo_deny.attempt1.log	PASS
+cargo_fmt	2026-08-12T16:00:55Z	2026-08-12T16:00:57Z	0	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/cargo_fmt.attempt1.log	PASS
+git_diff_check	2026-08-12T16:00:57Z	2026-08-12T16:00:57Z	0	docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/comparator-gate-logs/20260812T154346Z/git_diff_check.attempt1.log	PASS

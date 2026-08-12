@@ -1,0 +1,143 @@
+    Checking openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+    Checking openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Checking openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+    Checking openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+    Checking openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+    Checking openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+    Checking openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+    Checking openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+    Checking openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+    Checking openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+    Checking openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: unnecessary `!=` operation
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:238:9
+    |
+238 | /         if gap != "004" {
+239 | |             assert!(
+240 | |                 line.contains("`AUTHORITY_MISSING`"),
+241 | |                 "gap {gap} lost AUTHORITY_MISSING"
+...   |
+247 | |             );
+248 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#if_not_else
+    = note: `-D clippy::if-not-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::if_not_else)]`
+help: try
+    |
+238 ~         if gap == "004" {
+239 +             assert!(
+240 +                 line.contains("`IMPLEMENTATION_MISSING`"),
+241 +                 "gap 004 lost IMPLEMENTATION_MISSING"
+242 +             );
+243 +         } else {
+244 +             assert!(
+245 +                 line.contains("`AUTHORITY_MISSING`"),
+246 +                 "gap {gap} lost AUTHORITY_MISSING"
+247 +             );
+248 +         }
+    |
+
+error: could not compile `openwepp` (test "land_surface_energy_balance_authority_contract") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: long literal lacking separators
+   --> tests/integration/c3_vegetation_implementation_contract.rs:321:9
+    |
+321 |         0.0002745271120630628,
+    |         ^^^^^^^^^^^^^^^^^^^^^ help: consider: `0.000_274_527_112_063_062_8`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#unreadable_literal
+    = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+
+error: unnecessary hashes around raw string literal
+   --> tests/integration/c3_vegetation_implementation_contract.rs:396:51
+    |
+396 |     assert!(VegetationConfiguration::parse_strict(br#"{}"#).is_err());
+    |                                                   ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_raw_string_hashes
+    = note: `-D clippy::needless-raw-string-hashes` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_raw_string_hashes)]`
+help: remove all the hashes around the byte string literal
+    |
+396 -     assert!(VegetationConfiguration::parse_strict(br#"{}"#).is_err());
+396 +     assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
+    |
+
+error: this function has too many lines (107/100)
+  --> tests/integration/c3_vegetation_implementation_contract.rs:56:1
+   |
+56 | fn admitted_fvcb_and_medlyn_vectors_match_oracle() {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+   = note: `-D clippy::too-many-lines` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/c3_vegetation_implementation_contract.rs:269:5
+    |
+269 |     assert_ne!(transfer.carbon, transfer.dry_matter);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+    = note: this error originates in the macro `assert_ne` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: this function has too many lines (184/100)
+   --> tests/integration/c3_vegetation_implementation_contract.rs:434:1
+    |
+434 | fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+error: calling `MaterialPool::default()` is more clear than this expression
+   --> tests/integration/c3_vegetation_implementation_contract.rs:462:21
+    |
+462 |                     Default::default(),
+    |                     ^^^^^^^^^^^^^^^^^^ help: try: `MaterialPool::default()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_trait_access
+    = note: `-D clippy::default-trait-access` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::default_trait_access)]`
+
+error: calling `MaterialPool::default()` is more clear than this expression
+   --> tests/integration/c3_vegetation_implementation_contract.rs:466:21
+    |
+466 |                     Default::default(),
+    |                     ^^^^^^^^^^^^^^^^^^ help: try: `MaterialPool::default()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_trait_access
+
+error: calling `MaterialPool::default()` is more clear than this expression
+   --> tests/integration/c3_vegetation_implementation_contract.rs:470:21
+    |
+470 |                     Default::default(),
+    |                     ^^^^^^^^^^^^^^^^^^ help: try: `MaterialPool::default()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_trait_access
+
+error: calling `MaterialPool::default()` is more clear than this expression
+   --> tests/integration/c3_vegetation_implementation_contract.rs:474:21
+    |
+474 |                     Default::default(),
+    |                     ^^^^^^^^^^^^^^^^^^ help: try: `MaterialPool::default()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#default_trait_access
+
+error: could not compile `openwepp` (test "c3_vegetation_implementation_contract") due to 9 previous errors

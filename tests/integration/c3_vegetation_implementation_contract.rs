@@ -1,6 +1,6 @@
 use std::fs;
 
-use openwepp_biogeochemistry::{BiogeochemistryState, MineralLayer};
+use openwepp_biogeochemistry::{BiogeochemistryState, MaterialPool, MineralLayer};
 use openwepp_hillslope_orchestrator::vegetation_diagnostic::{
     DiagnosticEnergyState, DiagnosticOwnedState, DiagnosticWaterState, run_default_off_diagnostic,
     run_default_off_diagnostic_at_phase,
@@ -18,8 +18,8 @@ use openwepp_vegetation::migration::{RhessysSource, migrate};
 use openwepp_vegetation::photosynthesis::{FvcbInput, fvcb, medlyn};
 use openwepp_vegetation::radiation::two_stream;
 use openwepp_vegetation::{
-    CoupledOwnedState, FailurePoint, MODEL_BYTES, MODEL_SHA256, PhenologyPhase, SnowFreeForcing,
-    SoilLayerForcing, VegetationConfiguration, load_model_definition,
+    CoupledOwnedState, FailurePoint, MODEL_BYTES, MODEL_SHA256, ModelDefinition, PhenologyPhase,
+    SnowFreeForcing, SoilLayerForcing, VegetationConfiguration, load_model_definition,
 };
 use sha2::{Digest, Sha256};
 
@@ -28,6 +28,16 @@ fn expected() -> serde_json::Value {
         &fs::read("tests/fixtures/c3_woody_v1_expected_vectors.json").expect("vector fixture"),
     )
     .expect("valid vector fixture")
+}
+
+fn assert_fvcb_vector(
+    input: FvcbInput,
+    key: &str,
+) -> openwepp_vegetation::photosynthesis::FvcbResult {
+    let result = fvcb(input).expect("FvCB vector");
+    let expected = expected();
+    assert!((result.an - expected["photosynthesis"][key].as_f64().unwrap()).abs() < 1e-12);
+    result
 }
 
 #[test]
@@ -54,98 +64,74 @@ fn production_registry_is_byte_identical_to_authority() {
 
 #[test]
 fn admitted_fvcb_and_medlyn_vectors_match_oracle() {
-    let expected = expected();
-    let zero = fvcb(FvcbInput {
-        ci_pa: 30.0,
-        oi_pa: 20_265.0,
-        gamma_pa: 4.275,
-        kc_pa: 40.49,
-        ko_pa: 27_840.0,
-        vcmax: 60.0,
-        jmax: 110.0,
-        tp: 0.167 * 60.0,
-        rd: 1.2,
-        par_abs: 0.0,
-    })
-    .expect("zero light");
-    assert!(
-        (zero.an
-            - expected["photosynthesis"]["zero_an"]
-                .as_f64()
-                .expect("zero vector"))
-        .abs()
-            < 1e-12
+    assert_fvcb_vector(
+        FvcbInput {
+            ci_pa: 30.0,
+            oi_pa: 20_265.0,
+            gamma_pa: 4.275,
+            kc_pa: 40.49,
+            ko_pa: 27_840.0,
+            vcmax: 60.0,
+            jmax: 110.0,
+            tp: 0.167 * 60.0,
+            rd: 1.2,
+            par_abs: 0.0,
+        },
+        "zero_an",
     );
-    let saturated = fvcb(FvcbInput {
-        ci_pa: 30.0,
-        oi_pa: 20_265.0,
-        gamma_pa: 4.275,
-        kc_pa: 40.49,
-        ko_pa: 27_840.0,
-        vcmax: 70.0,
-        jmax: 120.0,
-        tp: 0.167 * 70.0,
-        rd: 1.2,
-        par_abs: 1600.0,
-    })
-    .expect("saturated light");
-    let rubisco = fvcb(FvcbInput {
-        ci_pa: 8.0,
-        oi_pa: 20_265.0,
-        gamma_pa: 4.275,
-        kc_pa: 40.49,
-        ko_pa: 27_840.0,
-        vcmax: 35.0,
-        jmax: 160.0,
-        tp: 0.167 * 35.0,
-        rd: 1.0,
-        par_abs: 800.0,
-    })
-    .expect("Rubisco limitation");
-    let electron = fvcb(FvcbInput {
-        ci_pa: 30.0,
-        oi_pa: 20_265.0,
-        gamma_pa: 4.275,
-        kc_pa: 40.49,
-        ko_pa: 27_840.0,
-        vcmax: 100.0,
-        jmax: 70.0,
-        tp: 0.167 * 100.0,
-        rd: 1.0,
-        par_abs: 45.0,
-    })
-    .expect("electron limitation");
+    let saturated = assert_fvcb_vector(
+        FvcbInput {
+            ci_pa: 30.0,
+            oi_pa: 20_265.0,
+            gamma_pa: 4.275,
+            kc_pa: 40.49,
+            ko_pa: 27_840.0,
+            vcmax: 70.0,
+            jmax: 120.0,
+            tp: 0.167 * 70.0,
+            rd: 1.2,
+            par_abs: 1600.0,
+        },
+        "saturated_an",
+    );
+    assert_fvcb_vector(
+        FvcbInput {
+            ci_pa: 8.0,
+            oi_pa: 20_265.0,
+            gamma_pa: 4.275,
+            kc_pa: 40.49,
+            ko_pa: 27_840.0,
+            vcmax: 35.0,
+            jmax: 160.0,
+            tp: 0.167 * 35.0,
+            rd: 1.0,
+            par_abs: 800.0,
+        },
+        "rubisco_an",
+    );
+    assert_fvcb_vector(
+        FvcbInput {
+            ci_pa: 30.0,
+            oi_pa: 20_265.0,
+            gamma_pa: 4.275,
+            kc_pa: 40.49,
+            ko_pa: 27_840.0,
+            vcmax: 100.0,
+            jmax: 70.0,
+            tp: 0.167 * 100.0,
+            rd: 1.0,
+            par_abs: 45.0,
+        },
+        "electron_an",
+    );
     let gs = medlyn(saturated.an, 25.0, 3.5, 1.4, 39.0, 101_325.0, 1.0).expect("Medlyn");
-    assert!(
-        (saturated.an
-            - expected["photosynthesis"]["saturated_an"]
-                .as_f64()
-                .expect("saturated vector"))
-        .abs()
-            < 1e-12
-    );
+    let expected = expected();
     assert!(
         (gs - expected["photosynthesis"]["medlyn_gs"]
             .as_f64()
             .expect("Medlyn vector"))
         .abs()
             < 1e-8
-    );
-    assert!(
-        (rubisco.an
-            - expected["photosynthesis"]["rubisco_an"]
-                .as_f64()
-                .expect("Rubisco vector"))
-        .abs()
-            < 1e-12
-    );
-    assert!(
-        (electron.an
-            - expected["photosynthesis"]["electron_an"]
-                .as_f64()
-                .expect("electron vector"))
-        .abs()
-            < 1e-12
     );
     assert!(
         fvcb(FvcbInput {
@@ -266,7 +252,7 @@ fn resource_caps_and_cn_dry_material_remain_distinct() {
     )
     .expect("material");
     assert!((transfer.dry_matter - 0.009).abs() < 1e-14);
-    assert_ne!(transfer.carbon, transfer.dry_matter);
+    assert!((transfer.carbon - transfer.dry_matter).abs() > 1e-6);
 }
 
 fn cn_vector_parameters() -> CnParameters {
@@ -318,7 +304,7 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
         &mut tissues,
         &offer,
         &mut internal_n,
-        0.0002745271120630628,
+        0.000_274_527_112_063_062_8,
         &parameters,
     )
     .expect("growth finalization");
@@ -393,7 +379,7 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
 
 #[test]
 fn schema_and_migration_fail_closed_without_defaults() {
-    assert!(VegetationConfiguration::parse_strict(br#"{}"#).is_err());
+    assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
     assert!(VegetationConfiguration::parse_strict(br#"{"unknown":1}"#).is_err());
     let mut mutated: VegetationConfiguration = serde_json::from_slice(
         &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
@@ -430,19 +416,11 @@ fn energy_and_aerodynamic_domains_are_explicit() {
     );
 }
 
-#[test]
-fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
-    let config = VegetationConfiguration::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
-            .expect("configuration fixture"),
-    )
-    .expect("valid configuration");
-    let vegetation = CoupledOwnedState::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_state.json").expect("state fixture"),
-    )
-    .expect("valid state");
-    let layer = SoilLayerId::try_new("soil-1").expect("layer identity");
-    let beginning = DiagnosticOwnedState {
+fn diagnostic_beginning(
+    vegetation: CoupledOwnedState,
+    layer: &SoilLayerId,
+) -> DiagnosticOwnedState {
+    DiagnosticOwnedState {
         vegetation,
         water: DiagnosticWaterState {
             liquid_kg_m2: std::collections::BTreeMap::from([(layer.clone(), 100.0)]),
@@ -459,26 +437,29 @@ fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
             receivers: std::collections::BTreeMap::from([
                 (
                     openwepp_kernel_contract::MaterialReceiverClass::Metabolic,
-                    Default::default(),
+                    MaterialPool::default(),
                 ),
                 (
                     openwepp_kernel_contract::MaterialReceiverClass::Cellulose,
-                    Default::default(),
+                    MaterialPool::default(),
                 ),
                 (
                     openwepp_kernel_contract::MaterialReceiverClass::Lignin,
-                    Default::default(),
+                    MaterialPool::default(),
                 ),
                 (
                     openwepp_kernel_contract::MaterialReceiverClass::CoarseWoodyDebris,
-                    Default::default(),
+                    MaterialPool::default(),
                 ),
             ]),
             ..BiogeochemistryState::default()
         },
         energy: DiagnosticEnergyState::default(),
-    };
-    let forcing = SnowFreeForcing {
+    }
+}
+
+fn diagnostic_forcing(layer: SoilLayerId) -> SnowFreeForcing {
+    SnowFreeForcing {
         air_temperature_k: 296.0,
         pressure_pa: 101_325.0,
         co2_pa: 40.0,
@@ -508,10 +489,17 @@ fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
             frozen: false,
         }],
         gsi: 0.8,
-    };
-    let model = load_model_definition().expect("model");
+    }
+}
+
+fn assert_phase_rollbacks(
+    beginning: &DiagnosticOwnedState,
+    model: &ModelDefinition,
+    config: &VegetationConfiguration,
+    forcing: &SnowFreeForcing,
+) {
     let available = beginning.water.liquid_kg_m2.clone();
-    let beginning_bytes = serde_json::to_vec(&beginning).expect("serialize beginning owners");
+    let beginning_bytes = serde_json::to_vec(beginning).expect("serialize beginning owners");
     for phase in [
         FailurePoint::Validation,
         FailurePoint::Radiation,
@@ -531,9 +519,9 @@ fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
         assert!(
             run_default_off_diagnostic_at_phase(
                 &mut rollback,
-                &model,
-                &config,
-                &forcing,
+                model,
+                config,
+                forcing,
                 &available,
                 Some(phase),
             )
@@ -546,6 +534,25 @@ fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
             "phase {phase:?}"
         );
     }
+}
+
+#[test]
+fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
+    let config = VegetationConfiguration::parse_strict(
+        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
+            .expect("configuration fixture"),
+    )
+    .expect("valid configuration");
+    let vegetation = CoupledOwnedState::parse_strict(
+        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_state.json").expect("state fixture"),
+    )
+    .expect("valid state");
+    let layer = SoilLayerId::try_new("soil-1").expect("layer identity");
+    let beginning = diagnostic_beginning(vegetation, &layer);
+    let forcing = diagnostic_forcing(layer);
+    let model = load_model_definition().expect("model");
+    let available = beginning.water.liquid_kg_m2.clone();
+    assert_phase_rollbacks(&beginning, &model, &config, &forcing);
     let mut committed = beginning;
     let receipt =
         run_default_off_diagnostic(&mut committed, &model, &config, &forcing, &available, false)

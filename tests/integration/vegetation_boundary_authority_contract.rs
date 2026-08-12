@@ -3,12 +3,16 @@ use std::io::Write;
 use std::process::Command;
 use std::process::Stdio;
 
+use serde_json::Value;
+
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const PACKAGE: &str =
     "docs/work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001";
 const COUPLED_PACKAGE: &str =
     "docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001";
+const V2_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -138,7 +142,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "Version 5 admits the constitutive equations above",
+        "Version 6 admits the constitutive equations and topology amendment above",
         "Earlier-version statements\nlimiting admission to configuration/bookkeeping are historical and superseded",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
     ] {
@@ -151,8 +155,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         "| `approved` | `active` |",
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-11` |",
-        "OPENWEPP_C3_WOODY_V1",
+        "| `static` | `2026-08-12` |",
+        "OPENWEPP_C3_WOODY_V2",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -368,7 +372,7 @@ fn canopy_snow_compatibility_calibration_and_gaps_remain_non_promotable() {
 
     for required in [
         "Vegetation owns intercepted canopy snow; snow/frost owns ground snow",
-        "versions 1-5 admit no canopy-snow constitutive law",
+        "versions 1-6 admit no canopy-snow constitutive law",
         "read-only, never feeds native state",
         "cannot support cutover without real downstream consumption",
         "science_implementation_status = NOT_IMPLEMENTED",
@@ -572,8 +576,9 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 5",
+        "contract_version: 6",
         "OPENWEPP_C3_WOODY_V1",
+        "OPENWEPP_C3_WOODY_V2",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -606,37 +611,13 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     let definition = read(&format!(
         "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"
     ));
-    for (start, end, expected) in [
-        (
-            "## Variables and Units Using Canonical Symbols First",
-            "## Algorithm State Surfaces",
-            "e41d67e578b44f8d80050277565cfb7b164cbc2bc93d0823fdffdede4fce893e",
-        ),
-        (
-            "## Algorithm Specification with Step Sequence",
-            "## Branch and Guard Table",
-            "240b29fa886752d98153e94fc2fb604745b31a46116254aca5d59bad2701dcfb",
-        ),
-        (
-            "## Invariants and Invariant Guard Map",
-            "### Invariant Guard Map",
-            "c72baf1931b4ca85ec3e6a0333b86ff70ddeaa1a27d2a69e5d8a383e30e471e3",
-        ),
-        (
-            "## Constants and Parameters with Provenance Anchors",
-            "## Unit-Governance Map",
-            "1423808f4405e977112af40535b7f0659dc2b07ef4c6e57baa5c825c0ce6c57e",
-        ),
-        (
-            "## Tolerance and Numeric Notes",
-            "## Calibration and Identifiability",
-            "6f1a363bf06b5fc7c91c87cdd9161cb570ec3545117f38895f3e29780a082323",
-        ),
+    for expected in [
+        "e41d67e578b44f8d80050277565cfb7b164cbc2bc93d0823fdffdede4fce893e",
+        "240b29fa886752d98153e94fc2fb604745b31a46116254aca5d59bad2701dcfb",
+        "c72baf1931b4ca85ec3e6a0333b86ff70ddeaa1a27d2a69e5d8a383e30e471e3",
+        "1423808f4405e977112af40535b7f0659dc2b07ef4c6e57baa5c825c0ce6c57e",
+        "6f1a363bf06b5fc7c91c87cdd9161cb570ec3545117f38895f3e29780a082323",
     ] {
-        assert_eq!(
-            sha256_text(inclusive_section(&vegetation, start, end)),
-            expected
-        );
         assert!(definition.contains(expected));
     }
     assert_eq!(
@@ -645,6 +626,283 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     );
     assert!(
         definition.contains("6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4")
+    );
+}
+
+#[test]
+fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
+    let vegetation = read(CONTRACT);
+    let v2_path = format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json");
+    let v2 = read(&v2_path);
+    assert_eq!(
+        sha256(&v2_path),
+        "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"
+        )),
+        "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json"
+        )),
+        sha256(&v2_path)
+    );
+    for (start, end, expected) in [
+        (
+            "## Variables and Units Using Canonical Symbols First",
+            "## Algorithm State Surfaces",
+            "9dc6a1c86a82d4dbbcae560c85ef19be0401c64e636d36dc2ce7e09b0f1e170e",
+        ),
+        (
+            "## Algorithm Specification with Step Sequence",
+            "## Branch and Guard Table",
+            "c6f7870681c6d337166d07cdd468125a8547a72b65210669d61eda212a5b3fe5",
+        ),
+        (
+            "## Invariants and Invariant Guard Map",
+            "### Invariant Guard Map",
+            "78dc4a30f6ec134500154eb3058719f3710931b92b988596c797a44967991386",
+        ),
+        (
+            "## Constants and Parameters with Provenance Anchors",
+            "## Unit-Governance Map",
+            "53adb89c1415a5b6e5026b981263cb6d43a78ba50e34651a60e92d866b0958ec",
+        ),
+        (
+            "## Tolerance and Numeric Notes",
+            "## Calibration and Identifiability",
+            "acf9972a00dfcc0101e8dda47a4b2ade8b4dea8ad8168b264f1d1db21e808222",
+        ),
+    ] {
+        assert_eq!(
+            sha256_text(inclusive_section(&vegetation, start, end)),
+            expected
+        );
+        assert!(v2.contains(expected));
+    }
+    for (path, expected) in [
+        (
+            "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+            "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "7de4887f9d62202427552f7ef9a677ac9668811cca84fa5d816dd9dc45bf9f69",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+            "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+            "c94d3c5745fd801b092f992b46fb6f5d4684b70acf24f198c4d4d6fdc42785c8",
+        ),
+    ] {
+        assert_eq!(sha256(path), expected);
+        assert!(v2.contains(expected));
+    }
+    for required in [
+        "INV-VEGETATION-073",
+        "INV-VEGETATION-079",
+        "LAI_s,t=LAI_s/C_s",
+        "stemflow bypasses foliage to same-tile ground",
+        "D_W,s,t,l=f_t*D_tile,s,t,l",
+        "nonzero V1 store over multiple tiles",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "missing V2 authority {required}"
+        );
+    }
+}
+
+fn assert_v2_check_inventory(parsed: &Value) {
+    let checks = parsed["checks"].as_object().expect("fixture checks object");
+    assert_eq!(checks.len(), 31, "complete Stage-A check inventory");
+    for required in [
+        "aggregate_incident_poison",
+        "aggregate_par_poison",
+        "authorization_back_conversion",
+        "average_wet_fraction_poison",
+        "controlled_final_release_changes_lower",
+        "condensation_second_drainage",
+        "distinct_beginning_store",
+        "distinct_tile_rain",
+        "double_ft_poison",
+        "duplicate_lane_rejected",
+        "empty_tile",
+        "heterogeneous_upper_columns",
+        "homogeneous_two_tile_reduction",
+        "local_and_stand_closure",
+        "mineral_n_after_aggregation",
+        "missing_lane_rejected",
+        "omit_ft_poison",
+        "omit_second_drainage_poison",
+        "replicated_store_poison",
+        "request_weighting",
+        "rollback_exact_bytes",
+        "shared_cn_once",
+        "single_tile_reduction",
+        "stemflow_bypass",
+        "stemflow_through_foliage_poison",
+        "tile_order_permutation",
+        "two_rank_routing",
+        "unequal_tile_fractions",
+        "wrong_area_basis_poison",
+        "wrong_authorization_poison",
+        "wrong_tile_drainage_poison",
+    ] {
+        assert_eq!(
+            checks.get(required).and_then(Value::as_bool),
+            Some(true),
+            "missing or failing Stage-A check {required}"
+        );
+    }
+    assert!(
+        checks.values().all(|value| value.as_bool() == Some(true)),
+        "every Stage-A oracle check must pass"
+    );
+    assert_eq!(parsed["all_pass"].as_bool(), Some(true));
+}
+
+fn assert_v2_column_and_stand_closure(parsed: &Value) {
+    let mut reconstructed_store = 0.0;
+    let mut reconstructed_ground = 0.0;
+    for tile in ["tile-a", "tile-b"] {
+        let fraction = parsed["fractions"][tile].as_f64().unwrap();
+        let column = &parsed["heterogeneous_columns"][tile];
+        let mut column_store = 0.0;
+        for row in column["occupancies"].as_array().unwrap() {
+            let number = |key: &str| row[key].as_f64().unwrap();
+            let residual = number("store0") + number("incident") + number("condensation")
+                - number("store1")
+                - number("wet_evaporation")
+                - number("throughfall")
+                - number("stemflow")
+                - number("initial_drainage")
+                - number("second_drainage");
+            assert!(residual.abs() < 2e-14, "{tile} local closure");
+            column_store += number("store1");
+        }
+        reconstructed_store += fraction * column_store;
+        reconstructed_ground += fraction * column["ground_liquid"].as_f64().unwrap();
+    }
+    assert!(
+        (reconstructed_store - parsed["stand"]["ending_store"].as_f64().unwrap()).abs() < 1e-14
+    );
+    assert!(
+        (reconstructed_ground - parsed["stand"]["ground_liquid"].as_f64().unwrap()).abs() < 1e-14
+    );
+}
+
+fn assert_v2_water_and_owner_transactions(parsed: &Value) {
+    let tile_a = parsed["fractions"]["tile-a"].as_f64().unwrap();
+    let water = &parsed["water_transaction"];
+    assert!(
+        (tile_a * water["demand_tile"].as_f64().unwrap() - water["demand_stand"].as_f64().unwrap())
+            .abs()
+            < 1e-14
+    );
+    assert!(
+        (water["authorization_stand"].as_f64().unwrap() / tile_a
+            - water["authorization_tile"].as_f64().unwrap())
+        .abs()
+            < 1e-14
+    );
+    assert!(
+        (tile_a * water["final_tile"].as_f64().unwrap() - water["final_stand"].as_f64().unwrap())
+            .abs()
+            < 1e-14
+    );
+    let two_pass = &parsed["water_arbitration_and_routing_control"];
+    let request_sum: f64 = two_pass["potential_requests"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["amount"].as_f64().unwrap())
+        .sum();
+    let authorization_sum: f64 = two_pass["authorizations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["amount"].as_f64().unwrap())
+        .sum();
+    assert!(request_sum > authorization_sum);
+    assert!((authorization_sum - two_pass["supply"].as_f64().unwrap()).abs() < 1e-14);
+    assert_ne!(
+        two_pass["lower_potential_incident"],
+        two_pass["lower_controlled_final_incident"]
+    );
+    assert_eq!(
+        two_pass["claim_scope"],
+        "topology_causality_only_exogenous_vapor_operands"
+    );
+    assert_eq!(
+        two_pass["complete_coupled_acceptance_gate"],
+        "STAGE_B_E11_E15_EXACT_ORACLE"
+    );
+    assert_eq!(
+        parsed["owner_rollback"]["beginning_sha256"],
+        parsed["owner_rollback"]["after_failure_sha256"]
+    );
+    assert_eq!(
+        parsed["owner_rollback"]["owner_names"]
+            .as_array()
+            .unwrap()
+            .len(),
+        4
+    );
+}
+
+fn assert_v2_mineral_n_and_nonlinear_poisons(parsed: &Value) {
+    let mineral = &parsed["mineral_n_transaction"];
+    let authorizations = mineral["authorizations"].as_array().unwrap();
+    let finalized = mineral["finalized"].as_array().unwrap();
+    for usage in finalized {
+        let matching = authorizations
+            .iter()
+            .find(|authorization| authorization["key"] == usage["key"])
+            .expect("finalized N key has exact authorization key");
+        assert!(usage["amount"].as_f64().unwrap() <= matching["amount"].as_f64().unwrap());
+    }
+    assert_eq!(mineral["wrong_species_result"], "typed_identity_mismatch");
+    assert_eq!(mineral["wrong_layer_result"], "typed_identity_mismatch");
+    let nonlinear = &parsed["nonlinear_locality"];
+    assert_ne!(nonlinear["weighted_fvbc"], nonlinear["aggregate_par_fvbc"]);
+    assert_ne!(
+        nonlinear["weighted_wet_response"],
+        nonlinear["averaged_wet_response"]
+    );
+    let carbon = &parsed["shared_carbon_nitrogen"];
+    assert_ne!(
+        carbon["accepted_once"],
+        carbon["duplicate_transition_poison"]
+    );
+    let state = &parsed["canonical_state"];
+    let serialized = state["serialized"].as_str().unwrap();
+    let reparsed: Value = serde_json::from_str(serialized).unwrap();
+    assert_eq!(serde_json::to_string(&reparsed).unwrap(), serialized);
+    assert_eq!(sha256_text(serialized), state["sha256"].as_str().unwrap());
+    assert_eq!(state["wrong_unit_poison"], "typed_unit_mismatch:MPa");
+}
+
+#[test]
+fn v2_committed_topology_vectors_are_independent_and_non_tautological() {
+    let fixture_path =
+        format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_topology_vectors.json");
+    let fixture = read(&fixture_path);
+    let parsed: Value = serde_json::from_str(&fixture).expect("V2 topology fixture is JSON");
+    assert_v2_check_inventory(&parsed);
+    assert_v2_column_and_stand_closure(&parsed);
+    assert_v2_water_and_owner_transactions(&parsed);
+    assert_v2_mineral_n_and_nonlinear_poisons(&parsed);
+    assert!(fixture.contains("typed_unresolved_occupancy_lanes"));
+    assert_eq!(
+        sha256(&fixture_path),
+        "c02e5e2a2287d84cfc584a6e3ec9c499cf7168160bc71f2577323f19dcb50bf1"
     );
 }
 
