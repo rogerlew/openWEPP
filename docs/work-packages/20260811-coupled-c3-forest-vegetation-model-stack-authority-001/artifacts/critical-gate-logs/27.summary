@@ -1,0 +1,1 @@
+27|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md

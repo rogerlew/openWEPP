@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -45,6 +45,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 
 | contract_id | title | status | maturity | owner | path | evidence_level | last_reviewed | replacement | notes |
 |---|---|---|---|---|---|---|---|---|---|
+| `SC-BIOGEOCHEM-001` | Vegetation Biogeochemistry Exchange and Receiving-State Contract | `approved` | `active` | openWEPP maintainers + forest biogeochemistry reviewer | `docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md` | `static` | `2026-08-11` |  | Mineral-N arbitration and litter/CWD C/N/dry-material receiving boundary; transformations remain an explicit dependency. |
 | `SC-CLIMATE-001` | Climate Forcing Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md` | `static` | `2026-06-03` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-EVAP-001` | Evapotranspiration Stress Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-EVAP-001.md` | `static` | `2026-08-08` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-GWBASEFLOW-001` | Groundwater Reservoir Baseflow Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md` | `static` | `2026-07-08` |  | M-T2A linear groundwater-reservoir baseflow authority; implementation follows in M-T2B. |
@@ -66,7 +67,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 | `SC-SOIL-001` | Soil State and Erodibility Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SOIL-001.md` | `static` | `2026-05-31` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-SUBHYD-001` | Subsurface Hydrology and Drainage Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md` | `static` | `2026-06-18` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-SYSTEM-001` | System Integration Boundary and Watershed Assembly Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md` | `static` | `2026-06-14` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
-| `SC-VEGETATION-001` | Native Vegetation State and Cross-Domain Boundary Contract | `in_review` | `draft` | openWEPP maintainers + forest ecohydrology/hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` | `static` | `2026-08-09` |  | Native stratum topology, Stage A/B/C custody, caller-supplied site configuration/state, independent native-forest flux ledgers, strict local acquisition/typed schema, and non-promotable constitutive gaps; no runtime implementation. |
+| `SC-VEGETATION-001` | Native Vegetation State and Cross-Domain Boundary Contract | `approved` | `active` | openWEPP maintainers + forest ecohydrology/hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` | `static` | `2026-08-11` |  | `OPENWEPP_C3_WOODY_V1` coupled implementation authority admitted; caller parameters/state required; no runtime implementation or empirical claim. |
 | `SC-WATBAL-001` | Water Balance Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md` | `static` | `2026-08-09` |  | Lifecycle row includes hourly peak-runoff, return-timing, unit/publication closure, and hydrology-owned vegetation Stage B arbitration. |
 
 ## Entry Order

@@ -1,0 +1,12 @@
+CMD=CARGO_BUILD_JOBS=4 cargo nextest run --test vegetation_boundary_authority_contract --profile quick
+TIMESTAMP_START=1786489912
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+────────────
+ Nextest run ID 738028ee-c32f-406c-8821-27c34cc0b548 with nextest profile: quick
+    Starting 12 tests across 1 binary
+────────────
+     Summary [   3.107s] 12 tests run: 12 passed, 0 skipped
+EXIT_CODE=0
+DURATION_SECONDS=4
+COMMAND_START_TS=1786489912
+COMMAND_END_TS=1786489916

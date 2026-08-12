@@ -1,0 +1,17 @@
+TMPDIR=/home/workdir/openwepp-cqr-enospc-retry.LNWKZ2
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID a7070d60-b51b-4561-9c13-019866b017d0 with nextest profile: full
+    Starting 1 test across 1 binary (3 tests skipped)
+        SLOW [> 90.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>180.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>270.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>360.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+────────────
+     Summary [ 366.773s] 1 test run: 1 passed (1 slow), 3 skipped
+EXIT_CODE=0
+DURATION_SECONDS=367
+COMMAND_START_TS=1786485617
+COMMAND_END_TS=1786485984
+TMPDIR_PATH=/home/workdir/openwepp-cqr-enospc-retry.LNWKZ2
+REMOVED_TMPDIR=/home/workdir/openwepp-cqr-enospc-retry.LNWKZ2

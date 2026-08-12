@@ -1,0 +1,7 @@
+CMD=markdown-doc lint --path docs/specifications/science-contracts --format plain
+TIMESTAMP_START=1786489908
+✅ 62 files validated, 0 errors, 0 warnings
+EXIT_CODE=0
+DURATION_SECONDS=1
+COMMAND_START_TS=1786489908
+COMMAND_END_TS=1786489909

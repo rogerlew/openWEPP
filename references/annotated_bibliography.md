@@ -1797,16 +1797,22 @@ citation/default audit, and deterministic compatibility disposition.
 **Citation**: Farquhar, G. D., S. von Caemmerer, and J. A. Berry (1980). "A
 biochemical model of photosynthetic CO2 assimilation in leaves of C3 species."
 *Planta*, 149, 78-90. https://doi.org/10.1007/BF00386231
-**Local path**: `not-acquired`; full text reviewed 2026-08-08 from
-https://biocycle.atmos.colostate.edu/Documents/SiB/Farquhar_1980.pdf; remote
-bytes were not retained/checksummed.
-**Reference quality**: `primary-remote-reviewed / non-binding-concordance`.
+**Local path**: `copyrighted/Farquhar1980_C3_Photosynthesis.pdf`; acquired
+2026-08-11 from the Colorado State University SiB mirror at
+https://biocycle.atmos.colostate.edu/Documents/SiB/Farquhar_1980.pdf. SHA-256
+`ce15f7a78456bf8a9153b20204a6a0d51c3e2697c3a03105315634bf1fe05048`;
+13 PDF pages.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Leaf-scale Rubisco, electron-transport, photorespiration, and gas-
 exchange equations for C3 assimilation.
 **openWEPP role**: Primary authority check for the recognizable core of
 RHESSysEastCoast `compute_farq_psn`. It does not authorize the source's fixed
 `Jmax/Vmax` ratio, hard-coded C3 selection for all profiles, ten-pass growth-
 respiration feedback, canopy aggregation, or profile parameters.
+**Supporting locators**: journal pp. 78-83, Eqs. (1)-(18), for net assimilation,
+Rubisco carboxylation/oxygenation, electron transport, and limitation; journal
+pp. 84-88, Eqs. (19)-(36), for kinetics and gas exchange; Appendix Eqs.
+(A1)-(A3) for the nonrectangular light-response relation.
 **Rights / distribution**: `restricted`; Springer journal copyright is visible
 in the article and no affirmative redistribution license was found.
 
@@ -1816,15 +1822,21 @@ in the article and no affirmative redistribution license was found.
 photosynthesis from leaves to canopies without the errors of big-leaf models."
 *Plant, Cell & Environment*, 20, 537-557.
 https://doi.org/10.1111/j.1365-3040.1997.00094.x
-**Local path**: `not-acquired`; full text reviewed 2026-08-08 from
-https://biocycle.atmos.colostate.edu/Documents/SiB/De_Pury_1997_Plant_Cell_%26_Environment.pdf;
-remote bytes were not retained/checksummed.
-**Reference quality**: `primary-remote-reviewed / non-binding-concordance`.
+**Local path**: `copyrighted/DePuryFarquhar1997_SunShade.pdf`; acquired
+2026-08-11 from the Colorado State University SiB mirror at
+https://biocycle.atmos.colostate.edu/Documents/SiB/De_Pury_1997_Plant_Cell_%26_Environment.pdf.
+SHA-256
+`8a847133cf3d546bccd3e2dc076fa3b1e5e6f71edf2dd2efcc32282f3fc41fc6`;
+21 PDF pages.
+**Reference quality**: `verified-primary-peer-reviewed-full-text`.
 **Topic**: Separate sunlit/shaded integration of absorbed irradiance,
 photosynthetic capacity, and C3 leaf equations.
 **openWEPP role**: Primary scale and structure check for source sun/shade
 assimilation. The paper shows why an undifferentiated big-leaf shortcut and a
 fixed empirical curvature correction are not generally adequate.
+**Supporting locators**: journal pp. 539-543, Table 1 Eqs. (1)-(14), for leaf
+C3 and canopy sunlit/shaded scaling; Table 2 for units; Appendix 1 Tables A1-A2
+for explicit direct/diffuse/scattered PAR and sunlit/shaded integration.
 **Rights / distribution**: `restricted`; journal copyright and no affirmative
 redistribution license.
 
@@ -1862,3 +1874,84 @@ comments explicitly replace an older Wullschleger relationship with a fixed
 `Jmax = 2.1 Vmax`, so this citation cannot support the executed expression.
 **Rights / distribution**: `restricted`; Oxford journal article with no
 affirmative redistribution license found.
+
+## R-152: Medlyn et al. (2011) photosynthesis-linked stomatal conductance
+
+**Citation**: Medlyn, B. E., R. A. Duursma, D. Eamus, D. S. Ellsworth,
+C. V. M. Barton, K. Y. Crous, P. De Angelis, M. Freeman, and L. Wingate
+(2011). "Reconciling the optimal and empirical approaches to modelling
+stomatal conductance." *Global Change Biology*, 17(6), 2134-2144.
+https://doi.org/10.1111/j.1365-2486.2010.02375.x
+**Local path**: `copyrighted/Medlyn2011_StomatalConductance.pdf`; author
+accepted manuscript acquired 2026-08-11 from the University of Technology
+Sydney institutional repository,
+https://opus.lib.uts.edu.au/bitstream/10453/18084/1/2010004674.pdf. SHA-256
+`57f9754dac8f81f257d819d474f6ed250b801179ceebadbe88c3f9c56cf17623`;
+39 PDF pages including repository/manuscript front matter.
+**Reference quality**: `verified-primary-peer-reviewed-author-manuscript`.
+**Topic**: Optimal-theory derivation of an empirical-form stomatal conductance
+law directly proportional to net assimilation and inversely responsive to
+leaf-surface carbon dioxide and square-root vapor-pressure deficit.
+**openWEPP role**: Primary process authority for the selected leaf stomatal
+family. The intercept and slope remain explicit caller parameters; the
+low-VPD mathematical singularity requires a typed supported-domain guard, not
+a hidden floor.
+**Supporting locators**: manuscript lines 113-148, Eqs. (2)-(3), for empirical
+comparators; lines 151-211, Eqs. (4)-(11), for the optimal derivation and
+selected model; Appendix Eqs. (A1)-(A11) for derivation; Table 1 for units.
+**Rights / distribution**: `restricted`; the manuscript permits
+non-commercial use under Wiley self-archiving terms but does not affirm the
+repository redistribution needed for `vendorable/`.
+
+## R-153: CLM5.0 technical description
+
+**Citation**: Community Land Model development team (2020). *CLM5
+Documentation / CLM5.0 Technical Description*, dated 23 March 2020. National
+Center for Atmospheric Research / Community Earth System Model.
+https://files.cesm.ucar.edu/models/clm/5.0/CLM50_Tech_Note.pdf
+**Local path**: `copyrighted/CLM50_Tech_Note.pdf`; acquired 2026-08-11 from the
+official CESM files service. SHA-256
+`9ca0f0e5b7aff712a0ef7f5198f111c4b250cac4417a4f000e36c6c143f2e363`;
+337 PDF pages.
+**Reference quality**: `verified-established-model-official-technical-definition`.
+**Topic**: Exact CLM5 biophysics, photosynthesis/Medlyn conductance, leaf
+energy balance, liquid interception, prognostic plant hydraulics, C/N pools,
+respiration, allocation, phenology/turnover, litter/CWD, soil
+biogeochemistry, and numerical solution definitions.
+**openWEPP role**: `REFERENCE_MODEL_DEFINITION` for selected exact algorithms
+where primary sources do not fully specify executable branches. openWEPP
+separately selects explicit vertically overlapping strata, caller-owned values,
+typed failures, atomic transactions, and no canopy-snow execution.
+**Supporting locators**: Chapters 3-5 (radiation/aerodynamics/leaf energy),
+Chapter 7.1 (canopy liquid), Chapters 9-11 (photosynthesis, Medlyn stomata,
+plant hydraulics), Chapters 16-21 (C/N pools, respiration, allocation,
+phenology/turnover, litter/soil BGC), and each chapter's numbered equations and
+parameter tables.
+**Rights / distribution**: `restricted-pending-review`; official technical
+documentation was captured exactly but no affirmative redistribution statement
+was found in the reviewed bytes.
+
+## R-154: Biome-BGC 4.2 theoretical framework
+
+**Citation**: Golinkoff, J. (2010). *Biome BGC version 4.2: Theoretical
+Framework of Biome-BGC*, January 2010. Numerical Terradynamic Simulation Group,
+University of Montana.
+https://www.umt.edu/numerical-terradynamic-simulation-group/files/biome-bgc/golinkoff_biomebgcv4.2_theoreticalbasis_1_18_10.pdf
+**Local path**: `copyrighted/BiomeBGC_v4_2_TheoreticalBasis.pdf`; acquired
+2026-08-11 from the University of Montana official model site. SHA-256
+`476dd8d5606941ccfdd59de277d03671e764ac6ceac44d9bebd68bf61f00be85`;
+71 PDF pages.
+**Reference quality**: `verified-established-model-official-technical-definition`.
+**Topic**: Reference-model order and exact equations for canopy radiation,
+interception/ET, photosynthesis, maintenance/growth respiration, decomposition,
+C/N allocation, mortality, state update, and mass-balance checks.
+**openWEPP role**: Comparator and corroborating
+`REFERENCE_MODEL_DEFINITION` for the RHESSys/BIOME-BGC lineage. The selected
+canonical stack uses CLM5 where its coupled formulation is more complete; no
+Biome-BGC parameter value becomes a default.
+**Supporting locators**: Section 5 pp. 22-52, especially `radtrans.c`,
+`prcp_route.c`, `canopy_et.c`, `photosynthesis.c`, `maint_resp.c`,
+`decomp.c`, `daily_allocation.c`, `growth_resp.c`, `state_update.c`,
+`mortality.c`, and `check_balance.c`; Appendices A-C for fields and constants.
+**Rights / distribution**: `restricted-pending-review`; official bytes contain
+no affirmative redistribution statement.

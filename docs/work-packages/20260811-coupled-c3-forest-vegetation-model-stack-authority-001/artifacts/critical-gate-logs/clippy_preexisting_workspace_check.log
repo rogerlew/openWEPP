@@ -1,0 +1,56 @@
+# workspace clippy pre-existing check
+--- HEAD excerpt
+   225	    ] {
+   226	        assert!(
+   227	            contract.contains(expected),
+   228	            "vector mapping changed: {expected}"
+   229	        );
+   230	    }
+   231
+   232	    for gap in ["001", "002", "003", "004", "005", "006"] {
+   233	        let line = row(&contract, &format!("GAP-LANDSURFACEENERGY-{gap}"));
+   234	        assert!(
+   235	            line.contains("`NON_PROMOTABLE`"),
+   236	            "gap {gap} lost NON_PROMOTABLE"
+   237	        );
+   238	        if gap != "004" {
+   239	            assert!(
+   240	                line.contains("`AUTHORITY_MISSING`"),
+   241	                "gap {gap} lost AUTHORITY_MISSING"
+   242	            );
+   243	        } else {
+   244	            assert!(
+   245	                line.contains("`IMPLEMENTATION_MISSING`"),
+   246	                "gap 004 lost IMPLEMENTATION_MISSING"
+   247	            );
+   248	        }
+   249	    }
+   250	}
+--- BASE excerpt
+   225	    ] {
+   226	        assert!(
+   227	            contract.contains(expected),
+   228	            "vector mapping changed: {expected}"
+   229	        );
+   230	    }
+   231
+   232	    for gap in ["001", "002", "003", "004", "005", "006"] {
+   233	        let line = row(&contract, &format!("GAP-LANDSURFACEENERGY-{gap}"));
+   234	        assert!(
+   235	            line.contains("`NON_PROMOTABLE`"),
+   236	            "gap {gap} lost NON_PROMOTABLE"
+   237	        );
+   238	        if gap != "004" {
+   239	            assert!(
+   240	                line.contains("`AUTHORITY_MISSING`"),
+   241	                "gap {gap} lost AUTHORITY_MISSING"
+   242	            );
+   243	        } else {
+   244	            assert!(
+   245	                line.contains("`IMPLEMENTATION_MISSING`"),
+   246	                "gap 004 lost IMPLEMENTATION_MISSING"
+   247	            );
+   248	        }
+   249	    }
+   250	}
+--- DIFF

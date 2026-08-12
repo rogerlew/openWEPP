@@ -1,0 +1,7 @@
+CMD=bash tools/release/check_science_contract_admission.sh --base-ref 669aafb60df3ac4eeed2661cc4db4ad33f3f2265 --worktree
+TIMESTAMP_START=1786489908
+A0_ADMITTED contracts=44 science_surfaces=0 base=669aafb60df3ac4eeed2661cc4db4ad33f3f2265 head=WORKTREE authority_sha256=4a21ecc5fc1c26f8b4aed159d48f2274c4eaf9469468360761f4cd466cd37d46
+EXIT_CODE=0
+DURATION_SECONDS=0
+COMMAND_START_TS=1786489908
+COMMAND_END_TS=1786489908

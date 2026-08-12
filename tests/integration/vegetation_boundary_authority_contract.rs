@@ -1,10 +1,14 @@
 use std::fs;
+use std::io::Write;
 use std::process::Command;
+use std::process::Stdio;
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const PACKAGE: &str =
     "docs/work-packages/20260808-vegetation-source-provenance-and-boundary-authority-001";
+const COUPLED_PACKAGE: &str =
+    "docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -57,6 +61,53 @@ fn sha256(path: &str) -> String {
         .to_owned()
 }
 
+fn sha256_text(value: &str) -> String {
+    let mut child = Command::new("sha256sum")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("spawn sha256sum");
+    child
+        .stdin
+        .take()
+        .expect("sha256sum stdin")
+        .write_all(value.as_bytes())
+        .expect("write sha256 bytes");
+    let output = child.wait_with_output().expect("wait for sha256sum");
+    assert!(output.status.success());
+    String::from_utf8(output.stdout)
+        .expect("sha256 UTF-8")
+        .split_whitespace()
+        .next()
+        .expect("sha256 digest")
+        .to_owned()
+}
+
+fn json_number_after(text: &str, key: &str) -> f64 {
+    let marker = format!("\"{key}\": ");
+    let value = text
+        .split_once(&marker)
+        .unwrap_or_else(|| panic!("missing numeric JSON key {key}"))
+        .1
+        .split([',', '\n', '}'])
+        .next()
+        .expect("numeric JSON token")
+        .trim();
+    value
+        .parse::<f64>()
+        .unwrap_or_else(|error| panic!("invalid numeric JSON value for {key}: {error}"))
+}
+
+fn inclusive_section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
+    let start_offset = text
+        .find(start)
+        .unwrap_or_else(|| panic!("missing {start}"));
+    let end_offset = text[start_offset..]
+        .find(end)
+        .map_or_else(|| panic!("missing {end}"), |offset| start_offset + offset);
+    &text[start_offset..end_offset]
+}
+
 #[test]
 fn canonical_schema_and_registry_entry_are_bound() {
     let contract = read(CONTRACT);
@@ -87,7 +138,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "Version 1 admits no vegetation-process numerical constant",
+        "Version 5 admits the constitutive equations above",
+        "Earlier-version statements\nlimiting admission to configuration/bookkeeping are historical and superseded",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
@@ -97,10 +149,10 @@ fn canonical_schema_and_registry_entry_are_bound() {
         .find(|line| line.starts_with("| `SC-VEGETATION-001` |"))
         .expect("SC-VEGETATION-001 registry row");
     for field in [
-        "| `in_review` | `draft` |",
+        "| `approved` | `active` |",
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-09` |",
-        "Native stratum topology, Stage A/B/C custody, caller-supplied site configuration/state",
+        "| `static` | `2026-08-11` |",
+        "OPENWEPP_C3_WOODY_V1",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -112,7 +164,8 @@ fn local_definition_acquisition_and_typed_schema_are_fail_closed() {
 
     for required in [
         "The schema-form portion of `AUTH-RHEC-001` and all authority requirements of",
-        "complete selected\nconsumed-field manifest and aliases remain missing",
+        "Version 5's exact consumed\nfield inventory is the canonical field list",
+        "runtime names equal canonical\nsnake-case names, and no RHESSys spelling is a consumed alias",
         "(repository, immutable_commit,\n   repository_relative_path, sha256)",
         "caller-supplied local bytes",
         "HTTP, HTTPS, FTP, mutable branch names such as `master`",
@@ -190,15 +243,17 @@ fn stage_transaction_has_single_mutators_bounded_receipts_and_atomic_commit() {
     let contract = read(CONTRACT);
 
     let stage_a = contract.find("**Assemble Stage A.**").expect("Stage A");
-    let stage_b = contract.find("**Assemble Stage B.**").expect("Stage B");
-    let stage_c = contract.find("**Assemble Stage C.**").expect("Stage C");
+    let stage_b = contract.find("**Authorize water.**").expect("Stage B");
+    let stage_c = contract
+        .find("**Finalize water and carbon.**")
+        .expect("Stage C");
     let commit = contract.find("**Close and commit.**").expect("commit");
     assert!(stage_a < stage_b && stage_b < stage_c && stage_c < commit);
 
     for required in [
         "Hydrology evaluates all same-`tau` demands",
-        "0 <= U_s,l <= D_s,l",
-        "sum_s U_s,l + W_comp,l <= A_l",
+        "0 <= A_W,s,l <= D_s,l",
+        "sum_s A_W,s,l + W_comp,l <= A_l",
         "no individually valid request can overbook",
         "fully_supplied",
         "zero_demand",
@@ -206,9 +261,9 @@ fn stage_transaction_has_single_mutators_bounded_receipts_and_atomic_commit() {
         "frozen_exclusion",
         "rooting_exclusion",
         "competing_demand",
-        "T_s = sum_l U_s,l",
+        "T_s=sum_l F_W,s,l",
         "Vegetation never mutates soil-layer liquid/frozen state",
-        "hydrology is sole Stage B mutator",
+        "hydrology alone validates finalized use and forms the soil candidate",
         "atomically commit",
         "errors leave\nevery owner state byte-identical",
         "VEG-E-020/021",
@@ -246,7 +301,14 @@ fn shared_water_energy_and_elemental_operands_cannot_alias() {
     }
     assert!(!variables.contains("kg m^-2 interval^-1"));
     assert!(!variables.contains("J m^-2 interval^-1"));
-    for symbol in ["P_liq,s", "E_int,s", "R_down,s", "D_s,l", "U_s,l", "T_s"] {
+    for symbol in [
+        "P_liq,s",
+        "E_int,s",
+        "R_down,s",
+        "D_s,l",
+        "A_W,s,l`, `F_W,s,l",
+        "T_s",
+    ] {
         let row = variables
             .lines()
             .find(|line| line.starts_with(&format!("| `{symbol}` |")))
@@ -306,10 +368,10 @@ fn canopy_snow_compatibility_calibration_and_gaps_remain_non_promotable() {
 
     for required in [
         "Vegetation owns intercepted canopy snow; snow/frost owns ground snow",
-        "v1 admits no canopy-snow constitutive law",
+        "versions 1-5 admit no canopy-snow constitutive law",
         "read-only, never feeds native state",
         "cannot support cutover without real downstream consumption",
-        "science_implementation_status = AUTHORITY_MISSING",
+        "science_implementation_status = NOT_IMPLEMENTED",
         "calibration_evidence_status = NOT_CALIBRATION_READY",
         "identifiability_status = NOT_ASSESSED",
         "DIRECT_TRANSLATION_PROHIBITED",
@@ -499,4 +561,161 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     assert!(impact.contains(
         "terminal addendum cleanup `SC-RESIDUE-001.md` | `df95b74417166de4ef891f20db27f3b1cad1c0d89be907b7fa582323a21363c6`"
     ));
+}
+
+#[test]
+fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
+    let vegetation = read(CONTRACT);
+    let bgc = read("docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md");
+    let selection = read(&format!(
+        "{COUPLED_PACKAGE}/artifacts/model-stack-selection.md"
+    ));
+
+    for required in [
+        "contract_version: 5",
+        "OPENWEPP_C3_WOODY_V1",
+        "FvCB--Medlyn",
+        "LAI=leaf_C*SLA",
+        "INV-VEGETATION-062",
+        "INV-VEGETATION-072",
+        "science_implementation_status = NOT_IMPLEMENTED",
+        "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "vegetation contract missing {required}"
+        );
+    }
+    for required in [
+        "contract_id: SC-BIOGEOCHEM-001",
+        "INV-BIOGEOCHEM-001",
+        "INV-BIOGEOCHEM-005",
+        "BGC-E-040",
+        "proportional",
+    ] {
+        assert!(bgc.contains(required), "BGC contract missing {required}");
+    }
+    assert!(selection.contains("one averaged canopy leaf is degenerate"));
+    assert!(selection.contains("LUNA is not selected for v1"));
+    assert_eq!(
+        sha256(&format!(
+            "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"
+        )),
+        "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157"
+    );
+    let definition = read(&format!(
+        "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"
+    ));
+    for (start, end, expected) in [
+        (
+            "## Variables and Units Using Canonical Symbols First",
+            "## Algorithm State Surfaces",
+            "e41d67e578b44f8d80050277565cfb7b164cbc2bc93d0823fdffdede4fce893e",
+        ),
+        (
+            "## Algorithm Specification with Step Sequence",
+            "## Branch and Guard Table",
+            "240b29fa886752d98153e94fc2fb604745b31a46116254aca5d59bad2701dcfb",
+        ),
+        (
+            "## Invariants and Invariant Guard Map",
+            "### Invariant Guard Map",
+            "c72baf1931b4ca85ec3e6a0333b86ff70ddeaa1a27d2a69e5d8a383e30e471e3",
+        ),
+        (
+            "## Constants and Parameters with Provenance Anchors",
+            "## Unit-Governance Map",
+            "1423808f4405e977112af40535b7f0659dc2b07ef4c6e57baa5c825c0ce6c57e",
+        ),
+        (
+            "## Tolerance and Numeric Notes",
+            "## Calibration and Identifiability",
+            "6f1a363bf06b5fc7c91c87cdd9161cb570ec3545117f38895f3e29780a082323",
+        ),
+    ] {
+        assert_eq!(
+            sha256_text(inclusive_section(&vegetation, start, end)),
+            expected
+        );
+        assert!(definition.contains(expected));
+    }
+    assert_eq!(
+        sha256("docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md"),
+        "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
+    );
+    assert!(
+        definition.contains("6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4")
+    );
+}
+
+#[test]
+fn independent_coupled_reference_vectors_pass() {
+    let output = Command::new(".venv/bin/python")
+        .arg(format!(
+            "{COUPLED_PACKAGE}/artifacts/reference_calculator.py"
+        ))
+        .output()
+        .expect("run independent coupled vegetation reference calculator");
+    assert!(
+        output.status.success(),
+        "oracle failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8(output.stdout).expect("oracle output UTF-8");
+    for required in [
+        "\"all_pass\": true",
+        "\"zero_light\": true",
+        "\"rubisco_limited\": true",
+        "\"electron_limited\": true",
+        "\"wet_canopy_closure\": true",
+        "\"wet_stem_energy_owner\": true",
+        "\"integrated_wet_dry_energy_water\": true",
+        "\"wet_rate_amount_area_poisons\": true",
+        "\"canopy_condensation_closure\": true",
+        "\"subfreezing_liquid_rejected\": true",
+        "\"radiation_removable_branches\": true",
+        "\"sunlit_shaded_partition\": true",
+        "\"root_profiles_distinct\": true",
+        "\"hydraulic_four_node_closure\": true",
+        "\"hydraulic_active_cap_resolve\": true",
+        "\"hydraulic_rate_amount_poison\": true",
+        "\"hydraulic_redistribution_rejected\": true",
+        "\"hydraulic_dry_frozen_exclusion\": true",
+        "\"coupled_hydraulic_fixed_point\": true",
+        "\"nitrogen_competition\": true",
+        "\"leaf_litter_cn_dm\": true",
+        "\"floor_not_donation_target\": true",
+        "\"deciduous_multistep\": true",
+        "\"evergreen_turnover\": true",
+        "\"root_wood_cwd_trajectory\": true",
+        "\"wrong_root_c_dm_receipt_rejected\": true",
+        "\"receiver_n_credit\": true",
+        "\"wrong_competitor_debit_rejected\": true",
+        "\"vertical_mixed_radiation\": true",
+        "\"hydraulic_finalized_caps\": true",
+        "\"cn_poison_rejected\": true",
+        "\"rollback\": true",
+        "\"radiation_absorbed\": 631.4550942161578",
+        "\"leaf_temperature\": 295.4923277333952",
+        "\"cn_leaf_growth\": 0.006442191726176829",
+    ] {
+        assert!(
+            stdout.contains(required),
+            "oracle output missing {required}: {stdout}"
+        );
+    }
+    for closure in [
+        "froot_c_closure",
+        "froot_n_closure",
+        "froot_dm_closure",
+        "wood_c_closure",
+        "wood_n_closure",
+        "wood_dm_closure",
+    ] {
+        assert!(
+            json_number_after(&stdout, closure).abs() < 1e-14,
+            "nonclosing independent turnover ledger {closure}: {stdout}"
+        );
+    }
+    assert!(json_number_after(&stdout, "wrong_n_remaining") < 0.01);
 }

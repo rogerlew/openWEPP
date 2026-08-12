@@ -1,0 +1,31 @@
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: this manual char comparison can be written more succinctly
+  --> tests/integration/vegetation_boundary_authority_contract.rs:92:16
+   |
+92 |         .split(|character: char| character == ',' || character == '\n' || character == '}')
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using an array of `char`: `[',', '\n', '}']`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_pattern_char_comparison
+   = note: `-D clippy::manual-pattern-char-comparison` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::manual_pattern_char_comparison)]`
+
+error: called `map(<f>).unwrap_or_else(<g>)` on an `Option` value
+   --> tests/integration/vegetation_boundary_authority_contract.rs:105:22
+    |
+105 |       let end_offset = text[start_offset..]
+    |  ______________________^
+106 | |         .find(end)
+107 | |         .map(|offset| start_offset + offset)
+108 | |         .unwrap_or_else(|| panic!("missing {end}"));
+    | |___________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#map_unwrap_or
+    = note: `-D clippy::map-unwrap-or` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::map_unwrap_or)]`
+help: try
+    |
+105 ~     let end_offset = text[start_offset..]
+106 ~         .find(end).map_or_else(|| panic!("missing {end}"), |offset| start_offset + offset);
+    |
+
+error: could not compile `openwepp` (test "vegetation_boundary_authority_contract") due to 2 previous errors

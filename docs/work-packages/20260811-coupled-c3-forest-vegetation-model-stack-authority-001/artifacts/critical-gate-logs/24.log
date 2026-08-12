@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID 390269b0-93b8-41c2-bdaa-b8c614aeb713 with nextest profile: full
+    Starting 1 test across 1 binary (3 tests skipped)
+        SLOW [> 90.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>180.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>270.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>360.000s] (───) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+────────────
+     Summary [ 366.723s] 1 test run: 1 passed (1 slow), 3 skipped

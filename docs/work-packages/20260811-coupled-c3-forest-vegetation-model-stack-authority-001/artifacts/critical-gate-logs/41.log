@@ -1,0 +1,7 @@
+CMD=bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md
+TIMESTAMP_START=1786489908
+PASS: SC unit compliance lint found no findings
+EXIT_CODE=0
+DURATION_SECONDS=0
+COMMAND_START_TS=1786489908
+COMMAND_END_TS=1786489908

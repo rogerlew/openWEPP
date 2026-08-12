@@ -1,0 +1,48 @@
+03|100|2102|CARGO_BUILD_JOBS=1 cargo nextest run --workspace --profile quick
+04|100|2246|CARGO_BUILD_JOBS=1 cargo nextest run --workspace --profile full
+05|0|3|CARGO_BUILD_JOBS=1 cargo fmt --all -- --check
+06|101|26|CARGO_BUILD_JOBS=1 cargo clippy --workspace --all-targets -- -D warnings
+07|0|6|CARGO_BUILD_JOBS=1 cargo test --doc --workspace
+08|0|6|cargo deny check
+09|0|0|markdown-doc lint --path docs/specifications/science-contracts --format plain
+10|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001 --format plain
+11|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001 --format plain
+12|0|0|markdown-doc lint --path docs/work-packages/20260811-soil-biogeochemistry-transformations-implementation-001 --format plain
+13|0|1|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+14|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md
+15|1|0|bash tools/release/check_science_contract_admission.sh --base-ref 669aafb60df3ac4eeed2661cc4db4ad33f3f2265 --worktree
+16|0|3|.venv/bin/python docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/reference_calculator.py
+17|0|4|CARGO_BUILD_JOBS=1 cargo nextest run --test vegetation_boundary_authority_contract --profile quick
+18|0|0|git diff --check
+19|100|2259|CARGO_BUILD_JOBS=4 cargo nextest run --workspace --profile full
+20|0|1|CARGO_BUILD_JOBS=4 cargo clippy --test vegetation_boundary_authority_contract -- -D warnings
+21|0|3|cargo fmt --all -- --check
+22|0|120|CARGO_BUILD_JOBS=4 cargo nextest run --test assurance_v2_publication_contract --profile full -- stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+23|0|0|git diff --check
+24|0|367|CARGO_BUILD_JOBS=4 TMPDIR=/home/workdir/openWEPP/target/enospc-retry-cqr-quality-2GHbqo cargo nextest run --test cqr_quality_evidence_handoff_contract --profile full -- cqr_quality_evidence_self_test_passes
+25|0|1|bash tools/release/check_science_contract_admission.sh --base-ref 669aafb60df3ac4eeed2661cc4db4ad33f3f2265 --worktree
+26|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+27|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md
+28|0|0|markdown-doc lint --path docs/specifications/science-contracts --format plain
+29|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001 --format plain
+30|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001 --format plain
+31|0|0|markdown-doc lint --path docs/work-packages/20260811-soil-biogeochemistry-transformations-implementation-001 --format plain
+32|0|1|CARGO_BUILD_JOBS=4 cargo clippy --test vegetation_boundary_authority_contract -- -D warnings
+33|0|4|CARGO_BUILD_JOBS=4 cargo nextest run --test vegetation_boundary_authority_contract --profile quick
+34|0|4|.venv/bin/python docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/reference_calculator.py
+35|0|3|cargo fmt --all -- --check
+36|0|0|git diff --check
+37|0|367|CARGO_BUILD_JOBS=4 cargo nextest run --test cqr_quality_evidence_handoff_contract --profile full -- cqr_quality_evidence_self_test_passes
+38|0|3542|CARGO_BUILD_JOBS=4 cargo nextest run --workspace --profile full
+39|0|0|bash tools/release/check_science_contract_admission.sh --base-ref 669aafb60df3ac4eeed2661cc4db4ad33f3f2265 --worktree
+40|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+41|0|0|bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md
+42|0|1|markdown-doc lint --path docs/specifications/science-contracts --format plain
+43|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001 --format plain
+44|0|0|markdown-doc lint --path docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001 --format plain
+45|0|0|markdown-doc lint --path docs/work-packages/20260811-soil-biogeochemistry-transformations-implementation-001 --format plain
+46|0|3|cargo fmt --all -- --check
+47|0|0|CARGO_BUILD_JOBS=4 cargo clippy --test vegetation_boundary_authority_contract -- -D warnings
+48|0|4|CARGO_BUILD_JOBS=4 cargo nextest run --test vegetation_boundary_authority_contract --profile quick
+49|0|3|.venv/bin/python docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/reference_calculator.py
+50|0|0|git diff --check

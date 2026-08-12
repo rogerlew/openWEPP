@@ -1,0 +1,7 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID 1961ccc5-aaf9-4881-b007-3faf13c787f0 with nextest profile: full
+    Starting 1 test across 1 binary (36 tests skipped)
+        SLOW [> 90.000s] (───) openwepp::assurance_v2_publication_contract stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+────────────
+     Summary [ 121.477s] 1 test run: 1 passed (1 slow), 36 skipped

@@ -1,0 +1,690 @@
+CMD=.venv/bin/python docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/reference_calculator.py
+TIMESTAMP_START=1786489916
+{
+  "all_pass": true,
+  "checks": {
+    "canopy_condensation_closure": true,
+    "carbon_respiration_allocation": true,
+    "cn_fixed_expected": true,
+    "cn_poison_rejected": true,
+    "cn_tissue_allocation": true,
+    "competing_water": true,
+    "coupled_conductance": true,
+    "coupled_hydraulic_fixed_point": true,
+    "coupled_resistance_node_poisons": true,
+    "deciduous_multistep": true,
+    "dry_canopy": true,
+    "electron_limited": true,
+    "energy_fixed_expected": true,
+    "evergreen_turnover": true,
+    "floor_not_donation_target": true,
+    "hydraulic_active_cap_resolve": true,
+    "hydraulic_continuity": true,
+    "hydraulic_dry_frozen_exclusion": true,
+    "hydraulic_finalized_caps": true,
+    "hydraulic_fixed_expected": true,
+    "hydraulic_four_node_closure": true,
+    "hydraulic_profiles_distinct": true,
+    "hydraulic_rate_amount_poison": true,
+    "hydraulic_redistribution_rejected": true,
+    "integrated_wet_dry_energy_water": true,
+    "lai_owned_by_leaf_c": true,
+    "leaf_energy_solve": true,
+    "leaf_litter_cn_dm": true,
+    "mixed_strata_not_averaged": true,
+    "n_finalization": true,
+    "nitrogen_competition": true,
+    "radiation_fixed_expected": true,
+    "radiation_poison_rejected": true,
+    "radiation_removable_branches": true,
+    "receiver_n_credit": true,
+    "receiver_reconstruction": true,
+    "rollback": true,
+    "root_profiles_distinct": true,
+    "root_wood_cwd_trajectory": true,
+    "rubisco_limited": true,
+    "saturated_light": true,
+    "storage_display": true,
+    "subfreezing_liquid_rejected": true,
+    "sunlit_shaded_partition": true,
+    "transition": true,
+    "two_stream_radiation": true,
+    "vertical_mixed_radiation": true,
+    "wet_canopy_closure": true,
+    "wet_rate_amount_area_poisons": true,
+    "wet_stem_energy_owner": true,
+    "wrong_competitor_debit_rejected": true,
+    "wrong_root_c_dm_receipt_rejected": true,
+    "zero_lai_radiation": true,
+    "zero_light": true
+  },
+  "model_version": "OPENWEPP_C3_WOODY_V1",
+  "vectors": {
+    "carbon_nitrogen": {
+      "closure": 1.0842021724855044e-18,
+      "display": [
+        0.003865315035706097,
+        0.0030922520285648777,
+        0.0002705720524994268,
+        0.0010822882099977072,
+        6.76430131248567e-05,
+        0.0002705720524994268
+      ],
+      "eta": 1.0,
+      "gpp_mr": 0.006,
+      "gpp_xs": 1.1574074074074074e-08,
+      "growth_resp": 0.0015855844386052718,
+      "n_authorization": 0.0003175930322239551,
+      "n_authorizations": [
+        8.892604902270741e-05,
+        0.00013338907353406112,
+        3.8111163866874613e-05,
+        5.716674580031191e-05
+      ],
+      "n_demand": 0.0003445271120630628,
+      "n_finalized": 0.0002745271120630628,
+      "n_finalized_by_bucket": [
+        7.686759137765759e-05,
+        0.00011530138706648637,
+        3.2943253447567546e-05,
+        4.941488017135131e-05
+      ],
+      "n_internal_use": 7e-05,
+      "n_request": 0.0003175930322239551,
+      "n_requests": [
+        8.892604902270741e-05,
+        0.00013338907353406112,
+        3.8111163866874613e-05,
+        5.716674580031191e-05
+      ],
+      "nsc_next": 0.0,
+      "storage": [
+        0.0025768766904707315,
+        0.0020615013523765852,
+        0.0001803813683329512,
+        0.0007215254733318048,
+        4.50953420832378e-05,
+        0.0001803813683329512
+      ],
+      "tissue": [
+        0.006442191726176829,
+        0.005153753380941463,
+        0.000450953420832378,
+        0.001803813683329512,
+        0.0001127383552080945,
+        0.000450953420832378
+      ],
+      "tissue_n": [
+        0.0002147397242058943,
+        0.00011452785290981029,
+        8.199153106043235e-06,
+        4.0084748518433595e-06,
+        2.049788276510809e-06,
+        1.0021187129608399e-06
+      ],
+      "xs_next": -0.029999988425925925
+    },
+    "condensation": {
+      "closure": -1.1102230246251565e-16,
+      "drainage": 0.39800000000000013,
+      "evap": -1.2,
+      "s1": 0.9019999999999999,
+      "stem": 0.0,
+      "through": 0.0
+    },
+    "coupled_leaf": {
+      "ambient_vpd_poison": 1.4,
+      "an": 10.880832945409162,
+      "ci": 32.007777403246266,
+      "ci_residual": -1.7486456727056066e-11,
+      "ci_without_boundary_resistance": 33.49583594641711,
+      "cs": 38.51194145684338,
+      "energy_residual": -2.1481000089806912e-08,
+      "gs_umol": 271210.96924579487,
+      "hydraulic_factor": 0.997334886752856,
+      "hydraulic_residual": 2.3710146259542375e-17,
+      "hydraulic_transpiration": 4.677543030368933e-05,
+      "one_pass_transpiration_poison": 4.6831848095587125e-05,
+      "outer_iterations": 38.0,
+      "potential_transpiration": 4.6831848095587125e-05,
+      "qcan": 0.011872370084377616,
+      "tcan": 294.3687650481718,
+      "temperature": 293.721449590097,
+      "transpiration": 4.677543030368935e-05,
+      "vpd_kpa": 0.5027083115588172
+    },
+    "electron": {
+      "ac": 25.73450762493449,
+      "aj": 8.359470238724429,
+      "an": 7.2006401928126404,
+      "ap": 50.099999999999994,
+      "j": 50.10807816564846,
+      "limit": "electron"
+    },
+    "energy": {
+      "residual": -2.8990143619012088e-12,
+      "temperature": 295.4923277333952,
+      "transpiration": 9.244295652252234e-05
+    },
+    "fixed_expected": {
+      "cn_leaf_growth": 0.006442191726176829,
+      "hydraulic_b_layer2": 2.3288575137818997e-05,
+      "leaf_temperature": 295.4923277333952,
+      "n_request": 0.0003175930322239551,
+      "radiation_absorbed": 631.4550942161578
+    },
+    "floor_evaporation": [
+      0.8,
+      0.8
+    ],
+    "hydraulic_a": {
+      "authorization_amounts": null,
+      "authorization_rates": null,
+      "dt_s": 1.0,
+      "finalized": [
+        2.3288575137818997e-05,
+        5.822143784454749e-06
+      ],
+      "gravity": 980.0,
+      "iterations": 4,
+      "layers": [
+        2.3288575137818997e-05,
+        5.822143784454749e-06
+      ],
+      "residuals": [
+        8.131516293641283e-20,
+        1.541261150823925e-17,
+        -6.151153262960729e-17,
+        6.516393869816783e-17
+      ],
+      "root": -24020.87576635145,
+      "shade": -25002.681160744538,
+      "stem": -25002.384393165696,
+      "sun": -25002.653338802033,
+      "transpiration": 2.911071892229289e-05
+    },
+    "hydraulic_b": {
+      "authorization_amounts": null,
+      "authorization_rates": null,
+      "dt_s": 1.0,
+      "finalized": [
+        5.822143784454749e-06,
+        2.3288575137818997e-05
+      ],
+      "gravity": 980.0,
+      "iterations": 4,
+      "layers": [
+        5.822143784454749e-06,
+        2.3288575137818997e-05
+      ],
+      "residuals": [
+        8.131516293641283e-20,
+        1.541261150823925e-17,
+        -6.151153262960729e-17,
+        6.516393869816783e-17
+      ],
+      "root": -24020.87576635145,
+      "shade": -25002.681160744538,
+      "stem": -25002.384393165696,
+      "sun": -25002.653338802033,
+      "transpiration": 2.911071892229289e-05
+    },
+    "hydraulic_dry": {
+      "authorization_amounts": null,
+      "authorization_rates": null,
+      "dt_s": 1.0,
+      "finalized": [
+        0.0,
+        9.576006405575336e-06
+      ],
+      "gravity": 980.0,
+      "iterations": 4,
+      "layers": [
+        0.0,
+        9.576006405575336e-06
+      ],
+      "residuals": [
+        1.0452386569118066e-17,
+        -1.1720903110926106e-16,
+        1.1575552257177268e-16,
+        8.580443755686062e-18
+      ],
+      "root": -29020.36165867669,
+      "shade": -30000.959951706667,
+      "stem": -30000.861499305513,
+      "sun": -30000.950721796435,
+      "transpiration": 9.576006405592915e-06
+    },
+    "hydraulic_four_node": {
+      "authorization_amounts": null,
+      "authorization_rates": null,
+      "dt_s": 1.0,
+      "finalized": [
+        1.018875162279581e-05,
+        1.8921967299477934e-05
+      ],
+      "gravity": 980.0,
+      "iterations": 4,
+      "layers": [
+        1.018875162279581e-05,
+        1.8921967299477934e-05
+      ],
+      "residuals": [
+        8.131516293641283e-20,
+        1.541261150823925e-17,
+        -6.151153262960729e-17,
+        6.516732682995685e-17
+      ],
+      "root": -24020.87576635145,
+      "shade": -25002.681160744538,
+      "stem": -25002.384393165696,
+      "sun": -25002.653338802033,
+      "transpiration": 2.911071892229289e-05
+    },
+    "hydraulic_four_node_limited": {
+      "authorization_amounts": [
+        0.0144,
+        0.023399999999999997
+      ],
+      "authorization_rates": [
+        8e-06,
+        1.3e-05
+      ],
+      "dt_s": 1800.0,
+      "finalized": [
+        8e-06,
+        1.3e-05
+      ],
+      "gravity": 980.0,
+      "iterations": 6,
+      "layers": [
+        0.7105985409924193,
+        1.3196830047002073
+      ],
+      "residuals": [
+        -2.7131142926913043e-16,
+        7.353093015114581e-17,
+        2.653754223747723e-16,
+        -6.759322919089317e-17
+      ],
+      "root": -85098.95399073414,
+      "shade": -86080.52136635946,
+      "stem": -86080.25751707375,
+      "sun": -86080.49663053795,
+      "transpiration": 2.1000000000000002e-05
+    },
+    "hydraulic_frozen": {
+      "authorization_amounts": null,
+      "authorization_rates": null,
+      "dt_s": 1.0,
+      "finalized": [
+        9.70358719793893e-06,
+        0.0
+      ],
+      "gravity": 980.0,
+      "iterations": 4,
+      "layers": [
+        9.70358719793893e-06,
+        0.0
+      ],
+      "residuals": [
+        -1.0807123967428167e-16,
+        -4.8679830511651895e-17,
+        1.764454332425433e-16,
+        -2.4214977896105938e-17
+      ],
+      "root": -24021.459612725303,
+      "shade": -25002.061412058654,
+      "stem": -25001.9624894491,
+      "sun": -25002.05213806601,
+      "transpiration": 9.70358719793441e-06
+    },
+    "integrated_canopy_energy": {
+      "dry_leaf_area": 2.869051977986515,
+      "dry_leaf_temperature": 295.51180325390214,
+      "dry_stem_area": 0.8069208688087073,
+      "dry_stem_temperature": 295.9672854057736,
+      "dt_s": 1800.0,
+      "energy_residual_j": 9.160672220787092e-10,
+      "latent_energy_j": 75030.0,
+      "leaf_only_area_poison": 4.006920868808708,
+      "rate_as_amount_poison": 0.029983333333333334,
+      "shortwave_partition": 500.0,
+      "store0": 0.03,
+      "store1": -3.469446951953614e-18,
+      "water_closure": 0.0,
+      "wet_actual_rate": 1.6666666666666667e-05,
+      "wet_amount": 0.030000000000000002,
+      "wet_fraction": 0.1034212568792141,
+      "wet_leaf_area": 0.3309480220134851,
+      "wet_potential_rate": 0.0002455307503061161,
+      "wet_stem_area": 0.09307913119129269,
+      "wet_temperature": 295.0224004142701
+    },
+    "litter": {
+      "c": 0.004319999999999999,
+      "dm": 0.009,
+      "n": 0.00010028571428571427,
+      "retrans_n": 5.3999999999999984e-05
+    },
+    "litter_receipts": [
+      {
+        "c": 0.0008640000000000001,
+        "dm": 0.0018,
+        "n": 2.0057142857142854e-05
+      },
+      {
+        "c": 0.001296,
+        "dm": 0.0026999999999999997,
+        "n": 3.008571428571428e-05
+      },
+      {
+        "c": 0.00216,
+        "dm": 0.0045,
+        "n": 5.0142857142857134e-05
+      }
+    ],
+    "medlyn_gs": 239762.23219703845,
+    "mixed_bottom": {
+      "absorbed": 43.49817246564321,
+      "closure": 0.0,
+      "reflected": 3.720985945114809,
+      "shaded_absorbed": 4.2381511044257465,
+      "sunlit_absorbed": 39.26002136121746,
+      "sunlit_area": 0.8449705616052888,
+      "transmitted": 29.69207049105475,
+      "transmitted_diffuse": 5.904630549380881,
+      "transmitted_direct": 23.78743994167387
+    },
+    "mixed_top": {
+      "absorbed": 490.5170806744828,
+      "closure": 0.0,
+      "reflected": 16.914187757081198,
+      "shaded_absorbed": 51.7392261259285,
+      "sunlit_absorbed": 438.77785454855433,
+      "sunlit_area": 1.1654741010433531,
+      "transmitted": 72.7543390330651,
+      "transmitted_diffuse": 12.236756504117595,
+      "transmitted_direct": 60.51758252894749
+    },
+    "n_competing_finalized": [
+      0.01,
+      0.025,
+      0.015
+    ],
+    "n_receipts": [
+      0.011999999999999999,
+      0.03,
+      0.018
+    ],
+    "n_remaining": 0.009999999999999995,
+    "phenology": {
+      "deciduous": [
+        [
+          "dormant",
+          0.0,
+          0.012,
+          0.0
+        ],
+        [
+          "onset",
+          0.008,
+          0.004,
+          0.0
+        ],
+        [
+          "active",
+          0.012,
+          0.0,
+          0.0
+        ],
+        [
+          "active",
+          0.012,
+          0.0,
+          0.0
+        ],
+        [
+          "offset",
+          0.004,
+          0.0,
+          0.008
+        ],
+        [
+          "dormant",
+          0.0,
+          0.0,
+          0.012
+        ],
+        [
+          "dormant",
+          0.0,
+          0.0,
+          0.012
+        ],
+        [
+          "dormant",
+          0.0,
+          0.0,
+          0.012
+        ]
+      ],
+      "evergreen_end": 0.1998174349738876,
+      "evergreen_loss": 0.00018256502611242454
+    },
+    "radiation": {
+      "absorbed": 631.4550942161545,
+      "closure": 0.0,
+      "reflected": 20.753003512829125,
+      "shaded_absorbed": 69.0177245623571,
+      "sunlit_absorbed": 562.4373696537974,
+      "sunlit_area": 1.2072677948158632,
+      "transmitted": 67.19988636164695,
+      "transmitted_diffuse": 11.700187974354032,
+      "transmitted_direct": 55.49969838729291
+    },
+    "radiation_black": {
+      "absorbed": 658.9899330001472,
+      "closure": 0.0,
+      "reflected": 0.31605538170609043,
+      "shaded_absorbed": 41.31140741729837,
+      "sunlit_absorbed": 617.6785255828488,
+      "sunlit_area": 1.2072677948158632,
+      "transmitted": 58.94652513737997,
+      "transmitted_diffuse": 3.44682675008706,
+      "transmitted_direct": 55.49969838729291
+    },
+    "radiation_black_direct": {
+      "absorbed": 564.5003016127071,
+      "closure": 0.0,
+      "reflected": 0.0,
+      "shaded_absorbed": 1.3378030416788533e-07,
+      "sunlit_absorbed": 564.5003014789268,
+      "sunlit_area": 1.2072677948158632,
+      "transmitted": 55.49969838729291,
+      "transmitted_diffuse": 0.0,
+      "transmitted_direct": 55.49969838729291
+    },
+    "radiation_chi_zero": {
+      "absorbed": 628.2015818252609,
+      "closure": 0.0,
+      "reflected": 20.511940616610623,
+      "shaded_absorbed": 68.51117635114701,
+      "sunlit_absorbed": 559.6904054741138,
+      "sunlit_area": 1.230678855590234,
+      "transmitted": 71.2633459978238,
+      "transmitted_diffuse": 12.308118399253951,
+      "transmitted_direct": 58.95522759856985
+    },
+    "radiation_zero_direct": {
+      "absorbed": 82.9892440204252,
+      "closure": 0.0,
+      "reflected": 3.3557169607136474,
+      "shaded_absorbed": 82.9892440204252,
+      "sunlit_absorbed": 0.0,
+      "sunlit_area": 0.0,
+      "transmitted": 4.250045370768781,
+      "transmitted_diffuse": 4.250045370768781,
+      "transmitted_direct": 0.0
+    },
+    "radiation_zero_lai": {
+      "absorbed": 0.0,
+      "closure": 0.0,
+      "reflected": 99.4,
+      "shaded_absorbed": 0.0,
+      "sunlit_absorbed": 0.0,
+      "sunlit_area": 0.0,
+      "transmitted": 710.0,
+      "transmitted_diffuse": 90.0,
+      "transmitted_direct": 620.0
+    },
+    "rejected_poison": {
+      "beer_only_absorbed": 566.6534722237947,
+      "carbon_without_growth_resp": 0.014414403987320653,
+      "n_debit_authorization_instead_of_use": 0.0003275930322239551
+    },
+    "root_wood_turnover": {
+      "cwd": {
+        "c": 1.3698442486220763e-05,
+        "dm": 2.853842184635802e-05,
+        "n": 9.588909740354534e-08
+      },
+      "deadwood_end": {
+        "c": 0.30010133695511654,
+        "n": 0.0015010544648786245
+      },
+      "froot_c_closure": 1.531435568635775e-18,
+      "froot_dm_closure": 0.0,
+      "froot_end": {
+        "c": 0.029958932244610676,
+        "dm": 0.06241444217627225,
+        "n": 0.000998631074820356
+      },
+      "froot_loss": {
+        "c": 4.1067755389321276e-05,
+        "dm": 8.555782372775267e-05,
+        "n": 1.3689251796440427e-06
+      },
+      "froot_n_closure": 7.983285527871781e-20,
+      "froot_receipts": [
+        {
+          "c": 1.0266938847330319e-05,
+          "dm": 2.1389455931938167e-05,
+          "n": 3.4223129491101067e-07
+        },
+        {
+          "c": 1.4373714386262446e-05,
+          "dm": 2.994523830471343e-05,
+          "n": 4.791238128754149e-07
+        },
+        {
+          "c": 1.642710215572851e-05,
+          "dm": 3.422312949110107e-05,
+          "n": 5.475700718576171e-07
+        }
+      ],
+      "froot_start": {
+        "c": 0.03,
+        "dm": 0.0625,
+        "n": 0.001
+      },
+      "livewood_end": {
+        "c": 0.1998849646023972,
+        "n": 0.001998849646023972
+      },
+      "livewood_internal": {
+        "c": 0.00010955902218423574,
+        "n": 1.0955902218423575e-06
+      },
+      "wood_c_closure": 0.0,
+      "wood_dm_closure": 0.0,
+      "wood_n_closure": -1.1969634335887332e-19
+    },
+    "roots_a": [
+      1.2,
+      0.3
+    ],
+    "roots_b": [
+      0.3,
+      1.2
+    ],
+    "rubisco": {
+      "ac": 1.672266435327354,
+      "aj": 8.71560956037226,
+      "an": 0.6557762406511378,
+      "ap": 17.535000000000004,
+      "j": 154.89217527426678,
+      "limit": "rubisco"
+    },
+    "saturated": {
+      "ac": 18.014155337454145,
+      "aj": 19.785536163225366,
+      "an": 14.57079781693375,
+      "ap": 35.07000000000001,
+      "j": 118.59784942154911,
+      "limit": "rubisco"
+    },
+    "super_saturated": {
+      "ac": 18.014155337454145,
+      "aj": 19.90337215886056,
+      "an": 14.600375211124181,
+      "ap": 35.07000000000001,
+      "j": 119.30417830500673,
+      "limit": "rubisco"
+    },
+    "transition": {
+      "ac": 14.185779939487583,
+      "aj": 14.19337564199535,
+      "an": 11.075648327482748,
+      "ap": 32.565,
+      "j": 91.90595952500728,
+      "limit": "rubisco"
+    },
+    "water_competition": [
+      0.4,
+      0.35,
+      0.25
+    ],
+    "wet": {
+      "closure": 2.220446049250313e-16,
+      "drainage": 1.997516728800741,
+      "evap": 0.42,
+      "s1": 0.48199999999999993,
+      "stem": 0.13006282525590374,
+      "through": 0.8704204459433558
+    },
+    "wet_energy": {
+      "evaporation": 0.00048734637231357,
+      "leaf_energy": 70.93925523997123,
+      "residual": 2.2509993868879974e-11,
+      "stem_energy": 19.951665536241908,
+      "temperature": 290.60992734999365,
+      "wet_area": 2.2550000000000003
+    },
+    "wet_energy_leaf_only": {
+      "evaporation": 0.0003937961191470054,
+      "leaf_energy": 121.648719603138,
+      "residual": -2.1600499167107046e-11,
+      "stem_energy": 0.0,
+      "temperature": 290.7147793878536,
+      "wet_area": 1.7600000000000002
+    },
+    "wrong_n_remaining": -0.0050000000000000044,
+    "wrong_root_receiver": {
+      "c": 4.206775538932127e-05,
+      "dm": 4.1067755389321276e-05
+    },
+    "zero": {
+      "ac": 15.440704574960694,
+      "aj": 0.0,
+      "an": -1.2,
+      "ap": 30.060000000000002,
+      "j": 0.0,
+      "limit": "electron"
+    }
+  }
+}
+EXIT_CODE=0
+DURATION_SECONDS=3
+COMMAND_START_TS=1786489916
+COMMAND_END_TS=1786489919

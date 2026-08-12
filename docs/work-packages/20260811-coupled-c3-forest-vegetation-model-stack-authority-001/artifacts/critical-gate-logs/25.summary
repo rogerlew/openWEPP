@@ -1,0 +1,1 @@
+25|0|1|bash tools/release/check_science_contract_admission.sh --base-ref 669aafb60df3ac4eeed2661cc4db4ad33f3f2265 --worktree

@@ -1,5 +1,11 @@
 # RHESSys-Derived Vegetation Crate
 
+> 2026-08-11 authority update: `SC-VEGETATION-001` v5 and
+> `SC-BIOGEOCHEM-001` v1 admit `OPENWEPP_C3_WOODY_V1`. The queued implementation
+> owner is `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`.
+> It must implement the whole coupled state machine; the earlier slice is
+> prospectively superseded.
+
 ## Status
 
 - `state`: **blocked; authority reframe complete** - site-specific stratum

@@ -11,6 +11,26 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/` — COMPLETE /
+  IMPLEMENTATION AUTHORITY RELEASED: canonically admits one complete
+  coupled vascular C3 woody-vegetation stack with persistent C/N state,
+  multistratum radiation/interception/gas exchange/hydraulics, typed water and
+  nutrient transactions, material transfers, exact conservation, and an
+  independent numerical oracle. No production Rust, activation, calibration,
+  deployment, or publication is authorized. Completion releases a whole-state
+  implementation successor; canopy snow remains explicit deferral.
+
+- `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/` —
+  QUEUED / IMPLEMENTATION AUTHORITY RELEASED: prospective default-off
+  implementation of the entire `OPENWEPP_C3_WOODY_V1` state machine. It cannot
+  close or cut over as a partial water-, phenology-, photosynthesis-, or C/N
+  endpoint.
+
+- `20260811-soil-biogeochemistry-transformations-implementation-001/` — QUEUED /
+  DEPENDENCY AUTHORITY BOUNDED: decomposition, mineralization, and soil-N
+  transformations; the current admitted branch is zero transformation or an
+  explicit typed failure.
+
 - `20260810-five-minute-generation-power-equivalent-cutover-001/` — COMPLETE /
   CRITICAL PASS / DIAGNOSTIC WATER / EROSION NO_ADOPTION: the supplied five-minute
   runoff-generation water-output and power-equivalent erosion-forcing ExecPlan.
@@ -575,16 +595,10 @@ State as of `2026-08-09 UTC`:
     is retained as scientific counterevidence and parameter-domain context.
 
 - `20260808-rhessys-east-coast-coupled-vegetation-slice-001/`
-  - HELD / CONSTITUTIVE AUTHORITY REQUIRED: licensed source-aware implementation
-    successor using pinned RHESSysEastCoast commit `375c75b1` and GIS2RHESSys
-    commit `6b20883d`. Site values/state are caller configuration and do not
-    require universal empirical selection. It remains blocked by incomplete
-    schema and constitutive authority plus its contract-first gate.
-    `AUTH-RHEC-016` authority is admitted, but its implementation and tests
-    remain obligations of this successor. Existing vegetation-file
-    compatibility and explicit
-    deciduous/evergreen/mixed strata remain the target; activation and cutover
-    remain excluded.
+  - PROSPECTIVELY SUPERSEDED / DO NOT EXECUTE: replaced by
+    `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`,
+    which owns the whole admitted C3 state machine and prohibits partial
+    endpoints.
 
 - `20260808-vegetation-source-provenance-and-boundary-authority-001/`
   - COMPLETE / AUTHORITY ONLY: independently structured

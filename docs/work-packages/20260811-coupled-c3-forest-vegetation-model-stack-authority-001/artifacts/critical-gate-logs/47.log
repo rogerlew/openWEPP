@@ -1,0 +1,8 @@
+CMD=CARGO_BUILD_JOBS=4 cargo clippy --test vegetation_boundary_authority_contract -- -D warnings
+TIMESTAMP_START=1786489912
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.53s
+EXIT_CODE=0
+DURATION_SECONDS=0
+COMMAND_START_TS=1786489912
+COMMAND_END_TS=1786489912

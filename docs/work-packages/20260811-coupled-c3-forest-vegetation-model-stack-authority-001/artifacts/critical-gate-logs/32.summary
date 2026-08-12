@@ -1,0 +1,1 @@
+32|0|1|CARGO_BUILD_JOBS=4 cargo clippy --test vegetation_boundary_authority_contract -- -D warnings

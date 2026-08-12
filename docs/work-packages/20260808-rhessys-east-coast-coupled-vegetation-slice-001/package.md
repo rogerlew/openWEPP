@@ -1,6 +1,11 @@
 # RHESSys East Coast Coupled Vegetation Slice
 
-Status: `held / authority reframe complete / constitutive admission required`
+Status: `prospectively superseded / do not execute`
+
+Prospective replacement: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`.
+The replacement targets the entire admitted coupled C3 state machine. This
+older slice is not authority for a water-only, phenology-only, immutable-N, or
+diagnostic-photosynthesis endpoint.
 
 Date: `2026-08-08`
 

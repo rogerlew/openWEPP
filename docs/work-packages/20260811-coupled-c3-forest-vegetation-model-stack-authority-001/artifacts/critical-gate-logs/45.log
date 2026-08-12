@@ -1,0 +1,7 @@
+CMD=markdown-doc lint --path docs/work-packages/20260811-soil-biogeochemistry-transformations-implementation-001 --format plain
+TIMESTAMP_START=1786489909
+✅ 2 files validated, 0 errors, 0 warnings
+EXIT_CODE=0
+DURATION_SECONDS=0
+COMMAND_START_TS=1786489909
+COMMAND_END_TS=1786489909

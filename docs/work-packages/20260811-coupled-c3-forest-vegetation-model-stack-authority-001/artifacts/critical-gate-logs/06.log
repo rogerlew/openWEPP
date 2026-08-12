@@ -1,0 +1,34 @@
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: unnecessary `!=` operation
+   --> tests/integration/land_surface_energy_balance_authority_contract.rs:238:9
+    |
+238 | /         if gap != "004" {
+239 | |             assert!(
+240 | |                 line.contains("`AUTHORITY_MISSING`"),
+241 | |                 "gap {gap} lost AUTHORITY_MISSING"
+...   |
+247 | |             );
+248 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#if_not_else
+    = note: `-D clippy::if-not-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::if_not_else)]`
+help: try
+    |
+238 ~         if gap == "004" {
+239 +             assert!(
+240 +                 line.contains("`IMPLEMENTATION_MISSING`"),
+241 +                 "gap 004 lost IMPLEMENTATION_MISSING"
+242 +             );
+243 +         } else {
+244 +             assert!(
+245 +                 line.contains("`AUTHORITY_MISSING`"),
+246 +                 "gap {gap} lost AUTHORITY_MISSING"
+247 +             );
+248 +         }
+    |
+
+error: could not compile `openwepp` (test "land_surface_energy_balance_authority_contract") due to 1 previous error
