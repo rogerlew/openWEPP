@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executed-hold / Milestone 0 passed / canonical E04 topology authority missing`
+Status: `executing / V2 tile-liquid authority admitted / remediation active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V1` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V2` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,10 +32,13 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v5, approved/active;
+- `SC-VEGETATION-001` v6, approved/active;
+- `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V1`, SHA-256
-  `003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`;
+- `OPENWEPP_C3_WOODY_V2`, SHA-256
+  `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`;
+- Stage-A authority terminal commit
+  `817b082d01d194cde61b1cf284bd85e40e44afc9`;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
 
@@ -402,6 +405,12 @@ closure, and line-count governance, not artifact presence alone.
   prompt lifecycle, and queued evidence scaffold; no production edit made.
 - [x] (2026-08-11) Executed Milestone 0: froze implementation surfaces and
   passed model digest, oracle, and A0 pre-implementation gates.
+- [x] (2026-08-12) Preserved the historical V1 HOLD, completed the separate
+  contract-first topology authority package, and froze its released V2 bytes at
+  commit `817b082d01d194cde61b1cf284bd85e40e44afc9`.
+- [x] (2026-08-12) Reran Milestone 0 against the admitted V2 authority: exact
+  digests/oracle, admission, unit checks, anti-evasion, AUTH11, A0 authority,
+  formatting, Markdown, and diff hygiene all pass.
 - [ ] Execute Milestone 1: identity, strict configuration/state, and migration.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
@@ -421,6 +430,10 @@ closure, and line-count governance, not artifact presence alone.
   identity; no canonicalization step is needed or permitted.
   Evidence: pre-implementation `sha256sum` returned
   `003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`.
+- Observation: the missing heterogeneous E04 topology authority was supplied
+  by the released V2 successor without rewriting V1 or the historical HOLD.
+  Evidence: Stage-A final disposition and both terminal verifiers pass at
+  commit `817b082d01d194cde61b1cf284bd85e40e44afc9`.
 
 ## Decision Log
 
@@ -465,6 +478,11 @@ heterogeneous-tile E04 liquid-store routing. The exact authority boundary and
 lift action are recorded in `artifacts/hold-legitimacy-audit.md`. Ambiguous
 topology now fails closed; heavy gates, terminal verification, prompt archival,
 and implementation-complete status remain prohibited.
+
+Continuation outcome (active): the legitimate E04 authority HOLD is lifted by
+the admitted `OPENWEPP_C3_WOODY_V2` contract package. Historical V1/HOLD records
+remain immutable. This package is executing Stage-B intake and will retain its
+fail-closed heterogeneous guard until the complete V2 path passes.
 
 ## Idempotence And Recovery
 

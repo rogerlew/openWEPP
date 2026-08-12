@@ -1,19 +1,22 @@
 # Equation Module Map
 
-Status: `PARTIAL / E04 heterogeneous topology authority missing`
+Status: `REOPENED / V2 occupancy integration active`
 
 Evidence mode: `Static + Ran`
 
-The independent fixture is
-`tests/fixtures/c3_woody_v1_expected_vectors.json`; its current SHA-256 is
-`339537846d2cad3b5f03f55cd1946b545a35a49aca9d92f6cd952e9bde83e964`.
+The V1 fixture remains historical equation evidence. V2 topology authority is
+bound by `openwepp_c3_woody_v2_topology_vectors.json`, SHA-256
+`c02e5e2a2287d84cfc584a6e3ec9c499cf7168160bc71f2577323f19dcb50bf1`.
+The complete capped physiology gate is named
+`STAGE_B_E11_E15_EXACT_ORACLE` and must pass before E11--E15 return to focused
+pass status.
 
 | Equation | Production function | Independent vector | Positive/poison/guard evidence | Whole-transaction consumer | Status |
 |---|---|---|---|---|---|
 | E01 | `radiation::two_stream` matrix exponential/particular solution | radiation fixed vector | direction/band closure and Beer poison; leaf-angle/nonfinite guards | `transaction::radiation_by_stratum` | focused pass |
 | E02 | `radiation::sunlit_absorption` and analytic sunlit LAI | sunlit area/absorption | sun/shade distinction and zero-direct branch | energy leaf-class construction | focused pass |
 | E03 | `transaction::radiation_by_stratum` | mixed-top/bottom oracle family | ordered tile/rank traversal; no mixed-stratum averaging | public candidate preparation | focused pass |
-| E04 | `interception::liquid_interception` | wet/condensation vectors | subfreezing rejection and exact water closure | `finish_physical` | focused pass |
+| E04 | `interception::liquid_interception` plus V2 tile-column routing | V1 wet/condensation and V2 topology vectors | subfreezing rejection, occupancy identity, same-tile drainage/stemflow routing, and exact water closure | V2 public tile-column candidate path | authority admitted; implementation active |
 | E05 | `liquid_interception`; `energy::canopy_residual` | integrated wet-canopy vector | dry/wet leaf/stem identity and active store cap | capped coupled solve | focused pass |
 | E06 | `energy::{neutral_resistance,leaf_boundary_conductance}` | aerodynamic/energy vectors | calm/nonneutral and domain guards | `energy_input` | focused pass |
 | E07 | `photosynthesis::fvcb` | Rubisco/electron/zero/saturated vectors | limitation and compensation branches | both solved leaf classes | focused pass |
@@ -35,3 +38,7 @@ The independent fixture is
 
 `c3_vegetation_implementation_contract` proves the public consumer invokes the
 modules above; helper existence alone is not used as implementation evidence.
+
+All earlier `focused pass` rows describe the historical single-topology
+remediation checkpoint. Each row must be revalidated through the V2 public path;
+no helper-only row is terminally implemented.

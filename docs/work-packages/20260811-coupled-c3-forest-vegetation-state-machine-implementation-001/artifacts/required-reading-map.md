@@ -52,3 +52,13 @@ before remediation edits.
 
 External checkouts, ignored source PDFs, and generated command output are
 excluded from this local Core byte total and become process-triggered evidence.
+
+## 2026-08-12 V2 Stage-B Intake
+
+Instruction discovery was rerun over the complete intended write set and again
+resolved `AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`, and
+`docs/work-packages/AGENTS.md`. Read the complete hold-lift guidance and the
+released Stage-A contracts, V2 definition, oracle, topology vectors, ownership
+contract, final reviews, terminal verifications, and worker handoff. The frozen
+authority predecessor is commit
+`817b082d01d194cde61b1cf284bd85e40e44afc9`.

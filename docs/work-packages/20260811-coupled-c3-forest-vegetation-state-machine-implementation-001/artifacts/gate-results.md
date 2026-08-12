@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `EXECUTED-HOLD / focused science review blocked by canonical omission`
+Status: `EXECUTING / V2 Milestone 0 PASS / focused remediation active`
 
 Evidence mode: `Ran`
 
@@ -71,3 +71,21 @@ corrected before this rerun.
 | AUTH11 obligation guards | PASS | 3 passed |
 | SC unit compliance | PASS | both vegetation and BGC contracts returned no findings |
 | formatting/diff hygiene | PASS | `cargo fmt --all -- --check` and `git diff --check` passed |
+
+## 2026-08-12 Stage-B V2 Intake
+
+The historical failures and HOLD evidence above remain preserved. The separate
+contract-first authority package released the missing topology authority at
+commit `817b082d01d194cde61b1cf284bd85e40e44afc9`.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V2 definition identity | PASS | both canonical copies SHA-256 `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3` |
+| independent V2 oracle regeneration | PASS | regenerated fixture byte-identical; SHA-256 `c02e5e2a2287d84cfc584a6e3ec9c499cf7168160bc71f2577323f19dcb50bf1` |
+| shared transaction contract identity | PASS | SHA-256 `c94d3c5745fd801b092f992b46fb6f5d4684b70acf24f198c4d4d6fdc42785c8` |
+| science admission | PASS | 45 contracts, zero science surfaces, receipt `464b2675f17f75a6a9e92c6de0a70dae76ef03ca092c23f29d2ad965d62be628` |
+| contract unit checks | PASS | vegetation and vegetation-transaction contracts found no findings |
+| authority anti-evasion | PASS | source-level suite guard passed |
+| AUTH11 | PASS | 3/3 |
+| A0 vegetation authority | PASS | 14/14 |
+| formatting, Markdown, diff hygiene | PASS | 49 package files and catalog had zero Markdown findings; format and diff checks passed |
