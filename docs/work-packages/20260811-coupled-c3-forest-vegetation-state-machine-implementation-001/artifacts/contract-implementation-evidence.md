@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: `EXECUTING / Milestone 1 implemented; public E04 fail-closed`
+Status: `EXECUTING / internal V2 column engine active; public E04 fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -15,3 +15,16 @@ extra/wrong occupancy, all 15 lane fields in the state digest, layer order and
 cardinality, unit spelling, V1 parser rejection, initial/prior transactions,
 and every admitted migration branch. Public execution remains explicitly
 fail-closed before E04; no E01--E22 public-path or commit claim is made.
+
+Static: `column.rs` now owns deterministic tile/vertical ordering, exact
+`LAI_s/C_s` and `WAI_s/C_s`, heterogeneous tile-rain identity, descendant
+routing of throughfall plus initial and second drainage, same-tile stemflow
+bypass, exact authorization back-conversion plumbing, and one-time local-water
+weighting. The callback supplies constitutive results; it cannot supply an
+accepted closure residual.
+
+Ran: controlled routing vectors pass for empty, one-occupancy, two-rank,
+condensation/second-drainage, tile isolation, tile-order invariance, area/store/
+aggregate-first poisons, fixed-cap identity, local/column/weighted closure, and
+byte-identical injected failure. This is topology evidence only. Exact
+occupancy-local radiation and E11--E15 potential/capped solves remain pending.

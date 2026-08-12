@@ -602,7 +602,7 @@ mod milestone_one_tests {
 
     fn fixture_config() -> VegetationConfiguration {
         let mut config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v1_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
         ))
         .expect("historical configuration shape");
         config.model_definition_sha256 = MODEL_SHA256.into();
@@ -741,6 +741,25 @@ mod milestone_one_tests {
         assert_eq!(state.occupancies.len(), 3);
         let bytes = serde_json::to_vec(&state).expect("canonical bytes");
         assert_eq!(CoupledOwnedState::parse_strict(&bytes, &config), Ok(state));
+    }
+
+    #[test]
+    fn v2_named_configuration_and_state_fixtures_are_cross_bound() {
+        let config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+        ))
+        .expect("V2 configuration fixture");
+        let state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v2_diagnostic_state.json"
+        ))
+        .expect("V2 state fixture");
+        assert_eq!(
+            state.state_sha256,
+            state.canonical_sha256().expect("state digest")
+        );
+        assert_eq!(config.initial_state_sha256, state.state_sha256);
+        config.validate().expect("V2 configuration validates");
+        state.validate(&config).expect("V2 state validates");
     }
 
     #[test]

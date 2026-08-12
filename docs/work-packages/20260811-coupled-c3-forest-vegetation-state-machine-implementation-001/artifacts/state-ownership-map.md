@@ -22,3 +22,9 @@ root-layer ordering, model/configuration/state digests, and initial/prior
 transaction lineage pass focused tests. No V2 execution path can access the
 historical shared liquid or hydraulic warm starts; those fields remain only in
 the explicitly named V1 migration DTO.
+
+Increment 2A borrows all beginning owner state immutably and returns owned
+column candidates. It never edits an occupancy map, shared stratum, pending
+transfer, state digest, or transaction identity. Injected failure at a lower
+occupancy after upper candidate work preserves the serialized beginning state
+byte-for-byte. Whole-owner atomicity is still a Milestone 5 obligation.

@@ -2,6 +2,7 @@
 //! Digest-bound coupled C3 woody vegetation state machine.
 
 pub mod carbon_nitrogen;
+pub mod column;
 pub mod config;
 pub mod energy;
 pub mod error;

@@ -150,3 +150,33 @@ pass again.
 
 Milestone 1 does not claim E04 routing, E11--E15 capped coupling, owner
 candidate construction, closure, or commit. Heavy gates remain ineligible.
+
+## 2026-08-12 Increment 2A Internal Tile-Column Engine
+
+Historical failures and retries above remain unchanged. This increment also
+retains its own edit-loop failures rather than replacing them with final passes.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| first vegetation quick run | FAIL, 47/48 | replicated-store poison used `store0=3`, which was out of the accepted occupancy-result domain and returned the earlier typed domain guard rather than the closure error asserted by the test |
+| replicated-store poison correction | PASS | changed the poison to replicate one valid lane's full `0.15 kg m-2 tile-ground` store into every lane; the distinct lower/tile-b beginning stores now reach and fail independent closure as intended |
+| first strict vegetation Clippy | FAIL | `execute_tile_column` exceeded the 100-line lint and exact float comparisons triggered `float_cmp` |
+| Clippy correction | PASS | decomposed column/per-occupancy acceptance and used exact `to_bits` identity for the candidate-store operand; `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` passed |
+| private-module visibility check | FAIL then PASS | making the developmental module private after the first pass produced dead-code and unreachable-public errors under strict Clippy; restored the intentionally callable callback seam while `execute_candidate` and commit remain fail-closed, then reran strict Clippy |
+| V2 fixture configuration identity | FAIL then PASS | placeholder configuration digest exposed expected SHA-256 `9b31228cc957031a1d71e9ffb6978591e63619da9fd4a1a9e75499aacbc62d1d`; fixture updated and exact identity test passed |
+| V2 fixture state identity | FAIL then PASS | placeholder state digest exposed expected SHA-256 `30b0df3945d3b63a45b05f7234bf4d0a37d3130aa5f542c9cb7528cbac1b4327`; state and configuration cross-binding updated and strict validation passed |
+| internal topology/routing vectors | PASS | empty/single/two-rank columns, throughfall, initial/second drainage, condensation, stemflow bypass, tile isolation/order, conditional area, one-time weighting, fixed-cap back-conversion plumbing, local/column/stand closure, producer-residual poison, and rollback |
+| vegetation crate | PASS | `cargo nextest run -p openwepp-vegetation --profile quick`: 51/51 |
+| implementation suite | PASS | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 11/11; public V2 execution remains explicitly fail-closed |
+| A0 vegetation authority | PASS | `cargo nextest run --test vegetation_boundary_authority_contract --profile quick`: 14/14 |
+| AUTH11 obligation guards | PASS | `cargo nextest run --test auth11_required_suite_obligation_guards_contract`: 3/3 |
+| four focused checks | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator `cargo check` commands passed |
+| four affected strict Clippy gates | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator passed `--all-targets -- -D warnings` |
+| authority anti-evasion | PASS | `bash tools/release/check_authority_suite_antievasion.sh` |
+| science admission | PASS | base `c064206883bd26848a93bd4b9b104b7f5b647344`, 45 contracts, 3 science surfaces, authority SHA-256 `49f331d85841ee60f361e5ac6937007829d544a5a0c4a2225dca88097e856913` |
+| formatting/diff hygiene | PASS | `cargo fmt --all -- --check` and `git diff --check` |
+| package Markdown | PASS | `markdown-doc lint --path <active-package> --format plain`: 49 files, 0 errors, 0 warnings |
+
+Heavy/full-workspace, benchmarks, science review, and terminal verification
+were not run: the exact E11--E15 occupancy solver and public candidate remain
+fail-closed, so those gates are not yet legitimate.

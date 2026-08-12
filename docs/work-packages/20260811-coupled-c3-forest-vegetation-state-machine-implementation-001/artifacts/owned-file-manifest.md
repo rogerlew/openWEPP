@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled through Milestone 1 V2 state integration`
+Status: `reconciled through Increment 2A internal column routing`
 
 Evidence mode: `Static`
 
@@ -15,6 +15,9 @@ Evidence mode: `Static`
   targets, retained V1 migration/oracle fixtures, and crate-local V2
   configuration/state/migration tests.
 - Package lifecycle/evidence: this active package tree.
+- Increment 2A: `crates/openwepp-vegetation/src/column.rs`, module registration,
+  V2-named diagnostic configuration/state fixtures, and bounded fixture-identity
+  tests in configuration/transaction modules.
 
 Protected and unchanged: canonical SC contracts, digest-bound model definition,
 production runner selectors, CLI defaults, production outputs, canopy-snow and

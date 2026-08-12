@@ -1,6 +1,6 @@
 # Milestone Gate Matrix
 
-Status: `EXECUTED-HOLD / Milestone 6 science authority block`
+Status: `EXECUTING / Increment 2A internal routing pass; Milestone 2 incomplete`
 
 | Milestone | Direct current-scope gates |
 |---|---|
@@ -14,3 +14,8 @@ Status: `EXECUTED-HOLD / Milestone 6 science authority block`
 | terminal | dual reviews/disposition, exact diff/line count, delegated full workspace, dual verification, prompt archive |
 
 No row may pass on artifact presence or later evidence.
+
+Increment 2A closes only the internal topology/routing sub-gate: controlled
+occupancy results prove ordering, routing, area conversion, closure, poisons,
+and rollback. Milestone 2 still requires exact occupancy-local E01--E06 oracle
+evidence, and Milestone 3 still requires `STAGE_B_E11_E15_EXACT_ORACLE`.

@@ -417,6 +417,11 @@ closure, and line-count governance, not artifact presence alone.
   state/configuration identity, enforces transaction lineage, and admits only
   the exact zero/single-tile V1 liquid conversions. The public candidate
   remains fail-closed before E04.
+- [x] (2026-08-12) Implement Increment 2A's internal V2 tile-column engine:
+  deterministic top-to-bottom occupancy ordering, exact conditional area,
+  same-tile routing, one-time stand weighting, controlled fixed-cap plumbing,
+  independent occupancy/column/stand closure, and failure isolation. This does
+  not complete Milestone 2 or 3 and does not reactivate public execution.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
@@ -439,6 +444,11 @@ closure, and line-count governance, not artifact presence alone.
   by the released V2 successor without rewriting V1 or the historical HOLD.
   Evidence: Stage-A final disposition and both terminal verifiers pass at
   commit `817b082d01d194cde61b1cf284bd85e40e44afc9`.
+- Observation: a closure poison that supplied an out-of-domain replicated
+  store failed earlier at the occupancy-result domain guard, so it could not
+  isolate the independent closure guard.
+  Evidence: the first 2A crate run passed 47/48; replacing it with an in-domain
+  full-store replication makes the intended independent closure guard fire.
 
 ## Decision Log
 
@@ -457,6 +467,12 @@ closure, and line-count governance, not artifact presence alone.
   Rationale: Rust tests must not require a local `.venv`, while a separate
   authority gate must prove fixtures regenerate exactly from the oracle.
   Date/Author: 2026-08-11 / Codex, implementing user direction.
+- Decision: place V2 routing in `column.rs` behind an occupancy-solver trait,
+  and keep `execute_candidate()` unchanged.
+  Rationale: topology, area conversion, release routing, and independent water
+  reconstruction can be tested without inventing E11--E15 physics or exposing
+  a partial public endpoint.
+  Date/Author: 2026-08-12 / Codex, implementing user direction.
 
 ## Outcomes & Retrospective
 
@@ -488,6 +504,14 @@ Continuation outcome (active): the legitimate E04 authority HOLD is lifted by
 the admitted `OPENWEPP_C3_WOODY_V2` contract package. Historical V1/HOLD records
 remain immutable. This package is executing Stage-B intake and will retain its
 fail-closed heterogeneous guard until the complete V2 path passes.
+
+Increment 2A outcome: the internal column engine is active and tested with a
+controlled constitutive seam. It derives conditional area, routes accepted
+throughfall and both drainage terms to descendants, bypasses stemflow to the
+same-tile ground, weights layer water exactly once, and reconstructs water
+closure outside the solver. The exact potential and authorization-capped
+E11--E15 occupancy solvers, public water path, owner candidates, and commit are
+still missing; Milestones 2 and 3 remain incomplete.
 
 ## Idempotence And Recovery
 

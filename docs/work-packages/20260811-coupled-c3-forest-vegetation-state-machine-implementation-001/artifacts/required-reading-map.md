@@ -62,3 +62,14 @@ released Stage-A contracts, V2 definition, oracle, topology vectors, ownership
 contract, final reviews, terminal verifications, and worker handoff. The frozen
 authority predecessor is commit
 `817b082d01d194cde61b1cf284bd85e40e44afc9`.
+
+## 2026-08-12 Increment 2A
+
+Ran instruction discovery for `crates/openwepp-vegetation`,
+`tests/integration`, and this package tree. Applicable instructions remained
+`AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`, and
+`docs/work-packages/AGENTS.md`. Re-read the package, testing/gate and kernel
+preparation standards, `SC-VEGETATION-001` v6 occupancy amendment and
+invariants 073--079, `SC-VEGETATIONTRANSACTION-001`, the numerical tolerance
+surface, and the current configuration/state/interception/transaction code
+before editing.

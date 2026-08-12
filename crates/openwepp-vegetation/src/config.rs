@@ -491,7 +491,7 @@ mod tests {
 
     fn fixture() -> VegetationConfiguration {
         let mut configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v1_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
         ))
         .expect("configuration fixture");
         configuration.model_definition_sha256 = MODEL_SHA256.into();
@@ -512,12 +512,27 @@ mod tests {
             "/strata/0/root_layers/0/layer_id",
         ] {
             let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
-                "../../../tests/fixtures/c3_woody_v1_diagnostic_configuration.json"
+                "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
             ))
             .expect("configuration JSON");
             *value.pointer_mut(pointer).expect("fixture identity") = serde_json::json!("  ");
             assert!(serde_json::from_value::<VegetationConfiguration>(value).is_err());
         }
+    }
+
+    #[test]
+    fn v2_named_fixture_has_exact_model_and_configuration_identity() {
+        let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+        ))
+        .expect("V2 configuration fixture");
+        assert_eq!(configuration.model_definition_sha256, MODEL_SHA256);
+        assert_eq!(
+            configuration.configuration_sha256,
+            configuration
+                .canonical_sha256()
+                .expect("configuration digest")
+        );
     }
 
     #[test]
