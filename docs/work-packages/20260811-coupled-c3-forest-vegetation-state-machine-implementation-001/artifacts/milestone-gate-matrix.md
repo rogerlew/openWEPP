@@ -1,6 +1,6 @@
 # Milestone Gate Matrix
 
-Status: `FROZEN`
+Status: `EXECUTED-HOLD / Milestone 6 science authority block`
 
 | Milestone | Direct current-scope gates |
 |---|---|

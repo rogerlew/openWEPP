@@ -2,6 +2,8 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum VegetationError {
+    #[error("VEG-E-INJECT-001: injected failure at {0}")]
+    InjectedFailure(&'static str),
     #[error("VEG-E-ID-001: model definition digest mismatch: expected {expected}, found {found}")]
     ModelDigestMismatch { expected: String, found: String },
     #[error("VEG-E-SCHEMA-001: invalid canonical input: {0}")]
@@ -14,8 +16,14 @@ pub enum VegetationError {
     QuadraticDomain,
     #[error("VEG-E-NUM-002: leaf ci solve did not converge")]
     CiNonConvergence,
+    #[error("VEG-E-NUM-003: canopy energy solve failed: {0}")]
+    Energy(&'static str),
     #[error("VEG-E-NUM-004: hydraulic solve failed: {0}")]
     Hydraulic(&'static str),
+    #[error("VEG-E-NUM-005: coupled gas/energy/hydraulic solve failed: {0}")]
+    Coupled(&'static str),
+    #[error("VEG-E-NUM-006: radiation quadrature failed: {0}")]
+    Radiation(&'static str),
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]

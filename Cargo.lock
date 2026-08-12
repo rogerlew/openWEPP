@@ -1091,6 +1091,8 @@ version = "0.1.0"
 dependencies = [
  "openwepp-sim-contract",
  "openwepp-unit-boundary",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

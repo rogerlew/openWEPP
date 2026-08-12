@@ -1,5 +1,5 @@
 # Diagnostics And Output Manifest
 
-Status: `FROZEN`
+Status: `implemented / focused pass`
 
-Diagnostics carry model/config/state hashes, transaction/stratum/layer IDs, solver iterations and normalized residuals, active bounds, backtracking and pivot failures, authorization activity, gas/hydraulic transpiration mismatch, five ledger residuals, and typed failure. Candidate output exposes beginning/final state identities, resource request/authorization/final-use triples, transfer proposals, and ledger operands. Diagnostics are immutable evidence and never alter equations or supply fallback inputs.
+Diagnostics carry transaction identity, nested solver iteration/evaluation behavior, normalized component residuals, final temperature/potential steps, active water caps, wet-store-cap activity, backtracking, authorization activity, gas/hydraulic transpiration mismatch, and typed convergence/pivot/domain failure. Candidate state carries model/config/state identity; typed requests carry stratum/layer/species/area-interval basis. Candidate output exposes request/maximum-authorization/final-use triples, C/N/DM transfer proposals, and authoritative five-ledger operands. The external validator reconstructs residuals; no producer residual scalar is accepted. Diagnostics are immutable evidence and never alter equations or supply fallback inputs.

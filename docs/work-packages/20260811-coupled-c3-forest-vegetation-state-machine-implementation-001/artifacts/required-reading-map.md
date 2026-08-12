@@ -40,5 +40,15 @@ because it governs current package/campaign lifecycle and successor ordering.
   the implicated interface.
 - Load RHESSys/GIS2RHESSys source only for explicit offline mapping provenance.
 
+## 2026-08-11 Remediation Continuation
+
+Ran instruction discovery for `Cargo.toml`, `Cargo.lock`, both new crates,
+kernel-contract, hillslope-orchestrator, `tests/integration`, and this package.
+Applicable instructions are `AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`,
+and `docs/work-packages/AGENTS.md`. Read the complete `SC-VEGETATION-001` and
+`SC-BIOGEOCHEM-001` contracts plus the predecessor equation, numerical,
+parameter, ownership, vector, definition, oracle, and model-selection artifacts
+before remediation edits.
+
 External checkouts, ignored source PDFs, and generated command output are
 excluded from this local Core byte total and become process-triggered evidence.

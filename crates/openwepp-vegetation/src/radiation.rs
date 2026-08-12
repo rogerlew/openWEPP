@@ -1,33 +1,83 @@
 #![allow(clippy::many_single_char_names)]
-//! E01--E03 radiation primitives and ordered canopy traversal.
+//! E01--E03 exact two-stream radiation and ordered canopy traversal.
+
 use crate::VegetationError;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct RadiationBand {
-    pub direct: f64,
-    pub diffuse: f64,
-}
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ClassRadiation {
-    pub sunlit_lai: f64,
-    pub shaded_lai: f64,
-    pub sunlit_absorbed: f64,
-    pub shaded_absorbed: f64,
-    pub transmitted: RadiationBand,
+pub(crate) struct ColumnLayer {
+    pub plant_area: f64,
+    pub chi: f64,
+    pub rho: f64,
+    pub tau: f64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TwoStreamResult {
     pub absorbed: f64,
     pub reflected: f64,
+    pub reflected_direct: f64,
+    pub reflected_diffuse: f64,
+    pub absorbed_direct: f64,
+    pub absorbed_diffuse: f64,
     pub transmitted_direct: f64,
     pub transmitted_diffuse: f64,
+    pub terminal_from_direct: f64,
+    pub terminal_from_diffuse: f64,
     pub sunlit_lai: f64,
+    pub shaded_lai: f64,
+    pub sunlit_absorbed: f64,
+    pub shaded_absorbed: f64,
     pub closure_residual: f64,
 }
 
-/// Solves the admitted Sellers/CLM two-stream ODEs using deterministic RK4.
-#[allow(clippy::too_many_arguments)]
+#[derive(Clone, Copy)]
+struct Matrix2 {
+    a11: f64,
+    a12: f64,
+    a21: f64,
+    a22: f64,
+}
+
+impl Matrix2 {
+    const IDENTITY: Self = Self {
+        a11: 1.0,
+        a12: 0.0,
+        a21: 0.0,
+        a22: 1.0,
+    };
+    fn scale(self, s: f64) -> Self {
+        Self {
+            a11: self.a11 * s,
+            a12: self.a12 * s,
+            a21: self.a21 * s,
+            a22: self.a22 * s,
+        }
+    }
+    fn add(self, o: Self) -> Self {
+        Self {
+            a11: self.a11 + o.a11,
+            a12: self.a12 + o.a12,
+            a21: self.a21 + o.a21,
+            a22: self.a22 + o.a22,
+        }
+    }
+    fn sub(self, o: Self) -> Self {
+        self.add(o.scale(-1.0))
+    }
+    fn vector(self, v: [f64; 2]) -> [f64; 2] {
+        [
+            self.a11.mul_add(v[0], self.a12 * v[1]),
+            self.a21.mul_add(v[0], self.a22 * v[1]),
+        ]
+    }
+}
+
+fn finite(values: &[f64]) -> bool {
+    values.iter().all(|v| v.is_finite())
+}
+
+/// Exact real 2x2 matrix-exponential boundary solution required by E01.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub fn two_stream(
     plant_area: f64,
     mu: f64,
@@ -38,132 +88,382 @@ pub fn two_stream(
     direct: f64,
     diffuse: f64,
 ) -> Result<TwoStreamResult, VegetationError> {
-    if !(-0.4..=0.6).contains(&chi)
-        || plant_area < 0.0
-        || direct < 0.0
-        || diffuse < 0.0
-        || rho < 0.0
-        || tau < 0.0
-        || rho + tau >= 1.0
-        || !(0.0..=1.0).contains(&ground_albedo)
-        || (direct > 0.0 && mu <= 0.0)
+    solve_column(
+        &[ColumnLayer {
+            plant_area,
+            chi,
+            rho,
+            tau,
+        }],
+        mu,
+        ground_albedo,
+        direct,
+        diffuse,
+    )?
+    .into_iter()
+    .next()
+    .ok_or(VegetationError::Domain("empty two-stream result"))
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn solution(
+    a: Matrix2,
+    p: [f64; 2],
+    k: f64,
+    x: f64,
+    y0: [f64; 2],
+) -> Result<[f64; 2], VegetationError> {
+    let homogeneous = exponential(a, x)?.vector(y0);
+    let particular = integral_shifted(a, k, x)?.vector(p);
+    let decay = (-k * x).exp();
+    Ok([
+        homogeneous[0] + decay * particular[0],
+        homogeneous[1] + decay * particular[1],
+    ])
+}
+
+fn exponential(a: Matrix2, x: f64) -> Result<Matrix2, VegetationError> {
+    let gamma2 = a.a11 * a.a11 + a.a12 * a.a21;
+    if gamma2 < -64.0 * f64::EPSILON {
+        return Err(VegetationError::Domain("complex two-stream eigenvalue"));
+    }
+    if gamma2.abs() <= 64.0 * f64::EPSILON {
+        return Ok(Matrix2::IDENTITY.add(a.scale(x)));
+    }
+    let gamma = gamma2.sqrt();
+    let gx = gamma * x;
+    Ok(Matrix2::IDENTITY
+        .scale(gx.cosh())
+        .add(a.scale(gx.sinh() / gamma)))
+}
+
+/// `integral_0^x exp((a + shift I) u) du`, including exact resonance.
+fn integral_shifted(a: Matrix2, shift: f64, x: f64) -> Result<Matrix2, VegetationError> {
+    let gamma2 = a.a11 * a.a11 + a.a12 * a.a21;
+    if gamma2 < -64.0 * f64::EPSILON {
+        return Err(VegetationError::Domain("complex two-stream eigenvalue"));
+    }
+    if gamma2.abs() <= 64.0 * f64::EPSILON {
+        let f0 = exp_integral(shift, x);
+        let f1 = exp_first_moment(shift, x);
+        return Ok(Matrix2::IDENTITY.scale(f0).add(a.scale(f1)));
+    }
+    let gamma = gamma2.sqrt();
+    let plus = Matrix2::IDENTITY.add(a.scale(1.0 / gamma)).scale(0.5);
+    let minus = Matrix2::IDENTITY.sub(a.scale(1.0 / gamma)).scale(0.5);
+    Ok(plus
+        .scale(exp_integral(shift + gamma, x))
+        .add(minus.scale(exp_integral(shift - gamma, x))))
+}
+
+fn exp_integral(rate: f64, x: f64) -> f64 {
+    if rate == 0.0 {
+        x
+    } else {
+        (rate * x).exp_m1() / rate
+    }
+}
+fn exp_first_moment(rate: f64, x: f64) -> f64 {
+    if rate == 0.0 {
+        x * x / 2.0
+    } else {
+        ((rate * x - 1.0) * (rate * x).exp() + 1.0) / (rate * rate)
+    }
+}
+
+fn sunlit_absorption(
+    a: Matrix2,
+    p: [f64; 2],
+    k: f64,
+    x: f64,
+    y0: [f64; 2],
+    direct: f64,
+    omega: f64,
+) -> Result<f64, VegetationError> {
+    let hminus = integral_shifted(a, -k, x)?;
+    let jplus = integral_shifted(a, k, x)?;
+    let double = hminus
+        .sub(jplus.scale((-2.0 * k * x).exp()))
+        .scale(1.0 / (2.0 * k));
+    let term1 = a.vector(hminus.vector(y0));
+    let term2 = a.vector(double.vector(p));
+    let row_term = (term1[0] - term1[1]) + (term2[0] - term2[1]);
+    let beam_integral = exp_integral(-2.0 * k, x);
+    let local_weighted = row_term + (p[0] - p[1] + k * direct) * beam_integral;
+    let direct_weighted = (1.0 - omega) * k * direct * beam_integral;
+    let direct_total = (1.0 - omega) * direct * (-k * x).exp_m1().abs();
+    Ok(local_weighted - direct_weighted + direct_total)
+}
+
+/// Piecewise exact column solve. One bottom boundary condition determines the
+/// upward stream through every overlying stratum; no internal layer is treated
+/// as an independent ground boundary.
+pub(crate) fn solve_column(
+    layers: &[ColumnLayer],
+    mu: f64,
+    ground_albedo: f64,
+    direct: f64,
+    diffuse: f64,
+) -> Result<Vec<TwoStreamResult>, VegetationError> {
+    let systems = column_systems(layers, mu, direct)?;
+    let total = solve_column_component(&systems, ground_albedo, diffuse)?;
+    let direct_only = solve_column_component(&systems, ground_albedo, 0.0)?;
+    let diffuse_systems = systems
+        .iter()
+        .map(|system| LayerSystem {
+            p: [0.0, 0.0],
+            direct_top: 0.0,
+            ..*system
+        })
+        .collect::<Vec<_>>();
+    let diffuse_only = solve_column_component(&diffuse_systems, ground_albedo, diffuse)?;
+    Ok(total
+        .into_iter()
+        .zip(direct_only)
+        .zip(diffuse_only)
+        .map(|((mut value, direct_value), diffuse_value)| {
+            value.reflected_direct = direct_value.reflected;
+            value.reflected_diffuse = diffuse_value.reflected;
+            value.absorbed_direct = direct_value.absorbed;
+            value.absorbed_diffuse = diffuse_value.absorbed;
+            let is_terminal_layer =
+                value.terminal_from_direct != 0.0 || value.terminal_from_diffuse != 0.0;
+            value.terminal_from_direct = if is_terminal_layer {
+                direct_value.transmitted_direct + direct_value.transmitted_diffuse
+            } else {
+                0.0
+            };
+            value.terminal_from_diffuse = if is_terminal_layer {
+                diffuse_value.transmitted_direct + diffuse_value.transmitted_diffuse
+            } else {
+                0.0
+            };
+            value
+        })
+        .collect())
+}
+
+#[derive(Clone, Copy)]
+struct LayerSystem {
+    a: Matrix2,
+    p: [f64; 2],
+    k: f64,
+    area: f64,
+    direct_top: f64,
+    omega: f64,
+}
+type LayerBoundaryStates = Vec<([f64; 2], [f64; 2])>;
+
+#[allow(clippy::too_many_lines)]
+fn layer_system(
+    layer: ColumnLayer,
+    mu: f64,
+    direct_top: f64,
+) -> Result<LayerSystem, VegetationError> {
+    if !finite(&[
+        layer.plant_area,
+        mu,
+        layer.chi,
+        layer.rho,
+        layer.tau,
+        direct_top,
+    ]) || layer.plant_area < 0.0
+        || !(-0.4..=0.6).contains(&layer.chi)
+        || layer.rho < 0.0
+        || layer.tau < 0.0
+        || layer.rho + layer.tau >= 1.0
+        || direct_top < 0.0
+        || (direct_top > 0.0 && mu <= 0.0)
     {
-        return Err(VegetationError::Domain("two-stream radiation"));
+        return Err(VegetationError::Domain("two-stream column layer"));
     }
-    if plant_area == 0.0 {
-        return Ok(TwoStreamResult {
-            absorbed: 0.0,
-            reflected: ground_albedo * (direct + diffuse),
-            transmitted_direct: direct,
-            transmitted_diffuse: diffuse,
-            sunlit_lai: 0.0,
-            closure_residual: 0.0,
-        });
-    }
-    let phi1 = 0.5 - 0.633 * chi - 0.33 * chi * chi;
+    let phi1 = 0.5 - 0.633 * layer.chi - 0.33 * layer.chi * layer.chi;
     let phi2 = 0.877 * (1.0 - 2.0 * phi1);
-    let gmu = phi1 + phi2 * mu;
-    let kbeam = if direct > 0.0 { gmu / mu } else { 0.0 };
+    let gmu = if direct_top > 0.0 {
+        phi1 + phi2 * mu
+    } else {
+        0.0
+    };
+    let k = if direct_top > 0.0 { gmu / mu } else { 0.0 };
     let mubar = adaptive_simpson(|mup| mup / (phi1 + phi2 * mup), 0.0, 1.0, 1e-14, 20)?;
-    let omega = rho + tau;
-    let cosbar = f64::midpoint(1.0, chi);
-    let omega_beta = 0.5 * (rho + tau + (rho - tau) * cosbar * cosbar);
-    let b = 1.0 - omega + omega_beta;
-    let c = omega_beta;
-    let integral = if direct > 0.0 {
-        adaptive_simpson(
-            |mup| {
-                let gp = phi1 + phi2 * mup;
-                let denominator = mu * gp + mup * gmu;
-                if denominator == 0.0 {
-                    0.0
-                } else {
-                    mup * gmu / denominator
-                }
-            },
-            0.0,
-            1.0,
-            1e-14,
-            20,
-        )?
-    } else {
+    let omega = layer.rho + layer.tau;
+    let cosbar = f64::midpoint(1.0, layer.chi);
+    let omega_beta = if omega == 0.0 {
         0.0
-    };
-    let scatter = 0.5 * omega * integral;
-    let beta0 = if omega > 0.0 && direct > 0.0 {
-        (1.0 + mubar * kbeam) / (mubar * kbeam) * scatter / omega
     } else {
-        0.0
+        0.5 * (layer.rho + layer.tau + (layer.rho - layer.tau) * cosbar * cosbar)
     };
-    let d = omega * mubar * kbeam * beta0;
-    let f = omega * mubar * kbeam * (1.0 - beta0);
-    let integrate =
-        |up0: f64| integrate_odes(up0, diffuse, plant_area, direct, kbeam, mubar, b, c, d, f);
-    let base = integrate(0.0);
-    let unit = integrate(1.0);
-    let slope_up = unit.0 - base.0;
-    let slope_down = unit.1 - base.1;
-    let terminal_direct = direct * (-kbeam * plant_area).exp();
-    let denominator = slope_up - ground_albedo * slope_down;
-    if denominator.abs() < 64.0 * f64::EPSILON {
-        return Err(VegetationError::Domain("two-stream boundary"));
-    }
-    let reflected = (ground_albedo * (base.1 + terminal_direct) - base.0) / denominator;
-    let terminal = integrate(reflected);
-    let transmitted_diffuse = terminal.1;
-    let transmitted = transmitted_diffuse + terminal_direct;
-    let incident = direct + diffuse;
-    let absorbed = incident - reflected - (1.0 - ground_albedo) * transmitted;
-    let closure = incident - absorbed - reflected - (1.0 - ground_albedo) * transmitted;
-    let sunlit_lai = if direct > 0.0 {
-        -(-kbeam * plant_area).exp_m1() / kbeam
+    let beta = if omega == 0.0 {
+        0.0
     } else {
-        0.0
+        omega_beta / omega
     };
-    Ok(TwoStreamResult {
-        absorbed,
-        reflected,
-        transmitted_direct: terminal_direct,
-        transmitted_diffuse,
-        sunlit_lai,
-        closure_residual: closure,
+    let ascat = if omega == 0.0 || direct_top == 0.0 {
+        0.0
+    } else {
+        0.5 * omega
+            * adaptive_simpson(
+                |mup| {
+                    let gp = phi1 + phi2 * mup;
+                    let den = mu * gp + mup * gmu;
+                    if den == 0.0 { 0.0 } else { mup * gmu / den }
+                },
+                0.0,
+                1.0,
+                1e-14,
+                20,
+            )?
+    };
+    let omega_beta0 = if omega == 0.0 || direct_top == 0.0 {
+        0.0
+    } else {
+        (1.0 + mubar * k) * ascat / (mubar * k)
+    };
+    let beta0 = if omega == 0.0 {
+        0.0
+    } else {
+        omega_beta0 / omega
+    };
+    let b = 1.0 - (1.0 - beta) * omega;
+    let c = omega * beta;
+    let d = omega * mubar * k * beta0;
+    let f = omega * mubar * k * (1.0 - beta0);
+    Ok(LayerSystem {
+        a: Matrix2 {
+            a11: b / mubar,
+            a12: -c / mubar,
+            a21: c / mubar,
+            a22: -b / mubar,
+        },
+        p: [-d * direct_top / mubar, f * direct_top / mubar],
+        k,
+        area: layer.plant_area,
+        direct_top,
+        omega,
     })
 }
 
-#[allow(clippy::too_many_arguments)]
-fn integrate_odes(
-    up0: f64,
-    down0: f64,
-    area: f64,
-    direct: f64,
-    kb: f64,
-    mubar: f64,
-    b: f64,
-    c: f64,
-    d: f64,
-    f: f64,
-) -> (f64, f64) {
-    let steps = 4000_u32;
-    let h = area / f64::from(steps);
-    let mut up = up0;
-    let mut down = down0;
-    let deriv = |x: f64, u: f64, v: f64| {
-        let beam = direct * (-kb * x).exp();
-        (
-            (b * u - c * v - d * beam) / mubar,
-            (f * beam - b * v + c * u) / mubar,
-        )
-    };
-    for step in 0..steps {
-        let x = f64::from(step) * h;
-        let k1 = deriv(x, up, down);
-        let k2 = deriv(x + h / 2.0, up + h * k1.0 / 2.0, down + h * k1.1 / 2.0);
-        let k3 = deriv(x + h / 2.0, up + h * k2.0 / 2.0, down + h * k2.1 / 2.0);
-        let k4 = deriv(x + h, up + h * k3.0, down + h * k3.1);
-        up += h * (k1.0 + 2.0 * k2.0 + 2.0 * k3.0 + k4.0) / 6.0;
-        down += h * (k1.1 + 2.0 * k2.1 + 2.0 * k3.1 + k4.1) / 6.0;
+fn propagate_column(
+    systems: &[LayerSystem],
+    top_up: f64,
+    top_down: f64,
+) -> Result<LayerBoundaryStates, VegetationError> {
+    let mut state = [top_up, top_down];
+    let mut states = Vec::with_capacity(systems.len());
+    for system in systems {
+        let terminal = solution(system.a, system.p, system.k, system.area, state)?;
+        states.push((state, terminal));
+        state = terminal;
     }
-    (up, down)
+    Ok(states)
+}
+
+fn column_systems(
+    layers: &[ColumnLayer],
+    mu: f64,
+    direct: f64,
+) -> Result<Vec<LayerSystem>, VegetationError> {
+    if layers.is_empty() || !finite(&[mu, direct]) || direct < 0.0 || (direct > 0.0 && mu <= 0.0) {
+        return Err(VegetationError::Domain("two-stream column"));
+    }
+    let mut beam = direct;
+    let mut systems = Vec::with_capacity(layers.len());
+    for layer in layers {
+        let system = layer_system(*layer, mu, beam)?;
+        beam *= (-system.k * system.area).exp();
+        systems.push(system);
+    }
+    Ok(systems)
+}
+
+fn solve_column_component(
+    systems: &[LayerSystem],
+    ground_albedo: f64,
+    diffuse: f64,
+) -> Result<Vec<TwoStreamResult>, VegetationError> {
+    if systems.is_empty()
+        || !finite(&[ground_albedo, diffuse])
+        || !(0.0..=1.0).contains(&ground_albedo)
+        || diffuse < 0.0
+    {
+        return Err(VegetationError::Domain("two-stream column component"));
+    }
+    let beam = systems
+        .last()
+        .map(|system| system.direct_top * (-system.k * system.area).exp())
+        .ok_or(VegetationError::Domain("empty column"))?;
+    let base = propagate_column(systems, 0.0, diffuse)?;
+    let unit = propagate_column(systems, 1.0, diffuse)?;
+    let base_bottom = base
+        .last()
+        .ok_or(VegetationError::Domain("empty column"))?
+        .1;
+    let unit_bottom = unit
+        .last()
+        .ok_or(VegetationError::Domain("empty column"))?
+        .1;
+    let slope = [
+        unit_bottom[0] - base_bottom[0],
+        unit_bottom[1] - base_bottom[1],
+    ];
+    let denominator = slope[0] - ground_albedo * slope[1];
+    if !denominator.is_finite() || denominator.abs() <= 64.0 * f64::EPSILON {
+        return Err(VegetationError::Domain(
+            "two-stream column boundary singular",
+        ));
+    }
+    let top_up = (ground_albedo * (base_bottom[1] + beam) - base_bottom[0]) / denominator;
+    let states = propagate_column(systems, top_up, diffuse)?;
+    let last = systems.len() - 1;
+    systems
+        .iter()
+        .zip(states)
+        .enumerate()
+        .map(|(index, (system, (top, bottom)))| {
+            let beam_bottom = system.direct_top * (-system.k * system.area).exp();
+            let absorbed =
+                system.direct_top + top[1] + bottom[0] - beam_bottom - bottom[1] - top[0];
+            let sunlit_lai = if system.direct_top == 0.0 {
+                0.0
+            } else {
+                -(-system.k * system.area).exp_m1() / system.k
+            };
+            let sunlit_absorbed = if system.direct_top == 0.0 {
+                0.0
+            } else {
+                sunlit_absorption(
+                    system.a,
+                    system.p,
+                    system.k,
+                    system.area,
+                    top,
+                    system.direct_top,
+                    system.omega,
+                )?
+            };
+            Ok(TwoStreamResult {
+                absorbed,
+                reflected: if index == 0 { top[0] } else { 0.0 },
+                reflected_direct: 0.0,
+                reflected_diffuse: 0.0,
+                absorbed_direct: 0.0,
+                absorbed_diffuse: 0.0,
+                transmitted_direct: beam_bottom,
+                transmitted_diffuse: bottom[1],
+                terminal_from_direct: if index == last {
+                    beam_bottom + bottom[1]
+                } else {
+                    0.0
+                },
+                terminal_from_diffuse: 0.0,
+                sunlit_lai,
+                shaded_lai: system.area - sunlit_lai,
+                sunlit_absorbed,
+                shaded_absorbed: absorbed - sunlit_absorbed,
+                closure_residual: 0.0,
+            })
+        })
+        .collect()
 }
 
 fn adaptive_simpson<F: Fn(f64) -> f64>(
@@ -186,7 +486,7 @@ fn adaptive_simpson<F: Fn(f64) -> f64>(
         depth: u32,
     ) -> Result<f64, VegetationError> {
         if depth == 0 {
-            return Err(VegetationError::Domain("radiation quadrature depth"));
+            return Err(VegetationError::Radiation("quadrature depth limit"));
         }
         let center = f64::midpoint(a, b);
         let lm = f64::midpoint(a, center);
@@ -210,80 +510,8 @@ fn adaptive_simpson<F: Fn(f64) -> f64>(
     let mid = f64::midpoint(a, b);
     let fm = function(mid);
     let whole = (b - a) * (fa + 4.0 * fm + fb) / 6.0;
+    if !finite(&[fa, fb, fm, whole]) {
+        return Err(VegetationError::Radiation("nonfinite quadrature operand"));
+    }
     refine(&function, a, b, fa, fm, fb, whole, tolerance, depth)
-}
-
-pub fn beam_extinction(g_mu: f64, mu: f64, clumping: f64) -> Result<f64, VegetationError> {
-    if !g_mu.is_finite()
-        || !mu.is_finite()
-        || !clumping.is_finite()
-        || g_mu <= 0.0
-        || mu <= 0.0
-        || !(0.0..=1.0).contains(&clumping)
-    {
-        return Err(VegetationError::Domain("beam extinction"));
-    }
-    Ok(g_mu * clumping / mu)
-}
-
-pub fn sunlit_shaded(
-    lai: f64,
-    kb: f64,
-    incident: RadiationBand,
-    absorptivity: f64,
-) -> Result<ClassRadiation, VegetationError> {
-    if !lai.is_finite()
-        || lai < 0.0
-        || !kb.is_finite()
-        || kb <= 0.0
-        || !absorptivity.is_finite()
-        || !(0.0..=1.0).contains(&absorptivity)
-        || incident.direct < 0.0
-        || incident.diffuse < 0.0
-    {
-        return Err(VegetationError::Domain("radiation"));
-    }
-    if lai == 0.0 {
-        return Ok(ClassRadiation {
-            sunlit_lai: 0.0,
-            shaded_lai: 0.0,
-            sunlit_absorbed: 0.0,
-            shaded_absorbed: 0.0,
-            transmitted: incident,
-        });
-    }
-    let transmitted_direct = incident.direct * (-kb * lai).exp();
-    let kd = 0.8_f64;
-    let transmitted_diffuse = incident.diffuse * (-kd * lai).exp();
-    let sunlit_lai = -(-kb * lai).exp_m1() / kb;
-    let shaded_lai = lai - sunlit_lai;
-    let absorbed_direct = absorptivity * (incident.direct - transmitted_direct);
-    let absorbed_diffuse = absorptivity * (incident.diffuse - transmitted_diffuse);
-    let diffuse_sun = absorbed_diffuse * sunlit_lai / lai;
-    Ok(ClassRadiation {
-        sunlit_lai,
-        shaded_lai,
-        sunlit_absorbed: absorbed_direct + diffuse_sun,
-        shaded_absorbed: absorbed_diffuse - diffuse_sun,
-        transmitted: RadiationBand {
-            direct: transmitted_direct,
-            diffuse: transmitted_diffuse,
-        },
-    })
-}
-
-pub fn traverse_column(
-    lai_by_rank: &[f64],
-    kb: f64,
-    incident: RadiationBand,
-    absorptivity: f64,
-) -> Result<Vec<ClassRadiation>, VegetationError> {
-    let mut flux = incident;
-    let mut out = Vec::with_capacity(lai_by_rank.len());
-    for &lai in lai_by_rank {
-        let class = sunlit_shaded(lai, kb, flux, absorptivity)?;
-        flux = class.transmitted;
-        out.push(class);
-    }
-    Ok(out)
 }

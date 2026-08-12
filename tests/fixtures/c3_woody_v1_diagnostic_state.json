@@ -1,0 +1,24 @@
+{
+  "model_definition_sha256": "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+  "configuration_sha256": "34035c2ade39f018a66eb265105f61931675f8789598f668e876c15f685545a9",
+  "state_sha256": "fb84277e108efc4ceac5c73a2fc5105ec168201fb8f80477a3e64953f61728eb",
+  "strata": {"tree-1": {
+    "canopy_liquid": 0.0, "psi_root_mm": -25500.0, "psi_stem_mm": -28500.0,
+    "psi_sun_mm": -33000.0, "psi_shade_mm": -32000.0,
+    "tissues": {
+      "leaf": {"display": {"carbon": 0.1, "nitrogen": 0.003}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}},
+      "fine_root": {"display": {"carbon": 0.08, "nitrogen": 0.0018}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}},
+      "live_stem": {"display": {"carbon": 0.2, "nitrogen": 0.0036}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}},
+      "dead_stem": {"display": {"carbon": 0.3, "nitrogen": 0.00067}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}},
+      "live_coarse_root": {"display": {"carbon": 0.05, "nitrogen": 0.00091}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}},
+      "dead_coarse_root": {"display": {"carbon": 0.08, "nitrogen": 0.00018}, "storage": {"carbon": 0.0, "nitrogen": 0.0}, "transfer": {"carbon": 0.0, "nitrogen": 0.0}}
+    },
+    "retranslocation_n": 0.00007, "nsc_c": 0.004, "xs_c": -0.03,
+    "standing_dead": {"carbon": 0.0, "nitrogen": 0.0}, "standing_dead_dm": 0.0,
+    "phase": "active", "onset_remaining_s": 0.0, "offset_remaining_s": 0.0,
+    "previous_leaf_offset_flux": 0.0, "previous_root_offset_flux": 0.0,
+    "previous_gsi": 0.8, "pending_transfers": [], "t10_k": 296.0,
+    "leaf_area": 2.0, "root_area": 2.7, "stem_area": 0.7, "last_transaction_id": 0
+  }},
+  "last_transaction_id": 0
+}

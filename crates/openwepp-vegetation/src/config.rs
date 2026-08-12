@@ -154,6 +154,19 @@ impl VegetationConfiguration {
         }
         require_hex_digest(&self.configuration_sha256, "configuration_sha256")?;
         require_hex_digest(&self.initial_state_sha256, "initial_state_sha256")?;
+        if self.configuration_sha256 != self.canonical_sha256()? {
+            return Err(VegetationError::Receipt(
+                "configuration digest does not match canonical bytes".into(),
+            ));
+        }
+        if self.topology_tiles.is_empty() {
+            return Err(VegetationError::Domain("empty topology"));
+        }
+        if self.topology_tiles.iter().any(|tile| {
+            tile.tile_id.trim().is_empty() || !tile.fraction.is_finite() || tile.fraction <= 0.0
+        }) {
+            return Err(VegetationError::Domain("topology tile identity/fraction"));
+        }
         let tile_sum: f64 = self.topology_tiles.iter().map(|v| v.fraction).sum();
         if (tile_sum - 1.0).abs() > 1e-12 {
             return Err(VegetationError::Domain("topology tile fractions"));
@@ -167,6 +180,7 @@ impl VegetationConfiguration {
             return Err(VegetationError::Domain("duplicate topology tile"));
         }
         let mut ids = BTreeSet::new();
+        let mut tile_ranks = BTreeSet::new();
         for s in &self.strata {
             if !ids.insert(s.stratum_id.as_str()) || s.lifeform != "C3_WOODY" {
                 return Err(VegetationError::Unsupported(
@@ -174,12 +188,35 @@ impl VegetationConfiguration {
                 ));
             }
             validate_stratum(s, &tiles)?;
+            for tile_id in &s.tile_ids {
+                if !tile_ranks.insert((tile_id.as_str(), s.vertical_rank)) {
+                    return Err(VegetationError::Domain("duplicate tile/rank occupancy"));
+                }
+            }
+        }
+        for tile in &self.topology_tiles {
+            let mut column = self
+                .strata
+                .iter()
+                .filter(|stratum| stratum.tile_ids.contains(&tile.tile_id))
+                .collect::<Vec<_>>();
+            column.sort_by_key(|stratum| stratum.vertical_rank);
+            if column.windows(2).any(|pair| {
+                pair[0].vertical_rank >= pair[1].vertical_rank
+                    || pair[0].height_m <= pair[1].height_m
+            }) {
+                return Err(VegetationError::Domain("topology rank/height order"));
+            }
         }
         Ok(())
     }
 
     pub fn canonical_sha256(&self) -> Result<String, VegetationError> {
-        let bytes = serde_json::to_vec(self).map_err(|e| VegetationError::Schema(e.to_string()))?;
+        let mut canonical = self.clone();
+        canonical.configuration_sha256.clear();
+        canonical.initial_state_sha256.clear();
+        let bytes =
+            serde_json::to_vec(&canonical).map_err(|e| VegetationError::Schema(e.to_string()))?;
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
 }
@@ -202,6 +239,7 @@ fn fraction(value: f64, field: &'static str) -> Result<(), VegetationError> {
     }
     Ok(())
 }
+#[allow(clippy::too_many_lines)]
 fn validate_stratum(
     s: &StratumConfiguration,
     tiles: &BTreeSet<&str>,
@@ -211,11 +249,20 @@ fn validate_stratum(
             return Err(VegetationError::Domain("stratum tile membership"));
         }
     }
+    if s.stratum_id.trim().is_empty() || s.tile_ids.is_empty() {
+        return Err(VegetationError::Domain("stratum identity/tile membership"));
+    }
     finite_positive(s.height_m, "height_m")?;
     finite_positive(s.leaf_dimension_m, "leaf_dimension_m")?;
+    finite_positive(s.stem_dimension_m, "stem_dimension_m")?;
+    finite_positive(s.wet_surface_dimension_m, "wet_surface_dimension_m")?;
     finite_positive(s.sla_m2_per_kg_c, "sla")?;
     finite_positive(s.clumping_index, "clumping_index")?;
-    if !(-0.4..=0.6).contains(&s.leaf_angle_chi)
+    if !s.crown_base_m.is_finite() {
+        return Err(VegetationError::Domain("crown_base_m"));
+    }
+    if s.clumping_index > 1.0
+        || !(-0.4..=0.6).contains(&s.leaf_angle_chi)
         || s.crown_base_m < 0.0
         || s.crown_base_m >= s.height_m
     {
@@ -235,10 +282,93 @@ fn validate_stratum(
     }
     fraction(s.alpha_liq, "alpha_liq")?;
     fraction(s.stemflow_fraction, "stemflow_fraction")?;
+    if !s.p_liq_kg_m2_plant.is_finite() || s.p_liq_kg_m2_plant < 0.0 {
+        return Err(VegetationError::Domain("p_liq_kg_m2_plant"));
+    }
     fraction(s.livewood_fraction_a4, "a4")?;
     fraction(s.current_growth_fraction, "current_growth_fraction")?;
     fraction(s.nh4_request_fraction, "nh4_request_fraction")?;
     fraction(s.drymatter_carbon_fraction, "drymatter_carbon_fraction")?;
+    if s.drymatter_carbon_fraction == 0.0
+        || s.leaf_emissivity <= 0.0
+        || s.stem_emissivity <= 0.0
+        || s.wet_surface_emissivity <= 0.0
+    {
+        return Err(VegetationError::Domain(
+            "positive material/emissivity fraction",
+        ));
+    }
+    for (value, field) in [
+        (s.g0_umol_h2o_m2_s, "g0"),
+        (s.g1_sqrt_kpa, "g1"),
+        (s.rd_leaf_n_rate, "rd_leaf_n_rate"),
+        (s.sai_relation, "sai_relation"),
+        (s.atkin_intercept, "atkin_intercept"),
+        (s.mr_base_kgc_per_kgn_s, "mr_base"),
+        (s.alloc_froot_leaf_a1, "a1"),
+        (s.alloc_croot_stem_a2, "a2"),
+        (s.alloc_stem_leaf_a3, "a3"),
+        (s.mortality_rate_s1, "mortality_rate"),
+    ] {
+        if !value.is_finite() || value < 0.0 {
+            return Err(VegetationError::Domain(field));
+        }
+    }
+    for (value, field) in [
+        (s.rubisco_n_efficiency, "rubisco_n_efficiency"),
+        (s.electron_n_efficiency, "electron_n_efficiency"),
+        (s.tp_vcmax_ratio, "tp_vcmax_ratio"),
+        (s.kc25_pa, "kc25"),
+        (s.ko25_pa, "ko25"),
+        (s.gamma25_pa, "gamma25"),
+        (s.z0m_m, "z0m"),
+        (s.z0h_m, "z0h"),
+        (s.z0q_m, "z0q"),
+        (s.k1a_max_s1, "k1a"),
+        (s.k1b_max_s1, "k1b"),
+        (s.k2_max_m_s, "k2"),
+        (s.k3_max_m_s, "k3"),
+        (s.vulnerability_shape, "vulnerability_shape"),
+        (s.root_to_leaf_area, "root_to_leaf_area"),
+        (s.mr_q10, "mr_q10"),
+        (s.xs_recovery_days, "xs_recovery_days"),
+        (s.cn_leaf, "cn_leaf"),
+        (s.cn_leaf_litter, "cn_leaf_litter"),
+        (s.cn_froot, "cn_froot"),
+        (s.cn_livewood, "cn_livewood"),
+        (s.cn_deadwood, "cn_deadwood"),
+        (s.leaf_lifetime_s, "leaf_lifetime"),
+        (s.froot_lifetime_s, "froot_lifetime"),
+        (s.livewood_turnover_s, "livewood_turnover"),
+    ] {
+        finite_positive(value, field)?;
+    }
+    for (value, field) in [
+        (s.ha_vcmax, "ha_vcmax"),
+        (s.hd_vcmax, "hd_vcmax"),
+        (s.entropy_vcmax, "entropy_vcmax"),
+        (s.ha_jmax, "ha_jmax"),
+        (s.hd_jmax, "hd_jmax"),
+        (s.entropy_jmax, "entropy_jmax"),
+        (s.ha_kc, "ha_kc"),
+        (s.ha_ko, "ha_ko"),
+        (s.ha_gamma, "ha_gamma"),
+    ] {
+        finite_positive(value, field)?;
+    }
+    if !s.displacement_m.is_finite() || s.displacement_m < 0.0 {
+        return Err(VegetationError::Domain("displacement"));
+    }
+    for (value, field) in [
+        (s.leaf_emissivity, "leaf_emissivity"),
+        (s.stem_emissivity, "stem_emissivity"),
+        (s.wet_surface_emissivity, "wet_surface_emissivity"),
+        (s.growth_resp_ratio_g1, "growth_respiration_ratio"),
+        (s.livewood_fraction_a4, "livewood_fraction"),
+        (s.current_growth_fraction, "current_growth_fraction"),
+    ] {
+        fraction(value, field)?;
+    }
     for p50 in [s.p50_leaf_mm, s.p50_stem_mm, s.p50_root_mm] {
         if !p50.is_finite() || p50 >= 0.0 {
             return Err(VegetationError::Domain("p50"));
@@ -253,6 +383,37 @@ fn validate_stratum(
     if (root_sum - 1.0).abs() > 1e-12 || (n_sum - 1.0).abs() > 1e-12 {
         return Err(VegetationError::Domain("root fractions"));
     }
+    let mut root_ids = BTreeSet::new();
+    for root in &s.root_layers {
+        if root.layer_id.trim().is_empty()
+            || !root_ids.insert(root.layer_id.as_str())
+            || !root.root_fraction.is_finite()
+            || root.root_fraction < 0.0
+            || !root.mineral_n_root_fraction.is_finite()
+            || root.mineral_n_root_fraction < 0.0
+            || !root.lateral_root_length_m.is_finite()
+            || root.lateral_root_length_m <= 0.0
+        {
+            return Err(VegetationError::Domain("root layer"));
+        }
+    }
+    for tissue in ["leaf", "fine_root"] {
+        let litter = [
+            &s.litter_metabolic_fraction,
+            &s.litter_cellulose_fraction,
+            &s.litter_lignin_fraction,
+        ]
+        .into_iter()
+        .map(|map| map.get(tissue).copied().unwrap_or(f64::NAN))
+        .collect::<Vec<_>>();
+        if litter
+            .iter()
+            .any(|value| !value.is_finite() || !(0.0..=1.0).contains(value))
+            || (litter.iter().sum::<f64>() - 1.0).abs() > 1e-12
+        {
+            return Err(VegetationError::Domain("litter partition"));
+        }
+    }
     if s.phenology_type == PhenologyType::SeasonalDeciduous {
         let on = s
             .gsi_on_threshold
@@ -260,9 +421,37 @@ fn validate_stratum(
         let off = s
             .gsi_off_threshold
             .ok_or_else(|| VegetationError::Schema("missing gsi_off_threshold".into()))?;
+        if !on.is_finite()
+            || !off.is_finite()
+            || !(0.0..=1.0).contains(&on)
+            || !(0.0..=1.0).contains(&off)
+        {
+            return Err(VegetationError::Domain("GSI thresholds"));
+        }
         if on <= off {
             return Err(VegetationError::Domain("GSI thresholds"));
         }
+        let onset = s
+            .onset_duration_s
+            .ok_or_else(|| VegetationError::Schema("missing onset_duration_s".into()))?;
+        let offset = s
+            .offset_duration_s
+            .ok_or_else(|| VegetationError::Schema("missing offset_duration_s".into()))?;
+        let hysteresis = s
+            .gsi_hysteresis
+            .ok_or_else(|| VegetationError::Schema("missing gsi_hysteresis".into()))?;
+        finite_positive(onset, "onset_duration_s")?;
+        finite_positive(offset, "offset_duration_s")?;
+        if !hysteresis.is_finite() || hysteresis < 0.0 || on - off < hysteresis {
+            return Err(VegetationError::Domain("GSI hysteresis"));
+        }
+    } else if s.onset_duration_s.is_some()
+        || s.offset_duration_s.is_some()
+        || s.gsi_on_threshold.is_some()
+        || s.gsi_off_threshold.is_some()
+        || s.gsi_hysteresis.is_some()
+    {
+        return Err(VegetationError::Domain("evergreen phenology nulls"));
     }
     Ok(())
 }

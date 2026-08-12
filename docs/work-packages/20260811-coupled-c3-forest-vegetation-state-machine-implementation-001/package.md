@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executed-hold / Milestone 0 passed / implementation review failed`
+Status: `executed-hold / Milestone 0 passed / canonical E04 topology authority missing`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -453,6 +453,18 @@ does not execute E01--E22 and that several helpers use unauthorized proxy or
 alternate numerical formulations. The package therefore remains `HOLD`; the
 scaffold is not closure-eligible production science and no terminal claim is
 made.
+
+Continuation outcome (in progress): commit `c06420688` remains the immutable
+failed-scaffold checkpoint. The package resumed in-place to correct every
+accepted Review-B finding; no finding is deferred, rejected, or moved to a
+follow-on package.
+
+Continuation outcome (HOLD): remediation corrected substantial E01--E22
+implementation defects, but fresh review exposed a canonical omission for
+heterogeneous-tile E04 liquid-store routing. The exact authority boundary and
+lift action are recorded in `artifacts/hold-legitimacy-audit.md`. Ambiguous
+topology now fails closed; heavy gates, terminal verification, prompt archival,
+and implementation-complete status remain prohibited.
 
 ## Idempotence And Recovery
 

@@ -2,10 +2,40 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
-  "generation": 18,
+  "generation": 20,
   "enforcement_status": "SCHEMA_ONLY_NONBLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
+    {
+      "entry_id": "c3-vegetation-resource-transaction-manifest",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-kernel-contract/Cargo.toml" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "typed-c3-resource-transaction", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-kernel-contract"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
+    {
+      "entry_id": "c3-vegetation-diagnostic-transaction",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "default-off-c3-vegetation-diagnostic", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
+    {
+      "entry_id": "c3-vegetation-resource-transaction",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-kernel-contract/src/lib_mod/resource_transaction.rs" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "typed-c3-resource-transaction", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-kernel-contract", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
     {
       "entry_id": "canopy-phenology-direct-core-frames",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs" },

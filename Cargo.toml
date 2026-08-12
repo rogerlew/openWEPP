@@ -797,6 +797,10 @@ name = "vegetation_boundary_authority_contract"
 path = "tests/integration/vegetation_boundary_authority_contract.rs"
 
 [[test]]
+name = "c3_vegetation_implementation_contract"
+path = "tests/integration/c3_vegetation_implementation_contract.rs"
+
+[[test]]
 name = "peak_hourly_authority_contract"
 path = "tests/integration/peak_hourly_authority_contract.rs"
 

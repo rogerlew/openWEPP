@@ -1,0 +1,30 @@
+{
+  "model_definition_sha256": "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+  "radiation": {
+    "absorbed": 631.4550942161578,
+    "reflected": 20.753003512829125,
+    "transmitted_direct": 55.49969838729291,
+    "transmitted_diffuse": 11.700187974354032,
+    "sunlit_area": 1.2072677948158632
+  },
+  "photosynthesis": {
+    "zero_an": -1.2,
+    "rubisco_an": 0.6557762406511378,
+    "electron_an": 7.2006401928126404,
+    "saturated_an": 14.57079781693375,
+    "transition_an": 11.075648327482748,
+    "medlyn_gs": 239762.23219703845
+  },
+  "carbon_nitrogen": {
+    "leaf_growth": 0.006442191726176829,
+    "n_request": 0.0003175930322239551,
+    "growth_respiration": 0.0015855844386052718,
+    "xs_next": -0.029999988425925925
+  },
+  "phenology": {
+    "onset_day_1_display": 0.008,
+    "onset_day_2_display": 0.012,
+    "offset_day_1_display": 0.004,
+    "evergreen_loss": 0.00018256502611242454
+  }
+}

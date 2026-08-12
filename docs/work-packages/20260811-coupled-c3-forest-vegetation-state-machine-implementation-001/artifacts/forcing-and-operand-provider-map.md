@@ -1,8 +1,8 @@
 # Forcing And Operand Provider Map
 
-Status: `FROZEN`
+Status: `implemented / focused pass`
 
-| Operand | Unit/time/area basis | Provider/owner | Missing behavior |
+| Operand | Unit/time/area basis | Provider/owner | Fail-closed behavior |
 |---|---|---|---|
 | VIS/NIR direct/diffuse, longwave | W m-2 ground, interval-mean | forcing / energy | typed missing/nonfinite |
 | precipitation | kg H2O m-2 ground per interval | forcing / hydrology | typed missing/phase unsupported |

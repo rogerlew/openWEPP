@@ -18,3 +18,7 @@ pedantic = { level = "warn", priority = -1 }
 [dependencies]
 openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }
 openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
