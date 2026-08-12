@@ -1,6 +1,10 @@
 # State Ownership Map
 
-Status: `MILESTONE 1 PASS / V2 ownership structure implemented`
+Status: `MILESTONE 1 PASS / V2 ownership structure implemented; update rule HOLD`
+
+The authority audit confirmed that the V2 per-layer root-potential lanes have
+no canonical accepted-update mapping from E14's common root-node solution.
+Potential candidates therefore remain unavailable and no lane is broadcast.
 
 Vegetation solely owns one canopy-liquid and coupled warm-start lane per valid
 `(stratum_id,tile_id)` occupancy, plus shared stratum phenology, geometry, and

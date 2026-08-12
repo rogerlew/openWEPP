@@ -180,3 +180,29 @@ retains its own edit-loop failures rather than replacing them with final passes.
 Heavy/full-workspace, benchmarks, science review, and terminal verification
 were not run: the exact E11--E15 occupancy solver and public candidate remain
 fail-closed, so those gates are not yet legitimate.
+
+## 2026-08-12 Increment 2B Authority Audit and HOLD Checkpoint
+
+Prior failures and successful Increment 2A evidence remain unchanged.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| exact authority/code audit | HOLD | two independent read-only audits confirmed missing leaf/stem E01 reduction/partition, local surface-wind, hydraulic path/state mapping, beta-one residual semantics, and exact V2 fixture authority |
+| inferred radiation attempt | REJECTED / REMOVED | a draft reused historical combined-area clumping, area-weighted optics, and absorptivity partition; review found no canonical authorization and all draft bytes were removed before acceptance |
+| potential solver attempt | NOT IMPLEMENTED | sequential energy/hydraulic composition would be the prohibited one-pass endpoint; no potential/input/diagnostic solver files were retained |
+| typed water boundary | PASS | complete transaction/owner/occupancy/layer/stand-basis request batches, canonical ordering, duplicate/mixed/amount guards, exact authorization correspondence, stand-to-tile conversion, and tolerance poisons |
+| first strict Clippy after resource module | FAIL | dead private cap helpers/constants plus three test style lints were exposed; no warning was suppressed |
+| strict Clippy correction | PASS | cap APIs documented and public for later typed final-pass use; style/conversion findings corrected; `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` passed |
+| vegetation quick suite | PASS | `cargo nextest run -p openwepp-vegetation --profile quick`: 58/58 |
+| four focused checks | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator package checks passed |
+| four affected strict Clippy gates | PASS | all four affected crates passed `--all-targets -- -D warnings` |
+| A0 vegetation authority | PASS | `vegetation_boundary_authority_contract`: 14/14 |
+| implementation contract | PASS | `c3_vegetation_implementation_contract`: 11/11; public path remains fail-closed |
+| AUTH11 and anti-evasion | PASS | AUTH11 3/3; source-level authority-suite guard passed |
+| science admission | PASS | base `c064206883bd26848a93bd4b9b104b7f5b647344`, 45 contracts, 3 science surfaces, authority SHA-256 `49f331d85841ee60f361e5ac6937007829d544a5a0c4a2225dca88097e856913` |
+| formatting/diff/package Markdown | PASS | format and diff checks passed; 50 package files had 0 Markdown errors and 0 warnings |
+| public candidate containment | PASS / fail-closed | no radiation, demand, request, candidate, or mutation is emitted by `execute_candidate()` |
+
+Heavy/full-workspace, benchmarks, focused science review, and terminal
+verification remain ineligible because exact potential authority and fixtures
+are absent.

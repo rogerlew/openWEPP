@@ -13,3 +13,10 @@ and independent closure functions.
 Responsibilities are separated into radiation, photosynthesis, energy,
 hydraulics, interception, C/N, numerics, ledger reconstruction, typed resource
 protocol, BGC receiving state, and diagnostic orchestration modules.
+
+## 2026-08-12 Increment 2B HOLD Checkpoint
+
+`occupancy_solver/resources.rs` is below the 2,000-line warning threshold.
+No radiation, potential, capped, input, or diagnostics solver module was
+retained because canonical authority is incomplete. Existing Increment 2A and
+package-wide line-count dispositions remain unchanged.

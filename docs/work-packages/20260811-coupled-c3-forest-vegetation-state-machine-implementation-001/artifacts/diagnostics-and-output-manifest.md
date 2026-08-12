@@ -1,6 +1,11 @@
 # Diagnostics And Output Manifest
 
-Status: `PARTIAL / internal column diagnostics only; public outputs pending`
+Status: `PARTIAL / internal column and typed resource diagnostics only; potential solver HOLD`
+
+No opaque solver failure was added. The audit also confirms that existing
+numerical errors do not yet retain the required partial iterations, residuals,
+steps, backtracking, and active-bound payload; this remains part of the
+authority-lift/resumption boundary.
 
 Increment 2A carries occupancy solver iteration count and normalized residuals
 without using them as fallback inputs. Its routed result exposes distinct

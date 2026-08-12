@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled through Increment 2A internal column routing`
+Status: `reconciled through Increment 2B authority hold checkpoint`
 
 Evidence mode: `Static`
 
@@ -18,6 +18,12 @@ Evidence mode: `Static`
 - Increment 2A: `crates/openwepp-vegetation/src/column.rs`, module registration,
   V2-named diagnostic configuration/state fixtures, and bounded fixture-identity
   tests in configuration/transaction modules.
+- Increment 2B safe foundation:
+  `crates/openwepp-vegetation/src/occupancy_solver/{mod.rs,resources.rs}` and
+  module registration. No radiation or potential/capped solver file is present.
+- Increment 2B hold evidence: this package's
+  `potential-pass-hold-legitimacy-audit.md` plus bounded lifecycle, map, gate,
+  and disposition updates.
 
 Protected and unchanged: canonical SC contracts, digest-bound model definition,
 production runner selectors, CLI defaults, production outputs, canopy-snow and

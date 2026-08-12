@@ -73,3 +73,14 @@ preparation standards, `SC-VEGETATION-001` v6 occupancy amendment and
 invariants 073--079, `SC-VEGETATIONTRANSACTION-001`, the numerical tolerance
 surface, and the current configuration/state/interception/transaction code
 before editing.
+
+## 2026-08-12 Increment 2B Authority Audit
+
+Instruction discovery for vegetation source, integration tests, and this
+package again resolved root, crate, test, and work-package instructions. Read
+the complete E01--E15 and V2 occupancy sections of `SC-VEGETATION-001`, the
+equation/parameter/numerical/vector authority artifacts, the independent Python
+calculator, V2 model definition, current radiation/photosynthesis/energy/
+hydraulics/numerics/interception/config/state/column/transaction source, and
+the historical coupled implementation at commit `02631ae92`. The audit result
+is recorded in `potential-pass-hold-legitimacy-audit.md`.

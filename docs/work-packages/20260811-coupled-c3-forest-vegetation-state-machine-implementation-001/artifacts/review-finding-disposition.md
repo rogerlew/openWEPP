@@ -1,6 +1,11 @@
 # Review Finding Disposition
 
-Status: `EXECUTED-HOLD / accepted findings remain; canonical E04 authority missing`
+Status: `EXECUTED-HOLD / V1 findings retained; exact V2 potential authority incomplete`
+
+The former heterogeneous E04 liquid-topology omission was lifted by V2.
+Increment 2B independently exposed additional load-bearing omissions and did
+not relabel any Review-B finding remediated. See
+`potential-pass-hold-legitimacy-audit.md`.
 
 Evidence mode: `Static + Ran`
 

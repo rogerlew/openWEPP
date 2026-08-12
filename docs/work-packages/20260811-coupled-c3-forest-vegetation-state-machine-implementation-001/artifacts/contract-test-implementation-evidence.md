@@ -1,6 +1,10 @@
 # Contract-Test Implementation Evidence
 
-Status: `INCREMENT 2A INTERNAL ROUTING PASS / Milestones 2 and 3 pending`
+Status: `INCREMENT 2B HOLD / typed resource tests pass; Milestones 2 and 3 pending`
+
+The vegetation quick suite now includes seven typed potential-water boundary
+tests. They prove identity/protocol behavior only and are not E01--E15 science
+evidence.
 
 Evidence mode: `Ran`
 

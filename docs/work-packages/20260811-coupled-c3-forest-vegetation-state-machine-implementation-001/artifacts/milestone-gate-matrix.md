@@ -1,6 +1,10 @@
 # Milestone Gate Matrix
 
-Status: `EXECUTING / Increment 2A internal routing pass; Milestone 2 incomplete`
+Status: `HOLD / Increment 2A internal routing pass; Milestones 2 and 3 incomplete`
+
+Increment 2B cannot pass its whole-column radiation or potential E11--E15
+gates until the omissions in `potential-pass-hold-legitimacy-audit.md` receive
+contract-first authority and independent exact vectors.
 
 | Milestone | Direct current-scope gates |
 |---|---|

@@ -1,6 +1,10 @@
 # Conservation And Anti-tautology Plan
 
-Status: `PARTIAL / internal V2 water reconstruction passes; owners pending`
+Status: `PARTIAL / internal V2 water reconstruction passes; potential operands HOLD`
+
+Typed request/authorization identity and tolerance-bound comparison now have
+independent protocol tests. Radiation and potential energy/water operands are
+not emitted because their canonical construction is incomplete.
 
 Water reconstruction uses start canopy liquid + rain + condensation against end store + wet evaporation + throughfall + stemflow + drainage, all kg m-2 interval, and separately reconstructs each soil-layer withdrawal. Energy reconstructs incident short/longwave against reflected/terminal shortwave, emitted longwave, sensible and latent interval energy in J m-2 ground. Carbon reconstructs beginning pools + molar-converted GPP against respiration + ending pools + exported litter/CWD. Nitrogen reconstructs beginning vegetation N plus exact layer/species finalized mineral use against ending pools + transfers. Dry material independently uses transferred C divided by explicit `drymatter_carbon_fraction`, never C itself. Candidate-to-ledger validation binds uses and transfers to these operands before residual reconstruction.
 

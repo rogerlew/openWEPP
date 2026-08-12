@@ -1,6 +1,11 @@
 # Forcing And Operand Provider Map
 
-Status: `implemented / focused pass`
+Status: `PARTIAL / Increment 2B authority gaps identified`
+
+Increment 2B audit: reference wind exists, but distinct `u_leaf` and `u_wet`
+providers do not. Stem hydraulic path/gravity and the accepted common-root to
+per-layer persistent-state mapping are also absent. No implicit aliases or
+derived substitutes were implemented.
 
 | Operand | Unit/time/area basis | Provider/owner | Fail-closed behavior |
 |---|---|---|---|

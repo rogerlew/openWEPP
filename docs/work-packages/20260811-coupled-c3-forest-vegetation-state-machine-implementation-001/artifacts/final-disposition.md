@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `IN PROGRESS / historical HOLD lifted by admitted V2 authority`
+Status: `EXECUTED-HOLD / Increment 2A retained / exact potential authority incomplete`
 
 Evidence mode: `Static + Ran`
 
@@ -19,11 +19,20 @@ The historical HOLD was lifted by the contract-first Stage-A package at commit
 `817b082d01d194cde61b1cf284bd85e40e44afc9`, which released
 `OPENWEPP_C3_WOODY_V2` digest
 `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`.
-Remediation is active in this existing package. The public path remains
+Remediation resumed in this existing package through Increment 2A. The public path remains
 fail-closed for heterogeneous topology until the complete V2 implementation and
 focused science gates pass. This placeholder makes no implementation-complete,
 runtime activation, consumer cutover, calibration, canopy-snow, soil-
 transformation, empirical-validation, or transferability claim.
+
+Increment 2B intake then exposed additional canonical omissions at the exact
+potential-pass boundary. They concern leaf/stem optical reduction and
+absorption partitioning, local surface winds, hydraulic path/state mapping,
+beta-one coupled residual semantics, and absent independent exact V2 vectors.
+`potential-pass-hold-legitimacy-audit.md` records the exact text boundary and
+rejected in-scope routes. All inferred constitutive drafts were removed. The
+non-constitutive typed resource boundary does not lift this HOLD or complete a
+milestone.
 
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 

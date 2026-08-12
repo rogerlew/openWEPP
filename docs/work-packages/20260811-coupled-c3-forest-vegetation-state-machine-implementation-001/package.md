@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V2 tile-liquid authority admitted / remediation active`
+Status: `executed-hold / Increment 2A passed / exact potential authority incomplete`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -422,6 +422,11 @@ closure, and line-count governance, not artifact presence alone.
   same-tile routing, one-time stand weighting, controlled fixed-cap plumbing,
   independent occupancy/column/stand closure, and failure isolation. This does
   not complete Milestone 2 or 3 and does not reactivate public execution.
+- [x] (2026-08-12) Audit Increment 2B before constitutive integration. Two
+  independent audits confirmed missing canonical leaf/stem radiation mixing,
+  local-wind, hydraulic-path/state, beta-one residual, and exact-vector rules.
+  Removed all inferred physics, retained only typed resource-boundary work, and
+  recorded `artifacts/potential-pass-hold-legitimacy-audit.md`.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
@@ -449,6 +454,11 @@ closure, and line-count governance, not artifact presence alone.
   isolate the independent closure guard.
   Evidence: the first 2A crate run passed 47/48; replacing it with an in-domain
   full-store replication makes the intended independent closure guard fire.
+- Observation: V2 closes occupancy liquid topology but does not close the
+  leaf/stem optical reduction or several potential E11--E15 operand/state joins.
+  Evidence: two independent audits found no canonical equations for these
+  mappings; attempted historical/inferred formulations were removed before
+  acceptance.
 
 ## Decision Log
 
@@ -473,6 +483,12 @@ closure, and line-count governance, not artifact presence alone.
   reconstruction can be tested without inventing E11--E15 physics or exposing
   a partial public endpoint.
   Date/Author: 2026-08-12 / Codex, implementing user direction.
+- Decision: stop Increment 2B before constructing radiation or physiological
+  output and retain the public fail-closed branch.
+  Rationale: every available composition requires at least one unadmitted
+  constitutive mapping; typed resource validation alone is safe but is not
+  potential-solve evidence.
+  Date/Author: 2026-08-12 / Codex, applying contract-first fail-closed rules.
 
 ## Outcomes & Retrospective
 
@@ -512,6 +528,12 @@ same-tile ground, weights layer water exactly once, and reconstructs water
 closure outside the solver. The exact potential and authorization-capped
 E11--E15 occupancy solvers, public water path, owner candidates, and commit are
 still missing; Milestones 2 and 3 remain incomplete.
+
+Increment 2B outcome (HOLD): exact potential execution did not begin because
+the released V2 authority remains incomplete at load-bearing radiation and
+coupled-solver joins. No proxy solver or radiation handoff remains. Typed water
+request/authorization validation is available as non-constitutive foundation;
+the public transaction still emits no request or candidate.
 
 ## Idempotence And Recovery
 

@@ -12,6 +12,7 @@ pub mod ledger;
 pub mod migration;
 pub mod model;
 pub mod numerics;
+pub mod occupancy_solver;
 pub mod occupancy_state;
 pub mod photosynthesis;
 pub mod radiation;

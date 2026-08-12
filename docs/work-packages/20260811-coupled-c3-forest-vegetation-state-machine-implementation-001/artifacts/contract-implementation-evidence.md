@@ -1,6 +1,10 @@
 # Contract Implementation Evidence
 
-Status: `EXECUTING / internal V2 column engine active; public E04 fail-closed`
+Status: `HOLD / internal V2 column engine active; exact potential authority incomplete`
+
+Increment 2B adds only a non-constitutive typed water request/authorization
+boundary. No radiation or potential solver output was retained; the exact
+authority omissions are recorded in `potential-pass-hold-legitimacy-audit.md`.
 
 Evidence mode: `Static + Ran`
 

@@ -1,6 +1,10 @@
 # Implementation And Test Evidence
 
-Status: `EXECUTING / Increment 2A internal column engine pass; public E04 pending`
+Status: `HOLD / Increment 2A retained; exact potential authority incomplete`
+
+Increment 2B stopped before constitutive implementation. The retained
+`occupancy_solver::resources` module constructs and validates complete typed
+potential request batches and authorizations but does not calculate demand.
 
 Evidence mode: `Static + Ran`
 
