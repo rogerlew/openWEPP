@@ -1,0 +1,227 @@
+# Admit C3 Woody V3 Potential-Pass Authority
+
+Status: `queued`
+
+Date: `2026-08-12`
+
+Package ID: `20260812-c3-woody-potential-pass-authority-001`
+
+Plan class: `Critical contract-first scientific-authority correction`
+
+This ExecPlan is a living document maintained under
+`docs/codex_exec_plans.md`.
+
+## Objective
+
+Admit the exact mixed leaf/stem radiation preparation, canopy-surface wind
+derivation, hydraulic geometry, common-root state, uncapped potential-pass
+coupling, leaf-respiration identity, numerical failure payloads, and independent
+V3 radiation/E11--E15/respiration vectors needed to execute the already-admitted
+tile-column architecture. The successor model identity is
+`OPENWEPP_C3_WOODY_V3` under `SC-VEGETATION-001@7`.
+
+## Progress
+
+- [ ] Freeze intake, exact base, required reading, protected bytes, and intended
+  write set.
+- [ ] Amend canonical authority to V7 before contract-derived tests.
+- [ ] Generate immutable V3 definition bytes and independent V3 fixtures.
+- [ ] Add contract-derived authority, digest, oracle, and poison tests.
+- [ ] Record and pass the pre-implementation authority gate.
+- [ ] Complete two independent science reviews and disposition every finding.
+- [ ] Complete critical heavy gates, exact terminal-diff reconciliation, and two
+  independent terminal verifications.
+- [ ] Archive the kickoff prompt byte-for-byte and publish the implementation
+  handoff only after all terminal criteria pass.
+
+## Surprises and Discoveries
+
+- None at scaffold time.
+
+## Decision Log
+
+- Decision: create a new immutable V3 identity rather than repair V2 in place.
+  Rationale: the correction changes occupancy state schema, radiation
+  preparation, potential-pass residual semantics, hydraulic geometry,
+  respiration semantics, and numerical fixtures.
+  Date/Author: 2026-08-12 / Codex.
+- Decision: preserve V1 and V2 definition bytes and digests unchanged.
+  Rationale: they remain immutable historical authority; V2 topology remains a
+  valid predecessor but is not executable as V3.
+  Date/Author: 2026-08-12 / Codex.
+
+## Outcomes and Retrospective
+
+Queued. No V3 authority, implementation permission, or runtime claim exists at
+scaffold time.
+
+## Scope and Protected Boundaries
+
+Included:
+
+- `SC-VEGETATION-001` V7 amendment;
+- exact `OPENWEPP_C3_WOODY_V3` model definition and digest;
+- mixed leaf/stem optical reduction and physical absorption ownership;
+- neutral canopy-surface friction-velocity derivation;
+- stem hydraulic path/gravity and common-root-node state;
+- V2-to-V3 state migration authority;
+- internal maximum-demand versus accepted uncapped potential-pass semantics;
+- leaf respiration identity and nonpositive Atkin posture;
+- canonical numerical failure diagnostics;
+- independent Python radiation, E11--E15, and respiration vectors;
+- contract-derived authority, digest, oracle, poison, and migration tests;
+- package evidence, dual review, heavy validation, dual verification, and
+  implementation handoff.
+
+Excluded:
+
+- production Rust implementation;
+- edits to V1 or V2 model-definition bytes;
+- runtime activation, selector changes, deployment, publication, PRs, or
+  production consumer cutover;
+- empirical calibration, independent validation, transferability claims,
+  canopy snow, soil biogeochemical transformations, or real-owner integration;
+- remote branch creation and pushes unless separately directed by the user.
+
+Protected boundaries:
+
+- V1 definition SHA-256
+  `003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`;
+- V2 definition SHA-256
+  `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`;
+- the existing implementation package's V1 and V2 HOLD evidence;
+- the public Rust transaction remains fail-closed throughout this authority
+  package.
+
+## Canonical Selections
+
+The contract must bind all user-directed selections without package-local
+substitution:
+
+1. Radiation uses conditional `L`, `S`, `P=L+S`, area-weighted leaf/stem
+   reflectance/transmittance, `K_eff=Omega*K`, actual sunlit leaf area, and
+   absorptivity-weighted leaf/stem partition independently by band and incident
+   component.
+2. Neutral local surface wind is
+   `u_star=kappa*u_ref/ln((z_ref-displacement)/z0m)` and the distinct semantic
+   operands `u_leaf`, `u_wet`, and `u_stem` equal `u_star`.
+3. Root-to-stem path length is vegetation height and gravity is
+   `1000*height_m` millimetres water with the frozen E14 sign.
+4. V3 occupancy state owns one `root_node_potential_mm`; V2 migration accepts
+   only bitwise-identical layer warm starts and otherwise returns an exhaustive
+   unresolved-field report.
+5. `beta_hyd=1` is internal maximum-demand evaluation only. The accepted
+   Stage-A potential pass is uncapped by the hydrology owner but solves
+   hydraulics, gas exchange, and energy jointly with accepted
+   `beta_hyd in [0,1]` and class/total continuity equalities.
+6. `Rd25` is owned by the admitted Atkin leaf-N/T10 relation, temperature-scaled
+   by the admitted Rd-specific response, subtracted once from assimilation and
+   debited once in the carbon ledger; the nonpositive Atkin branch is explicit
+   and typed or an authority-backed exact-zero branch.
+7. Every numerical failure carries the model, transaction, occupancy, pass,
+   solve identity, iteration, residual, step/backtracking/bound, bracket, pivot,
+   matrix, and active-cap evidence applicable at failure.
+
+## Intended Write Set
+
+- this package tree;
+- `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`;
+- `docs/specifications/science-contracts/index.md`;
+- a byte-identical V3 definition copy under the existing model-stack authority
+  package;
+- bounded successor/release lifecycle artifacts under the existing model-stack
+  authority package and implementation package;
+- `tests/integration/vegetation_boundary_authority_contract.rs`;
+- package catalog entries.
+
+No production crate is in the write set.
+
+## Phase Plan
+
+1. Confirm exact HEAD/worktree, discover instructions, freeze V1/V2 bytes, and
+   record the complete authority/provenance map.
+2. Amend `SC-VEGETATION-001` to V7 and update the lifecycle registry before
+   writing contract-derived tests.
+3. Implement an independent Python reference calculator and committed V3
+   fixture families. The Rust implementation under test must not generate
+   expected values.
+4. Canonically serialize the V3 definition, bind all section/fixture digests,
+   copy it byte-identically to the model-stack package, and prove V1/V2 bytes
+   unchanged.
+5. Add authority, schema, digest, migration, exact-vector, closure, guard, and
+   poison tests; record the pre-implementation authority gate.
+6. Obtain two independent science reviews against exact bytes, disposition and
+   fix every accepted finding, and repeat review until both are GO with no
+   unresolved material finding.
+7. Require the comparator runner to execute critical heavy gates. Reconcile the
+   exact terminal diff, obtain two independent terminal verifications, archive
+   the kickoff prompt byte-for-byte, and issue the V3 implementation handoff.
+
+## Validation and Acceptance
+
+Focused requirements include:
+
+- independent Python fixture regeneration and byte/value identity;
+- exact V1/V2 byte/digest preservation;
+- V3 canonical JSON/digest and section digest checks;
+- vegetation A0 authority-contract tests and AUTH11 anti-evasion;
+- science-contract admission, schema, unit-governance, and package Markdown
+  checks;
+- `cargo fmt --all -- --check` and `git diff --check`.
+
+Because this is a Critical production-kernel authority amendment, terminal
+closure additionally requires warnings-denied workspace Clippy, full-workspace
+nextest, workspace doctests, `cargo deny check`, and every package-selected
+authority/anti-evasion command against exact stable bytes. Failed evidence is
+preserved; it is never rewritten as only the successful retry.
+
+## Review and Delegation Authorization
+
+Subagent authorization: this package explicitly authorizes and requires
+spawning/delegating to two independent science reviewers for radiation,
+gas/energy/hydraulic coupling, respiration, schema, numerics, provenance, and
+fixture independence; one `comparator_suite_runner` for heavy batch closure;
+and two independent terminal verifiers for final exact-byte verification.
+Expected outputs are bounded package review/verification artifacts and compact
+gate metrics/log paths. Reviewers and verifiers are read-only except for their
+named package artifact; the comparator has bounded write access only to package
+gate logs/results. The parent owns authority/test corrections and disposition.
+
+## Exit Criteria
+
+The package may close only when:
+
+- `SC-VEGETATION-001@7` contains every canonical selection above;
+- `OPENWEPP_C3_WOODY_V3` has a new immutable digest and exact schema;
+- V1 and V2 model-definition bytes/digests remain unchanged;
+- the accepted potential-pass residual system and error precedence are
+  unambiguous and implementation-reproducible;
+- independent radiation, potential E11--E15, and respiration vectors plus all
+  named poisons pass;
+- both independent reviews pass with every finding dispositioned;
+- authority admission, unit governance, anti-evasion, formatting, full
+  workspace, doctest, dependency, digest, and package documentation gates pass;
+- exact terminal-diff reconciliation is complete;
+- both independent terminal verifiers pass;
+- the implementation package handoff preserves its historical HOLD and keeps
+  execution fail-closed until the capped second pass earns its own gate.
+
+Terminal status is exactly:
+
+`COMPLETE / OPENWEPP_C3_WOODY_V3 implementation authority released`
+
+It continues to state `calibration_evidence_status=NOT_CALIBRATION_READY`,
+`identifiability_status=NOT_ASSESSED`, no runtime activation, no real consumer
+cutover, no canopy snow, no soil transformations, and no empirical validation
+or transferability claim.
+
+## Idempotence and Recovery
+
+All edits are flat files. Regeneration is deterministic. Failed commands and
+review iterations are appended to package evidence. No history is rewritten.
+If a required authority selection or independent vector cannot be made exact,
+the package remains `HOLD` and the existing implementation path remains
+fail-closed.
+
+Plan update note (2026-08-12): initial scaffold created from the accepted V2
+potential-pass HOLD and the user-directed V3 authority selections.
