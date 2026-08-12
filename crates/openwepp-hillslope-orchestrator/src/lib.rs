@@ -1,6 +1,7 @@
 #![allow(clippy::missing_errors_doc)]
 
 pub mod runtime_inputs;
+pub mod vegetation_diagnostic;
 
 mod constants;
 mod direct_runtime;

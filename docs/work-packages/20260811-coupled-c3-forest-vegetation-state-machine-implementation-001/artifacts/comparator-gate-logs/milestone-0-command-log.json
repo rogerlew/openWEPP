@@ -1,0 +1,9 @@
+[
+{"index":"1","command":"bash tools/release/check_science_contract_admission.sh --base-ref 06f7d8041f7d957a803a52db87fb5957461f84df --worktree","exit_code":0,"start_utc":"2026-08-12T02:25:52Z","end_utc":"2026-08-12T02:25:52Z","status":"PASS"},
+{"index":"2","command":"bash tools/release/check_authority_suite_antievasion.sh","exit_code":0,"start_utc":"2026-08-12T02:25:52Z","end_utc":"2026-08-12T02:25:53Z","status":"PASS"},
+{"index":"3","command":"bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md","exit_code":0,"start_utc":"2026-08-12T02:25:53Z","end_utc":"2026-08-12T02:25:53Z","status":"PASS"},
+{"index":"4","command":"bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md","exit_code":0,"start_utc":"2026-08-12T02:25:53Z","end_utc":"2026-08-12T02:25:53Z","status":"PASS"},
+{"index":"5","command":"test -f docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/openwepp_c3_woody_v1_definition.json && sha256sum ...","exit_code":1,"start_utc":"2026-08-12T02:25:54Z","end_utc":"2026-08-12T02:25:54Z","status":"FAIL"},
+{"index":"6","command":"sha256sum --check docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v1_definition.json against expected OPENWEPP_C3_WOODY_V1 sha","exit_code":0,"start_utc":"2026-08-12T02:26:08Z","end_utc":"2026-08-12T02:26:08Z","status":"PASS"},
+{"index":"7","command":"sha256sum --check selected registry file crates/openwepp-vegetation/model-registry/openwepp_c3_woody_v1_definition.json against expected OPENWEPP_C3_WOODY_V1 sha","exit_code":0,"start_utc":"2026-08-12T02:34:00Z","end_utc":"2026-08-12T02:34:01Z","status":"PASS"}
+]

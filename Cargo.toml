@@ -19,6 +19,8 @@ members = [
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
+    "crates/openwepp-vegetation",
+    "crates/openwepp-biogeochemistry",
     "crates/openwepp-topology",
     "crates/openwepp-hillslope-orchestrator",
     "crates/openwepp-watershed-orchestrator",
@@ -91,6 +93,8 @@ sha2 = "0.10"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }
+openwepp-vegetation = { path = "crates/openwepp-vegetation", version = "0.1.0" }
+openwepp-biogeochemistry = { path = "crates/openwepp-biogeochemistry", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"

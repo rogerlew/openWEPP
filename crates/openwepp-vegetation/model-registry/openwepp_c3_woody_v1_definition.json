@@ -1,0 +1,58 @@
+{
+  "model_version": "OPENWEPP_C3_WOODY_V1",
+  "canonical_contract": "SC-VEGETATION-001@5",
+  "biogeochemistry_contract": "SC-BIOGEOCHEM-001@1",
+  "canonical_section_extraction": "UTF-8 bytes beginning with the exact start heading line and newline, ending immediately before the exact end heading line",
+  "canonical_section_sha256": {
+    "vegetation_variables": "e41d67e578b44f8d80050277565cfb7b164cbc2bc93d0823fdffdede4fce893e",
+    "vegetation_algorithm_and_equations": "240b29fa886752d98153e94fc2fb604745b31a46116254aca5d59bad2701dcfb",
+    "vegetation_invariants": "c72baf1931b4ca85ec3e6a0333b86ff70ddeaa1a27d2a69e5d8a383e30e471e3",
+    "vegetation_schema": "1423808f4405e977112af40535b7f0659dc2b07ef4c6e57baa5c825c0ce6c57e",
+    "vegetation_numerics": "6f1a363bf06b5fc7c91c87cdd9161cb570ec3545117f38895f3e29780a082323",
+    "biogeochemistry_contract": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
+  },
+  "equation_families": [
+    "two_stream_vis_nir_direct_diffuse_sellers_beta0_integral",
+    "sunlit_shaded_scaling",
+    "clm5_liquid_interception_with_canonical_stemflow_split",
+    "fvcb_c3_clm5_temperature_response",
+    "medlyn_stomata_with_hydraulic_fixed_point",
+    "neutral_loglaw_and_leaf_boundary_layer",
+    "store_limited_wet_leaf_stem_dry_leaf_dry_stem_energy_balance",
+    "clm5_interval_equilibrium_hydraulics_without_hydraulic_redistribution",
+    "clm5_biome_bgc_cn_allocation_respiration_turnover",
+    "gsi_edge_timing_with_leaf_carbon_lai"
+  ],
+  "fixed_constants": {
+    "carbon_molar_mass_kg_per_mol": 0.012011,
+    "gas_constant_j_per_mol_k": 8.31446261815324,
+    "h2o_co2_stomatal_diffusivity_ratio": 1.6,
+    "h2o_co2_boundary_diffusivity_ratio": 1.4,
+    "par_photon_conversion_umol_per_j": 4.6,
+    "psii_partition": 0.5,
+    "oxygen_mole_fraction": 0.20,
+    "fvcb_ac_aj_colimitation_curvature": 0.98,
+    "fvcb_ag_ap_colimitation_curvature": 0.95,
+    "electron_transport_curvature": 0.7,
+    "electron_transport_quantum_yield": 0.85,
+    "von_karman_constant": 0.4,
+    "leaf_boundary_coefficient_m_sqrt_s": 0.01,
+    "water_density_kg_m3": 1000.0,
+    "stefan_boltzmann_w_m2_k4": 5.670374419e-8,
+    "dry_air_gas_constant_j_kg_k": 287.05,
+    "dry_air_heat_capacity_j_kg_k": 1004.64,
+    "liquid_vaporization_enthalpy_j_kg": 2501000.0,
+    "liquid_esat_coefficients_hpa": [6.11213476,0.444007856,0.0143064234,0.000264461437,0.00000305903558,1.96237241e-8,8.92344772e-11,-3.73208410e-13,2.09339997e-16],
+    "mineral_n_arbitration": "equal_status_proportional_request_authorization_finalized_use",
+    "water_arbitration": "equal_status_proportional_request_authorization_finalized_use"
+  },
+  "unsupported_typed_branches": [
+    "C4",
+    "NONVASCULAR",
+    "CROP",
+    "CANOPY_SNOW",
+    "RECRUITMENT_SUCCESSION",
+    "FIRE_CATASTROPHIC_DISTURBANCE",
+    "CALM_OR_NONNEUTRAL_AERODYNAMICS"
+  ]
+}

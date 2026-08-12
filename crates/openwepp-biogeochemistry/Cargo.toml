@@ -1,0 +1,16 @@
+[package]
+name = "openwepp-biogeochemistry"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"

@@ -1,0 +1,19 @@
+{
+  "package": "20260811-coupled-c3-forest-vegetation-state-machine-implementation-001",
+  "milestone": 0,
+  "frozen_base_ref": "06f7d8041f7d957a803a52db87fb5957461f84df",
+  "command_count": 7,
+  "pass_count": 6,
+  "fail_count": 1,
+  "effective_required_pass_count": 6,
+  "effective_required_fail_count": 0,
+  "verdict": "PASS",
+  "blockers": [],
+  "notes": [
+    "Legacy check index 5 used an unselected path and is no longer required by package embedding strategy. Required path check is command 7 against crates/openwepp-vegetation/model-registry/openwepp_c3_woody_v1_definition.json."
+  ],
+  "evidence": {
+    "command_log_json": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/comparator-gate-logs/milestone-0-command-log.json",
+    "command_log_jsonl": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/comparator-gate-logs/milestone-0-command-log.jsonl"
+  }
+}

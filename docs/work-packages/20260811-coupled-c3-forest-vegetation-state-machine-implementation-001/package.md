@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `queued / implementation authority released / execution not started`
+Status: `executed-hold / Milestone 0 passed / implementation review failed`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -400,7 +400,8 @@ closure, and line-count governance, not artifact presence alone.
   model and scaffolded this successor queue card.
 - [x] (2026-08-11) Expanded the queue card into a complete autonomous ExecPlan,
   prompt lifecycle, and queued evidence scaffold; no production edit made.
-- [ ] Execute Milestone 0 and pass the pre-implementation gate.
+- [x] (2026-08-11) Executed Milestone 0: froze implementation surfaces and
+  passed model digest, oracle, and A0 pre-implementation gates.
 - [ ] Execute Milestone 1: identity, strict configuration/state, and migration.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
@@ -416,6 +417,10 @@ closure, and line-count governance, not artifact presence alone.
   35-line queue card.
   Evidence: intake inspection found no prompt lifecycle, artifact scaffold,
   declared production write set, milestone gates, or review authorization.
+- Observation: the authority model JSON bytes hash directly to the released
+  identity; no canonicalization step is needed or permitted.
+  Evidence: pre-implementation `sha256sum` returned
+  `003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`.
 
 ## Decision Log
 
@@ -441,6 +446,13 @@ Planning outcome only: the implementation successor is now designed to be
 autonomously executable, but execution has not started and no production Rust
 exists. Update this section after every milestone with achieved behavior,
 remaining blockers, gate evidence, and lessons.
+
+Execution outcome: Milestone 0 passed. A compiling scaffold and focused vector
+tests were produced, but independent review proved that the public candidate
+does not execute E01--E22 and that several helpers use unauthorized proxy or
+alternate numerical formulations. The package therefore remains `HOLD`; the
+scaffold is not closure-eligible production science and no terminal claim is
+made.
 
 ## Idempotence And Recovery
 

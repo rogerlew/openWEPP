@@ -63,6 +63,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "approx"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "arrow-array"
 version = "54.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -384,7 +393,7 @@ checksum = "1ac70aa55017e108007fbaf5aa0f54b021c98f92ff8af59d42eda9da96e3dd4f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -980,6 +989,7 @@ dependencies = [
  "flate2",
  "jsonschema",
  "openwepp-assurance",
+ "openwepp-biogeochemistry",
  "openwepp-climate-runtime-adapter",
  "openwepp-comparator-metadata",
  "openwepp-hillslope-orchestrator",
@@ -994,6 +1004,7 @@ dependencies = [
  "openwepp-summary-accumulator",
  "openwepp-topology",
  "openwepp-unit-boundary",
+ "openwepp-vegetation",
  "openwepp-watershed-orchestrator",
  "openwepp-watershed-output",
  "parquet",
@@ -1017,6 +1028,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "openwepp-biogeochemistry"
+version = "0.1.0"
+dependencies = [
+ "openwepp-kernel-contract",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "openwepp-climate-runtime-adapter"
 version = "0.1.0"
 dependencies = [
@@ -1031,6 +1051,7 @@ version = "0.1.0"
 name = "openwepp-hillslope-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-biogeochemistry",
  "openwepp-climate-runtime-adapter",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
@@ -1038,6 +1059,7 @@ dependencies = [
  "openwepp-sim-contract",
  "openwepp-topology",
  "openwepp-unit-boundary",
+ "openwepp-vegetation",
  "serde",
  "serde_json",
 ]
@@ -1156,6 +1178,18 @@ dependencies = [
 [[package]]
 name = "openwepp-unit-boundary"
 version = "0.1.0"
+
+[[package]]
+name = "openwepp-vegetation"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "openwepp-kernel-contract",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+]
 
 [[package]]
 name = "openwepp-watershed-orchestrator"
@@ -1359,7 +1393,7 @@ checksum = "b7186006dcb21920990093f30e3dea63b7d6e977bf1256be20c3563a5db070da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -1472,7 +1506,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -1581,6 +1615,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "syn"
+version = "3.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53e9bae58849f64dfa4f5d5ae372c8341f7305f82a3868709269343628b659a3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
 name = "synstructure"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1588,7 +1633,27 @@ checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -1814,7 +1879,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
  "wasm-bindgen-shared",
 ]
 
@@ -1848,7 +1913,7 @@ checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -1859,7 +1924,7 @@ checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -1926,7 +1991,7 @@ checksum = "de844c262c8848816172cef550288e7dc6c7b7814b4ee56b3e1553f275f1858e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
  "synstructure",
 ]
 
@@ -1947,7 +2012,7 @@ checksum = "70e3cd084b1788766f53af483dd21f93881ff30d7320490ec3ef7526d203bad4"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -1967,7 +2032,7 @@ checksum = "11532158c46691caf0f2593ea8358fed6bbf68a0315e80aae9bd41fbade684a1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
  "synstructure",
 ]
 
@@ -2001,7 +2066,7 @@ checksum = "625dc425cab0dca6dc3c3319506e6593dcb08a9f387ea3b284dbd52a92c40555"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.117",
 ]
 
 [[package]]
