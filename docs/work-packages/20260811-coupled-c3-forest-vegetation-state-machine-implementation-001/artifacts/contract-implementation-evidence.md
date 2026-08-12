@@ -1,19 +1,17 @@
 # Contract Implementation Evidence
 
-Status: `EXECUTED-HOLD / E04 topology authority missing; review findings remain`
+Status: `EXECUTING / Milestone 1 implemented; public E04 fail-closed`
 
 Evidence mode: `Static + Ran`
 
-Static: the public `execute_candidate_with_failure` path validates digest-bound
-model/configuration/state/forcing identity, traverses topology radiation,
-advances interception, solves potential and authorization-capped
-FvCB--Medlyn--energy--hydraulics, publishes typed layer water and
-layer/species mineral-N transactions, advances six-tissue C/N/phenology and
-material transfers, constructs explicit five-ledger operands, and returns only
-an isolated candidate. `validate_and_commit_with_failure` independently checks
-resource protocol shape/identity, candidate-to-ledger operands, five residuals,
-owner validation, and then commits.
+Static: the public state is V2-only: shared stratum C/N and phenology state is
+separate from exact `(stratum,tile)` occupancy lanes. Strict validation binds
+the released V2 model, configuration digest, complete state digest, exact
+occupancy/root identity, every occupancy field, pending transfers, and
+transaction lineage.
 
-Ran: the focused implementation suite exercised the real path through all
-E01--E22 families and all 13 injected failure boundaries. The current focused
-gate details are in `gate-results.md`.
+Ran: focused tests cover exact two-tile/two-stratum state, duplicate/missing/
+extra/wrong occupancy, all 15 lane fields in the state digest, layer order and
+cardinality, unit spelling, V1 parser rejection, initial/prior transactions,
+and every admitted migration branch. Public execution remains explicitly
+fail-closed before E04; no E01--E22 public-path or commit claim is made.

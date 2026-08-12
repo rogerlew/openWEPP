@@ -1,11 +1,5 @@
 use std::fs;
 
-use openwepp_biogeochemistry::{BiogeochemistryState, MaterialPool, MineralLayer};
-use openwepp_hillslope_orchestrator::vegetation_diagnostic::{
-    DiagnosticEnergyState, DiagnosticOwnedState, DiagnosticWaterState, run_default_off_diagnostic,
-    run_default_off_diagnostic_at_phase,
-};
-use openwepp_kernel_contract::SoilLayerId;
 use openwepp_vegetation::carbon_nitrogen::{
     AllocationInput, CnParameters, ElementPool, PhenologyMode, ReceiverClass, Tissue, TissuePool,
     advance_phenology, allocate, carbon_offer, finalize_growth, material_transfer,
@@ -14,12 +8,12 @@ use openwepp_vegetation::energy::{
     energy_residual, neutral_resistance, saturation_specific_humidity,
 };
 use openwepp_vegetation::interception::{InterceptionInput, liquid_interception};
-use openwepp_vegetation::migration::{RhessysSource, migrate};
+use openwepp_vegetation::migration::{RhessysSource, migrate_definition_fields};
 use openwepp_vegetation::photosynthesis::{FvcbInput, fvcb, medlyn};
 use openwepp_vegetation::radiation::two_stream;
 use openwepp_vegetation::{
-    CoupledOwnedState, FailurePoint, MODEL_BYTES, MODEL_SHA256, ModelDefinition, PhenologyPhase,
-    SnowFreeForcing, SoilLayerForcing, VegetationConfiguration, load_model_definition,
+    CoupledOwnedState, MODEL_BYTES, MODEL_SHA256, PhenologyPhase, VegetationConfiguration,
+    load_model_definition,
 };
 use sha2::{Digest, Sha256};
 
@@ -41,16 +35,35 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn public_candidate_orchestrates_admitted_modules_without_proxy_formulas() {
+fn public_candidate_is_v2_only_and_fail_closed_before_e04() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
-    assert!(source.contains("prepare_stratum"));
-    assert!(source.contains("solve_coupled"));
-    assert!(source.contains("finalize_growth"));
-    assert!(!source.contains("ImplementationIncomplete"));
+    assert!(
+        source.contains("V2 occupancy-local E04 transaction routing is implementation-incomplete")
+    );
+    assert!(source.contains("BTreeMap<OccupancyId, OccupancyState>"));
+    assert!(!source.contains("struct StratumState"));
+    assert!(!source.contains("pub canopy_liquid: f64"));
+    assert!(!source.contains("pub psi_root_mm: f64"));
     assert!(!source.contains("ledger_residuals: [0.0; 5]"));
     assert!(!source.contains("vapor_pressure_deficit_kpa *"));
     assert!(!source.contains("direct_par_w_m2 * 1e-9"));
+}
+
+#[test]
+fn v2_configuration_state_and_migration_inputs_have_no_default_path() {
+    for path in [
+        "crates/openwepp-vegetation/src/config.rs",
+        "crates/openwepp-vegetation/src/occupancy_state.rs",
+        "crates/openwepp-vegetation/src/transaction.rs",
+        "crates/openwepp-vegetation/src/migration.rs",
+    ] {
+        let source = fs::read_to_string(path).expect("V2 source");
+        assert!(!source.contains("impl Default for VegetationConfiguration"));
+        assert!(!source.contains("impl Default for OccupancyState"));
+        assert!(!source.contains("impl Default for CoupledOwnedState"));
+        assert!(!source.contains("impl Default for V1CoupledOwnedState"));
+    }
 }
 
 #[test]
@@ -179,7 +192,7 @@ fn liquid_interception_matches_fixed_oracle_and_closes() {
     })
     .expect("liquid interception");
     assert!((result.store1 - 0.482).abs() < 1e-12);
-    assert!((result.drainage - 1.997_516_728_800_741).abs() < 1e-12);
+    assert!((result.drainage() - 1.997_516_728_800_741).abs() < 1e-12);
     assert!(result.closure_residual.abs() < 1e-12);
     assert!(
         liquid_interception(InterceptionInput {
@@ -393,7 +406,7 @@ fn schema_and_migration_fail_closed_without_defaults() {
         raw_bytes: "leaf_cn 28".into(),
         fields: std::collections::BTreeMap::from([("leaf_cn".into(), serde_json::json!(28.0))]),
     };
-    let report = migrate(
+    let report = migrate_definition_fields(
         &source,
         &std::collections::BTreeMap::new(),
         &["cn_leaf".into(), "p50_leaf_mm".into()],
@@ -416,213 +429,18 @@ fn energy_and_aerodynamic_domains_are_explicit() {
     );
 }
 
-fn diagnostic_beginning(
-    vegetation: CoupledOwnedState,
-    layer: &SoilLayerId,
-) -> DiagnosticOwnedState {
-    DiagnosticOwnedState {
-        vegetation,
-        water: DiagnosticWaterState {
-            liquid_kg_m2: std::collections::BTreeMap::from([(layer.clone(), 100.0)]),
-            last_transaction_id: 0,
-        },
-        biogeochemistry: BiogeochemistryState {
-            layers: std::collections::BTreeMap::from([(
-                "soil-1".into(),
-                MineralLayer {
-                    ammonium_n: 0.01,
-                    nitrate_n: 0.02,
-                },
-            )]),
-            receivers: std::collections::BTreeMap::from([
-                (
-                    openwepp_kernel_contract::MaterialReceiverClass::Metabolic,
-                    MaterialPool::default(),
-                ),
-                (
-                    openwepp_kernel_contract::MaterialReceiverClass::Cellulose,
-                    MaterialPool::default(),
-                ),
-                (
-                    openwepp_kernel_contract::MaterialReceiverClass::Lignin,
-                    MaterialPool::default(),
-                ),
-                (
-                    openwepp_kernel_contract::MaterialReceiverClass::CoarseWoodyDebris,
-                    MaterialPool::default(),
-                ),
-            ]),
-            ..BiogeochemistryState::default()
-        },
-        energy: DiagnosticEnergyState::default(),
-    }
-}
-
-fn diagnostic_forcing(layer: SoilLayerId) -> SnowFreeForcing {
-    SnowFreeForcing {
-        air_temperature_k: 296.0,
-        pressure_pa: 101_325.0,
-        co2_pa: 40.0,
-        vapor_pressure_deficit_kpa: 1.4,
-        wind_m_s: 2.4,
-        rain_kg_m2: 0.1,
-        direct_par_w_m2: 620.0,
-        diffuse_par_w_m2: 90.0,
-        direct_nir_w_m2: 500.0,
-        diffuse_nir_w_m2: 80.0,
-        solar_zenith_cosine: 0.68,
-        ground_albedo_vis: 0.14,
-        ground_albedo_nir: 0.25,
-        longwave_down_w_m2: 400.0,
-        longwave_up_w_m2: 420.0,
-        specific_humidity: 0.010,
-        reference_height_m: 30.0,
-        soil_layers: vec![SoilLayerForcing {
-            layer_id: layer,
-            water_beginning_kg_m2: 100.0,
-            matric_potential_mm: -5_000.0,
-            hydraulic_conductivity_mm_s: 0.000_017,
-            root_path_length_mm: 1.0,
-            gravity_root_mm: 980.0,
-            temperature_k: 294.0,
-            accessible: true,
-            frozen: false,
-        }],
-        gsi: 0.8,
-    }
-}
-
-fn assert_phase_rollbacks(
-    beginning: &DiagnosticOwnedState,
-    model: &ModelDefinition,
-    config: &VegetationConfiguration,
-    forcing: &SnowFreeForcing,
-) {
-    let available = beginning.water.liquid_kg_m2.clone();
-    let beginning_bytes = serde_json::to_vec(beginning).expect("serialize beginning owners");
-    for phase in [
-        FailurePoint::Validation,
-        FailurePoint::Radiation,
-        FailurePoint::Interception,
-        FailurePoint::PotentialCoupledSolve,
-        FailurePoint::WaterAuthorization,
-        FailurePoint::CappedResolve,
-        FailurePoint::NitrogenRequest,
-        FailurePoint::NitrogenAuthorization,
-        FailurePoint::Allocation,
-        FailurePoint::ReceiverConstruction,
-        FailurePoint::ClosureValidation,
-        FailurePoint::BeforeCommit,
-        FailurePoint::OwnerValidation,
-    ] {
-        let mut rollback = beginning.clone();
-        assert!(
-            run_default_off_diagnostic_at_phase(
-                &mut rollback,
-                model,
-                config,
-                forcing,
-                &available,
-                Some(phase),
-            )
-            .is_err(),
-            "phase {phase:?}"
-        );
-        assert_eq!(
-            serde_json::to_vec(&rollback).expect("serialize rollback owners"),
-            beginning_bytes,
-            "phase {phase:?}"
-        );
-    }
-}
-
 #[test]
-fn public_transaction_commits_all_owners_and_rolls_back_on_injected_failure() {
-    let config = VegetationConfiguration::parse_strict(
+fn v1_state_cannot_enter_the_v2_public_state_parser() {
+    let mut config: VegetationConfiguration = serde_json::from_slice(
         &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
             .expect("configuration fixture"),
     )
-    .expect("valid configuration");
-    let vegetation = CoupledOwnedState::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_state.json").expect("state fixture"),
-    )
-    .expect("valid state");
-    let layer = SoilLayerId::try_new("soil-1").expect("layer identity");
-    let beginning = diagnostic_beginning(vegetation, &layer);
-    let forcing = diagnostic_forcing(layer);
-    let model = load_model_definition().expect("model");
-    let available = beginning.water.liquid_kg_m2.clone();
-    assert_phase_rollbacks(&beginning, &model, &config, &forcing);
-    let mut committed = beginning;
-    let receipt =
-        run_default_off_diagnostic(&mut committed, &model, &config, &forcing, &available, false)
-            .expect("coupled transaction");
-    assert_eq!(receipt.transaction_id.0, 1);
-    assert_eq!(committed.vegetation.last_transaction_id, 1);
-    assert_eq!(committed.water.last_transaction_id, 1);
-    assert_eq!(committed.biogeochemistry.last_transaction_id, 1);
-    assert_eq!(committed.energy.last_transaction_id, 1);
-
-    let mut partial_config = config.clone();
-    partial_config.topology_tiles[0].fraction = 0.5;
-    partial_config
-        .topology_tiles
-        .push(openwepp_vegetation::TopologyTile {
-            tile_id: "tile-empty".into(),
-            fraction: 0.5,
-        });
-    partial_config.configuration_sha256 = partial_config
-        .canonical_sha256()
-        .expect("partial config digest");
-    let mut partial_owned = committed;
-    partial_owned.vegetation.configuration_sha256 = partial_config.configuration_sha256.clone();
-    partial_owned.vegetation.state_sha256 = partial_owned
-        .vegetation
-        .canonical_sha256()
-        .expect("partial state digest");
-    let partial_available = partial_owned.water.liquid_kg_m2.clone();
-    let mut partial_forcing = forcing.clone();
-    partial_forcing.soil_layers[0].water_beginning_kg_m2 = *partial_available
-        .values()
-        .next()
-        .expect("diagnostic water layer");
-    let partial_result = run_default_off_diagnostic(
-        &mut partial_owned,
-        &model,
-        &partial_config,
-        &partial_forcing,
-        &partial_available,
-        false,
+    .expect("historical configuration shape");
+    config.model_definition_sha256 = MODEL_SHA256.into();
+    config.configuration_sha256 = config.canonical_sha256().expect("V2 configuration digest");
+    let result = CoupledOwnedState::parse_strict(
+        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_state.json").expect("V1 state fixture"),
+        &config,
     );
-    assert!(partial_result.is_err());
-
-    let mut empty_config = config;
-    empty_config.strata.clear();
-    empty_config.configuration_sha256 = empty_config
-        .canonical_sha256()
-        .expect("empty config digest");
-    let mut empty_owned = partial_owned;
-    empty_owned.vegetation.strata.clear();
-    empty_owned.vegetation.configuration_sha256 = empty_config.configuration_sha256.clone();
-    empty_owned.vegetation.state_sha256 = empty_owned
-        .vegetation
-        .canonical_sha256()
-        .expect("empty state digest");
-    let empty_available = empty_owned.water.liquid_kg_m2.clone();
-    let mut empty_forcing = forcing;
-    empty_forcing.soil_layers[0].water_beginning_kg_m2 = *empty_available
-        .values()
-        .next()
-        .expect("diagnostic water layer");
-    let empty_receipt = run_default_off_diagnostic(
-        &mut empty_owned,
-        &model,
-        &empty_config,
-        &empty_forcing,
-        &empty_available,
-        false,
-    )
-    .expect("empty-stand transaction");
-    assert_eq!(empty_receipt.transaction_id.0, 2);
-    assert!(empty_owned.vegetation.strata.is_empty());
+    assert!(result.is_err());
 }

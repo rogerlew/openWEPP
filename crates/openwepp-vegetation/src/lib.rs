@@ -14,8 +14,6 @@ pub mod numerics;
 pub mod occupancy_state;
 pub mod photosynthesis;
 pub mod radiation;
-#[cfg(test)]
-mod topology_tests;
 pub mod transaction;
 
 pub use config::*;

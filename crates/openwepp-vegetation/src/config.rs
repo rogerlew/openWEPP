@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use openwepp_kernel_contract::{OccupancyId, SoilLayerId, StratumId, TileId};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -15,14 +16,14 @@ pub enum PhenologyType {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct TopologyTile {
-    pub tile_id: String,
+    pub tile_id: TileId,
     pub fraction: f64,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RootLayer {
-    pub layer_id: String,
+    pub layer_id: SoilLayerId,
     pub root_fraction: f64,
     pub mineral_n_root_fraction: f64,
     pub lateral_root_length_m: f64,
@@ -31,11 +32,11 @@ pub struct RootLayer {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct StratumConfiguration {
-    pub stratum_id: String,
+    pub stratum_id: StratumId,
     pub lifeform: String,
     pub phenology_type: PhenologyType,
     pub vertical_rank: u32,
-    pub tile_ids: Vec<String>,
+    pub tile_ids: Vec<TileId>,
     pub height_m: f64,
     pub crown_base_m: f64,
     pub leaf_dimension_m: f64,
@@ -162,34 +163,32 @@ impl VegetationConfiguration {
         if self.topology_tiles.is_empty() {
             return Err(VegetationError::Domain("empty topology"));
         }
-        if self.topology_tiles.iter().any(|tile| {
-            tile.tile_id.trim().is_empty() || !tile.fraction.is_finite() || tile.fraction <= 0.0
-        }) {
+        if self
+            .topology_tiles
+            .iter()
+            .any(|tile| !tile.fraction.is_finite() || tile.fraction <= 0.0)
+        {
             return Err(VegetationError::Domain("topology tile identity/fraction"));
         }
         let tile_sum: f64 = self.topology_tiles.iter().map(|v| v.fraction).sum();
         if (tile_sum - 1.0).abs() > 1e-12 {
             return Err(VegetationError::Domain("topology tile fractions"));
         }
-        let tiles: BTreeSet<_> = self
-            .topology_tiles
-            .iter()
-            .map(|v| v.tile_id.as_str())
-            .collect();
+        let tiles: BTreeSet<_> = self.topology_tiles.iter().map(|v| &v.tile_id).collect();
         if tiles.len() != self.topology_tiles.len() {
             return Err(VegetationError::Domain("duplicate topology tile"));
         }
         let mut ids = BTreeSet::new();
         let mut tile_ranks = BTreeSet::new();
         for s in &self.strata {
-            if !ids.insert(s.stratum_id.as_str()) || s.lifeform != "C3_WOODY" {
+            if !ids.insert(&s.stratum_id) || s.lifeform != "C3_WOODY" {
                 return Err(VegetationError::Unsupported(
                     "lifeform or duplicate stratum",
                 ));
             }
             validate_stratum(s, &tiles)?;
             for tile_id in &s.tile_ids {
-                if !tile_ranks.insert((tile_id.as_str(), s.vertical_rank)) {
+                if !tile_ranks.insert((tile_id, s.vertical_rank)) {
                     return Err(VegetationError::Domain("duplicate tile/rank occupancy"));
                 }
             }
@@ -219,6 +218,37 @@ impl VegetationConfiguration {
             serde_json::to_vec(&canonical).map_err(|e| VegetationError::Schema(e.to_string()))?;
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
+
+    #[must_use]
+    pub fn expected_occupancies(&self) -> BTreeSet<OccupancyId> {
+        self.strata
+            .iter()
+            .flat_map(|stratum| {
+                stratum.tile_ids.iter().map(|tile_id| OccupancyId {
+                    stratum_id: stratum.stratum_id.clone(),
+                    tile_id: tile_id.clone(),
+                })
+            })
+            .collect()
+    }
+
+    pub fn stratum_coverage(&self, stratum_id: &StratumId) -> Result<f64, VegetationError> {
+        let stratum = self
+            .strata
+            .iter()
+            .find(|stratum| &stratum.stratum_id == stratum_id)
+            .ok_or(VegetationError::Domain("stratum coverage identity"))?;
+        let coverage = self
+            .topology_tiles
+            .iter()
+            .filter(|tile| stratum.tile_ids.contains(&tile.tile_id))
+            .map(|tile| tile.fraction)
+            .sum::<f64>();
+        if !coverage.is_finite() || coverage <= 0.0 || coverage > 1.0 {
+            return Err(VegetationError::Domain("stratum ground coverage"));
+        }
+        Ok(coverage)
+    }
 }
 
 fn require_hex_digest(value: &str, field: &'static str) -> Result<(), VegetationError> {
@@ -242,14 +272,14 @@ fn fraction(value: f64, field: &'static str) -> Result<(), VegetationError> {
 #[allow(clippy::too_many_lines)]
 fn validate_stratum(
     s: &StratumConfiguration,
-    tiles: &BTreeSet<&str>,
+    tiles: &BTreeSet<&TileId>,
 ) -> Result<(), VegetationError> {
     for id in &s.tile_ids {
-        if !tiles.contains(id.as_str()) {
+        if !tiles.contains(id) {
             return Err(VegetationError::Domain("stratum tile membership"));
         }
     }
-    if s.stratum_id.trim().is_empty() || s.tile_ids.is_empty() {
+    if s.tile_ids.is_empty() {
         return Err(VegetationError::Domain("stratum identity/tile membership"));
     }
     finite_positive(s.height_m, "height_m")?;
@@ -385,8 +415,7 @@ fn validate_stratum(
     }
     let mut root_ids = BTreeSet::new();
     for root in &s.root_layers {
-        if root.layer_id.trim().is_empty()
-            || !root_ids.insert(root.layer_id.as_str())
+        if !root_ids.insert(&root.layer_id)
             || !root.root_fraction.is_finite()
             || root.root_fraction < 0.0
             || !root.mineral_n_root_fraction.is_finite()
@@ -454,4 +483,165 @@ fn validate_stratum(
         return Err(VegetationError::Domain("evergreen phenology nulls"));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fixture() -> VegetationConfiguration {
+        let mut configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v1_diagnostic_configuration.json"
+        ))
+        .expect("configuration fixture");
+        configuration.model_definition_sha256 = MODEL_SHA256.into();
+        refresh_digest(&mut configuration);
+        configuration
+    }
+
+    fn refresh_digest(config: &mut VegetationConfiguration) {
+        config.configuration_sha256 = config.canonical_sha256().expect("configuration digest");
+    }
+
+    #[test]
+    fn typed_id_deserialization_rejects_empty_identity() {
+        for pointer in [
+            "/topology_tiles/0/tile_id",
+            "/strata/0/stratum_id",
+            "/strata/0/tile_ids/0",
+            "/strata/0/root_layers/0/layer_id",
+        ] {
+            let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v1_diagnostic_configuration.json"
+            ))
+            .expect("configuration JSON");
+            *value.pointer_mut(pointer).expect("fixture identity") = serde_json::json!("  ");
+            assert!(serde_json::from_value::<VegetationConfiguration>(value).is_err());
+        }
+    }
+
+    #[test]
+    fn topology_rejects_duplicate_and_nonmember_tile_identity() {
+        let mut duplicate = fixture();
+        duplicate
+            .topology_tiles
+            .push(duplicate.topology_tiles[0].clone());
+        duplicate.topology_tiles[0].fraction = 0.5;
+        duplicate.topology_tiles[1].fraction = 0.5;
+        refresh_digest(&mut duplicate);
+        assert_eq!(
+            duplicate.validate(),
+            Err(VegetationError::Domain("duplicate topology tile"))
+        );
+
+        let mut nonmember = fixture();
+        nonmember.strata[0].tile_ids[0] = TileId::try_new("absent").expect("tile ID");
+        refresh_digest(&mut nonmember);
+        assert_eq!(
+            nonmember.validate(),
+            Err(VegetationError::Domain("stratum tile membership"))
+        );
+    }
+
+    #[test]
+    fn topology_rejects_duplicate_occupancy_and_bad_rank_height_order() {
+        let mut duplicate = fixture();
+        let duplicate_tile_id = duplicate.strata[0].tile_ids[0].clone();
+        duplicate.strata[0].tile_ids.push(duplicate_tile_id);
+        refresh_digest(&mut duplicate);
+        assert_eq!(
+            duplicate.validate(),
+            Err(VegetationError::Domain("duplicate tile/rank occupancy"))
+        );
+
+        let mut bad_order = fixture();
+        let mut lower = bad_order.strata[0].clone();
+        lower.stratum_id = StratumId::try_new("understory").expect("stratum ID");
+        lower.vertical_rank += 1;
+        lower.height_m = bad_order.strata[0].height_m + 1.0;
+        bad_order.strata.push(lower);
+        refresh_digest(&mut bad_order);
+        assert_eq!(
+            bad_order.validate(),
+            Err(VegetationError::Domain("topology rank/height order"))
+        );
+    }
+
+    #[test]
+    fn typed_occupancies_and_coverage_are_exact_and_order_independent() {
+        let mut config = fixture();
+        config.topology_tiles[0].fraction = 0.25;
+        config.topology_tiles.push(TopologyTile {
+            tile_id: TileId::try_new("empty").expect("tile ID"),
+            fraction: 0.75,
+        });
+
+        let stratum_id = config.strata[0].stratum_id.clone();
+        assert_eq!(config.stratum_coverage(&stratum_id), Ok(0.25));
+        assert_eq!(
+            config.expected_occupancies(),
+            BTreeSet::from([OccupancyId {
+                stratum_id,
+                tile_id: config.topology_tiles[0].tile_id.clone(),
+            }])
+        );
+
+        config.topology_tiles.reverse();
+        assert_eq!(
+            config.stratum_coverage(&config.strata[0].stratum_id),
+            Ok(0.25)
+        );
+    }
+
+    #[test]
+    fn configuration_digest_binds_identity_and_topology_but_not_state_receipt() {
+        let config = fixture();
+        let digest = config.canonical_sha256().expect("configuration digest");
+        assert_eq!(digest, config.configuration_sha256);
+
+        let mut changed_state_receipt = config.clone();
+        changed_state_receipt.initial_state_sha256 = "a".repeat(64);
+        assert_eq!(
+            changed_state_receipt
+                .canonical_sha256()
+                .expect("configuration digest"),
+            digest
+        );
+
+        let mut changed_model = config.clone();
+        changed_model.model_definition_sha256 = "b".repeat(64);
+        assert_ne!(
+            changed_model
+                .canonical_sha256()
+                .expect("configuration digest"),
+            digest
+        );
+
+        let mut changed_topology = config.clone();
+        changed_topology.topology_tiles[0].tile_id =
+            TileId::try_new("replacement").expect("tile ID");
+        changed_topology.strata[0].tile_ids[0] = changed_topology.topology_tiles[0].tile_id.clone();
+        assert_ne!(
+            changed_topology
+                .canonical_sha256()
+                .expect("configuration digest"),
+            digest
+        );
+    }
+
+    #[test]
+    fn configuration_digest_retains_serialized_topology_order() {
+        let mut config = fixture();
+        config.topology_tiles[0].fraction = 0.5;
+        config.topology_tiles.push(TopologyTile {
+            tile_id: TileId::try_new("empty").expect("tile ID"),
+            fraction: 0.5,
+        });
+        let digest = config.canonical_sha256().expect("configuration digest");
+        config.topology_tiles.reverse();
+        assert_ne!(
+            config.canonical_sha256().expect("configuration digest"),
+            digest
+        );
+    }
 }

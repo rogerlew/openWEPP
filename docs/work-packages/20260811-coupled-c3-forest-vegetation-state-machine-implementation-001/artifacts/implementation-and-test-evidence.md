@@ -1,20 +1,16 @@
 # Implementation And Test Evidence
 
-Status: `EXECUTED-HOLD / focused containment passes; science acceptance blocked`
+Status: `EXECUTING / Milestone 1 pass; E04 not started`
 
 Evidence mode: `Static + Ran`
 
-The scaffold proxy was first replaced by a typed fail-closed endpoint, then by
-the complete coupled candidate path in the same package. No VPD water-demand
-proxy, PAR nitrogen-demand proxy, Beer/fixed-`kd` radiation, one-pass hydraulic
-endpoint, producer residual array, empty-transfer endpoint, or water-only
-commit remains.
+The executable state surface now implements V2 identity, configuration,
+occupancy-local state, canonical digest binding, transaction lineage, and
+offline V1/RHESSys migration. Historical shared liquid and hydraulic warm
+starts are reachable only through the explicitly named V1 migration DTO.
 
-The accepted remediation-review findings added sealed candidate construction,
-four-owner reconciliation, typed exact material receipts, deterministic
-arbitration, stem/leaf energy partitioning, column boundary routing, and exact
-serialized rollback evidence. Current passing evidence includes the required focused checks, strict Clippy,
-restored A0, implementation and crate suites, science admission, authority
-anti-evasion, AUTH11, both SC-unit lints, oracle regeneration, formatting, and
-diff hygiene. Heavy workspace/benchmark gates remain intentionally unrun until
-the independent science and Rust reviews accept these bytes.
+The public candidate validates complete V2 state and then returns a typed
+implementation-incomplete error before mutation or publication. Disabled V1
+transaction physics was removed rather than retained beside the V2 state.
+E04 tile-column routing, coupled capped solves, owner candidates, closure, and
+commit remain subsequent milestones and are not claimed by this evidence.

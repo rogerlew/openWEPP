@@ -411,7 +411,12 @@ closure, and line-count governance, not artifact presence alone.
 - [x] (2026-08-12) Reran Milestone 0 against the admitted V2 authority: exact
   digests/oracle, admission, unit checks, anti-evasion, AUTH11, A0 authority,
   formatting, Markdown, and diff hygiene all pass.
-- [ ] Execute Milestone 1: identity, strict configuration/state, and migration.
+- [x] (2026-08-12) Execute Milestone 1: identity, strict
+  configuration/state, and migration. V2 state now separates shared stratum
+  pools from exact occupancy-local liquid/numerical lanes, binds complete
+  state/configuration identity, enforces transaction lineage, and admits only
+  the exact zero/single-tile V1 liquid conversions. The public candidate
+  remains fail-closed before E04.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.

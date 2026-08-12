@@ -125,3 +125,28 @@ pass again.
 | vegetation crate | PASS | quick suite `14/14` |
 | diagnostic compile | PASS | occupancy-keyed requests compete proportionally over shared layer supply |
 | diff hygiene | PASS | `git diff --check` |
+
+## 2026-08-12 Milestone 1 V2 State Integration and Migration
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V2 state structure | PASS | shared stratum state contains no liquid or hydraulic numerical lane; exact typed occupancy map owns all 15 V2 fields |
+| exact state identity | PASS | exact two-tile/two-stratum set, missing/extra/wrong/duplicate occupancy, missing/extra stratum, root order/cardinality, model/config/state identity, unit spelling, and initial/prior transaction tests |
+| canonical digest | PASS | every occupancy field, occupancy identity, root order, configuration digest, and transaction marker changes the whole-state digest; fixed fixture SHA-256 `70d05bcda1e31aa82e9444cf73b032f20a47f6894c663ca07103bf36a0a7d77a` |
+| V1 state isolation | PASS | V1 bytes fail the V2 parser; shared liquid and scalar hydraulic warm starts remain only in `V1StratumState` |
+| V1 migration | PASS | zero store, exact single-occupancy coverage conversion, exhaustive nonzero multi-tile unresolved report, missing/invalid caller lanes, invalid V1 liquid, and V1 identity tests |
+| RHESSys migration | PASS | exhaustive deterministic occupancy-field report; no lane synthesis or executable hash |
+| public transaction boundary | PASS / fail-closed | complete V2 validation precedes a typed E04 implementation-incomplete error; no candidate, request, mutation, or commit is produced |
+| vegetation crate | PASS | `cargo nextest run -p openwepp-vegetation --profile quick`: 38 passed |
+| implementation suite | PASS | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 11 passed |
+| four focused checks | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator `cargo check` commands passed |
+| strict Clippy first attempt | FAIL | vegetation and downstream hillslope Clippy exposed duplicated/dangling attributes left by removal of inaccessible V1 transaction blocks; kernel-contract and BGC passed |
+| strict Clippy correction | PASS | dangling attributes removed; vegetation and hillslope-orchestrator reruns passed `--all-targets -- -D warnings` |
+| formatting/diff hygiene | PASS after format correction | first format check identified one integration-test wrap; `cargo fmt --all` applied it, then format and diff checks passed |
+| A0 vegetation authority | PASS | 14/14 |
+| authority anti-evasion | PASS | source-level authority-suite guard passed |
+| AUTH11 obligation guards | PASS | 3/3 |
+| package Markdown | PASS | 49 files, zero errors and zero warnings |
+
+Milestone 1 does not claim E04 routing, E11--E15 capped coupling, owner
+candidate construction, closure, or commit. Heavy gates remain ineligible.

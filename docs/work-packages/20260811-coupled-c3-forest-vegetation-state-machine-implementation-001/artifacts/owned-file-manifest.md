@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled for EXECUTED-HOLD checkpoint`
+Status: `reconciled through Milestone 1 V2 state integration`
 
 Evidence mode: `Static`
 
@@ -12,7 +12,8 @@ Evidence mode: `Static`
 - Default-off consumer: `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs`.
 - Authority binding catalog: `tools/release/authority-policy/impact-map.json`.
 - Authority and implementation tests: the two registered vegetation integration
-  targets and three `tests/fixtures/c3_woody_v1_*` fixtures.
+  targets, retained V1 migration/oracle fixtures, and crate-local V2
+  configuration/state/migration tests.
 - Package lifecycle/evidence: this active package tree.
 
 Protected and unchanged: canonical SC contracts, digest-bound model definition,
