@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
 use openwepp_kernel_contract::{
-    FinalizedUse, MaximumAuthorization, MineralNitrogenKey, ResourceRequest, SoilLayerId,
-    TransactionId, WaterResourceKey, validate_maximum_authorization, validate_resource_protocol,
+    FinalizedUse, MaximumAuthorization, MineralNitrogenKey, OccupancyId, ResourceRequest,
+    SoilLayerId, StratumId, TileId, TransactionId, WaterResourceKey,
+    validate_maximum_authorization, validate_resource_protocol,
 };
 use serde::{Deserialize, Serialize};
 
@@ -765,7 +766,7 @@ impl EnergyAccumulator {
         self.canopy_evaporation += item.interception.evaporation - item.interception.condensation;
         self.throughfall += item.interception.throughfall * item.terminal_rain_weight;
         self.stemflow += item.interception.stemflow;
-        self.drainage += item.interception.drainage * item.terminal_rain_weight;
+        self.drainage += item.interception.drainage() * item.terminal_rain_weight;
     }
 }
 
@@ -1033,7 +1034,7 @@ pub(crate) fn rain_by_stratum(
                 stemflow_fraction: stratum.stemflow_fraction,
                 leaf_temperature_k: forcing.air_temperature_k,
             })?;
-            rain = interception.throughfall + interception.drainage;
+            rain = interception.throughfall + interception.drainage();
         }
     }
     Ok(incident
@@ -1192,11 +1193,23 @@ fn prepare_stratum(
                 transaction_id,
                 owner_id: owner.clone(),
                 key: WaterResourceKey {
+                    occupancy_id: OccupancyId {
+                        stratum_id: StratumId::try_new(stratum.stratum_id.clone())
+                            .map_err(|_| VegetationError::Domain("water stratum identity"))?,
+                        tile_id: TileId::try_new(
+                            stratum
+                                .tile_ids
+                                .first()
+                                .ok_or(VegetationError::Domain("water occupancy identity"))?
+                                .clone(),
+                        )
+                        .map_err(|_| VegetationError::Domain("water tile identity"))?,
+                    },
                     layer_id: SoilLayerId::try_new(root.layer_id.clone())
                         .map_err(|_| VegetationError::Domain("water layer identity"))?,
                 },
                 amount: *amount,
-                basis: ResourceAmountBasis::WaterKgPerSquareMeterInterval,
+                basis: ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
             })
         })
         .collect::<Result<Vec<_>, VegetationError>>()?;
@@ -1781,7 +1794,23 @@ fn build_ledgers(
         .soil_layers
         .iter()
         .map(|layer| {
+            let first_stratum = config
+                .strata
+                .first()
+                .ok_or(VegetationError::Domain("water ledger occupancy"))?;
             let key = WaterResourceKey {
+                occupancy_id: OccupancyId {
+                    stratum_id: StratumId::try_new(first_stratum.stratum_id.clone())
+                        .map_err(|_| VegetationError::Domain("water ledger stratum"))?,
+                    tile_id: TileId::try_new(
+                        first_stratum
+                            .tile_ids
+                            .first()
+                            .ok_or(VegetationError::Domain("water ledger tile"))?
+                            .clone(),
+                    )
+                    .map_err(|_| VegetationError::Domain("water ledger tile"))?,
+                },
                 layer_id: layer.layer_id.clone(),
             };
             let owner_beginning = water_owner.beginning_amount(&key)?;

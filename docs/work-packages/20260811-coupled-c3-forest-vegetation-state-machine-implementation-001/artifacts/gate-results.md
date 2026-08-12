@@ -89,3 +89,39 @@ commit `817b082d01d194cde61b1cf284bd85e40e44afc9`.
 | AUTH11 | PASS | 3/3 |
 | A0 vegetation authority | PASS | 14/14 |
 | formatting, Markdown, diff hygiene | PASS | 49 package files and catalog had zero Markdown findings; format and diff checks passed |
+
+## 2026-08-12 V2 Identity Increment
+
+| Gate | Result | Evidence |
+|---|---|---|
+| embedded executable model | PASS | exact released `OPENWEPP_C3_WOODY_V2`, SHA-256 `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3` |
+| V1 immutability/nonexecution | PASS | V1 registry remains SHA-256 `003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`; V1 fails the V2 executable identity gate |
+| vegetation compile/tests | PASS | `cargo check -p openwepp-vegetation`; crate quick suite `10/10` |
+| diff hygiene | PASS | `git diff --check` |
+
+## 2026-08-12 Occupancy-State Primitive
+
+| Gate | Result | Evidence |
+|---|---|---|
+| exact V2 lane schema | PASS | all 15 frozen fields, typed occupancy/root identities, strict domains, root order/cardinality, and transaction continuity |
+| canonical serialization | PASS | authority bytes reproduced exactly; SHA-256 `5cb16721125b5352e4aadb861b5e928f13ce05ff32f34533798648ebc2c4bd4b` |
+| vegetation compile/tests | PASS | crate quick suite `21/21` |
+| strict Clippy/format/diff | PASS | `-D warnings`, format check, and diff check |
+
+The implementation integration suite then passed `9/10` and rejected its old
+V1 whole-transaction fixture at the V2 model-digest gate. This is expected
+fail-closed transition evidence, not a fixture to relabel: a genuine V2
+occupancy-state fixture and migration path must replace it before the suite can
+pass again.
+
+## 2026-08-12 Typed Identity and Pure-Kernel Increment
+
+| Gate | Result | Evidence |
+|---|---|---|
+| resource identity | PASS | typed stratum/tile/occupancy/layer identity, explicit stand-ground water basis, duplicate and mixed-transaction rejection |
+| kernel-contract crate | PASS | quick suite `48/48` |
+| E04 drainage operands | PASS | initial and second drainage exposed separately; closure uses both; evaporation, condensation, and stemflow tests |
+| E20 offset identity | PASS | exact `Nlit=Cfall/CNleaf_litter` and `Nret=Cfall/CNleaf-Nlit`; insufficient donor fails before mutation |
+| vegetation crate | PASS | quick suite `14/14` |
+| diagnostic compile | PASS | occupancy-keyed requests compete proportionally over shared layer supply |
+| diff hygiene | PASS | `git diff --check` |

@@ -55,7 +55,7 @@ fn public_candidate_orchestrates_admitted_modules_without_proxy_formulas() {
 
 #[test]
 fn production_registry_is_byte_identical_to_authority() {
-    let authority = fs::read("docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v1_definition.json")
+    let authority = fs::read("docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v2_definition.json")
         .expect("authority definition");
     assert_eq!(MODEL_BYTES, authority);
     assert_eq!(format!("{:x}", Sha256::digest(MODEL_BYTES)), MODEL_SHA256);

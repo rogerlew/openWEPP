@@ -621,19 +621,18 @@ pub fn advance_phenology(
             let pool = tissues
                 .get_mut(&Tissue::Leaf)
                 .ok_or(VegetationError::Domain("missing leaf pool"))?;
-            let loss = ElementPool {
-                carbon: pool.display.carbon * fraction,
-                nitrogen: pool.display.nitrogen * fraction,
-            };
-            pool.display.carbon -= loss.carbon;
-            pool.display.nitrogen -= loss.nitrogen;
-            let litter_n = loss.carbon / p.cn_leaf_litter;
-            if litter_n > loss.nitrogen + 1e-14 {
+            let fallen_c = pool.display.carbon * fraction;
+            let leaf_n_debit = fallen_c / p.cn_leaf;
+            let litter_n = fallen_c / p.cn_leaf_litter;
+            let retranslocated = leaf_n_debit - litter_n;
+            if pool.display.carbon < fallen_c || pool.display.nitrogen < leaf_n_debit {
                 return Err(VegetationError::Domain(
-                    "leaf offset donor cannot satisfy litter C:N",
+                    "leaf offset donor cannot cover prescribed C/N debit",
                 ));
             }
-            retranslocated_n = loss.nitrogen - litter_n;
+            pool.display.carbon -= fallen_c;
+            pool.display.nitrogen -= leaf_n_debit;
+            retranslocated_n = retranslocated;
             for (receiver, share) in [
                 ReceiverClass::Metabolic,
                 ReceiverClass::Cellulose,
@@ -645,7 +644,7 @@ pub fn advance_phenology(
                 transfers.push(material_transfer(
                     Tissue::Leaf,
                     receiver,
-                    loss.carbon * share,
+                    fallen_c * share,
                     litter_n * share,
                     p.drymatter_carbon_fraction,
                 )?);
@@ -829,4 +828,135 @@ fn validate_parameters(p: &CnParameters) -> Result<(), VegetationError> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeMap;
+
+    fn parameters() -> CnParameters {
+        CnParameters {
+            growth_respiration_ratio: 0.1,
+            a1_froot_leaf: 0.8,
+            a2_croot_stem: 0.25,
+            a3_stem_leaf: 0.35,
+            a4_livewood_fraction: 0.2,
+            current_growth_fraction: 0.6,
+            cn_leaf: 30.0,
+            cn_leaf_litter: 60.0,
+            cn_froot: 45.0,
+            cn_livewood: 55.0,
+            cn_deadwood: 450.0,
+            drymatter_carbon_fraction: 0.5,
+            xs_recovery_days: 30.0,
+            leaf_lifetime_s: 3.0 * 365.0 * 86_400.0,
+            froot_lifetime_s: 2.0 * 365.0 * 86_400.0,
+            livewood_turnover_s: 5.0 * 365.0 * 86_400.0,
+            mortality_rate_s1: 0.0,
+            leaf_litter_fractions: [0.25, 0.25, 0.5],
+            froot_litter_fractions: [0.25, 0.25, 0.5],
+        }
+    }
+
+    fn tissues_with_leaf(display: ElementPool) -> BTreeMap<Tissue, TissuePool> {
+        [
+            Tissue::Leaf,
+            Tissue::FineRoot,
+            Tissue::LiveStem,
+            Tissue::DeadStem,
+            Tissue::LiveCoarseRoot,
+            Tissue::DeadCoarseRoot,
+        ]
+        .into_iter()
+        .map(|tissue| {
+            let pool = if tissue == Tissue::Leaf {
+                TissuePool {
+                    display,
+                    ..TissuePool::default()
+                }
+            } else {
+                TissuePool::default()
+            };
+            (tissue, pool)
+        })
+        .collect()
+    }
+
+    fn offset_once(
+        tissues: &mut BTreeMap<Tissue, TissuePool>,
+        parameters: &CnParameters,
+    ) -> Result<PhenologyUpdate, VegetationError> {
+        advance_phenology(
+            tissues,
+            PhenologyMode::SeasonalDeciduous,
+            PhenologyPhase::Offset,
+            0.0,
+            4.0,
+            0.2,
+            0.2,
+            1.0,
+            0.6,
+            0.3,
+            3.0,
+            4.0,
+            parameters,
+        )
+    }
+
+    #[test]
+    fn deciduous_offset_uses_exact_cn_leaf_retranslocation_identity() {
+        let parameters = parameters();
+        let donor_n = 0.9;
+        let mut tissues = tissues_with_leaf(ElementPool {
+            carbon: 12.0,
+            nitrogen: donor_n,
+        });
+
+        let update = offset_once(&mut tissues, &parameters).expect("valid offset debit");
+
+        let fallen_c = 6.0;
+        let prescribed_n_debit = fallen_c / parameters.cn_leaf;
+        let expected_litter_n = fallen_c / parameters.cn_leaf_litter;
+        let expected_retranslocated_n = prescribed_n_debit - expected_litter_n;
+        let litter_c = update
+            .transfers
+            .iter()
+            .map(|transfer| transfer.carbon)
+            .sum::<f64>();
+        let litter_n = update
+            .transfers
+            .iter()
+            .map(|transfer| transfer.nitrogen)
+            .sum::<f64>();
+        let leaf = tissues.get(&Tissue::Leaf).expect("leaf donor");
+
+        assert!((litter_c - fallen_c).abs() < 1e-15);
+        assert!((litter_n - expected_litter_n).abs() < 1e-15);
+        assert!((update.retranslocated_n - expected_retranslocated_n).abs() < 1e-15);
+        assert!((leaf.display.carbon - (12.0 - fallen_c)).abs() < 1e-15);
+        assert!((leaf.display.nitrogen - (donor_n - prescribed_n_debit)).abs() < 1e-15);
+        assert!(
+            (donor_n - leaf.display.nitrogen - litter_n - update.retranslocated_n).abs() < 1e-15
+        );
+        assert!((update.retranslocated_n - (donor_n - litter_n)).abs() > 0.5);
+    }
+
+    #[test]
+    fn deciduous_offset_rejects_insufficient_prescribed_n_debit_without_mutation() {
+        let parameters = parameters();
+        let mut tissues = tissues_with_leaf(ElementPool {
+            carbon: 12.0,
+            nitrogen: 0.19,
+        });
+        let before = tissues.clone();
+
+        let error = offset_once(&mut tissues, &parameters).expect_err("insufficient leaf N");
+
+        assert_eq!(
+            error,
+            VegetationError::Domain("leaf offset donor cannot cover prescribed C/N debit")
+        );
+        assert_eq!(tissues, before);
+    }
 }

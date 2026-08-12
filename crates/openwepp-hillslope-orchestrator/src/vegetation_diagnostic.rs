@@ -8,8 +8,8 @@ use openwepp_biogeochemistry::{
     authorize_proportionally, available_by_key,
 };
 use openwepp_kernel_contract::{
-    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, SoilLayerId, TransactionId,
-    WaterResourceKey, authorize_proportionally as authorize_resources_proportionally,
+    MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, SoilLayerId,
+    TransactionId, WaterResourceKey, validate_request_batch,
 };
 use openwepp_vegetation::energy::LATENT_HEAT_VAPORIZATION;
 use openwepp_vegetation::{
@@ -79,24 +79,44 @@ impl WaterArbiter for ProportionalWater<'_> {
         &self,
         requests: &[WaterRequest],
     ) -> Result<Vec<WaterAuthorization>, VegetationError> {
-        let keyed = self
-            .available
+        validate_request_batch(requests)
+            .map_err(|error| VegetationError::Receipt(format!("{error:?}")))?;
+        if requests.iter().any(|request| {
+            request.basis != ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval
+                || !request.amount.is_finite()
+                || request.amount < 0.0
+        }) {
+            return Err(VegetationError::Receipt(
+                "invalid stand-ground water request".into(),
+            ));
+        }
+        let mut demand = BTreeMap::<SoilLayerId, f64>::new();
+        for request in requests {
+            *demand.entry(request.key.layer_id.clone()).or_default() += request.amount;
+        }
+        requests
             .iter()
-            .map(|(layer, amount)| {
-                (
-                    WaterResourceKey {
-                        layer_id: layer.clone(),
-                    },
-                    *amount,
-                )
+            .map(|request| {
+                let supply = self
+                    .available
+                    .get(&request.key.layer_id)
+                    .copied()
+                    .ok_or(VegetationError::Domain("unknown water layer"))?;
+                let total = demand[&request.key.layer_id];
+                let fraction = if total == 0.0 {
+                    0.0
+                } else {
+                    (supply / total).min(1.0)
+                };
+                Ok(MaximumAuthorization {
+                    transaction_id: request.transaction_id,
+                    owner_id: request.owner_id.clone(),
+                    key: request.key.clone(),
+                    amount: request.amount * fraction,
+                    basis: request.basis,
+                })
             })
-            .collect();
-        authorize_resources_proportionally(
-            requests,
-            &keyed,
-            ResourceAmountBasis::WaterKgPerSquareMeterInterval,
-        )
-        .map_err(|error| VegetationError::Receipt(format!("{error:?}")))
+            .collect()
     }
 }
 struct ProportionalNitrogen<'a> {
