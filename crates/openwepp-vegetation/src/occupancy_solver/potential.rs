@@ -155,6 +155,12 @@ pub(crate) fn solve_uncapped_stage_a(
             matrix_norm: 0.0,
         });
     }
+    if initial_evaluation.emax_sun_kg_m2_s == 0.0 {
+        return solve_single_active_stage_a(identity, initial, evaluator, ActiveClass::Shade);
+    }
+    if initial_evaluation.emax_shade_kg_m2_s == 0.0 {
+        return solve_single_active_stage_a(identity, initial, evaluator, ActiveClass::Sun);
+    }
 
     let mut x = initial.array();
     let mut evaluation = initial_evaluation;
@@ -349,6 +355,283 @@ pub(crate) fn solve_uncapped_stage_a(
     unreachable!("bounded Stage-A loop")
 }
 
+#[derive(Clone, Copy)]
+enum ActiveClass {
+    Sun,
+    Shade,
+}
+
+impl ActiveClass {
+    fn reduced_state(self, state: StageAState) -> [f64; 4] {
+        match self {
+            Self::Sun => [
+                state.psi_sunleaf_mm,
+                state.psi_stem_mm,
+                state.psi_root_mm,
+                state.beta_sun,
+            ],
+            Self::Shade => [
+                state.psi_shadeleaf_mm,
+                state.psi_stem_mm,
+                state.psi_root_mm,
+                state.beta_shade,
+            ],
+        }
+    }
+
+    fn full_state(self, reduced: [f64; 4]) -> StageAState {
+        match self {
+            Self::Sun => StageAState {
+                psi_sunleaf_mm: reduced[0],
+                psi_shadeleaf_mm: reduced[1],
+                psi_stem_mm: reduced[1],
+                psi_root_mm: reduced[2],
+                beta_sun: reduced[3],
+                beta_shade: 1.0,
+            },
+            Self::Shade => StageAState {
+                psi_sunleaf_mm: reduced[1],
+                psi_shadeleaf_mm: reduced[0],
+                psi_stem_mm: reduced[1],
+                psi_root_mm: reduced[2],
+                beta_sun: 1.0,
+                beta_shade: reduced[3],
+            },
+        }
+    }
+
+    fn residuals(self, value: &StageAEvaluation) -> [f64; 4] {
+        let all = residuals(value);
+        match self {
+            Self::Sun => [all[0], all[2], all[4], all[5]],
+            Self::Shade => [all[1], all[3], all[4], all[5]],
+        }
+    }
+}
+
+fn solve_single_active_stage_a(
+    identity: &StageASolveIdentity,
+    initial: StageAState,
+    evaluator: &dyn StageAEvaluator,
+    active: ActiveClass,
+) -> Result<StageASolution, VegetationError> {
+    let mut x = active.reduced_state(initial);
+    let mut evaluation = evaluator
+        .evaluate(active.full_state(x))
+        .map_err(|error| wrap_evaluator_error(identity, error, 0))?;
+    validate_evaluation(&evaluation).map_err(|error| wrap_evaluator_error(identity, error, 0))?;
+    let mut backtracks = 0;
+    let mut last_step = None;
+    let mut last_pivot = None;
+    let mut last_matrix_norm = None;
+
+    for iteration in 0..=MAX_ITERATIONS {
+        let raw = active.residuals(&evaluation);
+        let scale = water_scale(&evaluation);
+        let normalized = normalize_reduced(&raw, scale);
+        if raw
+            .iter()
+            .chain(normalized.iter())
+            .any(|value| !value.is_finite())
+        {
+            return Err(failure(
+                identity,
+                iteration,
+                &evaluation,
+                last_step,
+                backtracks,
+                last_pivot,
+                last_matrix_norm,
+                &active.full_state(x),
+                SolveIdentity::OuterGasEnergyHydraulicCoupling,
+            ));
+        }
+        let norm = infinity_norm_reduced(&normalized);
+        if norm <= 1.0 && last_step.is_none_or(|step| step <= POTENTIAL_STEP_TOLERANCE_MM) {
+            let state = active.full_state(x);
+            let all_normalized = normalize(&residuals(&evaluation), scale);
+            if infinity_norm(&all_normalized) > 1.0 {
+                return Err(failure(
+                    identity,
+                    iteration,
+                    &evaluation,
+                    last_step,
+                    backtracks,
+                    last_pivot,
+                    last_matrix_norm,
+                    &state,
+                    SolveIdentity::OuterGasEnergyHydraulicCoupling,
+                ));
+            }
+            validate_accepted_fluxes(&evaluation)?;
+            return Ok(StageASolution {
+                state,
+                persisted_beta_hyd: persisted_beta(&evaluation, state)?,
+                evaluation,
+                iterations: iteration,
+                backtracking_count: backtracks,
+                normalized_residuals: labeled(&all_normalized),
+                potential_step_mm: last_step.unwrap_or(0.0),
+                pivot_magnitude: last_pivot.unwrap_or(0.0),
+                matrix_norm: last_matrix_norm.unwrap_or(0.0),
+            });
+        }
+        if iteration == MAX_ITERATIONS {
+            return Err(failure(
+                identity,
+                iteration,
+                &evaluation,
+                last_step,
+                backtracks,
+                last_pivot,
+                last_matrix_norm,
+                &active.full_state(x),
+                SolveIdentity::OuterGasEnergyHydraulicCoupling,
+            ));
+        }
+
+        let jacobian = centered_jacobian_reduced(&x, evaluator, active).map_err(|error| {
+            if matches!(error, VegetationError::NumericalFailure(_)) {
+                error
+            } else {
+                failure(
+                    identity,
+                    iteration,
+                    &evaluation,
+                    last_step,
+                    backtracks,
+                    None,
+                    None,
+                    &active.full_state(x),
+                    SolveIdentity::OuterGasEnergyHydraulicCoupling,
+                )
+            }
+        })?;
+        let matrix_norm = matrix_infinity_norm_reduced(&jacobian);
+        if !matrix_norm.is_finite() {
+            return Err(failure(
+                identity,
+                iteration,
+                &evaluation,
+                last_step,
+                backtracks,
+                None,
+                None,
+                &active.full_state(x),
+                SolveIdentity::HydraulicSystem,
+            ));
+        }
+        let (delta, pivot) = solve_pivoted_reduced(jacobian, raw.map(|value| -value), matrix_norm)
+            .map_err(|pivot| {
+                failure(
+                    identity,
+                    iteration,
+                    &evaluation,
+                    None,
+                    backtracks,
+                    Some(pivot),
+                    Some(matrix_norm),
+                    &active.full_state(x),
+                    SolveIdentity::HydraulicSystem,
+                )
+            })?;
+        last_pivot = Some(pivot);
+        last_matrix_norm = Some(matrix_norm);
+        let full_potential_step = delta[..3].iter().copied().map(f64::abs).fold(0.0, f64::max);
+        if norm <= 1.0 && full_potential_step <= POTENTIAL_STEP_TOLERANCE_MM {
+            last_step = Some(full_potential_step);
+            continue;
+        }
+
+        let mut accepted = None;
+        let mut last_trial_error = None;
+        for half in 0..=MAX_HALVINGS {
+            let factor = 2.0_f64.powi(
+                -i32::try_from(half)
+                    .map_err(|_| VegetationError::Domain("V3 Stage-A backtracking count"))?,
+            );
+            let mut trial = x;
+            for index in 0..4 {
+                trial[index] += factor * delta[index];
+            }
+            if !(0.0..=1.0).contains(&trial[3]) {
+                backtracks += 1;
+                continue;
+            }
+            let trial_state = active.full_state(trial);
+            let trial_evaluation = match evaluator.evaluate(trial_state) {
+                Ok(value) => value,
+                Err(error) => {
+                    last_trial_error = Some(error);
+                    backtracks += 1;
+                    continue;
+                }
+            };
+            validate_evaluation(&trial_evaluation).map_err(|_| {
+                failure(
+                    identity,
+                    iteration,
+                    &evaluation,
+                    last_step,
+                    backtracks,
+                    last_pivot,
+                    last_matrix_norm,
+                    &active.full_state(x),
+                    SolveIdentity::OuterGasEnergyHydraulicCoupling,
+                )
+            })?;
+            let trial_norm = infinity_norm_reduced(&normalize_reduced(
+                &active.residuals(&trial_evaluation),
+                water_scale(&trial_evaluation),
+            ));
+            if trial_norm < norm {
+                accepted = Some((trial, trial_evaluation, factor));
+                break;
+            }
+            backtracks += 1;
+        }
+        let Some((next, next_evaluation, factor)) = accepted else {
+            if let Some(error) = last_trial_error {
+                return Err(if matches!(error, VegetationError::NumericalFailure(_)) {
+                    error
+                } else {
+                    failure(
+                        identity,
+                        iteration,
+                        &evaluation,
+                        last_step,
+                        backtracks,
+                        last_pivot,
+                        last_matrix_norm,
+                        &active.full_state(x),
+                        SolveIdentity::HydraulicSystem,
+                    )
+                });
+            }
+            return Err(failure(
+                identity,
+                iteration,
+                &evaluation,
+                last_step,
+                backtracks,
+                last_pivot,
+                last_matrix_norm,
+                &active.full_state(x),
+                SolveIdentity::HydraulicSystem,
+            ));
+        };
+        last_step = Some(
+            delta[..3]
+                .iter()
+                .map(|value| (factor * value).abs())
+                .fold(0.0, f64::max),
+        );
+        x = next;
+        evaluation = next_evaluation;
+    }
+    unreachable!("bounded reduced Stage-A loop")
+}
+
 fn validate_state(state: StageAState) -> Result<(), VegetationError> {
     let values = state.array();
     if values.iter().any(|value| !value.is_finite())
@@ -453,7 +736,16 @@ fn normalize(raw: &[f64; 6], scale: f64) -> [f64; 6] {
     raw.map(|value| value / tolerance)
 }
 
+fn normalize_reduced(raw: &[f64; 4], scale: f64) -> [f64; 4] {
+    let tolerance = WATER_ATOL + WATER_RTOL * scale;
+    raw.map(|value| value / tolerance)
+}
+
 fn infinity_norm(values: &[f64; 6]) -> f64 {
+    values.iter().copied().map(f64::abs).fold(0.0, f64::max)
+}
+
+fn infinity_norm_reduced(values: &[f64; 4]) -> f64 {
     values.iter().copied().map(f64::abs).fold(0.0, f64::max)
 }
 
@@ -513,7 +805,40 @@ fn centered_jacobian(
     Ok(jacobian)
 }
 
+fn centered_jacobian_reduced(
+    x: &[f64; 4],
+    evaluator: &dyn StageAEvaluator,
+    active: ActiveClass,
+) -> Result<[[f64; 4]; 4], VegetationError> {
+    let mut jacobian = [[0.0; 4]; 4];
+    let unit_scales = [1_000.0, 1_000.0, 1_000.0, 1.0];
+    for column in 0..4 {
+        let step = f64::EPSILON.sqrt() * x[column].abs().max(unit_scales[column]);
+        let mut plus = *x;
+        let mut minus = *x;
+        plus[column] += step;
+        minus[column] -= step;
+        let plus_evaluation = evaluator.evaluate(active.full_state(plus))?;
+        let minus_evaluation = evaluator.evaluate(active.full_state(minus))?;
+        validate_evaluation(&plus_evaluation)?;
+        validate_evaluation(&minus_evaluation)?;
+        let rp = active.residuals(&plus_evaluation);
+        let rm = active.residuals(&minus_evaluation);
+        for row in 0..4 {
+            jacobian[row][column] = (rp[row] - rm[row]) / (2.0 * step);
+        }
+    }
+    Ok(jacobian)
+}
+
 fn matrix_infinity_norm(matrix: &[[f64; 6]; 6]) -> f64 {
+    matrix
+        .iter()
+        .map(|row| row.iter().copied().map(f64::abs).sum::<f64>())
+        .fold(0.0, f64::max)
+}
+
+fn matrix_infinity_norm_reduced(matrix: &[[f64; 4]; 4]) -> f64 {
     matrix
         .iter()
         .map(|row| row.iter().copied().map(f64::abs).sum::<f64>())
@@ -560,6 +885,53 @@ fn solve_pivoted(
     let mut solution = [0.0; 6];
     for row in (0..6).rev() {
         let known = (row + 1..6)
+            .map(|column| matrix[row][column] * solution[column])
+            .sum::<f64>();
+        solution[row] = (rhs[row] - known) / matrix[row][row];
+    }
+    Ok((solution, minimum_pivot))
+}
+
+fn solve_pivoted_reduced(
+    mut matrix: [[f64; 4]; 4],
+    mut rhs: [f64; 4],
+    matrix_norm: f64,
+) -> Result<([f64; 4], f64), f64> {
+    if !matrix_norm.is_finite() || matrix_norm == 0.0 {
+        return Err(0.0);
+    }
+    let threshold = 64.0 * f64::EPSILON * matrix_norm;
+    let mut minimum_pivot = f64::INFINITY;
+    for column in 0..4 {
+        let pivot_row = (column..4)
+            .max_by(|left, right| {
+                matrix[*left][column]
+                    .abs()
+                    .total_cmp(&matrix[*right][column].abs())
+            })
+            .unwrap_or(column);
+        let pivot = matrix[pivot_row][column].abs();
+        minimum_pivot = minimum_pivot.min(pivot);
+        if !pivot.is_finite() || pivot == 0.0 || pivot < threshold {
+            return Err(pivot);
+        }
+        matrix.swap(column, pivot_row);
+        rhs.swap(column, pivot_row);
+        for row in column + 1..4 {
+            let factor = matrix[row][column] / matrix[column][column];
+            for index in column..4 {
+                matrix[row][index] -= factor * matrix[column][index];
+            }
+            rhs[row] -= factor * rhs[column];
+            if matrix[row][column..].iter().any(|value| !value.is_finite()) || !rhs[row].is_finite()
+            {
+                return Err(f64::NAN);
+            }
+        }
+    }
+    let mut solution = [0.0; 4];
+    for row in (0..4).rev() {
+        let known = (row + 1..4)
             .map(|column| matrix[row][column] * solution[column])
             .sum::<f64>();
         solution[row] = (rhs[row] - known) / matrix[row][row];
@@ -768,6 +1140,106 @@ mod tests {
         assert_eq!(solution.state.beta_sun, 1.0);
         assert_eq!(solution.state.beta_shade, 1.0);
         assert_eq!(solution.persisted_beta_hyd, 1.0);
+    }
+
+    struct OneInactiveOracle {
+        sun_active: bool,
+    }
+
+    impl StageAEvaluator for OneInactiveOracle {
+        fn evaluate(&self, state: StageAState) -> Result<StageAEvaluation, VegetationError> {
+            let emax_sun = if self.sun_active { 4.0e-5 } else { 0.0 };
+            let emax_shade = if self.sun_active { 0.0 } else { 2.0e-5 };
+            let gas_sun = state.beta_sun * emax_sun;
+            let gas_shade = state.beta_shade * emax_shade;
+            let q1_sun = 1.0e-9 * (state.psi_stem_mm - state.psi_sunleaf_mm);
+            let q1_shade = 1.0e-9 * (state.psi_stem_mm - state.psi_shadeleaf_mm);
+            let q2 = 1.0e-9 * (state.psi_root_mm - state.psi_stem_mm - 1_000.0);
+            let q3_total = 1.0e-9 * (10_000.0 - state.psi_root_mm);
+            Ok(StageAEvaluation {
+                emax_sun_kg_m2_s: emax_sun,
+                emax_shade_kg_m2_s: emax_shade,
+                gas_sun_kg_m2_s: gas_sun,
+                gas_shade_kg_m2_s: gas_shade,
+                vulnerability_demand_sun_kg_m2_s: emax_sun * 0.25,
+                vulnerability_demand_shade_kg_m2_s: emax_shade * 0.5,
+                q1_sun_kg_m2_s: q1_sun,
+                q1_shade_kg_m2_s: q1_shade,
+                q2_kg_m2_s: q2,
+                q3_kg_m2_s: vec![
+                    (layer("soil-1"), q3_total * 0.6),
+                    (layer("soil-2"), q3_total * 0.4),
+                ],
+            })
+        }
+    }
+
+    fn assert_stage_a_equalities(solution: &StageASolution) {
+        let value = &solution.evaluation;
+        let q3_sum = value.q3_kg_m2_s.iter().map(|(_, flux)| *flux).sum::<f64>();
+        let tolerance = WATER_ATOL + WATER_RTOL * water_scale(value);
+        assert!((value.q1_sun_kg_m2_s - value.gas_sun_kg_m2_s).abs() <= tolerance);
+        assert!((value.q1_shade_kg_m2_s - value.gas_shade_kg_m2_s).abs() <= tolerance);
+        assert!(
+            (value.gas_sun_kg_m2_s - value.vulnerability_demand_sun_kg_m2_s).abs() <= tolerance
+        );
+        assert!(
+            (value.gas_shade_kg_m2_s - value.vulnerability_demand_shade_kg_m2_s).abs() <= tolerance
+        );
+        assert!(
+            (value.q2_kg_m2_s - value.q1_sun_kg_m2_s - value.q1_shade_kg_m2_s).abs() <= tolerance
+        );
+        assert!((q3_sum - value.q2_kg_m2_s).abs() <= tolerance);
+    }
+
+    #[test]
+    fn sun_inactive_uses_exact_reduced_system_without_singularity() {
+        let solution = solve_uncapped_stage_a(
+            &identity(),
+            StageAState {
+                psi_sunleaf_mm: -3_000.0,
+                psi_shadeleaf_mm: -12_000.0,
+                psi_stem_mm: -6_000.0,
+                psi_root_mm: 6_000.0,
+                beta_sun: 0.2,
+                beta_shade: 0.4,
+            },
+            &OneInactiveOracle { sun_active: false },
+        )
+        .expect("sun-inactive reduced solution");
+        assert_eq!(solution.state.beta_sun, 1.0);
+        assert_eq!(
+            solution.state.psi_sunleaf_mm.to_bits(),
+            solution.state.psi_stem_mm.to_bits()
+        );
+        assert!((solution.state.beta_shade - 0.5).abs() < 1.0e-10);
+        assert!((solution.persisted_beta_hyd - 0.5).abs() < 1.0e-10);
+        assert_stage_a_equalities(&solution);
+    }
+
+    #[test]
+    fn shade_inactive_uses_exact_reduced_system_without_singularity() {
+        let solution = solve_uncapped_stage_a(
+            &identity(),
+            StageAState {
+                psi_sunleaf_mm: -16_000.0,
+                psi_shadeleaf_mm: -3_000.0,
+                psi_stem_mm: -6_000.0,
+                psi_root_mm: 6_000.0,
+                beta_sun: 0.4,
+                beta_shade: 0.2,
+            },
+            &OneInactiveOracle { sun_active: true },
+        )
+        .expect("shade-inactive reduced solution");
+        assert_eq!(solution.state.beta_shade, 1.0);
+        assert_eq!(
+            solution.state.psi_shadeleaf_mm.to_bits(),
+            solution.state.psi_stem_mm.to_bits()
+        );
+        assert!((solution.state.beta_sun - 0.25).abs() < 1.0e-10);
+        assert!((solution.persisted_beta_hyd - 0.25).abs() < 1.0e-10);
+        assert_stage_a_equalities(&solution);
     }
 
     struct ConstantInconsistentOracle;
