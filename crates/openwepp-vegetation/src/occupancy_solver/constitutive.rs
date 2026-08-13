@@ -287,6 +287,7 @@ pub(crate) struct V3ConstitutiveEvaluator {
     context: ConstitutiveSolveContext,
     next_evaluation_id: std::cell::Cell<u64>,
     evaluated_canopies: std::cell::RefCell<std::collections::BTreeMap<u64, CanopyEnergyResult>>,
+    water_caps_kg_m2_s: Option<std::collections::BTreeMap<SoilLayerId, f64>>,
 }
 
 impl V3ConstitutiveEvaluator {
@@ -295,7 +296,31 @@ impl V3ConstitutiveEvaluator {
         maximum_leaf_potentials_mm: (f64, f64),
         context: ConstitutiveSolveContext,
     ) -> Result<Self, VegetationError> {
+        Self::new_with_caps(case, maximum_leaf_potentials_mm, context, None)
+    }
+
+    pub(crate) fn new_capped(
+        case: V3PotentialCase,
+        maximum_leaf_potentials_mm: (f64, f64),
+        context: ConstitutiveSolveContext,
+        water_caps_kg_m2_s: std::collections::BTreeMap<SoilLayerId, f64>,
+    ) -> Result<Self, VegetationError> {
+        Self::new_with_caps(
+            case,
+            maximum_leaf_potentials_mm,
+            context,
+            Some(water_caps_kg_m2_s),
+        )
+    }
+
+    fn new_with_caps(
+        case: V3PotentialCase,
+        maximum_leaf_potentials_mm: (f64, f64),
+        context: ConstitutiveSolveContext,
+        water_caps_kg_m2_s: Option<std::collections::BTreeMap<SoilLayerId, f64>>,
+    ) -> Result<Self, VegetationError> {
         validate_case(&case)?;
+        validate_water_caps(&case, context.pass, water_caps_kg_m2_s.as_ref())?;
         let emax = if case.classes.sun.leaf_area + case.classes.shade.leaf_area == 0.0 {
             ClassMaximumDemand {
                 sun: 0.0,
@@ -315,6 +340,7 @@ impl V3ConstitutiveEvaluator {
             context,
             next_evaluation_id: std::cell::Cell::new(1),
             evaluated_canopies: std::cell::RefCell::new(std::collections::BTreeMap::new()),
+            water_caps_kg_m2_s,
         })
     }
 
@@ -368,6 +394,100 @@ impl V3ConstitutiveEvaluator {
             ))?;
         Ok(V3AcceptedStageA { outer, canopy })
     }
+
+    pub(crate) fn solve_capped(
+        &self,
+        identity: &StageASolveIdentity,
+        initial: StageAState,
+    ) -> Result<V3AcceptedStageA, VegetationError> {
+        if self.context.pass != CoupledSolvePass::Capped
+            || self.context.transaction_id != identity.transaction_id
+            || self.context.occupancy_id != identity.occupancy_id
+            || self.water_caps_kg_m2_s.is_none()
+        {
+            return Err(VegetationError::Domain(
+                "V3 capped constitutive solve identity",
+            ));
+        }
+        self.next_evaluation_id.set(1);
+        self.evaluated_canopies.borrow_mut().clear();
+        let outer = solve_uncapped_stage_a(identity, initial, self)
+            .map_err(|error| self.bind_cap_failure_diagnostics(error))?;
+        let canopy = self
+            .evaluated_canopies
+            .borrow_mut()
+            .remove(&outer.evaluation.evaluation_id)
+            .ok_or(VegetationError::Coupled(
+                "accepted capped nested canopy state unavailable",
+            ))?;
+        Ok(V3AcceptedStageA { outer, canopy })
+    }
+
+    fn bind_cap_failure_diagnostics(&self, error: VegetationError) -> VegetationError {
+        let VegetationError::NumericalFailure(mut diagnostics) = error else {
+            return error;
+        };
+        diagnostics.pass = CoupledSolvePass::Capped;
+        diagnostics.active_water_caps = self
+            .water_caps_kg_m2_s
+            .as_ref()
+            .into_iter()
+            .flat_map(|caps| caps.keys().cloned())
+            .collect();
+        VegetationError::NumericalFailure(diagnostics)
+    }
+
+    fn active_water_caps(
+        &self,
+        psi_root_mm: f64,
+        lai: f64,
+        sai: f64,
+    ) -> Result<Vec<SoilLayerId>, VegetationError> {
+        let Some(caps) = &self.water_caps_kg_m2_s else {
+            return Ok(Vec::new());
+        };
+        self.case
+            .layers
+            .iter()
+            .filter_map(|layer| {
+                let layer_id = SoilLayerId::try_new(layer.layer_id.clone()).ok()?;
+                let cap = *caps.get(&layer_id)?;
+                match layer_flux(&self.case, layer, psi_root_mm, lai, sai) {
+                    Ok(law_flux) if law_flux > cap => Some(Ok(layer_id)),
+                    Ok(_) => None,
+                    Err(error) => Some(Err(error)),
+                }
+            })
+            .collect()
+    }
+}
+
+fn validate_water_caps(
+    case: &V3PotentialCase,
+    pass: CoupledSolvePass,
+    caps: Option<&std::collections::BTreeMap<SoilLayerId, f64>>,
+) -> Result<(), VegetationError> {
+    match (pass, caps) {
+        (CoupledSolvePass::Potential, None) => return Ok(()),
+        (CoupledSolvePass::Capped, Some(_)) => {}
+        _ => return Err(VegetationError::Domain("V3 constitutive cap/pass identity")),
+    }
+    let caps = caps.ok_or(VegetationError::Domain("V3 constitutive cap identity"))?;
+    let expected = case
+        .layers
+        .iter()
+        .map(|layer| {
+            SoilLayerId::try_new(layer.layer_id.clone())
+                .map_err(|_| VegetationError::Domain("V3 constitutive layer identity"))
+        })
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    let actual = caps.keys().cloned().collect::<BTreeSet<_>>();
+    if actual != expected || caps.values().any(|cap| !cap.is_finite() || *cap < 0.0) {
+        return Err(VegetationError::Domain(
+            "V3 constitutive water-cap identity",
+        ));
+    }
+    Ok(())
 }
 
 impl StageAEvaluator for V3ConstitutiveEvaluator {
@@ -426,7 +546,12 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
         for layer in &self.case.layers {
             let layer_id = SoilLayerId::try_new(layer.layer_id.clone())
                 .map_err(|_| VegetationError::Domain("V3 constitutive layer identity"))?;
-            let flux = layer_flux(&self.case, layer, state.psi_root_mm, lai, sai)?;
+            let law_flux = layer_flux(&self.case, layer, state.psi_root_mm, lai, sai)?;
+            let flux = self
+                .water_caps_kg_m2_s
+                .as_ref()
+                .and_then(|caps| caps.get(&layer_id))
+                .map_or(law_flux, |cap| law_flux.min(*cap));
             q3.push((layer_id, flux));
         }
         let gas_sun = energy.sun.transpiration_kg_m2_tile_s;
@@ -445,6 +570,7 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
             q1_shade_kg_m2_s: q1_shade,
             q2_kg_m2_s: q2,
             q3_kg_m2_s: q3,
+            active_water_caps: self.active_water_caps(state.psi_root_mm, lai, sai)?,
         })
     }
 }
@@ -474,6 +600,7 @@ fn zero_lai_evaluation(
         q1_shade_kg_m2_s: 0.0,
         q2_kg_m2_s: 0.0,
         q3_kg_m2_s,
+        active_water_caps: Vec::new(),
     })
 }
 

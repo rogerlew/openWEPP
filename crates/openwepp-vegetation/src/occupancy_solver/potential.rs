@@ -88,6 +88,8 @@ pub(crate) struct StageAEvaluation {
     pub q1_shade_kg_m2_s: f64,
     pub q2_kg_m2_s: f64,
     pub q3_kg_m2_s: Vec<(SoilLayerId, f64)>,
+    /// Exact layer caps active in this evaluation. Empty for Stage A.
+    pub active_water_caps: Vec<SoilLayerId>,
 }
 
 pub(crate) trait StageAEvaluator {
@@ -998,7 +1000,7 @@ fn failure(
         step_norm: step_norm.filter(|value| value.is_finite()),
         backtracking_count,
         active_bounds,
-        active_water_caps: Vec::new(),
+        active_water_caps: evaluation.active_water_caps.clone(),
         bracket: None,
         pivot_magnitude: pivot_magnitude.filter(|value| value.is_finite()),
         matrix_norm: matrix_norm.filter(|value| value.is_finite()),
@@ -1069,6 +1071,7 @@ mod tests {
                     (layer("soil-1"), q3_total * 0.6),
                     (layer("soil-2"), q3_total * 0.4),
                 ],
+                active_water_caps: Vec::new(),
             })
         }
     }
@@ -1143,6 +1146,7 @@ mod tests {
                 q1_shade_kg_m2_s: 0.0,
                 q2_kg_m2_s: 0.0,
                 q3_kg_m2_s: vec![(layer("soil-1"), 0.0), (layer("soil-2"), 0.0)],
+                active_water_caps: Vec::new(),
             })
         }
     }
@@ -1196,6 +1200,7 @@ mod tests {
                     (layer("soil-1"), q3_total * 0.6),
                     (layer("soil-2"), q3_total * 0.4),
                 ],
+                active_water_caps: Vec::new(),
             })
         }
     }
@@ -1283,6 +1288,7 @@ mod tests {
                 q1_shade_kg_m2_s: 2.0e-6,
                 q2_kg_m2_s: 3.0e-6,
                 q3_kg_m2_s: vec![(layer("soil-1"), 3.0e-6)],
+                active_water_caps: Vec::new(),
             })
         }
     }
