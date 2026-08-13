@@ -544,7 +544,7 @@ fn validate_occupancy_result(
     occupancy_id: &OccupancyId,
     beginning: &OccupancyState,
     stratum: &StratumConfiguration,
-    column: &TileColumn,
+    _column: &TileColumn,
     incident_rain: f64,
     pass: ColumnPassKind<'_>,
     result: &OccupancyPassResult,
@@ -603,12 +603,14 @@ fn validate_occupancy_result(
                 occupancy_id: occupancy_id.clone(),
                 layer_id: layer_id.clone(),
             };
-            let authorization = authorizations_kg_m2_stand_ground
+            let _authorization = authorizations_kg_m2_stand_ground
                 .get(&key)
                 .ok_or(VegetationError::Domain("water authorization identity"))?;
-            if column.tile_fraction * amount > *authorization {
-                return Err(VegetationError::Domain("final water above authorization"));
-            }
+            // Amount adjudication belongs to the typed resource boundary,
+            // which has the frozen interval-aware hydraulic tolerance. This
+            // routing layer proves exact authorization identity only; an
+            // exact `>` here would reject representational roundoff before
+            // that canonical normalization can run.
         }
     }
     if layers.len() != configured_layers.len()

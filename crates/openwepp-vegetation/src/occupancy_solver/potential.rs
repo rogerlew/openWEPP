@@ -525,6 +525,9 @@ fn solve_pivoted(
     mut rhs: [f64; 6],
     matrix_norm: f64,
 ) -> Result<([f64; 6], f64), f64> {
+    if !matrix_norm.is_finite() || matrix_norm == 0.0 {
+        return Err(0.0);
+    }
     let threshold = 64.0 * f64::EPSILON * matrix_norm;
     let mut minimum_pivot = f64::INFINITY;
     for column in 0..6 {
@@ -537,7 +540,7 @@ fn solve_pivoted(
             .unwrap_or(column);
         let pivot = matrix[pivot_row][column].abs();
         minimum_pivot = minimum_pivot.min(pivot);
-        if !pivot.is_finite() || pivot < threshold {
+        if !pivot.is_finite() || pivot == 0.0 || pivot < threshold {
             return Err(pivot);
         }
         matrix.swap(column, pivot_row);
@@ -765,5 +768,46 @@ mod tests {
         assert_eq!(solution.state.beta_sun, 1.0);
         assert_eq!(solution.state.beta_shade, 1.0);
         assert_eq!(solution.persisted_beta_hyd, 1.0);
+    }
+
+    struct ConstantInconsistentOracle;
+    impl StageAEvaluator for ConstantInconsistentOracle {
+        fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
+            Ok(StageAEvaluation {
+                emax_sun_kg_m2_s: 1.0e-5,
+                emax_shade_kg_m2_s: 1.0e-5,
+                gas_sun_kg_m2_s: 1.0e-5,
+                gas_shade_kg_m2_s: 1.0e-5,
+                vulnerability_demand_sun_kg_m2_s: 5.0e-6,
+                vulnerability_demand_shade_kg_m2_s: 5.0e-6,
+                q1_sun_kg_m2_s: 2.0e-6,
+                q1_shade_kg_m2_s: 2.0e-6,
+                q2_kg_m2_s: 3.0e-6,
+                q3_kg_m2_s: vec![(layer("soil-1"), 3.0e-6)],
+            })
+        }
+    }
+
+    #[test]
+    fn zero_jacobian_is_typed_singular_with_finite_zero_pivot() {
+        let error = solve_uncapped_stage_a(
+            &identity(),
+            StageAState {
+                psi_sunleaf_mm: -16_000.0,
+                psi_shadeleaf_mm: -12_000.0,
+                psi_stem_mm: -6_000.0,
+                psi_root_mm: 6_000.0,
+                beta_sun: 0.4,
+                beta_shade: 0.4,
+            },
+            &ConstantInconsistentOracle,
+        )
+        .expect_err("constant inconsistent residual has singular Jacobian");
+        let VegetationError::NumericalFailure(diagnostics) = error else {
+            panic!("expected typed numerical failure");
+        };
+        assert_eq!(diagnostics.pivot_magnitude, Some(0.0));
+        assert_eq!(diagnostics.matrix_norm, Some(0.0));
+        assert_eq!(diagnostics.solve, SolveIdentity::HydraulicSystem);
     }
 }
