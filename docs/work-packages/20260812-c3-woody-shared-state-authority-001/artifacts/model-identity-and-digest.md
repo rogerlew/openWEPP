@@ -1,6 +1,6 @@
 # V4 Model Identity and Digest
 
-Status: `frozen for review`
+Status: `post-release remediation candidate / review pending`
 
 Evidence mode: `Static + Ran`
 
@@ -8,12 +8,14 @@ Evidence mode: `Static + Ran`
 - Contract: `SC-VEGETATION-001@8`.
 - Base: immutable V3 digest
   `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`.
-- V4 definition SHA-256:
-  `571bac78b6f116078b463021ec0a36a5206cbe14a94d9fdc76bc32c0a7cde327`.
-- V4 fixture SHA-256:
-  `6862b507cf54b57606304d4a7b01cffe55dd3f90b2a2b0d44601fe103e2841a7`.
-- Generator SHA-256:
-  `5ac8dfea31270a7cd7e213e29ffff9efc7cde8bb5e9333aa69add5100b0872c3`.
+- Corrected V4 definition SHA-256:
+  `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`.
+- Corrected V4 fixture SHA-256:
+  `3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d`.
+- Corrected generator SHA-256:
+  `422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2`.
+- Historical pre-remediation release identity: definition `571bac78...`,
+  fixture `6862b507...`, generator `5ac8dfea...`.
 
 The definition uses recursively sorted compact JSON and one trailing LF. It
 binds the V8 shared-state amendment, live contract sections, adjacent contract

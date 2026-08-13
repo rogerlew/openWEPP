@@ -487,21 +487,16 @@ fn validate_stratum(
 mod tests {
     use super::*;
 
-    fn v3_value() -> serde_json::Value {
-        let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+    fn v4_value() -> serde_json::Value {
+        serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("historical configuration JSON");
-        value["strata"][0]
-            .as_object_mut()
-            .expect("stratum object")
-            .remove("rd_leaf_n_rate");
-        value
+        .expect("V4 configuration JSON")
     }
 
     fn fixture() -> VegetationConfiguration {
         let mut configuration: VegetationConfiguration =
-            serde_json::from_value(v3_value()).expect("V3 configuration shape");
+            serde_json::from_value(v4_value()).expect("V4 configuration shape");
         configuration.model_definition_sha256 = MODEL_SHA256.into();
         refresh_digest(&mut configuration);
         configuration
@@ -519,35 +514,41 @@ mod tests {
             "/strata/0/tile_ids/0",
             "/strata/0/root_layers/0/layer_id",
         ] {
-            let mut value = v3_value();
+            let mut value = v4_value();
             *value.pointer_mut(pointer).expect("fixture identity") = serde_json::json!("  ");
             assert!(serde_json::from_value::<VegetationConfiguration>(value).is_err());
         }
     }
 
     #[test]
-    fn v2_named_fixture_is_not_an_executable_v3_configuration() {
+    fn historical_v2_and_v3_fixtures_are_not_executable_v4_configurations() {
         assert!(
             VegetationConfiguration::parse_strict(include_bytes!(
                 "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
             ))
             .is_err()
         );
+        assert!(
+            VegetationConfiguration::parse_strict(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            ))
+            .is_err()
+        );
     }
 
     #[test]
-    fn v3_named_fixture_parses_strictly_with_exact_identity() {
+    fn v4_named_fixture_parses_strictly_with_exact_identity() {
         let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration DTO");
+        .expect("V4 configuration DTO");
         assert_eq!(
             configuration.configuration_sha256,
             configuration.canonical_sha256().expect("digest")
         );
         configuration
             .validate()
-            .expect("digest-bound V3 configuration");
+            .expect("digest-bound V4 configuration");
         assert_eq!(configuration.model_definition_sha256, MODEL_SHA256);
         assert_eq!(
             configuration.configuration_sha256,

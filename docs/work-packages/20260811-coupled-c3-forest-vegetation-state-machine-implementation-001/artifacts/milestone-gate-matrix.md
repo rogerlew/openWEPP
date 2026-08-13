@@ -1,6 +1,6 @@
 # Milestone Gate Matrix
 
-Status: `HOLD / Increment 2A internal routing pass; Milestones 2 and 3 incomplete`
+Status: `executing / V4 state sub-gate PASS; Milestones 2 and 3 incomplete`
 
 Increment 2B cannot pass its whole-column radiation or potential E11--E15
 gates until the omissions in `potential-pass-hold-legitimacy-audit.md` receive
@@ -23,3 +23,10 @@ Increment 2A closes only the internal topology/routing sub-gate: controlled
 occupancy results prove ordering, routing, area conversion, closure, poisons,
 and rollback. Milestone 2 still requires exact occupancy-local E01--E06 oracle
 evidence, and Milestone 3 still requires `STAGE_B_E11_E15_EXACT_ORACLE`.
+
+V4 closes the current identity/state/migration sub-gate: exact displayed-pool
+ownership, recursive schema, structural serialization, all 155 mutation
+digests, and explicit V3-to-V4 migration pass. It does not change the
+Milestone 2/3 result. The capped Stage-B gate remains incomplete for lack of a
+digest-bound fully coupled cap-active equality/operand vector, so public
+execution remains fail-closed.

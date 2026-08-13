@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `EXECUTING / V3 authority intake PASS / focused remediation active`
+Status: `EXECUTING / V4 shared-state runtime focused PASS / capped gate incomplete`
 
 Evidence mode: `Ran`
 
@@ -303,3 +303,35 @@ Commits `3cbba7bb3` and `b06534df1` preserve the bounded C/N/ledger and
 constitutive/capped-pass checkpoints. No E11--E15 public-path, Milestone 2/3,
 E20--E22 state-finalizer, owner-candidate, or atomic-commit completion claim is
 made.
+
+## 2026-08-13 V4 Shared-State Runtime Increment
+
+All preceding failures, HOLDs, retries, and V1/V2/V3 checkpoint evidence above
+remain historical evidence. This section records only commands and reviews run
+against the V4 runtime increment.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V4 executable identity | PASS | registry bytes equal the authority definition; `OPENWEPP_C3_WOODY_V4` SHA-256 `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`; V1/V2/V3 executable identity rejected |
+| V4 authority vectors | PASS focused | fixture SHA-256 `3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d`; generator SHA-256 `422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2`; dual authority science rereviews GO and focused authority gates PASS |
+| V4 strict state schema | PASS | recursive exact-shape validation, typed structural identities, exact phase/GSI/domain/lineage validation, duplicate rejection, and removal of both prior offset fields |
+| structural canonical serializer | PASS | production encoder matches independent shared-state digest and all 155 whole-state scalar mutation digests, including occupancy identity and typed pending transfers |
+| displayed pool ownership | PASS | displayed leaf C alone reconstructs area caches; displayed leaf N alone supplies positive-LAI capacity/Rd ownership; storage/transfer poisons and leaf double-debit guard pass |
+| V3-to-V4 migration | PASS | complete source/config/state validation, bit-exact area-cache check, unchanged constitutive-payload check, removal of only two fields, identity rebinding, candidate revalidation, and exhaustive simultaneous-owner failures |
+| direct historical migration | PASS / fail-closed | V1/V2 cannot normalize directly to V4; historical V1 operation reports successor migration required |
+| vegetation quick | PASS | `cargo nextest run -p openwepp-vegetation --profile quick`: 159/159 |
+| implementation contract | PASS | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 11/11; public V4 path remains fail-closed |
+| vegetation authority | PASS | `cargo nextest run --test vegetation_boundary_authority_contract --profile quick`: 17/17 |
+| strict vegetation Clippy | PASS | `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` |
+| strict orchestrator Clippy | PASS | `cargo clippy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings` |
+| formatting/diff hygiene | PASS | `cargo fmt --all -- --check`; `git diff --check` |
+| independent Rust review | GO | `review_v4_runtime`: no High finding; one Medium intentional validation duplication accepted with 155-mutation parity/revalidation evidence and extraction plan |
+| independent QA | PASS | `qa_v4_runtime`: no material finding after recursive-shape and typed-mutation remediation |
+| authority-package heavy/terminal | NOT RUN / pending | focused authority and review evidence passes, but the V4 authority package's repeat heavy campaign and terminal closure are not borrowed or claimed here |
+| capped Stage-B oracle | BLOCKED / fail-closed | the minimum complementarity equation is canonical, but no digest-bound fully coupled cap-active vector fixes the active-set equality convention and `q_law`/cap operands; disconnected draft only |
+| public candidate containment | PASS / fail-closed | `execute_candidate()` emits no finalized use or candidate and performs no mutation; `STAGE_B_E11_E15_EXACT_ORACLE` remains incomplete |
+
+This increment closes V4 identity, strict state, canonical serialization,
+displayed-pool ownership, and V3-to-V4 migration only. It does not complete
+Milestone 2, Milestone 3, the E20--E22 accepted transition, all-owner commit,
+benchmarks, heavy closure, or terminal verification.

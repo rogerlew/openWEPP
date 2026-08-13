@@ -35,12 +35,12 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn public_candidate_is_v3_only_and_fail_closed_before_capped_pass() {
+fn public_candidate_is_v4_only_and_fail_closed_before_capped_pass() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
     assert!(
         source
-            .contains("V3 occupancy-local capped transaction routing is implementation-incomplete")
+            .contains("V4 occupancy-local capped transaction routing is implementation-incomplete")
     );
     assert!(source.contains("BTreeMap<OccupancyId, OccupancyState>"));
     assert!(!source.contains("struct StratumState"));
@@ -52,24 +52,26 @@ fn public_candidate_is_v3_only_and_fail_closed_before_capped_pass() {
 }
 
 #[test]
-fn v3_configuration_state_and_migration_inputs_have_no_default_path() {
+fn v4_configuration_state_and_migration_inputs_have_no_default_path() {
     for path in [
         "crates/openwepp-vegetation/src/config.rs",
         "crates/openwepp-vegetation/src/occupancy_state.rs",
         "crates/openwepp-vegetation/src/transaction.rs",
         "crates/openwepp-vegetation/src/migration.rs",
     ] {
-        let source = fs::read_to_string(path).expect("V3 source");
+        let source = fs::read_to_string(path).expect("V4 source");
         assert!(!source.contains("impl Default for VegetationConfiguration"));
         assert!(!source.contains("impl Default for OccupancyState"));
         assert!(!source.contains("impl Default for CoupledOwnedState"));
         assert!(!source.contains("impl Default for V1CoupledOwnedState"));
+        assert!(!source.contains("impl Default for V3CoupledOwnedState"));
+        assert!(!source.contains("impl Default for V3VegetationConfiguration"));
     }
 }
 
 #[test]
 fn production_registry_is_byte_identical_to_authority() {
-    let authority = fs::read("docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001/artifacts/openwepp_c3_woody_v3_definition.json")
+    let authority = fs::read("docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json")
         .expect("authority definition");
     assert_eq!(MODEL_BYTES, authority);
     assert_eq!(format!("{:x}", Sha256::digest(MODEL_BYTES)), MODEL_SHA256);
@@ -382,17 +384,11 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
 fn schema_and_migration_fail_closed_without_defaults() {
     assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
     assert!(VegetationConfiguration::parse_strict(br#"{"unknown":1}"#).is_err());
-    let mut value: serde_json::Value = serde_json::from_slice(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
-            .expect("configuration fixture"),
+    let mut mutated = VegetationConfiguration::parse_strict(
+        &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
+            .expect("V4 configuration fixture"),
     )
-    .expect("configuration JSON");
-    value["strata"][0]
-        .as_object_mut()
-        .expect("stratum object")
-        .remove("rd_leaf_n_rate");
-    let mut mutated: VegetationConfiguration =
-        serde_json::from_value(value).expect("V3 configuration shape");
+    .expect("V4 configuration shape");
     mutated.strata[0].stem_rho_vis += 0.01;
     assert!(mutated.validate().is_err());
     let source = RhessysSource {
@@ -424,23 +420,27 @@ fn energy_and_aerodynamic_domains_are_explicit() {
 }
 
 #[test]
-fn v1_state_cannot_enter_the_v3_public_state_parser() {
-    let mut value: serde_json::Value = serde_json::from_slice(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_configuration.json")
-            .expect("configuration fixture"),
+fn historical_states_cannot_enter_the_v4_public_state_parser() {
+    let config = VegetationConfiguration::parse_strict(
+        &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
+            .expect("V4 configuration fixture"),
     )
-    .expect("historical configuration JSON");
-    value["strata"][0]
-        .as_object_mut()
-        .expect("stratum object")
-        .remove("rd_leaf_n_rate");
-    let mut config: VegetationConfiguration =
-        serde_json::from_value(value).expect("V3 configuration shape");
-    config.model_definition_sha256 = MODEL_SHA256.into();
-    config.configuration_sha256 = config.canonical_sha256().expect("V3 configuration digest");
-    let result = CoupledOwnedState::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v1_diagnostic_state.json").expect("V1 state fixture"),
-        &config,
+    .expect("V4 configuration shape");
+    for path in [
+        "tests/fixtures/c3_woody_v1_diagnostic_state.json",
+        "tests/fixtures/c3_woody_v3_diagnostic_state.json",
+    ] {
+        let result = CoupledOwnedState::parse_strict(
+            &fs::read(path).expect("historical state fixture"),
+            &config,
+        );
+        assert!(result.is_err(), "historical state was accepted: {path}");
+    }
+    assert!(
+        VegetationConfiguration::parse_strict(
+            &fs::read("tests/fixtures/c3_woody_v3_diagnostic_configuration.json")
+                .expect("V3 configuration fixture"),
+        )
+        .is_err()
     );
-    assert!(result.is_err());
 }

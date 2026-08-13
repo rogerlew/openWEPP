@@ -1,4 +1,4 @@
-//! V3 whole-column radiation preparation for occupancy-local solves.
+//! V4 whole-column radiation preparation for occupancy-local solves.
 //!
 //! The constitutive E01--E03 implementation remains in [`crate::radiation`].
 //! This module binds its ordered layer results to exact topology occupancy
@@ -26,7 +26,7 @@ pub struct OccupancyRadiationComponent {
     pub absorption: OwnedLayerAbsorption,
 }
 
-/// Complete V3 radiation operands for one exact `(stratum, tile)` occupancy.
+/// Complete V4 radiation operands for one exact `(stratum, tile)` occupancy.
 #[derive(Clone, Debug, PartialEq)]
 pub struct OccupancyRadiation {
     pub occupancy_id: OccupancyId,
@@ -63,7 +63,7 @@ impl OccupancyRadiationComponent {
     ) -> Result<Self, VegetationError> {
         if absorption.band != band || absorption.component != component {
             return Err(VegetationError::Receipt(
-                "V3 radiation band/component identity".into(),
+                "V4 radiation band/component identity".into(),
             ));
         }
         Ok(Self {
@@ -110,7 +110,7 @@ pub fn prepare_whole_column_radiation(
                     .strata
                     .get(&stratum.stratum_id)
                     .ok_or(VegetationError::Domain(
-                        "V3 radiation shared stratum identity",
+                        "V4 radiation shared stratum identity",
                     ))?;
             let coverage = configuration.stratum_coverage(&stratum.stratum_id)?;
             let leaf_area_tile = shared.leaf_area / coverage;
@@ -121,7 +121,7 @@ pub fn prepare_whole_column_radiation(
                 || stem_area_tile < 0.0
             {
                 return Err(VegetationError::Domain(
-                    "V3 radiation conditional plant area",
+                    "V4 radiation conditional plant area",
                 ));
             }
             occupancy_ids.push(occupancy_id);
@@ -215,7 +215,7 @@ pub fn prepare_whole_column_radiation(
             };
             if occupancies.insert(occupancy_id.clone(), value).is_some() {
                 return Err(VegetationError::Domain(
-                    "duplicate V3 radiation occupancy identity",
+                    "duplicate V4 radiation occupancy identity",
                 ));
             }
         }
@@ -229,7 +229,7 @@ pub fn prepare_whole_column_radiation(
         };
         if columns.insert(tile.tile_id.clone(), column).is_some() {
             return Err(VegetationError::Domain(
-                "duplicate V3 radiation tile identity",
+                "duplicate V4 radiation tile identity",
             ));
         }
     }
@@ -241,7 +241,7 @@ pub fn prepare_whole_column_radiation(
         != configuration.expected_occupancies()
     {
         return Err(VegetationError::Domain(
-            "V3 radiation occupancy set identity",
+            "V4 radiation occupancy set identity",
         ));
     }
     Ok(PreparedRadiation {
@@ -263,7 +263,7 @@ fn strata_to_nir_layers(
                 .strata
                 .iter()
                 .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
-                .ok_or(VegetationError::Domain("V3 NIR radiation stratum identity"))?;
+                .ok_or(VegetationError::Domain("V4 NIR radiation stratum identity"))?;
             Ok(MixedLayer {
                 leaf_area,
                 stem_area,
@@ -288,7 +288,7 @@ fn require_layer_cardinality(
 ) -> Result<(), VegetationError> {
     if result.layers.len() != occupancy_ids.len() {
         return Err(VegetationError::Receipt(
-            "V3 radiation layer cardinality".into(),
+            "V4 radiation layer cardinality".into(),
         ));
     }
     Ok(())
@@ -304,7 +304,7 @@ fn component_at(
         .layers
         .get(index)
         .copied()
-        .ok_or_else(|| VegetationError::Receipt("V3 radiation layer identity".into()))?;
+        .ok_or_else(|| VegetationError::Receipt("V4 radiation layer identity".into()))?;
     OccupancyRadiationComponent::from_absorption(band, component, absorption)
 }
 
@@ -368,15 +368,15 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let mut configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration fixture");
+        .expect("V4 configuration fixture");
         let original = configuration.clone();
         let mut state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
             &original,
         )
-        .expect("V3 state fixture");
+        .expect("V4 state fixture");
 
         let upper = configuration.strata.get_mut(0).expect("upper config");
         upper.stratum_id = stratum_id("upper");
@@ -391,6 +391,7 @@ mod tests {
         upper.stem_tau_nir = 0.12;
         upper.clumping_index = 0.74;
         upper.leaf_angle_chi = 0.12;
+        upper.sai_relation = 0.7 / 2.6;
 
         let mut lower: StratumConfiguration = upper.clone();
         lower.stratum_id = stratum_id("lower");
@@ -407,6 +408,11 @@ mod tests {
         lower.stem_tau_nir = 0.10;
         lower.clumping_index = 0.86;
         lower.leaf_angle_chi = -0.08;
+        lower.sai_relation = 0.45 / 1.35;
+        let upper_sla = upper.sla_m2_per_kg_c;
+        let upper_root_to_leaf_area = upper.root_to_leaf_area;
+        let lower_sla = lower.sla_m2_per_kg_c;
+        let lower_root_to_leaf_area = lower.root_to_leaf_area;
         configuration.strata.push(lower);
 
         let original_shared: StratumSharedState = state
@@ -414,11 +420,25 @@ mod tests {
             .remove(&stratum_id("tree-1"))
             .expect("original shared");
         let mut upper_shared = original_shared.clone();
-        upper_shared.leaf_area = 2.6;
-        upper_shared.stem_area = 0.7;
+        let upper_leaf = upper_shared
+            .tissues
+            .get_mut(&crate::carbon_nitrogen::Tissue::Leaf)
+            .expect("upper leaf");
+        upper_leaf.display.carbon = 2.6 / upper_sla;
+        upper_shared.leaf_area = upper_leaf.display.carbon * upper_sla;
+        upper_shared.stem_area = upper_shared.leaf_area * (0.7 / 2.6);
+        upper_shared.root_area =
+            (upper_shared.leaf_area + upper_shared.stem_area) * upper_root_to_leaf_area;
         let mut lower_shared = original_shared;
-        lower_shared.leaf_area = 1.35;
-        lower_shared.stem_area = 0.45;
+        let lower_leaf = lower_shared
+            .tissues
+            .get_mut(&crate::carbon_nitrogen::Tissue::Leaf)
+            .expect("lower leaf");
+        lower_leaf.display.carbon = 1.35 / lower_sla;
+        lower_shared.leaf_area = lower_leaf.display.carbon * lower_sla;
+        lower_shared.stem_area = lower_shared.leaf_area * (0.45 / 1.35);
+        lower_shared.root_area =
+            (lower_shared.leaf_area + lower_shared.stem_area) * lower_root_to_leaf_area;
         state.strata.insert(stratum_id("upper"), upper_shared);
         state.strata.insert(stratum_id("lower"), lower_shared);
 

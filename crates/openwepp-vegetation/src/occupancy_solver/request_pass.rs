@@ -1,4 +1,4 @@
-//! V3 owner-uncapped column-pass orchestration and typed water requests.
+//! V4 owner-uncapped column-pass orchestration and typed water requests.
 //!
 //! This module binds the complete whole-column radiation preparation to an
 //! occupancy constitutive evaluator, executes the routing-only column engine,
@@ -37,7 +37,7 @@ pub(crate) struct PotentialColumnPass {
     pub diagnostics: BTreeMap<OccupancyId, OccupancyDiagnostics>,
 }
 
-/// Constitutive boundary for one exact V3 occupancy in the owner-uncapped
+/// Constitutive boundary for one exact V4 occupancy in the owner-uncapped
 /// pass. The evaluator must consume the supplied whole-column radiation result
 /// and return a complete routing-visible candidate; this orchestrator never
 /// invents gas, energy, hydraulic, interception, or demand values.
@@ -73,7 +73,7 @@ impl RadiationBoundPotentialSolver<'_> {
                 .any(|(key, value)| key != &value.occupancy_id)
         {
             return Err(VegetationError::Receipt(
-                "V3 potential radiation occupancy identity".into(),
+                "V4 potential radiation occupancy identity".into(),
             ));
         }
         Ok(RadiationBoundPotentialSolver {
@@ -87,11 +87,11 @@ impl OccupancyPassSolver for RadiationBoundPotentialSolver<'_> {
     fn solve(&self, input: OccupancyPassInput<'_>) -> Result<OccupancyPassResult, VegetationError> {
         if input.local_authorizations_kg_m2_tile_ground.is_some() {
             return Err(VegetationError::Receipt(
-                "owner authorization supplied during V3 potential pass".into(),
+                "owner authorization supplied during V4 potential pass".into(),
             ));
         }
         let radiation = self.radiation.get(input.occupancy_id).ok_or_else(|| {
-            VegetationError::Receipt("V3 potential radiation occupancy identity".into())
+            VegetationError::Receipt("V4 potential radiation occupancy identity".into())
         })?;
         if radiation.occupancy_id != *input.occupancy_id
             || radiation.conditional_lai_m2_m2_tile_ground.to_bits()
@@ -100,14 +100,14 @@ impl OccupancyPassSolver for RadiationBoundPotentialSolver<'_> {
                 != input.conditional_wai_m2_m2_tile_ground.to_bits()
         {
             return Err(VegetationError::Receipt(
-                "V3 potential radiation area/occupancy identity".into(),
+                "V4 potential radiation area/occupancy identity".into(),
             ));
         }
         self.evaluator.solve_potential(input, radiation)
     }
 }
 
-/// Executes the complete V3 owner-uncapped tile-column pass and constructs the
+/// Executes the complete V4 owner-uncapped tile-column pass and constructs the
 /// typed stand-ground request batch without mutating beginning state.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_potential_column_pass(
@@ -157,10 +157,10 @@ fn validate_candidate_transaction(
     let expected = beginning
         .last_transaction_id
         .checked_add(1)
-        .ok_or_else(|| VegetationError::Receipt("V3 transaction identity overflow".into()))?;
+        .ok_or_else(|| VegetationError::Receipt("V4 transaction identity overflow".into()))?;
     if transaction_id.0 != expected {
         return Err(VegetationError::Receipt(
-            "nonsequential V3 potential-pass transaction identity".into(),
+            "nonsequential V4 potential-pass transaction identity".into(),
         ));
     }
     Ok(())
@@ -181,7 +181,7 @@ fn configured_root_layers(
             let stratum = strata
                 .get(&occupancy_id.stratum_id)
                 .ok_or(VegetationError::Domain(
-                    "V3 potential request stratum identity",
+                    "V4 potential request stratum identity",
                 ))?;
             Ok(OccupancyRootLayers {
                 occupancy_id,
@@ -206,7 +206,7 @@ fn collect_stand_ground_amounts(
                     || amounts.insert(key.clone(), *amount).is_some()
                 {
                     return Err(VegetationError::Receipt(
-                        "duplicate or mismatched V3 potential water identity".into(),
+                        "duplicate or mismatched V4 potential water identity".into(),
                     ));
                 }
             }
@@ -229,7 +229,7 @@ fn collect_diagnostics(
                 .is_some()
             {
                 return Err(VegetationError::Receipt(
-                    "duplicate V3 potential diagnostic identity".into(),
+                    "duplicate V4 potential diagnostic identity".into(),
                 ));
             }
         }
@@ -238,7 +238,7 @@ fn collect_diagnostics(
 }
 
 fn resource_boundary_error(error: &WaterResourceBoundaryError) -> VegetationError {
-    VegetationError::Receipt(format!("V3 potential water request: {error}"))
+    VegetationError::Receipt(format!("V4 potential water request: {error}"))
 }
 
 #[cfg(test)]
@@ -320,14 +320,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration fixture");
+        .expect("V4 configuration fixture");
         let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V3 state fixture");
+        .expect("V4 state fixture");
         (configuration, state)
     }
 
@@ -442,7 +442,7 @@ mod tests {
                 &evaluator,
             ),
             Err(VegetationError::Receipt(message))
-                if message == "nonsequential V3 potential-pass transaction identity"
+                if message == "nonsequential V4 potential-pass transaction identity"
         ));
         assert!(evaluator.seen.borrow().is_empty());
 
@@ -460,7 +460,7 @@ mod tests {
                 &evaluator,
             ),
             Err(VegetationError::Receipt(message))
-                if message == "nonsequential V3 potential-pass transaction identity"
+                if message == "nonsequential V4 potential-pass transaction identity"
         ));
         assert!(evaluator.seen.borrow().is_empty());
     }

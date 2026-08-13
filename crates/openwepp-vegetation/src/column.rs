@@ -1,4 +1,4 @@
-//! V3 occupancy-local tile-column ordering, liquid routing, and area conversion.
+//! V4 occupancy-local tile-column ordering, liquid routing, and area conversion.
 //!
 //! This module deliberately contains no constitutive approximation. An
 //! [`OccupancyPassSolver`] supplies a complete occupancy result; this engine
@@ -928,24 +928,18 @@ mod tests {
     }
 
     fn shared_state() -> StratumSharedState {
-        let mut raw: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v1_diagnostic_state.json"
+        let configuration = VegetationConfiguration::parse_strict(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("historical state JSON");
-        let state = raw
-            .pointer_mut("/strata/tree-1")
-            .and_then(serde_json::Value::as_object_mut)
-            .expect("historical stratum");
-        for field in [
-            "canopy_liquid",
-            "psi_root_mm",
-            "psi_stem_mm",
-            "psi_sun_mm",
-            "psi_shade_mm",
-        ] {
-            state.remove(field);
-        }
-        serde_json::from_value(serde_json::Value::Object(state.clone())).expect("shared state")
+        .expect("V4 configuration fixture");
+        CoupledOwnedState::parse_strict(
+            include_bytes!("../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            &configuration,
+        )
+        .expect("V4 state fixture")
+        .strata
+        .remove(&stratum_id("tree-1"))
+        .expect("V4 shared state")
     }
 
     fn lane(store: f64, _root_layers: &[&str]) -> OccupancyState {
@@ -969,16 +963,10 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+        let mut config = VegetationConfiguration::parse_strict(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("historical configuration JSON");
-        value["strata"][0]
-            .as_object_mut()
-            .expect("stratum object")
-            .remove("rd_leaf_n_rate");
-        let mut config: VegetationConfiguration =
-            serde_json::from_value(value).expect("V3 configuration shape");
+        .expect("V4 configuration fixture");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![

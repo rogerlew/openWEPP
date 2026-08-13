@@ -1,9 +1,10 @@
-//! Production V3 owner-uncapped occupancy evaluator.
+//! Production V4 owner-uncapped occupancy evaluator.
 //!
 //! This adapter contains no constitutive alternatives. It binds validated
 //! configuration, shared C/N state, occupancy-local warm starts, whole-column
 //! radiation, snow-free forcing, and preliminary E04 liquid state to the
-//! digest-bound V3 coupled evaluator.
+//! digest-bound V3 constitutive equations under the V4 shared-state ownership
+//! amendment.
 
 use std::collections::BTreeMap;
 
@@ -40,7 +41,7 @@ const ELECTRON_CURVATURE: f64 = 0.7;
 const AC_AJ_CURVATURE: f64 = 0.98;
 const AG_AP_CURVATURE: f64 = 0.95;
 
-/// Exact V3 production adapter for one occupancy-local owner-uncapped solve.
+/// Exact V4 production adapter for one occupancy-local owner-uncapped solve.
 /// The evaluator is deliberately stateless: the exact interval and every
 /// numerical warm start arrive through validated owner state/context. Persisted
 /// `ci` lanes are validated and replaced by accepted endpoints, but they do
@@ -48,7 +49,7 @@ const AG_AP_CURVATURE: f64 = 0.95;
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct ProductionPotentialOccupancyEvaluator;
 
-/// Exact V3 production adapter for the owner-authorization-capped second pass.
+/// Exact V4 production adapter for the owner-authorization-capped second pass.
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct ProductionCappedOccupancyEvaluator;
 
@@ -430,24 +431,30 @@ fn accepted_leaf_nitrogen(input: &OccupancyPassInput<'_>) -> Result<f64, Vegetat
         .shared_state
         .tissues
         .get(&Tissue::Leaf)
-        .ok_or(VegetationError::Domain("V3 accepted leaf nitrogen pool"))?;
-    let nitrogen = pool.display.nitrogen + pool.storage.nitrogen + pool.transfer.nitrogen;
+        .ok_or(VegetationError::Domain("V4 displayed leaf nitrogen pool"))?;
+    let nitrogen = pool.display.nitrogen;
     if nitrogen.is_finite() && nitrogen >= 0.0 {
         Ok(nitrogen)
     } else {
-        Err(VegetationError::Domain("V3 accepted leaf nitrogen pool"))
+        Err(VegetationError::Domain("V4 displayed leaf nitrogen pool"))
     }
 }
 
 fn accepted_leaf_n_area(input: &OccupancyPassInput<'_>) -> Result<f64, VegetationError> {
     if input.shared_state.leaf_area == 0.0 {
-        return Ok(0.0);
+        return if accepted_leaf_nitrogen(input)?.to_bits() == 0.0_f64.to_bits() {
+            Ok(0.0)
+        } else {
+            Err(VegetationError::Domain(
+                "V4 displayed leaf nitrogen without leaf area",
+            ))
+        };
     }
     let value = accepted_leaf_nitrogen(input)? / input.shared_state.leaf_area;
     if value.is_finite() && value >= 0.0 {
         Ok(value)
     } else {
-        Err(VegetationError::Domain("V3 accepted leaf N area"))
+        Err(VegetationError::Domain("V4 displayed leaf N area"))
     }
 }
 
@@ -641,14 +648,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration");
+        .expect("V4 configuration");
         let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V3 state");
+        .expect("V4 state");
         (configuration, state)
     }
 
@@ -914,7 +921,10 @@ mod tests {
             .into_iter()
             .next()
             .expect("occupancy");
-        let shared = &state.strata[&occupancy_id.stratum_id];
+        let mut shared = state.strata[&occupancy_id.stratum_id].clone();
+        let leaf = shared.tissues.get_mut(&Tissue::Leaf).expect("leaf pool");
+        leaf.storage.nitrogen = 9.0;
+        leaf.transfer.nitrogen = 11.0;
         let lane = &state.occupancies[&occupancy_id];
         let radiation = &prepared.occupancies[&occupancy_id];
         let stratum = &configuration.strata[0];
@@ -928,7 +938,7 @@ mod tests {
             conditional_wai_m2_m2_tile_ground: shared.stem_area,
             incident_rain_kg_m2_tile_ground: 0.0,
             local_authorizations_kg_m2_tile_ground: None,
-            shared_state: shared,
+            shared_state: &shared,
             occupancy_state: lane,
             stratum_config: stratum,
             forcing: &forcing,
@@ -991,6 +1001,102 @@ mod tests {
                 .absorption
                 .leaf_shade_area
                 .to_bits()
+        );
+    }
+
+    #[test]
+    fn v4_leaf_capacity_uses_displayed_nitrogen_only_and_rejects_display_n_without_lai() {
+        let (configuration, state) = fixture();
+        let forcing = forcing();
+        let occupancy_id = configuration
+            .expected_occupancies()
+            .into_iter()
+            .next()
+            .expect("occupancy");
+        let lane = &state.occupancies[&occupancy_id];
+        let stratum = &configuration.strata[0];
+        let mut shared = state.strata[&occupancy_id.stratum_id].clone();
+        let leaf = shared.tissues.get_mut(&Tissue::Leaf).expect("leaf pool");
+        leaf.storage.nitrogen = 9.0;
+        leaf.transfer.nitrogen = 11.0;
+        {
+            let input = OccupancyPassInput {
+                transaction_id: TransactionId(1),
+                interval_s: configuration.dt_s,
+                occupancy_id: &occupancy_id,
+                tile_fraction: 1.0,
+                coverage: 1.0,
+                conditional_lai_m2_m2_tile_ground: shared.leaf_area,
+                conditional_wai_m2_m2_tile_ground: shared.stem_area,
+                incident_rain_kg_m2_tile_ground: 0.0,
+                local_authorizations_kg_m2_tile_ground: None,
+                shared_state: &shared,
+                occupancy_state: lane,
+                stratum_config: stratum,
+                forcing: &forcing,
+            };
+            assert_eq!(accepted_leaf_nitrogen(&input), Ok(0.003));
+            assert_eq!(
+                accepted_leaf_n_area(&input)
+                    .expect("displayed leaf N area")
+                    .to_bits(),
+                (0.003_f64 / shared.leaf_area).to_bits()
+            );
+        }
+
+        let mut zero_shared = shared.clone();
+        zero_shared.leaf_area = 0.0;
+        zero_shared
+            .tissues
+            .get_mut(&Tissue::Leaf)
+            .expect("leaf pool")
+            .display
+            .nitrogen = 0.0;
+        {
+            let zero_input = OccupancyPassInput {
+                transaction_id: TransactionId(1),
+                interval_s: configuration.dt_s,
+                occupancy_id: &occupancy_id,
+                tile_fraction: 1.0,
+                coverage: 1.0,
+                conditional_lai_m2_m2_tile_ground: 0.0,
+                conditional_wai_m2_m2_tile_ground: zero_shared.stem_area,
+                incident_rain_kg_m2_tile_ground: 0.0,
+                local_authorizations_kg_m2_tile_ground: None,
+                shared_state: &zero_shared,
+                occupancy_state: lane,
+                stratum_config: stratum,
+                forcing: &forcing,
+            };
+            assert_eq!(accepted_leaf_n_area(&zero_input), Ok(0.0));
+        }
+
+        zero_shared
+            .tissues
+            .get_mut(&Tissue::Leaf)
+            .expect("leaf pool")
+            .display
+            .nitrogen = f64::MIN_POSITIVE;
+        let invalid_input = OccupancyPassInput {
+            transaction_id: TransactionId(1),
+            interval_s: configuration.dt_s,
+            occupancy_id: &occupancy_id,
+            tile_fraction: 1.0,
+            coverage: 1.0,
+            conditional_lai_m2_m2_tile_ground: 0.0,
+            conditional_wai_m2_m2_tile_ground: zero_shared.stem_area,
+            incident_rain_kg_m2_tile_ground: 0.0,
+            local_authorizations_kg_m2_tile_ground: None,
+            shared_state: &zero_shared,
+            occupancy_state: lane,
+            stratum_config: stratum,
+            forcing: &forcing,
+        };
+        assert_eq!(
+            accepted_leaf_n_area(&invalid_input),
+            Err(VegetationError::Domain(
+                "V4 displayed leaf nitrogen without leaf area"
+            ))
         );
     }
 

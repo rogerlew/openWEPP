@@ -35,9 +35,10 @@ pub enum Tissue {
 
 pub use openwepp_kernel_contract::MaterialReceiverClass as ReceiverClass;
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct MaterialTransfer {
     pub transaction_id: u128,
-    pub owner_id: String,
+    pub owner_id: ResourceOwnerId,
     pub proposal_id: u64,
     pub donor: MaterialDonorClass,
     pub receiver: ReceiverClass,
@@ -102,7 +103,7 @@ impl MaterialTransferAmounts {
         }
         Ok(MaterialTransfer {
             transaction_id: transaction_id.0,
-            owner_id: owner_id.as_str().to_owned(),
+            owner_id: owner_id.clone(),
             proposal_id,
             donor: self.donor,
             receiver: self.receiver,
@@ -197,15 +198,19 @@ pub fn maintenance_respiration(
             "duplicate fine-root respiration layer",
         ));
     }
-    let nitrogen = |tissue: Tissue| -> Result<f64, VegetationError> {
+    // V4 leaf maintenance is already supplied by the accepted class-resolved
+    // respiration operand. Only imported non-leaf maintenance identities use
+    // total display + storage + transfer tissue N here.
+    let imported_total_nitrogen = |tissue: Tissue| -> Result<f64, VegetationError> {
         let pool = tissues
             .get(&tissue)
             .ok_or(VegetationError::Domain("missing tissue pool"))?;
         Ok(pool.display.nitrogen + pool.storage.nitrogen + pool.transfer.nitrogen)
     };
-    let livewood_n = nitrogen(Tissue::LiveStem)? + nitrogen(Tissue::LiveCoarseRoot)?;
+    let livewood_n = imported_total_nitrogen(Tissue::LiveStem)?
+        + imported_total_nitrogen(Tissue::LiveCoarseRoot)?;
     let livewood = livewood_n * base_rate * q10.powf((air_temperature_k - 293.15) / 10.0) * dt_s;
-    let fine_root_n = nitrogen(Tissue::FineRoot)?;
+    let fine_root_n = imported_total_nitrogen(Tissue::FineRoot)?;
     let fine_root = fine_root_layers
         .iter()
         .map(|layer| {
@@ -1125,6 +1130,54 @@ mod tests {
     }
 
     #[test]
+    fn v4_leaf_donor_n_is_excluded_while_imported_nonleaf_total_pools_remain_owned() {
+        let mut tissues = tissues_with_leaf(ElementPool {
+            carbon: 1.0,
+            nitrogen: 0.02,
+        });
+        let leaf = tissues.get_mut(&Tissue::Leaf).expect("leaf pool");
+        leaf.storage.nitrogen = 50.0;
+        leaf.transfer.nitrogen = 70.0;
+        let fine_root = tissues.get_mut(&Tissue::FineRoot).expect("fine-root pool");
+        fine_root.display.nitrogen = 0.001;
+        fine_root.storage.nitrogen = 0.002;
+        fine_root.transfer.nitrogen = 0.003;
+        let live_stem = tissues.get_mut(&Tissue::LiveStem).expect("live-stem pool");
+        live_stem.display.nitrogen = 0.004;
+        live_stem.storage.nitrogen = 0.005;
+        live_stem.transfer.nitrogen = 0.006;
+        let live_root = tissues
+            .get_mut(&Tissue::LiveCoarseRoot)
+            .expect("live-coarse-root pool");
+        live_root.display.nitrogen = 0.007;
+        live_root.storage.nitrogen = 0.008;
+        live_root.transfer.nitrogen = 0.009;
+        let layer = RootRespirationOperand {
+            layer_id: SoilLayerId::try_new("root-zone").expect("layer identity"),
+            temperature_k: 293.15,
+            nitrogen_fraction: 1.0,
+        };
+        let accepted_leaf_respiration = 0.25;
+        let response = maintenance_respiration(
+            &tissues,
+            accepted_leaf_respiration,
+            293.15,
+            &[layer],
+            1.0,
+            2.0,
+            1.0,
+        )
+        .expect("V4 maintenance ownership");
+        let expected_livewood = 0.015 + 0.024;
+        let expected_fine_root = 0.006;
+        assert_eq!(
+            response.to_bits(),
+            (accepted_leaf_respiration + expected_livewood + expected_fine_root).to_bits()
+        );
+        assert!(response < 1.0);
+    }
+
+    #[test]
     fn root_maintenance_rejects_incomplete_fraction_basis() {
         let tissues = tissues_with_leaf(ElementPool::default());
         let incomplete = [RootRespirationOperand {
@@ -1171,10 +1224,33 @@ mod tests {
             .bind(TransactionId(9), &owner, 7)
             .expect("bound material proposal");
         assert_eq!(bound.transaction_id, 9);
-        assert_eq!(bound.owner_id, "vegetation:stratum-a");
+        assert_eq!(bound.owner_id.as_str(), "vegetation:stratum-a");
         assert_eq!(bound.proposal_id, 7);
         assert_eq!(bound.carbon.to_bits(), amounts.carbon.to_bits());
         assert_eq!(bound.nitrogen.to_bits(), amounts.nitrogen.to_bits());
         assert_eq!(bound.dry_matter.to_bits(), amounts.dry_matter.to_bits());
+    }
+
+    #[test]
+    fn material_transfer_owner_is_typed_but_retains_string_wire_identity() {
+        let owner = ResourceOwnerId::try_new("stratum:canopy").expect("owner identity");
+        let transfer = material_transfer(
+            Tissue::Leaf,
+            ReceiverClass::Metabolic,
+            0.00432,
+            0.000_100_285_714_285_714_27,
+            0.48,
+        )
+        .expect("material amounts")
+        .bind(TransactionId(9), &owner, 7)
+        .expect("bound transfer");
+        let value = serde_json::to_value(&transfer).expect("transfer JSON");
+        assert_eq!(value["owner_id"], "stratum:canopy");
+        let decoded: MaterialTransfer = serde_json::from_value(value).expect("typed owner JSON");
+        assert_eq!(decoded.owner_id, owner);
+
+        let mut invalid = serde_json::to_value(&transfer).expect("transfer JSON");
+        invalid["owner_id"] = "   ".into();
+        assert!(serde_json::from_value::<MaterialTransfer>(invalid).is_err());
     }
 }

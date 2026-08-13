@@ -1,4 +1,4 @@
-//! V3 occupancy-local constitutive preparation and potential solving.
+//! V4 occupancy-local constitutive preparation and potential solving.
 
 #[allow(dead_code)]
 pub(crate) mod capped_pass;

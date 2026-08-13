@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `current / V3 implementation continuation`
+Status: `current / V4 shared-state implementation continuation`
 
 Evidence mode: `Ran + Static`
 
@@ -95,3 +95,20 @@ amendment, V3 definition, state/migration selection, potential-pass selection,
 failure contract, vector ledger, independent fixture, final science reviews,
 terminal verifications, and worker handoff. The frozen V3 authority predecessor
 is commit `94a4c99dc1228aa0399c01f4cc9590742960028f`.
+
+## 2026-08-13 V4 Shared-State Runtime Continuation
+
+Instruction discovery over the implementation package, vegetation crate,
+hillslope diagnostic, integration tests, and diagnostic fixtures resolved
+`AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`,
+`tests/fixtures/AGENTS.md`, and `docs/work-packages/AGENTS.md`. Read
+`SC-VEGETATION-001` v8 and the complete V4 authority package definition,
+vectors, reference calculator, state-schema/migration selection, review
+disposition, review artifacts, and gate history. Also read the V3 runtime
+configuration/state/migration, shared C/N, request/capped seams, and public
+transaction code before editing. Current executable authority is
+`OPENWEPP_C3_WOODY_V4`, SHA-256
+`8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`.
+V1/V2/V3 definitions and checkpoint evidence remain historical read-only
+inputs; the V4 authority package's final heavy/terminal closure remains
+pending and is not borrowed as implementation-package evidence.

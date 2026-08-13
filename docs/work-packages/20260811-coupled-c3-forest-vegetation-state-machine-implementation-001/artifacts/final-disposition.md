@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / V3 authority released / implementation resumed`
+Status: `in progress / V4 shared-state runtime integrated / capped path fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -45,3 +45,18 @@ fail-closed until the V3 capped second pass passes its focused oracle gate.
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 
 `identifiability_status=NOT_ASSESSED`
+
+The scoped V3 shared-C/N state HOLD is lifted by `SC-VEGETATION-001` v8 and
+`OPENWEPP_C3_WOODY_V4` digest
+`8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`.
+The runtime now implements V4 identity, exact recursive state shape, structural
+canonical serialization, displayed-leaf C/N ownership, and explicit V3-to-V4
+migration. Independent Rust review is GO and QA is PASS for this bounded
+increment.
+
+This is not terminal disposition. The V4 authority package's repeat heavy and
+terminal closure is pending, and the implementation still lacks sufficient
+digest-bound cap-active evidence to connect its capped draft. The public path
+remains fail-closed; Milestones 2 and 3, E20--E22 accepted finalization,
+all-owner atomic commit, benchmarks, broad heavy gates, terminal verification,
+and prompt archival remain incomplete.

@@ -17,7 +17,7 @@ FIXTURE_PATH = HERE / "openwepp_c3_woody_v4_vectors.json"
 DEFINITION_PATH = HERE / "openwepp_c3_woody_v4_definition.json"
 CONTRACT_PATH = HERE.parents[2] / "specifications/science-contracts/contracts/SC-VEGETATION-001.md"
 CONTRACTS_DIR = CONTRACT_PATH.parent
-STATIC_DEFINITION_SHA256 = "56b850e3727a3faf05d82c83c813c877ea2a3ee09bd5d4074648a7d18153e746"
+STATIC_DEFINITION_SHA256 = "66297c936a755086a9c1b64cdebd7724578695889a39976d350b5c3db444d96e"
 
 
 def canonical_bytes(value: Any) -> bytes:
@@ -74,6 +74,13 @@ def section_digest(text: str, start: str, end: str) -> str:
 
 def regenerate_definition(fixture_digest: str, generator_digest: str) -> None:
     definition = json.loads(DEFINITION_PATH.read_bytes())
+    definition["whole_state_occupancy_identity"] = {
+        "duplicate_policy": "reject_duplicate_structural_pair_before_digest",
+        "element": "object{identity:object{stratum_id:string,tile_id:string},state:occupancy_state}",
+        "forbidden": "delimiter_flattening_or_split_reconstruction",
+        "representation": "array",
+        "sort": "lexicographic_(stratum_id_UTF8_bytes,tile_id_UTF8_bytes)",
+    }
     definition["pending_transfer_schema"] = {
         "amounts": "finite_nonnegative_carbon_nitrogen_dry_matter",
         "donor_ids": sorted(MATERIAL_DONOR_CLASSES),
@@ -210,6 +217,29 @@ TISSUE_IDS = {
     "leaf", "fine_root", "live_stem", "dead_stem", "live_coarse_root",
     "dead_coarse_root",
 }
+
+
+def occupancy_entry(stratum_id: str, tile_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "identity": {"stratum_id": stratum_id, "tile_id": tile_id},
+        "state": state,
+    }
+
+
+def occupancy_pair(entry: dict[str, Any]) -> tuple[str, str]:
+    identity = entry["identity"]
+    return identity["stratum_id"], identity["tile_id"]
+
+
+def sorted_occupancies(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ordered = sorted(
+        entries,
+        key=lambda entry: tuple(part.encode("utf-8") for part in occupancy_pair(entry)),
+    )
+    pairs = [occupancy_pair(entry) for entry in ordered]
+    if len(pairs) != len(set(pairs)):
+        raise ValueError("VEG-E-087 duplicate_occupancy")
+    return ordered
 MATERIAL_DONOR_CLASSES = {
     "leaf", "fine_root", "live_stem", "dead_stem", "live_coarse_root",
     "dead_coarse_root",
@@ -322,6 +352,15 @@ def validate_shared(value: dict[str, Any], sla: float, sai_relation: float,
 def state_digest(value: dict[str, Any]) -> str:
     content = deepcopy(value)
     del content["state_sha256"]
+    if "occupancies" in content:
+        content["occupancies"] = sorted_occupancies(content["occupancies"])
+    return state_sha256(content)
+
+
+def whole_state_preimage_digest(value: dict[str, Any]) -> str:
+    """Hash a V4 whole-state preimage after canonical structural lane ordering."""
+    content = deepcopy(value)
+    content["occupancies"] = sorted_occupancies(content["occupancies"])
     return state_sha256(content)
 
 
@@ -357,11 +396,27 @@ def migrate_v3_whole(value: dict[str, Any], sla: float, sai_relation: float,
         failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_configuration_identity"})
     if value.get("state_sha256") != v3_state_digest(value):
         failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_state_digest"})
-    expected_occupancies = {"canopy@tile-a", "understory@tile-a"}
+    expected_occupancies = {("canopy", "tile-a"), ("understory", "tile-a")}
     expected_strata = {"canopy", "understory"}
     if set(value.get("strata", {})) != expected_strata:
         failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_stratum_set"})
-    if set(value.get("occupancies", {})) != expected_occupancies:
+    occupancy_entries = value.get("occupancies", [])
+    if not isinstance(occupancy_entries, list):
+        failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_occupancy_schema"})
+        occupancy_entries = []
+    occupancy_pairs = []
+    for entry in occupancy_entries:
+        if (not isinstance(entry, dict) or set(entry) != {"identity", "state"}
+                or not isinstance(entry.get("identity"), dict)
+                or set(entry["identity"]) != {"stratum_id", "tile_id"}
+                or not all(isinstance(entry["identity"][field], str)
+                           for field in ("stratum_id", "tile_id"))):
+            failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_occupancy_schema"})
+            continue
+        occupancy_pairs.append(occupancy_pair(entry))
+    if len(occupancy_pairs) != len(set(occupancy_pairs)):
+        failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 duplicate_occupancy"})
+    if set(occupancy_pairs) != expected_occupancies:
         failures.append({"stratum_id": "<whole>", "failure": "VEG-E-089 v3_occupancy_set"})
     whole_transaction = value.get("last_transaction_id")
     for stratum_id, shared in value.get("strata", {}).items():
@@ -372,12 +427,17 @@ def migrate_v3_whole(value: dict[str, Any], sla: float, sai_relation: float,
             if (transfer.get("transaction_id") != whole_transaction
                     or transfer.get("owner_id") != expected_owner):
                 failures.append({"stratum_id": stratum_id, "failure": "VEG-E-089 transfer_lineage"})
-    for occupancy_id, lane in value.get("occupancies", {}).items():
-        stratum_id = occupancy_id.split("@", 1)[0]
+    for entry in occupancy_entries:
+        if not isinstance(entry, dict) or "identity" not in entry or "state" not in entry:
+            continue
+        stratum_id, tile_id = occupancy_pair(entry)
+        lane = entry["state"]
         if stratum_id not in value.get("strata", {}):
-            failures.append({"stratum_id": occupancy_id, "failure": "VEG-E-089 occupancy_stratum_membership"})
+            failures.append({"stratum_id": stratum_id, "tile_id": tile_id,
+                             "failure": "VEG-E-089 occupancy_stratum_membership"})
         if lane.get("last_accepted_transaction_id") != whole_transaction:
-            failures.append({"stratum_id": occupancy_id, "failure": "VEG-E-089 occupancy_lineage"})
+            failures.append({"stratum_id": stratum_id, "tile_id": tile_id,
+                             "failure": "VEG-E-089 occupancy_lineage"})
     if failures:
         return failures, None
     migrated = {}
@@ -522,10 +582,10 @@ def main() -> None:
         "configuration_sha256": "4" * 64,
         "state_sha256": "",
         "strata": {"canopy": v3_source, "understory": second_v3_source},
-        "occupancies": {
-            "canopy@tile-a": occupancy,
-            "understory@tile-a": second_occupancy,
-        },
+        "occupancies": sorted_occupancies([
+            occupancy_entry("canopy", "tile-a", occupancy),
+            occupancy_entry("understory", "tile-a", second_occupancy),
+        ]),
         "last_transaction_id": 41,
     }
     v3_whole["state_sha256"] = v3_state_digest(v3_whole)
@@ -547,7 +607,7 @@ def main() -> None:
     for path, original in mutation_paths(whole_preimage):
         changed = deepcopy(whole_preimage)
         set_path(changed, path, mutate_scalar(original))
-        whole_mutation_digests[path] = state_sha256(changed)
+        whole_mutation_digests[path] = whole_state_preimage_digest(changed)
     multi_bad = deepcopy(v3_whole)
     multi_bad["strata"]["canopy"]["leaf_area"] = 99.0
     multi_bad["strata"]["understory"]["stem_area"] = 88.0
@@ -559,10 +619,16 @@ def main() -> None:
         "wrong_model": {**v3_whole, "model_definition_sha256": "0" * 64},
         "wrong_configuration": {**v3_whole, "configuration_sha256": "5" * 64},
         "wrong_state_digest": {**v3_whole, "state_sha256": "0" * 64},
-        "missing_occupancy": {**v3_whole, "occupancies": {"canopy@tile-a": occupancy}},
-        "extra_occupancy": {**v3_whole, "occupancies": {**v3_whole["occupancies"], "extra@tile-a": occupancy}},
+        "missing_occupancy": {**v3_whole, "occupancies": [occupancy_entry("canopy", "tile-a", occupancy)]},
+        "extra_occupancy": {**v3_whole, "occupancies": [*v3_whole["occupancies"], occupancy_entry("extra", "tile-a", occupancy)]},
+        "duplicate_occupancy": {**v3_whole, "occupancies": [
+            *v3_whole["occupancies"], occupancy_entry("canopy", "tile-a", occupancy),
+        ]},
         "shared_lineage": {**v3_whole, "strata": {**v3_whole["strata"], "canopy": {**v3_source, "last_transaction_id": 40}}},
-        "occupancy_lineage": {**v3_whole, "occupancies": {**v3_whole["occupancies"], "canopy@tile-a": {**occupancy, "last_accepted_transaction_id": 40}}},
+        "occupancy_lineage": {**v3_whole, "occupancies": [
+            occupancy_entry("canopy", "tile-a", {**occupancy, "last_accepted_transaction_id": 40}),
+            occupancy_entry("understory", "tile-a", second_occupancy),
+        ]},
         "missing_stratum": {**v3_whole, "strata": {"canopy": v3_source}},
         "extra_stratum": {**v3_whole, "strata": {**v3_whole["strata"], "extra": v3_source}},
         "wrong_transfer_owner": {**v3_whole, "strata": {**v3_whole["strata"], "understory": {**second_v3_source, "pending_transfers": [{**second_v3_source["pending_transfers"][0], "owner_id": "stratum:canopy"}]}}},
@@ -578,6 +644,29 @@ def main() -> None:
         for pool in ("display", "storage", "transfer")
     )
     insertion_permuted = dict(reversed(list(state.items())))
+    collision_left = occupancy_entry("a@b", "c", occupancy)
+    collision_right = occupancy_entry("a", "b@c", occupancy)
+    legacy_flattened_left = f"{collision_left['identity']['stratum_id']}@{collision_left['identity']['tile_id']}"
+    legacy_flattened_right = f"{collision_right['identity']['stratum_id']}@{collision_right['identity']['tile_id']}"
+    collision_left_bytes = state_canonical_bytes({"occupancies": [collision_left]})
+    collision_right_bytes = state_canonical_bytes({"occupancies": [collision_right]})
+    utf_identity = occupancy_entry("στρώμα@\t", "瓦@片\u0000", occupancy)
+    utf_identity_bytes = state_canonical_bytes({"occupancies": [utf_identity]})
+    whole_preimage = deepcopy(v4_whole)
+    del whole_preimage["state_sha256"]
+    whole_preimage["occupancies"] = sorted_occupancies(whole_preimage["occupancies"])
+    whole_preimage_bytes = state_canonical_bytes(whole_preimage)
+    reversed_occupancy_state = deepcopy(v4_whole)
+    reversed_occupancy_state["occupancies"] = list(
+        reversed(reversed_occupancy_state["occupancies"]))
+    duplicate_v4_state = deepcopy(v4_whole)
+    duplicate_v4_state["occupancies"].append(
+        occupancy_entry("canopy", "tile-a", deepcopy(occupancy)))
+    try:
+        state_digest(duplicate_v4_state)
+        duplicate_v4_outcome = "INVALIDLY_ACCEPTED"
+    except ValueError as error:
+        duplicate_v4_outcome = str(error)
     fixture = {
         "model_version": "OPENWEPP_C3_WOODY_V4",
         "oracle_independence": {
@@ -628,6 +717,34 @@ def main() -> None:
         "canonical_state_sha256": base_digest,
         "mutation_digests": mutation_digests,
         "whole_state_mutation_digests": whole_mutation_digests,
+        "whole_state_canonical": {
+            "preimage": whole_preimage,
+            "preimage_utf8_hex": whole_preimage_bytes.hex(),
+            "sha256": hashlib.sha256(whole_preimage_bytes).hexdigest(),
+            "occupancy_representation": "array of {identity:{stratum_id,tile_id},state} sorted by the typed UTF-8 identity pair",
+        },
+        "occupancy_identity_vectors": {
+            "delimiter_collision": {
+                "left": collision_left,
+                "right": collision_right,
+                "legacy_flattened_left": legacy_flattened_left,
+                "legacy_flattened_right": legacy_flattened_right,
+                "left_preimage_utf8_hex": collision_left_bytes.hex(),
+                "right_preimage_utf8_hex": collision_right_bytes.hex(),
+                "left_sha256": hashlib.sha256(collision_left_bytes).hexdigest(),
+                "right_sha256": hashlib.sha256(collision_right_bytes).hexdigest(),
+            },
+            "arbitrary_utf8_and_control": {
+                "entry": utf_identity,
+                "preimage_utf8_hex": utf_identity_bytes.hex(),
+                "sha256": hashlib.sha256(utf_identity_bytes).hexdigest(),
+            },
+            "duplicate_structural_pair": {
+                "state": duplicate_v4_state,
+                "expected": "VEG-E-087 duplicate_occupancy",
+                "actual": duplicate_v4_outcome,
+            },
+        },
         "schema": {
             "top_level_fields": sorted(state),
             "tissue_ids": sorted(state["tissues"]),
@@ -699,6 +816,21 @@ def main() -> None:
             "whole_state_digests_bound": bool(v3_whole["state_sha256"] and v4_whole["state_sha256"]),
             "every_whole_state_scalar_changes_digest": all(
                 digest != whole_digest for digest in whole_mutation_digests.values()),
+            "whole_state_preimage_matches_digest": (
+                hashlib.sha256(whole_preimage_bytes).hexdigest() == whole_digest),
+            "occupancy_input_order_is_normalized": (
+                state_digest(reversed_occupancy_state) == whole_digest),
+            "v4_duplicate_structural_pair_rejected": (
+                duplicate_v4_outcome == "VEG-E-087 duplicate_occupancy"),
+            "typed_occupancy_collision_is_distinct": (
+                legacy_flattened_left == legacy_flattened_right
+                and collision_left_bytes != collision_right_bytes
+                and hashlib.sha256(collision_left_bytes).digest()
+                    != hashlib.sha256(collision_right_bytes).digest()),
+            "arbitrary_utf8_occupancy_is_framed": (
+                "στρώμα@\t".encode("utf-8").hex() in utf_identity_bytes.decode("utf-8")
+                and "瓦@片\u0000".encode("utf-8").hex()
+                    in utf_identity_bytes.decode("utf-8")),
             "actual_migration_preserves_both_occupancies": (
                 v4_whole["occupancies"] == v3_whole["occupancies"]),
             "multi_stratum_failures_exhaustive": (

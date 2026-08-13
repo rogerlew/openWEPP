@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V3 potential-pass remediation active / shared C/N authority hold scoped`
+Status: `executing / V4 shared-state runtime integrated / capped public path fail-closed`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V3` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V4` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,13 +32,18 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v7, approved/active;
+- `SC-VEGETATION-001` v8, approved/active;
 - `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V3`, SHA-256
-  `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`;
-- V3 potential-pass authority terminal commit
-  `94a4c99dc1228aa0399c01f4cc9590742960028f`;
+- `OPENWEPP_C3_WOODY_V4`, SHA-256
+  `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`;
+- the active V4 shared-state authority package exact bytes: fixture SHA-256
+  `3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d`
+  and generator SHA-256
+  `422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2`;
+  its final heavy and
+  terminal closure remains pending and is not claimed by this implementation
+  increment;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
 
@@ -430,8 +435,14 @@ closure, and line-count governance, not artifact presence alone.
 - [x] (2026-08-12) Preserve the V2 HOLD and Increment 2A evidence, complete the
   contract-first V3 potential-pass authority package, and freeze its released
   bytes at commit `94a4c99dc1228aa0399c01f4cc9590742960028f`.
-- [ ] Migrate executable identity and occupancy state to V3's scalar common
-  root node without normalizing ambiguous V2 layer warm starts.
+- [x] (2026-08-13) Integrate V4 executable identity and exact shared-state
+  ownership: displayed leaf C alone derives LAI/area caches, displayed leaf N
+  alone supplies positive-LAI capacity/respiration inputs, the two unconsumed
+  previous-offset fields are absent, and the structural canonical serializer
+  matches all 155 independent mutation vectors.
+- [x] (2026-08-13) Implement explicit V3-to-V4 migration with complete source
+  validation, exact constitutive-payload comparison, exhaustive unresolved
+  reports, V4 identity rebinding, and no direct V1-to-V4 shortcut.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
@@ -468,6 +479,17 @@ closure, and line-count governance, not artifact presence alone.
   vector gap without changing the valid V2 tile-column topology.
   Evidence: the V3 authority package passed dual science review, 2,481/2,481
   full-workspace tests, and dual terminal verification at commit `94a4c99dc`.
+- Observation: V3 still left shared leaf-pool ownership and two persisted
+  offset fields ambiguous; V4 resolves those identities without changing the
+  admitted radiation or Stage-A constitutive equations.
+  Evidence: `SC-VEGETATION-001` v8 and the V4 definition bind displayed leaf C
+  and N ownership, remove the two unconsumed fields, and supply 155 independent
+  whole-state mutation digests.
+- Observation: the released minimum-complementarity statement is not enough to
+  accept a production capped evaluator.
+  Evidence: no digest-bound fully coupled cap-active vector currently binds the
+  active-set equality convention and the `q_law`/cap operands; the draft and
+  public transaction therefore remain fail-closed.
 
 ## Decision Log
 
@@ -503,6 +525,17 @@ closure, and line-count governance, not artifact presence alone.
   Rationale: V3 is the exact authority lift requested by the HOLD audit; the V1
   HOLD and V2 Increment 2A remain immutable implementation history.
   Date/Author: 2026-08-12 / Codex, implementing user direction.
+- Decision: advance this same package to V4 shared-state authority while
+  preserving the V1/V2/V3 checkpoints and HOLD records.
+  Rationale: V4 is the contract-first lift for the scoped C/N-state HOLD; it
+  changes state identity and migration, not the package objective or write set.
+  Date/Author: 2026-08-13 / Codex, implementing user direction.
+- Decision: retain the capped evaluator only as disconnected draft code and
+  keep `execute_candidate()` fail-closed.
+  Rationale: exact cap-active acceptance evidence and equality convention are
+  still absent, so neither `STAGE_B_E11_E15_EXACT_ORACLE` nor Milestones 2/3
+  can pass truthfully.
+  Date/Author: 2026-08-13 / Codex, applying contract-first fail-closed rules.
 
 ## Outcomes & Retrospective
 
@@ -562,6 +595,14 @@ exact boundary and lift action are recorded in
 `artifacts/cn-state-hold-legitimacy-audit.md`. Work that does not consume those
 identities continues; the public transaction and the affected E20--E22
 shared-state finalizer remain fail-closed.
+
+V4 shared-state continuation outcome (active): the scoped shared-state HOLD is
+lifted for runtime identity, parsing, canonical serialization, displayed-pool
+ownership, and explicit V3-to-V4 migration. Independent Rust review returned
+GO with one accepted Medium duplication/decomposition item; independent QA
+returned PASS after recursive shape and typed-mutation remediation. The public
+candidate, capped Stage-B solve, E20--E22 finalizer, and whole-owner commit are
+still incomplete. No Milestone 2 or 3 completion claim is made.
 
 ## Idempotence And Recovery
 

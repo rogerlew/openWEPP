@@ -1,10 +1,21 @@
 # Gate Results
 
-Status: `complete`
+Status: `executing remediation`
 
 Evidence mode: `Ran`
 
 ## Intake
+
+## Post-release remediation intake
+
+The prior COMPLETE checkpoint and every review/gate result below remain
+historical evidence. Accepted defect: whole-state fixture/oracle occupancy keys
+were flattened as `stratum@tile`, which collides for distinct typed pairs and
+does not reproduce the production structural occupancy preimage. No finding is
+deferred or rejected. Correction requires structural identity records, UTF-8
+and `@` collision poisons, production-consumable whole-state preimage bytes,
+digest and mutation vectors, new V4 definition/fixture/generator identities,
+dual rereview, critical gates, reconciliation, and dual terminal verification.
 
 - `git rev-parse HEAD` -> `9a154596d258e43aab7ec51dd7aa6b27f22ac1f3`.
 - `git status --short --branch` -> `main...origin/main [ahead 11]`, clean at intake.
@@ -17,6 +28,53 @@ Evidence mode: `Ran`
 
 Subsequent failed and successful commands are appended below; no failed
 evidence is replaced.
+
+## Structural occupancy-identity correction
+
+- The V8 amendment, oracle, fixture, and definition now encode each occupancy
+  as `{identity:{stratum_id,tile_id},state}` in an array sorted by the typed
+  UTF-8 pair. Each identity component is independently length-framed;
+  delimiter flattening and duplicate structural pairs are rejected.
+- Independent vectors include the collision pair `("a@b","c")` versus
+  `("a","b@c")`, arbitrary Greek/CJK/`@`/tab/NUL identities, exact canonical
+  whole-state preimage bytes, occupancy input-order normalization, and 155
+  whole-state scalar mutation digests including both components of both lane
+  identities.
+- Reviewer A correctly returned HOLD because the first remediation candidate
+  sorted duplicate structural pairs but did not reject them before V4 digest.
+  The finding was accepted. Canonical normalization now rejects duplicate typed
+  pairs and the fixture executes an explicit V4 duplicate-state poison.
+- Two consecutive post-correction generator executions were byte-identical.
+  Frozen remediation candidates are definition
+  `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`,
+  fixture
+  `3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d`,
+  and generator
+  `422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2`.
+- `markdown-doc lint --path <package>` -> PASS, 21 files, 0 errors/warnings.
+- `check_sc_unit_compliance.sh --path SC-VEGETATION-001.md` -> PASS.
+- `check_science_contract_admission.sh --base-ref 0525fe30... --worktree`
+  -> PASS, `A0_ADMITTED contracts=45 science_surfaces=0`, authority SHA-256
+  `1c1c6dee98bf78f89f401d815bf261fbbdbf8fb846fb3b63be83f34cd3316c45`.
+- `check_authority_suite_antievasion.sh` -> PASS.
+- `cargo nextest run --test vegetation_boundary_authority_contract --profile quick`
+  -> PASS, 17/17.
+- `cargo nextest run --test auth11_required_suite_obligation_guards_contract`
+  -> PASS, 3/3.
+- `git diff --check` -> PASS.
+- Independent remediation rereviews A and B -> GO, no unresolved material
+  finding. Reviewer B independently reproduced the 25,001-byte whole-state
+  preimage SHA-256, all 155 scalar mutations including four occupancy identity
+  scalars, collision separation, arbitrary UTF/control framing, structural
+  ordering, and duplicate rejection; focused production consumption tests
+  passed 3/3.
+- Post-registry-rebind focused rerun -> generator PASS; package Markdown PASS
+  (21 files); unit compliance PASS; admission PASS with authority SHA-256
+  `a511ea7911078ae92635ccd900cfc285f9f8ad6a8462729bdc1d2f98539fd37f`;
+  anti-evasion PASS; A0 17/17 PASS; AUTH11 3/3 PASS; diff hygiene PASS. The
+  production registry and authority definition both hash to `8ace38d1...`.
+- Heavy validation remains intentionally pending until the concurrently owned
+  Rust and documentation tree reaches stable bytes.
 
 ## Authority and independent vectors
 

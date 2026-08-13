@@ -1,4 +1,4 @@
-//! V3 fixed-authorization column-pass orchestration and finalized water uses.
+//! V4 fixed-authorization column-pass orchestration and finalized water uses.
 //!
 //! This module deliberately starts the second column pass from the immutable
 //! beginning owner state. It binds the same whole-column radiation preparation
@@ -43,7 +43,7 @@ pub(crate) struct CappedColumnPass {
     pub diagnostics: BTreeMap<OccupancyId, OccupancyDiagnostics>,
 }
 
-/// Constitutive boundary for one exact V3 occupancy under owner-fixed caps.
+/// Constitutive boundary for one exact V4 occupancy under owner-fixed caps.
 /// The evaluator receives local tile-ground caps through [`OccupancyPassInput`]
 /// and must solve the complete coupled system from the supplied beginning lane.
 pub(crate) trait CappedOccupancyEvaluator {
@@ -78,7 +78,7 @@ impl RadiationBoundCappedSolver<'_> {
                 .any(|(key, value)| key != &value.occupancy_id)
         {
             return Err(VegetationError::Receipt(
-                "V3 capped radiation occupancy identity".into(),
+                "V4 capped radiation occupancy identity".into(),
             ));
         }
         Ok(RadiationBoundCappedSolver {
@@ -92,7 +92,7 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
     fn solve(&self, input: OccupancyPassInput<'_>) -> Result<OccupancyPassResult, VegetationError> {
         let Some(local_caps) = input.local_authorizations_kg_m2_tile_ground.as_ref() else {
             return Err(VegetationError::Receipt(
-                "owner authorization absent during V3 capped pass".into(),
+                "owner authorization absent during V4 capped pass".into(),
             ));
         };
         let expected_layers = input
@@ -108,11 +108,11 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
                 .any(|amount| !amount.is_finite() || *amount < 0.0)
         {
             return Err(VegetationError::Receipt(
-                "V3 capped local authorization identity".into(),
+                "V4 capped local authorization identity".into(),
             ));
         }
         let radiation = self.radiation.get(input.occupancy_id).ok_or_else(|| {
-            VegetationError::Receipt("V3 capped radiation occupancy identity".into())
+            VegetationError::Receipt("V4 capped radiation occupancy identity".into())
         })?;
         if radiation.occupancy_id != *input.occupancy_id
             || radiation.conditional_lai_m2_m2_tile_ground.to_bits()
@@ -121,14 +121,14 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
                 != input.conditional_wai_m2_m2_tile_ground.to_bits()
         {
             return Err(VegetationError::Receipt(
-                "V3 capped radiation area/occupancy identity".into(),
+                "V4 capped radiation area/occupancy identity".into(),
             ));
         }
         self.evaluator.solve_capped(input, radiation)
     }
 }
 
-/// Rebuilds every V3 tile column from the original beginning state under one
+/// Rebuilds every V4 tile column from the original beginning state under one
 /// immutable typed authorization batch. No Stage-A candidate is an input.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_capped_column_pass(
@@ -144,11 +144,11 @@ pub(crate) fn execute_capped_column_pass(
     validate_candidate_transaction(beginning, transaction_id)?;
     validate_candidate_inputs(configuration, beginning, forcing)?;
     if !interval_s.is_finite() || interval_s <= 0.0 {
-        return Err(VegetationError::Domain("V3 capped interval duration"));
+        return Err(VegetationError::Domain("V4 capped interval duration"));
     }
     if authorizations.transaction_id() != transaction_id {
         return Err(VegetationError::Receipt(
-            "V3 capped authorization transaction identity".into(),
+            "V4 capped authorization transaction identity".into(),
         ));
     }
 
@@ -193,10 +193,10 @@ fn validate_candidate_transaction(
     let expected = beginning
         .last_transaction_id
         .checked_add(1)
-        .ok_or_else(|| VegetationError::Receipt("V3 transaction identity overflow".into()))?;
+        .ok_or_else(|| VegetationError::Receipt("V4 transaction identity overflow".into()))?;
     if transaction_id.0 != expected {
         return Err(VegetationError::Receipt(
-            "nonsequential V3 capped-pass transaction identity".into(),
+            "nonsequential V4 capped-pass transaction identity".into(),
         ));
     }
     Ok(())
@@ -215,7 +215,7 @@ fn tile_fractions(
             .values()
             .any(|fraction| !fraction.is_finite() || *fraction <= 0.0)
     {
-        return Err(VegetationError::Domain("V3 capped tile fraction"));
+        return Err(VegetationError::Domain("V4 capped tile fraction"));
     }
     Ok(fractions)
 }
@@ -234,7 +234,7 @@ fn collect_finalized_uses(
                     || amounts.insert(key.clone(), *amount).is_some()
                 {
                     return Err(VegetationError::Receipt(
-                        "duplicate or mismatched V3 finalized water identity".into(),
+                        "duplicate or mismatched V4 finalized water identity".into(),
                     ));
                 }
             }
@@ -248,7 +248,7 @@ fn collect_finalized_uses(
     let actual = amounts.keys().cloned().collect::<BTreeSet<_>>();
     if actual != expected {
         return Err(VegetationError::Receipt(
-            "V3 finalized water key set differs from authorization".into(),
+            "V4 finalized water key set differs from authorization".into(),
         ));
     }
 
@@ -257,7 +257,7 @@ fn collect_finalized_uses(
         .iter()
         .map(|(key, authorization)| {
             let raw = amounts.get(key).copied().ok_or_else(|| {
-                VegetationError::Receipt("V3 finalized water authorization identity".into())
+                VegetationError::Receipt("V4 finalized water authorization identity".into())
             })?;
             let amount = authorizations
                 .normalize_finalized_stand_amount(key, raw, tile_fractions, interval_s)
@@ -268,7 +268,7 @@ fn collect_finalized_uses(
                 || authorization.basis != WATER_STAND_BASIS
             {
                 return Err(VegetationError::Receipt(
-                    "V3 finalized water authorization identity".into(),
+                    "V4 finalized water authorization identity".into(),
                 ));
             }
             let finalized = FinalizedWaterUse {
@@ -279,12 +279,12 @@ fn collect_finalized_uses(
                 basis: authorization.basis,
             };
             let request = authorizations.requests().get(key).ok_or_else(|| {
-                VegetationError::Receipt("V3 finalized water request identity".into())
+                VegetationError::Receipt("V4 finalized water request identity".into())
             })?;
             validate_resource_protocol(request, authorization, &finalized).map_err(
                 |violation| {
                     VegetationError::Receipt(format!(
-                        "V3 finalized water protocol violation: {violation:?}"
+                        "V4 finalized water protocol violation: {violation:?}"
                     ))
                 },
             )?;
@@ -307,7 +307,7 @@ fn collect_diagnostics(
                 .is_some()
             {
                 return Err(VegetationError::Receipt(
-                    "duplicate V3 capped diagnostic identity".into(),
+                    "duplicate V4 capped diagnostic identity".into(),
                 ));
             }
         }
@@ -316,7 +316,7 @@ fn collect_diagnostics(
 }
 
 fn resource_boundary_error(error: &WaterResourceBoundaryError) -> VegetationError {
-    VegetationError::Receipt(format!("V3 capped water boundary: {error}"))
+    VegetationError::Receipt(format!("V4 capped water boundary: {error}"))
 }
 
 #[cfg(test)]
@@ -447,14 +447,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let mut configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration fixture");
+        .expect("V4 configuration fixture");
         let original = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V3 state fixture");
+        .expect("V4 state fixture");
         let tile_id = configuration.topology_tiles[0].tile_id.clone();
         let mut upper_config = configuration.strata.remove(0);
         upper_config.stratum_id = stratum_id("upper");
@@ -746,7 +746,7 @@ mod tests {
                 &evaluator,
             ),
             Err(VegetationError::Receipt(message))
-                if message == "nonsequential V3 capped-pass transaction identity"
+                if message == "nonsequential V4 capped-pass transaction identity"
         ));
         assert!(matches!(
             execute_capped_column_pass(
@@ -759,7 +759,7 @@ mod tests {
                 &authorizations,
                 &evaluator,
             ),
-            Err(VegetationError::Domain("V3 capped interval duration"))
+            Err(VegetationError::Domain("V4 capped interval duration"))
         ));
         assert!(evaluator.seen.borrow().is_empty());
     }

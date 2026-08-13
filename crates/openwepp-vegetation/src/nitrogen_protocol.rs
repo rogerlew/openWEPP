@@ -498,9 +498,9 @@ mod tests {
 
     fn stratum() -> StratumConfiguration {
         let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 fixture should parse");
+        .expect("V4 fixture should parse");
         configuration.strata[0].clone()
     }
 

@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `EXECUTED-HOLD / V1 findings retained; exact V2 potential authority incomplete`
+Status: `executing / V4 runtime reviews PASS / capped acceptance gap retained`
 
 The former heterogeneous E04 liquid-topology omission was lifted by V2.
 Increment 2B independently exposed additional load-bearing omissions and did
@@ -56,3 +56,24 @@ operand handling, and line-count decomposition are accepted and unresolved.
 They are not deferred to a new package: they remain in this package for the
 first continuation after the authority lift. No original or new finding is
 marked remediated without passing focused review evidence.
+
+## V4 Runtime Review Disposition
+
+The V4 authority lift resolves the scoped shared-C/N state questions recorded
+in `cn-state-hold-legitimacy-audit.md`: displayed leaf C owns LAI/area caches,
+displayed leaf N owns positive-LAI capacity and leaf Rd inputs, and both
+unconsumed previous-offset fields are removed. V1/V2/V3 HOLD and review
+artifacts remain unchanged.
+
+| Review finding | Disposition | Evidence / remaining action |
+|---|---|---|
+| recursive V4 JSON shape and typed structural mutation coverage | accepted / corrected | exact recursive key sets, duplicate rejection, typed identity/domain poisons, and all 155 independent mutation digests pass |
+| leaf displayed/storage/transfer ownership | accepted / corrected | displayed leaf C/N are the only area/capacity/Rd owners; storage/transfer poisons and no-double-leaf-maintenance test pass |
+| V3-to-V4 migration must validate, not merely reshape | accepted / corrected | source/config/state/lineage/membership/area/transfer validation, exhaustive issue report, target revalidation, and no direct V1/V2 shortcut pass |
+| duplicated validation across transaction, migration, state-shape, and canonical serializer | accepted Medium / non-blocking at this increment | `review_v4_runtime` GO: intentional independent boundary validation has 155-mutation parity and target revalidation; extract shared structural validation before terminal closure to reduce drift risk |
+| post-remediation runtime QA | PASS | `qa_v4_runtime` found no material issue after recursive-shape and typed-mutation corrections |
+| authorization-capped solver acceptance | accepted blocker / unresolved | canonical minimum complementarity alone does not bind the cap-equality active set or independent `q_law`/cap operands; obtain digest-bound fully coupled cap-active vectors before connecting the draft or passing `STAGE_B_E11_E15_EXACT_ORACLE` |
+
+No review labels the package, Milestone 2, Milestone 3, or E01--E22 public
+transaction complete. The capped acceptance gap is not deferred or waived; it
+is the current fail-closed boundary.

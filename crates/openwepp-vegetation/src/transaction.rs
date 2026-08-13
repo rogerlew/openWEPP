@@ -12,10 +12,16 @@ use crate::occupancy_state::OccupancyState;
 use crate::{MODEL_BYTES, MODEL_SHA256, ModelDefinition, VegetationConfiguration, VegetationError};
 use sha2::{Digest, Sha256};
 
+mod state_canonical;
+mod state_shape;
+
 mod occupancy_state_map {
     use std::collections::BTreeMap;
+    use std::fmt;
+    use std::marker::PhantomData;
 
     use openwepp_kernel_contract::OccupancyId;
+    use serde::de::{MapAccess, Visitor};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     use crate::occupancy_state::OccupancyState;
@@ -27,7 +33,17 @@ mod occupancy_state_map {
     where
         S: Serializer,
     {
-        lanes.iter().collect::<Vec<_>>().serialize(serializer)
+        #[derive(Serialize)]
+        struct Entry<'a> {
+            identity: &'a OccupancyId,
+            state: &'a OccupancyState,
+        }
+
+        lanes
+            .iter()
+            .map(|(identity, state)| Entry { identity, state })
+            .collect::<Vec<_>>()
+            .serialize(serializer)
     }
 
     pub(super) fn deserialize<'de, D>(
@@ -36,15 +52,217 @@ mod occupancy_state_map {
     where
         D: Deserializer<'de>,
     {
-        let entries = Vec::<(OccupancyId, OccupancyState)>::deserialize(deserializer)?;
+        struct Entry {
+            identity: OccupancyId,
+            state: OccupancyState,
+        }
+
+        impl<'de> Deserialize<'de> for Entry {
+            fn deserialize<T>(deserializer: T) -> Result<Self, T::Error>
+            where
+                T: Deserializer<'de>,
+            {
+                enum Field {
+                    Identity,
+                    State,
+                }
+
+                impl<'de> Deserialize<'de> for Field {
+                    fn deserialize<T>(deserializer: T) -> Result<Self, T::Error>
+                    where
+                        T: Deserializer<'de>,
+                    {
+                        struct FieldVisitor;
+
+                        impl Visitor<'_> for FieldVisitor {
+                            type Value = Field;
+
+                            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                                formatter.write_str("`identity` or `state`")
+                            }
+
+                            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                            where
+                                E: serde::de::Error,
+                            {
+                                match value {
+                                    "identity" => Ok(Field::Identity),
+                                    "state" => Ok(Field::State),
+                                    _ => Err(E::unknown_field(value, &["identity", "state"])),
+                                }
+                            }
+                        }
+
+                        deserializer.deserialize_identifier(FieldVisitor)
+                    }
+                }
+
+                struct EntryVisitor(PhantomData<()>);
+
+                impl<'de> Visitor<'de> for EntryVisitor {
+                    type Value = Entry;
+
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                        formatter.write_str(
+                            "a structural V4 occupancy object with identity and state fields",
+                        )
+                    }
+
+                    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+                    where
+                        A: MapAccess<'de>,
+                    {
+                        let mut identity = None;
+                        let mut state = None;
+                        while let Some(field) = map.next_key()? {
+                            match field {
+                                Field::Identity => {
+                                    if identity.is_some() {
+                                        return Err(serde::de::Error::duplicate_field("identity"));
+                                    }
+                                    identity = Some(map.next_value()?);
+                                }
+                                Field::State => {
+                                    if state.is_some() {
+                                        return Err(serde::de::Error::duplicate_field("state"));
+                                    }
+                                    state = Some(map.next_value()?);
+                                }
+                            }
+                        }
+                        Ok(Entry {
+                            identity: identity
+                                .ok_or_else(|| serde::de::Error::missing_field("identity"))?,
+                            state: state.ok_or_else(|| serde::de::Error::missing_field("state"))?,
+                        })
+                    }
+                }
+
+                deserializer.deserialize_map(EntryVisitor(PhantomData))
+            }
+        }
+
+        let entries = Vec::<Entry>::deserialize(deserializer)?;
         let expected_len = entries.len();
-        let lanes = entries.into_iter().collect::<BTreeMap<_, _>>();
+        let lanes = entries
+            .into_iter()
+            .map(|entry| (entry.identity, entry.state))
+            .collect::<BTreeMap<_, _>>();
         if lanes.len() != expected_len {
             return Err(serde::de::Error::custom(
-                "duplicate V3 occupancy state identity",
+                "duplicate V4 occupancy state identity",
             ));
         }
         Ok(lanes)
+    }
+}
+
+mod stratum_state_map {
+    use std::collections::BTreeMap;
+    use std::fmt;
+    use std::marker::PhantomData;
+
+    use openwepp_kernel_contract::StratumId;
+    use serde::de::{MapAccess, Visitor};
+    use serde::{Deserializer, Serialize, Serializer};
+
+    use super::StratumSharedState;
+
+    pub(super) fn serialize<S>(
+        strata: &BTreeMap<StratumId, StratumSharedState>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        strata.serialize(serializer)
+    }
+
+    pub(super) fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<BTreeMap<StratumId, StratumSharedState>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct StrictStrata(PhantomData<()>);
+
+        impl<'de> Visitor<'de> for StrictStrata {
+            type Value = BTreeMap<StratumId, StratumSharedState>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("a V4 shared-stratum object with unique identities")
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut strata = BTreeMap::new();
+                while let Some((id, state)) = map.next_entry()? {
+                    if strata.insert(id, state).is_some() {
+                        return Err(serde::de::Error::custom(
+                            "duplicate V4 shared-stratum identity",
+                        ));
+                    }
+                }
+                Ok(strata)
+            }
+        }
+
+        deserializer.deserialize_map(StrictStrata(PhantomData))
+    }
+}
+
+mod tissue_state_map {
+    use std::collections::BTreeMap;
+    use std::fmt;
+    use std::marker::PhantomData;
+
+    use serde::de::{MapAccess, Visitor};
+    use serde::{Deserializer, Serialize, Serializer};
+
+    use crate::carbon_nitrogen::{Tissue, TissuePool};
+
+    pub(super) fn serialize<S>(
+        tissues: &BTreeMap<Tissue, TissuePool>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        tissues.serialize(serializer)
+    }
+
+    pub(super) fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<BTreeMap<Tissue, TissuePool>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct StrictTissues(PhantomData<()>);
+
+        impl<'de> Visitor<'de> for StrictTissues {
+            type Value = BTreeMap<Tissue, TissuePool>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("a V4 tissue object with unique identities")
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut tissues = BTreeMap::new();
+                while let Some((id, pool)) = map.next_entry()? {
+                    if tissues.insert(id, pool).is_some() {
+                        return Err(serde::de::Error::custom("duplicate V4 tissue identity"));
+                    }
+                }
+                Ok(tissues)
+            }
+        }
+
+        deserializer.deserialize_map(StrictTissues(PhantomData))
     }
 }
 
@@ -60,6 +278,7 @@ pub enum PhenologyPhase {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct StratumSharedState {
+    #[serde(with = "tissue_state_map")]
     pub tissues: BTreeMap<Tissue, TissuePool>,
     pub retranslocation_n: f64,
     pub nsc_c: f64,
@@ -69,8 +288,6 @@ pub struct StratumSharedState {
     pub phase: PhenologyPhase,
     pub onset_remaining_s: f64,
     pub offset_remaining_s: f64,
-    pub previous_leaf_offset_flux: f64,
-    pub previous_root_offset_flux: f64,
     pub previous_gsi: f64,
     pub pending_transfers: Vec<MaterialTransfer>,
     pub t10_k: f64,
@@ -86,6 +303,7 @@ pub struct CoupledOwnedState {
     pub model_definition_sha256: String,
     pub configuration_sha256: String,
     pub state_sha256: String,
+    #[serde(with = "stratum_state_map")]
     pub strata: BTreeMap<StratumId, StratumSharedState>,
     #[serde(with = "occupancy_state_map")]
     pub occupancies: BTreeMap<OccupancyId, OccupancyState>,
@@ -97,6 +315,9 @@ impl CoupledOwnedState {
         bytes: &[u8],
         config: &VegetationConfiguration,
     ) -> Result<Self, VegetationError> {
+        let structural: serde_json::Value = serde_json::from_slice(bytes)
+            .map_err(|error| VegetationError::Schema(error.to_string()))?;
+        state_shape::validate(&structural)?;
         let value: Self = serde_json::from_slice(bytes)
             .map_err(|error| VegetationError::Schema(error.to_string()))?;
         value.validate(config)?;
@@ -152,7 +373,7 @@ impl CoupledOwnedState {
             .cloned()
             .collect::<std::collections::BTreeSet<_>>();
         if state_occupancies != expected_occupancies {
-            return Err(VegetationError::Domain("V3 occupancy state identity"));
+            return Err(VegetationError::Domain("V4 occupancy state identity"));
         }
         let expected_previous_transaction_id =
             (self.last_transaction_id != 0).then_some(self.last_transaction_id);
@@ -161,12 +382,13 @@ impl CoupledOwnedState {
                 .strata
                 .iter()
                 .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
-                .ok_or(VegetationError::Domain("V3 occupancy stratum identity"))?;
+                .ok_or(VegetationError::Domain("V4 occupancy stratum identity"))?;
             state
                 .validate(expected_previous_transaction_id)
                 .map_err(|error| VegetationError::Receipt(error.to_string()))?;
         }
-        for state in self.strata.values() {
+        let mut transfer_identities = std::collections::BTreeSet::new();
+        for (stratum_id, state) in &self.strata {
             if state.last_transaction_id != self.last_transaction_id {
                 return Err(VegetationError::Receipt(
                     "shared stratum transaction lineage".into(),
@@ -181,8 +403,6 @@ impl CoupledOwnedState {
                 state.standing_dead_dm,
                 state.onset_remaining_s,
                 state.offset_remaining_s,
-                state.previous_leaf_offset_flux,
-                state.previous_root_offset_flux,
                 state.previous_gsi,
                 state.t10_k,
                 state.leaf_area,
@@ -192,6 +412,11 @@ impl CoupledOwnedState {
             if scalars.iter().any(|value| !value.is_finite())
                 || state.retranslocation_n < 0.0
                 || state.nsc_c < 0.0
+                || state.standing_dead.carbon < 0.0
+                || state.standing_dead.nitrogen < 0.0
+                || state.standing_dead_dm < 0.0
+                || state.onset_remaining_s < 0.0
+                || state.offset_remaining_s < 0.0
                 || state.leaf_area < 0.0
                 || state.root_area < 0.0
                 || state.stem_area < 0.0
@@ -215,12 +440,21 @@ impl CoupledOwnedState {
             {
                 return Err(VegetationError::Domain("six-tissue identity"));
             }
+            let expected_owner_id = format!("stratum:{}", stratum_id.as_str());
             for transfer in &state.pending_transfers {
+                let identity = (
+                    transfer.transaction_id,
+                    transfer.owner_id.clone(),
+                    transfer.proposal_id,
+                );
                 if transfer.transaction_id == 0
-                    || transfer.owner_id.trim().is_empty()
+                    || transfer.transaction_id != self.last_transaction_id
+                    || transfer.owner_id.as_str() != expected_owner_id
+                    || transfer.proposal_id == 0
                     || [transfer.carbon, transfer.nitrogen, transfer.dry_matter]
                         .iter()
                         .any(|value| !value.is_finite() || *value < 0.0)
+                    || !transfer_identities.insert(identity)
                 {
                     return Err(VegetationError::Domain("pending material transfer"));
                 }
@@ -239,16 +473,18 @@ impl CoupledOwnedState {
                     }
                 }
             }
+            let stratum = config
+                .strata
+                .iter()
+                .find(|candidate| candidate.stratum_id == *stratum_id)
+                .ok_or(VegetationError::Domain("missing stratum configuration"))?;
+            validate_displayed_leaf_identity(state, stratum)?;
         }
         Ok(())
     }
 
     pub fn canonical_sha256(&self) -> Result<String, VegetationError> {
-        let mut canonical = self.clone();
-        canonical.state_sha256.clear();
-        let bytes = serde_json::to_vec(&canonical)
-            .map_err(|error| VegetationError::Schema(error.to_string()))?;
-        Ok(format!("{:x}", Sha256::digest(bytes)))
+        Ok(state_canonical::sha256(self))
     }
 }
 
@@ -417,7 +653,7 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Validates the complete public V3 state surface, then fails closed until the
+/// Validates the complete public V4 state surface, then fails closed until the
 /// occupancy-local authorization-capped transaction is implemented.
 pub fn execute_candidate(
     model: &ModelDefinition,
@@ -429,11 +665,11 @@ pub fn execute_candidate(
 ) -> Result<CoupledCandidate, VegetationError> {
     validate_execution(model, config, beginning, forcing)?;
     Err(VegetationError::Unsupported(
-        "V3 occupancy-local capped transaction routing is implementation-incomplete",
+        "V4 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection entry point retained while V3 routing is incomplete.
+/// Failure-injection entry point retained while V4 routing is incomplete.
 pub fn execute_candidate_with_failure(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -508,23 +744,7 @@ pub(crate) fn validate_candidate_inputs(
             .strata
             .get(&stratum.stratum_id)
             .ok_or(VegetationError::Domain("missing stratum state"))?;
-        let expected_lai = tissue_carbon(state, Tissue::Leaf)? * stratum.sla_m2_per_kg_c;
-        let derived_stem_area = expected_lai * stratum.sai_relation;
-        let derived_root_area = (expected_lai + derived_stem_area) * stratum.root_to_leaf_area;
-        if (state.leaf_area - expected_lai).abs() > 1e-14 + 64.0 * f64::EPSILON * expected_lai.abs()
-        {
-            return Err(VegetationError::Domain("leaf-C/SLA state identity"));
-        }
-        if (state.stem_area - derived_stem_area).abs()
-            > 1e-14 + 64.0 * f64::EPSILON * derived_stem_area.abs()
-        {
-            return Err(VegetationError::Domain("leaf-area/SAI state identity"));
-        }
-        if (state.root_area - derived_root_area).abs()
-            > 1e-14 + 64.0 * f64::EPSILON * derived_root_area.abs()
-        {
-            return Err(VegetationError::Domain("leaf/SAI/root-area state identity"));
-        }
+        validate_displayed_leaf_identity(state, stratum)?;
     }
     let values = [
         forcing.air_temperature_k,
@@ -608,7 +828,9 @@ pub(crate) fn validate_candidate_inputs(
 mod milestone_one_tests {
     use super::*;
     use crate::{RootLayer, StratumConfiguration, TopologyTile};
-    use openwepp_kernel_contract::TileId;
+    use openwepp_kernel_contract::{
+        MaterialDonorClass, MaterialReceiverClass, ResourceOwnerId, TileId,
+    };
 
     type LaneMutation = fn(&mut OccupancyState);
 
@@ -641,7 +863,7 @@ mod milestone_one_tests {
             .expect("stratum object")
             .remove("rd_leaf_n_rate");
         let mut config: VegetationConfiguration =
-            serde_json::from_value(value).expect("V3 configuration shape");
+            serde_json::from_value(value).expect("V4 configuration shape");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
@@ -693,6 +915,8 @@ mod milestone_one_tests {
             "psi_stem_mm",
             "psi_sun_mm",
             "psi_shade_mm",
+            "previous_leaf_offset_flux",
+            "previous_root_offset_flux",
         ] {
             state.remove(field);
         }
@@ -755,10 +979,38 @@ mod milestone_one_tests {
         }
     }
 
+    fn accepted_with_transfer() -> (VegetationConfiguration, CoupledOwnedState) {
+        let (config, mut state) = fixture();
+        state.last_transaction_id = 7;
+        for shared in state.strata.values_mut() {
+            shared.last_transaction_id = 7;
+        }
+        for lane in state.occupancies.values_mut() {
+            lane.last_accepted_transaction_id = Some(7);
+        }
+        state
+            .strata
+            .get_mut(&stratum_id("upper"))
+            .expect("upper stratum")
+            .pending_transfers
+            .push(MaterialTransfer {
+                transaction_id: 7,
+                owner_id: ResourceOwnerId::try_new("stratum:upper").expect("owner identity"),
+                proposal_id: 1,
+                donor: MaterialDonorClass::Leaf,
+                receiver: MaterialReceiverClass::Metabolic,
+                carbon: 0.01,
+                nitrogen: 0.001,
+                dry_matter: 0.02,
+            });
+        state.state_sha256 = state.canonical_sha256().expect("accepted digest");
+        (config, state)
+    }
+
     #[test]
     fn complete_two_tile_two_stratum_state_is_exact() {
         let (config, state) = fixture();
-        state.validate(&config).expect("complete V3 state");
+        state.validate(&config).expect("complete V4 state");
         assert_eq!(
             state
                 .occupancies
@@ -790,22 +1042,246 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn v3_named_configuration_and_state_fixtures_are_cross_bound() {
+    fn v3_named_state_fixture_is_historical_only() {
+        let (_, state) = fixture();
+        let bytes = include_bytes!("../../../tests/fixtures/c3_woody_v3_diagnostic_state.json");
+        assert!(serde_json::from_slice::<CoupledOwnedState>(bytes).is_err());
+        assert_ne!(
+            bytes.as_slice(),
+            serde_json::to_vec(&state).expect("V4 state")
+        );
+    }
+
+    #[test]
+    fn v4_named_configuration_and_state_fixtures_are_cross_bound() {
         let config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
         ))
-        .expect("V3 configuration fixture");
+        .expect("V4 configuration fixture");
         let state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"
         ))
-        .expect("V3 state DTO");
+        .expect("V4 state DTO");
         assert_eq!(
             state.state_sha256,
             state.canonical_sha256().expect("state digest")
         );
-        state.validate(&config).expect("V3 state fixture");
+        state.validate(&config).expect("V4 state fixture");
         assert_eq!(config.initial_state_sha256, state.state_sha256);
         assert_eq!(state.configuration_sha256, config.configuration_sha256);
+    }
+
+    #[test]
+    fn v4_occupancy_entries_reject_legacy_tuple_sequences() {
+        let config = VegetationConfiguration::parse_strict(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+        ))
+        .expect("V4 configuration fixture");
+        let state: serde_json::Value = serde_json::from_slice(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"
+        ))
+        .expect("V4 state JSON");
+        let mut tuple = state;
+        let entry = tuple["occupancies"][0].clone();
+        tuple["occupancies"][0] = serde_json::json!([entry["identity"], entry["state"]]);
+        assert!(matches!(
+            CoupledOwnedState::parse_strict(
+                &serde_json::to_vec(&tuple).expect("tuple poison bytes"),
+                &config
+            ),
+            Err(VegetationError::Schema(message))
+                if message.contains("V4 occupancy entry")
+        ));
+    }
+
+    #[test]
+    fn v4_strict_parser_rejects_every_nested_positional_record_alias() {
+        fn sequence(value: &serde_json::Value) -> serde_json::Value {
+            serde_json::Value::Array(
+                value
+                    .as_object()
+                    .expect("record object")
+                    .values()
+                    .cloned()
+                    .collect(),
+            )
+        }
+
+        let (config, state) = accepted_with_transfer();
+        let base = serde_json::to_value(state).expect("accepted state JSON");
+        let mut poisons = Vec::new();
+
+        let mut value = base.clone();
+        value["strata"]["upper"] = sequence(&value["strata"]["upper"]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["strata"]["upper"]["tissues"]["leaf"] =
+            sequence(&value["strata"]["upper"]["tissues"]["leaf"]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["strata"]["upper"]["tissues"]["leaf"]["display"] =
+            sequence(&value["strata"]["upper"]["tissues"]["leaf"]["display"]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["strata"]["upper"]["standing_dead"] =
+            sequence(&value["strata"]["upper"]["standing_dead"]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["strata"]["upper"]["pending_transfers"][0] =
+            sequence(&value["strata"]["upper"]["pending_transfers"][0]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["occupancies"][0]["identity"] = sequence(&value["occupancies"][0]["identity"]);
+        poisons.push(value);
+
+        let mut value = base.clone();
+        value["occupancies"][0]["state"] = sequence(&value["occupancies"][0]["state"]);
+        poisons.push(value);
+
+        for poison in poisons {
+            assert!(matches!(
+                CoupledOwnedState::parse_strict(
+                    &serde_json::to_vec(&poison).expect("shape poison bytes"),
+                    &config
+                ),
+                Err(VegetationError::Schema(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn v4_strict_parser_rejects_nested_occupancy_identity_unknown_field() {
+        let (config, state) = fixture();
+        let mut poison = serde_json::to_value(state).expect("state JSON");
+        poison["occupancies"][0]["identity"]["unknown"] = 1.into();
+        assert!(matches!(
+            CoupledOwnedState::parse_strict(
+                &serde_json::to_vec(&poison).expect("identity poison bytes"),
+                &config
+            ),
+            Err(VegetationError::Schema(message))
+                if message.contains("V4 occupancy identity")
+        ));
+    }
+
+    #[test]
+    fn v4_area_caches_are_bit_exact_and_display_leaf_only() {
+        let (mut config, state) = fixture();
+        let upper = stratum_id("upper");
+
+        let mut donor_poison = state.clone();
+        let leaf = donor_poison
+            .strata
+            .get_mut(&upper)
+            .expect("upper")
+            .tissues
+            .get_mut(&Tissue::Leaf)
+            .expect("leaf");
+        leaf.storage.carbon = 10_000.0;
+        leaf.transfer.carbon = 20_000.0;
+        refresh_state(&mut donor_poison, &mut config);
+        donor_poison
+            .validate(&config)
+            .expect("non-displayed C cannot own area");
+
+        let mut one_bit = state.clone();
+        let shared = one_bit.strata.get_mut(&upper).expect("upper");
+        shared.leaf_area = f64::from_bits(shared.leaf_area.to_bits() + 1);
+        refresh_state(&mut one_bit, &mut config);
+        assert_eq!(
+            one_bit.validate(&config),
+            Err(VegetationError::Domain("V4 displayed-leaf area identity"))
+        );
+
+        let mut zero = state;
+        let shared = zero.strata.get_mut(&upper).expect("upper");
+        let leaf = shared.tissues.get_mut(&Tissue::Leaf).expect("leaf");
+        leaf.display.carbon = 0.0;
+        leaf.display.nitrogen = 0.0;
+        leaf.storage.carbon = 5.0;
+        leaf.transfer.carbon = 7.0;
+        leaf.storage.nitrogen = 0.15;
+        leaf.transfer.nitrogen = 0.18;
+        shared.leaf_area = 0.0;
+        shared.stem_area = 0.0;
+        shared.root_area = 0.0;
+        refresh_state(&mut zero, &mut config);
+        zero.validate(&config)
+            .expect("zero displayed leaf has exact zero area");
+        zero.strata
+            .get_mut(&upper)
+            .expect("upper")
+            .tissues
+            .get_mut(&Tissue::Leaf)
+            .expect("leaf")
+            .display
+            .nitrogen = 0.001;
+        refresh_state(&mut zero, &mut config);
+        assert_eq!(
+            zero.validate(&config),
+            Err(VegetationError::Domain("V4 displayed leaf N without LAI"))
+        );
+    }
+
+    #[test]
+    fn v4_state_rejects_removed_offset_fields() {
+        let (config, state) = fixture();
+        let mut value = serde_json::to_value(state).expect("V4 state value");
+        value["strata"]["upper"]["previous_leaf_offset_flux"] = serde_json::Value::from(0.0);
+        value["strata"]["upper"]["previous_root_offset_flux"] = serde_json::Value::from(0.0);
+        let bytes = serde_json::to_vec(&value).expect("poison bytes");
+        assert!(matches!(
+            CoupledOwnedState::parse_strict(&bytes, &config),
+            Err(VegetationError::Schema(_))
+        ));
+    }
+
+    #[test]
+    fn v4_digest_structurally_frames_arbitrary_occupancy_ids_without_collision() {
+        let (_, mut state) = fixture();
+        let source_lane = state
+            .occupancies
+            .get(&occupancy("upper", "tile-a"))
+            .expect("source lane")
+            .clone();
+        state.occupancies.insert(
+            OccupancyId {
+                stratum_id: stratum_id("upper@tile"),
+                tile_id: tile_id("a"),
+            },
+            source_lane.clone(),
+        );
+        state.occupancies.insert(
+            OccupancyId {
+                stratum_id: stratum_id("upper"),
+                tile_id: tile_id("tile@a"),
+            },
+            source_lane.clone(),
+        );
+        state.occupancies.insert(
+            OccupancyId {
+                stratum_id: stratum_id("upper\nα"),
+                tile_id: tile_id("tile\t雪"),
+            },
+            source_lane,
+        );
+        let digest = state
+            .canonical_sha256()
+            .expect("typed identity framing accepts arbitrary valid IDs");
+        let removed = state
+            .occupancies
+            .remove(&occupancy("upper@tile", "a"))
+            .expect("first formerly colliding identity");
+        assert_ne!(state.canonical_sha256().expect("second digest"), digest);
+        state
+            .occupancies
+            .insert(occupancy("upper@tile", "a"), removed);
+        assert_eq!(state.canonical_sha256().expect("stable digest"), digest);
     }
 
     #[test]
@@ -816,7 +1292,7 @@ mod milestone_one_tests {
         refresh_state(&mut missing, &mut config);
         assert_eq!(
             missing.validate(&config),
-            Err(VegetationError::Domain("V3 occupancy state identity"))
+            Err(VegetationError::Domain("V4 occupancy state identity"))
         );
 
         let mut extra = state.clone();
@@ -826,7 +1302,7 @@ mod milestone_one_tests {
         refresh_state(&mut extra, &mut config);
         assert_eq!(
             extra.validate(&config),
-            Err(VegetationError::Domain("V3 occupancy state identity"))
+            Err(VegetationError::Domain("V4 occupancy state identity"))
         );
 
         let mut missing_stratum = state.clone();
@@ -859,7 +1335,122 @@ mod milestone_one_tests {
         lanes.push(lanes[0].clone());
         let bytes = serde_json::to_vec(&value).expect("duplicate bytes");
         assert!(
-            matches!(CoupledOwnedState::parse_strict(&bytes, &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V3 occupancy"))
+            matches!(CoupledOwnedState::parse_strict(&bytes, &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V4 occupancy"))
+        );
+    }
+
+    #[test]
+    fn strict_state_parser_rejects_duplicate_strata_tissues_and_transfer_fields() {
+        let (config, state) = fixture();
+        let upper = state.strata.get(&stratum_id("upper")).expect("upper");
+        let upper_json = serde_json::to_string(upper).expect("upper JSON");
+        let text = serde_json::to_string(&state).expect("state JSON");
+        let duplicate_stratum = text.replacen(
+            "\"strata\":{",
+            &format!("\"strata\":{{\"upper\":{upper_json},"),
+            1,
+        );
+        assert!(
+            matches!(CoupledOwnedState::parse_strict(duplicate_stratum.as_bytes(), &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V4 shared-stratum"))
+        );
+
+        let leaf_json =
+            serde_json::to_string(upper.tissues.get(&Tissue::Leaf).expect("leaf tissue"))
+                .expect("leaf JSON");
+        let duplicate_tissue = text.replacen(
+            "\"tissues\":{",
+            &format!("\"tissues\":{{\"leaf\":{leaf_json},"),
+            1,
+        );
+        assert!(
+            matches!(CoupledOwnedState::parse_strict(duplicate_tissue.as_bytes(), &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V4 tissue"))
+        );
+
+        let (accepted_config, accepted) = accepted_with_transfer();
+        let mut value = serde_json::to_value(accepted).expect("accepted value");
+        value["strata"]["upper"]["pending_transfers"][0]["unknown"] = 1.into();
+        assert!(matches!(
+            CoupledOwnedState::parse_strict(
+                &serde_json::to_vec(&value).expect("poison bytes"),
+                &accepted_config
+            ),
+            Err(VegetationError::Schema(_))
+        ));
+
+        value["strata"]["upper"]["pending_transfers"][0]
+            .as_object_mut()
+            .expect("transfer object")
+            .remove("unknown");
+        value["strata"]["upper"]["pending_transfers"][0]["owner_id"] = "   ".into();
+        assert!(matches!(
+            CoupledOwnedState::parse_strict(
+                &serde_json::to_vec(&value).expect("owner poison bytes"),
+                &accepted_config
+            ),
+            Err(VegetationError::Schema(_))
+        ));
+    }
+
+    #[test]
+    fn shared_state_rejects_negative_owned_amounts_and_invalid_transfer_lineage() {
+        let (mut config, state) = fixture();
+        for mutate in [
+            |shared: &mut StratumSharedState| shared.standing_dead.carbon = -1.0,
+            |shared: &mut StratumSharedState| shared.standing_dead.nitrogen = -1.0,
+            |shared: &mut StratumSharedState| shared.standing_dead_dm = -1.0,
+            |shared: &mut StratumSharedState| shared.onset_remaining_s = -1.0,
+            |shared: &mut StratumSharedState| shared.offset_remaining_s = -1.0,
+        ] {
+            let mut poison = state.clone();
+            mutate(poison.strata.get_mut(&stratum_id("upper")).expect("upper"));
+            refresh_state(&mut poison, &mut config);
+            assert_eq!(
+                poison.validate(&config),
+                Err(VegetationError::Domain("complete stratum state"))
+            );
+        }
+
+        let (config, accepted) = accepted_with_transfer();
+        for mutate in [
+            |transfer: &mut MaterialTransfer| transfer.transaction_id = 6,
+            |transfer: &mut MaterialTransfer| {
+                transfer.owner_id =
+                    ResourceOwnerId::try_new("stratum:lower").expect("owner identity");
+            },
+            |transfer: &mut MaterialTransfer| transfer.proposal_id = 0,
+        ] {
+            let mut poison = accepted.clone();
+            mutate(
+                &mut poison
+                    .strata
+                    .get_mut(&stratum_id("upper"))
+                    .expect("upper")
+                    .pending_transfers[0],
+            );
+            poison.state_sha256 = poison.canonical_sha256().expect("poison digest");
+            assert_eq!(
+                poison.validate(&config),
+                Err(VegetationError::Domain("pending material transfer"))
+            );
+        }
+
+        let mut duplicate = accepted;
+        let transfer = duplicate
+            .strata
+            .get(&stratum_id("upper"))
+            .expect("upper")
+            .pending_transfers[0]
+            .clone();
+        duplicate
+            .strata
+            .get_mut(&stratum_id("upper"))
+            .expect("upper")
+            .pending_transfers
+            .push(transfer);
+        duplicate.state_sha256 = duplicate.canonical_sha256().expect("duplicate digest");
+        assert_eq!(
+            duplicate.validate(&config),
+            Err(VegetationError::Domain("pending material transfer"))
         );
     }
 
@@ -901,7 +1492,7 @@ mod milestone_one_tests {
         let original = state.canonical_sha256().expect("digest");
         assert_eq!(
             original,
-            "5ac06f03dbe26e8e4e07e24550ae5f558ac2050978e45d61de856db1b655ee10"
+            "5d7f29d58c0ecf59b367d181586ac301ab277b4326f2cb39c20feddb3ae0e626"
         );
         let bytes = serde_json::to_vec(&state).expect("bytes");
         let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("value");
@@ -993,13 +1584,13 @@ mod milestone_one_tests {
         ));
 
         let mut value = serde_json::to_value(&state).expect("value");
-        let lane = &mut value["occupancies"][0][1];
+        let lane = &mut value["occupancies"][0]["state"];
         lane["stem_potential_mpa"] = lane["stem_potential_mm"].take();
         assert!(serde_json::from_value::<CoupledOwnedState>(value).is_err());
     }
 
     #[test]
-    fn public_transaction_validates_v3_inputs_then_fails_closed_before_capped_pass() {
+    fn public_transaction_validates_v4_inputs_then_fails_closed_before_capped_pass() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn beginning_amount(&self, _: &WaterResourceKey) -> Result<f64, VegetationError> {
@@ -1072,7 +1663,7 @@ mod milestone_one_tests {
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V3 occupancy-local capped transaction routing is implementation-incomplete"
+                "V4 occupancy-local capped transaction routing is implementation-incomplete"
             ))
         );
 
@@ -1102,26 +1693,41 @@ mod milestone_one_tests {
     }
 }
 
-fn tissue_carbon(state: &StratumSharedState, tissue: Tissue) -> Result<f64, VegetationError> {
-    let pool = state
+fn validate_displayed_leaf_identity(
+    state: &StratumSharedState,
+    stratum: &crate::StratumConfiguration,
+) -> Result<(), VegetationError> {
+    let leaf = state
         .tissues
-        .get(&tissue)
+        .get(&Tissue::Leaf)
         .ok_or(VegetationError::Domain("missing tissue"))?;
-    Ok(pool.display.carbon + pool.storage.carbon + pool.transfer.carbon)
+    let leaf_area = leaf.display.carbon * stratum.sla_m2_per_kg_c;
+    let stem_area = leaf_area * stratum.sai_relation;
+    let root_area = (leaf_area + stem_area) * stratum.root_to_leaf_area;
+    if state.leaf_area.to_bits() != leaf_area.to_bits()
+        || state.stem_area.to_bits() != stem_area.to_bits()
+        || state.root_area.to_bits() != root_area.to_bits()
+    {
+        return Err(VegetationError::Domain("V4 displayed-leaf area identity"));
+    }
+    if leaf_area == 0.0 && leaf.display.nitrogen != 0.0 {
+        return Err(VegetationError::Domain("V4 displayed leaf N without LAI"));
+    }
+    Ok(())
 }
 
-/// V3 commit remains unavailable until occupancy-local candidate routing can
+/// V4 commit remains unavailable until occupancy-local candidate routing can
 /// construct a fully validated candidate.
 pub fn validate_and_commit(
     _beginning: &mut CoupledOwnedState,
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V3 occupancy-local capped transaction routing is implementation-incomplete",
+        "V4 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection commit entry point retained while V3 routing is incomplete.
+/// Failure-injection commit entry point retained while V4 routing is incomplete.
 pub fn validate_and_commit_with_failure(
     beginning: &mut CoupledOwnedState,
     candidate: CoupledCandidate,

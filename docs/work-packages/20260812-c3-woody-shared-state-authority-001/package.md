@@ -1,6 +1,6 @@
 # Admit C3 Woody V4 Shared-State Authority
 
-Status: `COMPLETE / OPENWEPP_C3_WOODY_V4 shared-state implementation authority released`
+Status: `executing / released COMPLETE checkpoint preserved / occupancy-identity remediation active`
 
 Date: `2026-08-12`
 
@@ -29,6 +29,8 @@ production Rust or changing immutable V1/V2/V3 definition bytes.
 - [x] Run focused, authority, anti-evasion, documentation, and critical heavy gates.
 - [x] Reconcile exact terminal bytes and complete two independent verifications.
 - [x] Archive the active kickoff prompt byte-for-byte and release the implementation handoff.
+- [x] Correct the accepted collision-prone occupancy-identity oracle defect.
+- [ ] Repeat science review, critical gates, reconciliation, and terminal verification.
 
 ## Scope
 
@@ -148,6 +150,18 @@ All writes are flat files. The reference calculator is deterministic. Failed
 commands and reviews are appended. No history is rewritten. If the exact
 shared-state authority or independent evidence cannot be established, the
 package remains HOLD and the existing implementation stays fail-closed.
+
+## Post-release Occupancy-Identity Remediation
+
+The prior COMPLETE disposition at definition `571bac78...`, fixture
+`6862b507...`, and generator `5ac8dfea...` remains immutable historical
+evidence. Production review subsequently accepted an in-scope authority/evidence
+defect: V8 typed framing admits arbitrary UTF-8 stratum and tile IDs, but the
+released Python whole-state oracle flattened occupancy identity as
+`stratum@tile`. Distinct typed pairs can therefore collide whenever either ID
+contains `@`, and the released whole-state vector did not match the production
+structural occupancy preimage. This package is reopened to correct that defect;
+no prior review, gate, or disposition evidence is erased.
 
 ## Transient Heavy-Gate Failure Audit
 

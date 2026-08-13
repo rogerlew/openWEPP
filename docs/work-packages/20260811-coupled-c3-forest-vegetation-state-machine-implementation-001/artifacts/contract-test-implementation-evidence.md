@@ -1,6 +1,6 @@
 # Contract-Test Implementation Evidence
 
-Status: `INCREMENT 2B HOLD / typed resource tests pass; Milestones 2 and 3 pending`
+Status: `V4 focused PASS / public capped transaction pending`
 
 The vegetation quick suite now includes seven typed potential-water boundary
 tests. They prove identity/protocol behavior only and are not E01--E15 science
@@ -32,3 +32,18 @@ configuration/state fixture identity tests. The vegetation quick suite is now
 51/51. The unchanged implementation-contract suite is 11/11, A0 is 14/14,
 and AUTH11 is 3/3. The controlled solver fixes vapor/drainage outcomes only to
 test routing; it is explicitly not an independent E11--E15 oracle.
+
+## 2026-08-13 V4 Focused Tests
+
+- Vegetation quick: 159/159 passed.
+- C3 implementation contract: 11/11 passed; V4 public execution remains
+  source-guarded fail-closed.
+- Vegetation authority contract: 17/17 passed.
+- V4 state tests cover recursive shape, structural identity, all 155 released
+  mutations, displayed C/N ownership, exact digest rebinding, and exhaustive
+  V3-to-V4 migration failure reports.
+- Strict all-target Clippy for vegetation and hillslope-orchestrator,
+  formatting, and diff hygiene passed.
+
+These tests do not constitute the missing cap-active independent oracle or a
+Milestone 2/3/public-candidate claim.

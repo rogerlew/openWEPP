@@ -8,8 +8,8 @@ use openwepp_biogeochemistry::{
     authorize_proportionally, available_by_key,
 };
 use openwepp_kernel_contract::{
-    MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, SoilLayerId,
-    TransactionId, WaterResourceKey, validate_request_batch,
+    MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, SoilLayerId, TransactionId,
+    WaterResourceKey, validate_request_batch,
 };
 use openwepp_vegetation::energy::LATENT_HEAT_VAPORIZATION;
 use openwepp_vegetation::{
@@ -192,8 +192,7 @@ pub fn run_default_off_diagnostic_at_phase(
         .map(|transfer| {
             Ok(MaterialReceipt {
                 transaction_id: transfer.transaction_id,
-                owner_id: ResourceOwnerId::try_new(transfer.owner_id.clone())
-                    .map_err(|_| VegetationError::Domain("material owner identity"))?,
+                owner_id: transfer.owner_id.clone(),
                 donor: transfer.donor,
                 receiver: transfer.receiver,
                 proposal_id: transfer.proposal_id,

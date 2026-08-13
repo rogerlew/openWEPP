@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `complete / both final rereviews GO`
+Status: `executing / historical rereviews preserved / collision remediation reviews GO`
 
 Evidence mode: `Static`
 
@@ -38,3 +38,25 @@ corrected: V8 and the definition bind positive `u128` transaction and positive
 reject. Both final rereviews returned GO against definition `571bac78...`,
 fixture `6862b507...`, and generator `5ac8dfea...` with no unresolved material
 finding.
+
+## Post-release accepted finding
+
+The implementation review subsequently demonstrated that the released oracle
+represented an occupancy as the flattened key `stratum_id@tile_id`. This is
+accepted as a material authority/evidence defect: arbitrary admitted UTF-8 IDs
+make that representation non-injective, and it does not reproduce the existing
+production structural encoder.
+
+The remediation changes no constitutive science and does not edit production
+Rust. V8 now binds a structural occupancy array sorted by the typed UTF-8 pair;
+the oracle, fixture, and definition expose independent length-framed identity
+components, exact whole-state preimage bytes, delimiter-collision and arbitrary
+UTF-8/control vectors, duplicate-pair rejection, lane-order normalization, and
+identity-field mutation digests. No part of the finding is deferred or
+rejected. Fresh independent science rereviews A and B are GO with no unresolved
+material finding against definition `8ace38d1...`, fixture `3072226f...`, and
+generator `422f0a6f...`. Reviewer A first found and preserved a material HOLD
+because the V4 hashing helper sorted but did not reject duplicate structural
+pairs. The finding was accepted; the canonicalizer now rejects before digest
+and the fixture executes the V4 duplicate-state poison. Terminal verification
+remains pending.

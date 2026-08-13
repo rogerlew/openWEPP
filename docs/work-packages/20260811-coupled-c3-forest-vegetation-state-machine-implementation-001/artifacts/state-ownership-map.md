@@ -1,6 +1,6 @@
 # State Ownership Map
 
-Status: `MILESTONE 1 PASS / V2 ownership structure implemented; update rule HOLD`
+Status: `V4 shared-state ownership implemented / accepted-update path incomplete`
 
 The authority audit confirmed that the V2 per-layer root-potential lanes have
 no canonical accepted-update mapping from E14's common root-node solution.
@@ -32,3 +32,43 @@ column candidates. It never edits an occupancy map, shared stratum, pending
 transfer, state digest, or transaction identity. Injected failure at a lower
 occupancy after upper candidate work preserves the serialized beginning state
 byte-for-byte. Whole-owner atomicity is still a Milestone 5 obligation.
+
+## V4 Shared-State Ownership
+
+Ran: executable state now binds `OPENWEPP_C3_WOODY_V4` and the exact v8 field
+set. `StratumSharedState` contains the six tissue display/storage/transfer C/N
+pools, retranslocation and reserves, standing dead, phenology/timers,
+`previous_gsi`, typed pending transfers, `t10_k`, three derived area caches,
+and accepted transaction lineage. The unconsumed
+`previous_leaf_offset_flux` and `previous_root_offset_flux` fields exist only
+in the historical V3 migration DTO and are removed during the explicit V3-to-
+V4 migration.
+
+Displayed leaf carbon is the sole owner of accepted LAI and the three exact
+area caches. Displayed leaf nitrogen is the sole positive-LAI leaf-N input to
+FvCB capacity and Atkin/Rd ownership. Storage and transfer leaf subpools remain
+mass state but cannot manufacture area, capacity, or a second leaf-maintenance
+debit. Non-leaf maintenance continues to consume the admitted complete tissue
+N identities.
+
+The whole-state digest uses the structural
+`OPENWEPP_V4_STATE_CANONICAL_V1` encoder, including exact typed paths,
+transaction lineage, pending-transfer identities, shared state, occupancy
+identity, and all occupancy lanes. Recursive exact-shape validation rejects
+missing/unknown fields before typed decode; duplicate structural identities
+are rejected. Production serialization matches the independent released
+shared-state vectors and all 155 whole-state scalar mutation digests.
+
+The explicit V3-to-V4 migration validates source definition/configuration/state
+digests, complete membership, tissue/domain/lineage/transfer identities, and
+bit-exact V3 displayed-area caches. It compares the unchanged constitutive
+configuration payload, removes only the two obsolete fields, copies every
+other shared and occupancy value, rebinds V4 identities, recomputes the V4
+digest, and revalidates the candidate. Invalid simultaneous owners produce one
+deterministic exhaustive report and no candidate. V1-to-V4 and V2-to-V4 direct
+normalization remain prohibited.
+
+The public transaction remains fail-closed before the authorization-capped
+second pass. Therefore this map claims V4 state ownership and migration only;
+it does not claim accepted E20--E22 state updates, owner candidates, or atomic
+commit.

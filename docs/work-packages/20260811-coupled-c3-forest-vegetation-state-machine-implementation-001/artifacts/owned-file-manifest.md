@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled through Increment 2B authority hold checkpoint`
+Status: `reconciled through V4 shared-state runtime increment`
 
 Evidence mode: `Static`
 
@@ -24,7 +24,33 @@ Evidence mode: `Static`
 - Increment 2B hold evidence: this package's
   `potential-pass-hold-legitimacy-audit.md` plus bounded lifecycle, map, gate,
   and disposition updates.
+- V3/V4 potential and resource foundation:
+  `crates/openwepp-vegetation/src/occupancy_solver/**`, radiation/column inputs,
+  typed water/N request seams, independent keyed ledgers, and retained capped
+  draft. The capped draft is not a public consumer and carries no Stage-B
+  acceptance claim.
+- V4 executable identity and configuration:
+  `crates/openwepp-vegetation/model-registry/openwepp_c3_woody_v4_definition.json`,
+  `src/model.rs`, and `src/config.rs`.
+- V4 shared-state schema and digest:
+  `src/transaction.rs`, `src/transaction/state_shape.rs`, and
+  `src/transaction/state_canonical.rs`; plus bounded state consumers in
+  column/radiation/request/capped/N/diagnostic modules.
+- V4 displayed-pool ownership: bounded changes in
+  `src/carbon_nitrogen.rs` and typed `MaterialTransfer.owner_id` propagation to
+  the default-off hillslope diagnostic.
+- V3-to-V4 migration: `src/migration.rs`, including historical V3-only DTOs,
+  strict validation, exhaustive typed reports, identity rebinding, and tests.
+- V4 diagnostic fixtures and provenance:
+  `tests/fixtures/c3_woody_v4_diagnostic_{configuration,state}.json`, their
+  manifest/checksum, and bounded implementation-contract fixture identity
+  updates.
+- V4 implementation evidence: this package's lifecycle, required-reading,
+  equation/state, gate, review, line-count, owned-file, and in-progress terminal
+  reconciliation artifacts.
 
-Protected and unchanged: canonical SC contracts, digest-bound model definition,
-production runner selectors, CLI defaults, production outputs, canopy-snow and
-soil-transformation paths.
+Protected implementation boundaries: production runner selectors, CLI defaults,
+production outputs, canopy-snow, soil-transformation, deployment, and consumer
+cutover paths. The canonical SC contract and V4 authority-package bytes changed
+only in their separately authorized contract-first package; this implementation
+package consumes them and does not claim authorship of that authority diff.

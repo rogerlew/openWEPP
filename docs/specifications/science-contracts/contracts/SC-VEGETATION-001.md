@@ -72,7 +72,7 @@ V3 delta stated below. The final digest is bound by the definition artifact,
 contract-derived tests, and this contract's Version 7 change record.
 
 The immutable V4 definition identity is
-`sha256:571bac78b6f116078b463021ec0a36a5206cbe14a94d9fdc76bc32c0a7cde327`
+`sha256:8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`
 for `docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json`.
 That definition normatively imports the exact V3 digest and supersedes only the
 shared-stratum state, area derivation, and V3-to-V4 migration delta in the
@@ -1460,6 +1460,18 @@ enters the V4 state digest. The digest excludes only the whole-state
 `state_sha256` member and includes the root object container line after that
 member is omitted.
 
+Whole-state occupancy identity is structural, never a delimiter-composed object
+key. The canonical `occupancies` node is an array sorted lexicographically by
+the typed pair `(stratum_id UTF-8 bytes, tile_id UTF-8 bytes)`. Each element is
+exactly an object with `identity` and `state`; `identity` is exactly an object
+with independent `stratum_id` and `tile_id` strings, and `state` is the complete
+occupancy lane. The existing length-prefixed string and object-key framing
+applies independently to both ID values. Concatenating, joining, splitting, or
+otherwise flattening the pair with `@`, NUL, whitespace, a path separator, or
+any other delimiter is prohibited. Distinct admitted UTF-8 pairs must have
+distinct canonical preimages even when a delimiter-based rendering would be
+identical. Duplicate structural pairs reject before digest calculation.
+
 The executable V4 schema does **not** contain
 `previous_leaf_offset_flux` or `previous_root_offset_flux`. No admitted V1--V3
 equation consumes either value, and no source reviewed for this amendment
@@ -1559,6 +1571,7 @@ transfer.
 | `INV-VEGETATION-089` | `leaf_area`, `stem_area`, and `root_area` are reconstructed caches equal to the three V4 displayed-leaf equations and cannot override them. |
 | `INV-VEGETATION-090` | V3-to-V4 migration removes exactly the two unconsumed offset-flux fields, copies all other shared and occupancy state exactly, and rejects mismatched source area caches. |
 | `INV-VEGETATION-091` | Displayed leaf N alone supplies `Nleaf_area` and every FvCB/Atkin capacity; storage/transfer leaf N contributes exact zero before accepted transfer to display. |
+| `INV-VEGETATION-092` | Every whole-state occupancy identity is encoded as an independently framed structural `(stratum_id,tile_id)` pair; delimiter flattening is forbidden and cannot determine ordering, equality, membership, or digest bytes. |
 | `VEG-E-087` | Missing/extra/duplicate shared field or tissue, legacy offset-flux field in V4 input, nonfinite/domain-invalid amount, or state-digest mismatch rejects before calculation. |
 | `VEG-E-088` | LAI or any derived cache formed from total leaf C, storage C, transfer C, or another tissue rejects as a shared-state identity mismatch. |
 | `VEG-E-089` | V3 source identity invalid, source cache inconsistent, or any migration synthesis beyond exact removal/rebinding rejects without a partial V4 state. |

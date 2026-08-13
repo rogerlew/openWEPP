@@ -1,6 +1,6 @@
 # Forcing And Operand Provider Map
 
-Status: `PARTIAL / Increment 2B authority gaps identified`
+Status: `PARTIAL / V4 state operands bound; capped operands incomplete`
 
 Increment 2B audit: reference wind exists, but distinct `u_leaf` and `u_wet`
 providers do not. Stem hydraulic path/gravity and the accepted common-root to
@@ -24,3 +24,9 @@ No operand is profile-averaged. Increment 2A accepts heterogeneous tile rain
 explicitly because the current public `SnowFreeForcing.rain_kg_m2` remains
 stand-shaped; public forcing integration is intentionally still fail-closed.
 Every rate is converted once at the transaction ledger.
+
+V4 binds displayed leaf C as the only LAI/area-cache provider and displayed
+leaf N as the only positive-LAI capacity/leaf-Rd provider. Storage/transfer
+leaf pools remain mass operands only. The cap-active boundary still lacks an
+independent digest-bound vector identifying equality-active caps and the
+separate hydraulic-law versus cap operands; no provider alias is inferred.
