@@ -269,3 +269,17 @@ from configuration, forcing, occupancy radiation, interception, and soil
 forcing is not yet implemented, so this is not E11--E15 acceptance evidence,
 does not emit a potential request batch, and does not lift the public
 fail-closed branch.
+
+## 2026-08-12 Typed Request Boundaries
+
+| Gate | Result | Evidence |
+|---|---|---|
+| potential water request orchestration | PASS / constitutive seam pending | centralized complete input validation, exact radiation/area binding, sequential transaction, one-time tile-to-stand conversion, configured root-layer completeness, typed batch, rollback; focused `4/4`; correctness rereview PASS |
+| typed E19 mineral-N boundary | PASS / shared-state consumer pending | internal retranslocation first; exact stratum owner/layer/species identity; authorization correspondence; proportional finalized use; unused authorization preserved; focused `7/7` |
+| constitutive evaluator first review | HOLD / remediation active | positive oracle vectors passed, but reviewers accepted nested diagnostic, runtime-input provenance, configured-dimension, retained-state, adapter, validation, and numerical-evidence defects; module remains disconnected from compilation/public request path while remediation proceeds |
+| public candidate containment | PASS / fail-closed | no request pass or constitutive evaluator is reachable from `execute_candidate()` |
+| focused vegetation after request boundaries | PASS | quick suite `93/93`; strict all-target Clippy, formatting, and diff hygiene pass |
+
+No E11--E15 or Milestone 2/3 completion claim is made until the corrected
+constitutive evaluator, production adapter, exact nested failure vectors, and
+authorization-capped second pass all pass independent review.

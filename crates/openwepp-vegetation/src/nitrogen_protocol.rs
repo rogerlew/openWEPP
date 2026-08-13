@@ -46,6 +46,8 @@ pub enum NitrogenProtocolError {
     TransactionMismatch,
     #[error("mineral-nitrogen owner identity mismatch")]
     OwnerMismatch,
+    #[error("mineral-nitrogen owner is not the exact requesting stratum identity")]
+    StratumOwnerMismatch,
     #[error("mineral-nitrogen amount basis mismatch")]
     BasisMismatch,
     #[error("mineral-nitrogen authorization exceeds its potential request")]
@@ -56,6 +58,8 @@ pub enum NitrogenProtocolError {
 
 /// Complete potential E19 requests for one stratum and transaction.
 ///
+/// All scalar nitrogen amounts accepted or returned by this module are
+/// interval `kg N m^-2` on the transaction stand-ground area basis.
 /// Internal retranslocated nitrogen is applied before the external shortfall is
 /// partitioned across configured layers and chemical species. This object does
 /// not debit the internal pool; it records the potential calculation only.
@@ -78,6 +82,9 @@ impl PotentialMineralNitrogenRequestBatch {
         potential_total_demand: f64,
         internal_retranslocated_offer: f64,
     ) -> Result<Self, NitrogenProtocolError> {
+        if owner_id.as_str() != stratum.stratum_id.as_str() {
+            return Err(NitrogenProtocolError::StratumOwnerMismatch);
+        }
         validate_amount(potential_total_demand)?;
         validate_amount(internal_retranslocated_offer)?;
         if !stratum.nh4_request_fraction.is_finite()
@@ -471,6 +478,22 @@ mod tests {
 
     fn owner() -> ResourceOwnerId {
         ResourceOwnerId::try_new("tree-1").expect("valid owner")
+    }
+
+    #[test]
+    fn owner_identity_must_equal_exact_requesting_stratum() {
+        let stratum = stratum();
+        let wrong = ResourceOwnerId::try_new("another-stratum").expect("owner");
+        assert_eq!(
+            PotentialMineralNitrogenRequestBatch::try_from_stratum_configuration(
+                TransactionId(1),
+                wrong,
+                &stratum,
+                0.1,
+                0.0,
+            ),
+            Err(NitrogenProtocolError::StratumOwnerMismatch)
+        );
     }
 
     fn stratum() -> StratumConfiguration {

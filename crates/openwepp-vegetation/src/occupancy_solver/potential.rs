@@ -129,6 +129,7 @@ pub(crate) fn solve_uncapped_stage_a(
             .map_err(|error| wrap_evaluator_error(identity, error, 0))?;
         validate_evaluation(&evaluation)
             .map_err(|error| wrap_evaluator_error(identity, error, 0))?;
+        validate_accepted_fluxes(&evaluation)?;
         if residuals(&evaluation).iter().any(|value| *value != 0.0) {
             return Err(failure(
                 identity,
@@ -185,6 +186,7 @@ pub(crate) fn solve_uncapped_stage_a(
         let norm = infinity_norm(&normalized);
         if norm <= 1.0 && last_step.is_none_or(|step| step <= POTENTIAL_STEP_TOLERANCE_MM) {
             let state = StageAState::from_array(x);
+            validate_accepted_fluxes(&evaluation)?;
             return Ok(StageASolution {
                 state,
                 persisted_beta_hyd: persisted_beta(&evaluation, state)?,
@@ -260,6 +262,7 @@ pub(crate) fn solve_uncapped_stage_a(
             continue;
         }
         let mut accepted = None;
+        let mut last_trial_error = None;
         for half in 0..=MAX_HALVINGS {
             let factor = 2.0_f64.powi(
                 -i32::try_from(half)
@@ -274,23 +277,14 @@ pub(crate) fn solve_uncapped_stage_a(
                 continue;
             }
             let trial_state = StageAState::from_array(trial);
-            let trial_evaluation =
-                evaluator
-                    .evaluate(trial_state)
-                    .map_err(|error| match error {
-                        VegetationError::NumericalFailure(_) => error,
-                        _ => failure(
-                            identity,
-                            iteration,
-                            &evaluation,
-                            last_step,
-                            backtracks,
-                            last_pivot,
-                            last_matrix_norm,
-                            &StageAState::from_array(x),
-                            SolveIdentity::OuterGasEnergyHydraulicCoupling,
-                        ),
-                    })?;
+            let trial_evaluation = match evaluator.evaluate(trial_state) {
+                Ok(value) => value,
+                Err(error) => {
+                    last_trial_error = Some(error);
+                    backtracks += 1;
+                    continue;
+                }
+            };
             validate_evaluation(&trial_evaluation).map_err(|_| {
                 failure(
                     identity,
@@ -315,6 +309,22 @@ pub(crate) fn solve_uncapped_stage_a(
             backtracks += 1;
         }
         let Some((next, next_evaluation, factor)) = accepted else {
+            if let Some(error) = last_trial_error {
+                return Err(match error {
+                    VegetationError::NumericalFailure(_) => error,
+                    _ => failure(
+                        identity,
+                        iteration,
+                        &evaluation,
+                        last_step,
+                        backtracks,
+                        last_pivot,
+                        last_matrix_norm,
+                        &StageAState::from_array(x),
+                        SolveIdentity::HydraulicSystem,
+                    ),
+                });
+            }
             return Err(failure(
                 identity,
                 iteration,
@@ -369,13 +379,33 @@ fn validate_evaluation(value: &StageAEvaluation) -> Result<(), VegetationError> 
         .collect::<BTreeSet<_>>();
     if value.q3_kg_m2_s.is_empty()
         || layer_ids.len() != value.q3_kg_m2_s.len()
-        || scalars.iter().any(|item| !item.is_finite() || *item < 0.0)
-        || value
-            .q3_kg_m2_s
-            .iter()
-            .any(|(_, item)| !item.is_finite() || *item < 0.0)
+        || scalars.iter().any(|item| !item.is_finite())
+        || value.q3_kg_m2_s.iter().any(|(_, item)| !item.is_finite())
     {
         return Err(VegetationError::Domain("V3 Stage-A flux operands"));
+    }
+    Ok(())
+}
+
+fn validate_accepted_fluxes(value: &StageAEvaluation) -> Result<(), VegetationError> {
+    if [
+        value.emax_sun_kg_m2_s,
+        value.emax_shade_kg_m2_s,
+        value.gas_sun_kg_m2_s,
+        value.gas_shade_kg_m2_s,
+        value.vulnerability_demand_sun_kg_m2_s,
+        value.vulnerability_demand_shade_kg_m2_s,
+        value.q1_sun_kg_m2_s,
+        value.q1_shade_kg_m2_s,
+        value.q2_kg_m2_s,
+    ]
+    .iter()
+    .any(|flux| *flux < 0.0)
+        || value.q3_kg_m2_s.iter().any(|(_, flux)| *flux < 0.0)
+    {
+        return Err(VegetationError::Hydraulic(
+            "hydraulic redistribution unsupported",
+        ));
     }
     Ok(())
 }
