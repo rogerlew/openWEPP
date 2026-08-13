@@ -1,0 +1,9 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.04s
+────────────
+ Nextest run ID 8580c9f5-222f-45f9-beaf-8a5dafc35091 with nextest profile: full
+    Starting 169 tests across 217 binaries (2483 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+────────────
+     Summary [ 143.054s] 169 tests run: 169 passed (2 slow), 2483 skipped

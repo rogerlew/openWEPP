@@ -19,6 +19,8 @@ const V4_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260812-c3-woody-shared-state-authority-001";
 const V6_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001";
+const V7_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -185,7 +187,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 10",
+        "contract_version: 11",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
@@ -208,7 +210,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
         "| `static` | `2026-08-13` |",
-        "OPENWEPP_C3_WOODY_V6",
+        "OPENWEPP_C3_WOODY_V7",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -628,13 +630,14 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 10",
+        "contract_version: 11",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
         "OPENWEPP_C3_WOODY_V4",
         "OPENWEPP_C3_WOODY_V5",
         "OPENWEPP_C3_WOODY_V6",
+        "OPENWEPP_C3_WOODY_V7",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -2129,4 +2132,268 @@ fn v6_vectors_bind_comparison_boundary_identity_transition_and_acceptance_firewa
         identity["source"]["diagnostic_sha256"],
         identity["target"]["diagnostic_sha256"]
     );
+}
+
+#[test]
+fn v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable() {
+    let vegetation = read(CONTRACT);
+    let definition_path =
+        format!("{V7_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v7_definition.json");
+    let model_stack_copy =
+        format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v7_definition.json");
+    let definition_bytes = read(&definition_path);
+    let definition: Value = serde_json::from_str(&definition_bytes).expect("V7 definition JSON");
+
+    assert_eq!(
+        sha256(&definition_path),
+        "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f"
+    );
+    assert_eq!(read(&model_stack_copy), definition_bytes);
+    assert_eq!(definition["model_version"], "OPENWEPP_C3_WOODY_V7");
+    assert_eq!(definition["canonical_contract"], "SC-VEGETATION-001@11");
+    assert_eq!(
+        definition["base_model_definition_sha256"],
+        "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426"
+    );
+    assert_eq!(
+        sha256_text(inclusive_section(
+            &vegetation,
+            "## `OPENWEPP_C3_WOODY_V7` Storage-Transfer Phenology Amendment\n",
+            "## `OPENWEPP_C3_WOODY_V4` Shared-State Authority Amendment\n",
+        )),
+        definition["canonical_section_sha256"]
+            .as_str()
+            .expect("V7 section digest"),
+    );
+
+    for (path, digest) in [
+        (
+            format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"),
+            "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+        ),
+        (
+            format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json"),
+            "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3",
+        ),
+        (
+            format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json"),
+            "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852",
+        ),
+        (
+            format!("{V4_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v4_definition.json"),
+            "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+        ),
+        (
+            format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json"),
+            "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3",
+        ),
+        (
+            format!("{V6_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v6_definition.json"),
+            "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426",
+        ),
+    ] {
+        assert_eq!(
+            sha256(&path),
+            digest,
+            "historical model bytes changed: {path}"
+        );
+    }
+
+    for required in [
+        "BEI-VEGETATION-011",
+        "INV-VEGETATION-104",
+        "INV-VEGETATION-105",
+        "INV-VEGETATION-106",
+        "INV-VEGETATION-107",
+        "INV-VEGETATION-108",
+        "INV-VEGETATION-109",
+        "VEG-E-097",
+        "VEG-E-098",
+        "VEG-E-099",
+        "VEG-E-100",
+        "AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING",
+        "Current-interval E19 growth is never eligible",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "missing V7 authority {required}"
+        );
+    }
+}
+
+fn assert_v7_migration(fixture: &Value) {
+    assert_eq!(
+        fixture["migration"]["seasonal_nonidentity_fields_preserved"],
+        true
+    );
+    assert_eq!(
+        fixture["migration"]["source_nonidentity_sha256"],
+        fixture["migration"]["migrated_nonidentity_sha256"]
+    );
+    assert_eq!(fixture["migration"]["preparation_not_executed"], true);
+    assert_eq!(fixture["migration"]["evergreen_unresolved_field_count"], 25);
+    let incomplete = &fixture["migration"]["evergreen_incomplete"];
+    assert_eq!(incomplete["status"], "incomplete");
+    assert!(incomplete["candidate"].is_null());
+    let unresolved = incomplete["unresolved"]
+        .as_array()
+        .expect("evergreen unresolved fields");
+    assert_eq!(unresolved.len(), 25);
+    assert_eq!(unresolved[0]["field"], "current_growth_fraction");
+    let mut expected_index = 1;
+    for tissue in [
+        "leaf",
+        "fine_root",
+        "live_stem",
+        "dead_stem",
+        "live_coarse_root",
+        "dead_coarse_root",
+    ] {
+        for pool in ["storage", "transfer"] {
+            for element in ["carbon", "nitrogen"] {
+                assert_eq!(unresolved[expected_index]["stratum"], "stratum-1");
+                assert_eq!(unresolved[expected_index]["tissue"], tissue);
+                assert_eq!(unresolved[expected_index]["pool"], pool);
+                assert_eq!(unresolved[expected_index]["element"], element);
+                assert_eq!(
+                    unresolved[expected_index]["reason"],
+                    "evergreen_nonzero_pool"
+                );
+                expected_index += 1;
+            }
+        }
+    }
+}
+
+fn assert_v7_poisons(fixture: &Value) {
+    let poisons = fixture["poisons"].as_array().expect("V7 poisons");
+    let poison_names: Vec<_> = poisons
+        .iter()
+        .map(|case| case["name"].as_str().expect("poison name"))
+        .collect();
+    for required in [
+        "move_100_percent",
+        "move_only_leaf",
+        "move_leaf_and_fine_root_only",
+        "overwrite_existing_transfer",
+        "move_current_interval_storage",
+        "prepare_every_onset_timestep",
+        "move_c_without_n",
+        "move_n_without_c",
+        "recompute_n_from_c_over_cn",
+        "double_growth_respiration",
+        "request_mineral_n_for_stored_tissue",
+        "active_with_nonleaf_transfer",
+        "calendar_year_transfer_without_onset",
+        "background_seasonal_transfer",
+        "evergreen_storage_accumulation",
+        "negative_pool",
+        "nonfinite_pool",
+    ] {
+        assert!(
+            poison_names.contains(&required),
+            "missing V7 poison {required}"
+        );
+    }
+    assert_eq!(poisons.len(), 17);
+    assert!(poisons.iter().all(|case| {
+        case["rejected"] == true
+            && case["candidate"].is_null()
+            && case["discriminator"]["alternative_executed"] == true
+            && case["discriminator"]["differs"] == true
+    }));
+}
+
+fn assert_v7_rollback(fixture: &Value) {
+    let rollbacks = fixture["rollback_injections"]
+        .as_array()
+        .expect("rollback injections");
+    let phases: Vec<_> = rollbacks
+        .iter()
+        .map(|case| case["phase"].as_str().expect("rollback phase"))
+        .collect();
+    assert_eq!(
+        phases,
+        [
+            "after_preparation",
+            "during_onset_deployment",
+            "after_n_authorization",
+            "during_allocation",
+            "closure_validation",
+            "before_commit",
+        ]
+    );
+    assert!(rollbacks.iter().all(|case| {
+        case["owners_byte_identical"] == true
+            && case["before_sha256"] == case["after_sha256"]
+            && case["candidate"].is_null()
+    }));
+    assert_eq!(fixture["rollback_leak_poison"]["accepted"], false);
+    assert_ne!(
+        fixture["rollback_leak_poison"]["before_sha256"],
+        fixture["rollback_leak_poison"]["after_sha256"]
+    );
+}
+
+#[test]
+fn v7_vectors_bind_six_tissues_ordering_migration_poisons_and_rollback() {
+    let fixture_path =
+        format!("{V7_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v7_vectors.json");
+    let fixture: Value = serde_json::from_str(&read(&fixture_path)).expect("V7 vectors JSON");
+    assert_eq!(
+        sha256(&fixture_path),
+        "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V7_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v7.py"
+        )),
+        "dfc7c586cb42f7729de09ac0660fa4b2f61d8132ccb3b24b570743bd1ba8a5dd"
+    );
+    assert_eq!(fixture["model_version"], "OPENWEPP_C3_WOODY_V7");
+    assert_eq!(fixture["constants"]["f_stor_xfer"], 0.5);
+    assert_eq!(
+        fixture["six_tissue_vectors"]
+            .as_array()
+            .expect("six tissue vectors")
+            .len(),
+        6
+    );
+    for tissue in fixture["six_tissue_vectors"]
+        .as_array()
+        .expect("six tissue vectors")
+    {
+        assert_eq!(tissue["carbon_source_operand_independent"], true);
+        assert_eq!(tissue["nitrogen_source_operand_independent"], true);
+        assert_eq!(
+            tissue["preparation_amount"]["carbon"].as_f64(),
+            tissue["beginning"]["storage"]["carbon"]
+                .as_f64()
+                .map(|value| 0.5 * value)
+        );
+        assert_eq!(
+            tissue["preparation_amount"]["nitrogen"].as_f64(),
+            tissue["beginning"]["storage"]["nitrogen"]
+                .as_f64()
+                .map(|value| 0.5 * value)
+        );
+    }
+    assert_eq!(fixture["multi_interval_onset"]["preparation_count"], 1);
+    assert_eq!(
+        fixture["multi_interval_onset"]["phase_before_exhaustion"],
+        "onset"
+    );
+    assert_eq!(fixture["multi_interval_onset"]["final_phase"], "active");
+    assert_eq!(fixture["terminal_remainder_branch"]["fraction"], 1.0);
+    assert_eq!(
+        fixture["terminal_remainder_branch"]["all_transfer_exact_zero"],
+        true
+    );
+    assert_eq!(
+        fixture["current_interval_allocation_exclusion"]["new_allocation_remains_in_storage"],
+        true
+    );
+    assert_v7_migration(&fixture);
+    assert_v7_poisons(&fixture);
+    assert_v7_rollback(&fixture);
 }

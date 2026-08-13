@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+────────────
+ Nextest run ID b0f7ce13-0579-4ccc-a442-33bd203b11a0 with nextest profile: full
+    Starting 161 tests across 217 binaries (2491 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+────────────
+     Summary [ 207.145s] 161 tests run: 161 passed (1 slow), 2491 skipped

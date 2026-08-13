@@ -1,0 +1,18 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract role_assignment_is_typed_receipted_and_idempotent
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_        SLOW [> 90.000s] (───────) ope        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract superseded_report_fails_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+────────────
+     Summary [ 387.764s] 155 tests run: 155 passed (3 slow), 2497 skipped
+enwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+────────────
+     Summary [ 394.741s] 155 tests run: 155 passed (3 slow), 2497 skipped

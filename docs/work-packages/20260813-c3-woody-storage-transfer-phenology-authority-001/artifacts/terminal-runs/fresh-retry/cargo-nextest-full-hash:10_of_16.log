@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.02s
+────────────
+ Nextest run ID 8dcad72a-0a1a-4394-8e23-248b947773d9 with nextest profile: full
+    Starting 172 tests across 217 binaries (2480 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract every_precommit_fault_boundary_preserves_the_prior_public_generation
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract every_precommit_fault_boundary_preserves_the_prior_public_generation
+────────────
+     Summary [ 192.148s] 172 tests run: 172 passed (1 slow), 2480 skipped

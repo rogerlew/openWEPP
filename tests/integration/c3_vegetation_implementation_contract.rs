@@ -65,9 +65,13 @@ fn identity_rebound_v6_fixture() -> (VegetationConfiguration, CoupledOwnedState)
     )
     .expect("historical V5 state DTO");
     state.model_definition_sha256 = MODEL_SHA256.into();
-    state.configuration_sha256 = configuration.configuration_sha256.clone();
+    state
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
     state.state_sha256 = state.canonical_sha256().expect("V6 state digest");
-    configuration.initial_state_sha256 = state.state_sha256.clone();
+    configuration
+        .initial_state_sha256
+        .clone_from(&state.state_sha256);
     state.validate(&configuration).expect("V6 state");
     (configuration, state)
 }

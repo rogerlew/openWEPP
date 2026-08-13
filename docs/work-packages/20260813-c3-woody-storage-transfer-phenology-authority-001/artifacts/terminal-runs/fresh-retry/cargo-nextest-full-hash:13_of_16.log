@@ -1,0 +1,65 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+────────────
+ Nextest run ID c5b3980d-e15b-4cc0-bd3d-50a344f59fb2 with nextest profile: full
+    Starting 154 tests across 217 binaries (2498 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>450.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>540.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>630.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+ TERMINATING [>720.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+     TIMEOUT [ 720.014s] (151/154) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_bound_byte_negative_matrix_is_fail_closed has been running for over 60 seconds
+
+    (test timed out)
+
+  Cancelling due to signal: 2 tests still running
+     SIGTERM [  36.423s] (153/154) openwepp::assurance_v2_publication_contract wrong_principal_kind_fails_closed
+  stdout ───
+
+    running 1 test
+
+    (test aborted with signal 15: SIGTERM)
+
+     SIGTERM [  30.492s] (154/154) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+  stdout ───
+
+    running 1 test
+
+    (test aborted with signal 15: SIGTERM)
+
+────────────
+     Summary [ 756.499s] 154 tests run: 151 passed (3 slow), 2 failed, 1 timed out, 2498 skipped
+     TIMEOUT [ 720.014s] (151/154) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_bound_byte_negative_matrix_is_fail_closed has been running for over 60 seconds
+
+    (test timed out)
+
+     SIGTERM [  36.423s] (153/154) openwepp::assurance_v2_publication_contract wrong_principal_kind_fails_closed
+     SIGTERM [  30.492s] (154/154) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+error: test run failed
+/154) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_bound_byte_negative_matrix_is_fail_closed has been running for over 60 seconds
+
+    (test timed out)
+
+     SIGTERM [ 134.688s] (154/154) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+error: test run failed

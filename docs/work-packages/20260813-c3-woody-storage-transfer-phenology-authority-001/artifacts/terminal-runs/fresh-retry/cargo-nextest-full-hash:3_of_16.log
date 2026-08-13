@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 9b826499-f5ef-4964-aedc-df6210fc102b with nextest profile: full
+    Starting 156 tests across 217 binaries (2496 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [> 90.000s] (───────) openwepp-assurance v2::transaction::tests::every_precommit_fault_preserves_the_active_generation
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract simultaneous_publishers_serialize_and_converge_on_one_generation
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+────────────
+     Summary [ 381.385s] 156 tests run: 156 passed (5 slow), 2496 skipped

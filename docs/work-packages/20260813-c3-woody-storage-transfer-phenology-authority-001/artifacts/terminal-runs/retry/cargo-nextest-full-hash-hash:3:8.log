@@ -1,0 +1,575 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 7ec3334e-a920-4dbc-b106-4d565506754a with nextest profile: full
+    Starting 322 tests across 217 binaries (2330 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+        FAIL [  24.429s] ( 29/322) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 24.42s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (600985) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+    cqr-quality-intake: INVALID
+    cqr-quality-intake: INVALID
+    cqr-recollection: AUTHORIZED disposition=INVALID
+
+    stderr:
+    Traceback (most recent call last):
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1030, in self_test
+        inventories = quality.independent_inventory_partition(repo)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 1904, in independent_inventory_partition
+        "full": enumerate_inventory(
+                ^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 267, in enumerate_inventory
+        payload = json.loads(run(arguments, cwd=repo, env=env))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (101): cargo nextest list --workspace --profile full --target-dir /tmp/openwepp-quality-verify-rzsn1yil/target --config-file /tmp/openwepp-quality-verify-rzsn1yil/nextest.toml --message-format json
+    Compiling proc-macro2 v1.0.106
+       Compiling quote v1.0.45
+       Compiling unicode-ident v1.0.24
+       Compiling serde_core v1.0.228
+       Compiling serde v1.0.228
+       Compiling cfg-if v1.0.4
+       Compiling version_check v0.9.5
+       Compiling itoa v1.0.18
+       Compiling typenum v1.20.0
+       Compiling equivalent v1.0.2
+       Compiling ryu v1.0.23
+       Compiling cpufeatures v0.2.17
+       Compiling hashbrown v0.17.1
+       Compiling unsafe-libyaml v0.2.11
+       Compiling crc32fast v1.5.0
+       Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+       Compiling adler2 v2.0.1
+       Compiling libm v0.2.16
+       Compiling simd-adler32 v0.3.9
+       Compiling autocfg v1.5.1
+       Compiling libc v0.2.186
+       Compiling memchr v2.8.0
+       Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+       Compiling zmij v1.0.21
+       Compiling serde_json v1.0.150
+       Compiling zerocopy v0.8.48
+       Compiling getrandom v0.3.4
+       Compiling thiserror v2.0.20
+       Compiling shlex v1.3.0
+       Compiling once_cell v1.21.4
+       Compiling find-msvc-tools v0.1.9
+       Compiling bytes v1.11.1
+       Compiling pkg-config v0.3.33
+       Compiling lexical-util v1.0.7
+       Compiling semver v1.0.28
+       Compiling iana-time-zone v0.1.65
+       Compiling arrow-schema v54.3.1
+       Compiling hashbrown v0.15.5
+       Compiling zstd-safe v7.2.4
+       Compiling alloc-no-stdlib v2.0.4
+       Compiling snap v1.1.1
+       Compiling bitflags v1.3.2
+       Compiling paste v1.0.15
+       Compiling byteorder v1.5.0
+       Compiling static_assertions v1.1.0
+       Compiling toml_write v0.1.2
+       Compiling winnow v0.7.15
+       Compiling integer-encoding v3.0.4
+       Compiling twox-hash v2.1.2
+       Compiling base64 v0.22.1
+       Compiling simdutf8 v0.1.5
+       Compiling seq-macro v0.3.6
+       Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+       Compiling miniz_oxide v0.8.9
+       Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+       Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+       Compiling alloc-stdlib v0.2.2
+       Compiling twox-hash v1.6.3
+       Compiling openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+       Compiling powerfmt v0.2.0
+       Compiling lz4_flex v0.11.6
+       Compiling time-core v0.1.8
+       Compiling num-conv v0.2.2
+       Compiling stable_deref_trait v1.2.1
+       Compiling litemap v0.8.2
+       Compiling generic-array v0.14.7
+       Compiling ahash v0.8.12
+       Compiling rustc_version v0.4.1
+       Compiling brotli-decompressor v4.0.3
+       Compiling smallvec v1.15.2
+       Compiling writeable v0.6.3
+       Compiling icu_properties_data v2.2.0
+       Compiling utf8_iter v1.0.4
+       Compiling pulldown-cmark v0.13.4
+       Compiling icu_normalizer_data v2.2.0
+       Compiling parking_lot_core v0.9.12
+       Compiling unicase v2.9.0
+       Compiling deranged v0.5.8
+       Compiling ref-cast v1.0.25
+       Compiling bitflags v2.13.0
+       Compiling num-traits v0.2.19
+       Compiling scopeguard v1.2.0
+       Compiling regex-syntax v0.8.11
+       Compiling foldhash v0.2.0
+       Compiling allocator-api2 v0.2.21
+       Compiling unicode-general-category v1.1.0
+       Compiling bit-vec v0.8.0
+       Compiling borrow-or-share v0.2.4
+       Compiling lock_api v0.4.14
+       Compiling vsimd v0.8.0
+       Compiling lexical-parse-integer v1.0.6
+       Compiling lexical-write-integer v1.0.6
+       Compiling percent-encoding v2.3.2
+       Compiling lazy_static v1.5.0
+       Compiling outref v0.5.2
+       Compiling data-encoding v2.11.0
+       Compiling quick-xml v0.41.0
+       Compiling aho-corasick v1.1.4
+       Compiling bytecount v0.6.9
+       Compiling num-cmp v0.1.0
+       Compiling flatbuffers v24.12.23
+       Compiling indexmap v2.14.0
+       Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+       Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+       Compiling lexical-parse-float v1.0.6
+       Compiling bit-set v0.8.0
+       Compiling flate2 v1.1.9
+       Compiling lexical-write-float v1.0.6
+       Compiling hashbrown v0.16.1
+       Compiling uuid-simd v0.8.0
+       Compiling syn v2.0.117
+       Compiling syn v3.0.3
+       Compiling lexical-core v1.0.6
+       Compiling brotli v7.0.0
+       Compiling block-buffer v0.10.4
+       Compiling crypto-common v0.1.7
+       Compiling digest v0.10.7
+       Compiling sha2 v0.10.9
+       Compiling jobserver v0.1.34
+       Compiling time v0.3.47
+       Compiling parking_lot v0.12.5
+       Compiling cc v1.2.62
+       Compiling num-integer v0.1.46
+       Compiling num-complex v0.4.6
+       Compiling chrono v0.4.44
+       Compiling ordered-float v2.10.1
+       Compiling atoi v2.0.0
+       Compiling approx v0.5.1
+       Compiling regex-automata v0.4.15
+       Compiling thrift v0.17.0
+       Compiling num-bigint v0.4.6
+       Compiling num-iter v0.1.45
+       Compiling zstd-sys v2.0.16+zstd.1.5.7
+       Compiling thiserror-impl v2.0.20
+       Compiling num-rational v0.4.2
+       Compiling num v0.4.3
+       Compiling fraction v0.15.4
+       Compiling synstructure v0.13.2
+       Compiling regex v1.13.0
+       Compiling fancy-regex v0.17.0
+       Compiling serde_derive v1.0.228
+       Compiling zerocopy-derive v0.8.48
+       Compiling zerofrom-derive v0.1.7
+       Compiling yoke-derive v0.8.2
+       Compiling zerovec-derive v0.11.3
+       Compiling displaydoc v0.2.6
+       Compiling ref-cast-impl v1.0.25
+       Compiling zerofrom v0.1.8
+       Compiling zstd v0.13.3
+       Compiling yoke v0.8.3
+       Compiling zerovec v0.11.6
+       Compiling zerotrie v0.2.4
+       Compiling tinystr v0.8.3
+       Compiling potential_utf v0.1.5
+       Compiling icu_collections v2.2.0
+       Compiling icu_locale_core v2.2.0
+       Compiling icu_provider v2.2.0
+       Compiling serde_yaml v0.9.34+deprecated
+       Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+       Compiling serde_spanned v0.6.9
+       Compiling toml_datetime v0.6.11
+       Compiling fluent-uri v0.4.1
+       Compiling email_address v0.2.9
+       Compiling icu_properties v2.2.0
+       Compiling icu_normalizer v2.2.0
+       Compiling toml_edit v0.22.27
+       Compiling openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+       Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+       Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+       Compiling openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+       Compiling idna_adapter v1.2.2
+       Compiling idna v1.1.0
+       Compiling toml v0.8.23
+    error: could not parse/generate dep info at: /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/toml-36d805adab795fc1.d
+
+    Caused by:
+      failed to write `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/.fingerprint/toml-36d805adab795fc1/dep-lib-toml`
+
+    Caused by:
+      No space left on device (os error 28)
+    warning: build failed, waiting for other jobs to finish...
+    rustc-LLVM ERROR: IO failure on output stream: No space left on device
+    error: could not parse/generate dep info at: /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/openwepp_biogeochemistry-4f786fd386cd8ab3.d
+
+    Caused by:
+      failed to write `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/.fingerprint/openwepp-biogeochemistry-4f786fd386cd8ab3/dep-test-lib-openwepp_biogeochemistry`
+
+    Caused by:
+      No space left on device (os error 28)
+    error: could not compile `toml_edit` (lib)
+
+    Caused by:
+      No space left on device (os error 28)
+
+    Caused by:
+      failed to parse process output: `/home/roger/.cargo/bin/cargo-llvm-cov /home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name toml_edit --edition=2021 /home/roger/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml_edit-0.22.27/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --warn=rust_2018_idioms '--warn=clippy::zero_sized_map_values' '--warn=clippy::wildcard_imports' '--warn=clippy::verbose_file_reads' --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --allow=unnameable_types '--warn=clippy::uninlined_format_args' '--warn=clippy::trait_duplication_in_bounds' '--warn=clippy::todo' '--warn=clippy::string_to_string' '--warn=clippy::string_lit_as_bytes' '--warn=clippy::string_add_assign' '--warn=clippy::string_add' '--warn=clippy::str_to_string' '--warn=clippy::semicolon_if_nothing_returned' '--warn=clippy::self_named_module_files' '--warn=clippy::same_functions_in_if_condition' '--allow=clippy::result_large_err' '--warn=clippy::rest_pat_in_fully_bound_structs' '--warn=clippy::ref_option_ref' '--warn=clippy::redundant_feature_names' '--warn=clippy::rc_mutex' '--warn=clippy::ptr_as_ptr' '--warn=clippy::path_buf_push_overwrite' '--warn=clippy::negative_feature_names' '--warn=clippy::needless_for_each' '--allow=clippy::needless_continue' '--warn=clippy::mutex_integer' '--warn=clippy::mem_forget' '--warn=clippy::macro_use_imports' '--warn=clippy::lossy_float_literal' '--warn=clippy::linkedlist' '--allow=clippy::let_and_return' '--warn=clippy::large_types_passed_by_value' '--warn=clippy::large_stack_arrays' '--warn=clippy::large_digit_groups' '--warn=clippy::invalid_upcast_comparisons' '--warn=clippy::infinite_loop' '--warn=clippy::inefficient_to_string' '--warn=clippy::inconsistent_struct_constructor' '--warn=clippy::imprecise_flops' '--warn=clippy::implicit_clone' '--allow=clippy::if_same_then_else' '--warn=clippy::from_iter_instead_of_collect' '--warn=clippy::fn_params_excessive_bools' '--warn=clippy::float_cmp_const' '--warn=clippy::flat_map_option' '--warn=clippy::filter_map_next' '--warn=clippy::fallible_impl_from' '--warn=clippy::explicit_into_iter_loop' '--warn=clippy::explicit_deref_methods' '--warn=clippy::expl_impl_clone_on_copy' '--warn=clippy::enum_glob_use' '--warn=clippy::empty_enum' '--warn=clippy::doc_markdown' '--warn=clippy::debug_assert_with_mut_call' '--warn=clippy::dbg_macro' '--warn=clippy::create_dir' '--allow=clippy::collapsible_else_if' '--warn=clippy::checked_conversions' '--allow=clippy::branches_sharing_code' '--allow=clippy::bool_assert_comparison' --cfg 'feature="display"' --cfg 'feature="parse"' --cfg 'feature="serde"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "display", "parse", "perf", "serde", "unbounded", "unstable-debug"))' -C metadata=2ab00758e79f7f96 -C extra-filename=-cb42f7d4c02fee36 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern indexmap=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libindexmap-ce368a53615029df.rmeta --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rmeta --extern serde_spanned=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_spanned-2cae803a4b8b7e17.rmeta --extern toml_datetime=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libtoml_datetime-4f3c7252c024d74c.rmeta --extern toml_write=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libtoml_write-d71924ec196f69f2.rmeta --extern winnow=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libwinnow-363868de7700199f.rmeta --cap-lints allow` (exit status: 101)
+    error: failed to write to `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaLNxhCq/full.rmeta`: No space left on device (os error 28)
+
+    error: could not compile `zerocopy` (lib) due to 1 previous error
+    error: failed to write to `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaS2a8UR/full.rmeta`: No space left on device (os error 28)
+
+    error: could not compile `openwepp-management-schema` (lib) due to 1 previous error
+    error: linking with `cc` failed: exit status: 1
+      |
+      = note:  "cc" "-m64" "/tmp/rustcGkGWze/symbols.o" "<139 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/{libserde_json-e45f55ce2636d51a,libmemchr-616198ed82ec96a9,libzmij-211a475a36dbadab,libitoa-fc5c8f1745b88ffe}.rlib" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/{libserde-ce86ecf73b62038a,libserde_core-d4a722a22773e376,libopenwepp_unit_boundary-11004debb668cd64,libopenwepp_sim_contract-a1ac57118222df81}.rlib" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libprofiler_builtins-*,libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-L" "/tmp/rustcGkGWze/raw-dylibs" "-B<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld" "-fuse-ld=lld" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-o" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/openwepp_kernel_contract-267556888dba73c2" "-Wl,--gc-sections" "-pie" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-u" "__llvm_profile_runtime"
+      = note: some arguments are omitted. use `--verbose` to show all linker arguments
+      = note: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace.
+              collect2: fatal error: ld terminated with signal 7 [Bus error], core dumped
+              compilation terminated.
+              
+
+    error: process didn't exit successfully: `/home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name openwepp_kernel_contract --edition=2024 crates/openwepp-kernel-contract/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 '--warn=clippy::pedantic' '--warn=clippy::all' --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=44b10b69292d7204 -C extra-filename=-267556888dba73c2 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -C incremental=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/incremental -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern openwepp_sim_contract=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libopenwepp_sim_contract-a1ac57118222df81.rlib --extern openwepp_unit_boundary=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libopenwepp_unit_boundary-11004debb668cd64.rlib --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rlib --extern serde_json=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_json-e45f55ce2636d51a.rlib -C instrument-coverage --cfg=coverage` (exit status: 1)
+    error: could not compile `openwepp-kernel-contract` (lib test) due to 1 previous error
+    rustc-LLVM ERROR: IO failure on output stream: No space left on device
+    error: could not compile `openwepp-management-schema` (lib test)
+
+    Caused by:
+      No space left on device (os error 28)
+
+    Caused by:
+      failed to parse process output: `/home/roger/.cargo/bin/cargo-llvm-cov /home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name openwepp_management_schema --edition=2024 crates/openwepp-management-schema/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 '--warn=clippy::pedantic' '--warn=clippy::all' --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=unexpected_cfgs '--allow=clippy::cognitive_complexity' --check-cfg 'cfg(coverage)' --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=cab862e95ab05fee -C extra-filename=-0ff41eab18ae6523 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -C incremental=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/incremental -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rlib --extern serde_yaml=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_yaml-4630320edd8b8c21.rlib --extern sha2=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libsha2-ca41b394e8b0ef88.rlib` (exit status: 101)
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaxfXdI4"
+
+    error: could not compile `openwepp-vegetation` (lib) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetalnlyaq"
+
+    error: could not compile `openwepp-assurance` (lib) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaTq2tYV"
+
+    error: could not compile `openwepp-assurance` (lib test) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetakCgIM5"
+
+    error: could not compile `openwepp-vegetation` (lib test) due to 1 previous error
+    error: command `/home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo test --no-run --message-format json-render-diagnostics --workspace --target-dir /tmp/openwepp-quality-verify-rzsn1yil/target` exited with code 101
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+────────────
+     Summary [ 419.163s] 322 tests run: 321 passed (4 slow), 1 failed, 2330 skipped
+        FAIL [  24.429s] ( 29/322) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 24.42s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (600985) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+    cqr-quality-intake: INVALID
+    cqr-quality-intake: INVALID
+    cqr-recollection: AUTHORIZED disposition=INVALID
+
+    stderr:
+    Traceback (most recent call last):
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1030, in self_test
+        inventories = quality.independent_inventory_partition(repo)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 1904, in independent_inventory_partition
+        "full": enumerate_inventory(
+                ^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 267, in enumerate_inventory
+        payload = json.loads(run(arguments, cwd=repo, env=env))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (101): cargo nextest list --workspace --profile full --target-dir /tmp/openwepp-quality-verify-rzsn1yil/target --config-file /tmp/openwepp-quality-verify-rzsn1yil/nextest.toml --message-format json
+    Compiling proc-macro2 v1.0.106
+       Compiling quote v1.0.45
+       Compiling unicode-ident v1.0.24
+       Compiling serde_core v1.0.228
+       Compiling serde v1.0.228
+       Compiling cfg-if v1.0.4
+       Compiling version_check v0.9.5
+       Compiling itoa v1.0.18
+       Compiling typenum v1.20.0
+       Compiling equivalent v1.0.2
+       Compiling ryu v1.0.23
+       Compiling cpufeatures v0.2.17
+       Compiling hashbrown v0.17.1
+       Compiling unsafe-libyaml v0.2.11
+       Compiling crc32fast v1.5.0
+       Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+       Compiling adler2 v2.0.1
+       Compiling libm v0.2.16
+       Compiling simd-adler32 v0.3.9
+       Compiling autocfg v1.5.1
+       Compiling libc v0.2.186
+       Compiling memchr v2.8.0
+       Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+       Compiling zmij v1.0.21
+       Compiling serde_json v1.0.150
+       Compiling zerocopy v0.8.48
+       Compiling getrandom v0.3.4
+       Compiling thiserror v2.0.20
+       Compiling shlex v1.3.0
+       Compiling once_cell v1.21.4
+       Compiling find-msvc-tools v0.1.9
+       Compiling bytes v1.11.1
+       Compiling pkg-config v0.3.33
+       Compiling lexical-util v1.0.7
+       Compiling semver v1.0.28
+       Compiling iana-time-zone v0.1.65
+       Compiling arrow-schema v54.3.1
+       Compiling hashbrown v0.15.5
+       Compiling zstd-safe v7.2.4
+       Compiling alloc-no-stdlib v2.0.4
+       Compiling snap v1.1.1
+       Compiling bitflags v1.3.2
+       Compiling paste v1.0.15
+       Compiling byteorder v1.5.0
+       Compiling static_assertions v1.1.0
+       Compiling toml_write v0.1.2
+       Compiling winnow v0.7.15
+       Compiling integer-encoding v3.0.4
+       Compiling twox-hash v2.1.2
+       Compiling base64 v0.22.1
+       Compiling simdutf8 v0.1.5
+       Compiling seq-macro v0.3.6
+       Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+       Compiling miniz_oxide v0.8.9
+       Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+       Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+       Compiling alloc-stdlib v0.2.2
+       Compiling twox-hash v1.6.3
+       Compiling openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+       Compiling powerfmt v0.2.0
+       Compiling lz4_flex v0.11.6
+       Compiling time-core v0.1.8
+       Compiling num-conv v0.2.2
+       Compiling stable_deref_trait v1.2.1
+       Compiling litemap v0.8.2
+       Compiling generic-array v0.14.7
+       Compiling ahash v0.8.12
+       Compiling rustc_version v0.4.1
+       Compiling brotli-decompressor v4.0.3
+       Compiling smallvec v1.15.2
+       Compiling writeable v0.6.3
+       Compiling icu_properties_data v2.2.0
+       Compiling utf8_iter v1.0.4
+       Compiling pulldown-cmark v0.13.4
+       Compiling icu_normalizer_data v2.2.0
+       Compiling parking_lot_core v0.9.12
+       Compiling unicase v2.9.0
+       Compiling deranged v0.5.8
+       Compiling ref-cast v1.0.25
+       Compiling bitflags v2.13.0
+       Compiling num-traits v0.2.19
+       Compiling scopeguard v1.2.0
+       Compiling regex-syntax v0.8.11
+       Compiling foldhash v0.2.0
+       Compiling allocator-api2 v0.2.21
+       Compiling unicode-general-category v1.1.0
+       Compiling bit-vec v0.8.0
+       Compiling borrow-or-share v0.2.4
+       Compiling lock_api v0.4.14
+       Compiling vsimd v0.8.0
+       Compiling lexical-parse-integer v1.0.6
+       Compiling lexical-write-integer v1.0.6
+       Compiling percent-encoding v2.3.2
+       Compiling lazy_static v1.5.0
+       Compiling outref v0.5.2
+       Compiling data-encoding v2.11.0
+       Compiling quick-xml v0.41.0
+       Compiling aho-corasick v1.1.4
+       Compiling bytecount v0.6.9
+       Compiling num-cmp v0.1.0
+       Compiling flatbuffers v24.12.23
+       Compiling indexmap v2.14.0
+       Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+       Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+       Compiling lexical-parse-float v1.0.6
+       Compiling bit-set v0.8.0
+       Compiling flate2 v1.1.9
+       Compiling lexical-write-float v1.0.6
+       Compiling hashbrown v0.16.1
+       Compiling uuid-simd v0.8.0
+       Compiling syn v2.0.117
+       Compiling syn v3.0.3
+       Compiling lexical-core v1.0.6
+       Compiling brotli v7.0.0
+       Compiling block-buffer v0.10.4
+       Compiling crypto-common v0.1.7
+       Compiling digest v0.10.7
+       Compiling sha2 v0.10.9
+       Compiling jobserver v0.1.34
+       Compiling time v0.3.47
+       Compiling parking_lot v0.12.5
+       Compiling cc v1.2.62
+       Compiling num-integer v0.1.46
+       Compiling num-complex v0.4.6
+       Compiling chrono v0.4.44
+       Compiling ordered-float v2.10.1
+       Compiling atoi v2.0.0
+       Compiling approx v0.5.1
+       Compiling regex-automata v0.4.15
+       Compiling thrift v0.17.0
+       Compiling num-bigint v0.4.6
+       Compiling num-iter v0.1.45
+       Compiling zstd-sys v2.0.16+zstd.1.5.7
+       Compiling thiserror-impl v2.0.20
+       Compiling num-rational v0.4.2
+       Compiling num v0.4.3
+       Compiling fraction v0.15.4
+       Compiling synstructure v0.13.2
+       Compiling regex v1.13.0
+       Compiling fancy-regex v0.17.0
+       Compiling serde_derive v1.0.228
+       Compiling zerocopy-derive v0.8.48
+       Compiling zerofrom-derive v0.1.7
+       Compiling yoke-derive v0.8.2
+       Compiling zerovec-derive v0.11.3
+       Compiling displaydoc v0.2.6
+       Compiling ref-cast-impl v1.0.25
+       Compiling zerofrom v0.1.8
+       Compiling zstd v0.13.3
+       Compiling yoke v0.8.3
+       Compiling zerovec v0.11.6
+       Compiling zerotrie v0.2.4
+       Compiling tinystr v0.8.3
+       Compiling potential_utf v0.1.5
+       Compiling icu_collections v2.2.0
+       Compiling icu_locale_core v2.2.0
+       Compiling icu_provider v2.2.0
+       Compiling serde_yaml v0.9.34+deprecated
+       Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+       Compiling serde_spanned v0.6.9
+       Compiling toml_datetime v0.6.11
+       Compiling fluent-uri v0.4.1
+       Compiling email_address v0.2.9
+       Compiling icu_properties v2.2.0
+       Compiling icu_normalizer v2.2.0
+       Compiling toml_edit v0.22.27
+       Compiling openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+       Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+       Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+       Compiling openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+       Compiling idna_adapter v1.2.2
+       Compiling idna v1.1.0
+       Compiling toml v0.8.23
+    error: could not parse/generate dep info at: /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/toml-36d805adab795fc1.d
+
+    Caused by:
+      failed to write `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/.fingerprint/toml-36d805adab795fc1/dep-lib-toml`
+
+    Caused by:
+      No space left on device (os error 28)
+    warning: build failed, waiting for other jobs to finish...
+    rustc-LLVM ERROR: IO failure on output stream: No space left on device
+    error: could not parse/generate dep info at: /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/openwepp_biogeochemistry-4f786fd386cd8ab3.d
+
+    Caused by:
+      failed to write `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/.fingerprint/openwepp-biogeochemistry-4f786fd386cd8ab3/dep-test-lib-openwepp_biogeochemistry`
+
+    Caused by:
+      No space left on device (os error 28)
+    error: could not compile `toml_edit` (lib)
+
+    Caused by:
+      No space left on device (os error 28)
+
+    Caused by:
+      failed to parse process output: `/home/roger/.cargo/bin/cargo-llvm-cov /home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name toml_edit --edition=2021 /home/roger/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml_edit-0.22.27/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --warn=rust_2018_idioms '--warn=clippy::zero_sized_map_values' '--warn=clippy::wildcard_imports' '--warn=clippy::verbose_file_reads' --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --allow=unnameable_types '--warn=clippy::uninlined_format_args' '--warn=clippy::trait_duplication_in_bounds' '--warn=clippy::todo' '--warn=clippy::string_to_string' '--warn=clippy::string_lit_as_bytes' '--warn=clippy::string_add_assign' '--warn=clippy::string_add' '--warn=clippy::str_to_string' '--warn=clippy::semicolon_if_nothing_returned' '--warn=clippy::self_named_module_files' '--warn=clippy::same_functions_in_if_condition' '--allow=clippy::result_large_err' '--warn=clippy::rest_pat_in_fully_bound_structs' '--warn=clippy::ref_option_ref' '--warn=clippy::redundant_feature_names' '--warn=clippy::rc_mutex' '--warn=clippy::ptr_as_ptr' '--warn=clippy::path_buf_push_overwrite' '--warn=clippy::negative_feature_names' '--warn=clippy::needless_for_each' '--allow=clippy::needless_continue' '--warn=clippy::mutex_integer' '--warn=clippy::mem_forget' '--warn=clippy::macro_use_imports' '--warn=clippy::lossy_float_literal' '--warn=clippy::linkedlist' '--allow=clippy::let_and_return' '--warn=clippy::large_types_passed_by_value' '--warn=clippy::large_stack_arrays' '--warn=clippy::large_digit_groups' '--warn=clippy::invalid_upcast_comparisons' '--warn=clippy::infinite_loop' '--warn=clippy::inefficient_to_string' '--warn=clippy::inconsistent_struct_constructor' '--warn=clippy::imprecise_flops' '--warn=clippy::implicit_clone' '--allow=clippy::if_same_then_else' '--warn=clippy::from_iter_instead_of_collect' '--warn=clippy::fn_params_excessive_bools' '--warn=clippy::float_cmp_const' '--warn=clippy::flat_map_option' '--warn=clippy::filter_map_next' '--warn=clippy::fallible_impl_from' '--warn=clippy::explicit_into_iter_loop' '--warn=clippy::explicit_deref_methods' '--warn=clippy::expl_impl_clone_on_copy' '--warn=clippy::enum_glob_use' '--warn=clippy::empty_enum' '--warn=clippy::doc_markdown' '--warn=clippy::debug_assert_with_mut_call' '--warn=clippy::dbg_macro' '--warn=clippy::create_dir' '--allow=clippy::collapsible_else_if' '--warn=clippy::checked_conversions' '--allow=clippy::branches_sharing_code' '--allow=clippy::bool_assert_comparison' --cfg 'feature="display"' --cfg 'feature="parse"' --cfg 'feature="serde"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "display", "parse", "perf", "serde", "unbounded", "unstable-debug"))' -C metadata=2ab00758e79f7f96 -C extra-filename=-cb42f7d4c02fee36 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern indexmap=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libindexmap-ce368a53615029df.rmeta --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rmeta --extern serde_spanned=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_spanned-2cae803a4b8b7e17.rmeta --extern toml_datetime=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libtoml_datetime-4f3c7252c024d74c.rmeta --extern toml_write=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libtoml_write-d71924ec196f69f2.rmeta --extern winnow=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libwinnow-363868de7700199f.rmeta --cap-lints allow` (exit status: 101)
+    error: failed to write to `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaLNxhCq/full.rmeta`: No space left on device (os error 28)
+
+    error: could not compile `zerocopy` (lib) due to 1 previous error
+    error: failed to write to `/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaS2a8UR/full.rmeta`: No space left on device (os error 28)
+
+    error: could not compile `openwepp-management-schema` (lib) due to 1 previous error
+    error: linking with `cc` failed: exit status: 1
+      |
+      = note:  "cc" "-m64" "/tmp/rustcGkGWze/symbols.o" "<139 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/{libserde_json-e45f55ce2636d51a,libmemchr-616198ed82ec96a9,libzmij-211a475a36dbadab,libitoa-fc5c8f1745b88ffe}.rlib" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/{libserde-ce86ecf73b62038a,libserde_core-d4a722a22773e376,libopenwepp_unit_boundary-11004debb668cd64,libopenwepp_sim_contract-a1ac57118222df81}.rlib" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libprofiler_builtins-*,libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-L" "/tmp/rustcGkGWze/raw-dylibs" "-B<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld" "-fuse-ld=lld" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-o" "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/openwepp_kernel_contract-267556888dba73c2" "-Wl,--gc-sections" "-pie" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-u" "__llvm_profile_runtime"
+      = note: some arguments are omitted. use `--verbose` to show all linker arguments
+      = note: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace.
+              collect2: fatal error: ld terminated with signal 7 [Bus error], core dumped
+              compilation terminated.
+              
+
+    error: process didn't exit successfully: `/home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name openwepp_kernel_contract --edition=2024 crates/openwepp-kernel-contract/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 '--warn=clippy::pedantic' '--warn=clippy::all' --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=44b10b69292d7204 -C extra-filename=-267556888dba73c2 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -C incremental=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/incremental -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern openwepp_sim_contract=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libopenwepp_sim_contract-a1ac57118222df81.rlib --extern openwepp_unit_boundary=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libopenwepp_unit_boundary-11004debb668cd64.rlib --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rlib --extern serde_json=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_json-e45f55ce2636d51a.rlib -C instrument-coverage --cfg=coverage` (exit status: 1)
+    error: could not compile `openwepp-kernel-contract` (lib test) due to 1 previous error
+    rustc-LLVM ERROR: IO failure on output stream: No space left on device
+    error: could not compile `openwepp-management-schema` (lib test)
+
+    Caused by:
+      No space left on device (os error 28)
+
+    Caused by:
+      failed to parse process output: `/home/roger/.cargo/bin/cargo-llvm-cov /home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name openwepp_management_schema --edition=2024 crates/openwepp-management-schema/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 '--warn=clippy::pedantic' '--warn=clippy::all' --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=unexpected_cfgs '--allow=clippy::cognitive_complexity' --check-cfg 'cfg(coverage)' --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=cab862e95ab05fee -C extra-filename=-0ff41eab18ae6523 --out-dir /tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps -C incremental=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/incremental -L dependency=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps --extern serde=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde-ce86ecf73b62038a.rlib --extern serde_yaml=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libserde_yaml-4630320edd8b8c21.rlib --extern sha2=/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/libsha2-ca41b394e8b0ef88.rlib` (exit status: 101)
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaxfXdI4"
+
+    error: could not compile `openwepp-vegetation` (lib) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetalnlyaq"
+
+    error: could not compile `openwepp-assurance` (lib) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetaTq2tYV"
+
+    error: could not compile `openwepp-assurance` (lib test) due to 1 previous error
+    error: couldn't create a temp dir: No space left on device (os error 28) at path "/tmp/openwepp-quality-verify-rzsn1yil/target/debug/deps/rmetakCgIM5"
+
+    error: could not compile `openwepp-vegetation` (lib test) due to 1 previous error
+    error: command `/home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo test --no-run --message-format json-render-diagnostics --workspace --target-dir /tmp/openwepp-quality-verify-rzsn1yil/target` exited with code 101
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

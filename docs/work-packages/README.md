@@ -589,6 +589,12 @@
 
 State as of `2026-08-09 UTC`:
 
+- `20260813-c3-woody-storage-transfer-phenology-authority-001/`
+  - COMPLETE / V7 STORAGE-TRANSFER PHENOLOGY AUTHORITY RELEASED / TERMINAL
+    A+B PASS: exact six-tissue seasonal storage-to-transfer preparation and
+    onset deployment are admitted while preserving V1--V6. Production Rust,
+    runtime activation, calibration, and consumer cutover remain excluded.
+
 - `20260809-assurance-draft-publication-defect-closure-001/`
   - COMPLETE / DUAL TERMINAL VERIFIED: the stable DRAFT-publication failure
     was caused by placing `TMPDIR` below the repository, which correctly

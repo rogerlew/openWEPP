@@ -1,0 +1,11 @@
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.39s
+────────────
+ Nextest run ID 8de0a3be-c113-4732-87f4-7cc4fda347cf with nextest profile: full
+    Starting 343 tests across 217 binaries (2309 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+────────────
+     Summary [ 416.837s] 343 tests run: 343 passed (3 slow), 2309 skipped

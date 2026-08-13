@@ -1,0 +1,14 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.16s
+────────────
+ Nextest run ID 2078df17-a6ea-4433-ad4d-ab823f9a07b3 with nextest profile: full
+    Starting 173 tests across 217 binaries (2479 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+────────────
+     Summary [ 280.557s] 173 tests run: 173 passed (1 slow), 2479 skipped

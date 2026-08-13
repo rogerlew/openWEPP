@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+────────────
+ Nextest run ID 9c72d96d-c46d-472a-ac2e-b29b56d66c49 with nextest profile: full
+    Starting 154 tests across 217 binaries (2498 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract bootstrap_unowned_readme_fails_closed
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+────────────
+     Summary [ 385.356s] 154 tests run: 154 passed (4 slow), 2498 skipped

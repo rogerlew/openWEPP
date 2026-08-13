@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+────────────
+ Nextest run ID bc54197f-d224-4f12-9439-ceeff8c5ca2d with nextest profile: full
+    Starting 165 tests across 217 binaries (2487 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract named_publication_rejects_unreceipted_prior_catalog_entries
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract narrative_drift_fails_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract wrong_principal_role_fails_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+────────────
+     Summary [ 604.070s] 165 tests run: 165 passed (5 slow), 2487 skipped

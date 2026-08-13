@@ -1,0 +1,10 @@
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.35s
+────────────
+ Nextest run ID eca36db3-f02f-43d5-a4dd-cca3293e4db0 with nextest profile: full
+    Starting 326 tests across 217 binaries (2326 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+────────────
+     Summary [ 283.087s] 326 tests run: 326 passed (2 slow), 2326 skipped

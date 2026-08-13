@@ -1,0 +1,64 @@
+{
+  "run_name": "fresh-retry",
+  "run_root": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry",
+  "date": "2026-08-13",
+  "commands": [
+    {
+      "name": "clippy",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "pass": true,
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-clippy.log"
+    },
+    {
+      "name": "sc_unit_compliance",
+      "command": "tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "exit_code": 0,
+      "pass": true,
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/check_sc_unit_compliance-vegetation.log"
+    }
+  ],
+  "nextest": {
+    "profile": "full",
+    "partitions": [
+      {"partition": "1/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:1_of_16.log", "summary": "169 tests run: 169 passed, 2483 skipped"},
+      {"partition": "2/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:2_of_16.log", "summary": "154 tests run: 154 passed, 2498 skipped"},
+      {"partition": "3/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:3_of_16.log", "summary": "156 tests run: 156 passed, 2496 skipped"},
+      {"partition": "4/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:4_of_16.log", "summary": "165 tests run: 165 passed, 2487 skipped"},
+      {"partition": "5/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:5_of_16.log", "summary": "161 tests run: 161 passed, 2491 skipped"},
+      {"partition": "6/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:6_of_16.log", "summary": "165 tests run: 165 passed, 2487 skipped"},
+      {"partition": "7/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:7_of_16.log", "summary": "155 tests run: 155 passed, 2497 skipped"},
+      {"partition": "8/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:8_of_16_single.log", "summary": "163 tests run: 163 passed, 2489 skipped"},
+      {"partition": "9/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:9_of_16.log", "summary": "162 tests run: 162 passed, 2490 skipped"},
+      {"partition": "10/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:10_of_16.log", "summary": "172 tests run: 172 passed, 2480 skipped"},
+      {"partition": "11/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:11_of_16.log", "summary": "166 tests run: 166 passed, 2486 skipped"},
+      {"partition": "12/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:12_of_16.log", "summary": "178 tests run: 178 passed, 2474 skipped"},
+      {"partition": "13/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:13_single.log", "summary": "154 tests run: 154 passed, 2498 skipped"},
+      {"partition": "14/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:14_of_16.log", "summary": "179 tests run: 179 passed, 2473 skipped"},
+      {"partition": "15/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:15_of_16.log", "summary": "147 tests run: 147 passed, 2505 skipped"},
+      {"partition": "16/16", "exit_code": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/terminal-runs/fresh-retry/cargo-nextest-full-hash:16_of_16.log", "summary": "173 tests run: 173 passed, 2479 skipped"}
+    ]
+  },
+  "infra_anomalies": {
+    "duplicate_runs": [
+      "6/16",
+      "7/16",
+      "8/16",
+      "9/16",
+      "10/16",
+      "11/16",
+      "12/16",
+      "13/16",
+      "14/16",
+      "15/16",
+      "16/16"
+    ],
+    "notable_failures_observed": [
+      "8/16 initial run with shared log was interrupted (SIGINT/7 failed)",
+      "9/16 had one interrupted run with binary log content (SIGINT, 157-163), followed by pass",
+      "13/16 timed out/fail and was rerun twice to pass"
+    ]
+  },
+  "overall_pass": true,
+  "overall_verdict": "PASS"
+}

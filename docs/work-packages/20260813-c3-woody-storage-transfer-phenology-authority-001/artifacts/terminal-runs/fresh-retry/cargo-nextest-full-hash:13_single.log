@@ -1,0 +1,21 @@
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.97s
+────────────
+ Nextest run ID 34955251-dd47-4d42-830a-f12dc9060c0e with nextest profile: full
+    Starting 154 tests across 217 binaries (2498 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>450.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+        SLOW [>540.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>630.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract wrong_principal_kind_fails_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+────────────
+     Summary [ 770.391s] 154 tests run: 154 passed (6 slow), 2498 skipped

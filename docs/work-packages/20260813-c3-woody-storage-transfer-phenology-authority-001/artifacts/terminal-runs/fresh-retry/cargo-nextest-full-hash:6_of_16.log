@@ -1,0 +1,17 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.47s
+────────────
+ Nextest run ID ede8e153-414d-4025-8dc9-2b937ae17683 with nextest profile: full
+    Starting 165 tests across 217 binaries (2487 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract reconstructed_production_snapshot_passes_and_forged_roots_fail
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract bootstrap_empty_directory_fails_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract reconstructed_production_snapshot_passes_and_forged_roots_fail
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract bootstrap_empty_directory_fails_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract release_driver_persists_verified_v2_artifacts_and_discovery_sidecar
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract release_driver_persists_verified_v2_artifacts_and_discovery_sidecar
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+────────────
+     Summary [ 456.871s] 165 tests run: 165 passed (4 slow), 2487 skipped

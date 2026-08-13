@@ -1,0 +1,13 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.88s
+�        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+────────────
+     Summary [ 171.988s] 178 tests run: 178 passed (1 slow), 2474 skipped
+90.000s] (───────) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+────────────
+     Summary [ 180.831s] 178 tests run: 178 passed (1 slow), 2474 skipped

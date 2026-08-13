@@ -1,0 +1,32 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+────────────
+ Nextest run ID 4a47882d-82ec-4aae-a79e-4a9447ea27fe with nextest profile: full
+    Starting 315 tests across 217 binaries (2337 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  Cancelling due to signal: 2 tests still running
+     SIGTERM [  40.020s] (312/315) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+  stdout ───
+
+    running 1 test
+
+    (test aborted with signal 15: SIGTERM)
+
+     SIGTERM [ 313.515s] (313/315) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_bound_byte_negative_matrix_is_fail_closed has been running for over 60 seconds
+
+    (test aborted with signal 15: SIGTERM)
+
+────────────
+     Summary [ 313.527s] 313/315 tests run: 311 passed (2 slow), 2 failed, 2337 skipped
+     SIGTERM [  40.020s] (312/315) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+     SIGTERM [ 313.515s] (313/315) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+warning: 2/315 tests were not run due to signal
+error: test run failed

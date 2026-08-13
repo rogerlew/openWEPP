@@ -1,0 +1,16 @@
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.54s
+────────────
+ Nextest run ID cff7e090-0b78-4ab2-a5c3-e5d94364825e with nextest profile: full
+    Starting 331 tests across 217 binaries (2321 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+────────────
+     Summary [ 214.460s] 331 tests run: 331 passed (6 slow), 2321 skipped

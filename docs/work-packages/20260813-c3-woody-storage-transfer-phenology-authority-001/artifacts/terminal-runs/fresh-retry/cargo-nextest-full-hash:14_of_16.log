@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.87s
+────────────
+ Nextest run ID 29b9b074-fae2-4321-8828-dfc9673f39c3 with nextest profile: full
+    Starting 179 tests across 217 binaries (2473 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract staging_fifo_fails_closed
+        SLOW [>180.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>270.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>360.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+────────────
+     Summary [ 418.724s] 179 tests run: 179 passed (3 slow), 2473 skipped

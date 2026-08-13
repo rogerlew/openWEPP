@@ -1,0 +1,24 @@
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: assigning the result of `Clone::clone()` may be inefficient
+  --> tests/integration/c3_vegetation_implementation_contract.rs:68:5
+   |
+68 |     state.configuration_sha256 = configuration.configuration_sha256.clone();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `state.configuration_sha256.clone_from(&configuration.configuration_sha256)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+   = note: `-D clippy::assigning-clones` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::assigning_clones)]`
+
+error: assigning the result of `Clone::clone()` may be inefficient
+  --> tests/integration/c3_vegetation_implementation_contract.rs:70:5
+   |
+70 |     configuration.initial_state_sha256 = state.state_sha256.clone();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `configuration.initial_state_sha256.clone_from(&state.state_sha256)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+
+error: could not compile `openwepp` (test "c3_vegetation_implementation_contract") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

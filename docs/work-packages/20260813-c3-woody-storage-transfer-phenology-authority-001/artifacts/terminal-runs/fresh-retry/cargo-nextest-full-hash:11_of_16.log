@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+────────────
+ Nextest run ID bd77a8e2-a05d-47d8-b24c-543c8ad1a777 with nextest profile: full
+    Starting 166 tests across 217 binaries (2486 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [> 90.000s] (───────) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+        SLOW [> 90.000s] (───────) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [>180.000s] (───────) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+        SLOW [> 90.000s] (───────) openwepp-assurance v2::transaction::tests::adoption_selected_source_race_preserves_the_active_generation
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+────────────
+     Summary [ 514.721s] 166 tests run: 166 passed (6 slow), 2486 skipped

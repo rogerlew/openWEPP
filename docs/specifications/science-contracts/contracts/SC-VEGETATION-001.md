@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -61,6 +61,13 @@ successor to V5. V6 changes only comparison of rejected-backtracking
 state, flux, residual, conservation, authorization, categorical diagnostic,
 and rollback requirement remains unchanged. V1--V5 remain immutable historical
 identities and are not V6 runtime aliases.
+Version 11 admits `OPENWEPP_C3_WOODY_V7` as the successor to V6 for the
+previously blocked E19-to-E20 seasonal reserve bridge. V7 adds only the exact
+six-tissue carbon/nitrogen storage-to-transfer preparation at a seasonal
+`Dormant -> Onset` edge, six-tissue transfer-to-display deployment, event
+ordering, evergreen zero-pool posture, identity-only migration, conservation,
+and failure rules. V1--V6 remain immutable historical identities and are not
+V7 runtime aliases.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -105,6 +112,13 @@ for
 That definition normatively imports exact V5 and supersedes only the
 cross-runtime comparison rule for rejected `backtracking_limit.step_norm` in
 the Version 10 amendment below.
+
+The immutable V7 definition identity is
+`sha256:a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f`
+for
+`docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json`.
+That definition normatively imports exact V6 and supersedes only the seasonal
+storage/transfer/onset delta in the Version 11 amendment below.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -1389,6 +1403,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-008` | `20260812-c3-woody-shared-state-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-069, INV-VEGETATION-087, INV-VEGETATION-088, INV-VEGETATION-089, INV-VEGETATION-090, INV-VEGETATION-091` | `flagged-binding-addition` | Version 8 releases immutable V4 exact shared-state schema, displayed-leaf C/N area/capacity ownership, derived area caches, and exact V3-to-V4 removal migration while preserving V1/V2/V3 historical bytes. |
 | `BEI-VEGETATION-009` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-093, INV-VEGETATION-094, INV-VEGETATION-095, INV-VEGETATION-096, INV-VEGETATION-097, INV-VEGETATION-098, INV-VEGETATION-099` | `flagged-binding-addition` | Version 9 releases immutable V5 fixed-authorization E11--E15 complementarity, generalized-Jacobian, diagnostic/operand, rollback, identity-transition, and independent fixture authority while preserving V1--V4 historical bytes. |
 | `BEI-VEGETATION-010` | `20260813-c3-woody-failure-diagnostic-portability-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-100, INV-VEGETATION-101, INV-VEGETATION-102, INV-VEGETATION-103, VEG-E-095, VEG-E-096` | `flagged-binding-addition` | Version 10 releases only V6 rejected-backtracking `step_norm` evidence portability and exact V5-to-V6 identity transition; accepted numerical and physical authority remains unchanged. |
+| `BEI-VEGETATION-011` | `20260813-c3-woody-storage-transfer-phenology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-104, INV-VEGETATION-105, INV-VEGETATION-106, INV-VEGETATION-107, INV-VEGETATION-108, INV-VEGETATION-109, VEG-E-097, VEG-E-098, VEG-E-099, VEG-E-100` | `flagged-binding-addition` | Version 11 admits the V7 six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen posture, conservation, failure, migration, and independent fixture authority; implementation remains separate. |
 
 ## Gap Register and Promotability Labels
 
@@ -1420,7 +1435,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-024` | V1 lacked persistent liquid distribution and descendant routing for a stratum spanning heterogeneous tiles. | Version 6 selects exact occupancy state, same-tile routing, local nonlinear solves, area conversion, migration, and closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-025` | V2 did not define the mixed leaf/stem radiation reduction/partition, local wind derivation, stem geometry/gravity, common-root warm start, accepted uncapped potential semantics, one Rd identity, complete numerical failure payload, or independent potential fixtures. | Version 7 selects every missing rule and binds independent V3 radiation, coupling, migration, respiration, and failure vectors; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-026` | V3 did not identify the displayed leaf C/N subpools owning LAI and photosynthetic capacity and carried two offset-flux state fields with no admitted units, update law, or consumer. | Version 8 selects displayed leaf C/N only, derived area caches, exact V4 shared schema, and removal-only V3 migration; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
-| `GAP-VEGETATION-027` | Imported E19 credits noncurrent growth to storage while E20 onset debits transfer, but no admitted equation moves storage to transfer. | Admit a complete ordered storage-to-transfer C/N preparation equation and independent conservation vectors before executing an onset that requires this bridge. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-027` | Imported E19 credits noncurrent growth to storage while E20 onset debits transfer, but no admitted equation moves storage to transfer. | Version 11 selects exact six-tissue C/N storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen posture, conservation, migration, and independent fixtures. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-028` | V4 imported the final capped E11--E15 pass without exact authorization-rate conversion, layer complementarity/equality branch, generalized Jacobian, complete capped operands/diagnostics, or independent cap-active vectors. | Version 9 selects and binds the complete V5 fixed-cap system and fixture family; production implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
@@ -1429,6 +1444,144 @@ independent native-forest flux components, and layer-resolved potential demand.
 It must independently admit every implemented constitutive relationship, remain
 default-off and non-publishing, mutate no soil store, and make no runtime or
 cutover claim.
+
+## `OPENWEPP_C3_WOODY_V7` Storage-Transfer Phenology Amendment
+
+V7 normatively imports the exact immutable V6 definition digest
+`a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426`
+and every unchanged V1--V6 equation, configuration/state field, numerical
+algorithm, tolerance, transaction identity, conservation rule, diagnostic,
+failure, and fixture value. This section exclusively supersedes the missing
+E19-to-E20 storage/transfer preparation, onset deployment, event ordering,
+evergreen semantic validation, and V6-to-V7 identity transition.
+The six-tissue preparation and deployment selection is directly anchored to
+`REF-VEGETATION-027`; the immutable-beginning interval ordering and absence
+of a second growth-respiration debit are explicit openWEPP canonical
+selections required by existing E19 ownership.
+
+### Pool identity and preparation
+
+For every tissue
+`p in {leaf, fine_root, live_stem, dead_stem, live_coarse_root,
+dead_coarse_root}` and element `e in {C,N}`, let `D_p,e`, `S_p,e`, and `X_p,e`
+be the displayed, storage, and transfer pools. At an accepted
+seasonal-deciduous `Dormant -> Onset` edge only, using the immutable
+beginning-of-interval state, V7 selects:
+
+```text
+f_stor_xfer = 0.5
+Prep_p,e = f_stor_xfer * S0_p,e
+Sprep_p,e = S0_p,e - Prep_p,e
+Xprep_p,e = X0_p,e + Prep_p,e
+```
+
+Carbon and nitrogen use their own source operands. Nitrogen is never derived
+from carbon or a configured C:N ratio. Preparation adds to preexisting
+transfer; it never overwrites it. Display is unchanged by preparation. No
+atmospheric flux, respiration, mineral-N request, retranslocation, litter/CWD,
+dry-matter transfer, or total vegetation C/N change occurs.
+
+### Six-tissue onset deployment
+
+For the accepted onset interval, after any one-time edge preparation, define:
+
+```text
+f_on = 1                              when t_onset_remaining <= dt
+f_on = min(1, 2*dt/t_onset_remaining) otherwise
+Deploy_p,e = f_on * Xprep_p,e
+X1_p,e = Xprep_p,e - Deploy_p,e
+D1_p,e = D0_p,e + Deploy_p,e
+```
+
+The same `f_on` applies independently to all six tissue C/N transfer pools.
+When `f_on=1`, the complete exact transfer remainder moves to display and each
+transfer pool becomes exact zero. Phase becomes `Active` only when every one
+of the twelve transfer C/N pools is exact zero; otherwise it remains `Onset`.
+An already-onset interval deploys transfer but never repeats preparation.
+
+### Accepted event ordering
+
+The Stage-C interval order is binding:
+
+1. Freeze beginning shared C/N state.
+2. Detect the phenology edge from beginning phase, previous accepted GSI, and
+   current GSI; equality with the onset threshold retains phase.
+3. On a seasonal `Dormant -> Onset` edge, prepare from beginning storage once.
+4. Deploy prepared transfer to display for all six tissues.
+5. Form offset, retranslocation, turnover, and mortality candidates.
+6. Use generated retranslocated N before E19 external mineral-N demand.
+7. Finalize current-interval E19 N-constrained allocation.
+8. Credit `f_cur` growth to display and `(1-f_cur)` growth to storage.
+9. Validate per-tissue and aggregate C/N ledgers.
+10. Commit only with every other owner candidate.
+
+Current-interval E19 growth is never eligible for preparation or deployment in
+the same interval. There is no calendar-year transfer, background seasonal
+transfer, repeated preparation, or outer phenology fixed point. Storage-to-
+transfer and transfer-to-display are internal relabeling with zero additional
+growth respiration; the E19 allocation debit remains the only growth-
+respiration charge.
+
+### Evergreen posture
+
+For `PhenologyMode::Evergreen`, `current_growth_fraction` must equal exact
+binary64 `1.0`, and every storage and transfer carbon/nitrogen pool for all six
+tissues must be exact zero (positive and negative zero are the same zero
+class). Evergreen never executes onset preparation or deployment. A non-one
+fraction or any nonzero pool is invalid configuration/state and cannot be
+normalized.
+
+### Conservation and failure
+
+For every tissue and element, preparation independently requires
+`S0+X0=Sprep+Xprep`; deployment requires `D0+Xprep=D1+X1`; and the combined
+operation requires exact operand reconstruction of `D+S+X`, subject only to
+the V7 per-tissue, per-element acceptance rule
+`abs(residual) <= 1e-12 kg element m^-2 stand-ground`. This absolute
+representation envelope is an `OPENWEPP_CANONICAL_SELECTION` for independent
+ledger validation, not permission to normalize a pool or accept a missing,
+duplicated, wrong-owner, wrong-tissue, or wrong-element operand.
+Producer-supplied residuals are not accepted.
+Nonfinite or negative pools reject before candidate mutation. Any branch,
+identity, per-tissue/aggregate closure, owner-validation, or precommit failure
+publishes no candidate and preserves every beginning vegetation, water, BGC,
+energy, transaction, pending-transfer, and diagnostic byte.
+
+### V6-to-V7 migration
+
+The serialized state shape is unchanged. Seasonal-deciduous migration validates
+the complete V6 configuration/state, copies every non-identity byte including
+all display/storage/transfer pools, phases, timers, GSI, T10, NSC,
+retranslocation, occupancies, and pending transfers, binds caller-supplied V7
+model/configuration identity, and recomputes only identity-dependent digests.
+Migration never executes onset preparation.
+
+Evergreen migration additionally requires exact `current_growth_fraction=1`
+and exact-zero storage/transfer C/N for all six tissues. Every violation is
+reported exhaustively as an unresolved `(stratum,tissue,pool,element)` field;
+no pool is moved, cleared, or normalized.
+
+### V7 invariants and guards
+
+| ID | Binding invariant or guard |
+|---|---|
+| `INV-VEGETATION-104` | One seasonal `Dormant -> Onset` edge moves exact `0.5*S0` independently for C and N from all six storage pools into matching transfer pools, adding to `X0`. |
+| `INV-VEGETATION-105` | All six transfer pools deploy to their matching displayed pools with one admitted `f_on`; `Active` requires all twelve C/N transfer values exact zero. |
+| `INV-VEGETATION-106` | Preparation consumes immutable beginning storage before current E19 allocation; current-interval noncurrent growth remains ending storage. |
+| `INV-VEGETATION-107` | Preparation/deployment is internal C/N relabeling with no respiration, N request, material proposal, or dry-matter flux and independently satisfies `abs(residual) <= 1e-12 kg element m^-2 stand-ground` per tissue/element. |
+| `INV-VEGETATION-108` | Evergreen requires exact `f_cur=1` and exact-zero six-tissue storage/transfer C/N; onset mechanisms are unavailable. |
+| `INV-VEGETATION-109` | V6-to-V7 migration preserves all non-identity bytes and never performs the runtime onset event; evergreen violations remain exhaustive unresolved fields. |
+| `VEG-E-097` | Wrong fraction/tissue/element/owner, overwrite, repeated preparation, same-interval recycling, added respiration/N request, premature Active, or failed C/N closure rejects without a candidate. |
+| `VEG-E-098` | Evergreen non-one `f_cur` or nonzero storage/transfer pool rejects without normalization. |
+| `VEG-E-099` | Invalid V6 source, stale V7 identity, incomplete unresolved-field report, or migration-time onset mutation rejects without a partial migration. |
+| `VEG-E-100` | Any V7 preparation, deployment, allocation, closure, owner-validation, or precommit failure preserves every beginning owner and transaction byte. |
+
+### V7 scope and claims
+
+V7 releases implementation authority for this storage/transfer/onset delta
+only. It does not implement Rust, activate a selector, complete E01--E22, cut
+over a consumer, admit canopy snow or soil transformations, or establish
+calibration, identifiability, empirical validity, or transferability.
 
 ## `OPENWEPP_C3_WOODY_V4` Shared-State Authority Amendment
 
@@ -2047,6 +2200,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-13 | 11 | Codex | Admitted `OPENWEPP_C3_WOODY_V7` exact six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen zero-pool posture, conservation, failure, migration, and independent fixtures; preserved V1--V6 bytes. |
 | 2026-08-13 | 10 | Codex | Admitted `OPENWEPP_C3_WOODY_V6` narrowly scoped portable comparison for rejected cross-runtime `backtracking_limit.step_norm`, with exact eligibility and anti-laundering guards plus independent binary64 boundary fixtures; preserved all V1--V5 bytes and accepted numerical/physical authority unchanged. |
 | 2026-08-13 | 9 | Codex | Admitted `OPENWEPP_C3_WOODY_V5` exact fixed-authorization E11--E15 cap conversion, independently evaluated hydraulic-law flux, deterministic complementarity/generalized-Jacobian branches, capped residual scaling, complete operands/diagnostics/rollback, exact V4-to-V5 identity transition, and independent capped-pass fixtures; preserved V1--V4 bytes as historical authority. |
 | 2026-08-12 | 8 | Codex | Admitted `OPENWEPP_C3_WOODY_V4` exact shared-stratum schema, displayed-leaf-C/N-only area and capacity ownership, derived area caches, and exact removal of two unconsumed V3 offset-flux fields; preserved V1/V2/V3 bytes as historical authority. |
