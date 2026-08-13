@@ -467,6 +467,21 @@ fn validate_execution(
             found: actual_model_sha,
         });
     }
+    validate_candidate_inputs(config, beginning, forcing)?;
+    if beginning.model_definition_sha256 != model.sha256 {
+        return Err(VegetationError::Receipt(
+            "model/configuration state identity".into(),
+        ));
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+pub(crate) fn validate_candidate_inputs(
+    config: &VegetationConfiguration,
+    beginning: &CoupledOwnedState,
+    forcing: &SnowFreeForcing,
+) -> Result<(), VegetationError> {
     config.validate()?;
     beginning.validate(config)?;
     if beginning
@@ -478,9 +493,7 @@ fn validate_execution(
             "unresolved beginning-state material transfer".into(),
         ));
     }
-    if beginning.model_definition_sha256 != model.sha256
-        || beginning.configuration_sha256 != config.configuration_sha256
-    {
+    if beginning.configuration_sha256 != config.configuration_sha256 {
         return Err(VegetationError::Receipt(
             "model/configuration state identity".into(),
         ));

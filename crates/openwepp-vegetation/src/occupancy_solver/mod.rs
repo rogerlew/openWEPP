@@ -3,4 +3,6 @@
 #[allow(dead_code)]
 pub(crate) mod potential;
 pub mod radiation;
+#[allow(dead_code)]
+pub(crate) mod request_pass;
 pub mod resources;

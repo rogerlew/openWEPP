@@ -12,6 +12,7 @@ pub mod interception;
 pub mod ledger;
 pub mod migration;
 pub mod model;
+pub mod nitrogen_protocol;
 pub mod numerics;
 pub mod occupancy_solver;
 pub mod occupancy_state;
