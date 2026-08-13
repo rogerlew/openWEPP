@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -55,7 +55,12 @@ fixed-authorization E11--E15 pass: exact stand/tile/rate conversion, independent
 hydraulic-law evaluation, deterministic layer-cap complementarity, generalized
 Jacobian branches, complete operands and diagnostics, and immutable independent
 fixtures. V1--V4 remain immutable historical identities and are not V5 runtime
-aliases.
+aliases. Version 10 admits `OPENWEPP_C3_WOODY_V6` as the evidence-portable
+successor to V5. V6 changes only comparison of rejected-backtracking
+`step_norm` across runtimes; every accepted
+state, flux, residual, conservation, authorization, categorical diagnostic,
+and rollback requirement remains unchanged. V1--V5 remain immutable historical
+identities and are not V6 runtime aliases.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -88,10 +93,18 @@ The immutable V5 definition identity is
 `sha256:0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`
 for
 `docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json`.
-That definition normatively imports the exact V4 digest
+The V5 definition normatively imports the exact V4 digest
 `sha256:8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`
 and supersedes only the capped E11--E15, numerical-branch, diagnostic, and
 fixture delta stated in the Version 9 amendment below.
+
+The immutable V6 definition identity is
+`sha256:a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426`
+for
+`docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_definition.json`.
+That definition normatively imports exact V5 and supersedes only the
+cross-runtime comparison rule for rejected `backtracking_limit.step_norm` in
+the Version 10 amendment below.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -1375,6 +1388,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-007` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-080, INV-VEGETATION-081, INV-VEGETATION-082, INV-VEGETATION-083, INV-VEGETATION-084, INV-VEGETATION-085, INV-VEGETATION-086` | `flagged-binding-addition` | Version 7 releases immutable V3 radiation preparation/ownership, surface wind, hydraulic geometry/common-root state, uncapped coupled potential semantics, exact leaf respiration, diagnostics, and independent fixture authority while preserving V1/V2 historical bytes. |
 | `BEI-VEGETATION-008` | `20260812-c3-woody-shared-state-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-069, INV-VEGETATION-087, INV-VEGETATION-088, INV-VEGETATION-089, INV-VEGETATION-090, INV-VEGETATION-091` | `flagged-binding-addition` | Version 8 releases immutable V4 exact shared-state schema, displayed-leaf C/N area/capacity ownership, derived area caches, and exact V3-to-V4 removal migration while preserving V1/V2/V3 historical bytes. |
 | `BEI-VEGETATION-009` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-093, INV-VEGETATION-094, INV-VEGETATION-095, INV-VEGETATION-096, INV-VEGETATION-097, INV-VEGETATION-098, INV-VEGETATION-099` | `flagged-binding-addition` | Version 9 releases immutable V5 fixed-authorization E11--E15 complementarity, generalized-Jacobian, diagnostic/operand, rollback, identity-transition, and independent fixture authority while preserving V1--V4 historical bytes. |
+| `BEI-VEGETATION-010` | `20260813-c3-woody-failure-diagnostic-portability-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-100, INV-VEGETATION-101, INV-VEGETATION-102, INV-VEGETATION-103, VEG-E-095, VEG-E-096` | `flagged-binding-addition` | Version 10 releases only V6 rejected-backtracking `step_norm` evidence portability and exact V5-to-V6 identity transition; accepted numerical and physical authority remains unchanged. |
 
 ## Gap Register and Promotability Labels
 
@@ -1611,6 +1625,156 @@ package to replace the V3 shared-state surface and LAI consumer, but does not
 implement Rust, activate a runtime selector, complete E01--E22, cut over a real
 consumer, admit canopy snow or soil transformations, or establish calibration,
 identifiability, empirical validity, or transferability.
+
+## `OPENWEPP_C3_WOODY_V6` Rejected-Failure Diagnostic Portability Amendment
+
+V6 normatively imports the exact immutable V5 definition digest
+`0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`
+and every unchanged V1--V5 equation, state/configuration field, numerical
+algorithm, solver-acceptance threshold, typed identity, branch, operand,
+authorization rule, conservation rule, failure category, rollback requirement,
+and fixture value. This section exclusively supersedes bit-exact
+cross-runtime comparison for an eligible rejected-backtracking `step_norm`
+emitted by a rejected nonlinear trajectory. It does not change production
+arithmetic or permit normalization of a produced diagnostic.
+
+### Eligible evidence surface
+
+The portable comparison is available only when both records describe the same
+rejected solve and all of the following compare exactly before any numeric
+tolerance is evaluated:
+
+- V6 model definition, configuration, transaction, occupancy, pass, solve, and
+  continuous diagnostic field identity;
+- typed failure category, candidate absence, and optional presence/null shape;
+- iteration count, backtracking count, array cardinality/order, active bounds,
+  active water caps, complementarity branches, and every other categorical or
+  integer diagnostic;
+- byte-identical beginning-owner and transaction rollback evidence;
+- exact stored-representation identity
+  (`mixed_native_unknown_units/unscaled_six_unknown_newton_correction`); and
+- finite classification, sign class, and zero/nonzero class of the compared
+  scalar.
+
+The sole eligible scalar is `step_norm` on a typed `backtracking_limit`
+failure. It is defined exactly as `max_j(abs(delta_x_j))` over the rejected
+unscaled six-variable Newton correction and compared in its stored binary64
+representation. A rejected residual norm, pivot magnitude, matrix norm, or any
+other scalar is not eligible. `step_norm` is not
+an accepted state, accepted flux, accepted residual, conservation operand,
+authorization, finalized use, closure value, convergence threshold, or
+branch-selection operand. A scalar from a successful/accepted solve is
+ineligible even when the field name is the same.
+
+NaN, positive infinity, and negative infinity are invalid evidence and reject
+the comparison. A missing optional value cannot compare with a present value.
+Because `step_norm=max_j(abs(delta_x_j))`, either value below zero is invalid
+evidence and rejects before tolerance evaluation. Positive and negative zero
+form one exact zero class and compare equal; zero and nonzero can never compare
+equal. A wrong
+field, unit, solver, pass, occupancy, transaction, failure category, branch,
+count, order, or rollback state is not repaired by numerical closeness.
+
+### Portable scalar comparison
+
+After every eligibility check passes, let `a` be the independent frozen
+reference value and `b` the implementation value in the stored binary64
+representation. `step_norm` combines mixed native unknowns and has no
+dimensional absolute tolerance. V6 defines:
+
+```text
+diagnostic_rtol = 3e-7   [dimensionless]
+diagnostic_scale = max(abs(a), abs(b))
+diagnostic_limit = diagnostic_rtol * diagnostic_scale
+portable_equal = abs(a - b) <= diagnostic_limit
+```
+
+All operations use finite IEEE-754 binary64 values and the stated operation
+order. The comparison is symmetric because the scale uses both magnitudes.
+The boundary is inclusive. There is no hidden ULP allowance, rounded decimal
+precomparison, field-specific multiplier, retry-dependent widening, or
+platform-specific exception.
+
+The selected `rtol` is the smallest one-significant-digit ceiling above the
+observed portable divergence. For the frozen CPython/Rust V5 backtracking pair
+`3925.8532969524972` and `3925.8544224384018`, the absolute difference is
+`0.0011254859045948251`, the relative difference against the larger magnitude
+is approximately `2.86686e-7`, and `diagnostic_limit` is approximately
+`0.0011777563267315204`. The observed pair therefore consumes about 95.6
+percent of the
+allowed envelope. V6 admits no universal absolute tolerance.
+
+### Acceptance firewall and anti-laundering
+
+Portable diagnostic equality is evidence adjudication after a solve has
+already rejected. It cannot:
+
+- turn a failed solve into an accepted solve or publish a last iterate;
+- change a residual, pivot, bracket, backtracking, iteration, complementarity,
+  authorization, finalized-use, or conservation acceptance threshold;
+- compare or normalize accepted state, flux, energy, water, carbon, nitrogen,
+  dry-material, or owner-ledger operands;
+- repair a nonfinite value, sign change, zero/nonzero change, missing field,
+  wrong unit/basis/identity, categorical mismatch, ordering mismatch, or
+  rollback mutation; or
+- authorize a fallback, partial candidate, partial commit, retry tolerance
+  expansion, or producer-selected expected value.
+
+Every ineligible or out-of-bound comparison is a typed fixture/evidence
+nonconformance. The public vegetation transaction retains the V5 fail-closed
+posture until every otherwise-required implementation gate passes.
+
+### Independent V6 boundary fixtures
+
+The immutable independent V6 fixture binds the observed pair and an
+implementation-independent binary64 boundary family. The generator finds the
+largest representable same-sign positive value satisfying the inclusive rule
+for a fixed positive reference, binds the immediately preceding value as
+inside, and binds `nextafter(boundary,+infinity)` as the first representable
+outside failure. It also binds exact zero/zero success; zero versus minimum
+positive subnormal rejection; positive/negative sign rejection; NaN and both
+infinity metadata rejection; null/present rejection; and wrong-field,
+wrong-solve, accepted-solve, wrong-branch/count/order, and rollback-mutation
+rejection.
+
+Expected fixture values are generated only by the package-independent Python
+calculator and committed digest-bound data. Ordinary Rust tests consume the
+committed JSON without requiring Python. Rust output cannot generate, update,
+round, normalize, or select its own expected values. Regeneration must be
+byte-identical and the two canonical V6 definition copies must be byte-
+identical.
+
+### V6 invariants and guards
+
+| ID | Binding invariant or guard |
+|---|---|
+| `INV-VEGETATION-100` | Only `step_norm` from the same rejected cross-runtime `backtracking_limit` trajectory may use the V6 portable comparison; all identity, category, count, order, presence, sign, zero class, and rollback evidence compares exactly first. |
+| `INV-VEGETATION-101` | Only rejected `backtracking_limit.step_norm=max_j(abs(delta_x_j))` is eligible and compares by the inclusive binary64 rule `abs(a-b) <= 3e-7*max(abs(a),abs(b))` in its stored representation and exact operation order. |
+| `INV-VEGETATION-102` | The portable comparison cannot alter solver acceptance, accepted values, residual/conservation/authorization thresholds, state mutation, candidate publication, or atomic rollback. |
+| `INV-VEGETATION-103` | Independent V6 fixtures bind the observed pair, exact representable boundary, immediate outside value, zero-class, sign, nonfinite, presence, identity, and acceptance-firewall poisons. |
+| `VEG-E-095` | Any ineligible, nonfinite, wrong-class, wrong-identity, or out-of-bound diagnostic comparison is typed evidence nonconformance and cannot produce an accepted candidate. |
+| `VEG-E-096` | Any attempt to use the V6 rule on accepted state/flux/residual/conservation/authorization values or to change solver acceptance rejects as tolerance laundering. |
+
+### V6 scope and claims
+
+V6 releases implementation authority only for portable conformance comparison
+of eligible rejected `backtracking_limit.step_norm` evidence. It changes no
+constitutive equation, state schema, production arithmetic, accepted physical
+value, owner transaction, runtime selector, calibration posture, empirical
+validity, or transferability claim.
+
+### Exact V5-to-V6 identity transition
+
+V5 is not an executable alias for V6. Migration validates the complete V5
+model, configuration, state, diagnostic identity, and transaction lineage,
+copies every non-identity scientific configuration/state/diagnostic payload
+byte unchanged, binds the
+caller-supplied distinct V6 model and configuration identities, and recomputes
+only the V6 configuration/state/diagnostic digests. Identity fields and digest
+fields are excluded from the preserved payload comparison. No scientific, state, or
+diagnostic payload field is added, removed, defaulted, normalized, or remapped.
+The observed V5 pair is authority-selection rationale; executable comparison
+is between two correctly V6-bound rejected-failure records.
 
 ## `OPENWEPP_C3_WOODY_V5` Fixed-Authorization Capped-Pass Amendment
 
@@ -1883,6 +2047,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-13 | 10 | Codex | Admitted `OPENWEPP_C3_WOODY_V6` narrowly scoped portable comparison for rejected cross-runtime `backtracking_limit.step_norm`, with exact eligibility and anti-laundering guards plus independent binary64 boundary fixtures; preserved all V1--V5 bytes and accepted numerical/physical authority unchanged. |
 | 2026-08-13 | 9 | Codex | Admitted `OPENWEPP_C3_WOODY_V5` exact fixed-authorization E11--E15 cap conversion, independently evaluated hydraulic-law flux, deterministic complementarity/generalized-Jacobian branches, capped residual scaling, complete operands/diagnostics/rollback, exact V4-to-V5 identity transition, and independent capped-pass fixtures; preserved V1--V4 bytes as historical authority. |
 | 2026-08-12 | 8 | Codex | Admitted `OPENWEPP_C3_WOODY_V4` exact shared-stratum schema, displayed-leaf-C/N-only area and capacity ownership, derived area caches, and exact removal of two unconsumed V3 offset-flux fields; preserved V1/V2/V3 bytes as historical authority. |
 | 2026-08-12 | 7 | Codex | Admitted `OPENWEPP_C3_WOODY_V3` mixed leaf/stem radiation ownership, neutral surface wind, height/gravity and common-root hydraulics, coupled uncapped potential semantics, one Atkin/Rd identity, typed numerical failure payloads, exact migration, and independent V3 fixtures; preserved V1/V2 bytes as historical authority. |

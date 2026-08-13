@@ -18,6 +18,13 @@
   shared-state serialization/migration and independent fixtures, and preserve
   immutable V1/V2/V3 bytes. Production Rust and runtime activation are excluded.
 
+- `20260813-c3-woody-failure-diagnostic-portability-authority-001/` —
+  COMPLETE / V6 DIAGNOSTIC PORTABILITY AUTHORITY RELEASED / TERMINAL A+B PASS:
+  narrowly admits portable comparison of rejected cross-runtime
+  `backtracking_limit.step_norm` evidence. Accepted solver behavior, physical
+  values, rollback, V1--V5 bytes, production Rust, and runtime activation are
+  unchanged.
+
 - `20260812-c3-woody-potential-pass-authority-001/` — COMPLETE /
   `OPENWEPP_C3_WOODY_V3` IMPLEMENTATION AUTHORITY RELEASED
   CONTRACT-FIRST AUTHORITY CORRECTION: admit exact mixed leaf/stem radiation,

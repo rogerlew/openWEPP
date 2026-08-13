@@ -17,6 +17,8 @@ const V3_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260812-c3-woody-potential-pass-authority-001";
 const V4_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260812-c3-woody-shared-state-authority-001";
+const V6_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -183,7 +185,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 9",
+        "contract_version: 10",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
@@ -194,11 +196,19 @@ fn canonical_schema_and_registry_entry_are_bound() {
         .lines()
         .find(|line| line.starts_with("| `SC-VEGETATION-001` |"))
         .expect("SC-VEGETATION-001 registry row");
+    let lifecycle = if contract.contains("status: approved\nmaturity: active") {
+        assert!(contract.contains("Status: `approved`\nMaturity: `active`"));
+        "| `approved` | `active` |"
+    } else {
+        assert!(contract.contains("status: in_review\nmaturity: draft"));
+        assert!(contract.contains("Status: `in_review`\nMaturity: `draft`"));
+        "| `in_review` | `draft` |"
+    };
     for field in [
-        "| `approved` | `active` |",
+        lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-12` |",
-        "OPENWEPP_C3_WOODY_V5",
+        "| `static` | `2026-08-13` |",
+        "OPENWEPP_C3_WOODY_V6",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -618,12 +628,13 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 9",
+        "contract_version: 10",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
         "OPENWEPP_C3_WOODY_V4",
         "OPENWEPP_C3_WOODY_V5",
+        "OPENWEPP_C3_WOODY_V6",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -1742,10 +1753,13 @@ fn v5_vectors_bind_exact_cap_conversions_tie_rule_operands_and_poison_inventory(
         let q_law = layer["q_law_kg_m2_tile_s"].as_f64().unwrap();
         let q_final = layer["q_final_kg_m2_tile_s"].as_f64().unwrap();
         let finalized = layer["finalized_use_kg_m2_stand_ground"].as_f64().unwrap();
-        assert_eq!(tile_amount, authorization / fraction);
-        assert_eq!(cap_rate, authorization / (fraction * dt));
-        assert_eq!(q_final, q_law.min(cap_rate));
-        assert_eq!(finalized, fraction * q_final * dt);
+        assert_eq!(tile_amount.to_bits(), (authorization / fraction).to_bits());
+        assert_eq!(
+            cap_rate.to_bits(),
+            (authorization / (fraction * dt)).to_bits()
+        );
+        assert_eq!(q_final.to_bits(), q_law.min(cap_rate).to_bits());
+        assert_eq!(finalized.to_bits(), (fraction * q_final * dt).to_bits());
         let cap_active = cap_rate <= q_law;
         assert_eq!(
             layer["branch"],
@@ -1757,7 +1771,7 @@ fn v5_vectors_bind_exact_cap_conversions_tie_rule_operands_and_poison_inventory(
         );
         let derivative = layer["dq_final_d_root_potential"].as_f64().unwrap();
         if cap_active {
-            assert_eq!(derivative, 0.0);
+            assert_eq!(derivative.to_bits(), 0.0_f64.to_bits());
         } else {
             assert!(
                 derivative < 0.0,
@@ -1857,5 +1871,262 @@ fn v5_failure_payloads_rollback_and_migration_identity_are_complete() {
     assert_eq!(
         migration["stale_v4_identity_poison"]["typed_error"],
         "stale_v4_identity_in_v5_state"
+    );
+}
+
+fn v6_fixture() -> Value {
+    serde_json::from_str(&read(&format!(
+        "{V6_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v6_vectors.json"
+    )))
+    .expect("V6 fixture JSON")
+}
+
+fn v6_portable_equal(reference: &Value, actual: &Value) -> bool {
+    const EXACT_FIELDS: [&str; 21] = [
+        "model_definition_sha256",
+        "configuration_sha256",
+        "transaction_id",
+        "occupancy_id",
+        "pass",
+        "solve",
+        "field",
+        "typed_failure",
+        "candidate",
+        "unit",
+        "basis",
+        "present",
+        "iterations",
+        "backtracking_count",
+        "residual_cardinality",
+        "active_bounds",
+        "active_water_caps",
+        "branches",
+        "rollback_sha256_before",
+        "rollback_sha256_after",
+        "accepted_value",
+    ];
+    // Scalar values are compared below; their encoded class is exact here.
+    if EXACT_FIELDS
+        .iter()
+        .any(|field| reference[*field] != actual[*field])
+    {
+        return false;
+    }
+    if reference["model_definition_sha256"] != "BOUND_BY_V6_DEFINITION_NOT_ORACLE"
+        || reference["pass"] != "capped"
+        || reference["solve"] != "hydraulic_system"
+        || reference["field"] != "step_norm"
+        || reference["typed_failure"] != "backtracking_limit"
+        || reference["present"] != true
+        || !reference["candidate"].is_null()
+        || reference["accepted_value"] != false
+        || reference["rollback_sha256_before"] != reference["rollback_sha256_after"]
+        || actual["rollback_sha256_before"] != actual["rollback_sha256_after"]
+        || reference["scalar"]["class"] != "finite"
+        || actual["scalar"]["class"] != "finite"
+    {
+        return false;
+    }
+    let Some(a) = reference["scalar"]["value"].as_f64() else {
+        return false;
+    };
+    let Some(b) = actual["scalar"]["value"].as_f64() else {
+        return false;
+    };
+    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
+        return false;
+    }
+    let a_zero = a.abs().to_bits() == 0;
+    let b_zero = b.abs().to_bits() == 0;
+    if a_zero != b_zero || (!a_zero && a.is_sign_negative() != b.is_sign_negative()) {
+        return false;
+    }
+    (a - b).abs() <= 3e-7 * a.abs().max(b.abs())
+}
+
+#[test]
+fn v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable() {
+    let vegetation = read(CONTRACT);
+    let definition_path =
+        format!("{V6_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v6_definition.json");
+    let model_stack_copy =
+        format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v6_definition.json");
+    let definition_bytes = read(&definition_path);
+    let definition: Value = serde_json::from_str(&definition_bytes).expect("V6 definition JSON");
+
+    assert_eq!(
+        sha256(&definition_path),
+        "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426"
+    );
+    assert_eq!(read(&model_stack_copy), definition_bytes);
+    assert_eq!(sha256(&model_stack_copy), sha256(&definition_path));
+    assert_eq!(definition["model_version"], "OPENWEPP_C3_WOODY_V6");
+    assert_eq!(definition["canonical_contract"], "SC-VEGETATION-001@10");
+    assert_eq!(
+        definition["base_model_definition"]["sha256"],
+        "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    );
+    assert_eq!(
+        definition["independent_fixture"]["sha256"],
+        "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b"
+    );
+    assert_eq!(
+        definition["independent_fixture"]["generator_sha256"],
+        "bfa805000a6e29b3c56a666ea97a4e4825f9262a3ef1f0daa5c3cfb5f2dd6532"
+    );
+    assert_eq!(
+        sha256_text(inclusive_section(
+            &vegetation,
+            "## `OPENWEPP_C3_WOODY_V6` Rejected-Failure Diagnostic Portability Amendment\n",
+            "## `OPENWEPP_C3_WOODY_V5` Fixed-Authorization Capped-Pass Amendment\n",
+        )),
+        definition["canonical_section_sha256"]
+            ["v6_rejected_failure_diagnostic_portability_amendment"]
+            .as_str()
+            .expect("V6 section digest"),
+    );
+
+    for (path, digest) in [
+        (
+            format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"),
+            "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+        ),
+        (
+            format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json"),
+            "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3",
+        ),
+        (
+            format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json"),
+            "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852",
+        ),
+        (
+            format!("{V4_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v4_definition.json"),
+            "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+        ),
+        (
+            format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json"),
+            "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3",
+        ),
+    ] {
+        assert_eq!(
+            sha256(&path),
+            digest,
+            "historical model bytes changed: {path}"
+        );
+    }
+
+    for required in [
+        "INV-VEGETATION-100",
+        "INV-VEGETATION-101",
+        "INV-VEGETATION-102",
+        "INV-VEGETATION-103",
+        "VEG-E-095",
+        "VEG-E-096",
+        "abs(a-b) <= 3e-7*max(abs(a),abs(b))",
+        "Portable diagnostic equality is evidence adjudication after a solve has\nalready rejected",
+        "cannot alter solver acceptance",
+        "byte-identical beginning-owner and transaction rollback evidence",
+        "public vegetation transaction retains the V5 fail-closed\nposture",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "missing V6 authority {required}"
+        );
+    }
+}
+
+#[test]
+fn v6_vectors_bind_comparison_boundary_identity_transition_and_acceptance_firewall() {
+    let fixture_path =
+        format!("{V6_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v6_vectors.json");
+    let fixture = v6_fixture();
+
+    assert_eq!(
+        sha256(&fixture_path),
+        "2e7005f88d788399e914b2034c0193fc6f08d1657532a349ec797b966432356b"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V6_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v6.py"
+        )),
+        "bfa805000a6e29b3c56a666ea97a4e4825f9262a3ef1f0daa5c3cfb5f2dd6532"
+    );
+    assert_eq!(fixture["model_version"], "OPENWEPP_C3_WOODY_V6");
+    assert_eq!(
+        fixture["base_model_sha256"],
+        "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    );
+    assert_eq!(fixture["comparison"]["relative_tolerance"], 3e-7);
+    assert_eq!(
+        fixture["comparison"]["formula"],
+        "abs(a-b) <= rtol*max(abs(a),abs(b))"
+    );
+    assert!(
+        fixture["checks"]
+            .as_object()
+            .expect("V6 checks")
+            .values()
+            .all(|value| value == true)
+    );
+
+    let numeric_cases = fixture["families"]["numeric_boundary_cases"]
+        .as_array()
+        .expect("V6 numeric boundary cases");
+    for required in [
+        ("observed_cpython_rust_step_norm", true),
+        ("exact_largest_representable_boundary", true),
+        ("one_representable_value_inside", true),
+        ("first_representable_value_outside", false),
+        ("positive_zero_vs_negative_zero", true),
+        ("zero_vs_minimum_positive_subnormal", false),
+        ("sign_mismatch", false),
+        ("reversed_observed_operands", true),
+        ("lower_side_boundary", true),
+        ("negative_step_norm", false),
+    ] {
+        let case = numeric_cases
+            .iter()
+            .find(|case| case["case"] == required.0)
+            .unwrap_or_else(|| panic!("missing V6 numeric case {}", required.0));
+        assert_eq!(case["expected_equal"], required.1);
+        assert_eq!(case["observed_equal"], required.1);
+        assert_eq!(
+            v6_portable_equal(&case["reference"], &case["actual"]),
+            required.1,
+            "Rust V6 comparison disagreed for {}",
+            required.0
+        );
+    }
+
+    for family in ["eligibility_and_firewall_poisons", "nonfinite_rejections"] {
+        for case in fixture["families"][family]
+            .as_array()
+            .unwrap_or_else(|| panic!("missing V6 family {family}"))
+        {
+            assert_eq!(case["expected_equal"], false, "accepted V6 poison {case}");
+            assert_eq!(case["observed_equal"], false, "laundered V6 poison {case}");
+            assert!(
+                !v6_portable_equal(&case["reference"], &case["actual"]),
+                "Rust comparison laundered V6 poison {case}"
+            );
+        }
+    }
+
+    let identity = &fixture["identity_transition"];
+    assert_eq!(
+        identity["non_identity_payload_bytes_sha256_before"],
+        identity["non_identity_payload_bytes_sha256_after"]
+    );
+    assert_ne!(
+        identity["source"]["configuration_sha256"],
+        identity["target"]["configuration_sha256"]
+    );
+    assert_ne!(
+        identity["source"]["state_sha256"],
+        identity["target"]["state_sha256"]
+    );
+    assert_ne!(
+        identity["source"]["diagnostic_sha256"],
+        identity["target"]["diagnostic_sha256"]
     );
 }
