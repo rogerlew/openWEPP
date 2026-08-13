@@ -23,6 +23,12 @@ derived substitutes were implemented.
 No operand is profile-averaged. Increment 2A accepts heterogeneous tile rain
 explicitly because the current public `SnowFreeForcing.rain_kg_m2` remains
 stand-shaped; public forcing integration is intentionally still fail-closed.
+
+V6 update: `SnowFreeForcing` is now consumed by the public uncommitted water
+stage. Rain remains tile-ground during each column and is weighted only after
+column completion; radiation and soil operands retain exact occupancy/band/
+direction/layer identities. The complete public candidate remains fail-closed
+at E16, so this does not claim C/N, BGC, energy-owner, or commit integration.
 Every rate is converted once at the transaction ledger.
 
 V4 binds displayed leaf C as the only LAI/area-cache provider and displayed

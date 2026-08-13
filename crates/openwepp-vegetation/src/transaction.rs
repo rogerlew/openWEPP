@@ -532,11 +532,19 @@ pub type NitrogenAuthorization = MaximumAuthorization<MineralNitrogenKey, f64>;
 pub type NitrogenUse = FinalizedUse<MineralNitrogenKey, f64>;
 
 pub trait WaterArbiter {
-    fn beginning_amount(&self, key: &WaterResourceKey) -> Result<f64, VegetationError>;
     fn authorize(
         &self,
         requests: &[WaterRequest],
-    ) -> Result<Vec<WaterAuthorization>, VegetationError>;
+    ) -> Result<crate::water_phase::WaterArbitration, VegetationError>;
+    /// Construct the water owner's uncommitted debit candidate from the exact
+    /// resource protocol. Vegetation independently validates the returned
+    /// candidate and cannot mutate owner state through this interface.
+    fn candidate_from_finalized_use(
+        &self,
+        transaction_id: TransactionId,
+        arbitration: &crate::water_phase::WaterArbitration,
+        finalized_uses: &[WaterUse],
+    ) -> Result<crate::water_phase::WaterOwnerCandidate, VegetationError>;
 }
 pub trait NitrogenArbiter {
     fn beginning_amount(&self, key: &MineralNitrogenKey) -> Result<f64, VegetationError>;
@@ -653,23 +661,23 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Validates the complete public V6 state surface, then fails closed until the
-/// occupancy-local authorization-capped transaction is implemented.
+/// Executes the complete uncommitted V6 water phase, then fails closed at the
+/// still-unimplemented shared C/N and multi-owner transaction boundary.
 pub fn execute_candidate(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
-    _water: &dyn WaterArbiter,
+    water: &dyn WaterArbiter,
     _nitrogen: &dyn NitrogenArbiter,
 ) -> Result<CoupledCandidate, VegetationError> {
-    validate_execution(model, config, beginning, forcing)?;
+    crate::water_phase::execute_uncommitted_water_phase(model, config, beginning, forcing, water)?;
     Err(VegetationError::Unsupported(
-        "V6 occupancy-local capped transaction routing is implementation-incomplete",
+        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
     ))
 }
 
-/// Failure-injection entry point retained while V6 routing is incomplete.
+/// Failure-injection entry point retained while the post-water transaction is incomplete.
 pub fn execute_candidate_with_failure(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -679,14 +687,29 @@ pub fn execute_candidate_with_failure(
     nitrogen: &dyn NitrogenArbiter,
     failure: Option<FailurePoint>,
 ) -> Result<CoupledCandidate, VegetationError> {
-    if failure == Some(FailurePoint::Validation) {
-        return Err(VegetationError::InjectedFailure("validation"));
+    crate::water_phase::execute_uncommitted_water_phase_with_failure(
+        model, config, beginning, forcing, water, failure,
+    )?;
+    let label = match failure {
+        Some(FailurePoint::NitrogenRequest) => Some("nitrogen request"),
+        Some(FailurePoint::NitrogenAuthorization) => Some("nitrogen authorization"),
+        Some(FailurePoint::Allocation) => Some("allocation"),
+        Some(FailurePoint::ReceiverConstruction) => Some("receiver construction"),
+        Some(FailurePoint::ClosureValidation) => Some("closure validation"),
+        Some(FailurePoint::BeforeCommit) => Some("before commit"),
+        _ => None,
+    };
+    if let Some(label) = label {
+        return Err(VegetationError::InjectedFailure(label));
     }
-    execute_candidate(model, config, beginning, forcing, water, nitrogen)
+    let _ = nitrogen;
+    Err(VegetationError::Unsupported(
+        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+    ))
 }
 
 #[allow(clippy::too_many_lines)]
-fn validate_execution(
+pub(crate) fn validate_execution(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
@@ -1597,17 +1620,62 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn public_transaction_validates_v5_inputs_then_fails_closed_before_capped_pass() {
+    #[allow(clippy::too_many_lines)]
+    fn public_transaction_executes_v6_water_then_fails_closed_before_shared_cn() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
-            fn beginning_amount(&self, _: &WaterResourceKey) -> Result<f64, VegetationError> {
-                Ok(0.0)
-            }
             fn authorize(
                 &self,
-                _: &[WaterRequest],
-            ) -> Result<Vec<WaterAuthorization>, VegetationError> {
-                Ok(Vec::new())
+                requests: &[WaterRequest],
+            ) -> Result<crate::water_phase::WaterArbitration, VegetationError> {
+                let authorizations = requests
+                    .iter()
+                    .map(|request| WaterAuthorization {
+                        transaction_id: request.transaction_id,
+                        owner_id: request.owner_id.clone(),
+                        key: request.key.clone(),
+                        amount: request.amount,
+                        basis: request.basis,
+                    })
+                    .collect::<Vec<_>>();
+                let reasons: BTreeMap<_, _> = requests
+                    .iter()
+                    .map(|request| {
+                        (
+                            request.key.clone(),
+                            if request.amount == 0.0 {
+                                crate::water_phase::WaterAuthorizationReason::ZeroDemand
+                            } else {
+                                crate::water_phase::WaterAuthorizationReason::FullySupplied
+                            },
+                        )
+                    })
+                    .collect();
+                let snapshot = crate::water_phase::WaterOwnerSnapshot::try_new(
+                    requests[0].transaction_id,
+                    requests[0].owner_id.clone(),
+                    BTreeMap::from([(requests[0].key.layer_id.clone(), 10.0)]),
+                    reasons.clone(),
+                )?;
+                crate::water_phase::WaterArbitration::try_new(snapshot, authorizations, reasons)
+            }
+            fn candidate_from_finalized_use(
+                &self,
+                transaction_id: TransactionId,
+                arbitration: &crate::water_phase::WaterArbitration,
+                finalized_uses: &[WaterUse],
+            ) -> Result<crate::water_phase::WaterOwnerCandidate, VegetationError> {
+                let ending = crate::water_phase::reconstruct_water_ending(
+                    arbitration.snapshot(),
+                    finalized_uses,
+                )?;
+                crate::water_phase::WaterOwnerCandidate::try_new(
+                    transaction_id,
+                    arbitration.snapshot().owner_id().clone(),
+                    arbitration.snapshot().clone(),
+                    ending,
+                    finalized_uses.to_vec(),
+                )
             }
         }
         impl NitrogenArbiter for NoArbiter {
@@ -1621,56 +1689,43 @@ mod milestone_one_tests {
                 Ok(Vec::new())
             }
         }
-        let (config, state) = fixture();
+        let (config, state) = v6_identity_rebound_fixture();
         let model = crate::load_model_definition().expect("model");
         let forcing = SnowFreeForcing {
-            air_temperature_k: 296.0,
+            air_temperature_k: 298.15,
             pressure_pa: 101_325.0,
-            co2_pa: 40.0,
-            vapor_pressure_deficit_kpa: 1.0,
-            wind_m_s: 2.0,
+            co2_pa: 42.0,
+            vapor_pressure_deficit_kpa: 1.2,
+            wind_m_s: 3.7,
             rain_kg_m2: 0.0,
-            direct_par_w_m2: 0.0,
-            diffuse_par_w_m2: 0.0,
-            direct_nir_w_m2: 0.0,
-            diffuse_nir_w_m2: 0.0,
-            solar_zenith_cosine: 0.5,
-            ground_albedo_vis: 0.1,
-            ground_albedo_nir: 0.2,
-            longwave_down_w_m2: 300.0,
-            longwave_up_w_m2: 350.0,
+            direct_par_w_m2: 410.0,
+            diffuse_par_w_m2: 83.0,
+            direct_nir_w_m2: 355.0,
+            diffuse_nir_w_m2: 101.0,
+            solar_zenith_cosine: 0.67,
+            ground_albedo_vis: 0.14,
+            ground_albedo_nir: 0.31,
+            longwave_down_w_m2: 350.0,
+            longwave_up_w_m2: 390.0,
             specific_humidity: 0.01,
             reference_height_m: 20.0,
-            soil_layers: vec![
-                SoilLayerForcing {
-                    layer_id: layer_id("soil-1"),
-                    water_beginning_kg_m2: 10.0,
-                    matric_potential_mm: -1000.0,
-                    hydraulic_conductivity_mm_s: 1e-5,
-                    root_path_length_mm: 1.0,
-                    gravity_root_mm: 1.0,
-                    temperature_k: 290.0,
-                    accessible: true,
-                    frozen: false,
-                },
-                SoilLayerForcing {
-                    layer_id: layer_id("soil-2"),
-                    water_beginning_kg_m2: 10.0,
-                    matric_potential_mm: -2000.0,
-                    hydraulic_conductivity_mm_s: 1e-5,
-                    root_path_length_mm: 1.0,
-                    gravity_root_mm: 1.0,
-                    temperature_k: 290.0,
-                    accessible: true,
-                    frozen: false,
-                },
-            ],
-            gsi: 0.5,
+            soil_layers: vec![SoilLayerForcing {
+                layer_id: layer_id("soil-1"),
+                water_beginning_kg_m2: 20.0,
+                matric_potential_mm: -1000.0,
+                hydraulic_conductivity_mm_s: 1e-5,
+                root_path_length_mm: 100.0,
+                gravity_root_mm: 500.0,
+                temperature_k: 295.0,
+                accessible: true,
+                frozen: false,
+            }],
+            gsi: 1.0,
         };
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V6 occupancy-local capped transaction routing is implementation-incomplete"
+                "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
             ))
         );
 
@@ -1723,18 +1778,18 @@ fn validate_displayed_leaf_identity(
     Ok(())
 }
 
-/// V5 commit remains unavailable until occupancy-local candidate routing can
-/// construct a fully validated candidate.
+/// Commit remains unavailable until E16--E22 and every receiving-owner
+/// candidate can be validated together.
 pub fn validate_and_commit(
     _beginning: &mut CoupledOwnedState,
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V6 occupancy-local capped transaction routing is implementation-incomplete",
+        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
     ))
 }
 
-/// Failure-injection commit entry point retained while V6 routing is incomplete.
+/// Failure-injection commit entry point retained while the all-owner transaction is incomplete.
 pub fn validate_and_commit_with_failure(
     beginning: &mut CoupledOwnedState,
     candidate: CoupledCandidate,

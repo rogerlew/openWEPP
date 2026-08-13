@@ -49,7 +49,7 @@ pub(crate) struct CappedColumnPass {
 /// occupancy/layer order. These are independently reconstructable; no closure
 /// boolean or producer residual is accepted.
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct CappedWaterLayerOperands {
+pub struct CappedWaterLayerOperands {
     pub model_definition_sha256: String,
     pub configuration_sha256: String,
     pub beginning_state_sha256: String,
@@ -66,6 +66,8 @@ pub(crate) struct CappedWaterLayerOperands {
     pub q_final_kg_m2_tile_s: f64,
     pub finalized_use_kg_m2_stand_ground: f64,
     pub authorization_active_or_tie: bool,
+    pub vulnerability_demand_sun_kg_m2_s: f64,
+    pub vulnerability_demand_shade_kg_m2_s: f64,
     pub beginning_occupancy_state: OccupancyState,
     pub candidate_occupancy_state: OccupancyState,
     pub coupled: crate::diagnostics::CappedNumericalOperands,
@@ -315,7 +317,11 @@ fn validate_capped_water_operands(
                     .map_or(1, |accepted| accepted.saturating_add(1))
             || value.candidate_occupancy_state.last_accepted_transaction_id
                 != value.beginning_occupancy_state.last_accepted_transaction_id
-            || !valid_coupled_operands(&value.coupled)
+            || !valid_coupled_operands(
+                &value.coupled,
+                value.vulnerability_demand_sun_kg_m2_s,
+                value.vulnerability_demand_shade_kg_m2_s,
+            )
         {
             return Err(VegetationError::Receipt(
                 "V5 independently reconstructed capped operands".into(),
@@ -325,7 +331,11 @@ fn validate_capped_water_operands(
     Ok(())
 }
 
-fn valid_coupled_operands(value: &crate::diagnostics::CappedNumericalOperands) -> bool {
+fn valid_coupled_operands(
+    value: &crate::diagnostics::CappedNumericalOperands,
+    vulnerability_demand_sun_kg_m2_s: f64,
+    vulnerability_demand_shade_kg_m2_s: f64,
+) -> bool {
     const IDENTITIES: [&str; 6] = [
         "sun_gas_minus_q1",
         "shade_gas_minus_q1",
@@ -342,8 +352,8 @@ fn valid_coupled_operands(value: &crate::diagnostics::CappedNumericalOperands) -
     let raw = [
         value.gas_sun_kg_m2_s - value.q1_sun_kg_m2_s,
         value.gas_shade_kg_m2_s - value.q1_shade_kg_m2_s,
-        value.gas_sun_kg_m2_s - value.beta_sun * value.emax_sun_kg_m2_s,
-        value.gas_shade_kg_m2_s - value.beta_shade * value.emax_shade_kg_m2_s,
+        value.gas_sun_kg_m2_s - vulnerability_demand_sun_kg_m2_s,
+        value.gas_shade_kg_m2_s - vulnerability_demand_shade_kg_m2_s,
         value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s - value.q2_kg_m2_s,
         value.q2_kg_m2_s - q3_sum,
     ];
@@ -419,6 +429,15 @@ fn collect_water_operands(
             .get(&key.occupancy_id)
             .and_then(|value| value.capped_operands.as_ref())
             .ok_or_else(|| VegetationError::Receipt("V5 capped numerical operands".into()))?;
+        let occupancy_diagnostics = diagnostics
+            .get(&key.occupancy_id)
+            .ok_or_else(|| VegetationError::Receipt("V5 capped diagnostic identity".into()))?;
+        let vulnerability_demand_sun_kg_m2_s = occupancy_diagnostics
+            .vulnerability_demand_sun_kg_m2_s
+            .ok_or_else(|| VegetationError::Receipt("V5 sun vulnerability operand".into()))?;
+        let vulnerability_demand_shade_kg_m2_s = occupancy_diagnostics
+            .vulnerability_demand_shade_kg_m2_s
+            .ok_or_else(|| VegetationError::Receipt("V5 shade vulnerability operand".into()))?;
         let (configured_layer_index, numerical) = coupled
             .layers
             .iter()
@@ -455,6 +474,8 @@ fn collect_water_operands(
                 .get(key)
                 .ok_or_else(|| VegetationError::Receipt("V5 finalized identity".into()))?,
             authorization_active_or_tie: numerical.authorization_active_or_tie,
+            vulnerability_demand_sun_kg_m2_s,
+            vulnerability_demand_shade_kg_m2_s,
             beginning_occupancy_state: beginning_lane.clone(),
             candidate_occupancy_state: candidate_lane.clone(),
             coupled: coupled.clone(),
@@ -705,6 +726,8 @@ mod tests {
                         .map(|root| root.layer_id.clone())
                         .collect(),
                     gas_hydraulic_mismatch_kg_m2_s: 0.0,
+                    vulnerability_demand_sun_kg_m2_s: Some(q),
+                    vulnerability_demand_shade_kg_m2_s: Some(0.0),
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,

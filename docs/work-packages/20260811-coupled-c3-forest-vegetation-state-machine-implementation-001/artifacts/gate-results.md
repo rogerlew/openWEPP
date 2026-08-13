@@ -433,3 +433,47 @@ exactly and applies only the unchanged canonical acceptance threshold.
 | public boundary identity guards | PASS / Ran | `c3_vegetation_implementation_contract`: 13/13 |
 | independent focused-gate audit | PASS / Ran | 24 selected tests; no remaining production or exact-gate defect; explicitly confirms no V6 tolerance spread to accepted values |
 | `STAGE_B_E11_E15_EXACT_ORACLE` | **PASS** | focused capped oracle and ownership boundary only; public V6 transaction integration remains pending/fail-closed |
+
+## V6 Public Water-Phase Integration
+
+Prior HOLDs and failed attempts above remain historical evidence.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| first real production water-stage run | FAIL / Ran | full authorization reached `validate_capped_water_operands` and exposed that the independent validator incorrectly reconstructed vulnerability-demand residuals as `beta * Emax`; no phase candidate returned and beginning state remained immutable |
+| vulnerability operand correction | PASS / Ran | solver arithmetic and frozen V5/V6 failure serialization unchanged; production occupancy diagnostics now carry exact hydraulic vulnerability-demand operands and the owning validator reconstructs both named residuals from them |
+| public two-pass water stage | PASS / Ran | 4/4 focused plus public implementation-contract invocation: exact production potential pass, one typed snapshot/reason authorization batch, fixed-cap rebuild from original beginning, D/A/F, capped operands, receiving-owner debit, shared-layer/reason/debit poisons, and seven injected failure boundaries |
+| vegetation crate | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick`: 184/184 after review remediation |
+| implementation contract | PASS / Ran | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 13/13 |
+| affected strict Clippy | PASS / Ran | vegetation and hillslope-orchestrator, all targets, warnings denied |
+| formatting/diff hygiene | PASS / Ran | `cargo fmt --all -- --check`; `git diff --check` |
+| authority anti-evasion and AUTH11 | PASS / Ran | source-level anti-evasion passed; AUTH11 3/3 |
+| package Markdown | PASS / Ran | 52 files, 0 errors, 0 warnings |
+| full-candidate containment | PASS / fail-closed | `UncommittedWaterPhase` has no commit/conversion surface; `execute_candidate()` consumes E01--E15 then returns typed E16--E22/multi-owner implementation-incomplete failure |
+| focused public-integration review | GO / PASS | final repeat correctness and QA reviews found no unresolved material finding; formal Milestone 2/3 disposition remains separate |
+
+The first independent public-integration correctness review returned HOLD with
+three accepted High findings: the authorization and debit were not bound to one
+immutable hydrology snapshot, authorization reason identity was absent, and
+shared-layer debit aggregation used inconsistent arithmetic order. The first QA
+review separately rejected the evidence because no exact `F<A` authorization-
+as-debit poison existed and receiving-owner rollback bytes were not compared.
+
+Remediation binds a typed `WaterOwnerSnapshot` through `WaterArbitration` and
+`WaterOwnerCandidate`, requires exactly one enumerated reason per request,
+validates aggregate authorization against that frozen snapshot, and centralizes
+sorted-key aggregation plus one subtraction per layer in
+`reconstruct_water_ending`. A two-occupancy shared-layer vector proves exact
+arithmetic, `F<A`, rejection of exact authorization-as-debit, snapshot drift,
+and wrong reason identity. Phase-failure tests now compare both vegetation and
+water-owner beginning bytes.
+
+The first repeat correctness review retained one High: frozen, rooting, and
+competition reason labels could alias because the immutable snapshot did not
+carry the owner's reason facts. The first repeat QA review retained one High:
+the selected `0.1/0.2` shared-layer vector did not actually discriminate the
+rejected sequential subtraction on IEEE-754. Both findings were accepted.
+`WaterOwnerSnapshot` now binds the exact per-request authorization facts and
+rejects frozen/rooting/competition relabeling. The shared-layer vector now uses
+`0.01/0.07` and explicitly proves a one-ULP difference from sequential
+subtraction. Final stable-byte reviews returned correctness GO and QA PASS.

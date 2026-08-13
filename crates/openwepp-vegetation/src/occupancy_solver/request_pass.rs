@@ -310,6 +310,8 @@ mod tests {
                     wet_store_cap_active: false,
                     active_water_caps: Vec::new(),
                     gas_hydraulic_mismatch_kg_m2_s: 0.0,
+                    vulnerability_demand_sun_kg_m2_s: None,
+                    vulnerability_demand_shade_kg_m2_s: None,
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,

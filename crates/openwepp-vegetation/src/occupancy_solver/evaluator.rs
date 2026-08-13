@@ -200,6 +200,12 @@ fn solve_occupancy(
             wet_store_cap_active: accepted.canopy.wet_store_cap_active,
             active_water_caps: accepted.outer.evaluation.active_water_caps.clone(),
             gas_hydraulic_mismatch_kg_m2_s,
+            vulnerability_demand_sun_kg_m2_s: Some(
+                accepted.outer.evaluation.vulnerability_demand_sun_kg_m2_s,
+            ),
+            vulnerability_demand_shade_kg_m2_s: Some(
+                accepted.outer.evaluation.vulnerability_demand_shade_kg_m2_s,
+            ),
             pivot_magnitude: Some(
                 accepted
                     .outer

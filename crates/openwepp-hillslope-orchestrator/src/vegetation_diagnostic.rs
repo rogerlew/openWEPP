@@ -9,13 +9,14 @@ use openwepp_biogeochemistry::{
 };
 use openwepp_kernel_contract::{
     MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, SoilLayerId, TransactionId,
-    WaterResourceKey, validate_request_batch,
+    validate_request_batch,
 };
 use openwepp_vegetation::energy::LATENT_HEAT_VAPORIZATION;
 use openwepp_vegetation::{
     CoupledOwnedState, FailurePoint, ModelDefinition, NitrogenArbiter, NitrogenAuthorization,
     NitrogenRequest, SnowFreeForcing, VegetationConfiguration, VegetationError, WaterArbiter,
-    WaterAuthorization, WaterRequest, execute_candidate_with_failure,
+    WaterArbitration, WaterAuthorizationReason, WaterOwnerCandidate, WaterOwnerSnapshot,
+    WaterRequest, WaterUse, execute_candidate_with_failure, reconstruct_water_ending,
     validate_and_commit_with_failure,
 };
 use serde::{Deserialize, Serialize};
@@ -69,16 +70,7 @@ struct ProportionalWater<'a> {
     available: &'a BTreeMap<SoilLayerId, f64>,
 }
 impl WaterArbiter for ProportionalWater<'_> {
-    fn beginning_amount(&self, key: &WaterResourceKey) -> Result<f64, VegetationError> {
-        self.available
-            .get(&key.layer_id)
-            .copied()
-            .ok_or(VegetationError::Domain("unknown water layer"))
-    }
-    fn authorize(
-        &self,
-        requests: &[WaterRequest],
-    ) -> Result<Vec<WaterAuthorization>, VegetationError> {
+    fn authorize(&self, requests: &[WaterRequest]) -> Result<WaterArbitration, VegetationError> {
         validate_request_batch(requests)
             .map_err(|error| VegetationError::Receipt(format!("{error:?}")))?;
         if requests.iter().any(|request| {
@@ -94,7 +86,7 @@ impl WaterArbiter for ProportionalWater<'_> {
         for request in requests {
             *demand.entry(request.key.layer_id.clone()).or_default() += request.amount;
         }
-        requests
+        let authorizations = requests
             .iter()
             .map(|request| {
                 let supply = self
@@ -116,7 +108,59 @@ impl WaterArbiter for ProportionalWater<'_> {
                     basis: request.basis,
                 })
             })
-            .collect()
+            .collect::<Result<Vec<_>, _>>()?;
+        let owner_id = requests
+            .first()
+            .map(|request| request.owner_id.clone())
+            .ok_or_else(|| VegetationError::Receipt("empty water request batch".into()))?;
+        let reasons: BTreeMap<_, _> = requests
+            .iter()
+            .zip(&authorizations)
+            .map(|(request, authorization)| {
+                let reason = if request.amount.to_bits() == 0.0_f64.to_bits() {
+                    WaterAuthorizationReason::ZeroDemand
+                } else if authorization.amount.to_bits() == request.amount.to_bits() {
+                    WaterAuthorizationReason::FullySupplied
+                } else if self.available[&request.key.layer_id].to_bits() == 0.0_f64.to_bits() {
+                    WaterAuthorizationReason::LiquidStorageLimit
+                } else {
+                    WaterAuthorizationReason::CompetingDemand
+                };
+                (request.key.clone(), reason)
+            })
+            .collect();
+        let snapshot = WaterOwnerSnapshot::try_new(
+            requests[0].transaction_id,
+            owner_id,
+            requests
+                .iter()
+                .map(|request| {
+                    self.available
+                        .get(&request.key.layer_id)
+                        .copied()
+                        .map(|amount| (request.key.layer_id.clone(), amount))
+                        .ok_or(VegetationError::Domain("unknown water layer"))
+                })
+                .collect::<Result<BTreeMap<_, _>, _>>()?,
+            reasons.clone(),
+        )?;
+        WaterArbitration::try_new(snapshot, authorizations, reasons)
+    }
+
+    fn candidate_from_finalized_use(
+        &self,
+        transaction_id: TransactionId,
+        arbitration: &WaterArbitration,
+        finalized_uses: &[WaterUse],
+    ) -> Result<WaterOwnerCandidate, VegetationError> {
+        let ending = reconstruct_water_ending(arbitration.snapshot(), finalized_uses)?;
+        WaterOwnerCandidate::try_new(
+            transaction_id,
+            arbitration.snapshot().owner_id().clone(),
+            arbitration.snapshot().clone(),
+            ending,
+            finalized_uses.to_vec(),
+        )
     }
 }
 struct ProportionalNitrogen<'a> {

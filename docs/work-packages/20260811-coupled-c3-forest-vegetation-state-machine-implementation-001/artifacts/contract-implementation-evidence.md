@@ -48,6 +48,19 @@ vector fixed the equality active set or independent `q_law`/cap operands.
 Therefore the historical capped draft was not contract evidence and
 `STAGE_B_E11_E15_EXACT_ORACLE` remained incomplete.
 
+## V6 Public Water Boundary
+
+Static + Ran: the public uncommitted water stage now invokes whole-column
+radiation, potential occupancy solves, typed stand-ground requests, one owner
+authorization, and the fixed-cap final column rebuilt from original beginning
+state. It returns exact typed D/A/F, final physical operands, and an
+independently validated receiving-owner water debit without constructing an
+accepted vegetation state or exposing a commit method.
+
+`execute_candidate()` consumes the same water stage and fails closed at the
+next incomplete E16--E22/shared-owner boundary. The production selector,
+legacy runtime, and all-owner commit remain unchanged.
+
 ## V5 Capped Contract Surface
 
 Static: `SC-VEGETATION-001` v9 resolves the V4 capped boundary with exact

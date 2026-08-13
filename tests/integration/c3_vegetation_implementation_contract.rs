@@ -19,8 +19,10 @@ use openwepp_vegetation::occupancy_solver::resources::{
 use openwepp_vegetation::photosynthesis::{FvcbInput, fvcb, medlyn};
 use openwepp_vegetation::radiation::two_stream;
 use openwepp_vegetation::{
-    CoupledOwnedState, MODEL_BYTES, MODEL_SHA256, PhenologyPhase, VegetationConfiguration,
-    load_model_definition,
+    CoupledOwnedState, MODEL_BYTES, MODEL_SHA256, PhenologyPhase, SnowFreeForcing,
+    SoilLayerForcing, VegetationConfiguration, VegetationError, WaterArbiter, WaterArbitration,
+    WaterAuthorizationReason, WaterOwnerCandidate, WaterOwnerSnapshot, WaterRequest, WaterUse,
+    execute_uncommitted_water_phase, load_model_definition, reconstruct_water_ending,
 };
 use sha2::{Digest, Sha256};
 
@@ -55,6 +57,106 @@ fn identity_rebound_v6_configuration() -> VegetationConfiguration {
     VegetationConfiguration::parse_strict(&bytes).expect("identity-rebound V6 configuration")
 }
 
+fn identity_rebound_v6_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
+    let mut configuration = identity_rebound_v6_configuration();
+    let mut state: CoupledOwnedState = serde_json::from_slice(
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_state.json")
+            .expect("historical V5 state fixture"),
+    )
+    .expect("historical V5 state DTO");
+    state.model_definition_sha256 = MODEL_SHA256.into();
+    state.configuration_sha256 = configuration.configuration_sha256.clone();
+    state.state_sha256 = state.canonical_sha256().expect("V6 state digest");
+    configuration.initial_state_sha256 = state.state_sha256.clone();
+    state.validate(&configuration).expect("V6 state");
+    (configuration, state)
+}
+
+struct IntegrationWater;
+impl WaterArbiter for IntegrationWater {
+    fn authorize(&self, requests: &[WaterRequest]) -> Result<WaterArbitration, VegetationError> {
+        let authorizations = requests
+            .iter()
+            .map(|request| MaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect::<Vec<_>>();
+        let reasons: std::collections::BTreeMap<_, _> = requests
+            .iter()
+            .map(|request| {
+                (
+                    request.key.clone(),
+                    if request.amount == 0.0 {
+                        WaterAuthorizationReason::ZeroDemand
+                    } else {
+                        WaterAuthorizationReason::FullySupplied
+                    },
+                )
+            })
+            .collect();
+        let snapshot = WaterOwnerSnapshot::try_new(
+            requests[0].transaction_id,
+            requests[0].owner_id.clone(),
+            std::collections::BTreeMap::from([(requests[0].key.layer_id.clone(), 20.0)]),
+            reasons.clone(),
+        )?;
+        WaterArbitration::try_new(snapshot, authorizations, reasons)
+    }
+    fn candidate_from_finalized_use(
+        &self,
+        transaction_id: TransactionId,
+        arbitration: &WaterArbitration,
+        finalized_uses: &[WaterUse],
+    ) -> Result<WaterOwnerCandidate, VegetationError> {
+        let ending = reconstruct_water_ending(arbitration.snapshot(), finalized_uses)?;
+        WaterOwnerCandidate::try_new(
+            transaction_id,
+            arbitration.snapshot().owner_id().clone(),
+            arbitration.snapshot().clone(),
+            ending,
+            finalized_uses.to_vec(),
+        )
+    }
+}
+
+fn public_water_forcing() -> SnowFreeForcing {
+    SnowFreeForcing {
+        air_temperature_k: 298.15,
+        pressure_pa: 101_325.0,
+        co2_pa: 42.0,
+        vapor_pressure_deficit_kpa: 1.2,
+        wind_m_s: 3.7,
+        rain_kg_m2: 0.0,
+        direct_par_w_m2: 410.0,
+        diffuse_par_w_m2: 83.0,
+        direct_nir_w_m2: 355.0,
+        diffuse_nir_w_m2: 101.0,
+        solar_zenith_cosine: 0.67,
+        ground_albedo_vis: 0.14,
+        ground_albedo_nir: 0.31,
+        longwave_down_w_m2: 350.0,
+        longwave_up_w_m2: 390.0,
+        specific_humidity: 0.01,
+        reference_height_m: 20.0,
+        soil_layers: vec![SoilLayerForcing {
+            layer_id: SoilLayerId::try_new("soil-1").expect("layer"),
+            water_beginning_kg_m2: 20.0,
+            matric_potential_mm: -1_000.0,
+            hydraulic_conductivity_mm_s: 1.0e-5,
+            root_path_length_mm: 100.0,
+            gravity_root_mm: 500.0,
+            temperature_k: 295.0,
+            accessible: true,
+            frozen: false,
+        }],
+        gsi: 1.0,
+    }
+}
+
 fn assert_fvcb_vector(
     input: FvcbInput,
     key: &str,
@@ -66,13 +168,17 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn v6_public_candidate_preserves_v5_fail_closed_capped_pass() {
+fn v6_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
-    assert!(
-        source
-            .contains("V6 occupancy-local capped transaction routing is implementation-incomplete")
-    );
+    assert!(source.contains(
+        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
+    ));
+    let water_source =
+        fs::read_to_string("crates/openwepp-vegetation/src/water_phase.rs").expect("water source");
+    assert!(water_source.contains("execute_potential_column_pass"));
+    assert!(water_source.contains("execute_capped_column_pass"));
+    assert!(!water_source.contains("validate_and_commit"));
     assert!(source.contains("BTreeMap<OccupancyId, OccupancyState>"));
     assert!(!source.contains("struct StratumState"));
     assert!(!source.contains("pub canopy_liquid: f64"));
@@ -80,6 +186,23 @@ fn v6_public_candidate_preserves_v5_fail_closed_capped_pass() {
     assert!(!source.contains("ledger_residuals: [0.0; 5]"));
     assert!(!source.contains("vapor_pressure_deficit_kpa *"));
     assert!(!source.contains("direct_par_w_m2 * 1e-9"));
+
+    let (configuration, beginning) = identity_rebound_v6_fixture();
+    let bytes = serde_json::to_vec(&beginning).expect("beginning bytes");
+    let phase = execute_uncommitted_water_phase(
+        &load_model_definition().expect("model"),
+        &configuration,
+        &beginning,
+        &public_water_forcing(),
+        &IntegrationWater,
+    )
+    .expect("public uncommitted water phase");
+    let (requests, authorizations, uses) = phase.protocol();
+    assert!(!requests.is_empty());
+    assert_eq!(requests.len(), authorizations.len());
+    assert_eq!(requests.len(), uses.len());
+    assert_eq!(phase.water_operands().len(), uses.len());
+    assert_eq!(serde_json::to_vec(&beginning).expect("after bytes"), bytes);
 }
 
 #[test]

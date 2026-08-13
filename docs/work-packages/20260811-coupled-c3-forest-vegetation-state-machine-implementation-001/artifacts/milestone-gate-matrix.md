@@ -1,11 +1,13 @@
 # Milestone Gate Matrix
 
-Status: `executing / V6 Stage-B focused gate passed; Milestones 2 and 3 incomplete`
+Status: `executing / V6 public E01--E15 water stage active; E16--E22 pending`
 
 The former Stage-B portability blocker is lifted. The focused E11--E15
-equation/ownership gate passes under V6. Milestones 2 and 3 remain incomplete
-until the real public water transaction invokes the potential and fixed-cap
-column passes and exposes the resulting finalized ownership operands.
+equation/ownership gate passes under V6. The real public water stage now invokes
+the potential and fixed-cap column passes, exposes typed finalized ownership
+operands, and remains structurally uncommittable. Milestone 2/3 closure review
+and broader exact topology vectors remain pending; no Milestone 4/5 claim is
+made.
 
 | Milestone | Direct current-scope gates |
 |---|---|
@@ -37,6 +39,9 @@ V5 supplied the exact cap-active vectors and V6 admitted the single rejected
 singular, iteration-limit, and backtracking vectors; independent bounded
 correctness and QA reviews pass; and the internal final-column pass proves
 finalized-use identity, rerouting, `F<=A<=D`, diagnostics, and rollback.
-Therefore `STAGE_B_E11_E15_EXACT_ORACLE` is PASS. Milestones 2 and 3 remain
-incomplete until that accepted final pass is consumed by the real public column
-transaction.
+Therefore `STAGE_B_E11_E15_EXACT_ORACLE` is PASS. The public water phase now
+consumes that accepted final pass from original beginning state, authorizes
+once, preserves typed D/A/F identity, independently validates the receiving
+water-owner debit, and publishes no committable vegetation candidate. Formal
+Milestone 2/3 disposition awaits the focused public-integration review and
+remaining multi-rank production vectors.

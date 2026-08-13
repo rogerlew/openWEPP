@@ -19,8 +19,10 @@ pub mod occupancy_state;
 pub mod photosynthesis;
 pub mod radiation;
 pub mod transaction;
+pub mod water_phase;
 
 pub use config::*;
 pub use error::*;
 pub use model::*;
 pub use transaction::*;
+pub use water_phase::*;

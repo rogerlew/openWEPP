@@ -139,3 +139,22 @@ mandatory threshold. Neither review approves the still-fail-closed public
 E01--E22 transaction or completes Milestones 2/3.
 
 No finding is rejected, deferred, or used to activate the public candidate.
+
+## V6 Public Water-Phase Review Disposition
+
+The first correctness review returned HOLD and the first QA review returned
+FAIL. All findings were accepted; none was deferred or rejected.
+
+| Finding | Decision and correction | Focused evidence | Status |
+|---|---|---|---|
+| authorization/candidate validation could span different water snapshots | accepted; `WaterArbitration` carries one typed immutable `WaterOwnerSnapshot`, and the same exact snapshot is required in `WaterOwnerCandidate` | snapshot-drift poison and aggregate snapshot overbooking validation | corrected; repeat review pending |
+| per-request authorization reason absent | accepted; every exact request key carries one of the six canonical `WaterAuthorizationReason` variants and reason/amount consistency is independently validated | zero/full/competing paths and wrong-reason poison | corrected; repeat review pending |
+| shared-layer owner and validator used different floating aggregation order | accepted; both call `reconstruct_water_ending`, which sorts exact resource keys, sums once per layer, and subtracts once | two-occupancy same-layer exact-bit vector | corrected; repeat review pending |
+| evidence did not distinguish finalized use from authorization | accepted; independent vector fixes `F<A` and rejects a candidate whose ending store debits exact `A` instead of `F` | exact authorization-as-debit poison | corrected; repeat review pending |
+| rollback test omitted receiving-owner bytes | accepted; every injected public water failure compares serialized vegetation and water-owner beginning stores before/after | seven phase failures, no returned phase | corrected; repeat review pending |
+| first repeat review found frozen/rooting/competition reason aliases | accepted; exact per-request owner reason facts now live in the immutable snapshot and must equal the arbitration reason map | frozen-to-rooting and competing-to-exclusion alias poisons | corrected; second repeat review pending |
+| first repeat QA found shared-layer poison arithmetic aliased | accepted; changed finalized operands to `0.01/0.07` and assert the canonical result differs by one ULP from sequential subtraction | explicit `assert_ne` against rejected arithmetic | corrected; second repeat review pending |
+
+The full `CoupledCandidate` and commit remain fail-closed at E16--E22. Final
+repeat review on stable bytes returned correctness GO and QA PASS with no
+unresolved material finding; the bounded public water increment is accepted.

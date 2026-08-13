@@ -1,6 +1,6 @@
 # State Ownership Map
 
-Status: `V4 payload ownership retained / V5 identity and accepted-update active`
+Status: `V6 occupancy candidates active / receiving water-owner candidate uncommitted`
 
 The authority audit confirmed that the V2 per-layer root-potential lanes have
 no canonical accepted-update mapping from E14's common root-node solution.
@@ -86,3 +86,22 @@ authorizations and beginning inventory. Vegetation may finalize only exact
 `F_W = f_t * q_i * dt`, and hydrology debits only that finalized use, never the
 authorization. Implementation and owner-validation tests are active; this map
 does not yet claim V5 accepted state, debit, receipt, or atomic commit.
+
+## V6 Public Water-Phase Ownership
+
+The public water stage borrows the complete beginning vegetation state and
+water owner immutably. Potential occupancy lanes and final capped occupancy
+lanes are unaccepted numerical candidates: their
+`last_accepted_transaction_id` remains the beginning identity. They cannot be
+converted to a whole `CoupledOwnedState` until shared C/N and every receiving
+owner candidate are complete.
+
+Hydrology owns a typed immutable `WaterOwnerSnapshot`, returns it with maximum
+authorizations and one required reason per request, and constructs
+`WaterOwnerCandidate` from the exact typed D/A/F protocol against that same
+snapshot. Vegetation independently validates transaction, owner, occupancy,
+layer, basis, reason, per-layer aggregate authorization, finalized debit, and
+ending store. The candidate is exposed
+only through `UncommittedWaterPhase`; no vegetation-only or water-only commit
+API exists. Failure injection through owner validation returns no phase and
+preserves beginning vegetation bytes.

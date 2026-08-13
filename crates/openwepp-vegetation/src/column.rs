@@ -73,6 +73,8 @@ pub struct OccupancyDiagnostics {
     pub wet_store_cap_active: bool,
     pub active_water_caps: Vec<SoilLayerId>,
     pub gas_hydraulic_mismatch_kg_m2_s: f64,
+    pub vulnerability_demand_sun_kg_m2_s: Option<f64>,
+    pub vulnerability_demand_shade_kg_m2_s: Option<f64>,
     pub pivot_magnitude: Option<f64>,
     pub matrix_norm: Option<f64>,
     /// Candidate ten-day acclimation temperature calculated once before
@@ -907,6 +909,8 @@ mod tests {
                     wet_store_cap_active: false,
                     active_water_caps: Vec::new(),
                     gas_hydraulic_mismatch_kg_m2_s: 0.0,
+                    vulnerability_demand_sun_kg_m2_s: None,
+                    vulnerability_demand_shade_kg_m2_s: None,
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,

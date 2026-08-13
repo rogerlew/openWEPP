@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / V6 portability hold lifted / public path fail-closed`
+Status: `executing / V6 public water phase active / full candidate fail-closed at E16`
 
 Increment 2B stopped before constitutive implementation. The retained
 `occupancy_solver::resources` module constructs and validates complete typed
@@ -84,3 +84,39 @@ and remediated, with another independent review pending. Authority release and
 this portability evidence are not public-path implementation evidence:
 `STAGE_B_E11_E15_EXACT_ORACLE`, finalized-use debit, Milestones 2/3, and the
 public candidate remain incomplete/fail-closed.
+
+## V6 Public Water-Phase Integration
+
+Static + Ran: `water_phase::execute_uncommitted_water_phase` now performs the
+complete public E01--E15 water sequence: exact input validation, whole-column
+radiation, owner-uncapped potential columns, typed potential request batch, one
+hydrology authorization call, immutable typed authorization validation, and a
+fixed-cap rebuild from the original beginning state. It exposes typed D/A/F,
+potential/final columns and radiation, complete diagnostics, capped operands,
+and a receiving-owner water candidate.
+
+The water owner constructs its own candidate debit. Vegetation independently
+reconstructs the exact resource protocol, key set, per-layer aggregate maximum
+authorization against the typed immutable beginning snapshot, the required
+per-request authorization reason, finalized debit, and ending store. Only
+finalized use is debited. Shared-layer aggregation uses one canonical sorted-key
+sum and one subtraction in both the receiving owner and independent validator.
+The sealed phase has no conversion
+to `CoupledCandidate` and no commit method; occupancy accepted lineage remains
+unchanged. `execute_candidate` consumes this same stage and then returns a typed
+E16--E22/multi-owner implementation-incomplete error.
+
+The first production-stage run rejected because the capped owning validator
+incorrectly attempted to reconstruct vulnerability-demand residuals as
+`beta * Emax`. The solver itself was unchanged. The runtime diagnostic seam now
+carries the exact hydraulic vulnerability-demand operands outside the frozen
+V5/V6 failure serialization, and the independent validator reconstructs the
+two residuals from those operands. The failed attempt and correction are
+preserved in `gate-results.md`.
+
+Ran after first-review remediation: public water phase 4/4, vegetation quick
+184/184, implementation contract 13/13,
+affected vegetation/orchestrator strict all-target Clippy, formatting, and diff
+hygiene pass. Public integration review and remaining multi-rank production
+vectors are pending; E16--E22, energy/BGC candidates, atomic commit, runtime
+activation, and terminal completion remain unclaimed.

@@ -102,3 +102,14 @@ was extracted to cohesive submodules and the current exact counts are:
 No touched Rust file is at or above 3,000 lines. The retained WARN remains
 decomposition debt for terminal package closure, not a blocker for this bounded
 HOLD-lift increment.
+
+## 2026-08-13 Public Water-Phase Recount
+
+| Rust file | Lines | Disposition |
+|---|---:|---|
+| `water_phase.rs` | 1,032 | PASS; cohesive uncommitted orchestration and owner validation |
+| `transaction.rs` | 1,805 | PASS; full candidate remains sealed/fail-closed at E16 |
+| `occupancy_solver/capped_pass.rs` | 1,204 | PASS; exact public capped operands |
+
+No newly touched Rust file reaches 2,000 lines. The earlier `migration.rs` and
+`constitutive.rs` WARN-level decomposition debt remains unchanged.

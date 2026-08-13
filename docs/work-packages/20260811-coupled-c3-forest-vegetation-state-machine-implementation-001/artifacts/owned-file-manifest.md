@@ -57,6 +57,11 @@ Evidence mode: `Static`
   fixed-authorization/finalized-use protocol, focused tests, and this package's
   evidence artifacts. No completed solver/public-path claim is made by this
   manifest entry.
+- V6 public water integration: `src/water_phase.rs`, bounded public-stage
+  registration and transaction wiring, exact capped diagnostic operands, and
+  `WaterArbiter` receiving-owner candidate construction in the default-off
+  hillslope diagnostic. This surface is explicitly uncommittable and does not
+  authorize E16--E22 or a partial owner commit.
 
 Protected implementation boundaries: production runner selectors, CLI defaults,
 production outputs, canopy-snow, soil-transformation, deployment, and consumer
