@@ -1,0 +1,1 @@
+cargo-clippy|cargo clippy --workspace --all-targets -- -D warnings|101|2026-08-13T06:21:10Z|2026-08-13T06:21:16Z|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-20260813-20260812-232110/cargo-clippy.log

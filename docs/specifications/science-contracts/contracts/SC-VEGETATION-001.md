@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -44,7 +44,12 @@ ownership, neutral canopy-surface wind, height-based stem hydraulics, one common
 root node, an uncapped but hydraulically coupled accepted potential pass,
 single-source/single-debit leaf respiration, typed numerical failure payloads,
 and independent V3 constitutive vectors. V1 and V2 remain immutable historical
-identities and neither is a V3 runtime alias.
+identities and neither is a V3 runtime alias. Version 8 admits
+`OPENWEPP_C3_WOODY_V4` as the executable successor to V3 for shared-stratum
+state: displayed leaf carbon alone owns LAI, derived leaf/stem/root area is
+bound to that displayed pool, and the unconsumed previous leaf/root offset-flux
+fields are removed rather than assigned invented semantics. V1, V2, and V3
+remain immutable historical identities and are not V4 runtime aliases.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -65,6 +70,13 @@ The immutable V3 definition identity is the SHA-256 of
 That definition normatively imports the exact V2 digest and supersedes only the
 V3 delta stated below. The final digest is bound by the definition artifact,
 contract-derived tests, and this contract's Version 7 change record.
+
+The immutable V4 definition identity is
+`sha256:571bac78b6f116078b463021ec0a36a5206cbe14a94d9fdc76bc32c0a7cde327`
+for `docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json`.
+That definition normatively imports the exact V3 digest and supersedes only the
+shared-stratum state, area derivation, and V3-to-V4 migration delta in the
+Version 8 amendment below.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -876,6 +888,10 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | positive leaf area with nonfinite/nonpositive Atkin rate, invalid Rd temperature, or nonfinite peaked response | reject without clamp or fallback | `VEG-E-085` |
 | numerical failure lacks its typed deterministic diagnostic payload | discard all candidates and reject implementation conformance | `VEG-E-086` |
 | V1, V2, or V3 model digest/schema/execution identity mixed | reject before calculation | `VEG-E-077` |
+| V4 shared field/tissue set is incomplete, duplicated, unknown, nonfinite, or retains either legacy offset-flux field | reject before calculation | `VEG-E-087` |
+| V4 LAI/cache uses storage or transfer leaf C, another tissue, or a producer-supplied independent area | reject shared candidate identity | `VEG-E-088` |
+| V3-to-V4 source cache is inconsistent or migration synthesizes/remaps state | reject migration without partial V4 output | `VEG-E-089` |
+| displayed leaf N is positive at zero displayed leaf C, or storage/transfer N enters leaf physiology | reject before gas exchange | `VEG-E-090` |
 
 ## Invariants and Invariant Guard Map
 
@@ -1320,6 +1336,11 @@ makes no suitability claim; it must not be mislabeled as calibrated or validated
 | Atkin/Rd identity | exact `Rd25` from leaf N/T10, class peaked response, `An=Ag-Rd`, class-area scaling, and one identical carbon debit | `INV-VEGETATION-085` |
 | respiration poisons | nonpositive Atkin, clamp, `rd_leaf_n_rate`, wrong temperature response, sun/shade swap, and double debit reject or numerically differ | `INV-VEGETATION-085`, `VEG-E-085` |
 | numerical failure payload family | each solve identity preserves deterministic pass/occupancy/iteration/residual/step/backtracking/bound/cap/bracket/pivot/matrix evidence and byte-identical rollback | `INV-VEGETATION-086`, `VEG-E-086` |
+| V4 displayed/storage/transfer leaf C are all distinct and nonzero | LAI/SAI/RAI use displayed C only; total-pool and partial-pool poisons differ | V4 successor amendment |
+| V4 zero display with nonzero leaf storage/transfer | exact zero leaf/stem/root area and zero photosynthetic area | V4 successor amendment |
+| distinct displayed/storage/transfer leaf N | FvCB/Atkin capacity uses displayed N divided by displayed LAI only; total-N and donor-N poisons differ | V4 successor amendment |
+| complete V4 six-tissue shared state | exact field/tissue/subpool set, recursive-order-stable digest, and every retained scalar mutation changes digest | V4 successor amendment |
+| V3-to-V4 shared migration | exactly two offset fields removed, every retained shared/occupancy byte preserved, mismatched source cache rejects | V4 successor amendment |
 
 Future fixtures must use deliberately distinct canopy, ground, litter, snow,
 soil, ponded-water, layer, dry-matter, carbon, and nitrogen operands so wrong
@@ -1337,6 +1358,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-005` | `20260811-coupled-c3-forest-vegetation-model-stack-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-062, INV-VEGETATION-063, INV-VEGETATION-064, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-068, INV-VEGETATION-069, INV-VEGETATION-070, INV-VEGETATION-071, INV-VEGETATION-072` | `flagged-binding-addition` | Version 5 releases the indivisible contract-first C3 woody stack; implementation and empirical claims remain separate. |
 | `BEI-VEGETATION-006` | `20260811-c3-woody-tile-liquid-topology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-073, INV-VEGETATION-074, INV-VEGETATION-075, INV-VEGETATION-076, INV-VEGETATION-077, INV-VEGETATION-078, INV-VEGETATION-079` | `flagged-binding-addition` | Version 6 releases immutable V2 occupancy state, routing, area/resource identity, migration, and nonlinear local-solve implementation authority while preserving V1 as historical bytes. |
 | `BEI-VEGETATION-007` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-080, INV-VEGETATION-081, INV-VEGETATION-082, INV-VEGETATION-083, INV-VEGETATION-084, INV-VEGETATION-085, INV-VEGETATION-086` | `flagged-binding-addition` | Version 7 releases immutable V3 radiation preparation/ownership, surface wind, hydraulic geometry/common-root state, uncapped coupled potential semantics, exact leaf respiration, diagnostics, and independent fixture authority while preserving V1/V2 historical bytes. |
+| `BEI-VEGETATION-008` | `20260812-c3-woody-shared-state-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-069, INV-VEGETATION-087, INV-VEGETATION-088, INV-VEGETATION-089, INV-VEGETATION-090, INV-VEGETATION-091` | `flagged-binding-addition` | Version 8 releases immutable V4 exact shared-state schema, displayed-leaf C/N area/capacity ownership, derived area caches, and exact V3-to-V4 removal migration while preserving V1/V2/V3 historical bytes. |
 
 ## Gap Register and Promotability Labels
 
@@ -1367,6 +1389,8 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-023` | Agricultural PMET donation is prohibited. | Version 5 structurally separates canopy/wet/floor components; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING`, `NATIVE_FOREST_PMET_PARTITION_PROHIBITED` |
 | `GAP-VEGETATION-024` | V1 lacked persistent liquid distribution and descendant routing for a stratum spanning heterogeneous tiles. | Version 6 selects exact occupancy state, same-tile routing, local nonlinear solves, area conversion, migration, and closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-025` | V2 did not define the mixed leaf/stem radiation reduction/partition, local wind derivation, stem geometry/gravity, common-root warm start, accepted uncapped potential semantics, one Rd identity, complete numerical failure payload, or independent potential fixtures. | Version 7 selects every missing rule and binds independent V3 radiation, coupling, migration, respiration, and failure vectors; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-026` | V3 did not identify the displayed leaf C/N subpools owning LAI and photosynthetic capacity and carried two offset-flux state fields with no admitted units, update law, or consumer. | Version 8 selects displayed leaf C/N only, derived area caches, exact V4 shared schema, and removal-only V3 migration; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-027` | Imported E19 credits noncurrent growth to storage while E20 onset debits transfer, but no admitted equation moves storage to transfer. | Admit a complete ordered storage-to-transfer C/N preparation equation and independent conservation vectors before executing an onset that requires this bridge. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
 caller configuration/state, radiation/interception/conductance inputs,
@@ -1375,10 +1399,194 @@ It must independently admit every implemented constitutive relationship, remain
 default-off and non-publishing, mutate no soil store, and make no runtime or
 cutover claim.
 
+## `OPENWEPP_C3_WOODY_V4` Shared-State Authority Amendment
+
+V4 normatively imports the exact V3 definition digest and every unchanged
+V1/V2/V3 equation, configuration field, occupancy state, topology, transaction,
+numerical rule, and unsupported branch. This section exclusively supersedes the
+conflicting shared-stratum state, displayed-leaf C/N area/capacity ownership,
+state-digest encoding, and migration text. Historical V3 metadata used
+`contract_version: 7`; that literal is retained here solely as immutable-history
+evidence, not as the current contract version.
+
+### V4 shared-stratum state schema
+
+For every configured stratum, the executable V4 shared state contains exactly:
+
+- `tissues`, a map with exactly the six typed identities `leaf`, `fine_root`,
+  `live_stem`, `dead_stem`, `live_coarse_root`, and `dead_coarse_root`; each
+  tissue contains exactly `display`, `storage`, and `transfer`, and each of
+  those contains exactly finite nonnegative `carbon` and `nitrogen` amounts in
+  `kg element m^-2 stand-ground`;
+- finite nonnegative `retranslocation_n` and `nsc_c`, and finite signed `xs_c`,
+  all in `kg element m^-2 stand-ground`;
+- `standing_dead`, containing finite nonnegative `carbon` and `nitrogen`, plus
+  finite nonnegative `standing_dead_dm`, each on stand-ground basis;
+- the exact `phase` enum `dormant|onset|active|offset`, finite nonnegative
+  `onset_remaining_s` and `offset_remaining_s`, and finite
+  `previous_gsi` in `[0,1]`;
+- `pending_transfers`, whose complete typed transaction, proposal, donor,
+  receiver, carbon, nitrogen, and dry-matter identity remains binding. Every
+  entry has a positive nonzero `transaction_id: u128`, nonempty typed owner
+  identity, positive nonzero `proposal_id: u64`, donor exactly one of
+  `leaf|fine_root|live_stem|dead_stem|live_coarse_root|dead_coarse_root`,
+  receiver exactly one of
+  `metabolic|cellulose|lignin|coarse_woody_debris`, and finite nonnegative
+  carbon, nitrogen, and dry-matter operands;
+- finite positive `t10_k`;
+- finite nonnegative derived caches `leaf_area`, `stem_area`, and `root_area`,
+  each in `m2 m^-2 stand-ground`; and
+- `last_transaction_id`, equal to the owning whole-state accepted transaction
+  identity under the existing initial/accepted lineage rules.
+
+Unknown, missing, duplicate, wrong-unit, nonfinite, or out-of-domain fields
+reject before calculation. Map order is non-semantic. The V4 state digest uses
+`OPENWEPP_V4_STATE_CANONICAL_V1`, a typed UTF-8 line encoding. It recursively
+walks object keys by unsigned UTF-8 bytewise lexicographic order and arrays by
+index, emitting one line per container and scalar as
+`encoded_path<TAB>type<TAB>value<LF>`. The root path is empty. Each object-key
+path component is `/k<decimal_UTF8_byte_count>:<lowercase_UTF8_hex>` and each
+array component is `/i<unsigned_decimal_index>`; therefore arbitrary admitted
+IDs, including whitespace and control characters, cannot collide with framing.
+Object/array container values are their decimal member counts. Types and scalar
+values are: `f64be`
+plus exactly 16 lowercase hexadecimal digits of the IEEE-754 binary64
+big-endian bits; `u128` plus unsigned base-10 digits with no leading zero except
+zero; `string` plus `<decimal_UTF8_byte_count>:<lowercase_UTF8_hex>`; `null` plus an empty value;
+and `bool` plus `true|false`. No locale, whitespace, exponent, shortest-decimal,
+or host-language JSON-number formatting enters this preimage. Every listed
+value, including every pending-transfer operand and transaction identity,
+enters the V4 state digest. The digest excludes only the whole-state
+`state_sha256` member and includes the root object container line after that
+member is omitted.
+
+The executable V4 schema does **not** contain
+`previous_leaf_offset_flux` or `previous_root_offset_flux`. No admitted V1--V3
+equation consumes either value, and no source reviewed for this amendment
+establishes complete units, update law, interval semantics, or a downstream
+consumer. Retaining, defaulting, accumulating, differentiating, or assigning a
+new meaning to either field is prohibited. Phenology continues from the owned
+phase, timers, previous accepted GSI, and explicit display/storage/transfer
+pools under the unchanged admitted E20 equations.
+
+This V4 correction does not claim that the imported E19 storage-to-E20 transfer
+preparation is complete. E19 can credit noncurrent growth to `storage`, while
+the admitted E20 onset equation debits `transfer`; no reviewed equation yet
+moves storage into transfer. Execution requiring that bridge remains typed
+fail-closed under `VEG-E-060` until successor authority supplies its complete
+ordering, amounts, and C/N conservation. This bounded pre-existing omission is
+not filled by either removed offset-flux scalar.
+
+### Displayed-leaf C/N area and photosynthetic-capacity ownership
+
+Let `C_leaf,display` be the carbon amount in exactly
+`tissues[leaf].display.carbon`. V4 defines:
+
+```text
+LAI_s = C_leaf,display * SLA_s
+SAI_s = LAI_s * sai_relation_s
+RAI_s = (LAI_s + SAI_s) * root_to_leaf_area_s
+```
+
+The caller configuration supplies finite positive `SLA_s`, finite nonnegative
+`sai_relation_s`, and finite positive `root_to_leaf_area_s` under the inherited
+configuration domains. The serialized `leaf_area`, `stem_area`, and `root_area`
+are derived integrity caches and must equal `LAI_s`, `SAI_s`, and `RAI_s`,
+respectively, by exact IEEE-754 binary64 bits after evaluating the displayed
+equations in their stated left-to-right operation order. V4 admits no cache
+tolerance or normalization. The caches are not independent biomass or geometry
+owners.
+
+Leaf `storage.carbon` is a non-displayed allocation pool under the unchanged
+E19 allocation identity. Leaf `transfer.carbon` is the explicit E20 onset donor.
+This amendment admits no new storage-to-transfer movement. Neither pool is
+displayed tissue, exposed leaf area,
+photosynthetic capacity, interception area, hydraulic area, or radiation area
+until an accepted E20 transition debits the source pool and credits
+`leaf.display` in the same candidate. Consequently, a state with zero displayed
+leaf C and positive leaf storage or transfer C has exact zero LAI and cannot
+photosynthesize. Summing display, storage, and transfer C for LAI is a typed
+state-identity failure, not an alternative reduction.
+
+Let `N_leaf,display=tissues[leaf].display.nitrogen`. For positive `LAI_s`,
+V4 exclusively defines
+`Nleaf_area=N_leaf,display/LAI_s` in `kg N m^-2 displayed leaf`. The unchanged
+V3 FvCB capacity and Atkin/Rd equations consume this value. Leaf
+`storage.nitrogen` and `transfer.nitrogen` contribute exactly zero to Vcmax,
+Jmax, TPU, Rd25, maintenance respiration, or any other displayed-leaf
+physiology until an accepted state transition credits leaf display N. For exact
+zero `LAI_s`, displayed leaf N must also be exact zero and the existing
+zero-capacity/zero-Rd branch executes without division; storage and transfer N
+remain non-displayed pools. Positive displayed leaf N at zero displayed leaf C,
+or any capacity formed from total leaf N, is a typed shared-state identity
+failure.
+
+Each accepted state independently reconstructs the three cached areas from the
+accepted displayed leaf C and configuration. Candidate construction updates C/N
+pools first, derives the caches once from the resulting displayed leaf C, then
+performs state validation. No producer-supplied area can override that
+reconstruction.
+
+### Exact V3-to-V4 migration
+
+V3 never became an accepted public runtime state machine. Migration therefore
+first validates complete V3 model/configuration/state identity, including the
+two finite legacy offset-flux values. For each stratum it then:
+
+1. copies every V4-listed shared field bit-for-bit;
+2. removes only `previous_leaf_offset_flux` and
+   `previous_root_offset_flux` without mapping their values anywhere;
+3. independently evaluates `leaf_area`, `stem_area`, and `root_area` from
+   displayed leaf C and V4 configuration in the stated operation order,
+   requires exact binary64 equality with the V3 caches, and then copies those
+   already-valid cache bytes unchanged;
+4. copies every V3 occupancy lane bit-for-bit; and
+5. binds the caller-supplied V4 model/configuration identity and recomputes the
+   complete V4 state digest.
+
+Migration never sums leaf pools, invents offset-flux consumers, copies an
+offset flux into `previous_gsi`, or silently repairs a mismatched area cache.
+Because the removed fields have no admitted consumer or material ownership,
+their removal creates no carbon, nitrogen, water, energy, or dry-material
+transfer.
+
+### V4 invariants, guards, and independent vectors
+
+| ID | Binding invariant or guard |
+|---|---|
+| `INV-VEGETATION-087` | The V4 shared-stratum record has exactly the listed fields and six tissue identities; every listed operand enters deterministic whole-state serialization and digest. |
+| `INV-VEGETATION-088` | `LAI_s=tissues[leaf].display.carbon*SLA_s`; storage and transfer leaf C contribute exactly zero until accepted transfer into display. |
+| `INV-VEGETATION-089` | `leaf_area`, `stem_area`, and `root_area` are reconstructed caches equal to the three V4 displayed-leaf equations and cannot override them. |
+| `INV-VEGETATION-090` | V3-to-V4 migration removes exactly the two unconsumed offset-flux fields, copies all other shared and occupancy state exactly, and rejects mismatched source area caches. |
+| `INV-VEGETATION-091` | Displayed leaf N alone supplies `Nleaf_area` and every FvCB/Atkin capacity; storage/transfer leaf N contributes exact zero before accepted transfer to display. |
+| `VEG-E-087` | Missing/extra/duplicate shared field or tissue, legacy offset-flux field in V4 input, nonfinite/domain-invalid amount, or state-digest mismatch rejects before calculation. |
+| `VEG-E-088` | LAI or any derived cache formed from total leaf C, storage C, transfer C, or another tissue rejects as a shared-state identity mismatch. |
+| `VEG-E-089` | V3 source identity invalid, source cache inconsistent, or any migration synthesis beyond exact removal/rebinding rejects without a partial V4 state. |
+| `VEG-E-090` | Positive displayed leaf N at zero displayed leaf C, or photosynthetic/respiration capacity formed from storage/transfer leaf N, rejects before gas exchange. |
+
+The independent V4 fixture family binds at least: positive and zero displayed
+leaf C with distinct nonzero storage/transfer poisons; exact leaf/stem/root area
+reconstruction; all six tissue identities; recursive-order-invariant canonical
+serialization; one-bit mutation of every shared-state field changing the
+digest; unknown/missing/duplicate fields; retained legacy offset fields;
+display-plus-storage-plus-transfer LAI; wrong cached area; exact V3-to-V4 field
+removal; and byte preservation of every unchanged shared and occupancy field.
+Expected bytes and values come from the package Python reference calculator,
+never from Rust or from the implementation under test.
+
+### V4 scope and claims
+
+V4 corrects authority and schema only. It authorizes the existing implementation
+package to replace the V3 shared-state surface and LAI consumer, but does not
+implement Rust, activate a runtime selector, complete E01--E22, cut over a real
+consumer, admit canopy snow or soil transformations, or establish calibration,
+identifiability, empirical validity, or transferability.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-12 | 8 | Codex | Admitted `OPENWEPP_C3_WOODY_V4` exact shared-stratum schema, displayed-leaf-C/N-only area and capacity ownership, derived area caches, and exact removal of two unconsumed V3 offset-flux fields; preserved V1/V2/V3 bytes as historical authority. |
 | 2026-08-12 | 7 | Codex | Admitted `OPENWEPP_C3_WOODY_V3` mixed leaf/stem radiation ownership, neutral surface wind, height/gravity and common-root hydraulics, coupled uncapped potential semantics, one Atkin/Rd identity, typed numerical failure payloads, exact migration, and independent V3 fixtures; preserved V1/V2 bytes as historical authority. |
 | 2026-08-08 | 2 | Codex | Admitted the exact licensed-source provenance boundary without promoting source science; added strict-definition invariant `INV-VEGETATION-052` and audit-proven format, hidden-default, parameter, conductance, photosynthesis, root-demand, available-energy, and initialization gaps. |
 | 2026-08-08 | 3 | Codex | Admitted strict caller-supplied local acquisition, immutable raw/resolved separation, typed schema-form requirements, and dated initial-state identity; retained every selected value, alias, initializer, constitutive, implementation, and cutover gap. |

@@ -1,0 +1,2 @@
+[START] cargo-fmt at 2026-08-13T08:35:25Z
+[CMD] cargo fmt --all -- --check

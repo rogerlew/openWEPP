@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260812-c3-woody-shared-state-authority-001/` — COMPLETE / V4
+  AUTHORITY REVIEWED GO / HEAVY RETRY ACTIVE: select displayed leaf C/N as the sole LAI
+  and leaf-capacity owners, remove two unconsumed offset-flux fields, bind exact
+  shared-state serialization/migration and independent fixtures, and preserve
+  immutable V1/V2/V3 bytes. Production Rust and runtime activation are excluded.
+
 - `20260812-c3-woody-potential-pass-authority-001/` — COMPLETE /
   `OPENWEPP_C3_WOODY_V3` IMPLEMENTATION AUTHORITY RELEASED
   CONTRACT-FIRST AUTHORITY CORRECTION: admit exact mixed leaf/stem radiation,

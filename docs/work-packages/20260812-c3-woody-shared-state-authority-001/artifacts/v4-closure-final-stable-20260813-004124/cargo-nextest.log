@@ -1,0 +1,4 @@
+[START] cargo-nextest at 2026-08-13T07:41:31Z
+[CMD] cargo nextest run --workspace --profile full
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.09s

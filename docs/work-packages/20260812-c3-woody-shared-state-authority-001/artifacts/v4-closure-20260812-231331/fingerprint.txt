@@ -1,0 +1,5 @@
+head=85d7119d894ec36d9f78f43b0d331ae8705f9521
+ M docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+ M docs/specifications/science-contracts/index.md
+ M docs/work-packages/README.md
+?? docs/work-packages/20260812-c3-woody-shared-state-authority-001/

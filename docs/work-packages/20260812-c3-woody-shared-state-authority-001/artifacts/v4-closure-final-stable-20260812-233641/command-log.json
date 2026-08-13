@@ -1,0 +1,14 @@
+{
+  "package": "20260812-c3-woody-shared-state-authority-001",
+  "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641",
+  "tmpdir": "/tmp/openwepp-v4-shared-state-final",
+  "commands": [
+    {"command_name": "name", "command": "command", "exit_code": rc, "started_at": "started", "ended_at": "ended", "duration_s": duration_s, "log": "log"},
+    {"command_name": "cargo-clippy", "command": "cargo clippy --workspace --all-targets -- -D warnings", "exit_code": 0, "started_at": "2026-08-13T06:36:47Z", "ended_at": "2026-08-13T06:36:53Z", "duration_s": 6, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/cargo-clippy.log"},
+    {"command_name": "cargo-nextest", "command": "cargo nextest run --workspace --profile full", "exit_code": 100, "started_at": "2026-08-13T06:36:54Z", "ended_at": "2026-08-13T07:02:05Z", "duration_s": 1511, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/cargo-nextest.log"},
+    {"command_name": "cargo-test-doc", "command": "cargo test --doc --workspace", "exit_code": 0, "started_at": "2026-08-13T07:02:14Z", "ended_at": "2026-08-13T07:02:22Z", "duration_s": 8, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/cargo-test-doc.log"},
+    {"command_name": "cargo-deny", "command": "cargo deny check", "exit_code": 0, "started_at": "2026-08-13T07:02:34Z", "ended_at": "2026-08-13T07:02:37Z", "duration_s": 3, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/cargo-deny.log"},
+    {"command_name": "cargo-fmt", "command": "cargo fmt --all -- --check", "exit_code": 0, "started_at": "2026-08-13T07:02:51Z", "ended_at": "2026-08-13T07:02:54Z", "duration_s": 3, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/cargo-fmt.log"},
+    {"command_name": "git-diff-check", "command": "git diff --check", "exit_code": 0, "started_at": "2026-08-13T07:02:58Z", "ended_at": "2026-08-13T07:02:58Z", "duration_s": 0, "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641/git-diff-check.log"}
+  ]
+}

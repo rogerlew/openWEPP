@@ -1,0 +1,9 @@
+{
+  "package": "20260812-c3-woody-shared-state-authority-001",
+  "head": "85d7119d894ec36d9f78f43b0d331ae8705f9521",
+  "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260812-233641",
+  "tmpdir": "/tmp/openwepp-v4-shared-state-final",
+  "commands_attempted": 6,
+  "passed": 5,
+  "failed": 1
+}

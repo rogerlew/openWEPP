@@ -1,0 +1,8 @@
+[START] cargo-clippy at 2026-08-13T06:13:31Z
+[CMD] cargo clippy --workspace --all-targets -- -D warnings
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.71s
+[END] rc=0 at 2026-08-13T06:13:58Z

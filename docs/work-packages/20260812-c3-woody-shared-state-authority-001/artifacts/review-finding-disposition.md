@@ -1,0 +1,40 @@
+# Review Finding Disposition
+
+Status: `complete / both final rereviews GO`
+
+Evidence mode: `Static`
+
+All first-review findings are accepted; none is deferred or rejected.
+
+| Finding | Correction | Status |
+|---|---|---|
+| canonical digest/oracle mismatch | V8 binds injective typed-line encoding; oracle and definition implement it; V3 source retains predecessor JSON/empty-field digest | corrected / PASS |
+| ambiguous leaf N | displayed leaf N alone supplies positive-LAI `Nleaf_area`; zero-LAI and donor-N poisons added | corrected / PASS |
+| generator published false checks | generator raises before write unless every check is true | corrected / PASS |
+| tautological migration/digest evidence | actual two-stratum/two-occupancy migration, 151 whole-state scalar mutations, exact digest-cycle injection, and identity/lineage poisons added | corrected / PASS |
+| weak multi-owner migration | two simultaneous invalid source strata report deterministically and return no candidate | corrected / PASS |
+| undefined area-cache tolerance | exact left-to-right IEEE-754 bit equality selected | corrected / PASS |
+| non-injective path/string framing | UTF-8 length-prefixed lowercase hex components selected | corrected / PASS |
+| incomplete schema domains | exact phase enum and GSI `[0,1]` added | corrected / PASS |
+| zero-C/positive-display-N fixture | valid zero branch now zeroes displayed C/N; separate executed rejection poison added | corrected / PASS |
+
+Additional rereview findings for strict bool/u128/pending-transfer validation,
+distinct V4 configuration rebinding, exact stratum/occupancy membership,
+transfer lineage, and canonical single-LF definition bytes were accepted,
+corrected, and independently verified PASS.
+
+Reviewer B's later exact-byte rereview found that the positive fixture used the
+unsupported receiver spelling `litter_metabolic` and that the independent
+validator accepted arbitrary donor/receiver strings and zero transaction or
+proposal identities. This HIGH finding is accepted. The positive fixture now
+uses the imported typed receiver `metabolic`; validation admits exactly the six
+`MaterialDonorClass` and four `MaterialReceiverClass` serde identities, requires
+positive nonzero transaction/proposal `u128` values, and executes poisons for
+unsupported donor, unsupported receiver, zero transaction, and zero proposal.
+Reviewer A then required canonical contract/definition binding and Reviewer B
+required exact-width upper-bound poisons. Both findings were accepted and
+corrected: V8 and the definition bind positive `u128` transaction and positive
+`u64` proposal IDs plus exact typed enum sets; `2^128` and `2^64` poison vectors
+reject. Both final rereviews returned GO against definition `571bac78...`,
+fixture `6862b507...`, and generator `5ac8dfea...` with no unresolved material
+finding.

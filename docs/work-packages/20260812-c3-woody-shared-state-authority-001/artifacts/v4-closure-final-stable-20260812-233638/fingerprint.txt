@@ -1,0 +1,11 @@
+head=85d7119d894ec36d9f78f43b0d331ae8705f9521
+generator_hash=5ac8dfea
+definition_hash=571bac78
+fixture_hash=6862b507
+ M crates/openwepp-vegetation/src/occupancy_solver/constitutive.rs
+ M crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs
+ M crates/openwepp-vegetation/src/occupancy_solver/potential.rs
+ M docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+ M docs/specifications/science-contracts/index.md
+ M docs/work-packages/README.md
+?? docs/work-packages/20260812-c3-woody-shared-state-authority-001/

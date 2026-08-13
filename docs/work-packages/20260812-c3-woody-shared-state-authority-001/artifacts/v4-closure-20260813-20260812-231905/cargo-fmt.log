@@ -1,0 +1,293 @@
+[START] cargo-fmt at 2026-08-13T06:21:03Z
+[CMD] cargo fmt --all -- --check
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/constitutive.rs:405:
+             || self.context.occupancy_id != identity.occupancy_id
+             || self.water_caps_kg_m2_s.is_none()
+         {
+[31m-            return Err(VegetationError::Domain("V3 capped constitutive solve identity"));
+(B[m[32m+            return Err(VegetationError::Domain(
+(B[m[32m+                "V3 capped constitutive solve identity",
+(B[m[32m+            ));
+(B[m         }
+         self.next_evaluation_id.set(1);
+         self.evaluated_canopies.borrow_mut().clear();
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/constitutive.rs:481:
+         .collect::<Result<BTreeSet<_>, _>>()?;
+     let actual = caps.keys().cloned().collect::<BTreeSet<_>>();
+     if actual != expected || caps.values().any(|cap| !cap.is_finite() || *cap < 0.0) {
+[31m-        return Err(VegetationError::Domain("V3 constitutive water-cap identity"));
+(B[m[32m+        return Err(VegetationError::Domain(
+(B[m[32m+            "V3 constitutive water-cap identity",
+(B[m[32m+        ));
+(B[m     }
+     Ok(())
+ }
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs:9:
+ 
+ use openwepp_kernel_contract::SoilLayerId;
+ 
+[32m+use super::capped_pass::CappedOccupancyEvaluator;
+(B[m use super::constitutive::{
+     BiochemicalParameters, ConstitutiveSolveContext, GasEnergyOperands, HydraulicParameters,
+     LayerOperands, LeafClassOperands, LeafClasses, ReferenceWindOperands, SurfaceDimensions,
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs:15:
+     V3ConstitutiveEvaluator, V3PotentialCase,
+ };
+[31m-use super::capped_pass::CappedOccupancyEvaluator;
+(B[m use super::potential::{StageASolveIdentity, StageAState};
+ use super::radiation::OccupancyRadiation;
+ use super::request_pass::PotentialOccupancyEvaluator;
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs:96:
+     radiation: &OccupancyRadiation,
+     pass: CoupledSolvePass,
+ ) -> Result<OccupancyPassResult, VegetationError> {
+[31m-        validate_identity(&input, radiation, pass)?;
+(B[m[32m+    validate_identity(&input, radiation, pass)?;
+(B[m 
+[31m-        let preliminary =
+(B[m[31m-            interception(&input, 0.0, input.occupancy_state.wet_surface_temperature_k)?;
+(B[m[31m-        let advanced_t10_k = update_t10(
+(B[m[31m-            input.shared_state.t10_k,
+(B[m[31m-            input.forcing.air_temperature_k,
+(B[m[31m-            input.interval_s,
+(B[m[31m-        )?;
+(B[m[31m-        let case = prepare_case(&input, radiation, preliminary, advanced_t10_k)?;
+(B[m[31m-        let context = ConstitutiveSolveContext {
+(B[m[31m-            transaction_id: input.transaction_id,
+(B[m[31m-            occupancy_id: input.occupancy_id.clone(),
+(B[m[31m-            pass,
+(B[m[31m-        };
+(B[m[31m-        let maximum_leaf_potentials = (
+(B[m[31m-            input.occupancy_state.sun_leaf_potential_mm,
+(B[m[31m-            input.occupancy_state.shade_leaf_potential_mm,
+(B[m[31m-        );
+(B[m[31m-        let evaluator = match pass {
+(B[m[31m-            CoupledSolvePass::Potential => {
+(B[m[31m-                V3ConstitutiveEvaluator::new(case, maximum_leaf_potentials, context)?
+(B[m[31m-            }
+(B[m[31m-            CoupledSolvePass::Capped => V3ConstitutiveEvaluator::new_capped(
+(B[m[31m-                case,
+(B[m[31m-                maximum_leaf_potentials,
+(B[m[31m-                context,
+(B[m[31m-                local_cap_rates(&input)?,
+(B[m[31m-            )?,
+(B[m[31m-        };
+(B[m[31m-        let identity = StageASolveIdentity {
+(B[m[31m-            transaction_id: input.transaction_id,
+(B[m[31m-            occupancy_id: input.occupancy_id.clone(),
+(B[m[31m-        };
+(B[m[31m-        let initial = StageAState {
+(B[m[31m-                psi_sunleaf_mm: input.occupancy_state.sun_leaf_potential_mm,
+(B[m[31m-                psi_shadeleaf_mm: input.occupancy_state.shade_leaf_potential_mm,
+(B[m[31m-                psi_stem_mm: input.occupancy_state.stem_potential_mm,
+(B[m[31m-                psi_root_mm: input.occupancy_state.root_node_potential_mm,
+(B[m[31m-                beta_sun: input.occupancy_state.beta_hyd,
+(B[m[31m-                beta_shade: input.occupancy_state.beta_hyd,
+(B[m[31m-            };
+(B[m[31m-        let accepted = match pass {
+(B[m[31m-            CoupledSolvePass::Potential => evaluator.solve_uncapped(&identity, initial)?,
+(B[m[31m-            CoupledSolvePass::Capped => evaluator.solve_capped(&identity, initial)?,
+(B[m[31m-        };
+(B[m[32m+    let preliminary = interception(&input, 0.0, input.occupancy_state.wet_surface_temperature_k)?;
+(B[m[32m+    let advanced_t10_k = update_t10(
+(B[m[32m+        input.shared_state.t10_k,
+(B[m[32m+        input.forcing.air_temperature_k,
+(B[m[32m+        input.interval_s,
+(B[m[32m+    )?;
+(B[m[32m+    let case = prepare_case(&input, radiation, preliminary, advanced_t10_k)?;
+(B[m[32m+    let context = ConstitutiveSolveContext {
+(B[m[32m+        transaction_id: input.transaction_id,
+(B[m[32m+        occupancy_id: input.occupancy_id.clone(),
+(B[m[32m+        pass,
+(B[m[32m+    };
+(B[m[32m+    let maximum_leaf_potentials = (
+(B[m[32m+        input.occupancy_state.sun_leaf_potential_mm,
+(B[m[32m+        input.occupancy_state.shade_leaf_potential_mm,
+(B[m[32m+    );
+(B[m[32m+    let evaluator = match pass {
+(B[m[32m+        CoupledSolvePass::Potential => {
+(B[m[32m+            V3ConstitutiveEvaluator::new(case, maximum_leaf_potentials, context)?
+(B[m[32m+        }
+(B[m[32m+        CoupledSolvePass::Capped => V3ConstitutiveEvaluator::new_capped(
+(B[m[32m+            case,
+(B[m[32m+            maximum_leaf_potentials,
+(B[m[32m+            context,
+(B[m[32m+            local_cap_rates(&input)?,
+(B[m[32m+        )?,
+(B[m[32m+    };
+(B[m[32m+    let identity = StageASolveIdentity {
+(B[m[32m+        transaction_id: input.transaction_id,
+(B[m[32m+        occupancy_id: input.occupancy_id.clone(),
+(B[m[32m+    };
+(B[m[32m+    let initial = StageAState {
+(B[m[32m+        psi_sunleaf_mm: input.occupancy_state.sun_leaf_potential_mm,
+(B[m[32m+        psi_shadeleaf_mm: input.occupancy_state.shade_leaf_potential_mm,
+(B[m[32m+        psi_stem_mm: input.occupancy_state.stem_potential_mm,
+(B[m[32m+        psi_root_mm: input.occupancy_state.root_node_potential_mm,
+(B[m[32m+        beta_sun: input.occupancy_state.beta_hyd,
+(B[m[32m+        beta_shade: input.occupancy_state.beta_hyd,
+(B[m[32m+    };
+(B[m[32m+    let accepted = match pass {
+(B[m[32m+        CoupledSolvePass::Potential => evaluator.solve_uncapped(&identity, initial)?,
+(B[m[32m+        CoupledSolvePass::Capped => evaluator.solve_capped(&identity, initial)?,
+(B[m[32m+    };
+(B[m 
+[31m-        let final_liquid = interception(
+(B[m[31m-            &input,
+(B[m[31m-            accepted.canopy.wet_actual_kg_m2_s * input.interval_s,
+(B[m[31m-            accepted.canopy.wet_surface_temperature_k,
+(B[m[31m-        )?;
+(B[m[31m-        let candidate_state =
+(B[m[31m-            accepted.occupancy_state(input.occupancy_state, final_liquid.store1)?;
+(B[m[31m-        let local_layer_water_kg_m2_tile_ground = accepted
+(B[m[31m-            .outer
+(B[m[31m-            .evaluation
+(B[m[31m-            .q3_kg_m2_s
+(B[m[31m-            .iter()
+(B[m[31m-            .map(|(layer_id, flux)| (layer_id.clone(), flux * input.interval_s))
+(B[m[31m-            .collect::<Vec<_>>();
+(B[m[31m-        validate_layer_output(&input, &local_layer_water_kg_m2_tile_ground)?;
+(B[m[32m+    let final_liquid = interception(
+(B[m[32m+        &input,
+(B[m[32m+        accepted.canopy.wet_actual_kg_m2_s * input.interval_s,
+(B[m[32m+        accepted.canopy.wet_surface_temperature_k,
+(B[m[32m+    )?;
+(B[m[32m+    let candidate_state = accepted.occupancy_state(input.occupancy_state, final_liquid.store1)?;
+(B[m[32m+    let local_layer_water_kg_m2_tile_ground = accepted
+(B[m[32m+        .outer
+(B[m[32m+        .evaluation
+(B[m[32m+        .q3_kg_m2_s
+(B[m[32m+        .iter()
+(B[m[32m+        .map(|(layer_id, flux)| (layer_id.clone(), flux * input.interval_s))
+(B[m[32m+        .collect::<Vec<_>>();
+(B[m[32m+    validate_layer_output(&input, &local_layer_water_kg_m2_tile_ground)?;
+(B[m 
+[31m-        let mut normalized_residuals = accepted.outer.normalized_residuals.clone();
+(B[m[31m-        normalized_residuals.extend(accepted.canopy.normalized_residuals.clone());
+(B[m[31m-        let q3_sum = accepted
+(B[m[31m-            .outer
+(B[m[31m-            .evaluation
+(B[m[31m-            .q3_kg_m2_s
+(B[m[31m-            .iter()
+(B[m[31m-            .map(|(_, flux)| *flux)
+(B[m[31m-            .sum::<f64>();
+(B[m[31m-        let gas_sum = accepted.canopy.sun.transpiration_kg_m2_tile_s
+(B[m[31m-            + accepted.canopy.shade.transpiration_kg_m2_tile_s;
+(B[m[31m-        let gas_hydraulic_mismatch_kg_m2_s = gas_sum - q3_sum;
+(B[m[31m-        if !gas_hydraulic_mismatch_kg_m2_s.is_finite() {
+(B[m[31m-            return Err(VegetationError::Domain(
+(B[m[31m-                "V3 potential gas/hydraulic diagnostic",
+(B[m[31m-            ));
+(B[m[31m-        }
+(B[m[32m+    let mut normalized_residuals = accepted.outer.normalized_residuals.clone();
+(B[m[32m+    normalized_residuals.extend(accepted.canopy.normalized_residuals.clone());
+(B[m[32m+    let q3_sum = accepted
+(B[m[32m+        .outer
+(B[m[32m+        .evaluation
+(B[m[32m+        .q3_kg_m2_s
+(B[m[32m+        .iter()
+(B[m[32m+        .map(|(_, flux)| *flux)
+(B[m[32m+        .sum::<f64>();
+(B[m[32m+    let gas_sum = accepted.canopy.sun.transpiration_kg_m2_tile_s
+(B[m[32m+        + accepted.canopy.shade.transpiration_kg_m2_tile_s;
+(B[m[32m+    let gas_hydraulic_mismatch_kg_m2_s = gas_sum - q3_sum;
+(B[m[32m+    if !gas_hydraulic_mismatch_kg_m2_s.is_finite() {
+(B[m[32m+        return Err(VegetationError::Domain(
+(B[m[32m+            "V3 potential gas/hydraulic diagnostic",
+(B[m[32m+        ));
+(B[m[32m+    }
+(B[m 
+[31m-        Ok(OccupancyPassResult {
+(B[m[31m-            candidate_state,
+(B[m[31m-            liquid: final_liquid,
+(B[m[31m-            local_layer_water_kg_m2_tile_ground,
+(B[m[31m-            diagnostics: OccupancyDiagnostics {
+(B[m[31m-                pass,
+(B[m[31m-                ci_iterations_sun: accepted.canopy.sun.ci_iterations,
+(B[m[31m-                ci_iterations_shade: accepted.canopy.shade.ci_iterations,
+(B[m[31m-                energy_iterations: accepted.canopy.iterations,
+(B[m[31m-                hydraulic_iterations: accepted.outer.iterations,
+(B[m[31m-                outer_iterations: accepted.outer.iterations,
+(B[m[31m-                normalized_residuals,
+(B[m[31m-                temperature_step_k: accepted.canopy.temperature_step_k,
+(B[m[31m-                potential_step_mm: Some(accepted.outer.potential_step_mm),
+(B[m[31m-                backtracking_count: accepted
+(B[m[32m+    Ok(OccupancyPassResult {
+(B[m[32m+        candidate_state,
+(B[m[32m+        liquid: final_liquid,
+(B[m[32m+        local_layer_water_kg_m2_tile_ground,
+(B[m[32m+        diagnostics: OccupancyDiagnostics {
+(B[m[32m+            pass,
+(B[m[32m+            ci_iterations_sun: accepted.canopy.sun.ci_iterations,
+(B[m[32m+            ci_iterations_shade: accepted.canopy.shade.ci_iterations,
+(B[m[32m+            energy_iterations: accepted.canopy.iterations,
+(B[m[32m+            hydraulic_iterations: accepted.outer.iterations,
+(B[m[32m+            outer_iterations: accepted.outer.iterations,
+(B[m[32m+            normalized_residuals,
+(B[m[32m+            temperature_step_k: accepted.canopy.temperature_step_k,
+(B[m[32m+            potential_step_mm: Some(accepted.outer.potential_step_mm),
+(B[m[32m+            backtracking_count: accepted
+(B[m[32m+                .outer
+(B[m[32m+                .backtracking_count
+(B[m[32m+                .checked_add(accepted.canopy.backtracking_count)
+(B[m[32m+                .ok_or(VegetationError::Domain(
+(B[m[32m+                    "V3 occupancy diagnostic backtracking count",
+(B[m[32m+                ))?,
+(B[m[32m+            wet_store_cap_active: accepted.canopy.wet_store_cap_active,
+(B[m[32m+            active_water_caps: accepted.outer.evaluation.active_water_caps.clone(),
+(B[m[32m+            gas_hydraulic_mismatch_kg_m2_s,
+(B[m[32m+            pivot_magnitude: Some(
+(B[m[32m+                accepted
+(B[m                     .outer
+[31m-                    .backtracking_count
+(B[m[31m-                    .checked_add(accepted.canopy.backtracking_count)
+(B[m[31m-                    .ok_or(VegetationError::Domain(
+(B[m[31m-                        "V3 occupancy diagnostic backtracking count",
+(B[m[31m-                    ))?,
+(B[m[31m-                wet_store_cap_active: accepted.canopy.wet_store_cap_active,
+(B[m[31m-                active_water_caps: accepted.outer.evaluation.active_water_caps.clone(),
+(B[m[31m-                gas_hydraulic_mismatch_kg_m2_s,
+(B[m[31m-                pivot_magnitude: Some(
+(B[m[31m-                    accepted
+(B[m[31m-                        .outer
+(B[m[31m-                        .pivot_magnitude
+(B[m[31m-                        .min(accepted.canopy.pivot_magnitude.unwrap_or(f64::INFINITY)),
+(B[m[31m-                )
+(B[m[31m-                .filter(|value| value.is_finite()),
+(B[m[31m-                matrix_norm: Some(
+(B[m[31m-                    accepted
+(B[m[31m-                        .outer
+(B[m[31m-                        .matrix_norm
+(B[m[31m-                        .max(accepted.canopy.matrix_norm.unwrap_or(0.0)),
+(B[m[31m-                ),
+(B[m[31m-                advanced_t10_k: Some(advanced_t10_k),
+(B[m[31m-            },
+(B[m[31m-        })
+(B[m[32m+                    .pivot_magnitude
+(B[m[32m+                    .min(accepted.canopy.pivot_magnitude.unwrap_or(f64::INFINITY)),
+(B[m[32m+            )
+(B[m[32m+            .filter(|value| value.is_finite()),
+(B[m[32m+            matrix_norm: Some(
+(B[m[32m+                accepted
+(B[m[32m+                    .outer
+(B[m[32m+                    .matrix_norm
+(B[m[32m+                    .max(accepted.canopy.matrix_norm.unwrap_or(0.0)),
+(B[m[32m+            ),
+(B[m[32m+            advanced_t10_k: Some(advanced_t10_k),
+(B[m[32m+        },
+(B[m[32m+    })
+(B[m }
+ 
+ fn validate_identity(
+Diff in /home/workdir/openWEPP/crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs:265:
+         .map(|(layer_id, amount)| {
+             let rate = *amount / input.interval_s;
+             if !rate.is_finite() || rate < 0.0 {
+[31m-                return Err(VegetationError::Domain("V3 capped local authorization rate"));
+(B[m[32m+                return Err(VegetationError::Domain(
+(B[m[32m+                    "V3 capped local authorization rate",
+(B[m[32m+                ));
+(B[m             }
+             Ok((layer_id.clone(), rate))
+         })
+[END] rc=1 at 2026-08-13T06:21:06Z

@@ -1,0 +1,7 @@
+name|command|rc|started|ended|duration_s|log
+cargo-clippy|cargo clippy --workspace --all-targets -- -D warnings|0|2026-08-13T07:41:37Z|2026-08-13T07:41:40Z|3|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/cargo-clippy.log
+cargo-nextest|cargo nextest run --workspace --profile full|0|2026-08-13T07:41:40Z|2026-08-13T08:35:17Z|3217|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/cargo-nextest.log
+cargo-test-doc|cargo test --doc --workspace|0|2026-08-13T08:35:17Z|2026-08-13T08:35:25Z|8|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/cargo-test-doc.log
+cargo-deny|cargo deny check|0|2026-08-13T08:35:25Z|2026-08-13T08:35:25Z|0|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/cargo-deny.log
+cargo-fmt|cargo fmt --all -- --check|0|2026-08-13T08:35:25Z|2026-08-13T08:35:28Z|3|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/cargo-fmt.log
+git-diff-check|git diff --check|0|2026-08-13T08:35:28Z|2026-08-13T08:35:29Z|1|/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-final-stable-20260813-004136/git-diff-check.log

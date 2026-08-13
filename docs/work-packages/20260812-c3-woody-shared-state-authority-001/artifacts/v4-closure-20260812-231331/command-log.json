@@ -1,0 +1,23 @@
+{
+  "package": "20260812-c3-woody-shared-state-authority-001",
+  "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-20260812-231331",
+  "tmpdir": "/tmp/openwepp-v4-shared-state",
+  "commands": [
+    {
+      "command_name": "cargo-clippy",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "started_at": "2026-08-13T06:13:31Z",
+      "ended_at": "2026-08-13T06:13:58Z",
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-20260812-231331/cargo-clippy.log"
+    },
+    {
+      "command_name": "cargo-nextest",
+      "command": "cargo nextest run --workspace --profile full",
+      "exit_code": 101,
+      "started_at": "2026-08-13T06:13:58Z",
+      "ended_at": null,
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/v4-closure-20260812-231331/nextest.log"
+    }
+  ]
+}

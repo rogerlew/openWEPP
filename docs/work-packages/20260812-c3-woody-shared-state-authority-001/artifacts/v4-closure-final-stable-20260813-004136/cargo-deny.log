@@ -1,0 +1,9 @@
+[START] cargo-deny at 2026-08-13T08:35:25Z
+[CMD] cargo deny check
+warning[license-not-encountered]: license was not encountered
+   ┌─ /home/workdir/openWEPP/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+
+advisories ok, bans ok, licenses ok, sources ok

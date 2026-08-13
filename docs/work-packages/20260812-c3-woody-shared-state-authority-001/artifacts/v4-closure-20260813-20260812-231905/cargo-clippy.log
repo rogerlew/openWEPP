@@ -1,0 +1,21 @@
+[START] cargo-clippy at 2026-08-13T06:19:05Z
+[CMD] cargo clippy --workspace --all-targets -- -D warnings
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+error: this argument is passed by value, but not consumed in the function body
+  --> crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs:95:12
+   |
+95 |     input: OccupancyPassInput<'_>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+   = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+   |
+95 |     input: &OccupancyPassInput<'_>,
+   |            +
+
+error: could not compile `openwepp-vegetation` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-vegetation` (lib test) due to 1 previous error
+[END] rc=101 at 2026-08-13T06:19:13Z

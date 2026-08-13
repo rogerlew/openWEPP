@@ -1,0 +1,3 @@
+[START] cargo-fmt at 2026-08-13T07:02:51Z
+[CMD] cargo fmt --all -- --check
+[END] rc=0 at 2026-08-13T07:02:54Z duration_s=3

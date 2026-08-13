@@ -1,0 +1,43 @@
+[START] cargo-nextest at 2026-08-13T06:19:13Z
+[CMD] cargo nextest run --workspace --profile full
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 36.26s
+────────────
+ Nextest run ID 6882ecc6-6438-4e2e-9f31-e6aece1debc3 with nextest profile: full
+    Starting 2557 tests across 217 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+  Cancelling due to interrupt: 27 tests still running
+      SIGINT [  57.401s] ( 155/2557) openwepp::assurance_v2_source_contract every_record_family_has_executable_field_consumption
+      SIGINT [  50.277s] ( 156/2557) openwepp::assurance_v2_source_contract unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed
+      SIGINT [  60.535s] ( 157/2557) openwepp::assurance_v2_assembly_contract malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed
+      SIGINT [  60.526s] ( 158/2557) openwepp::assurance_v2_normalization_contract apply_rebinds_complete_graph_builds_and_is_idempotent
+      SIGINT [  60.536s] ( 159/2557) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+      SIGINT [  60.548s] ( 160/2557) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+      SIGINT [  60.538s] ( 161/2557) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+      SIGINT [  60.538s] ( 162/2557) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+      SIGINT [  60.521s] ( 163/2557) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+      SIGINT [  60.539s] ( 164/2557) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+      SIGINT [  57.416s] ( 165/2557) openwepp::assurance_v2_source_contract content_schema_contract_and_report_versions_are_enforced
+      SIGINT [  60.539s] ( 166/2557) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+      SIGINT [  60.543s] ( 167/2557) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+      SIGINT [  60.544s] ( 168/2557) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+      SIGINT [  60.545s] ( 169/2557) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+      SIGINT [  60.547s] ( 170/2557) openwepp::assurance_v2_assembly_contract canopy_named_and_all_builds_are_byte_equivalent_and_complete
+      SIGINT [  60.546s] ( 171/2557) openwepp::assurance_v2_assembly_contract real_cli_selects_v2_staging_without_weakening_zero_public_operations
+      SIGINT [  60.546s] ( 172/2557) openwepp::assurance_v2_assembly_contract real_named_and_all_builds_are_deterministic_equivalent_and_checkable
+      SIGINT [  13.627s] ( 173/2557) openwepp::cli03_runner_contract_derived_tests cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums
+      SIGINT [  11.648s] ( 174/2557) openwepp::cli03_runner_contract_derived_tests cli03_fixture_run_publishes_retired_wb16_ealpha_provenance
+      SIGINT [  61.288s] ( 175/2557) openwepp::assurance_v2_amendment_contract role_assignment_is_typed_receipted_and_idempotent
+      SIGINT [  61.279s] ( 176/2557) openwepp::assurance_v2_normalization_contract check_detects_converter_diff_without_writing
+      SIGINT [  60.494s] ( 177/2557) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+      SIGINT [  61.027s] ( 178/2557) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+      SIGINT [  61.290s] ( 179/2557) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+      SIGINT [  61.303s] ( 180/2557) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+      SIGINT [  61.295s] ( 181/2557) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+────────────
+     Summary [  61.352s] 181/2557 tests run: 154 passed, 27 failed, 33 skipped
+warning: 2376/2557 tests were not run due to interrupt
+error: test run failed
+[END] rc=100 at 2026-08-13T06:20:52Z

@@ -1,0 +1,4 @@
+[START] cargo-clippy at 2026-08-13T07:41:37Z
+[CMD] cargo clippy --workspace --all-targets -- -D warnings
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.44s
