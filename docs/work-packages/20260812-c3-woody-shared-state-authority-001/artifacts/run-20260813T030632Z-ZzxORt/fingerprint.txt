@@ -1,0 +1,18 @@
+run_directory=/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/run-20260813T030632Z-ZzxORt
+commit=916f24181e250d1cee5b17d9985bb082b7b53a3f
+frozen_hashes_definition=8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437
+fixture=3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d
+generator=422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2
+
+command-01.rc=0
+command-02.rc=0
+command-03.rc=0
+command-04.rc=0
+command-05.rc=0
+command-06.rc=0
+01-cargo-clippy.log f269bf9080c006f92b7d09187c91495a666b8e03676d07ac4e36675155a09da6
+02-cargo-nextest.log 16b9cf3e6fabe3625665c37902a61ff0d7430a9729498d9b7ed8f8d73ee5500f
+03-cargo-test-doc.log 9683b53513592436bd5a615373a1f69a4f1eef6b7cd59d5ad62dfb2f84d3b221
+04-cargo-deny.log 573ef48971e07ec71ba140c11a621e3a759fedee8f019a7c33d84908232f99ee
+05-cargo-fmt.log 9246667d9e7dec7371181ed064f7d9748d7eeeef03d466d5c422802de98d6561
+06-git-diff-check.log 565a2d7eed693e1a4b1ceee52109693b981abf0fab8ab68ba347f29cc6b50081

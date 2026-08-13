@@ -76,6 +76,47 @@ evidence is replaced.
 - Heavy validation remains intentionally pending until the concurrently owned
   Rust and documentation tree reaches stable bytes.
 
+## Post-remediation final heavy closure
+
+Exact stable input commit:
+`916f24181e250d1cee5b17d9985bb082b7b53a3f`.
+
+Comparator artifacts:
+`artifacts/run-20260813T030632Z-ZzxORt/`.
+
+The comparator created a unique absolute temporary directory under
+`/home/workdir` on the 24-TiB-free `/home` filesystem. It ran one uninterrupted
+campaign with no timeout or restart. All six commands completed:
+
+- `cargo clippy --workspace --all-targets -- -D warnings` -> PASS, rc 0,
+  25 seconds;
+- `cargo nextest run --workspace --profile full` -> PASS, rc 0, 3,371
+  seconds;
+- `cargo test --doc --workspace` -> PASS, rc 0, 7 seconds;
+- `cargo deny check` -> PASS, rc 0, 1 second, with the existing non-fatal
+  `license-not-encountered` warning;
+- `cargo fmt --all -- --check` -> PASS, rc 0, 3 seconds;
+- `git diff --check` -> PASS, rc 0, under 1 second.
+
+The run directory preserves full per-command logs, return-code files,
+`command-results.csv`, `results.csv`, JSON/Markdown summaries, command log, and
+fingerprint. Its fingerprint binds exact definition `8ace38d1...`, fixture
+`3072226f...`, generator `422f0a6f...`, and commit `916f2418...`.
+
+## Post-remediation terminal verification
+
+- Independent terminal verifier A -> PASS, no unresolved material finding.
+- Independent terminal verifier B -> PASS, no unresolved material finding.
+- Both verified exact commit `916f2418...`, definition `8ace38d1...`, fixture
+  `3072226f...`, generator `422f0a6f...`, the 25,001-byte whole-state preimage,
+  all 26 oracle checks, all 155 mutation digests, four occupancy identity
+  mutations, structural collision separation, UTF/control framing, canonical
+  ordering, duplicate rejection before digest, V1/V2/V3 protection, dual
+  science-review GO, and the 6/6 heavy campaign.
+- Verifier A independently recorded the full nextest summary as 2,582 passed
+  and 33 skipped; no failure occurred.
+- Final package Markdown lint -> PASS, 24 files, 0 errors/warnings.
+
 ## Authority and independent vectors
 
 - `.venv/bin/python .../reference_calculator.py` -> PASS; all 21 fixture

@@ -1,6 +1,6 @@
 # Admit C3 Woody V4 Shared-State Authority
 
-Status: `executing / released COMPLETE checkpoint preserved / occupancy-identity remediation active`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V4 collision-safe shared-state authority released`
 
 Date: `2026-08-12`
 
@@ -30,7 +30,7 @@ production Rust or changing immutable V1/V2/V3 definition bytes.
 - [x] Reconcile exact terminal bytes and complete two independent verifications.
 - [x] Archive the active kickoff prompt byte-for-byte and release the implementation handoff.
 - [x] Correct the accepted collision-prone occupancy-identity oracle defect.
-- [ ] Repeat science review, critical gates, reconciliation, and terminal verification.
+- [x] Repeat science review, critical gates, reconciliation, and terminal verification.
 
 ## Scope
 

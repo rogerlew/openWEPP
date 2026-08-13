@@ -11,9 +11,10 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260812-c3-woody-shared-state-authority-001/` — EXECUTING / V4 post-release occupancy-identity remediation
-  AUTHORITY REVIEWED GO / HEAVY RETRY ACTIVE: select displayed leaf C/N as the sole LAI
-  and leaf-capacity owners, remove two unconsumed offset-flux fields, bind exact
+- `20260812-c3-woody-shared-state-authority-001/` — COMPLETE / collision-safe V4 shared-state implementation authority released
+  DUAL REVIEW GO / HEAVY 6/6 PASS / TERMINAL A+B PASS: select displayed leaf
+  C/N as the sole LAI and leaf-capacity owners, remove two unconsumed
+  offset-flux fields, bind collision-safe structural occupancy identity, exact
   shared-state serialization/migration and independent fixtures, and preserve
   immutable V1/V2/V3 bytes. Production Rust and runtime activation are excluded.
 

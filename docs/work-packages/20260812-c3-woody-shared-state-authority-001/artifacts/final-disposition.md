@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `IN PROGRESS / prior COMPLETE checkpoint preserved / collision remediation active`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V4 collision-safe shared-state implementation authority released`
 
 Historical release checkpoint: V4 authority, both final science reviews, both
 independent terminal verifiers, and the final capacity-correct six-command
@@ -22,5 +22,17 @@ That COMPLETE statement is retained as the historical release checkpoint.
 Production review later accepted that the released whole-state oracle flattened
 typed occupancy identity with `@`, contrary to collision-safe V8 framing for
 arbitrary admitted UTF-8 IDs. Corrected successor bytes, repeated reviews,
-gates, reconciliation, and terminal verification are now active; the prior
-definition is no longer the terminal implementation-authority candidate.
+focused and heavy gates, and exact reconciliation are complete. Fresh terminal
+verifiers A and B both returned PASS with no unresolved material finding; the
+prior definition is no longer the terminal implementation-authority candidate.
+
+Current terminal candidate: definition `8ace38d1...`, fixture `3072226f...`,
+generator `422f0a6f...`, stable implementation/review commit `916f2418...`, and
+heavy evidence `artifacts/run-20260813T030632Z-ZzxORt/` with all six commands
+PASS. The full-workspace nextest log records 2,582 passed and 33 skipped.
+
+The historical kickoff prompt remains archived byte-for-byte at SHA-256
+`7f31e3a82634aaab31aa9de2d4bf5ac9bfd34c11241671fb3a80685b6839df25`.
+This remediation did not create or replace a kickoff prompt; it preserved the
+prior archive and appended the accepted defect, correction, review, gate, and
+verification evidence in the existing package.

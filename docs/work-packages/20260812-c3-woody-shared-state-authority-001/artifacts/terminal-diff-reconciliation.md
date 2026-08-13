@@ -1,6 +1,6 @@
 # Terminal Diff Reconciliation
 
-Status: `in progress / post-release remediation candidate`
+Status: `complete / terminal verified`
 
 Evidence mode: `Static`
 
@@ -21,11 +21,30 @@ contract registry, and the package catalog. Vegetation Rust files shown by the
 whole-worktree diff are concurrent implementation-campaign ownership and are
 explicitly outside this package's write set.
 
+The final remediation baseline is clean commit
+`916f24181e250d1cee5b17d9985bb082b7b53a3f`. That commit includes the matching
+production registry definition and implementation bindings reviewed by the
+independent authority reviewers, but this package claims no Rust ownership or
+runtime activation. The post-baseline authority-package diff contains only the
+new heavy-run evidence and this package's closure evidence. It does not change
+the frozen contract, definition, fixture, generator, Rust, implementation
+package, runtime selector, or predecessor authority.
+
 Historical failed, interrupted, and ENOSPC heavy attempts are preserved. The
 previously accepted capacity-correct run was
 `artifacts/v4-closure-final-stable-20260813-004136/`: workspace Clippy PASS,
 full-workspace nextest PASS (3,217 seconds), workspace doctests PASS, deny PASS,
-format PASS, and diff hygiene PASS, against the superseded V4 identity. Fresh
-science reviews, heavy gates, exact terminal reconciliation, and terminal
-verification are pending for the corrected identity. The prior archived prompt
-remains immutable historical evidence.
+format PASS, and diff hygiene PASS, against the superseded V4 identity. That
+historical run does not substitute for the corrected closure. The prior
+archived prompt remains immutable historical evidence.
+
+The authoritative post-remediation heavy campaign is
+`artifacts/run-20260813T030632Z-ZzxORt/`, bound to commit `916f2418...` and
+definition/fixture/generator `8ace38d1.../3072226f.../422f0a6f...`. All six
+commands passed in one uninterrupted campaign. Dual science rereviews A and B
+are GO with no unresolved material finding. Two fresh terminal verifiers
+assessed these exact bytes and both returned PASS with no unresolved material
+finding. The package-only closure diff contains the heavy run directory, final
+evidence updates, and the two fresh verifier artifacts; it contains no Rust,
+implementation-package, contract, definition, fixture, generator, selector, or
+predecessor-authority change.

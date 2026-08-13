@@ -1,0 +1,7 @@
+command,exit_code,duration_s
+cargo clippy --workspace --all-targets -- -D warnings,0,25
+cargo nextest run --workspace --profile full,0,3371
+cargo test --doc --workspace,0,7
+cargo deny check,0,1
+cargo fmt --all -- --check,0,3
+git diff --check,0,0

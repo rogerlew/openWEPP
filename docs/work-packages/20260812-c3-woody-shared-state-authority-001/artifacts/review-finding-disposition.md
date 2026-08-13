@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `executing / historical rereviews preserved / collision remediation reviews GO`
+Status: `complete / historical reviews preserved / remediation reviews GO`
 
 Evidence mode: `Static`
 
@@ -58,5 +58,7 @@ material finding against definition `8ace38d1...`, fixture `3072226f...`, and
 generator `422f0a6f...`. Reviewer A first found and preserved a material HOLD
 because the V4 hashing helper sorted but did not reject duplicate structural
 pairs. The finding was accepted; the canonicalizer now rejects before digest
-and the fixture executes the V4 duplicate-state poison. Terminal verification
-remains pending.
+and the fixture executes the V4 duplicate-state poison. Terminal verifiers A
+and B subsequently returned PASS with no unresolved
+material finding against those exact hashes and the six-command heavy evidence
+bound to commit `916f2418...`.
