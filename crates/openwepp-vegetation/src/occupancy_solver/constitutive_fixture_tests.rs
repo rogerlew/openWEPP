@@ -462,7 +462,11 @@ fn all_released_ci_failures_have_exact_payload_shape() {
             solve,
         )
         .expect_err("released CI failure must fail");
-        let VegetationError::NumericalFailure(actual) = result else {
+        let VegetationError::NumericalFailure {
+            diagnostics: actual,
+            ..
+        } = result
+        else {
             panic!("typed CI diagnostics");
         };
         assert_failure_common(&actual, expected, solve);
@@ -492,7 +496,11 @@ fn released_canopy_iteration_limit_and_singular_linear_payloads_are_exact() {
     let failure =
         solve_canopy_energy_with_limit(&case, (0.6, 0.6), (-5_900.0, -5_450.0), &context(), 0)
             .expect_err("zero iteration cap");
-    let VegetationError::NumericalFailure(actual) = failure else {
+    let VegetationError::NumericalFailure {
+        diagnostics: actual,
+        ..
+    } = failure
+    else {
         panic!("typed canopy failure");
     };
     let expected = &family["executed_canopy_energy_failures"][1]["diagnostics"];
@@ -532,7 +540,11 @@ fn released_nonzero_singular_and_outer_iteration_limit_execute_exact_paths() {
         .with_released_singular_hydraulics();
     let failure = solve_uncapped_stage_a_with_limit(&identity(), initial, &singular, 50)
         .expect_err("released nonzero singular Jacobian must fail");
-    let VegetationError::NumericalFailure(actual) = failure else {
+    let VegetationError::NumericalFailure {
+        diagnostics: actual,
+        ..
+    } = failure
+    else {
         panic!("typed singular diagnostics");
     };
     let expected = &family["singular_jacobian"]["diagnostics"];
@@ -560,7 +572,11 @@ fn released_nonzero_singular_and_outer_iteration_limit_execute_exact_paths() {
         .expect("constitutive evaluator");
     let failure = solve_uncapped_stage_a_with_limit(&identity(), alternate, &evaluator, 1)
         .expect_err("released outer iteration cap must fail");
-    let VegetationError::NumericalFailure(actual) = failure else {
+    let VegetationError::NumericalFailure {
+        diagnostics: actual,
+        ..
+    } = failure
+    else {
         panic!("typed outer diagnostics");
     };
     let expected = &family["iteration_limit"]["diagnostics"];
@@ -643,7 +659,11 @@ fn released_canopy_domain_case_executes_without_candidate() {
     let failure =
         solve_canopy_energy_with_limit(&case, (0.6, 0.6), (-5_900.0, -5_450.0), &context(), 50)
             .expect_err("released canopy domain case");
-    let VegetationError::NumericalFailure(actual) = failure else {
+    let VegetationError::NumericalFailure {
+        diagnostics: actual,
+        ..
+    } = failure
+    else {
         panic!("typed canopy domain failure required");
     };
     assert_eq!(actual.solve, SolveIdentity::CanopyEnergy);

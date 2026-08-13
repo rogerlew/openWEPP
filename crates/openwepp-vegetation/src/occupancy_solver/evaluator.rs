@@ -652,19 +652,12 @@ mod tests {
 
     use super::*;
     use crate::occupancy_solver::request_pass::execute_potential_column_pass;
-    use crate::transaction::{CoupledOwnedState, SnowFreeForcing, SoilLayerForcing};
+    use crate::transaction::{
+        CoupledOwnedState, SnowFreeForcing, SoilLayerForcing, v6_identity_rebound_fixture,
+    };
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration");
-        let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
-            &configuration,
-        )
-        .expect("V5 state");
-        (configuration, state)
+        v6_identity_rebound_fixture()
     }
 
     fn forcing() -> SnowFreeForcing {

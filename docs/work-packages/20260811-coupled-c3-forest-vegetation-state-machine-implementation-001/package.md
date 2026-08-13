@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executed-hold / V5 bounded capped-core checkpoint / public path fail-closed`
+Status: `executing / V6 portability hold lifted / capped remediation active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V5` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V6` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,18 +32,18 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v9, approved/active;
+- `SC-VEGETATION-001` v10, approved/active;
 - `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V5`, SHA-256
-  `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`;
+- `OPENWEPP_C3_WOODY_V6`, SHA-256
+  `a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426`;
 - the released V5 capped-pass authority package exact bytes: independent
   vectors SHA-256
   `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`
   and generator SHA-256
   `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`;
 - authority predecessor commit
-  `b7e6f08b655452c5c59a498ac9becd1439dd21ef`, whose dual science reviews,
+  `b326173e2`, whose dual science reviews,
   focused/heavy gates, and dual terminal verifiers passed;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
@@ -448,13 +448,16 @@ closure, and line-count governance, not artifact presence alone.
   the released V5 fixed-authorization authority at commit `b7e6f08b6`.
   Definition, vectors, generator, dual science reviews, focused/heavy gates,
   and dual terminal verification are frozen and passing.
-- [ ] Implement and independently review the exact V5 capped second pass,
-  including V4-to-V5 identity rebinding, fixed authorization conversion,
+- [ ] Implement and independently review the exact V6-bound capped second pass,
+  including V5-to-V6 identity rebinding, fixed authorization conversion,
   equality-active complementarity, generalized-Jacobian branches, typed
   diagnostics, finalized-use debit, and rollback. The bounded core is
-  checkpointed, but `STAGE_B_E11_E15_EXACT_ORACLE` remains on the authority
-  HOLD recorded in `artifacts/v5-failure-payload-portability-hold-legitimacy-audit.md`.
-  The public path remains fail-closed.
+  checkpointed. The former portability HOLD remains historical evidence in
+  `artifacts/v5-failure-payload-portability-hold-legitimacy-audit.md`; V6
+  authority commit `b326173e2` lifted it. Runtime identity, complete snapshot
+  migration, and the exact failure comparator pass focused gates. Final bounded
+  Rust correctness review returned GO and QA returned PASS with no material
+  finding. The public path remains fail-closed.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.

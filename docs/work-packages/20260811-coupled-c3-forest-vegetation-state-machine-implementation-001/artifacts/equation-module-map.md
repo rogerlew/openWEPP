@@ -1,6 +1,6 @@
 # Equation Module Map
 
-Status: `executing / V5 capped authority active / implementation oracle pending`
+Status: `executing / V6 portability authority active / capped oracle remediation`
 
 Evidence mode: `Static + Ran`
 

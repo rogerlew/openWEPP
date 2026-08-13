@@ -936,18 +936,11 @@ mod tests {
     }
 
     fn shared_state() -> StratumSharedState {
-        let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration fixture");
-        CoupledOwnedState::parse_strict(
-            include_bytes!("../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
-            &configuration,
-        )
-        .expect("V5 state fixture")
-        .strata
-        .remove(&stratum_id("tree-1"))
-        .expect("V4 shared state")
+        crate::transaction::v6_identity_rebound_fixture()
+            .1
+            .strata
+            .remove(&stratum_id("tree-1"))
+            .expect("V4 shared state")
     }
 
     fn lane(store: f64, _root_layers: &[&str]) -> OccupancyState {
@@ -971,11 +964,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let mut config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration fixture");
-        config.model_definition_sha256 = MODEL_SHA256.into();
+        let (mut config, _) = crate::transaction::v6_identity_rebound_fixture();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
             TopologyTile {

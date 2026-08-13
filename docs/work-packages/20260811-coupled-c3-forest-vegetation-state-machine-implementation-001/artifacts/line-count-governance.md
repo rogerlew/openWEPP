@@ -85,3 +85,20 @@ Ran after capped-core stabilization:
 
 No touched Rust file reaches 3,000 lines. The two WARN files remain package
 decomposition debt and must be reconciled again after the authority HOLD lifts.
+
+## 2026-08-13 V6 Remediation Recount
+
+The first V6 correctness review found `migration.rs` at 3,130 lines, which was
+a closure-blocking policy violation. V5-to-V6 snapshot and diagnostic migration
+was extracted to cohesive submodules and the current exact counts are:
+
+| Rust file | Lines | Disposition |
+|---|---:|---|
+| `migration.rs` | 2,890 | WARN; below the mandatory 3,000-line threshold |
+| `migration/v5_to_v6.rs` | 378 | PASS |
+| `migration/v5_to_v6/tests.rs` | 651 | PASS |
+| `occupancy_solver/v5_capped_fixture_tests.rs` | 1,070 | PASS |
+
+No touched Rust file is at or above 3,000 lines. The retained WARN remains
+decomposition debt for terminal package closure, not a blocker for this bounded
+HOLD-lift increment.

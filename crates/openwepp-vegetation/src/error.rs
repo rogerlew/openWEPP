@@ -1,6 +1,17 @@
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::diagnostics::NumericalFailureDiagnostics;
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NumericalFailureCategory {
+    BacktrackingLimit,
+    IterationLimit,
+    SingularPivot,
+    BracketFailure,
+    Domain,
+}
 
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum VegetationError {
@@ -26,8 +37,11 @@ pub enum VegetationError {
     Coupled(&'static str),
     #[error("VEG-E-NUM-006: radiation quadrature failed: {0}")]
     Radiation(&'static str),
-    #[error("VEG-E-NUM-007: coupled numerical failure: {0:?}")]
-    NumericalFailure(Box<NumericalFailureDiagnostics>),
+    #[error("VEG-E-NUM-007: coupled numerical failure ({category:?}): {diagnostics:?}")]
+    NumericalFailure {
+        category: NumericalFailureCategory,
+        diagnostics: Box<NumericalFailureDiagnostics>,
+    },
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]

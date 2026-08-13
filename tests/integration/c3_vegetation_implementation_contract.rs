@@ -12,7 +12,7 @@ use openwepp_vegetation::energy::{
     energy_residual, neutral_resistance, saturation_specific_humidity,
 };
 use openwepp_vegetation::interception::{InterceptionInput, liquid_interception};
-use openwepp_vegetation::migration::{RhessysSource, migrate_definition_fields};
+use openwepp_vegetation::migration::{RhessysSource, V5_MODEL_SHA256, migrate_definition_fields};
 use openwepp_vegetation::occupancy_solver::resources::{
     OccupancyRootLayers, PotentialWaterRequestBatch, ValidatedWaterAuthorizations,
 };
@@ -39,6 +39,22 @@ fn expected_v5() -> serde_json::Value {
     .expect("valid V5 vector fixture")
 }
 
+fn identity_rebound_v6_configuration() -> VegetationConfiguration {
+    let mut configuration: VegetationConfiguration = serde_json::from_slice(
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
+            .expect("historical V5 configuration fixture"),
+    )
+    .expect("historical V5 configuration DTO");
+    assert_eq!(configuration.model_definition_sha256, V5_MODEL_SHA256);
+
+    configuration.model_definition_sha256 = MODEL_SHA256.into();
+    configuration.configuration_sha256 = configuration
+        .canonical_sha256()
+        .expect("V6 configuration digest");
+    let bytes = serde_json::to_vec(&configuration).expect("identity-rebound V6 bytes");
+    VegetationConfiguration::parse_strict(&bytes).expect("identity-rebound V6 configuration")
+}
+
 fn assert_fvcb_vector(
     input: FvcbInput,
     key: &str,
@@ -50,12 +66,12 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn public_candidate_is_v5_only_and_fail_closed_before_capped_pass() {
+fn v6_public_candidate_preserves_v5_fail_closed_capped_pass() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
     assert!(
         source
-            .contains("V5 occupancy-local capped transaction routing is implementation-incomplete")
+            .contains("V6 occupancy-local capped transaction routing is implementation-incomplete")
     );
     assert!(source.contains("BTreeMap<OccupancyId, OccupancyState>"));
     assert!(!source.contains("struct StratumState"));
@@ -67,7 +83,7 @@ fn public_candidate_is_v5_only_and_fail_closed_before_capped_pass() {
 }
 
 #[test]
-fn v5_configuration_state_and_migration_inputs_have_no_default_path() {
+fn v6_configuration_state_and_migration_inputs_have_no_default_path() {
     for path in [
         "crates/openwepp-vegetation/src/config.rs",
         "crates/openwepp-vegetation/src/occupancy_state.rs",
@@ -85,8 +101,8 @@ fn v5_configuration_state_and_migration_inputs_have_no_default_path() {
 }
 
 #[test]
-fn production_registry_is_byte_identical_to_authority() {
-    let authority = fs::read("docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json")
+fn production_registry_is_byte_identical_to_v6_authority() {
+    let authority = fs::read("docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_definition.json")
         .expect("authority definition");
     assert_eq!(MODEL_BYTES, authority);
     assert_eq!(format!("{:x}", Sha256::digest(MODEL_BYTES)), MODEL_SHA256);
@@ -399,11 +415,7 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
 fn schema_and_migration_fail_closed_without_defaults() {
     assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
     assert!(VegetationConfiguration::parse_strict(br#"{"unknown":1}"#).is_err());
-    let mut mutated = VegetationConfiguration::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
-            .expect("V5 configuration fixture"),
-    )
-    .expect("V5 configuration shape");
+    let mut mutated = identity_rebound_v6_configuration();
     mutated.strata[0].stem_rho_vis += 0.01;
     assert!(mutated.validate().is_err());
     let source = RhessysSource {
@@ -435,16 +447,14 @@ fn energy_and_aerodynamic_domains_are_explicit() {
 }
 
 #[test]
-fn historical_states_cannot_enter_the_v5_public_state_parser() {
-    let config = VegetationConfiguration::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
-            .expect("V5 configuration fixture"),
-    )
-    .expect("V5 configuration shape");
+fn historical_v1_through_v5_cannot_enter_the_v6_public_parsers() {
+    let config = identity_rebound_v6_configuration();
     for path in [
         "tests/fixtures/c3_woody_v1_diagnostic_state.json",
+        "tests/fixtures/c3_woody_v2_diagnostic_state.json",
         "tests/fixtures/c3_woody_v3_diagnostic_state.json",
         "tests/fixtures/c3_woody_v4_diagnostic_state.json",
+        "tests/fixtures/c3_woody_v5_diagnostic_state.json",
     ] {
         let result = CoupledOwnedState::parse_strict(
             &fs::read(path).expect("historical state fixture"),
@@ -452,23 +462,25 @@ fn historical_states_cannot_enter_the_v5_public_state_parser() {
         );
         assert!(result.is_err(), "historical state was accepted: {path}");
     }
-    assert!(
-        VegetationConfiguration::parse_strict(
-            &fs::read("tests/fixtures/c3_woody_v3_diagnostic_configuration.json")
-                .expect("V3 configuration fixture"),
-        )
-        .is_err()
-    );
-    assert!(
-        VegetationConfiguration::parse_strict(
-            &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
-                .expect("V4 configuration fixture"),
-        )
-        .is_err()
-    );
+    for path in [
+        "tests/fixtures/c3_woody_v1_diagnostic_configuration.json",
+        "tests/fixtures/c3_woody_v2_diagnostic_configuration.json",
+        "tests/fixtures/c3_woody_v3_diagnostic_configuration.json",
+        "tests/fixtures/c3_woody_v4_diagnostic_configuration.json",
+        "tests/fixtures/c3_woody_v5_diagnostic_configuration.json",
+    ] {
+        assert!(
+            VegetationConfiguration::parse_strict(
+                &fs::read(path).expect("historical configuration fixture"),
+            )
+            .is_err(),
+            "historical configuration was accepted: {path}"
+        );
+    }
 }
 
 #[test]
+#[allow(clippy::float_cmp)] // Committed V5 vectors require exact binary64 reconstruction.
 fn v5_committed_cap_vectors_reconstruct_conversions_and_exact_tie_without_python() {
     let expected = expected_v5();
     let family = &expected["families"]["controlled_layer_complementarity"];
@@ -501,14 +513,15 @@ fn v5_committed_cap_vectors_reconstruct_conversions_and_exact_tie_without_python
 }
 
 #[test]
+#[allow(clippy::float_cmp)] // The ownership boundary preserves exact admitted amounts.
 fn public_water_boundary_preserves_v5_identity_and_one_time_tile_conversion() {
     let expected = expected_v5();
     let family = &expected["families"]["controlled_layer_complementarity"];
-    let transaction_id = TransactionId(
+    let transaction_id = TransactionId(u128::from(
         family["identity"]["transaction_id"]
             .as_u64()
-            .expect("transaction id") as u128,
-    );
+            .expect("transaction id"),
+    ));
     let owner_id =
         ResourceOwnerId::try_new(family["identity"]["owner_id"].as_str().expect("owner id"))
             .expect("typed owner");

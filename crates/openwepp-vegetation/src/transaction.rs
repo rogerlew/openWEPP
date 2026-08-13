@@ -653,7 +653,7 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Validates the complete public V5 state surface, then fails closed until the
+/// Validates the complete public V6 state surface, then fails closed until the
 /// occupancy-local authorization-capped transaction is implemented.
 pub fn execute_candidate(
     model: &ModelDefinition,
@@ -665,11 +665,11 @@ pub fn execute_candidate(
 ) -> Result<CoupledCandidate, VegetationError> {
     validate_execution(model, config, beginning, forcing)?;
     Err(VegetationError::Unsupported(
-        "V5 occupancy-local capped transaction routing is implementation-incomplete",
+        "V6 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection entry point retained while V5 routing is incomplete.
+/// Failure-injection entry point retained while V6 routing is incomplete.
 pub fn execute_candidate_with_failure(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -824,6 +824,34 @@ pub(crate) fn validate_candidate_inputs(
 }
 
 #[cfg(test)]
+pub(crate) fn v6_identity_rebound_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
+    let mut config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+        "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
+    ))
+    .expect("historical V5 configuration DTO");
+    let mut state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
+        "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
+    ))
+    .expect("historical V5 state DTO");
+
+    crate::migration::validate_v5_initial_fixture(&config, &state)
+        .expect("complete historical V5 fixture identity, digest, and lineage");
+
+    config.model_definition_sha256 = MODEL_SHA256.into();
+    config.configuration_sha256 = config.canonical_sha256().expect("V6 configuration digest");
+    state.model_definition_sha256 = MODEL_SHA256.into();
+    state.configuration_sha256 = config.configuration_sha256.clone();
+    state.state_sha256 = state.canonical_sha256().expect("V6 state digest");
+    config.initial_state_sha256 = state.state_sha256.clone();
+
+    config
+        .validate()
+        .expect("identity-rebound V6 configuration");
+    state.validate(&config).expect("identity-rebound V6 state");
+    (config, state)
+}
+
+#[cfg(test)]
 #[allow(clippy::items_after_test_module)]
 mod milestone_one_tests {
     use super::*;
@@ -854,17 +882,7 @@ mod milestone_one_tests {
     }
 
     fn fixture_config() -> VegetationConfiguration {
-        let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
-        ))
-        .expect("historical configuration JSON");
-        value["strata"][0]
-            .as_object_mut()
-            .expect("stratum object")
-            .remove("rd_leaf_n_rate");
-        let mut config: VegetationConfiguration =
-            serde_json::from_value(value).expect("V5 configuration shape");
-        config.model_definition_sha256 = MODEL_SHA256.into();
+        let (mut config, _) = v6_identity_rebound_fixture();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
             TopologyTile {
@@ -901,26 +919,11 @@ mod milestone_one_tests {
     }
 
     fn shared_state() -> StratumSharedState {
-        let mut raw: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v1_diagnostic_state.json"
-        ))
-        .expect("historical state JSON");
-        let state = raw
-            .pointer_mut("/strata/tree-1")
-            .and_then(serde_json::Value::as_object_mut)
-            .expect("historical stratum");
-        for field in [
-            "canopy_liquid",
-            "psi_root_mm",
-            "psi_stem_mm",
-            "psi_sun_mm",
-            "psi_shade_mm",
-            "previous_leaf_offset_flux",
-            "previous_root_offset_flux",
-        ] {
-            state.remove(field);
-        }
-        serde_json::from_value(serde_json::Value::Object(state.clone())).expect("shared state")
+        let (_, mut state) = v6_identity_rebound_fixture();
+        state
+            .strata
+            .remove(&stratum_id("tree-1"))
+            .expect("V5 shared state")
     }
 
     fn lane(seed: f64, _roots: &[&str]) -> OccupancyState {
@@ -1053,11 +1056,11 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn v5_named_configuration_and_state_fixtures_are_cross_bound() {
-        let config = VegetationConfiguration::parse_strict(include_bytes!(
+    fn v5_named_configuration_and_state_fixtures_are_historical_only() {
+        let config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V5 configuration fixture");
+        .expect("V5 configuration DTO");
         let state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
         ))
@@ -1066,17 +1069,21 @@ mod milestone_one_tests {
             state.state_sha256,
             state.canonical_sha256().expect("state digest")
         );
-        state.validate(&config).expect("V5 state fixture");
         assert_eq!(config.initial_state_sha256, state.state_sha256);
         assert_eq!(state.configuration_sha256, config.configuration_sha256);
+        assert!(matches!(
+            config.validate(),
+            Err(VegetationError::ModelDigestMismatch { .. })
+        ));
+        assert!(matches!(
+            state.validate(&config),
+            Err(VegetationError::ModelDigestMismatch { .. })
+        ));
     }
 
     #[test]
     fn v4_occupancy_entries_reject_legacy_tuple_sequences() {
-        let config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration fixture");
+        let (config, _) = v6_identity_rebound_fixture();
         let state: serde_json::Value = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
         ))
@@ -1492,7 +1499,7 @@ mod milestone_one_tests {
         let original = state.canonical_sha256().expect("digest");
         assert_eq!(
             original,
-            "cc2e24a08c817f3c1006f4cd1ea480dbef9c33b1f797ed4ba834390b827125b6"
+            "7f527c8ad6df7b030ba86f77c987a826b168a96b8b15a7c3937b2e5ac9ce252b"
         );
         let bytes = serde_json::to_vec(&state).expect("bytes");
         let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("value");
@@ -1663,7 +1670,7 @@ mod milestone_one_tests {
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V5 occupancy-local capped transaction routing is implementation-incomplete"
+                "V6 occupancy-local capped transaction routing is implementation-incomplete"
             ))
         );
 
@@ -1723,11 +1730,11 @@ pub fn validate_and_commit(
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V5 occupancy-local capped transaction routing is implementation-incomplete",
+        "V6 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection commit entry point retained while V5 routing is incomplete.
+/// Failure-injection commit entry point retained while V6 routing is incomplete.
 pub fn validate_and_commit_with_failure(
     beginning: &mut CoupledOwnedState,
     candidate: CoupledCandidate,

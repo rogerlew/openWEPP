@@ -473,7 +473,7 @@ fn map_protocol_violation(violation: ResourceProtocolViolation) -> NitrogenProto
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{RootLayer, VegetationConfiguration};
+    use crate::config::RootLayer;
     use openwepp_kernel_contract::SoilLayerId;
 
     fn owner() -> ResourceOwnerId {
@@ -497,10 +497,7 @@ mod tests {
     }
 
     fn stratum() -> StratumConfiguration {
-        let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V4 fixture should parse");
+        let (configuration, _) = crate::transaction::v6_identity_rebound_fixture();
         configuration.strata[0].clone()
     }
 

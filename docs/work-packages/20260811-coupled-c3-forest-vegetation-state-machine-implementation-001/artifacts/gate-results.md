@@ -375,3 +375,37 @@ held by the separately recorded portability omission.
 | frozen backtracking `step_norm` | BLOCKED | Python `3925.8532969524972`; Rust `3925.8544224384018`; no admitted cross-runtime tolerance; see `v5-failure-payload-portability-hold-legitimacy-audit.md` |
 | `STAGE_B_E11_E15_EXACT_ORACLE` | NOT PASSED / HOLD | the provisional `3e-6` observation is explicitly non-authoritative and cannot close this gate |
 | public candidate containment | PASS / fail-closed | no request, finalized use, owner candidate, or mutation is published |
+
+## 2026-08-13 V6 Diagnostic-Portability Authority Lift
+
+All V5 HOLD evidence above remains immutable. The contract-first portability
+package completed at commit `b326173e2` before implementation resumed.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V6 authority lifecycle | PASS | `SC-VEGETATION-001` v10 approved/active only after complete dual review, disposition, separate dual verification, and post-promotion addenda |
+| V6 definition | PASS | both authority copies SHA-256 `a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426`; V1--V5 identities preserved |
+| portability rule | PASS / authority | only finite nonnegative rejected capped-hydraulic `backtracking_limit.step_norm`; exact identity, failure, presence, count/order, branch, zero/sign, candidate, and rollback firewalls; `rtol=3e-7`, no absolute tolerance |
+| V6 authority gates | PASS | admission authority SHA-256 `7759fe4819ee3741298abcddf86966ad5fa3d68837ac7cf380f614d1f7b76753`; authority suite 23/23; strict focused Clippy; AUTH11 3/3; anti-evasion, unit, Markdown, formatting, and diff hygiene |
+| V6 terminal verification | PASS | verifier A `PASS-WITH-NOTES`, verifier B `PASS`, both post-promotion addenda `PASS`; archived prompt SHA-256 `2228a6426779e742bd93121353a978fe9dd3161d366adda0cc12c2b0cce79efe` |
+| implementation lifecycle | ACTIVE | bind V6 runtime identity and identity-only migration; apply the exact portable comparator to the frozen rejected failure; rerun Stage-B focused gates and independent Rust review |
+| public candidate containment | PASS / fail-closed | no public candidate or finalized use until capped Stage B and downstream owner gates pass |
+| initial V6 vegetation crate retry | PASS / Ran | 178/178 after identity-rebound positive test fixtures; historical V5 fixtures remain explicitly non-executable |
+| initial V6 implementation-contract retry | FAIL / Ran | 10/13 effective progress; registry and two parser tests still asserted V5 executable identity after the admitted V6 transition; focused reconciliation active |
+| reconciled V6 implementation contract | PASS / Ran | 13/13; runtime registry equals exact V6 authority; V1--V5 remain historical/non-executable; public V6 path remains fail-closed |
+| first V6 correctness review | HOLD / Static + Ran | runtime comparison inherited exact fields from reference; diagnostic migration missing; source lineage incomplete; `migration.rs` reached 3,130 lines |
+| first V6 QA review | FAIL / Static + Ran | confirmed migration/firewall/line-count findings and stale test-helper/evidence wording; `cargo deny check` otherwise passed with pre-existing unmatched MIT-0 allowance warning |
+| V6 migration remediation | PASS / Ran | atomic config/initial/current state/typed-category diagnostic transition; complete V5 lineage and source-side transaction-zero precedence; frozen V6 transition payload and digests consumed; source byte-identical on every failure |
+| V6 comparator remediation | PASS / Ran | actual 21-field record derives the typed failure from the returned Rust error and hashes the full owner/attempted-transaction envelope before and after rejection; all 21 seam poisons plus frozen boundary/firewall/nonfinite families pass; no solver or physics change |
+| V6 line-count remediation | PASS / Ran | `migration.rs` reduced from 3,130 to 2,890 lines; cohesive V5-to-V6 implementation/tests extracted |
+| remediated V6 focused gates | PASS / Ran | vegetation 179/179; implementation 13/13; authority 23/23; strict all-target vegetation Clippy; formatting and diff hygiene |
+| second V6 correctness and QA reviews | HOLD / accepted findings | returned numerical failure lacked a typed category, rollback evidence covered only six solver scalars, diagnostic migration omitted the category and frozen transition vector, transaction-zero source precedence and exact line counts required correction; all findings preserved and corrected above |
+| post-second-review affected-crate checks | PASS / Ran | `cargo check` passed for kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator |
+| post-second-review governance gates | PASS / Ran | AUTH11 3/3; anti-evasion PASS; `cargo deny check` PASS with the pre-existing unmatched MIT-0 allowance warning |
+| post-second-review package Markdown | PASS / Ran | `markdown-doc lint --path ...implementation-001`: 52 files, 0 errors, 0 warnings |
+| third V6 QA review | FAIL / accepted finding | re-digested backtracking diagnostic could alias weak `domain` or `iteration_limit` migration predicates; runtime comparator and other prior findings passed |
+| diagnostic category-alias remediation | PASS / Ran | migration restricted to authorized capped hydraulic backtracking seam; domain, iteration, singular, bracket, and outer-solve aliases rejected; focused migration 3/3; strict Clippy, formatting, and diff hygiene pass |
+| third correctness review | HOLD / accepted findings | comparator used an unrelated owner/configuration, omitted boundary-supplied fixed authorization identity, and migration asserted frozen transition beside rather than against implementation projection; exact count drift also noted |
+| transaction/authority-binding remediation | PASS / Ran | complete five-layer configuration + full owner + constitutive/cap + fixed authorization + transaction snapshot; centralized production boundary identity binding; source and migrated projections equal frozen V6 transition payload; V6 5/5, migration 3/3, strict Clippy |
+| final V6 Rust correctness review | GO / Static + Ran | no material finding; bounded portability/migration increment only; vegetation 179/179, implementation 13/13, authority 23/23, strict Clippy, formatting, and diff hygiene pass |
+| final V6 QA review | PASS / Static + Ran | no material finding; focused V6+migration 8/8, vegetation 179/179, integration/authority 36/36, workspace Clippy, formatting, diff hygiene, and dependency policy pass; unmatched MIT-0 allowance warning remains documented |

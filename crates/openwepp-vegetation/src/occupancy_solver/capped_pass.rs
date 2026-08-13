@@ -162,18 +162,36 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
         self.evaluator
             .solve_capped(input, radiation)
             .map_err(|error| {
-                let VegetationError::NumericalFailure(mut diagnostics) = error else {
-                    return error;
-                };
-                diagnostics.fixed_authorization_identity =
-                    Some(crate::diagnostics::FixedAuthorizationIdentity {
+                bind_fixed_authorization_failure(
+                    error,
+                    crate::diagnostics::FixedAuthorizationIdentity {
                         transaction_id: self.transaction_id,
                         owner_id: self.owner_id.clone(),
                         occupancy_id,
                         basis: WATER_STAND_BASIS,
-                    });
-                VegetationError::NumericalFailure(diagnostics)
+                    },
+                )
             })
+    }
+}
+
+/// Attaches the already validated owner authorization identity to a rejected
+/// constitutive solve without changing its typed category or numerical payload.
+pub(crate) fn bind_fixed_authorization_failure(
+    error: VegetationError,
+    identity: crate::diagnostics::FixedAuthorizationIdentity,
+) -> VegetationError {
+    let VegetationError::NumericalFailure {
+        category,
+        mut diagnostics,
+    } = error
+    else {
+        return error;
+    };
+    diagnostics.fixed_authorization_identity = Some(identity);
+    VegetationError::NumericalFailure {
+        category,
+        diagnostics,
     }
 }
 
@@ -764,15 +782,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let mut configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration fixture");
-        let original = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
-            &configuration,
-        )
-        .expect("V5 state fixture");
+        let (mut configuration, original) = crate::transaction::v6_identity_rebound_fixture();
         let tile_id = configuration.topology_tiles[0].tile_id.clone();
         let mut upper_config = configuration.strata.remove(0);
         upper_config.stratum_id = stratum_id("upper");

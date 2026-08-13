@@ -26,6 +26,7 @@ use crate::energy::{
     LATENT_HEAT_VAPORIZATION, STEFAN_BOLTZMANN, canopy_surface_friction_velocity,
     neutral_resistance, saturation_specific_humidity,
 };
+use crate::error::NumericalFailureCategory;
 use crate::occupancy_state::OccupancyState;
 use crate::photosynthesis::{FvcbInput, arrhenius, fvcb, peaked_response};
 
@@ -459,11 +460,18 @@ impl V3ConstitutiveEvaluator {
     }
 
     fn bind_cap_failure_diagnostics(error: VegetationError) -> VegetationError {
-        let VegetationError::NumericalFailure(mut diagnostics) = error else {
+        let VegetationError::NumericalFailure {
+            category,
+            mut diagnostics,
+        } = error
+        else {
             return error;
         };
         diagnostics.pass = CoupledSolvePass::Capped;
-        VegetationError::NumericalFailure(diagnostics)
+        VegetationError::NumericalFailure {
+            category,
+            diagnostics,
+        }
     }
 
     fn active_water_caps(
@@ -804,6 +812,7 @@ pub(super) fn solve_canopy_energy_with_limit(
         if iteration == max_iterations {
             return Err(energy_failure(
                 context,
+                NumericalFailureCategory::IterationLimit,
                 iteration,
                 &last_detail,
                 last_temperature_step,
@@ -854,6 +863,7 @@ pub(super) fn solve_canopy_energy_with_limit(
             .map_err(|failure| {
                 energy_failure(
                     context,
+                    NumericalFailureCategory::SingularPivot,
                     iteration,
                     &last_detail,
                     last_temperature_step,
@@ -888,8 +898,8 @@ pub(super) fn solve_canopy_energy_with_limit(
             }
             let detail = match energy_residual(case, betas, &trial, context) {
                 Ok(detail) => detail,
-                Err(VegetationError::NumericalFailure(error)) => {
-                    return Err(VegetationError::NumericalFailure(error));
+                Err(error @ VegetationError::NumericalFailure { .. }) => {
+                    return Err(error);
                 }
                 Err(_) => {
                     backtracking += 1;
@@ -905,6 +915,7 @@ pub(super) fn solve_canopy_energy_with_limit(
         let Some((next, detail, factor)) = accepted else {
             return Err(energy_failure(
                 context,
+                NumericalFailureCategory::BacktrackingLimit,
                 iteration,
                 &last_detail,
                 Some(full_temperature_step),
@@ -1161,11 +1172,12 @@ fn solve_class(
         solve_identity,
     )
     .map_err(|error| {
-        if matches!(error, VegetationError::NumericalFailure(_)) {
+        if matches!(error, VegetationError::NumericalFailure { .. }) {
             error
         } else {
             numerical_failure(
                 context,
+                NumericalFailureCategory::Domain,
                 solve_identity,
                 0,
                 Vec::new(),
@@ -1282,13 +1294,32 @@ where
 {
     let mut a = low;
     let mut b = high;
-    let (mut fa, _) = function(a)
-        .map_err(|error| ci_failure(context, solve_identity, 1, Vec::new(), (a, b), error))?;
-    let (mut fb, high_state) = function(b)
-        .map_err(|error| ci_failure(context, solve_identity, 2, Vec::new(), (a, b), error))?;
+    let (mut fa, _) = function(a).map_err(|error| {
+        ci_failure(
+            context,
+            NumericalFailureCategory::Domain,
+            solve_identity,
+            1,
+            Vec::new(),
+            (a, b),
+            error,
+        )
+    })?;
+    let (mut fb, high_state) = function(b).map_err(|error| {
+        ci_failure(
+            context,
+            NumericalFailureCategory::Domain,
+            solve_identity,
+            2,
+            Vec::new(),
+            (a, b),
+            error,
+        )
+    })?;
     if !fa.is_finite() || !fb.is_finite() {
         return Err(ci_failure(
             context,
+            NumericalFailureCategory::Domain,
             solve_identity,
             2,
             Vec::new(),
@@ -1311,6 +1342,7 @@ where
     if fa * fb > 0.0 {
         return Err(ci_failure(
             context,
+            NumericalFailureCategory::BracketFailure,
             solve_identity,
             2,
             vec![fa / 1.0e-8, fb / 1.0e-8],
@@ -1348,6 +1380,7 @@ where
         let (fs, _) = function(s).map_err(|error| {
             ci_failure(
                 context,
+                NumericalFailureCategory::Domain,
                 solve_identity,
                 evaluation,
                 Vec::new(),
@@ -1379,6 +1412,7 @@ where
     }
     Err(ci_failure(
         context,
+        NumericalFailureCategory::IterationLimit,
         solve_identity,
         max_evaluations,
         vec![fa / 1.0e-8, fb / 1.0e-8],
@@ -1420,6 +1454,7 @@ fn labeled_energy(values: &[f64; 6]) -> Vec<NormalizedResidual> {
 #[allow(clippy::too_many_arguments)]
 fn energy_failure(
     context: &ConstitutiveSolveContext,
+    category: NumericalFailureCategory,
     iterations: u32,
     detail: &EnergyResidualDetail,
     step_norm: Option<f64>,
@@ -1429,6 +1464,7 @@ fn energy_failure(
 ) -> VegetationError {
     numerical_failure(
         context,
+        category,
         SolveIdentity::CanopyEnergy,
         iterations,
         labeled_energy(&normalized_energy(detail)),
@@ -1450,11 +1486,12 @@ fn wrap_energy_error(
     pivot_magnitude: Option<f64>,
     matrix_norm: Option<f64>,
 ) -> VegetationError {
-    if matches!(error, VegetationError::NumericalFailure(_)) {
+    if matches!(error, VegetationError::NumericalFailure { .. }) {
         error
     } else {
         numerical_failure(
             context,
+            NumericalFailureCategory::Domain,
             SolveIdentity::CanopyEnergy,
             iterations,
             Vec::new(),
@@ -1469,13 +1506,14 @@ fn wrap_energy_error(
 
 fn ci_failure(
     context: &ConstitutiveSolveContext,
+    category: NumericalFailureCategory,
     solve: SolveIdentity,
     iterations: u32,
     residual_values: Vec<f64>,
     bracket: (f64, f64),
     source: VegetationError,
 ) -> VegetationError {
-    if matches!(source, VegetationError::NumericalFailure(_)) {
+    if matches!(source, VegetationError::NumericalFailure { .. }) {
         return source;
     }
     let identities: &[&str] = if residual_values.len() <= 1 {
@@ -1493,6 +1531,7 @@ fn ci_failure(
     };
     numerical_failure(
         context,
+        category,
         solve,
         iterations,
         identities
@@ -1514,6 +1553,7 @@ fn ci_failure(
 #[allow(clippy::too_many_arguments)]
 fn numerical_failure(
     context: &ConstitutiveSolveContext,
+    category: NumericalFailureCategory,
     solve: SolveIdentity,
     iterations: u32,
     residual_norms: Vec<NormalizedResidual>,
@@ -1542,7 +1582,10 @@ fn numerical_failure(
         fixed_authorization_identity: None,
     };
     debug_assert!(diagnostics.validate().is_ok());
-    VegetationError::NumericalFailure(Box::new(diagnostics))
+    VegetationError::NumericalFailure {
+        category,
+        diagnostics: Box::new(diagnostics),
+    }
 }
 
 fn infinity_norm(values: &[f64; 6]) -> f64 {
@@ -2608,9 +2651,14 @@ mod tests {
         ci_domain.gas_energy.qcan_start_kg_kg = 0.1;
         let failure = V3ConstitutiveEvaluator::new(ci_domain, (-5_900.0, -5_450.0), context())
             .expect_err("surface-VPD domain must retain class identity");
-        let VegetationError::NumericalFailure(ci_domain_diagnostics) = failure else {
+        let VegetationError::NumericalFailure {
+            category,
+            diagnostics: ci_domain_diagnostics,
+        } = failure
+        else {
             panic!("typed class failure required");
         };
+        assert_eq!(category, NumericalFailureCategory::Domain);
         assert_eq!(ci_domain_diagnostics.solve, SolveIdentity::SunCi);
         assert_eq!(ci_domain_diagnostics.iterations, 0);
         assert_eq!(ci_domain_diagnostics.bracket, None);
@@ -2634,9 +2682,14 @@ mod tests {
             SolveIdentity::SunCi,
         )
         .expect_err("unbracketed ci must fail");
-        let VegetationError::NumericalFailure(diagnostics) = failure else {
+        let VegetationError::NumericalFailure {
+            category,
+            diagnostics,
+        } = failure
+        else {
             panic!("typed numerical failure required");
         };
+        assert_eq!(category, NumericalFailureCategory::BracketFailure);
         assert_eq!(diagnostics.solve, SolveIdentity::SunCi);
         assert_eq!(diagnostics.transaction_id, TransactionId(17));
         assert_eq!(diagnostics.occupancy_id, identity().occupancy_id);
@@ -2648,9 +2701,14 @@ mod tests {
         let energy_failure =
             solve_canopy_energy_with_limit(&case, (0.6, 0.6), (-5_900.0, -5_450.0), &context(), 0)
                 .expect_err("zero-iteration energy fixture must fail");
-        let VegetationError::NumericalFailure(energy_diagnostics) = energy_failure else {
+        let VegetationError::NumericalFailure {
+            category,
+            diagnostics: energy_diagnostics,
+        } = energy_failure
+        else {
             panic!("typed energy failure required");
         };
+        assert_eq!(category, NumericalFailureCategory::IterationLimit);
         let expected = &family["executed_canopy_energy_failures"][1]["diagnostics"];
         assert_eq!(energy_diagnostics.solve, SolveIdentity::CanopyEnergy);
         assert_eq!(energy_diagnostics.iterations, 0);

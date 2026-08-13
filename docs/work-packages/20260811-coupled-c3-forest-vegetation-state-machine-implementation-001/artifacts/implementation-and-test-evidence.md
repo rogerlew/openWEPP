@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / V5 capped remediation active / public path fail-closed`
+Status: `executing / V6 portability hold lifted / public path fail-closed`
 
 Increment 2B stopped before constitutive implementation. The retained
 `occupancy_solver::resources` module constructs and validates complete typed
@@ -76,9 +76,11 @@ and generator
 Both authority science reviews returned GO, the focused/heavy authority gates
 passed, and both terminal verifiers returned PASS.
 
-Static: V5 remediation is active for runtime identity, V4-to-V5 migration, the
-fixed-authorization coupled solve, exact fixture consumption, typed diagnostics,
-finalized-use debit, and rollback. Those edits have not yet passed the exact
-solver gate or independent implementation reviews. Authority release is not
-implementation evidence: `STAGE_B_E11_E15_EXACT_ORACLE`, Milestones 2/3, and
-the public candidate remain incomplete/fail-closed.
+Static + Ran: V6 runtime identity, exact V5-to-V6 snapshot/diagnostic migration,
+the rejected-failure typed category, and the tightly firewalled rtol-only
+`step_norm` comparison pass focused tests. Two implementation-review rounds
+found material evidence and migration defects; all are preserved, accepted,
+and remediated, with another independent review pending. Authority release and
+this portability evidence are not public-path implementation evidence:
+`STAGE_B_E11_E15_EXACT_ORACLE`, finalized-use debit, Milestones 2/3, and the
+public candidate remain incomplete/fail-closed.

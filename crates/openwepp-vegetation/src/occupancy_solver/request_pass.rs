@@ -320,16 +320,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration fixture");
-        let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
-            &configuration,
-        )
-        .expect("V5 state fixture");
-        (configuration, state)
+        crate::transaction::v6_identity_rebound_fixture()
     }
 
     fn forcing(rain_kg_m2: f64) -> SnowFreeForcing {

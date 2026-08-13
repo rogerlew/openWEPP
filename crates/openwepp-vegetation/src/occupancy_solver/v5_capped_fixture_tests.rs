@@ -2,23 +2,179 @@
 
 use std::collections::BTreeMap;
 
-use openwepp_kernel_contract::{OccupancyId, SoilLayerId, StratumId, TileId, TransactionId};
+use openwepp_kernel_contract::{
+    OccupancyId, ResourceAmountBasis, ResourceOwnerId, SoilLayerId, StratumId, TileId,
+    TransactionId,
+};
+use serde::Serialize;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 
+use super::capped_pass::bind_fixed_authorization_failure;
 use super::constitutive::{
     ConstitutiveSolveContext, V3ConstitutiveEvaluator, V3PotentialCase, select_capped_flux,
 };
 use super::potential::{StageAEvaluator, StageASolveIdentity, StageAState};
-use crate::VegetationError;
-use crate::diagnostics::CoupledSolvePass;
+use crate::diagnostics::{
+    CoupledSolvePass, FixedAuthorizationIdentity, NumericalFailureDiagnostics, SolveIdentity,
+};
+use crate::error::NumericalFailureCategory;
+use crate::{CoupledOwnedState, VegetationConfiguration, VegetationError};
 
 const VECTORS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json"
 ));
+const V6_PORTABILITY_VECTORS: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_vectors.json"
+));
+const V6_DIAGNOSTIC_RTOL: f64 = 3.0e-7;
+const V6_EXACT_PORTABILITY_FIELDS: [&str; 21] = [
+    "model_definition_sha256",
+    "configuration_sha256",
+    "transaction_id",
+    "occupancy_id",
+    "pass",
+    "solve",
+    "field",
+    "typed_failure",
+    "candidate",
+    "unit",
+    "basis",
+    "present",
+    "iterations",
+    "backtracking_count",
+    "residual_cardinality",
+    "active_bounds",
+    "active_water_caps",
+    "branches",
+    "rollback_sha256_before",
+    "rollback_sha256_after",
+    "accepted_value",
+];
 
 fn root() -> Value {
     serde_json::from_str(VECTORS).expect("released V5 fixture parses")
+}
+
+fn v6_portability_root() -> Value {
+    serde_json::from_str(V6_PORTABILITY_VECTORS).expect("released V6 portability fixture parses")
+}
+
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum V6DiagnosticField {
+    StepNorm,
+}
+
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum V6DiagnosticUnit {
+    MixedNativeUnknownUnits,
+}
+
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum V6DiagnosticBasis {
+    UnscaledSixUnknownNewtonCorrection,
+}
+
+/// Runtime context for evidence that is necessarily outside the numerical
+/// diagnostics payload. This is constructed from the executed solve inputs,
+/// never from the expected portability record.
+struct V6RejectedExecutionContext {
+    solve_context: ConstitutiveSolveContext,
+    configuration_sha256: String,
+    field: V6DiagnosticField,
+    unit: V6DiagnosticUnit,
+    basis: V6DiagnosticBasis,
+}
+
+#[derive(Serialize)]
+struct V6CappedTransactionSnapshot<'a> {
+    configuration: &'a VegetationConfiguration,
+    beginning_owner: &'a CoupledOwnedState,
+    constitutive_configuration: (&'a V3PotentialCase, &'a BTreeMap<SoilLayerId, f64>),
+    beginning_stage_a: [f64; 6],
+    attempted_transaction_id: TransactionId,
+    attempted_occupancy_id: &'a OccupancyId,
+    fixed_authorization_identity: &'a FixedAuthorizationIdentity,
+    candidate: Option<&'static str>,
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+fn rollback_snapshot_bytes(
+    configuration: &VegetationConfiguration,
+    beginning_owner: &CoupledOwnedState,
+    case: &V3PotentialCase,
+    caps: &BTreeMap<SoilLayerId, f64>,
+    beginning: StageAState,
+    attempted_identity: &StageASolveIdentity,
+    fixed_authorization_identity: &FixedAuthorizationIdentity,
+) -> Vec<u8> {
+    serde_json::to_vec(&V6CappedTransactionSnapshot {
+        configuration,
+        beginning_owner,
+        constitutive_configuration: (case, caps),
+        beginning_stage_a: [
+            beginning.psi_sunleaf_mm,
+            beginning.psi_shadeleaf_mm,
+            beginning.psi_stem_mm,
+            beginning.psi_root_mm,
+            beginning.beta_sun,
+            beginning.beta_shade,
+        ],
+        attempted_transaction_id: attempted_identity.transaction_id,
+        attempted_occupancy_id: &attempted_identity.occupancy_id,
+        fixed_authorization_identity,
+        candidate: None,
+    })
+    .expect("complete capped-transaction rollback snapshot serializes")
+}
+
+/// Applies the V6 evidence-only comparison after every categorical and domain
+/// firewall has passed.
+fn v6_portable_rejected_step_norm_equal(reference: &Value, actual: &Value) -> bool {
+    if V6_EXACT_PORTABILITY_FIELDS
+        .iter()
+        .any(|field| reference[*field] != actual[*field])
+        || reference["pass"] != "capped"
+        || reference["solve"] != "hydraulic_system"
+        || reference["field"] != "step_norm"
+        || reference["typed_failure"] != "backtracking_limit"
+        || reference["present"] != true
+        || !reference["candidate"].is_null()
+        || reference["accepted_value"] != false
+        || reference["unit"] != "mixed_native_unknown_units"
+        || reference["basis"] != "unscaled_six_unknown_newton_correction"
+        || reference["rollback_sha256_before"] != reference["rollback_sha256_after"]
+        || actual["rollback_sha256_before"] != actual["rollback_sha256_after"]
+        || reference["scalar"]["class"] != "finite"
+        || actual["scalar"]["class"] != "finite"
+    {
+        return false;
+    }
+
+    let (Some(a), Some(b)) = (
+        reference["scalar"]["value"].as_f64(),
+        actual["scalar"]["value"].as_f64(),
+    ) else {
+        return false;
+    };
+    if !a.is_finite() || !b.is_finite() || a < 0.0 || b < 0.0 {
+        return false;
+    }
+    let a_zero = a.abs().to_bits() == 0;
+    let b_zero = b.abs().to_bits() == 0;
+    if a_zero != b_zero || (!a_zero && a.is_sign_negative() != b.is_sign_negative()) {
+        return false;
+    }
+
+    (a - b).abs() <= V6_DIAGNOSTIC_RTOL * a.abs().max(b.abs())
 }
 
 fn fixture() -> (V3PotentialCase, Value) {
@@ -59,11 +215,71 @@ fn fixture() -> (V3PotentialCase, Value) {
 
 fn identity() -> StageASolveIdentity {
     StageASolveIdentity {
-        transaction_id: TransactionId(53),
+        transaction_id: TransactionId(1),
         occupancy_id: OccupancyId {
-            stratum_id: StratumId::try_new("canopy").expect("stratum"),
-            tile_id: TileId::try_new("tile-a").expect("tile"),
+            stratum_id: StratumId::try_new("tree-1").expect("stratum"),
+            tile_id: TileId::try_new("tile-1").expect("tile"),
         },
+    }
+}
+
+fn v6_beginning_owner(
+    case: &V3PotentialCase,
+) -> (VegetationConfiguration, CoupledOwnedState, StageAState) {
+    let (mut configuration, mut beginning_owner) =
+        crate::transaction::v6_identity_rebound_fixture();
+    let template = configuration.strata[0].root_layers[0].clone();
+    configuration.strata[0].root_layers = case
+        .layers
+        .iter()
+        .map(|layer| crate::config::RootLayer {
+            layer_id: SoilLayerId::try_new(layer.layer_id.clone()).expect("typed fixture layer"),
+            root_fraction: layer.root_fraction,
+            mineral_n_root_fraction: layer.root_fraction,
+            lateral_root_length_m: template.lateral_root_length_m,
+        })
+        .collect();
+    configuration.configuration_sha256.clear();
+    configuration.configuration_sha256 = configuration
+        .canonical_sha256()
+        .expect("five-layer V6 configuration digest");
+    beginning_owner
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
+    let attempted = identity();
+    let lane = beginning_owner
+        .occupancies
+        .get_mut(&attempted.occupancy_id)
+        .expect("attempted occupancy belongs to beginning owner");
+    lane.sun_leaf_potential_mm = -5_900.0;
+    lane.shade_leaf_potential_mm = -5_450.0;
+    lane.stem_potential_mm = -4_300.0;
+    lane.root_node_potential_mm = -2_850.0;
+    lane.beta_hyd = 0.67;
+    beginning_owner.state_sha256 = beginning_owner
+        .canonical_sha256()
+        .expect("five-layer beginning-owner digest");
+    configuration
+        .initial_state_sha256
+        .clone_from(&beginning_owner.state_sha256);
+    beginning_owner
+        .validate(&configuration)
+        .expect("five-layer beginning owner remains valid");
+    (
+        configuration,
+        beginning_owner,
+        state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]),
+    )
+}
+
+fn v6_fixed_authorization_identity() -> FixedAuthorizationIdentity {
+    let attempted = identity();
+    FixedAuthorizationIdentity {
+        transaction_id: attempted.transaction_id,
+        owner_id: ResourceOwnerId::try_new("v6-portability-water-owner")
+            .expect("typed water owner"),
+        occupancy_id: attempted.occupancy_id,
+        basis: ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
     }
 }
 
@@ -100,6 +316,206 @@ fn caps(expected: &Value) -> BTreeMap<SoilLayerId, f64> {
             )
         })
         .collect()
+}
+
+fn v6_runtime_rejected_step_norm_records() -> (Value, Value) {
+    let (case, actual_family) = fixture();
+    let expected = &actual_family["accepted_constrained_all_cap"];
+    let zero_caps = caps(expected)
+        .into_keys()
+        .map(|layer| (layer, 0.0))
+        .collect::<BTreeMap<_, _>>();
+    let (configuration, beginning_owner, beginning) = v6_beginning_owner(&case);
+    let execution = V6RejectedExecutionContext {
+        solve_context: context(),
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        field: V6DiagnosticField::StepNorm,
+        unit: V6DiagnosticUnit::MixedNativeUnknownUnits,
+        basis: V6DiagnosticBasis::UnscaledSixUnknownNewtonCorrection,
+    };
+    let evaluator = V3ConstitutiveEvaluator::new_capped(
+        case.clone(),
+        (-5_900.0, -5_450.0),
+        execution.solve_context.clone(),
+        zero_caps.clone(),
+    )
+    .expect("zero-cap evaluator");
+    let attempted = identity();
+    let fixed_authorization_identity = v6_fixed_authorization_identity();
+    let rollback_before_bytes = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &zero_caps,
+        beginning,
+        &attempted,
+        &fixed_authorization_identity,
+    );
+    let result = evaluator.solve_capped(&attempted, beginning);
+    let accepted_value = result.is_ok();
+    let candidate_present = result.as_ref().ok().is_some();
+    let error = bind_fixed_authorization_failure(
+        result.expect_err("zero caps exhaust canonical backtracking"),
+        fixed_authorization_identity.clone(),
+    );
+    let VegetationError::NumericalFailure {
+        category,
+        diagnostics,
+    } = error
+    else {
+        panic!("typed numerical failure required");
+    };
+    let rollback_after_bytes = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &zero_caps,
+        beginning,
+        &attempted,
+        &fixed_authorization_identity,
+    );
+
+    assert_eq!(
+        diagnostics.transaction_id,
+        execution.solve_context.transaction_id
+    );
+    assert_eq!(
+        diagnostics.occupancy_id,
+        execution.solve_context.occupancy_id
+    );
+    assert_eq!(diagnostics.pass, execution.solve_context.pass);
+    assert_eq!(
+        diagnostics.fixed_authorization_identity.as_ref(),
+        Some(&fixed_authorization_identity)
+    );
+    assert_eq!(category, NumericalFailureCategory::BacktrackingLimit);
+    assert!(!accepted_value);
+    assert!(!candidate_present);
+
+    let actual = v6_actual_record(
+        &diagnostics,
+        category,
+        &execution,
+        accepted_value,
+        candidate_present,
+        &rollback_before_bytes,
+        &rollback_after_bytes,
+    );
+
+    (v6_reference_record(), actual)
+}
+
+fn v6_reference_record() -> Value {
+    // The reference retains V6's frozen comparator schema/scalar and V5's
+    // frozen executed-failure caps/branches. Only the authority's explicit
+    // identity/rollback sentinels are bound to independently derived runtime
+    // identities and independently serialized reference beginning state.
+    let (reference_case, reference_family) = fixture();
+    let reference_zero_caps = caps(&reference_family["accepted_constrained_all_cap"])
+        .into_keys()
+        .map(|layer| (layer, 0.0))
+        .collect::<BTreeMap<_, _>>();
+    let (reference_configuration, reference_beginning_owner, reference_beginning) =
+        v6_beginning_owner(&reference_case);
+    let expected_configuration_sha256 = reference_configuration.configuration_sha256.clone();
+    let frozen = reference_family["executed_failures"]
+        .as_array()
+        .expect("failures")
+        .iter()
+        .find(|value| value["failure"] == "backtracking_limit")
+        .expect("frozen backtracking failure");
+    let portability = v6_portability_root();
+    let observed = portability["families"]["numeric_boundary_cases"]
+        .as_array()
+        .expect("V6 numeric cases")
+        .iter()
+        .find(|case| case["case"] == "observed_cpython_rust_step_norm")
+        .expect("observed CPython/Rust portability case");
+    assert_eq!(
+        observed["reference"]["scalar"]["value"],
+        frozen["diagnostics"]["step_norm"]
+    );
+    let expected_beginning_bytes = rollback_snapshot_bytes(
+        &reference_configuration,
+        &reference_beginning_owner,
+        &reference_case,
+        &reference_zero_caps,
+        reference_beginning,
+        &identity(),
+        &v6_fixed_authorization_identity(),
+    );
+    let mut reference = observed["reference"].clone();
+    reference["model_definition_sha256"] = Value::String(crate::MODEL_SHA256.into());
+    reference["configuration_sha256"] = Value::String(expected_configuration_sha256);
+    reference["transaction_id"] = serde_json::json!(identity().transaction_id);
+    reference["occupancy_id"] = serde_json::json!(identity().occupancy_id);
+    reference["active_water_caps"] = frozen["diagnostics"]["active_water_caps"].clone();
+    reference["branches"] = Value::Array(
+        frozen["diagnostics"]["layer_operands_in_configuration_order"]
+            .as_array()
+            .expect("frozen layer operands")
+            .iter()
+            .map(|layer| layer["branch"].clone())
+            .collect(),
+    );
+    let expected_rollback_sha256 = sha256(&expected_beginning_bytes);
+    reference["rollback_sha256_before"] = Value::String(expected_rollback_sha256.clone());
+    reference["rollback_sha256_after"] = Value::String(expected_rollback_sha256);
+    reference
+}
+
+fn v6_actual_record(
+    diagnostics: &NumericalFailureDiagnostics,
+    category: NumericalFailureCategory,
+    execution: &V6RejectedExecutionContext,
+    accepted_value: bool,
+    candidate_present: bool,
+    rollback_before_bytes: &[u8],
+    rollback_after_bytes: &[u8],
+) -> Value {
+    let operands = diagnostics
+        .capped_operands
+        .as_ref()
+        .expect("failed capped iterate retains operands");
+    let branches = operands
+        .layers
+        .iter()
+        .map(|layer| {
+            if layer.authorization_active_or_tie {
+                "authorization_active_or_tie"
+            } else {
+                "constitutive_law"
+            }
+        })
+        .collect::<Vec<_>>();
+    let step_norm = diagnostics.step_norm;
+    serde_json::json!({
+        "model_definition_sha256": diagnostics.model_definition_sha256,
+        "configuration_sha256": execution.configuration_sha256,
+        "transaction_id": diagnostics.transaction_id,
+        "occupancy_id": diagnostics.occupancy_id,
+        "pass": diagnostics.pass,
+        "solve": diagnostics.solve,
+        "field": execution.field,
+        "typed_failure": category,
+        "candidate": candidate_present.then_some("accepted_stage_a"),
+        "unit": execution.unit,
+        "basis": execution.basis,
+        "present": step_norm.is_some(),
+        "iterations": diagnostics.iterations,
+        "backtracking_count": diagnostics.backtracking_count,
+        "residual_cardinality": diagnostics.residual_norms.len(),
+        "active_bounds": diagnostics.active_bounds,
+        "active_water_caps": diagnostics.active_water_caps,
+        "branches": branches,
+        "rollback_sha256_before": sha256(rollback_before_bytes),
+        "rollback_sha256_after": sha256(rollback_after_bytes),
+        "accepted_value": accepted_value,
+        "scalar": {
+            "class": if step_norm.is_some_and(f64::is_finite) { "finite" } else { "nonfinite" },
+            "value": step_norm,
+        },
+    })
 }
 
 fn close(actual: f64, expected: f64, atol: f64, rtol: f64) {
@@ -340,9 +756,14 @@ fn zero_iteration_failure_is_capped_typed_and_leaves_inputs_unchanged() {
     let error = evaluator
         .solve_capped_with_limit(&identity(), beginning, 0)
         .expect_err("zero iteration limit rejects");
-    let VegetationError::NumericalFailure(diagnostics) = error else {
+    let VegetationError::NumericalFailure {
+        category,
+        diagnostics,
+    } = error
+    else {
         panic!("typed capped numerical failure required");
     };
+    assert_eq!(category, NumericalFailureCategory::IterationLimit);
     assert_eq!(diagnostics.pass, CoupledSolvePass::Capped);
     assert_eq!(diagnostics.iterations, 0);
     assert_eq!(diagnostics.backtracking_count, 0);
@@ -426,16 +847,18 @@ fn capped_singular_failure_retains_configured_layer_operands_and_rolls_back() {
     let error = evaluator
         .solve_capped(&identity(), beginning)
         .expect_err("singular capped hydraulics reject");
-    let VegetationError::NumericalFailure(diagnostics) = error else {
+    let VegetationError::NumericalFailure {
+        category,
+        diagnostics,
+    } = error
+    else {
         panic!("typed numerical failure required");
     };
+    assert_eq!(category, NumericalFailureCategory::SingularPivot);
     assert_eq!(diagnostics.pass, CoupledSolvePass::Capped);
     assert_eq!(diagnostics.iterations, 0);
     assert_eq!(diagnostics.backtracking_count, 0);
-    assert_eq!(
-        diagnostics.solve,
-        crate::diagnostics::SolveIdentity::HydraulicSystem
-    );
+    assert_eq!(diagnostics.solve, SolveIdentity::HydraulicSystem);
     assert_eq!(diagnostics.pivot_magnitude, Some(0.0));
     assert!(diagnostics.matrix_norm.is_some());
     assert_eq!(
@@ -468,12 +891,22 @@ fn zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate() {
     let error = evaluator
         .solve_capped(&identity(), beginning)
         .expect_err("zero caps exhaust canonical backtracking");
-    let VegetationError::NumericalFailure(diagnostics) = error else {
+    let VegetationError::NumericalFailure {
+        category,
+        diagnostics,
+    } = error
+    else {
         panic!("typed numerical failure required");
     };
+    assert_eq!(category, NumericalFailureCategory::BacktrackingLimit);
+    assert_eq!(diagnostics.model_definition_sha256, crate::MODEL_SHA256);
+    assert_eq!(diagnostics.transaction_id, identity().transaction_id);
+    assert_eq!(diagnostics.occupancy_id, identity().occupancy_id);
     assert_eq!(diagnostics.pass, CoupledSolvePass::Capped);
+    assert_eq!(diagnostics.solve, SolveIdentity::HydraulicSystem);
     assert_eq!(diagnostics.iterations, 7);
     assert_eq!(diagnostics.backtracking_count, 94);
+    assert!(diagnostics.step_norm.is_some());
     let frozen = family["executed_failures"]
         .as_array()
         .expect("failures")
@@ -489,31 +922,117 @@ fn zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate() {
             .map(|value| SoilLayerId::try_new(value.as_str().expect("layer")).expect("typed"))
             .collect::<Vec<_>>()
     );
-    close(
-        diagnostics.step_norm.expect("step"),
-        frozen["diagnostics"]["step_norm"].as_f64().expect("step"),
-        1.0e-7,
-        // Provisional portability observation only: this cannot pass Stage B
-        // because authority freezes CPython failed-iterate rounding without
-        // admitting a cross-runtime comparison tolerance.
-        3.0e-6,
-    );
-    assert_eq!(
-        diagnostics
-            .capped_operands
-            .as_ref()
-            .expect("failed iterate")
-            .layers
-            .len(),
-        5
-    );
-    // The exact owner/basis identity is bound by the validated authorization
-    // boundary in `execute_capped_column_pass`, not synthesized by equations.
-    assert!(diagnostics.fixed_authorization_identity.is_none());
+    let failed_operands = diagnostics
+        .capped_operands
+        .as_ref()
+        .expect("failed iterate");
+    assert_eq!(diagnostics.residual_norms.len(), 6);
+    assert_eq!(failed_operands.layers.len(), 5);
+    let expected_branches = frozen["diagnostics"]["layer_operands_in_configuration_order"]
+        .as_array()
+        .expect("frozen layer operands")
+        .iter()
+        .map(|layer| layer["branch"].clone())
+        .collect::<Vec<_>>();
+    let actual_branches = failed_operands
+        .layers
+        .iter()
+        .map(|layer| {
+            Value::String(
+                if layer.authorization_active_or_tie {
+                    "authorization_active_or_tie"
+                } else {
+                    "constitutive_law"
+                }
+                .into(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(actual_branches, expected_branches);
+
+    let (reference_record, actual_record) = v6_runtime_rejected_step_norm_records();
+    assert!(v6_portable_rejected_step_norm_equal(
+        &reference_record,
+        &actual_record,
+    ));
     assert_eq!(
         beginning,
         state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66])
     );
+}
+
+#[test]
+fn v6_rejected_step_norm_portability_enforces_boundaries_and_all_firewalls() {
+    let root = v6_portability_root();
+    assert_eq!(root["comparison"]["relative_tolerance"], V6_DIAGNOSTIC_RTOL);
+    assert_eq!(
+        root["comparison"]["formula"],
+        "abs(a-b) <= rtol*max(abs(a),abs(b))"
+    );
+    let families = &root["families"];
+    for (family, expected_count) in [
+        ("numeric_boundary_cases", 10),
+        ("eligibility_and_firewall_poisons", 20),
+        ("nonfinite_rejections", 4),
+    ] {
+        let cases = families[family]
+            .as_array()
+            .unwrap_or_else(|| panic!("{family} is an array"));
+        assert_eq!(cases.len(), expected_count, "complete {family} inventory");
+        for case in cases {
+            let expected = case["expected_equal"]
+                .as_bool()
+                .expect("comparison expectation");
+            assert_eq!(
+                v6_portable_rejected_step_norm_equal(&case["reference"], &case["actual"],),
+                expected,
+                "V6 portability case {}",
+                case["case"].as_str().expect("case name"),
+            );
+        }
+    }
+}
+
+#[test]
+fn v6_runtime_record_rejects_poison_at_each_exact_firewall_seam() {
+    let (reference, actual) = v6_runtime_rejected_step_norm_records();
+    assert!(
+        v6_portable_rejected_step_norm_equal(&reference, &actual),
+        "runtime record differs from reference: reference={reference:#} actual={actual:#}"
+    );
+    assert_eq!(V6_EXACT_PORTABILITY_FIELDS.len(), 21);
+
+    for field in V6_EXACT_PORTABILITY_FIELDS {
+        let mut poisoned = actual.clone();
+        poisoned[field] = match field {
+            "model_definition_sha256" => Value::String("0".repeat(64)),
+            "configuration_sha256" => Value::String("1".repeat(64)),
+            "transaction_id" => serde_json::json!(54),
+            "occupancy_id" => serde_json::json!({"stratum_id": "canopy", "tile_id": "tile-b"}),
+            "pass" => serde_json::json!("potential"),
+            "solve" => serde_json::json!("canopy_energy"),
+            "field" => serde_json::json!("residual_norm"),
+            "typed_failure" => serde_json::json!("iteration_limit"),
+            "candidate" => serde_json::json!({"present": true}),
+            "unit" => serde_json::json!("dimensionless"),
+            "basis" => serde_json::json!("scaled_residual"),
+            "present" => serde_json::json!(false),
+            "iterations" => serde_json::json!(8),
+            "backtracking_count" => serde_json::json!(95),
+            "residual_cardinality" => serde_json::json!(5),
+            "active_bounds" => serde_json::json!(["beta_sun_lower"]),
+            "active_water_caps" => serde_json::json!(["soil-2", "soil-1"]),
+            "branches" => serde_json::json!(["constitutive_law"]),
+            "rollback_sha256_before" => Value::String("2".repeat(64)),
+            "rollback_sha256_after" => Value::String("3".repeat(64)),
+            "accepted_value" => serde_json::json!(true),
+            _ => unreachable!("complete exact firewall inventory"),
+        };
+        assert!(
+            !v6_portable_rejected_step_norm_equal(&reference, &poisoned),
+            "runtime-derived {field} poison must reject"
+        );
+    }
 }
 
 #[test]

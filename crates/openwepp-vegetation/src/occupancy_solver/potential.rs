@@ -21,6 +21,7 @@ use crate::diagnostics::{
     BoundIdentity, CappedLayerNumericalOperands, CappedNumericalOperands, CappedResidualOperands,
     CoupledSolvePass, NormalizedResidual, NumericalFailureDiagnostics, SolveIdentity,
 };
+use crate::error::NumericalFailureCategory;
 use crate::{MODEL_SHA256, VegetationError};
 
 const MAX_ITERATIONS: u32 = 50;
@@ -202,6 +203,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
         if residuals(&evaluation).iter().any(|value| *value != 0.0) {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::Domain,
                 0,
                 &evaluation,
                 None,
@@ -249,6 +251,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
         {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::Domain,
                 iteration,
                 &evaluation,
                 last_step,
@@ -279,6 +282,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
         if iteration == max_iterations {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::IterationLimit,
                 iteration,
                 &evaluation,
                 last_step,
@@ -295,9 +299,10 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             centered_jacobian(&x, evaluator)
         })
         .map_err(|error| match error {
-            VegetationError::NumericalFailure(_) => error,
+            VegetationError::NumericalFailure { .. } => error,
             _ => failure(
                 identity,
+                NumericalFailureCategory::Domain,
                 iteration,
                 &evaluation,
                 last_step,
@@ -312,6 +317,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
         if !matrix_norm.is_finite() {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::SingularPivot,
                 iteration,
                 &evaluation,
                 last_step,
@@ -326,6 +332,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             .map_err(|pivot| {
                 failure(
                     identity,
+                    NumericalFailureCategory::SingularPivot,
                     iteration,
                     &evaluation,
                     None,
@@ -371,6 +378,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             validate_evaluation(&trial_evaluation).map_err(|_| {
                 failure(
                     identity,
+                    NumericalFailureCategory::Domain,
                     iteration,
                     &evaluation,
                     last_step,
@@ -394,9 +402,10 @@ pub(super) fn solve_uncapped_stage_a_bounded(
         let Some((next, next_evaluation, factor)) = accepted else {
             if let Some(error) = last_trial_error {
                 return Err(match error {
-                    VegetationError::NumericalFailure(_) => error,
+                    VegetationError::NumericalFailure { .. } => error,
                     _ => failure(
                         identity,
+                        NumericalFailureCategory::Domain,
                         iteration,
                         &evaluation,
                         last_step,
@@ -415,6 +424,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             };
             return Err(failure(
                 identity,
+                NumericalFailureCategory::BacktrackingLimit,
                 iteration,
                 &evaluation,
                 if evaluation.capped_system {
@@ -522,6 +532,7 @@ fn solve_single_active_stage_a(
         {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::Domain,
                 iteration,
                 &evaluation,
                 last_step,
@@ -539,6 +550,7 @@ fn solve_single_active_stage_a(
             if infinity_norm(&all_normalized) > 1.0 {
                 return Err(failure(
                     identity,
+                    NumericalFailureCategory::Domain,
                     iteration,
                     &evaluation,
                     last_step,
@@ -566,6 +578,7 @@ fn solve_single_active_stage_a(
         if iteration == MAX_ITERATIONS {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::IterationLimit,
                 iteration,
                 &evaluation,
                 last_step,
@@ -583,11 +596,12 @@ fn solve_single_active_stage_a(
             centered_jacobian_reduced(&x, evaluator, active)
         })
         .map_err(|error| {
-            if matches!(error, VegetationError::NumericalFailure(_)) {
+            if matches!(error, VegetationError::NumericalFailure { .. }) {
                 error
             } else {
                 failure(
                     identity,
+                    NumericalFailureCategory::Domain,
                     iteration,
                     &evaluation,
                     last_step,
@@ -603,6 +617,7 @@ fn solve_single_active_stage_a(
         if !matrix_norm.is_finite() {
             return Err(failure(
                 identity,
+                NumericalFailureCategory::SingularPivot,
                 iteration,
                 &evaluation,
                 last_step,
@@ -617,6 +632,7 @@ fn solve_single_active_stage_a(
             .map_err(|pivot| {
                 failure(
                     identity,
+                    NumericalFailureCategory::SingularPivot,
                     iteration,
                     &evaluation,
                     None,
@@ -662,6 +678,7 @@ fn solve_single_active_stage_a(
             validate_evaluation(&trial_evaluation).map_err(|_| {
                 failure(
                     identity,
+                    NumericalFailureCategory::Domain,
                     iteration,
                     &evaluation,
                     last_step,
@@ -684,24 +701,28 @@ fn solve_single_active_stage_a(
         }
         let Some((next, next_evaluation, factor)) = accepted else {
             if let Some(error) = last_trial_error {
-                return Err(if matches!(error, VegetationError::NumericalFailure(_)) {
-                    error
-                } else {
-                    failure(
-                        identity,
-                        iteration,
-                        &evaluation,
-                        last_step,
-                        backtracks,
-                        last_pivot,
-                        last_matrix_norm,
-                        &active.full_state(x),
-                        SolveIdentity::HydraulicSystem,
-                    )
-                });
+                return Err(
+                    if matches!(error, VegetationError::NumericalFailure { .. }) {
+                        error
+                    } else {
+                        failure(
+                            identity,
+                            NumericalFailureCategory::Domain,
+                            iteration,
+                            &evaluation,
+                            last_step,
+                            backtracks,
+                            last_pivot,
+                            last_matrix_norm,
+                            &active.full_state(x),
+                            SolveIdentity::HydraulicSystem,
+                        )
+                    },
+                );
             }
             return Err(failure(
                 identity,
+                NumericalFailureCategory::BacktrackingLimit,
                 iteration,
                 &evaluation,
                 last_step,
@@ -1123,6 +1144,7 @@ fn solve_pivoted_reduced(
 #[allow(clippy::too_many_arguments)]
 fn failure(
     identity: &StageASolveIdentity,
+    category: NumericalFailureCategory,
     iterations: u32,
     evaluation: &StageAEvaluation,
     step_norm: Option<f64>,
@@ -1164,7 +1186,10 @@ fn failure(
         fixed_authorization_identity: None,
     };
     debug_assert!(diagnostics.validate().is_ok());
-    VegetationError::NumericalFailure(Box::new(diagnostics))
+    VegetationError::NumericalFailure {
+        category,
+        diagnostics: Box::new(diagnostics),
+    }
 }
 
 fn wrap_evaluator_error(
@@ -1172,27 +1197,30 @@ fn wrap_evaluator_error(
     error: VegetationError,
     iterations: u32,
 ) -> VegetationError {
-    if matches!(error, VegetationError::NumericalFailure(_)) {
+    if matches!(error, VegetationError::NumericalFailure { .. }) {
         return error;
     }
-    VegetationError::NumericalFailure(Box::new(NumericalFailureDiagnostics {
-        model_definition_sha256: MODEL_SHA256.into(),
-        transaction_id: identity.transaction_id,
-        occupancy_id: identity.occupancy_id.clone(),
-        pass: CoupledSolvePass::Potential,
-        solve: SolveIdentity::OuterGasEnergyHydraulicCoupling,
-        iterations,
-        residual_norms: Vec::new(),
-        step_norm: None,
-        backtracking_count: 0,
-        active_bounds: Vec::new(),
-        active_water_caps: Vec::new(),
-        bracket: None,
-        pivot_magnitude: None,
-        matrix_norm: None,
-        capped_operands: None,
-        fixed_authorization_identity: None,
-    }))
+    VegetationError::NumericalFailure {
+        category: NumericalFailureCategory::Domain,
+        diagnostics: Box::new(NumericalFailureDiagnostics {
+            model_definition_sha256: MODEL_SHA256.into(),
+            transaction_id: identity.transaction_id,
+            occupancy_id: identity.occupancy_id.clone(),
+            pass: CoupledSolvePass::Potential,
+            solve: SolveIdentity::OuterGasEnergyHydraulicCoupling,
+            iterations,
+            residual_norms: Vec::new(),
+            step_norm: None,
+            backtracking_count: 0,
+            active_bounds: Vec::new(),
+            active_water_caps: Vec::new(),
+            bracket: None,
+            pivot_magnitude: None,
+            matrix_norm: None,
+            capped_operands: None,
+            fixed_authorization_identity: None,
+        }),
+    }
 }
 
 pub(crate) fn capped_numerical_operands(
@@ -1576,7 +1604,7 @@ mod tests {
             &ConstantInconsistentOracle,
         )
         .expect_err("constant inconsistent residual has singular Jacobian");
-        let VegetationError::NumericalFailure(diagnostics) = error else {
+        let VegetationError::NumericalFailure { diagnostics, .. } = error else {
             panic!("expected typed numerical failure");
         };
         assert_eq!(diagnostics.pivot_magnitude, Some(0.0));

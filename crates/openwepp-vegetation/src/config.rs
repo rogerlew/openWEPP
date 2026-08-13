@@ -521,7 +521,7 @@ mod tests {
     }
 
     #[test]
-    fn historical_v2_through_v4_fixtures_are_not_executable_v5_configurations() {
+    fn historical_v2_through_v5_fixtures_are_not_executable_v6_configurations() {
         assert!(
             VegetationConfiguration::parse_strict(include_bytes!(
                 "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
@@ -540,21 +540,27 @@ mod tests {
             ))
             .is_err()
         );
+        assert!(
+            VegetationConfiguration::parse_strict(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
+            ))
+            .is_err()
+        );
     }
 
     #[test]
-    fn v5_named_fixture_parses_strictly_with_exact_identity() {
-        let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
-        ))
-        .expect("V5 configuration DTO");
+    fn identity_rebound_v6_configuration_parses_strictly() {
+        let configuration = fixture();
+        let bytes = serde_json::to_vec(&configuration).expect("V6 configuration bytes");
+        let configuration =
+            VegetationConfiguration::parse_strict(&bytes).expect("V6 configuration");
         assert_eq!(
             configuration.configuration_sha256,
             configuration.canonical_sha256().expect("digest")
         );
         configuration
             .validate()
-            .expect("digest-bound V5 configuration");
+            .expect("digest-bound V6 configuration");
         assert_eq!(configuration.model_definition_sha256, MODEL_SHA256);
         assert_eq!(
             configuration.configuration_sha256,

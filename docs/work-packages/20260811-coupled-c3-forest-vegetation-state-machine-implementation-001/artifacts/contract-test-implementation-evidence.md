@@ -1,6 +1,6 @@
 # Contract-Test Implementation Evidence
 
-Status: `V4 focused evidence retained / V5 implementation tests pending`
+Status: `V6 portability remediation focused gates pass / repeat review pending`
 
 The vegetation quick suite now includes seven typed potential-water boundary
 tests. They prove identity/protocol behavior only and are not E01--E15 science
@@ -60,3 +60,30 @@ source or science-byte delta.
 No V5 Rust solver test is recorded as PASS here yet. The committed vector
 fixture must be consumed without Python and independently reconstructed by the
 production capped evaluator before `STAGE_B_E11_E15_EXACT_ORACLE` can pass.
+
+## 2026-08-13 V6 Portability HOLD Lift
+
+- Exact V6 runtime registry bytes match admitted SHA-256 `a5a5ed77...` and
+  V1--V5 definitions remain immutable and non-executable.
+- Complete V5 configuration, initial/current state, transaction lineage, and
+  typed-category identity-bound diagnostic snapshots migrate atomically to
+  distinct V6 identities while preserving all non-identity payload bytes and
+  consuming the frozen V6 transition hashes.
+- The runtime rejected failure builds all 21 exact comparator fields from Rust
+  diagnostics, the returned typed numerical-failure category, execution
+  context, result posture, configuration bytes, and independently serialized
+  full owner/attempted-transaction rollback snapshots. The frozen authority
+  record supplies only the reference.
+- All 10 numeric boundary cases, 20 eligibility/firewall poisons, 4 nonfinite
+  rejections, and 21 runtime-field mutation poisons execute in ordinary Rust
+  tests. Only the eligible scalar then uses rtol `3e-7`; no atol exists.
+- Ran: vegetation 179/179, implementation contract 13/13, authority contract
+  23/23, strict all-target vegetation Clippy, formatting, and diff hygiene.
+
+The first two correctness and QA review rounds returned HOLD/FAIL. They found
+incomplete runtime derivation, missing typed diagnostic migration and frozen
+transition binding, incomplete source lineage/error precedence, insufficient
+rollback scope, and a 3,130-line migration module. All findings were accepted
+and corrected. Final bounded Rust correctness review returned GO and QA returned
+PASS with no material finding. Public execution remains fail-closed and this
+evidence does not complete Milestones 2 or 3.

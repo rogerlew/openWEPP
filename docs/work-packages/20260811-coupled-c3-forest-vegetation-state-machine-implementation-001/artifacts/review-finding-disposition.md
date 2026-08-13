@@ -110,3 +110,32 @@ and lift action are recorded in
 
 Disposition: bounded checkpoint accepted; Stage B, public path, Milestones 2/3,
 and the original Review-B completion claims remain unresolved and fail-closed.
+
+## V6 Portability-Lift Review Disposition
+
+The contract-first V6 package at commit `b326173e2` lifted only the frozen
+rejected-failure evidence-comparison HOLD. The first correctness and QA reviews
+of the implementation found the following material defects; every finding was
+accepted and corrected in this package.
+
+| Finding | Decision and correction | Focused evidence | Status |
+|---|---|---|---|
+| runtime comparison cloned exact fields from the reference | accepted; actual record now derives all 21 fields from Rust diagnostics, typed context/result posture, configuration bytes, and independently serialized full owner/attempted-transaction snapshots | 21 seam poisons plus 10 boundary, 20 firewall, and 4 nonfinite authority cases | corrected; repeat review pending |
+| V5-to-V6 migration omitted diagnostic identity/payload | accepted; added atomic configuration, initial/current state, and typed-category identity-bound diagnostic migration with distinct V6 digests and byte-preserved non-identity payload | frozen V6 `identity_transition` payload/digests, stale diagnostic identity/category/digest/lineage poisons, no-candidate source immutability | corrected; repeat review pending |
+| historical source lineage was incomplete | accepted; complete V5 config/initial/current state, shared/occupancy/pending-transfer lineage and error precedence now validate before candidate construction; transaction-zero current state must be byte-identical to initial state | initial receipt, transaction-zero divergence, nonzero transaction, shared/occupancy/transfer poisons | corrected; repeat review pending |
+| `migration.rs` exceeded 3,000 lines | accepted; extracted cohesive V5-to-V6 implementation/tests; parent is 2,890 lines | strict Clippy and line-count recount | corrected; repeat review pending |
+| positive test fixture could launder historical V5 drift | accepted; shared exact V5 configuration/initial-state validation now precedes test-only identity rebinding | full vegetation 179/179 and historical V1--V5 rejection | corrected; repeat review pending |
+| package evidence and V5 public wording were stale | accepted; package/evidence rows now preserve the failed retry and identify V6 fail-closed posture | Markdown and source checks | corrected; repeat review pending |
+| repeat reviews found a harness-authored failure category and incomplete rollback evidence | accepted; `VegetationError::NumericalFailure` now carries `NumericalFailureCategory`, producers preserve the category, and V6 comparison derives it from the returned error while hashing the complete beginning owner plus attempted transaction/occupancy and absent candidate before and after rejection | vegetation 179/179; implementation 13/13; authority 23/23; strict Clippy | corrected; repeat review pending |
+| repeat reviews found migration category/fixture gaps | accepted; the migration envelope preserves and validates the typed failure category and its payload relationship, directly consumes the frozen V6 transition vector hashes, and enforces source-side transaction-zero precedence | focused migration 3/3 and frozen V6 vector hash assertions | corrected; repeat review pending |
+| third QA review found re-digested category aliases could pass migration | accepted; V5-to-V6 evidence migration now admits only the authorized capped hydraulic `backtracking_limit` seam with positive backtracking count and finite nonnegative `step_norm` | explicit domain, iteration, singular, bracket, and outer-solve alias poisons; focused migration 3/3; strict Clippy | corrected; repeat review pending |
+| third correctness review found unrelated rollback/configuration identities and indirect authority-vector consumption | accepted; the comparator snapshot now combines the validated five-layer V6 configuration receipt, full `CoupledOwnedState`, exact constitutive case/caps, Stage-A state, fixed authorization identity, attempted transaction/occupancy, and absent candidate; the production boundary helper attaches authorization identity; migration source and target projections both equal the frozen V6 scientific payload | focused V6 5/5; migration 3/3; strict Clippy | corrected; repeat review pending |
+| third review exact line-count evidence drift | accepted; recounted stable formatted bytes | `migration.rs` 2,890; V5-to-V6 implementation 378; migration tests 651; comparator tests 1,070 | corrected; repeat review pending |
+
+Final independent disposition on the stable bounded increment: Rust
+correctness **GO** and QA **PASS**, with no unresolved material finding. The
+2,890-line `migration.rs` remains WARN-level decomposition debt below the
+mandatory threshold. Neither review approves the still-fail-closed public
+E01--E22 transaction or completes Milestones 2/3.
+
+No finding is rejected, deferred, or used to activate the public candidate.
