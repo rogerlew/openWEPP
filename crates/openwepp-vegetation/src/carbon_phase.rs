@@ -1,8 +1,9 @@
-//! Exact post-E15 aggregation of accepted occupancy carbon operands.
+//! Exact aggregation of potential and accepted occupancy carbon operands.
 //!
-//! This module stops before the authority-missing E19-to-E20 storage/transfer
-//! bridge. It performs no persistent-state mutation and publishes no owner
-//! candidate.
+//! The pass identity is an explicit input to the private implementation so
+//! potential E19 demand cannot silently consume capped carbon, and accepted
+//! allocation cannot silently consume potential carbon. This module performs
+//! no persistent-state mutation and publishes no owner candidate.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -26,6 +27,22 @@ pub(crate) fn aggregate_stratum_carbon(
     columns: &TileColumnsResult,
     interval_s: f64,
 ) -> Result<BTreeMap<StratumId, StratumCarbonOperands>, VegetationError> {
+    aggregate_stratum_carbon_for_pass(columns, interval_s, CoupledSolvePass::Capped)
+}
+
+/// Aggregate the owner-uncapped potential pass without re-running `FvCB`.
+pub(crate) fn aggregate_potential_stratum_carbon(
+    columns: &TileColumnsResult,
+    interval_s: f64,
+) -> Result<BTreeMap<StratumId, StratumCarbonOperands>, VegetationError> {
+    aggregate_stratum_carbon_for_pass(columns, interval_s, CoupledSolvePass::Potential)
+}
+
+fn aggregate_stratum_carbon_for_pass(
+    columns: &TileColumnsResult,
+    interval_s: f64,
+    required_pass: CoupledSolvePass,
+) -> Result<BTreeMap<StratumId, StratumCarbonOperands>, VegetationError> {
     if !interval_s.is_finite() || interval_s <= 0.0 {
         return Err(VegetationError::Domain("E16 aggregation interval"));
     }
@@ -42,9 +59,9 @@ pub(crate) fn aggregate_stratum_carbon(
             return Err(VegetationError::Domain("E16 tile fraction"));
         }
         for occupancy in &column.occupancy_results {
-            if occupancy.diagnostics.pass != CoupledSolvePass::Capped {
+            if occupancy.diagnostics.pass != required_pass {
                 return Err(VegetationError::Receipt(
-                    "E16 requires accepted capped occupancy operands".into(),
+                    "E16 carbon operands do not match the required solve pass".into(),
                 ));
             }
             if occupancy.occupancy_id.tile_id != column.tile_id

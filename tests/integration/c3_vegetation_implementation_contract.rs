@@ -182,9 +182,9 @@ fn assert_fvcb_vector(
 fn v7_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
-    assert!(source.contains(
-        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
-    ));
+    assert!(
+        source.contains("V7 E19 potential/final nitrogen ordering is implementation-incomplete")
+    );
     let water_source =
         fs::read_to_string("crates/openwepp-vegetation/src/water_phase.rs").expect("water source");
     assert!(water_source.contains("execute_potential_column_pass"));

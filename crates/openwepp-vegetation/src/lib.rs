@@ -17,6 +17,7 @@ pub mod nitrogen_protocol;
 pub mod numerics;
 pub mod occupancy_solver;
 pub mod occupancy_state;
+pub(crate) mod persistent_phase;
 pub mod photosynthesis;
 pub mod radiation;
 pub mod transaction;

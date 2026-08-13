@@ -590,6 +590,27 @@ pub trait NitrogenArbiter {
     ) -> Result<Vec<NitrogenAuthorization>, VegetationError>;
 }
 
+/// Internal sentinel proving E19 preflight can complete without publishing a
+/// request batch to the caller-supplied owner while the ordering HOLD is open.
+struct PreflightOnlyNitrogen;
+
+impl NitrogenArbiter for PreflightOnlyNitrogen {
+    fn beginning_amount(&self, _: &MineralNitrogenKey) -> Result<f64, VegetationError> {
+        Err(VegetationError::Unsupported(
+            "V7 E19 nitrogen owner preflight has no inventory access",
+        ))
+    }
+
+    fn authorize(
+        &self,
+        _: &[NitrogenRequest],
+    ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
+        Err(VegetationError::Unsupported(
+            "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
+        ))
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExecutionDiagnostics {
     pub transaction_id: TransactionId,
@@ -697,8 +718,9 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Executes the complete uncommitted V7 water phase, then fails closed at the
-/// still-unimplemented shared C/N and multi-owner transaction boundary.
+/// Executes the complete uncommitted V7 water phase and the crate-private E19
+/// preflight, which fails closed before arbitration for the unresolved
+/// potential/final numerical ordering case.
 pub fn execute_candidate(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -707,9 +729,18 @@ pub fn execute_candidate(
     water: &dyn WaterArbiter,
     _nitrogen: &dyn NitrogenArbiter,
 ) -> Result<CoupledCandidate, VegetationError> {
-    crate::water_phase::execute_uncommitted_water_phase(model, config, beginning, forcing, water)?;
+    let water_phase = crate::water_phase::execute_uncommitted_water_phase(
+        model, config, beginning, forcing, water,
+    )?;
+    crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+        config,
+        beginning,
+        forcing,
+        &water_phase,
+        &PreflightOnlyNitrogen,
+    )?;
     Err(VegetationError::Unsupported(
-        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
     ))
 }
 
@@ -720,14 +751,23 @@ pub fn execute_candidate_with_failure(
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
     water: &dyn WaterArbiter,
-    nitrogen: &dyn NitrogenArbiter,
+    _nitrogen: &dyn NitrogenArbiter,
     failure: Option<FailurePoint>,
 ) -> Result<CoupledCandidate, VegetationError> {
-    crate::water_phase::execute_uncommitted_water_phase_with_failure(
+    let water_phase = crate::water_phase::execute_uncommitted_water_phase_with_failure(
         model, config, beginning, forcing, water, failure,
     )?;
+    if failure == Some(FailurePoint::NitrogenRequest) {
+        return Err(VegetationError::InjectedFailure("nitrogen request"));
+    }
+    crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+        config,
+        beginning,
+        forcing,
+        &water_phase,
+        &PreflightOnlyNitrogen,
+    )?;
     let label = match failure {
-        Some(FailurePoint::NitrogenRequest) => Some("nitrogen request"),
         Some(FailurePoint::NitrogenAuthorization) => Some("nitrogen authorization"),
         Some(FailurePoint::Allocation) => Some("allocation"),
         Some(FailurePoint::ReceiverConstruction) => Some("receiver construction"),
@@ -738,9 +778,8 @@ pub fn execute_candidate_with_failure(
     if let Some(label) = label {
         return Err(VegetationError::InjectedFailure(label));
     }
-    let _ = nitrogen;
     Err(VegetationError::Unsupported(
-        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
     ))
 }
 
@@ -1659,7 +1698,7 @@ mod milestone_one_tests {
 
     #[test]
     #[allow(clippy::too_many_lines)]
-    fn public_transaction_executes_v7_water_then_fails_closed_before_shared_cn() {
+    fn public_transaction_fails_closed_at_v7_nitrogen_ordering_boundary() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn authorize(
@@ -1722,9 +1761,35 @@ mod milestone_one_tests {
             }
             fn authorize(
                 &self,
-                _: &[NitrogenRequest],
+                requests: &[NitrogenRequest],
             ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
-                Ok(Vec::new())
+                Ok(requests
+                    .iter()
+                    .map(|request| NitrogenAuthorization {
+                        transaction_id: request.transaction_id,
+                        owner_id: request.owner_id.clone(),
+                        key: request.key.clone(),
+                        amount: request.amount,
+                        basis: request.basis,
+                    })
+                    .collect())
+            }
+        }
+        struct CountingNitrogen {
+            calls: std::cell::Cell<u32>,
+            request_count: std::cell::Cell<usize>,
+        }
+        impl NitrogenArbiter for CountingNitrogen {
+            fn beginning_amount(&self, _: &MineralNitrogenKey) -> Result<f64, VegetationError> {
+                Ok(0.0)
+            }
+            fn authorize(
+                &self,
+                requests: &[NitrogenRequest],
+            ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
+                self.calls.set(self.calls.get() + 1);
+                self.request_count.set(requests.len());
+                NitrogenArbiter::authorize(&NoArbiter, requests)
             }
         }
         let (config, state) = v7_identity_rebound_fixture();
@@ -1760,11 +1825,44 @@ mod milestone_one_tests {
             }],
             gsi: 1.0,
         };
+        let beginning_bytes = serde_json::to_vec(&state).expect("beginning bytes");
+        let counting_nitrogen = CountingNitrogen {
+            calls: std::cell::Cell::new(0),
+            request_count: std::cell::Cell::new(0),
+        };
+        let water_phase = crate::water_phase::execute_uncommitted_water_phase(
+            &model, &config, &state, &forcing, &NoArbiter,
+        )
+        .expect("complete water phase");
+        assert_eq!(
+            crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+                &config,
+                &state,
+                &forcing,
+                &water_phase,
+                &counting_nitrogen,
+            ),
+            Err(VegetationError::NitrogenDemandOrdering {
+                potential_carbon_offer: f64::from_bits(4_571_873_354_058_590_328),
+                final_carbon_offer: f64::from_bits(4_571_873_354_058_590_330),
+                potential_demand: f64::from_bits(4_546_826_747_422_758_608),
+                final_demand: f64::from_bits(4_546_826_747_422_758_610),
+            })
+        );
+        assert_eq!(counting_nitrogen.calls.get(), 0);
+        assert_eq!(counting_nitrogen.request_count.get(), 0);
+        assert_eq!(
+            serde_json::to_vec(&state).expect("unchanged beginning bytes"),
+            beginning_bytes
+        );
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
-            Err(VegetationError::Unsupported(
-                "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
-            ))
+            Err(VegetationError::NitrogenDemandOrdering {
+                potential_carbon_offer: f64::from_bits(4_571_873_354_058_590_328),
+                final_carbon_offer: f64::from_bits(4_571_873_354_058_590_330),
+                potential_demand: f64::from_bits(4_546_826_747_422_758_608),
+                final_demand: f64::from_bits(4_546_826_747_422_758_610),
+            })
         );
 
         let forged = ModelDefinition {
@@ -1823,7 +1921,7 @@ pub fn validate_and_commit(
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
     ))
 }
 

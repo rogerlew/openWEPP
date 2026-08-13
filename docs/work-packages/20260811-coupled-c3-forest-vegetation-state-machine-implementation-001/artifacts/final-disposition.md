@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / V7 storage-transfer authority admitted / public path fail-closed`
+Status: `in progress / bounded E19 numerical-authority HOLD / public path fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -41,6 +41,15 @@ commit `94a4c99dc1228aa0399c01f4cc9590742960028f`, which released
 Implementation is active again in this existing package. The V1 and V2 HOLD
 records remain immutable historical evidence, and the public transaction stays
 fail-closed until the V3 capped second pass passes its focused oracle gate.
+
+The V7 storage-transfer authority is implemented at its focused kernel
+boundary. Subsequent real potential/final E19 composition found a binary64
+ordering case in which fully supplied `Ndem_final` exceeds `Ndem_pot` by about
+`2e-20 kg N m^-2 interval`. No admitted rule authorizes tolerance, clamping, or
+request inflation, and the V6 diagnostic-only tolerance explicitly cannot
+spread. The bounded hold and exact lift action are recorded in
+`e19-potential-final-numerical-hold-legitimacy-audit.md`; the package remains
+in progress and the public path remains fail-closed.
 
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 

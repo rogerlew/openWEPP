@@ -741,10 +741,6 @@ fn advance_phenology_candidate(
         previous_gsi,
         gsi,
         dt_s,
-        on_threshold,
-        off_threshold,
-        onset_duration_s,
-        offset_duration_s,
     ]
     .iter()
     .any(|value| !value.is_finite())
@@ -753,9 +749,6 @@ fn advance_phenology_candidate(
         || !(0.0..=1.0).contains(&previous_gsi)
         || !(0.0..=1.0).contains(&gsi)
         || dt_s <= 0.0
-        || off_threshold >= on_threshold
-        || onset_duration_s <= 0.0
-        || offset_duration_s <= 0.0
     {
         return Err(VegetationError::Domain("phenology"));
     }
@@ -786,6 +779,20 @@ fn advance_phenology_candidate(
         )?;
         phase = PhenologyPhase::Active;
     } else {
+        if [
+            on_threshold,
+            off_threshold,
+            onset_duration_s,
+            offset_duration_s,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || off_threshold >= on_threshold
+            || onset_duration_s <= 0.0
+            || offset_duration_s <= 0.0
+        {
+            return Err(VegetationError::Domain("phenology"));
+        }
         let onset_edge =
             phase == PhenologyPhase::Dormant && previous_gsi < on_threshold && gsi > on_threshold;
         if onset_edge {
@@ -1659,6 +1666,30 @@ mod tests {
             ),
             Err(VegetationError::Domain("V7 evergreen storage/transfer"))
         );
+    }
+
+    #[test]
+    fn v7_evergreen_does_not_consume_deciduous_only_operands() {
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        let mut evergreen_parameters = parameters();
+        evergreen_parameters.current_growth_fraction = 1.0;
+        let update = advance_phenology(
+            &mut tissues,
+            PhenologyMode::Evergreen,
+            PhenologyPhase::Active,
+            0.0,
+            0.0,
+            0.5,
+            0.5,
+            1.0,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            &evergreen_parameters,
+        )
+        .expect("evergreen has no deciduous timing operands");
+        assert_eq!(update.phase, PhenologyPhase::Active);
     }
 
     #[test]

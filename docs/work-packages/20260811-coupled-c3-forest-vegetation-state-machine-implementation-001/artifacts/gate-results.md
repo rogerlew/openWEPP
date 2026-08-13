@@ -531,3 +531,17 @@ Historical failures and the V6 HOLD text above are preserved as evidence.
 | strict affected Clippy | PASS / Ran | `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` |
 | formatting/diff hygiene | PASS / Ran | `cargo fmt --all -- --check`; `git diff --check` |
 | public persistent candidate | NOT RUN / intentionally fail-closed | V7 public water stage still returns typed implementation-incomplete before persistent E16--E22 mutation; no candidate or commit claim |
+
+## V7 E19 Potential/Final Composition
+
+Historical results above remain unchanged.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| pass-typed carbon boundary | IMPLEMENTED / Static; focused poison pending | separate sealed potential and capped aggregation paths share the exact E16/E17 integration and require exact pass identity |
+| evergreen operand ownership | PASS / Ran | evergreen phenology no longer consumes or requires synthesized deciduous thresholds/timers; V7 exact reserve guards remain active |
+| internal all-strata N composition | IMPLEMENTED / Static; multi-stratum gate pending | immutable beginning clones, phenology then turnover, separate potential/final offers, exact root-temperature/root-fraction E17 operands, typed layer/species/owner requests, one arbitration call, authorization regrouping, and finalized uses; crate-private with no public candidate/commit surface |
+| first fully supplied composition | FAIL / Ran | the first internal attempt called the arbiter with two requests before discovering `Ndem_final>Ndem_pot`; no result/candidate, but review rejected the publication ordering |
+| remediated fully supplied composition | **HOLD / Ran** | all-strata preflight now rejects before arbitration (zero calls/requests); observed `Coffer_final-Coffer_pot=2e-18 kg C m^-2` and `Ndem_final-Ndem_pot=2e-20 kg N m^-2`; no phase result/candidate; compared vegetation input bytes identical; no whole-owner rollback claim |
+| authority audit | HOLD | `e19-potential-final-numerical-hold-legitimacy-audit.md`; no V6 tolerance spread, clamp, or request inflation admitted |
+| independent bounded-checkpoint reviews | GO / PASS | final Rust correctness and QA re-reviews found no material implementation/evidence defect; multi-stratum arbitration, explicit wrong-pass poison, full-owner rollback, and public candidate integration remain pending and unclaimed |

@@ -343,6 +343,21 @@ impl UncommittedWaterPhase {
     > {
         crate::carbon_phase::aggregate_stratum_carbon(&self.final_columns, self.interval_s)
     }
+
+    /// Reconstruct potential E18/E19 operands exclusively from the sealed
+    /// owner-uncapped pass. These operands form potential mineral-N demand;
+    /// they cannot be substituted for the accepted capped allocation input.
+    pub fn potential_stratum_carbon_operands(
+        &self,
+    ) -> Result<
+        BTreeMap<openwepp_kernel_contract::StratumId, crate::carbon_phase::StratumCarbonOperands>,
+        VegetationError,
+    > {
+        crate::carbon_phase::aggregate_potential_stratum_carbon(
+            &self.potential_columns,
+            self.interval_s,
+        )
+    }
 }
 
 pub fn execute_uncommitted_water_phase(

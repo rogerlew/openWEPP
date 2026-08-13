@@ -123,3 +123,14 @@ HOLD-lift increment.
 
 No newly touched Rust file reaches 2,000 lines. The earlier `migration.rs` and
 `constitutive.rs` WARN-level decomposition debt remains unchanged.
+
+## 2026-08-13 V7 E19 Hold Recount
+
+| Rust file | Lines | Disposition |
+|---|---:|---|
+| `carbon_nitrogen.rs` | 2,051 | WARN; production kernels remain below 2,000 lines and the retained focused tests require extraction before terminal closure |
+| `persistent_phase.rs` | 452 | PASS; crate-private uncommitted composition |
+
+No touched Rust file reaches 3,000 lines. The `carbon_nitrogen.rs` WARN is
+explicit decomposition debt and does not justify bypassing the bounded E19
+authority HOLD.

@@ -44,6 +44,15 @@ pub enum VegetationError {
     },
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
+    #[error(
+        "VEG-E-TRANSACTION-002: final mineral-nitrogen demand {final_demand} exceeds potential demand {potential_demand}"
+    )]
+    NitrogenDemandOrdering {
+        potential_carbon_offer: f64,
+        final_carbon_offer: f64,
+        potential_demand: f64,
+        final_demand: f64,
+    },
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]
     Closure { ledger: &'static str, residual: f64 },
 }

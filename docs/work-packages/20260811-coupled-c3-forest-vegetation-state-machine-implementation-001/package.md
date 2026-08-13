@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V7 storage-transfer authority admitted / E16--E22 remediation active`
+Status: `executing / V7 storage-transfer active / bounded E19 numerical-authority HOLD`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
