@@ -1,6 +1,24 @@
 # Implementation And Test Evidence
 
-Status: `executing / V6 public water phase active / full candidate fail-closed at E16`
+Status: `executing / V7 onset kernel active / full candidate fail-closed at E16`
+
+## V7 Storage-Transfer Phenology Increment
+
+Static + Ran: active runtime identity is the exact released V7 definition.
+Historical V5-to-V6 migration is frozen to V6, while the new V6-to-V7 boundary
+validates complete source/target receipts, preserves seasonal nonidentity bytes,
+does not execute onset, and returns exhaustive evergreen unresolved fields.
+
+Static + Ran: `prepare_storage_for_onset` is pure and moves independently for
+all six tissues and both elements exactly half of immutable beginning storage
+into existing transfer. `advance_phenology` prepares only on the strict upward
+Dormant-to-Onset edge, deploys every tissue, uses the exact terminal remainder,
+and enters Active only when all twelve transfer values are exact zero. It
+commits its caller-owned tissue map only after validation and closure pass.
+
+Ran: vegetation 203/203, implementation contract 13/13, strict all-target
+vegetation Clippy, formatting, and diff hygiene pass. Public persistent mutation
+and the all-owner candidate remain intentionally unavailable.
 
 Increment 2B stopped before constitutive implementation. The retained
 `occupancy_solver::resources` module constructs and validates complete typed

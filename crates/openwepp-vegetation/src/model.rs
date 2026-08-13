@@ -2,10 +2,10 @@ use sha2::{Digest, Sha256};
 
 use crate::VegetationError;
 
-pub const MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V6";
-pub const MODEL_SHA256: &str = "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426";
+pub const MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V7";
+pub const MODEL_SHA256: &str = "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f";
 pub const MODEL_BYTES: &[u8] =
-    include_bytes!("../model-registry/openwepp_c3_woody_v6_definition.json");
+    include_bytes!("../model-registry/openwepp_c3_woody_v7_definition.json");
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ModelDefinition {
@@ -52,8 +52,8 @@ pub fn load_model_definition() -> Result<ModelDefinition, VegetationError> {
 mod tests {
     use super::*;
 
-    const RELEASED_V6_BYTES: &[u8] = include_bytes!(
-        "../../../docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_definition.json"
+    const RELEASED_V7_BYTES: &[u8] = include_bytes!(
+        "../../../docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json"
     );
     const HISTORICAL_V1_BYTES: &[u8] =
         include_bytes!("../model-registry/openwepp_c3_woody_v1_definition.json");
@@ -65,6 +65,8 @@ mod tests {
         include_bytes!("../model-registry/openwepp_c3_woody_v4_definition.json");
     const HISTORICAL_V5_BYTES: &[u8] =
         include_bytes!("../model-registry/openwepp_c3_woody_v5_definition.json");
+    const HISTORICAL_V6_BYTES: &[u8] =
+        include_bytes!("../model-registry/openwepp_c3_woody_v6_definition.json");
     const HISTORICAL_V1_SHA256: &str =
         "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157";
     const HISTORICAL_V2_SHA256: &str =
@@ -75,14 +77,16 @@ mod tests {
         "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437";
     const HISTORICAL_V5_SHA256: &str =
         "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3";
+    const HISTORICAL_V6_SHA256: &str =
+        "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426";
 
     #[test]
-    fn embedded_definition_has_exact_released_v6_identity() {
+    fn embedded_definition_has_exact_released_v7_identity() {
         let model = load_model_definition().expect("admitted model bytes");
-        assert_eq!(model.version, "OPENWEPP_C3_WOODY_V6");
+        assert_eq!(model.version, "OPENWEPP_C3_WOODY_V7");
         assert_eq!(model.sha256, MODEL_SHA256);
-        assert_eq!(model.bytes, RELEASED_V6_BYTES);
-        assert_eq!(MODEL_BYTES, RELEASED_V6_BYTES);
+        assert_eq!(model.bytes, RELEASED_V7_BYTES);
+        assert_eq!(MODEL_BYTES, RELEASED_V7_BYTES);
     }
 
     #[test]
@@ -169,6 +173,25 @@ mod tests {
             VegetationError::ModelDigestMismatch {
                 expected: MODEL_SHA256.into(),
                 found: HISTORICAL_V5_SHA256.into(),
+            }
+        );
+    }
+
+    #[test]
+    fn historical_v6_definition_is_preserved_but_not_executable() {
+        assert_eq!(
+            format!("{:x}", Sha256::digest(HISTORICAL_V6_BYTES)),
+            HISTORICAL_V6_SHA256
+        );
+        assert_ne!(HISTORICAL_V6_BYTES, MODEL_BYTES);
+
+        let error = validate_model_definition(HISTORICAL_V6_BYTES, MODEL_VERSION, MODEL_SHA256)
+            .expect_err("historical V6 bytes must not pass the V7 executable identity gate");
+        assert_eq!(
+            error,
+            VegetationError::ModelDigestMismatch {
+                expected: MODEL_SHA256.into(),
+                found: HISTORICAL_V6_SHA256.into(),
             }
         );
     }

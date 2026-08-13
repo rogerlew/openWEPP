@@ -144,11 +144,26 @@ impl VegetationConfiguration {
     }
 
     pub fn validate(&self) -> Result<(), VegetationError> {
+        self.validate_for_model(MODEL_SHA256, true)
+    }
+
+    pub(crate) fn validate_historical(
+        &self,
+        expected_model_sha256: &str,
+    ) -> Result<(), VegetationError> {
+        self.validate_for_model(expected_model_sha256, false)
+    }
+
+    fn validate_for_model(
+        &self,
+        expected_model_sha256: &str,
+        enforce_v7_semantics: bool,
+    ) -> Result<(), VegetationError> {
         finite_positive(self.area_m2, "area_m2")?;
         finite_positive(self.dt_s, "dt_s")?;
-        if self.model_definition_sha256 != MODEL_SHA256 {
+        if self.model_definition_sha256 != expected_model_sha256 {
             return Err(VegetationError::ModelDigestMismatch {
-                expected: MODEL_SHA256.into(),
+                expected: expected_model_sha256.into(),
                 found: self.model_definition_sha256.clone(),
             });
         }
@@ -185,7 +200,7 @@ impl VegetationConfiguration {
                     "lifeform or duplicate stratum",
                 ));
             }
-            validate_stratum(s, &tiles)?;
+            validate_stratum(s, &tiles, enforce_v7_semantics)?;
             for tile_id in &s.tile_ids {
                 if !tile_ranks.insert((tile_id, s.vertical_rank)) {
                     return Err(VegetationError::Domain("duplicate tile/rank occupancy"));
@@ -272,6 +287,7 @@ fn fraction(value: f64, field: &'static str) -> Result<(), VegetationError> {
 fn validate_stratum(
     s: &StratumConfiguration,
     tiles: &BTreeSet<&TileId>,
+    enforce_v7_semantics: bool,
 ) -> Result<(), VegetationError> {
     for id in &s.tile_ids {
         if !tiles.contains(id) {
@@ -316,6 +332,15 @@ fn validate_stratum(
     }
     fraction(s.livewood_fraction_a4, "a4")?;
     fraction(s.current_growth_fraction, "current_growth_fraction")?;
+    #[allow(clippy::float_cmp)] // V7 requires the exact admitted evergreen branch identity.
+    let invalid_evergreen_growth_fraction = enforce_v7_semantics
+        && s.phenology_type == PhenologyType::Evergreen
+        && s.current_growth_fraction != 1.0;
+    if invalid_evergreen_growth_fraction {
+        return Err(VegetationError::Domain(
+            "V7 evergreen current_growth_fraction",
+        ));
+    }
     fraction(s.nh4_request_fraction, "nh4_request_fraction")?;
     fraction(s.drymatter_carbon_fraction, "drymatter_carbon_fraction")?;
     if s.drymatter_carbon_fraction == 0.0
@@ -497,6 +522,11 @@ mod tests {
     fn fixture() -> VegetationConfiguration {
         let mut configuration: VegetationConfiguration =
             serde_json::from_value(v5_value()).expect("V5 configuration shape");
+        for stratum in &mut configuration.strata {
+            if stratum.phenology_type == PhenologyType::Evergreen {
+                stratum.current_growth_fraction = 1.0;
+            }
+        }
         configuration.model_definition_sha256 = MODEL_SHA256.into();
         refresh_digest(&mut configuration);
         configuration
@@ -521,7 +551,7 @@ mod tests {
     }
 
     #[test]
-    fn historical_v2_through_v5_fixtures_are_not_executable_v6_configurations() {
+    fn historical_v2_through_v5_fixtures_are_not_executable_v7_configurations() {
         assert!(
             VegetationConfiguration::parse_strict(include_bytes!(
                 "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
@@ -549,18 +579,18 @@ mod tests {
     }
 
     #[test]
-    fn identity_rebound_v6_configuration_parses_strictly() {
+    fn identity_rebound_v7_configuration_parses_strictly() {
         let configuration = fixture();
-        let bytes = serde_json::to_vec(&configuration).expect("V6 configuration bytes");
+        let bytes = serde_json::to_vec(&configuration).expect("V7 configuration bytes");
         let configuration =
-            VegetationConfiguration::parse_strict(&bytes).expect("V6 configuration");
+            VegetationConfiguration::parse_strict(&bytes).expect("V7 configuration");
         assert_eq!(
             configuration.configuration_sha256,
             configuration.canonical_sha256().expect("digest")
         );
         configuration
             .validate()
-            .expect("digest-bound V6 configuration");
+            .expect("digest-bound V7 configuration");
         assert_eq!(configuration.model_definition_sha256, MODEL_SHA256);
         assert_eq!(
             configuration.configuration_sha256,

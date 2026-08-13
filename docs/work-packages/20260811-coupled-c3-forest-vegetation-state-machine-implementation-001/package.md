@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V6 portability hold lifted / capped remediation active`
+Status: `executing / V7 storage-transfer authority admitted / E16--E22 remediation active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V6` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V7` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,18 +32,18 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v10, approved/active;
+- `SC-VEGETATION-001` v11, approved/active;
 - `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V6`, SHA-256
-  `a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426`;
+- `OPENWEPP_C3_WOODY_V7`, SHA-256
+  `a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f`;
 - the released V5 capped-pass authority package exact bytes: independent
   vectors SHA-256
   `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`
   and generator SHA-256
   `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`;
 - authority predecessor commit
-  `b326173e2`, whose dual science reviews,
+  `83db91251`, whose dual science reviews,
   focused/heavy gates, and dual terminal verifiers passed;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
@@ -461,6 +461,10 @@ closure, and line-count governance, not artifact presence alone.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
+  V7 executable identity and strict V6-to-V7 migration are implemented. The
+  pure storage-to-transfer preparation and all-six-tissue onset deployment pass
+  focused tests; public persistent mutation, mineral-N finalization, material
+  proposals, and all-owner commit remain pending.
 - [ ] Execute Milestone 5: whole transaction and atomic commit.
 - [ ] Execute Milestone 6: diagnostic consumer and Critical closure.
 - [ ] Complete dual reviews, finding disposition, dual terminal verification,
@@ -506,6 +510,12 @@ closure, and line-count governance, not artifact presence alone.
   active selection, generalized-Jacobian branches, complete diagnostics and
   rollback, plus immutable cap-active vectors. Implementation and review of
   those rules remain active, so the public transaction stays fail-closed.
+- Observation: changing the active model digest can silently retarget an older
+  identity-only migration if it imports the active `MODEL_SHA256`.
+  Evidence: the V7 integration audit found V5-to-V6 rebinding coupled to the
+  active digest; it is now frozen explicitly to `V6_MODEL_SHA256`, and
+  historical validators are version-bound rather than inheriting V7 evergreen
+  semantics.
 
 ## Decision Log
 
@@ -558,6 +568,12 @@ closure, and line-count governance, not artifact presence alone.
   it changes capped execution authority and runtime identity without changing
   this package's objective or write set.
   Date/Author: 2026-08-13 / Codex, implementing user direction.
+- Decision: resume this same package against V7 and preserve the historical
+  V6 portability and E19/E20 HOLD records.
+  Rationale: V7 supplies the exact six-tissue storage-to-transfer authority
+  requested by `GAP-VEGETATION-027`; it changes model identity and phenology
+  ordering without changing this package's objective or write set.
+  Date/Author: 2026-08-13 / Codex, implementing user direction.
 
 ## Outcomes & Retrospective
 
@@ -577,6 +593,13 @@ Continuation outcome (in progress): commit `c06420688` remains the immutable
 failed-scaffold checkpoint. The package resumed in-place to correct every
 accepted Review-B finding; no finding is deferred, rejected, or moved to a
 follow-on package.
+
+V7 continuation outcome (in progress): authority commit `83db91251` lifts the
+historical E19/E20 storage-transfer HOLD. Runtime identity, exact historical
+V6 validation, V6-to-V7 migration, evergreen fail-closed semantics, pure
+half-storage preparation, and all-six onset deployment are implemented. The
+complete public transaction remains fail-closed before persistent E16--E22
+mutation and no partial candidate or commit is published.
 
 Continuation outcome (HOLD): remediation corrected substantial E01--E22
 implementation defects, but fresh review exposed a canonical omission for

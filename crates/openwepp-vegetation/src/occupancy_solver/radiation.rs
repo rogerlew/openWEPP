@@ -367,7 +367,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let (mut configuration, mut state) = crate::transaction::v6_identity_rebound_fixture();
+        let (mut configuration, mut state) = crate::transaction::v7_identity_rebound_fixture();
 
         let upper = configuration.strata.get_mut(0).expect("upper config");
         upper.stratum_id = stratum_id("upper");

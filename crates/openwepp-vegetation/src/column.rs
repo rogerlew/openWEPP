@@ -959,7 +959,7 @@ mod tests {
     }
 
     fn shared_state() -> StratumSharedState {
-        crate::transaction::v6_identity_rebound_fixture()
+        crate::transaction::v7_identity_rebound_fixture()
             .1
             .strata
             .remove(&stratum_id("tree-1"))
@@ -987,7 +987,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let (mut config, _) = crate::transaction::v6_identity_rebound_fixture();
+        let (mut config, _) = crate::transaction::v7_identity_rebound_fixture();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
             TopologyTile {

@@ -326,14 +326,37 @@ impl CoupledOwnedState {
 
     #[allow(clippy::too_many_lines)]
     pub fn validate(&self, config: &VegetationConfiguration) -> Result<(), VegetationError> {
-        config.validate()?;
+        self.validate_for_model(config, MODEL_SHA256, true)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub(crate) fn validate_historical(
+        &self,
+        config: &VegetationConfiguration,
+        expected_model_sha256: &str,
+    ) -> Result<(), VegetationError> {
+        self.validate_for_model(config, expected_model_sha256, false)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn validate_for_model(
+        &self,
+        config: &VegetationConfiguration,
+        expected_model_sha256: &str,
+        enforce_v7_semantics: bool,
+    ) -> Result<(), VegetationError> {
+        if enforce_v7_semantics {
+            config.validate()?;
+        } else {
+            config.validate_historical(expected_model_sha256)?;
+        }
         if self.model_definition_sha256.len() != 64
             || self.configuration_sha256.len() != 64
             || self.state_sha256.len() != 64
         {
             return Err(VegetationError::Domain("state identity"));
         }
-        if self.model_definition_sha256 != MODEL_SHA256
+        if self.model_definition_sha256 != expected_model_sha256
             || self.model_definition_sha256 != config.model_definition_sha256
             || self.configuration_sha256 != config.configuration_sha256
         {
@@ -478,6 +501,19 @@ impl CoupledOwnedState {
                 .iter()
                 .find(|candidate| candidate.stratum_id == *stratum_id)
                 .ok_or(VegetationError::Domain("missing stratum configuration"))?;
+            if enforce_v7_semantics
+                && stratum.phenology_type == crate::PhenologyType::Evergreen
+                && state.tissues.values().any(|pool| {
+                    pool.storage.carbon != 0.0
+                        || pool.storage.nitrogen != 0.0
+                        || pool.transfer.carbon != 0.0
+                        || pool.transfer.nitrogen != 0.0
+                })
+            {
+                return Err(VegetationError::Domain(
+                    "V7 evergreen storage/transfer state",
+                ));
+            }
             validate_displayed_leaf_identity(state, stratum)?;
         }
         Ok(())
@@ -661,7 +697,7 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Executes the complete uncommitted V6 water phase, then fails closed at the
+/// Executes the complete uncommitted V7 water phase, then fails closed at the
 /// still-unimplemented shared C/N and multi-owner transaction boundary.
 pub fn execute_candidate(
     model: &ModelDefinition,
@@ -673,7 +709,7 @@ pub fn execute_candidate(
 ) -> Result<CoupledCandidate, VegetationError> {
     crate::water_phase::execute_uncommitted_water_phase(model, config, beginning, forcing, water)?;
     Err(VegetationError::Unsupported(
-        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
     ))
 }
 
@@ -704,7 +740,7 @@ pub fn execute_candidate_with_failure(
     }
     let _ = nitrogen;
     Err(VegetationError::Unsupported(
-        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
     ))
 }
 
@@ -847,7 +883,7 @@ pub(crate) fn validate_candidate_inputs(
 }
 
 #[cfg(test)]
-pub(crate) fn v6_identity_rebound_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
+pub(crate) fn v7_identity_rebound_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
     let mut config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
         "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
     ))
@@ -860,17 +896,22 @@ pub(crate) fn v6_identity_rebound_fixture() -> (VegetationConfiguration, Coupled
     crate::migration::validate_v5_initial_fixture(&config, &state)
         .expect("complete historical V5 fixture identity, digest, and lineage");
 
+    for stratum in &mut config.strata {
+        if stratum.phenology_type == crate::PhenologyType::Evergreen {
+            stratum.current_growth_fraction = 1.0;
+        }
+    }
     config.model_definition_sha256 = MODEL_SHA256.into();
-    config.configuration_sha256 = config.canonical_sha256().expect("V6 configuration digest");
+    config.configuration_sha256 = config.canonical_sha256().expect("V7 configuration digest");
     state.model_definition_sha256 = MODEL_SHA256.into();
     state.configuration_sha256 = config.configuration_sha256.clone();
-    state.state_sha256 = state.canonical_sha256().expect("V6 state digest");
+    state.state_sha256 = state.canonical_sha256().expect("V7 state digest");
     config.initial_state_sha256 = state.state_sha256.clone();
 
     config
         .validate()
-        .expect("identity-rebound V6 configuration");
-    state.validate(&config).expect("identity-rebound V6 state");
+        .expect("identity-rebound V7 configuration");
+    state.validate(&config).expect("identity-rebound V7 state");
     (config, state)
 }
 
@@ -905,7 +946,7 @@ mod milestone_one_tests {
     }
 
     fn fixture_config() -> VegetationConfiguration {
-        let (mut config, _) = v6_identity_rebound_fixture();
+        let (mut config, _) = v7_identity_rebound_fixture();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
             TopologyTile {
@@ -942,7 +983,7 @@ mod milestone_one_tests {
     }
 
     fn shared_state() -> StratumSharedState {
-        let (_, mut state) = v6_identity_rebound_fixture();
+        let (_, mut state) = v7_identity_rebound_fixture();
         state
             .strata
             .remove(&stratum_id("tree-1"))
@@ -1106,7 +1147,7 @@ mod milestone_one_tests {
 
     #[test]
     fn v4_occupancy_entries_reject_legacy_tuple_sequences() {
-        let (config, _) = v6_identity_rebound_fixture();
+        let (config, _) = v7_identity_rebound_fixture();
         let state: serde_json::Value = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
         ))
@@ -1216,7 +1257,7 @@ mod milestone_one_tests {
         leaf.transfer.carbon = 20_000.0;
         refresh_state(&mut donor_poison, &mut config);
         donor_poison
-            .validate(&config)
+            .validate_historical(&config, MODEL_SHA256)
             .expect("non-displayed C cannot own area");
 
         let mut one_bit = state.clone();
@@ -1241,7 +1282,7 @@ mod milestone_one_tests {
         shared.stem_area = 0.0;
         shared.root_area = 0.0;
         refresh_state(&mut zero, &mut config);
-        zero.validate(&config)
+        zero.validate_historical(&config, MODEL_SHA256)
             .expect("zero displayed leaf has exact zero area");
         zero.strata
             .get_mut(&upper)
@@ -1253,7 +1294,7 @@ mod milestone_one_tests {
             .nitrogen = 0.001;
         refresh_state(&mut zero, &mut config);
         assert_eq!(
-            zero.validate(&config),
+            zero.validate_historical(&config, MODEL_SHA256),
             Err(VegetationError::Domain("V4 displayed leaf N without LAI"))
         );
     }
@@ -1520,10 +1561,7 @@ mod milestone_one_tests {
     fn complete_state_digest_binds_order_identity_and_every_lane_field() {
         let (config, state) = fixture();
         let original = state.canonical_sha256().expect("digest");
-        assert_eq!(
-            original,
-            "7f527c8ad6df7b030ba86f77c987a826b168a96b8b15a7c3937b2e5ac9ce252b"
-        );
+        assert_eq!(original, state.state_sha256);
         let bytes = serde_json::to_vec(&state).expect("bytes");
         let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("value");
         value["occupancies"]
@@ -1621,7 +1659,7 @@ mod milestone_one_tests {
 
     #[test]
     #[allow(clippy::too_many_lines)]
-    fn public_transaction_executes_v6_water_then_fails_closed_before_shared_cn() {
+    fn public_transaction_executes_v7_water_then_fails_closed_before_shared_cn() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn authorize(
@@ -1689,7 +1727,7 @@ mod milestone_one_tests {
                 Ok(Vec::new())
             }
         }
-        let (config, state) = v6_identity_rebound_fixture();
+        let (config, state) = v7_identity_rebound_fixture();
         let model = crate::load_model_definition().expect("model");
         let forcing = SnowFreeForcing {
             air_temperature_k: 298.15,
@@ -1725,7 +1763,7 @@ mod milestone_one_tests {
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
+                "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
             ))
         );
 
@@ -1785,7 +1823,7 @@ pub fn validate_and_commit(
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
+        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete",
     ))
 }
 

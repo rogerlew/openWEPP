@@ -682,11 +682,11 @@ mod tests {
     use super::*;
     use crate::occupancy_solver::request_pass::execute_potential_column_pass;
     use crate::transaction::{
-        CoupledOwnedState, SnowFreeForcing, SoilLayerForcing, v6_identity_rebound_fixture,
+        CoupledOwnedState, SnowFreeForcing, SoilLayerForcing, v7_identity_rebound_fixture,
     };
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        v6_identity_rebound_fixture()
+        v7_identity_rebound_fixture()
     }
 
     fn forcing() -> SnowFreeForcing {

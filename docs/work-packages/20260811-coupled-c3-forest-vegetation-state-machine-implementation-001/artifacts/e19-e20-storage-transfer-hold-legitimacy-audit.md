@@ -1,6 +1,6 @@
 # E19-to-E20 Storage/Transfer Authority Hold Audit
 
-Status: `BLOCKED / seasonal onset requiring storage-to-transfer preparation only`
+Status: `HISTORICAL HOLD LIFTED / V7 authority admitted at 83db91251`
 
 Evidence class: `Static` canonical-authority audit plus `Ran` unaffected E16/E17 operand gates.
 

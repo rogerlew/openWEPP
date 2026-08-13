@@ -14,11 +14,17 @@ use crate::{
 };
 
 mod v5_to_v6;
+mod v6_to_v7;
 #[cfg(test)]
 pub(crate) use v5_to_v6::validate_v5_initial_fixture;
 pub use v5_to_v6::{
     IdentityBoundNumericalFailureDiagnostics, V5ToV6Migration, V5ToV6MigrationError,
     migrate_v5_snapshot,
+};
+pub use v6_to_v7::{
+    V6ToV7ElementIdentity, V6ToV7Migration, V6ToV7MigrationError, V6ToV7MigrationField,
+    V6ToV7MigrationReport, V6ToV7MigrationResult, V6ToV7PoolIdentity, V6ToV7UnresolvedField,
+    migrate_v6_snapshot,
 };
 
 /// Immutable identity of the historical state schema accepted by this module.
@@ -36,6 +42,9 @@ pub const V4_MODEL_SHA256: &str =
 /// Immutable identity of the historical V5 capped-pass definition.
 pub const V5_MODEL_SHA256: &str =
     "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3";
+/// Immutable identity of the historical V6 diagnostic-portability definition.
+pub const V6_MODEL_SHA256: &str =
+    "a5a5ed77b4672b97b7c50103089067d70ade03bc1b5aff4e08ba6fdffc05d426";
 /// Version of the offline, non-runtime `RHESSys` definition mapping table.
 pub const RHESSYS_MAPPING_VERSION: &str = "RHESSYS_TO_OPENWEPP_C3_WOODY_V3_V1";
 
@@ -1101,20 +1110,9 @@ fn valid_historical_configuration(
     configuration: &VegetationConfiguration,
     expected_model_sha256: &str,
 ) -> bool {
-    if configuration.model_definition_sha256 != expected_model_sha256
-        || configuration.canonical_sha256().ok().as_ref()
-            != Some(&configuration.configuration_sha256)
-    {
-        return false;
-    }
-    let mut rebound = configuration.clone();
-    rebound.model_definition_sha256 = MODEL_SHA256.into();
-    rebound.configuration_sha256.clear();
-    let Ok(digest) = rebound.canonical_sha256() else {
-        return false;
-    };
-    rebound.configuration_sha256 = digest;
-    rebound.validate().is_ok()
+    configuration
+        .validate_historical(expected_model_sha256)
+        .is_ok()
 }
 
 fn valid_historical_v4_state(
@@ -1129,36 +1127,9 @@ fn valid_historical_state(
     configuration: &VegetationConfiguration,
     expected_model_sha256: &str,
 ) -> bool {
-    if !valid_historical_configuration(configuration, expected_model_sha256)
-        || state.model_definition_sha256 != expected_model_sha256
-        || state.configuration_sha256 != configuration.configuration_sha256
-        || state.canonical_sha256().ok().as_ref() != Some(&state.state_sha256)
-    {
-        return false;
-    }
-    let mut rebound_configuration = configuration.clone();
-    rebound_configuration.model_definition_sha256 = MODEL_SHA256.into();
-    rebound_configuration.configuration_sha256.clear();
-    let Ok(configuration_digest) = rebound_configuration.canonical_sha256() else {
-        return false;
-    };
-    rebound_configuration.configuration_sha256 = configuration_digest;
-
-    let mut rebound_state = state.clone();
-    rebound_state.model_definition_sha256 = MODEL_SHA256.into();
-    rebound_state
-        .configuration_sha256
-        .clone_from(&rebound_configuration.configuration_sha256);
-    let Ok(state_digest) = rebound_state.canonical_sha256() else {
-        return false;
-    };
-    rebound_state.state_sha256 = state_digest;
-    if rebound_state.last_transaction_id == 0 {
-        rebound_configuration
-            .initial_state_sha256
-            .clone_from(&rebound_state.state_sha256);
-    }
-    rebound_state.validate(&rebound_configuration).is_ok()
+    state
+        .validate_historical(configuration, expected_model_sha256)
+        .is_ok()
 }
 
 impl V3StratumSharedState {
@@ -2734,6 +2705,11 @@ mod tests {
     }
 
     fn bind_valid_root_layers(configuration: &mut VegetationConfiguration, count: usize) {
+        for stratum in &mut configuration.strata {
+            if stratum.phenology_type == crate::PhenologyType::Evergreen {
+                stratum.current_growth_fraction = 1.0;
+            }
+        }
         let count = count.max(1);
         let fraction = 1.0 / f64::from(u32::try_from(count).expect("small test roots"));
         configuration.strata[0].root_layers = (0..count)

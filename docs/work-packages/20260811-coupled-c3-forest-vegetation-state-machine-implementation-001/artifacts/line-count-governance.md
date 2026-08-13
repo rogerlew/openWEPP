@@ -2,6 +2,16 @@
 
 Status: `WARN / V5 remediation in progress; no 3,000-line blocker`
 
+## 2026-08-13 V7 Focused Recount
+
+Ran after formatting: `carbon_nitrogen.rs` 2,020 lines; `migration.rs` 2,866
+lines; `migration/v6_to_v7.rs` 598 lines; `transaction.rs` 1,843 lines. The
+existing `migration.rs` WARN remains below the 3,000-line blocker, and the V7
+migration was placed in a separate cohesive module. `carbon_nitrogen.rs` now
+enters WARN solely because the independent V7 fixture and poison tests remain
+module-local; split those tests into a dedicated file before package closure.
+Neither file reaches the 3,000-line closure blocker.
+
 Evidence mode: `Ran`
 
 Ran: `transaction.rs` is 1,069 lines and the dedicated `column.rs` is 1,479

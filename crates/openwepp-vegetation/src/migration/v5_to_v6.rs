@@ -6,10 +6,13 @@ use openwepp_kernel_contract::TransactionId;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use super::{V5_MODEL_SHA256, identity_only_configuration_payload_matches, valid_historical_state};
+use super::{
+    V5_MODEL_SHA256, V6_MODEL_SHA256, identity_only_configuration_payload_matches,
+    valid_historical_state,
+};
 use crate::diagnostics::{CoupledSolvePass, NumericalFailureDiagnostics, SolveIdentity};
 use crate::error::NumericalFailureCategory;
-use crate::{CoupledOwnedState, MODEL_SHA256, VegetationConfiguration};
+use crate::{CoupledOwnedState, VegetationConfiguration};
 
 /// Numerical failure payload plus every external identity needed to prove its
 /// configuration, rollback state, and attempted-transaction lineage.
@@ -85,7 +88,10 @@ pub fn migrate_v5_snapshot(
     validate_source_state(source_configuration, source_initial_state, source_state)?;
     validate_source_diagnostics(source_configuration, source_state, source_diagnostics)?;
 
-    if target_configuration.validate().is_err() {
+    if target_configuration
+        .validate_historical(V6_MODEL_SHA256)
+        .is_err()
+    {
         return Err(V5ToV6MigrationError::InvalidV6Configuration);
     }
     if !identity_only_configuration_payload_matches(source_configuration, target_configuration) {
@@ -105,13 +111,13 @@ pub fn migrate_v5_snapshot(
         return Err(V5ToV6MigrationError::InvalidV6Configuration);
     }
     initial_state
-        .validate(target_configuration)
+        .validate_historical(target_configuration, V6_MODEL_SHA256)
         .map_err(|_| V5ToV6MigrationError::TargetInitialStateRejected)?;
 
     let state = rebind_state(source_state, target_configuration)
         .map_err(|_| V5ToV6MigrationError::TargetStateRejected)?;
     state
-        .validate(target_configuration)
+        .validate_historical(target_configuration, V6_MODEL_SHA256)
         .map_err(|_| V5ToV6MigrationError::TargetStateRejected)?;
 
     let diagnostics = rebind_diagnostics(source_diagnostics, &state, target_configuration)
@@ -132,13 +138,13 @@ fn derive_target_configuration(
     initial_state: &CoupledOwnedState,
 ) -> Result<VegetationConfiguration, crate::VegetationError> {
     let mut target = source.clone();
-    target.model_definition_sha256 = MODEL_SHA256.into();
+    target.model_definition_sha256 = V6_MODEL_SHA256.into();
     target.configuration_sha256.clear();
     target.configuration_sha256 = target.canonical_sha256()?;
     target
         .initial_state_sha256
         .clone_from(&initial_state.state_sha256);
-    target.validate()?;
+    target.validate_historical(V6_MODEL_SHA256)?;
     Ok(target)
 }
 
@@ -152,13 +158,13 @@ fn validate_source_configuration(
         return Err(V5ToV6MigrationError::InvalidV5ConfigurationDigest);
     }
     let mut rebound = configuration.clone();
-    rebound.model_definition_sha256 = MODEL_SHA256.into();
+    rebound.model_definition_sha256 = V6_MODEL_SHA256.into();
     rebound.configuration_sha256.clear();
     rebound.configuration_sha256 = rebound
         .canonical_sha256()
         .map_err(|_| V5ToV6MigrationError::InvalidV5Configuration)?;
     rebound
-        .validate()
+        .validate_historical(V6_MODEL_SHA256)
         .map_err(|_| V5ToV6MigrationError::InvalidV5Configuration)
 }
 
@@ -235,7 +241,7 @@ fn validate_source_diagnostics(
     validate_failure_category(envelope.failure_category, &envelope.diagnostics)
         .map_err(|()| V5ToV6MigrationError::InvalidV5DiagnosticPayload)?;
     let mut rebound = envelope.diagnostics.clone();
-    rebound.model_definition_sha256 = MODEL_SHA256.into();
+    rebound.model_definition_sha256 = crate::MODEL_SHA256.into();
     rebound
         .validate()
         .map_err(|_| V5ToV6MigrationError::InvalidV5DiagnosticPayload)
@@ -327,7 +333,7 @@ fn rebind_state(
     target_configuration: &VegetationConfiguration,
 ) -> Result<CoupledOwnedState, serde_json::Error> {
     let mut target = source.clone();
-    target.model_definition_sha256 = MODEL_SHA256.into();
+    target.model_definition_sha256 = V6_MODEL_SHA256.into();
     target
         .configuration_sha256
         .clone_from(&target_configuration.configuration_sha256);
@@ -344,14 +350,14 @@ fn rebind_diagnostics(
     target_configuration: &VegetationConfiguration,
 ) -> Result<IdentityBoundNumericalFailureDiagnostics, serde_json::Error> {
     let mut target = source.clone();
-    target.model_definition_sha256 = MODEL_SHA256.into();
+    target.model_definition_sha256 = V6_MODEL_SHA256.into();
     target
         .configuration_sha256
         .clone_from(&target_configuration.configuration_sha256);
     target
         .beginning_state_sha256
         .clone_from(&target_state.state_sha256);
-    target.diagnostics.model_definition_sha256 = MODEL_SHA256.into();
+    target.diagnostics.model_definition_sha256 = V6_MODEL_SHA256.into();
     target.diagnostics_sha256.clear();
     target.diagnostics_sha256 = target.canonical_sha256()?;
     Ok(target)
@@ -362,16 +368,22 @@ fn validate_v6_diagnostics(
     state: &CoupledOwnedState,
     diagnostics: &IdentityBoundNumericalFailureDiagnostics,
 ) -> Result<(), ()> {
-    if diagnostics.model_definition_sha256 != MODEL_SHA256
+    if diagnostics.model_definition_sha256 != V6_MODEL_SHA256
         || diagnostics.configuration_sha256 != configuration.configuration_sha256
         || diagnostics.beginning_state_sha256 != state.state_sha256
         || diagnostics.canonical_sha256().ok().as_ref() != Some(&diagnostics.diagnostics_sha256)
-        || diagnostics.diagnostics.validate().is_err()
+        || !historical_diagnostics_are_valid(&diagnostics.diagnostics)
     {
         return Err(());
     }
     validate_failure_category(diagnostics.failure_category, &diagnostics.diagnostics)?;
     validate_diagnostic_lineage(configuration, state, &diagnostics.diagnostics)
+}
+
+fn historical_diagnostics_are_valid(diagnostics: &NumericalFailureDiagnostics) -> bool {
+    let mut rebound = diagnostics.clone();
+    rebound.model_definition_sha256 = crate::MODEL_SHA256.into();
+    rebound.validate().is_ok()
 }
 
 #[cfg(test)]

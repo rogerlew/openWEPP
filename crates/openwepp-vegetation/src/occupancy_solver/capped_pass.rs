@@ -806,7 +806,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let (mut configuration, original) = crate::transaction::v6_identity_rebound_fixture();
+        let (mut configuration, original) = crate::transaction::v7_identity_rebound_fixture();
         let tile_id = configuration.topology_tiles[0].tile_id.clone();
         let mut upper_config = configuration.strata.remove(0);
         upper_config.stratum_id = stratum_id("upper");

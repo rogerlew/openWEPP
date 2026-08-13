@@ -1,6 +1,6 @@
 # Equation Module Map
 
-Status: `executing / V6 public water phase active / full candidate fail-closed at E16`
+Status: `executing / V7 onset kernel active / full candidate fail-closed at E16`
 
 Evidence mode: `Static + Ran`
 
@@ -42,13 +42,19 @@ fails closed before shared C/N and the all-owner candidate.
 | E17 | accepted class Rd operands; `aggregate_stratum_carbon`; `update_t10`; `maintenance_respiration`; `carbon_offer` | V3 respiration plus V4 displayed-leaf-N ownership vectors | class-resolved leaf Rd debited once; storage/transfer leaf-N poison; non-leaf tissue/layer respiration and signed reserve priority | final carbon offer | capped Rd/T10 operands retained; persistent public transition pending |
 | E18 | `nitrogen_demand`; `finalize_growth` | six-tissue allocation vector | N-sufficient/limited common-eta allocation and NSC retention | post-N-authorization state | focused pass |
 | E19 | pending V2 post-occupancy aggregation; proportional BGC arbitration | request/finalized bucket vectors | layer/species identity and unused-authorization poisons | public N request/auth/use path | V2 public path pending |
-| E20 | `advance_phenology`; V4 displayed-leaf-C/SLA area ownership | V4 shared-state and 155 whole-state mutation vectors | storage/transfer leaf-C area poisons; removed offset-field shape guards; onset/offset and GSI timing posture | persistent stratum state | helper pass; `GAP-VEGETATION-027` blocks onset requiring storage-to-transfer preparation |
+| E20 | `prepare_storage_for_onset`; `advance_phenology`; V4 displayed-leaf-C/SLA area ownership | V7 six-tissue preparation, first/multi-interval onset, terminal remainder, evergreen, migration, and poison vectors | exact half of beginning storage; add to existing transfer; all-six C/N deployment; exact-zero all-12 Active gate; no same-interval recycling; evergreen rejection; byte-identical failure input | persistent stratum state | V7 pure kernel and migration focused PASS; public persistent transaction pending |
 | E21 | `advance_turnover` | fine-root/livewood/CWD vectors | ordered bounded turnover and receiver identity | material proposals | focused pass |
 | E22 | `material_transfer`; BGC `MaterialReceipt` | litter C/N/DM vectors | carbon-as-dry-matter and duplicate-receipt poisons | BGC receiver candidate | focused pass |
 
 The public consumer now executes E01--E15 through an explicitly uncommittable
 water stage, constructs typed D/A/F and a receiving-owner water debit, and then
 fails closed at E16. It does not claim E16--E22 or an all-owner commit.
+
+V7 lifts `GAP-VEGETATION-027` and implements the standalone E20 preparation and
+deployment kernel. This is not yet a public E20 claim: turnover/retranslocation,
+E19 nitrogen authorization/allocation, proposals, independent ledgers, and the
+atomic multi-owner candidate remain to be composed from immutable beginning
+state.
 
 All earlier `focused pass` rows describe the historical single-topology
 remediation checkpoint. Each row must be revalidated through the V4 public path;

@@ -323,7 +323,7 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        crate::transaction::v6_identity_rebound_fixture()
+        crate::transaction::v7_identity_rebound_fixture()
     }
 
     fn forcing(rain_kg_m2: f64) -> SnowFreeForcing {

@@ -199,7 +199,7 @@ fn fixture() -> Fixture {
         .expect("V5 diagnostic digest");
 
     let mut target_configuration = source_configuration.clone();
-    target_configuration.model_definition_sha256 = MODEL_SHA256.into();
+    target_configuration.model_definition_sha256 = V6_MODEL_SHA256.into();
     target_configuration.configuration_sha256.clear();
     target_configuration.configuration_sha256 = target_configuration
         .canonical_sha256()
@@ -208,7 +208,7 @@ fn fixture() -> Fixture {
         rebind_state(&source_initial_state, &target_configuration).expect("V6 initial state");
     target_configuration.initial_state_sha256 = migrated_initial.state_sha256;
     target_configuration
-        .validate()
+        .validate_historical(V6_MODEL_SHA256)
         .expect("complete V6 configuration");
 
     Fixture {
@@ -464,7 +464,7 @@ fn stale_receipts_follow_typed_precedence_and_return_no_candidate() {
     let before = source_bytes(&fixture);
 
     let mut stale_configuration = fixture.source_configuration.clone();
-    stale_configuration.model_definition_sha256 = MODEL_SHA256.into();
+    stale_configuration.model_definition_sha256 = V6_MODEL_SHA256.into();
     stale_configuration.configuration_sha256 = "0".repeat(64);
     assert_eq!(
         migrate_v5_snapshot(

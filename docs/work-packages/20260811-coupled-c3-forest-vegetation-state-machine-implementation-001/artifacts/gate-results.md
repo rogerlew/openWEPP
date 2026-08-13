@@ -514,3 +514,20 @@ authority-blocked persistent transition.
 See `artifacts/e19-e20-storage-transfer-hold-legitimacy-audit.md`. This is a
 bounded authority HOLD only for execution requiring the missing seasonal
 storage-to-transfer bridge; the public all-owner candidate remains fail closed.
+
+## V7 Storage-Transfer HOLD Lift And Focused Runtime Increment
+
+Historical failures and the V6 HOLD text above are preserved as evidence.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| V7 authority predecessor | PASS / Ran | authority commit `83db91251`; `SC-VEGETATION-001` v11 approved/active; V7 SHA-256 `a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f`; dual reviews, heavy gates, and dual terminal verification passed |
+| executable registry identity | PASS / Ran | registry bytes equal the released V7 definition; V1--V6 bytes remain historical/non-executable |
+| V6-to-V7 migration | PASS / Ran | strict version-bound source identity/digest/lineage; seasonal nonidentity preservation; no onset execution; deterministic exhaustive evergreen report; no candidate/source mutation on failure |
+| historical migration isolation | PASS / Ran | V5-to-V6 target is explicitly frozen to `V6_MODEL_SHA256`; historical configuration/state validation does not inherit V7 evergreen rules |
+| V7 E20 kernel | PASS / Ran | exact 0.5 beginning-storage preparation, add-to-existing transfer, independent six-tissue C/N closure, all-six deployment, exact terminal remainder, exact-zero all-12 Active gate, no repeated preparation, current-interval growth exclusion, and failure rollback |
+| vegetation crate | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick --no-fail-fast`: 203/203 |
+| implementation contract | PASS / Ran | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick --no-fail-fast`: 13/13 after V7 registry/fail-closed reconciliation |
+| strict affected Clippy | PASS / Ran | `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` |
+| formatting/diff hygiene | PASS / Ran | `cargo fmt --all -- --check`; `git diff --check` |
+| public persistent candidate | NOT RUN / intentionally fail-closed | V7 public water stage still returns typed implementation-incomplete before persistent E16--E22 mutation; no candidate or commit claim |

@@ -3,7 +3,18 @@ use crate::VegetationError;
 use crate::photosynthesis::peaked_response;
 use crate::transaction::PhenologyPhase;
 use openwepp_kernel_contract::{MaterialDonorClass, ResourceOwnerId, SoilLayerId, TransactionId};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+
+const ALL_TISSUES: [Tissue; 6] = [
+    Tissue::Leaf,
+    Tissue::FineRoot,
+    Tissue::LiveStem,
+    Tissue::DeadStem,
+    Tissue::LiveCoarseRoot,
+    Tissue::DeadCoarseRoot,
+];
+
+const V7_CN_CLOSURE_TOLERANCE: f64 = 1.0e-12;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -31,6 +42,70 @@ pub enum Tissue {
     DeadStem,
     LiveCoarseRoot,
     DeadCoarseRoot,
+}
+
+fn validate_complete_tissue_state(
+    tissues: &BTreeMap<Tissue, TissuePool>,
+) -> Result<(), VegetationError> {
+    if tissues.len() != ALL_TISSUES.len()
+        || ALL_TISSUES
+            .iter()
+            .any(|tissue| !tissues.contains_key(tissue))
+    {
+        return Err(VegetationError::Domain("V7 tissue identity set"));
+    }
+    for pool in tissues.values() {
+        for element in [pool.display, pool.storage, pool.transfer] {
+            if [element.carbon, element.nitrogen]
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+            {
+                return Err(VegetationError::Domain("V7 tissue C/N pool"));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Prepare all six seasonal tissue reserves for an onset edge.
+///
+/// This is a pure transformation of the immutable beginning state. It moves
+/// exactly half of each tissue's storage C and N into the corresponding
+/// preexisting transfer pool, without changing display or any external ledger.
+pub fn prepare_storage_for_onset(
+    beginning: &BTreeMap<Tissue, TissuePool>,
+) -> Result<BTreeMap<Tissue, TissuePool>, VegetationError> {
+    validate_complete_tissue_state(beginning)?;
+    let mut prepared = beginning.clone();
+    for tissue in ALL_TISSUES {
+        let before = beginning
+            .get(&tissue)
+            .ok_or(VegetationError::Domain("V7 tissue identity set"))?;
+        let after = prepared
+            .get_mut(&tissue)
+            .ok_or(VegetationError::Domain("V7 tissue identity set"))?;
+        let prepared_c = 0.5 * before.storage.carbon;
+        let prepared_n = 0.5 * before.storage.nitrogen;
+        after.storage.carbon = before.storage.carbon - prepared_c;
+        after.storage.nitrogen = before.storage.nitrogen - prepared_n;
+        after.transfer.carbon = before.transfer.carbon + prepared_c;
+        after.transfer.nitrogen = before.transfer.nitrogen + prepared_n;
+
+        let carbon_residual = before.storage.carbon + before.transfer.carbon
+            - after.storage.carbon
+            - after.transfer.carbon;
+        let nitrogen_residual = before.storage.nitrogen + before.transfer.nitrogen
+            - after.storage.nitrogen
+            - after.transfer.nitrogen;
+        let residual = carbon_residual.abs().max(nitrogen_residual.abs());
+        if !residual.is_finite() || residual > V7_CN_CLOSURE_TOLERANCE {
+            return Err(VegetationError::Closure {
+                ledger: "V7 storage-transfer preparation",
+                residual,
+            });
+        }
+    }
+    Ok(prepared)
 }
 
 pub use openwepp_kernel_contract::MaterialReceiverClass as ReceiverClass;
@@ -608,7 +683,43 @@ pub struct PhenologyUpdate {
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub fn advance_phenology(
-    tissues: &mut std::collections::BTreeMap<Tissue, TissuePool>,
+    tissues: &mut BTreeMap<Tissue, TissuePool>,
+    mode: PhenologyMode,
+    phase: PhenologyPhase,
+    onset_remaining_s: f64,
+    offset_remaining_s: f64,
+    previous_gsi: f64,
+    gsi: f64,
+    dt_s: f64,
+    on_threshold: f64,
+    off_threshold: f64,
+    onset_duration_s: f64,
+    offset_duration_s: f64,
+    p: &CnParameters,
+) -> Result<PhenologyUpdate, VegetationError> {
+    let mut candidate = tissues.clone();
+    let update = advance_phenology_candidate(
+        &mut candidate,
+        mode,
+        phase,
+        onset_remaining_s,
+        offset_remaining_s,
+        previous_gsi,
+        gsi,
+        dt_s,
+        on_threshold,
+        off_threshold,
+        onset_duration_s,
+        offset_duration_s,
+        p,
+    )?;
+    *tissues = candidate;
+    Ok(update)
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn advance_phenology_candidate(
+    tissues: &mut BTreeMap<Tissue, TissuePool>,
     mode: PhenologyMode,
     mut phase: PhenologyPhase,
     mut onset_remaining_s: f64,
@@ -623,6 +734,7 @@ pub fn advance_phenology(
     p: &CnParameters,
 ) -> Result<PhenologyUpdate, VegetationError> {
     validate_parameters(p)?;
+    validate_complete_tissue_state(tissues)?;
     if [
         onset_remaining_s,
         offset_remaining_s,
@@ -650,6 +762,20 @@ pub fn advance_phenology(
     let mut transfers = Vec::new();
     let mut retranslocated_n = 0.0;
     if mode == PhenologyMode::Evergreen {
+        if p.current_growth_fraction.to_bits() != 1.0_f64.to_bits()
+            || tissues.values().any(|pool| {
+                [
+                    pool.storage.carbon,
+                    pool.storage.nitrogen,
+                    pool.transfer.carbon,
+                    pool.transfer.nitrogen,
+                ]
+                .iter()
+                .any(|value| *value != 0.0)
+            })
+        {
+            return Err(VegetationError::Domain("V7 evergreen storage/transfer"));
+        }
         route_fraction(
             tissues,
             Tissue::Leaf,
@@ -660,7 +786,10 @@ pub fn advance_phenology(
         )?;
         phase = PhenologyPhase::Active;
     } else {
-        if phase == PhenologyPhase::Dormant && previous_gsi < on_threshold && gsi > on_threshold {
+        let onset_edge =
+            phase == PhenologyPhase::Dormant && previous_gsi < on_threshold && gsi > on_threshold;
+        if onset_edge {
+            *tissues = prepare_storage_for_onset(tissues)?;
             phase = PhenologyPhase::Onset;
             onset_remaining_s = onset_duration_s;
         }
@@ -669,23 +798,59 @@ pub fn advance_phenology(
             offset_remaining_s = offset_duration_s;
         }
         if phase == PhenologyPhase::Onset {
-            let pool = tissues
-                .get_mut(&Tissue::Leaf)
-                .ok_or(VegetationError::Domain("missing leaf pool"))?;
             let fraction = if onset_remaining_s <= dt_s {
                 1.0
             } else {
                 (2.0 * dt_s / onset_remaining_s).min(1.0)
             };
-            let moved_c = pool.transfer.carbon * fraction;
-            let moved_n = pool.transfer.nitrogen * fraction;
-            pool.transfer.carbon -= moved_c;
-            pool.transfer.nitrogen -= moved_n;
-            pool.display.carbon += moved_c;
-            pool.display.nitrogen += moved_n;
+            let terminal_interval = fraction.to_bits() == 1.0_f64.to_bits();
+            for tissue in ALL_TISSUES {
+                let pool = tissues
+                    .get_mut(&tissue)
+                    .ok_or(VegetationError::Domain("V7 tissue identity set"))?;
+                let before_display = pool.display;
+                let before_transfer = pool.transfer;
+                let moved_c = if terminal_interval {
+                    before_transfer.carbon
+                } else {
+                    before_transfer.carbon * fraction
+                };
+                let moved_n = if terminal_interval {
+                    before_transfer.nitrogen
+                } else {
+                    before_transfer.nitrogen * fraction
+                };
+                pool.transfer.carbon = if terminal_interval {
+                    0.0
+                } else {
+                    before_transfer.carbon - moved_c
+                };
+                pool.transfer.nitrogen = if terminal_interval {
+                    0.0
+                } else {
+                    before_transfer.nitrogen - moved_n
+                };
+                pool.display.carbon = before_display.carbon + moved_c;
+                pool.display.nitrogen = before_display.nitrogen + moved_n;
+                let carbon_residual = before_display.carbon + before_transfer.carbon
+                    - pool.display.carbon
+                    - pool.transfer.carbon;
+                let nitrogen_residual = before_display.nitrogen + before_transfer.nitrogen
+                    - pool.display.nitrogen
+                    - pool.transfer.nitrogen;
+                let residual = carbon_residual.abs().max(nitrogen_residual.abs());
+                if !residual.is_finite() || residual > V7_CN_CLOSURE_TOLERANCE {
+                    return Err(VegetationError::Closure {
+                        ledger: "V7 onset deployment",
+                        residual,
+                    });
+                }
+            }
             onset_remaining_s = (onset_remaining_s - dt_s).max(0.0);
-            if pool.transfer.carbon <= 1e-15 && pool.transfer.nitrogen <= 1e-15 {
-                pool.transfer = ElementPool::default();
+            if tissues
+                .values()
+                .all(|pool| pool.transfer.carbon == 0.0 && pool.transfer.nitrogen == 0.0)
+            {
                 phase = PhenologyPhase::Active;
             }
         } else if phase == PhenologyPhase::Offset {
@@ -908,8 +1073,34 @@ fn validate_parameters(p: &CnParameters) -> Result<(), VegetationError> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp, clippy::cast_precision_loss)]
     use super::*;
+    use sha2::{Digest, Sha256};
     use std::collections::BTreeMap;
+
+    const V7_VECTORS: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_vectors.json"
+    ));
+
+    fn tissue_from_fixture(value: &str) -> Tissue {
+        match value {
+            "leaf" => Tissue::Leaf,
+            "fine_root" => Tissue::FineRoot,
+            "live_stem" => Tissue::LiveStem,
+            "dead_stem" => Tissue::DeadStem,
+            "live_coarse_root" => Tissue::LiveCoarseRoot,
+            "dead_coarse_root" => Tissue::DeadCoarseRoot,
+            _ => panic!("unknown V7 tissue fixture identity: {value}"),
+        }
+    }
+
+    fn fixture_pool(value: &serde_json::Value) -> ElementPool {
+        ElementPool {
+            carbon: value["carbon"].as_f64().expect("fixture carbon"),
+            nitrogen: value["nitrogen"].as_f64().expect("fixture nitrogen"),
+        }
+    }
 
     fn parameters() -> CnParameters {
         CnParameters {
@@ -957,6 +1148,579 @@ mod tests {
             (tissue, pool)
         })
         .collect()
+    }
+
+    fn distinct_v7_tissues() -> BTreeMap<Tissue, TissuePool> {
+        ALL_TISSUES
+            .into_iter()
+            .enumerate()
+            .map(|(index, tissue)| {
+                let scale = index as f64 + 1.0;
+                (
+                    tissue,
+                    TissuePool {
+                        display: ElementPool {
+                            carbon: 10.0 * scale,
+                            nitrogen: 0.1 * scale,
+                        },
+                        storage: ElementPool {
+                            carbon: 2.0 * scale,
+                            nitrogen: 0.02 * scale,
+                        },
+                        transfer: ElementPool {
+                            carbon: 0.5 * scale,
+                            nitrogen: 0.005 * scale,
+                        },
+                    },
+                )
+            })
+            .collect()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn seasonal_update(
+        tissues: &mut BTreeMap<Tissue, TissuePool>,
+        phase: PhenologyPhase,
+        onset_remaining_s: f64,
+        previous_gsi: f64,
+        gsi: f64,
+        dt_s: f64,
+        onset_duration_s: f64,
+    ) -> Result<PhenologyUpdate, VegetationError> {
+        advance_phenology(
+            tissues,
+            PhenologyMode::SeasonalDeciduous,
+            phase,
+            onset_remaining_s,
+            0.0,
+            previous_gsi,
+            gsi,
+            dt_s,
+            0.6,
+            0.3,
+            onset_duration_s,
+            4.0,
+            &parameters(),
+        )
+    }
+
+    #[test]
+    fn v7_preparation_moves_half_of_each_elements_storage_for_all_six_tissues() {
+        let beginning = distinct_v7_tissues();
+        let prepared = prepare_storage_for_onset(&beginning).expect("complete V7 preparation");
+
+        for tissue in ALL_TISSUES {
+            let before = beginning.get(&tissue).expect("beginning tissue");
+            let after = prepared.get(&tissue).expect("prepared tissue");
+            assert_eq!(after.display, before.display);
+            assert_eq!(after.storage.carbon, 0.5 * before.storage.carbon);
+            assert_eq!(after.storage.nitrogen, 0.5 * before.storage.nitrogen);
+            assert_eq!(
+                after.transfer.carbon,
+                before.transfer.carbon + 0.5 * before.storage.carbon
+            );
+            assert_eq!(
+                after.transfer.nitrogen,
+                before.transfer.nitrogen + 0.5 * before.storage.nitrogen
+            );
+            assert!(
+                (before.storage.carbon + before.transfer.carbon
+                    - after.storage.carbon
+                    - after.transfer.carbon)
+                    .abs()
+                    <= V7_CN_CLOSURE_TOLERANCE
+            );
+            assert!(
+                (before.storage.nitrogen + before.transfer.nitrogen
+                    - after.storage.nitrogen
+                    - after.transfer.nitrogen)
+                    .abs()
+                    <= V7_CN_CLOSURE_TOLERANCE
+            );
+        }
+    }
+
+    #[test]
+    fn v7_preparation_and_first_onset_match_independent_frozen_vectors() {
+        assert_eq!(
+            format!("{:x}", Sha256::digest(V7_VECTORS.as_bytes())),
+            "d99288741f3cac16f017ffe5cd11620bfde2055e32f18b82e538eaf6d48ef411"
+        );
+        let fixture: serde_json::Value =
+            serde_json::from_str(V7_VECTORS).expect("released V7 vectors");
+        let rows = fixture["six_tissue_vectors"]
+            .as_array()
+            .expect("six-tissue vectors");
+        let beginning = rows
+            .iter()
+            .map(|row| {
+                (
+                    tissue_from_fixture(row["tissue"].as_str().expect("tissue identity")),
+                    TissuePool {
+                        display: fixture_pool(&row["beginning"]["display"]),
+                        storage: fixture_pool(&row["beginning"]["storage"]),
+                        transfer: fixture_pool(&row["beginning"]["transfer"]),
+                    },
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let prepared = prepare_storage_for_onset(&beginning).expect("V7 fixture preparation");
+        for row in rows {
+            let tissue = tissue_from_fixture(row["tissue"].as_str().expect("tissue identity"));
+            let actual = prepared.get(&tissue).expect("prepared tissue");
+            assert_eq!(actual.display, fixture_pool(&row["prepared"]["display"]));
+            assert_eq!(actual.storage, fixture_pool(&row["prepared"]["storage"]));
+            assert_eq!(actual.transfer, fixture_pool(&row["prepared"]["transfer"]));
+        }
+
+        let mut first = beginning;
+        let update = advance_phenology(
+            &mut first,
+            PhenologyMode::SeasonalDeciduous,
+            PhenologyPhase::Dormant,
+            0.0,
+            0.0,
+            0.4,
+            0.7,
+            fixture["first_onset_interval"]["dt_s"]
+                .as_f64()
+                .expect("dt"),
+            fixture["constants"]["onset_threshold"]
+                .as_f64()
+                .expect("threshold"),
+            0.3,
+            fixture["first_onset_interval"]["remaining_s"]
+                .as_f64()
+                .expect("duration"),
+            345_600.0,
+            &parameters(),
+        )
+        .expect("V7 first onset interval");
+        assert_eq!(update.phase, PhenologyPhase::Onset);
+        for row in rows {
+            let tissue = tissue_from_fixture(row["tissue"].as_str().expect("tissue identity"));
+            let actual = first.get(&tissue).expect("first-ending tissue");
+            assert_eq!(
+                actual.display,
+                fixture_pool(&row["first_ending"]["display"])
+            );
+            assert_eq!(
+                actual.storage,
+                fixture_pool(&row["first_ending"]["storage"])
+            );
+            assert_eq!(
+                actual.transfer,
+                fixture_pool(&row["first_ending"]["transfer"])
+            );
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn v7_multi_interval_and_allocation_order_consume_frozen_vectors() {
+        let fixture: serde_json::Value =
+            serde_json::from_str(V7_VECTORS).expect("released V7 vectors");
+        let rows = fixture["six_tissue_vectors"]
+            .as_array()
+            .expect("six-tissue vectors");
+        let mut tissues = rows
+            .iter()
+            .map(|row| {
+                (
+                    tissue_from_fixture(row["tissue"].as_str().expect("tissue identity")),
+                    TissuePool {
+                        display: fixture_pool(&row["beginning"]["display"]),
+                        storage: fixture_pool(&row["beginning"]["storage"]),
+                        transfer: fixture_pool(&row["beginning"]["transfer"]),
+                    },
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let expected_moves = fixture["multi_interval_onset"]["deployment_amounts"]
+            .as_array()
+            .expect("deployment amounts");
+        let mut phase = PhenologyPhase::Dormant;
+        let mut remaining = 0.0;
+        let mut previous_gsi = 0.4;
+        for (index, expected) in expected_moves.iter().enumerate() {
+            let before = tissues.clone();
+            let update = advance_phenology(
+                &mut tissues,
+                PhenologyMode::SeasonalDeciduous,
+                phase,
+                remaining,
+                0.0,
+                previous_gsi,
+                0.7,
+                86_400.0,
+                0.5,
+                0.3,
+                345_600.0,
+                345_600.0,
+                &parameters(),
+            )
+            .expect("V7 onset interval");
+            for tissue in ALL_TISSUES {
+                let key = match tissue {
+                    Tissue::Leaf => "leaf",
+                    Tissue::FineRoot => "fine_root",
+                    Tissue::LiveStem => "live_stem",
+                    Tissue::DeadStem => "dead_stem",
+                    Tissue::LiveCoarseRoot => "live_coarse_root",
+                    Tissue::DeadCoarseRoot => "dead_coarse_root",
+                };
+                let moved = fixture_pool(&expected[key]);
+                let before_pool = before.get(&tissue).expect("before tissue");
+                let after_pool = tissues.get(&tissue).expect("after tissue");
+                let preparation = if index == 0 {
+                    ElementPool {
+                        carbon: 0.5 * before_pool.storage.carbon,
+                        nitrogen: 0.5 * before_pool.storage.nitrogen,
+                    }
+                } else {
+                    ElementPool::default()
+                };
+                assert!(
+                    (after_pool.display.carbon - before_pool.display.carbon - moved.carbon).abs()
+                        <= V7_CN_CLOSURE_TOLERANCE
+                );
+                assert!(
+                    (after_pool.display.nitrogen - before_pool.display.nitrogen - moved.nitrogen)
+                        .abs()
+                        <= V7_CN_CLOSURE_TOLERANCE
+                );
+                assert!(
+                    (before_pool.transfer.carbon + preparation.carbon
+                        - after_pool.transfer.carbon
+                        - moved.carbon)
+                        .abs()
+                        <= V7_CN_CLOSURE_TOLERANCE
+                );
+                assert!(
+                    (before_pool.transfer.nitrogen + preparation.nitrogen
+                        - after_pool.transfer.nitrogen
+                        - moved.nitrogen)
+                        .abs()
+                        <= V7_CN_CLOSURE_TOLERANCE
+                );
+            }
+            phase = update.phase;
+            remaining = update.onset_remaining_s;
+            previous_gsi = update.previous_gsi;
+        }
+        assert_eq!(phase, PhenologyPhase::Active);
+        assert!(
+            tissues
+                .values()
+                .all(|pool| pool.transfer == ElementPool::default())
+        );
+
+        let addition =
+            fixture["current_interval_allocation_exclusion"]["allocation_after_onset_per_tissue"]
+                .clone();
+        let addition = fixture_pool(&addition);
+        let before_allocation = tissues.clone();
+        for pool in tissues.values_mut() {
+            pool.storage.carbon += addition.carbon;
+            pool.storage.nitrogen += addition.nitrogen;
+        }
+        for tissue in ALL_TISSUES {
+            let before = before_allocation.get(&tissue).expect("before allocation");
+            let after = tissues.get(&tissue).expect("after allocation");
+            assert_eq!(after.transfer, before.transfer);
+            assert!(
+                (after.storage.carbon - before.storage.carbon - addition.carbon).abs()
+                    <= V7_CN_CLOSURE_TOLERANCE
+            );
+            assert!(
+                (after.storage.nitrogen - before.storage.nitrogen - addition.nitrogen).abs()
+                    <= V7_CN_CLOSURE_TOLERANCE
+            );
+        }
+    }
+
+    #[test]
+    fn v7_onset_edge_prepares_once_then_deploys_every_tissue() {
+        let mut tissues = distinct_v7_tissues();
+        let beginning = tissues.clone();
+        let first = seasonal_update(
+            &mut tissues,
+            PhenologyPhase::Dormant,
+            0.0,
+            0.5,
+            0.7,
+            1.0,
+            8.0,
+        )
+        .expect("onset edge");
+        assert_eq!(first.phase, PhenologyPhase::Onset);
+
+        for tissue in ALL_TISSUES {
+            let before = beginning.get(&tissue).expect("beginning tissue");
+            let after = tissues.get(&tissue).expect("onset tissue");
+            let prepared_c = before.transfer.carbon + 0.5 * before.storage.carbon;
+            let prepared_n = before.transfer.nitrogen + 0.5 * before.storage.nitrogen;
+            assert_eq!(after.storage.carbon, 0.5 * before.storage.carbon);
+            assert_eq!(after.storage.nitrogen, 0.5 * before.storage.nitrogen);
+            assert_eq!(
+                after.display.carbon,
+                before.display.carbon + 0.25 * prepared_c
+            );
+            assert_eq!(
+                after.display.nitrogen,
+                before.display.nitrogen + 0.25 * prepared_n
+            );
+            assert_eq!(after.transfer.carbon, 0.75 * prepared_c);
+            assert_eq!(after.transfer.nitrogen, 0.75 * prepared_n);
+        }
+
+        let storage_after_edge: Vec<_> = ALL_TISSUES
+            .into_iter()
+            .map(|tissue| tissues.get(&tissue).expect("tissue").storage)
+            .collect();
+        seasonal_update(
+            &mut tissues,
+            PhenologyPhase::Onset,
+            first.onset_remaining_s,
+            first.previous_gsi,
+            0.8,
+            1.0,
+            8.0,
+        )
+        .expect("continuing onset");
+        for (tissue, storage) in ALL_TISSUES.into_iter().zip(storage_after_edge) {
+            assert_eq!(tissues.get(&tissue).expect("tissue").storage, storage);
+        }
+    }
+
+    #[test]
+    fn v7_current_interval_growth_enters_storage_after_onset_without_recycling() {
+        let mut tissues = distinct_v7_tissues();
+        seasonal_update(
+            &mut tissues,
+            PhenologyPhase::Dormant,
+            0.0,
+            0.5,
+            0.7,
+            1.0,
+            8.0,
+        )
+        .expect("onset preparation and deployment");
+        let prepared_storage: BTreeMap<_, _> = ALL_TISSUES
+            .into_iter()
+            .map(|tissue| (tissue, tissues.get(&tissue).expect("tissue").storage))
+            .collect();
+        let accepted_transfer: BTreeMap<_, _> = ALL_TISSUES
+            .into_iter()
+            .map(|tissue| (tissue, tissues.get(&tissue).expect("tissue").transfer))
+            .collect();
+        let mut internal_n = 1.0;
+        finalize_growth(
+            &mut tissues,
+            &CarbonOffer {
+                maintenance_from_gpp: 0.0,
+                reserve_recovery: 0.0,
+                offer: 1.0,
+                xs_next: 0.0,
+            },
+            &mut internal_n,
+            0.0,
+            &parameters(),
+        )
+        .expect("current interval growth allocation");
+
+        for tissue in ALL_TISSUES {
+            let after = tissues.get(&tissue).expect("tissue");
+            let storage_before_growth = prepared_storage.get(&tissue).expect("prepared storage");
+            assert!(after.storage.carbon > storage_before_growth.carbon);
+            assert!(after.storage.nitrogen > storage_before_growth.nitrogen);
+            assert_eq!(
+                after.transfer,
+                *accepted_transfer.get(&tissue).expect("accepted transfer")
+            );
+        }
+    }
+
+    #[test]
+    fn v7_onset_equality_does_not_prepare_and_terminal_interval_empties_all_transfers() {
+        let mut equality = distinct_v7_tissues();
+        let before = equality.clone();
+        let unchanged = seasonal_update(
+            &mut equality,
+            PhenologyPhase::Dormant,
+            0.0,
+            0.5,
+            0.6,
+            1.0,
+            3.0,
+        )
+        .expect("threshold equality");
+        assert_eq!(unchanged.phase, PhenologyPhase::Dormant);
+        assert_eq!(equality, before);
+
+        let mut terminal = distinct_v7_tissues();
+        let before_terminal = terminal.clone();
+        let update = seasonal_update(
+            &mut terminal,
+            PhenologyPhase::Onset,
+            1.0,
+            0.7,
+            0.8,
+            1.0,
+            3.0,
+        )
+        .expect("terminal onset");
+        assert_eq!(update.phase, PhenologyPhase::Active);
+        for tissue in ALL_TISSUES {
+            let before = before_terminal.get(&tissue).expect("beginning tissue");
+            let after = terminal.get(&tissue).expect("terminal tissue");
+            assert_eq!(after.transfer, ElementPool::default());
+            assert_eq!(after.storage, before.storage);
+            assert_eq!(
+                after.display.carbon,
+                before.display.carbon + before.transfer.carbon
+            );
+            assert_eq!(
+                after.display.nitrogen,
+                before.display.nitrogen + before.transfer.nitrogen
+            );
+        }
+    }
+
+    #[test]
+    fn v7_nonterminal_onset_does_not_normalize_tiny_transfer_or_enter_active() {
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        tissues
+            .get_mut(&Tissue::DeadCoarseRoot)
+            .expect("dead coarse root")
+            .transfer
+            .carbon = 1.0e-15;
+        let update = seasonal_update(&mut tissues, PhenologyPhase::Onset, 4.0, 0.7, 0.8, 1.0, 4.0)
+            .expect("nonterminal onset");
+        assert_eq!(update.phase, PhenologyPhase::Onset);
+        assert_eq!(
+            tissues
+                .get(&Tissue::DeadCoarseRoot)
+                .expect("dead coarse root")
+                .transfer
+                .carbon,
+            5.0e-16
+        );
+    }
+
+    #[test]
+    fn v7_evergreen_requires_exact_current_growth_and_zero_reserve_pools() {
+        let mut invalid = tissues_with_leaf(ElementPool::default());
+        let before = invalid.clone();
+        let error = advance_phenology(
+            &mut invalid,
+            PhenologyMode::Evergreen,
+            PhenologyPhase::Active,
+            0.0,
+            0.0,
+            0.5,
+            0.5,
+            1.0,
+            0.6,
+            0.3,
+            3.0,
+            4.0,
+            &parameters(),
+        )
+        .expect_err("non-one evergreen growth fraction");
+        assert_eq!(
+            error,
+            VegetationError::Domain("V7 evergreen storage/transfer")
+        );
+        assert_eq!(invalid, before);
+
+        let mut evergreen_parameters = parameters();
+        evergreen_parameters.current_growth_fraction = 1.0;
+        invalid
+            .get_mut(&Tissue::FineRoot)
+            .expect("fine root")
+            .storage
+            .nitrogen = 1.0e-30;
+        assert_eq!(
+            advance_phenology(
+                &mut invalid,
+                PhenologyMode::Evergreen,
+                PhenologyPhase::Active,
+                0.0,
+                0.0,
+                0.5,
+                0.5,
+                1.0,
+                0.6,
+                0.3,
+                3.0,
+                4.0,
+                &evergreen_parameters,
+            ),
+            Err(VegetationError::Domain("V7 evergreen storage/transfer"))
+        );
+    }
+
+    #[test]
+    fn v7_invalid_pool_or_incomplete_tissue_set_rejects_without_mutation() {
+        let mut incomplete = distinct_v7_tissues();
+        incomplete.remove(&Tissue::DeadStem);
+        let before = incomplete.clone();
+        assert_eq!(
+            prepare_storage_for_onset(&incomplete),
+            Err(VegetationError::Domain("V7 tissue identity set"))
+        );
+        assert_eq!(
+            seasonal_update(
+                &mut incomplete,
+                PhenologyPhase::Dormant,
+                0.0,
+                0.5,
+                0.7,
+                1.0,
+                3.0,
+            ),
+            Err(VegetationError::Domain("V7 tissue identity set"))
+        );
+        assert_eq!(incomplete, before);
+
+        let mut nonfinite = distinct_v7_tissues();
+        nonfinite
+            .get_mut(&Tissue::Leaf)
+            .expect("leaf")
+            .storage
+            .carbon = f64::NAN;
+        assert_eq!(
+            prepare_storage_for_onset(&nonfinite),
+            Err(VegetationError::Domain("V7 tissue C/N pool"))
+        );
+    }
+
+    #[test]
+    fn v7_failure_after_preparation_and_partial_deployment_rolls_back_exactly() {
+        let mut tissues = distinct_v7_tissues();
+        tissues
+            .get_mut(&Tissue::DeadCoarseRoot)
+            .expect("terminal tissue")
+            .display
+            .carbon = f64::MAX;
+        let before = serde_json::to_vec(&tissues).expect("beginning bytes");
+        assert!(matches!(
+            seasonal_update(
+                &mut tissues,
+                PhenologyPhase::Dormant,
+                0.0,
+                0.5,
+                0.7,
+                1.0,
+                8.0,
+            ),
+            Err(VegetationError::Closure {
+                ledger: "V7 onset deployment",
+                ..
+            })
+        ));
+        assert_eq!(serde_json::to_vec(&tissues).expect("ending bytes"), before);
     }
 
     fn offset_once(

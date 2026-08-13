@@ -652,7 +652,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::transaction::{SoilLayerForcing, v6_identity_rebound_fixture};
+    use crate::transaction::{SoilLayerForcing, v7_identity_rebound_fixture};
 
     struct FullWater {
         stores: BTreeMap<SoilLayerId, f64>,
@@ -827,7 +827,7 @@ mod tests {
 
     #[test]
     fn public_water_phase_runs_exact_two_pass_protocol_without_commit() {
-        let (configuration, beginning) = v6_identity_rebound_fixture();
+        let (configuration, beginning) = v7_identity_rebound_fixture();
         let beginning_bytes = serde_json::to_vec(&beginning).expect("beginning bytes");
         let owner = water();
         let phase = execute_uncommitted_water_phase(
@@ -890,7 +890,7 @@ mod tests {
             FailurePoint::OwnerValidation,
         ];
         for point in points {
-            let (configuration, beginning) = v6_identity_rebound_fixture();
+            let (configuration, beginning) = v7_identity_rebound_fixture();
             let bytes = serde_json::to_vec(&beginning).expect("before bytes");
             let owner = water();
             let water_bytes = serde_json::to_vec(&owner.stores).expect("water bytes");
@@ -942,7 +942,7 @@ mod tests {
             }
         }
 
-        let (configuration, beginning) = v6_identity_rebound_fixture();
+        let (configuration, beginning) = v7_identity_rebound_fixture();
         let mut limited = water();
         limited.stores.values_mut().for_each(|value| *value = 0.05);
         let owner = AuthorizationDebitOwner(limited);

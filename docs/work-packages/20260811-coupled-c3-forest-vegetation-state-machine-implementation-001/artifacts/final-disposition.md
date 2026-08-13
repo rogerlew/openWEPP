@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / V6 portability hold lifted / public path fail-closed`
+Status: `in progress / V7 storage-transfer authority admitted / public path fail-closed`
 
 Evidence mode: `Static + Ran`
 

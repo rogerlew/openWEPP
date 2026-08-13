@@ -497,7 +497,7 @@ mod tests {
     }
 
     fn stratum() -> StratumConfiguration {
-        let (configuration, _) = crate::transaction::v6_identity_rebound_fixture();
+        let (configuration, _) = crate::transaction::v7_identity_rebound_fixture();
         configuration.strata[0].clone()
     }
 

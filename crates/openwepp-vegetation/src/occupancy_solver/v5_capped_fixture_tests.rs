@@ -229,7 +229,7 @@ fn v6_beginning_owner(
     case: &V3PotentialCase,
 ) -> (VegetationConfiguration, CoupledOwnedState, StageAState) {
     let (mut configuration, mut beginning_owner) =
-        crate::transaction::v6_identity_rebound_fixture();
+        crate::transaction::v7_identity_rebound_fixture();
     let template = configuration.strata[0].root_layers[0].clone();
     configuration.strata[0].root_layers = case
         .layers

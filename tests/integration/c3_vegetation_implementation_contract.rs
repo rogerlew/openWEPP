@@ -12,7 +12,9 @@ use openwepp_vegetation::energy::{
     energy_residual, neutral_resistance, saturation_specific_humidity,
 };
 use openwepp_vegetation::interception::{InterceptionInput, liquid_interception};
-use openwepp_vegetation::migration::{RhessysSource, V5_MODEL_SHA256, migrate_definition_fields};
+use openwepp_vegetation::migration::{
+    RhessysSource, V5_MODEL_SHA256, V6_MODEL_SHA256, migrate_definition_fields,
+};
 use openwepp_vegetation::occupancy_solver::resources::{
     OccupancyRootLayers, PotentialWaterRequestBatch, ValidatedWaterAuthorizations,
 };
@@ -41,7 +43,7 @@ fn expected_v5() -> serde_json::Value {
     .expect("valid V5 vector fixture")
 }
 
-fn identity_rebound_v6_configuration() -> VegetationConfiguration {
+fn identity_rebound_v7_configuration() -> VegetationConfiguration {
     let mut configuration: VegetationConfiguration = serde_json::from_slice(
         &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
             .expect("historical V5 configuration fixture"),
@@ -49,16 +51,21 @@ fn identity_rebound_v6_configuration() -> VegetationConfiguration {
     .expect("historical V5 configuration DTO");
     assert_eq!(configuration.model_definition_sha256, V5_MODEL_SHA256);
 
+    for stratum in &mut configuration.strata {
+        if stratum.phenology_type == openwepp_vegetation::PhenologyType::Evergreen {
+            stratum.current_growth_fraction = 1.0;
+        }
+    }
     configuration.model_definition_sha256 = MODEL_SHA256.into();
     configuration.configuration_sha256 = configuration
         .canonical_sha256()
-        .expect("V6 configuration digest");
-    let bytes = serde_json::to_vec(&configuration).expect("identity-rebound V6 bytes");
-    VegetationConfiguration::parse_strict(&bytes).expect("identity-rebound V6 configuration")
+        .expect("V7 configuration digest");
+    let bytes = serde_json::to_vec(&configuration).expect("identity-rebound V7 bytes");
+    VegetationConfiguration::parse_strict(&bytes).expect("identity-rebound V7 configuration")
 }
 
-fn identity_rebound_v6_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-    let mut configuration = identity_rebound_v6_configuration();
+fn identity_rebound_v7_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
+    let mut configuration = identity_rebound_v7_configuration();
     let mut state: CoupledOwnedState = serde_json::from_slice(
         &fs::read("tests/fixtures/c3_woody_v5_diagnostic_state.json")
             .expect("historical V5 state fixture"),
@@ -68,11 +75,11 @@ fn identity_rebound_v6_fixture() -> (VegetationConfiguration, CoupledOwnedState)
     state
         .configuration_sha256
         .clone_from(&configuration.configuration_sha256);
-    state.state_sha256 = state.canonical_sha256().expect("V6 state digest");
+    state.state_sha256 = state.canonical_sha256().expect("V7 state digest");
     configuration
         .initial_state_sha256
         .clone_from(&state.state_sha256);
-    state.validate(&configuration).expect("V6 state");
+    state.validate(&configuration).expect("V7 state");
     (configuration, state)
 }
 
@@ -172,11 +179,11 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn v6_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
+fn v7_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
     assert!(source.contains(
-        "V6 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
+        "V7 E16-E22 shared C/N and multi-owner transaction is implementation-incomplete"
     ));
     let water_source =
         fs::read_to_string("crates/openwepp-vegetation/src/water_phase.rs").expect("water source");
@@ -191,7 +198,7 @@ fn v6_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     assert!(!source.contains("vapor_pressure_deficit_kpa *"));
     assert!(!source.contains("direct_par_w_m2 * 1e-9"));
 
-    let (configuration, beginning) = identity_rebound_v6_fixture();
+    let (configuration, beginning) = identity_rebound_v7_fixture();
     let bytes = serde_json::to_vec(&beginning).expect("beginning bytes");
     let phase = execute_uncommitted_water_phase(
         &load_model_definition().expect("model"),
@@ -210,7 +217,7 @@ fn v6_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
 }
 
 #[test]
-fn v6_configuration_state_and_migration_inputs_have_no_default_path() {
+fn v7_configuration_state_and_migration_inputs_have_no_default_path() {
     for path in [
         "crates/openwepp-vegetation/src/config.rs",
         "crates/openwepp-vegetation/src/occupancy_state.rs",
@@ -228,8 +235,8 @@ fn v6_configuration_state_and_migration_inputs_have_no_default_path() {
 }
 
 #[test]
-fn production_registry_is_byte_identical_to_v6_authority() {
-    let authority = fs::read("docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001/artifacts/openwepp_c3_woody_v6_definition.json")
+fn production_registry_is_byte_identical_to_v7_authority() {
+    let authority = fs::read("docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json")
         .expect("authority definition");
     assert_eq!(MODEL_BYTES, authority);
     assert_eq!(format!("{:x}", Sha256::digest(MODEL_BYTES)), MODEL_SHA256);
@@ -542,7 +549,7 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
 fn schema_and_migration_fail_closed_without_defaults() {
     assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
     assert!(VegetationConfiguration::parse_strict(br#"{"unknown":1}"#).is_err());
-    let mut mutated = identity_rebound_v6_configuration();
+    let mut mutated = identity_rebound_v7_configuration();
     mutated.strata[0].stem_rho_vis += 0.01;
     assert!(mutated.validate().is_err());
     let source = RhessysSource {
@@ -574,8 +581,31 @@ fn energy_and_aerodynamic_domains_are_explicit() {
 }
 
 #[test]
-fn historical_v1_through_v5_cannot_enter_the_v6_public_parsers() {
-    let config = identity_rebound_v6_configuration();
+fn historical_v1_through_v6_cannot_enter_the_v7_public_parsers() {
+    let config = identity_rebound_v7_configuration();
+    let (_, v7_state) = identity_rebound_v7_fixture();
+    let mut v6_config = config.clone();
+    v6_config.model_definition_sha256 = V6_MODEL_SHA256.into();
+    v6_config.configuration_sha256.clear();
+    v6_config.configuration_sha256 = v6_config.canonical_sha256().expect("V6 config digest");
+    let mut v6_state = v7_state;
+    v6_state.model_definition_sha256 = V6_MODEL_SHA256.into();
+    v6_state.configuration_sha256 = v6_config.configuration_sha256.clone();
+    v6_state.state_sha256 = v6_state.canonical_sha256().expect("V6 state digest");
+    v6_config.initial_state_sha256 = v6_state.state_sha256.clone();
+    assert!(
+        VegetationConfiguration::parse_strict(
+            &serde_json::to_vec(&v6_config).expect("V6 config bytes")
+        )
+        .is_err()
+    );
+    assert!(
+        CoupledOwnedState::parse_strict(
+            &serde_json::to_vec(&v6_state).expect("V6 state bytes"),
+            &config
+        )
+        .is_err()
+    );
     for path in [
         "tests/fixtures/c3_woody_v1_diagnostic_state.json",
         "tests/fixtures/c3_woody_v2_diagnostic_state.json",
