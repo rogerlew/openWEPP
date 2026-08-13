@@ -2,7 +2,8 @@
 use crate::VegetationError;
 use crate::photosynthesis::peaked_response;
 use crate::transaction::PhenologyPhase;
-use openwepp_kernel_contract::MaterialDonorClass;
+use openwepp_kernel_contract::{MaterialDonorClass, ResourceOwnerId, SoilLayerId, TransactionId};
+use std::collections::BTreeSet;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
@@ -45,6 +46,81 @@ pub struct MaterialTransfer {
     pub dry_matter: f64,
 }
 
+/// Constitutive material amounts before transaction identity is assigned.
+///
+/// Turnover and phenology calculate these amounts without manufacturing a
+/// transaction, owner, or proposal identity. The transaction orchestrator must
+/// bind each amount exactly once before it can become a [`MaterialTransfer`].
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MaterialTransferAmounts {
+    donor: MaterialDonorClass,
+    receiver: ReceiverClass,
+    carbon: f64,
+    nitrogen: f64,
+    dry_matter: f64,
+}
+
+impl MaterialTransferAmounts {
+    #[must_use]
+    pub const fn donor(&self) -> MaterialDonorClass {
+        self.donor
+    }
+
+    #[must_use]
+    pub const fn receiver(&self) -> ReceiverClass {
+        self.receiver
+    }
+
+    #[must_use]
+    pub const fn carbon(&self) -> f64 {
+        self.carbon
+    }
+
+    #[must_use]
+    pub const fn nitrogen(&self) -> f64 {
+        self.nitrogen
+    }
+
+    #[must_use]
+    pub const fn dry_matter(&self) -> f64 {
+        self.dry_matter
+    }
+
+    pub fn bind(
+        self,
+        transaction_id: TransactionId,
+        owner_id: &ResourceOwnerId,
+        proposal_id: u64,
+    ) -> Result<MaterialTransfer, VegetationError> {
+        if transaction_id.0 == 0
+            || proposal_id == 0
+            || [self.carbon, self.nitrogen, self.dry_matter]
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+        {
+            return Err(VegetationError::Domain("material transfer identity"));
+        }
+        Ok(MaterialTransfer {
+            transaction_id: transaction_id.0,
+            owner_id: owner_id.as_str().to_owned(),
+            proposal_id,
+            donor: self.donor,
+            receiver: self.receiver,
+            carbon: self.carbon,
+            nitrogen: self.nitrogen,
+            dry_matter: self.dry_matter,
+        })
+    }
+}
+
+/// One typed fine-root maintenance-respiration operand.
+#[derive(Clone, Debug, PartialEq)]
+pub struct RootRespirationOperand {
+    pub layer_id: SoilLayerId,
+    pub temperature_k: f64,
+    pub nitrogen_fraction: f64,
+}
+
 pub fn gpp_kg_c(
     dt_s: f64,
     tile_fraction: f64,
@@ -76,8 +152,7 @@ pub fn maintenance_respiration(
     tissues: &std::collections::BTreeMap<Tissue, TissuePool>,
     accepted_leaf_respiration_kg_c: f64,
     air_temperature_k: f64,
-    fine_root_temperatures_k: &[f64],
-    fine_root_fractions: &[f64],
+    fine_root_layers: &[RootRespirationOperand],
     base_rate: f64,
     q10: f64,
     dt_s: f64,
@@ -96,16 +171,31 @@ pub fn maintenance_respiration(
         || base_rate < 0.0
         || q10 <= 0.0
         || dt_s <= 0.0
-        || fine_root_temperatures_k.len() != fine_root_fractions.len()
-        || fine_root_temperatures_k
+        || fine_root_layers.is_empty()
+        || fine_root_layers.iter().any(|layer| {
+            !layer.temperature_k.is_finite()
+                || layer.temperature_k <= 0.0
+                || !layer.nitrogen_fraction.is_finite()
+                || layer.nitrogen_fraction < 0.0
+        })
+        || (fine_root_layers
             .iter()
-            .any(|value| !value.is_finite() || *value <= 0.0)
-        || fine_root_fractions
-            .iter()
-            .any(|value| !value.is_finite() || *value < 0.0)
-        || (fine_root_fractions.iter().sum::<f64>() - 1.0).abs() > 1e-12
+            .map(|layer| layer.nitrogen_fraction)
+            .sum::<f64>()
+            - 1.0)
+            .abs()
+            > 1e-12
     {
         return Err(VegetationError::Domain("maintenance respiration"));
+    }
+    let mut layer_ids = BTreeSet::new();
+    if fine_root_layers
+        .iter()
+        .any(|layer| !layer_ids.insert(&layer.layer_id))
+    {
+        return Err(VegetationError::Domain(
+            "duplicate fine-root respiration layer",
+        ));
     }
     let nitrogen = |tissue: Tissue| -> Result<f64, VegetationError> {
         let pool = tissues
@@ -116,11 +206,14 @@ pub fn maintenance_respiration(
     let livewood_n = nitrogen(Tissue::LiveStem)? + nitrogen(Tissue::LiveCoarseRoot)?;
     let livewood = livewood_n * base_rate * q10.powf((air_temperature_k - 293.15) / 10.0) * dt_s;
     let fine_root_n = nitrogen(Tissue::FineRoot)?;
-    let fine_root = fine_root_temperatures_k
+    let fine_root = fine_root_layers
         .iter()
-        .zip(fine_root_fractions)
-        .map(|(temperature, fraction)| {
-            fine_root_n * fraction * base_rate * q10.powf((*temperature - 293.15) / 10.0) * dt_s
+        .map(|layer| {
+            fine_root_n
+                * layer.nitrogen_fraction
+                * base_rate
+                * q10.powf((layer.temperature_k - 293.15) / 10.0)
+                * dt_s
         })
         .sum::<f64>();
     let total = accepted_leaf_respiration_kg_c + livewood + fine_root;
@@ -202,79 +295,6 @@ pub fn leaf_rd_carbon_debit(
     Err(VegetationError::Domain("leaf respiration carbon debit"))
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Allocation {
-    pub eta: f64,
-    pub leaf_c: f64,
-    pub froot_c: f64,
-    pub stem_c: f64,
-    pub croot_c: f64,
-    pub growth_respiration: f64,
-    pub n_used: f64,
-    pub nsc_end: f64,
-}
-#[derive(Clone, Copy, Debug)]
-pub struct AllocationInput {
-    pub carbon_offer: f64,
-    pub nitrogen_available: f64,
-    pub a1: f64,
-    pub a2: f64,
-    pub a3: f64,
-    pub growth_resp_ratio: f64,
-    pub cn_leaf: f64,
-    pub cn_froot: f64,
-    pub cn_wood: f64,
-}
-pub fn allocate(i: AllocationInput) -> Result<Allocation, VegetationError> {
-    let vals = [
-        i.carbon_offer,
-        i.nitrogen_available,
-        i.a1,
-        i.a2,
-        i.a3,
-        i.growth_resp_ratio,
-        i.cn_leaf,
-        i.cn_froot,
-        i.cn_wood,
-    ];
-    if vals.iter().any(|v| !v.is_finite())
-        || i.carbon_offer < 0.0
-        || i.nitrogen_available < 0.0
-        || i.a1 < 0.0
-        || i.a2 < 0.0
-        || i.a3 < 0.0
-        || !(0.0..1.0).contains(&i.growth_resp_ratio)
-        || i.cn_leaf <= 0.0
-        || i.cn_froot <= 0.0
-        || i.cn_wood <= 0.0
-    {
-        return Err(VegetationError::Domain("allocation"));
-    }
-    let callom = (1.0 + i.growth_resp_ratio) * (1.0 + i.a1 + i.a3 * (1.0 + i.a2));
-    let nallom = 1.0 / i.cn_leaf + i.a1 / i.cn_froot + i.a3 * (1.0 + i.a2) / i.cn_wood;
-    let demand = i.carbon_offer * nallom / callom;
-    let eta = if demand == 0.0 {
-        1.0
-    } else {
-        (i.nitrogen_available / demand).min(1.0)
-    };
-    let leaf = eta * i.carbon_offer / callom;
-    let froot = i.a1 * leaf;
-    let stem = i.a3 * leaf;
-    let croot = i.a2 * stem;
-    let structural = leaf + froot + stem + croot;
-    let respiration = i.growth_resp_ratio * structural;
-    Ok(Allocation {
-        eta,
-        leaf_c: leaf,
-        froot_c: froot,
-        stem_c: stem,
-        croot_c: croot,
-        growth_respiration: respiration,
-        n_used: eta * demand,
-        nsc_end: (1.0 - eta) * i.carbon_offer,
-    })
-}
 pub fn bounded_turnover(pool: f64, dt: f64, lifetime: f64) -> Result<f64, VegetationError> {
     if !pool.is_finite()
         || !dt.is_finite()
@@ -293,7 +313,7 @@ pub fn material_transfer(
     carbon: f64,
     nitrogen: f64,
     carbon_fraction: f64,
-) -> Result<MaterialTransfer, VegetationError> {
+) -> Result<MaterialTransferAmounts, VegetationError> {
     if !carbon.is_finite()
         || !nitrogen.is_finite()
         || carbon < 0.0
@@ -304,10 +324,7 @@ pub fn material_transfer(
     {
         return Err(VegetationError::Domain("material transfer"));
     }
-    Ok(MaterialTransfer {
-        transaction_id: 0,
-        owner_id: String::new(),
-        proposal_id: 0,
+    Ok(MaterialTransferAmounts {
         donor: match tissue {
             Tissue::Leaf => MaterialDonorClass::Leaf,
             Tissue::FineRoot => MaterialDonorClass::FineRoot,
@@ -519,7 +536,7 @@ pub fn advance_turnover(
     tissues: &mut std::collections::BTreeMap<Tissue, TissuePool>,
     dt_s: f64,
     p: &CnParameters,
-) -> Result<Vec<MaterialTransfer>, VegetationError> {
+) -> Result<Vec<MaterialTransferAmounts>, VegetationError> {
     validate_parameters(p)?;
     if !dt_s.is_finite() || dt_s <= 0.0 {
         return Err(VegetationError::Domain("turnover interval"));
@@ -580,7 +597,7 @@ pub struct PhenologyUpdate {
     pub onset_remaining_s: f64,
     pub offset_remaining_s: f64,
     pub previous_gsi: f64,
-    pub transfers: Vec<MaterialTransfer>,
+    pub transfers: Vec<MaterialTransferAmounts>,
     pub retranslocated_n: f64,
 }
 
@@ -784,7 +801,7 @@ fn route_fraction(
     fraction: f64,
     fractions: &[f64; 3],
     p: &CnParameters,
-    out: &mut Vec<MaterialTransfer>,
+    out: &mut Vec<MaterialTransferAmounts>,
 ) -> Result<(), VegetationError> {
     let loss = debit_fraction(
         tissues
@@ -815,7 +832,7 @@ fn route_cwd(
     tissue: Tissue,
     fraction: f64,
     p: &CnParameters,
-    out: &mut Vec<MaterialTransfer>,
+    out: &mut Vec<MaterialTransferAmounts>,
 ) -> Result<(), VegetationError> {
     let loss = debit_fraction(
         tissues
@@ -1025,5 +1042,139 @@ mod tests {
         assert!((debit - rd * 1.0e-6 * 0.012_011 * 1.2 * 1800.0 * 0.35).abs() < 1.0e-18);
         assert!(atkin_rd25(0.0, 1.0, 350.0, 0.0).is_err());
         assert_eq!(atkin_rd25(0.0, 0.0, 296.0, 0.0), Ok(0.0));
+    }
+
+    #[test]
+    fn root_maintenance_operands_preserve_layer_identity() {
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        tissues
+            .get_mut(&Tissue::FineRoot)
+            .expect("fine-root pool")
+            .display
+            .nitrogen = 0.004;
+        tissues
+            .get_mut(&Tissue::LiveStem)
+            .expect("live-stem pool")
+            .display
+            .nitrogen = 0.002;
+        tissues
+            .get_mut(&Tissue::LiveCoarseRoot)
+            .expect("live-coarse-root pool")
+            .display
+            .nitrogen = 0.001;
+        let layer_a = RootRespirationOperand {
+            layer_id: SoilLayerId::try_new("upper").expect("layer identity"),
+            temperature_k: 293.15,
+            nitrogen_fraction: 0.7,
+        };
+        let layer_b = RootRespirationOperand {
+            layer_id: SoilLayerId::try_new("lower").expect("layer identity"),
+            temperature_k: 303.15,
+            nitrogen_fraction: 0.3,
+        };
+        let ordered = maintenance_respiration(
+            &tissues,
+            0.000_002,
+            293.15,
+            &[layer_a.clone(), layer_b.clone()],
+            1.0e-7,
+            2.0,
+            3600.0,
+        )
+        .expect("typed root respiration");
+        let reversed = maintenance_respiration(
+            &tissues,
+            0.000_002,
+            293.15,
+            &[layer_b, layer_a.clone()],
+            1.0e-7,
+            2.0,
+            3600.0,
+        )
+        .expect("order-invariant typed root respiration");
+        let expected_livewood = 0.003 * 1.0e-7 * 3600.0;
+        let expected_fine_root = 0.004 * 1.0e-7 * (0.7 + 0.3 * 2.0) * 3600.0;
+        assert!((ordered - (0.000_002 + expected_livewood + expected_fine_root)).abs() < 1e-18);
+        assert_eq!(ordered.to_bits(), reversed.to_bits());
+
+        let duplicate = RootRespirationOperand {
+            layer_id: layer_a.layer_id.clone(),
+            temperature_k: 303.15,
+            nitrogen_fraction: 0.3,
+        };
+        assert_eq!(
+            maintenance_respiration(
+                &tissues,
+                0.0,
+                293.15,
+                &[
+                    RootRespirationOperand {
+                        nitrogen_fraction: 0.7,
+                        ..layer_a
+                    },
+                    duplicate,
+                ],
+                1.0e-7,
+                2.0,
+                3600.0,
+            ),
+            Err(VegetationError::Domain(
+                "duplicate fine-root respiration layer"
+            ))
+        );
+    }
+
+    #[test]
+    fn root_maintenance_rejects_incomplete_fraction_basis() {
+        let tissues = tissues_with_leaf(ElementPool::default());
+        let incomplete = [RootRespirationOperand {
+            layer_id: SoilLayerId::try_new("upper").expect("layer identity"),
+            temperature_k: 293.15,
+            nitrogen_fraction: 0.8,
+        }];
+        assert_eq!(
+            maintenance_respiration(&tissues, 0.0, 293.15, &incomplete, 1.0e-7, 2.0, 3600.0,),
+            Err(VegetationError::Domain("maintenance respiration"))
+        );
+    }
+
+    #[test]
+    fn material_amounts_require_explicit_valid_binding() {
+        let amounts = material_transfer(
+            Tissue::Leaf,
+            ReceiverClass::Metabolic,
+            0.00432,
+            0.000_100_285_714_285_714_27,
+            0.48,
+        )
+        .expect("unbound material amounts");
+        assert!((amounts.dry_matter - 0.009).abs() < 1e-15);
+        assert!((amounts.carbon - amounts.dry_matter).abs() > 1e-6);
+        let owner = ResourceOwnerId::try_new("vegetation:stratum-a").expect("owner identity");
+        assert_eq!(
+            amounts.bind(TransactionId(0), &owner, 1),
+            Err(VegetationError::Domain("material transfer identity"))
+        );
+        assert_eq!(
+            amounts.bind(TransactionId(9), &owner, 0),
+            Err(VegetationError::Domain("material transfer identity"))
+        );
+        let forged = MaterialTransferAmounts {
+            carbon: f64::NAN,
+            ..amounts
+        };
+        assert_eq!(
+            forged.bind(TransactionId(9), &owner, 1),
+            Err(VegetationError::Domain("material transfer identity"))
+        );
+        let bound = amounts
+            .bind(TransactionId(9), &owner, 7)
+            .expect("bound material proposal");
+        assert_eq!(bound.transaction_id, 9);
+        assert_eq!(bound.owner_id, "vegetation:stratum-a");
+        assert_eq!(bound.proposal_id, 7);
+        assert_eq!(bound.carbon.to_bits(), amounts.carbon.to_bits());
+        assert_eq!(bound.nitrogen.to_bits(), amounts.nitrogen.to_bits());
+        assert_eq!(bound.dry_matter.to_bits(), amounts.dry_matter.to_bits());
     }
 }

@@ -1,8 +1,8 @@
 use std::fs;
 
 use openwepp_vegetation::carbon_nitrogen::{
-    AllocationInput, CnParameters, ElementPool, PhenologyMode, ReceiverClass, Tissue, TissuePool,
-    advance_phenology, allocate, carbon_offer, finalize_growth, material_transfer,
+    CnParameters, ElementPool, PhenologyMode, ReceiverClass, Tissue, TissuePool, advance_phenology,
+    carbon_offer, finalize_growth, material_transfer,
 };
 use openwepp_vegetation::energy::{
     energy_residual, neutral_resistance, saturation_specific_humidity,
@@ -243,20 +243,7 @@ fn two_stream_rejects_beer_lambert_poison() {
 }
 
 #[test]
-fn resource_caps_and_cn_dry_material_remain_distinct() {
-    let allocation = allocate(AllocationInput {
-        carbon_offer: 0.02,
-        nitrogen_available: 0.0001,
-        a1: 0.7,
-        a2: 0.3,
-        a3: 1.2,
-        growth_resp_ratio: 0.25,
-        cn_leaf: 28.0,
-        cn_froot: 35.0,
-        cn_wood: 120.0,
-    })
-    .expect("allocation");
-    assert!(allocation.eta < 1.0 && allocation.nsc_end > 0.0);
+fn carbon_and_dry_material_remain_distinct() {
     let transfer = material_transfer(
         Tissue::Leaf,
         ReceiverClass::Metabolic,
@@ -265,8 +252,8 @@ fn resource_caps_and_cn_dry_material_remain_distinct() {
         0.48,
     )
     .expect("material");
-    assert!((transfer.dry_matter - 0.009).abs() < 1e-14);
-    assert!((transfer.carbon - transfer.dry_matter).abs() > 1e-6);
+    assert!((transfer.dry_matter() - 0.009).abs() < 1e-14);
+    assert!((transfer.carbon() - transfer.dry_matter()).abs() > 1e-6);
 }
 
 fn cn_vector_parameters() -> CnParameters {
