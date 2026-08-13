@@ -247,3 +247,25 @@ This increment closes V3 executable identity, state schema, offline migration,
 and the pure whole-column radiation/wind/respiration preparation surfaces. It
 does not claim the coupled potential demand, capped finalization, or a public
 candidate.
+
+## 2026-08-12 V3 Column-Radiation and Stage-A Driver Increment
+
+| Gate | Result | Evidence |
+|---|---|---|
+| whole-column radiation adapter | PASS | exact topology occupancy identity, conditional area, VIS/NIR, direct/diffuse, and leaf/stem owner results are prepared before occupancy calculation; 6/6 focused tests |
+| candidate transaction identity propagation | PASS | the explicit `TransactionId` now enters every column occupancy input; radiation preparation does not fabricate transaction identity |
+| Stage-A numerical driver first review | HOLD then corrected / infrastructure only | first review found convergence-control, residual-sign, nested-error, singular-identity, diagnostic-finiteness, layer-identity, public-surface, and test-evidence defects; the driver was made crate-private and corrected before any constitutive adapter or public use |
+| Stage-A driver smoke tests | PASS | distinct-class six-residual solve, initially converged state, and exact zero-demand branch; exact independent constitutive fixture remains pending |
+| vegetation crate | PASS | quick suite `81/81` before review correction; rerun below records current exact bytes |
+| strict vegetation Clippy | PASS | all targets, warnings denied |
+| formatting/diff hygiene | PASS | `cargo fmt --all -- --check`; `git diff --check` |
+| Stage-A correctness rereview | PASS | crate-private infrastructure only; no remaining material finding after convergence, error-precedence, finiteness, residual-sign, layer-identity, and overflow corrections |
+| Stage-A QA rereview | PASS | bounded infrastructure increment approved; exact fixture and production adapter remain explicitly pending |
+| post-review vegetation crate | PASS | quick suite `82/82` |
+
+The Stage-A driver accepts only a callback that returns a complete nested
+gas/energy/hydraulic evaluation for every trial state. The production adapter
+from configuration, forcing, occupancy radiation, interception, and soil
+forcing is not yet implemented, so this is not E11--E15 acceptance evidence,
+does not emit a potential request batch, and does not lift the public
+fail-closed branch.
