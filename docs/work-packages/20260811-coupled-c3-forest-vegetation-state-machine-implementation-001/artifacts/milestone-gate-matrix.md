@@ -1,10 +1,11 @@
 # Milestone Gate Matrix
 
-Status: `executed-hold / V5 Stage B blocked; Milestones 2 and 3 incomplete`
+Status: `executing / V6 Stage-B focused gate passed; Milestones 2 and 3 incomplete`
 
-Increment 2B cannot pass its whole-column radiation or potential E11--E15
-gates until the omissions in `potential-pass-hold-legitimacy-audit.md` receive
-contract-first authority and independent exact vectors.
+The former Stage-B portability blocker is lifted. The focused E11--E15
+equation/ownership gate passes under V6. Milestones 2 and 3 remain incomplete
+until the real public water transaction invokes the potential and fixed-cap
+column passes and exposes the resulting finalized ownership operands.
 
 | Milestone | Direct current-scope gates |
 |---|---|
@@ -31,10 +32,11 @@ Milestone 2/3 result. At that checkpoint the capped Stage-B gate remained
 incomplete for lack of a digest-bound fully coupled cap-active equality/operand
 vector; V5 supplies that authority but still requires implementation evidence.
 
-V5 removes the authority blocker for the capped Stage-B gate and supplies exact
-cap-active vectors and failure evidence. It does not itself pass the
-implementation gate. Milestone 3 remains incomplete until production Rust
-reconstructs those vectors, independent solver reviews pass, and the final
-column pass proves finalized-use identity, rerouting, closure, and rollback.
-Milestone 2 remains incomplete until that accepted final pass is consumed by
-the real public column transaction.
+V5 supplied the exact cap-active vectors and V6 admitted the single rejected
+`step_norm` portability rule. Production Rust now reconstructs the accepted,
+singular, iteration-limit, and backtracking vectors; independent bounded
+correctness and QA reviews pass; and the internal final-column pass proves
+finalized-use identity, rerouting, `F<=A<=D`, diagnostics, and rollback.
+Therefore `STAGE_B_E11_E15_EXACT_ORACLE` is PASS. Milestones 2 and 3 remain
+incomplete until that accepted final pass is consumed by the real public column
+transaction.

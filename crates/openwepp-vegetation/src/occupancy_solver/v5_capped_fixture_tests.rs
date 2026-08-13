@@ -14,7 +14,9 @@ use super::capped_pass::bind_fixed_authorization_failure;
 use super::constitutive::{
     ConstitutiveSolveContext, V3ConstitutiveEvaluator, V3PotentialCase, select_capped_flux,
 };
-use super::potential::{StageAEvaluator, StageASolveIdentity, StageAState};
+use super::potential::{
+    StageAEvaluator, StageASolution, StageASolveIdentity, StageAState, capped_numerical_operands,
+};
 use crate::diagnostics::{
     CoupledSolvePass, FixedAuthorizationIdentity, NumericalFailureDiagnostics, SolveIdentity,
 };
@@ -525,10 +527,189 @@ fn close(actual: f64, expected: f64, atol: f64, rtol: f64) {
     );
 }
 
+fn assert_accepted_state_and_diagnostics(actual: &StageASolution, expected: &Value) {
+    let solution = &expected["solution"];
+    for (value, field) in [
+        (actual.state.psi_sunleaf_mm, "sun_leaf_potential_mm"),
+        (actual.state.psi_shadeleaf_mm, "shade_leaf_potential_mm"),
+        (actual.state.psi_stem_mm, "stem_potential_mm"),
+        (actual.state.psi_root_mm, "root_node_potential_mm"),
+        (actual.state.beta_sun, "beta_hyd_sun"),
+        (actual.state.beta_shade, "beta_hyd_shade"),
+    ] {
+        close(
+            value,
+            solution[field].as_f64().expect("solution value"),
+            1.0e-7,
+            1.0e-10,
+        );
+    }
+    assert_eq!(
+        actual.iterations,
+        u32::try_from(expected["iterations"].as_u64().expect("iterations"))
+            .expect("u32 iterations")
+    );
+    assert_eq!(
+        actual.backtracking_count,
+        u32::try_from(
+            expected["backtracking_count"]
+                .as_u64()
+                .expect("backtracking count")
+        )
+        .expect("u32 backtracks")
+    );
+    let operands = capped_numerical_operands(&actual.evaluation, &actual.state)
+        .expect("accepted capped diagnostics");
+    for ((residual, operand), frozen) in actual
+        .normalized_residuals
+        .iter()
+        .zip(&operands.residuals)
+        .zip(
+            expected["normalized_residuals"]
+                .as_array()
+                .expect("residuals"),
+        )
+    {
+        assert_eq!(
+            residual.identity,
+            frozen["identity"].as_str().expect("identity")
+        );
+        assert_eq!(operand.identity, residual.identity);
+        assert_eq!(residual.value.to_bits(), operand.normalized.to_bits());
+        assert_eq!(
+            operand.normalized.to_bits(),
+            (operand.raw_kg_m2_tile_s / operand.tolerance).to_bits()
+        );
+        assert!(residual.value.is_finite() && residual.value.abs() <= 1.0);
+        assert!(
+            frozen["normalized"]
+                .as_f64()
+                .expect("frozen normalized")
+                .abs()
+                <= 1.0
+        );
+        assert_eq!(
+            operand.scale_kg_m2_tile_s.to_bits(),
+            operands.water_residual_scale_kg_m2_tile_s.to_bits()
+        );
+    }
+    let frozen_history = expected["residual_norm_history"]
+        .as_array()
+        .expect("history");
+    assert_eq!(actual.residual_norm_history.len(), frozen_history.len());
+    assert!(
+        actual
+            .residual_norm_history
+            .iter()
+            .all(|value| value.is_finite() && *value >= 0.0)
+    );
+    let terminal_norm = actual
+        .normalized_residuals
+        .iter()
+        .map(|value| value.value.abs())
+        .fold(0.0, f64::max);
+    assert_eq!(
+        actual
+            .residual_norm_history
+            .last()
+            .expect("terminal norm")
+            .to_bits(),
+        terminal_norm.to_bits()
+    );
+    assert!(actual.potential_step_mm.is_finite() && actual.potential_step_mm <= 1.0e-7);
+    assert!(actual.pivot_magnitude.is_finite() && actual.pivot_magnitude > 0.0);
+    assert!(actual.matrix_norm.is_finite() && actual.matrix_norm > 0.0);
+}
+
+fn assert_capped_layer_amounts(actual: &StageASolution, expected: &Value, fraction: f64, dt: f64) {
+    for (layer, frozen) in actual
+        .evaluation
+        .capped_layer_fluxes
+        .iter()
+        .zip(expected["fluxes"]["q3"].as_array().expect("q3"))
+    {
+        assert_eq!(
+            layer.layer_id.as_str(),
+            frozen["layer_id"].as_str().expect("layer")
+        );
+        close(
+            layer.q_law_kg_m2_s,
+            frozen["q_law_kg_m2_tile_s"].as_f64().expect("q law"),
+            1.0e-12,
+            1.0e-9,
+        );
+        assert_eq!(
+            layer.cap_rate_kg_m2_s.to_bits(),
+            frozen["cap_rate_kg_m2_tile_s"]
+                .as_f64()
+                .expect("cap")
+                .to_bits()
+        );
+        close(
+            layer.q_final_kg_m2_s,
+            frozen["q_final_kg_m2_tile_s"].as_f64().expect("q final"),
+            1.0e-12,
+            1.0e-9,
+        );
+        assert_eq!(
+            layer.authorization_active_or_tie,
+            frozen["branch"] == "authorization_active_or_tie"
+        );
+        let demand = frozen["potential_request_kg_m2_stand_ground"]
+            .as_f64()
+            .expect("demand");
+        let authorization = fraction * layer.cap_rate_kg_m2_s * dt;
+        let finalized = fraction * layer.q_final_kg_m2_s * dt;
+        close(
+            authorization,
+            frozen["authorization_kg_m2_stand_ground"]
+                .as_f64()
+                .expect("authorization"),
+            1.0e-15,
+            1.0e-12,
+        );
+        close(
+            finalized,
+            frozen["finalized_use_kg_m2_stand_ground"]
+                .as_f64()
+                .expect("finalized"),
+            1.0e-15,
+            1.0e-12,
+        );
+        assert!(finalized <= authorization && authorization <= demand);
+    }
+}
+
+fn assert_coupled_fluxes(actual: &StageASolution, expected: &Value) {
+    let fluxes = &expected["fluxes"];
+    for (value, field) in [
+        (
+            actual.evaluation.gas_sun_kg_m2_s,
+            "gas_energy_transpiration_sun",
+        ),
+        (
+            actual.evaluation.gas_shade_kg_m2_s,
+            "gas_energy_transpiration_shade",
+        ),
+        (actual.evaluation.q1_sun_kg_m2_s, "q1_sun"),
+        (actual.evaluation.q1_shade_kg_m2_s, "q1_shade"),
+        (actual.evaluation.q2_kg_m2_s, "q2"),
+    ] {
+        close(
+            value,
+            fluxes[field].as_f64().expect("coupled flux"),
+            1.0e-15,
+            1.0e-9,
+        );
+    }
+}
+
 #[test]
 fn constrained_all_cap_matches_released_v5_endpoint_and_operands() {
     let (case, family) = fixture();
     let expected = &family["accepted_constrained_all_cap"];
+    let tile_fraction = case.tile_fraction;
+    let interval_s = case.dt_s;
     let evaluator =
         V3ConstitutiveEvaluator::new_capped(case, (-5_900.0, -5_450.0), context(), caps(expected))
             .expect("capped evaluator");
@@ -538,30 +719,7 @@ fn constrained_all_cap_matches_released_v5_endpoint_and_operands() {
             state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]),
         )
         .expect("capped coupled solve");
-    let solution = &expected["solution"];
-    for (actual, field) in [
-        (accepted.outer.state.psi_sunleaf_mm, "sun_leaf_potential_mm"),
-        (
-            accepted.outer.state.psi_shadeleaf_mm,
-            "shade_leaf_potential_mm",
-        ),
-        (accepted.outer.state.psi_stem_mm, "stem_potential_mm"),
-        (accepted.outer.state.psi_root_mm, "root_node_potential_mm"),
-        (accepted.outer.state.beta_sun, "beta_hyd_sun"),
-        (accepted.outer.state.beta_shade, "beta_hyd_shade"),
-    ] {
-        close(
-            actual,
-            solution[field].as_f64().expect("solution value"),
-            1.0e-7,
-            1.0e-10,
-        );
-    }
-    assert_eq!(
-        accepted.outer.iterations,
-        u32::try_from(expected["iterations"].as_u64().expect("iterations"))
-            .expect("iterations fit u32")
-    );
+    assert_accepted_state_and_diagnostics(&accepted.outer, expected);
     assert_eq!(
         accepted.outer.evaluation.active_water_caps,
         expected["active_water_caps"]
@@ -571,40 +729,8 @@ fn constrained_all_cap_matches_released_v5_endpoint_and_operands() {
             .map(|value| SoilLayerId::try_new(value.as_str().expect("layer")).expect("typed layer"))
             .collect::<Vec<_>>()
     );
-    for (actual, fixture) in accepted
-        .outer
-        .evaluation
-        .capped_layer_fluxes
-        .iter()
-        .zip(expected["fluxes"]["q3"].as_array().expect("q3"))
-    {
-        assert_eq!(
-            actual.layer_id.as_str(),
-            fixture["layer_id"].as_str().expect("layer id")
-        );
-        close(
-            actual.q_law_kg_m2_s,
-            fixture["q_law_kg_m2_tile_s"].as_f64().expect("q law"),
-            1.0e-12,
-            1.0e-9,
-        );
-        close(
-            actual.cap_rate_kg_m2_s,
-            fixture["cap_rate_kg_m2_tile_s"].as_f64().expect("cap"),
-            0.0,
-            0.0,
-        );
-        close(
-            actual.q_final_kg_m2_s,
-            fixture["q_final_kg_m2_tile_s"].as_f64().expect("q final"),
-            1.0e-12,
-            1.0e-9,
-        );
-        assert_eq!(
-            actual.authorization_active_or_tie,
-            fixture["branch"] == "authorization_active_or_tie"
-        );
-    }
+    assert_capped_layer_amounts(&accepted.outer, expected, tile_fraction, interval_s);
+    assert_coupled_fluxes(&accepted.outer, expected);
 }
 
 #[test]
@@ -639,6 +765,73 @@ fn fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches() {
             .into_iter()
             .map(|value| SoilLayerId::try_new(value).expect("layer"))
             .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn valid_authorization_demand_branch_sweep_executes_every_frozen_case() {
+    let (case, family) = fixture();
+    let demand = &family["accepted_constrained_all_cap"]["fluxes"]["q3"];
+    let sweep = &family["valid_A_le_D_branch_sweep"];
+    let mut found_positive_law_branch = false;
+    for frozen in sweep["cases"].as_array().expect("branch sweep cases") {
+        let fraction = frozen["uniform_authorization_fraction_of_D"]
+            .as_f64()
+            .expect("authorization fraction");
+        let cap_rates = demand
+            .as_array()
+            .expect("potential requests")
+            .iter()
+            .map(|layer| {
+                let id = SoilLayerId::try_new(layer["layer_id"].as_str().expect("layer"))
+                    .expect("typed layer");
+                let potential = layer["potential_request_kg_m2_stand_ground"]
+                    .as_f64()
+                    .expect("potential request");
+                (id, fraction * potential / (case.tile_fraction * case.dt_s))
+            })
+            .collect::<BTreeMap<_, _>>();
+        let evaluator = V3ConstitutiveEvaluator::new_capped(
+            case.clone(),
+            (-5_900.0, -5_450.0),
+            context(),
+            cap_rates,
+        )
+        .expect("sweep evaluator");
+        let result = evaluator.solve_capped(
+            &identity(),
+            state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]),
+        );
+        assert_eq!(result.is_ok(), frozen["accepted"] == true);
+        let accepted = result.expect("frozen valid A<=D sweep accepts");
+        let actual_positive = accepted
+            .outer
+            .evaluation
+            .capped_layer_fluxes
+            .iter()
+            .filter(|layer| layer.q_final_kg_m2_s > 0.0)
+            .map(|layer| {
+                if layer.authorization_active_or_tie {
+                    "authorization_active_or_tie"
+                } else {
+                    found_positive_law_branch = true;
+                    "constitutive_law"
+                }
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            actual_positive,
+            frozen["positive_layer_branches"]
+                .as_array()
+                .expect("positive branches")
+                .iter()
+                .map(|value| value.as_str().expect("branch"))
+                .collect::<Vec<_>>()
+        );
+    }
+    assert_eq!(
+        found_positive_law_branch,
+        sweep["accepted_positive_law_branch_found"] == true
     );
 }
 
@@ -749,13 +942,31 @@ fn alternate_warm_start_converges_to_the_same_capped_endpoint() {
 fn zero_iteration_failure_is_capped_typed_and_leaves_inputs_unchanged() {
     let (case, family) = fixture();
     let expected = &family["accepted_constrained_all_cap"];
-    let evaluator =
-        V3ConstitutiveEvaluator::new_capped(case, (-5_900.0, -5_450.0), context(), caps(expected))
-            .expect("capped evaluator");
-    let beginning = state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]);
-    let error = evaluator
-        .solve_capped_with_limit(&identity(), beginning, 0)
-        .expect_err("zero iteration limit rejects");
+    let cap_rates = caps(expected);
+    let (configuration, beginning_owner, beginning) = v6_beginning_owner(&case);
+    let fixed = v6_fixed_authorization_identity();
+    let before = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &cap_rates,
+        beginning,
+        &identity(),
+        &fixed,
+    );
+    let evaluator = V3ConstitutiveEvaluator::new_capped(
+        case.clone(),
+        (-5_900.0, -5_450.0),
+        context(),
+        cap_rates.clone(),
+    )
+    .expect("capped evaluator");
+    let result = evaluator.solve_capped_with_limit(&identity(), beginning, 0);
+    assert!(result.is_err(), "iteration failure emitted a candidate");
+    let error = bind_fixed_authorization_failure(
+        result.expect_err("zero iteration limit rejects"),
+        fixed.clone(),
+    );
     let VegetationError::NumericalFailure {
         category,
         diagnostics,
@@ -764,6 +975,10 @@ fn zero_iteration_failure_is_capped_typed_and_leaves_inputs_unchanged() {
         panic!("typed capped numerical failure required");
     };
     assert_eq!(category, NumericalFailureCategory::IterationLimit);
+    assert_eq!(
+        diagnostics.fixed_authorization_identity,
+        Some(fixed.clone())
+    );
     assert_eq!(diagnostics.pass, CoupledSolvePass::Capped);
     assert_eq!(diagnostics.iterations, 0);
     assert_eq!(diagnostics.backtracking_count, 0);
@@ -803,9 +1018,18 @@ fn zero_iteration_failure_is_capped_typed_and_leaves_inputs_unchanged() {
             .collect::<Vec<_>>(),
         diagnostics.active_water_caps
     );
-    assert_eq!(
+    let after = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &cap_rates,
         beginning,
-        state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66])
+        &identity(),
+        &fixed,
+    );
+    assert_eq!(
+        after, before,
+        "iteration failure changed owner/transaction bytes"
     );
 }
 
@@ -839,14 +1063,32 @@ fn exact_and_near_tie_bits_follow_the_released_v5_branch_rule() {
 fn capped_singular_failure_retains_configured_layer_operands_and_rolls_back() {
     let (case, family) = fixture();
     let expected = &family["accepted_constrained_all_cap"];
-    let evaluator =
-        V3ConstitutiveEvaluator::new_capped(case, (-5_900.0, -5_450.0), context(), caps(expected))
-            .expect("capped evaluator")
-            .with_released_singular_hydraulics();
-    let beginning = state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]);
-    let error = evaluator
-        .solve_capped(&identity(), beginning)
-        .expect_err("singular capped hydraulics reject");
+    let cap_rates = caps(expected);
+    let (configuration, beginning_owner, beginning) = v6_beginning_owner(&case);
+    let fixed = v6_fixed_authorization_identity();
+    let before = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &cap_rates,
+        beginning,
+        &identity(),
+        &fixed,
+    );
+    let evaluator = V3ConstitutiveEvaluator::new_capped(
+        case.clone(),
+        (-5_900.0, -5_450.0),
+        context(),
+        cap_rates.clone(),
+    )
+    .expect("capped evaluator")
+    .with_released_singular_hydraulics();
+    let result = evaluator.solve_capped(&identity(), beginning);
+    assert!(result.is_err(), "singular failure emitted a candidate");
+    let error = bind_fixed_authorization_failure(
+        result.expect_err("singular capped hydraulics reject"),
+        fixed.clone(),
+    );
     let VegetationError::NumericalFailure {
         category,
         diagnostics,
@@ -855,6 +1097,10 @@ fn capped_singular_failure_retains_configured_layer_operands_and_rolls_back() {
         panic!("typed numerical failure required");
     };
     assert_eq!(category, NumericalFailureCategory::SingularPivot);
+    assert_eq!(
+        diagnostics.fixed_authorization_identity,
+        Some(fixed.clone())
+    );
     assert_eq!(diagnostics.pass, CoupledSolvePass::Capped);
     assert_eq!(diagnostics.iterations, 0);
     assert_eq!(diagnostics.backtracking_count, 0);
@@ -870,9 +1116,18 @@ fn capped_singular_failure_retains_configured_layer_operands_and_rolls_back() {
             .len(),
         5
     );
-    assert_eq!(
+    let after = rollback_snapshot_bytes(
+        &configuration,
+        &beginning_owner,
+        &case,
+        &cap_rates,
         beginning,
-        state([-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66])
+        &identity(),
+        &fixed,
+    );
+    assert_eq!(
+        after, before,
+        "singular failure changed owner/transaction bytes"
     );
 }
 

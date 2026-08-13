@@ -97,7 +97,7 @@ was extracted to cohesive submodules and the current exact counts are:
 | `migration.rs` | 2,890 | WARN; below the mandatory 3,000-line threshold |
 | `migration/v5_to_v6.rs` | 378 | PASS |
 | `migration/v5_to_v6/tests.rs` | 651 | PASS |
-| `occupancy_solver/v5_capped_fixture_tests.rs` | 1,070 | PASS |
+| `occupancy_solver/v5_capped_fixture_tests.rs` | 1,325 | PASS |
 
 No touched Rust file is at or above 3,000 lines. The retained WARN remains
 decomposition debt for terminal package closure, not a blocker for this bounded

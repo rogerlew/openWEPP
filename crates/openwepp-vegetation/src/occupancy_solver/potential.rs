@@ -152,6 +152,10 @@ pub(crate) struct StageASolution {
     pub potential_step_mm: f64,
     pub pivot_magnitude: f64,
     pub matrix_norm: f64,
+    /// Infinity norm of the normalized residual at every outer iteration,
+    /// including the repeated terminal evaluation used to satisfy the step
+    /// convergence guard.
+    pub residual_norm_history: Vec<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -225,6 +229,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             potential_step_mm: 0.0,
             pivot_magnitude: 0.0,
             matrix_norm: 0.0,
+            residual_norm_history: vec![0.0],
         });
     }
     if initial_evaluation.emax_sun_kg_m2_s == 0.0 {
@@ -240,6 +245,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
     let mut last_step = None;
     let mut last_pivot = None;
     let mut last_matrix_norm = None;
+    let mut residual_norm_history = Vec::new();
     for iteration in 0..=max_iterations {
         let raw = residuals(&evaluation);
         let scale = water_scale(&evaluation);
@@ -263,6 +269,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
             ));
         }
         let norm = infinity_norm(&normalized);
+        residual_norm_history.push(norm);
         if norm <= 1.0 && last_step.is_none_or(|step| step <= POTENTIAL_STEP_TOLERANCE_MM) {
             let state = StageAState::from_array(x);
             validate_accepted_fluxes(&evaluation)?;
@@ -277,6 +284,7 @@ pub(super) fn solve_uncapped_stage_a_bounded(
                 potential_step_mm: last_step.unwrap_or(0.0),
                 pivot_magnitude: last_pivot.unwrap_or(0.0),
                 matrix_norm: last_matrix_norm.unwrap_or(0.0),
+                residual_norm_history,
             });
         }
         if iteration == max_iterations {
@@ -520,6 +528,7 @@ fn solve_single_active_stage_a(
     let mut last_step = None;
     let mut last_pivot = None;
     let mut last_matrix_norm = None;
+    let mut residual_norm_history = Vec::new();
 
     for iteration in 0..=MAX_ITERATIONS {
         let raw = active.residuals(&evaluation);
@@ -544,6 +553,7 @@ fn solve_single_active_stage_a(
             ));
         }
         let norm = infinity_norm_reduced(&normalized);
+        residual_norm_history.push(norm);
         if norm <= 1.0 && last_step.is_none_or(|step| step <= POTENTIAL_STEP_TOLERANCE_MM) {
             let state = active.full_state(x);
             let all_normalized = normalize(&residuals(&evaluation), scale);
@@ -573,6 +583,7 @@ fn solve_single_active_stage_a(
                 potential_step_mm: last_step.unwrap_or(0.0),
                 pivot_magnitude: last_pivot.unwrap_or(0.0),
                 matrix_norm: last_matrix_norm.unwrap_or(0.0),
+                residual_norm_history,
             });
         }
         if iteration == MAX_ITERATIONS {

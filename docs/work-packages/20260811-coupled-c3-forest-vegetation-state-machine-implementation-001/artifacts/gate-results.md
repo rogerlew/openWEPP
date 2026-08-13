@@ -409,3 +409,27 @@ package completed at commit `b326173e2` before implementation resumed.
 | transaction/authority-binding remediation | PASS / Ran | complete five-layer configuration + full owner + constitutive/cap + fixed authorization + transaction snapshot; centralized production boundary identity binding; source and migrated projections equal frozen V6 transition payload; V6 5/5, migration 3/3, strict Clippy |
 | final V6 Rust correctness review | GO / Static + Ran | no material finding; bounded portability/migration increment only; vegetation 179/179, implementation 13/13, authority 23/23, strict Clippy, formatting, and diff hygiene pass |
 | final V6 QA review | PASS / Static + Ran | no material finding; focused V6+migration 8/8, vegetation 179/179, integration/authority 36/36, workspace Clippy, formatting, diff hygiene, and dependency policy pass; unmatched MIT-0 allowance warning remains documented |
+
+## Explicit Stage-B E11--E15 Gate Closure
+
+The final V6 identity changes only rejected-failure evidence comparison. The
+named focused gate was rerun after V6 runtime and migration review completed.
+
+The first explicit audit returned HOLD despite the then-green 23-test suite:
+the exact cap-active test did not consume frozen D/A/F operands or the branch
+sweep, accepted diagnostics were only partially asserted, and singular/
+iteration rollback covered only the six-scalar solver input. The first added
+scalar residual comparison also failed because it attempted to spread a new
+cross-runtime comparison tolerance to accepted diagnostics. That attempt was
+removed. The accepted path now reconstructs raw/tolerance/normalized operands
+exactly and applies only the unchanged canonical acceptance threshold.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| accepted unconstrained and alternate starts | PASS / Ran | `constitutive_fixture_tests`: 6/6, including accepted/alternate outer diagnostics and exact nested failures |
+| accepted fixed-cap, fully authorized reduction, equality and near ties | PASS / Ran | `v5_capped_fixture_tests`: 12/12, including all five frozen valid-A-to-D sweep cases |
+| independent law/cap operands and `F<=A<=D` | PASS / Ran | exact capped oracle D/A/F plus `capped_pass::tests` 5/5; independent operand validator and exact finalized identity |
+| singular, iteration-limit, and backtracking-limit failures | PASS / Ran | typed failures, complete diagnostics, absent candidate, exact rollback; V6 rtol applies only after 21 exact firewalls |
+| public boundary identity guards | PASS / Ran | `c3_vegetation_implementation_contract`: 13/13 |
+| independent focused-gate audit | PASS / Ran | 24 selected tests; no remaining production or exact-gate defect; explicitly confirms no V6 tolerance spread to accepted values |
+| `STAGE_B_E11_E15_EXACT_ORACLE` | **PASS** | focused capped oracle and ownership boundary only; public V6 transaction integration remains pending/fail-closed |
