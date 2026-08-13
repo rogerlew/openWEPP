@@ -60,3 +60,19 @@ and generator
 `7b137c1aa9ed0912caf4d14c779eca1819014b4217156d36f98619f06daabd1a`.
 They explicitly accepted prior heavy evidence reuse for unaffected lanes under
 the testing strategy's demonstrable-exclusion rule.
+
+## V5 Capped-Pass Authority Disposition
+
+The first V5 frozen candidate received dual NO-GO and remains preserved in
+`gate-results.md`. Every accepted finding was remediated without deferral:
+
+- failure payloads now contain actual failed-iterate layer operands, branches,
+  active-cap identities, and ordered typed residual records;
+- a distinct accessible, non-dry, non-frozen zero-root vector is bound;
+- the verifier requires the exact 27-poison inventory and independently checks
+  typed rejection or numerical discrimination; and
+- obsolete candidate PASS rows are explicitly superseded rather than erased.
+
+Review A and Review B both return GO on definition `0ee6a50d...`, vectors
+`6f5e9554...`, and generator `4c3a1cfc...`. No V5 finding is deferred,
+rejected, or unresolved.

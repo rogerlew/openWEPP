@@ -1,0 +1,9 @@
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.19s
+────────────
+ Nextest run ID 9b8f0817-d8ea-49fd-b4d5-68f8c01ce049 with nextest profile: full
+    Starting 0 tests across 217 binaries (2615 tests and 5 binaries skipped, including 5 binaries via profile.full.default-filter)
+────────────
+     Summary [   0.015s] 0 tests run: 0 passed, 2615 skipped
+error: no tests to run
+(hint: use `--no-tests` to customize)

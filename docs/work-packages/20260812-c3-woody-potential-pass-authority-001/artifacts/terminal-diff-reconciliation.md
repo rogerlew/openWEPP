@@ -61,3 +61,48 @@ finding. The verifier-owned artifacts and lifecycle summaries are present, and
 the kickoff prompt moved byte-for-byte from `prompts/active/` to
 `prompts/archived/` at SHA-256
 `9252d2ce3fb553d598099762319cb502ae2a06ad2520b0da9ce31c09485f1c5c`.
+
+## V5 Reconciliation In Progress
+
+Base HEAD: `2685a1ea9fcfd51fef426eeb4c3685b419b2f768`
+
+The V5 continuation changes only `SC-VEGETATION-001`, its registry row, one
+byte-identical V5 definition copy in the existing model-stack authority
+package, and this existing authority package's plan, prompt, generator,
+fixtures, verifier, review, and evidence artifacts. There is no production Rust,
+Cargo, runtime-selector, diagnostic-consumer, owner, output, deployment, or
+activation delta.
+
+Frozen V5 identities are definition `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`,
+vectors `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`,
+and generator `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`.
+The two definition copies are byte-identical and exact V4 digest
+`8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`
+is imported unchanged. V1--V4 protected bytes are not edited.
+
+The contract is 1,894 lines, the V5 generator is 1,282 lines, the independent
+verifier is 405 lines, and the package plan is 399 lines. The package occupies
+approximately 1.4 MiB and contains no file larger than 10 MiB. This is
+authority/test-data complexity, not a production-module line-count exception.
+
+Focused admission, unit, anti-evasion, AUTH11, authority, Markdown, formatting,
+and diff gates pass. Dual independent science reviews return GO and confirm GO
+after lifecycle-only cleanup.
+
+The heavy comparator's workspace Clippy, doctests, dependency policy,
+formatting, diff, admission, oracle/verifier, unit, anti-evasion, AUTH11, and
+authority gates pass. The full nextest profile ran 2,582 tests: 2,581 passed,
+33 were canonically skipped, and one source-contract test failed only because
+the timestamped absolute TMPDIR made its Unix socket path exceed `SUN_LEN`.
+The exact failed test then passed under short TMPDIR `/home/roger/v5t` in
+24.027 seconds, with no source or science-byte delta. This is demonstrable
+infrastructure exclusion, not borrowed correctness evidence. Package and index
+Markdown commands also passed after correcting a wrapper argument-order typo.
+All original failures and non-executing attempts remain preserved in
+`v5-heavy-rerun-20260813T120528Z/` and
+`v5-short-remed-20260813T130609Z/`.
+
+Both terminal verifier artifacts are present and return PASS with no unresolved
+material finding. The V5 prompt moved byte-for-byte from `prompts/active/` to
+`prompts/archived/` at SHA-256
+`959670289be1dc0c89f5f4acddcebbde03eeda938f6b4e9ab9022bc83326bcf5`.

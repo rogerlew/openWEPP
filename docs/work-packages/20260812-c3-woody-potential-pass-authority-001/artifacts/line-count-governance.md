@@ -14,3 +14,15 @@ Evidence mode: `Static + Ran`
 Strict Clippy initially rejected 163-line and later 127-line V3 helpers. The
 tests were decomposed into scientific-family, failure, and inventory helpers;
 the warnings-denied retry passed. No production module grew.
+
+## V5 Continuation
+
+| File | Lines | Disposition |
+| --- | ---: | --- |
+| `SC-VEGETATION-001.md` | 1,894 | Cumulative canonical contract; V9 is a bounded capped-pass amendment. |
+| `reference_calculator_v5.py` | 1,282 | Independent capped-pass fixture generator; not production code. |
+| `verify_v5_authority.py` | 405 | Independent frozen-operand and identity verifier; not production code. |
+| `package.md` | 399 | Existing package plan plus bounded V5 continuation addendum. |
+
+No production Rust module changed or grew in the V5 continuation. Workspace
+warnings-denied Clippy passed.

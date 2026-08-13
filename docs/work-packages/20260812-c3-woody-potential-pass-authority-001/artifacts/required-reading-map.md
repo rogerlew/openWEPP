@@ -37,4 +37,25 @@ are:
 - `docs/specifications/science-contracts/AGENTS.md`;
 - `crates/AGENTS.md` and `crates/openwepp-vegetation/AGENTS.md` only if a later
   separately authorized implementation package edits those paths;
-- `tests/AGENTS.md` for contract-derived integration tests.
+- `tests/AGENTS.md` as future implementation-package context; this authority-
+  only V5 continuation does not edit Rust tests.
+
+## V5 Continuation Reading
+
+Before V5 authority edits, the execution owner must also read completely:
+
+- current `SC-VEGETATION-001` V8 and science-contract instructions;
+- immutable V3 and V4 model definitions and their authority-package
+  fixture/generator, review, verification, and handoff evidence;
+- the implementation package's `equation-module-map.md`,
+  `potential-pass-hold-legitimacy-audit.md`, `gate-results.md`,
+  `implementation-and-test-evidence.md`, and `final-disposition.md`;
+- current production capped-solver draft and typed water resource boundary as
+  inspection-only consumers of the new authority;
+- canonical testing/gate, unit-governance, and kernel-package preparation
+  standards.
+
+Applicable instruction files remain `AGENTS.md`,
+`docs/work-packages/AGENTS.md`, `docs/specifications/science-contracts/AGENTS.md`,
+and `tests/AGENTS.md` for contract-derived tests. Production crate instructions
+are reading context only because Rust edits remain excluded.

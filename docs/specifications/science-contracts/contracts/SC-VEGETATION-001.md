@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-12
+last_reviewed: 2026-08-13
 supersedes: []
 superseded_by: []
 ---
@@ -22,7 +22,7 @@ superseded_by: []
 
 Status: `approved`
 Maturity: `active`
-Evidence mode: `Static`
+Evidence mode: `Static + Ran`
 
 ## Purpose
 
@@ -49,7 +49,13 @@ identities and neither is a V3 runtime alias. Version 8 admits
 state: displayed leaf carbon alone owns LAI, derived leaf/stem/root area is
 bound to that displayed pool, and the unconsumed previous leaf/root offset-flux
 fields are removed rather than assigned invented semantics. V1, V2, and V3
-remain immutable historical identities and are not V4 runtime aliases.
+remain immutable historical identities and are not V4 runtime aliases. Version
+9 admits `OPENWEPP_C3_WOODY_V5` as the executable successor to V4 for the final
+fixed-authorization E11--E15 pass: exact stand/tile/rate conversion, independent
+hydraulic-law evaluation, deterministic layer-cap complementarity, generalized
+Jacobian branches, complete operands and diagnostics, and immutable independent
+fixtures. V1--V4 remain immutable historical identities and are not V5 runtime
+aliases.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -77,6 +83,15 @@ for `docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/o
 That definition normatively imports the exact V3 digest and supersedes only the
 shared-stratum state, area derivation, and V3-to-V4 migration delta in the
 Version 8 amendment below.
+
+The immutable V5 definition identity is
+`sha256:0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`
+for
+`docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json`.
+That definition normatively imports the exact V4 digest
+`sha256:8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`
+and supersedes only the capped E11--E15, numerical-branch, diagnostic, and
+fixture delta stated in the Version 9 amendment below.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -1269,8 +1284,8 @@ calibration_evidence_status = NOT_CALIBRATION_READY
 identifiability_status = NOT_ASSESSED
 ```
 
-Version 7 admits equations, domains, occupancy semantics, and a typed parameter
-surface, while the
+Version 9 admits equations, domains, occupancy and fixed-cap semantics, and a
+typed parameter surface, while the
 canonical runtime remains absent; therefore `science_implementation_status =
 NOT_IMPLEMENTED`.
 No current parameter,
@@ -1359,6 +1374,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-006` | `20260811-c3-woody-tile-liquid-topology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-073, INV-VEGETATION-074, INV-VEGETATION-075, INV-VEGETATION-076, INV-VEGETATION-077, INV-VEGETATION-078, INV-VEGETATION-079` | `flagged-binding-addition` | Version 6 releases immutable V2 occupancy state, routing, area/resource identity, migration, and nonlinear local-solve implementation authority while preserving V1 as historical bytes. |
 | `BEI-VEGETATION-007` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-080, INV-VEGETATION-081, INV-VEGETATION-082, INV-VEGETATION-083, INV-VEGETATION-084, INV-VEGETATION-085, INV-VEGETATION-086` | `flagged-binding-addition` | Version 7 releases immutable V3 radiation preparation/ownership, surface wind, hydraulic geometry/common-root state, uncapped coupled potential semantics, exact leaf respiration, diagnostics, and independent fixture authority while preserving V1/V2 historical bytes. |
 | `BEI-VEGETATION-008` | `20260812-c3-woody-shared-state-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-069, INV-VEGETATION-087, INV-VEGETATION-088, INV-VEGETATION-089, INV-VEGETATION-090, INV-VEGETATION-091` | `flagged-binding-addition` | Version 8 releases immutable V4 exact shared-state schema, displayed-leaf C/N area/capacity ownership, derived area caches, and exact V3-to-V4 removal migration while preserving V1/V2/V3 historical bytes. |
+| `BEI-VEGETATION-009` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-093, INV-VEGETATION-094, INV-VEGETATION-095, INV-VEGETATION-096, INV-VEGETATION-097, INV-VEGETATION-098, INV-VEGETATION-099` | `flagged-binding-addition` | Version 9 releases immutable V5 fixed-authorization E11--E15 complementarity, generalized-Jacobian, diagnostic/operand, rollback, identity-transition, and independent fixture authority while preserving V1--V4 historical bytes. |
 
 ## Gap Register and Promotability Labels
 
@@ -1391,6 +1407,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-025` | V2 did not define the mixed leaf/stem radiation reduction/partition, local wind derivation, stem geometry/gravity, common-root warm start, accepted uncapped potential semantics, one Rd identity, complete numerical failure payload, or independent potential fixtures. | Version 7 selects every missing rule and binds independent V3 radiation, coupling, migration, respiration, and failure vectors; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-026` | V3 did not identify the displayed leaf C/N subpools owning LAI and photosynthetic capacity and carried two offset-flux state fields with no admitted units, update law, or consumer. | Version 8 selects displayed leaf C/N only, derived area caches, exact V4 shared schema, and removal-only V3 migration; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-027` | Imported E19 credits noncurrent growth to storage while E20 onset debits transfer, but no admitted equation moves storage to transfer. | Admit a complete ordered storage-to-transfer C/N preparation equation and independent conservation vectors before executing an onset that requires this bridge. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-028` | V4 imported the final capped E11--E15 pass without exact authorization-rate conversion, layer complementarity/equality branch, generalized Jacobian, complete capped operands/diagnostics, or independent cap-active vectors. | Version 9 selects and binds the complete V5 fixed-cap system and fixture family; production implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
 caller configuration/state, radiation/interception/conductance inputs,
@@ -1595,10 +1612,278 @@ implement Rust, activate a runtime selector, complete E01--E22, cut over a real
 consumer, admit canopy snow or soil transformations, or establish calibration,
 identifiability, empirical validity, or transferability.
 
+## `OPENWEPP_C3_WOODY_V5` Fixed-Authorization Capped-Pass Amendment
+
+V5 normatively imports the exact immutable V4 definition digest
+`8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`
+and every unchanged V1--V4 equation, configuration field, shared and occupancy
+state field, topology rule, potential-pass equation, transaction identity,
+numerical rule, guard, and unsupported branch. This section exclusively
+supersedes the incomplete final fixed-authorization E11--E15 relationship,
+including its cap complementarity, generalized-Jacobian branch, residual
+scaling, diagnostics, operands, rollback evidence, and independent fixture
+authority. It changes no potential-pass constitutive equation and no V4 state
+schema.
+
+### Fixed authorization identity and basis conversion
+
+For occupancy `o=(s,t)`, configured root layer `l`, positive tile fraction
+`f_t`, and positive interval `dt`, hydrology returns the immutable maximum
+authorization `A_W,o,l` in `kg H2O m^-2 stand-ground`. Before any capped solve,
+vegetation validates one complete typed authorization for every and only the
+potential request identities. Transaction, owner, stratum, tile, layer,
+resource, amount basis, and potential-request lineage are exact. Every amount
+is finite and satisfies `0<=A_W,o,l<=D_W,o,l`. Missing, extra, duplicate,
+mixed-transaction, wrong-basis, wrong-layer, wrong-occupancy, stale-request, or
+out-of-range authorization rejects the whole transaction before calculation.
+
+The only admitted conversions are:
+
+```text
+A_tile,o,l = A_W,o,l / f_t
+cap_rate_o,l = A_tile,o,l / dt
+             = A_W,o,l / (f_t * dt)
+```
+
+`A_tile` is an interval amount in `kg H2O m^-2 tile-ground`; `cap_rate` is a
+tile-ground flux in `kg H2O m^-2 tile-ground s^-1`. Neither conversion occurs
+inside a hydraulic constitutive law, and `f_t` is applied exactly once at each
+stand/tile boundary. A cap is fixed for the entire final pass. It is not
+borrowed across layers or occupancies, changed by descendant forcing,
+reauthorized, or donated to another process.
+
+### Capped layer flux and complementarity
+
+The final pass starts every tile column from the original beginning owner
+states and original forcing, never from a Stage-A candidate or last numerical
+iterate. At every nonlinear residual evaluation and for every configured root
+layer, evaluate the unchanged V3 soil-to-common-root hydraulic law first,
+independently of authorization:
+
+```text
+q_law_o,l = hydraulic_layer_law(psi_soil_l, psi_root, geometry_l,
+                                conductance_l, root_area_l, gravity_l)
+```
+
+Frozen, dry/inaccessible, or zero-root layers have the exact V3 zero-law
+branch. A negative accessible-layer `q_law` is the existing typed hydraulic
+redistribution rejection before complementarity; applying `min` must not hide
+or normalize it. For each otherwise valid layer, the accepted capped flux is
+exactly:
+
+```text
+q_o,l = min(q_law_o,l, cap_rate_o,l)
+```
+
+The branch rule is deterministic:
+
+```text
+cap active  iff cap_rate_o,l <= q_law_o,l
+law branch  iff q_law_o,l <  cap_rate_o,l
+```
+
+Exact equality therefore selects the active-cap branch. There is no blending,
+hysteresis, representation tolerance, post-hoc scalar ratio, or hidden cap
+floor. `q_law`, `cap_rate`, and `q` are distinct authoritative operands even
+when two values have identical bits.
+
+The capped hydraulic solve retains exactly the six V3 unknowns and six V3
+residual identities. Both class loss-function equalities, both class
+stem-to-leaf flux equalities, and `q1a+q1b-q2` are unchanged. Only root
+continuity becomes:
+
+```text
+R_root = q2 - sum_l(q_o,l)
+       = q2 - sum_l(min(q_law_o,l, cap_rate_o,l))
+```
+
+At every iterate the gas, leaf/wet/stem/canopy-air energy, vulnerability, and
+hydraulic equations are reevaluated under the current class beta factors and
+potentials. The cap is part of the coupled residual system; sequentially
+clamping an uncapped solution, scaling all layers by one ratio, or changing
+hydraulics without re-solving gas and energy is prohibited. Acceptance still
+requires each sun/shade gas-energy transpiration to equal its hydraulic leaf
+flux and total leaf loss to equal `q2=sum_l(q_o,l)` under the canonical scaled
+residual thresholds.
+
+The generalized Jacobian uses the selected branch at the current iterate:
+
+```text
+dq_o,l/dx = 0              when cap_rate_o,l <= q_law_o,l
+dq_o,l/dx = dq_law_o,l/dx  when q_law_o,l < cap_rate_o,l
+```
+
+Thus equality uses the zero derivative of the active-cap branch. Fixed
+authorization operands have zero derivative. At each Jacobian construction the
+branch is freshly selected from the unperturbed current iterate. The unchanged
+centered finite-difference state perturbations apply to all smooth V3 terms;
+the selected cap contribution is differentiated as zero on the active/equality
+branch, while the selected law contribution differentiates `q_law` on the law
+branch. The selected branch is frozen across the finite-difference perturbation
+pair used to assemble that Jacobian. Each new Newton or backtracking trial
+iterate then reselects its branch by `cap_rate<=q_law` before evaluating its
+residual and, if accepted for a subsequent iteration, its next Jacobian. A
+branch label from an earlier iterate is stale and prohibited. Backtracking,
+pivot limits, iteration limits, error precedence, and failure rollback remain
+the V3 numerical rules.
+
+For the capped root-continuity residual, the shared water scale is superseded
+by:
+
+```text
+scale_W_cap = max(
+  1e-12 kg H2O m^-2 tile-ground s^-1,
+  E_sun,max, E_shade,max,
+  abs(q1a), abs(q1b), abs(q2),
+  max_l(abs(q_law_o,l)),
+  max_l(abs(q_o,l)),
+  max_l(abs(cap_rate_o,l))
+)
+threshold_W_cap = 1e-12 + 1e-9 * scale_W_cap
+normalized_R_root = R_root / threshold_W_cap
+```
+
+All terms are in the stated tile-ground flux basis. Empty maxima are exact
+zero. The other five capped-system residuals retain their V3 identities and
+owning V3 scales. A rate/amount, tile/stand, layer/occupancy, or law/capped-flux
+substitution is never repaired by a numerical tolerance.
+
+### Finalized use, operands, diagnostics, and rollback
+
+After acceptance, each finalized stand-ground use is reconstructed exactly:
+
+```text
+F_W,o,l = f_t * q_o,l * dt
+```
+
+The transaction boundary independently validates
+`0<=F_W,o,l<=A_W,o,l<=D_W,o,l` with exact typed identity and the stated
+operation order. A rounded value above authorization rejects; V5 admits no
+normalization threshold for this inequality. Hydrology debits `F_W`, not
+`A_W`, `D_W`, `A_tile`, `cap_rate`, or `q_law`; unused authorization remains in
+the hydrology-owned inventory. The accepted occupancy candidate records the
+capped gas/energy/hydraulic warm starts and candidate transaction identity only
+after all owner candidates and all ledgers validate.
+
+Every occupancy-layer capped-pass operand record exposes at least: model,
+configuration, beginning-state and transaction identities; occupancy and
+configured root-layer identity/order; `f_t` and `dt`; `D_W`; `A_W`; `A_tile`;
+`cap_rate`; `q_law`; accepted `q`; `F_W`; the layer hydraulic-law inputs; all
+four potentials; both class beta factors; `Emax`, gas-energy transpiration,
+`q1a`, `q1b`, and `q2`; the six raw and normalized residuals with exact scales;
+and beginning/candidate occupancy states. An independent validator reconstructs
+all conversions, branch decisions, continuity, inequalities, and water-ledger
+amounts from these operands. Producer-supplied closure booleans or zero
+residuals are not authority.
+
+Successful and failed diagnostics list active water-cap layer IDs in configured
+root-layer order, without sorting by string rendering or activation time. The
+list contains exactly layers satisfying `cap_rate<=q_law` at the accepted or
+failed reported iterate. Numerical failures retain the complete V3 typed
+payload plus the applicable fixed authorization identities, `q_law`, accepted
+piecewise `q`, branch identities, residual scales, and ordered active-cap list.
+Optional values are null only when failure occurred before their evaluation.
+
+Any failure in authorization validation, column reconstruction, occupancy
+solve, generalized Jacobian, backtracking, receiver construction, independent
+closure, owner validation, or immediately before commit rejects all owners.
+Beginning vegetation, diagnostic hydrology, biogeochemistry, energy, pending
+transfer, transaction-lineage, and diagnostic-feedback bytes remain identical.
+No potential candidate, capped last iterate, request, authorization, finalized
+use, receipt, active-cap feedback, or transaction ID survives a rejected
+transaction.
+
+### V5 poisons and independent fixtures
+
+The immutable independent V5 capped-pass fixture family binds at least:
+
+- a fully authorized reduction with `A_W=D_W`, one active layer cap, multiple
+  active caps, exact equality at a cap, and a zero authorization; the fully
+  authorized physical solution and fluxes equal Stage A, while each layer's
+  reported branch follows its exact recomputed bits and exact equality remains
+  deterministically cap-active;
+- two accessible layers with different law fluxes, dry/frozen/zero-root exact
+  zero branches, and typed negative-flux redistribution rejection;
+- exact `A_W -> A_tile -> cap_rate -> q -> F_W` conversions with non-unit
+  `f_t` and non-unit `dt`;
+- both class flux equalities, total continuity, every accepted potential,
+  class beta, energy state, `q_law`, `q`, residual, scale, generalized-Jacobian
+  branch, and active-cap identity;
+- alternate valid warm starts converging to the same accepted solution;
+- cap-branch equality, branch-crossing finite differences, singular Jacobian,
+  backtracking exhaustion, and iteration-limit diagnostic payloads; and
+- byte-identical all-owner rollback for every capped-pass failure phase.
+
+Named poison alternatives must be numerically distinct and rejected for at
+least: `A_W` used as a rate; missing or double `f_t`; missing or double `dt`;
+stand-ground caps used inside tile hydraulics; `q_law` omitted or overwritten
+by `q`; equality assigned to the law branch; stale generalized-Jacobian branch;
+branch reselected inside a Jacobian perturbation pair or centered secant used
+at an exact tie;
+uncapped solution clamped after convergence; one scalar applied to every layer;
+gas/energy not re-solved after cap activation; authorization substituted for
+finalized use; wrong transaction, occupancy, tile, or layer; active caps sorted
+lexically rather than configured order; cap tolerance repairing wrong identity
+or basis; producer-supplied zero closure; reauthorization; potential-candidate
+continuation; and partial owner commit.
+
+Expected fixture values and failure payloads are generated only by the package
+independent reference calculator and committed digest-bound data. Rust output
+cannot generate, update, normalize, or select its own expected values. The
+resumed implementation package's ordinary Rust tests must consume the
+committed fixture without requiring Python. This authority package uses a
+separate implementation-independent Python verifier to reconstruct the frozen
+operands, while its regeneration gate proves exact digest/value identity.
+
+### Exact V4-to-V5 identity transition
+
+V4 is not an executable alias for V5 even though this amendment changes no
+shared or occupancy state field. Migration first validates the complete V4
+model, configuration, state digest, topology, field set, and transaction
+lineage. It then copies every shared-stratum and occupancy-state field byte for
+byte, binds the caller-supplied distinct V5 model and V5 configuration
+identities, and recomputes the complete V5 state digest. No state field is
+added, removed, defaulted, normalized, reordered semantically, or remapped.
+
+Missing V5 identity, a V4 configuration presented as V5, stale V4 model or
+state digest after migration, invalid source identity, or any changed copied
+field rejects without a partial V5 state. The independent fixture binds the
+complete V4 preimage and exact preservation of every state field without
+creating a definition--fixture digest cycle. After the V5 definition freezes,
+the independent authority verifier injects its actual digest, derives a
+distinct V5 configuration identity, reconstructs the actual V5 state digest,
+and exercises each stale-identity poison. The fixture marker is only the typed
+injection point and is never an executable model or state identity.
+
+### V5 invariants and guards
+
+| ID | Binding invariant or guard |
+|---|---|
+| `INV-VEGETATION-093` | Every fixed water authorization preserves exact potential-request transaction/owner/occupancy/layer/basis identity and converts by `A_tile=A_W/f_t`, `cap_rate=A_W/(f_t*dt)` exactly once. |
+| `INV-VEGETATION-094` | Each `q_law_l` is independently evaluated before `q_l=min(q_law_l,cap_rate_l)`; equality is cap-active and uses the zero generalized derivative. |
+| `INV-VEGETATION-095` | The capped pass retains the V3 six-unknown/six-residual coupled system, with only root continuity using capped `q_l`; gas, energy, class flux, and total continuity all re-solve together. |
+| `INV-VEGETATION-096` | Capped root-continuity normalization includes every `q_law`, accepted `q`, and `cap_rate` as well as all inherited V3 water-scale operands. |
+| `INV-VEGETATION-097` | Final use is independently reconstructed as `F_W=f_t*q*dt`; only final use is debited, and unused authorization remains owner inventory. |
+| `INV-VEGETATION-098` | Active-cap diagnostics use configured root-layer order and expose complete fixed-cap operands, branches, residuals, scales, and rollback evidence. |
+| `INV-VEGETATION-099` | V4-to-V5 migration validates the complete V4 source, copies every state field byte-identically, binds distinct caller-supplied V5 model/configuration identity, and recomputes only the V5 state digest. |
+| `VEG-E-091` | Missing, extra, duplicate, mixed, stale, wrong-identity/basis, nonfinite, negative, or request-exceeding authorization rejects before capped calculation. |
+| `VEG-E-092` | Negative accessible-layer `q_law`, wrong complementarity branch, stale generalized derivative, or failed class/total continuity rejects without a candidate. |
+| `VEG-E-093` | Any capped numerical, operand, closure, owner-validation, or precommit failure preserves every beginning owner and transaction byte exactly. |
+| `VEG-E-094` | Invalid V4 source, stale V4 identity in V5, missing/distorted V5 configuration identity, or any copied-state mutation rejects without a partial migration result. |
+
+### V5 scope and claims
+
+V5 releases implementation authority for the fixed-authorization E11--E15
+pass only. It does not itself implement Rust, activate a runtime selector,
+complete E01--E22, admit E19-to-E20 storage preparation, cut over a real
+consumer, admit canopy snow or soil biogeochemical transformations, or establish
+calibration, identifiability, empirical validity, or transferability.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-13 | 9 | Codex | Admitted `OPENWEPP_C3_WOODY_V5` exact fixed-authorization E11--E15 cap conversion, independently evaluated hydraulic-law flux, deterministic complementarity/generalized-Jacobian branches, capped residual scaling, complete operands/diagnostics/rollback, exact V4-to-V5 identity transition, and independent capped-pass fixtures; preserved V1--V4 bytes as historical authority. |
 | 2026-08-12 | 8 | Codex | Admitted `OPENWEPP_C3_WOODY_V4` exact shared-stratum schema, displayed-leaf-C/N-only area and capacity ownership, derived area caches, and exact removal of two unconsumed V3 offset-flux fields; preserved V1/V2/V3 bytes as historical authority. |
 | 2026-08-12 | 7 | Codex | Admitted `OPENWEPP_C3_WOODY_V3` mixed leaf/stem radiation ownership, neutral surface wind, height/gravity and common-root hydraulics, coupled uncapped potential semantics, one Atkin/Rd identity, typed numerical failure payloads, exact migration, and independent V3 fixtures; preserved V1/V2 bytes as historical authority. |
 | 2026-08-08 | 2 | Codex | Admitted the exact licensed-source provenance boundary without promoting source science; added strict-definition invariant `INV-VEGETATION-052` and audit-proven format, hidden-default, parameter, conductance, photosynthesis, root-demand, available-energy, and initialization gaps. |

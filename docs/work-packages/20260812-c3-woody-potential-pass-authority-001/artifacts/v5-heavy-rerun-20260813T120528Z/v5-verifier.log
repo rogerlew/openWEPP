@@ -1,0 +1,3 @@
+v5_configuration_sha256=ab3ede8d493859d1b70f8ae0014f6cdbaafac38f9bea83f0470c9dc5275ace26
+v5_state_sha256=fa7348db0e99eae3dbe843500e51d0b3cf01f732827fc93d3117a9ca2ab79c9c
+PASS: V5 capped-pass authority and independent vectors are frozen and consistent

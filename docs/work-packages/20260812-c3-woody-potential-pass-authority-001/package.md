@@ -1,6 +1,6 @@
-# Admit C3 Woody V3 Potential-Pass Authority
+# Admit C3 Woody Potential- and Capped-Pass Authority
 
-Status: `COMPLETE / OPENWEPP_C3_WOODY_V3 implementation authority released`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V5 capped-pass implementation authority released`
 
 Date: `2026-08-12`
 
@@ -11,6 +11,17 @@ Plan class: `Critical contract-first scientific-authority correction`
 This ExecPlan is a living document maintained under
 `docs/codex_exec_plans.md`.
 
+## Historical V3 Checkpoint
+
+The package reached the truthful terminal status
+`COMPLETE / OPENWEPP_C3_WOODY_V3 implementation authority released` on
+2026-08-12. Its V7 contract, V3 definition digest
+`7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`,
+independent vectors, reviews, gate history, terminal verifications, final
+disposition, and archived kickoff prompt remain immutable historical evidence.
+Reopening this package does not retract or rewrite that completed authority
+release.
+
 ## Objective
 
 Admit the exact mixed leaf/stem radiation preparation, canopy-surface wind
@@ -19,6 +30,13 @@ coupling, leaf-respiration identity, numerical failure payloads, and independent
 V3 radiation/E11--E15/respiration vectors needed to execute the already-admitted
 tile-column architecture. The successor model identity is
 `OPENWEPP_C3_WOODY_V3` under `SC-VEGETATION-001@7`.
+
+The active continuation admits the exact authorization-capped Stage C
+complementarity convention, layer-cap operand lineage, generalized derivative,
+residual scaling, diagnostics, and independent cap-active vectors required to
+replace the implementation package's disconnected capped draft. The successor
+identity is `OPENWEPP_C3_WOODY_V5` under `SC-VEGETATION-001@9`, importing exact
+V4 digest `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`.
 
 ## Progress
 
@@ -33,6 +51,22 @@ tile-column architecture. The successor model identity is
 - [x] Complete two independent terminal verifications.
 - [x] Archive the kickoff prompt byte-for-byte and publish the implementation
   handoff only after all terminal criteria pass.
+- [x] Preserve the complete V3 checkpoint, archived prompt, failed attempts,
+  review findings, and terminal evidence without rewriting history.
+- [x] Reopen at base commit `2685a1ea9fcfd51fef426eeb4c3685b419b2f768`
+  and record V5 intake, selection, operand lineage, and vector plans.
+- [x] Amend canonical authority to V9 and freeze immutable V5 definition bytes.
+- [x] Generate independent mixed-active-set, equality-tie, boundary, poison,
+  failure-diagnostic, and rollback vectors.
+- [x] Add implementation-independent V5 authority, digest, oracle, and anti-
+  evasion verification; assign ordinary Rust fixture consumption to the
+  resumed implementation package because production/test Rust is excluded.
+- [x] Complete two fresh independent science reviews and disposition every V5
+  finding against stable exact bytes.
+- [x] Complete focused and heavy gates, exact terminal-diff reconciliation, and
+  two fresh terminal verifications.
+- [x] Archive the V5 remediation prompt byte-for-byte and publish the capped-
+  pass implementation handoff only after every V5 terminal criterion passes.
 
 ## Surprises and Discoveries
 
@@ -67,6 +101,16 @@ tile-column architecture. The successor model identity is
   Rationale: regenerated fixture bytes are deterministic and contract-derived
   tests bind the five live V7 sections and all adjacent contract digests.
   Date/Author: 2026-08-12 / Codex.
+- Decision: bind the V5 independent capped fixture at SHA-256
+  `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`,
+  its generator at SHA-256
+  `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`,
+  and the canonical V5 definition at SHA-256
+  `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`.
+  Rationale: the independent six-unknown capped solve, exact active-set
+  branches, failures, rollback, and identity transition regenerate
+  deterministically and the byte-identical definition copy imports exact V4.
+  Date/Author: 2026-08-13 / Codex.
 
 ## Outcomes and Retrospective
 
@@ -261,3 +305,101 @@ Plan update note (2026-08-12): both science reviews and all focused/heavy gates
 passed. The final uninterrupted full-workspace run used a unique `/home`
 temporary directory and passed 2,481/2,481 tests; the package advanced to exact-
 byte terminal verification.
+
+## V5 Continuation Addendum
+
+This addendum supersedes only the current lifecycle and future exit condition;
+all preceding V3 decisions and evidence remain historical and unchanged.
+
+### Decisions and Scope
+
+- Reopen this package in place for the bounded capped-pass authority omission.
+  The completed parent cap-authority audit found the missing fully coupled cap-
+  active vector, equality-tie convention, independent `q_law`/`A_tile`/cap-rate
+  operands, generalized Jacobian and residual definition, and capped diagnostic
+  ordering. These findings are accepted; none is deferred or rejected.
+- Issue `OPENWEPP_C3_WOODY_V5` under `SC-VEGETATION-001@9`, importing exact V4
+  digest `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`.
+  The V3 six-unknown coupled system and V4 shared-state schema remain unchanged.
+- Include V9 authority, V5 definition/fixture/generator bytes, contract-derived
+  tests, package lifecycle/evidence, reviews, gates, verifiers, and handoff.
+- Exclude production Rust, runtime activation, hydrology arbitration changes,
+  cap borrowing, reauthorization, consumer cutover, deployment, publication,
+  empirical claims, remote branches, and pushes absent separate user direction.
+- Preserve immutable V1--V4 definitions, completed V3 evidence, and the
+  archived V3 prompt as protected boundaries.
+
+### Canonical Selections
+
+1. `A_tile_i=A_W_i/f_t`, `cap_rate_i=A_W_i/(f_t*dt)`, independently evaluate
+   `q_law_i`, select `q_i=min(q_law_i,cap_rate_i)`, and finalize
+   `F_W_i=f_t*q_i*dt`.
+2. A cap is active, including exact equality, iff
+   `cap_rate_i<=q_law_i`. The generalized derivative is zero on the cap/tie
+   branch and the law derivative otherwise.
+3. Root continuity is `q2-sum_i(q_i)`. The residual scale includes every
+   `q_law_i`, cap rate, and selected `q_i` together with imported V3 terms.
+4. Active cap identities and diagnostics follow configured root-layer order.
+5. Only finalized use is debited; identity is exact through request,
+   authorization, finalization, candidate debit, and receipt.
+6. V4-to-V5 migration validates the complete V4 source, copies the state
+   payload bitwise without field synthesis or remapping, binds distinct V5
+   model/configuration identities, and recomputes the state digest. Stale V4
+   identity is rejected by V5 execution.
+
+### V5 Phase Plan
+
+1. Freeze V4 predecessor bytes and V3 checkpoint evidence.
+2. Amend V9 with the cap operand, active-set, derivative, residual-scale,
+   ordering, diagnostics, and identity-rebind rules.
+3. Generate an independent V5 fixture covering accepted capped and controlled
+   law branches, equality and both near-tie sides, fully authorized value
+   reduction, unavailable layers,
+   failures, poisons,
+   rollback, and V4-to-V5 identity rebinding.
+4. Bind fixture/generator/section digests into immutable V5 definition bytes
+   and add contract-derived authority/digest/oracle/anti-evasion tests.
+5. Complete two fresh science reviews, correcting every accepted finding.
+6. Run focused then Critical heavy closure, exact terminal reconciliation, and
+   two fresh terminal verifications.
+7. Archive the V5 active prompt byte-for-byte and issue the capped-pass
+   implementation handoff.
+
+### V5 Exit Criteria
+
+The reopened package may close only when:
+
+- V9 binds every selection above without changing the imported V3 coupled
+  system or V4 state schema;
+- immutable V5 bytes bind the exact V4 predecessor and every canonical section,
+  fixture, and generator digest;
+- independent vectors pass for accepted capped and controlled law branches,
+  exact/near ties, fully authorized value reduction,
+  zero/dry/frozen/inaccessible layers, domain/singular/iteration failures,
+  rollback, and exact V4-to-V5 identity rebinding;
+- every amount/rate, stand/tile, `f_t`/`dt`, sequential-clamp, branch-tie,
+  ordering, debit, borrowing, transaction, occupancy, layer, and basis poison
+  discriminates;
+- both fresh reviews, focused and heavy gates, exact reconciliation, and both
+  fresh terminal verifiers pass with no unresolved material finding;
+- the V5 prompt is archived byte-for-byte only after those passes.
+
+The next terminal status is exactly:
+
+`COMPLETE / OPENWEPP_C3_WOODY_V5 capped-pass implementation authority released`
+
+It remains implementation authority only and retains
+`calibration_evidence_status=NOT_CALIBRATION_READY`,
+`identifiability_status=NOT_ASSESSED`, and every no-activation/no-cutover/no-
+empirical-claim boundary above.
+
+Plan update note (2026-08-13): the V3 checkpoint was preserved and the package
+reopened from commit `2685a1ea9fcfd51fef426eeb4c3685b419b2f768` for the
+accepted bounded V5 capped-pass authority/evidence gap. This intake statement
+is preserved as the pre-admission checkpoint; the later completion note below
+supersedes only its lifecycle posture.
+
+Plan update note (2026-08-13): V9/V5 authority, independent fixtures, dual
+science review, focused and heavy closure, exact reconciliation, and both
+terminal verifications passed. The package releases implementation authority
+only; the existing implementation remains fail-closed until it consumes V5.
