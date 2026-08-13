@@ -880,8 +880,8 @@ mod tests {
             stratum_config: &stratum,
             forcing: &forcing,
         };
-        let preliminary = interception(&input, 0.0, lane.wet_surface_temperature_k)
-            .expect("preliminary E04");
+        let preliminary =
+            interception(&input, 0.0, lane.wet_surface_temperature_k).expect("preliminary E04");
         let advanced_t10 = update_t10(shared.t10_k, forcing.air_temperature_k, input.interval_s)
             .expect("advanced T10");
         let case = prepare_case(&input, radiation, preliminary, advanced_t10)
@@ -891,10 +891,10 @@ mod tests {
             "/../../docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_vectors.json"
         )))
         .expect("independent V3 vectors");
-        let expected = vectors["families"]["leaf_respiration"]["results"]
-            ["rd25_umol_co2_m2_leaf_s"]
-            .as_f64()
-            .expect("independent Rd25");
+        let expected =
+            vectors["families"]["leaf_respiration"]["results"]["rd25_umol_co2_m2_leaf_s"]
+                .as_f64()
+                .expect("independent Rd25");
         assert!((case.classes.sun.rd25 - expected).abs() <= f64::EPSILON);
         assert!((case.classes.shade.rd25 - expected).abs() <= f64::EPSILON);
     }

@@ -74,6 +74,10 @@ impl StageAState {
 /// Complete flux operands produced by one nested gas/energy/hydraulic trial.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct StageAEvaluation {
+    /// Evaluator-local identity for binding exact nested accepted operands.
+    /// Generic equation tests use zero; production evaluators issue a unique
+    /// nonzero identity for every evaluation.
+    pub evaluation_id: u64,
     pub emax_sun_kg_m2_s: f64,
     pub emax_shade_kg_m2_s: f64,
     pub gas_sun_kg_m2_s: f64,
@@ -707,7 +711,7 @@ fn residuals(value: &StageAEvaluation) -> [f64; 6] {
         value.q1_shade_kg_m2_s - value.gas_shade_kg_m2_s,
         value.gas_sun_kg_m2_s - value.vulnerability_demand_sun_kg_m2_s,
         value.gas_shade_kg_m2_s - value.vulnerability_demand_shade_kg_m2_s,
-        value.q2_kg_m2_s - value.q1_sun_kg_m2_s - value.q1_shade_kg_m2_s,
+        value.q2_kg_m2_s - (value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s),
         q3_sum - value.q2_kg_m2_s,
     ]
 }
@@ -1032,6 +1036,7 @@ mod tests {
             let q2 = 1.0e-9 * (state.psi_root_mm - state.psi_stem_mm - 1_000.0);
             let q3_total = 1.0e-9 * (10_000.0 - state.psi_root_mm);
             Ok(StageAEvaluation {
+                evaluation_id: 0,
                 emax_sun_kg_m2_s: emax_sun,
                 emax_shade_kg_m2_s: emax_shade,
                 gas_sun_kg_m2_s: gas_sun,
@@ -1108,6 +1113,7 @@ mod tests {
     impl StageAEvaluator for ZeroOracle {
         fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
             Ok(StageAEvaluation {
+                evaluation_id: 0,
                 emax_sun_kg_m2_s: 0.0,
                 emax_shade_kg_m2_s: 0.0,
                 gas_sun_kg_m2_s: 0.0,
@@ -1157,6 +1163,7 @@ mod tests {
             let q2 = 1.0e-9 * (state.psi_root_mm - state.psi_stem_mm - 1_000.0);
             let q3_total = 1.0e-9 * (10_000.0 - state.psi_root_mm);
             Ok(StageAEvaluation {
+                evaluation_id: 0,
                 emax_sun_kg_m2_s: emax_sun,
                 emax_shade_kg_m2_s: emax_shade,
                 gas_sun_kg_m2_s: gas_sun,
@@ -1246,6 +1253,7 @@ mod tests {
     impl StageAEvaluator for ConstantInconsistentOracle {
         fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
             Ok(StageAEvaluation {
+                evaluation_id: 0,
                 emax_sun_kg_m2_s: 1.0e-5,
                 emax_shade_kg_m2_s: 1.0e-5,
                 gas_sun_kg_m2_s: 1.0e-5,

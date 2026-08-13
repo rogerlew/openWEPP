@@ -15,7 +15,9 @@ pub fn smaller_root(a: f64, b: f64, c: f64) -> Result<f64, VegetationError> {
         }
         return Ok(-c / b);
     }
-    let mut d = b.mul_add(b, -4.0 * a * c);
+    // The digest-bound V3 algorithm and independent oracle freeze these
+    // operations separately; an FMA changes Brent's discrete bracket path.
+    let mut d = b * b - 4.0 * a * c;
     let scale = (b * b).abs().max((4.0 * a * c).abs());
     if d < 0.0 {
         if d >= -64.0 * f64::EPSILON * scale {

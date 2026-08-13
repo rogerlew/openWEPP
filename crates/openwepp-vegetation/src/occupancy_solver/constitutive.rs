@@ -285,6 +285,8 @@ pub(crate) struct V3ConstitutiveEvaluator {
     case: V3PotentialCase,
     emax: ClassMaximumDemand,
     context: ConstitutiveSolveContext,
+    next_evaluation_id: std::cell::Cell<u64>,
+    evaluated_canopies: std::cell::RefCell<std::collections::BTreeMap<u64, CanopyEnergyResult>>,
 }
 
 impl V3ConstitutiveEvaluator {
@@ -311,6 +313,8 @@ impl V3ConstitutiveEvaluator {
             case,
             emax,
             context,
+            next_evaluation_id: std::cell::Cell::new(1),
+            evaluated_canopies: std::cell::RefCell::new(std::collections::BTreeMap::new()),
         })
     }
 
@@ -329,13 +333,16 @@ impl V3ConstitutiveEvaluator {
         {
             return Err(VegetationError::Domain("V3 constitutive solve identity"));
         }
+        self.next_evaluation_id.set(1);
+        self.evaluated_canopies.borrow_mut().clear();
         let outer = solve_uncapped_stage_a(identity, initial, self)?;
-        let canopy = solve_canopy_energy(
-            &self.case,
-            (outer.state.beta_sun, outer.state.beta_shade),
-            (outer.state.psi_sunleaf_mm, outer.state.psi_shadeleaf_mm),
-            &self.context,
-        )?;
+        let canopy = self
+            .evaluated_canopies
+            .borrow_mut()
+            .remove(&outer.evaluation.evaluation_id)
+            .ok_or(VegetationError::Coupled(
+                "accepted nested canopy state unavailable",
+            ))?;
         Ok(V3AcceptedStageA { outer, canopy })
     }
 }
@@ -371,6 +378,14 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
             (state.psi_sunleaf_mm, state.psi_shadeleaf_mm),
             &self.context,
         )?;
+        let evaluation_id = self.next_evaluation_id.get();
+        let next = evaluation_id
+            .checked_add(1)
+            .ok_or(VegetationError::Domain("V3 evaluation identity overflow"))?;
+        self.next_evaluation_id.set(next);
+        self.evaluated_canopies
+            .borrow_mut()
+            .insert(evaluation_id, energy.clone());
         let stem_vulnerability = vulnerability(state.psi_stem_mm, p.p50_xylem, p.ck)?;
         let q1_sun = p.k1a_max_s1
             * sun_area
@@ -394,6 +409,7 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
         let gas_sun = energy.sun.transpiration_kg_m2_tile_s;
         let gas_shade = energy.shade.transpiration_kg_m2_tile_s;
         Ok(StageAEvaluation {
+            evaluation_id,
             emax_sun_kg_m2_s: self.emax.sun,
             emax_shade_kg_m2_s: self.emax.shade,
             gas_sun_kg_m2_s: gas_sun,
@@ -421,6 +437,7 @@ fn zero_lai_evaluation(case: &V3PotentialCase) -> Result<StageAEvaluation, Veget
         })
         .collect::<Result<Vec<_>, _>>()?;
     Ok(StageAEvaluation {
+        evaluation_id: 0,
         emax_sun_kg_m2_s: 0.0,
         emax_shade_kg_m2_s: 0.0,
         gas_sun_kg_m2_s: 0.0,
