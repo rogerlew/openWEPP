@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `EXECUTING / V4 shared-state runtime focused PASS / capped gate incomplete`
+Status: `EXECUTED-HOLD / V5 bounded capped-core checkpoint / public path fail-closed`
 
 Evidence mode: `Ran`
 
@@ -335,3 +335,43 @@ This increment closes V4 identity, strict state, canonical serialization,
 displayed-pool ownership, and V3-to-V4 migration only. It does not complete
 Milestone 2, Milestone 3, the E20--E22 accepted transition, all-owner commit,
 benchmarks, heavy closure, or terminal verification.
+
+## 2026-08-13 V5 Capped-Pass Authority Intake
+
+All preceding V1--V4 failures, HOLDs, retries, reviews, and checkpoint evidence
+remain preserved. These rows record authority availability and implementation
+intake only; they do not pass a Rust capped-solver or public-path gate.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V5 authority predecessor | PASS | terminal authority commit `b7e6f08b655452c5c59a498ac9becd1439dd21ef`; `SC-VEGETATION-001` v9 approved/active |
+| V5 definition identity | PASS | both canonical copies byte-identical at SHA-256 `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`; V4 predecessor `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437` preserved |
+| V5 independent vectors and generator | PASS | vectors `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`; generator `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`; independent verifier PASS |
+| V5 science reviews | GO | both fresh independent reviewers report no unresolved material science, numerical, closure, diagnostic, rollback, migration, or protected-byte finding |
+| V5 focused authority gates | PASS | regeneration/verifier, admission, SC unit compliance, anti-evasion, AUTH11, vegetation authority, Markdown, formatting, and diff hygiene passed |
+| V5 heavy authority gates | PASS with demonstrable infrastructure exclusion | workspace Clippy, doctests, dependency policy, and all unaffected full-profile tests passed; the sole long-TMPDIR Unix-socket `SUN_LEN` failure passed as the exact named test under short TMPDIR with no source/science delta |
+| V5 terminal verifiers | PASS | both independent terminal verifiers report no unresolved material finding; archived authority prompt SHA-256 `959670289be1dc0c89f5f4acddcebbde03eeda938f6b4e9ab9022bc83326bcf5` |
+| V5 implementation lifecycle | ACTIVE / NOT PASSED | runtime identity, V4-to-V5 migration, capped coupled solve, exact fixture consumption, diagnostics, finalized-use debit, and rollback are under remediation |
+| `STAGE_B_E11_E15_EXACT_ORACLE` | NOT RUN / pending stable implementation | authority vectors exist, but no production Rust capped-solver PASS or independent implementation review is claimed |
+| public candidate containment | PASS / fail-closed | public execution must continue to emit no candidate or finalized use until the exact capped solver and whole-owner gates pass |
+| Milestones 2 and 3 | INCOMPLETE | authority lift does not substitute for public final-column execution, closure, rollback, and review evidence |
+
+## 2026-08-13 V5 Bounded Capped-Core Checkpoint
+
+All prior failures and retries remain preserved above. The bounded runtime
+identity and capped-core bytes are stable, but the exact Stage-B oracle gate is
+held by the separately recorded portability omission.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| vegetation quick | PASS | `173/173` |
+| implementation contract | PASS | `13/13` |
+| vegetation authority | PASS | `21/21` |
+| AUTH11 and anti-evasion | PASS | `3/3`; source-level authority anti-evasion passed |
+| strict vegetation Clippy | PASS | all targets, warnings denied |
+| formatting/diff hygiene | PASS | `cargo fmt --all -- --check`; `git diff --check` |
+| bounded capped-core correctness | PASS / checkpoint only | exact over-cap rejection, configured cap order, fixed authorization identity, complete success/failure operands, independent conversion/continuity reconstruction, coupled near-tie branches, singular/iteration/backtracking diagnostics, and rollback |
+| independent correctness and QA | HOLD legitimate | no remaining material bounded Rust finding; both reviewers reject Stage-B acceptance without a portable failed-iterate comparison rule |
+| frozen backtracking `step_norm` | BLOCKED | Python `3925.8532969524972`; Rust `3925.8544224384018`; no admitted cross-runtime tolerance; see `v5-failure-payload-portability-hold-legitimacy-audit.md` |
+| `STAGE_B_E11_E15_EXACT_ORACLE` | NOT PASSED / HOLD | the provisional `3e-6` observation is explicitly non-authoritative and cannot close this gate |
+| public candidate containment | PASS / fail-closed | no request, finalized use, owner candidate, or mutation is published |

@@ -1,5 +1,9 @@
 use std::fs;
 
+use openwepp_kernel_contract::{
+    MaximumAuthorization, OccupancyId, ResourceOwnerId, SoilLayerId, StratumId, TileId,
+    TransactionId, WaterResourceKey,
+};
 use openwepp_vegetation::carbon_nitrogen::{
     CnParameters, ElementPool, PhenologyMode, ReceiverClass, Tissue, TissuePool, advance_phenology,
     carbon_offer, finalize_growth, material_transfer,
@@ -9,6 +13,9 @@ use openwepp_vegetation::energy::{
 };
 use openwepp_vegetation::interception::{InterceptionInput, liquid_interception};
 use openwepp_vegetation::migration::{RhessysSource, migrate_definition_fields};
+use openwepp_vegetation::occupancy_solver::resources::{
+    OccupancyRootLayers, PotentialWaterRequestBatch, ValidatedWaterAuthorizations,
+};
 use openwepp_vegetation::photosynthesis::{FvcbInput, fvcb, medlyn};
 use openwepp_vegetation::radiation::two_stream;
 use openwepp_vegetation::{
@@ -24,6 +31,14 @@ fn expected() -> serde_json::Value {
     .expect("valid vector fixture")
 }
 
+fn expected_v5() -> serde_json::Value {
+    serde_json::from_slice(
+        &fs::read("docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_vectors.json")
+            .expect("V5 capped-pass vector fixture"),
+    )
+    .expect("valid V5 vector fixture")
+}
+
 fn assert_fvcb_vector(
     input: FvcbInput,
     key: &str,
@@ -35,12 +50,12 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn public_candidate_is_v4_only_and_fail_closed_before_capped_pass() {
+fn public_candidate_is_v5_only_and_fail_closed_before_capped_pass() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
     assert!(
         source
-            .contains("V4 occupancy-local capped transaction routing is implementation-incomplete")
+            .contains("V5 occupancy-local capped transaction routing is implementation-incomplete")
     );
     assert!(source.contains("BTreeMap<OccupancyId, OccupancyState>"));
     assert!(!source.contains("struct StratumState"));
@@ -52,14 +67,14 @@ fn public_candidate_is_v4_only_and_fail_closed_before_capped_pass() {
 }
 
 #[test]
-fn v4_configuration_state_and_migration_inputs_have_no_default_path() {
+fn v5_configuration_state_and_migration_inputs_have_no_default_path() {
     for path in [
         "crates/openwepp-vegetation/src/config.rs",
         "crates/openwepp-vegetation/src/occupancy_state.rs",
         "crates/openwepp-vegetation/src/transaction.rs",
         "crates/openwepp-vegetation/src/migration.rs",
     ] {
-        let source = fs::read_to_string(path).expect("V4 source");
+        let source = fs::read_to_string(path).expect("V5 source");
         assert!(!source.contains("impl Default for VegetationConfiguration"));
         assert!(!source.contains("impl Default for OccupancyState"));
         assert!(!source.contains("impl Default for CoupledOwnedState"));
@@ -71,7 +86,7 @@ fn v4_configuration_state_and_migration_inputs_have_no_default_path() {
 
 #[test]
 fn production_registry_is_byte_identical_to_authority() {
-    let authority = fs::read("docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_definition.json")
+    let authority = fs::read("docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json")
         .expect("authority definition");
     assert_eq!(MODEL_BYTES, authority);
     assert_eq!(format!("{:x}", Sha256::digest(MODEL_BYTES)), MODEL_SHA256);
@@ -385,10 +400,10 @@ fn schema_and_migration_fail_closed_without_defaults() {
     assert!(VegetationConfiguration::parse_strict(br"{}").is_err());
     assert!(VegetationConfiguration::parse_strict(br#"{"unknown":1}"#).is_err());
     let mut mutated = VegetationConfiguration::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
-            .expect("V4 configuration fixture"),
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
+            .expect("V5 configuration fixture"),
     )
-    .expect("V4 configuration shape");
+    .expect("V5 configuration shape");
     mutated.strata[0].stem_rho_vis += 0.01;
     assert!(mutated.validate().is_err());
     let source = RhessysSource {
@@ -420,15 +435,16 @@ fn energy_and_aerodynamic_domains_are_explicit() {
 }
 
 #[test]
-fn historical_states_cannot_enter_the_v4_public_state_parser() {
+fn historical_states_cannot_enter_the_v5_public_state_parser() {
     let config = VegetationConfiguration::parse_strict(
-        &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
-            .expect("V4 configuration fixture"),
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
+            .expect("V5 configuration fixture"),
     )
-    .expect("V4 configuration shape");
+    .expect("V5 configuration shape");
     for path in [
         "tests/fixtures/c3_woody_v1_diagnostic_state.json",
         "tests/fixtures/c3_woody_v3_diagnostic_state.json",
+        "tests/fixtures/c3_woody_v4_diagnostic_state.json",
     ] {
         let result = CoupledOwnedState::parse_strict(
             &fs::read(path).expect("historical state fixture"),
@@ -443,4 +459,123 @@ fn historical_states_cannot_enter_the_v4_public_state_parser() {
         )
         .is_err()
     );
+    assert!(
+        VegetationConfiguration::parse_strict(
+            &fs::read("tests/fixtures/c3_woody_v4_diagnostic_configuration.json")
+                .expect("V4 configuration fixture"),
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn v5_committed_cap_vectors_reconstruct_conversions_and_exact_tie_without_python() {
+    let expected = expected_v5();
+    let family = &expected["families"]["controlled_layer_complementarity"];
+    let fraction = family["tile_fraction"].as_f64().expect("tile fraction");
+    let dt = family["dt_s"].as_f64().expect("interval");
+    for layer in family["layers"].as_array().expect("layer operands") {
+        let authorization = layer["authorization_kg_m2_stand_ground"].as_f64().unwrap();
+        let cap_rate = authorization / (fraction * dt);
+        let q_law = layer["q_law_kg_m2_tile_s"].as_f64().unwrap();
+        let q = q_law.min(cap_rate);
+        assert_eq!(cap_rate, layer["cap_rate_kg_m2_tile_s"].as_f64().unwrap());
+        assert_eq!(q, layer["q_final_kg_m2_tile_s"].as_f64().unwrap());
+        assert_eq!(
+            fraction * q * dt,
+            layer["finalized_use_kg_m2_stand_ground"].as_f64().unwrap()
+        );
+        assert_eq!(
+            layer["branch"],
+            if cap_rate <= q_law {
+                "authorization_active_or_tie"
+            } else {
+                "constitutive_law"
+            }
+        );
+    }
+    let tie = &expected["families"]["exact_and_near_tie"]["cases"][1];
+    assert_eq!(tie["cap_rate_f64_hex"], tie["q_law_f64_hex"]);
+    assert_eq!(tie["branch"], "authorization_active_or_tie");
+    assert_eq!(tie["dq_final_d_root_potential"].as_f64(), Some(0.0));
+}
+
+#[test]
+fn public_water_boundary_preserves_v5_identity_and_one_time_tile_conversion() {
+    let expected = expected_v5();
+    let family = &expected["families"]["controlled_layer_complementarity"];
+    let transaction_id = TransactionId(
+        family["identity"]["transaction_id"]
+            .as_u64()
+            .expect("transaction id") as u128,
+    );
+    let owner_id =
+        ResourceOwnerId::try_new(family["identity"]["owner_id"].as_str().expect("owner id"))
+            .expect("typed owner");
+    let occupancy_id = OccupancyId {
+        stratum_id: StratumId::try_new(
+            family["identity"]["stratum_id"]
+                .as_str()
+                .expect("stratum id"),
+        )
+        .expect("typed stratum"),
+        tile_id: TileId::try_new(family["identity"]["tile_id"].as_str().expect("tile id"))
+            .expect("typed tile"),
+    };
+    let layers = family["layers"].as_array().expect("layer operands");
+    let configured = vec![OccupancyRootLayers {
+        occupancy_id: occupancy_id.clone(),
+        layer_ids: layers
+            .iter()
+            .map(|layer| SoilLayerId::try_new(layer["layer_id"].as_str().unwrap()).unwrap())
+            .collect(),
+    }];
+    let amounts = layers
+        .iter()
+        .map(|layer| {
+            let key = WaterResourceKey {
+                occupancy_id: occupancy_id.clone(),
+                layer_id: SoilLayerId::try_new(layer["layer_id"].as_str().unwrap()).unwrap(),
+            };
+            let authorization = layer["authorization_kg_m2_stand_ground"].as_f64().unwrap();
+            (key, authorization.max(1.0))
+        })
+        .collect::<std::collections::BTreeMap<_, _>>();
+    let requests = PotentialWaterRequestBatch::try_from_stand_amounts(
+        transaction_id,
+        owner_id.clone(),
+        &configured,
+        &amounts,
+    )
+    .expect("typed V5 request batch");
+    let authorizations = requests
+        .requests()
+        .iter()
+        .zip(layers)
+        .map(|(request, layer)| MaximumAuthorization {
+            transaction_id,
+            owner_id: owner_id.clone(),
+            key: request.key.clone(),
+            amount: layer["authorization_kg_m2_stand_ground"].as_f64().unwrap(),
+            basis: request.basis,
+        })
+        .collect();
+    let validated = ValidatedWaterAuthorizations::try_new(&requests, authorizations)
+        .expect("exact authorization correspondence");
+    let fraction = family["tile_fraction"].as_f64().unwrap();
+    let tile_fractions =
+        std::collections::BTreeMap::from([(occupancy_id.tile_id.clone(), fraction)]);
+    let local = validated
+        .to_local_cap_map(&tile_fractions)
+        .expect("one stand-to-tile conversion");
+    for layer in layers {
+        let key = WaterResourceKey {
+            occupancy_id: occupancy_id.clone(),
+            layer_id: SoilLayerId::try_new(layer["layer_id"].as_str().unwrap()).unwrap(),
+        };
+        assert_eq!(
+            local[&key],
+            layer["authorization_kg_m2_tile_ground"].as_f64().unwrap()
+        );
+    }
 }

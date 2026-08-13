@@ -15,6 +15,8 @@ const V2_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001";
 const V3_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260812-c3-woody-potential-pass-authority-001";
+const V4_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260812-c3-woody-shared-state-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -181,7 +183,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 7",
+        "contract_version: 9",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
@@ -196,7 +198,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
         "| `approved` | `active` |",
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
         "| `static` | `2026-08-12` |",
-        "OPENWEPP_C3_WOODY_V3",
+        "OPENWEPP_C3_WOODY_V5",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -616,10 +618,12 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 7",
+        "contract_version: 9",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
+        "OPENWEPP_C3_WOODY_V4",
+        "OPENWEPP_C3_WOODY_V5",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -1556,4 +1560,302 @@ fn independent_coupled_reference_vectors_pass() {
         );
     }
     assert!(json_number_after(&stdout, "wrong_n_remaining") < 0.01);
+}
+
+const V5_REQUIRED_POISONS: [&str; 27] = [
+    "authorization_amount_as_rate",
+    "authorization_as_finalized_debit",
+    "borrow_unused_authorization",
+    "cap_before_constitutive_law",
+    "cap_tolerance_repairs_identity_or_basis",
+    "continue_from_potential_candidate",
+    "double_interval",
+    "double_tile_fraction",
+    "gas_energy_not_resolved",
+    "omit_interval",
+    "omit_tile_fraction",
+    "partial_commit",
+    "producer_supplied_zero_closure",
+    "q_law_overwritten_by_q",
+    "reauthorization_after_final_pass",
+    "reselect_within_tie_perturbation",
+    "scalar_ratio_all_layers",
+    "sequential_clamp_potential_q",
+    "sorted_layer_id_active_caps",
+    "stale_generalized_branch",
+    "stale_transaction",
+    "stand_cap_used_inside_tile_law",
+    "strict_less_than_tie",
+    "wrong_basis",
+    "wrong_layer",
+    "wrong_occupancy",
+    "wrong_tile_authorization",
+];
+
+fn v5_fixture() -> Value {
+    serde_json::from_str(&read(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_vectors.json"
+    )))
+    .expect("V5 fixture JSON")
+}
+
+#[test]
+fn v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable() {
+    let vegetation = read(CONTRACT);
+    let definition_path =
+        format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json");
+    let definition: Value =
+        serde_json::from_str(&read(&definition_path)).expect("V5 definition JSON");
+
+    assert_eq!(
+        sha256(&definition_path),
+        "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    );
+    assert_eq!(definition["model_version"], "OPENWEPP_C3_WOODY_V5");
+    assert_eq!(definition["canonical_contract"], "SC-VEGETATION-001@9");
+    assert_eq!(
+        definition["base_model_definition"]["sha256"],
+        "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437"
+    );
+    assert_eq!(
+        definition["independent_fixture"]["sha256"],
+        "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d"
+    );
+    assert_eq!(
+        definition["independent_fixture"]["generator_sha256"],
+        "4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775"
+    );
+    assert_eq!(
+        sha256_text(inclusive_section(
+            &vegetation,
+            "## `OPENWEPP_C3_WOODY_V5` Fixed-Authorization Capped-Pass Amendment\n",
+            "## Change Log\n",
+        )),
+        definition["canonical_section_sha256"]["v5_authorization_capped_pass_amendment"]
+            .as_str()
+            .expect("V5 section digest"),
+    );
+
+    for (path, digest) in [
+        (
+            format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"),
+            "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
+        ),
+        (
+            format!("{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json"),
+            "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3",
+        ),
+        (
+            format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json"),
+            "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852",
+        ),
+        (
+            format!("{V4_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v4_definition.json"),
+            "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437",
+        ),
+    ] {
+        assert_eq!(
+            sha256(&path),
+            digest,
+            "historical model bytes changed: {path}"
+        );
+    }
+    for required in [
+        "INV-VEGETATION-093",
+        "INV-VEGETATION-094",
+        "INV-VEGETATION-095",
+        "INV-VEGETATION-096",
+        "INV-VEGETATION-097",
+        "INV-VEGETATION-098",
+        "INV-VEGETATION-099",
+        "VEG-E-091",
+        "VEG-E-092",
+        "VEG-E-093",
+        "VEG-E-094",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "missing V5 authority {required}"
+        );
+    }
+}
+
+#[test]
+fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
+    let fixture_path =
+        format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_vectors.json");
+    let definition_path =
+        format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json");
+    let before_fixture = read(&fixture_path);
+    let before_definition = read(&definition_path);
+    let output = Command::new(".venv/bin/python")
+        .arg(format!(
+            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v5.py"
+        ))
+        .output()
+        .expect("run independent V5 oracle");
+    assert!(
+        output.status.success(),
+        "V5 oracle failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(read(&fixture_path), before_fixture);
+    assert_eq!(read(&definition_path), before_definition);
+    assert_eq!(
+        sha256(&fixture_path),
+        "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v5.py"
+        )),
+        "4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775"
+    );
+}
+
+#[test]
+fn v5_vectors_bind_exact_cap_conversions_tie_rule_operands_and_poison_inventory() {
+    let fixture = v5_fixture();
+    assert_eq!(fixture["model_version"], "OPENWEPP_C3_WOODY_V5");
+    assert_eq!(fixture["oracle_independence"]["calls_rust"], false);
+    assert!(
+        fixture["checks"]
+            .as_object()
+            .expect("V5 checks")
+            .values()
+            .all(|value| value == true)
+    );
+
+    let controlled = &fixture["families"]["controlled_layer_complementarity"];
+    let fraction = controlled["tile_fraction"].as_f64().expect("tile fraction");
+    let dt = controlled["dt_s"].as_f64().expect("interval");
+    let configured = controlled["configured_layer_order"]
+        .as_array()
+        .expect("configured layers");
+    let layers = controlled["layers"].as_array().expect("layer operands");
+    assert_eq!(configured.len(), layers.len());
+    for (identity, layer) in configured.iter().zip(layers) {
+        assert_eq!(identity, &layer["layer_id"]);
+        let authorization = layer["authorization_kg_m2_stand_ground"].as_f64().unwrap();
+        let tile_amount = layer["authorization_kg_m2_tile_ground"].as_f64().unwrap();
+        let cap_rate = layer["cap_rate_kg_m2_tile_s"].as_f64().unwrap();
+        let q_law = layer["q_law_kg_m2_tile_s"].as_f64().unwrap();
+        let q_final = layer["q_final_kg_m2_tile_s"].as_f64().unwrap();
+        let finalized = layer["finalized_use_kg_m2_stand_ground"].as_f64().unwrap();
+        assert_eq!(tile_amount, authorization / fraction);
+        assert_eq!(cap_rate, authorization / (fraction * dt));
+        assert_eq!(q_final, q_law.min(cap_rate));
+        assert_eq!(finalized, fraction * q_final * dt);
+        let cap_active = cap_rate <= q_law;
+        assert_eq!(
+            layer["branch"],
+            if cap_active {
+                "authorization_active_or_tie"
+            } else {
+                "constitutive_law"
+            }
+        );
+        let derivative = layer["dq_final_d_root_potential"].as_f64().unwrap();
+        if cap_active {
+            assert_eq!(derivative, 0.0);
+        } else {
+            assert!(
+                derivative < 0.0,
+                "law branch retains its constitutive derivative"
+            );
+        }
+    }
+    let tie_cases = fixture["families"]["exact_and_near_tie"]["cases"]
+        .as_array()
+        .unwrap();
+    assert_eq!(tie_cases[1]["case"], "exact_tie");
+    assert_eq!(tie_cases[1]["branch"], "authorization_active_or_tie");
+    assert_eq!(
+        tie_cases[1]["dq_final_d_root_potential"].as_f64(),
+        Some(0.0)
+    );
+
+    let poisons = fixture["poisons"].as_object().expect("V5 poisons");
+    assert_eq!(poisons.len(), V5_REQUIRED_POISONS.len());
+    for name in V5_REQUIRED_POISONS {
+        let poison = poisons
+            .get(name)
+            .unwrap_or_else(|| panic!("missing V5 poison {name}"));
+        assert_eq!(poison["executed"], true, "unexecuted poison {name}");
+        assert!(
+            poison.get("typed_error").is_some() || poison["discriminates"] == true,
+            "nondiscriminating poison {name}"
+        );
+    }
+}
+
+#[test]
+fn v5_failure_payloads_rollback_and_migration_identity_are_complete() {
+    let fixture = v5_fixture();
+    for failure in fixture["families"]["capped_failures"]
+        .as_array()
+        .expect("capped failures")
+    {
+        assert!(failure["candidate"].is_null());
+        assert_eq!(failure["rollback_byte_identical"], true);
+        assert_eq!(
+            failure["beginning_state_sha256_before"],
+            failure["beginning_state_sha256_after"]
+        );
+        let diagnostics = &failure["diagnostics"];
+        assert_eq!(diagnostics["pass"], "capped");
+        for field in [
+            "model_definition_sha256",
+            "transaction_id",
+            "occupancy_id",
+            "solve",
+            "iterations",
+            "residual_norms",
+            "backtracking_count",
+            "active_bounds",
+            "active_water_caps",
+            "layer_operands_in_configuration_order",
+            "fixed_authorization_identity",
+            "step_norm",
+            "bracket",
+            "pivot_magnitude",
+            "matrix_norm",
+        ] {
+            assert!(
+                diagnostics.get(field).is_some(),
+                "failure diagnostic missing {field}"
+            );
+        }
+    }
+    for injection in fixture["families"]["phase_rollback_injections"]
+        .as_array()
+        .unwrap()
+    {
+        assert_eq!(injection["candidate_survives"], false);
+        assert_eq!(injection["beginning_owners_byte_identical"], true);
+        assert_eq!(
+            injection["beginning_owner_bytes_before_sha256"],
+            injection["beginning_owner_bytes_after_sha256"]
+        );
+    }
+
+    let migration = &fixture["families"]["v4_to_v5_identity_rebind"];
+    assert_eq!(migration["payload_byte_identical"], true);
+    assert_eq!(migration["field_migration_or_synthesis"], false);
+    assert_eq!(
+        migration["payload_sha256_before"],
+        migration["payload_sha256_after"]
+    );
+    assert_ne!(
+        migration["v4_identity"]["configuration_sha256"],
+        migration["v5_identity"]["configuration_sha256"]
+    );
+    assert_eq!(
+        migration["stale_v4_identity_poison"]["candidate"],
+        Value::Null
+    );
+    assert_eq!(
+        migration["stale_v4_identity_poison"]["typed_error"],
+        "stale_v4_identity_in_v5_state"
+    );
 }

@@ -1,4 +1,4 @@
-//! V4 fixed-authorization column-pass orchestration and finalized water uses.
+//! V5 fixed-authorization column-pass orchestration and finalized water uses.
 //!
 //! This module deliberately starts the second column pass from the immutable
 //! beginning owner state. It binds the same whole-column radiation preparation
@@ -25,6 +25,7 @@ use crate::occupancy_solver::radiation::{
 use crate::occupancy_solver::resources::{
     ValidatedWaterAuthorizations, WaterResourceBoundaryError,
 };
+use crate::occupancy_state::OccupancyState;
 use crate::transaction::validate_candidate_inputs;
 use crate::transaction::{CoupledOwnedState, SnowFreeForcing};
 
@@ -41,9 +42,36 @@ pub(crate) struct CappedColumnPass {
     pub finalized_water_uses: Vec<FinalizedWaterUse>,
     pub radiation: PreparedRadiation,
     pub diagnostics: BTreeMap<OccupancyId, OccupancyDiagnostics>,
+    pub water_operands: Vec<CappedWaterLayerOperands>,
 }
 
-/// Constitutive boundary for one exact V4 occupancy under owner-fixed caps.
+/// Complete V5 success-path ownership and constitutive operands in configured
+/// occupancy/layer order. These are independently reconstructable; no closure
+/// boolean or producer residual is accepted.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct CappedWaterLayerOperands {
+    pub model_definition_sha256: String,
+    pub configuration_sha256: String,
+    pub beginning_state_sha256: String,
+    pub transaction_id: TransactionId,
+    pub tile_fraction: f64,
+    pub interval_s: f64,
+    pub configured_layer_index: usize,
+    pub key: WaterResourceKey,
+    pub potential_request_kg_m2_stand_ground: f64,
+    pub authorization_kg_m2_stand_ground: f64,
+    pub authorization_kg_m2_tile_ground: f64,
+    pub cap_rate_kg_m2_tile_s: f64,
+    pub q_law_kg_m2_tile_s: f64,
+    pub q_final_kg_m2_tile_s: f64,
+    pub finalized_use_kg_m2_stand_ground: f64,
+    pub authorization_active_or_tie: bool,
+    pub beginning_occupancy_state: OccupancyState,
+    pub candidate_occupancy_state: OccupancyState,
+    pub coupled: crate::diagnostics::CappedNumericalOperands,
+}
+
+/// Constitutive boundary for one exact V5 occupancy under owner-fixed caps.
 /// The evaluator receives local tile-ground caps through [`OccupancyPassInput`]
 /// and must solve the complete coupled system from the supplied beginning lane.
 pub(crate) trait CappedOccupancyEvaluator {
@@ -57,6 +85,8 @@ pub(crate) trait CappedOccupancyEvaluator {
 struct RadiationBoundCappedSolver<'a> {
     radiation: &'a BTreeMap<OccupancyId, OccupancyRadiation>,
     evaluator: &'a dyn CappedOccupancyEvaluator,
+    owner_id: &'a openwepp_kernel_contract::ResourceOwnerId,
+    transaction_id: TransactionId,
 }
 
 impl RadiationBoundCappedSolver<'_> {
@@ -64,6 +94,8 @@ impl RadiationBoundCappedSolver<'_> {
         configuration: &VegetationConfiguration,
         prepared: &'a PreparedRadiation,
         evaluator: &'a dyn CappedOccupancyEvaluator,
+        owner_id: &'a openwepp_kernel_contract::ResourceOwnerId,
+        transaction_id: TransactionId,
     ) -> Result<RadiationBoundCappedSolver<'a>, VegetationError> {
         let expected = configuration.expected_occupancies();
         let actual = prepared
@@ -78,12 +110,14 @@ impl RadiationBoundCappedSolver<'_> {
                 .any(|(key, value)| key != &value.occupancy_id)
         {
             return Err(VegetationError::Receipt(
-                "V4 capped radiation occupancy identity".into(),
+                "V5 capped radiation occupancy identity".into(),
             ));
         }
         Ok(RadiationBoundCappedSolver {
             radiation: &prepared.occupancies,
             evaluator,
+            owner_id,
+            transaction_id,
         })
     }
 }
@@ -92,7 +126,7 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
     fn solve(&self, input: OccupancyPassInput<'_>) -> Result<OccupancyPassResult, VegetationError> {
         let Some(local_caps) = input.local_authorizations_kg_m2_tile_ground.as_ref() else {
             return Err(VegetationError::Receipt(
-                "owner authorization absent during V4 capped pass".into(),
+                "owner authorization absent during V5 capped pass".into(),
             ));
         };
         let expected_layers = input
@@ -108,11 +142,11 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
                 .any(|amount| !amount.is_finite() || *amount < 0.0)
         {
             return Err(VegetationError::Receipt(
-                "V4 capped local authorization identity".into(),
+                "V5 capped local authorization identity".into(),
             ));
         }
         let radiation = self.radiation.get(input.occupancy_id).ok_or_else(|| {
-            VegetationError::Receipt("V4 capped radiation occupancy identity".into())
+            VegetationError::Receipt("V5 capped radiation occupancy identity".into())
         })?;
         if radiation.occupancy_id != *input.occupancy_id
             || radiation.conditional_lai_m2_m2_tile_ground.to_bits()
@@ -121,14 +155,29 @@ impl OccupancyPassSolver for RadiationBoundCappedSolver<'_> {
                 != input.conditional_wai_m2_m2_tile_ground.to_bits()
         {
             return Err(VegetationError::Receipt(
-                "V4 capped radiation area/occupancy identity".into(),
+                "V5 capped radiation area/occupancy identity".into(),
             ));
         }
-        self.evaluator.solve_capped(input, radiation)
+        let occupancy_id = input.occupancy_id.clone();
+        self.evaluator
+            .solve_capped(input, radiation)
+            .map_err(|error| {
+                let VegetationError::NumericalFailure(mut diagnostics) = error else {
+                    return error;
+                };
+                diagnostics.fixed_authorization_identity =
+                    Some(crate::diagnostics::FixedAuthorizationIdentity {
+                        transaction_id: self.transaction_id,
+                        owner_id: self.owner_id.clone(),
+                        occupancy_id,
+                        basis: WATER_STAND_BASIS,
+                    });
+                VegetationError::NumericalFailure(diagnostics)
+            })
     }
 }
 
-/// Rebuilds every V4 tile column from the original beginning state under one
+/// Rebuilds every V5 tile column from the original beginning state under one
 /// immutable typed authorization batch. No Stage-A candidate is an input.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_capped_column_pass(
@@ -144,11 +193,11 @@ pub(crate) fn execute_capped_column_pass(
     validate_candidate_transaction(beginning, transaction_id)?;
     validate_candidate_inputs(configuration, beginning, forcing)?;
     if !interval_s.is_finite() || interval_s <= 0.0 {
-        return Err(VegetationError::Domain("V4 capped interval duration"));
+        return Err(VegetationError::Domain("V5 capped interval duration"));
     }
     if authorizations.transaction_id() != transaction_id {
         return Err(VegetationError::Receipt(
-            "V4 capped authorization transaction identity".into(),
+            "V5 capped authorization transaction identity".into(),
         ));
     }
 
@@ -163,7 +212,13 @@ pub(crate) fn execute_capped_column_pass(
         .collect::<BTreeMap<_, _>>();
 
     let radiation = prepare_whole_column_radiation(configuration, beginning, forcing)?;
-    let solver = RadiationBoundCappedSolver::try_new(configuration, &radiation, evaluator)?;
+    let solver = RadiationBoundCappedSolver::try_new(
+        configuration,
+        &radiation,
+        evaluator,
+        authorizations.owner_id(),
+        transaction_id,
+    )?;
     let columns = execute_tile_columns(
         configuration,
         beginning,
@@ -178,12 +233,216 @@ pub(crate) fn execute_capped_column_pass(
     let finalized_water_uses =
         collect_finalized_uses(&columns, authorizations, &tile_fractions, interval_s)?;
     let diagnostics = collect_diagnostics(&columns)?;
+    let water_operands = collect_water_operands(
+        &finalized_water_uses,
+        authorizations,
+        &tile_fractions,
+        interval_s,
+        &diagnostics,
+        configuration,
+        beginning,
+        &columns,
+    )?;
+    validate_capped_water_operands(&water_operands)?;
     Ok(CappedColumnPass {
         columns,
         finalized_water_uses,
         radiation,
         diagnostics,
+        water_operands,
     })
+}
+
+fn validate_capped_water_operands(
+    operands: &[CappedWaterLayerOperands],
+) -> Result<(), VegetationError> {
+    if operands.is_empty() {
+        return Err(VegetationError::Receipt("V5 capped operands empty".into()));
+    }
+    let mut identities = BTreeSet::new();
+    for value in operands {
+        let local = value.authorization_kg_m2_stand_ground / value.tile_fraction;
+        let cap_rate = local / value.interval_s;
+        let finalized = value.tile_fraction * value.q_final_kg_m2_tile_s * value.interval_s;
+        let selected = if value.authorization_active_or_tie {
+            value.cap_rate_kg_m2_tile_s
+        } else {
+            value.q_law_kg_m2_tile_s
+        };
+        if value.model_definition_sha256 != crate::MODEL_SHA256
+            || !value.tile_fraction.is_finite()
+            || value.tile_fraction <= 0.0
+            || !value.interval_s.is_finite()
+            || value.interval_s <= 0.0
+            || local.to_bits() != value.authorization_kg_m2_tile_ground.to_bits()
+            || cap_rate.to_bits() != value.cap_rate_kg_m2_tile_s.to_bits()
+            || selected.to_bits() != value.q_final_kg_m2_tile_s.to_bits()
+            || finalized.to_bits() != value.finalized_use_kg_m2_stand_ground.to_bits()
+            || value.authorization_active_or_tie
+                != (value.cap_rate_kg_m2_tile_s <= value.q_law_kg_m2_tile_s)
+            || !(value.finalized_use_kg_m2_stand_ground <= value.authorization_kg_m2_stand_ground
+                && value.authorization_kg_m2_stand_ground
+                    <= value.potential_request_kg_m2_stand_ground)
+            || value
+                .coupled
+                .layers
+                .get(value.configured_layer_index)
+                .map(|layer| &layer.layer_id)
+                != Some(&value.key.layer_id)
+            || !identities.insert(value.key.clone())
+            || value.transaction_id.0
+                != value
+                    .beginning_occupancy_state
+                    .last_accepted_transaction_id
+                    .map_or(1, |accepted| accepted.saturating_add(1))
+            || value.candidate_occupancy_state.last_accepted_transaction_id
+                != value.beginning_occupancy_state.last_accepted_transaction_id
+            || !valid_coupled_operands(&value.coupled)
+        {
+            return Err(VegetationError::Receipt(
+                "V5 independently reconstructed capped operands".into(),
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn valid_coupled_operands(value: &crate::diagnostics::CappedNumericalOperands) -> bool {
+    const IDENTITIES: [&str; 6] = [
+        "sun_gas_minus_q1",
+        "shade_gas_minus_q1",
+        "sun_gas_minus_vulnerability_demand",
+        "shade_gas_minus_vulnerability_demand",
+        "q1_sum_minus_q2",
+        "q2_minus_capped_q3_sum",
+    ];
+    let q3_sum = value
+        .layers
+        .iter()
+        .map(|layer| layer.q_final_kg_m2_tile_s)
+        .sum::<f64>();
+    let raw = [
+        value.gas_sun_kg_m2_s - value.q1_sun_kg_m2_s,
+        value.gas_shade_kg_m2_s - value.q1_shade_kg_m2_s,
+        value.gas_sun_kg_m2_s - value.beta_sun * value.emax_sun_kg_m2_s,
+        value.gas_shade_kg_m2_s - value.beta_shade * value.emax_shade_kg_m2_s,
+        value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s - value.q2_kg_m2_s,
+        value.q2_kg_m2_s - q3_sum,
+    ];
+    let scale = value
+        .layers
+        .iter()
+        .flat_map(|layer| {
+            [
+                layer.q_law_kg_m2_tile_s.abs(),
+                layer.cap_rate_kg_m2_tile_s.abs(),
+                layer.q_final_kg_m2_tile_s.abs(),
+            ]
+        })
+        .chain([
+            1.0e-12,
+            value.emax_sun_kg_m2_s.abs(),
+            value.emax_shade_kg_m2_s.abs(),
+            value.q1_sun_kg_m2_s.abs(),
+            value.q1_shade_kg_m2_s.abs(),
+            value.q2_kg_m2_s.abs(),
+        ])
+        .fold(1.0e-12, f64::max);
+    let tolerance = 1.0e-12 + 1.0e-9 * scale;
+    scale.to_bits() == value.water_residual_scale_kg_m2_tile_s.to_bits()
+        && value.residuals.len() == IDENTITIES.len()
+        && value.residuals.iter().zip(IDENTITIES.iter().zip(raw)).all(
+            |(actual, (identity, expected_raw))| {
+                actual.identity == *identity
+                    && actual.raw_kg_m2_tile_s.to_bits() == expected_raw.to_bits()
+                    && actual.scale_kg_m2_tile_s.to_bits() == scale.to_bits()
+                    && actual.tolerance.to_bits() == tolerance.to_bits()
+                    && actual.normalized.to_bits() == (expected_raw / tolerance).to_bits()
+            },
+        )
+        && value.layers.iter().all(|layer| {
+            layer.authorization_active_or_tie
+                == (layer.cap_rate_kg_m2_tile_s <= layer.q_law_kg_m2_tile_s)
+                && layer.q_final_kg_m2_tile_s.to_bits()
+                    == (if layer.authorization_active_or_tie {
+                        layer.cap_rate_kg_m2_tile_s
+                    } else {
+                        layer.q_law_kg_m2_tile_s
+                    })
+                    .to_bits()
+        })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn collect_water_operands(
+    finalized: &[FinalizedWaterUse],
+    authorizations: &ValidatedWaterAuthorizations,
+    tile_fractions: &BTreeMap<TileId, f64>,
+    interval_s: f64,
+    diagnostics: &BTreeMap<OccupancyId, OccupancyDiagnostics>,
+    configuration: &VegetationConfiguration,
+    beginning: &CoupledOwnedState,
+    columns: &TileColumnsResult,
+) -> Result<Vec<CappedWaterLayerOperands>, VegetationError> {
+    let finalized = finalized
+        .iter()
+        .map(|value| (value.key.clone(), value.amount))
+        .collect::<BTreeMap<_, _>>();
+    let mut output = Vec::new();
+    for (key, authorization) in authorizations.authorizations() {
+        let request = authorizations
+            .requests()
+            .get(key)
+            .ok_or_else(|| VegetationError::Receipt("V5 capped request identity".into()))?;
+        let tile_fraction = *tile_fractions
+            .get(&key.occupancy_id.tile_id)
+            .ok_or_else(|| VegetationError::Receipt("V5 capped tile identity".into()))?;
+        let coupled = diagnostics
+            .get(&key.occupancy_id)
+            .and_then(|value| value.capped_operands.as_ref())
+            .ok_or_else(|| VegetationError::Receipt("V5 capped numerical operands".into()))?;
+        let (configured_layer_index, numerical) = coupled
+            .layers
+            .iter()
+            .enumerate()
+            .find(|(_, layer)| layer.layer_id == key.layer_id)
+            .ok_or_else(|| VegetationError::Receipt("V5 capped layer operands".into()))?;
+        let beginning_lane = beginning
+            .occupancies
+            .get(&key.occupancy_id)
+            .ok_or_else(|| VegetationError::Receipt("V5 beginning occupancy identity".into()))?;
+        let candidate_lane = columns
+            .columns
+            .iter()
+            .flat_map(|column| &column.occupancy_results)
+            .find(|occupancy| occupancy.occupancy_id == key.occupancy_id)
+            .map(|occupancy| &occupancy.candidate_state)
+            .ok_or_else(|| VegetationError::Receipt("V5 candidate occupancy identity".into()))?;
+        output.push(CappedWaterLayerOperands {
+            model_definition_sha256: beginning.model_definition_sha256.clone(),
+            configuration_sha256: configuration.configuration_sha256.clone(),
+            beginning_state_sha256: beginning.state_sha256.clone(),
+            transaction_id: authorization.transaction_id,
+            tile_fraction,
+            interval_s,
+            configured_layer_index,
+            key: key.clone(),
+            potential_request_kg_m2_stand_ground: request.amount,
+            authorization_kg_m2_stand_ground: authorization.amount,
+            authorization_kg_m2_tile_ground: authorization.amount / tile_fraction,
+            cap_rate_kg_m2_tile_s: authorization.amount / (tile_fraction * interval_s),
+            q_law_kg_m2_tile_s: numerical.q_law_kg_m2_tile_s,
+            q_final_kg_m2_tile_s: numerical.q_final_kg_m2_tile_s,
+            finalized_use_kg_m2_stand_ground: *finalized
+                .get(key)
+                .ok_or_else(|| VegetationError::Receipt("V5 finalized identity".into()))?,
+            authorization_active_or_tie: numerical.authorization_active_or_tie,
+            beginning_occupancy_state: beginning_lane.clone(),
+            candidate_occupancy_state: candidate_lane.clone(),
+            coupled: coupled.clone(),
+        });
+    }
+    Ok(output)
 }
 
 fn validate_candidate_transaction(
@@ -196,7 +455,7 @@ fn validate_candidate_transaction(
         .ok_or_else(|| VegetationError::Receipt("V4 transaction identity overflow".into()))?;
     if transaction_id.0 != expected {
         return Err(VegetationError::Receipt(
-            "nonsequential V4 capped-pass transaction identity".into(),
+            "nonsequential V5 capped-pass transaction identity".into(),
         ));
     }
     Ok(())
@@ -215,7 +474,7 @@ fn tile_fractions(
             .values()
             .any(|fraction| !fraction.is_finite() || *fraction <= 0.0)
     {
-        return Err(VegetationError::Domain("V4 capped tile fraction"));
+        return Err(VegetationError::Domain("V5 capped tile fraction"));
     }
     Ok(fractions)
 }
@@ -260,7 +519,7 @@ fn collect_finalized_uses(
                 VegetationError::Receipt("V4 finalized water authorization identity".into())
             })?;
             let amount = authorizations
-                .normalize_finalized_stand_amount(key, raw, tile_fractions, interval_s)
+                .validate_finalized_stand_amount(key, raw, tile_fractions, interval_s)
                 .map_err(|error| resource_boundary_error(&error))?;
             if authorization.transaction_id != authorizations.transaction_id()
                 || &authorization.owner_id != authorizations.owner_id()
@@ -307,7 +566,7 @@ fn collect_diagnostics(
                 .is_some()
             {
                 return Err(VegetationError::Receipt(
-                    "duplicate V4 capped diagnostic identity".into(),
+                    "duplicate V5 capped diagnostic identity".into(),
                 ));
             }
         }
@@ -316,7 +575,7 @@ fn collect_diagnostics(
 }
 
 fn resource_boundary_error(error: &WaterResourceBoundaryError) -> VegetationError {
-    VegetationError::Receipt(format!("V4 capped water boundary: {error}"))
+    VegetationError::Receipt(format!("V5 capped water boundary: {error}"))
 }
 
 #[cfg(test)]
@@ -345,6 +604,7 @@ mod tests {
     }
 
     impl CappedOccupancyEvaluator for ControlledCappedEvaluator {
+        #[allow(clippy::too_many_lines)]
         fn solve_capped(
             &self,
             input: OccupancyPassInput<'_>,
@@ -391,6 +651,11 @@ mod tests {
             })?;
             let mut candidate_state = input.occupancy_state.clone();
             candidate_state.canopy_liquid_kg_h2o_m2_tile_ground = liquid.store1;
+            let q = local_cap / input.interval_s;
+            let beta = input.occupancy_state.beta_hyd;
+            let emax = q / beta;
+            let scale = emax.abs().max(q.abs()).max(1.0e-12);
+            let tolerance = 1.0e-12 + 1.0e-9 * scale;
             Ok(OccupancyPassResult {
                 candidate_state,
                 liquid,
@@ -425,6 +690,59 @@ mod tests {
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,
+                    capped_operands: Some(crate::diagnostics::CappedNumericalOperands {
+                        water_residual_scale_kg_m2_tile_s: scale,
+                        psi_sunleaf_mm: input.occupancy_state.sun_leaf_potential_mm,
+                        psi_shadeleaf_mm: input.occupancy_state.shade_leaf_potential_mm,
+                        psi_stem_mm: input.occupancy_state.stem_potential_mm,
+                        psi_root_mm: input.occupancy_state.root_node_potential_mm,
+                        beta_sun: beta,
+                        beta_shade: beta,
+                        emax_sun_kg_m2_s: emax,
+                        emax_shade_kg_m2_s: 0.0,
+                        gas_sun_kg_m2_s: q,
+                        gas_shade_kg_m2_s: 0.0,
+                        q1_sun_kg_m2_s: q,
+                        q1_shade_kg_m2_s: 0.0,
+                        q2_kg_m2_s: q,
+                        residuals: [
+                            "sun_gas_minus_q1",
+                            "shade_gas_minus_q1",
+                            "sun_gas_minus_vulnerability_demand",
+                            "shade_gas_minus_vulnerability_demand",
+                            "q1_sum_minus_q2",
+                            "q2_minus_capped_q3_sum",
+                        ]
+                        .into_iter()
+                        .map(|identity| crate::diagnostics::CappedResidualOperands {
+                            identity: identity.into(),
+                            raw_kg_m2_tile_s: 0.0,
+                            scale_kg_m2_tile_s: scale,
+                            tolerance,
+                            normalized: 0.0,
+                        })
+                        .collect(),
+                        layers: input
+                            .stratum_config
+                            .root_layers
+                            .iter()
+                            .map(|root| crate::diagnostics::CappedLayerNumericalOperands {
+                                layer_id: root.layer_id.clone(),
+                                cap_rate_kg_m2_tile_s: q,
+                                q_law_kg_m2_tile_s: q,
+                                q_final_kg_m2_tile_s: q,
+                                authorization_active_or_tie: true,
+                                soil_potential_mm: 0.0,
+                                gravity_head_mm: 0.0,
+                                root_fraction: root.root_fraction,
+                                z3_m: 0.0,
+                                ksoil_m2_s: 0.0,
+                                dxroot_m: 0.0,
+                                accessible: true,
+                                frozen: false,
+                            })
+                            .collect(),
+                    }),
                 },
             })
         }
@@ -447,14 +765,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let mut configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         let original = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V4 state fixture");
+        .expect("V5 state fixture");
         let tile_id = configuration.topology_tiles[0].tile_id.clone();
         let mut upper_config = configuration.strata.remove(0);
         upper_config.stratum_id = stratum_id("upper");
@@ -638,6 +956,47 @@ mod tests {
             .map(|seen| seen.beginning_store.to_bits())
             .collect::<Vec<_>>();
         assert_eq!(seen_stores, expected_beginning_stores);
+        assert_eq!(result.water_operands.len(), 2);
+        for operand in &result.water_operands {
+            assert_eq!(operand.model_definition_sha256, crate::MODEL_SHA256);
+            assert_eq!(
+                operand.configuration_sha256,
+                configuration.configuration_sha256
+            );
+            assert_eq!(operand.beginning_state_sha256, beginning.state_sha256);
+            assert!(
+                operand.finalized_use_kg_m2_stand_ground
+                    <= operand.authorization_kg_m2_stand_ground
+            );
+            assert!(
+                operand.authorization_kg_m2_stand_ground
+                    <= operand.potential_request_kg_m2_stand_ground
+            );
+            assert!(
+                (operand.authorization_kg_m2_tile_ground
+                    - operand.authorization_kg_m2_stand_ground
+                        / configuration.topology_tiles[0].fraction)
+                    .abs()
+                    <= f64::EPSILON
+            );
+            assert!(
+                (operand.cap_rate_kg_m2_tile_s - operand.authorization_kg_m2_tile_ground / 1_800.0)
+                    .abs()
+                    <= f64::EPSILON
+            );
+            assert!(
+                (operand.finalized_use_kg_m2_stand_ground
+                    - configuration.topology_tiles[0].fraction
+                        * operand.q_final_kg_m2_tile_s
+                        * 1_800.0)
+                    .abs()
+                    <= f64::EPSILON
+            );
+            assert_eq!(
+                operand.beginning_occupancy_state,
+                beginning.occupancies[&operand.key.occupancy_id]
+            );
+        }
         assert!(
             evaluator
                 .seen
@@ -655,6 +1014,52 @@ mod tests {
         }
         assert_eq!(result.radiation.occupancies.len(), 2);
         assert_eq!(result.diagnostics.len(), 2);
+    }
+
+    #[test]
+    fn independent_capped_operand_validator_rejects_tautology_and_lineage_poisons() {
+        let (configuration, beginning) = fixture();
+        let evaluator = ControlledCappedEvaluator {
+            seen: RefCell::new(Vec::new()),
+            fail_at: None,
+        };
+        let authorizations = authorization_batch(&configuration, 0.25, 0.5);
+        let result = execute(&configuration, &beginning, &authorizations, &evaluator)
+            .expect("canonical operands");
+
+        let mut poisons = Vec::new();
+        let mut wrong_conversion = result.water_operands.clone();
+        wrong_conversion[0].authorization_kg_m2_tile_ground = f64::from_bits(
+            wrong_conversion[0]
+                .authorization_kg_m2_tile_ground
+                .to_bits()
+                + 1,
+        );
+        poisons.push(wrong_conversion);
+
+        let mut producer_zero = result.water_operands.clone();
+        producer_zero[0].coupled.residuals[0].raw_kg_m2_tile_s = 0.0;
+        producer_zero[0].coupled.gas_sun_kg_m2_s =
+            f64::from_bits(producer_zero[0].coupled.gas_sun_kg_m2_s.to_bits() + 1);
+        poisons.push(producer_zero);
+
+        let mut wrong_scale = result.water_operands.clone();
+        wrong_scale[0].coupled.water_residual_scale_kg_m2_tile_s *= 2.0;
+        poisons.push(wrong_scale);
+
+        let mut wrong_branch = result.water_operands.clone();
+        wrong_branch[0].coupled.layers[0].authorization_active_or_tie = false;
+        poisons.push(wrong_branch);
+
+        let mut wrong_lineage = result.water_operands.clone();
+        wrong_lineage[0]
+            .candidate_occupancy_state
+            .last_accepted_transaction_id = Some(99);
+        poisons.push(wrong_lineage);
+
+        for poison in poisons {
+            assert!(validate_capped_water_operands(&poison).is_err());
+        }
     }
 
     #[test]
@@ -746,7 +1151,7 @@ mod tests {
                 &evaluator,
             ),
             Err(VegetationError::Receipt(message))
-                if message == "nonsequential V4 capped-pass transaction identity"
+                if message == "nonsequential V5 capped-pass transaction identity"
         ));
         assert!(matches!(
             execute_capped_column_pass(
@@ -759,7 +1164,7 @@ mod tests {
                 &authorizations,
                 &evaluator,
             ),
-            Err(VegetationError::Domain("V4 capped interval duration"))
+            Err(VegetationError::Domain("V5 capped interval duration"))
         ));
         assert!(evaluator.seen.borrow().is_empty());
     }

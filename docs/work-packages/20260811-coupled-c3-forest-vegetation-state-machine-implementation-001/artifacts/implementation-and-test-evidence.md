@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / V4 state runtime focused PASS / capped path fail-closed`
+Status: `executing / V5 capped remediation active / public path fail-closed`
 
 Increment 2B stopped before constitutive implementation. The retained
 `occupancy_solver::resources` module constructs and validates complete typed
@@ -62,3 +62,23 @@ active-set equality convention and independent `q_law`/cap operands. Public
 execution therefore remains fail-closed, `STAGE_B_E11_E15_EXACT_ORACLE` is
 incomplete, and no Milestone 2/3, finalized-use, owner-candidate, or commit
 claim is made.
+
+## V5 Authority Intake And Active Remediation
+
+Static + Ran: authority predecessor commit
+`b7e6f08b655452c5c59a498ac9becd1439dd21ef` released
+`OPENWEPP_C3_WOODY_V5` definition
+`0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`,
+independent vectors
+`6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`,
+and generator
+`4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`.
+Both authority science reviews returned GO, the focused/heavy authority gates
+passed, and both terminal verifiers returned PASS.
+
+Static: V5 remediation is active for runtime identity, V4-to-V5 migration, the
+fixed-authorization coupled solve, exact fixture consumption, typed diagnostics,
+finalized-use debit, and rollback. Those edits have not yet passed the exact
+solver gate or independent implementation reviews. Authority release is not
+implementation evidence: `STAGE_B_E11_E15_EXACT_ORACLE`, Milestones 2/3, and
+the public candidate remain incomplete/fail-closed.

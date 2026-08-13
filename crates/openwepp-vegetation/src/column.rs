@@ -12,7 +12,7 @@ use openwepp_kernel_contract::{OccupancyId, SoilLayerId, TileId, TransactionId, 
 
 use crate::VegetationError;
 use crate::config::{StratumConfiguration, VegetationConfiguration};
-use crate::diagnostics::{CoupledSolvePass, NormalizedResidual};
+use crate::diagnostics::{CappedNumericalOperands, CoupledSolvePass, NormalizedResidual};
 use crate::interception::InterceptionResult;
 use crate::occupancy_state::OccupancyState;
 use crate::transaction::{CoupledOwnedState, SnowFreeForcing, StratumSharedState};
@@ -78,6 +78,7 @@ pub struct OccupancyDiagnostics {
     /// Candidate ten-day acclimation temperature calculated once before
     /// Atkin Rd25 and retained for the later shared-state finalizer.
     pub advanced_t10_k: Option<f64>,
+    pub capped_operands: Option<CappedNumericalOperands>,
 }
 
 /// One solver-produced occupancy candidate. All water amounts are tile-ground
@@ -657,8 +658,8 @@ fn valid_diagnostics(
     let configured_layers = stratum
         .root_layers
         .iter()
-        .map(|root| &root.layer_id)
-        .collect::<BTreeSet<_>>();
+        .map(|root| root.layer_id.clone())
+        .collect::<Vec<_>>();
     let mut active_caps = BTreeSet::new();
     diagnostics.pass == expected_pass
         && diagnostics.normalized_residuals.iter().all(|residual| {
@@ -686,6 +687,12 @@ fn valid_diagnostics(
             .active_water_caps
             .iter()
             .all(|layer| configured_layers.contains(layer) && active_caps.insert(layer))
+        && diagnostics.active_water_caps
+            == configured_layers
+                .iter()
+                .filter(|layer| diagnostics.active_water_caps.contains(layer))
+                .cloned()
+                .collect::<Vec<_>>()
         && (diagnostics.pass == CoupledSolvePass::Capped
             || diagnostics.active_water_caps.is_empty())
 }
@@ -903,6 +910,7 @@ mod tests {
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,
+                    capped_operands: None,
                 },
             })
         }
@@ -929,14 +937,14 @@ mod tests {
 
     fn shared_state() -> StratumSharedState {
         let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         CoupledOwnedState::parse_strict(
-            include_bytes!("../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            include_bytes!("../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V4 state fixture")
+        .expect("V5 state fixture")
         .strata
         .remove(&stratum_id("tree-1"))
         .expect("V4 shared state")
@@ -964,9 +972,9 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let mut config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![

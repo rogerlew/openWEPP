@@ -1,6 +1,6 @@
 # Contract-Test Implementation Evidence
 
-Status: `V4 focused PASS / public capped transaction pending`
+Status: `V4 focused evidence retained / V5 implementation tests pending`
 
 The vegetation quick suite now includes seven typed potential-water boundary
 tests. They prove identity/protocol behavior only and are not E01--E15 science
@@ -47,3 +47,16 @@ test routing; it is explicitly not an independent E11--E15 oracle.
 
 These tests do not constitute the missing cap-active independent oracle or a
 Milestone 2/3/public-candidate claim.
+
+## 2026-08-13 V5 Authority Test Intake
+
+Ran in the authority predecessor package: exact V5 generator/verifier,
+admission, unit compliance, anti-evasion, AUTH11, and vegetation authority
+tests passed; both science reviews returned GO and both terminal verifiers
+returned PASS. The heavy run passed all lanes except one long-TMPDIR Unix-socket
+path-length failure, whose exact named test passed under short TMPDIR without a
+source or science-byte delta.
+
+No V5 Rust solver test is recorded as PASS here yet. The committed vector
+fixture must be consumed without Python and independently reconstructed by the
+production capped evaluator before `STAGE_B_E11_E15_EXACT_ORACLE` can pass.

@@ -1,6 +1,6 @@
 # Line-Count Governance
 
-Status: `WARN / V4 runtime increment; no 3,000-line blocker`
+Status: `WARN / V5 remediation in progress; no 3,000-line blocker`
 
 Evidence mode: `Ran`
 
@@ -46,3 +46,42 @@ independent boundary revalidation.
 No touched Rust file reaches 3,000 lines, so this WARN does not by itself block
 the bounded V4 increment. It remains open package work and must be reconciled
 again against terminal exact bytes.
+
+## 2026-08-13 V5 Pre-Implementation Baseline
+
+Ran at authority predecessor commit `b7e6f08b6` before V5 production edits:
+`find crates/openwepp-vegetation/src -name '*.rs' -print0 | xargs -0 wc -l |
+sort -nr`.
+
+| Rust file | Lines | In-progress disposition |
+|---|---:|---|
+| `migration.rs` | 2,589 | WARN retained; V5 migration work must not cross 3,000 without decomposition |
+| `occupancy_solver/constitutive.rs` | 2,541 | WARN retained; capped work should remain outside this file where practical |
+| `transaction.rs` | 1,743 | PASS baseline |
+| `column.rs` | 1,585 | PASS baseline |
+| `occupancy_solver/potential.rs` | 1,318 | PASS baseline |
+| `occupancy_solver/evaluator.rs` | 1,211 | PASS baseline |
+| `occupancy_solver/capped_pass.rs` | 766 | PASS baseline; V5 implementation active |
+
+This is an in-progress baseline, not terminal reconciliation. Recount all
+touched Rust files after the capped implementation stabilizes and before its
+reviews; the 3,000-line rule remains mandatory.
+
+## 2026-08-13 V5 Bounded Checkpoint Recount
+
+Ran after capped-core stabilization:
+
+| Rust file | Lines | Disposition |
+|---|---:|---|
+| `migration.rs` | 2,842 | WARN; below the 3,000-line closure threshold |
+| `occupancy_solver/constitutive.rs` | 2,683 | WARN; retain decomposition debt |
+| `transaction.rs` | 1,743 | PASS |
+| `column.rs` | 1,593 | PASS |
+| `occupancy_solver/potential.rs` | 1,581 | PASS |
+| `occupancy_solver/evaluator.rs` | 1,300 | PASS |
+| `occupancy_solver/capped_pass.rs` | 1,030 | PASS |
+| `occupancy_solver/resources.rs` | 732 | PASS |
+| `diagnostics.rs` | 233 | PASS |
+
+No touched Rust file reaches 3,000 lines. The two WARN files remain package
+decomposition debt and must be reconciled again after the authority HOLD lifts.

@@ -1,6 +1,6 @@
 # State Ownership Map
 
-Status: `V4 shared-state ownership implemented / accepted-update path incomplete`
+Status: `V4 payload ownership retained / V5 identity and accepted-update active`
 
 The authority audit confirmed that the V2 per-layer root-potential lanes have
 no canonical accepted-update mapping from E14's common root-node solution.
@@ -72,3 +72,17 @@ The public transaction remains fail-closed before the authorization-capped
 second pass. Therefore this map claims V4 state ownership and migration only;
 it does not claim accepted E20--E22 state updates, owner candidates, or atomic
 commit.
+
+## V5 Identity And Capped Ownership
+
+V5 imports the V4 state payload byte-for-byte but is not an executable alias.
+The V4-to-V5 transition must validate the complete V4 source, bind distinct
+caller-supplied V5 model and configuration identities, recompute the V5 state
+digest, and reject stale V4 identity without producing a partial result. No
+state field may be synthesized or normalized.
+
+During the capped pass, hydrology continues to own fixed maximum
+authorizations and beginning inventory. Vegetation may finalize only exact
+`F_W = f_t * q_i * dt`, and hydrology debits only that finalized use, never the
+authorization. Implementation and owner-validation tests are active; this map
+does not yet claim V5 accepted state, debit, receipt, or atomic commit.

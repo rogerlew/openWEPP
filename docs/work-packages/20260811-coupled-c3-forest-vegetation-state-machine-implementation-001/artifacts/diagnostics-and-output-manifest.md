@@ -1,6 +1,6 @@
 # Diagnostics And Output Manifest
 
-Status: `PARTIAL / uncapped diagnostics present; capped/public diagnostics fail-closed`
+Status: `PARTIAL / V5 capped diagnostic authority bound; implementation active`
 
 No opaque solver failure was added. The audit also confirms that existing
 numerical errors do not yet retain the required partial iterations, residuals,
@@ -18,7 +18,10 @@ triples, energy owner operands, five-ledger public candidate, and atomic commit
 remain pending. Historical helper structs do not establish those public claims.
 
 The V3 exact numerical-failure diagnostics and production potential evaluator
-remain imported unchanged under V4. V4 adds state/model identity and structural
-digest coverage, not a new capped diagnostic claim. Until a digest-bound
-cap-active vector binds equality activity and `q_law`/cap operands, the capped
-draft cannot publish diagnostics, finalized use, or an accepted candidate.
+remain imported unchanged through V5. V5 additionally requires configured-
+order cap identities, independently evaluated law/cap/selected operands,
+tie-derived active lists, typed residual records from the failed iterate,
+iteration/step/backtracking/pivot/matrix payloads, and null candidate/use on
+every failure. The immutable fixture binds those diagnostics, but Rust
+implementation and review are still active. The capped path cannot publish
+diagnostics, finalized use, or an accepted candidate yet.

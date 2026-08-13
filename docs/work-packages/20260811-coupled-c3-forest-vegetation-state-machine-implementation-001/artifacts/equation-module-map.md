@@ -1,6 +1,6 @@
 # Equation Module Map
 
-Status: `executing / V4 state identity active / capped exact oracle incomplete`
+Status: `executing / V5 capped authority active / implementation oracle pending`
 
 Evidence mode: `Static + Ran`
 
@@ -11,11 +11,12 @@ The complete capped physiology gate is named
 `STAGE_B_E11_E15_EXACT_ORACLE` and must pass before E11--E15 return to focused
 pass status.
 
-V4 changes shared-state ownership and serialization only. V3 radiation and
-uncapped constitutive vectors remain imported unchanged. The production
-potential occupancy evaluator now consumes those vectors, but the capped draft
-is disconnected because no digest-bound fully coupled cap-active vector binds
-the active-set equality convention and `q_law`/cap operands.
+V5 imports V4 shared-state ownership and V3 radiation/uncapped constitutive
+authority unchanged. It now binds the previously missing capped-pass amount/
+rate conversion, independent hydraulic-law operand, equality-active branch,
+generalized Jacobian, diagnostics, rollback, and exact cap-active vectors.
+Production implementation and independent Rust reconstruction are active; the
+capped draft and public path retain no PASS claim until those gates finish.
 
 | Equation | Production function | Independent vector | Positive/poison/guard evidence | Whole-transaction consumer | Status |
 |---|---|---|---|---|---|
@@ -29,11 +30,11 @@ the active-set equality convention and `q_law`/cap operands.
 | E08 | `photosynthesis::electron_transport` | zero/electron/saturated vectors | zero light and capacity guards | `fvcb` | focused pass |
 | E09 | `photosynthesis::smaller_root`; `fvcb` | co-limitation vectors | stable smaller-root implementation and discriminant error | `solve_ci` | focused pass |
 | E10 | `photosynthesis::{arrhenius,peaked_response}` | digest-bound biochemical vectors | stable log-domain response; NaN/zero-capacity guards | leaf-temperature residual | focused pass |
-| E11 | `photosynthesis::{medlyn,solve_ci}`, `energy::canopy_surface_friction_velocity`, and production potential occupancy evaluator | V3 exact potential vectors imported by V4 | reference-wind misuse, wind-domain, class-beta/equality, inactive-class, and nested failure guards | typed potential request pass; public capped transaction pending | uncapped occupancy pass reviewed PASS; public consumer pending |
+| E11 | `photosynthesis::{medlyn,solve_ci}`, `energy::canopy_surface_friction_velocity`, and potential/capped occupancy evaluators | V3 potential vectors plus V5 cap-active vectors | reference-wind misuse, wind-domain, class-beta/equality, inactive-class, cap ordering, and nested failure guards | typed potential request pass; V5 capped transaction under implementation | uncapped reviewed PASS; V5 capped review pending |
 | E12 | `photosynthesis::{carbon_surface,solve_ci}` | coupled-leaf `ci/cs` vector | boundary-resistance distinction and Brent guards | energy leaf nodes | focused pass |
 | E13 | `energy::solve_canopy_energy` | integrated energy vectors | six-node residual, wet-store cap, dry-stem owner | public physical candidate | focused pass |
-| E14 | `hydraulics::{vulnerability,solve_hydraulics}` plus production common-root potential evaluator | V3 four-node potential and failure vectors imported by V4 | height/gravity/common-root, dry/frozen layer, redistribution, singular/pivot, and typed-failure guards | typed potential request pass; capped final solve pending | uncapped occupancy pass reviewed PASS |
-| E15 | `occupancy_solver::potential::solve_uncapped_stage_a` and production constitutive evaluator; capped evaluator remains disconnected draft | V3 accepted potential and exact numerical-failure vectors; no sufficient V4 cap-active acceptance vector | distinct-beta, class/aggregate equality, zero-demand, alternate warm starts, failure identity/count/order/nullness; capped equality convention unresolved | potential water requests only; no accepted finalized-use/public candidate | uncapped reviewed PASS; `STAGE_B_E11_E15_EXACT_ORACLE` incomplete |
+| E14 | `hydraulics::{vulnerability,solve_hydraulics}` plus common-root potential/capped evaluators | V3 four-node potential/failure vectors plus V5 law/cap/tie vectors | height/gravity/common-root, dry/frozen layer, redistribution, cap equality, generalized derivative, singular/pivot, and typed-failure guards | typed potential requests; V5 finalized-use pass under implementation | uncapped reviewed PASS; capped fixture gate pending |
+| E15 | `occupancy_solver::potential::solve_uncapped_stage_a` and constitutive evaluator; V5 capped evaluator under remediation | V3 accepted potential/failure vectors and V5 vectors SHA-256 `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d` | distinct-beta, class/aggregate equality, exact `F<=A<=D`, equality/near-tie, alternate warm starts, failed-iterate operands, diagnostics, rollback, and 27 capped poisons | potential water requests only until V5 final-pass gates pass | uncapped reviewed PASS; `STAGE_B_E11_E15_EXACT_ORACLE` pending implementation/review |
 | E16 | `carbon_nitrogen::gpp_kg_c` | C/N vector | gross/net separation and molar conversion | final physical state | focused pass |
 | E17 | `update_t10`; `maintenance_respiration`; `carbon_offer` | V3 respiration plus V4 displayed-leaf-N ownership vectors | class-resolved leaf Rd debited once; storage/transfer leaf-N poison; non-leaf tissue/layer respiration and signed reserve priority | final carbon offer | V4 ownership kernel pass; persistent public transition pending |
 | E18 | `nitrogen_demand`; `finalize_growth` | six-tissue allocation vector | N-sufficient/limited common-eta allocation and NSC retention | post-N-authorization state | focused pass |
@@ -43,9 +44,10 @@ the active-set equality convention and `q_law`/cap operands.
 | E22 | `material_transfer`; BGC `MaterialReceipt` | litter C/N/DM vectors | carbon-as-dry-matter and duplicate-receipt poisons | BGC receiver candidate | focused pass |
 
 `c3_vegetation_implementation_contract` currently proves retained pure-kernel
-vectors and that the V4 public consumer fails closed before the capped pass. It does not
+vectors and that the public consumer fails closed before the capped pass. It does not
 claim that the public consumer invokes E01--E22.
 
 All earlier `focused pass` rows describe the historical single-topology
 remediation checkpoint. Each row must be revalidated through the V4 public path;
-no helper-only row is terminally implemented.
+no helper-only row is terminally implemented. V5 authority availability is not
+Rust implementation evidence.

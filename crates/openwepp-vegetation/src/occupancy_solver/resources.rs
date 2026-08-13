@@ -56,7 +56,7 @@ pub enum WaterResourceBoundaryError {
     InvalidInterval,
     #[error("water authorization is missing for the requested occupancy and layer")]
     MissingAuthorization,
-    #[error("finalized stand-ground use exceeds authorization beyond hydraulic tolerance")]
+    #[error("finalized stand-ground use exceeds authorization")]
     FinalizedUseExceedsAuthorization,
 }
 
@@ -257,10 +257,9 @@ impl ValidatedWaterAuthorizations {
 
     /// Validate a finalized stand-ground use against its exact authorization.
     ///
-    /// An amount that exceeds the cap only within the frozen hydraulic residual
-    /// tolerance is normalized to the cap. Identity and basis were validated
-    /// exactly when this collection was constructed and are never normalized.
-    pub fn normalize_finalized_stand_amount(
+    /// V5 admits no representational normalization at this ownership boundary:
+    /// any finite value above the immutable authorization rejects.
+    pub fn validate_finalized_stand_amount(
         &self,
         key: &WaterResourceKey,
         finalized_kg_m2_stand_ground: f64,
@@ -282,18 +281,10 @@ impl ValidatedWaterAuthorizations {
         if !interval_s.is_finite() || interval_s <= 0.0 {
             return Err(WaterResourceBoundaryError::InvalidInterval);
         }
-        if finalized_kg_m2_stand_ground <= authorization.amount {
-            return Ok(finalized_kg_m2_stand_ground);
-        }
-        let tolerance = tile_fraction * interval_s * 1.0e-12
-            + 1.0e-9 * finalized_kg_m2_stand_ground.max(authorization.amount);
-        if !tolerance.is_finite() {
-            return Err(WaterResourceBoundaryError::NonFiniteAmount);
-        }
-        if finalized_kg_m2_stand_ground - authorization.amount <= tolerance {
-            Ok(authorization.amount)
-        } else {
+        if finalized_kg_m2_stand_ground > authorization.amount {
             Err(WaterResourceBoundaryError::FinalizedUseExceedsAuthorization)
+        } else {
+            Ok(finalized_kg_m2_stand_ground)
         }
     }
 }
@@ -672,7 +663,7 @@ mod tests {
     }
 
     #[test]
-    fn cap_tolerance_normalizes_only_amount_roundoff() {
+    fn finalized_use_rejects_even_one_bit_above_authorization() {
         let batch = request_batch();
         let validated = ValidatedWaterAuthorizations::try_new(&batch, authorizations(&batch))
             .expect("authorization batch should validate");
@@ -690,25 +681,35 @@ mod tests {
             ),
         ]);
         let interval_s = 1_800.0;
-        let tolerance = tile_fraction * interval_s * 1.0e-12 + 1.0e-9 * authorization;
+        let one_bit_above = f64::from_bits(authorization.to_bits() + 1);
+        let one_bit_below = f64::from_bits(authorization.to_bits() - 1);
 
         assert_eq!(
-            validated.normalize_finalized_stand_amount(
+            validated.validate_finalized_stand_amount(
                 key,
-                authorization + 0.5 * tolerance,
+                one_bit_above,
+                &tile_fractions,
+                interval_s,
+            ),
+            Err(WaterResourceBoundaryError::FinalizedUseExceedsAuthorization)
+        );
+        assert_eq!(
+            validated.validate_finalized_stand_amount(
+                key,
+                authorization,
                 &tile_fractions,
                 interval_s,
             ),
             Ok(authorization)
         );
         assert_eq!(
-            validated.normalize_finalized_stand_amount(
+            validated.validate_finalized_stand_amount(
                 key,
-                authorization + 2.0 * tolerance,
+                one_bit_below,
                 &tile_fractions,
                 interval_s,
             ),
-            Err(WaterResourceBoundaryError::FinalizedUseExceedsAuthorization)
+            Ok(one_bit_below)
         );
 
         let wrong_key = WaterResourceKey {
@@ -716,12 +717,7 @@ mod tests {
             layer_id: layer("surface"),
         };
         assert_eq!(
-            validated.normalize_finalized_stand_amount(
-                &wrong_key,
-                0.0,
-                &tile_fractions,
-                interval_s
-            ),
+            validated.validate_finalized_stand_amount(&wrong_key, 0.0, &tile_fractions, interval_s),
             Err(WaterResourceBoundaryError::MissingAuthorization)
         );
     }

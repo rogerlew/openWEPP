@@ -22,6 +22,9 @@ pub const V2_MODEL_SHA256: &str =
 /// Immutable identity of the historical V3 constitutive definition.
 pub const V3_MODEL_SHA256: &str =
     "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852";
+/// Immutable identity of the historical V4 shared-state definition.
+pub const V4_MODEL_SHA256: &str =
+    "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437";
 /// Version of the offline, non-runtime `RHESSys` definition mapping table.
 pub const RHESSYS_MAPPING_VERSION: &str = "RHESSYS_TO_OPENWEPP_C3_WOODY_V3_V1";
 
@@ -492,6 +495,92 @@ pub enum V3ToV4MigrationResult {
     Incomplete(V3ToV4MigrationReport),
 }
 
+/// Typed failures for the exact identity-only V4-to-V5 migration.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum V4ToV5MigrationError {
+    InvalidV4ConfigurationIdentity,
+    InvalidV4ConfigurationDigest,
+    InvalidV4StateIdentity,
+    InvalidV4StateDigest,
+    InvalidV4StateLineage,
+    InvalidV5Configuration,
+    ConfigurationPayloadMismatch,
+    TargetStateRejected,
+}
+
+/// Rebinds a complete V4 state to V5 without changing any state payload field.
+///
+/// V5 imports the V4 configuration and state schema unchanged. This offline
+/// boundary therefore validates the complete V4 receipts first, requires an
+/// independently digest-bound V5 configuration with byte-equivalent payload,
+/// and changes only the three identity digests.
+pub fn migrate_v4_state(
+    source_configuration: &VegetationConfiguration,
+    source: &CoupledOwnedState,
+    target_configuration: &VegetationConfiguration,
+) -> Result<CoupledOwnedState, V4ToV5MigrationError> {
+    if source_configuration.model_definition_sha256 != V4_MODEL_SHA256 {
+        return Err(V4ToV5MigrationError::InvalidV4ConfigurationIdentity);
+    }
+    if source_configuration.canonical_sha256().ok().as_ref()
+        != Some(&source_configuration.configuration_sha256)
+    {
+        return Err(V4ToV5MigrationError::InvalidV4ConfigurationDigest);
+    }
+    if source.model_definition_sha256 != V4_MODEL_SHA256
+        || source.configuration_sha256 != source_configuration.configuration_sha256
+    {
+        return Err(V4ToV5MigrationError::InvalidV4StateIdentity);
+    }
+    if source.canonical_sha256().ok().as_ref() != Some(&source.state_sha256) {
+        return Err(V4ToV5MigrationError::InvalidV4StateDigest);
+    }
+    if source.last_transaction_id == 0
+        && source_configuration.initial_state_sha256 != source.state_sha256
+    {
+        return Err(V4ToV5MigrationError::InvalidV4StateLineage);
+    }
+    if target_configuration.validate().is_err() {
+        return Err(V4ToV5MigrationError::InvalidV5Configuration);
+    }
+    if !v4_v5_configuration_payload_matches(source_configuration, target_configuration) {
+        return Err(V4ToV5MigrationError::ConfigurationPayloadMismatch);
+    }
+
+    let mut migrated = source.clone();
+    migrated.model_definition_sha256 = MODEL_SHA256.into();
+    migrated
+        .configuration_sha256
+        .clone_from(&target_configuration.configuration_sha256);
+    migrated.state_sha256 = migrated
+        .canonical_sha256()
+        .map_err(|_| V4ToV5MigrationError::TargetStateRejected)?;
+    migrated
+        .validate(target_configuration)
+        .map_err(|_| V4ToV5MigrationError::TargetStateRejected)?;
+    Ok(migrated)
+}
+
+fn v4_v5_configuration_payload_matches(
+    source: &VegetationConfiguration,
+    target: &VegetationConfiguration,
+) -> bool {
+    let Ok(mut source_value) = serde_json::to_value(source) else {
+        return false;
+    };
+    let Ok(mut target_value) = serde_json::to_value(target) else {
+        return false;
+    };
+    for value in [&mut source_value, &mut target_value] {
+        if let Some(object) = value.as_object_mut() {
+            object.remove("model_definition_sha256");
+            object.remove("configuration_sha256");
+            object.remove("initial_state_sha256");
+        }
+    }
+    source_value == target_value
+}
+
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MigrationIssue {
@@ -882,7 +971,7 @@ fn validate_v3_migration_identities(
     );
     push_global_issue(
         unresolved,
-        target_configuration.validate().is_err(),
+        !valid_historical_v4_configuration(target_configuration),
         "target_configuration",
         V3ToV4MigrationIssue::InvalidV4Configuration,
     );
@@ -948,7 +1037,7 @@ fn construct_v4_migration(
         .map(|(stratum_id, state)| (stratum_id.clone(), state.to_v4_shared()))
         .collect();
     let mut migrated = CoupledOwnedState {
-        model_definition_sha256: MODEL_SHA256.into(),
+        model_definition_sha256: V4_MODEL_SHA256.into(),
         configuration_sha256: target_configuration.configuration_sha256.clone(),
         state_sha256: String::new(),
         strata,
@@ -968,7 +1057,7 @@ fn construct_v4_migration(
             );
         }
     }
-    if migrated.validate(target_configuration).is_err() {
+    if !valid_historical_v4_state(&migrated, target_configuration) {
         return incomplete_v3_migration(
             source,
             vec![v3_global_issue(
@@ -978,6 +1067,59 @@ fn construct_v4_migration(
         );
     }
     V3ToV4MigrationResult::Complete(migrated)
+}
+
+fn valid_historical_v4_configuration(configuration: &VegetationConfiguration) -> bool {
+    if configuration.model_definition_sha256 != V4_MODEL_SHA256
+        || configuration.canonical_sha256().ok().as_ref()
+            != Some(&configuration.configuration_sha256)
+    {
+        return false;
+    }
+    let mut rebound = configuration.clone();
+    rebound.model_definition_sha256 = MODEL_SHA256.into();
+    rebound.configuration_sha256.clear();
+    let Ok(digest) = rebound.canonical_sha256() else {
+        return false;
+    };
+    rebound.configuration_sha256 = digest;
+    rebound.validate().is_ok()
+}
+
+fn valid_historical_v4_state(
+    state: &CoupledOwnedState,
+    configuration: &VegetationConfiguration,
+) -> bool {
+    if !valid_historical_v4_configuration(configuration)
+        || state.model_definition_sha256 != V4_MODEL_SHA256
+        || state.configuration_sha256 != configuration.configuration_sha256
+        || state.canonical_sha256().ok().as_ref() != Some(&state.state_sha256)
+    {
+        return false;
+    }
+    let mut rebound_configuration = configuration.clone();
+    rebound_configuration.model_definition_sha256 = MODEL_SHA256.into();
+    rebound_configuration.configuration_sha256.clear();
+    let Ok(configuration_digest) = rebound_configuration.canonical_sha256() else {
+        return false;
+    };
+    rebound_configuration.configuration_sha256 = configuration_digest;
+
+    let mut rebound_state = state.clone();
+    rebound_state.model_definition_sha256 = MODEL_SHA256.into();
+    rebound_state
+        .configuration_sha256
+        .clone_from(&rebound_configuration.configuration_sha256);
+    let Ok(state_digest) = rebound_state.canonical_sha256() else {
+        return false;
+    };
+    rebound_state.state_sha256 = state_digest;
+    if rebound_state.last_transaction_id == 0 {
+        rebound_configuration
+            .initial_state_sha256
+            .clone_from(&rebound_state.state_sha256);
+    }
+    rebound_state.validate(&rebound_configuration).is_ok()
 }
 
 impl V3StratumSharedState {
@@ -1262,7 +1404,7 @@ fn incomplete_v3_migration(
     unresolved.dedup();
     V3ToV4MigrationResult::Incomplete(V3ToV4MigrationReport {
         from_model_definition_sha256: source.model_definition_sha256.clone(),
-        to_model_definition_sha256: MODEL_SHA256.into(),
+        to_model_definition_sha256: V4_MODEL_SHA256.into(),
         unresolved,
     })
 }
@@ -1544,6 +1686,10 @@ mod tests {
         include_bytes!("../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json");
     const V4_STATE_BYTES: &[u8] =
         include_bytes!("../../../tests/fixtures/c3_woody_v4_diagnostic_state.json");
+    const V5_CONFIG_BYTES: &[u8] =
+        include_bytes!("../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json");
+    const V5_STATE_BYTES: &[u8] =
+        include_bytes!("../../../tests/fixtures/c3_woody_v5_diagnostic_state.json");
     const V4_AUTHORITY_VECTOR_BYTES: &[u8] = include_bytes!(
         "../../../docs/work-packages/20260812-c3-woody-shared-state-authority-001/artifacts/openwepp_c3_woody_v4_vectors.json"
     );
@@ -1552,6 +1698,113 @@ mod tests {
     );
     const FINAL_V4_AUTHORITY_SHA256: &str =
         "8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437";
+
+    fn v4_to_v5_fixture() -> (
+        VegetationConfiguration,
+        CoupledOwnedState,
+        VegetationConfiguration,
+        CoupledOwnedState,
+    ) {
+        let source_configuration =
+            serde_json::from_slice(V4_CONFIG_BYTES).expect("historical V4 configuration");
+        let source = serde_json::from_slice(V4_STATE_BYTES).expect("historical V4 state");
+        let target_configuration = VegetationConfiguration::parse_strict(V5_CONFIG_BYTES)
+            .expect("released V5 configuration");
+        let expected = CoupledOwnedState::parse_strict(V5_STATE_BYTES, &target_configuration)
+            .expect("released V5 state");
+        (source_configuration, source, target_configuration, expected)
+    }
+
+    #[test]
+    fn v4_to_v5_changes_only_model_configuration_and_state_identities() {
+        let (source_configuration, source, target_configuration, expected) = v4_to_v5_fixture();
+        let source_bytes = serde_json::to_vec(&source).expect("V4 source bytes");
+        let actual = migrate_v4_state(&source_configuration, &source, &target_configuration)
+            .expect("identity-only migration");
+        assert_eq!(actual, expected);
+        assert_eq!(actual.strata, source.strata);
+        assert_eq!(actual.occupancies, source.occupancies);
+        assert_eq!(actual.last_transaction_id, source.last_transaction_id);
+        assert_eq!(actual.model_definition_sha256, MODEL_SHA256);
+        assert_eq!(
+            actual.configuration_sha256,
+            target_configuration.configuration_sha256
+        );
+        assert_ne!(actual.state_sha256, source.state_sha256);
+        let mut rebound = actual;
+        rebound
+            .model_definition_sha256
+            .clone_from(&source.model_definition_sha256);
+        rebound
+            .configuration_sha256
+            .clone_from(&source.configuration_sha256);
+        rebound.state_sha256.clone_from(&source.state_sha256);
+        assert_eq!(
+            serde_json::to_vec(&rebound).expect("identity-rebound V5 bytes"),
+            source_bytes
+        );
+        assert_eq!(
+            serde_json::to_vec(&source).expect("unchanged V4 source bytes"),
+            source_bytes
+        );
+    }
+
+    #[test]
+    fn v4_to_v5_rejects_stale_or_mismatched_receipts_without_candidate() {
+        let (source_configuration, source, target_configuration, _) = v4_to_v5_fixture();
+
+        let mut wrong_source_identity = source_configuration.clone();
+        wrong_source_identity.model_definition_sha256 = MODEL_SHA256.into();
+        assert_eq!(
+            migrate_v4_state(&wrong_source_identity, &source, &target_configuration),
+            Err(V4ToV5MigrationError::InvalidV4ConfigurationIdentity)
+        );
+
+        let mut stale_configuration = source_configuration.clone();
+        stale_configuration.configuration_sha256 = "0".repeat(64);
+        assert_eq!(
+            migrate_v4_state(&stale_configuration, &source, &target_configuration),
+            Err(V4ToV5MigrationError::InvalidV4ConfigurationDigest)
+        );
+
+        let mut stale_state = source.clone();
+        stale_state.state_sha256 = "0".repeat(64);
+        assert_eq!(
+            migrate_v4_state(&source_configuration, &stale_state, &target_configuration),
+            Err(V4ToV5MigrationError::InvalidV4StateDigest)
+        );
+
+        let mut wrong_state_identity = source.clone();
+        wrong_state_identity.model_definition_sha256 = MODEL_SHA256.into();
+        assert_eq!(
+            migrate_v4_state(
+                &source_configuration,
+                &wrong_state_identity,
+                &target_configuration
+            ),
+            Err(V4ToV5MigrationError::InvalidV4StateIdentity)
+        );
+
+        let mut historical_target = target_configuration.clone();
+        historical_target.model_definition_sha256 = V4_MODEL_SHA256.into();
+        historical_target.configuration_sha256 = historical_target
+            .canonical_sha256()
+            .expect("historical target digest");
+        assert_eq!(
+            migrate_v4_state(&source_configuration, &source, &historical_target),
+            Err(V4ToV5MigrationError::InvalidV5Configuration)
+        );
+
+        let mut mismatched_target = target_configuration;
+        mismatched_target.strata[0].height_m += 1.0;
+        mismatched_target.configuration_sha256 = mismatched_target
+            .canonical_sha256()
+            .expect("mismatched target digest");
+        assert_eq!(
+            migrate_v4_state(&source_configuration, &source, &mismatched_target),
+            Err(V4ToV5MigrationError::ConfigurationPayloadMismatch)
+        );
+    }
 
     fn config() -> VegetationConfiguration {
         let mut raw: serde_json::Value =
@@ -1631,14 +1884,14 @@ mod tests {
     ) {
         let mut target_config: VegetationConfiguration =
             serde_json::from_slice(V4_CONFIG_BYTES).expect("released V4 configuration schema");
-        target_config.model_definition_sha256 = MODEL_SHA256.into();
+        target_config.model_definition_sha256 = V4_MODEL_SHA256.into();
         target_config.configuration_sha256.clear();
         target_config.configuration_sha256 = target_config
             .canonical_sha256()
             .expect("current V4 configuration digest");
         let mut target_state: CoupledOwnedState =
             serde_json::from_slice(V4_STATE_BYTES).expect("released V4 state schema");
-        target_state.model_definition_sha256 = MODEL_SHA256.into();
+        target_state.model_definition_sha256 = V4_MODEL_SHA256.into();
         target_state
             .configuration_sha256
             .clone_from(&target_config.configuration_sha256);
@@ -1709,7 +1962,7 @@ mod tests {
         let expected_whole = &migration["expected_v4_whole_state"];
         let mut target: VegetationConfiguration =
             serde_json::from_slice(V4_CONFIG_BYTES).expect("released V4 configuration schema");
-        target.model_definition_sha256 = MODEL_SHA256.into();
+        target.model_definition_sha256 = V4_MODEL_SHA256.into();
         let tile_id = TileId::try_new("tile-a").expect("tile ID");
         target.topology_tiles[0].tile_id.clone_from(&tile_id);
         let mut canopy = target.strata[0].clone();
@@ -1797,7 +2050,7 @@ mod tests {
             format!("{:x}", Sha256::digest(V4_AUTHORITY_DEFINITION_BYTES)),
             FINAL_V4_AUTHORITY_SHA256
         );
-        assert_eq!(MODEL_SHA256, FINAL_V4_AUTHORITY_SHA256);
+        assert_eq!(V4_MODEL_SHA256, FINAL_V4_AUTHORITY_SHA256);
         let (source_config, source, target_config, expected) = authority_two_stratum_fixture();
         let source_bytes = serde_json::to_vec(&source).expect("source bytes");
         let actual = match migrate_v3_state(&source_config, &source, &target_config) {
@@ -1825,7 +2078,7 @@ mod tests {
             }
         };
         assert_eq!(actual, expected);
-        assert_eq!(actual.model_definition_sha256, MODEL_SHA256);
+        assert_eq!(actual.model_definition_sha256, V4_MODEL_SHA256);
         assert_eq!(
             actual.configuration_sha256,
             target_config.configuration_sha256

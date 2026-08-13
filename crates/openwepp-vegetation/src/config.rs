@@ -487,16 +487,16 @@ fn validate_stratum(
 mod tests {
     use super::*;
 
-    fn v4_value() -> serde_json::Value {
+    fn v5_value() -> serde_json::Value {
         serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration JSON")
+        .expect("V5 configuration JSON")
     }
 
     fn fixture() -> VegetationConfiguration {
         let mut configuration: VegetationConfiguration =
-            serde_json::from_value(v4_value()).expect("V4 configuration shape");
+            serde_json::from_value(v5_value()).expect("V5 configuration shape");
         configuration.model_definition_sha256 = MODEL_SHA256.into();
         refresh_digest(&mut configuration);
         configuration
@@ -514,14 +514,14 @@ mod tests {
             "/strata/0/tile_ids/0",
             "/strata/0/root_layers/0/layer_id",
         ] {
-            let mut value = v4_value();
+            let mut value = v5_value();
             *value.pointer_mut(pointer).expect("fixture identity") = serde_json::json!("  ");
             assert!(serde_json::from_value::<VegetationConfiguration>(value).is_err());
         }
     }
 
     #[test]
-    fn historical_v2_and_v3_fixtures_are_not_executable_v4_configurations() {
+    fn historical_v2_through_v4_fixtures_are_not_executable_v5_configurations() {
         assert!(
             VegetationConfiguration::parse_strict(include_bytes!(
                 "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
@@ -534,21 +534,27 @@ mod tests {
             ))
             .is_err()
         );
+        assert!(
+            VegetationConfiguration::parse_strict(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            ))
+            .is_err()
+        );
     }
 
     #[test]
-    fn v4_named_fixture_parses_strictly_with_exact_identity() {
+    fn v5_named_fixture_parses_strictly_with_exact_identity() {
         let configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration DTO");
+        .expect("V5 configuration DTO");
         assert_eq!(
             configuration.configuration_sha256,
             configuration.canonical_sha256().expect("digest")
         );
         configuration
             .validate()
-            .expect("digest-bound V4 configuration");
+            .expect("digest-bound V5 configuration");
         assert_eq!(configuration.model_definition_sha256, MODEL_SHA256);
         assert_eq!(
             configuration.configuration_sha256,

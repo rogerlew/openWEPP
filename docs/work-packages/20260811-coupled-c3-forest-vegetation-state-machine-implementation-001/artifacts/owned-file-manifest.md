@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled through V4 shared-state runtime increment`
+Status: `reconciled through V5 authority intake / implementation active`
 
 Evidence mode: `Static`
 
@@ -48,9 +48,18 @@ Evidence mode: `Static`
 - V4 implementation evidence: this package's lifecycle, required-reading,
   equation/state, gate, review, line-count, owned-file, and in-progress terminal
   reconciliation artifacts.
+- V5 read-only predecessor authority: `SC-VEGETATION-001` v9 and exact V5
+  definition/vector/generator/review/gate/verifier artifacts released at
+  commit `b7e6f08b655452c5c59a498ac9becd1439dd21ef`. This implementation
+  package consumes but does not edit or claim authorship of those bytes.
+- V5 implementation scope in progress: model registry/runtime identity,
+  V4-to-V5 migration, capped coupled evaluator, exact fixture consumption,
+  fixed-authorization/finalized-use protocol, focused tests, and this package's
+  evidence artifacts. No completed solver/public-path claim is made by this
+  manifest entry.
 
 Protected implementation boundaries: production runner selectors, CLI defaults,
 production outputs, canopy-snow, soil-transformation, deployment, and consumer
-cutover paths. The canonical SC contract and V4 authority-package bytes changed
+cutover paths. The canonical SC contract and V5 authority-package bytes changed
 only in their separately authorized contract-first package; this implementation
 package consumes them and does not claim authorship of that authority diff.

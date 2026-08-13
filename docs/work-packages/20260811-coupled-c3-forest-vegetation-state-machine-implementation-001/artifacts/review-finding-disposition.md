@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `executing / V4 runtime reviews PASS / capped acceptance gap retained`
+Status: `executed-hold / bounded capped core accepted / Stage B not passed`
 
 The former heterogeneous E04 liquid-topology omission was lifted by V2.
 Increment 2B independently exposed additional load-bearing omissions and did
@@ -77,3 +77,36 @@ artifacts remain unchanged.
 No review labels the package, Milestone 2, Milestone 3, or E01--E22 public
 transaction complete. The capped acceptance gap is not deferred or waived; it
 is the current fail-closed boundary.
+
+## V5 Authority-Lift Disposition
+
+The V4 capped acceptance blocker is resolved at the authority layer by commit
+`b7e6f08b655452c5c59a498ac9becd1439dd21ef`. V5's two independent science
+reviews returned GO and both terminal verifiers returned PASS on definition
+`0ee6a50d...`, vectors `6f5e9554...`, and generator `4c3a1cfc...`.
+
+| Finding | Disposition | Remaining implementation evidence |
+|---|---|---|
+| missing cap amount/rate and `q_law` operands | authority corrected / implementation active | exact Rust operand reconstruction and basis poisons |
+| unresolved equality-active convention and derivative | authority corrected / implementation active | equality/near-tie active set and frozen generalized-Jacobian vectors |
+| incomplete capped failure diagnostics | authority corrected / implementation active | failed-iterate typed payload, singular/limit/backtracking, null candidate/use |
+| authorization substituted for finalized use | authority corrected / implementation active | `F<=A<=D`, hydrology debit of `F` only, receipt and closure |
+| incomplete V4-to-V5 identity transition | authority corrected / implementation active | exact payload copy, distinct identities, stale-V4 rejection |
+
+No capped implementation review has passed yet. The earlier V1--V4 findings
+and HOLD records remain immutable, and no Milestone 2/3 or public-path claim is
+made.
+
+## V5 Bounded-Core Review Disposition
+
+Both repeat reviewers found no remaining material Rust defect in the bounded
+V5 capped core after remediation. They independently rejected
+`STAGE_B_E11_E15_EXACT_ORACLE` because the digest-bound CPython failed-iterate
+`step_norm` is not reproduced by Rust and V5 supplies no cross-runtime
+comparison rule. The locally observed `3e-6` comparison is provisional only and
+does not remediate or pass the finding. The exact blocker, attempted routes,
+and lift action are recorded in
+`v5-failure-payload-portability-hold-legitimacy-audit.md`.
+
+Disposition: bounded checkpoint accepted; Stage B, public path, Milestones 2/3,
+and the original Review-B completion claims remain unresolved and fail-closed.

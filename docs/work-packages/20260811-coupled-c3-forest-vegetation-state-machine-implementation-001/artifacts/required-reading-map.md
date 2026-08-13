@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `current / V4 shared-state implementation continuation`
+Status: `current / V5 capped-pass implementation continuation`
 
 Evidence mode: `Ran + Static`
 
@@ -112,3 +112,20 @@ transaction code before editing. Current executable authority is
 V1/V2/V3 definitions and checkpoint evidence remain historical read-only
 inputs; the V4 authority package's final heavy/terminal closure remains
 pending and is not borrowed as implementation-package evidence.
+
+## 2026-08-13 V5 Capped-Pass Runtime Continuation
+
+Instruction discovery over the implementation package, vegetation crate,
+kernel transaction contract, integration tests, and diagnostic fixtures again
+resolved `AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`,
+`tests/fixtures/AGENTS.md`, and `docs/work-packages/AGENTS.md`. Read
+`SC-VEGETATION-001` v9 and the complete V5 authority definition, cap selection,
+operand lineage, vector ledger, generator, verifier, review disposition, both
+science reviews, both terminal verifiers, gate history, and worker handoff.
+The frozen authority predecessor is commit
+`b7e6f08b655452c5c59a498ac9becd1439dd21ef`. Exact V5 identities are
+definition `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`,
+vectors `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`,
+and generator `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`.
+V1--V4 definitions, HOLDs, reviews, and checkpoint evidence remain immutable
+historical inputs.

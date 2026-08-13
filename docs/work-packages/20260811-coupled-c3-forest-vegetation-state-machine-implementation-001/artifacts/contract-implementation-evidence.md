@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: `executing / V4 shared-state contract surfaces PASS; capped path incomplete`
+Status: `executing / V5 capped contract authority bound; implementation active`
 
 Increment 2B adds only a non-constitutive typed water request/authorization
 boundary. No radiation or potential solver output was retained; the exact
@@ -43,7 +43,21 @@ historical migration input only and are not executable V4 state.
 
 The production uncapped occupancy evaluator and typed potential-request seam
 remain available, but the public transaction is fail-closed before capped
-finalization. No digest-bound fully coupled cap-active vector currently fixes
-the equality active set or independent `q_law`/cap operands. Therefore the
-capped draft is not contract evidence and `STAGE_B_E11_E15_EXACT_ORACLE`
-remains incomplete.
+finalization. At the V4 checkpoint no digest-bound fully coupled cap-active
+vector fixed the equality active set or independent `q_law`/cap operands.
+Therefore the historical capped draft was not contract evidence and
+`STAGE_B_E11_E15_EXACT_ORACLE` remained incomplete.
+
+## V5 Capped Contract Surface
+
+Static: `SC-VEGETATION-001` v9 resolves the V4 capped boundary with exact
+stand/tile/rate conversions, independent hydraulic-law evaluation, equality-
+active complementarity, frozen generalized-Jacobian selection, configured cap
+order, failure payloads, final-use owner debit, rollback, and V4-to-V5 identity
+rebinding. The immutable V5 vectors exercise the accepted, equality, near-tie,
+unavailable, zero-root, singular, iteration-limit, and poison families.
+
+The Rust implementation is under active remediation. No row is promoted from
+authority to implementation until fixture reconstruction, focused solver tests,
+independent reviews, and whole-owner rollback pass. The public transaction
+therefore remains fail-closed.

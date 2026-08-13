@@ -1,6 +1,6 @@
 # Terminal Diff Reconciliation
 
-Status: `V4 increment reconciled in progress / not terminal-complete`
+Status: `V5 remediation reconciliation in progress / not terminal-complete`
 
 Evidence mode: `Ran`
 
@@ -48,3 +48,19 @@ consumer cutover, canopy-snow, or soil-transformation path is changed. This is
 an increment reconciliation only; terminal exact-diff reconciliation must be
 repeated after the capped/public transaction and all remaining package work are
 stable.
+
+## 2026-08-13 V5 Authority Intake Reconciliation
+
+The exact predecessor is commit
+`b7e6f08b655452c5c59a498ac9becd1439dd21ef`. The separately authorized V5
+contract package changed canonical authority and evidence only; this package
+consumes its definition `0ee6a50d...`, vectors `6f5e9554...`, and generator
+`4c3a1cfc...`. V1--V4 checkpoint bytes and HOLD/review evidence remain
+historical and unchanged.
+
+V5 production remediation is active and has not reached stable terminal bytes.
+No exact implementation diff, solver PASS, public candidate, broad heavy gate,
+terminal verifier, or prompt-archive claim is made here. Reconcile the complete
+V5 model registry, migration, capped solver, fixture/test, owner, and package-
+evidence diff only after focused solver reviews pass. The public path remains
+fail-closed in the interim.

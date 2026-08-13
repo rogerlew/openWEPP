@@ -1,6 +1,6 @@
 # Forcing And Operand Provider Map
 
-Status: `PARTIAL / V4 state operands bound; capped operands incomplete`
+Status: `PARTIAL / V5 capped operands authoritative; runtime binding active`
 
 Increment 2B audit: reference wind exists, but distinct `u_leaf` and `u_wet`
 providers do not. Stem hydraulic path/gravity and the accepted common-root to
@@ -27,6 +27,10 @@ Every rate is converted once at the transaction ledger.
 
 V4 binds displayed leaf C as the only LAI/area-cache provider and displayed
 leaf N as the only positive-LAI capacity/leaf-Rd provider. Storage/transfer
-leaf pools remain mass operands only. The cap-active boundary still lacks an
-independent digest-bound vector identifying equality-active caps and the
-separate hydraulic-law versus cap operands; no provider alias is inferred.
+leaf pools remain mass operands only. V5 now binds exact stand-ground
+authorization amount, tile-ground amount, tile-ground rate, independently
+evaluated `q_law`, selected `q_i`, finalized stand-ground amount, equality-
+active branch, and configured layer order. The implementation must preserve
+each as a distinct typed operand. Until its exact fixture and review gates
+pass, no provider alias or finalized-use claim is accepted and the public path
+remains fail-closed.

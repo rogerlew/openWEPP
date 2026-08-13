@@ -313,6 +313,7 @@ mod tests {
                     pivot_magnitude: None,
                     matrix_norm: None,
                     advanced_t10_k: None,
+                    capped_operands: None,
                 },
             })
         }
@@ -320,14 +321,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V4 state fixture");
+        .expect("V5 state fixture");
         (configuration, state)
     }
 

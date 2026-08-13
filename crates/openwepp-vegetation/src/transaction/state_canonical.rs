@@ -1,4 +1,4 @@
-//! `OPENWEPP_V4_STATE_CANONICAL_V1` whole-state encoding.
+//! `OPENWEPP_V4_STATE_CANONICAL_V1` whole-state encoding, imported unchanged by V5.
 
 use std::collections::BTreeMap;
 

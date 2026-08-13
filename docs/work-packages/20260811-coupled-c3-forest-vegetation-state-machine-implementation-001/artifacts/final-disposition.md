@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / V4 shared-state runtime integrated / capped path fail-closed`
+Status: `executed-hold / V5 failure-payload portability authority gap / public path fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -54,9 +54,25 @@ canonical serialization, displayed-leaf C/N ownership, and explicit V3-to-V4
 migration. Independent Rust review is GO and QA is PASS for this bounded
 increment.
 
-This is not terminal disposition. The V4 authority package's repeat heavy and
-terminal closure is pending, and the implementation still lacks sufficient
-digest-bound cap-active evidence to connect its capped draft. The public path
-remains fail-closed; Milestones 2 and 3, E20--E22 accepted finalization,
-all-owner atomic commit, benchmarks, broad heavy gates, terminal verification,
-and prompt archival remain incomplete.
+This was not terminal disposition. At the V4 checkpoint the implementation
+lacked sufficient digest-bound cap-active evidence to connect its capped draft.
+The public path remained fail-closed; Milestones 2 and 3, E20--E22 accepted
+finalization, all-owner atomic commit, benchmarks, broad heavy gates, terminal
+verification, and prompt archival remained incomplete.
+
+The capped-authority boundary is now lifted by `SC-VEGETATION-001` v9 and
+`OPENWEPP_C3_WOODY_V5` at authority predecessor commit
+`b7e6f08b655452c5c59a498ac9becd1439dd21ef`. Exact definition, vectors, and
+generator hashes are recorded in `gate-results.md`; dual science reviews,
+focused/heavy authority gates, and dual terminal verifiers passed. V1--V4 HOLD
+and checkpoint evidence remains preserved.
+
+This remains an in-progress HOLD placeholder. The bounded V5 capped-core
+implementation is checkpoint-ready, but the exact solver oracle is not passed:
+the frozen CPython backtracking `step_norm` differs from Rust and V5 admits no
+portable comparison rule. See
+`v5-failure-payload-portability-hold-legitimacy-audit.md`. Finalized-use owner
+closure, all-owner rollback, public E01--E22 candidate, Milestones 2/3, broad
+implementation gates, terminal verification, and prompt archive are not yet
+complete. `execute_candidate()` remains fail-closed and publishes no candidate
+or finalized use.

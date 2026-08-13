@@ -1,0 +1,139 @@
+{
+  "model_definition_sha256": "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3",
+  "configuration_sha256": "e62787970cbfbad63ec2914855bea3d51e9cfea87f95d0fc41c560f36419695e",
+  "state_sha256": "eb86d05a500734e9adb8b81705f88f353d96632a10e824ef4e595ba51a3e2acc",
+  "strata": {
+    "tree-1": {
+      "tissues": {
+        "leaf": {
+          "display": {
+            "carbon": 0.1,
+            "nitrogen": 0.003
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        },
+        "fine_root": {
+          "display": {
+            "carbon": 0.08,
+            "nitrogen": 0.0018
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        },
+        "live_stem": {
+          "display": {
+            "carbon": 0.2,
+            "nitrogen": 0.0036
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        },
+        "dead_stem": {
+          "display": {
+            "carbon": 0.3,
+            "nitrogen": 0.00067
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        },
+        "live_coarse_root": {
+          "display": {
+            "carbon": 0.05,
+            "nitrogen": 0.00091
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        },
+        "dead_coarse_root": {
+          "display": {
+            "carbon": 0.08,
+            "nitrogen": 0.00018
+          },
+          "storage": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          },
+          "transfer": {
+            "carbon": 0.0,
+            "nitrogen": 0.0
+          }
+        }
+      },
+      "retranslocation_n": 0.00007,
+      "nsc_c": 0.004,
+      "xs_c": -0.03,
+      "standing_dead": {
+        "carbon": 0.0,
+        "nitrogen": 0.0
+      },
+      "standing_dead_dm": 0.0,
+      "phase": "active",
+      "onset_remaining_s": 0.0,
+      "offset_remaining_s": 0.0,
+      "previous_gsi": 0.8,
+      "pending_transfers": [],
+      "t10_k": 296.0,
+      "leaf_area": 2.0,
+      "root_area": 2.7,
+      "stem_area": 0.7,
+      "last_transaction_id": 0
+    }
+  },
+  "occupancies": [
+    {
+      "identity": {
+        "stratum_id": "tree-1",
+        "tile_id": "tile-1"
+      },
+      "state": {
+        "beta_hyd": 0.75,
+        "canopy_air_specific_humidity_kg_kg": 0.009,
+        "canopy_air_temperature_k": 295.0,
+        "canopy_liquid_kg_h2o_m2_tile_ground": 0.0,
+        "dry_stem_temperature_k": 294.0,
+        "last_accepted_transaction_id": null,
+        "shade_ci_pa": 27.0,
+        "shade_leaf_potential_mm": -32000.0,
+        "shade_leaf_temperature_k": 295.0,
+        "stem_potential_mm": -28500.0,
+        "sun_ci_pa": 25.0,
+        "sun_leaf_potential_mm": -33000.0,
+        "sun_leaf_temperature_k": 296.0,
+        "wet_surface_temperature_k": 295.0,
+        "root_node_potential_mm": -25500.0
+      }
+    }
+  ],
+  "last_transaction_id": 0
+}

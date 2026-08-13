@@ -368,15 +368,15 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let mut configuration: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         let original = configuration.clone();
         let mut state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
             &original,
         )
-        .expect("V4 state fixture");
+        .expect("V5 state fixture");
 
         let upper = configuration.strata.get_mut(0).expect("upper config");
         upper.stratum_id = stratum_id("upper");

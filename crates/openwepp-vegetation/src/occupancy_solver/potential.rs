@@ -18,7 +18,8 @@ use std::collections::BTreeSet;
 use openwepp_kernel_contract::{OccupancyId, SoilLayerId, TransactionId};
 
 use crate::diagnostics::{
-    BoundIdentity, CoupledSolvePass, NormalizedResidual, NumericalFailureDiagnostics, SolveIdentity,
+    BoundIdentity, CappedLayerNumericalOperands, CappedNumericalOperands, CappedResidualOperands,
+    CoupledSolvePass, NormalizedResidual, NumericalFailureDiagnostics, SolveIdentity,
 };
 use crate::{MODEL_SHA256, VegetationError};
 
@@ -28,13 +29,21 @@ const POTENTIAL_STEP_TOLERANCE_MM: f64 = 1.0e-7;
 const WATER_ATOL: f64 = 1.0e-12;
 const WATER_RTOL: f64 = 1.0e-9;
 const UNIT_SCALES: [f64; 6] = [1_000.0, 1_000.0, 1_000.0, 1_000.0, 1.0, 1.0];
-const RESIDUAL_IDENTITIES: [&str; 6] = [
+const V3_RESIDUAL_IDENTITIES: [&str; 6] = [
     "sun_gas_minus_q1",
     "shade_gas_minus_q1",
     "sun_gas_minus_vulnerability_demand",
     "shade_gas_minus_vulnerability_demand",
     "q1_sum_minus_q2",
     "q3_sum_minus_q2",
+];
+const V5_CAPPED_RESIDUAL_IDENTITIES: [&str; 6] = [
+    "sun_gas_minus_q1",
+    "shade_gas_minus_q1",
+    "sun_gas_minus_vulnerability_demand",
+    "shade_gas_minus_vulnerability_demand",
+    "q1_sum_minus_q2",
+    "q2_minus_capped_q3_sum",
 ];
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -78,6 +87,9 @@ pub(crate) struct StageAEvaluation {
     /// Generic equation tests use zero; production evaluators issue a unique
     /// nonzero identity for every evaluation.
     pub evaluation_id: u64,
+    /// True only for the V5 fixed-authorization residual system. V3 Stage A
+    /// retains its frozen arithmetic/sign path byte-for-byte.
+    pub capped_system: bool,
     pub emax_sun_kg_m2_s: f64,
     pub emax_shade_kg_m2_s: f64,
     pub gas_sun_kg_m2_s: f64,
@@ -88,12 +100,44 @@ pub(crate) struct StageAEvaluation {
     pub q1_shade_kg_m2_s: f64,
     pub q2_kg_m2_s: f64,
     pub q3_kg_m2_s: Vec<(SoilLayerId, f64)>,
+    /// Independently evaluated constitutive-law, fixed-cap, and selected
+    /// layer flux operands in configured layer order. Empty for legacy test
+    /// evaluators; production V5 evaluators populate every configured layer.
+    pub capped_layer_fluxes: Vec<CappedLayerFluxEvaluation>,
     /// Exact layer caps active in this evaluation. Empty for Stage A.
     pub active_water_caps: Vec<SoilLayerId>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct CappedLayerFluxEvaluation {
+    pub layer_id: SoilLayerId,
+    pub q_law_kg_m2_s: f64,
+    pub cap_rate_kg_m2_s: f64,
+    pub q_final_kg_m2_s: f64,
+    pub authorization_active_or_tie: bool,
+    pub soil_potential_mm: f64,
+    pub gravity_head_mm: f64,
+    pub root_fraction: f64,
+    pub z3_m: f64,
+    pub ksoil_m2_s: f64,
+    pub dxroot_m: f64,
+    pub accessible: bool,
+    pub frozen: bool,
+}
+
 pub(crate) trait StageAEvaluator {
     fn evaluate(&self, state: StageAState) -> Result<StageAEvaluation, VegetationError>;
+
+    /// Evaluate a finite-difference perturbation using the generalized branch
+    /// selected at the unperturbed iterate. Smooth/uncapped evaluators use the
+    /// ordinary evaluation; the V5 capped evaluator freezes its active set.
+    fn evaluate_jacobian_perturbation(
+        &self,
+        state: StageAState,
+        _unperturbed: &StageAEvaluation,
+    ) -> Result<StageAEvaluation, VegetationError> {
+        self.evaluate(state)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -133,7 +177,7 @@ pub(super) fn solve_uncapped_stage_a_with_limit(
     solve_uncapped_stage_a_bounded(identity, initial, evaluator, max_iterations)
 }
 
-fn solve_uncapped_stage_a_bounded(
+pub(super) fn solve_uncapped_stage_a_bounded(
     identity: &StageASolveIdentity,
     initial: StageAState,
     evaluator: &dyn StageAEvaluator,
@@ -168,13 +212,14 @@ fn solve_uncapped_stage_a_bounded(
                 SolveIdentity::OuterGasEnergyHydraulicCoupling,
             ));
         }
+        let capped_system = evaluation.capped_system;
         return Ok(StageASolution {
             state,
             persisted_beta_hyd: 1.0,
             evaluation,
             iterations: 0,
             backtracking_count: 0,
-            normalized_residuals: zero_residuals(),
+            normalized_residuals: zero_residuals(capped_system),
             potential_step_mm: 0.0,
             pivot_magnitude: 0.0,
             matrix_norm: 0.0,
@@ -218,13 +263,14 @@ fn solve_uncapped_stage_a_bounded(
         if norm <= 1.0 && last_step.is_none_or(|step| step <= POTENTIAL_STEP_TOLERANCE_MM) {
             let state = StageAState::from_array(x);
             validate_accepted_fluxes(&evaluation)?;
+            let capped_system = evaluation.capped_system;
             return Ok(StageASolution {
                 state,
                 persisted_beta_hyd: persisted_beta(&evaluation, state)?,
                 evaluation,
                 iterations: iteration,
                 backtracking_count: backtracks,
-                normalized_residuals: labeled(&normalized),
+                normalized_residuals: labeled(&normalized, capped_system),
                 potential_step_mm: last_step.unwrap_or(0.0),
                 pivot_magnitude: last_pivot.unwrap_or(0.0),
                 matrix_norm: last_matrix_norm.unwrap_or(0.0),
@@ -243,7 +289,12 @@ fn solve_uncapped_stage_a_bounded(
                 SolveIdentity::OuterGasEnergyHydraulicCoupling,
             ));
         }
-        let jacobian = centered_jacobian(&x, evaluator).map_err(|error| match error {
+        let jacobian = (if evaluation.capped_system {
+            centered_jacobian_capped(&x, &evaluation, evaluator)
+        } else {
+            centered_jacobian(&x, evaluator)
+        })
+        .map_err(|error| match error {
             VegetationError::NumericalFailure(_) => error,
             _ => failure(
                 identity,
@@ -288,6 +339,7 @@ fn solve_uncapped_stage_a_bounded(
         last_pivot = Some(pivot);
         last_matrix_norm = Some(matrix_norm);
         let full_potential_step = delta[..4].iter().copied().map(f64::abs).fold(0.0, f64::max);
+        let full_state_step = delta.iter().copied().map(f64::abs).fold(0.0, f64::max);
         if norm <= 1.0 && full_potential_step <= POTENTIAL_STEP_TOLERANCE_MM {
             last_step = Some(full_potential_step);
             continue;
@@ -356,12 +408,21 @@ fn solve_uncapped_stage_a_bounded(
                     ),
                 });
             }
+            let reported_backtracks = if evaluation.capped_system {
+                backtracks.saturating_sub(1)
+            } else {
+                backtracks
+            };
             return Err(failure(
                 identity,
                 iteration,
                 &evaluation,
-                last_step,
-                backtracks,
+                if evaluation.capped_system {
+                    Some(full_state_step)
+                } else {
+                    last_step
+                },
+                reported_backtracks,
                 last_pivot,
                 last_matrix_norm,
                 &StageAState::from_array(x),
@@ -489,13 +550,14 @@ fn solve_single_active_stage_a(
                 ));
             }
             validate_accepted_fluxes(&evaluation)?;
+            let capped_system = evaluation.capped_system;
             return Ok(StageASolution {
                 state,
                 persisted_beta_hyd: persisted_beta(&evaluation, state)?,
                 evaluation,
                 iterations: iteration,
                 backtracking_count: backtracks,
-                normalized_residuals: labeled(&all_normalized),
+                normalized_residuals: labeled(&all_normalized, capped_system),
                 potential_step_mm: last_step.unwrap_or(0.0),
                 pivot_magnitude: last_pivot.unwrap_or(0.0),
                 matrix_norm: last_matrix_norm.unwrap_or(0.0),
@@ -515,7 +577,12 @@ fn solve_single_active_stage_a(
             ));
         }
 
-        let jacobian = centered_jacobian_reduced(&x, evaluator, active).map_err(|error| {
+        let jacobian = (if evaluation.capped_system {
+            centered_jacobian_reduced_capped(&x, &evaluation, evaluator, active)
+        } else {
+            centered_jacobian_reduced(&x, evaluator, active)
+        })
+        .map_err(|error| {
             if matches!(error, VegetationError::NumericalFailure(_)) {
                 error
             } else {
@@ -727,18 +794,32 @@ fn residuals(value: &StageAEvaluation) -> [f64; 6] {
             next.is_finite().then_some(next)
         })
         .unwrap_or(f64::NAN);
-    [
-        value.q1_sun_kg_m2_s - value.gas_sun_kg_m2_s,
-        value.q1_shade_kg_m2_s - value.gas_shade_kg_m2_s,
-        value.gas_sun_kg_m2_s - value.vulnerability_demand_sun_kg_m2_s,
-        value.gas_shade_kg_m2_s - value.vulnerability_demand_shade_kg_m2_s,
-        value.q2_kg_m2_s - (value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s),
-        q3_sum - value.q2_kg_m2_s,
-    ]
+    if value.capped_system {
+        [
+            value.gas_sun_kg_m2_s - value.q1_sun_kg_m2_s,
+            value.gas_shade_kg_m2_s - value.q1_shade_kg_m2_s,
+            value.gas_sun_kg_m2_s - value.vulnerability_demand_sun_kg_m2_s,
+            value.gas_shade_kg_m2_s - value.vulnerability_demand_shade_kg_m2_s,
+            value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s - value.q2_kg_m2_s,
+            value.q2_kg_m2_s - q3_sum,
+        ]
+    } else {
+        // Frozen V3 arithmetic order and signs. Although several historical
+        // labels describe the opposite orientation, V5 does not supersede
+        // the uncapped numerical bytes.
+        [
+            value.q1_sun_kg_m2_s - value.gas_sun_kg_m2_s,
+            value.q1_shade_kg_m2_s - value.gas_shade_kg_m2_s,
+            value.gas_sun_kg_m2_s - value.vulnerability_demand_sun_kg_m2_s,
+            value.gas_shade_kg_m2_s - value.vulnerability_demand_shade_kg_m2_s,
+            value.q2_kg_m2_s - (value.q1_sun_kg_m2_s + value.q1_shade_kg_m2_s),
+            q3_sum - value.q2_kg_m2_s,
+        ]
+    }
 }
 
 fn water_scale(value: &StageAEvaluation) -> f64 {
-    [
+    let v3_scale = [
         WATER_ATOL,
         value.emax_sun_kg_m2_s.abs(),
         value.emax_shade_kg_m2_s.abs(),
@@ -753,7 +834,21 @@ fn water_scale(value: &StageAEvaluation) -> f64 {
             .fold(0.0, f64::max),
     ]
     .into_iter()
-    .fold(WATER_ATOL, f64::max)
+    .fold(WATER_ATOL, f64::max);
+    if !value.capped_system {
+        return v3_scale;
+    }
+    value
+        .capped_layer_fluxes
+        .iter()
+        .flat_map(|layer| {
+            [
+                layer.q_law_kg_m2_s.abs(),
+                layer.cap_rate_kg_m2_s.abs(),
+                layer.q_final_kg_m2_s.abs(),
+            ]
+        })
+        .fold(v3_scale, f64::max)
 }
 
 fn normalize(raw: &[f64; 6], scale: f64) -> [f64; 6] {
@@ -774,8 +869,13 @@ fn infinity_norm_reduced(values: &[f64; 4]) -> f64 {
     values.iter().copied().map(f64::abs).fold(0.0, f64::max)
 }
 
-fn labeled(values: &[f64; 6]) -> Vec<NormalizedResidual> {
-    RESIDUAL_IDENTITIES
+fn labeled(values: &[f64; 6], capped: bool) -> Vec<NormalizedResidual> {
+    let identities = if capped {
+        &V5_CAPPED_RESIDUAL_IDENTITIES
+    } else {
+        &V3_RESIDUAL_IDENTITIES
+    };
+    identities
         .iter()
         .zip(values)
         .map(|(identity, value)| NormalizedResidual {
@@ -785,8 +885,8 @@ fn labeled(values: &[f64; 6]) -> Vec<NormalizedResidual> {
         .collect()
 }
 
-fn zero_residuals() -> Vec<NormalizedResidual> {
-    labeled(&[0.0; 6])
+fn zero_residuals(capped: bool) -> Vec<NormalizedResidual> {
+    labeled(&[0.0; 6], capped)
 }
 
 fn persisted_beta(value: &StageAEvaluation, state: StageAState) -> Result<f64, VegetationError> {
@@ -830,6 +930,33 @@ fn centered_jacobian(
     Ok(jacobian)
 }
 
+fn centered_jacobian_capped(
+    x: &[f64; 6],
+    unperturbed: &StageAEvaluation,
+    evaluator: &dyn StageAEvaluator,
+) -> Result<[[f64; 6]; 6], VegetationError> {
+    let mut jacobian = [[0.0; 6]; 6];
+    for column in 0..6 {
+        let step = f64::EPSILON.sqrt() * x[column].abs().max(UNIT_SCALES[column]);
+        let mut plus = *x;
+        let mut minus = *x;
+        plus[column] += step;
+        minus[column] -= step;
+        let plus_evaluation =
+            evaluator.evaluate_jacobian_perturbation(StageAState::from_array(plus), unperturbed)?;
+        let minus_evaluation = evaluator
+            .evaluate_jacobian_perturbation(StageAState::from_array(minus), unperturbed)?;
+        validate_evaluation(&plus_evaluation)?;
+        validate_evaluation(&minus_evaluation)?;
+        let rp = residuals(&plus_evaluation);
+        let rm = residuals(&minus_evaluation);
+        for row in 0..6 {
+            jacobian[row][column] = (rp[row] - rm[row]) / (2.0 * step);
+        }
+    }
+    Ok(jacobian)
+}
+
 fn centered_jacobian_reduced(
     x: &[f64; 4],
     evaluator: &dyn StageAEvaluator,
@@ -845,6 +972,35 @@ fn centered_jacobian_reduced(
         minus[column] -= step;
         let plus_evaluation = evaluator.evaluate(active.full_state(plus))?;
         let minus_evaluation = evaluator.evaluate(active.full_state(minus))?;
+        validate_evaluation(&plus_evaluation)?;
+        validate_evaluation(&minus_evaluation)?;
+        let rp = active.residuals(&plus_evaluation);
+        let rm = active.residuals(&minus_evaluation);
+        for row in 0..4 {
+            jacobian[row][column] = (rp[row] - rm[row]) / (2.0 * step);
+        }
+    }
+    Ok(jacobian)
+}
+
+fn centered_jacobian_reduced_capped(
+    x: &[f64; 4],
+    unperturbed: &StageAEvaluation,
+    evaluator: &dyn StageAEvaluator,
+    active: ActiveClass,
+) -> Result<[[f64; 4]; 4], VegetationError> {
+    let mut jacobian = [[0.0; 4]; 4];
+    let unit_scales = [1_000.0, 1_000.0, 1_000.0, 1.0];
+    for column in 0..4 {
+        let step = f64::EPSILON.sqrt() * x[column].abs().max(unit_scales[column]);
+        let mut plus = *x;
+        let mut minus = *x;
+        plus[column] += step;
+        minus[column] -= step;
+        let plus_evaluation =
+            evaluator.evaluate_jacobian_perturbation(active.full_state(plus), unperturbed)?;
+        let minus_evaluation =
+            evaluator.evaluate_jacobian_perturbation(active.full_state(minus), unperturbed)?;
         validate_evaluation(&plus_evaluation)?;
         validate_evaluation(&minus_evaluation)?;
         let rp = active.residuals(&plus_evaluation);
@@ -985,7 +1141,7 @@ fn failure(
         active_bounds.push(BoundIdentity("beta_shade".into()));
     }
     let residual_norms = if normalized.iter().all(|value| value.is_finite()) {
-        labeled(&normalized)
+        labeled(&normalized, evaluation.capped_system)
     } else {
         Vec::new()
     };
@@ -1004,6 +1160,8 @@ fn failure(
         bracket: None,
         pivot_magnitude: pivot_magnitude.filter(|value| value.is_finite()),
         matrix_norm: matrix_norm.filter(|value| value.is_finite()),
+        capped_operands: capped_numerical_operands(evaluation, state),
+        fixed_authorization_identity: None,
     };
     debug_assert!(diagnostics.validate().is_ok());
     VegetationError::NumericalFailure(Box::new(diagnostics))
@@ -1032,7 +1190,66 @@ fn wrap_evaluator_error(
         bracket: None,
         pivot_magnitude: None,
         matrix_norm: None,
+        capped_operands: None,
+        fixed_authorization_identity: None,
     }))
+}
+
+pub(crate) fn capped_numerical_operands(
+    evaluation: &StageAEvaluation,
+    state: &StageAState,
+) -> Option<CappedNumericalOperands> {
+    evaluation.capped_system.then(|| CappedNumericalOperands {
+        water_residual_scale_kg_m2_tile_s: water_scale(evaluation),
+        psi_sunleaf_mm: state.psi_sunleaf_mm,
+        psi_shadeleaf_mm: state.psi_shadeleaf_mm,
+        psi_stem_mm: state.psi_stem_mm,
+        psi_root_mm: state.psi_root_mm,
+        beta_sun: state.beta_sun,
+        beta_shade: state.beta_shade,
+        emax_sun_kg_m2_s: evaluation.emax_sun_kg_m2_s,
+        emax_shade_kg_m2_s: evaluation.emax_shade_kg_m2_s,
+        gas_sun_kg_m2_s: evaluation.gas_sun_kg_m2_s,
+        gas_shade_kg_m2_s: evaluation.gas_shade_kg_m2_s,
+        q1_sun_kg_m2_s: evaluation.q1_sun_kg_m2_s,
+        q1_shade_kg_m2_s: evaluation.q1_shade_kg_m2_s,
+        q2_kg_m2_s: evaluation.q2_kg_m2_s,
+        residuals: {
+            let scale = water_scale(evaluation);
+            let tolerance = WATER_ATOL + WATER_RTOL * scale;
+            let raw = residuals(evaluation);
+            V5_CAPPED_RESIDUAL_IDENTITIES
+                .iter()
+                .zip(raw)
+                .map(|(identity, value)| CappedResidualOperands {
+                    identity: (*identity).into(),
+                    raw_kg_m2_tile_s: value,
+                    scale_kg_m2_tile_s: scale,
+                    tolerance,
+                    normalized: value / tolerance,
+                })
+                .collect()
+        },
+        layers: evaluation
+            .capped_layer_fluxes
+            .iter()
+            .map(|layer| CappedLayerNumericalOperands {
+                layer_id: layer.layer_id.clone(),
+                cap_rate_kg_m2_tile_s: layer.cap_rate_kg_m2_s,
+                q_law_kg_m2_tile_s: layer.q_law_kg_m2_s,
+                q_final_kg_m2_tile_s: layer.q_final_kg_m2_s,
+                authorization_active_or_tie: layer.authorization_active_or_tie,
+                soil_potential_mm: layer.soil_potential_mm,
+                gravity_head_mm: layer.gravity_head_mm,
+                root_fraction: layer.root_fraction,
+                z3_m: layer.z3_m,
+                ksoil_m2_s: layer.ksoil_m2_s,
+                dxroot_m: layer.dxroot_m,
+                accessible: layer.accessible,
+                frozen: layer.frozen,
+            })
+            .collect(),
+    })
 }
 
 #[cfg(test)]
@@ -1058,6 +1275,7 @@ mod tests {
             let q3_total = 1.0e-9 * (10_000.0 - state.psi_root_mm);
             Ok(StageAEvaluation {
                 evaluation_id: 0,
+                capped_system: false,
                 emax_sun_kg_m2_s: emax_sun,
                 emax_shade_kg_m2_s: emax_shade,
                 gas_sun_kg_m2_s: gas_sun,
@@ -1071,6 +1289,7 @@ mod tests {
                     (layer("soil-1"), q3_total * 0.6),
                     (layer("soil-2"), q3_total * 0.4),
                 ],
+                capped_layer_fluxes: Vec::new(),
                 active_water_caps: Vec::new(),
             })
         }
@@ -1136,6 +1355,7 @@ mod tests {
         fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
             Ok(StageAEvaluation {
                 evaluation_id: 0,
+                capped_system: false,
                 emax_sun_kg_m2_s: 0.0,
                 emax_shade_kg_m2_s: 0.0,
                 gas_sun_kg_m2_s: 0.0,
@@ -1146,9 +1366,53 @@ mod tests {
                 q1_shade_kg_m2_s: 0.0,
                 q2_kg_m2_s: 0.0,
                 q3_kg_m2_s: vec![(layer("soil-1"), 0.0), (layer("soil-2"), 0.0)],
+                capped_layer_fluxes: Vec::new(),
                 active_water_caps: Vec::new(),
             })
         }
+    }
+
+    struct CappedZeroOracle;
+    impl StageAEvaluator for CappedZeroOracle {
+        fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
+            Ok(StageAEvaluation {
+                evaluation_id: 0,
+                capped_system: true,
+                emax_sun_kg_m2_s: 0.0,
+                emax_shade_kg_m2_s: 0.0,
+                gas_sun_kg_m2_s: 0.0,
+                gas_shade_kg_m2_s: 0.0,
+                vulnerability_demand_sun_kg_m2_s: 0.0,
+                vulnerability_demand_shade_kg_m2_s: 0.0,
+                q1_sun_kg_m2_s: 0.0,
+                q1_shade_kg_m2_s: 0.0,
+                q2_kg_m2_s: 0.0,
+                q3_kg_m2_s: vec![(layer("soil-1"), 0.0)],
+                capped_layer_fluxes: Vec::new(),
+                active_water_caps: vec![layer("soil-1")],
+            })
+        }
+    }
+
+    #[test]
+    fn capped_zero_maximum_uses_exact_v5_root_residual_identity() {
+        let solution = solve_uncapped_stage_a(
+            &identity(),
+            StageAState {
+                psi_sunleaf_mm: -1.0,
+                psi_shadeleaf_mm: -1.0,
+                psi_stem_mm: -1.0,
+                psi_root_mm: -1.0,
+                beta_sun: 0.5,
+                beta_shade: 0.5,
+            },
+            &CappedZeroOracle,
+        )
+        .expect("capped zero maximum");
+        assert_eq!(
+            solution.normalized_residuals[5].identity,
+            "q2_minus_capped_q3_sum"
+        );
     }
 
     #[test]
@@ -1187,6 +1451,7 @@ mod tests {
             let q3_total = 1.0e-9 * (10_000.0 - state.psi_root_mm);
             Ok(StageAEvaluation {
                 evaluation_id: 0,
+                capped_system: false,
                 emax_sun_kg_m2_s: emax_sun,
                 emax_shade_kg_m2_s: emax_shade,
                 gas_sun_kg_m2_s: gas_sun,
@@ -1200,6 +1465,7 @@ mod tests {
                     (layer("soil-1"), q3_total * 0.6),
                     (layer("soil-2"), q3_total * 0.4),
                 ],
+                capped_layer_fluxes: Vec::new(),
                 active_water_caps: Vec::new(),
             })
         }
@@ -1278,6 +1544,7 @@ mod tests {
         fn evaluate(&self, _: StageAState) -> Result<StageAEvaluation, VegetationError> {
             Ok(StageAEvaluation {
                 evaluation_id: 0,
+                capped_system: false,
                 emax_sun_kg_m2_s: 1.0e-5,
                 emax_shade_kg_m2_s: 1.0e-5,
                 gas_sun_kg_m2_s: 1.0e-5,
@@ -1288,6 +1555,7 @@ mod tests {
                 q1_shade_kg_m2_s: 2.0e-6,
                 q2_kg_m2_s: 3.0e-6,
                 q3_kg_m2_s: vec![(layer("soil-1"), 3.0e-6)],
+                capped_layer_fluxes: Vec::new(),
                 active_water_caps: Vec::new(),
             })
         }

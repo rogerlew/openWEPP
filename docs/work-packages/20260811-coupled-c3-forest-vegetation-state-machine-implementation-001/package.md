@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V4 shared-state runtime integrated / capped public path fail-closed`
+Status: `executed-hold / V5 bounded capped-core checkpoint / public path fail-closed`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V4` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V5` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,18 +32,19 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v8, approved/active;
+- `SC-VEGETATION-001` v9, approved/active;
 - `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V4`, SHA-256
-  `8ace38d1148f95261306cd6b0bf6f22e23ac8ead4cb6897dbdb53061b78ee437`;
-- the active V4 shared-state authority package exact bytes: fixture SHA-256
-  `3072226f1d80359c548d87c1fa222be0c20b01627d9117e39163c39d9eb8824d`
+- `OPENWEPP_C3_WOODY_V5`, SHA-256
+  `0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3`;
+- the released V5 capped-pass authority package exact bytes: independent
+  vectors SHA-256
+  `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d`
   and generator SHA-256
-  `422f0a6fb778de73568259b0d1bad19f63e5b6fcac5fd608accace45b316bcd2`;
-  its final heavy and
-  terminal closure remains pending and is not claimed by this implementation
-  increment;
+  `4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775`;
+- authority predecessor commit
+  `b7e6f08b655452c5c59a498ac9becd1439dd21ef`, whose dual science reviews,
+  focused/heavy gates, and dual terminal verifiers passed;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
 
@@ -443,6 +444,17 @@ closure, and line-count governance, not artifact presence alone.
 - [x] (2026-08-13) Implement explicit V3-to-V4 migration with complete source
   validation, exact constitutive-payload comparison, exhaustive unresolved
   reports, V4 identity rebinding, and no direct V1-to-V4 shortcut.
+- [x] (2026-08-13) Preserve V1--V4 checkpoint and HOLD evidence and consume
+  the released V5 fixed-authorization authority at commit `b7e6f08b6`.
+  Definition, vectors, generator, dual science reviews, focused/heavy gates,
+  and dual terminal verification are frozen and passing.
+- [ ] Implement and independently review the exact V5 capped second pass,
+  including V4-to-V5 identity rebinding, fixed authorization conversion,
+  equality-active complementarity, generalized-Jacobian branches, typed
+  diagnostics, finalized-use debit, and rollback. The bounded core is
+  checkpointed, but `STAGE_B_E11_E15_EXACT_ORACLE` remains on the authority
+  HOLD recorded in `artifacts/v5-failure-payload-portability-hold-legitimacy-audit.md`.
+  The public path remains fail-closed.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
@@ -485,11 +497,12 @@ closure, and line-count governance, not artifact presence alone.
   Evidence: `SC-VEGETATION-001` v8 and the V4 definition bind displayed leaf C
   and N ownership, remove the two unconsumed fields, and supply 155 independent
   whole-state mutation digests.
-- Observation: the released minimum-complementarity statement is not enough to
-  accept a production capped evaluator.
-  Evidence: no digest-bound fully coupled cap-active vector currently binds the
-  active-set equality convention and the `q_law`/cap operands; the draft and
-  public transaction therefore remain fail-closed.
+- Observation: V4's minimum-complementarity statement was not enough to accept
+  a production capped evaluator; V5 now supplies the missing exact authority.
+  Evidence: V5 binds cap amount/rate conversion, independent `q_law`, equality-
+  active selection, generalized-Jacobian branches, complete diagnostics and
+  rollback, plus immutable cap-active vectors. Implementation and review of
+  those rules remain active, so the public transaction stays fail-closed.
 
 ## Decision Log
 
@@ -536,6 +549,12 @@ closure, and line-count governance, not artifact presence alone.
   still absent, so neither `STAGE_B_E11_E15_EXACT_ORACLE` nor Milestones 2/3
   can pass truthfully.
   Date/Author: 2026-08-13 / Codex, applying contract-first fail-closed rules.
+- Decision: resume this same implementation package against V5 and preserve
+  every V1--V4 HOLD, review, and increment record.
+  Rationale: V5 is the bounded contract-first lift for the capped Stage-B gap;
+  it changes capped execution authority and runtime identity without changing
+  this package's objective or write set.
+  Date/Author: 2026-08-13 / Codex, implementing user direction.
 
 ## Outcomes & Retrospective
 
@@ -596,13 +615,21 @@ exact boundary and lift action are recorded in
 identities continues; the public transaction and the affected E20--E22
 shared-state finalizer remain fail-closed.
 
-V4 shared-state continuation outcome (active): the scoped shared-state HOLD is
+V4 shared-state continuation outcome (historical checkpoint): the scoped shared-state HOLD is
 lifted for runtime identity, parsing, canonical serialization, displayed-pool
 ownership, and explicit V3-to-V4 migration. Independent Rust review returned
 GO with one accepted Medium duplication/decomposition item; independent QA
 returned PASS after recursive shape and typed-mutation remediation. The public
 candidate, capped Stage-B solve, E20--E22 finalizer, and whole-owner commit are
 still incomplete. No Milestone 2 or 3 completion claim is made.
+
+V5 capped-pass continuation outcome (active): commit `b7e6f08b6` releases
+`SC-VEGETATION-001` v9 and exact `OPENWEPP_C3_WOODY_V5` authority. Both fresh
+science reviews returned GO, focused and heavy authority gates passed, and both
+terminal verifiers returned PASS. Implementation remediation is now active
+against those exact bytes. Until the capped solver, exact fixture gate,
+independent implementation reviews, and whole-owner rollback pass, the public
+candidate remains fail-closed and Milestones 2 and 3 remain incomplete.
 
 ## Idempotence And Recovery
 

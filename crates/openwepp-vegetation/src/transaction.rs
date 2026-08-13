@@ -653,7 +653,7 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Validates the complete public V4 state surface, then fails closed until the
+/// Validates the complete public V5 state surface, then fails closed until the
 /// occupancy-local authorization-capped transaction is implemented.
 pub fn execute_candidate(
     model: &ModelDefinition,
@@ -665,11 +665,11 @@ pub fn execute_candidate(
 ) -> Result<CoupledCandidate, VegetationError> {
     validate_execution(model, config, beginning, forcing)?;
     Err(VegetationError::Unsupported(
-        "V4 occupancy-local capped transaction routing is implementation-incomplete",
+        "V5 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection entry point retained while V4 routing is incomplete.
+/// Failure-injection entry point retained while V5 routing is incomplete.
 pub fn execute_candidate_with_failure(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -863,7 +863,7 @@ mod milestone_one_tests {
             .expect("stratum object")
             .remove("rd_leaf_n_rate");
         let mut config: VegetationConfiguration =
-            serde_json::from_value(value).expect("V4 configuration shape");
+            serde_json::from_value(value).expect("V5 configuration shape");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
@@ -1010,7 +1010,7 @@ mod milestone_one_tests {
     #[test]
     fn complete_two_tile_two_stratum_state_is_exact() {
         let (config, state) = fixture();
-        state.validate(&config).expect("complete V4 state");
+        state.validate(&config).expect("complete V5 state");
         assert_eq!(
             state
                 .occupancies
@@ -1048,25 +1048,25 @@ mod milestone_one_tests {
         assert!(serde_json::from_slice::<CoupledOwnedState>(bytes).is_err());
         assert_ne!(
             bytes.as_slice(),
-            serde_json::to_vec(&state).expect("V4 state")
+            serde_json::to_vec(&state).expect("V5 state")
         );
     }
 
     #[test]
-    fn v4_named_configuration_and_state_fixtures_are_cross_bound() {
+    fn v5_named_configuration_and_state_fixtures_are_cross_bound() {
         let config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         let state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
         ))
-        .expect("V4 state DTO");
+        .expect("V5 state DTO");
         assert_eq!(
             state.state_sha256,
             state.canonical_sha256().expect("state digest")
         );
-        state.validate(&config).expect("V4 state fixture");
+        state.validate(&config).expect("V5 state fixture");
         assert_eq!(config.initial_state_sha256, state.state_sha256);
         assert_eq!(state.configuration_sha256, config.configuration_sha256);
     }
@@ -1074,13 +1074,13 @@ mod milestone_one_tests {
     #[test]
     fn v4_occupancy_entries_reject_legacy_tuple_sequences() {
         let config = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration fixture");
+        .expect("V5 configuration fixture");
         let state: serde_json::Value = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"
+            "../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"
         ))
-        .expect("V4 state JSON");
+        .expect("V5 state JSON");
         let mut tuple = state;
         let entry = tuple["occupancies"][0].clone();
         tuple["occupancies"][0] = serde_json::json!([entry["identity"], entry["state"]]);
@@ -1231,7 +1231,7 @@ mod milestone_one_tests {
     #[test]
     fn v4_state_rejects_removed_offset_fields() {
         let (config, state) = fixture();
-        let mut value = serde_json::to_value(state).expect("V4 state value");
+        let mut value = serde_json::to_value(state).expect("V5 state value");
         value["strata"]["upper"]["previous_leaf_offset_flux"] = serde_json::Value::from(0.0);
         value["strata"]["upper"]["previous_root_offset_flux"] = serde_json::Value::from(0.0);
         let bytes = serde_json::to_vec(&value).expect("poison bytes");
@@ -1492,7 +1492,7 @@ mod milestone_one_tests {
         let original = state.canonical_sha256().expect("digest");
         assert_eq!(
             original,
-            "5d7f29d58c0ecf59b367d181586ac301ab277b4326f2cb39c20feddb3ae0e626"
+            "cc2e24a08c817f3c1006f4cd1ea480dbef9c33b1f797ed4ba834390b827125b6"
         );
         let bytes = serde_json::to_vec(&state).expect("bytes");
         let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("value");
@@ -1590,7 +1590,7 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn public_transaction_validates_v4_inputs_then_fails_closed_before_capped_pass() {
+    fn public_transaction_validates_v5_inputs_then_fails_closed_before_capped_pass() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn beginning_amount(&self, _: &WaterResourceKey) -> Result<f64, VegetationError> {
@@ -1663,7 +1663,7 @@ mod milestone_one_tests {
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V4 occupancy-local capped transaction routing is implementation-incomplete"
+                "V5 occupancy-local capped transaction routing is implementation-incomplete"
             ))
         );
 
@@ -1716,18 +1716,18 @@ fn validate_displayed_leaf_identity(
     Ok(())
 }
 
-/// V4 commit remains unavailable until occupancy-local candidate routing can
+/// V5 commit remains unavailable until occupancy-local candidate routing can
 /// construct a fully validated candidate.
 pub fn validate_and_commit(
     _beginning: &mut CoupledOwnedState,
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V4 occupancy-local capped transaction routing is implementation-incomplete",
+        "V5 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection commit entry point retained while V4 routing is incomplete.
+/// Failure-injection commit entry point retained while V5 routing is incomplete.
 pub fn validate_and_commit_with_failure(
     beginning: &mut CoupledOwnedState,
     candidate: CoupledCandidate,

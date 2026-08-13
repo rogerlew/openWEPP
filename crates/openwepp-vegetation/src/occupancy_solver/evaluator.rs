@@ -214,6 +214,14 @@ fn solve_occupancy(
                     .max(accepted.canopy.matrix_norm.unwrap_or(0.0)),
             ),
             advanced_t10_k: Some(advanced_t10_k),
+            capped_operands: (pass == CoupledSolvePass::Capped)
+                .then(|| {
+                    crate::occupancy_solver::potential::capped_numerical_operands(
+                        &accepted.outer.evaluation,
+                        &accepted.outer.state,
+                    )
+                })
+                .flatten(),
         },
     })
 }
@@ -232,7 +240,7 @@ fn validate_identity(
         }
         (CoupledSolvePass::Capped, None) => {
             return Err(VegetationError::Receipt(
-                "owner authorization absent during V3 capped pass".into(),
+                "owner authorization absent during V5 capped pass".into(),
             ));
         }
     }
@@ -259,13 +267,13 @@ fn local_cap_rates(
     let caps = input
         .local_authorizations_kg_m2_tile_ground
         .as_ref()
-        .ok_or_else(|| VegetationError::Receipt("V3 capped local authorization absent".into()))?;
+        .ok_or_else(|| VegetationError::Receipt("V5 capped local authorization absent".into()))?;
     caps.iter()
         .map(|(layer_id, amount)| {
             let rate = *amount / input.interval_s;
             if !rate.is_finite() || rate < 0.0 {
                 return Err(VegetationError::Domain(
-                    "V3 capped local authorization rate",
+                    "V5 capped local authorization rate",
                 ));
             }
             Ok((layer_id.clone(), rate))
@@ -648,14 +656,14 @@ mod tests {
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
         let configuration = VegetationConfiguration::parse_strict(include_bytes!(
-            "../../../../tests/fixtures/c3_woody_v4_diagnostic_configuration.json"
+            "../../../../tests/fixtures/c3_woody_v5_diagnostic_configuration.json"
         ))
-        .expect("V4 configuration");
+        .expect("V5 configuration");
         let state = CoupledOwnedState::parse_strict(
-            include_bytes!("../../../../tests/fixtures/c3_woody_v4_diagnostic_state.json"),
+            include_bytes!("../../../../tests/fixtures/c3_woody_v5_diagnostic_state.json"),
             &configuration,
         )
-        .expect("V4 state");
+        .expect("V5 state");
         (configuration, state)
     }
 
