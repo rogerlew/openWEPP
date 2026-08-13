@@ -623,6 +623,23 @@ mod tests {
         ResourceOwnerId::try_new("vegetation").expect("owner")
     }
 
+    fn clear_absorption(absorption: &mut OwnedLayerAbsorption) {
+        absorption.plant_area = 0.0;
+        absorption.effective_reflectance = 0.0;
+        absorption.effective_transmittance = 0.0;
+        absorption.beam_extinction_unclumped = None;
+        absorption.beam_extinction_effective = None;
+        absorption.leaf_absorption_fraction = 0.0;
+        absorption.stem_absorption_fraction = 0.0;
+        absorption.absorbed_plant = 0.0;
+        absorption.absorbed_leaf_sun = 0.0;
+        absorption.absorbed_leaf_shade = 0.0;
+        absorption.absorbed_stem = 0.0;
+        absorption.leaf_sun_area = 0.0;
+        absorption.leaf_shade_area = 0.0;
+        absorption.owner_closure_residual = 0.0;
+    }
+
     #[test]
     fn production_adapter_executes_real_uncapped_column_without_mutating_beginning() {
         let (configuration, state) = fixture();
@@ -666,6 +683,77 @@ mod tests {
                 .all(|residual| residual.value.is_finite())
         );
         assert_eq!(serde_json::to_vec(&state).expect("after bytes"), beginning);
+    }
+
+    #[test]
+    fn production_adapter_accepts_exact_zero_plant_nested_energy_state() {
+        let (configuration, state) = fixture();
+        let forcing = forcing();
+        let occupancy_id = configuration
+            .expected_occupancies()
+            .into_iter()
+            .next()
+            .expect("occupancy");
+        let mut shared = state.strata[&occupancy_id.stratum_id].clone();
+        shared.leaf_area = 0.0;
+        shared.stem_area = 0.0;
+        shared.root_area = 0.0;
+        *shared.tissues.get_mut(&Tissue::Leaf).expect("leaf pool") =
+            crate::carbon_nitrogen::TissuePool::default();
+        let lane = &state.occupancies[&occupancy_id];
+        let mut radiation = crate::occupancy_solver::radiation::prepare_whole_column_radiation(
+            &configuration,
+            &state,
+            &forcing,
+        )
+        .expect("prepared radiation")
+        .occupancies[&occupancy_id]
+            .clone();
+        radiation.conditional_lai_m2_m2_tile_ground = 0.0;
+        radiation.conditional_wai_m2_m2_tile_ground = 0.0;
+        clear_absorption(&mut radiation.visible_direct.absorption);
+        clear_absorption(&mut radiation.visible_diffuse.absorption);
+        clear_absorption(&mut radiation.near_infrared_direct.absorption);
+        clear_absorption(&mut radiation.near_infrared_diffuse.absorption);
+        let input = OccupancyPassInput {
+            transaction_id: TransactionId(1),
+            interval_s: configuration.dt_s,
+            occupancy_id: &occupancy_id,
+            tile_fraction: 1.0,
+            coverage: 1.0,
+            conditional_lai_m2_m2_tile_ground: 0.0,
+            conditional_wai_m2_m2_tile_ground: 0.0,
+            incident_rain_kg_m2_tile_ground: 0.0,
+            local_authorizations_kg_m2_tile_ground: None,
+            shared_state: &shared,
+            occupancy_state: lane,
+            stratum_config: &configuration.strata[0],
+            forcing: &forcing,
+        };
+        let evaluator = ProductionPotentialOccupancyEvaluator::from_configuration(&configuration)
+            .expect("production evaluator");
+        let accepted = evaluator
+            .solve_potential(input, &radiation)
+            .expect("zero-plant production adapter path");
+
+        assert!(
+            accepted
+                .local_layer_water_kg_m2_tile_ground
+                .iter()
+                .all(|(_, amount)| amount.to_bits() == 0.0_f64.to_bits())
+        );
+        assert_eq!(
+            accepted
+                .diagnostics
+                .gas_hydraulic_mismatch_kg_m2_s
+                .to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            accepted.candidate_state.beta_hyd.to_bits(),
+            1.0_f64.to_bits()
+        );
+        assert!(accepted.diagnostics.energy_iterations > 0);
     }
 
     #[test]

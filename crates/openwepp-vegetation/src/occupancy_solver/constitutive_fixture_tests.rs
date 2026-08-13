@@ -10,7 +10,9 @@ use super::constitutive::{
 };
 use crate::VegetationError;
 use crate::diagnostics::{CoupledSolvePass, NumericalFailureDiagnostics, SolveIdentity};
-use crate::occupancy_solver::potential::{StageASolveIdentity, StageAState};
+use crate::occupancy_solver::potential::{
+    StageASolveIdentity, StageAState, solve_uncapped_stage_a_with_limit,
+};
 
 const VECTORS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -22,7 +24,14 @@ const TEMPERATURE_TOLERANCE_K: f64 = 1.0e-8;
 const POTENTIAL_TOLERANCE_MM: f64 = 1.0e-7;
 const WATER_ATOL: f64 = 1.0e-12;
 const WATER_RTOL: f64 = 1.0e-9;
-
+const OUTER_RESIDUAL_IDENTITIES: [&str; 6] = [
+    "sun_gas_minus_q1",
+    "shade_gas_minus_q1",
+    "sun_gas_minus_vulnerability_demand",
+    "shade_gas_minus_vulnerability_demand",
+    "q1_sum_minus_q2",
+    "q3_sum_minus_q2",
+];
 fn vectors() -> Value {
     serde_json::from_str(VECTORS).expect("released V3 fixture parses")
 }
@@ -509,15 +518,147 @@ fn released_canopy_iteration_limit_and_singular_linear_payloads_are_exact() {
         close(actual.value / expected_value, 1.0, 2.0e-12, 2.0e-12);
     }
 
-    let singular = solve_linear([[0.0; 6]; 6], [0.0; 6]).expect_err("singular Jacobian");
+    let zero_matrix = solve_linear([[0.0; 6]; 6], [0.0; 6]).expect_err("zero matrix");
+    assert_eq!(zero_matrix.pivot_magnitude.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(zero_matrix.matrix_norm.to_bits(), 0.0_f64.to_bits());
+}
+
+#[test]
+fn released_nonzero_singular_and_outer_iteration_limit_execute_exact_paths() {
+    let (case, family) = fixture();
+    let initial = state(&[-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66]);
+    let singular = V3ConstitutiveEvaluator::new(case.clone(), (-5_900.0, -5_450.0), context())
+        .expect("valid base evaluator")
+        .with_released_singular_hydraulics();
+    let failure = solve_uncapped_stage_a_with_limit(&identity(), initial, &singular, 50)
+        .expect_err("released nonzero singular Jacobian must fail");
+    let VegetationError::NumericalFailure(actual) = failure else {
+        panic!("typed singular diagnostics");
+    };
     let expected = &family["singular_jacobian"]["diagnostics"];
-    close(
-        singular.pivot_magnitude,
-        number(expected, "pivot_magnitude"),
-        0.0,
-        0.0,
+    assert_outer_failure_payload(&actual, expected, SolveIdentity::HydraulicSystem);
+    assert_eq!(
+        actual.pivot_magnitude,
+        Some(number(expected, "pivot_magnitude"))
     );
-    close(singular.matrix_norm, 0.0, 0.0, 0.0);
-    assert_eq!(expected["solve"].as_str(), Some("hydraulic_system"));
-    assert_eq!(expected["step_norm"], Value::Null);
+    close(
+        actual.matrix_norm.expect("matrix norm"),
+        number(expected, "matrix_norm"),
+        2.0e-11,
+        5.0e-7,
+    );
+
+    let alternate = state(
+        &family["alternate_warm_start"]["start"]
+            .as_array()
+            .expect("alternate start")
+            .iter()
+            .map(|value| value.as_f64().expect("number"))
+            .collect::<Vec<_>>(),
+    );
+    let evaluator = V3ConstitutiveEvaluator::new(case, (-5_900.0, -5_450.0), context())
+        .expect("constitutive evaluator");
+    let failure = solve_uncapped_stage_a_with_limit(&identity(), alternate, &evaluator, 1)
+        .expect_err("released outer iteration cap must fail");
+    let VegetationError::NumericalFailure(actual) = failure else {
+        panic!("typed outer diagnostics");
+    };
+    let expected = &family["iteration_limit"]["diagnostics"];
+    assert_outer_failure_payload(
+        &actual,
+        expected,
+        SolveIdentity::OuterGasEnergyHydraulicCoupling,
+    );
+    close(
+        actual.step_norm.expect("last potential step"),
+        number(expected, "step_norm"),
+        1.0e-6,
+        1.0e-6,
+    );
+    close(
+        actual.pivot_magnitude.expect("pivot"),
+        number(expected, "pivot_magnitude"),
+        2.0e-14,
+        1.0e-6,
+    );
+    close(
+        actual.matrix_norm.expect("matrix norm"),
+        number(expected, "matrix_norm"),
+        2.0e-12,
+        1.0e-6,
+    );
+}
+
+fn assert_outer_failure_payload(
+    actual: &NumericalFailureDiagnostics,
+    expected: &Value,
+    solve: SolveIdentity,
+) {
+    assert_eq!(actual.model_definition_sha256, crate::MODEL_SHA256);
+    assert_eq!(actual.transaction_id, TransactionId(17));
+    assert_eq!(actual.occupancy_id, identity().occupancy_id);
+    assert_eq!(actual.pass, CoupledSolvePass::Potential);
+    assert_eq!(actual.solve, solve);
+    assert_eq!(actual.iterations, count(expected, "iterations"));
+    assert_eq!(
+        actual.backtracking_count,
+        count(expected, "backtracking_count")
+    );
+    assert_eq!(actual.bracket, None);
+    assert!(actual.active_bounds.is_empty());
+    assert!(actual.active_water_caps.is_empty());
+    let expected_residuals = expected["residual_norms"].as_array().expect("residuals");
+    assert_eq!(actual.residual_norms.len(), expected_residuals.len());
+    for (index, (actual, expected)) in actual
+        .residual_norms
+        .iter()
+        .zip(expected_residuals)
+        .enumerate()
+    {
+        let expected_identity = expected["identity"].as_str().expect("identity");
+        if solve == SolveIdentity::OuterGasEnergyHydraulicCoupling {
+            assert_eq!(expected_identity, format!("outer_{index}"));
+            assert_eq!(actual.identity, OUTER_RESIDUAL_IDENTITIES[index]);
+        } else {
+            assert_eq!(actual.identity, expected_identity);
+        }
+        let expected_value = number(expected, "normalized");
+        if solve == SolveIdentity::OuterGasEnergyHydraulicCoupling {
+            // Failure residuals are finite-difference trajectory diagnostics,
+            // not accepted endpoints. Preserve exact identity/order and use a
+            // narrow cross-language arithmetic allowance; accepted states use
+            // the canonical physical tolerances above.
+            close(actual.value.abs(), expected_value.abs(), 2.0e-5, 1.0e-6);
+        } else {
+            close(actual.value, expected_value, 2.0e-5, 2.0e-9);
+        }
+    }
+    actual.validate().expect("finite released failure payload");
+}
+
+#[test]
+fn released_canopy_domain_case_executes_without_candidate() {
+    let (mut case, family) = fixture();
+    case.gas_energy.canopy_air_temperature_start_k = 250.0;
+    let failure =
+        solve_canopy_energy_with_limit(&case, (0.6, 0.6), (-5_900.0, -5_450.0), &context(), 50)
+            .expect_err("released canopy domain case");
+    let VegetationError::NumericalFailure(actual) = failure else {
+        panic!("typed canopy domain failure required");
+    };
+    assert_eq!(actual.solve, SolveIdentity::CanopyEnergy);
+    assert_eq!(actual.iterations, 0);
+    assert!(actual.residual_norms.is_empty());
+    let released = &family["executed_canopy_energy_failures"][0];
+    assert_eq!(released["failure_kind"].as_str(), Some("domain"));
+    assert_eq!(released["candidate"], Value::Null);
+    assert_eq!(released["last_iterate"], Value::Null);
+    assert_eq!(released["diagnostics"]["iterations"].as_u64(), Some(0));
+    assert_eq!(
+        released["diagnostics"]["residual_norms"]
+            .as_array()
+            .expect("empty pre-solver residuals")
+            .len(),
+        0
+    );
 }

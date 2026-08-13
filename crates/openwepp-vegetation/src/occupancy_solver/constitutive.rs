@@ -322,6 +322,29 @@ impl V3ConstitutiveEvaluator {
         &self.emax
     }
 
+    #[cfg(test)]
+    pub(super) fn with_released_singular_hydraulics(mut self) -> Self {
+        self.case.parameters.k1a_max_s1 = 0.0;
+        self.case.parameters.k1b_max_s1 = 0.0;
+        self.case.parameters.k2_max = 0.0;
+        for layer in &mut self.case.layers {
+            layer.accessible = false;
+        }
+        self
+    }
+
+    fn retain_evaluated_canopy(&self, canopy: CanopyEnergyResult) -> Result<u64, VegetationError> {
+        let evaluation_id = self.next_evaluation_id.get();
+        let next = evaluation_id
+            .checked_add(1)
+            .ok_or(VegetationError::Domain("V3 evaluation identity overflow"))?;
+        self.next_evaluation_id.set(next);
+        self.evaluated_canopies
+            .borrow_mut()
+            .insert(evaluation_id, canopy);
+        Ok(evaluation_id)
+    }
+
     pub(crate) fn solve_uncapped(
         &self,
         identity: &StageASolveIdentity,
@@ -370,7 +393,14 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
         let sai = self.case.gas_energy.stem_area;
         let lai = sun_area + shade_area;
         if lai == 0.0 {
-            return zero_lai_evaluation(&self.case);
+            let canopy = solve_canopy_energy(
+                &self.case,
+                (state.beta_sun, state.beta_shade),
+                (state.psi_sunleaf_mm, state.psi_shadeleaf_mm),
+                &self.context,
+            )?;
+            let evaluation_id = self.retain_evaluated_canopy(canopy)?;
+            return zero_lai_evaluation(&self.case, evaluation_id);
         }
         let energy = solve_canopy_energy(
             &self.case,
@@ -378,14 +408,7 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
             (state.psi_sunleaf_mm, state.psi_shadeleaf_mm),
             &self.context,
         )?;
-        let evaluation_id = self.next_evaluation_id.get();
-        let next = evaluation_id
-            .checked_add(1)
-            .ok_or(VegetationError::Domain("V3 evaluation identity overflow"))?;
-        self.next_evaluation_id.set(next);
-        self.evaluated_canopies
-            .borrow_mut()
-            .insert(evaluation_id, energy.clone());
+        let evaluation_id = self.retain_evaluated_canopy(energy.clone())?;
         let stem_vulnerability = vulnerability(state.psi_stem_mm, p.p50_xylem, p.ck)?;
         let q1_sun = p.k1a_max_s1
             * sun_area
@@ -426,7 +449,10 @@ impl StageAEvaluator for V3ConstitutiveEvaluator {
     }
 }
 
-fn zero_lai_evaluation(case: &V3PotentialCase) -> Result<StageAEvaluation, VegetationError> {
+fn zero_lai_evaluation(
+    case: &V3PotentialCase,
+    evaluation_id: u64,
+) -> Result<StageAEvaluation, VegetationError> {
     let q3_kg_m2_s = case
         .layers
         .iter()
@@ -437,7 +463,7 @@ fn zero_lai_evaluation(case: &V3PotentialCase) -> Result<StageAEvaluation, Veget
         })
         .collect::<Result<Vec<_>, _>>()?;
     Ok(StageAEvaluation {
-        evaluation_id: 0,
+        evaluation_id,
         emax_sun_kg_m2_s: 0.0,
         emax_shade_kg_m2_s: 0.0,
         gas_sun_kg_m2_s: 0.0,
@@ -2161,6 +2187,20 @@ mod tests {
                 .q3_kg_m2_s
                 .iter()
                 .all(|(_, flux)| flux.to_bits() == 0.0_f64.to_bits())
+        );
+        let accepted = evaluator
+            .solve_uncapped(
+                &identity(),
+                state(&[-5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.2, 0.3]),
+            )
+            .expect("zero-LAI accepted nested state");
+        assert_eq!(
+            accepted.canopy.sun.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            accepted.canopy.shade.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
         );
     }
 

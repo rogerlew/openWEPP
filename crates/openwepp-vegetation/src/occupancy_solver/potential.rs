@@ -118,6 +118,25 @@ pub(crate) fn solve_uncapped_stage_a(
     initial: StageAState,
     evaluator: &dyn StageAEvaluator,
 ) -> Result<StageASolution, VegetationError> {
+    solve_uncapped_stage_a_bounded(identity, initial, evaluator, MAX_ITERATIONS)
+}
+
+#[cfg(test)]
+pub(super) fn solve_uncapped_stage_a_with_limit(
+    identity: &StageASolveIdentity,
+    initial: StageAState,
+    evaluator: &dyn StageAEvaluator,
+    max_iterations: u32,
+) -> Result<StageASolution, VegetationError> {
+    solve_uncapped_stage_a_bounded(identity, initial, evaluator, max_iterations)
+}
+
+fn solve_uncapped_stage_a_bounded(
+    identity: &StageASolveIdentity,
+    initial: StageAState,
+    evaluator: &dyn StageAEvaluator,
+    max_iterations: u32,
+) -> Result<StageASolution, VegetationError> {
     validate_state(initial)?;
     let initial_evaluation = evaluator
         .evaluate(initial)
@@ -172,7 +191,7 @@ pub(crate) fn solve_uncapped_stage_a(
     let mut last_step = None;
     let mut last_pivot = None;
     let mut last_matrix_norm = None;
-    for iteration in 0..=MAX_ITERATIONS {
+    for iteration in 0..=max_iterations {
         let raw = residuals(&evaluation);
         let scale = water_scale(&evaluation);
         let normalized = normalize(&raw, scale);
@@ -209,7 +228,7 @@ pub(crate) fn solve_uncapped_stage_a(
                 matrix_norm: last_matrix_norm.unwrap_or(0.0),
             });
         }
-        if iteration == MAX_ITERATIONS {
+        if iteration == max_iterations {
             return Err(failure(
                 identity,
                 iteration,
