@@ -13,9 +13,9 @@ pass status.
 
 | Equation | Production function | Independent vector | Positive/poison/guard evidence | Whole-transaction consumer | Status |
 |---|---|---|---|---|---|
-| E01 | `radiation::two_stream` matrix exponential/particular solution | radiation fixed vector | direction/band closure and Beer poison; leaf-angle/nonfinite guards | V2 whole-column preparation blocked by missing leaf/stem reduction authority | pure kernel retained; V2 composition HOLD |
-| E02 | `radiation::sunlit_absorption` and analytic sunlit LAI | sunlit area/absorption | sun/shade distinction and zero-direct branch | energy leaf-class construction | focused pass |
-| E03 | pending V2 tile-column radiation traversal | no exact V2 mixed leaf/stem fixture exists | ordered tile/rank traversal is known; leaf/stem/clumping construction and partition are unspecified | public candidate preparation | authority HOLD |
+| E01 | `radiation::{mixed_optics,solve_mixed_column}` matrix exponential/particular solution | V3 authority radiation vectors | direction/band closure, mixed-optics, clumping, Beer, and leaf-angle guards | V3 occupancy radiation preparation | focused V3 kernel pass; public consumer pending |
+| E02 | `radiation::{sunlit_absorption,partition_owned_absorption}` | V3 sunlit/owner vectors | stem-only zero-photosynthesis, absorptivity weighting, direct/diffuse and VIS/NIR identity | energy leaf/stem owners | focused V3 kernel pass; public consumer pending |
+| E03 | `radiation::solve_mixed_column` ordered full-column traversal | V3 two-rank directional fixture | nonzero upward lower boundary, rank/identity swaps, terminal closure | public candidate preparation | focused V3 kernel pass; public consumer pending |
 | E04 | `interception::liquid_interception`; `column::execute_tile_columns` internal engine | V1 wet/condensation plus controlled V2 topology vectors | conditional-area poison; same-tile throughfall/both-drainage routing; stemflow bypass; local/column/stand closure | V2 public tile-column candidate path | internal routing pass; exact occupancy solver/public path pending |
 | E05 | `liquid_interception`; `energy::canopy_residual` | integrated wet-canopy vector | dry/wet leaf/stem identity and active store cap | capped coupled solve | focused pass |
 | E06 | `energy::{neutral_resistance,leaf_boundary_conductance}` | aerodynamic/energy vectors | calm/nonneutral and domain guards | `energy_input` | focused pass |
@@ -23,11 +23,11 @@ pass status.
 | E08 | `photosynthesis::electron_transport` | zero/electron/saturated vectors | zero light and capacity guards | `fvcb` | focused pass |
 | E09 | `photosynthesis::smaller_root`; `fvcb` | co-limitation vectors | stable smaller-root implementation and discriminant error | `solve_ci` | focused pass |
 | E10 | `photosynthesis::{arrhenius,peaked_response}` | digest-bound biochemical vectors | stable log-domain response; NaN/zero-capacity guards | leaf-temperature residual | focused pass |
-| E11 | `photosynthesis::{medlyn,solve_ci}`; V2 coupled orchestrator pending | exact V2 potential fixture absent | surface VPD kernel retained; local wind and beta-one/equality join unresolved | public potential and capped solves | authority HOLD |
+| E11 | `photosynthesis::{medlyn,solve_ci}` plus `energy::canopy_surface_friction_velocity`; V3 coupled orchestrator pending | V3 potential vectors released | reference-wind misuse and wind-domain guards; beta/equality join remains | public potential and capped solves | preparation kernels pass; orchestration pending |
 | E12 | `photosynthesis::{carbon_surface,solve_ci}` | coupled-leaf `ci/cs` vector | boundary-resistance distinction and Brent guards | energy leaf nodes | focused pass |
 | E13 | `energy::solve_canopy_energy` | integrated energy vectors | six-node residual, wet-store cap, dry-stem owner | public physical candidate | focused pass |
-| E14 | `hydraulics::{vulnerability,solve_hydraulics}` | historical four-node vector only | pure gravity/path/series kernel retained; V2 stem-path and per-layer root-state mapping unresolved | potential and capped solves | authority HOLD at V2 join |
-| E15 | `hydraulics::hydraulic_residual`; V2 cap orchestrator pending | exact V2 potential/cap-active fixture absent | typed request boundary added; beta-one/equality semantics unresolved | water requests/final uses | authority HOLD |
+| E14 | `hydraulics::{vulnerability,solve_hydraulics}`; V3 common-root orchestration pending | V3 four-node potential vectors released | pure kernel retained; height/gravity/common-root join pending | potential and capped solves | authority released; orchestration pending |
+| E15 | `hydraulics::hydraulic_residual`; V3 cap orchestrator pending | V3 potential/cap-active vectors released | typed request boundary present; coupled beta/equality solve pending | water requests/final uses | authority released; implementation pending |
 | E16 | `carbon_nitrogen::gpp_kg_c` | C/N vector | gross/net separation and molar conversion | final physical state | focused pass |
 | E17 | `update_t10`; `maintenance_respiration`; `carbon_offer` | C/N vector | tissue/layer respiration and signed reserve priority | final carbon offer | focused pass |
 | E18 | `nitrogen_demand`; `finalize_growth` | six-tissue allocation vector | N-sufficient/limited common-eta allocation and NSC retention | post-N-authorization state | focused pass |

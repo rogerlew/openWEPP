@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `EXECUTED-HOLD / Increment 2A retained / exact potential authority incomplete`
+Status: `in progress / V3 authority released / implementation resumed`
 
 Evidence mode: `Static + Ran`
 
@@ -33,6 +33,14 @@ beta-one coupled residual semantics, and absent independent exact V2 vectors.
 rejected in-scope routes. All inferred constitutive drafts were removed. The
 non-constitutive typed resource boundary does not lift this HOLD or complete a
 milestone.
+
+That second HOLD was lifted by the contract-first V3 authority package at
+commit `94a4c99dc1228aa0399c01f4cc9590742960028f`, which released
+`OPENWEPP_C3_WOODY_V3` digest
+`7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`.
+Implementation is active again in this existing package. The V1 and V2 HOLD
+records remain immutable historical evidence, and the public transaction stays
+fail-closed until the V3 capped second pass passes its focused oracle gate.
 
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 

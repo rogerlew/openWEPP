@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `frozen for kickoff / execution not started`
+Status: `current / V3 implementation continuation`
 
 Evidence mode: `Ran + Static`
 
@@ -84,3 +84,14 @@ calculator, V2 model definition, current radiation/photosynthesis/energy/
 hydraulics/numerics/interception/config/state/column/transaction source, and
 the historical coupled implementation at commit `02631ae92`. The audit result
 is recorded in `potential-pass-hold-legitimacy-audit.md`.
+
+## 2026-08-12 V3 Implementation Continuation
+
+Instruction discovery over the complete intended write set again resolved
+`AGENTS.md`, `crates/AGENTS.md`, `tests/AGENTS.md`, and
+`docs/work-packages/AGENTS.md`. Re-read the package and applicable root, crate,
+test, work-package, and science-contract instructions. Read the complete V7
+amendment, V3 definition, state/migration selection, potential-pass selection,
+failure contract, vector ledger, independent fixture, final science reviews,
+terminal verifications, and worker handoff. The frozen V3 authority predecessor
+is commit `94a4c99dc1228aa0399c01f4cc9590742960028f`.

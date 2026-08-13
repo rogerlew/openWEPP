@@ -1,4 +1,4 @@
-//! Typed V2 occupancy water request and authorization boundaries.
+//! Typed V3 occupancy water request and authorization boundaries.
 
 use std::collections::{BTreeMap, BTreeSet};
 

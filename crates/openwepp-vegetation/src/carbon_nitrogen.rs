@@ -1,5 +1,6 @@
 //! E16--E22 persistent carbon, nitrogen, phenology, and material transfer.
 use crate::VegetationError;
+use crate::photosynthesis::peaked_response;
 use crate::transaction::PhenologyPhase;
 use openwepp_kernel_contract::MaterialDonorClass;
 
@@ -73,29 +74,24 @@ pub fn update_t10(t10: f64, tair: f64, dt: f64) -> Result<f64, VegetationError> 
 #[allow(clippy::too_many_arguments)]
 pub fn maintenance_respiration(
     tissues: &std::collections::BTreeMap<Tissue, TissuePool>,
-    leaf_area: f64,
-    t10_k: f64,
+    accepted_leaf_respiration_kg_c: f64,
     air_temperature_k: f64,
     fine_root_temperatures_k: &[f64],
     fine_root_fractions: &[f64],
-    atkin_intercept: f64,
     base_rate: f64,
     q10: f64,
     dt_s: f64,
 ) -> Result<f64, VegetationError> {
     if ![
-        leaf_area,
-        t10_k,
+        accepted_leaf_respiration_kg_c,
         air_temperature_k,
-        atkin_intercept,
         base_rate,
         q10,
         dt_s,
     ]
     .iter()
     .all(|value| value.is_finite())
-        || leaf_area < 0.0
-        || t10_k <= 0.0
+        || accepted_leaf_respiration_kg_c < 0.0
         || air_temperature_k <= 0.0
         || base_rate < 0.0
         || q10 <= 0.0
@@ -117,19 +113,6 @@ pub fn maintenance_respiration(
             .ok_or(VegetationError::Domain("missing tissue pool"))?;
         Ok(pool.display.nitrogen + pool.storage.nitrogen + pool.transfer.nitrogen)
     };
-    let leaf_n = nitrogen(Tissue::Leaf)?;
-    let n_area = if leaf_area == 0.0 {
-        0.0
-    } else {
-        leaf_n / leaf_area
-    };
-    // Atkin source units are g C m-2 leaf d-1; convert to kg C and the interval.
-    let n_area_g_m2 = n_area * 1_000.0;
-    let leaf_rate_g_day = atkin_intercept + 0.2061 * n_area_g_m2 - 0.0402 * (t10_k - 273.15);
-    if !leaf_rate_g_day.is_finite() || leaf_rate_g_day < 0.0 {
-        return Err(VegetationError::Domain("negative Atkin leaf respiration"));
-    }
-    let leaf = leaf_rate_g_day * 1e-3 * leaf_area * dt_s / 86_400.0;
     let livewood_n = nitrogen(Tissue::LiveStem)? + nitrogen(Tissue::LiveCoarseRoot)?;
     let livewood = livewood_n * base_rate * q10.powf((air_temperature_k - 293.15) / 10.0) * dt_s;
     let fine_root_n = nitrogen(Tissue::FineRoot)?;
@@ -140,12 +123,83 @@ pub fn maintenance_respiration(
             fine_root_n * fraction * base_rate * q10.powf((*temperature - 293.15) / 10.0) * dt_s
         })
         .sum::<f64>();
-    let total = leaf + livewood + fine_root;
+    let total = accepted_leaf_respiration_kg_c + livewood + fine_root;
     if total.is_finite() {
         Ok(total)
     } else {
         Err(VegetationError::Domain("maintenance response"))
     }
+}
+
+/// V3 Atkin leaf dark respiration at 25 C in umol CO2 m-2 leaf s-1.
+pub fn atkin_rd25(
+    leaf_nitrogen_kg_n: f64,
+    leaf_area_m2: f64,
+    t10_k: f64,
+    intercept_umol_co2_m2_leaf_s: f64,
+) -> Result<f64, VegetationError> {
+    if [
+        leaf_nitrogen_kg_n,
+        leaf_area_m2,
+        t10_k,
+        intercept_umol_co2_m2_leaf_s,
+    ]
+    .iter()
+    .all(|value| value.is_finite())
+        && leaf_nitrogen_kg_n >= 0.0
+        && leaf_area_m2 >= 0.0
+        && t10_k > 0.0
+    {
+        if leaf_area_m2 == 0.0 {
+            return Ok(0.0);
+        }
+        let rd25 = intercept_umol_co2_m2_leaf_s
+            + 0.2061 * (1_000.0 * leaf_nitrogen_kg_n / leaf_area_m2)
+            - 0.0402 * (t10_k - 273.15);
+        if rd25.is_finite() && rd25 > 0.0 {
+            return Ok(rd25);
+        }
+    }
+    Err(VegetationError::Domain("nonpositive Atkin Rd25"))
+}
+
+/// Applies the admitted Rd-specific peaked temperature response.
+pub fn leaf_rd_at_temperature(rd25: f64, temperature_k: f64) -> Result<f64, VegetationError> {
+    if !rd25.is_finite() || rd25 < 0.0 {
+        return Err(VegetationError::Domain("Rd25"));
+    }
+    Ok(rd25 * peaked_response(temperature_k, 46_390.0, 150_650.0, 490.0)?)
+}
+
+/// Integrates one accepted class-resolved Rd exactly once into kg C.
+pub fn leaf_rd_carbon_debit(
+    rd_umol_co2_m2_leaf_s: f64,
+    leaf_area_m2_m2_tile: f64,
+    dt_s: f64,
+    tile_fraction: f64,
+) -> Result<f64, VegetationError> {
+    if [
+        rd_umol_co2_m2_leaf_s,
+        leaf_area_m2_m2_tile,
+        dt_s,
+        tile_fraction,
+    ]
+    .iter()
+    .all(|value| value.is_finite())
+        && rd_umol_co2_m2_leaf_s >= 0.0
+        && leaf_area_m2_m2_tile >= 0.0
+        && dt_s > 0.0
+        && tile_fraction > 0.0
+        && tile_fraction <= 1.0
+    {
+        return Ok(rd_umol_co2_m2_leaf_s
+            * 1.0e-6
+            * 0.012_011
+            * leaf_area_m2_m2_tile
+            * dt_s
+            * tile_fraction);
+    }
+    Err(VegetationError::Domain("leaf respiration carbon debit"))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -958,5 +1012,18 @@ mod tests {
             VegetationError::Domain("leaf offset donor cannot cover prescribed C/N debit")
         );
         assert_eq!(tissues, before);
+    }
+
+    #[test]
+    fn v3_atkin_rd_and_carbon_debit_use_one_unit_conversion() {
+        let rd25 = atkin_rd25(0.002, 2.0, 296.0, 1.25).expect("positive Atkin Rd25");
+        let expected_rd25 = 1.25 + 0.2061 - 0.0402 * (296.0 - 273.15);
+        assert!((rd25 - expected_rd25).abs() < 1.0e-15);
+        let rd = leaf_rd_at_temperature(rd25, 298.15).expect("temperature response");
+        assert!((rd - rd25).abs() < 1.0e-12);
+        let debit = leaf_rd_carbon_debit(rd, 1.2, 1800.0, 0.35).expect("carbon debit");
+        assert!((debit - rd * 1.0e-6 * 0.012_011 * 1.2 * 1800.0 * 0.35).abs() < 1.0e-18);
+        assert!(atkin_rd25(0.0, 1.0, 350.0, 0.0).is_err());
+        assert_eq!(atkin_rd25(0.0, 0.0, 296.0, 0.0), Ok(0.0));
     }
 }

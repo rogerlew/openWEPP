@@ -1,4 +1,4 @@
-//! V2 occupancy-local tile-column ordering, liquid routing, and area conversion.
+//! V3 occupancy-local tile-column ordering, liquid routing, and area conversion.
 //!
 //! This module deliberately contains no constitutive approximation. An
 //! [`OccupancyPassSolver`] supplies a complete occupancy result; this engine
@@ -569,7 +569,7 @@ fn validate_occupancy_result(
     configured_layers.sort();
     result
         .candidate_state
-        .validate(&configured_layers, beginning.last_accepted_transaction_id)
+        .validate(beginning.last_accepted_transaction_id)
         .map_err(|error| VegetationError::Receipt(error.to_string()))?;
 
     let mut layers = BTreeSet::new();
@@ -847,7 +847,7 @@ mod tests {
         serde_json::from_value(serde_json::Value::Object(state.clone())).expect("shared state")
     }
 
-    fn lane(store: f64, root_layers: &[&str]) -> OccupancyState {
+    fn lane(store: f64, _root_layers: &[&str]) -> OccupancyState {
         OccupancyState {
             beta_hyd: 0.75,
             canopy_air_specific_humidity_kg_kg: 0.009,
@@ -855,10 +855,7 @@ mod tests {
             canopy_liquid_kg_h2o_m2_tile_ground: store,
             dry_stem_temperature_k: 294.0,
             last_accepted_transaction_id: None,
-            root_potential_mm_by_layer: root_layers
-                .iter()
-                .map(|id| (layer_id(id), -5_000.0))
-                .collect(),
+            root_node_potential_mm: -5_000.0,
             shade_ci_pa: 27.0,
             shade_leaf_potential_mm: -7_000.0,
             shade_leaf_temperature_k: 295.0,
@@ -871,10 +868,16 @@ mod tests {
     }
 
     fn fixture() -> (VegetationConfiguration, CoupledOwnedState) {
-        let mut config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+        let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
         ))
-        .expect("historical configuration shape");
+        .expect("historical configuration JSON");
+        value["strata"][0]
+            .as_object_mut()
+            .expect("stratum object")
+            .remove("rd_leaf_n_rate");
+        let mut config: VegetationConfiguration =
+            serde_json::from_value(value).expect("V3 configuration shape");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![

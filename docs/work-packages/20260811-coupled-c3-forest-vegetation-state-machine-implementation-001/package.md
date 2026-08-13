@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executed-hold / Increment 2A passed / exact potential authority incomplete`
+Status: `executing / V3 authority released / potential-pass remediation active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -12,7 +12,7 @@ The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and
 
 ## Purpose / Big Picture
 
-Implement the approved `OPENWEPP_C3_WOODY_V2` scientific definition as a
+Implement the approved `OPENWEPP_C3_WOODY_V3` scientific definition as a
 deterministic, default-off Rust state machine. At completion, a caller can load
 one digest-bound canonical configuration and complete initial state, execute the
 entire multistratum radiation--interception--gas-exchange--energy--hydraulic--C/N
@@ -32,13 +32,13 @@ close independently.
 
 The implementation must conform exactly to:
 
-- `SC-VEGETATION-001` v6, approved/active;
+- `SC-VEGETATION-001` v7, approved/active;
 - `SC-VEGETATIONTRANSACTION-001` v1, approved/active;
 - `SC-BIOGEOCHEM-001` v1, approved/active;
-- `OPENWEPP_C3_WOODY_V2`, SHA-256
-  `38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`;
-- Stage-A authority terminal commit
-  `817b082d01d194cde61b1cf284bd85e40e44afc9`;
+- `OPENWEPP_C3_WOODY_V3`, SHA-256
+  `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`;
+- V3 potential-pass authority terminal commit
+  `94a4c99dc1228aa0399c01f4cc9590742960028f`;
 - the equation, numerical, schema, ownership, and vector artifacts in
   `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/`.
 
@@ -427,6 +427,11 @@ closure, and line-count governance, not artifact presence alone.
   local-wind, hydraulic-path/state, beta-one residual, and exact-vector rules.
   Removed all inferred physics, retained only typed resource-boundary work, and
   recorded `artifacts/potential-pass-hold-legitimacy-audit.md`.
+- [x] (2026-08-12) Preserve the V2 HOLD and Increment 2A evidence, complete the
+  contract-first V3 potential-pass authority package, and freeze its released
+  bytes at commit `94a4c99dc1228aa0399c01f4cc9590742960028f`.
+- [ ] Migrate executable identity and occupancy state to V3's scalar common
+  root node without normalizing ambiguous V2 layer warm starts.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
 - [ ] Execute Milestone 4: persistent C/N and phenology.
@@ -459,6 +464,10 @@ closure, and line-count governance, not artifact presence alone.
   Evidence: two independent audits found no canonical equations for these
   mappings; attempted historical/inferred formulations were removed before
   acceptance.
+- Observation: V3 closes all five constitutive/schema gaps and the independent
+  vector gap without changing the valid V2 tile-column topology.
+  Evidence: the V3 authority package passed dual science review, 2,481/2,481
+  full-workspace tests, and dual terminal verification at commit `94a4c99dc`.
 
 ## Decision Log
 
@@ -489,6 +498,11 @@ closure, and line-count governance, not artifact presence alone.
   constitutive mapping; typed resource validation alone is safe but is not
   potential-solve evidence.
   Date/Author: 2026-08-12 / Codex, applying contract-first fail-closed rules.
+- Decision: resume this same implementation package against V3 rather than
+  scaffold another implementation package.
+  Rationale: V3 is the exact authority lift requested by the HOLD audit; the V1
+  HOLD and V2 Increment 2A remain immutable implementation history.
+  Date/Author: 2026-08-12 / Codex, implementing user direction.
 
 ## Outcomes & Retrospective
 
@@ -534,6 +548,12 @@ the released V2 authority remains incomplete at load-bearing radiation and
 coupled-solver joins. No proxy solver or radiation handoff remains. Typed water
 request/authorization validation is available as non-constitutive foundation;
 the public transaction still emits no request or candidate.
+
+V3 continuation outcome (active): commit `94a4c99dc` releases the exact mixed
+leaf/stem radiation, canopy wind, common-root hydraulics, coupled uncapped
+potential-pass, respiration, diagnostics, and independent vector authority.
+This package has resumed against those bytes. The public transaction remains
+fail-closed until the authorization-capped second pass passes the exact oracle.
 
 ## Idempotence And Recovery
 

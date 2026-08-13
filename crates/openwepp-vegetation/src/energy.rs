@@ -5,6 +5,7 @@ use crate::photosynthesis::{CiSolution, FvcbInput, arrhenius, peaked_response, s
 
 pub const STEFAN_BOLTZMANN: f64 = 5.670_374_419e-8;
 pub const LATENT_HEAT_VAPORIZATION: f64 = 2_501_000.0;
+pub const VON_KARMAN: f64 = 0.4;
 const ESAT_HPA: [f64; 9] = [
     6.112_134_76,
     0.444_007_856,
@@ -40,6 +41,40 @@ pub fn neutral_resistance(
         ((z_ref - displacement) / z0_a).ln() * ((z_ref - displacement) / z0_b).ln()
             / (0.4_f64.powi(2) * wind),
     )
+}
+
+/// Derives the V3 canopy-surface semantic wind from reference wind.
+pub fn canopy_surface_friction_velocity(
+    reference_wind_m_s: f64,
+    reference_height_m: f64,
+    displacement_m: f64,
+    momentum_roughness_m: f64,
+) -> Result<f64, VegetationError> {
+    if [
+        reference_wind_m_s,
+        reference_height_m,
+        displacement_m,
+        momentum_roughness_m,
+    ]
+    .iter()
+    .any(|value| !value.is_finite())
+        || reference_wind_m_s <= 0.0
+        || momentum_roughness_m <= 0.0
+        || reference_height_m <= displacement_m + momentum_roughness_m
+    {
+        return Err(VegetationError::Unsupported(
+            "CALM_OR_NONNEUTRAL_AERODYNAMICS",
+        ));
+    }
+    let u_star = VON_KARMAN * reference_wind_m_s
+        / ((reference_height_m - displacement_m) / momentum_roughness_m).ln();
+    if u_star.is_finite() && u_star > 0.0 {
+        Ok(u_star)
+    } else {
+        Err(VegetationError::Unsupported(
+            "CALM_OR_NONNEUTRAL_AERODYNAMICS",
+        ))
+    }
 }
 
 pub fn leaf_boundary_conductance(wind_leaf: f64, dimension: f64) -> Result<f64, VegetationError> {
@@ -495,5 +530,16 @@ mod tests {
                 "WET_SURFACE_CONDENSATION_WITHOUT_STORE_CAPACITY"
             ))
         );
+    }
+
+    #[test]
+    fn v3_surface_wind_is_friction_velocity_not_reference_wind() {
+        let u_star =
+            canopy_surface_friction_velocity(2.4, 30.0, 12.0, 1.0).expect("supported neutral wind");
+        let expected = 0.4 * 2.4 / ((30.0_f64 - 12.0) / 1.0).ln();
+        assert!((u_star - expected).abs() < 1.0e-15);
+        assert_ne!(u_star.to_bits(), 2.4_f64.to_bits());
+        assert!(canopy_surface_friction_velocity(0.0, 30.0, 12.0, 1.0).is_err());
+        assert!(canopy_surface_friction_velocity(2.4, 13.0, 12.0, 1.0).is_err());
     }
 }

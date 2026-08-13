@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::diagnostics::NumericalFailureDiagnostics;
+
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum VegetationError {
     #[error("VEG-E-INJECT-001: injected failure at {0}")]
@@ -24,6 +26,8 @@ pub enum VegetationError {
     Coupled(&'static str),
     #[error("VEG-E-NUM-006: radiation quadrature failed: {0}")]
     Radiation(&'static str),
+    #[error("VEG-E-NUM-007: coupled numerical failure: {0:?}")]
+    NumericalFailure(Box<NumericalFailureDiagnostics>),
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]

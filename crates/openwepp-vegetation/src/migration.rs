@@ -2,12 +2,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{OccupancyId, StratumId};
+use openwepp_kernel_contract::{OccupancyId, SoilLayerId, StratumId};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::carbon_nitrogen::{ElementPool, MaterialTransfer, Tissue, TissuePool};
-use crate::occupancy_state::{OccupancyStateError, OccupancyStateLanes};
+use crate::occupancy_state::{OccupancyState, OccupancyStateError, OccupancyStateLanes};
 use crate::{
     CoupledOwnedState, MODEL_SHA256, PhenologyPhase, StratumSharedState, VegetationConfiguration,
 };
@@ -15,8 +15,11 @@ use crate::{
 /// Immutable identity of the historical state schema accepted by this module.
 pub const V1_MODEL_SHA256: &str =
     "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157";
+/// Immutable identity of the historical V2 topology/state definition.
+pub const V2_MODEL_SHA256: &str =
+    "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3";
 /// Version of the offline, non-runtime `RHESSys` definition mapping table.
-pub const RHESSYS_MAPPING_VERSION: &str = "RHESSYS_TO_OPENWEPP_C3_WOODY_V2_V1";
+pub const RHESSYS_MAPPING_VERSION: &str = "RHESSYS_TO_OPENWEPP_C3_WOODY_V3_V1";
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -46,14 +49,14 @@ pub struct RhessysMigrationReport {
     pub canonical_configuration_sha256: Option<String>,
 }
 
-/// One required V2 numerical field at one exact occupancy.
+/// One required V3 numerical field at one exact occupancy.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct OccupancyFieldRequirement {
     pub occupancy_id: OccupancyId,
     pub field: OccupancyMigrationField,
 }
 
-/// V2 occupancy fields whose values cannot be synthesized during migration.
+/// V3 occupancy fields whose values cannot be synthesized during migration.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum OccupancyMigrationField {
@@ -63,7 +66,7 @@ pub enum OccupancyMigrationField {
     CanopyLiquidKgH2oM2TileGround,
     DryStemTemperatureK,
     LastAcceptedTransactionId,
-    RootPotentialMmByLayer,
+    RootNodePotentialMm,
     ShadeCiPa,
     ShadeLeafPotentialMm,
     ShadeLeafTemperatureK,
@@ -80,7 +83,7 @@ const WARM_START_FIELDS: [OccupancyMigrationField; 14] = [
     OccupancyMigrationField::CanopyAirTemperatureK,
     OccupancyMigrationField::DryStemTemperatureK,
     OccupancyMigrationField::LastAcceptedTransactionId,
-    OccupancyMigrationField::RootPotentialMmByLayer,
+    OccupancyMigrationField::RootNodePotentialMm,
     OccupancyMigrationField::ShadeCiPa,
     OccupancyMigrationField::ShadeLeafPotentialMm,
     OccupancyMigrationField::ShadeLeafTemperatureK,
@@ -103,7 +106,7 @@ pub fn migrate_definition_fields(
     migrate(source, supplements, required, mapping, &BTreeSet::new())
 }
 
-/// V2 definition mapping with an exhaustive declaration of caller-required
+/// V3 definition mapping with an exhaustive declaration of caller-required
 /// occupancy numerical fields. No occupancy value is sourced or defaulted.
 #[must_use]
 pub fn migrate(
@@ -224,6 +227,12 @@ pub enum MigrationIssue {
     InvalidWarmStart,
     InvalidV1Liquid,
     UnresolvedMultiTileLiquid,
+    AmbiguousV2LayerRootWarmStarts,
+    InvalidV2ModelIdentity,
+    MissingV2Occupancy,
+    ExtraV2Occupancy,
+    V2RootLayerIdentity,
+    InvalidV3Configuration,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -251,7 +260,252 @@ pub enum MigrationResult {
 /// Compatibility name that makes the source schema explicit at call sites.
 pub type V1StateMigration = MigrationResult;
 
-/// Performs the only authority-admitted V1-to-V2 state migration.
+/// Historical V2 occupancy state retained only as an offline migration DTO.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V2OccupancyState {
+    pub beta_hyd: f64,
+    pub canopy_air_specific_humidity_kg_kg: f64,
+    pub canopy_air_temperature_k: f64,
+    pub canopy_liquid_kg_h2o_m2_tile_ground: f64,
+    pub dry_stem_temperature_k: f64,
+    pub last_accepted_transaction_id: Option<u128>,
+    pub root_potential_mm_by_layer: Vec<(SoilLayerId, f64)>,
+    pub shade_ci_pa: f64,
+    pub shade_leaf_potential_mm: f64,
+    pub shade_leaf_temperature_k: f64,
+    pub stem_potential_mm: f64,
+    pub sun_ci_pa: f64,
+    pub sun_leaf_potential_mm: f64,
+    pub sun_leaf_temperature_k: f64,
+    pub wet_surface_temperature_k: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V2OccupancyStateSet {
+    pub model_definition_sha256: String,
+    #[serde(with = "v2_occupancy_state_map")]
+    pub occupancies: BTreeMap<OccupancyId, V2OccupancyState>,
+}
+
+impl V2OccupancyStateSet {
+    /// Parses the historical array-of-pairs representation without allowing
+    /// duplicate occupancy identities to be overwritten by a map decoder.
+    pub fn parse_strict(bytes: &[u8]) -> Result<Self, serde_json::Error> {
+        serde_json::from_slice(bytes)
+    }
+}
+
+mod v2_occupancy_state_map {
+    use std::collections::BTreeMap;
+
+    use openwepp_kernel_contract::OccupancyId;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as _};
+
+    use super::V2OccupancyState;
+
+    pub(super) fn serialize<S>(
+        lanes: &BTreeMap<OccupancyId, V2OccupancyState>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        lanes.iter().collect::<Vec<_>>().serialize(serializer)
+    }
+
+    pub(super) fn deserialize<'de, D>(
+        deserializer: D,
+    ) -> Result<BTreeMap<OccupancyId, V2OccupancyState>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let pairs = Vec::<(OccupancyId, V2OccupancyState)>::deserialize(deserializer)?;
+        let mut lanes = BTreeMap::new();
+        for (occupancy_id, lane) in pairs {
+            if lanes.insert(occupancy_id.clone(), lane).is_some() {
+                return Err(D::Error::custom(format!(
+                    "duplicate V2 occupancy identity {occupancy_id:?}"
+                )));
+            }
+        }
+        Ok(lanes)
+    }
+}
+
+/// Result of migrating historical V2 occupancy lanes to the V3 common root node.
+#[derive(Clone, Debug, PartialEq)]
+pub enum V2OccupancyMigration {
+    Complete(OccupancyStateLanes),
+    Incomplete(MigrationReport),
+}
+
+/// Migrates V2 root warm starts only when every layer carries identical bits.
+#[must_use]
+pub fn migrate_v2_occupancy_lanes(
+    source: &V2OccupancyStateSet,
+    configuration: &VegetationConfiguration,
+    expected_previous_transaction_id: Option<u128>,
+) -> V2OccupancyMigration {
+    let mut migrated = OccupancyStateLanes::new();
+    let mut unresolved = v2_identity_issues(source, configuration);
+    if configuration.validate().is_err() {
+        unresolved.push(UnresolvedMigrationField {
+            occupancy_id: None,
+            stratum_id: None,
+            field: OccupancyMigrationField::RootNodePotentialMm,
+            issue: MigrationIssue::InvalidV3Configuration,
+        });
+    }
+    for (occupancy_id, lane) in &source.occupancies {
+        if !lane.root_potential_mm_by_layer.is_empty()
+            && !v2_layer_identity_matches(occupancy_id, lane, configuration)
+        {
+            unresolved.push(occupancy_issue(
+                occupancy_id,
+                OccupancyMigrationField::RootNodePotentialMm,
+                MigrationIssue::V2RootLayerIdentity,
+            ));
+        }
+        migrate_v2_lane(
+            occupancy_id,
+            lane,
+            expected_previous_transaction_id,
+            &mut migrated,
+            &mut unresolved,
+        );
+    }
+    unresolved.sort();
+    unresolved.dedup();
+    if unresolved.is_empty() {
+        V2OccupancyMigration::Complete(migrated)
+    } else {
+        V2OccupancyMigration::Incomplete(MigrationReport {
+            from_model_definition_sha256: source.model_definition_sha256.clone(),
+            to_model_definition_sha256: MODEL_SHA256.into(),
+            unresolved,
+        })
+    }
+}
+
+fn v2_identity_issues(
+    source: &V2OccupancyStateSet,
+    configuration: &VegetationConfiguration,
+) -> Vec<UnresolvedMigrationField> {
+    let mut unresolved = Vec::new();
+    if source.model_definition_sha256 != V2_MODEL_SHA256 {
+        unresolved.push(UnresolvedMigrationField {
+            occupancy_id: None,
+            stratum_id: None,
+            field: OccupancyMigrationField::RootNodePotentialMm,
+            issue: MigrationIssue::InvalidV2ModelIdentity,
+        });
+    }
+    let expected = configuration.expected_occupancies();
+    for occupancy_id in &expected {
+        if !source.occupancies.contains_key(occupancy_id) {
+            unresolved.push(occupancy_issue(
+                occupancy_id,
+                OccupancyMigrationField::RootNodePotentialMm,
+                MigrationIssue::MissingV2Occupancy,
+            ));
+        }
+    }
+    for occupancy_id in source
+        .occupancies
+        .keys()
+        .filter(|occupancy_id| !expected.contains(*occupancy_id))
+    {
+        unresolved.push(occupancy_issue(
+            occupancy_id,
+            OccupancyMigrationField::RootNodePotentialMm,
+            MigrationIssue::ExtraV2Occupancy,
+        ));
+    }
+    unresolved
+}
+
+fn v2_layer_identity_matches(
+    occupancy_id: &OccupancyId,
+    lane: &V2OccupancyState,
+    configuration: &VegetationConfiguration,
+) -> bool {
+    let expected_layers = configuration
+        .strata
+        .iter()
+        .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
+        .map(|stratum| {
+            let mut layers = stratum
+                .root_layers
+                .iter()
+                .map(|root| root.layer_id.clone())
+                .collect::<Vec<_>>();
+            layers.sort();
+            layers
+        });
+    let found_layers = lane
+        .root_potential_mm_by_layer
+        .iter()
+        .map(|(layer, _)| layer.clone())
+        .collect::<Vec<_>>();
+    expected_layers.as_ref() == Some(&found_layers)
+}
+
+fn migrate_v2_lane(
+    occupancy_id: &OccupancyId,
+    lane: &V2OccupancyState,
+    expected_previous_transaction_id: Option<u128>,
+    migrated: &mut OccupancyStateLanes,
+    unresolved: &mut Vec<UnresolvedMigrationField>,
+) {
+    let common = lane
+        .root_potential_mm_by_layer
+        .first()
+        .map(|entry| entry.1)
+        .filter(|value| value.is_finite())
+        .filter(|first| {
+            lane.root_potential_mm_by_layer
+                .iter()
+                .all(|(_, value)| value.is_finite() && value.to_bits() == first.to_bits())
+        });
+    let Some(root_node_potential_mm) = common else {
+        unresolved.push(occupancy_issue(
+            occupancy_id,
+            OccupancyMigrationField::RootNodePotentialMm,
+            MigrationIssue::AmbiguousV2LayerRootWarmStarts,
+        ));
+        return;
+    };
+    let candidate = OccupancyState {
+        beta_hyd: lane.beta_hyd,
+        canopy_air_specific_humidity_kg_kg: lane.canopy_air_specific_humidity_kg_kg,
+        canopy_air_temperature_k: lane.canopy_air_temperature_k,
+        canopy_liquid_kg_h2o_m2_tile_ground: lane.canopy_liquid_kg_h2o_m2_tile_ground,
+        dry_stem_temperature_k: lane.dry_stem_temperature_k,
+        last_accepted_transaction_id: lane.last_accepted_transaction_id,
+        root_node_potential_mm,
+        shade_ci_pa: lane.shade_ci_pa,
+        shade_leaf_potential_mm: lane.shade_leaf_potential_mm,
+        shade_leaf_temperature_k: lane.shade_leaf_temperature_k,
+        stem_potential_mm: lane.stem_potential_mm,
+        sun_ci_pa: lane.sun_ci_pa,
+        sun_leaf_potential_mm: lane.sun_leaf_potential_mm,
+        sun_leaf_temperature_k: lane.sun_leaf_temperature_k,
+        wet_surface_temperature_k: lane.wet_surface_temperature_k,
+    };
+    if let Err(error) = candidate.validate(expected_previous_transaction_id) {
+        unresolved.push(occupancy_issue(
+            occupancy_id,
+            field_for_state_error(&error),
+            MigrationIssue::InvalidWarmStart,
+        ));
+    } else {
+        migrated.insert(occupancy_id.clone(), candidate);
+    }
+}
+
+/// Performs the authority-admitted V1-to-V3 state migration.
 #[must_use]
 #[allow(clippy::too_many_lines)]
 pub fn migrate_v1_state(
@@ -308,8 +562,8 @@ pub fn migrate_v1_state(
             (None, _) => unresolved.extend(WARM_START_FIELDS.map(|field| {
                 occupancy_issue(occupancy_id, field, MigrationIssue::MissingWarmStart)
             })),
-            (Some(state), Some(layers)) => {
-                if let Err(error) = state.validate(&layers, None) {
+            (Some(state), Some(_layers)) => {
+                if let Err(error) = state.validate(None) {
                     let issue = if matches!(error, OccupancyStateError::StaleTransaction { .. }) {
                         MigrationIssue::NonNullWarmStartTransaction
                     } else {
@@ -487,15 +741,12 @@ fn field_for_state_error(error: &OccupancyStateError) -> OccupancyMigrationField
             "sun_leaf_potential_mm" => OccupancyMigrationField::SunLeafPotentialMm,
             "sun_leaf_temperature_k" => OccupancyMigrationField::SunLeafTemperatureK,
             "wet_surface_temperature_k" => OccupancyMigrationField::WetSurfaceTemperatureK,
-            _ => OccupancyMigrationField::RootPotentialMmByLayer,
+            _ => OccupancyMigrationField::RootNodePotentialMm,
         },
-        OccupancyStateError::RootLayerIdentity { .. } => {
-            OccupancyMigrationField::RootPotentialMmByLayer
-        }
         OccupancyStateError::StaleTransaction { .. } => {
             OccupancyMigrationField::LastAcceptedTransactionId
         }
-        OccupancyStateError::Schema(_) => OccupancyMigrationField::RootPotentialMmByLayer,
+        OccupancyStateError::Schema(_) => OccupancyMigrationField::RootNodePotentialMm,
     }
 }
 
@@ -512,6 +763,7 @@ fn shared_stratum_issue(stratum_id: &StratumId, issue: MigrationIssue) -> Unreso
 #[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
+    use crate::RootLayer;
     use crate::occupancy_state::OccupancyState;
     use openwepp_kernel_contract::TileId;
 
@@ -521,8 +773,14 @@ mod tests {
         include_bytes!("../../../tests/fixtures/c3_woody_v1_diagnostic_state.json");
 
     fn config() -> VegetationConfiguration {
+        let mut raw: serde_json::Value =
+            serde_json::from_slice(CONFIG_BYTES).expect("configuration JSON");
+        raw["strata"][0]
+            .as_object_mut()
+            .expect("stratum object")
+            .remove("rd_leaf_n_rate");
         let mut value: VegetationConfiguration =
-            serde_json::from_slice(CONFIG_BYTES).expect("configuration DTO");
+            serde_json::from_value(raw).expect("V3 configuration DTO");
         value.model_definition_sha256 = MODEL_SHA256.into();
         value.configuration_sha256.clear();
         value.initial_state_sha256 = "0".repeat(64);
@@ -556,7 +814,7 @@ mod tests {
         value
     }
 
-    fn warm_start(config: &VegetationConfiguration, liquid: f64) -> OccupancyState {
+    fn warm_start(_config: &VegetationConfiguration, liquid: f64) -> OccupancyState {
         OccupancyState {
             beta_hyd: 0.7,
             canopy_air_specific_humidity_kg_kg: 0.01,
@@ -564,11 +822,7 @@ mod tests {
             canopy_liquid_kg_h2o_m2_tile_ground: liquid,
             dry_stem_temperature_k: 294.0,
             last_accepted_transaction_id: None,
-            root_potential_mm_by_layer: config.strata[0]
-                .root_layers
-                .iter()
-                .map(|layer| (layer.layer_id.clone(), -5000.0))
-                .collect(),
+            root_node_potential_mm: -5000.0,
             shade_ci_pa: 25.0,
             shade_leaf_potential_mm: -6000.0,
             shade_leaf_temperature_k: 295.0,
@@ -619,7 +873,7 @@ mod tests {
     }
 
     #[test]
-    fn rhessys_v2_mapping_reports_every_unsynthesizable_lane() {
+    fn rhessys_v3_mapping_reports_every_unsynthesizable_lane() {
         let config = two_tile_config();
         let source = RhessysSource {
             source_path: "synthetic.epc".into(),
@@ -779,5 +1033,187 @@ mod tests {
         let mut value: serde_json::Value = serde_json::from_slice(STATE_BYTES).expect("JSON");
         value["strata"]["tree-1"]["unknown_warm_start"] = serde_json::json!(1.0);
         assert!(serde_json::from_value::<V1CoupledOwnedState>(value).is_err());
+    }
+
+    fn historical_v2_lane(root_values: &[f64]) -> V2OccupancyState {
+        V2OccupancyState {
+            beta_hyd: 0.7,
+            canopy_air_specific_humidity_kg_kg: 0.01,
+            canopy_air_temperature_k: 295.0,
+            canopy_liquid_kg_h2o_m2_tile_ground: 0.1,
+            dry_stem_temperature_k: 294.0,
+            last_accepted_transaction_id: None,
+            root_potential_mm_by_layer: root_values
+                .iter()
+                .enumerate()
+                .map(|(index, value)| {
+                    (
+                        SoilLayerId::try_new(format!("soil-{index}")).expect("layer ID"),
+                        *value,
+                    )
+                })
+                .collect(),
+            shade_ci_pa: 25.0,
+            shade_leaf_potential_mm: -6000.0,
+            shade_leaf_temperature_k: 295.0,
+            stem_potential_mm: -5500.0,
+            sun_ci_pa: 26.0,
+            sun_leaf_potential_mm: -6200.0,
+            sun_leaf_temperature_k: 296.0,
+            wet_surface_temperature_k: 294.5,
+        }
+    }
+
+    fn bind_valid_root_layers(configuration: &mut VegetationConfiguration, count: usize) {
+        let count = count.max(1);
+        let fraction = 1.0 / f64::from(u32::try_from(count).expect("small test roots"));
+        configuration.strata[0].root_layers = (0..count)
+            .map(|index| RootLayer {
+                layer_id: SoilLayerId::try_new(format!("soil-{index}")).expect("layer ID"),
+                root_fraction: fraction,
+                mineral_n_root_fraction: fraction,
+                lateral_root_length_m: 0.001,
+            })
+            .collect();
+        configuration.configuration_sha256.clear();
+        configuration.configuration_sha256 = configuration
+            .canonical_sha256()
+            .expect("configuration digest");
+        configuration
+            .validate()
+            .expect("valid migration configuration");
+    }
+
+    #[test]
+    fn v2_identical_root_bits_migrate_to_one_common_root_node() {
+        let mut configuration = config();
+        bind_valid_root_layers(&mut configuration, 2);
+        let id = OccupancyId {
+            stratum_id: StratumId::try_new("tree-1").expect("stratum"),
+            tile_id: TileId::try_new("tile-1").expect("tile"),
+        };
+        let source = V2OccupancyStateSet {
+            model_definition_sha256: V2_MODEL_SHA256.into(),
+            occupancies: BTreeMap::from([(id.clone(), historical_v2_lane(&[-5000.0, -5000.0]))]),
+        };
+        let V2OccupancyMigration::Complete(lanes) =
+            migrate_v2_occupancy_lanes(&source, &configuration, None)
+        else {
+            panic!("bitwise-identical roots must migrate")
+        };
+        assert_eq!(
+            lanes[&id].root_node_potential_mm.to_bits(),
+            (-5000.0_f64).to_bits()
+        );
+    }
+
+    #[test]
+    fn v2_ambiguous_root_vectors_report_every_occupancy_without_normalization() {
+        let cases = [
+            vec![],
+            vec![-5000.0, -5001.0],
+            vec![0.0, -0.0],
+            vec![f64::NAN],
+        ];
+        for roots in cases {
+            let mut configuration = config();
+            bind_valid_root_layers(&mut configuration, roots.len());
+            let id = OccupancyId {
+                stratum_id: StratumId::try_new("tree-1").expect("stratum"),
+                tile_id: TileId::try_new("tile-1").expect("tile"),
+            };
+            let source = V2OccupancyStateSet {
+                model_definition_sha256: V2_MODEL_SHA256.into(),
+                occupancies: BTreeMap::from([(id.clone(), historical_v2_lane(&roots))]),
+            };
+            let V2OccupancyMigration::Incomplete(report) =
+                migrate_v2_occupancy_lanes(&source, &configuration, None)
+            else {
+                panic!("ambiguous V2 roots must remain unresolved")
+            };
+            assert_eq!(report.from_model_definition_sha256, V2_MODEL_SHA256);
+            assert_eq!(report.unresolved.len(), 1);
+            assert!(report.unresolved.iter().any(|item| {
+                item.occupancy_id.as_ref() == Some(&id)
+                    && item.field == OccupancyMigrationField::RootNodePotentialMm
+                    && item.issue == MigrationIssue::AmbiguousV2LayerRootWarmStarts
+            }));
+        }
+    }
+
+    #[test]
+    fn v2_strict_parser_accepts_array_pairs_and_rejects_duplicate_occupancies() {
+        let configuration = config();
+        let id = configuration
+            .expected_occupancies()
+            .into_iter()
+            .next()
+            .expect("occupancy");
+        let source = V2OccupancyStateSet {
+            model_definition_sha256: V2_MODEL_SHA256.into(),
+            occupancies: BTreeMap::from([(id, historical_v2_lane(&[-5000.0]))]),
+        };
+        let bytes = serde_json::to_vec(&source).expect("serialize V2 state set");
+        assert_eq!(
+            V2OccupancyStateSet::parse_strict(&bytes).expect("historical array pairs"),
+            source
+        );
+        let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("JSON");
+        let pair = value["occupancies"][0].clone();
+        value["occupancies"]
+            .as_array_mut()
+            .expect("pairs")
+            .push(pair);
+        assert!(
+            V2OccupancyStateSet::parse_strict(&serde_json::to_vec(&value).expect("duplicate JSON"))
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn v2_migration_rejects_missing_lanes_wrong_layers_and_model_identity() {
+        let configuration = config();
+        let empty = V2OccupancyStateSet {
+            model_definition_sha256: "0".repeat(64),
+            occupancies: BTreeMap::new(),
+        };
+        let V2OccupancyMigration::Incomplete(report) =
+            migrate_v2_occupancy_lanes(&empty, &configuration, None)
+        else {
+            panic!("missing lane and wrong identity must fail")
+        };
+        assert!(
+            report
+                .unresolved
+                .iter()
+                .any(|item| item.issue == MigrationIssue::InvalidV2ModelIdentity)
+        );
+        assert!(
+            report
+                .unresolved
+                .iter()
+                .any(|item| item.issue == MigrationIssue::MissingV2Occupancy)
+        );
+
+        let id = configuration
+            .expected_occupancies()
+            .into_iter()
+            .next()
+            .expect("occupancy");
+        let wrong_layer = V2OccupancyStateSet {
+            model_definition_sha256: V2_MODEL_SHA256.into(),
+            occupancies: BTreeMap::from([(id, historical_v2_lane(&[-5000.0]))]),
+        };
+        let V2OccupancyMigration::Incomplete(report) =
+            migrate_v2_occupancy_lanes(&wrong_layer, &configuration, None)
+        else {
+            panic!("wrong V2 layer identity must fail")
+        };
+        assert!(
+            report
+                .unresolved
+                .iter()
+                .any(|item| item.issue == MigrationIssue::V2RootLayerIdentity)
+        );
     }
 }

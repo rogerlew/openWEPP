@@ -32,12 +32,13 @@
   implementation successor; canopy snow remains explicit deferral.
 
 - `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/` —
-  EXECUTING / V2 TILE-LIQUID AUTHORITY ADMITTED / REMEDIATION ACTIVE:
+  EXECUTING / V3 POTENTIAL-PASS AUTHORITY RELEASED / REMEDIATION ACTIVE:
   autonomous Critical default-off implementation campaign for the entire
-  `OPENWEPP_C3_WOODY_V2` state machine, including strict schema/state, E01--E22,
+  `OPENWEPP_C3_WOODY_V3` state machine, including strict schema/state, E01--E22,
   resource arbitration, atomic rollback, an offline RHESSys migration adapter,
   independent vectors, and a diagnostic consumer. The historical V1 HOLD is
-  preserved and the heterogeneous guard remains fail-closed until V2 passes.
+  preserved and the public guard remains fail-closed until the V3 capped pass
+  and complete state machine pass.
   Runtime selection, cutover, calibration, canopy snow, and soil transformations
   remain unauthorized.
 

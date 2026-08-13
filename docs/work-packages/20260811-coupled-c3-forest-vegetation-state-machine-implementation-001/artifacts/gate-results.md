@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `EXECUTING / V2 Milestone 0 PASS / focused remediation active`
+Status: `EXECUTING / V3 authority intake PASS / focused remediation active`
 
 Evidence mode: `Ran`
 
@@ -206,3 +206,44 @@ Prior failures and successful Increment 2A evidence remain unchanged.
 Heavy/full-workspace, benchmarks, focused science review, and terminal
 verification remain ineligible because exact potential authority and fixtures
 are absent.
+
+## 2026-08-12 V3 Authority Intake
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V3 authority predecessor | PASS | terminal authority commit `94a4c99dc1228aa0399c01f4cc9590742960028f` |
+| V3 definition identity | PASS | SHA-256 `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852` |
+| V3 independent fixture identity | PASS | SHA-256 `1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109` |
+| authority package reviews | PASS | dual science GO and dual terminal PASS, no unresolved material finding |
+| implementation lifecycle | PASS | existing package resumed; V1/V2 HOLD and Increment 2A evidence preserved |
+
+The exact potential authority and fixtures now exist. Focused implementation
+may resume; heavy gates remain ineligible until the complete public V3 path and
+all seven accepted Review-B findings have focused passing evidence.
+
+## 2026-08-12 V3 Identity, State, Migration, and Radiation Increment
+
+| Gate | Result | Evidence |
+|---|---|---|
+| executable model registry | PASS | V3 crate registry is byte-identical to released authority at SHA-256 `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`; V1/V2 digests remain unchanged and non-executable |
+| V3 state schema | PASS | exact scalar `root_node_potential_mm`; old layer vector rejected by strict runtime parser; lane digest `75830208c3ff83948dc646ca218f1d64fcefc94dc3412e789f2e0634075ea04e` |
+| V2-to-V3 migration | PASS | nonempty bitwise-identical finite roots migrate; unequal, empty, nonfinite, and `+0/-0` vectors return `AmbiguousV2LayerRootWarmStarts` per occupancy without normalization |
+| V2 migration intake | PASS | historical array-of-pairs encoding parses strictly; duplicate occupancy identities, invalid V3 configurations, wrong topology/layer identity, and forged model identity fail closed |
+| V3 consumed configuration | PASS | removed `rd_leaf_n_rate`; historical V1/V2 configuration bytes fail the V3 strict parser |
+| named V3 configuration/state fixtures | PASS after digest correction | Rust-canonical configuration SHA-256 `fcb8e1d0cbbf206c7439d5e8f06e1037f0860a5ec2556170b52b3d41bea54e8e` and state SHA-256 `141b485649b63cd0b8d62bf113225d8e44ad1eea1020e8628ecc89e84562d59a` validate and cross-bind |
+| V3 whole-column radiation kernel | PASS | exact mixed leaf/stem optical reduction, one-time clumping, owner absorption partition, sunlit leaf identity, ordered two-rank directional transport, and closure/identity poisons; 5/5 focused radiation tests |
+| V3 wind/respiration primitives | PASS | friction-velocity canopy-surface wind and single-source Atkin `Rd25`/temperature/debit primitives have focused positive and domain tests |
+| public candidate containment | PASS / fail-closed | complete V3 identity/state/forcing validation precedes typed capped-transaction implementation-incomplete failure; no request or candidate is emitted |
+| vegetation crate | PASS | quick suite `73/73` |
+| implementation contract | PASS | quick suite `11/11` |
+| A0 vegetation authority | PASS | quick suite `17/17` |
+| four affected checks | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator |
+| strict affected Clippy | PASS | kernel-contract, vegetation, BGC, and hillslope-orchestrator all targets, warnings denied |
+| AUTH11 and anti-evasion | PASS | AUTH11 `3/3`; source-level authority-suite guard passed |
+| science-contract unit lint | PASS | `SC-VEGETATION-001` and `SC-BIOGEOCHEM-001` |
+| formatting/diff hygiene | PASS | `cargo fmt --all -- --check`; `git diff --check` |
+
+This increment closes V3 executable identity, state schema, offline migration,
+and the pure whole-column radiation/wind/respiration preparation surfaces. It
+does not claim the coupled potential demand, capped finalization, or a public
+candidate.

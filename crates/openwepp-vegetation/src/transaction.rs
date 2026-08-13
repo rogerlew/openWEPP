@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::carbon_nitrogen::{ElementPool, MaterialTransfer, Tissue, TissuePool};
 use crate::ledger::FiveLedgerOperands;
 use crate::occupancy_state::OccupancyState;
-use crate::{MODEL_SHA256, ModelDefinition, VegetationConfiguration, VegetationError};
+use crate::{MODEL_BYTES, MODEL_SHA256, ModelDefinition, VegetationConfiguration, VegetationError};
 use sha2::{Digest, Sha256};
 
 mod occupancy_state_map {
@@ -41,7 +41,7 @@ mod occupancy_state_map {
         let lanes = entries.into_iter().collect::<BTreeMap<_, _>>();
         if lanes.len() != expected_len {
             return Err(serde::de::Error::custom(
-                "duplicate V2 occupancy state identity",
+                "duplicate V3 occupancy state identity",
             ));
         }
         Ok(lanes)
@@ -152,24 +152,18 @@ impl CoupledOwnedState {
             .cloned()
             .collect::<std::collections::BTreeSet<_>>();
         if state_occupancies != expected_occupancies {
-            return Err(VegetationError::Domain("V2 occupancy state identity"));
+            return Err(VegetationError::Domain("V3 occupancy state identity"));
         }
         let expected_previous_transaction_id =
             (self.last_transaction_id != 0).then_some(self.last_transaction_id);
         for (occupancy_id, state) in &self.occupancies {
-            let stratum = config
+            config
                 .strata
                 .iter()
                 .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
-                .ok_or(VegetationError::Domain("V2 occupancy stratum identity"))?;
-            let mut root_layer_ids = stratum
-                .root_layers
-                .iter()
-                .map(|root| root.layer_id.clone())
-                .collect::<Vec<_>>();
-            root_layer_ids.sort();
+                .ok_or(VegetationError::Domain("V3 occupancy stratum identity"))?;
             state
-                .validate(&root_layer_ids, expected_previous_transaction_id)
+                .validate(expected_previous_transaction_id)
                 .map_err(|error| VegetationError::Receipt(error.to_string()))?;
         }
         for state in self.strata.values() {
@@ -423,8 +417,8 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Validates the complete public V2 state surface, then fails closed until the
-/// occupancy-local E04 column transaction is implemented.
+/// Validates the complete public V3 state surface, then fails closed until the
+/// occupancy-local authorization-capped transaction is implemented.
 pub fn execute_candidate(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -435,11 +429,11 @@ pub fn execute_candidate(
 ) -> Result<CoupledCandidate, VegetationError> {
     validate_execution(model, config, beginning, forcing)?;
     Err(VegetationError::Unsupported(
-        "V2 occupancy-local E04 transaction routing is implementation-incomplete",
+        "V3 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection entry point retained while V2 routing is incomplete.
+/// Failure-injection entry point retained while V3 routing is incomplete.
 pub fn execute_candidate_with_failure(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -462,10 +456,15 @@ fn validate_execution(
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
 ) -> Result<(), VegetationError> {
-    if model.version != crate::MODEL_VERSION || model.sha256 != MODEL_SHA256 {
+    let actual_model_sha = format!("{:x}", Sha256::digest(model.bytes));
+    if model.version != crate::MODEL_VERSION
+        || model.sha256 != MODEL_SHA256
+        || model.bytes != MODEL_BYTES
+        || actual_model_sha != MODEL_SHA256
+    {
         return Err(VegetationError::ModelDigestMismatch {
             expected: MODEL_SHA256.into(),
-            found: model.sha256.clone(),
+            found: actual_model_sha,
         });
     }
     config.validate()?;
@@ -569,6 +568,25 @@ fn validate_execution(
     {
         return Err(VegetationError::Domain("soil layer topology"));
     }
+    for layer in &forcing.soil_layers {
+        if [
+            layer.water_beginning_kg_m2,
+            layer.matric_potential_mm,
+            layer.hydraulic_conductivity_mm_s,
+            layer.root_path_length_mm,
+            layer.gravity_root_mm,
+            layer.temperature_k,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || layer.water_beginning_kg_m2 < 0.0
+            || layer.hydraulic_conductivity_mm_s < 0.0
+            || layer.root_path_length_mm <= 0.0
+            || layer.temperature_k <= 0.0
+        {
+            return Err(VegetationError::Domain("soil layer forcing"));
+        }
+    }
     Ok(())
 }
 
@@ -601,10 +619,16 @@ mod milestone_one_tests {
     }
 
     fn fixture_config() -> VegetationConfiguration {
-        let mut config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
+        let mut value: serde_json::Value = serde_json::from_slice(include_bytes!(
             "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
         ))
-        .expect("historical configuration shape");
+        .expect("historical configuration JSON");
+        value["strata"][0]
+            .as_object_mut()
+            .expect("stratum object")
+            .remove("rd_leaf_n_rate");
+        let mut config: VegetationConfiguration =
+            serde_json::from_value(value).expect("V3 configuration shape");
         config.model_definition_sha256 = MODEL_SHA256.into();
         config.initial_state_sha256 = "0".repeat(64);
         config.topology_tiles = vec![
@@ -662,7 +686,7 @@ mod milestone_one_tests {
         serde_json::from_value(serde_json::Value::Object(state.clone())).expect("shared state")
     }
 
-    fn lane(seed: f64, roots: &[&str]) -> OccupancyState {
+    fn lane(seed: f64, _roots: &[&str]) -> OccupancyState {
         OccupancyState {
             beta_hyd: 0.5 + seed / 100.0,
             canopy_air_specific_humidity_kg_kg: 0.009 + seed / 10_000.0,
@@ -670,14 +694,7 @@ mod milestone_one_tests {
             canopy_liquid_kg_h2o_m2_tile_ground: seed / 100.0,
             dry_stem_temperature_k: 293.0 + seed,
             last_accepted_transaction_id: None,
-            root_potential_mm_by_layer: roots
-                .iter()
-                .enumerate()
-                .map(|(index, id)| {
-                    let index = u32::try_from(index).expect("test root-layer count fits u32");
-                    (layer_id(id), -5_000.0 - seed - f64::from(index))
-                })
-                .collect(),
+            root_node_potential_mm: -5_000.0 - seed,
             shade_ci_pa: 27.0 + seed,
             shade_leaf_potential_mm: -7_000.0 - seed,
             shade_leaf_temperature_k: 294.5 + seed,
@@ -728,7 +745,7 @@ mod milestone_one_tests {
     #[test]
     fn complete_two_tile_two_stratum_state_is_exact() {
         let (config, state) = fixture();
-        state.validate(&config).expect("complete V2 state");
+        state.validate(&config).expect("complete V3 state");
         assert_eq!(
             state
                 .occupancies
@@ -744,22 +761,38 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn v2_named_configuration_and_state_fixtures_are_cross_bound() {
-        let config: VegetationConfiguration = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+    fn v2_named_configuration_and_state_fixtures_are_historical_only() {
+        assert!(
+            VegetationConfiguration::parse_strict(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v2_diagnostic_configuration.json"
+            ))
+            .is_err()
+        );
+        assert!(
+            serde_json::from_slice::<CoupledOwnedState>(include_bytes!(
+                "../../../tests/fixtures/c3_woody_v2_diagnostic_state.json"
+            ))
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn v3_named_configuration_and_state_fixtures_are_cross_bound() {
+        let config = VegetationConfiguration::parse_strict(include_bytes!(
+            "../../../tests/fixtures/c3_woody_v3_diagnostic_configuration.json"
         ))
-        .expect("V2 configuration fixture");
+        .expect("V3 configuration fixture");
         let state: CoupledOwnedState = serde_json::from_slice(include_bytes!(
-            "../../../tests/fixtures/c3_woody_v2_diagnostic_state.json"
+            "../../../tests/fixtures/c3_woody_v3_diagnostic_state.json"
         ))
-        .expect("V2 state fixture");
+        .expect("V3 state DTO");
         assert_eq!(
             state.state_sha256,
             state.canonical_sha256().expect("state digest")
         );
+        state.validate(&config).expect("V3 state fixture");
         assert_eq!(config.initial_state_sha256, state.state_sha256);
-        config.validate().expect("V2 configuration validates");
-        state.validate(&config).expect("V2 state validates");
+        assert_eq!(state.configuration_sha256, config.configuration_sha256);
     }
 
     #[test]
@@ -770,7 +803,7 @@ mod milestone_one_tests {
         refresh_state(&mut missing, &mut config);
         assert_eq!(
             missing.validate(&config),
-            Err(VegetationError::Domain("V2 occupancy state identity"))
+            Err(VegetationError::Domain("V3 occupancy state identity"))
         );
 
         let mut extra = state.clone();
@@ -780,7 +813,7 @@ mod milestone_one_tests {
         refresh_state(&mut extra, &mut config);
         assert_eq!(
             extra.validate(&config),
-            Err(VegetationError::Domain("V2 occupancy state identity"))
+            Err(VegetationError::Domain("V3 occupancy state identity"))
         );
 
         let mut missing_stratum = state.clone();
@@ -813,7 +846,7 @@ mod milestone_one_tests {
         lanes.push(lanes[0].clone());
         let bytes = serde_json::to_vec(&value).expect("duplicate bytes");
         assert!(
-            matches!(CoupledOwnedState::parse_strict(&bytes, &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V2 occupancy"))
+            matches!(CoupledOwnedState::parse_strict(&bytes, &config), Err(VegetationError::Schema(message)) if message.contains("duplicate V3 occupancy"))
         );
     }
 
@@ -855,7 +888,7 @@ mod milestone_one_tests {
         let original = state.canonical_sha256().expect("digest");
         assert_eq!(
             original,
-            "70d05bcda1e31aa82e9444cf73b032f20a47f6894c663ca07103bf36a0a7d77a"
+            "5ac06f03dbe26e8e4e07e24550ae5f558ac2050978e45d61de856db1b655ee10"
         );
         let bytes = serde_json::to_vec(&state).expect("bytes");
         let mut value: serde_json::Value = serde_json::from_slice(&bytes).expect("value");
@@ -875,7 +908,7 @@ mod milestone_one_tests {
             |s| s.canopy_liquid_kg_h2o_m2_tile_ground += 0.01,
             |s| s.dry_stem_temperature_k += 0.1,
             |s| s.last_accepted_transaction_id = Some(1),
-            |s| s.root_potential_mm_by_layer[0].1 -= 1.0,
+            |s| s.root_node_potential_mm -= 1.0,
             |s| s.shade_ci_pa += 0.1,
             |s| s.shade_leaf_potential_mm -= 1.0,
             |s| s.shade_leaf_temperature_k += 0.1,
@@ -912,20 +945,18 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn root_layers_units_and_transaction_lineage_are_exact() {
+    fn root_node_units_and_transaction_lineage_are_exact() {
         let (mut config, state) = fixture();
         let mut reordered = state.clone();
         reordered
             .occupancies
             .get_mut(&occupancy("upper", "tile-a"))
             .expect("lane")
-            .root_potential_mm_by_layer
-            .reverse();
+            .root_node_potential_mm -= 1.0;
         refresh_state(&mut reordered, &mut config);
-        assert!(matches!(
-            reordered.validate(&config),
-            Err(VegetationError::Receipt(_))
-        ));
+        reordered
+            .validate(&config)
+            .expect("one common root node is independent of root-layer order");
 
         let mut accepted = state.clone();
         accepted.last_transaction_id = 7;
@@ -955,7 +986,7 @@ mod milestone_one_tests {
     }
 
     #[test]
-    fn public_transaction_validates_v2_state_then_fails_closed_before_e04() {
+    fn public_transaction_validates_v3_inputs_then_fails_closed_before_capped_pass() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn beginning_amount(&self, _: &WaterResourceKey) -> Result<f64, VegetationError> {
@@ -1028,9 +1059,33 @@ mod milestone_one_tests {
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
             Err(VegetationError::Unsupported(
-                "V2 occupancy-local E04 transaction routing is implementation-incomplete"
+                "V3 occupancy-local capped transaction routing is implementation-incomplete"
             ))
         );
+
+        let forged = ModelDefinition {
+            version: crate::MODEL_VERSION,
+            sha256: MODEL_SHA256.into(),
+            bytes: b"{}",
+        };
+        assert!(matches!(
+            execute_candidate(&forged, &config, &state, &forcing, &NoArbiter, &NoArbiter),
+            Err(VegetationError::ModelDigestMismatch { .. })
+        ));
+
+        for poison in [
+            |layer: &mut SoilLayerForcing| layer.water_beginning_kg_m2 = -1.0,
+            |layer: &mut SoilLayerForcing| layer.hydraulic_conductivity_mm_s = f64::NAN,
+            |layer: &mut SoilLayerForcing| layer.root_path_length_mm = 0.0,
+            |layer: &mut SoilLayerForcing| layer.temperature_k = -1.0,
+        ] {
+            let mut bad = forcing.clone();
+            poison(&mut bad.soil_layers[0]);
+            assert_eq!(
+                execute_candidate(&model, &config, &state, &bad, &NoArbiter, &NoArbiter),
+                Err(VegetationError::Domain("soil layer forcing"))
+            );
+        }
     }
 }
 
@@ -1042,18 +1097,18 @@ fn tissue_carbon(state: &StratumSharedState, tissue: Tissue) -> Result<f64, Vege
     Ok(pool.display.carbon + pool.storage.carbon + pool.transfer.carbon)
 }
 
-/// V2 commit remains unavailable until occupancy-local candidate routing can
+/// V3 commit remains unavailable until occupancy-local candidate routing can
 /// construct a fully validated candidate.
 pub fn validate_and_commit(
     _beginning: &mut CoupledOwnedState,
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V2 occupancy-local E04 transaction routing is implementation-incomplete",
+        "V3 occupancy-local capped transaction routing is implementation-incomplete",
     ))
 }
 
-/// Failure-injection commit entry point retained while V2 routing is incomplete.
+/// Failure-injection commit entry point retained while V3 routing is incomplete.
 pub fn validate_and_commit_with_failure(
     beginning: &mut CoupledOwnedState,
     candidate: CoupledCandidate,

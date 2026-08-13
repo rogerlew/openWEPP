@@ -4,6 +4,7 @@
 pub mod carbon_nitrogen;
 pub mod column;
 pub mod config;
+pub mod diagnostics;
 pub mod energy;
 pub mod error;
 pub mod hydraulics;
