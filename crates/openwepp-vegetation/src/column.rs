@@ -8,7 +8,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{OccupancyId, SoilLayerId, TileId, WaterResourceKey};
+use openwepp_kernel_contract::{OccupancyId, SoilLayerId, TileId, TransactionId, WaterResourceKey};
 
 use crate::VegetationError;
 use crate::config::{StratumConfiguration, VegetationConfiguration};
@@ -37,6 +37,7 @@ pub enum ColumnPassKind<'a> {
 /// Immutable inputs supplied to one occupancy-local constitutive solve.
 #[derive(Clone, Debug)]
 pub struct OccupancyPassInput<'a> {
+    pub transaction_id: TransactionId,
     pub occupancy_id: &'a OccupancyId,
     pub tile_fraction: f64,
     pub coverage: f64,
@@ -259,11 +260,13 @@ pub fn build_tile_columns(
 }
 
 /// Executes all tile columns without mutating beginning state. Rain is supplied
-/// by exact tile identity so heterogeneous forcing remains distinguishable.
+/// by exact tile identity so heterogeneous forcing remains distinguishable;
+/// the candidate transaction identity is carried into every occupancy solve.
 pub fn execute_tile_columns(
     config: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
+    transaction_id: TransactionId,
     top_rain_kg_m2_tile_ground: &BTreeMap<TileId, f64>,
     pass: ColumnPassKind<'_>,
     solver: &dyn OccupancyPassSolver,
@@ -278,7 +281,14 @@ pub fn execute_tile_columns(
             .get(&column.tile_id)
             .ok_or(VegetationError::Domain("tile rain identity"))?;
         results.push(execute_tile_column(
-            config, beginning, forcing, column, top_rain, pass, solver,
+            config,
+            beginning,
+            forcing,
+            transaction_id,
+            column,
+            top_rain,
+            pass,
+            solver,
         )?);
     }
     let result = TileColumnsResult { columns: results };
@@ -286,10 +296,12 @@ pub fn execute_tile_columns(
     Ok(result)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn execute_tile_column(
     config: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
+    transaction_id: TransactionId,
     column: &TileColumn,
     top_rain: f64,
     pass: ColumnPassKind<'_>,
@@ -299,6 +311,7 @@ fn execute_tile_column(
         config,
         beginning,
         forcing,
+        transaction_id,
         column,
         pass,
         solver,
@@ -325,6 +338,7 @@ struct ColumnExecutionContext<'a> {
     config: &'a VegetationConfiguration,
     beginning: &'a CoupledOwnedState,
     forcing: &'a SnowFreeForcing,
+    transaction_id: TransactionId,
     column: &'a TileColumn,
     pass: ColumnPassKind<'a>,
     solver: &'a dyn OccupancyPassSolver,
@@ -354,6 +368,7 @@ impl ColumnExecutionContext<'_> {
             .ok_or(VegetationError::Domain("column occupancy state identity"))?;
         let coverage = self.config.stratum_coverage(&occupancy_id.stratum_id)?;
         let result = self.solver.solve(OccupancyPassInput {
+            transaction_id: self.transaction_id,
             occupancy_id,
             tile_fraction: self.column.tile_fraction,
             coverage,
@@ -1023,6 +1038,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1046,6 +1062,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1087,6 +1104,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1138,6 +1156,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1168,6 +1187,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1221,6 +1241,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1240,6 +1261,7 @@ mod tests {
             &reordered_config,
             &reordered_state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &ControlledSolver::new(BTreeMap::new()),
@@ -1297,6 +1319,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &wrong_store,
@@ -1315,6 +1338,7 @@ mod tests {
                 &config,
                 &state,
                 &forcing(),
+                TransactionId(1),
                 &rain(),
                 ColumnPassKind::Potential,
                 &aggregate_first,
@@ -1334,6 +1358,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Potential,
             &solver,
@@ -1371,6 +1396,7 @@ mod tests {
                 &config,
                 &state,
                 &forcing(),
+                TransactionId(1),
                 &wrong_rain,
                 ColumnPassKind::Potential,
                 &ControlledSolver::new(BTreeMap::new()),
@@ -1407,6 +1433,7 @@ mod tests {
             &config,
             &state,
             &forcing(),
+            TransactionId(1),
             &rain(),
             ColumnPassKind::Final {
                 authorizations_kg_m2_stand_ground: &authorizations,
@@ -1444,6 +1471,7 @@ mod tests {
                 &config,
                 &state,
                 &forcing(),
+                TransactionId(1),
                 &rain(),
                 ColumnPassKind::Final {
                     authorizations_kg_m2_stand_ground: &missing,
@@ -1465,6 +1493,7 @@ mod tests {
                 &config,
                 &state,
                 &forcing(),
+                TransactionId(1),
                 &rain(),
                 ColumnPassKind::Potential,
                 &solver,
