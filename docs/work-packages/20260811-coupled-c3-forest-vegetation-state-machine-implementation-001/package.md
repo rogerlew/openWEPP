@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V3 authority released / potential-pass remediation active`
+Status: `executing / V3 potential-pass remediation active / shared C/N authority hold scoped`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -554,6 +554,14 @@ leaf/stem radiation, canopy wind, common-root hydraulics, coupled uncapped
 potential-pass, respiration, diagnostics, and independent vector authority.
 This package has resumed against those bytes. The public transaction remains
 fail-closed until the authorization-capped second pass passes the exact oracle.
+
+Shared C/N authority outcome (scoped HOLD): a complete canonical audit found
+that V3 does not define which leaf-carbon subpool owns LAI and does not define
+the numerical semantics of the two persisted previous-offset flux fields. The
+exact boundary and lift action are recorded in
+`artifacts/cn-state-hold-legitimacy-audit.md`. Work that does not consume those
+identities continues; the public transaction and the affected E20--E22
+shared-state finalizer remain fail-closed.
 
 ## Idempotence And Recovery
 

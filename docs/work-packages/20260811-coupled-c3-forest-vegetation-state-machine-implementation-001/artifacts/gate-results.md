@@ -283,3 +283,23 @@ fail-closed branch.
 No E11--E15 or Milestone 2/3 completion claim is made until the corrected
 constitutive evaluator, production adapter, exact nested failure vectors, and
 authorization-capped second pass all pass independent review.
+
+## 2026-08-12 Constitutive, Fixed-Cap Boundary, and Ledger Checkpoint
+
+| Gate | Result | Evidence |
+|---|---|---|
+| V3 positive-flow constitutive implementation | PASS focused / rereview active | exact internal beta-one evaluation, distinct `k1a/k1b`, height/gravity stem path, configured dimensions, pressure-derived oxygen partial pressure, retained 15-lane accepted state, and typed nested diagnostics; focused constitutive `8/8` |
+| exact zero and singular guards | PASS focused | zero-direct and zero-LAI constitutive branches plus immediate finite zero-pivot singular diagnostics; full inactive-class reduced outer solve remains under review |
+| typed fixed-cap column boundary | PASS controlled seam / real evaluator pending | original-state rebuild, immutable typed authorizations, exact radiation identity, top-down rerouting of final releases, typed finalized uses, tolerance-normalized amount validation, and byte-identical rollback; focused `4/4` |
+| C/N pure-kernel identity hardening | PASS | aggregate four-way allocation shortcut removed; typed root-layer respiration operands; constitutive material amounts require explicit valid transaction binding; focused `6/6` |
+| independent keyed ledgers | PASS bounded / owner construction pending | water closes per occupancy/layer, mineral N per layer/species, and material donor/receiver per exact transfer identity; wrong-key, missing/duplicate, authorization-as-use, and carbon-as-dry-matter poisons; focused `9/9` |
+| vegetation library | PASS | `119/119` |
+| implementation contract | PASS | `11/11` after removal of aggregate allocation poison |
+| strict vegetation Clippy | PASS | all targets, warnings denied |
+| public candidate containment | PASS / fail-closed | neither controlled request nor capped seams are reachable from `execute_candidate()` |
+| shared C/N persistent transition authority | BLOCKED | LAI leaf-subpool identity and both previous-offset flux semantics are missing; see `cn-state-hold-legitimacy-audit.md` |
+
+Commits `3cbba7bb3` and `b06534df1` preserve the bounded C/N/ledger and
+constitutive/capped-pass checkpoints. No E11--E15 public-path, Milestone 2/3,
+E20--E22 state-finalizer, owner-candidate, or atomic-commit completion claim is
+made.
