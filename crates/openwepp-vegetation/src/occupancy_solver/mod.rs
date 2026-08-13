@@ -4,6 +4,10 @@
 pub(crate) mod capped_pass;
 #[allow(dead_code)]
 pub(crate) mod constitutive;
+#[cfg(test)]
+mod constitutive_fixture_tests;
+#[allow(dead_code)]
+pub(crate) mod evaluator;
 #[allow(dead_code)]
 pub(crate) mod potential;
 pub mod radiation;

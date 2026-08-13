@@ -434,7 +434,7 @@ fn zero_lai_evaluation(case: &V3PotentialCase) -> Result<StageAEvaluation, Veget
     })
 }
 
-fn solve_canopy_energy(
+pub(super) fn solve_canopy_energy(
     case: &V3PotentialCase,
     betas: (f64, f64),
     leaf_potentials_mm: (f64, f64),
@@ -449,7 +449,7 @@ fn solve_canopy_energy(
     )
 }
 
-fn solve_canopy_energy_with_limit(
+pub(super) fn solve_canopy_energy_with_limit(
     case: &V3PotentialCase,
     betas: (f64, f64),
     leaf_potentials_mm: (f64, f64),
@@ -557,7 +557,15 @@ fn solve_canopy_energy_with_limit(
         let full_temperature_step = delta[..5].iter().copied().map(f64::abs).fold(0.0, f64::max);
         if norm <= 1.0 && full_temperature_step <= ENERGY_STEP_TOLERANCE_K {
             last_temperature_step = Some(full_temperature_step);
-            continue;
+            return Ok(energy_result(
+                x,
+                last_detail,
+                iteration,
+                backtracking,
+                last_temperature_step,
+                last_pivot,
+                last_matrix_norm,
+            ));
         }
         let mut accepted = None;
         for half in 0..=ENERGY_MAX_HALVINGS {
@@ -722,34 +730,45 @@ fn energy_residual(
             shade_flux,
         )
     };
-    let qsat_wet = saturation_specific_humidity(x[2], pressure)?;
-    let wet_potential = rho * f.gb_wet_m_s * (qsat_wet - qcan) * wet_area;
-    let store_cap = f.canopy_liquid_kg_m2_tile / f.dt_s;
-    let wet_actual = if wet_potential >= 0.0 {
-        wet_potential.min(store_cap)
+    let (wet_actual, wet_cap_active, wet_residual, wet_scale) = if wet_area == 0.0 {
+        (0.0, false, x[2] - tcan, 1.0)
     } else {
-        wet_potential
+        let qsat_wet = saturation_specific_humidity(x[2], pressure)?;
+        let wet_potential = rho * f.gb_wet_m_s * (qsat_wet - qcan) * wet_area;
+        let store_cap = f.canopy_liquid_kg_m2_tile / f.dt_s;
+        let wet_actual = if wet_potential >= 0.0 {
+            wet_potential.min(store_cap)
+        } else {
+            wet_potential
+        };
+        let wet_cap_active = wet_potential > store_cap;
+        let wet_sw = wet_fraction
+            * (case.classes.sun.absorbed_shortwave_w_m2_tile
+                + case.classes.shade.absorbed_shortwave_w_m2_tile
+                + f.stem_absorbed_shortwave_w_m2_tile);
+        let wet_lw = f.wet_emissivity
+            * wet_area
+            * (f.longwave_down_w_m2 + f.longwave_up_w_m2 - 2.0 * STEFAN_BOLTZMANN * x[2].powi(4));
+        let wet_h = rho * f.cp_air_j_kg_k * f.gb_wet_m_s * wet_area * (x[2] - tcan);
+        let wet_residual = wet_sw + wet_lw - wet_h - f.latent_heat_j_kg * wet_actual;
+        let wet_scale =
+            (wet_sw.abs() + wet_lw.abs() + wet_h.abs() + (f.latent_heat_j_kg * wet_actual).abs())
+                .max(1.0);
+        (wet_actual, wet_cap_active, wet_residual, wet_scale)
     };
-    let wet_cap_active = wet_potential > store_cap;
-    let wet_sw = wet_fraction
-        * (case.classes.sun.absorbed_shortwave_w_m2_tile
-            + case.classes.shade.absorbed_shortwave_w_m2_tile
-            + f.stem_absorbed_shortwave_w_m2_tile);
-    let wet_lw = f.wet_emissivity
-        * wet_area
-        * (f.longwave_down_w_m2 + f.longwave_up_w_m2 - 2.0 * STEFAN_BOLTZMANN * x[2].powi(4));
-    let wet_h = rho * f.cp_air_j_kg_k * f.gb_wet_m_s * wet_area * (x[2] - tcan);
-    let wet_residual = wet_sw + wet_lw - wet_h - f.latent_heat_j_kg * wet_actual;
-    let wet_scale =
-        (wet_sw.abs() + wet_lw.abs() + wet_h.abs() + (f.latent_heat_j_kg * wet_actual).abs())
-            .max(1.0);
     let stem_sw = (1.0 - wet_fraction) * f.stem_absorbed_shortwave_w_m2_tile;
     let stem_lw = f.stem_emissivity
         * dry_stem_area
         * (f.longwave_down_w_m2 + f.longwave_up_w_m2 - 2.0 * STEFAN_BOLTZMANN * x[3].powi(4));
     let stem_h = rho * f.cp_air_j_kg_k * f.gb_stem_m_s * dry_stem_area * (x[3] - tcan);
-    let stem_residual = stem_sw + stem_lw - stem_h;
-    let stem_scale = (stem_sw.abs() + stem_lw.abs() + stem_h.abs()).max(1.0);
+    let (stem_residual, stem_scale) = if dry_stem_area == 0.0 {
+        (x[3] - tcan, 1.0)
+    } else {
+        (
+            stem_sw + stem_lw - stem_h,
+            (stem_sw.abs() + stem_lw.abs() + stem_h.abs()).max(1.0),
+        )
+    };
     let heat_terms = (tcan - f.air_temperature_k) / f.rah_s_m
         - f.gb_leaf_m_s * dry_sun_area * (x[0] - tcan)
         - f.gb_leaf_m_s * dry_shade_area * (x[1] - tcan)
@@ -806,11 +825,11 @@ fn energy_residual(
 }
 
 #[derive(Clone, Copy, Debug)]
-struct SolvedClass {
-    ci_pa: f64,
-    rs_s_m: f64,
-    iterations: u32,
-    bracket: (f64, f64),
+pub(super) struct SolvedClass {
+    pub(super) ci_pa: f64,
+    pub(super) rs_s_m: f64,
+    pub(super) iterations: u32,
+    pub(super) bracket: (f64, f64),
 }
 
 fn solve_class(
@@ -940,7 +959,7 @@ fn solve_class_inner(
     brent_dekker_class(residual, gamma, f.ca_pa, 64, context, solve_identity)
 }
 
-fn brent_dekker_class<F>(
+pub(super) fn brent_dekker_class<F>(
     mut function: F,
     low: f64,
     high: f64,
@@ -1068,7 +1087,7 @@ fn normalized_energy(detail: &EnergyResidualDetail) -> [f64; 6] {
     normalized
 }
 
-const ENERGY_RESIDUAL_IDENTITIES: [&str; 6] = [
+pub(super) const ENERGY_RESIDUAL_IDENTITIES: [&str; 6] = [
     "sun_leaf_energy",
     "shade_leaf_energy",
     "wet_surface_energy",
@@ -1219,12 +1238,12 @@ fn infinity_norm(values: &[f64; 6]) -> f64 {
 }
 
 #[derive(Clone, Copy, Debug)]
-struct LinearSolveFailure {
-    pivot_magnitude: f64,
-    matrix_norm: f64,
+pub(super) struct LinearSolveFailure {
+    pub(super) pivot_magnitude: f64,
+    pub(super) matrix_norm: f64,
 }
 
-fn solve_linear(
+pub(super) fn solve_linear(
     mut matrix: [[f64; 6]; 6],
     mut rhs: [f64; 6],
 ) -> Result<([f64; 6], f64, f64), LinearSolveFailure> {
@@ -1700,8 +1719,8 @@ mod tests {
             family["internal_maximum_evaluation"]["emax"]["sun"]
                 .as_f64()
                 .expect("sun Emax"),
-            2.0e-13,
-            2.0e-10,
+            1.0e-12,
+            0.0,
         );
         let expected = &family["internal_maximum_evaluation"];
         let canopy = &expected["canopy_energy_state"];
@@ -1710,50 +1729,57 @@ mod tests {
             canopy["canopy_air_temperature_k"]
                 .as_f64()
                 .expect("maximum canopy temperature"),
-            2.0e-8,
-            2.0e-10,
+            ENERGY_STEP_TOLERANCE_K,
+            0.0,
         );
         close(
             maximum.canopy_air_specific_humidity_kg_kg,
             canopy["canopy_air_specific_humidity_kg_kg"]
                 .as_f64()
                 .expect("maximum canopy humidity"),
-            2.0e-12,
-            2.0e-10,
+            1.0e-12,
+            0.0,
         );
         close(
             maximum.wet_surface_temperature_k,
             canopy["wet_surface_temperature_k"]
                 .as_f64()
                 .expect("maximum wet temperature"),
-            2.0e-8,
-            2.0e-10,
+            ENERGY_STEP_TOLERANCE_K,
+            0.0,
         );
         close(
             maximum.sun.ci_pa,
             expected["sun_gas_energy_state"]["ci_pa"]
                 .as_f64()
                 .expect("maximum sun ci"),
-            3.0e-6,
-            2.0e-9,
+            1.0e-6,
+            0.0,
         );
         close(
             maximum.shade.ci_pa,
             expected["shade_gas_energy_state"]["ci_pa"]
                 .as_f64()
                 .expect("maximum shade ci"),
-            3.0e-6,
-            2.0e-9,
+            1.0e-6,
+            0.0,
         );
         assert!(maximum.wet_store_cap_active);
-        assert!(maximum.iterations <= ENERGY_MAX_ITERATIONS);
+        assert_eq!(
+            maximum.iterations,
+            u32::try_from(canopy["iterations"].as_u64().expect("iterations"))
+                .expect("iteration count fits u32")
+        );
+        assert_eq!(maximum.backtracking_count, 0);
+        assert_eq!(maximum.sun.ci_iterations, 6);
+        assert_eq!(maximum.shade.ci_iterations, 6);
         close(
             evaluator.maximum_demand().shade,
             family["internal_maximum_evaluation"]["emax"]["shade"]
                 .as_f64()
                 .expect("shade Emax"),
-            2.0e-13,
-            2.0e-10,
+            1.0e-12,
+            0.0,
         );
     }
 
@@ -1783,57 +1809,88 @@ mod tests {
             } else {
                 &family[result_path]["result"]["solution"]
             };
+            let expected_diagnostics = if result_path == "accepted_uncapped_stage_a" {
+                &family[result_path]
+            } else {
+                &family[result_path]["result"]
+            };
             close(
                 solved.state.psi_sunleaf_mm,
                 expected["sun_leaf_potential_mm"].as_f64().expect("sun psi"),
-                3.0e-6,
-                2.0e-9,
+                1.0e-7,
+                0.0,
             );
             close(
                 solved.state.psi_shadeleaf_mm,
                 expected["shade_leaf_potential_mm"]
                     .as_f64()
                     .expect("shade psi"),
-                3.0e-6,
-                2.0e-9,
+                1.0e-7,
+                0.0,
             );
             close(
                 solved.state.psi_stem_mm,
                 expected["stem_potential_mm"].as_f64().expect("stem psi"),
-                3.0e-6,
-                2.0e-9,
+                1.0e-7,
+                0.0,
             );
             close(
                 solved.state.psi_root_mm,
                 expected["root_node_potential_mm"]
                     .as_f64()
                     .expect("root psi"),
-                3.0e-6,
-                2.0e-9,
+                1.0e-7,
+                0.0,
             );
             close(
                 solved.state.beta_sun,
                 expected["beta_hyd_sun"].as_f64().expect("sun beta"),
-                2.0e-10,
-                2.0e-9,
+                1.0e-9,
+                0.0,
             );
             close(
                 solved.state.beta_shade,
                 expected["beta_hyd_shade"].as_f64().expect("shade beta"),
-                2.0e-10,
-                2.0e-9,
+                1.0e-9,
+                0.0,
             );
             close(
                 solved.persisted_beta_hyd,
                 expected["beta_hyd"].as_f64().expect("aggregate beta"),
-                2.0e-10,
-                2.0e-9,
+                1.0e-9,
+                0.0,
             );
             assert!(
                 solved
                     .normalized_residuals
                     .iter()
                     .all(|residual| residual.value.abs() <= 1.0)
+            );
+            assert_eq!(
+                solved.iterations,
+                u32::try_from(
+                    expected_diagnostics["iterations"]
+                        .as_u64()
+                        .expect("outer iterations"),
+                )
+                .expect("iteration count fits u32")
+            );
+            assert_eq!(
+                solved.backtracking_count,
+                u32::try_from(
+                    expected_diagnostics["backtracking_count"]
+                        .as_u64()
+                        .expect("outer backtracking"),
+                )
+                .expect("backtracking count fits u32")
+            );
+            assert!(solved.potential_step_mm <= 1.0e-7);
+            assert_eq!(
+                solved.normalized_residuals.len(),
+                expected_diagnostics["normalized_residuals"]
+                    .as_array()
+                    .expect("outer residuals")
+                    .len()
             );
         }
     }
@@ -1844,6 +1901,7 @@ mod tests {
         let tile_fraction = case.tile_fraction;
         let dt_s = case.dt_s;
         let expected_solution = &family["accepted_uncapped_stage_a"]["solution"];
+        let expected_flux = &family["accepted_uncapped_stage_a"]["fluxes"];
         let accepted_energy = solve_canopy_energy(
             &case,
             (
@@ -1865,6 +1923,15 @@ mod tests {
             &context(),
         )
         .expect("accepted nested gas-energy solve");
+        assert_eq!(
+            accepted_energy.iterations,
+            u32::try_from(
+                expected_flux["canopy_energy_state"]["iterations"]
+                    .as_u64()
+                    .expect("accepted energy iterations"),
+            )
+            .expect("iteration count fits u32")
+        );
         let evaluator = V3ConstitutiveEvaluator::new(case, (-5_900.0, -5_450.0), context())
             .expect("constitutive evaluator");
         let solved = solve_uncapped_stage_a(
@@ -1873,7 +1940,6 @@ mod tests {
             &evaluator,
         )
         .expect("coupled solution");
-        let expected_flux = &family["accepted_uncapped_stage_a"]["fluxes"];
         close(
             solved.evaluation.q1_sun_kg_m2_s,
             expected_flux["q1_sun"].as_f64().expect("q1 sun"),
@@ -2078,6 +2144,75 @@ mod tests {
                 .q3_kg_m2_s
                 .iter()
                 .all(|(_, flux)| flux.to_bits() == 0.0_f64.to_bits())
+        );
+    }
+
+    #[test]
+    fn zero_area_energy_nodes_use_explicit_nonsingular_branches() {
+        let (mut dry, _) = fixture();
+        dry.gas_energy.wet_fraction = 0.0;
+        dry.gas_energy.canopy_liquid_kg_m2_tile = 0.0;
+        let dry_result = solve_canopy_energy(&dry, (1.0, 1.0), (-5_900.0, -5_450.0), &context())
+            .expect("dry canopy has an explicit inactive wet node");
+        assert_eq!(dry_result.wet_actual_kg_m2_s.to_bits(), 0.0_f64.to_bits());
+        close(
+            dry_result.wet_surface_temperature_k,
+            dry_result.canopy_air_temperature_k,
+            ENERGY_STEP_TOLERANCE_K,
+            0.0,
+        );
+
+        let (mut fully_wet, _) = fixture();
+        fully_wet.gas_energy.wet_fraction = 1.0;
+        let fully_wet_result =
+            solve_canopy_energy(&fully_wet, (1.0, 1.0), (-5_900.0, -5_450.0), &context())
+                .expect("fully wet canopy has explicit inactive dry nodes");
+        close(
+            fully_wet_result.dry_stem_temperature_k,
+            fully_wet_result.canopy_air_temperature_k,
+            ENERGY_STEP_TOLERANCE_K,
+            0.0,
+        );
+        assert_eq!(
+            fully_wet_result.sun.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            fully_wet_result.shade.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
+        );
+
+        let (mut no_stem, _) = fixture();
+        no_stem.gas_energy.stem_area = 0.0;
+        no_stem.gas_energy.stem_absorbed_shortwave_w_m2_tile = 0.0;
+        let no_stem_result =
+            solve_canopy_energy(&no_stem, (1.0, 1.0), (-5_900.0, -5_450.0), &context())
+                .expect("zero stem area has an explicit inactive dry-stem node");
+        close(
+            no_stem_result.dry_stem_temperature_k,
+            no_stem_result.canopy_air_temperature_k,
+            ENERGY_STEP_TOLERANCE_K,
+            0.0,
+        );
+
+        let (mut empty, _) = fixture();
+        deactivate(&mut empty.classes.sun);
+        deactivate(&mut empty.classes.shade);
+        empty.gas_energy.stem_area = 0.0;
+        empty.gas_energy.stem_absorbed_shortwave_w_m2_tile = 0.0;
+        empty.gas_energy.wet_fraction = 0.0;
+        empty.gas_energy.canopy_liquid_kg_m2_tile = 0.0;
+        let empty_result =
+            solve_canopy_energy(&empty, (1.0, 1.0), (-5_900.0, -5_450.0), &context())
+                .expect("empty plant area has an exact nonsingular energy branch");
+        assert_eq!(empty_result.wet_actual_kg_m2_s.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            empty_result.sun.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            empty_result.shade.transpiration_kg_m2_tile_s.to_bits(),
+            0.0_f64.to_bits()
         );
     }
 

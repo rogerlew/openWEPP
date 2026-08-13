@@ -401,8 +401,30 @@ mod tests {
                     .map(|root| (root.layer_id.clone(), local_cap))
                     .collect(),
                 diagnostics: OccupancyDiagnostics {
-                    solver_iterations: 9,
-                    normalized_residuals: vec![1.0e-13],
+                    pass: crate::diagnostics::CoupledSolvePass::Capped,
+                    ci_iterations_sun: 0,
+                    ci_iterations_shade: 0,
+                    energy_iterations: 0,
+                    hydraulic_iterations: 0,
+                    outer_iterations: 9,
+                    normalized_residuals: vec![crate::diagnostics::NormalizedResidual {
+                        identity: "controlled_capped".into(),
+                        value: 1.0e-13,
+                    }],
+                    temperature_step_k: None,
+                    potential_step_mm: None,
+                    backtracking_count: 0,
+                    wet_store_cap_active: false,
+                    active_water_caps: input
+                        .stratum_config
+                        .root_layers
+                        .iter()
+                        .map(|root| root.layer_id.clone())
+                        .collect(),
+                    gas_hydraulic_mismatch_kg_m2_s: 0.0,
+                    pivot_magnitude: None,
+                    matrix_norm: None,
+                    advanced_t10_k: None,
                 },
             })
         }

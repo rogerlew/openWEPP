@@ -12,6 +12,7 @@ use openwepp_kernel_contract::{OccupancyId, SoilLayerId, TileId, TransactionId, 
 
 use crate::VegetationError;
 use crate::config::{StratumConfiguration, VegetationConfiguration};
+use crate::diagnostics::{CoupledSolvePass, NormalizedResidual};
 use crate::interception::InterceptionResult;
 use crate::occupancy_state::OccupancyState;
 use crate::transaction::{CoupledOwnedState, SnowFreeForcing, StratumSharedState};
@@ -38,6 +39,9 @@ pub enum ColumnPassKind<'a> {
 #[derive(Clone, Debug)]
 pub struct OccupancyPassInput<'a> {
     pub transaction_id: TransactionId,
+    /// Exact validated configuration interval; no evaluator may supply an
+    /// independent or fixture-local duration.
+    pub interval_s: f64,
     pub occupancy_id: &'a OccupancyId,
     pub tile_fraction: f64,
     pub coverage: f64,
@@ -51,12 +55,29 @@ pub struct OccupancyPassInput<'a> {
     pub forcing: &'a SnowFreeForcing,
 }
 
-/// Minimal routing-visible diagnostics. Full coupled-solver diagnostics are
-/// added by the E11--E15 occupancy solver, not synthesized by this engine.
+/// Complete accepted coupled-solver diagnostics retained across the routing
+/// seam. Controlled topology solvers populate explicit zero/not-applicable
+/// values; production evaluators supply the canonical E11--E15 payload.
 #[derive(Clone, Debug, PartialEq)]
 pub struct OccupancyDiagnostics {
-    pub solver_iterations: u32,
-    pub normalized_residuals: Vec<f64>,
+    pub pass: CoupledSolvePass,
+    pub ci_iterations_sun: u32,
+    pub ci_iterations_shade: u32,
+    pub energy_iterations: u32,
+    pub hydraulic_iterations: u32,
+    pub outer_iterations: u32,
+    pub normalized_residuals: Vec<NormalizedResidual>,
+    pub temperature_step_k: Option<f64>,
+    pub potential_step_mm: Option<f64>,
+    pub backtracking_count: u32,
+    pub wet_store_cap_active: bool,
+    pub active_water_caps: Vec<SoilLayerId>,
+    pub gas_hydraulic_mismatch_kg_m2_s: f64,
+    pub pivot_magnitude: Option<f64>,
+    pub matrix_norm: Option<f64>,
+    /// Candidate ten-day acclimation temperature calculated once before
+    /// Atkin Rd25 and retained for the later shared-state finalizer.
+    pub advanced_t10_k: Option<f64>,
 }
 
 /// One solver-produced occupancy candidate. All water amounts are tile-ground
@@ -369,6 +390,7 @@ impl ColumnExecutionContext<'_> {
         let coverage = self.config.stratum_coverage(&occupancy_id.stratum_id)?;
         let result = self.solver.solve(OccupancyPassInput {
             transaction_id: self.transaction_id,
+            interval_s: self.config.dt_s,
             occupancy_id,
             tile_fraction: self.column.tile_fraction,
             coverage,
@@ -568,11 +590,7 @@ fn validate_occupancy_result(
             .canopy_liquid_kg_h2o_m2_tile_ground
             .to_bits()
             != result.liquid.store1.to_bits()
-        || result
-            .diagnostics
-            .normalized_residuals
-            .iter()
-            .any(|value| !value.is_finite())
+        || !valid_diagnostics(pass, stratum, &result.diagnostics)
     {
         return Err(VegetationError::Domain("occupancy pass result"));
     }
@@ -624,6 +642,52 @@ fn validate_occupancy_result(
         return Err(VegetationError::Domain("occupancy incident rain"));
     }
     Ok(())
+}
+
+fn valid_diagnostics(
+    pass: ColumnPassKind<'_>,
+    stratum: &StratumConfiguration,
+    diagnostics: &OccupancyDiagnostics,
+) -> bool {
+    let expected_pass = match pass {
+        ColumnPassKind::Potential => CoupledSolvePass::Potential,
+        ColumnPassKind::Final { .. } => CoupledSolvePass::Capped,
+    };
+    let mut residual_identities = BTreeSet::new();
+    let configured_layers = stratum
+        .root_layers
+        .iter()
+        .map(|root| &root.layer_id)
+        .collect::<BTreeSet<_>>();
+    let mut active_caps = BTreeSet::new();
+    diagnostics.pass == expected_pass
+        && diagnostics.normalized_residuals.iter().all(|residual| {
+            !residual.identity.is_empty()
+                && residual.value.is_finite()
+                && residual_identities.insert(&residual.identity)
+        })
+        && diagnostics
+            .temperature_step_k
+            .is_none_or(|value| value.is_finite() && value >= 0.0)
+        && diagnostics
+            .potential_step_mm
+            .is_none_or(|value| value.is_finite() && value >= 0.0)
+        && diagnostics.gas_hydraulic_mismatch_kg_m2_s.is_finite()
+        && diagnostics
+            .pivot_magnitude
+            .is_none_or(|value| value.is_finite() && value >= 0.0)
+        && diagnostics
+            .matrix_norm
+            .is_none_or(|value| value.is_finite() && value >= 0.0)
+        && diagnostics
+            .advanced_t10_k
+            .is_none_or(|value| value.is_finite() && value > 0.0)
+        && diagnostics
+            .active_water_caps
+            .iter()
+            .all(|layer| configured_layers.contains(layer) && active_caps.insert(layer))
+        && (diagnostics.pass == CoupledSolvePass::Capped
+            || diagnostics.active_water_caps.is_empty())
 }
 
 fn validate_rain_identity(
@@ -817,8 +881,28 @@ mod tests {
                 liquid,
                 local_layer_water_kg_m2_tile_ground,
                 diagnostics: OccupancyDiagnostics {
-                    solver_iterations: 3,
-                    normalized_residuals: vec![0.25],
+                    pass: match input.local_authorizations_kg_m2_tile_ground {
+                        Some(_) => CoupledSolvePass::Capped,
+                        None => CoupledSolvePass::Potential,
+                    },
+                    ci_iterations_sun: 0,
+                    ci_iterations_shade: 0,
+                    energy_iterations: 0,
+                    hydraulic_iterations: 0,
+                    outer_iterations: 3,
+                    normalized_residuals: vec![NormalizedResidual {
+                        identity: "controlled_routing".into(),
+                        value: 0.25,
+                    }],
+                    temperature_step_k: None,
+                    potential_step_mm: None,
+                    backtracking_count: 0,
+                    wet_store_cap_active: false,
+                    active_water_caps: Vec::new(),
+                    gas_hydraulic_mismatch_kg_m2_s: 0.0,
+                    pivot_magnitude: None,
+                    matrix_norm: None,
+                    advanced_t10_k: None,
                 },
             })
         }
