@@ -477,3 +477,40 @@ rejected sequential subtraction on IEEE-754. Both findings were accepted.
 rejects frozen/rooting/competition relabeling. The shared-layer vector now uses
 `0.01/0.07` and explicitly proves a one-ULP difference from sequential
 subtraction. Final stable-byte reviews returned correctness GO and QA PASS.
+
+## E16/E17 Accepted-Operand Retention
+
+The post-water audit found that the nonlinear evaluator discarded accepted
+gross assimilation and class-resolved Rd, making exact shared-stratum E16/E17
+aggregation impossible without rerunning or approximating FvCB. Production
+potential and capped results now retain those exact operands and class leaf
+areas. The new aggregation boundary applies interval and tile weighting once,
+requires bit-identical shared T10 across a stratum, and performs no persistent
+mutation.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| vegetation crate | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick`: 186/186 |
+| sealed production-output accessor | PASS / Ran | public water-phase output aggregates only final capped columns, rejects potential columns, and uses the phase-bound validated interval; `execute_candidate()` remains fail closed before persistent E16 execution |
+| E16/E17 poisons | PASS / Ran | independent V3 fixture checks production `Ag` against distinct `An` and exact class Rd; net substitution, potential-pass input, and omitted tile weighting are distinct rejected alternatives |
+| persistent transition | BLOCKED / Static authority | `SC-VEGETATION-001` v10 `GAP-VEGETATION-027` and `VEG-E-060`; no storage-to-transfer equation exists |
+
+The first correctness review returned HOLD because the aggregation function
+accepted potential columns and the production `Ag` retention lacked an
+independent poison. The first QA review additionally found a caller-supplied
+interval seam and missing direct guard tests. Remediation sealed aggregation
+behind the final-capped water-phase output, bound the validated interval in the
+phase, moved T10 into required carbon operands, added V3 and V5 independent
+`Ag`/distinct-`An`/Rd assertions, and exercised absent, duplicate, wrong-tile,
+negative-class, inconsistent-T10, and potential-pass poisons. A transient
+strict-Clippy failure from the enlarged test was preserved and corrected by
+extracting a focused guard helper.
+
+Final stable-byte independent review: Rust correctness **GO** and QA **PASS**,
+with no unresolved material finding. This approval is limited to accepted
+E16/E17 operand retention and aggregation containment; it does not approve the
+authority-blocked persistent transition.
+
+See `artifacts/e19-e20-storage-transfer-hold-legitimacy-audit.md`. This is a
+bounded authority HOLD only for execution requiring the missing seasonal
+storage-to-transfer bridge; the public all-owner candidate remains fail closed.

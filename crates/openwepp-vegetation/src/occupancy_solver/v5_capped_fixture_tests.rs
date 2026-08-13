@@ -731,6 +731,37 @@ fn constrained_all_cap_matches_released_v5_endpoint_and_operands() {
     );
     assert_capped_layer_amounts(&accepted.outer, expected, tile_fraction, interval_s);
     assert_coupled_fluxes(&accepted.outer, expected);
+    for (actual, frozen) in [
+        (
+            &accepted.canopy.sun,
+            &expected["fluxes"]["sun_gas_energy_state"],
+        ),
+        (
+            &accepted.canopy.shade,
+            &expected["fluxes"]["shade_gas_energy_state"],
+        ),
+    ] {
+        let ag = frozen["ag"].as_f64().expect("capped accepted Ag");
+        let an = frozen["an"].as_f64().expect("capped accepted An");
+        let rd = frozen["rd"].as_f64().expect("capped accepted Rd");
+        close(
+            actual.gross_assimilation_umol_co2_m2_leaf_s,
+            ag,
+            2.0e-12,
+            2.0e-10,
+        );
+        close(
+            actual.dark_respiration_umol_co2_m2_leaf_s,
+            rd,
+            2.0e-12,
+            2.0e-10,
+        );
+        assert_ne!(ag.to_bits(), an.to_bits());
+        assert_ne!(
+            actual.gross_assimilation_umol_co2_m2_leaf_s.to_bits(),
+            an.to_bits()
+        );
+    }
 }
 
 #[test]

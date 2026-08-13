@@ -197,9 +197,14 @@ pub(crate) struct LayerOperands {
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct ClassGasState {
+    pub leaf_area_m2_m2_tile_ground: f64,
     pub transpiration_kg_m2_tile_s: f64,
     pub ci_pa: f64,
     pub leaf_temperature_k: f64,
+    /// Accepted gross `FvCB` assimilation, before the single Rd debit.
+    pub gross_assimilation_umol_co2_m2_leaf_s: f64,
+    /// Accepted class-resolved dark respiration used in the same `FvCB` solve.
+    pub dark_respiration_umol_co2_m2_leaf_s: f64,
     pub ci_iterations: u32,
     pub ci_bracket_pa: (f64, f64),
 }
@@ -1119,16 +1124,22 @@ fn energy_residual(
             vapor_balance,
         ],
         sun: ClassGasState {
+            leaf_area_m2_m2_tile_ground: case.classes.sun.leaf_area,
             transpiration_kg_m2_tile_s: sun_flux,
             ci_pa: sun.ci_pa,
             leaf_temperature_k: x[0],
+            gross_assimilation_umol_co2_m2_leaf_s: sun.gross_assimilation,
+            dark_respiration_umol_co2_m2_leaf_s: sun.dark_respiration,
             ci_iterations: sun.iterations,
             ci_bracket_pa: sun.bracket,
         },
         shade: ClassGasState {
+            leaf_area_m2_m2_tile_ground: case.classes.shade.leaf_area,
             transpiration_kg_m2_tile_s: shade_flux,
             ci_pa: shade.ci_pa,
             leaf_temperature_k: x[1],
+            gross_assimilation_umol_co2_m2_leaf_s: shade.gross_assimilation,
+            dark_respiration_umol_co2_m2_leaf_s: shade.dark_respiration,
             ci_iterations: shade.iterations,
             ci_bracket_pa: shade.bracket,
         },
@@ -1151,6 +1162,8 @@ pub(super) struct SolvedClass {
     pub(super) rs_s_m: f64,
     pub(super) iterations: u32,
     pub(super) bracket: (f64, f64),
+    pub(super) gross_assimilation: f64,
+    pub(super) dark_respiration: f64,
 }
 
 fn solve_class(
@@ -1207,6 +1220,8 @@ fn solve_class_inner(
             rs_s_m: 0.0,
             iterations: 0,
             bracket: (f.ca_pa, f.ca_pa),
+            gross_assimilation: 0.0,
+            dark_respiration: 0.0,
         });
     }
     let b = &case.biochemical_parameters;
@@ -1275,6 +1290,8 @@ fn solve_class_inner(
                 rs_s_m: rs,
                 iterations: 0,
                 bracket: (gamma, f.ca_pa),
+                gross_assimilation: photo.ag,
+                dark_respiration: rd,
             },
         ))
     };
@@ -2354,6 +2371,36 @@ mod tests {
             2.0e-13,
             2.0e-9,
         );
+        for (actual, expected) in [
+            (&accepted_energy.sun, &expected_flux["sun_gas_energy_state"]),
+            (
+                &accepted_energy.shade,
+                &expected_flux["shade_gas_energy_state"],
+            ),
+        ] {
+            let expected_ag = expected["ag"]
+                .as_f64()
+                .expect("accepted gross assimilation");
+            let expected_an = expected["an"].as_f64().expect("accepted net assimilation");
+            let expected_rd = expected["rd"].as_f64().expect("accepted class Rd");
+            close(
+                actual.gross_assimilation_umol_co2_m2_leaf_s,
+                expected_ag,
+                2.0e-12,
+                2.0e-10,
+            );
+            close(
+                actual.dark_respiration_umol_co2_m2_leaf_s,
+                expected_rd,
+                2.0e-12,
+                2.0e-10,
+            );
+            assert_ne!(expected_ag.to_bits(), expected_an.to_bits());
+            assert_ne!(
+                actual.gross_assimilation_umol_co2_m2_leaf_s.to_bits(),
+                expected_an.to_bits()
+            );
+        }
         let expected_requests = family["accepted_uncapped_stage_a"]["water_requests"]
             .as_array()
             .expect("requests");
@@ -2672,6 +2719,8 @@ mod tests {
                         rs_s_m: 1.0,
                         iterations: 0,
                         bracket: (-1.0, 1.0),
+                        gross_assimilation: 0.0,
+                        dark_respiration: 0.0,
                     },
                 ))
             },

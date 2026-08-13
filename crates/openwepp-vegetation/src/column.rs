@@ -90,7 +90,23 @@ pub struct OccupancyPassResult {
     pub candidate_state: OccupancyState,
     pub liquid: InterceptionResult,
     pub local_layer_water_kg_m2_tile_ground: Vec<(SoilLayerId, f64)>,
+    /// Exact accepted FvCB/Rd operands. Controlled routing solvers leave this
+    /// absent; production potential and capped evaluators must populate it.
+    pub carbon_operands: Option<OccupancyCarbonOperands>,
     pub diagnostics: OccupancyDiagnostics,
+}
+
+/// Accepted class-resolved operands needed to aggregate E16/E17 once per
+/// shared stratum without re-running or approximating the nonlinear solve.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct OccupancyCarbonOperands {
+    pub advanced_t10_k: f64,
+    pub sun_leaf_area_m2_m2_tile_ground: f64,
+    pub shade_leaf_area_m2_m2_tile_ground: f64,
+    pub sun_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_dark_respiration_umol_co2_m2_leaf_s: f64,
+    pub shade_dark_respiration_umol_co2_m2_leaf_s: f64,
 }
 
 /// Constitutive seam used by the internal routing engine. Controlled test
@@ -158,6 +174,7 @@ pub struct RoutedOccupancyResult {
     pub liquid: InterceptionResult,
     pub release: OccupancyLiquidRelease,
     pub stand_ground_layer_water_kg_m2: BTreeMap<WaterResourceKey, f64>,
+    pub carbon_operands: Option<OccupancyCarbonOperands>,
     pub diagnostics: OccupancyDiagnostics,
 }
 
@@ -483,6 +500,7 @@ fn accept_occupancy_result(
             liquid: accepted_liquid,
             release,
             stand_ground_layer_water_kg_m2,
+            carbon_operands: result.carbon_operands,
             diagnostics: result.diagnostics,
         },
         ledger,
@@ -889,6 +907,7 @@ mod tests {
                 candidate_state,
                 liquid,
                 local_layer_water_kg_m2_tile_ground,
+                carbon_operands: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: match input.local_authorizations_kg_m2_tile_ground {
                         Some(_) => CoupledSolvePass::Capped,

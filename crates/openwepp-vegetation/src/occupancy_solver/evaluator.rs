@@ -21,7 +21,9 @@ use super::radiation::OccupancyRadiation;
 use super::request_pass::PotentialOccupancyEvaluator;
 use crate::VegetationError;
 use crate::carbon_nitrogen::{Tissue, atkin_rd25, update_t10};
-use crate::column::{OccupancyDiagnostics, OccupancyPassInput, OccupancyPassResult};
+use crate::column::{
+    OccupancyCarbonOperands, OccupancyDiagnostics, OccupancyPassInput, OccupancyPassResult,
+};
 use crate::config::VegetationConfiguration;
 use crate::diagnostics::CoupledSolvePass;
 use crate::energy::{
@@ -180,6 +182,27 @@ fn solve_occupancy(
         candidate_state,
         liquid: final_liquid,
         local_layer_water_kg_m2_tile_ground,
+        carbon_operands: Some(OccupancyCarbonOperands {
+            advanced_t10_k,
+            sun_leaf_area_m2_m2_tile_ground: accepted.canopy.sun.leaf_area_m2_m2_tile_ground,
+            shade_leaf_area_m2_m2_tile_ground: accepted.canopy.shade.leaf_area_m2_m2_tile_ground,
+            sun_gross_assimilation_umol_co2_m2_leaf_s: accepted
+                .canopy
+                .sun
+                .gross_assimilation_umol_co2_m2_leaf_s,
+            shade_gross_assimilation_umol_co2_m2_leaf_s: accepted
+                .canopy
+                .shade
+                .gross_assimilation_umol_co2_m2_leaf_s,
+            sun_dark_respiration_umol_co2_m2_leaf_s: accepted
+                .canopy
+                .sun
+                .dark_respiration_umol_co2_m2_leaf_s,
+            shade_dark_respiration_umol_co2_m2_leaf_s: accepted
+                .canopy
+                .shade
+                .dark_respiration_umol_co2_m2_leaf_s,
+        }),
         diagnostics: OccupancyDiagnostics {
             pass,
             ci_iterations_sun: accepted.canopy.sun.ci_iterations,

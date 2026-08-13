@@ -293,6 +293,7 @@ mod tests {
                     .iter()
                     .map(|root| (root.layer_id.clone(), self.local_amount_kg_m2_tile))
                     .collect(),
+                carbon_operands: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: crate::diagnostics::CoupledSolvePass::Potential,
                     ci_iterations_sun: 0,

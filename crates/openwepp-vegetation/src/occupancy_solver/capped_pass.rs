@@ -704,6 +704,7 @@ mod tests {
                     .iter()
                     .map(|root| (root.layer_id.clone(), local_cap))
                     .collect(),
+                carbon_operands: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: crate::diagnostics::CoupledSolvePass::Capped,
                     ci_iterations_sun: 0,

@@ -270,6 +270,7 @@ pub fn reconstruct_water_ending(
 pub struct UncommittedWaterPhase {
     beginning_state_sha256: String,
     transaction_id: TransactionId,
+    interval_s: f64,
     requests: Vec<WaterRequest>,
     authorizations: Vec<WaterAuthorization>,
     finalized_uses: Vec<WaterUse>,
@@ -331,6 +332,16 @@ impl UncommittedWaterPhase {
     #[must_use]
     pub fn water_owner_candidate(&self) -> &WaterOwnerCandidate {
         &self.water_owner_candidate
+    }
+    /// Reconstruct accepted E16/E17 operands exclusively from the sealed final
+    /// capped pass. Potential columns cannot enter this boundary.
+    pub fn final_stratum_carbon_operands(
+        &self,
+    ) -> Result<
+        BTreeMap<openwepp_kernel_contract::StratumId, crate::carbon_phase::StratumCarbonOperands>,
+        VegetationError,
+    > {
+        crate::carbon_phase::aggregate_stratum_carbon(&self.final_columns, self.interval_s)
     }
 }
 
@@ -457,6 +468,7 @@ pub fn execute_uncommitted_water_phase_with_failure(
     Ok(UncommittedWaterPhase {
         beginning_state_sha256: beginning.state_sha256.clone(),
         transaction_id,
+        interval_s: configuration.dt_s,
         requests,
         authorizations,
         finalized_uses: capped.finalized_water_uses,
@@ -636,7 +648,7 @@ mod tests {
     use std::cell::Cell;
 
     use openwepp_kernel_contract::{
-        MaximumAuthorization, ResourceAmountBasis, SoilLayerId, validate_resource_protocol,
+        MaximumAuthorization, ResourceAmountBasis, SoilLayerId, TileId, validate_resource_protocol,
     };
 
     use super::*;
@@ -744,6 +756,75 @@ mod tests {
         }
     }
 
+    fn assert_capped_carbon_boundary(
+        phase: &UncommittedWaterPhase,
+        configuration: &VegetationConfiguration,
+    ) {
+        let final_carbon = phase
+            .final_stratum_carbon_operands()
+            .expect("final capped carbon operands");
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(
+                phase.potential_columns(),
+                configuration.dt_s,
+            )
+            .is_err()
+        );
+        let mut absent = phase.final_columns().clone();
+        absent.columns[0].occupancy_results[0].carbon_operands = None;
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(&absent, configuration.dt_s).is_err()
+        );
+        let mut duplicate = phase.final_columns().clone();
+        let duplicate_occupancy = duplicate.columns[0].occupancy_results[0].clone();
+        duplicate.columns[0]
+            .occupancy_results
+            .push(duplicate_occupancy);
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(&duplicate, configuration.dt_s).is_err()
+        );
+        let mut wrong_identity = phase.final_columns().clone();
+        wrong_identity.columns[0].occupancy_results[0]
+            .occupancy_id
+            .tile_id = TileId::try_new("wrong-tile").expect("tile");
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(&wrong_identity, configuration.dt_s)
+                .is_err()
+        );
+        let mut invalid_class = phase.final_columns().clone();
+        invalid_class.columns[0].occupancy_results[0]
+            .carbon_operands
+            .as_mut()
+            .expect("production operands")
+            .sun_gross_assimilation_umol_co2_m2_leaf_s = -1.0;
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(&invalid_class, configuration.dt_s)
+                .is_err()
+        );
+        let mut inconsistent_t10 = phase.final_columns().clone();
+        let mut second_column = inconsistent_t10.columns[0].clone();
+        let second_tile = TileId::try_new("second-carbon-tile").expect("tile");
+        second_column.tile_id = second_tile.clone();
+        second_column.ledger.tile_id = second_tile.clone();
+        second_column.occupancy_results[0].occupancy_id.tile_id = second_tile;
+        second_column.occupancy_results[0]
+            .carbon_operands
+            .as_mut()
+            .expect("production operands")
+            .advanced_t10_k += 1.0;
+        inconsistent_t10.columns.push(second_column);
+        assert!(
+            crate::carbon_phase::aggregate_stratum_carbon(&inconsistent_t10, configuration.dt_s)
+                .is_err()
+        );
+        assert_eq!(final_carbon.len(), configuration.strata.len());
+        assert!(final_carbon.values().all(|operands| {
+            operands.gross_primary_production_kg_c_m2 > 0.0
+                && operands.accepted_leaf_respiration_kg_c_m2 > 0.0
+                && operands.advanced_t10_k > 0.0
+        }));
+    }
+
     #[test]
     fn public_water_phase_runs_exact_two_pass_protocol_without_commit() {
         let (configuration, beginning) = v6_identity_rebound_fixture();
@@ -766,6 +847,7 @@ mod tests {
         assert_eq!(requests.len(), authorizations.len());
         assert_eq!(requests.len(), uses.len());
         assert_eq!(phase.water_operands().len(), uses.len());
+        assert_capped_carbon_boundary(&phase, &configuration);
         for ((request, authorization), finalized) in requests.iter().zip(authorizations).zip(uses) {
             validate_resource_protocol(request, authorization, finalized)
                 .expect("typed D/A/F protocol");

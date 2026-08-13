@@ -158,3 +158,15 @@ FAIL. All findings were accepted; none was deferred or rejected.
 The full `CoupledCandidate` and commit remain fail-closed at E16--E22. Final
 repeat review on stable bytes returned correctness GO and QA PASS with no
 unresolved material finding; the bounded public water increment is accepted.
+
+## E16/E17 Operand-Retention Review
+
+| Finding | Disposition | Correction |
+|---|---|---|
+| accepted-carbon API allowed potential columns | accepted / corrected | crate-private aggregation requires capped diagnostics and is exposed only by sealed final water-phase output |
+| production `Ag` versus `An` retention lacked independent poison | accepted / corrected | V3 uncapped and V5 capped fixtures assert sun/shade `Ag`, distinct `An`, and exact Rd |
+| interval could be substituted by accessor caller | accepted / corrected | validated configuration interval is stored in `UncommittedWaterPhase`; accessor takes no duration |
+| aggregation rejection seams lacked direct tests | accepted / corrected | absent operands, duplicate/wrong identity, inconsistent T10, negative class Ag, and potential-pass inputs reject |
+
+No finding is deferred or rejected. The bounded operand-retention increment
+does not remediate `GAP-VEGETATION-027` or enable persistent E16--E22 execution.

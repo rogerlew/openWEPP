@@ -452,6 +452,8 @@ fn all_released_ci_failures_have_exact_payload_shape() {
                         rs_s_m: 1.0,
                         iterations: 0,
                         bracket: (low, high),
+                        gross_assimilation: 0.0,
+                        dark_respiration: 0.0,
                     },
                 ))
             },
