@@ -1,3 +1,4 @@
 # Active Prompts
 
-Contains the active package-end-to-end kickoff prompt.
+No active prompt remains. The package completed and its kickoff prompt is
+preserved byte-for-byte under `../archived/`.

@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -33,12 +33,18 @@ two-stream radiation, sunlit/shaded FvCB--Medlyn gas exchange, explicit leaf
 energy balance, interval-equilibrium plant hydraulics, liquid interception, and persistent
 vegetation C/N dynamics. It releases contract-first implementation authority;
 it admits no production kernel, runtime selector, cutover, output, calibration,
-or recommended site value. Version 6 supersedes V1 for heterogeneous topology
+or recommended site value. Version 6 superseded V1 for heterogeneous topology
 by admitting `OPENWEPP_C3_WOODY_V2`: tile-resolved occupancy liquid state,
 same-tile column routing, occupancy-local wet-energy/physiology/hydraulics,
 occupancy-preserving water identities, exact area conversion, and fail-closed
 migration. V1 remains immutable historical authority and is not a V2 runtime
-alias.
+alias. Version 7 admits `OPENWEPP_C3_WOODY_V3` as the executable successor to
+the V2 topology: exact mixed leaf/stem radiation preparation and absorption
+ownership, neutral canopy-surface wind, height-based stem hydraulics, one common
+root node, an uncapped but hydraulically coupled accepted potential pass,
+single-source/single-debit leaf respiration, typed numerical failure payloads,
+and independent V3 constitutive vectors. V1 and V2 remain immutable historical
+identities and neither is a V3 runtime alias.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -53,6 +59,12 @@ The immutable V2 definition identity is
 `sha256:38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3`
 for
 `docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001/artifacts/openwepp_c3_woody_v2_definition.json`.
+
+The immutable V3 definition identity is the SHA-256 of
+`docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v3_definition.json`.
+That definition normatively imports the exact V2 digest and supersedes only the
+V3 delta stated below. The final digest is bound by the definition artifact,
+contract-derived tests, and this contract's Version 7 change record.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -125,6 +137,11 @@ Out of scope:
 | `REF-VEGETATION-028` | BIOME-BGC v4.2 theoretical framework, SHA-256 `476dd8d5606941ccfdd59de277d03671e764ac6ceac44d9bebd68bf61f00be85`, pp. 14--31 | Independent established-model C/N pool, respiration, allocation and turnover architecture. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
 | `REF-VEGETATION-029` | `SC-BIOGEOCHEM-001` | Mineral-N arbitration and litter/CWD receiving-owner authority. | `[DIRECT][Static]` |
 | `REF-VEGETATION-030` | `SC-VEGETATIONTRANSACTION-001` | Shared V2 occupancy water/energy identity, receiving-owner reconstruction, and all-owner atomicity. | `[DIRECT][Static]` |
+| `REF-VEGETATION-031` | CLM5 Technical Note, Surface Albedos, equations 2.3.1--2.3.30, <https://escomp.github.io/CTSM/release-clm5.0/tech_note/Surface_Albedos/CLM50_Tech_Note_Surface_Albedos.html> | Two-stream coordinate over exposed leaf plus stem area, area-weighted leaf/stem reflectance/transmittance, and sunlit/shaded absorption. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
+| `REF-VEGETATION-032` | CLM5 Technical Note, Fluxes, equations 2.5.117 and 2.5.122, <https://escomp.github.io/CTSM/release-clm5.0/tech_note/Fluxes/CLM50_Tech_Note_Fluxes.html> | Incident canopy wind equals friction velocity and drives characteristic-dimension-specific boundary resistance. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
+| `REF-VEGETATION-033` | CLM5 Technical Note, Plant Hydraulics, Section 2.11.2, <https://escomp.github.io/CTSM/release-clm5.0/tech_note/Plant_Hydraulics/CLM50_Tech_Note_Plant_Hydraulics.html> | Common root-node hydraulic circuit, root-to-stem path, gravity, unstressed maximum evaluation, vulnerability response, and continuity. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
+| `REF-VEGETATION-034` | CLM5 Technical Note, Photosynthesis, equations 2.9.10--2.9.17 and Chapters 17/19 in reviewed CLM5 bytes, <https://escomp.github.io/CTSM/tech_note/Photosynthesis/CLM50_Tech_Note_Photosynthesis.html> | Net assimilation subtracts leaf dark respiration; Rd uses its own peaked temperature response and one leaf-N/acclimation basis. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
+| `REF-VEGETATION-035` | ESCOMP/CTSM commit `8e1309ab0db671d884b80746cbae9bbaafbe78a7`, `src/biogeophys/PhotosynthesisMod.F90` SHA-256 `e4c9ad718209af44fcfdfc1d591bd2729d345f9e422cf5d9c8a889525d6a1cdf`, lines 1318--1322 and 1441--1447, <https://raw.githubusercontent.com/ESCOMP/CTSM/8e1309ab0db671d884b80746cbae9bbaafbe78a7/src/biogeophys/PhotosynthesisMod.F90> | Immutable directly resolvable transcription authority for leaf N in `g N m^-2 leaf`, the Atkin coefficients, Celsius `T10`, the positive-leaf-N branch, and `lmr25top` already expressed as the photosynthesis module's `umol CO2 m^-2 leaf s^-1` rate. | `[DIRECT][Static]` `REFERENCE_MODEL_DEFINITION` |
 
 Source-reported literature names in `REF-VEGETATION-009`,
 `REF-VEGETATION-012`, or `REF-VEGETATION-013` are discovery leads only. They
@@ -149,6 +166,10 @@ explicitly declared.
 | `z_s` | `m` | stratum reference height | vegetation |
 | `LAI_s`, `WAI_s` | `m^2 m^-2` | leaf and woody area per ground area | vegetation |
 | `LAI_s,t`, `WAI_s,t` | `m^2 plant m^-2 tile-ground` | V2 conditional occupancy area, exactly `LAI_s/C_s`, `WAI_s/C_s` | vegetation, derived |
+| `L`, `S`, `P=L+S` | `m^2 plant m^-2 tile-ground` | V3 occupancy leaf, stem, and total exposed plant area used by one two-stream layer | vegetation, derived |
+| `Omega`, `K_eff` | fraction, `m^2 ground m^-2 plant` | clumping index and direct extinction `K_eff=Omega*K` | vegetation/radiation |
+| `rho_lambda`, `tau_lambda` | fraction | V3 area-weighted effective reflectance/transmittance for band `lambda` | vegetation/radiation |
+| `A_leaf,sun,lambda,j`, `A_leaf,shade,lambda,j`, `A_stem,lambda,j` | `W m^-2 tile-ground` | physically owned V3 absorbed radiation by band `lambda` and incident component `j` | radiation/energy |
 | `r_s,l` | fraction | root participation fraction for stratum `s`, soil layer `l` | native management / vegetation |
 | `S_liq,s` | `kg m^-2` | liquid water stored on stratum `s` | vegetation |
 | `S_liq,s,t` | `kg H2O m^-2 tile-ground` | V2 sole mutable canopy-liquid store for occupancy `(s,t)`; aggregate is derived only | vegetation |
@@ -178,6 +199,14 @@ explicitly declared.
 | `g_s,s,c` | `umol H2O m^-2 leaf s^-1` | Medlyn stomatal conductance | vegetation |
 | `T_leaf,s,c` | `K` | converged leaf temperature | vegetation/LSE join |
 | `psi_s,n` | `mm H2O` | root/xylem/leaf-node water potential; the exact E14/E15 hydraulic basis | vegetation |
+| `u_ref`, `u_star` | `m s^-1` | reference wind and neutral friction velocity at the canopy surface | forcing / vegetation, derived |
+| `u_leaf`, `u_wet`, `u_stem` | `m s^-1` | distinct semantic V3 surface-wind operands, each exactly equal to `u_star` | vegetation, derived |
+| `z2`, `Delta_psi_stem` | `m`, `mm H2O` | root-to-stem conducting length `height_m` and gravitational head `1000*height_m` | vegetation, derived |
+| `psi_root` | `mm H2O` | V3 single common root-node potential connected in parallel to every soil layer | vegetation |
+| `E_c,max`, `E_c` | `kg H2O m^-2 leaf s^-1` | internal `beta_c=1` class maximum and accepted uncapped coupled class transpiration | vegetation |
+| `beta_sun`, `beta_shade` | `1` | accepted class-resolved hydraulic stomatal factors solved inside Stage A or the capped pass | vegetation |
+| `beta_hyd` | `1` | persisted Emax-weighted aggregate of accepted class factors; warm-start/diagnostic only | vegetation |
+| `Rd25`, `Rd_c` | `umol CO2 m^-2 leaf s^-1` | Atkin leaf-N/T10 respiration basis at 298.15 K and class temperature response | vegetation |
 | `GPP_s`, `R_m,s`, `R_g,s` | `kg C m^-2` | interval carbon gain and respiration | vegetation |
 | `NSC_C,s` | `kg C m^-2` | nonnegative unallocated carbon carried across intervals | vegetation |
 | `D_N,s,l,q`, `A_N,s,l,q`, `F_N,s,l,q` | `kg N m^-2` | mineral-N request, maximum authorization, and finalized use | vegetation / `SC-BIOGEOCHEM-001` |
@@ -289,7 +318,7 @@ every owner state byte-identical.
    transfer. Only after all water, energy, carbon, nitrogen, and material
    identities and typed receipts pass does the orchestrator atomically commit
    candidate states and expose adapter/publication candidates.
-11. **Coupled constitutive solve.** Version 5 binds the exact equations,
+11. **Coupled constitutive solve.** Versions 5--7 bind the exact equations,
     branch order, solver tolerances and limits in `INV-VEGETATION-062` through
     `INV-VEGETATION-072`. Radiation precedes the nested FvCB--Medlyn--leaf-
     energy--hydraulic solve. Nonconvergence authorizes no last iterate or
@@ -636,6 +665,177 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
     definition bytes remain immutable and historical; V1 state cannot execute
     under V2 identity except through the explicit migration operation.
 
+### `OPENWEPP_C3_WOODY_V3` Potential-Pass Authority Amendment
+
+V3 normatively imports the exact V2 definition digest and all unchanged V1/V2
+equations, topology, routing, transaction, ownership, and numerical rules. The
+following clauses exclusively supersede the conflicting V1/V2 preparation,
+state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
+
+1. **Mixed leaf/stem radiation preparation.** For occupancy `o=(s,t)`, set
+   `L=LAI_s,t`, `S=WAI_s,t`, and `P=L+S`. Require finite `L,S>=0`, finite
+   `0<Omega<=1`, and the existing leaf-angle and optical domains. For `P>0`,
+   `w_leaf=L/P`, `w_stem=S/P`, and, independently for
+   `lambda in {VIS,NIR}`,
+   `rho_lambda=w_leaf*rho_leaf,lambda+w_stem*rho_stem,lambda` and
+   `tau_lambda=w_leaf*tau_leaf,lambda+w_stem*tau_stem,lambda`. For `P=0`,
+   transport and every absorbed owner term are exact zero. The complete tile
+   column is one two-stream boundary-value problem over actual conditional
+   plant-area coordinates; lower-canopy and ground upward diffuse flux traverse
+   every overlying layer. Solving layers independently with a zero lower
+   boundary, directly summing lower reflection at the top, or averaging
+   different strata is prohibited.
+2. **Clumping and actual sunlit leaf area.** The V3 canonical selection applies
+   clumping exactly once to direct extinction, `K_eff=Omega*K`, while the
+   transport coordinate remains actual `P`. Every direct exponential and the
+   direct source in the admitted E01 solution uses `K_eff`; the diffuse
+   coefficients otherwise retain the admitted two-stream construction. For
+   positive direct incident radiation and `L,P>0`,
+   `L_sun=w_leaf*[1-exp(-K_eff*P)]/K_eff` and `L_shade=L-L_sun`.
+   The removable `K_eff=0` limit is exactly `L_sun=L`. For zero direct
+   radiation, `L_sun=0` and `L_shade=L`; for `L=0` both are zero. A two-stream
+   sunlit *plant* area is never passed to photosynthesis as leaf area.
+3. **Physical absorption ownership.** For each band and incident component
+   independently, set
+   `a_leaf=w_leaf*(1-rho_leaf-tau_leaf)` and
+   `a_stem=w_stem*(1-rho_stem-tau_stem)`. When
+   `a_sum=a_leaf+a_stem>0`, define
+   `f_abs_leaf=a_leaf/a_sum` and `f_abs_stem=a_stem/a_sum`; when `a_sum=0`,
+   require exact zero plant absorption and return exact-zero owner terms.
+   Partition the analytically solved plant absorption as
+   `A_leaf,sun=f_abs_leaf*A_plant,sun`,
+   `A_leaf,shade=f_abs_leaf*A_plant,shade`, and
+   `A_stem=f_abs_stem*(A_plant,sun+A_plant,shade)`. Direct/diffuse and VIS/NIR
+   identities never alias. Only leaf-owned VIS absorption enters FvCB PAR;
+   stem absorption enters the stem energy owner. The owner terms must sum
+   exactly to solved plant absorption within the radiation closure tolerance.
+4. **Neutral canopy-surface wind.** On the admitted neutral domain, require
+   finite `u_ref>0`, `z0m>0`, and `z_ref>displacement+z0m`. Derive
+   `u_star=kappa*u_ref/ln((z_ref-displacement)/z0m)` and require finite
+   `u_star>0`. V3 defines three distinct semantic operands by authority:
+   `u_leaf=u_wet=u_stem=u_star`. Their conductances remain distinct through
+   their positive characteristic dimensions:
+   `gb_leaf=Cv*sqrt(u_leaf/d_leaf)`,
+   `gb_wet=Cv*sqrt(u_wet/d_wet)`, and
+   `gb_stem=Cv*sqrt(u_stem/d_stem)`. Reference wind used directly as surface
+   wind, a hidden minimum wind, independent undocumented wet/stem wind, or
+   heat/vapor roughness in the momentum logarithm is invalid.
+5. **Height-based stem hydraulics.** V3 selects
+   `z2_m=height_m` and `Delta_psi_stem_mm=1000*height_m`; require finite
+   `height_m>0`. Thus
+   `q2=[k2_max/height_m]*v(psi_root)*SAI*
+   (psi_root-psi_stem-1000*height_m)`. Crown base, half height, omitted gravity,
+   reversed gravity, metres used as millimetres, and any stem-to-leaf gravity
+   term are prohibited. The existing explicit layer soil-to-root path length
+   and layer gravitational head remain unchanged.
+6. **One common root-node state.** The V3 hydraulic unknown vector is exactly
+   `[psi_sunleaf,psi_shadeleaf,psi_stem,psi_root]`. All accessible soil layers
+   connect in parallel to the single `psi_root`; layer identity remains in
+   configuration, soil forcing, `q3_i`, request, authorization, and finalized
+   use, but not in the root warm start. V3 replaces
+   `root_potential_mm_by_layer[]` with one finite
+   `root_node_potential_mm`. The complete occupancy state is exactly the
+   lexicographically serialized fields `beta_hyd`,
+   `canopy_air_specific_humidity_kg_kg`, `canopy_air_temperature_k`,
+   `canopy_liquid_kg_h2o_m2_tile_ground`, `dry_stem_temperature_k`,
+   `last_accepted_transaction_id`, `root_node_potential_mm`, `shade_ci_pa`,
+   `shade_leaf_potential_mm`, `shade_leaf_temperature_k`, `stem_potential_mm`,
+   `sun_ci_pa`, `sun_leaf_potential_mm`, `sun_leaf_temperature_k`, and
+   `wet_surface_temperature_k`. Every field enters the state digest.
+7. **Exact V2-to-V3 migration.** Because V2 never became an executable accepted
+   public state machine, migration of a V2 occupancy succeeds only when every
+   entry in its ordered root-potential vector is present, finite, and bitwise
+   identical. The common bits become `root_node_potential_mm`. An empty vector
+   or any unequal bits returns an exhaustive unresolved field for that
+   occupancy with reason `ambiguous_v2_layer_root_warm_starts`. Averaging,
+   first-layer selection, root-fraction weighting, broadcast, or synthesis is
+   forbidden. All other V2-to-V3 fields map by exact identity after the V3
+   model/configuration identity is supplied and validated.
+8. **Internal maximum-demand evaluation.** `beta_sun=beta_shade=1` is used only inside each
+   outer residual evaluation to solve sun and shade FvCB--Medlyn--energy and
+   obtain `E_sun,max`, `E_shade,max`, `gs_sun,max`, and `gs_shade,max`. These
+   values are diagnostic operands, not an accepted state, request, finalized
+   use, or publishable flux. A `beta=1` column result must never be sent to the
+   hydrology owner.
+9. **Accepted uncapped potential pass.** "Potential" means uncapped by the
+   hydrology owner, not hydraulically unstressed. From the original beginning
+   occupancy state, solve one common residual system for sun/shade `ci`, leaf,
+   wet, stem, and canopy-air energy states, the four hydraulic potentials, and
+   accepted `beta_sun,beta_shade in [0,1]`. The exact hydraulic subsystem has
+   six unknowns
+   `[psi_sunleaf,psi_shadeleaf,psi_stem,psi_root,beta_sun,beta_shade]`
+   and six independent residuals. At every iterate, re-solve each class's gas
+   exchange and energy with its own `beta_c`; a common post-hoc scalar
+   multiplication is prohibited. Acceptance requires separately
+   `E_sun,gas-energy(beta_sun)=E_sun,max*v(psi_sunleaf)=q1a`,
+   `E_shade,gas-energy(beta_shade)=E_shade,max*v(psi_shadeleaf)=q1b`,
+   `q1a+q1b=q2`, and `q2=sum_i q3_i` under the admitted scaled residual
+   tolerances. These are six equations: two class loss-function equalities, two
+   class stem-to-leaf equalities, and two downstream continuity equalities.
+   Aggregate equality cannot mask a failed class equality. The persisted
+   15-field state does not add a seventh unknown: after acceptance, if
+   `E_sun,max+E_shade,max>0`, set
+   `beta_hyd=(E_sun,max*beta_sun+E_shade,max*beta_shade)/
+   (E_sun,max+E_shade,max)`; for exact zero maximum demand set `beta_hyd=1` and
+   require every accepted class demand and hydraulic flux to be exact zero.
+   The persisted aggregate is a diagnostic and the next solve's initial value
+   for both class factors; it is never reapplied as a common constitutive
+   stress. This class-resolved solve and aggregate persistence rule are an
+   `OPENWEPP_CANONICAL_SELECTION` over the CLM distinct sun/shade water-stress
+   factors. The
+   accepted potential request is `D_W,o,i=f_t*q3_i*dt` in stand-ground basis,
+   without authorization operands. It is valid and expected that the accepted
+   uncapped state has either class factor and aggregate `beta_hyd<1` when
+   soil/plant hydraulics constrain demand.
+10. **Capped pass relationship.** The final authorization pass solves the same
+    coupled residual system from original beginning state with fixed layer caps
+    added. It neither reuses the internal maximum state nor sequentially clamps
+    the accepted potential flux. All V2 two-pass column routing, identity,
+    weighting, no-reauthorization, and rollback rules remain binding.
+11. **One leaf-respiration identity.** For accepted leaf N area
+    `N_leaf_area_kg`, form source units once as
+    `N_leaf_area_g=1000*N_leaf_area_kg` and `T10_C=T10_K-273.15`. The Atkin
+    source rate is
+    `Rd25=i_atkin+0.2061*N_leaf_area_g-0.0402*T10_C`, where `Rd25` and
+    `i_atkin` are in `umol CO2 m^-2 leaf s^-1`, the nitrogen coefficient is
+    `0.2061 umol CO2 g^-1 N s^-1`, and the temperature coefficient is
+    `0.0402 umol CO2 m^-2 leaf s^-1 degC^-1`. For positive leaf area, a nonfinite or
+    nonpositive source rate is typed invalid state/configuration; it is never
+    clamped. Zero leaf area takes the exact zero-capacity/zero-Rd branch without
+    division. The Atkin result is already `Rd25`; no carbon/day conversion is
+    applied at this point.
+12. **Rd temperature response and debit.** For class temperature `T`, use the
+    stable log-domain normalized response
+    `ln(f_Rd)=Ha_Rd*(T-298.15)/(R*T*298.15)
+    +ln1p(exp((298.15*S_Rd-Hd_Rd)/(R*298.15)))
+    -ln1p(exp((T*S_Rd-Hd_Rd)/(R*T)))`, with
+    `Ha_Rd=46390 J mol^-1`, `Hd_Rd=150650 J mol^-1`, and
+    `S_Rd=490 J mol^-1 K^-1`; `Rd(T)=Rd25*exp(ln(f_Rd))`.
+    Exponent clamps and last-finite substitutes are prohibited. The identical
+    class-resolved `Rd(T)` is subtracted once in `An=Ag-Rd` and, after exact
+    class-area/topology/time/carbon conversion, debited once in the leaf
+    maintenance carbon ledger. No independent second leaf-maintenance
+    expression is evaluated. `rd_leaf_n_rate` is not a V3 consumed field.
+13. **Typed numerical failure payload.** Every failed sun `ci`, shade `ci`,
+    canopy-energy, hydraulic-system, or outer gas--energy--hydraulic solve
+    returns a typed `NumericalFailureDiagnostics` containing model-definition
+    digest, transaction, occupancy, `potential|capped` pass, solve identity,
+    completed iterations, every normalized residual available at failure,
+    optional step norm, backtracking count, active bounds, active water-cap
+    layer IDs, optional bracket, optional pivot magnitude, and optional matrix
+    infinity norm. All numeric payload values must be finite when present and
+    serialize deterministically. Domain, bracket, singular-pivot, and iteration
+    failures have deterministic precedence in that order after identity/schema
+    validation. An opaque `nonconvergence` string, a last iterate, or partial
+    candidate is prohibited.
+14. **V3 identity and exact fixtures.** V3 canonical JSON imports the immutable
+    V2 digest, declares every override above, binds exact contract-section and
+    fixture digests, and uses recursively lexicographic compact JSON plus one
+    trailing newline. Independent Python fixtures must expose inputs, operands,
+    expected outputs, closures, diagnostics, and numerically distinct named
+    poison alternatives for radiation, potential E11--E15, migration, and
+    respiration. Expected values are never generated by Rust.
+
 ## Branch and Guard Table
 
 | Condition | Required disposition | Failure |
@@ -654,7 +854,7 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | `T_s != sum_l F_W,s,l` | reject both candidate states | `VEG-E-030` |
 | missing/mismatched `h_v` or duplicate latent debit | reject | `VEG-E-031` |
 | water/energy/carbon/nitrogen/material closure fails | reject atomically | `VEG-E-032` |
-| canopy-snow constitutive execution requested under versions 2-6 | reject; boundary concept only | `VEG-E-040` |
+| canopy-snow constitutive execution requested under versions 2-7 | reject; boundary concept only | `VEG-E-040` |
 | iterative feedback requested without successor authority | reject without partial publication | `VEG-E-041` |
 | compatibility adapter invoked before Stage C/receipt closure | reject | `VEG-E-050` |
 | unsupported lifeform/process or canopy snow | reject before solve | `VEG-E-062` |
@@ -668,7 +868,14 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | nonlinear occupancy operand aggregated before local solve | reject candidate | `VEG-E-074` |
 | occupancy/layer/transaction/resource/amount-basis request identity mismatch or duplicate | reject before arbitration | `VEG-E-075` |
 | nonzero multi-tile V1 store requested for automatic migration | return exhaustive unresolved occupancy lanes | `VEG-E-076` |
-| V1/V2 digest, schema, or execution identity mixed | reject before calculation | `VEG-E-077` |
+| invalid V3 mixed optics, clumping, owner partition, band, or incident-component identity | reject before column radiation | `VEG-E-080` |
+| reference wind used as canopy-surface wind, invalid logarithmic geometry, or nonpositive `u_star` | reject before conductance construction; no floor | `VEG-E-081` |
+| nonpositive height, wrong stem path/gravity identity, or per-layer root warm start presented as V3 | reject before hydraulic solve | `VEG-E-082` |
+| V2 root warm starts are empty or not bitwise identical during V3 migration | return every unresolved occupancy root-node field | `VEG-E-083` |
+| `beta_hyd=1` maximum evaluation published/requested, authorization used in potential pass, or class/total coupling equality fails | reject all candidates | `VEG-E-084` |
+| positive leaf area with nonfinite/nonpositive Atkin rate, invalid Rd temperature, or nonfinite peaked response | reject without clamp or fallback | `VEG-E-085` |
+| numerical failure lacks its typed deterministic diagnostic payload | discard all candidates and reject implementation conformance | `VEG-E-086` |
+| V1, V2, or V3 model digest/schema/execution identity mixed | reject before calculation | `VEG-E-077` |
 
 ## Invariants and Invariant Guard Map
 
@@ -686,7 +893,7 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | `INV-VEGETATION-015` | Failed or non-converged transactions publish and mutate nothing. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | atomic commit | `VEG-E-032/041` |
 | `INV-VEGETATION-020` | Canopy liquid start plus interval-integrated incident water equals end storage plus interval-integrated actual evaporation and named releases. | `REF-VEGETATION-002`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[DIRECT][Static] + [INFERENCE][Static]` | dual reconstruction | `VEG-E-012/032` |
 | `INV-VEGETATION-021` | Canopy, ground, litter, snow, soil, ponded-water, and atmospheric radiation/latent terms remain distinct. | `REF-VEGETATION-007`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | alias/poison test | `VEG-E-011/032` |
-| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; versions 1-6 admit no canopy-snow constitutive law. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
+| `INV-VEGETATION-022` | Vegetation owns intercepted canopy snow; snow/frost owns ground snow; versions 1-7 admit no canopy-snow constitutive law. | `REF-VEGETATION-008`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | governance | `VEG-E-040` |
 | `INV-VEGETATION-030` | Live/standing-dead plant pools remain vegetation-owned until an accepted exact-once material/element transfer. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | receipt test | `VEG-E-032` |
 | `INV-VEGETATION-031` | Vegetation and residue/biogeochemistry independently reconstruct identical dry-matter, carbon, and nitrogen transfers. | `REF-VEGETATION-006`, `REF-VEGETATION-009`, `REF-VEGETATION-010` | `[INFERENCE][Static]` | dual reconstruction | `VEG-E-032` |
 | `INV-VEGETATION-040` | Every compatibility field has an explicit reduction, area basis, unit conversion, missing-state rule, and contributing-strata receipt. | `REF-VEGETATION-004`, `REF-VEGETATION-009` | `[DIRECT][Static] + [INFERENCE][Static]` | adapter test | `VEG-E-050` |
@@ -721,6 +928,13 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | `INV-VEGETATION-077` | V2 water identity preserves transaction, stratum, occupancy, layer, resource, and amount basis; tile demand/authorization/final use cross the stand boundary with exactly one `f_t` conversion each way. | `REF-VEGETATION-005/010/030` plus `OPENWEPP_CANONICAL_SELECTION` | `[INFERENCE][Static]` | hydrology/vegetation dual reconstruction | `VEG-E-072/075` |
 | `INV-VEGETATION-078` | Occupancy warm starts are deterministic numerical state only; alternative valid starts converge equivalently, and failure rolls back every lane byte-identically. | `REF-VEGETATION-010/027` | `[DIRECT+INFERENCE][Static]` | convergence/rollback vectors | `VEG-E-064/071` |
 | `INV-VEGETATION-079` | V1 zero and single-tile stores have only the specified unique migrations; nonzero multi-tile stores require caller-supplied V2 lanes and never receive a silent distribution. | `REF-VEGETATION-010` plus `OPENWEPP_CANONICAL_SELECTION` | `[INFERENCE][Static]` | migration/schema test | `VEG-E-076/077` |
+| `INV-VEGETATION-080` | V3 radiation transports over actual `L+S`, applies clumping exactly once through `K_eff`, preserves whole-column upward diffuse coupling, and partitions every band/component absorption to leaf sun, leaf shade, and stem by area-times-absorptivity without admitting stem PAR. | `REF-VEGETATION-025/027/031` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | independent reconstruction/poison test | `VEG-E-080` |
+| `INV-VEGETATION-081` | V3 derives positive neutral `u_star` from reference wind and momentum roughness; leaf, wet, and stem wind are distinct semantic operands equal to `u_star` and retain distinct characteristic dimensions. | `REF-VEGETATION-027/032` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | domain/conductance vector | `VEG-E-081` |
+| `INV-VEGETATION-082` | V3 root-to-stem path and gravity are exactly vegetation height and `1000*height` mm H2O, and all layer fluxes connect to one persistent common root node. | `REF-VEGETATION-027/033` | `[DIRECT][Static]` | hydraulic/schema vector | `VEG-E-082` |
+| `INV-VEGETATION-083` | V2-to-V3 migration constructs a common root warm start only from a nonempty bitwise-identical V2 vector; ambiguous lanes are exhaustively unresolved and never averaged, selected, weighted, or broadcast. | `REF-VEGETATION-010/033` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | migration/digest poison test | `VEG-E-083` |
+| `INV-VEGETATION-084` | Class `beta=1` exists only inside maximum-demand evaluation; the accepted Stage-A potential pass is owner-uncapped but jointly solves distinct accepted sun/shade beta factors, gas exchange, energy, and four-node hydraulics with both class loss-function equalities, both class flux equalities, and total continuity. Persisted scalar `beta_hyd` is only the exact Emax-weighted aggregate/warm start. | `REF-VEGETATION-026/027/033` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | independent coupled vector | `VEG-E-084` |
+| `INV-VEGETATION-085` | One Atkin leaf-N/T10 source supplies `Rd25`; its Rd-specific peaked response is subtracted once from gross assimilation and the identical amount is debited once in the carbon ledger, with no nonpositive clamp or second leaf-maintenance formula. | `REF-VEGETATION-027/034` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | respiration/ledger poison test | `VEG-E-085` |
+| `INV-VEGETATION-086` | Every numerical failure carries deterministic typed solve/pass/identity, residual, iteration, step/backtracking/bound, cap, bracket, pivot, and matrix evidence applicable at failure; no last iterate or opaque fallback is usable. | `REF-VEGETATION-010/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | diagnostic schema/error-precedence test | `VEG-E-086` |
 
 ### Invariant Guard Map
 
@@ -773,6 +987,13 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | `INV-VEGETATION-077` | typed occupancy water request/authorization/final-use validator | runtime/test | `VEG-E-072/075` | `SC-WATBAL-001` join vectors |
 | `INV-VEGETATION-078` | occupancy warm-start equivalence and byte rollback | runtime/test | `VEG-E-064/071` | V2 convergence/rollback vectors |
 | `INV-VEGETATION-079` | explicit V1-to-V2 migration operation | runtime/test | `VEG-E-076/077` | migration poison vectors |
+| `INV-VEGETATION-080` | V3 whole-column radiation and physical-owner reconstruction | test | `VEG-E-080` | independent V3 radiation fixture and named poisons |
+| `INV-VEGETATION-081` | neutral friction-velocity and surface-conductance guards | runtime/test | `VEG-E-081` | independent V3 wind/conductance fixture |
+| `INV-VEGETATION-082` | common-root hydraulic schema and height/gravity continuity | runtime/test | `VEG-E-082` | independent V3 hydraulic fixture |
+| `INV-VEGETATION-083` | exact V2-to-V3 migration and state-digest guards | runtime/test | `VEG-E-083` | V3 migration fixture and poisons |
+| `INV-VEGETATION-084` | maximum-evaluation versus accepted-potential coupled residual reconstruction | runtime/test | `VEG-E-084` | independent V3 E11--E15 fixture |
+| `INV-VEGETATION-085` | Atkin/Rd25/class-response/carbon-debit reconstruction | runtime/test | `VEG-E-085` | independent V3 respiration fixture |
+| `INV-VEGETATION-086` | typed numerical-failure payload and deterministic precedence | runtime/test | `VEG-E-086` | V3 failure-diagnostics fixture |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -822,6 +1043,11 @@ resolved by occupancy. An occupancy is the exact typed pair `o=(s,t)`.
 | `Q_rad,k,j` | not a universal ground/net-radiation scalar | energy receipt | interval-integrated `J m^-2`; recipient-specific | `SC-LANDSURFACEENERGY-001` |
 | `S_liq,s,t` | not V1 `S_liq,s` and not a mutable weighted aggregate | V2 occupancy state | `kg H2O m^-2 tile-ground`; exact `(s,t)` identity | this contract |
 | `D_W,s,t,l`, `A_W,s,t,l`, `F_W,s,t,l` | not stratum-only or tile-ground owner debits | V2 water exchange | stand-ground interval amount with explicit one-time `f_t` conversion | this contract / `SC-WATBAL-001` |
+| `u_ref` | `reference_wind_m_s` | V3 forcing boundary | `m s^-1`; input to neutral momentum logarithm, never leaf wind directly | this contract / meteorology |
+| `u_star` | `u_leaf`, `u_wet`, `u_stem` | V3 derived surface operands | same `m s^-1` value by explicit authority; distinct semantic fields | this contract |
+| `psi_root` | `root_node_potential_mm` | V3 occupancy state | `mm H2O`; one common node, not MPa or a per-layer vector | this contract |
+| `root_potential_mm_by_layer[]` | no V3 runtime alias | historical V2 migration input only | bitwise-identical-only migration; no averaging or implicit conversion | this contract |
+| `i_atkin`, `Rd25`, `Rd(T)` | no `rd_leaf_n_rate` alias | V3 gas/carbon join | source equation is already `umol CO2 m^-2 leaf s^-1`; carbon conversion occurs only in interval ledger integration | this contract |
 
 ## Constants and Parameters with Provenance Anchors
 
@@ -857,6 +1083,16 @@ Table 5.2 liquid saturation coefficients `a0..a8` are respectively
 3.05903558e-6, 1.96237241e-8, 8.92344772e-11, -3.73208410e-13,
 2.09339997e-16`, with the equation's factor `100 Pa`.
 
+V3 retains all unchanged V2 constants and adds the fixed Rd response constants
+`Ha_Rd=46390 J mol^-1`, `Hd_Rd=150650 J mol^-1`, and
+`S_Rd=490 J mol^-1 K^-1`. Its neutral wind derivation reuses digest-bound
+`kappa=0.4`; no minimum wind is admitted. Immutable CTSM source binds the Atkin
+coefficients and establishes that its result is already `Rd25` in
+`umol CO2 m^-2 leaf s^-1`; carbon molar mass is used only when integrating the
+identical class-resolved Rd into the carbon ledger. The numbers
+`1000 mm m^-1` and `1000 g kg^-1` are explicit directional unit conversions,
+not numerical floors.
+
 The exact v1 consumed configuration fields are:
 `model_definition_sha256`, `configuration_sha256`, `initial_state_sha256`,
 `area_m2`, `timestamp`, `dt_s`, `topology_tiles[]`, `stratum_id`, `lifeform`,
@@ -890,8 +1126,18 @@ The CLM leaf-angle approximation is admitted only for
 `-0.4<=leaf_angle_chi<=0.6`; values outside that interval are typed unsupported
 configuration, not extrapolated or clamped.
 
-Version 6 admits the constitutive equations and topology amendment above. Earlier-version statements
-limiting admission to configuration/bookkeeping are historical and superseded.
+The exact V3 consumed configuration is the V2 field inventory with
+`rd_leaf_n_rate` removed. `atkin_intercept` remains required and has units
+`umol CO2 m^-2 leaf s^-1`; `Ha_Rd`, `Hd_Rd`, and `S_Rd` are fixed model-definition
+constants rather than caller parameters. The V3 occupancy state has the exact
+15-field schema in the V3 amendment and replaces the V2 root-layer warm-start
+vector with `root_node_potential_mm`. Numerical failure DTO fields and their
+enumerated pass/solve identities are definition schema, not optional logging.
+
+Version 7 admits the constitutive equations, topology inheritance, and V3
+amendment above. Earlier-version statements limiting admission to
+configuration/bookkeeping or treating V1/V2 as executable successors are
+historical and superseded only for V3 execution.
 
 ### Definition Acquisition And Typed Schema
 
@@ -949,6 +1195,11 @@ composition proving that neither parameter record was averaged.
 | V2 occupancy water stores/releases | `kg H2O m^-2 tile-ground` | future vegetation occupancy registry | named tile-to-stand weighting only | no scalar exception | none |
 | V2 occupancy water owner exchange | interval `kg H2O m^-2 stand-ground` | future typed resource registry | exactly one multiply/divide by positive `f_t` at boundary | no scalar exception | none |
 | V2 occupancy energy | interval `J m^-2 tile-ground` | future LSE occupancy registry | named `f_t` weighting after local solve | no scalar exception | none |
+| V3 mixed plant area and absorbed owner energy | `m^2 m^-2 tile-ground`, `W m^-2 tile-ground` | future vegetation/LSE occupancy registry | named flux-duration integration only after physical owner partition | no scalar exception | none |
+| V3 wind operands | `m s^-1` | future vegetation boundary registry | `reference_wind_to_neutral_friction_velocity` | no scalar exception | none |
+| V3 hydraulic path/head/potentials | `m`, `mm H2O` | future vegetation hydraulic registry | `height_m_to_gravity_head_mm_h2o` | no scalar exception | none |
+| V3 Atkin/Rd operands | `umol CO2 m^-2 leaf s^-1`, `kg N m^-2 leaf`, `g N m^-2 leaf`, `degC` | future vegetation gas/carbon registry | `kg_n_to_g_n`, Kelvin-to-Celsius difference, and exact interval carbon integration only | no scalar exception | none |
+| V3 numerical failure diagnostics | typed identities plus contract-declared units per numeric field | future vegetation diagnostic registry | none beyond named dimensional helpers above | enum/count fields only | no publication authorized |
 
 No runtime symbol, registry, or output metadata changes are authorized here.
 
@@ -957,10 +1208,37 @@ No runtime symbol, registry, or output metadata changes are authorized here.
 - Conservation and representation tolerances are distinct.
 - Version 5 numerical tolerances and solver limits are the explicit
   `OPENWEPP_CANONICAL_SELECTION` values in the equation set above.
-- Version 6 retains those tolerances. Topology fractions use the existing
+- Version 7 retains all unchanged V2 tolerances. Topology fractions use the existing
   separately admitted `1e-12` representation tolerance only for validation;
   no constitutive operand, negative store, or closure residual is silently
   normalized through it.
+- V3 mixed-optics preparation, neutral wind, Atkin conversion, height/gravity,
+  common-root state, and class/total potential residuals use the inherited
+  scale-aware tolerances of their owning solve; no new flux or identity
+  tolerance is introduced. Identity, model digest, band, direction, owner,
+  amount basis, and migration bit equality are exact and never tolerance-fixed.
+- V3 centered finite-difference state unit scales are exact model constants:
+  `1 Pa` for `ci`, `1 K` for every temperature, `0.001 kg kg^-1` for
+  canopy-air specific humidity, `1000 mm H2O` for every hydraulic potential,
+  and `1` for each class beta factor. The component perturbation is
+  `sqrt(epsilon)*max(abs(x),unit_scale)`; no other hidden scale is allowed.
+- Energy-component normalization uses
+  `scale_E=max(1 W m^-2,sum(abs(each incident, emitted, sensible, and latent
+  operand in that residual)))` with the inherited
+  `1e-6 W m^-2+1e-10*scale_E` threshold. Canopy-air vapor continuity uses the
+  water-flux threshold with
+  `scale_W=max(1e-12 mm s^-1,abs(each vapor or transpiration flux in that
+  residual))`. Each hydraulic or class-continuity residual uses one shared
+  `scale_W=max(1e-12 mm s^-1,E_sun,max,E_shade,max,abs(q1a),abs(q1b),
+  abs(q2),max_i(abs(q3_i)))` and the inherited
+  `1e-12 mm s^-1+1e-9*scale_W` threshold. A reported normalized residual is
+  the signed residual divided by its exact owning threshold and retains its
+  component identity. The post-acceptance beta aggregation is exact algebra,
+  not a seventh convergence residual.
+- `NumericalFailureDiagnostics` is canonical transaction evidence. Optional
+  fields are null only when the solve failed before that quantity existed;
+  nonfinite JSON numbers are forbidden. Diagnostic serialization never makes a
+  rejected iterate eligible for state, request, or ledger construction.
 - Zero snapping, negative-pool clipping, cover perturbation, conductance floors,
   denominator replacement, or unbounded iteration are prohibited absent a
   threshold, units, provenance, tests, and explicit canonical authority.
@@ -975,7 +1253,7 @@ calibration_evidence_status = NOT_CALIBRATION_READY
 identifiability_status = NOT_ASSESSED
 ```
 
-Version 6 admits equations, domains, occupancy semantics, and a typed parameter
+Version 7 admits equations, domains, occupancy semantics, and a typed parameter
 surface, while the
 canonical runtime remains absent; therefore `science_implementation_status =
 NOT_IMPLEMENTED`.
@@ -1005,7 +1283,7 @@ makes no suitability claim; it must not be mislabeled as calibrated or validated
 | canopy liquid store | independently reconstruct start + incident - evaporation - every release = end | `INV-VEGETATION-020` |
 | canopy/ground/litter/snow/soil poison aliases | omitted, duplicated, or swapped recipient fails | `INV-VEGETATION-021`, `VEG-E-011/032` |
 | dry matter/C/N transfer | donor and receiver reconstruct same three distinct operands | `INV-VEGETATION-030`, `INV-VEGETATION-031` |
-| canopy snow request | ownership visible but constitutive execution rejected under versions 1-6 | `INV-VEGETATION-022`, `VEG-E-040` |
+| canopy snow request | ownership visible but constitutive execution rejected under versions 1-7 | `INV-VEGETATION-022`, `VEG-E-040` |
 | unbounded/failed iteration | no partial mutation or publication | `INV-VEGETATION-015`, `VEG-E-041` |
 | compatibility adapter | field-specific receipt, read-only, no native feedback | `INV-VEGETATION-040`, `INV-VEGETATION-041` |
 | source-derived constant/proxy physiology | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | `INV-VEGETATION-050`, `INV-VEGETATION-051` |
@@ -1029,6 +1307,19 @@ makes no suitability claim; it must not be mislabeled as calibrated or validated
 | aggregate-first nonlinear poison | at least one accepted operand differs from weighted local execution | `INV-VEGETATION-074` |
 | V1 migration zero/single/nonzero-multitile | exact expansion/conversion/unresolved-lane error | `INV-VEGETATION-079` |
 | tile-local failure after candidate work | every owner and every occupancy warm start byte-identical | `INV-VEGETATION-078` |
+| two-rank mixed leaf/stem VIS/NIR direct/diffuse column | whole-column boundary solution, effective optics, non-unit clumping, ground/upward reflection, physical owner absorption, leaf-only sun/shade area, and directional closure match the independent fixture | `INV-VEGETATION-080`, `VEG-E-080` |
+| leaf-only / stem-only / identical-optics / zero-leaf / zero-stem / zero-direct / zero-plant reductions | exact admitted degenerate or reduction; zero-leaf stem-only canopy has zero photosynthesis | `INV-VEGETATION-080` |
+| radiation poison alternatives | leaf-only optics, stem-only optics, arithmetic mean, area-only absorption, double/omitted clumping, sunlit plant as leaf, stem PAR, VIS/NIR swap, direct/diffuse swap, zero lower boundary, and direct-summed reflection differ and are rejected | `INV-VEGETATION-080`, `VEG-E-080` |
+| neutral reference wind | exact `u_star`, three semantic wind identities, and distinct leaf/wet/stem conductances | `INV-VEGETATION-081` |
+| wind domain poisons | direct `u_ref`, hidden floor, wrong roughness, nonpositive wind, and invalid `z_ref<=d+z0m` reject | `VEG-E-081` |
+| height/gravity and common root node | exact `z2=height`, `Delta_psi=1000*height`, four potentials, and every accessible `q3_i` join one root node | `INV-VEGETATION-082` |
+| V2 root warm-start migration | bitwise-identical vector maps exactly; empty/unequal vectors exhaustively name `root_node_potential_mm`; average/first/weighted alternatives reject | `INV-VEGETATION-083`, `VEG-E-083` |
+| uncapped potential E11--E15 | explicit reference wind/`u_star`, conductances, class Emax, accepted `beta_sun/beta_shade`, persisted aggregate `beta_hyd`, four potentials, every `q1/q2/q3`, both class loss/flux equalities, total continuity, accepted transpiration, and stand-ground requests match independent expected values | `INV-VEGETATION-084` |
+| potential numerical/physical variants | alternate warm starts converge equivalently; dry/frozen/two-layer/redistribution/singular/iteration-limit cases return exact result or typed diagnostics | `INV-VEGETATION-082/084/086`, `VEG-E-082/084/086` |
+| potential-pass poisons | published beta-one demand, sequential hydraulics, post-hoc scalar stress, aggregate-only equality, authorization in potential, and external supply clamp differ and reject | `INV-VEGETATION-084`, `VEG-E-084` |
+| Atkin/Rd identity | exact `Rd25` from leaf N/T10, class peaked response, `An=Ag-Rd`, class-area scaling, and one identical carbon debit | `INV-VEGETATION-085` |
+| respiration poisons | nonpositive Atkin, clamp, `rd_leaf_n_rate`, wrong temperature response, sun/shade swap, and double debit reject or numerically differ | `INV-VEGETATION-085`, `VEG-E-085` |
+| numerical failure payload family | each solve identity preserves deterministic pass/occupancy/iteration/residual/step/backtracking/bound/cap/bracket/pivot/matrix evidence and byte-identical rollback | `INV-VEGETATION-086`, `VEG-E-086` |
 
 Future fixtures must use deliberately distinct canopy, ground, litter, snow,
 soil, ponded-water, layer, dry-matter, carbon, and nitrogen operands so wrong
@@ -1045,6 +1336,7 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-004` | `20260809-native-forest-ecohydrology-authority-reframe-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-055, INV-VEGETATION-056, INV-VEGETATION-057, INV-VEGETATION-058, INV-VEGETATION-059, INV-VEGETATION-060, INV-VEGETATION-061` | `flagged-binding-addition` | Version 4 assigns site values/state to caller configuration, constrains demonstration claims, and prohibits the agricultural PMET partition as the native-forest target while retaining complete constitutive-authority requirements. |
 | `BEI-VEGETATION-005` | `20260811-coupled-c3-forest-vegetation-model-stack-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-062, INV-VEGETATION-063, INV-VEGETATION-064, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-068, INV-VEGETATION-069, INV-VEGETATION-070, INV-VEGETATION-071, INV-VEGETATION-072` | `flagged-binding-addition` | Version 5 releases the indivisible contract-first C3 woody stack; implementation and empirical claims remain separate. |
 | `BEI-VEGETATION-006` | `20260811-c3-woody-tile-liquid-topology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-073, INV-VEGETATION-074, INV-VEGETATION-075, INV-VEGETATION-076, INV-VEGETATION-077, INV-VEGETATION-078, INV-VEGETATION-079` | `flagged-binding-addition` | Version 6 releases immutable V2 occupancy state, routing, area/resource identity, migration, and nonlinear local-solve implementation authority while preserving V1 as historical bytes. |
+| `BEI-VEGETATION-007` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-080, INV-VEGETATION-081, INV-VEGETATION-082, INV-VEGETATION-083, INV-VEGETATION-084, INV-VEGETATION-085, INV-VEGETATION-086` | `flagged-binding-addition` | Version 7 releases immutable V3 radiation preparation/ownership, surface wind, hydraulic geometry/common-root state, uncapped coupled potential semantics, exact leaf respiration, diagnostics, and independent fixture authority while preserving V1/V2 historical bytes. |
 
 ## Gap Register and Promotability Labels
 
@@ -1057,23 +1349,24 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted constitutive law or atomic amendment with snow/frost. | Independent authority plus joint vegetation/snow/LSE contract and mass-energy vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-006` | Elemental/dead-material receiver was missing. | `SC-BIOGEOCHEM-001` admits N and litter/CWD receiving transactions; soil transformations remain explicit dependency. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-007` | Every compatibility reduction except exact tile-union cover lacks reviewed operator/cutover evidence. | Field-specific reductions, unit helpers, real consumers, negative old-path proof. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-008` | No vegetation crate, scheduler transaction, typed failures, registry entries, fixtures, output, or real consumer exists. | Scoped implementation packages and direct consumer evidence. | `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-008` | The vegetation crate and default-off diagnostic scaffolding exist, but the public V3 transaction, complete typed numerical failures, owner candidates, atomic commit, output, and real consumer remain incomplete/fail-closed. | Resume the existing implementation package against immutable V3, pass both column solves and independent ledgers, then require direct-consumer evidence before cutover. | `IMPLEMENTATION_INCOMPLETE`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-009` | Calibration/identifiability authority and independent observations are absent. | Prospective data roles, observation operators, readiness analysis, calibration, and held-out validation. | `NOT_CALIBRATION_READY`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-010` | The earlier repository-license gap is closed only for the two pinned Laurence Lin repositories in `REF-VEGETATION-012/013`; the separate official RHESSys repository remains outside this route. | Preserve exact commit/file lineage and the MIT notice for distributed source-derived material. Licensing never substitutes for scientific authority; historical `DIRECT_TRANSLATION_PROHIBITED` remains applicable outside the admitted pinned route. | `LICENSE_ADMITTED`, `SCIENCE_AUTHORITY_UNCHANGED` |
 | `GAP-VEGETATION-011` | Pinned GIS definitions contain five keys that do not match the pinned C parser. | Version 5 consumes no RHESSys alias: canonical snake-case fields are exclusive, raw source keys remain evidence, and every mismatch fails ingestion. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-012` | The parser reads 53 parameters absent from all 32 GIS profiles and silently supplies defaults. | Version 5's exhaustive consumed-field schema makes every field caller-required and rejects missing/extra consumed fields; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-013` | The minimum generic and East-Coast deciduous/evergreen profile candidates have no cell-level source, calibration-domain, or transferability map. | Do not distribute or recommend them as defaults. Permit explicit caller values after schema/domain validation, preserve stratum identity, and label demonstration fixtures `ASSUMED_FOR_EXECUTION`. | `CALLER_CONFIGURATION`, `DEFAULT_AND_TRANSFERABILITY_CLAIM_PROHIBITED` |
-| `GAP-VEGETATION-014` | RHESSys aerodynamic/Jarvis chain rejected. | Version 5 selects neutral aerodynamic/boundary transfer and FvCB-linked Medlyn; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
-| `GAP-VEGETATION-015` | RHESSys C3 path incomplete. | Version 5 selects C3-only FvCB, leaf-N capacity, canopy scaling and finite solvers. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
-| `GAP-VEGETATION-016` | RHESSys root demand rejected. | Version 5 selects CLM5 equilibrium hydraulics plus layer authorization/finalization. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-014` | RHESSys aerodynamic/Jarvis chain rejected. | Version 7 selects neutral friction-velocity-derived leaf/wet/stem winds, dimension-specific boundary transfer, and FvCB-linked Medlyn; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-015` | RHESSys C3 path incomplete. | Version 7 selects C3-only FvCB, Atkin-owned `Rd25`, one exact Rd debit, canopy scaling, and finite solvers. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-016` | RHESSys root demand rejected. | Version 7 selects one common-root CLM5 equilibrium hydraulic system, height/gravity geometry, uncapped accepted potential coupling, and layer authorization/finalization. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-017` | RHESSys available-energy chain rejected. | Version 5 selects signed leaf energy and independent ground-owner residual. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-018` | The audited worldfile generators construct initial C/N pools and root depth with fixed row indices, unproven ratios/constants, contradictory deadwood C:N rules, and an SLA identity that diverges from the runtime parser. | Reject those synthesis paths. Implement complete, versioned, dated caller-state ingestion with exact profile/key identity, area basis, domains, finite guards, and independent mass/LAI reconstruction. | `CALLER_STATE_REQUIRED`, `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-019` | The audited Penman-Monteith routine omits the water/air molecular-mass ratio from the psychrometric constant, despite defining it and using the correct factor in another source routine. | Never port the defective expression. Penman-Monteith is neither required nor prohibited; any component selecting it must independently admit the complete equation, constants, units, resistance scale, phase/enthalpy, guards, and limiting vectors. | `SOURCE_ROUTINE_REJECTED`, `CONSTITUTIVE_AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-020` | Strict local-byte acquisition authority is now admitted by `INV-VEGETATION-053/054`, but no runtime validator implements it. The audited generator still fetches mutable raw `master` parameter collections and is prohibited. | Implement the exact tuple/digest checks and negative vectors without importing the audited fallback path. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
-| `GAP-VEGETATION-021` | RHESSys optical bypass rejected. | Version 5 selects explicit two-stream band/direction optics with strict closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-021` | RHESSys optical bypass rejected. | Version 7 selects explicit whole-column two-stream band/direction optics, exact leaf/stem preparation and physical absorption ownership with strict closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-022` | The inspected Coweeta evidence does not jointly observe every required C/N/root/geometry pool on one compatible state surface. | This does not block caller-supplied state. Require a complete caller state for execution; require observation operators, uncertainty, and compatible measurements only before an empirical calibration, validation, or transferability claim. | `CALLER_STATE_REQUIRED`, `EMPIRICAL_CLAIM_NOT_READY` |
 | `GAP-VEGETATION-023` | Agricultural PMET donation is prohibited. | Version 5 structurally separates canopy/wet/floor components; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING`, `NATIVE_FOREST_PMET_PARTITION_PROHIBITED` |
 | `GAP-VEGETATION-024` | V1 lacked persistent liquid distribution and descendant routing for a stratum spanning heterogeneous tiles. | Version 6 selects exact occupancy state, same-tile routing, local nonlinear solves, area conversion, migration, and closure. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
+| `GAP-VEGETATION-025` | V2 did not define the mixed leaf/stem radiation reduction/partition, local wind derivation, stem geometry/gravity, common-root warm start, accepted uncapped potential semantics, one Rd identity, complete numerical failure payload, or independent potential fixtures. | Version 7 selects every missing rule and binds independent V3 radiation, coupling, migration, respiration, and failure vectors; implementation remains in the existing state-machine package. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 
 The first safe successor is an authority-and-typed-boundary slice for topology,
 caller configuration/state, radiation/interception/conductance inputs,
@@ -1086,6 +1379,7 @@ cutover claim.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-12 | 7 | Codex | Admitted `OPENWEPP_C3_WOODY_V3` mixed leaf/stem radiation ownership, neutral surface wind, height/gravity and common-root hydraulics, coupled uncapped potential semantics, one Atkin/Rd identity, typed numerical failure payloads, exact migration, and independent V3 fixtures; preserved V1/V2 bytes as historical authority. |
 | 2026-08-08 | 2 | Codex | Admitted the exact licensed-source provenance boundary without promoting source science; added strict-definition invariant `INV-VEGETATION-052` and audit-proven format, hidden-default, parameter, conductance, photosynthesis, root-demand, available-energy, and initialization gaps. |
 | 2026-08-08 | 3 | Codex | Admitted strict caller-supplied local acquisition, immutable raw/resolved separation, typed schema-form requirements, and dated initial-state identity; retained every selected value, alias, initializer, constitutive, implementation, and cutover gap. |
 | 2026-08-09 | 4 | Codex | Reclassified site-specific values and complete compatible state as caller configuration, bounded demonstration claims, prohibited agricultural PMET redistribution in the native-forest target, and required independent canopy/wet-canopy/forest-floor/root component closure. |

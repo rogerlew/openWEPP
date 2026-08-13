@@ -13,6 +13,8 @@ const COUPLED_PACKAGE: &str =
     "docs/work-packages/20260811-coupled-c3-forest-vegetation-model-stack-authority-001";
 const V2_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260811-c3-woody-tile-liquid-topology-authority-001";
+const V3_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260812-c3-woody-potential-pass-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -112,6 +114,43 @@ fn inclusive_section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
     &text[start_offset..end_offset]
 }
 
+fn assert_v3_section_digests(vegetation: &str, parsed: &Value) {
+    for (key, start, end) in [
+        (
+            "vegetation_variables",
+            "## Variables and Units Using Canonical Symbols First\n",
+            "## Algorithm State Surfaces\n",
+        ),
+        (
+            "vegetation_algorithm_and_equations",
+            "## Algorithm Specification with Step Sequence\n",
+            "## Branch and Guard Table\n",
+        ),
+        (
+            "vegetation_invariants",
+            "## Invariants and Invariant Guard Map\n",
+            "### Invariant Guard Map\n",
+        ),
+        (
+            "vegetation_schema",
+            "## Constants and Parameters with Provenance Anchors\n",
+            "## Unit-Governance Map\n",
+        ),
+        (
+            "vegetation_numerics",
+            "## Tolerance and Numeric Notes\n",
+            "## Calibration and Identifiability\n",
+        ),
+    ] {
+        assert_eq!(
+            sha256_text(inclusive_section(vegetation, start, end)),
+            parsed["canonical_section_sha256"][key]
+                .as_str()
+                .unwrap_or_else(|| panic!("missing V3 section digest {key}"))
+        );
+    }
+}
+
 #[test]
 fn canonical_schema_and_registry_entry_are_bound() {
     let contract = read(CONTRACT);
@@ -142,8 +181,9 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "Version 6 admits the constitutive equations and topology amendment above",
-        "Earlier-version statements\nlimiting admission to configuration/bookkeeping are historical and superseded",
+        "contract_version: 7",
+        "Version 7 admits the constitutive equations, topology inheritance, and V3",
+        "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
@@ -156,7 +196,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
         "| `approved` | `active` |",
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
         "| `static` | `2026-08-12` |",
-        "OPENWEPP_C3_WOODY_V2",
+        "OPENWEPP_C3_WOODY_V3",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -372,7 +412,7 @@ fn canopy_snow_compatibility_calibration_and_gaps_remain_non_promotable() {
 
     for required in [
         "Vegetation owns intercepted canopy snow; snow/frost owns ground snow",
-        "versions 1-6 admit no canopy-snow constitutive law",
+        "versions 1-7 admit no canopy-snow constitutive law",
         "read-only, never feeds native state",
         "cannot support cutover without real downstream consumption",
         "science_implementation_status = NOT_IMPLEMENTED",
@@ -576,9 +616,10 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 6",
+        "contract_version: 7",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
+        "OPENWEPP_C3_WOODY_V3",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -650,37 +691,13 @@ fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
         )),
         sha256(&v2_path)
     );
-    for (start, end, expected) in [
-        (
-            "## Variables and Units Using Canonical Symbols First",
-            "## Algorithm State Surfaces",
-            "9dc6a1c86a82d4dbbcae560c85ef19be0401c64e636d36dc2ce7e09b0f1e170e",
-        ),
-        (
-            "## Algorithm Specification with Step Sequence",
-            "## Branch and Guard Table",
-            "c6f7870681c6d337166d07cdd468125a8547a72b65210669d61eda212a5b3fe5",
-        ),
-        (
-            "## Invariants and Invariant Guard Map",
-            "### Invariant Guard Map",
-            "78dc4a30f6ec134500154eb3058719f3710931b92b988596c797a44967991386",
-        ),
-        (
-            "## Constants and Parameters with Provenance Anchors",
-            "## Unit-Governance Map",
-            "53adb89c1415a5b6e5026b981263cb6d43a78ba50e34651a60e92d866b0958ec",
-        ),
-        (
-            "## Tolerance and Numeric Notes",
-            "## Calibration and Identifiability",
-            "acf9972a00dfcc0101e8dda47a4b2ade8b4dea8ad8168b264f1d1db21e808222",
-        ),
+    for expected in [
+        "9dc6a1c86a82d4dbbcae560c85ef19be0401c64e636d36dc2ce7e09b0f1e170e",
+        "c6f7870681c6d337166d07cdd468125a8547a72b65210669d61eda212a5b3fe5",
+        "78dc4a30f6ec134500154eb3058719f3710931b92b988596c797a44967991386",
+        "53adb89c1415a5b6e5026b981263cb6d43a78ba50e34651a60e92d866b0958ec",
+        "acf9972a00dfcc0101e8dda47a4b2ade8b4dea8ad8168b264f1d1db21e808222",
     ] {
-        assert_eq!(
-            sha256_text(inclusive_section(&vegetation, start, end)),
-            expected
-        );
         assert!(v2.contains(expected));
     }
     for (path, expected) in [
@@ -717,6 +734,569 @@ fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
             "missing V2 authority {required}"
         );
     }
+}
+
+#[test]
+fn v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable() {
+    let vegetation = read(CONTRACT);
+    let v3_path = format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json");
+    let model_stack_copy =
+        format!("{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json");
+    let definition = read(&v3_path);
+    let parsed: Value = serde_json::from_str(&definition).expect("V3 definition JSON");
+
+    assert_eq!(
+        sha256(&v3_path),
+        "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852"
+    );
+    assert_eq!(read(&model_stack_copy), definition);
+    assert_eq!(sha256(&model_stack_copy), sha256(&v3_path));
+    assert_eq!(parsed["model_version"], "OPENWEPP_C3_WOODY_V3");
+    assert_eq!(parsed["canonical_contract"], "SC-VEGETATION-001@7");
+    assert_eq!(
+        parsed["base_model_definition"]["sha256"],
+        "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3"
+    );
+    assert_eq!(
+        parsed["independent_fixture"]["sha256"],
+        "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109"
+    );
+    assert_eq!(
+        parsed["independent_fixture"]["generator_sha256"],
+        "7b137c1aa9ed0912caf4d14c779eca1819014b4217156d36f98619f06daabd1a"
+    );
+    assert_eq!(
+        parsed["leaf_respiration"]["immutable_source"],
+        "ESCOMP/CTSM@8e1309ab0db671d884b80746cbae9bbaafbe78a7 src/biogeophys/PhotosynthesisMod.F90 sha256=e4c9ad718209af44fcfdfc1d591bd2729d345f9e422cf5d9c8a889525d6a1cdf lines 1318-1322,1441-1447"
+    );
+
+    assert_v3_section_digests(&vegetation, &parsed);
+
+    for (path, key, expected) in [
+        (
+            "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+            "biogeochemistry_contract",
+            "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+            "land_surface_energy_contract",
+            "7de4887f9d62202427552f7ef9a677ac9668811cca84fa5d816dd9dc45bf9f69",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+            "water_balance_contract",
+            "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
+        ),
+        (
+            "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+            "vegetation_transaction_contract",
+            "c94d3c5745fd801b092f992b46fb6f5d4684b70acf24f198c4d4d6fdc42785c8",
+        ),
+    ] {
+        assert_eq!(sha256(path), expected);
+        assert_eq!(parsed["canonical_section_sha256"][key], expected);
+    }
+
+    assert_eq!(
+        sha256(&format!(
+            "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v1_definition.json"
+        )),
+        "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V2_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v2_definition.json"
+        )),
+        "38e1bb90abd3ff82879f7d9c80b0377bb510a3b97fdd2b6f07c12b7c42b80dc3"
+    );
+}
+
+#[test]
+fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
+    let fixture_path =
+        format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_vectors.json");
+    let before = read(&fixture_path);
+    let before_digest = sha256(&fixture_path);
+    let output = Command::new(".venv/bin/python")
+        .arg(format!(
+            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator.py"
+        ))
+        .output()
+        .expect("run independent V3 oracle");
+    assert!(
+        output.status.success(),
+        "V3 oracle failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        read(&fixture_path),
+        before,
+        "oracle regeneration changed bytes"
+    );
+    assert_eq!(sha256(&fixture_path), before_digest);
+    assert_eq!(
+        before_digest,
+        "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109"
+    );
+    let parsed: Value = serde_json::from_str(&before).expect("V3 fixture JSON");
+    assert_eq!(parsed["model_version"], "OPENWEPP_C3_WOODY_V3");
+    assert_eq!(parsed["oracle_independence"]["calls_rust"], false);
+    assert_eq!(
+        parsed["oracle_independence"]["expected_values_generated_by_rust"],
+        false
+    );
+    assert!(
+        parsed["checks"]
+            .as_object()
+            .expect("V3 check object")
+            .values()
+            .all(|value| value.as_bool() == Some(true))
+    );
+}
+
+fn assert_v3_radiation_and_aerodynamics(families: &Value) {
+    for band in ["VIS", "NIR"] {
+        for component in ["direct", "diffuse"] {
+            let vector = &families["radiation"]["two_rank"][band][component];
+            assert!(vector["closure_residual"].as_f64().unwrap().abs() <= 2.0e-8);
+            for occupancy in vector["occupancies"].as_array().unwrap() {
+                let result = &occupancy["results"];
+                let owner_absorption = result["absorbed_leaf_sun"].as_f64().unwrap()
+                    + result["absorbed_leaf_shade"].as_f64().unwrap()
+                    + result["absorbed_stem"].as_f64().unwrap();
+                assert!(
+                    (owner_absorption - result["absorbed_plant"].as_f64().unwrap()).abs()
+                        <= 2.0e-10
+                );
+            }
+        }
+    }
+    let zero_direct = &families["radiation"]["zero_direct_exact_branch"];
+    assert_eq!(zero_direct["directional_operands_evaluated"], false);
+    assert!(zero_direct["beam_k_unclumped"].is_null());
+    assert!(zero_direct["k_eff"].is_null());
+    assert_eq!(zero_direct["terminal_direct"].as_f64(), Some(0.0));
+    let resonance = &families["radiation"]["resonance_exact_integral_branch"];
+    assert!(
+        (resonance["source_offset"][0].as_f64().unwrap()
+            - resonance["analytic_first_component"].as_f64().unwrap())
+        .abs()
+            <= 1.0e-12
+    );
+
+    let aerodynamic = &families["aerodynamics"];
+    let u_star = aerodynamic["results"]["u_star_m_s"].as_f64().unwrap();
+    for semantic in ["u_leaf_m_s", "u_wet_m_s", "u_stem_m_s"] {
+        assert_eq!(
+            aerodynamic["results"]["semantic_winds"][semantic].as_f64(),
+            Some(u_star)
+        );
+    }
+    let conductances = aerodynamic["results"]["conductances"].as_object().unwrap();
+    assert_eq!(conductances.len(), 3);
+    assert_ne!(conductances["gb_leaf_m_s"], conductances["gb_wet_m_s"]);
+    assert_ne!(conductances["gb_wet_m_s"], conductances["gb_stem_m_s"]);
+}
+
+fn assert_v3_hydraulics_and_migration(families: &Value) {
+    let hydraulic = &families["hydraulic_potential_pass"];
+    let accepted = &hydraulic["accepted_uncapped_stage_a"];
+    let beta = accepted["solution"]["beta_hyd"].as_f64().unwrap();
+    let beta_sun = accepted["solution"]["beta_hyd_sun"].as_f64().unwrap();
+    let beta_shade = accepted["solution"]["beta_hyd_shade"].as_f64().unwrap();
+    assert!(beta > 0.0 && beta < 1.0);
+    assert!(beta_sun > 0.0 && beta_sun < 1.0);
+    assert!(beta_shade > 0.0 && beta_shade < 1.0);
+    assert!((beta_sun - beta_shade).abs() > f64::EPSILON);
+    let emax = &hydraulic["internal_maximum_evaluation"]["emax"];
+    let emax_sun = emax["sun"].as_f64().unwrap();
+    let emax_shade = emax["shade"].as_f64().unwrap();
+    let reconstructed_beta =
+        (emax_sun * beta_sun + emax_shade * beta_shade) / (emax_sun + emax_shade);
+    assert!((beta - reconstructed_beta).abs() <= 2.0e-14);
+    for residual in accepted["closures"].as_object().unwrap().values() {
+        assert!(residual.as_f64().unwrap().abs() <= 2.0e-10);
+    }
+    let normalized = accepted["normalized_residuals"].as_array().unwrap();
+    assert_eq!(normalized.len(), 6);
+    for identity in [
+        "sun_gas_minus_q1",
+        "shade_gas_minus_q1",
+        "sun_gas_minus_vulnerability_demand",
+        "shade_gas_minus_vulnerability_demand",
+        "q1_sum_minus_q2",
+        "q3_sum_minus_q2",
+    ] {
+        let component = normalized
+            .iter()
+            .find(|component| component["identity"] == identity)
+            .unwrap_or_else(|| panic!("missing coupled residual {identity}"));
+        assert!(component["normalized"].as_f64().unwrap().abs() <= 1.0);
+        assert!(component["tolerance"].as_f64().unwrap() > 0.0);
+    }
+    let energy = &accepted["fluxes"]["canopy_energy_state"];
+    for field in [
+        "canopy_air_specific_humidity_kg_kg",
+        "canopy_air_temperature_k",
+        "dry_stem_temperature_k",
+        "wet_surface_temperature_k",
+    ] {
+        assert!(energy[field].as_f64().unwrap().is_finite());
+    }
+    assert_eq!(energy["wet_store_cap_active"], true);
+    assert_eq!(energy["normalized_residuals"].as_array().unwrap().len(), 6);
+    assert!(
+        energy["normalized_residuals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|residual| residual.as_f64().is_some_and(|value| value.abs() <= 1.0))
+    );
+    assert_eq!(
+        hydraulic["internal_maximum_evaluation"]["accepted_state_or_request"],
+        false
+    );
+    assert_eq!(accepted["fluxes"]["stem_path_length_m"], 12.5);
+    assert_eq!(accepted["fluxes"]["stem_gravity_head_mm"], 12500.0);
+    assert_v3_biochemistry_aerodynamics_and_root_paths(hydraulic, accepted);
+    let fraction = hydraulic["operands"]["tile_fraction"].as_f64().unwrap();
+    let interval = hydraulic["operands"]["dt_s"].as_f64().unwrap();
+    for request in accepted["water_requests"].as_array().unwrap() {
+        let layer = request["layer_id"].as_str().unwrap();
+        let flux = accepted["fluxes"]["q3"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["layer_id"] == layer)
+            .expect("request layer flux")["flux"]
+            .as_f64()
+            .unwrap();
+        assert!(
+            (request["amount_kg_h2o_m2_stand_ground"].as_f64().unwrap()
+                - fraction * interval * flux)
+                .abs()
+                <= 2.0e-14
+        );
+        if matches!(layer, "soil-dry" | "soil-frozen") {
+            assert_eq!(flux.to_bits(), 0.0_f64.to_bits());
+        }
+    }
+    assert_eq!(
+        hydraulic["singular_jacobian"]["failure"],
+        "singular_jacobian"
+    );
+    assert_eq!(hydraulic["iteration_limit"]["failure"], "iteration_limit");
+    assert_eq!(
+        hydraulic["redistribution_poison"]["expected"],
+        "VEG-E-063 hydraulic_redistribution_unsupported"
+    );
+
+    assert_v3_migration_and_zero_demand(families);
+}
+
+fn assert_v3_biochemistry_aerodynamics_and_root_paths(hydraulic: &Value, accepted: &Value) {
+    let forcing = &hydraulic["operands"]["gas_energy"];
+    assert_eq!(forcing["cp_air_j_kg_k"], 1004.64);
+    assert_eq!(forcing["latent_heat_j_kg"], 2_501_000.0);
+    let wind = &forcing["reference_wind_operands"];
+    let kappa = wind["kappa"].as_f64().unwrap();
+    let reference = wind["u_ref_m_s"].as_f64().unwrap();
+    let height = wind["z_ref_m"].as_f64().unwrap() - wind["displacement_m"].as_f64().unwrap();
+    let z0m = wind["z0m_m"].as_f64().unwrap();
+    for (field, scalar) in [("rah_s_m", "z0h_m"), ("raw_s_m", "z0q_m")] {
+        let reconstructed = (height / z0m).ln() * (height / wind[scalar].as_f64().unwrap()).ln()
+            / (kappa * kappa * reference);
+        assert!((forcing[field].as_f64().unwrap() - reconstructed).abs() <= 2.0e-14);
+    }
+
+    for class_name in ["sun_gas_energy_state", "shade_gas_energy_state"] {
+        let state = &accepted["fluxes"][class_name];
+        assert!(
+            (state["ci_initial_bracket_pa"][0].as_f64().unwrap()
+                - state["gamma_pa"].as_f64().unwrap())
+            .abs()
+                <= 2.0e-14
+        );
+        assert!(
+            (state["ap"].as_f64().unwrap() - 3.0 * state["tp"].as_f64().unwrap()).abs() <= 1.0e-13
+        );
+        assert!(
+            (state["an"].as_f64().unwrap()
+                - (state["ag"].as_f64().unwrap() - state["rd"].as_f64().unwrap()))
+            .abs()
+                <= 1.0e-13
+        );
+        for field in [
+            "vcmax",
+            "jmax",
+            "kc_pa",
+            "ko_pa",
+            "gamma_pa",
+            "ipsii",
+            "electron_transport",
+            "ac",
+            "aj",
+            "ap",
+            "ai",
+            "ag",
+        ] {
+            assert!(state[field].as_f64().is_some_and(f64::is_finite));
+        }
+    }
+
+    let parameters = &hydraulic["operands"]["parameters"];
+    for row in accepted["fluxes"]["q3"].as_array().unwrap() {
+        if row["flux"].as_f64().unwrap() == 0.0 {
+            continue;
+        }
+        let layer = hydraulic["operands"]["layers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|layer| layer["layer_id"] == row["layer_id"])
+            .expect("layer operands");
+        let kr = row["kr_m_s"].as_f64().unwrap();
+        let ks = row["ks_m_s"].as_f64().unwrap();
+        assert!(
+            (kr - parameters["k3_max_m_s"].as_f64().unwrap() / layer["z3_m"].as_f64().unwrap()
+                * row["soil_vulnerability"].as_f64().unwrap())
+            .abs()
+                <= 2.0e-20
+        );
+        assert!(
+            (ks - layer["ksoil_m2_s"].as_f64().unwrap() / layer["dxroot_m"].as_f64().unwrap())
+                .abs()
+                <= 2.0e-20
+        );
+        assert!((row["k3_series_m_s"].as_f64().unwrap() - kr * ks / (kr + ks)).abs() <= 2.0e-20);
+        let rai = (parameters["lai"].as_f64().unwrap() + parameters["sai"].as_f64().unwrap())
+            * layer["root_fraction"].as_f64().unwrap()
+            * parameters["root_to_leaf_area"].as_f64().unwrap();
+        assert!((row["rai_m2_m2"].as_f64().unwrap() - rai).abs() <= 2.0e-14);
+    }
+}
+
+fn assert_v3_migration_and_zero_demand(families: &Value) {
+    let migration = &families["v2_to_v3_root_state_migration"];
+    assert_eq!(
+        migration["bitwise_identical"]["expected"]["status"],
+        "complete"
+    );
+    assert_eq!(
+        migration["numerically_equal_bitwise_distinct"]["expected"]["reason"],
+        "ambiguous_v2_layer_root_warm_starts"
+    );
+    assert_eq!(
+        migration["missing"]["expected"]["reason"],
+        "ambiguous_v2_layer_root_warm_starts"
+    );
+    let zero_demand = &families["hydraulic_potential_pass"]["zero_maximum_demand_exact_branch"];
+    assert_eq!(zero_demand["persisted_beta_hyd"], 1.0);
+    assert_eq!(zero_demand["division_evaluated"], false);
+}
+
+fn assert_v3_respiration_failures_and_poisons(parsed: &Value) {
+    let families = &parsed["families"];
+    let respiration = &families["leaf_respiration"];
+    let results = &respiration["results"];
+    assert!(
+        (respiration["operands"]["ag_sun_umol_co2_m2_leaf_s"]
+            .as_f64()
+            .unwrap()
+            - results["rd_sun"].as_f64().unwrap()
+            - results["an_sun"].as_f64().unwrap())
+        .abs()
+            <= 1.0e-14
+    );
+    let exact_once = results["leaf_maintenance_carbon_debit_exact_once"]
+        .as_f64()
+        .unwrap();
+    let double_poison = results["double_debit_poison"].as_f64().unwrap();
+    assert!((2.0 * exact_once - double_poison).abs() <= f64::EPSILON);
+    assert_eq!(
+        respiration["nonpositive_atkin_poison"]["expected"],
+        "VEG-E-085 nonpositive_atkin_rd25"
+    );
+    assert_eq!(
+        respiration["source_unit_conversion"]["atkin_result_units"],
+        "umol CO2 m-2 leaf s-1"
+    );
+    assert_eq!(
+        respiration["zero_leaf_area_exact_branch"]["leaf_n_division_evaluated"],
+        false
+    );
+
+    assert_v3_failure_diagnostics(families);
+    assert_v3_poison_inventory(parsed);
+}
+
+fn assert_v3_failure_diagnostics(families: &Value) {
+    let mut failures = Vec::new();
+    failures.extend(families["executed_ci_failures"].as_array().unwrap());
+    failures.extend(
+        families["hydraulic_potential_pass"]["executed_canopy_energy_failures"]
+            .as_array()
+            .unwrap(),
+    );
+    failures.push(&families["hydraulic_potential_pass"]["singular_jacobian"]);
+    failures.push(&families["hydraulic_potential_pass"]["iteration_limit"]);
+    for solve in [
+        "sun_ci",
+        "shade_ci",
+        "canopy_energy",
+        "hydraulic_system",
+        "outer_gas_energy_hydraulic_coupling",
+    ] {
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure["diagnostics"]["solve"] == solve)
+        );
+    }
+    for failure in failures {
+        assert!(failure["candidate"].is_null());
+        assert!(failure["last_iterate"].is_null());
+        let diagnostics = &failure["diagnostics"];
+        for field in [
+            "model_definition_sha256",
+            "transaction_id",
+            "occupancy_id",
+            "pass",
+            "solve",
+            "iterations",
+            "residual_norms",
+            "step_norm",
+            "backtracking_count",
+            "active_bounds",
+            "active_water_caps",
+            "bracket",
+            "pivot_magnitude",
+            "matrix_norm",
+        ] {
+            assert!(
+                diagnostics.get(field).is_some(),
+                "failure payload missing {field}"
+            );
+        }
+        assert_json_numbers_finite(diagnostics);
+    }
+    let precedence = &families["failure_precedence"];
+    assert_eq!(
+        precedence["order"],
+        serde_json::json!([
+            "identity_schema",
+            "domain",
+            "bracket",
+            "singular",
+            "iteration"
+        ])
+    );
+    for (index, row) in precedence["competing_conditions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+    {
+        assert_eq!(row["selected"], precedence["order"][index]);
+        assert!(row["candidate"].is_null() && row["last_iterate"].is_null());
+    }
+    for failure in families["executed_ci_failures"].as_array().unwrap() {
+        assert_eq!(failure["evaluations"], 2);
+        assert!(failure["diagnostics"]["bracket"].is_array());
+        if failure["failure_kind"] != "domain" {
+            assert_eq!(
+                failure["diagnostics"]["residual_norms"]
+                    .as_array()
+                    .unwrap()
+                    .len(),
+                2
+            );
+        }
+    }
+}
+
+fn assert_v3_poison_inventory(parsed: &Value) {
+    let poisons = parsed["poisons"].as_object().unwrap();
+    assert_eq!(poisons.len(), 40);
+    assert!(
+        poisons
+            .values()
+            .all(|poison| poison["executed"].as_bool() == Some(true))
+    );
+    for required_poison in V3_REQUIRED_POISONS {
+        assert!(poisons.get(required_poison).is_some());
+    }
+    assert!(
+        poisons
+            .values()
+            .filter(|poison| poison.get("typed_error").is_some())
+            .all(|poison| poison["executed_by"] == "owning_validator")
+    );
+}
+
+fn assert_json_numbers_finite(value: &Value) {
+    match value {
+        Value::Number(number) => assert!(number.as_f64().is_some_and(f64::is_finite)),
+        Value::Array(values) => values.iter().for_each(assert_json_numbers_finite),
+        Value::Object(values) => values.values().for_each(assert_json_numbers_finite),
+        _ => {}
+    }
+}
+
+const V3_REQUIRED_POISONS: [&str; 40] = [
+    "aggregate_only_transpiration_equality",
+    "area_only_absorption_partition",
+    "arithmetic_mean_optics",
+    "authorization_in_potential_pass",
+    "average_v2_root_warm_starts",
+    "clumping_applied_twice",
+    "clumping_omitted",
+    "crown_base_as_stem_path",
+    "direct_diffuse_swap",
+    "direct_summed_lower_reflection",
+    "external_hydraulic_clamp",
+    "first_v2_root_warm_start",
+    "half_height_stem_path",
+    "heat_roughness_in_momentum_log",
+    "hidden_minimum_wind",
+    "hydraulics_without_energy_resolve",
+    "invalid_reference_height_geometry",
+    "leaf_optics_for_all_plant_area",
+    "legacy_rd_leaf_n_rate",
+    "metres_as_mm_gravity",
+    "missing_gravity",
+    "nonpositive_friction_velocity",
+    "nonpositive_height",
+    "nonpositive_rd_clamp",
+    "posthoc_scalar_stress",
+    "publish_beta_one_emax_as_request",
+    "rd_debited_twice",
+    "reference_wind_as_leaf_wind",
+    "root_weighted_v2_migration",
+    "stem_absorption_in_fvcb_par",
+    "stem_leaf_gravity",
+    "stem_only_photosynthesis",
+    "stem_optics_for_all_plant_area",
+    "sun_shade_respiration_swap",
+    "sunlit_plant_area_as_sunlit_leaf_area",
+    "undocumented_wet_surface_wind",
+    "vis_nir_swap",
+    "whole_column_zero_lower_boundary",
+    "wrong_gravity_sign",
+    "wrong_rd_temperature_response",
+];
+
+#[test]
+fn v3_vectors_close_radiation_hydraulics_respiration_and_failure_payloads() {
+    let fixture = read(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_vectors.json"
+    ));
+    let parsed: Value = serde_json::from_str(&fixture).expect("V3 fixture JSON");
+    let families = &parsed["families"];
+    assert_v3_radiation_and_aerodynamics(families);
+    assert_v3_hydraulics_and_migration(families);
+    assert_v3_respiration_failures_and_poisons(&parsed);
 }
 
 fn assert_v2_check_inventory(parsed: &Value) {

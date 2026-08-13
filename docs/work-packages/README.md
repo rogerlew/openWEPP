@@ -11,13 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260812-c3-woody-potential-pass-authority-001/` — QUEUED / V3
+- `20260812-c3-woody-potential-pass-authority-001/` — COMPLETE /
+  `OPENWEPP_C3_WOODY_V3` IMPLEMENTATION AUTHORITY RELEASED
   CONTRACT-FIRST AUTHORITY CORRECTION: admit exact mixed leaf/stem radiation,
   neutral canopy-surface wind, hydraulic geometry and common-root state,
   uncapped coupled potential-pass semantics, leaf-respiration identity,
   numerical failure diagnostics, and independent V3 fixtures. Production Rust,
   runtime activation, consumer cutover, calibration, and publication are
-  excluded.
+  excluded. Dual science review, focused/heavy gates, and dual terminal
+  verification passed.
 
 - `20260811-c3-woody-tile-liquid-topology-authority-001/` — COMPLETE / `OPENWEPP_C3_WOODY_V2` IMPLEMENTATION AUTHORITY RELEASED: exact tile-liquid topology authority, dual science review, focused/heavy gates, and dual terminal verification pass; no runtime activation or cutover.
 - `20260811-coupled-c3-forest-vegetation-model-stack-authority-001/` — COMPLETE /

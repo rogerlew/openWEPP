@@ -1,0 +1,21 @@
+{"label":"cargo-clippy","command":"cargo clippy --workspace --all-targets -- -D warnings","exit_code":0,"start_utc":"2026-08-13T00:09:11Z","end_utc":"2026-08-13T00:09:25Z","duration_ms":14421,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/cargo-clippy.log"}
+,
+{"label":"nextest-workspace-full","command":"cargo nextest run --workspace --profile full","exit_code":100,"start_utc":"2026-08-13T00:09:25Z","end_utc":"2026-08-13T00:32:10Z","duration_ms":1364557,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/nextest-workspace-full.log"}
+,
+{"label":"cargo-test-doc","command":"cargo test --doc --workspace","exit_code":0,"start_utc":"2026-08-13T00:32:10Z","end_utc":"2026-08-13T00:32:17Z","duration_ms":7535,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/cargo-test-doc.log"}
+,
+{"label":"cargo-deny","command":"cargo deny check","exit_code":0,"start_utc":"2026-08-13T00:32:17Z","end_utc":"2026-08-13T00:32:20Z","duration_ms":2805,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/cargo-deny.log"}
+,
+{"label":"cargo-fmt-check","command":"cargo fmt --all -- --check","exit_code":0,"start_utc":"2026-08-13T00:32:20Z","end_utc":"2026-08-13T00:32:23Z","duration_ms":2790,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/cargo-fmt-check.log"}
+,
+{"label":"git-diff-check","command":"git diff --check","exit_code":0,"start_utc":"2026-08-13T00:32:23Z","end_utc":"2026-08-13T00:32:23Z","duration_ms":44,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/git-diff-check.log"}
+,
+{"label":"check-science-contract-admission","command":"bash tools/release/check_science_contract_admission.sh --base-ref 4f5bb1c599a683b63be56ecd9e7296f8faf01ed0 --worktree","exit_code":0,"start_utc":"2026-08-13T00:32:23Z","end_utc":"2026-08-13T00:32:23Z","duration_ms":301,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/check-science-contract-admission.log"}
+,
+{"label":"check-authority-suite-antievasion","command":"bash tools/release/check_authority_suite_antievasion.sh","exit_code":0,"start_utc":"2026-08-13T00:32:23Z","end_utc":"2026-08-13T00:32:23Z","duration_ms":69,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/check-authority-suite-antievasion.log"}
+,
+{"label":"nextest-auth11-guards","command":"cargo nextest run --test auth11_required_suite_obligation_guards_contract","exit_code":0,"start_utc":"2026-08-13T00:32:23Z","end_utc":"2026-08-13T00:32:24Z","duration_ms":652,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/nextest-auth11-guards.log"}
+,
+{"label":"check-sc-unit-compliance","command":"bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md","exit_code":0,"start_utc":"2026-08-13T00:32:24Z","end_utc":"2026-08-13T00:32:24Z","duration_ms":117,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/check-sc-unit-compliance.log"}
+,
+{"label":"nextest-vegetation-boundary","command":"cargo nextest run --test vegetation_boundary_authority_contract --profile quick","exit_code":0,"start_utc":"2026-08-13T00:32:24Z","end_utc":"2026-08-13T00:32:30Z","duration_ms":5464,"log_path":"/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/heavy-closure-20260812-170911/nextest-vegetation-boundary.log"}

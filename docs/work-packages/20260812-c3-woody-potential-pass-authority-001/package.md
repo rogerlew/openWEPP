@@ -1,6 +1,6 @@
 # Admit C3 Woody V3 Potential-Pass Authority
 
-Status: `queued`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V3 implementation authority released`
 
 Date: `2026-08-12`
 
@@ -22,21 +22,30 @@ tile-column architecture. The successor model identity is
 
 ## Progress
 
-- [ ] Freeze intake, exact base, required reading, protected bytes, and intended
+- [x] Freeze intake, exact base, required reading, protected bytes, and intended
   write set.
-- [ ] Amend canonical authority to V7 before contract-derived tests.
-- [ ] Generate immutable V3 definition bytes and independent V3 fixtures.
-- [ ] Add contract-derived authority, digest, oracle, and poison tests.
-- [ ] Record and pass the pre-implementation authority gate.
-- [ ] Complete two independent science reviews and disposition every finding.
-- [ ] Complete critical heavy gates, exact terminal-diff reconciliation, and two
-  independent terminal verifications.
-- [ ] Archive the kickoff prompt byte-for-byte and publish the implementation
+- [x] Amend canonical authority to V7 before contract-derived tests.
+- [x] Generate immutable V3 definition bytes and independent V3 fixtures.
+- [x] Add contract-derived authority, digest, oracle, and poison tests.
+- [x] Record and pass the pre-implementation authority gate.
+- [x] Complete two independent science reviews and disposition every finding.
+- [x] Complete critical heavy gates and exact terminal-diff reconciliation.
+- [x] Complete two independent terminal verifications.
+- [x] Archive the kickoff prompt byte-for-byte and publish the implementation
   handoff only after all terminal criteria pass.
 
 ## Surprises and Discoveries
 
-- None at scaffold time.
+- The first oracle draft exposed an invalid post-hoc
+  `beta*Emax*vulnerability` endpoint and a mislabeled Atkin source unit during
+  parent audit. Both were rejected before identity binding; the frozen oracle
+  re-solves nonlinear class gas exchange and energy in every coupled hydraulic
+  evaluation and corrected the Atkin source identity: immutable CTSM source
+  shows the expression already returns `Rd25` in
+  `umol CO2 m-2 leaf s-1`, so carbon conversion occurs only in the ledger.
+- The admission script correctly rejects an `in_review/draft` contract. This is
+  retained as expected lifecycle evidence and will be rerun after dual science
+  review authorizes `approved/active` promotion.
 
 ## Decision Log
 
@@ -49,11 +58,27 @@ tile-column architecture. The successor model identity is
   Rationale: they remain immutable historical authority; V2 topology remains a
   valid predecessor but is not executable as V3.
   Date/Author: 2026-08-12 / Codex.
+- Decision: bind the V3 independent fixture at SHA-256
+  `1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109`,
+  its generator at SHA-256
+  `7b137c1aa9ed0912caf4d14c779eca1819014b4217156d36f98619f06daabd1a`,
+  and the canonical V3 definition at SHA-256
+  `7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852`.
+  Rationale: regenerated fixture bytes are deterministic and contract-derived
+  tests bind the five live V7 sections and all adjacent contract digests.
+  Date/Author: 2026-08-12 / Codex.
 
 ## Outcomes and Retrospective
 
-Queued. No V3 authority, implementation permission, or runtime claim exists at
-scaffold time.
+Both independent science reviewers and both terminal verifiers return GO/PASS
+with every finding resolved. V7 is approved/active and the final definition,
+fixture, and generator identities are frozen. Admission and all heavy gates
+pass, including an uninterrupted full-workspace result of 2,481/2,481 tests in
+3,318.773 seconds. Earlier manual interrupts and the root-filesystem ENOSPC
+attempt remain preserved. The kickoff prompt was archived byte-for-byte at
+SHA-256 `9252d2ce3fb553d598099762319cb502ae2a06ad2520b0da9ce31c09485f1c5c`.
+This releases implementation authority only; it makes no runtime or completed
+implementation claim.
 
 ## Scope and Protected Boundaries
 
@@ -110,10 +135,12 @@ substitution:
 4. V3 occupancy state owns one `root_node_potential_mm`; V2 migration accepts
    only bitwise-identical layer warm starts and otherwise returns an exhaustive
    unresolved-field report.
-5. `beta_hyd=1` is internal maximum-demand evaluation only. The accepted
-   Stage-A potential pass is uncapped by the hydrology owner but solves
-   hydraulics, gas exchange, and energy jointly with accepted
-   `beta_hyd in [0,1]` and class/total continuity equalities.
+5. Class `beta=1` is internal maximum-demand evaluation only. The accepted
+   Stage-A potential pass is uncapped by the hydrology owner but jointly solves
+   distinct sun/shade beta factors, hydraulics, gas exchange, and energy with
+   both class loss-function equalities and all class/total continuity
+   equalities. Persisted scalar `beta_hyd` is only the exact Emax-weighted
+   aggregate/warm start.
 6. `Rd25` is owned by the admitted Atkin leaf-N/T10 relation, temperature-scaled
    by the admitted Rd-specific response, subtracted once from assimilation and
    debited once in the carbon ledger; the nonpositive Atkin branch is explicit
@@ -225,3 +252,12 @@ fail-closed.
 
 Plan update note (2026-08-12): initial scaffold created from the accepted V2
 potential-pass HOLD and the user-directed V3 authority selections.
+
+Plan update note (2026-08-12): V7 draft, deterministic independent vectors,
+immutable V3 definition, and focused contract-derived tests completed; package
+advanced to dual independent science review.
+
+Plan update note (2026-08-12): both science reviews and all focused/heavy gates
+passed. The final uninterrupted full-workspace run used a unique `/home`
+temporary directory and passed 2,481/2,481 tests; the package advanced to exact-
+byte terminal verification.

@@ -1,0 +1,8 @@
+command=cargo nextest run --workspace --profile full
+tmpdir_created=/home/workdir/openwepp-v3-nextest.7LzluH
+tmpdir_removed=removed
+start_utc=2026-08-13T02:43:14Z
+end_utc=2026-08-13T03:38:43Z
+duration_seconds=3329
+exit_code=0
+log_path=/home/workdir/openWEPP/docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/v3-nextest-20260812-194314-1131755/nextest.log
