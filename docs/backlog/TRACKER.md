@@ -13,8 +13,8 @@ concept → work-package → contract-authoring promotion path.
 - `complete` — superseded by completed work; **prune candidate** (move detail to the
   execution log and delete the note).
 
-Last updated: 2026-08-11 (Codex — coupled C3 implementation authority released;
-whole-state successor queued).
+Last updated: 2026-08-14 (Codex — coupled C3 V7 science implementation
+complete; snow-free integration sequence promoted).
 
 | Item | State | Gate / blocker | Notes |
 |---|---|---|---|
@@ -30,7 +30,7 @@ whole-state successor queued).
 | [Native-vegetation evapotranspiration process model](20260803-native-vegetation-et-process-model.md) | `concept` | Vendor Stevens Canyon cohort; admit component-resolved forest authority; amend `SC-EVAP-001` | Replace agricultural LAI/crop-coefficient partitioning in explicit native mode with conservative live-canopy transpiration, soil evaporation, and canopy/litter interception processes. Legacy remains compatibility/diagnostic behavior, not native truth. |
 | [Canopy mutation peak-runoff discontinuity](20260807-canopy-peak-runoff-discontinuity.md) | `complete` | — | Native runtime, SC-* authority, amended ADR-0036, and its source guard agree. The exact-source reopened full workspace gate passes 2,346/2,346 and both fresh terminal verifiers pass. |
 | [Frost / daylength canopy decline + leaf-on/leaf-off + residue cover](20260626-frost-daylength-canopy-decline-hemisphere-robust.md) | `staged` | empirical calibration and assurance under the [canopy phenology assurance roadmap](../planning/canopy-phenology-assurance-roadmap.md) | **Mechanics implemented:** dynamic residue coupling and `CANOPY-PHENOLOGY-02` native GSI leaf-on/leaf-off, canopy, LAI, litter, and real-consumer integration are complete. Remaining: Bill Elliot reproduction, field calibration, litter-source adjudication, canopy-gradient congruence, independent Southern Hemisphere evaluation, and `CANOPY-ASSURE-01`. |
-| [RHESSys-derived vegetation crate](20260806-rhessys-derived-vegetation-crate.md) | `queued` | Execute `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001` | Contract-first authority is admitted. Implement the entire coupled state machine default-off; no partial endpoint or empirical claim. |
+| [RHESSys-derived vegetation crate](20260806-rhessys-derived-vegetation-crate.md) | `complete` | — | Superseded by the complete `OPENWEPP_C3_WOODY_V7` default-off science implementation at `023ca4518`. The retained RHESSys source/parameter evidence informs later calibration readiness; it is not implementation authority or a blocker for the snow-free land-surface/hydrology shadow sequence. Prune candidate. |
 | Soil biogeochemistry transformations | `queued` | Execute `20260811-soil-biogeochemistry-transformations-implementation-001` | Receiving/arbitration authority exists; decomposition, mineralization, and endogenous mineral-N supply remain explicitly unimplemented. |
 | [Canopy snow interception / sublimation](20260627-canopy-snow-interception-sublimation.md) | `concept` | not load-bearing yet | The canopy side of sublimation (distinct from the surface-pack side below). |
 | [Stream water temperature — surface energy balance](20260627-stream-water-temperature-surface-energy-balance.md) | `breadcrumb` | prerequisites met; not being planned | Surface-EB foundation + opt-in meltwater-temperature source exist. Open question on pickup: can hourly water+temperature serialize across HBP and be consumed by `openwepp-cli-watershed`. |

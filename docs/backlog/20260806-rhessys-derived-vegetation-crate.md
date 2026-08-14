@@ -1,30 +1,30 @@
 # RHESSys-Derived Vegetation Crate
 
-> 2026-08-11 authority update: `SC-VEGETATION-001` v5 and
-> `SC-BIOGEOCHEM-001` v1 admit `OPENWEPP_C3_WOODY_V1`. The queued implementation
-> owner is `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`.
-> It must implement the whole coupled state machine; the earlier slice is
-> prospectively superseded.
+> 2026-08-14 completion update: the whole-state successor
+> `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
+> completed `OPENWEPP_C3_WOODY_V7` science implementation at commit
+> `023ca4518180e652febdf406d6b3d83862a49e24`. The default-off diagnostic,
+> reviews, heavy gates, and dual terminal verification pass. The original
+> concept and provenance detail below remains historical evidence, not a queued
+> implementation plan or empirical-validation claim.
 
 ## Status
 
-- `state`: **blocked; authority reframe complete** - site-specific stratum
-  values and compatible initial state are caller configuration rather than
-  universal-value blockers. Source-aware implementation remains closed on the
-  complete schema and selected constitutive families; `AUTH-RHEC-016` authority
-  is admitted but its implementation/tests remain a successor obligation;
-  default activation remains prohibited. The reframe and exact-head full
-  workspace pass; remaining blockers are the complete schema and selected
-  constitutive families plus their contract-first implementation gates.
-- `date`: 2026-08-06
+- `state`: **complete; V7 default-off science implementation** - strict
+  configuration/state, E01--E22, typed water and mineral-N arbitration,
+  persistent C/N state, material transfers, five-ledger validation, four-owner
+  candidates, atomic commit, and rollback are implemented and terminally
+  verified. Production activation, real-consumer cutover, calibration,
+  empirical validation, canopy snow, calm/nonneutral aerodynamics, and soil
+  transformations remain outside the claim.
+- `date`: 2026-08-14
 - `owner`: openWEPP maintainers + forest ecohydrology reviewer
 - `working crate name`: `openwepp-vegetation` (the RHESSys lineage is
   provenance, not necessarily the permanent public crate name)
 - `origin`: static comparison of openWEPP, WEPP-forest, and RHESSys vegetation,
   ET, radiation, litter, snow, hydrology, and biogeochemistry implementations
-- `implementation release trigger`: close every required audit blocker through
-  reviewed canonical authority, prospectively reconcile the coupled package,
-  and pass its contract-first gate
+- `implementation release`: complete at `023ca4518`; the next prospective work
+  is the snow-free land-surface and real-hydrology shadow sequence
 - `default eligibility`: prohibited until conservation, field-evaluation,
   coupled-response, and real-consumer gates pass
 - `completed authority package`:
@@ -39,8 +39,8 @@
   [RHESSYS-EAST-COAST-VEGETATION-AUTHORITY-CLOSURE](../work-packages/20260809-rhessys-east-coast-vegetation-authority-closure-001/package.md)
 - `completed authority-reframe package`:
   [NATIVE-FOREST-ECOHYDROLOGY-AUTHORITY-REFRAME](../work-packages/20260809-native-forest-ecohydrology-authority-reframe-001/package.md)
-- `queued implementation package`:
-  [RHESSYS-EAST-COAST-COUPLED-VEGETATION-SLICE](../work-packages/20260808-rhessys-east-coast-coupled-vegetation-slice-001/package.md)
+- `completed implementation package`:
+  [COUPLED-C3-FOREST-VEGETATION-STATE-MACHINE](../work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/package.md)
 
 ## Summary
 

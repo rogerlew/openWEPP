@@ -46,15 +46,18 @@
   implementation successor; canopy snow remains explicit deferral.
 
 - `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/` —
-  EXECUTING / V3 POTENTIAL-PASS AUTHORITY RELEASED / REMEDIATION ACTIVE:
-  autonomous Critical default-off implementation campaign for the entire
-  `OPENWEPP_C3_WOODY_V3` state machine, including strict schema/state, E01--E22,
-  resource arbitration, atomic rollback, an offline RHESSys migration adapter,
-  independent vectors, and a diagnostic consumer. The historical V1 HOLD is
-  preserved and the public guard remains fail-closed until the V3 capped pass
-  and complete state machine pass.
-  Runtime selection, cutover, calibration, canopy snow, and soil transformations
-  remain unauthorized.
+  COMPLETE / `OPENWEPP_C3_WOODY_V7` SCIENCE IMPLEMENTATION COMPLETE /
+  DEFAULT-OFF DIAGNOSTIC ONLY at commit
+  `023ca4518180e652febdf406d6b3d83862a49e24`: the public candidate executes
+  E01--E22, preserves typed water and NH4/NO3 identity, constructs independent
+  vegetation, water, BGC, and energy owner candidates, validates five ledgers,
+  and commits by one atomic whole-state replacement. The corrected benchmark,
+  2,671/2,671 full-workspace run, dual final reviews, and dual terminal
+  verifiers pass; historical HOLD and failed-gate evidence remains preserved.
+  `calibration_evidence_status=NOT_CALIBRATION_READY` and
+  `identifiability_status=NOT_ASSESSED`. Runtime selection, real-consumer
+  cutover, calibration, empirical validation, canopy snow, calm/nonneutral
+  aerodynamics, and soil transformations remain unclaimed.
 
 - `20260811-soil-biogeochemistry-transformations-implementation-001/` — QUEUED /
   DEPENDENCY AUTHORITY BOUNDED: decomposition, mineralization, and soil-N
