@@ -72,7 +72,8 @@ branch, PR or push is in scope.
   accepted implementation-review findings now have focused passing
   remediation, including exact receiver identity, contextual canonical errors,
   and nonzero-residual production-soil reconstruction. A fresh exact-byte
-  re-review is pending against commit `26e34e024`.
+  re-review found one bounded E011 offender-context defect; its focused passing
+  correction is frozen at `75ba70681` and awaits fresh exact-byte review.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

@@ -68,3 +68,12 @@ expectations, narrows the Child-3 rollback set to its actual three owners,
 reconstructs production aggregate soil water with residual water over unfrozen
 depth, and includes typed owner/OFE/tile context when known. No new authority or
 package is indicated. Fresh exact-byte review remains pending.
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-FINAL-PASS-HIGH-001 / A-FINAL-PASS-HIGH-001: E011 substitutes the first configured receiver and hydrology owner for the actual offending receiver or rollback row | Accepted | Remediated; focused PASS |
+
+The first canonical structural offender now supplies typed owner, OFE and tile
+context. Missing rows use the exact expected owner/identity; malformed or extra
+rows retain their actual identity. Two-row thermal and wrong LSE/soil-thermal
+rollback poisons assert the payload rather than only the error code.

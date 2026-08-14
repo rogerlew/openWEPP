@@ -324,6 +324,19 @@ failed attempts.
   thermal, matching the owners this Child-3 bridge constructs.
 - Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
 
+## Exact-offender E011 remediation at `75ba70681`
+
+- HOLD retained: both fresh exact-byte reviewers found that E011 substituted a
+  convenient first configured receiver/hydrology owner for later thermal or
+  rollback offenders.
+- PASS: receiver and rollback validators now return the first canonical
+  offender's typed owner/OFE/tile context without substituting another row.
+- PASS: real-LSE/real-hydrology integration, 17/17, including a second-row
+  thermal-tile poison and exact wrong LSE/soil-thermal rollback-owner payloads.
+- PASS: surface-liquid focused tests, 30/30; affected strict all-target Clippy;
+  formatting; and diff hygiene.
+- Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
+
 ## Heavy comparator attempt 1
 
 - PASS: formatting and diff hygiene at `a92cd5db5`.
