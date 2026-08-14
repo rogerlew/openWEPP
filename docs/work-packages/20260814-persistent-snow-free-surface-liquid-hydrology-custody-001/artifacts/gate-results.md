@@ -238,3 +238,23 @@ Further results append below; failed attempts are retained.
 Raw logs were retained outside the checkout under the short `/tmp` gate
 directories reported by the command output. They are execution evidence only
 and are not committed.
+
+## Heavy comparator attempt 1
+
+- PASS: formatting and diff hygiene at `a92cd5db5`.
+- FAIL: workspace strict Clippy reported 16 `float_cmp` findings in the two
+  focused integration targets. Every finding was an intentionally exact scalar
+  assertion; each was rewritten as an exact IEEE-754 bit-pattern comparison.
+  No approximate comparison, tolerance, constitutive value, or production code
+  changed.
+- FAIL: the first corrected authority compilation required explicit `f64`
+  suffixes on six otherwise ambiguous local poison-vector operands. The
+  operands were typed without changing their values.
+- PASS: corrected surface-liquid authority 9/9, real-owner integration 8/8,
+  and workspace strict all-target/all-feature Clippy.
+- Not run in attempt 1: full workspace nextest, doctests, and dependency policy
+  were correctly withheld after the first hard failure. They require a fresh
+  comparator run against the corrected exact bytes.
+
+The small attempt-1 raw logs are retained under
+`artifacts/gate-run-20260814-1/`.

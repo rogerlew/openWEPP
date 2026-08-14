@@ -406,7 +406,7 @@ fn root_and_bare_ground_share_one_real_layer_authorization_and_clone_only_debit(
     let arbitration = adapter.authorize(&requests).expect("one arbitration");
     assert_eq!(arbitration.authorizations().len(), 2);
     assert!(arbitration.authorizations().iter().all(|row| {
-        row.authorization.amount_kg_m2_stand_ground == 10.0
+        row.authorization.amount_kg_m2_stand_ground.to_bits() == 10.0_f64.to_bits()
             && row.authorization.amount_kg_m2_stand_ground
                 <= requests
                     .iter()
@@ -433,8 +433,10 @@ fn root_and_bare_ground_share_one_real_layer_authorization_and_clone_only_debit(
     assert_eq!(frame, original, "production state changed during shadow");
     assert_eq!(candidate.beginning_frame(), &original);
     assert_eq!(
-        candidate.ending_frame().lanes[0].subsurface_layers[0].theta_m,
-        0.0
+        candidate.ending_frame().lanes[0].subsurface_layers[0]
+            .theta_m
+            .to_bits(),
+        0.0_f64.to_bits()
     );
 }
 
@@ -477,8 +479,9 @@ fn full_supply_frozen_duplicate_wrong_layer_and_rollback_are_fail_closed() {
     assert_eq!(
         result.authorizations()[0]
             .authorization
-            .amount_kg_m2_stand_ground,
-        0.0
+            .amount_kg_m2_stand_ground
+            .to_bits(),
+        0.0_f64.to_bits()
     );
     assert_eq!(
         result.authorizations()[0].authorization.reason,
@@ -677,8 +680,10 @@ fn unified_surface_owner_applies_signed_condensation_credit_before_ingress() {
     assert_eq!(frame, original);
     assert_eq!(candidate.surface_resource.condensation_credits.len(), 1);
     assert_eq!(
-        candidate.condensation_credits[0].amount_kg_m2_stand_ground,
-        0.1
+        candidate.condensation_credits[0]
+            .amount_kg_m2_stand_ground
+            .to_bits(),
+        0.1_f64.to_bits()
     );
 }
 

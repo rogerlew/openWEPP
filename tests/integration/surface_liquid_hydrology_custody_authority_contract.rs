@@ -123,13 +123,13 @@ fn independent_daf_and_condensation_vectors_bind_one_basis_conversion() {
     let condensation_ofe = 0.2;
     let ending_raw_tile =
         beginning_tile - finalized.iter().sum::<f64>() / 0.25 + condensation_ofe / 0.25;
-    assert_eq!(ending_raw_tile, 1.8);
+    assert_eq!(ending_raw_tile.to_bits(), 1.8_f64.to_bits());
 
     let overflow_raw_tile = beginning_tile + 0.75 / 0.25;
     let ending_tile = overflow_raw_tile.min(2.0);
     let overflow_ofe = 0.25 * (overflow_raw_tile - 2.0).max(0.0);
-    assert_eq!(ending_tile, 2.0);
-    assert_eq!(overflow_ofe, 1.25);
+    assert_eq!(ending_tile.to_bits(), 2.0_f64.to_bits());
+    assert_eq!(overflow_ofe.to_bits(), 1.25_f64.to_bits());
 
     let contract = read(CONTRACT);
     for required in [
@@ -162,7 +162,7 @@ fn independent_attribution_retention_and_enthalpy_vectors_close() {
     let remaining_capacity_ofe = 0.25 * (4.0 - 1.0);
     let retained = excess[0].min(remaining_capacity_ofe);
     let runoff = excess[0] - retained;
-    assert_eq!(retained, 0.75);
+    assert_eq!(retained.to_bits(), 0.75_f64.to_bits());
     assert!((runoff - 0.45).abs() < f64::EPSILON);
 
     let specific_enthalpy = 4218.0 * (290.0 - 273.15);
@@ -238,13 +238,19 @@ fn actual_wb14_non_degenerate_timed_vector_executes() {
         .run_r4k_infiltration_depression_span()
         .expect("actual WB14 timed producer");
     assert_eq!(
-        frame.infiltration_depression.depression_storage_delta_m,
-        0.0
+        frame
+            .infiltration_depression
+            .depression_storage_delta_m
+            .to_bits(),
+        0.0_f64.to_bits()
     );
     assert!(frame.infiltration_depression.cumulative_infiltration_m > 0.0);
     assert_eq!(
-        frame.infiltration_depression.cumulative_infiltration_m,
-        0.005
+        frame
+            .infiltration_depression
+            .cumulative_infiltration_m
+            .to_bits(),
+        0.005_f64.to_bits()
     );
     let excess: f64 = frame.wb14_hourly_excess_m.iter().sum();
     assert!(
@@ -263,21 +269,21 @@ fn open_and_covered_ingress_are_mutually_exclusive_and_routing_scales_area() {
     let forbidden_duplicate = ground_supply + covered_fraction * raw_rain_tile;
     assert!((forbidden_duplicate - ground_supply).abs() > 0.006);
 
-    let upstream_depth = 0.004;
-    let upstream_area = 250.0;
-    let downstream_area = 1_000.0;
+    let upstream_depth = 0.004_f64;
+    let upstream_area = 250.0_f64;
+    let downstream_area = 1_000.0_f64;
     let downstream_depth = upstream_depth * upstream_area / downstream_area;
-    let upstream_energy = 40_000.0;
+    let upstream_energy = 40_000.0_f64;
     let downstream_energy = upstream_energy * upstream_area / downstream_area;
-    assert_eq!(downstream_depth, 0.001);
-    assert_eq!(downstream_energy, 10_000.0);
+    assert_eq!(downstream_depth.to_bits(), 0.001_f64.to_bits());
+    assert_eq!(downstream_energy.to_bits(), 10_000.0_f64.to_bits());
     assert_eq!(
-        upstream_depth * upstream_area,
-        downstream_depth * downstream_area
+        (upstream_depth * upstream_area).to_bits(),
+        (downstream_depth * downstream_area).to_bits()
     );
     assert_eq!(
-        upstream_energy * upstream_area,
-        downstream_energy * downstream_area
+        (upstream_energy * upstream_area).to_bits(),
+        (downstream_energy * downstream_area).to_bits()
     );
 
     let contract = read(CONTRACT);
@@ -313,8 +319,11 @@ fn independent_48_step_continuation_and_day_reset_vector() {
     let next_day = advance_reference_continuation(ending, 0.002, 0.001);
     assert_eq!(next_day.day, 18);
     assert_eq!(next_day.next_interval, 1);
-    assert_eq!(next_day.cumulative_supply_m, 0.002);
-    assert_eq!(next_day.cumulative_infiltration_m, 0.001);
+    assert_eq!(next_day.cumulative_supply_m.to_bits(), 0.002_f64.to_bits());
+    assert_eq!(
+        next_day.cumulative_infiltration_m.to_bits(),
+        0.001_f64.to_bits()
+    );
     assert_ne!(next_day, ending);
 
     let contract = read(CONTRACT);

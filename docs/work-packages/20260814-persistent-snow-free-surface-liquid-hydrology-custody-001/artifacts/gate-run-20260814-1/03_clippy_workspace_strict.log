@@ -1,0 +1,200 @@
+command: cargo clippy --workspace --all-targets --all-features -- -D warnings
+start_utc: 2026-08-14T21:49:36Z
+    Checking openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Checking openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+    Checking openwepp-plant-phenology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-plant-phenology)
+    Checking openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+    Checking openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+    Checking openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+    Checking openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+    Checking openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+    Checking openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Checking openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+    Checking openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-assurance v0.1.0 (/home/workdir/openWEPP/crates/openwepp-assurance)
+    Checking openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:126:5
+    |
+126 |     assert_eq!(ending_raw_tile, 1.8);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:131:5
+    |
+131 |     assert_eq!(ending_tile, 2.0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:132:5
+    |
+132 |     assert_eq!(overflow_ofe, 1.25);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:165:5
+    |
+165 |     assert_eq!(retained, 0.75);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:240:5
+    |
+240 | /     assert_eq!(
+241 | |         frame.infiltration_depression.depression_storage_delta_m,
+242 | |         0.0
+243 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:245:5
+    |
+245 | /     assert_eq!(
+246 | |         frame.infiltration_depression.cumulative_infiltration_m,
+247 | |         0.005
+248 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:272:5
+    |
+272 |     assert_eq!(downstream_depth, 0.001);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:273:5
+    |
+273 |     assert_eq!(downstream_energy, 10_000.0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:274:5
+    |
+274 | /     assert_eq!(
+275 | |         upstream_depth * upstream_area,
+276 | |         downstream_depth * downstream_area
+277 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5
+    |
+278 | /     assert_eq!(
+279 | |         upstream_energy * upstream_area,
+280 | |         downstream_energy * downstream_area
+281 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:316:5
+    |
+316 |     assert_eq!(next_day.cumulative_supply_m, 0.002);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:317:5
+    |
+317 |     assert_eq!(next_day.cumulative_infiltration_m, 0.001);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:409:9
+    |
+409 |         row.authorization.amount_kg_m2_stand_ground == 10.0
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(row.authorization.amount_kg_m2_stand_ground - 10.0).abs() < error_margin`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:435:5
+    |
+435 | /     assert_eq!(
+436 | |         candidate.ending_frame().lanes[0].subsurface_layers[0].theta_m,
+437 | |         0.0
+438 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:477:5
+    |
+477 | /     assert_eq!(
+478 | |         result.authorizations()[0]
+479 | |             .authorization
+480 | |             .amount_kg_m2_stand_ground,
+481 | |         0.0
+482 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `openwepp` (test "surface_liquid_hydrology_custody_authority_contract") due to 12 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: strict comparison of `f32` or `f64`
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:679:5
+    |
+679 | /     assert_eq!(
+680 | |         candidate.condensation_credits[0].amount_kg_m2_stand_ground,
+681 | |         0.1
+682 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+    = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `openwepp` (test "land_surface_energy_real_hydrology_shadow_contract") due to 4 previous errors
+Command exited with non-zero status 101
+elapsed_sec=26.89 user_sec=136.38 sys_sec=29.29
