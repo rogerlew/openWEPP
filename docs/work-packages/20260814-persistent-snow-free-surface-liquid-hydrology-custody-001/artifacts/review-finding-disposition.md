@@ -53,3 +53,14 @@ Rust and hydrology re-reviews and terminal verification remain pending.
 All findings are in-scope implementation defects. Their corrections change no
 authority, model identity, production selection, or package write envelope.
 No finding is closed until final exact-byte re-review passes.
+
+## Final re-review
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-FINAL-HIGH-001: extra/nonfinite thermal layers and forged rollback owner identity accepted | Accepted | Active |
+| B-FINAL-HIGH-002: E004/E007/E011 omit available offending identity context | Accepted | Active |
+| A-FINAL-HIGH-001: independent soil aggregate omits valid residual/frozen storage | Accepted | Active |
+
+These are bounded implementation defects in the existing bridge and receiver
+validator. No new authority or package is indicated.

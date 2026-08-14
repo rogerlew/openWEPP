@@ -300,6 +300,16 @@ failed attempts.
   coverage and no file exceeds 3,000 lines. Final exact-byte re-review remains
   required before closure.
 
+## Final exact-byte re-review
+
+- HOLD (hydrology/ownership): exact thermal-layer and rollback-owner identity
+  remains incomplete; E004/E007/some E011 payloads omit known offending
+  context. Ordered production-layer and energy equations are otherwise closed.
+- HOLD (Rust correctness, early finding): the independent aggregate-soil check
+  sums `theta_m` but omits production residual/frozen storage, rejecting valid
+  nonzero-residual profiles hidden by the zero-residual fixture.
+- Disposition: all three findings accepted for immediate bridge/test correction.
+
 ## Heavy comparator attempt 1
 
 - PASS: formatting and diff hygiene at `a92cd5db5`.
