@@ -1,6 +1,6 @@
 # Milestone Gate Matrix
 
-Status: `executing / V6 public E01--E15 water stage active; E16--E22 pending`
+Status: `executing / V7 sealed vegetation candidate active; all-owner transaction pending`
 
 The former Stage-B portability blocker is lifted. The focused E11--E15
 equation/ownership gate passes under V6. The real public water stage now invokes
@@ -45,3 +45,10 @@ once, preserves typed D/A/F identity, independently validates the receiving
 water-owner debit, and publishes no committable vegetation candidate. Formal
 Milestone 2/3 disposition awaits the focused public-integration review and
 remaining multi-rank production vectors.
+
+Increment 4A closes Milestone 4: V7 persistent
+state is constructed with exact ending pools and derived caches, final capped
+occupancy lanes, deterministic material proposals, canonical state identity,
+and independently reconstructed vegetation C/N/DM operands. Final correctness
+and QA reviews returned GO/PASS. BGC mineral/material receiving ownership,
+independent energy ownership, and atomic four-owner commit remain Milestone 5.

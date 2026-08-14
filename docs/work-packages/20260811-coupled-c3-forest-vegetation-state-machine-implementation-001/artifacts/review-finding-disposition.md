@@ -140,6 +140,29 @@ E01--E22 transaction or completes Milestones 2/3.
 
 No finding is rejected, deferred, or used to activate the public candidate.
 
+## V7 Increment 4A Review Disposition
+
+The first correctness and QA reviews returned HOLD. All material findings were
+accepted; their original text remains unchanged in `review_agent_a.md` and
+`review_agent_b.md`.
+
+| Finding | Decision and correction | Focused evidence | Status |
+|---|---|---|---|
+| signed `XS_C` was rejected or algebraically cancelled | accepted; physical vegetation C and finite signed reserve are separate beginning/ending operands, and the ledger consumes the directly retained final-maintenance operand | valid negative signed aggregate plus ending-XS corruption poisons; real two-ULP candidate corruption rejects | corrected; final review GO/PASS |
+| nitrogen candidate could be paired with a different capped water phase | accepted; the nitrogen phase retains its exact source `UncommittedWaterPhase`, and candidate construction requires structural equality with the supplied phase | real two-ULP nitrogen phase rejects a distinct complete capped-water phase | corrected; final review GO/PASS |
+| whole-ledger stratum/state identity was incomplete | accepted; validator requires exact configured stratum set, one expected transaction/beginning/ending digest, unique strata, and globally unique proposal IDs | duplicate/missing/mixed identity, global duplicate-ID, and coherent forged-ending-digest poisons | corrected; final review GO/PASS |
+| whole-owner C/N tolerance was too loose | accepted; restored `1e-14 + 64*epsilon*operand_sum` | old-envelope-only residual rejects; vegetation 223/223 | corrected; final review GO/PASS |
+| candidate failures used generic or invented taxonomy | accepted; capped rollback, V7 allocation/closure, and V7 candidate rollback now emit canonical `VEG-E-093`, `VEG-E-097`, and `VEG-E-100` variants | exact variant assertions, strict Clippy, and focused rejection tests | corrected; final review GO/PASS |
+| displayed-area calculation had three production copies | accepted; runtime, candidate, and V3 migration use one exact-order helper | migration and full vegetation suites pass | corrected; final review GO/PASS |
+| real-candidate provenance poisons were missing | accepted; the actual two-ULP candidate is revalidated after XS corruption, coherent digest forgery, DM=C substitution, deterministic reconstruction, and source-water replacement | vegetation 223/223; beginning bytes remain exact | corrected; final review GO/PASS |
+
+No finding authorizes public candidate publication, receiving-owner mutation,
+atomic commit, heavy gates, activation, or calibration claims.
+
+Final exact-byte review: Rust correctness `GO`; QA `PASS`. No material
+Increment 4A finding remains unresolved. Milestone 4 is closed; Milestone 5 is
+still open.
+
 ## E19 Ordering-Remediation Review Disposition
 
 | Finding | Decision and correction | Status |

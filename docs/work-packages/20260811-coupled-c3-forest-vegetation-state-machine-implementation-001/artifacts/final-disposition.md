@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / E19 implementation-overconstraint remediation active / public path fail-closed`
+Status: `in progress / Milestone 4 closed / Increment 4B receiving owners active / public path fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -67,6 +67,15 @@ correctness review is GO and fresh QA review is PASS. This does not complete
 the package: BGC and energy owner candidates, independent all-owner ledgers,
 atomic commit, public E01--E22 completion, heavy gates, terminal verification,
 prompt archival, runtime activation, and calibration remain pending.
+
+Increment 4A now additionally constructs a crate-private, sealed vegetation
+owner candidate. It consumes only final capped occupancy states, advances exact
+transaction lineage, recomputes leaf/stem/root caches from ending displayed
+leaf C, binds deterministic positive material proposal identities, computes a
+new canonical V7 state digest, and independently reconstructs vegetation
+carbon, nitrogen, and dry-material obligations. The type has no commit method;
+`execute_candidate()` still returns the typed post-nitrogen multi-owner
+implementation-incomplete failure after constructing and validating it.
 
 The scoped V3 shared-C/N state HOLD is lifted by `SC-VEGETATION-001` v8 and
 `OPENWEPP_C3_WOODY_V4` digest

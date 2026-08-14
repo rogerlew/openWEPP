@@ -1,6 +1,6 @@
 # Conservation And Anti-tautology Plan
 
-Status: `PARTIAL / internal V2 water reconstruction passes; potential operands HOLD`
+Status: `PARTIAL / water and vegetation-owner reconstruction pass; BGC and energy owners pending`
 
 Typed request/authorization identity and tolerance-bound comparison now have
 independent protocol tests. Radiation and potential energy/water operands are
@@ -23,3 +23,30 @@ full canopy store, aggregate-first rainfall, missing tile rain, duplicate or
 missing occupancy, wrong authorization identity, and omitted/double area
 weighting. Independent hydrology/energy owner reconstruction and public
 candidate operands remain pending and are not claimed.
+
+Increment 4A adds independent vegetation-owner reconstruction outside the
+phenology/allocation producers. Carbon keeps nonnegative physical vegetation C
+(all six display/storage/transfer pools, NSC, and standing-dead C) separate
+from the finite signed `XS_C` reserve; it closes both beginning operands plus
+accepted capped GPP against the directly retained full-maintenance operand,
+growth respiration, material exports, and both ending operands. The validator
+uses `1e-14 + 64*epsilon*operand_sum`, binds the exact candidate transaction and
+beginning/ending state digests, and rejects missing/duplicate strata or reused
+proposal IDs. Nitrogen includes all tissue pools,
+retranslocation, and standing-dead N; it closes finalized external use and
+material exports. Dry material is independently recalculated from each exact
+proposal C operand and the stratum's explicit configured carbon fraction, then
+checks its C and N proposal aggregates against the independently constructed
+element ledgers; carbon-as-dry-matter and forged aggregate poisons fail. No
+producer residual is stored or accepted. BGC receiving-side and independent
+energy-owner reconstruction remain pending.
+
+Increment 4B removes the caller-provided BGC receipt alias. The BGC owner
+independently groups finalized use by exact `(layer,species)`, reconstructs
+`beginning-use=ending`, and constructs its own material receipts and receiver
+`beginning+incoming=ending` operands for C, N, and dry material. Tests prove
+unused authorization is not debited and wrong-species use, duplicate proposal
+identity, missing receivers, and transformation requests reject without
+changing beginning state. Vegetation-proposal/BGC-receipt reconciliation at the
+sealed V7 transaction boundary and independent component-level energy closure
+remain pending.

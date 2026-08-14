@@ -712,13 +712,21 @@ pub fn execute_candidate(
     let water_phase = crate::water_phase::execute_uncommitted_water_phase(
         model, config, beginning, forcing, water,
     )?;
-    crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+    let nitrogen_phase = crate::persistent_phase::execute_uncommitted_nitrogen_phase(
         config,
         beginning,
         forcing,
         &water_phase,
         nitrogen,
     )?;
+    let vegetation_candidate =
+        crate::vegetation_candidate::construct_uncommitted_vegetation_candidate(
+            config,
+            beginning,
+            &water_phase,
+            &nitrogen_phase,
+        )?;
+    vegetation_candidate.validate_sealed()?;
     Err(VegetationError::Unsupported(
         "V7 post-nitrogen multi-owner candidate is implementation-incomplete",
     ))
@@ -740,13 +748,21 @@ pub fn execute_candidate_with_failure(
     if failure == Some(FailurePoint::NitrogenRequest) {
         return Err(VegetationError::InjectedFailure("nitrogen request"));
     }
-    crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+    let nitrogen_phase = crate::persistent_phase::execute_uncommitted_nitrogen_phase(
         config,
         beginning,
         forcing,
         &water_phase,
         nitrogen,
     )?;
+    let vegetation_candidate =
+        crate::vegetation_candidate::construct_uncommitted_vegetation_candidate(
+            config,
+            beginning,
+            &water_phase,
+            &nitrogen_phase,
+        )?;
+    vegetation_candidate.validate_sealed()?;
     let label = match failure {
         Some(FailurePoint::NitrogenAuthorization) => Some("nitrogen authorization"),
         Some(FailurePoint::Allocation) => Some("allocation"),
@@ -1878,6 +1894,167 @@ mod milestone_one_tests {
             assert!(finalized.amount <= authorization.amount);
             assert!(authorization.amount <= request.amount);
         }
+        let candidate = crate::vegetation_candidate::construct_uncommitted_vegetation_candidate(
+            &config,
+            &state,
+            &water_phase,
+            &phase,
+        )
+        .expect("sealed V7 vegetation candidate");
+        let repeated_candidate =
+            crate::vegetation_candidate::construct_uncommitted_vegetation_candidate(
+                &config,
+                &state,
+                &water_phase,
+                &phase,
+            )
+            .expect("byte-stable repeated V7 vegetation candidate");
+        assert_eq!(repeated_candidate, candidate);
+        let mut different_forcing = forcing.clone();
+        different_forcing.rain_kg_m2 = 0.01;
+        let different_water_phase = crate::water_phase::execute_uncommitted_water_phase(
+            &model,
+            &config,
+            &state,
+            &different_forcing,
+            &NoArbiter,
+        )
+        .expect("distinct complete water phase");
+        assert!(matches!(
+            crate::vegetation_candidate::construct_uncommitted_vegetation_candidate(
+                &config,
+                &state,
+                &different_water_phase,
+                &phase,
+            ),
+            Err(VegetationError::V7CandidateRollback(
+                "phase or beginning-state identity mismatch"
+            ))
+        ));
+        candidate.validate_sealed().expect("sealed identity");
+        assert_eq!(candidate.transaction_id(), TransactionId(1));
+        assert_eq!(candidate.beginning_state_sha256(), state.state_sha256);
+        assert_eq!(candidate.water_phase().transaction_id(), TransactionId(1));
+        assert_eq!(
+            candidate.nitrogen_phase().transaction_id(),
+            TransactionId(1)
+        );
+        assert_eq!(candidate.ending_state().last_transaction_id, 1);
+        candidate
+            .ending_state()
+            .validate(&config)
+            .expect("accepted-shape ending vegetation state");
+        assert_ne!(candidate.ending_state().state_sha256, state.state_sha256);
+        assert!(
+            candidate
+                .ending_state()
+                .occupancies
+                .values()
+                .all(|lane| lane.last_accepted_transaction_id == Some(1))
+        );
+        let ending_stratum = &candidate.ending_state().strata[&config.strata[0].stratum_id];
+        let ending_leaf = ending_stratum.tissues[&Tissue::Leaf].display.carbon;
+        assert_eq!(
+            ending_stratum.leaf_area.to_bits(),
+            (ending_leaf * config.strata[0].sla_m2_per_kg_c).to_bits()
+        );
+        assert_eq!(
+            ending_stratum.stem_area.to_bits(),
+            (ending_stratum.leaf_area * config.strata[0].sai_relation).to_bits()
+        );
+        assert_eq!(
+            ending_stratum.root_area.to_bits(),
+            ((ending_stratum.leaf_area + ending_stratum.stem_area)
+                * config.strata[0].root_to_leaf_area)
+                .to_bits()
+        );
+        assert!(ending_stratum.pending_transfers.is_empty());
+        assert_eq!(candidate.carbon_ledgers().len(), config.strata.len());
+        assert_eq!(candidate.nitrogen_ledgers().len(), config.strata.len());
+        assert_eq!(candidate.dry_material_ledgers().len(), config.strata.len());
+        assert!(!candidate.material_proposals().is_empty());
+        for (index, proposal) in candidate.material_proposals().iter().enumerate() {
+            assert_eq!(proposal.transaction_id, 1);
+            assert_eq!(proposal.proposal_id, index as u64 + 1);
+        }
+        assert!(candidate.material_proposals().windows(2).all(|window| {
+            let left = &window[0];
+            let right = &window[1];
+            (
+                left.owner_id.as_str(),
+                left.donor,
+                left.receiver,
+                left.proposal_id,
+            ) < (
+                right.owner_id.as_str(),
+                right.donor,
+                right.receiver,
+                right.proposal_id,
+            )
+        }));
+        let expected_strata = config
+            .strata
+            .iter()
+            .map(|stratum| stratum.stratum_id.clone())
+            .collect::<std::collections::BTreeSet<_>>();
+        let validate_candidate_ledgers =
+            |carbon: &[crate::vegetation_ledger::VegetationCarbonLedger],
+             nitrogen: &[crate::vegetation_ledger::VegetationNitrogenLedger],
+             dry: &[crate::vegetation_ledger::VegetationDryMaterialLedger]| {
+                crate::vegetation_ledger::validate_vegetation_ledgers(
+                    &expected_strata,
+                    candidate.transaction_id(),
+                    candidate.beginning_state_sha256(),
+                    &candidate.ending_state().state_sha256,
+                    carbon,
+                    nitrogen,
+                    dry,
+                )
+            };
+        let mut corrupt_carbon = candidate.carbon_ledgers().to_vec();
+        corrupt_carbon[0].ending_xs_c_kg_c_m2 += 1.0e-6;
+        assert!(
+            validate_candidate_ledgers(
+                &corrupt_carbon,
+                candidate.nitrogen_ledgers(),
+                candidate.dry_material_ledgers(),
+            )
+            .is_err()
+        );
+        let mut forged_carbon = candidate.carbon_ledgers().to_vec();
+        let mut forged_nitrogen = candidate.nitrogen_ledgers().to_vec();
+        let mut forged_dry = candidate.dry_material_ledgers().to_vec();
+        let forged_digest = "c".repeat(64);
+        for ledger in &mut forged_carbon {
+            ledger
+                .identity
+                .ending_state_sha256
+                .clone_from(&forged_digest);
+        }
+        for ledger in &mut forged_nitrogen {
+            ledger
+                .identity
+                .ending_state_sha256
+                .clone_from(&forged_digest);
+        }
+        for ledger in &mut forged_dry {
+            ledger
+                .identity
+                .ending_state_sha256
+                .clone_from(&forged_digest);
+        }
+        assert!(validate_candidate_ledgers(&forged_carbon, &forged_nitrogen, &forged_dry).is_err());
+        let mut corrupt_dry = candidate.dry_material_ledgers().to_vec();
+        corrupt_dry[0].transfers[0].proposed_dry_matter_kg_m2 =
+            corrupt_dry[0].transfers[0].carbon_kg_m2;
+        assert!(
+            validate_candidate_ledgers(
+                candidate.carbon_ledgers(),
+                candidate.nitrogen_ledgers(),
+                &corrupt_dry,
+            )
+            .is_err()
+        );
         assert_eq!(
             serde_json::to_vec(&state).expect("unchanged beginning bytes"),
             beginning_bytes
@@ -1915,6 +2092,22 @@ mod milestone_one_tests {
     }
 }
 
+pub(crate) fn displayed_leaf_derived_areas(
+    displayed_leaf_carbon: f64,
+    stratum: &crate::StratumConfiguration,
+) -> Result<(f64, f64, f64), VegetationError> {
+    let leaf_area = displayed_leaf_carbon * stratum.sla_m2_per_kg_c;
+    let stem_area = leaf_area * stratum.sai_relation;
+    let root_area = (leaf_area + stem_area) * stratum.root_to_leaf_area;
+    if [leaf_area, stem_area, root_area]
+        .iter()
+        .any(|value| !value.is_finite() || *value < 0.0)
+    {
+        return Err(VegetationError::Domain("V4 displayed-leaf area identity"));
+    }
+    Ok((leaf_area, stem_area, root_area))
+}
+
 fn validate_displayed_leaf_identity(
     state: &StratumSharedState,
     stratum: &crate::StratumConfiguration,
@@ -1923,9 +2116,8 @@ fn validate_displayed_leaf_identity(
         .tissues
         .get(&Tissue::Leaf)
         .ok_or(VegetationError::Domain("missing tissue"))?;
-    let leaf_area = leaf.display.carbon * stratum.sla_m2_per_kg_c;
-    let stem_area = leaf_area * stratum.sai_relation;
-    let root_area = (leaf_area + stem_area) * stratum.root_to_leaf_area;
+    let (leaf_area, stem_area, root_area) =
+        displayed_leaf_derived_areas(leaf.display.carbon, stratum)?;
     if state.leaf_area.to_bits() != leaf_area.to_bits()
         || state.stem_area.to_bits() != stem_area.to_bits()
         || state.root_area.to_bits() != root_area.to_bits()

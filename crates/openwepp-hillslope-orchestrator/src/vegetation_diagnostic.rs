@@ -4,8 +4,9 @@
 use std::collections::BTreeMap;
 
 use openwepp_biogeochemistry::{
-    BiogeochemistryError, BiogeochemistryState, MaterialPool, MaterialReceipt, apply_candidate,
-    authorize_proportionally, available_by_key,
+    BiogeochemistryError, BiogeochemistryState, MaterialPool, MaterialProposal,
+    TransformationsMode, authorize_proportionally, available_by_key,
+    construct_biogeochemistry_candidate,
 };
 use openwepp_kernel_contract::{
     MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, SoilLayerId, TransactionId,
@@ -234,7 +235,7 @@ pub fn run_default_off_diagnostic_at_phase(
         .material_transfers()
         .iter()
         .map(|transfer| {
-            Ok(MaterialReceipt {
+            Ok(MaterialProposal {
                 transaction_id: transfer.transaction_id,
                 owner_id: transfer.owner_id.clone(),
                 donor: transfer.donor,
@@ -250,16 +251,32 @@ pub fn run_default_off_diagnostic_at_phase(
         .collect::<Result<Vec<_>, VegetationError>>()?;
     let (nitrogen_requests, nitrogen_authorizations, nitrogen_uses) =
         vegetation_candidate.nitrogen_protocol();
-    let bgc_candidate = apply_candidate(
+    let bgc_candidate = construct_biogeochemistry_candidate(
         &owned.biogeochemistry,
-        vegetation_candidate.transaction_id().0,
+        vegetation_candidate.transaction_id(),
         nitrogen_requests,
         nitrogen_authorizations,
         nitrogen_uses,
         &transfers,
-        &transfers,
-        false,
+        TransformationsMode::Disabled,
     )?;
+    if transfers.len() != bgc_candidate.receipts().len()
+        || transfers
+            .iter()
+            .zip(bgc_candidate.receipts())
+            .any(|(proposal, receipt)| {
+                proposal.transaction_id != receipt.transaction_id
+                    || proposal.owner_id != receipt.owner_id
+                    || proposal.donor != receipt.donor
+                    || proposal.receiver != receipt.receiver
+                    || proposal.proposal_id != receipt.proposal_id
+                    || proposal.amounts != receipt.amounts
+            })
+    {
+        return Err(DiagnosticError::Biogeochemistry(
+            BiogeochemistryError::MaterialClosure,
+        ));
+    }
     let mut water_candidate = owned.water.clone();
     for finalized in vegetation_candidate.water_uses() {
         let store = water_candidate
@@ -309,14 +326,14 @@ pub fn run_default_off_diagnostic_at_phase(
     validate_owner_candidates(
         &vegetation_candidate,
         &water_candidate,
-        &bgc_candidate,
+        bgc_candidate.ending(),
         &energy_candidate,
     )?;
     let mut vegetation_commit = owned.vegetation.clone();
     validate_and_commit_with_failure(&mut vegetation_commit, vegetation_candidate, failure)?;
     owned.vegetation = vegetation_commit;
     owned.water = water_candidate;
-    owned.biogeochemistry = bgc_candidate;
+    owned.biogeochemistry = bgc_candidate.ending().clone();
     owned.energy = energy_candidate;
     Ok(DiagnosticReceipt {
         transaction_id,

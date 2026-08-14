@@ -150,3 +150,28 @@ Ran after formatting:
 No changed non-generated Rust file reaches 3,000 lines. The
 `carbon_nitrogen.rs` WARN is retained as decomposition debt and does not block
 this bounded uncommitted E19 increment.
+
+## 2026-08-13 Increment 4A Recount
+
+Ran after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-vegetation/src/vegetation_candidate.rs` | 535 | PASS; candidate construction is isolated from transaction routing and constitutive kernels |
+| `crates/openwepp-vegetation/src/vegetation_ledger.rs` | 443 | PASS; independent owner reconstruction and review poisons are isolated from producers |
+| `crates/openwepp-vegetation/src/persistent_phase.rs` | 508 | PASS |
+| `crates/openwepp-vegetation/src/transaction.rs` | 2,157 | WARN; production candidate construction was extracted, while the existing module-local transaction test population crosses the warning threshold |
+| `crates/openwepp-vegetation/src/carbon_nitrogen.rs` | 2,214 | WARN retained; below the mandatory 3,000-line threshold |
+| `crates/openwepp-vegetation/src/migration.rs` | 2,873 | WARN retained; shared derived-area helper removed a third implementation copy and the module remains below the mandatory threshold |
+
+No changed non-generated Rust file reaches 3,000 lines. Before terminal
+closure, split the transaction test population into its existing module path
+without changing public transaction bytes or test semantics; retain the prior
+carbon/nitrogen test-split obligation.
+
+Increment 4B BGC slice recount after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-biogeochemistry/src/lib.rs` | 672 | PASS; owner construction and focused tests remain below WARN threshold |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` | 378 | PASS; default-off adapter only |

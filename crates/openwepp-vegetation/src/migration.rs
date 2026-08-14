@@ -1302,9 +1302,16 @@ fn validate_v3_area_caches(
     let Some(leaf) = state.tissues.get(&Tissue::Leaf) else {
         return;
     };
-    let leaf_area = leaf.display.carbon * stratum.sla_m2_per_kg_c;
-    let stem_area = leaf_area * stratum.sai_relation;
-    let root_area = (leaf_area + stem_area) * stratum.root_to_leaf_area;
+    let Ok((leaf_area, stem_area, root_area)) =
+        crate::transaction::displayed_leaf_derived_areas(leaf.display.carbon, stratum)
+    else {
+        unresolved.push(v3_shared_issue(
+            stratum_id,
+            "displayed_area_caches",
+            V3ToV4MigrationIssue::InvalidDisplayedAreaCache,
+        ));
+        return;
+    };
     for (field, found, expected) in [
         ("leaf_area", state.leaf_area, leaf_area),
         ("stem_area", state.stem_area, stem_area),

@@ -575,3 +575,43 @@ changed.
 | fresh Rust correctness review | HOLD then GO / Static + Ran | initial review found the rounded aggregate-`Nused` ordering guard; accepted correction and exact adjacent-bit regression passed; final review found no remaining correctness issue |
 | fresh QA review | evidence HOLD then PASS / Static + Ran | stale count/disposition evidence and explicit one-ULP assertion were corrected; final review found no material QA issue |
 | bounded phase disposition | PASS / Static + Ran | V7 phenology/turnover and E19 mineral-N request/authorization/final-use/growth composition are implemented as an uncommitted candidate; BGC debit, energy owner, all-owner candidate/commit, activation, and calibration remain unclaimed |
+
+## V7 Increment 4A Sealed Vegetation Candidate
+
+The historical failed and HOLD rows above remain unchanged.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| ending shared state | PASS / Ran | ending six-tissue state preserves finalized V7 phenology/growth values; leaf/stem/root areas are recomputed from ending displayed leaf C; shared lineage advances exactly once |
+| ending occupancy state | PASS / Ran | exact configured occupancy set is reconstructed only from final capped results; potential-only, missing, and duplicate results reject; accepted lanes carry the candidate transaction |
+| canonical state identity | PASS / Ran | newly constructed accepted-shape state validates against V7 configuration and its recomputed canonical digest differs from beginning state |
+| material proposal binding | PASS / Ran | positive deterministic IDs in typed stratum/donor/receiver/source order; exact transaction/owner/C/N/DM retained; ending state has no unresolved pending transfer |
+| independent vegetation ledgers | PASS / Ran | carbon, nitrogen, and dry-material reconstruction validates outside producer modules; carbon-as-DM, forged aggregate, wrong element closure, and identity poisons reject |
+| real two-ULP public containment | PASS / Ran | the real full-water fixture constructs and validates the sealed vegetation candidate, preserves beginning bytes, then public execution remains typed fail-closed |
+| vegetation quick | PASS / Ran | initial 219/219; first remediation 221/221; final remediation `cargo nextest run -p openwepp-vegetation --profile quick`: 223/223 |
+| vegetation strict Clippy | PASS / Ran | `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` |
+| four affected crate checks | PASS / Ran | kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator `cargo check` passed |
+| four affected strict Clippy gates | PASS / Ran | all four affected crates passed `--all-targets -- -D warnings` |
+| implementation contract | PASS / Ran | 13/13 |
+| vegetation authority contract | PASS / Ran | 25/25 |
+| AUTH11 | PASS / Ran | 3/3 |
+| authority anti-evasion | PASS / Ran | source-level authority suite guard passed |
+| science admission | PASS / Ran | `A0_ADMITTED contracts=45 science_surfaces=0`, base `f96f27bb3d4da10f864938e374c2c1801fac4217` |
+| formatting/diff/package Markdown | PASS / Ran | formatting and diff hygiene passed; package lint validated 55 files with 0 errors and 0 warnings |
+| public/BGC/energy/commit | NOT COMPLETE / Static | no public candidate, receiving-owner receipt, energy owner, or commit method is added; Increment 4B/5 remain required |
+| first Increment 4A correctness/QA reviews | HOLD / accepted | signed `XS_C` closure, exact water-phase lineage, whole-ledger identity/set uniqueness, canonical closure tolerance, typed errors, shared derived-area calculation, and real-candidate provenance required correction; historical review text is preserved |
+| post-review remediation | PASS focused | direct maintenance operands and exact source-water phase are retained; physical C and signed `XS_C` are separate; ledger identity binds exact transaction/begin/end state and configured strata; proposal IDs are globally unique; `1e-14 + 64*epsilon*scale`; canonical `VEG-E-093/097/100` failures; real-candidate XS/digest/DM/source-phase and focused duplicate-ID/old-envelope poisons pass |
+| final Increment 4A correctness/QA | GO / PASS | exact-byte rereviews close all accepted A-001--A-008 findings; vegetation 223/223, implementation/authority/AUTH11 41/41, strict vegetation Clippy, formatting, diff hygiene, and package Markdown pass |
+| Milestone 4 | CLOSED | sealed persistent vegetation owner candidate is complete and independently reviewed; no public/BGC/energy/commit claim |
+
+## Increment 4B Receiving-Owner Construction
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| BGC owner candidate API | PASS focused | caller supplies proposals only; BGC constructs exact receipts, finalized mineral debit, receiver credits, ending state, and independent owner operands |
+| BGC quick | PASS / Ran | `cargo nextest run -p openwepp-biogeochemistry --profile quick`: 5/5 |
+| hillslope diagnostic compatibility | PASS / Ran | adapter consumes BGC-produced candidate; hillslope-orchestrator quick 490/490 |
+| strict affected Clippy/checks | PASS / Ran | BGC and hillslope-orchestrator all-target `-D warnings` and checks pass |
+| authority guards | PASS / Ran | anti-evasion PASS; science admission `A0_ADMITTED contracts=45 science_surfaces=1`, base `f96f27bb3d4da10f864938e374c2c1801fac4217`, authority SHA-256 `942e9e0eb3f017345833aa085b9bfe4efc87f8eb01ff5047f7aa59ca3df77c6b` |
+| energy receiving owner | PENDING | existing aggregate diagnostic reconstruction is not accepted as Increment 4B completion evidence |
+| Increment 4B / Milestone 5 | INCOMPLETE | sealed V7 cross-owner connection, independent energy candidate, and atomic commit remain unavailable |

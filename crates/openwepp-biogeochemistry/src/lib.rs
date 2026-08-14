@@ -4,7 +4,8 @@
 use openwepp_kernel_contract::{
     FinalizedUse, MaterialDonorClass, MaterialReceiverClass, MaximumAuthorization,
     MineralNitrogenKey, MineralNitrogenSpecies, ResourceAmountBasis, ResourceOwnerId,
-    ResourceRequest, SoilLayerId, authorize_proportionally as authorize_resources_proportionally,
+    ResourceRequest, SoilLayerId, TransactionId,
+    authorize_proportionally as authorize_resources_proportionally, validate_request_batch,
     validate_resource_protocol,
 };
 use serde::{Deserialize, Serialize};
@@ -37,6 +38,15 @@ pub struct MaterialReceipt {
     pub proposal_id: u64,
     pub amounts: MaterialPool,
 }
+#[derive(Clone, Debug, PartialEq)]
+pub struct MaterialProposal {
+    pub transaction_id: u128,
+    pub owner_id: ResourceOwnerId,
+    pub donor: MaterialDonorClass,
+    pub receiver: MaterialReceiverClass,
+    pub proposal_id: u64,
+    pub amounts: MaterialPool,
+}
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct MineralLayer {
     pub ammonium_n: f64,
@@ -51,6 +61,110 @@ pub struct BiogeochemistryState {
 pub type NitrogenRequest = ResourceRequest<MineralNitrogenKey, f64>;
 pub type NitrogenAuthorization = MaximumAuthorization<MineralNitrogenKey, f64>;
 pub type NitrogenUse = FinalizedUse<MineralNitrogenKey, f64>;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TransformationsMode {
+    Disabled,
+    Required,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct MineralInventoryOperand {
+    pub key: MineralNitrogenKey,
+    pub beginning_kg_n_m2: f64,
+    pub finalized_use_kg_n_m2: f64,
+    pub ending_kg_n_m2: f64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct MaterialReceiverOperand {
+    pub receiver: MaterialReceiverClass,
+    pub beginning: MaterialPool,
+    pub incoming: MaterialPool,
+    pub ending: MaterialPool,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct BiogeochemistryOwnerCandidate {
+    transaction_id: TransactionId,
+    beginning: BiogeochemistryState,
+    ending: BiogeochemistryState,
+    finalized_uses: Vec<NitrogenUse>,
+    receipts: Vec<MaterialReceipt>,
+    mineral_operands: Vec<MineralInventoryOperand>,
+    receiver_operands: Vec<MaterialReceiverOperand>,
+}
+
+impl BiogeochemistryOwnerCandidate {
+    #[must_use]
+    pub fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub fn beginning(&self) -> &BiogeochemistryState {
+        &self.beginning
+    }
+
+    #[must_use]
+    pub fn ending(&self) -> &BiogeochemistryState {
+        &self.ending
+    }
+
+    #[must_use]
+    pub fn finalized_uses(&self) -> &[NitrogenUse] {
+        &self.finalized_uses
+    }
+
+    #[must_use]
+    pub fn receipts(&self) -> &[MaterialReceipt] {
+        &self.receipts
+    }
+
+    #[must_use]
+    pub fn mineral_operands(&self) -> &[MineralInventoryOperand] {
+        &self.mineral_operands
+    }
+
+    #[must_use]
+    pub fn receiver_operands(&self) -> &[MaterialReceiverOperand] {
+        &self.receiver_operands
+    }
+
+    pub fn validate(&self) -> Result<(), BiogeochemistryError> {
+        if self.transaction_id.0 == 0
+            || self.ending.last_transaction_id != self.transaction_id.0
+            || self.beginning.last_transaction_id >= self.transaction_id.0
+        {
+            return Err(BiogeochemistryError::InvalidRequest(
+                "candidate transaction identity".into(),
+            ));
+        }
+        for operand in &self.mineral_operands {
+            if [
+                operand.beginning_kg_n_m2,
+                operand.finalized_use_kg_n_m2,
+                operand.ending_kg_n_m2,
+            ]
+            .iter()
+            .any(|value| !value.is_finite() || *value < 0.0)
+                || (operand.beginning_kg_n_m2 - operand.finalized_use_kg_n_m2).to_bits()
+                    != operand.ending_kg_n_m2.to_bits()
+            {
+                return Err(BiogeochemistryError::InsufficientMineralNitrogen);
+            }
+        }
+        for operand in &self.receiver_operands {
+            validate_material_pool(operand.beginning)?;
+            validate_material_pool(operand.incoming)?;
+            validate_material_pool(operand.ending)?;
+            if add_pool(operand.beginning, operand.incoming) != operand.ending {
+                return Err(BiogeochemistryError::MaterialClosure);
+            }
+        }
+        Ok(())
+    }
+}
 
 pub fn available_by_key(
     state: &BiogeochemistryState,
@@ -98,86 +212,147 @@ pub fn authorize_proportionally(
     .map_err(|error| BiogeochemistryError::InvalidRequest(format!("{error:?}")))
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn apply_candidate(
+#[allow(clippy::too_many_lines)]
+pub fn construct_biogeochemistry_candidate(
     beginning: &BiogeochemistryState,
-    transaction_id: u128,
+    transaction_id: TransactionId,
     requests: &[NitrogenRequest],
     authorizations: &[NitrogenAuthorization],
     uses: &[NitrogenUse],
-    proposals: &[MaterialReceipt],
-    receipts: &[MaterialReceipt],
-    require_transformations: bool,
-) -> Result<BiogeochemistryState, BiogeochemistryError> {
-    if require_transformations {
+    proposals: &[MaterialProposal],
+    transformations: TransformationsMode,
+) -> Result<BiogeochemistryOwnerCandidate, BiogeochemistryError> {
+    if transformations == TransformationsMode::Required {
         return Err(BiogeochemistryError::TransformationsRequired);
     }
     if requests.len() != authorizations.len() || requests.len() != uses.len() {
         return Err(BiogeochemistryError::InvalidRequest("receipt shape".into()));
     }
+    validate_request_batch(requests)
+        .map_err(|error| BiogeochemistryError::InvalidRequest(format!("{error:?}")))?;
     let mut candidate = beginning.clone();
-    if transaction_id <= beginning.last_transaction_id {
+    if transaction_id.0 <= beginning.last_transaction_id {
         return Err(BiogeochemistryError::InvalidRequest(
             "stale transaction identity".into(),
         ));
     }
+    let available = available_by_key(beginning)?;
+    let mut use_by_key = BTreeMap::<MineralNitrogenKey, f64>::new();
     for ((r, a), u) in requests.iter().zip(authorizations).zip(uses) {
         validate_resource_protocol(r, a, u)
             .map_err(|e| BiogeochemistryError::InvalidRequest(format!("{e:?}")))?;
-        if r.transaction_id.0 != transaction_id {
+        if r.transaction_id != transaction_id {
             return Err(BiogeochemistryError::InvalidRequest(
                 "nitrogen transaction identity".into(),
             ));
         }
-        let layer = candidate
-            .layers
-            .get_mut(r.key.layer_id.as_str())
-            .ok_or_else(|| BiogeochemistryError::InvalidRequest("unknown layer".into()))?;
-        let available = match r.key.species {
-            MineralNitrogenSpecies::Ammonium => layer.ammonium_n,
-            MineralNitrogenSpecies::Nitrate => layer.nitrate_n,
-        };
-        if u.amount > available {
+        *use_by_key.entry(r.key.clone()).or_default() += u.amount;
+    }
+    let mut mineral_operands = Vec::with_capacity(available.len());
+    for (key, beginning_amount) in available {
+        let finalized = use_by_key.remove(&key).unwrap_or(0.0);
+        if !finalized.is_finite() || finalized < 0.0 || finalized > beginning_amount {
             return Err(BiogeochemistryError::InsufficientMineralNitrogen);
         }
-        match r.key.species {
-            MineralNitrogenSpecies::Ammonium => layer.ammonium_n -= u.amount,
-            MineralNitrogenSpecies::Nitrate => layer.nitrate_n -= u.amount,
+        let ending_amount = beginning_amount - finalized;
+        let layer = candidate
+            .layers
+            .get_mut(key.layer_id.as_str())
+            .ok_or_else(|| BiogeochemistryError::InvalidRequest("unknown layer".into()))?;
+        match key.species {
+            MineralNitrogenSpecies::Ammonium => layer.ammonium_n = ending_amount,
+            MineralNitrogenSpecies::Nitrate => layer.nitrate_n = ending_amount,
         }
+        mineral_operands.push(MineralInventoryOperand {
+            key,
+            beginning_kg_n_m2: beginning_amount,
+            finalized_use_kg_n_m2: finalized,
+            ending_kg_n_m2: ending_amount,
+        });
     }
-    if proposals.len() != receipts.len() {
-        return Err(BiogeochemistryError::MaterialClosure);
+    if !use_by_key.is_empty() {
+        return Err(BiogeochemistryError::InvalidRequest(
+            "unknown finalized-use inventory".into(),
+        ));
     }
-    let mut receipt_keys = std::collections::BTreeSet::new();
-    for (proposal, receipt) in proposals.iter().zip(receipts) {
-        let t = receipt.amounts;
-        if proposal != receipt
-            || receipt.transaction_id != transaction_id
-            || !receipt_keys.insert((
-                receipt.transaction_id,
-                receipt.owner_id.clone(),
-                receipt.proposal_id,
+    let receiver_beginning = beginning.receivers.clone();
+    let mut receipts = Vec::with_capacity(proposals.len());
+    let mut proposal_keys = std::collections::BTreeSet::new();
+    for proposal in proposals {
+        if proposal.transaction_id != transaction_id.0
+            || proposal.proposal_id == 0
+            || !proposal_keys.insert((
+                proposal.transaction_id,
+                proposal.owner_id.clone(),
+                proposal.proposal_id,
             ))
         {
             return Err(BiogeochemistryError::MaterialClosure);
         }
-        if [t.carbon, t.nitrogen, t.dry_matter]
-            .iter()
-            .any(|v| !v.is_finite() || *v < 0.0)
-            || (t.carbon > 0.0 && t.dry_matter < t.carbon)
-        {
-            return Err(BiogeochemistryError::MaterialClosure);
-        }
+        validate_material_pool(proposal.amounts)?;
         let pool = candidate
             .receivers
-            .get_mut(&receipt.receiver)
+            .get_mut(&proposal.receiver)
             .ok_or(BiogeochemistryError::MaterialClosure)?;
-        pool.carbon += t.carbon;
-        pool.nitrogen += t.nitrogen;
-        pool.dry_matter += t.dry_matter;
+        *pool = add_pool(*pool, proposal.amounts);
+        receipts.push(MaterialReceipt {
+            transaction_id: proposal.transaction_id,
+            owner_id: proposal.owner_id.clone(),
+            donor: proposal.donor,
+            receiver: proposal.receiver,
+            proposal_id: proposal.proposal_id,
+            amounts: proposal.amounts,
+        });
     }
-    candidate.last_transaction_id = transaction_id;
-    Ok(candidate)
+    candidate.last_transaction_id = transaction_id.0;
+    let receiver_operands = receiver_beginning
+        .into_iter()
+        .map(|(receiver, beginning_pool)| {
+            let incoming = receipts
+                .iter()
+                .filter(|receipt| receipt.receiver == receiver)
+                .fold(MaterialPool::default(), |total, receipt| {
+                    add_pool(total, receipt.amounts)
+                });
+            let ending = candidate.receivers[&receiver];
+            MaterialReceiverOperand {
+                receiver,
+                beginning: beginning_pool,
+                incoming,
+                ending,
+            }
+        })
+        .collect();
+    let owner_candidate = BiogeochemistryOwnerCandidate {
+        transaction_id,
+        beginning: beginning.clone(),
+        ending: candidate,
+        finalized_uses: uses.to_vec(),
+        receipts,
+        mineral_operands,
+        receiver_operands,
+    };
+    owner_candidate.validate()?;
+    Ok(owner_candidate)
+}
+
+fn validate_material_pool(pool: MaterialPool) -> Result<(), BiogeochemistryError> {
+    if [pool.carbon, pool.nitrogen, pool.dry_matter]
+        .iter()
+        .any(|value| !value.is_finite() || *value < 0.0)
+        || (pool.carbon > 0.0 && pool.dry_matter < pool.carbon)
+    {
+        return Err(BiogeochemistryError::MaterialClosure);
+    }
+    Ok(())
+}
+
+fn add_pool(left: MaterialPool, right: MaterialPool) -> MaterialPool {
+    MaterialPool {
+        carbon: left.carbon + right.carbon,
+        nitrogen: left.nitrogen + right.nitrogen,
+        dry_matter: left.dry_matter + right.dry_matter,
+    }
 }
 
 pub fn zero_transformation_flux(required: bool) -> Result<f64, BiogeochemistryError> {
@@ -310,17 +485,17 @@ mod tests {
             ]),
             ..BiogeochemistryState::default()
         };
-        let ending = apply_candidate(
+        let candidate = construct_biogeochemistry_candidate(
             &beginning,
-            tx.0,
+            tx,
             &requests,
             &authorizations,
             &uses,
             &[],
-            &[],
-            false,
+            TransformationsMode::Disabled,
         )
         .expect("candidate");
+        let ending = candidate.ending();
         assert!((ending.layers["l1"].ammonium_n - 0.5).abs() < f64::EPSILON);
         assert!((ending.layers["l1"].nitrate_n - 3.0).abs() < f64::EPSILON);
         assert!((ending.layers["l2"].ammonium_n - 0.25).abs() < f64::EPSILON);
@@ -329,7 +504,7 @@ mod tests {
 
     #[test]
     fn duplicate_material_receipt_is_rejected() {
-        let receipt = MaterialReceipt {
+        let proposal = MaterialProposal {
             transaction_id: 1,
             owner_id: ResourceOwnerId::try_new("tree").expect("owner"),
             donor: MaterialDonorClass::Leaf,
@@ -342,17 +517,156 @@ mod tests {
             },
         };
         assert_eq!(
-            apply_candidate(
+            construct_biogeochemistry_candidate(
                 &BiogeochemistryState::default(),
-                1,
+                TransactionId(1),
                 &[],
                 &[],
                 &[],
-                &[receipt.clone(), receipt.clone()],
-                &[receipt.clone(), receipt],
-                false,
+                &[proposal.clone(), proposal],
+                TransformationsMode::Disabled,
             ),
             Err(BiogeochemistryError::MaterialClosure)
+        );
+    }
+
+    #[test]
+    fn owner_constructs_exact_material_receipt_and_independent_receiver_operands() {
+        let beginning = BiogeochemistryState {
+            receivers: BTreeMap::from([(
+                MaterialReceiverClass::Metabolic,
+                MaterialPool {
+                    carbon: 1.0,
+                    nitrogen: 2.0,
+                    dry_matter: 3.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        let proposal = MaterialProposal {
+            transaction_id: 1,
+            owner_id: ResourceOwnerId::try_new("stratum:canopy").expect("owner"),
+            donor: MaterialDonorClass::Leaf,
+            receiver: MaterialReceiverClass::Metabolic,
+            proposal_id: 7,
+            amounts: MaterialPool {
+                carbon: 0.4,
+                nitrogen: 0.03,
+                dry_matter: 0.9,
+            },
+        };
+        let candidate = construct_biogeochemistry_candidate(
+            &beginning,
+            TransactionId(1),
+            &[],
+            &[],
+            &[],
+            std::slice::from_ref(&proposal),
+            TransformationsMode::Disabled,
+        )
+        .expect("receiving owner candidate");
+        assert_eq!(
+            beginning.receivers[&MaterialReceiverClass::Metabolic]
+                .carbon
+                .to_bits(),
+            1.0_f64.to_bits()
+        );
+        assert_eq!(candidate.receipts().len(), 1);
+        let receipt = &candidate.receipts()[0];
+        assert_eq!(receipt.transaction_id, proposal.transaction_id);
+        assert_eq!(receipt.owner_id, proposal.owner_id);
+        assert_eq!(receipt.donor, proposal.donor);
+        assert_eq!(receipt.receiver, proposal.receiver);
+        assert_eq!(receipt.proposal_id, proposal.proposal_id);
+        assert_eq!(receipt.amounts, proposal.amounts);
+        assert_eq!(candidate.receiver_operands().len(), 1);
+        assert_eq!(candidate.receiver_operands()[0].incoming, proposal.amounts);
+        assert_eq!(
+            candidate.ending().receivers[&MaterialReceiverClass::Metabolic],
+            MaterialPool {
+                carbon: 1.4,
+                nitrogen: 2.03,
+                dry_matter: 3.9,
+            }
+        );
+        candidate.validate().expect("independent owner ledgers");
+    }
+
+    #[test]
+    fn transformations_and_wrong_species_finalized_use_fail_closed() {
+        assert_eq!(
+            construct_biogeochemistry_candidate(
+                &BiogeochemistryState::default(),
+                TransactionId(1),
+                &[],
+                &[],
+                &[],
+                &[],
+                TransformationsMode::Required,
+            ),
+            Err(BiogeochemistryError::TransformationsRequired)
+        );
+
+        let tx = TransactionId(1);
+        let owner = ResourceOwnerId::try_new("stratum:canopy").expect("owner");
+        let ammonium = MineralNitrogenKey {
+            layer_id: SoilLayerId::try_new("l1").expect("layer"),
+            species: MineralNitrogenSpecies::Ammonium,
+        };
+        let nitrate = MineralNitrogenKey {
+            layer_id: ammonium.layer_id.clone(),
+            species: MineralNitrogenSpecies::Nitrate,
+        };
+        let request = ResourceRequest {
+            transaction_id: tx,
+            owner_id: owner.clone(),
+            key: ammonium.clone(),
+            amount: 0.5,
+            basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        };
+        let authorization = MaximumAuthorization {
+            transaction_id: tx,
+            owner_id: owner.clone(),
+            key: ammonium,
+            amount: 0.5,
+            basis: request.basis,
+        };
+        let wrong_use = FinalizedUse {
+            transaction_id: tx,
+            owner_id: owner,
+            key: nitrate,
+            amount: 0.25,
+            basis: request.basis,
+        };
+        let beginning = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "l1".into(),
+                MineralLayer {
+                    ammonium_n: 1.0,
+                    nitrate_n: 1.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        assert!(matches!(
+            construct_biogeochemistry_candidate(
+                &beginning,
+                tx,
+                &[request],
+                &[authorization],
+                &[wrong_use],
+                &[],
+                TransformationsMode::Disabled,
+            ),
+            Err(BiogeochemistryError::InvalidRequest(_))
+        ));
+        assert_eq!(
+            beginning.layers["l1"].ammonium_n.to_bits(),
+            1.0_f64.to_bits()
+        );
+        assert_eq!(
+            beginning.layers["l1"].nitrate_n.to_bits(),
+            1.0_f64.to_bits()
         );
     }
 }

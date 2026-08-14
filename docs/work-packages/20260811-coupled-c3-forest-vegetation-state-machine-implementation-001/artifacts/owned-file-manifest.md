@@ -62,6 +62,18 @@ Evidence mode: `Static`
   `WaterArbiter` receiving-owner candidate construction in the default-off
   hillslope diagnostic. This surface is explicitly uncommittable and does not
   authorize E16--E22 or a partial owner commit.
+- V7 Increment 4A vegetation candidate:
+  `src/vegetation_candidate.rs`, `src/vegetation_ledger.rs`, bounded phase
+  accessors in `src/persistent_phase.rs`, public-path containment wiring and
+  focused tests in `src/transaction.rs`, plus module registration. The sealed
+  type has no commit method and no public re-export.
+- Increment 4B BGC receiving-owner slice:
+  `crates/openwepp-biogeochemistry/src/lib.rs` owns proposal-input validation,
+  BGC-constructed receipts, exact mineral debit, receiver operands, ending
+  state, and focused poisons. The default-off adapter update in
+  `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` consumes
+  that owner candidate. Independent energy ownership and all-owner commit are
+  still pending.
 
 Protected implementation boundaries: production runner selectors, CLI defaults,
 production outputs, canopy-snow, soil-transformation, deployment, and consumer

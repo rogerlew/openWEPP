@@ -1,6 +1,6 @@
 # State Ownership Map
 
-Status: `V6 occupancy candidates active / receiving water-owner candidate uncommitted`
+Status: `V7 sealed vegetation candidate active / receiving BGC and energy owners pending`
 
 The authority audit confirmed that the V2 per-layer root-potential lanes have
 no canonical accepted-update mapping from E14's common root-node solution.
@@ -105,3 +105,38 @@ ending store. The candidate is exposed
 only through `UncommittedWaterPhase`; no vegetation-only or water-only commit
 API exists. Failure injection through owner validation returns no phase and
 preserves beginning vegetation bytes.
+
+## V7 Increment 4A Vegetation Ownership
+
+The sealed vegetation owner candidate takes shared ending state only from the
+receipt-bound V7 nitrogen/growth phase and numerical ending lanes only from the
+final capped occupancy columns. It rejects missing, duplicate, potential-only,
+wrong-tile, or stale-lineage occupancy results. Shared and occupancy lineage
+advance to one candidate transaction, derived areas are recomputed from ending
+displayed leaf C, and a new canonical whole-state digest is validated.
+
+Material proposals are transaction escrow owned by typed `stratum:<id>`
+donors; they are not inserted into accepted-state `pending_transfers` and
+cannot be committed before a receiving-owner candidate exists. Vegetation
+independently reconstructs its C/N/DM obligations. BGC still owns mineral
+debit and material receipts, energy still owns its candidate, and the
+orchestrator still owns the only eventual all-owner commit. The sealed type has
+no commit method and is not publicly exported.
+
+## Increment 4B Biogeochemistry Receiving Ownership
+
+The BGC owner now accepts vegetation-side material proposals but never accepts
+a caller-authored receipt. It constructs one receipt per accepted typed
+proposal, debits exact `(layer,species)` mineral inventories by finalized use
+only, credits exact material receiver pools, and exposes independently
+reconstructed beginning/use/ending mineral operands plus beginning/incoming/
+ending receiver operands for carbon, nitrogen, and dry material. Unused
+authorization remains in mineral inventory. Candidate construction clones the
+beginning owner and has no commit method.
+
+The default-off diagnostic adapter now maps the historical public proposal DTO
+to a proposal input and consumes the BGC-produced ending state; it no longer
+passes the same vector as both proposal and receipt. This is boundary hardening
+only because the current V7 public transaction remains fail-closed before that
+diagnostic path. Energy receiving ownership and all-owner commit remain
+pending.

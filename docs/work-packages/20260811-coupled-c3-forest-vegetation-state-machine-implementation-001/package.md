@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / E19 implementation-overconstraint remediation active`
+Status: `executing / Milestone 4 closed / Increment 4B receiving owners active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -460,12 +460,21 @@ closure, and line-count governance, not artifact presence alone.
   finding. The public path remains fail-closed.
 - [ ] Execute Milestone 2: radiation, topology, and interception.
 - [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
-- [ ] Execute Milestone 4: persistent C/N and phenology.
+- [x] Execute Milestone 4: persistent C/N and phenology.
   V7 executable identity and strict V6-to-V7 migration are implemented. The
   pure storage-to-transfer preparation and all-six-tissue onset deployment pass
-  focused tests; public persistent mutation, mineral-N finalization, material
-  proposals, and all-owner commit remain pending.
+  focused tests. Mineral-N finalization, receipt-bound six-tissue growth,
+  accepted-shape vegetation state construction, deterministic material
+  proposal binding, and independent vegetation C/N/dry-material ledgers now
+  pass as a sealed uncommitted candidate. Final independent correctness and QA
+  reviews returned GO/PASS. BGC/energy receiving candidates and all-owner
+  commit remain Milestone 5 work.
 - [ ] Execute Milestone 5: whole transaction and atomic commit.
+  Increment 4B is active. The BGC owner now constructs its own exact material
+  receipts, mineral debit, ending state, and independent mineral/C/N/dry-
+  material receiver operands from vegetation proposals and finalized N use.
+  The independent energy owner and connection to the sealed V7 transaction
+  remain pending; no commit is available.
 - [ ] Execute Milestone 6: diagnostic consumer and Critical closure.
 - [ ] Complete dual reviews, finding disposition, dual terminal verification,
   prompt archival, and truthful final disposition.

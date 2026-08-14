@@ -21,6 +21,8 @@ pub(crate) mod persistent_phase;
 pub mod photosynthesis;
 pub mod radiation;
 pub mod transaction;
+pub(crate) mod vegetation_candidate;
+pub(crate) mod vegetation_ledger;
 pub mod water_phase;
 
 pub use config::*;

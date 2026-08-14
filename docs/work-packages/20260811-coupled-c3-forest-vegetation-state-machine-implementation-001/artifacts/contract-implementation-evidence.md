@@ -74,3 +74,14 @@ The Rust implementation is under active remediation. No row is promoted from
 authority to implementation until fixture reconstruction, focused solver tests,
 independent reviews, and whole-owner rollback pass. The public transaction
 therefore remains fail-closed.
+
+## V7 Increment 4A Candidate Binding
+
+Static + Ran: V7 E18--E22 outputs now enter a crate-private vegetation-owner
+candidate. Ending shared state, capped occupancy state, transaction lineage,
+derived displayed-leaf area caches, deterministic proposal identities, and the
+canonical state digest are constructed and validated together. Carbon,
+nitrogen, and dry-material operands are reconstructed by a module outside the
+constitutive producers. This binds `INV-VEGETATION-030/031/068/069/070` at the
+vegetation-owner boundary only; the independent BGC receipt, energy owner, and
+atomic owner-set commit remain implementation obligations.

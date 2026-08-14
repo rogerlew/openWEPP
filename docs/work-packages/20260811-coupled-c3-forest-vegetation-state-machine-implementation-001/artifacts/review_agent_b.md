@@ -181,3 +181,253 @@ potential requests, one authorization, `F<=A<=D`, receipt-bound eta/NSC, and
 beginning-state immutability are covered. Fresh vegetation 215/215, formatting,
 and diff hygiene passed. BGC debit, energy-owner completion, atomic commit,
 heavy gates, runtime activation, and calibration remain explicitly unclaimed.
+
+## 2026-08-13 V7 Increment 4A QA Review
+
+Evidence mode: `Static + Ran`
+
+### HIGH — Signed `XS_C` can reject a contract-valid vegetation candidate
+
+`CoupledOwnedState::validate_for_model` treats `xs_c` as finite signed state and
+does not impose a nonnegative bound
+(`crates/openwepp-vegetation/src/transaction.rs:420-449`), consistent with the
+canonical signed-state rule in
+`docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md:1605`.
+The Increment 4A ledger builder includes that signed value in total vegetation
+carbon (`crates/openwepp-vegetation/src/vegetation_candidate.rs:395-404`), but
+the validator then requires both aggregate beginning and ending vegetation
+carbon to be nonnegative
+(`crates/openwepp-vegetation/src/vegetation_ledger.rs:74-89`). A finite,
+otherwise valid state whose negative `XS_C` debt exceeds its positive pools is
+therefore admitted by state/configuration validation and rejected only at the
+new owner-ledger boundary. The current real fixture has negative `xs_c` but a
+positive aggregate, so it does not cover this valid edge.
+
+Required disposition: `accepted`. Preserve finite signed `XS_C` accounting
+without imposing a new aggregate nonnegative domain, and add a focused valid
+signed-debt candidate regression that proves closure and beginning-state byte
+identity.
+
+### HIGH — Ledger validation does not bind a unique stratum set or one whole-state identity
+
+`validate_vegetation_ledgers` checks only equal vector cardinality and equality
+within each zipped carbon/N/DM row
+(`crates/openwepp-vegetation/src/vegetation_ledger.rs:63-73`). It does not reject
+duplicate `stratum_id` values, prove the configured stratum set, or require one
+transaction/beginning digest/ending digest across all rows. In addition,
+`validate_sealed` does not bind ledger identities back to the candidate's
+transaction, beginning digest, and ending-state digest
+(`crates/openwepp-vegetation/src/vegetation_candidate.rs:82-100`). Consequently,
+matching duplicate triplets can replace a missing configured stratum, and
+individually matching rows from different transactions or whole-state digests
+can pass the purported independent validator. The current builder happens to
+emit configuration order from one state pair, but the validation boundary does
+not independently prove that claim, and no duplicate/missing/mixed-identity
+poison exercises it.
+
+Required disposition: `accepted`. Bind validation to the expected configured
+stratum set and candidate-wide transaction/beginning/ending identities, with
+duplicate-stratum, missing-stratum, mixed-transaction, and mixed-digest poison
+tests.
+
+### MEDIUM — Real-candidate C/N/DM provenance is not independently exercised
+
+The standalone ledger tests use a hand-authored internally closing fixture
+(`crates/openwepp-vegetation/src/vegetation_ledger.rs:197-230`). The real
+candidate test checks only ledger vector counts
+(`crates/openwepp-vegetation/src/transaction.rs:1942-1944`); it does not
+independently reconstruct each real ledger from beginning state, ending state,
+finalized use, final carbon operands, and material proposals, nor verify exact
+proposal C/N/DM copying from source amounts. The carbon-as-dry-matter and forged
+aggregate poisons do exercise the arithmetic validator, but they do not prove
+the production operand-lineage mapping asserted in the package evidence.
+
+Required disposition: `accepted`. Add an outside-producer reconstruction over
+the real candidate with all-distinct C, N, and dry-material operands and poison
+the production mapping rather than only a synthetic aggregate fixture.
+
+## Non-blocking Debt / Follow-ups
+
+- Missing, potential-only, and duplicate occupancy results are directly covered
+  at `crates/openwepp-vegetation/src/vegetation_candidate.rs:420-516`; the real
+  fixture also covers canonical digest validation, exact shared/occupancy
+  lineage, derived-area refresh, and serialized beginning-state identity at
+  `crates/openwepp-vegetation/src/transaction.rs:1897-1967`.
+- Unresolved beginning/candidate transfers have production guards at
+  `crates/openwepp-vegetation/src/transaction.rs:817-824` and
+  `crates/openwepp-vegetation/src/vegetation_candidate.rs:191-196`, but Increment
+  4A adds only a positive empty-state assertion. Add a targeted rejection poison.
+- Proposal IDs and sort order are asserted, but a second construction is not
+  compared byte-for-byte and exact owner/C/N/DM/source-sequence preservation is
+  not asserted. Add a repeated-construction and all-distinct source-order test.
+- `artifacts/implementation-and-test-evidence.md:3` still labels E19 composition
+  as the active status although the package and final-disposition headers have
+  advanced to Increment 4A.
+- Line-count evidence matches the reviewed bytes: `vegetation_candidate.rs`
+  518, `vegetation_ledger.rs` 258, `persistent_phase.rs` 498,
+  `transaction.rs` 2,049 (WARN with split follow-up), and
+  `carbon_nitrogen.rs` 2,214 (retained WARN); no reviewed file reaches 3,000.
+
+Ran on unchanged reviewed source bytes: vegetation quick 219/219;
+implementation contract 13/13; vegetation authority contract 25/25; AUTH11
+3/3; strict all-target vegetation Clippy; formatting; and diff hygiene all
+passed. One attempted test-list command used an invalid output-format value;
+the corrected list command succeeded and did not affect a gate result.
+
+Public candidate publication, BGC receipt, energy ownership, atomic commit,
+Milestone 4/5 completion, heavy gates, terminal verification, activation, and
+calibration remain explicitly withheld. QA disposition: `HOLD` pending the
+three accepted findings above.
+
+## 2026-08-13 V7 Increment 4A Final QA Rereview
+
+Evidence mode: `Static + Ran`
+
+### Findings
+
+No remaining material QA finding. The initial Increment 4A `HOLD` above remains
+immutable historical evidence; all three accepted findings are corrected on
+the current exact worktree bytes.
+
+- Signed `XS_C` is now a separate finite signed beginning/ending operand while
+  physical vegetation C remains nonnegative
+  (`crates/openwepp-vegetation/src/vegetation_ledger.rs:21-32,105-134`). The
+  closure consumes the directly retained final-maintenance operand rather than
+  deriving respiration from ending `XS_C`
+  (`crates/openwepp-vegetation/src/persistent_phase.rs:28-36,81-89,216-226,271-286`;
+  `crates/openwepp-vegetation/src/vegetation_candidate.rs:374-386`). A negative
+  physical-plus-reserve aggregate is accepted and ending-reserve corruption is
+  rejected (`vegetation_ledger.rs:365-380`); the real two-ULP candidate also
+  rejects ending-`XS_C` corruption (`transaction.rs:1993-2002`).
+- Ledger validation now requires the exact configured stratum set, candidate
+  transaction, beginning digest, ending digest, unique strata, row-consistent
+  C/N/DM identities, and globally unique positive proposal IDs
+  (`crates/openwepp-vegetation/src/vegetation_ledger.rs:61-159,179-223`).
+  Duplicate/missing strata and mixed whole-state identity reject at
+  `vegetation_ledger.rs:377-406`; the real candidate coherently forges all three
+  ending-digest copies and still rejects against candidate identity at
+  `transaction.rs:2003-2025`.
+- The production two-ULP path now validates the actual candidate operands, not
+  only a synthetic ledger. It poisons signed reserve, whole-state digest, and
+  carbon-as-dry-matter while preserving the independent C/N/DM closure path
+  (`crates/openwepp-vegetation/src/transaction.rs:1974-2036`). Direct final GPP,
+  final maintenance, finalized N use, beginning/ending physical state, and
+  proposal C/N/DM provenance are visibly bound in
+  `vegetation_candidate.rs:336-415`.
+- Candidate construction requires structural equality with the exact water
+  phase retained by the nitrogen phase
+  (`crates/openwepp-vegetation/src/persistent_phase.rs:38-48,70-74,289-302`;
+  `crates/openwepp-vegetation/src/vegetation_candidate.rs:113-133`). Ending
+  occupancy uses only capped results, requires the exact configured set, and
+  advances lineage once (`vegetation_candidate.rs:244-287`).
+- Material proposals retain deterministic typed stratum/donor/receiver/source
+  ordering and consecutive positive IDs (`vegetation_candidate.rs:290-328`).
+  The real fixture constructs the entire sealed candidate twice and proves
+  exact structural equality, then asserts proposal order/IDs
+  (`transaction.rs:1897-1973`). Serialized beginning state remains byte-
+  identical after both constructions and real-candidate poisons
+  (`transaction.rs:2037-2040`).
+
+### Non-blocking Debt / Follow-ups
+
+- Add one isolated cross-stratum duplicate-proposal-ID poison. The production
+  validator already enforces global uniqueness and candidate construction
+  generates one consecutive global sequence, but the present duplicate-stratum
+  fixture reaches an earlier identity guard.
+- The valid negative aggregate and real-candidate corruption tests jointly
+  cover signed reserve semantics; a future multi-stratum full-candidate fixture
+  with physical-plus-`XS_C` below zero would make that integration coverage more
+  direct.
+- `UncommittedNitrogenPhase` retains a boxed clone of the full source water
+  phase, and the candidate also stores its own water-phase clone. This is exact
+  and safe for the bounded private candidate, but a compact immutable phase
+  identity should be considered before a public/performance-sensitive API.
+- Line-count governance matches current bytes: `vegetation_candidate.rs` 540,
+  `vegetation_ledger.rs` 408, `persistent_phase.rs` 508, `transaction.rs` 2,136,
+  `carbon_nitrogen.rs` 2,214, and `migration.rs` 2,873. The three 2,000-line
+  files remain WARN-level decomposition debt with recorded follow-up; none
+  reaches the 3,000-line blocker.
+
+Reviewed source SHA-256: `vegetation_candidate.rs`
+`3a75f82039818ae01073cb8b770e3d8853936ab39ce2cbd944b8d6de4fd3751c`;
+`vegetation_ledger.rs`
+`45b5d66ca46feab1a587e05e75d8d82d3495eaafeaa2e49c3256814ac6816afe`;
+`persistent_phase.rs`
+`b9be5e28c81a971cd937b0657b2b3c2520534152d7d33b136bb1327afbcd16c1`;
+`transaction.rs`
+`5a8556ac0d53cef8ca252611e78c1e48499bc8e2266145ae9179e9a28249a6ef`;
+and `lib.rs`
+`1cdbf8de57972764cc13983b3dd8a4ecb57f382db8e1139d4d3207861189f436`.
+
+Ran on those source bytes: vegetation quick 221/221; implementation contract
+13/13; vegetation authority contract 25/25; AUTH11 3/3; strict all-target
+vegetation Clippy; formatting; and diff hygiene all passed. Current retained
+package evidence records Markdown lint over 55 files with 0 errors and 0
+warnings. Counts, active Increment 4A lifecycle status, historical HOLDs, and
+WARN-level line-count dispositions are truthful.
+
+Public candidate publication, BGC receipt, independent energy ownership,
+atomic commit, Milestone 4/5 completion, heavy gates, terminal verification,
+activation, and calibration remain explicitly out of scope and fail-closed.
+Final bounded Increment 4A QA disposition: `PASS`.
+
+## 2026-08-13 V7 Increment 4A Superseding Final QA Addendum
+
+Evidence mode: `Static + Ran`
+
+### Findings
+
+No material finding. This addendum supersedes the immediately preceding final
+rereview for the exact final bytes; the original `HOLD` remains immutable
+historical evidence.
+
+- The new typed failures emit only the contract-authorized `VEG-E-093`,
+  `VEG-E-097`, and `VEG-E-100` codes
+  (`crates/openwepp-vegetation/src/error.rs:47-54`; `SC-VEGETATION-001.md:1574-1577,2186-2188`).
+  Exact-variant assertions cover capped rollback, V7 allocation/closure
+  rejection, and byte-preserving V7 transaction rollback.
+- The real two-ULP path now rejects pairing its nitrogen phase with a distinct
+  complete source-water phase
+  (`crates/openwepp-vegetation/src/transaction.rs:1913-1933`). Independent
+  ledger poisons reject a residual admitted only by the former loose envelope
+  and a globally duplicated proposal ID across distinct strata
+  (`crates/openwepp-vegetation/src/vegetation_ledger.rs:365-376,422-442`).
+- Package evidence reports vegetation `223/223` and matching governed counts:
+  `vegetation_candidate.rs` 535, `vegetation_ledger.rs` 443,
+  `persistent_phase.rs` 508, `transaction.rs` 2,157,
+  `carbon_nitrogen.rs` 2,214, and `migration.rs` 2,873. No file reaches the
+  3,000-line blocker.
+
+### Non-blocking Debt / Follow-ups
+
+- The boxed full source-water-phase clone remains a performance/API refinement
+  before any public path. The three 2,000-line modules retain their recorded
+  WARN-level decomposition debt.
+- A future multi-stratum full-candidate fixture with a negative
+  physical-plus-signed-`XS_C` aggregate would make the existing unit-level
+  semantic coverage more direct.
+
+Reviewed source SHA-256: `vegetation_candidate.rs`
+`daa882ccddfe071368279fd78cb83b1c913d806860dd4e0921b05f082f951a41`;
+`vegetation_ledger.rs`
+`336fcd53bdf726fedc4b5f12271d2e7cf5c87cca27af222f344a00b34098cd2e`;
+`persistent_phase.rs`
+`b9be5e28c81a971cd937b0657b2b3c2520534152d7d33b136bb1327afbcd16c1`;
+`transaction.rs`
+`f6c5035796057af12f5a1e303fc1d87de6a127055c910ae0c0271f9eefa0a24f`;
+`error.rs`
+`773f6d4c40f2b375efcc299d9a9c4e61c65d129a38b62e7c7f62ecefca0c5a51`;
+`migration.rs`
+`ab62ef22fe438547173462c863ded3d0b88cfda3810bbcbe525aa6d15ad23d45`;
+and `lib.rs`
+`1cdbf8de57972764cc13983b3dd8a4ecb57f382db8e1139d4d3207861189f436`.
+
+Ran on those bytes: vegetation quick 223/223; implementation, vegetation
+authority, and AUTH11 focused contracts 41/41; strict all-target vegetation
+Clippy; formatting; and diff hygiene all passed. Package Markdown lint validated
+55 files with 0 errors and 0 warnings.
+
+Public candidate publication, BGC receipt, independent energy ownership,
+atomic commit, Milestone 4/5 completion, heavy gates, terminal verification,
+activation, and calibration remain out of scope and fail-closed. Superseding
+final bounded Increment 4A QA disposition: `PASS`.

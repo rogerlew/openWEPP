@@ -87,3 +87,28 @@ rollback scope, and a 3,130-line migration module. All findings were accepted
 and corrected. Final bounded Rust correctness review returned GO and QA returned
 PASS with no material finding. Public execution remains fail-closed and this
 evidence does not complete Milestones 2 or 3.
+
+## V7 Increment 4A Candidate Tests
+
+Ran after review remediation: vegetation quick passed 223/223. The real
+two-ULP full-water fixture now
+constructs and validates the sealed vegetation candidate, proves a new state
+digest, exact accepted lineage, ending displayed-leaf area identities,
+deterministic positive proposal IDs, empty accepted-state pending transfers,
+and byte-identical beginning state. It also rejects signed-reserve corruption,
+a coherently forged ending digest, and carbon-as-dry-matter substitution using
+the production candidate operands. Focused poisons reject missing,
+potential-only, and duplicate capped occupancy results; carbon-as-dry-matter;
+forged dry aggregate; elemental imbalance; cross-ledger identity; globally
+duplicated proposal identity; old-envelope-only closure; and a nitrogen phase
+paired with a different accepted capped-water phase.
+
+Ran: vegetation strict all-target Clippy passed. Public execution still returns
+the typed post-nitrogen multi-owner incomplete error, so these tests make no
+BGC receipt, energy-owner, atomic-commit, activation, or completion claim.
+
+Ran: the implementation contract passed 13/13, vegetation authority passed
+25/25, AUTH11 passed 3/3, all four affected crate checks and strict Clippy
+gates passed, authority anti-evasion passed, and science admission returned
+`A0_ADMITTED contracts=45 science_surfaces=0` against base
+`f96f27bb3d4da10f864938e374c2c1801fac4217`.

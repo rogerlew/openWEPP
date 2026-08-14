@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / V7 uncommitted E19 composition active / full candidate fail-closed`
+Status: `executing / Milestone 4 closed / Increment 4B receiving owners active / public candidate fail-closed`
 
 ## V7 Storage-Transfer Phenology Increment
 
@@ -164,3 +164,56 @@ obeys every layer/species `F<=A<=D` bound, produces `eta<1` and positive NSC,
 and leaves serialized beginning vegetation bytes unchanged. The public path
 still returns typed post-nitrogen implementation-incomplete and cannot publish
 or commit a multi-owner candidate.
+
+## V7 Increment 4A Sealed Vegetation Candidate
+
+Static + Ran: `vegetation_candidate::construct_uncommitted_vegetation_candidate`
+consumes the sealed water and nitrogen phases, requires exact phase/beginning/
+transaction identity, takes occupancy warm starts only from the final capped
+column set, advances accepted lineage, and reconstructs all shared derived
+areas from ending displayed leaf C. It computes and validates a new canonical
+V7 state digest. Beginning state remains byte-identical.
+
+Material amounts are sorted by typed stratum, donor, receiver, and original
+source sequence, then receive positive deterministic proposal IDs. They remain
+candidate escrow outside the ending state; no unresolved pending transfer can
+enter the next accepted state. `vegetation_ledger` independently reconstructs
+per-stratum carbon, nitrogen, and dry-material obligations without consuming a
+producer residual. Missing/potential-only/duplicate occupancy results,
+carbon-as-dry-matter, forged dry aggregate, elemental imbalance, and cross-
+ledger identity poisons reject. Post-review remediation separates physical
+vegetation C from signed `XS_C`, consumes the directly retained maintenance
+operand, uses the canonical whole-owner closure bound, binds every ledger to
+the exact candidate transaction and beginning/ending digests, and requires the
+exact configured stratum set with globally unique proposal IDs.
+
+Ran after review remediation: `cargo nextest run -p openwepp-vegetation
+--profile quick` passed 223/223. The real two-ULP candidate now rejects ending
+`XS_C` corruption, a coherently forged ending digest, and a carbon-as-dry-
+matter proposal while retaining exact beginning bytes. A distinct capped water
+phase cannot be paired with the retained nitrogen phase.
+Ran: `cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` passed.
+The public function constructs and validates this sealed candidate, then still
+returns `V7 post-nitrogen multi-owner candidate is implementation-incomplete`.
+Final exact-byte correctness review returned GO and QA returned PASS after the
+initial HOLD findings and all remediation attempts were preserved. This closes
+Milestone 4; receiving BGC/energy candidates and atomic commit remain
+Milestone 5.
+
+## Increment 4B BGC Receiving Owner
+
+Static + Ran: `construct_biogeochemistry_candidate` replaces the former API
+that accepted caller-supplied proposals and receipts. It accepts typed
+potential requests, maximum authorizations, finalized uses, and vegetation
+material proposals, then independently constructs exact receipts, species- and
+layer-preserving mineral debits, receiver credits, ending state, and explicit
+mineral plus C/N/dry-material receiver operands. It validates the owner
+candidate before return and retains `TransformationsMode::Required` as
+`BGC-E-040`.
+
+Ran: BGC quick passed 5/5; hillslope-orchestrator quick passed 490/490; strict
+all-target BGC and hillslope Clippy and affected checks passed. Poisons cover
+duplicate proposal identity, wrong-species finalized use, missing receiver,
+unsupported transformations, and authorization distinct from finalized debit.
+The independent energy owner and sealed V7 cross-owner connection remain
+pending, so Increment 4B and Milestone 5 are not closed.

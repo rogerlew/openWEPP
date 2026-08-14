@@ -13,6 +13,7 @@ use crate::carbon_nitrogen::{
     PhenologyMode, PhenologyUpdate, RootRespirationOperand, advance_phenology, advance_turnover,
     carbon_offer, finalize_growth, maintenance_respiration, nitrogen_demand,
 };
+use crate::carbon_phase::StratumCarbonOperands;
 use crate::config::{PhenologyType, StratumConfiguration, VegetationConfiguration};
 use crate::nitrogen_protocol::{
     MineralNitrogenFinalization, MineralNitrogenFinalizedUse, MineralNitrogenMaximumAuthorization,
@@ -27,6 +28,8 @@ pub(crate) struct StratumPreallocation {
     pub candidate_after_growth: StratumSharedState,
     pub potential_carbon_offer: CarbonOffer,
     pub final_carbon_offer: CarbonOffer,
+    pub final_carbon_operands: StratumCarbonOperands,
+    pub final_maintenance_respiration_kg_c_m2: f64,
     pub potential_request_batch: PotentialMineralNitrogenRequestBatch,
     pub nitrogen_finalization: MineralNitrogenFinalization,
     pub growth_finalization: GrowthFinalization,
@@ -41,24 +44,35 @@ pub(crate) struct UncommittedNitrogenPhase {
     authorizations: Vec<MineralNitrogenMaximumAuthorization>,
     finalized_uses: Vec<MineralNitrogenFinalizedUse>,
     strata: BTreeMap<StratumId, StratumPreallocation>,
+    source_water_phase: Box<UncommittedWaterPhase>,
 }
 
-#[cfg(test)]
 impl UncommittedNitrogenPhase {
+    pub(crate) fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[cfg(test)]
     pub(crate) fn requests(&self) -> &[PotentialMineralNitrogenRequest] {
         &self.requests
     }
 
+    #[cfg(test)]
     pub(crate) fn authorizations(&self) -> &[MineralNitrogenMaximumAuthorization] {
         &self.authorizations
     }
 
+    #[cfg(test)]
     pub(crate) fn finalized_uses(&self) -> &[MineralNitrogenFinalizedUse] {
         &self.finalized_uses
     }
 
     pub(crate) fn strata(&self) -> &BTreeMap<StratumId, StratumPreallocation> {
         &self.strata
+    }
+
+    pub(crate) fn source_water_phase(&self) -> &UncommittedWaterPhase {
+        &self.source_water_phase
     }
 }
 
@@ -67,6 +81,7 @@ struct PreparedStratum {
     parameters: CnParameters,
     potential_offer: CarbonOffer,
     final_offer: CarbonOffer,
+    final_maintenance_respiration: f64,
     final_demand: f64,
     request_batch: PotentialMineralNitrogenRequestBatch,
     transfers: Vec<MaterialTransferAmounts>,
@@ -208,6 +223,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
                 parameters,
                 potential_offer,
                 final_offer,
+                final_maintenance_respiration: final_maintenance,
                 final_demand,
                 request_batch,
                 transfers,
@@ -255,12 +271,17 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         item.state.nsc_c = growth_finalization.nsc_next;
         item.state.xs_c = growth_finalization.xs_next;
         finalized_uses.extend_from_slice(&nitrogen_finalization.finalized_uses);
+        let final_carbon_operands = *final_carbon
+            .get(&stratum_id)
+            .ok_or(VegetationError::Domain("final carbon identity"))?;
         strata.insert(
             stratum_id,
             StratumPreallocation {
                 candidate_after_growth: item.state,
                 potential_carbon_offer: item.potential_offer,
                 final_carbon_offer: item.final_offer,
+                final_carbon_operands,
+                final_maintenance_respiration_kg_c_m2: item.final_maintenance_respiration,
                 potential_request_batch: item.request_batch,
                 nitrogen_finalization,
                 growth_finalization,
@@ -280,6 +301,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         authorizations,
         finalized_uses,
         strata,
+        source_water_phase: Box::new(water_phase.clone()),
     })
 }
 

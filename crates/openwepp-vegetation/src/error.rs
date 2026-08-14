@@ -44,6 +44,14 @@ pub enum VegetationError {
     },
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
+    #[error("VEG-E-093: capped candidate rejected without owner mutation: {0}")]
+    CappedCandidateRollback(&'static str),
+    #[error("VEG-E-097: V7 allocation or owner ledger rejected without a candidate: {0}")]
+    V7Candidate(&'static str),
+    #[error("VEG-E-097: V7 {ledger} closure rejected with residual {residual}")]
+    V7Closure { ledger: &'static str, residual: f64 },
+    #[error("VEG-E-100: V7 candidate transaction rejected without owner mutation: {0}")]
+    V7CandidateRollback(&'static str),
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]
     Closure { ledger: &'static str, residual: f64 },
 }
