@@ -19,11 +19,12 @@ use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologySourceKey,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectDayConstructorInputs, DirectGroundIngressMode, DirectIngressAmount,
-    DirectOfeWb14Parameters, DirectRunFrame, DirectRunIdentity, DirectSubsurfaceLayerState,
-    DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord,
-    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding,
-    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
+    DirectDayConstructorInputs, DirectFrostLaneState, DirectFrostRuntimeCarry,
+    DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters, DirectRunFrame,
+    DirectRunIdentity, DirectSubsurfaceLayerState, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidErrorCode,
+    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 use sha2::{Digest, Sha256};
@@ -1086,30 +1087,48 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
 }
 
 #[test]
-fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
-    for expected_code in [
-        DirectSurfaceLiquidErrorCode::E004,
-        DirectSurfaceLiquidErrorCode::E007,
-    ] {
+fn unified_entry_rejects_frozen_snow_and_duplicate_legacy_surface_custody() {
+    for poison in 0..6 {
         let (mut frame, configuration) = configured_surface_frame(
             SurfaceClass::BareMineralSoil,
             WaterSourceType::SurfaceLiquid,
             1.0,
         );
-        match expected_code {
-            DirectSurfaceLiquidErrorCode::E004 => {
+        let expected_code = match poison {
+            0 => {
                 frame.lanes[0].winter_column.snow.runtime_swe_m = 0.001;
+                DirectSurfaceLiquidErrorCode::E004
             }
-            DirectSurfaceLiquidErrorCode::E007 => {
+            1 => {
                 frame.lanes[0]
                     .day_inputs
                     .push(DirectDayConstructorInputs::zero());
                 frame.lanes[0].day_inputs[0]
                     .infiltration_depression_inputs
                     .depression_storage_delta_handoff_m = 0.001;
+                DirectSurfaceLiquidErrorCode::E007
             }
-            _ => unreachable!("bounded entry poison"),
-        }
+            2 => {
+                frame.lanes[0].subsurface_layers[0].frozen_depth_m =
+                    frame.lanes[0].subsurface_layers[0].depth_m;
+                frame.lanes[0].subsurface_layers[0].frozen_water_m =
+                    frame.lanes[0].subsurface_layers[0].theta_m;
+                DirectSurfaceLiquidErrorCode::E004
+            }
+            3 => {
+                frame.lanes[0].winter_column.frost.active_frost_coupling = true;
+                DirectSurfaceLiquidErrorCode::E004
+            }
+            4 => {
+                frame.lanes[0].frost_runtime_carry =
+                    Some(DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero()));
+                DirectSurfaceLiquidErrorCode::E004
+            }
+            _ => {
+                frame.lanes[0].winter_column.snow.liquid_water_retained_m = 0.001;
+                DirectSurfaceLiquidErrorCode::E004
+            }
+        };
         let original = frame.clone();
         let (owner, _) = owner(&frame);
         let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
@@ -1121,6 +1140,7 @@ fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
             configuration.records[0].key.source_id.clone(),
             1.0,
         );
+        let mut callback_called = false;
         let result = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
@@ -1128,8 +1148,14 @@ fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
             &batch,
             &BTreeMap::new(),
             &ingress_input(),
-            |_| panic!("unsupported owner state rejects before fixed-cap solve"),
+            |_| {
+                callback_called = true;
+                Err(LandSurfaceEnergyShadowError::Identity(
+                    "unsupported owner state reached callback",
+                ))
+            },
         );
+        assert!(!callback_called, "entry poison {poison} reached callback");
         let error = result.expect_err("entry poison must fail");
         let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
             panic!("entry poison must retain canonical surface-liquid failure");
@@ -1153,8 +1179,27 @@ fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
             failure.context.tile_id.as_ref().map(TileId::as_str),
             Some("open")
         );
+        assert_eq!(
+            failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+            Some("surface:ofe-1:open")
+        );
+        assert_eq!(
+            failure.context.source_id.as_ref().map(SourceId::as_str),
+            Some("surface-store:ofe-1:open")
+        );
         assert!(failure.rollback.beginning_owner_sha256.is_some());
-        assert_eq!(frame, original, "entry poison mutated production owner");
+        assert_eq!(
+            failure
+                .rollback
+                .beginning_owner_sha256
+                .as_ref()
+                .map(String::as_str),
+            Some(snapshot.as_str())
+        );
+        assert_eq!(
+            frame, original,
+            "entry poison {poison} mutated production owner"
+        );
     }
 }
 

@@ -822,14 +822,17 @@ fn validate_native_shadow_domain(
     configuration: &DirectSurfaceLiquidConfiguration,
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    if let Some(lane_index) = owner.beginning_frame().lanes.iter().position(|lane| {
-        lane.winter_column.snow.has_runtime_state() || lane.snow_runtime_carry.is_some()
-    }) {
+    if let Some(lane_index) = owner
+        .beginning_frame()
+        .lanes
+        .iter()
+        .position(lane_has_unsupported_frozen_or_snow_state)
+    {
         return Err(DirectSurfaceLiquidError::unsupported_domain_failure(
             DirectSurfaceLiquidPhase::AtomicEnvelope,
             first_lane_error_context(owner, configuration, lane_index),
             Some(beginning_hydrology_snapshot_sha256.to_string()),
-            "snow-present or snow-terminal production frame",
+            "snow, terminal snow, frozen, or thawing production frame",
         )
         .into());
     }
@@ -862,6 +865,20 @@ fn validate_native_shadow_domain(
         .into());
     }
     Ok(())
+}
+
+fn lane_has_unsupported_frozen_or_snow_state(
+    lane: &crate::direct_runtime::DirectLaneFrame,
+) -> bool {
+    lane.winter_column.snow.has_runtime_state()
+        || lane.winter_column.snow.liquid_water_retained_m > 0.0
+        || lane.snow_runtime_carry.is_some()
+        || lane.winter_column.frost.has_runtime_state()
+        || lane.frost_runtime_carry.is_some()
+        || lane
+            .subsurface_layers
+            .iter()
+            .any(|layer| layer.frozen_depth_m > 0.0 || layer.frozen_water_m > 0.0)
 }
 
 fn first_lane_error_context(
