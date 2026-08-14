@@ -13,14 +13,14 @@ pub(crate) struct ColumnLayer {
 }
 
 /// Spectral identity retained through radiation preparation and ownership.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum RadiationBand {
     Visible,
     NearInfrared,
 }
 
 /// Incident-stream identity retained through radiation preparation and ownership.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum IncidentComponent {
     Direct,
     Diffuse,
@@ -74,6 +74,7 @@ pub struct ColumnRadiationResult {
     pub top_reflected: f64,
     pub terminal_direct: f64,
     pub terminal_diffuse: f64,
+    pub ground_albedo: f64,
     pub ground_absorbed: f64,
     pub layers: Vec<OwnedLayerAbsorption>,
     pub transport_closure_residual: f64,
@@ -332,6 +333,7 @@ fn empty_column_result(
         } else {
             0.0
         },
+        ground_albedo,
         ground_absorbed,
         layers: Vec::new(),
         transport_closure_residual: incident - top_reflected - ground_absorbed,
@@ -420,6 +422,7 @@ fn own_mixed_absorption(
         top_reflected,
         terminal_direct,
         terminal_diffuse,
+        ground_albedo,
         ground_absorbed,
         layers: owned,
         transport_closure_residual,

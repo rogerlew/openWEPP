@@ -263,7 +263,12 @@ pub(crate) fn execute_capped_column_pass(
         beginning,
         &columns,
     )?;
-    validate_capped_water_operands(&water_operands)?;
+    let expected_operand_count = configuration
+        .strata
+        .iter()
+        .map(|stratum| stratum.tile_ids.len() * stratum.root_layers.len())
+        .sum();
+    validate_capped_water_operands(&water_operands, expected_operand_count)?;
     Ok(CappedColumnPass {
         columns,
         finalized_water_uses,
@@ -275,9 +280,12 @@ pub(crate) fn execute_capped_column_pass(
 
 fn validate_capped_water_operands(
     operands: &[CappedWaterLayerOperands],
+    expected_count: usize,
 ) -> Result<(), VegetationError> {
-    if operands.is_empty() {
-        return Err(VegetationError::Receipt("V5 capped operands empty".into()));
+    if operands.len() != expected_count {
+        return Err(VegetationError::Receipt(
+            "V5 capped operand cardinality".into(),
+        ));
     }
     let mut identities = BTreeSet::new();
     for value in operands {
@@ -614,7 +622,7 @@ fn collect_diagnostics(
 }
 
 fn resource_boundary_error(error: &WaterResourceBoundaryError) -> VegetationError {
-    VegetationError::Receipt(format!("V5 capped water boundary: {error}"))
+    error.clone().into()
 }
 
 #[cfg(test)]
@@ -705,6 +713,7 @@ mod tests {
                     .map(|root| (root.layer_id.clone(), local_cap))
                     .collect(),
                 carbon_operands: None,
+                energy_proposal: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: crate::diagnostics::CoupledSolvePass::Capped,
                     ci_iterations_sun: 0,
@@ -1092,7 +1101,8 @@ mod tests {
         poisons.push(wrong_lineage);
 
         for poison in poisons {
-            assert!(validate_capped_water_operands(&poison).is_err());
+            let expected_count = poison.len();
+            assert!(validate_capped_water_operands(&poison, expected_count).is_err());
         }
     }
 

@@ -1,0 +1,5 @@
+run_id=m6-heavy-short-final-20260814005156
+artifact_dir=docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156
+tmp_dir=/tmp/owm6f-lQkG1z
+Linux forest 6.8.0-136-generic #136-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 21:53:05 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+rustc 1.92.0 (ded5c06cf 2025-12-08)

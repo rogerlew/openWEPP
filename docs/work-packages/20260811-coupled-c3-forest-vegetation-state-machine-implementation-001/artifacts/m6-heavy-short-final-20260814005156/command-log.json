@@ -1,0 +1,55 @@
+{
+  "run_id": "m6-heavy-short-final-20260814005156",
+  "tmp_dir": "/tmp/owm6f-lQkG1z",
+  "artifact_dir": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156",
+  "commands": [
+    {
+      "label": "clippy_step",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "clippy_step.log",
+      "time_log": "clippy_step.time"
+    },
+    {
+      "label": "nextest_full",
+      "command": "cargo nextest run --workspace --profile full",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "nextest_full.log",
+      "time_log": "nextest_full.time"
+    },
+    {
+      "label": "doc_tests",
+      "command": "cargo test --doc --workspace",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "doc_tests.log",
+      "time_log": "doc_tests.time"
+    },
+    {
+      "label": "deny_check",
+      "command": "cargo deny check",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "deny_check.log",
+      "time_log": "deny_check.time"
+    },
+    {
+      "label": "fmt_check",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "fmt_check.log",
+      "time_log": "fmt_check.time"
+    },
+    {
+      "label": "diff_check",
+      "command": "git diff --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "diff_check.log",
+      "time_log": "diff_check.time"
+    }
+  ]
+}

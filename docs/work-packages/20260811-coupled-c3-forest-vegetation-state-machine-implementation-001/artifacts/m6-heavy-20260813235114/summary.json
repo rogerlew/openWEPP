@@ -1,0 +1,62 @@
+{
+  "run_id": "m6-heavy-20260813235114",
+  "tmp_root": "/tmp/openwepp-m6-heavy-20260813235114",
+  "status": "PASS",
+  "results": {
+    "cargo clippy --workspace --all-targets -- -D warnings": {
+      "exit_code": 0,
+      "real_seconds": 29.19,
+      "user_seconds": 112.57,
+      "sys_seconds": 28.33,
+      "max_rss_kb": 653428,
+      "warnings": 0,
+      "errors": 0,
+      "note": "single attempt; no clippy warnings"
+    },
+    "cargo nextest run --workspace --profile full": {
+      "exit_code": 0,
+      "real_seconds": 2299.92,
+      "user_seconds": 11032.92,
+      "sys_seconds": 683.95,
+      "max_rss_kb": 1170480,
+      "tests_run": 2670,
+      "tests_passed": 2670,
+      "tests_failed": 0,
+      "tests_skipped": 33,
+      "slow_tests": 35
+    },
+    "cargo test --doc --workspace": {
+      "exit_code": 0,
+      "real_seconds": 8.30,
+      "user_seconds": 5.44,
+      "sys_seconds": 2.50,
+      "max_rss_kb": 244508,
+      "docs": 19,
+      "doctests": 0,
+      "failed": 0
+    },
+    "cargo deny check": {
+      "exit_code": 0,
+      "real_seconds": 0.80,
+      "user_seconds": 0.95,
+      "sys_seconds": 0.49,
+      "max_rss_kb": 86364,
+      "warnings": 1,
+      "warning_text": "unmatched license allowance \"MIT-0\" in deny.toml"
+    },
+    "cargo fmt --all -- --check": {
+      "exit_code": 0,
+      "real_seconds": 3.19,
+      "user_seconds": 3.07,
+      "sys_seconds": 0.15,
+      "max_rss_kb": 74112
+    },
+    "git diff --check": {
+      "exit_code": 0,
+      "real_seconds": 0.09,
+      "user_seconds": 0.12,
+      "sys_seconds": 0.20,
+      "max_rss_kb": 20704
+    }
+  }
+}

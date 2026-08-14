@@ -2,7 +2,8 @@
 //!
 //! The candidate contains an accepted-shape vegetation state plus immutable
 //! owner protocols, material proposals, and independently validated vegetation
-//! ledgers. It deliberately has no commit method and is not publicly exposed.
+//! ledgers. It is publicly inspectable but deliberately has no commit method;
+//! only the complete diagnostic owner envelope may publish its ending state.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -12,6 +13,7 @@ use crate::VegetationError;
 use crate::carbon_nitrogen::{MaterialTransfer, Tissue};
 use crate::config::{StratumConfiguration, VegetationConfiguration};
 use crate::diagnostics::CoupledSolvePass;
+use crate::energy_proposal::{EnergyProposalBatch, construct_energy_proposal_batch};
 use crate::persistent_phase::UncommittedNitrogenPhase;
 use crate::transaction::{CoupledOwnedState, StratumSharedState};
 use crate::vegetation_ledger::{
@@ -21,7 +23,7 @@ use crate::vegetation_ledger::{
 use crate::water_phase::UncommittedWaterPhase;
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct UncommittedVegetationCandidate {
+pub struct UncommittedVegetationCandidate {
     transaction_id: TransactionId,
     beginning_state_sha256: String,
     ending_state: CoupledOwnedState,
@@ -31,26 +33,27 @@ pub(crate) struct UncommittedVegetationCandidate {
     carbon_ledgers: Vec<VegetationCarbonLedger>,
     nitrogen_ledgers: Vec<VegetationNitrogenLedger>,
     dry_material_ledgers: Vec<VegetationDryMaterialLedger>,
+    energy_proposals: EnergyProposalBatch,
 }
 
 impl UncommittedVegetationCandidate {
-    #[cfg(test)]
-    pub(crate) fn transaction_id(&self) -> TransactionId {
+    #[must_use]
+    pub fn transaction_id(&self) -> TransactionId {
         self.transaction_id
     }
 
-    #[cfg(test)]
-    pub(crate) fn beginning_state_sha256(&self) -> &str {
+    #[must_use]
+    pub fn beginning_state_sha256(&self) -> &str {
         &self.beginning_state_sha256
     }
 
-    #[cfg(test)]
-    pub(crate) fn ending_state(&self) -> &CoupledOwnedState {
+    #[must_use]
+    pub fn ending_state(&self) -> &CoupledOwnedState {
         &self.ending_state
     }
 
-    #[cfg(test)]
-    pub(crate) fn water_phase(&self) -> &UncommittedWaterPhase {
+    #[must_use]
+    pub fn water_phase(&self) -> &UncommittedWaterPhase {
         &self.water_phase
     }
 
@@ -59,8 +62,8 @@ impl UncommittedVegetationCandidate {
         &self.nitrogen_phase
     }
 
-    #[cfg(test)]
-    pub(crate) fn material_proposals(&self) -> &[MaterialTransfer] {
+    #[must_use]
+    pub fn material_proposals(&self) -> &[MaterialTransfer] {
         &self.material_proposals
     }
 
@@ -79,10 +82,17 @@ impl UncommittedVegetationCandidate {
         &self.dry_material_ledgers
     }
 
-    pub(crate) fn validate_sealed(&self) -> Result<(), VegetationError> {
+    #[must_use]
+    pub fn energy_proposals(&self) -> &EnergyProposalBatch {
+        &self.energy_proposals
+    }
+
+    pub fn validate_sealed(&self) -> Result<(), VegetationError> {
         if self.transaction_id != self.water_phase.transaction_id()
             || self.transaction_id != self.nitrogen_phase.transaction_id()
             || self.beginning_state_sha256 != self.water_phase.beginning_state_sha256()
+            || self.energy_proposals.identity.transaction_id != self.transaction_id
+            || self.energy_proposals.identity.beginning_state_sha256 != self.beginning_state_sha256
             || self.ending_state.last_transaction_id != self.transaction_id.0
             || self.material_proposals.iter().any(|proposal| {
                 proposal.transaction_id != self.transaction_id.0 || proposal.proposal_id == 0
@@ -106,6 +116,21 @@ impl UncommittedVegetationCandidate {
             &self.carbon_ledgers,
             &self.nitrogen_ledgers,
             &self.dry_material_ledgers,
+        )
+    }
+
+    #[must_use]
+    pub fn nitrogen_protocol(
+        &self,
+    ) -> (
+        &[crate::transaction::NitrogenRequest],
+        &[crate::transaction::NitrogenAuthorization],
+        &[crate::transaction::NitrogenUse],
+    ) {
+        (
+            self.nitrogen_phase.requests(),
+            self.nitrogen_phase.authorizations(),
+            self.nitrogen_phase.finalized_uses(),
         )
     }
 }
@@ -150,6 +175,12 @@ pub(crate) fn construct_uncommitted_vegetation_candidate(
     };
     ending_state.state_sha256 = ending_state.canonical_sha256()?;
     ending_state.validate(configuration)?;
+    let energy_proposals = construct_energy_proposal_batch(
+        configuration,
+        beginning,
+        &ending_state.state_sha256,
+        water_phase,
+    )?;
 
     let (carbon_ledgers, nitrogen_ledgers, dry_material_ledgers) = construct_ledgers(
         configuration,
@@ -183,6 +214,7 @@ pub(crate) fn construct_uncommitted_vegetation_candidate(
         carbon_ledgers,
         nitrogen_ledgers,
         dry_material_ledgers,
+        energy_proposals,
     })
 }
 
@@ -475,6 +507,7 @@ mod tests {
                 },
                 stand_ground_layer_water_kg_m2: BTreeMap::new(),
                 carbon_operands: None,
+                energy_proposal: None,
                 diagnostics: crate::column::OccupancyDiagnostics {
                     pass: CoupledSolvePass::Potential,
                     ci_iterations_sun: 0,

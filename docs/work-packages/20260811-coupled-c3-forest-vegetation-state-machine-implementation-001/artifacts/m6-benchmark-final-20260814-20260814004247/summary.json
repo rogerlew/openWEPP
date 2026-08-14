@@ -1,0 +1,102 @@
+{
+  "run_id": "m6-benchmark-final-20260814-20260814004247",
+  "artifact_dir": "docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-benchmark-final-20260814-20260814004247",
+  "surfaces": [
+    {
+      "label": "strict_config_parse",
+      "command": "cargo test --release -p openwepp-vegetation --lib identity_rebound_v7_configuration_parses_strictly",
+      "requested_test": "identity_rebound_v7_configuration_parses_strictly",
+      "identified_test": "config::tests::identity_rebound_v7_configuration_parses_strictly",
+      "sample_times": [
+        0.23,
+        0.16,
+        0.15,
+        0.15,
+        0.15
+      ],
+      "first_sample_seconds": 0.23,
+      "median_seconds": 0.15,
+      "max_ratio_to_first": 1.0,
+      "zero_test_run": false,
+      "status": "PASS"
+    },
+    {
+      "label": "strict_state_parse",
+      "command": "cargo test --release -p openwepp-vegetation --lib complete_two_tile_two_stratum_state_is_exact",
+      "requested_test": "complete_two_tile_two_stratum_state_is_exact",
+      "identified_test": "transaction::milestone_one_tests::complete_two_tile_two_stratum_state_is_exact",
+      "sample_times": [
+        0.16,
+        0.16,
+        0.15,
+        0.16,
+        0.15
+      ],
+      "first_sample_seconds": 0.16,
+      "median_seconds": 0.16,
+      "max_ratio_to_first": 1.0,
+      "zero_test_run": false,
+      "status": "PASS"
+    },
+    {
+      "label": "radiation",
+      "command": "cargo test --release -p openwepp-vegetation --lib v3_two_rank_visible_direct_fixture_and_named_poisons",
+      "requested_test": "v3_two_rank_visible_direct_fixture_and_named_poisons",
+      "identified_test": "radiation::tests::v3_two_rank_visible_direct_fixture_and_named_poisons",
+      "sample_times": [
+        0.16,
+        0.16,
+        0.16,
+        0.16,
+        0.16
+      ],
+      "first_sample_seconds": 0.16,
+      "median_seconds": 0.16,
+      "max_ratio_to_first": 1.0,
+      "zero_test_run": false,
+      "status": "PASS"
+    },
+    {
+      "label": "public_candidate",
+      "command": "cargo test --release --test c3_vegetation_implementation_contract v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands -- --exact",
+      "requested_test": "v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands",
+      "identified_test": "v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands",
+      "sample_times": [
+        0.33,
+        0.33,
+        0.32,
+        0.31,
+        0.32
+      ],
+      "first_sample_seconds": 0.33,
+      "median_seconds": 0.32,
+      "max_ratio_to_first": 1.0,
+      "zero_test_run": false,
+      "status": "PASS"
+    },
+    {
+      "label": "shared_species_competition",
+      "command": "cargo test --release --test c3_vegetation_implementation_contract v7_real_diagnostic_activates_shared_water_and_species_n_competition -- --exact",
+      "requested_test": "v7_real_diagnostic_activates_shared_water_and_species_n_competition",
+      "identified_test": "v7_real_diagnostic_activates_shared_water_and_species_n_competition",
+      "sample_times": [
+        0.46,
+        0.45,
+        0.47,
+        0.44,
+        0.44
+      ],
+      "first_sample_seconds": 0.46,
+      "median_seconds": 0.45,
+      "max_ratio_to_first": 1.0217391304347825,
+      "zero_test_run": false,
+      "status": "PASS"
+    }
+  ],
+  "checks": [
+    {
+      "name": "zero_test_runs",
+      "result": "PASS"
+    }
+  ]
+}

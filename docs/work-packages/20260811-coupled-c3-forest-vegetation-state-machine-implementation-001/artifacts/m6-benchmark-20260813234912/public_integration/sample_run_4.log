@@ -1,0 +1,6 @@
+
+running 1 test
+test v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.08s
+

@@ -1,6 +1,6 @@
 # Conservation And Anti-tautology Plan
 
-Status: `PARTIAL / water and vegetation-owner reconstruction pass; BGC and energy owners pending`
+Status: `PASS focused / five ledgers connected in the default-off four-owner transaction`
 
 Typed request/authorization identity and tolerance-bound comparison now have
 independent protocol tests. Radiation and potential energy/water operands are
@@ -48,5 +48,28 @@ independently groups finalized use by exact `(layer,species)`, reconstructs
 unused authorization is not debited and wrong-species use, duplicate proposal
 identity, missing receivers, and transformation requests reject without
 changing beginning state. Vegetation-proposal/BGC-receipt reconciliation at the
-sealed V7 transaction boundary and independent component-level energy closure
-remain pending.
+sealed V7 transaction boundary remains pending.
+
+The component energy owner consumes no producer residual. It reconstructs each
+sun-leaf, shade-leaf, wet-surface, and dry-stem balance from physical operands,
+then independently closes canopy-air sensible/vapor exchange, class
+transpiration against finalized layer withdrawals, and all four VIS/NIR plus
+direct/diffuse radiation boundaries. Signed condensation is retained. Local
+tile-ground closure precedes exactly one tile-fraction weighting into the stand
+ledger. The real full-water fixture passes; component identity, amount/rate,
+authorization-as-use, omitted-stem, sign, and area-basis poisons fail.
+
+Milestone 5 connects the independently constructed vegetation C/N/dry-
+material operands, retained water-owner candidate, BGC mineral/material
+receipts, and energy receipts without reconstructing a second water debit or
+accepting a producer residual. The coupled envelope checks exact D/A/F,
+proposal/receipt, state-lineage, and owner completeness before one atomic
+replacement. The phase-failure matrix proves every beginning owner byte remains
+unchanged on every rejected path.
+
+Terminal reconciliation: the earlier “pending” statements above are retained
+as historical increment boundaries. They are superseded by the Increment 4B
+and Milestone 5 evidence that follows them. Water, energy, carbon, nitrogen,
+and dry material now close from independent typed operands in the real
+default-off four-owner transaction; no producer-supplied residual is accepted.
+Final correctness is GO and science/closure QA is PASS.

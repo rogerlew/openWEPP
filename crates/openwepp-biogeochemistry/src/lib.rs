@@ -4,9 +4,9 @@
 use openwepp_kernel_contract::{
     FinalizedUse, MaterialDonorClass, MaterialReceiverClass, MaximumAuthorization,
     MineralNitrogenKey, MineralNitrogenSpecies, ResourceAmountBasis, ResourceOwnerId,
-    ResourceRequest, SoilLayerId, TransactionId,
-    authorize_proportionally as authorize_resources_proportionally, validate_request_batch,
-    validate_resource_protocol,
+    ResourceProtocolCategory, ResourceProtocolViolation, ResourceRequest, SoilLayerId,
+    TransactionId, authorize_proportionally as authorize_resources_proportionally,
+    validate_request_batch, validate_resource_protocol,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -16,13 +16,27 @@ use thiserror::Error;
 pub enum BiogeochemistryError {
     #[error("BGC-E-001: invalid resource request: {0}")]
     InvalidRequest(String),
-    #[error("BGC-E-002: finalized use exceeds mineral storage")]
+    #[error("BGC-E-010: finalized use exceeds mineral storage")]
     InsufficientMineralNitrogen,
-    #[error("BGC-E-003: material transfer fails C/N/dry-material closure")]
+    #[error("BGC-E-010: material transfer fails C/N/dry-material closure")]
     MaterialClosure,
+    #[error("BGC-E-010: resource authorization/final-use bound is invalid: {0}")]
+    ProtocolBound(String),
     #[error("BGC-E-040: soil transformations are required but unsupported by model v1")]
     TransformationsRequired,
 }
+
+fn bgc_protocol_error(error: ResourceProtocolViolation) -> BiogeochemistryError {
+    match error.category() {
+        ResourceProtocolCategory::Bound => {
+            BiogeochemistryError::ProtocolBound(format!("{error:?}"))
+        }
+        ResourceProtocolCategory::Identity | ResourceProtocolCategory::Operand => {
+            BiogeochemistryError::InvalidRequest(format!("{error:?}"))
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct MaterialPool {
     pub carbon: f64,
@@ -89,6 +103,8 @@ pub struct BiogeochemistryOwnerCandidate {
     transaction_id: TransactionId,
     beginning: BiogeochemistryState,
     ending: BiogeochemistryState,
+    requests: Vec<NitrogenRequest>,
+    authorizations: Vec<NitrogenAuthorization>,
     finalized_uses: Vec<NitrogenUse>,
     receipts: Vec<MaterialReceipt>,
     mineral_operands: Vec<MineralInventoryOperand>,
@@ -117,6 +133,11 @@ impl BiogeochemistryOwnerCandidate {
     }
 
     #[must_use]
+    pub fn protocol(&self) -> (&[NitrogenRequest], &[NitrogenAuthorization], &[NitrogenUse]) {
+        (&self.requests, &self.authorizations, &self.finalized_uses)
+    }
+
+    #[must_use]
     pub fn receipts(&self) -> &[MaterialReceipt] {
         &self.receipts
     }
@@ -139,6 +160,22 @@ impl BiogeochemistryOwnerCandidate {
             return Err(BiogeochemistryError::InvalidRequest(
                 "candidate transaction identity".into(),
             ));
+        }
+        if self.requests.len() != self.authorizations.len()
+            || self.requests.len() != self.finalized_uses.len()
+        {
+            return Err(BiogeochemistryError::InvalidRequest(
+                "candidate protocol shape".into(),
+            ));
+        }
+        for ((request, authorization), finalized) in self
+            .requests
+            .iter()
+            .zip(&self.authorizations)
+            .zip(&self.finalized_uses)
+        {
+            validate_resource_protocol(request, authorization, finalized)
+                .map_err(bgc_protocol_error)?;
         }
         for operand in &self.mineral_operands {
             if [
@@ -209,7 +246,7 @@ pub fn authorize_proportionally(
         available,
         ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
     )
-    .map_err(|error| BiogeochemistryError::InvalidRequest(format!("{error:?}")))
+    .map_err(bgc_protocol_error)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -228,8 +265,9 @@ pub fn construct_biogeochemistry_candidate(
     if requests.len() != authorizations.len() || requests.len() != uses.len() {
         return Err(BiogeochemistryError::InvalidRequest("receipt shape".into()));
     }
-    validate_request_batch(requests)
-        .map_err(|error| BiogeochemistryError::InvalidRequest(format!("{error:?}")))?;
+    if !requests.is_empty() {
+        validate_request_batch(requests).map_err(bgc_protocol_error)?;
+    }
     let mut candidate = beginning.clone();
     if transaction_id.0 <= beginning.last_transaction_id {
         return Err(BiogeochemistryError::InvalidRequest(
@@ -239,8 +277,7 @@ pub fn construct_biogeochemistry_candidate(
     let available = available_by_key(beginning)?;
     let mut use_by_key = BTreeMap::<MineralNitrogenKey, f64>::new();
     for ((r, a), u) in requests.iter().zip(authorizations).zip(uses) {
-        validate_resource_protocol(r, a, u)
-            .map_err(|e| BiogeochemistryError::InvalidRequest(format!("{e:?}")))?;
+        validate_resource_protocol(r, a, u).map_err(bgc_protocol_error)?;
         if r.transaction_id != transaction_id {
             return Err(BiogeochemistryError::InvalidRequest(
                 "nitrogen transaction identity".into(),
@@ -327,6 +364,8 @@ pub fn construct_biogeochemistry_candidate(
         transaction_id,
         beginning: beginning.clone(),
         ending: candidate,
+        requests: requests.to_vec(),
+        authorizations: authorizations.to_vec(),
         finalized_uses: uses.to_vec(),
         receipts,
         mineral_operands,
@@ -668,5 +707,121 @@ mod tests {
             beginning.layers["l1"].nitrate_n.to_bits(),
             1.0_f64.to_bits()
         );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)] // One table-like test traces both contract taxonomies.
+    fn owner_and_coupled_transaction_error_taxonomies_remain_distinct() {
+        let tx = TransactionId(1);
+        let owner = ResourceOwnerId::try_new("tree").unwrap();
+        let key = MineralNitrogenKey {
+            layer_id: SoilLayerId::try_new("l1").unwrap(),
+            species: MineralNitrogenSpecies::Ammonium,
+        };
+        let request = ResourceRequest {
+            transaction_id: tx,
+            owner_id: owner.clone(),
+            key: key.clone(),
+            amount: 1.0,
+            basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        };
+        let mut wrong_basis = request.clone();
+        wrong_basis.basis = ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval;
+        let invalid =
+            authorize_proportionally(&[wrong_basis], &BTreeMap::from([(key.clone(), 1.0)]))
+                .unwrap_err();
+        assert!(invalid.to_string().starts_with("BGC-E-001"));
+
+        let authorization = MaximumAuthorization {
+            transaction_id: tx,
+            owner_id: owner.clone(),
+            key: key.clone(),
+            amount: 1.0,
+            basis: request.basis,
+        };
+        let ample = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "l1".into(),
+                MineralLayer {
+                    ammonium_n: 2.0,
+                    nitrate_n: 0.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        let mut excessive = authorization.clone();
+        excessive.amount = 1.5;
+        let authorization_bound = construct_biogeochemistry_candidate(
+            &ample,
+            tx,
+            std::slice::from_ref(&request),
+            &[excessive],
+            &[FinalizedUse {
+                transaction_id: tx,
+                owner_id: owner.clone(),
+                key: key.clone(),
+                amount: 1.0,
+                basis: request.basis,
+            }],
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .unwrap_err();
+        assert!(authorization_bound.to_string().starts_with("BGC-E-010"));
+
+        let finalized_bound = construct_biogeochemistry_candidate(
+            &ample,
+            tx,
+            std::slice::from_ref(&request),
+            std::slice::from_ref(&authorization),
+            &[FinalizedUse {
+                transaction_id: tx,
+                owner_id: owner.clone(),
+                key: key.clone(),
+                amount: f64::from_bits(1.0_f64.to_bits() + 1),
+                basis: request.basis,
+            }],
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .unwrap_err();
+        assert!(finalized_bound.to_string().starts_with("BGC-E-010"));
+
+        let finalized = FinalizedUse {
+            transaction_id: tx,
+            owner_id: owner,
+            key,
+            amount: 1.0,
+            basis: request.basis,
+        };
+        let beginning = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "l1".into(),
+                MineralLayer {
+                    ammonium_n: 0.5,
+                    nitrate_n: 0.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        let overdraw = construct_biogeochemistry_candidate(
+            &beginning,
+            tx,
+            &[request],
+            &[authorization],
+            &[finalized],
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .unwrap_err();
+        assert!(overdraw.to_string().starts_with("BGC-E-010"));
+
+        let closure = validate_material_pool(MaterialPool {
+            carbon: 1.0,
+            nitrogen: 0.1,
+            dry_matter: 0.5,
+        })
+        .unwrap_err();
+        assert!(closure.to_string().starts_with("BGC-E-010"));
     }
 }

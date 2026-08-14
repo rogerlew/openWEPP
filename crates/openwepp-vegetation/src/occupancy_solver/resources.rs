@@ -22,8 +22,6 @@ pub struct OccupancyRootLayers {
 
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum WaterResourceBoundaryError {
-    #[error("water request batch has no configured occupancy lanes")]
-    EmptyConfiguration,
     #[error("duplicate configured occupancy identity")]
     DuplicateConfiguredOccupancy,
     #[error("configured occupancy has no root layers")]
@@ -58,6 +56,33 @@ pub enum WaterResourceBoundaryError {
     MissingAuthorization,
     #[error("finalized stand-ground use exceeds authorization")]
     FinalizedUseExceedsAuthorization,
+}
+
+impl From<WaterResourceBoundaryError> for crate::VegetationError {
+    fn from(error: WaterResourceBoundaryError) -> Self {
+        use WaterResourceBoundaryError as E;
+        let message = error.to_string();
+        match error {
+            E::BasisMismatch
+            | E::NonFiniteAmount
+            | E::NegativeAmount
+            | E::InvalidTileFraction
+            | E::InvalidInterval => Self::ResourceOperand(message),
+            E::AuthorizationExceedsRequest | E::FinalizedUseExceedsAuthorization => {
+                Self::ResourceBound(message)
+            }
+            E::DuplicateConfiguredOccupancy
+            | E::MissingConfiguredRootLayer
+            | E::DuplicateConfiguredRootLayer
+            | E::DuplicateRequestIdentity
+            | E::DuplicateAuthorizationIdentity
+            | E::ResourceKeySetMismatch
+            | E::TransactionMismatch
+            | E::OwnerMismatch
+            | E::AuthorizationCorrespondence
+            | E::MissingAuthorization => Self::ResourceIdentity(message),
+        }
+    }
 }
 
 /// A complete, single-transaction batch of potential occupancy water requests.
@@ -292,9 +317,6 @@ impl ValidatedWaterAuthorizations {
 fn validate_configured_root_layers(
     configured: &[OccupancyRootLayers],
 ) -> Result<BTreeSet<WaterResourceKey>, WaterResourceBoundaryError> {
-    if configured.is_empty() {
-        return Err(WaterResourceBoundaryError::EmptyConfiguration);
-    }
     let mut occupancies = BTreeSet::new();
     let mut keys = BTreeSet::new();
     for occupancy in configured {
@@ -728,5 +750,65 @@ mod tests {
             ResourceOwnerId::try_new(""),
             Err(ResourceIdentityError::EmptyOwner)
         );
+    }
+
+    #[test]
+    fn water_boundary_categories_retain_canonical_transaction_codes() {
+        let batch = request_batch();
+        let mut duplicate = batch.requests().to_vec();
+        duplicate.push(duplicate[0].clone());
+        let identity = PotentialWaterRequestBatch::try_from_requests(
+            batch.transaction_id(),
+            batch.owner_id().clone(),
+            &configured(),
+            duplicate,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(identity),
+            crate::VegetationError::ResourceIdentity(_)
+        ));
+
+        let mut nonfinite = amount_map();
+        *nonfinite.values_mut().next().unwrap() = f64::NAN;
+        let operand = PotentialWaterRequestBatch::try_from_stand_amounts(
+            batch.transaction_id(),
+            batch.owner_id().clone(),
+            &configured(),
+            &nonfinite,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(operand),
+            crate::VegetationError::ResourceOperand(_)
+        ));
+
+        let mut excessive = authorizations(&batch);
+        excessive[0].amount = batch.requests()[0].amount + 1.0;
+        let bound = ValidatedWaterAuthorizations::try_new(&batch, excessive).unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(bound),
+            crate::VegetationError::ResourceBound(_)
+        ));
+
+        let validated = ValidatedWaterAuthorizations::try_new(&batch, authorizations(&batch))
+            .expect("valid authorizations");
+        let key = &batch.requests()[0].key;
+        let authorization = validated.authorizations()[key].amount;
+        let finalized_bound = validated
+            .validate_finalized_stand_amount(
+                key,
+                f64::from_bits(authorization.to_bits() + 1),
+                &BTreeMap::from([
+                    (TileId::try_new("tile-a").unwrap(), 0.5),
+                    (TileId::try_new("tile-b").unwrap(), 0.5),
+                ]),
+                1.0,
+            )
+            .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(finalized_bound),
+            crate::VegetationError::ResourceBound(_)
+        ));
     }
 }

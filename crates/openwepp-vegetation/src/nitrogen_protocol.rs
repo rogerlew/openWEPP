@@ -54,6 +54,32 @@ pub enum NitrogenProtocolError {
     FinalizedUseExceedsAuthorization,
 }
 
+impl From<NitrogenProtocolError> for crate::VegetationError {
+    fn from(error: NitrogenProtocolError) -> Self {
+        use NitrogenProtocolError as E;
+        let message = error.to_string();
+        match error {
+            E::InvalidConfiguredFraction
+            | E::ConfiguredFractionsDoNotClose
+            | E::NonFiniteAmount
+            | E::NegativeAmount
+            | E::BasisMismatch => Self::ResourceOperand(message),
+            E::AuthorizationExceedsRequest | E::FinalizedUseExceedsAuthorization => {
+                Self::ResourceBound(message)
+            }
+            E::EmptyConfiguredLayers
+            | E::DuplicateConfiguredLayer
+            | E::DuplicateRequestIdentity
+            | E::DuplicateAuthorizationIdentity
+            | E::ResourceKeySetMismatch
+            | E::AuthorizationCorrespondence
+            | E::TransactionMismatch
+            | E::OwnerMismatch
+            | E::StratumOwnerMismatch => Self::ResourceIdentity(message),
+        }
+    }
+}
+
 /// Complete potential E19 requests for one stratum and transaction.
 ///
 /// All scalar nitrogen amounts accepted or returned by this module are
@@ -906,5 +932,57 @@ mod tests {
         let finalization = validated.finalize(9.0).expect("canonical finalization");
         assert_eq!(finalization.final_total_demand, 9.0);
         assert_eq!(finalization.external_use, 6.0);
+    }
+
+    #[test]
+    fn nitrogen_boundary_categories_retain_canonical_transaction_codes() {
+        let request_batch = batch(8.0, 2.0);
+        let mut wrong_owner = full_authorizations(&request_batch);
+        wrong_owner[0].owner_id = ResourceOwnerId::try_new("wrong").unwrap();
+        let identity = ValidatedMineralNitrogenAuthorizations::try_new(&request_batch, wrong_owner)
+            .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(identity),
+            crate::VegetationError::ResourceIdentity(_)
+        ));
+
+        let operand = PotentialMineralNitrogenRequestBatch::try_from_stratum_configuration(
+            TransactionId(11),
+            owner(),
+            &two_layer_stratum(),
+            f64::NAN,
+            0.0,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(operand),
+            crate::VegetationError::ResourceOperand(_)
+        ));
+
+        let mut excessive = full_authorizations(&request_batch);
+        excessive[0].amount = request_batch.requests()[0].amount + 1.0;
+        let authorization_bound =
+            ValidatedMineralNitrogenAuthorizations::try_new(&request_batch, excessive).unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(authorization_bound),
+            crate::VegetationError::ResourceBound(_)
+        ));
+
+        let request = &request_batch.requests()[0];
+        let authorization = &full_authorizations(&request_batch)[0];
+        let finalized = MineralNitrogenFinalizedUse {
+            transaction_id: request.transaction_id,
+            owner_id: request.owner_id.clone(),
+            key: request.key.clone(),
+            amount: f64::from_bits(authorization.amount.to_bits() + 1),
+            basis: request.basis,
+        };
+        let finalized_bound = validate_resource_protocol(request, authorization, &finalized)
+            .map_err(map_protocol_violation)
+            .unwrap_err();
+        assert!(matches!(
+            crate::VegetationError::from(finalized_bound),
+            crate::VegetationError::ResourceBound(_)
+        ));
     }
 }

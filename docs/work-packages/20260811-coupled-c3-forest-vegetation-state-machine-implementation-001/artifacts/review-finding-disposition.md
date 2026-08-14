@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `executing / bounded E19 remediation reviewed GO/PASS / public candidate pending`
+Status: `terminal candidate / every accepted material finding corrected / final GO/PASS`
 
 The former heterogeneous E04 liquid-topology omission was lifted by V2.
 Increment 2B independently exposed additional load-bearing omissions and did
@@ -16,31 +16,33 @@ deferred or rejected.
 
 | Finding | Correction and authority | Focused evidence | Current status |
 |---|---|---|---|
-| B-CRITICAL-001 | Rebuilt `transaction::{execute_candidate_with_failure,prepare_stratum,finish_physical}` from SC-VEGETATION E01--E22; diagnostic consumes the real path. | real three-owner transaction plus 13 failure phases | implemented; re-review pending |
-| B-CRITICAL-002 | Replaced RK4/fixed-`kd` optics with `radiation::{two_stream,solve_two_stream}` exact matrix exponential, analytic particular/resonance branches, directional identities, and ordered topology traversal. | oracle absorption, band/direction closure, Beer poison, A0 | implemented; re-review pending |
-| B-CRITICAL-003 | Added exact Brent and damped-Newton numerics, separate leaf/wet/stem/canopy-air energy nodes, four-potential hydraulics, cap complementarity, and outer `beta_hyd` equality solve. | coupled public path; full and cap-active hydraulic oracle vectors; rollback | implemented; re-review pending |
-| B-CRITICAL-004 | Added persistent six-tissue display/storage/transfer state, exact C/N allocation, maintenance reserve, phenology, turnover, mortality, LAI ownership, and C/N/DM transfers. | six-tissue and phenology oracle vectors; public state transition | implemented; re-review pending |
-| B-CRITICAL-005 | Added typed `SoilLayerId`, `MineralNitrogenSpecies`, `MineralNitrogenKey`, amount basis, owner, and transaction identity through request/auth/use/debit/receipt. BGC arbitrates exact keys proportionally. | layer/species, competition, unused authorization, wrong/duplicate receipt coverage | implemented; re-review pending |
-| B-HIGH-006 | Replaced residual scalars with explicit five-ledger operand structures and external reconstruction; added diagnostic water, BGC, vegetation, and energy owner candidates. | five-ledger public commit and 13 byte-identical serialized rollback phases | implemented; re-review pending |
-| B-HIGH-007 | Corrected peaked response, stable log evaluation, finite/domain guards, smaller-root selection, and exact numerical tolerances/limits. | biochemical vectors, NaN/zero-capacity guards, strict Clippy | implemented; re-review pending |
+| B-CRITICAL-001 | Rebuilt `transaction::{execute_candidate_with_failure,prepare_stratum,finish_physical}` from SC-VEGETATION E01--E22; diagnostic consumes the real path. | real four-owner transaction plus 27 failure/malformed-owner phases | remediated; final GO/PASS |
+| B-CRITICAL-002 | Replaced RK4/fixed-`kd` optics with `radiation::{two_stream,solve_two_stream}` exact matrix exponential, analytic particular/resonance branches, directional identities, and ordered topology traversal. | oracle absorption, band/direction closure, Beer poison, A0 | remediated; final GO/PASS |
+| B-CRITICAL-003 | Added exact Brent and damped-Newton numerics, separate leaf/wet/stem/canopy-air energy nodes, four-potential hydraulics, cap complementarity, and outer `beta_hyd` equality solve. | coupled public path; full and cap-active hydraulic oracle vectors; rollback | remediated; final GO/PASS |
+| B-CRITICAL-004 | Added persistent six-tissue display/storage/transfer state, exact C/N allocation, maintenance reserve, phenology, turnover, mortality, LAI ownership, and C/N/DM transfers. | six-tissue and phenology oracle vectors; public state transition | remediated; final GO/PASS |
+| B-CRITICAL-005 | Added typed `SoilLayerId`, `MineralNitrogenSpecies`, `MineralNitrogenKey`, amount basis, owner, and transaction identity through request/auth/use/debit/receipt. BGC arbitrates exact keys proportionally. | layer/species, competition, unused authorization, wrong/duplicate receipt coverage | remediated; final GO/PASS |
+| B-HIGH-006 | Replaced residual scalars with explicit five-ledger operand structures and external reconstruction; added diagnostic water, BGC, vegetation, and energy owner candidates. | five-ledger public commit and 27 byte-identical serialized rollback/malformed-owner phases | remediated; final GO/PASS |
+| B-HIGH-007 | Corrected peaked response, stable log evaluation, finite/domain guards, smaller-root selection, and exact numerical tolerances/limits. | biochemical vectors, NaN/zero-capacity guards, strict Clippy | remediated; final GO/PASS |
 
 ## Remediation-review findings
 
 | Finding | Correction | Focused evidence | Current status |
 |---|---|---|---|
-| RB-CRITICAL-001 / A-CRITICAL-002 | Clumped plant-area optics now consumes leaf/stem optical parameters, then partitions photosynthetic leaf area and wet/dry leaf/stem energy. | stem-only optics poison and directional/topology closure tests | corrected; repeat review pending |
-| RB-CRITICAL-002 | Condensation is capacity-bounded or typed unsupported, q1 paths use stem vulnerability, and gas/hydraulic equality uses the admitted scale-aware tolerance. | condensation-cap, four-node/cap oracle, and coupled solve tests | corrected; repeat review pending |
-| RB-CRITICAL-003 | Removed the Atkin clamp, applied its source-unit conversion, made GSI crossings strict at equality, enforced litter C:N donor sufficiency, and advances both previous offset fluxes. | phenology equality, trajectory, C/N, and persistent-state tests | corrected; repeat review pending |
-| RB-CRITICAL-004 / A-CRITICAL-001 | Sealed `CoupledCandidate`, bound commit to exact beginning identities, added typed exact proposal/receipt matching and the energy owner, and reconciles all owner candidates. | 13 phase failures compare serialized owner bytes exactly | corrected; repeat review pending |
-| RB-HIGH-005 / A-HIGH-006 | Fixed Brent rotation, requires residual and step convergence, uses physical residual scales, and distinguishes energy/hydraulic/coupled/radiation failures. | Brent root, singular taxonomy, hydraulic oracle, strict Clippy | corrected; repeat review pending |
-| RB-HIGH-006 / A-MEDIUM-007 | Centralized deterministic, owner-sorted compensated proportional arbitration and exact layer/species debit/receipt identity. | order reversal, species/layer, unused authorization, and duplicate proposal tests | corrected; repeat review pending |
-| A-CRITICAL-003 | Added column rain routing, one top shortwave boundary, nonterminal zero-ground branches, and terminal-only water/energy output accounting. | two-rank rain and independent top-boundary shortwave reconstruction | corrected; repeat review pending |
-| A-HIGH-004 | Canonical configuration/state digests, exact stratum sets, and topology/domain rules now fail before Stage A. | mutated-digest poison and strict parsing | corrected; repeat review pending |
-| A-HIGH-005 | C/N/dry-material closure now uses `1e-14 + 64*epsilon*operand_sum`; water and energy use explicit scale-aware bounds. | public five-ledger commit and rollback suite | corrected; repeat review pending |
+| RB-CRITICAL-001 / A-CRITICAL-002 | Clumped plant-area optics now consumes leaf/stem optical parameters, then partitions photosynthetic leaf area and wet/dry leaf/stem energy. | stem-only optics poison and directional/topology closure tests | corrected; final GO/PASS |
+| RB-CRITICAL-002 | Condensation is capacity-bounded or typed unsupported, q1 paths use stem vulnerability, and gas/hydraulic equality uses the admitted scale-aware tolerance. | condensation-cap, four-node/cap oracle, and coupled solve tests | corrected; final GO/PASS |
+| RB-CRITICAL-003 | Removed the Atkin clamp, applied its source-unit conversion, made GSI crossings strict at equality, enforced litter C:N donor sufficiency, and advances both previous offset fluxes. | phenology equality, trajectory, C/N, and persistent-state tests | corrected; final GO/PASS |
+| RB-CRITICAL-004 / A-CRITICAL-001 | Sealed `CoupledCandidate`, bound commit to exact beginning identities, added typed exact proposal/receipt matching and the energy owner, and reconciles all owner candidates. | 27 phase/malformed-owner failures compare serialized owner bytes exactly | corrected; final GO/PASS |
+| RB-HIGH-005 / A-HIGH-006 | Fixed Brent rotation, requires residual and step convergence, uses physical residual scales, and distinguishes energy/hydraulic/coupled/radiation failures. | Brent root, singular taxonomy, hydraulic oracle, strict Clippy | corrected; final GO/PASS |
+| RB-HIGH-006 / A-MEDIUM-007 | Centralized deterministic, owner-sorted compensated proportional arbitration and exact layer/species debit/receipt identity. | order reversal, species/layer, unused authorization, and duplicate proposal tests | corrected; final GO/PASS |
+| A-CRITICAL-003 | Added column rain routing, one top shortwave boundary, nonterminal zero-ground branches, and terminal-only water/energy output accounting. | two-rank rain and independent top-boundary shortwave reconstruction | corrected; final GO/PASS |
+| A-HIGH-004 | Canonical configuration/state digests, exact stratum sets, and topology/domain rules now fail before Stage A. | mutated-digest poison and strict parsing | corrected; final GO/PASS |
+| A-HIGH-005 | C/N/dry-material closure now uses `1e-14 + 64*epsilon*operand_sum`; water and energy use explicit scale-aware bounds. | public five-ledger commit and rollback suite | corrected; final GO/PASS |
 
 The focused evidence invalidates the checkpoint implementation conclusions but
-does not rewrite them. Repeat science/closure and Rust correctness reviews must
-independently accept the exact current bytes before any heavy gate.
+does not rewrite them. Final science/closure and Rust correctness reviews have
+independently accepted the implementation bytes; the benchmark-evidence
+correction recorded later was the only active rereview item at that checkpoint
+and is superseded by the corrected benchmark matrix and final rereviews.
 
 ## HOLD adjudication and current disposition
 
@@ -210,3 +212,40 @@ unresolved material finding; the bounded public water increment is accepted.
 
 No finding is deferred or rejected. The bounded operand-retention increment
 does not remediate `GAP-VEGETATION-027` or enable persistent E16--E22 execution.
+
+## Increment 4B / Milestone 5 Review Disposition
+
+The first correctness and QA reviews returned HOLD. Every material finding was
+accepted; none was deferred or rejected.
+
+| Finding | Decision and correction | Focused evidence | Status |
+|---|---|---|---|
+| empty stand rejected by nonempty water/C/energy assumptions | accepted; admitted empty configuration now runs an exact zero-demand water/N transaction, retains mineral and water stores, closes tile radiation, and advances all owner lineage | real public empty-stand integration vector | corrected; repeat review pending |
+| BGC owner omitted from science admission | accepted; classifier includes biogeochemistry and separate impact entries bind the crate to `SC-BIOGEOCHEM-001` and `SC-VEGETATIONTRANSACTION-001` | admission now covers 18 surfaces | corrected; repeat review pending |
+| prior energy ledger accepted without validation | accepted; genesis/continuation shape, identity, finite operands, and stand closure are validated before construction | corrupted accepted-ledger rollback poison | corrected; repeat review pending |
+| owner-envelope failures used a generic vegetation receipt | accepted; typed `DiagnosticError::OwnerEnvelopeIdentity` carries canonical `VEGTXN-E-007` | exact variant assertions | corrected; repeat review pending |
+| cross-owner comparisons lacked behavioral poisons | accepted; validly constructed water, N, energy, transaction, beginning-state, and material-receipt mismatches reach the real envelope validator | 27-point rollback/malformed-owner matrix with error-origin assertions | corrected; repeat review pending |
+| envelope owner-validation injection was shadowed by the water phase | accepted; the diagnostic reserves `OwnerValidation` for the envelope while the water phase retains its own focused unit failure | exact error-origin assertions | corrected; repeat review pending |
+| stale lifecycle and line-count evidence | accepted; current headers/status, counts, and historical qualifiers reconciled | package Markdown lint and exact recount | corrected; repeat review pending |
+
+The first review text remains historical evidence. Final stable-byte
+disposition: Rust correctness **GO** and QA **PASS**, with no unresolved
+material finding.
+
+## Milestone 6 Central Arbitration and Error-Taxonomy Disposition
+
+The first final-campaign correctness review returned HOLD with two material
+findings. Both were accepted and corrected; neither was deferred or rejected.
+
+| Finding | Decision and correction | Focused evidence | Status |
+|---|---|---|---|
+| `V7-M6-A-001`: the diagnostic duplicated proportional water arbitration and could drift in summation/order semantics | accepted; added one kernel `authorize_proportionally_by` allocator that groups by projected supply identity, preserves the complete request key, uses compensated totals, and sorts by owner/transaction/key/basis; diagnostic water delegates to it | shared-layer `2:6` against supply `4` produces exact `1:3`; four-request reversal-sensitive binary64 vector returns bit-identical per-key authorizations under caller-order reversal | corrected; final GO/PASS |
+| `V7-M6-A-002`: canonical outer VEGTXN resource error families were unreachable through real water/N boundaries | accepted; kernel classifies identity/operand/bound once, vegetation maps those categories to `VEGTXN-E-001/002/003`, and BGC retains its distinct admitted `BGC-E-001/010` owner boundary | real duplicate/wrong-owner, nonfinite, `A>D`, `F>A`, inventory-overdraw, material-closure, and wrong-species tests assert exact variants/codes and rollback | corrected; final GO/PASS |
+
+The final taxonomy delta review confirms the authority precedence: the kernel
+owns shared exhaustive classification, the coupled envelope emits VEGTXN
+families, and the BGC owner emits its own BGC families. Kernel 50/50,
+vegetation 225/225, BGC 6/6, implementation 16/16, strict affected Clippy,
+formatting, diff hygiene, and package Markdown passed. Final Rust correctness
+is **GO** and final science/closure QA is **PASS**. No material review finding
+is unresolved.

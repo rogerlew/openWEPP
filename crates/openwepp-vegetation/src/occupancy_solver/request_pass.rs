@@ -238,7 +238,7 @@ fn collect_diagnostics(
 }
 
 fn resource_boundary_error(error: &WaterResourceBoundaryError) -> VegetationError {
-    VegetationError::Receipt(format!("V4 potential water request: {error}"))
+    error.clone().into()
 }
 
 #[cfg(test)]
@@ -294,6 +294,7 @@ mod tests {
                     .map(|root| (root.layer_id.clone(), self.local_amount_kg_m2_tile))
                     .collect(),
                 carbon_operands: None,
+                energy_proposal: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: crate::diagnostics::CoupledSolvePass::Potential,
                     ci_iterations_sun: 0,

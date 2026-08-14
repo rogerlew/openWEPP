@@ -89,11 +89,6 @@ fn aggregate_stratum_carbon_for_pass(
             entry.accepted_leaf_respiration_kg_c_m2 += rd;
         }
     }
-    if aggregate.is_empty() {
-        return Err(VegetationError::Receipt(
-            "accepted E16 occupancy set empty".into(),
-        ));
-    }
     if aggregate.values().any(|value| {
         !value.gross_primary_production_kg_c_m2.is_finite()
             || !value.accepted_leaf_respiration_kg_c_m2.is_finite()

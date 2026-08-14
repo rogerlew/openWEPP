@@ -1,8 +1,17 @@
 use std::fs;
+use std::path::Path;
 
+use openwepp_biogeochemistry::{BiogeochemistryState, MaterialPool, MineralLayer};
+use openwepp_hillslope_orchestrator::vegetation_diagnostic::{
+    DiagnosticError, DiagnosticOwnedState, DiagnosticWaterState,
+    run_default_off_diagnostic_at_phase,
+};
+use openwepp_hillslope_orchestrator::vegetation_energy_owner::{
+    CanopyHeatStorageMode, DiagnosticEnergyState, construct_energy_owner_candidate,
+};
 use openwepp_kernel_contract::{
-    MaximumAuthorization, OccupancyId, ResourceOwnerId, SoilLayerId, StratumId, TileId,
-    TransactionId, WaterResourceKey,
+    MaterialReceiverClass, MaximumAuthorization, OccupancyId, ResourceOwnerId, SoilLayerId,
+    StratumId, TileId, TransactionId, WaterResourceKey,
 };
 use openwepp_vegetation::carbon_nitrogen::{
     CnParameters, ElementPool, GrowthNitrogenReceipt, PhenologyMode, ReceiverClass, Tissue,
@@ -22,10 +31,12 @@ use openwepp_vegetation::occupancy_solver::resources::{
 use openwepp_vegetation::photosynthesis::{FvcbInput, fvcb, medlyn};
 use openwepp_vegetation::radiation::two_stream;
 use openwepp_vegetation::{
-    CoupledOwnedState, MODEL_BYTES, MODEL_SHA256, PhenologyPhase, SnowFreeForcing,
-    SoilLayerForcing, VegetationConfiguration, VegetationError, WaterArbiter, WaterArbitration,
+    CoupledOwnedState, FailurePoint, MODEL_BYTES, MODEL_SHA256, NitrogenArbiter,
+    NitrogenAuthorization, NitrogenRequest, PhenologyPhase, SnowFreeForcing, SoilLayerForcing,
+    VegetationConfiguration, VegetationError, WaterArbiter, WaterArbitration,
     WaterAuthorizationReason, WaterOwnerCandidate, WaterOwnerSnapshot, WaterRequest, WaterUse,
-    execute_uncommitted_water_phase, load_model_definition, reconstruct_water_ending,
+    execute_candidate, execute_uncommitted_water_phase, load_model_definition,
+    reconstruct_water_ending,
 };
 use sha2::{Digest, Sha256};
 
@@ -84,6 +95,49 @@ fn identity_rebound_v7_fixture() -> (VegetationConfiguration, CoupledOwnedState)
     (configuration, state)
 }
 
+fn two_stratum_competition_fixture() -> (VegetationConfiguration, CoupledOwnedState) {
+    let (mut configuration, mut state) = identity_rebound_v7_fixture();
+    let second_id = StratumId::try_new("tree-2").expect("second stratum");
+    let tile_id = TileId::try_new("tile-1").expect("shared tile");
+
+    let mut second_config = configuration.strata[0].clone();
+    second_config.stratum_id = second_id.clone();
+    second_config.vertical_rank = 1;
+    second_config.height_m = 8.0;
+    second_config.crown_base_m = 1.5;
+    second_config.displacement_m = 4.8;
+    configuration.strata.push(second_config);
+    configuration.configuration_sha256.clear();
+    configuration.configuration_sha256 = configuration
+        .canonical_sha256()
+        .expect("two-stratum configuration digest");
+
+    let first_id = StratumId::try_new("tree-1").expect("first stratum");
+    let second_shared = state.strata[&first_id].clone();
+    state.strata.insert(second_id.clone(), second_shared);
+    let first_occupancy = OccupancyId {
+        stratum_id: first_id,
+        tile_id: tile_id.clone(),
+    };
+    let second_occupancy = OccupancyId {
+        stratum_id: second_id,
+        tile_id,
+    };
+    let second_lane = state.occupancies[&first_occupancy].clone();
+    state.occupancies.insert(second_occupancy, second_lane);
+    state
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
+    state.state_sha256 = state.canonical_sha256().expect("two-stratum state digest");
+    configuration
+        .initial_state_sha256
+        .clone_from(&state.state_sha256);
+    state
+        .validate(&configuration)
+        .expect("two-stratum competition fixture");
+    (configuration, state)
+}
+
 struct IntegrationWater;
 impl WaterArbiter for IntegrationWater {
     fn authorize(&self, requests: &[WaterRequest]) -> Result<WaterArbitration, VegetationError> {
@@ -135,6 +189,32 @@ impl WaterArbiter for IntegrationWater {
     }
 }
 
+struct IntegrationNitrogen;
+impl NitrogenArbiter for IntegrationNitrogen {
+    fn beginning_amount(
+        &self,
+        _key: &openwepp_kernel_contract::MineralNitrogenKey,
+    ) -> Result<f64, VegetationError> {
+        Ok(1.0)
+    }
+
+    fn authorize(
+        &self,
+        requests: &[NitrogenRequest],
+    ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
+        Ok(requests
+            .iter()
+            .map(|request| MaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect())
+    }
+}
+
 fn public_water_forcing() -> SnowFreeForcing {
     SnowFreeForcing {
         air_temperature_k: 298.15,
@@ -169,6 +249,55 @@ fn public_water_forcing() -> SnowFreeForcing {
     }
 }
 
+fn rust_sources_below(path: &Path, sources: &mut Vec<std::path::PathBuf>) {
+    for entry in fs::read_dir(path).expect("production source directory") {
+        let entry = entry.expect("production source entry");
+        let path = entry.path();
+        if path.is_dir() {
+            rust_sources_below(&path, sources);
+        } else if path.extension().is_some_and(|extension| extension == "rs") {
+            sources.push(path);
+        }
+    }
+}
+
+#[test]
+fn v7_diagnostic_has_no_production_selector_or_legacy_pmet_gsi_entry_point() {
+    let mut production_sources = Vec::new();
+    rust_sources_below(
+        Path::new("crates/openwepp-runner/src"),
+        &mut production_sources,
+    );
+    rust_sources_below(
+        Path::new("crates/openwepp-hillslope-orchestrator/src/direct_runtime"),
+        &mut production_sources,
+    );
+    production_sources.sort();
+    assert!(!production_sources.is_empty());
+
+    for path in production_sources {
+        let source = fs::read_to_string(&path).expect("production Rust source");
+        for forbidden in [
+            "run_default_off_diagnostic",
+            "run_default_off_diagnostic_at_phase",
+            "OPENWEPP_C3_WOODY_V7",
+            "openwepp_vegetation::execute_candidate",
+        ] {
+            assert!(
+                !source.contains(forbidden),
+                "default-off vegetation diagnostic leaked into production source {} through {forbidden}",
+                path.display()
+            );
+        }
+    }
+
+    let diagnostic =
+        fs::read_to_string("crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs")
+            .expect("diagnostic source");
+    assert!(diagnostic.contains("run_default_off_diagnostic"));
+    assert!(diagnostic.contains("execute_candidate_with_failure"));
+}
+
 fn assert_fvcb_vector(
     input: FvcbInput,
     key: &str,
@@ -180,13 +309,10 @@ fn assert_fvcb_vector(
 }
 
 #[test]
-fn v7_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
+fn v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
-    assert!(source.contains("V7 post-nitrogen multi-owner candidate is implementation-incomplete"));
-    assert!(
-        source.contains("V7 multi-owner candidate and atomic commit are implementation-incomplete")
-    );
+    assert!(!source.contains("pub fn validate_and_commit"));
     assert!(!source.contains("NitrogenDemandOrdering"));
     let nitrogen_source = fs::read_to_string("crates/openwepp-vegetation/src/nitrogen_protocol.rs")
         .expect("nitrogen protocol source");
@@ -223,7 +349,330 @@ fn v7_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     assert_eq!(requests.len(), authorizations.len());
     assert_eq!(requests.len(), uses.len());
     assert_eq!(phase.water_operands().len(), uses.len());
+    let candidate = execute_candidate(
+        &load_model_definition().expect("model"),
+        &configuration,
+        &beginning,
+        &public_water_forcing(),
+        &IntegrationWater,
+        &IntegrationNitrogen,
+    )
+    .expect("sealed public vegetation candidate");
+    candidate
+        .validate_sealed()
+        .expect("sealed candidate identity");
+    let energy_beginning = DiagnosticEnergyState {
+        model_definition_sha256: MODEL_SHA256.into(),
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        accepted_vegetation_state_sha256: beginning.state_sha256.clone(),
+        last_transaction_id: 0,
+        last_operands: None,
+    };
+    let energy_topology = openwepp_hillslope_orchestrator::vegetation_energy_owner::EnergyOwnerTopology::from_configuration(&configuration)
+        .expect("energy owner topology");
+    let energy_candidate = construct_energy_owner_candidate(
+        &energy_beginning,
+        &energy_topology,
+        candidate.energy_proposals(),
+        CanopyHeatStorageMode::EquilibriumZero,
+    )
+    .expect("independently reconstructed production energy candidate");
+    assert_eq!(energy_candidate.transaction_id(), TransactionId(1));
+    assert_eq!(
+        energy_candidate.occupancy_receipts().len(),
+        configuration.expected_occupancies().len()
+    );
+    assert_eq!(
+        energy_candidate.ending().accepted_vegetation_state_sha256,
+        candidate.ending_state().state_sha256
+    );
     assert_eq!(serde_json::to_vec(&beginning).expect("after bytes"), bytes);
+}
+
+fn diagnostic_owned_state(
+    configuration: &VegetationConfiguration,
+    vegetation: CoupledOwnedState,
+) -> DiagnosticOwnedState {
+    let receivers = [
+        MaterialReceiverClass::Metabolic,
+        MaterialReceiverClass::Cellulose,
+        MaterialReceiverClass::Lignin,
+        MaterialReceiverClass::CoarseWoodyDebris,
+    ]
+    .into_iter()
+    .map(|receiver| (receiver, MaterialPool::default()))
+    .collect();
+    DiagnosticOwnedState {
+        energy: DiagnosticEnergyState {
+            model_definition_sha256: MODEL_SHA256.into(),
+            configuration_sha256: configuration.configuration_sha256.clone(),
+            accepted_vegetation_state_sha256: vegetation.state_sha256.clone(),
+            last_transaction_id: vegetation.last_transaction_id,
+            last_operands: None,
+        },
+        vegetation,
+        water: DiagnosticWaterState {
+            liquid_kg_m2: std::collections::BTreeMap::from([(
+                SoilLayerId::try_new("soil-1").expect("layer"),
+                20.0,
+            )]),
+            last_transaction_id: 0,
+        },
+        biogeochemistry: BiogeochemistryState {
+            layers: std::collections::BTreeMap::from([(
+                "soil-1".into(),
+                MineralLayer {
+                    ammonium_n: 1.0,
+                    nitrate_n: 1.0,
+                },
+            )]),
+            receivers,
+            last_transaction_id: 0,
+        },
+    }
+}
+
+#[test]
+fn v7_default_off_diagnostic_commits_all_owners_once_and_rolls_back_every_phase() {
+    let (configuration, vegetation) = identity_rebound_v7_fixture();
+    let model = load_model_definition().expect("model");
+    let forcing = public_water_forcing();
+    let initial = diagnostic_owned_state(&configuration, vegetation);
+
+    let mut accepted = initial.clone();
+    let available = accepted.water.liquid_kg_m2.clone();
+    let receipt = run_default_off_diagnostic_at_phase(
+        &mut accepted,
+        &model,
+        &configuration,
+        &forcing,
+        &available,
+        None,
+    )
+    .expect("atomic default-off transaction");
+    assert_eq!(receipt.transaction_id, TransactionId(1));
+    assert_eq!(accepted.vegetation.last_transaction_id, 1);
+    assert_eq!(accepted.water.last_transaction_id, 1);
+    assert_eq!(accepted.biogeochemistry.last_transaction_id, 1);
+    assert_eq!(accepted.energy.last_transaction_id, 1);
+    assert_eq!(
+        accepted.energy.accepted_vegetation_state_sha256,
+        accepted.vegetation.state_sha256
+    );
+
+    for failure in [
+        FailurePoint::Validation,
+        FailurePoint::Radiation,
+        FailurePoint::Interception,
+        FailurePoint::PotentialCoupledSolve,
+        FailurePoint::WaterAuthorization,
+        FailurePoint::CappedResolve,
+        FailurePoint::NitrogenRequest,
+        FailurePoint::NitrogenAuthorization,
+        FailurePoint::Allocation,
+        FailurePoint::ReceiverConstruction,
+        FailurePoint::BiogeochemistryCandidate,
+        FailurePoint::ProposalReceiptValidation,
+        FailurePoint::EnergyOperandConstruction,
+        FailurePoint::EnergyOwnerValidation,
+        FailurePoint::ClosureValidation,
+        FailurePoint::VegetationOwnerValidation,
+        FailurePoint::WaterOwnerValidation,
+        FailurePoint::BiogeochemistryOwnerValidation,
+        FailurePoint::OwnerValidation,
+        FailurePoint::CrossOwnerValidation,
+        FailurePoint::CrossOwnerWaterCandidateMismatch,
+        FailurePoint::CrossOwnerNitrogenProtocolMismatch,
+        FailurePoint::CrossOwnerEnergyIdentityMismatch,
+        FailurePoint::CrossOwnerTransactionMismatch,
+        FailurePoint::CrossOwnerBeginningStateMismatch,
+        FailurePoint::CrossOwnerMaterialReceiptMismatch,
+        FailurePoint::BeforeCommit,
+    ] {
+        let mut owned = initial.clone();
+        let before = serde_json::to_vec(&owned).expect("beginning owner bytes");
+        let available = owned.water.liquid_kg_m2.clone();
+        let error = run_default_off_diagnostic_at_phase(
+            &mut owned,
+            &model,
+            &configuration,
+            &forcing,
+            &available,
+            Some(failure),
+        )
+        .expect_err("injected or poisoned phase must reject");
+        if matches!(
+            failure,
+            FailurePoint::CrossOwnerWaterCandidateMismatch
+                | FailurePoint::CrossOwnerNitrogenProtocolMismatch
+                | FailurePoint::CrossOwnerEnergyIdentityMismatch
+                | FailurePoint::CrossOwnerTransactionMismatch
+                | FailurePoint::CrossOwnerBeginningStateMismatch
+        ) {
+            assert!(
+                matches!(error, DiagnosticError::OwnerEnvelopeIdentity(_)),
+                "cross-owner poison {failure:?} must reach typed envelope validation: {error:?}"
+            );
+        } else if failure == FailurePoint::CrossOwnerMaterialReceiptMismatch {
+            assert!(
+                matches!(error, DiagnosticError::Biogeochemistry(_)),
+                "material receipt poison must reach cross-owner validation: {error:?}"
+            );
+        } else {
+            assert!(
+                matches!(
+                    error,
+                    DiagnosticError::InjectedFailure | DiagnosticError::Vegetation(_)
+                ),
+                "failure point {failure:?} must reject at its intended phase: {error:?}"
+            );
+        }
+        assert_eq!(
+            serde_json::to_vec(&owned).expect("ending owner bytes"),
+            before,
+            "failure point {failure:?} must roll back every owner"
+        );
+    }
+}
+
+#[test]
+fn v7_real_diagnostic_activates_shared_water_and_species_n_competition() {
+    let (configuration, vegetation) = two_stratum_competition_fixture();
+    let model = load_model_definition().expect("model");
+    let forcing = public_water_forcing();
+    let mut owned = diagnostic_owned_state(&configuration, vegetation);
+    let layer = SoilLayerId::try_new("soil-1").expect("layer");
+    owned.water.liquid_kg_m2.insert(layer.clone(), 0.05);
+    owned
+        .biogeochemistry
+        .layers
+        .get_mut("soil-1")
+        .expect("mineral layer")
+        .ammonium_n = 1.0e-6;
+    owned
+        .biogeochemistry
+        .layers
+        .get_mut("soil-1")
+        .expect("mineral layer")
+        .nitrate_n = 1.0e-6;
+    let beginning = owned.clone();
+    let available = owned.water.liquid_kg_m2.clone();
+
+    let receipt = run_default_off_diagnostic_at_phase(
+        &mut owned,
+        &model,
+        &configuration,
+        &forcing,
+        &available,
+        None,
+    )
+    .expect("scarce four-owner diagnostic");
+
+    assert!(receipt.water_used > 0.0);
+    assert!(receipt.water_used <= 0.05);
+    assert_eq!(receipt.water_partial_authorizations, 2);
+    assert!(receipt.nitrogen_used > 0.0);
+    assert!(receipt.nitrogen_used <= 2.0e-6);
+    assert_eq!(receipt.nitrogen_partial_authorizations, 4);
+    assert_eq!(owned.vegetation.strata.len(), 2);
+    assert_eq!(owned.vegetation.occupancies.len(), 2);
+    assert_eq!(
+        owned.water.liquid_kg_m2[&layer].to_bits(),
+        (0.05 - receipt.water_used).to_bits()
+    );
+    assert_eq!(owned.water.last_transaction_id, 1);
+    assert_eq!(owned.biogeochemistry.last_transaction_id, 1);
+
+    let mut rejected = beginning.clone();
+    let before = serde_json::to_vec(&rejected).expect("scarce beginning bytes");
+    let available = rejected.water.liquid_kg_m2.clone();
+    let error = run_default_off_diagnostic_at_phase(
+        &mut rejected,
+        &model,
+        &configuration,
+        &forcing,
+        &available,
+        Some(FailurePoint::BeforeCommit),
+    )
+    .expect_err("scarce rollback injection");
+    assert!(matches!(error, DiagnosticError::InjectedFailure));
+    assert_eq!(
+        serde_json::to_vec(&rejected).expect("scarce after bytes"),
+        before
+    );
+}
+
+#[test]
+fn v7_empty_stand_executes_zero_demand_and_corrupted_energy_history_rolls_back() {
+    let (mut configuration, mut vegetation) = identity_rebound_v7_fixture();
+    configuration.strata.clear();
+    configuration.configuration_sha256 = configuration
+        .canonical_sha256()
+        .expect("empty-stand configuration digest");
+    vegetation.strata.clear();
+    vegetation.occupancies.clear();
+    vegetation
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
+    vegetation.state_sha256 = vegetation
+        .canonical_sha256()
+        .expect("empty-stand state digest");
+    configuration
+        .initial_state_sha256
+        .clone_from(&vegetation.state_sha256);
+    vegetation
+        .validate(&configuration)
+        .expect("canonical empty stand");
+
+    let model = load_model_definition().expect("model");
+    let forcing = public_water_forcing();
+    let mut owned = diagnostic_owned_state(&configuration, vegetation);
+    let beginning_water = owned.water.liquid_kg_m2.clone();
+    let beginning_mineral = owned.biogeochemistry.layers.clone();
+    let available = beginning_water.clone();
+    let receipt = run_default_off_diagnostic_at_phase(
+        &mut owned,
+        &model,
+        &configuration,
+        &forcing,
+        &available,
+        None,
+    )
+    .expect("empty-stand zero-demand transaction");
+    assert_eq!(receipt.transaction_id, TransactionId(1));
+    assert_eq!(receipt.water_used.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(receipt.nitrogen_used.to_bits(), 0.0_f64.to_bits());
+    assert!(owned.vegetation.strata.is_empty());
+    assert!(owned.vegetation.occupancies.is_empty());
+    assert_eq!(owned.water.liquid_kg_m2, beginning_water);
+    assert_eq!(owned.biogeochemistry.layers, beginning_mineral);
+    assert!(owned.energy.last_operands.is_some());
+
+    let mut corrupted = owned.clone();
+    corrupted
+        .energy
+        .last_operands
+        .as_mut()
+        .expect("accepted energy operands")
+        .identity
+        .transaction_id = TransactionId(0);
+    let before = serde_json::to_vec(&corrupted).expect("corrupted beginning bytes");
+    let available = corrupted.water.liquid_kg_m2.clone();
+    assert!(matches!(
+        run_default_off_diagnostic_at_phase(
+            &mut corrupted,
+            &model,
+            &configuration,
+            &forcing,
+            &available,
+            None,
+        ),
+        Err(DiagnosticError::Energy(_))
+    ));
+    assert_eq!(
+        serde_json::to_vec(&corrupted).expect("corrupted ending bytes"),
+        before
+    );
 }
 
 #[test]

@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use openwepp_kernel_contract::{ResourceProtocolCategory, ResourceProtocolViolation};
+
 use crate::diagnostics::NumericalFailureDiagnostics;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -44,6 +46,12 @@ pub enum VegetationError {
     },
     #[error("VEG-E-TRANSACTION-001: resource receipt is invalid: {0}")]
     Receipt(String),
+    #[error("VEGTXN-E-001: resource identity or correspondence is invalid: {0}")]
+    ResourceIdentity(String),
+    #[error("VEGTXN-E-002: resource operand or basis is invalid: {0}")]
+    ResourceOperand(String),
+    #[error("VEGTXN-E-003: resource authorization/final-use bound is invalid: {0}")]
+    ResourceBound(String),
     #[error("VEG-E-093: capped candidate rejected without owner mutation: {0}")]
     CappedCandidateRollback(&'static str),
     #[error("VEG-E-097: V7 allocation or owner ledger rejected without a candidate: {0}")]
@@ -54,4 +62,14 @@ pub enum VegetationError {
     V7CandidateRollback(&'static str),
     #[error("VEG-E-CLOSURE-001: {ledger} residual {residual} exceeds tolerance")]
     Closure { ledger: &'static str, residual: f64 },
+}
+
+impl From<ResourceProtocolViolation> for VegetationError {
+    fn from(error: ResourceProtocolViolation) -> Self {
+        match error.category() {
+            ResourceProtocolCategory::Identity => Self::ResourceIdentity(format!("{error:?}")),
+            ResourceProtocolCategory::Operand => Self::ResourceOperand(format!("{error:?}")),
+            ResourceProtocolCategory::Bound => Self::ResourceBound(format!("{error:?}")),
+        }
+    }
 }

@@ -1,0 +1,78 @@
+{
+  "run_dir": "m6-benchmark-20260813234912",
+  "fixtures": {},
+  "tests": {
+    "parse_hash": "v7_configuration_state_and_migration_inputs_have_no_default_path",
+    "radiation_unit": "radiation::tests::v3_two_rank_visible_direct_fixture_and_named_poisons",
+    "public_integration": "v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands",
+    "upper_cap": "occupancy_solver::capped_pass::tests::upper_cap_changes_final_release_received_by_descendant",
+    "rollback_integration": "v7_default_off_diagnostic_commits_all_owners_once_and_rolls_back_every_phase"
+  },
+  "results": [
+    {
+      "label": "parse_hash",
+      "sample_times": [
+        0.26,
+        0.24,
+        0.25,
+        0.25,
+        0.24
+      ],
+      "first_sample": 0.26,
+      "median_real_seconds": 0.25,
+      "max_ratio_to_first": 1.0
+    },
+    {
+      "label": "radiation_unit",
+      "sample_times": [
+        0.16,
+        0.17,
+        0.16,
+        0.16,
+        0.17
+      ],
+      "first_sample": 0.16,
+      "median_real_seconds": 0.16,
+      "max_ratio_to_first": 1.0625
+    },
+    {
+      "label": "public_integration",
+      "sample_times": [
+        0.32,
+        0.31,
+        0.32,
+        0.32,
+        0.34
+      ],
+      "first_sample": 0.32,
+      "median_real_seconds": 0.32,
+      "max_ratio_to_first": 1.0625
+    },
+    {
+      "label": "upper_cap",
+      "sample_times": [
+        0.19,
+        0.19,
+        0.19,
+        0.19,
+        0.19
+      ],
+      "first_sample": 0.19,
+      "median_real_seconds": 0.19,
+      "max_ratio_to_first": 1.0
+    },
+    {
+      "label": "rollback_integration",
+      "sample_times": [
+        1.13,
+        1.16,
+        1.11,
+        1.14,
+        1.1
+      ],
+      "first_sample": 1.13,
+      "median_real_seconds": 1.13,
+      "max_ratio_to_first": 1.0265486725663717
+    }
+  ]
+}

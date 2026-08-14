@@ -7,7 +7,6 @@ use openwepp_kernel_contract::{
 use serde::{Deserialize, Serialize};
 
 use crate::carbon_nitrogen::{ElementPool, MaterialTransfer, Tissue, TissuePool};
-use crate::ledger::FiveLedgerOperands;
 use crate::occupancy_state::OccupancyState;
 use crate::{MODEL_BYTES, MODEL_SHA256, ModelDefinition, VegetationConfiguration, VegetationError};
 use sha2::{Digest, Sha256};
@@ -572,6 +571,18 @@ pub trait WaterArbiter {
         &self,
         requests: &[WaterRequest],
     ) -> Result<crate::water_phase::WaterArbitration, VegetationError>;
+    /// Construct the immutable owner snapshot for the canonical empty-stand
+    /// zero-demand branch, where no request exists from which to recover the
+    /// transaction or owner identity.
+    fn authorize_zero_demand(
+        &self,
+        _transaction_id: TransactionId,
+        _owner_id: &openwepp_kernel_contract::ResourceOwnerId,
+    ) -> Result<crate::water_phase::WaterArbitration, VegetationError> {
+        Err(VegetationError::Receipt(
+            "water owner does not support empty-stand zero demand".into(),
+        ))
+    }
     /// Construct the water owner's uncommitted debit candidate from the exact
     /// resource protocol. Vegetation independently validates the returned
     /// candidate and cannot mutate owner state through this interface.
@@ -590,95 +601,7 @@ pub trait NitrogenArbiter {
     ) -> Result<Vec<NitrogenAuthorization>, VegetationError>;
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct ExecutionDiagnostics {
-    pub transaction_id: TransactionId,
-    pub solver_iterations: u32,
-    pub normalized_residuals: Vec<f64>,
-    pub active_bounds: Vec<String>,
-    pub authorization_activity: bool,
-    pub temperature_step_k: f64,
-    pub potential_step_mm: f64,
-    pub backtracking_count: u32,
-    pub wet_store_cap_active: bool,
-    pub gas_hydraulic_mismatch_kg_m2_s: f64,
-}
-#[derive(Clone, Debug, PartialEq)]
-pub struct EnergyOwnerOperands {
-    pub incident_shortwave_w_m2: f64,
-    pub reflected_shortwave_w_m2: f64,
-    pub terminal_shortwave_w_m2: f64,
-    pub incident_longwave_j_m2: f64,
-    pub emitted_longwave_j_m2: f64,
-    pub sensible_j_m2: f64,
-    pub transpiration_kg_m2: f64,
-    pub wet_phase_change_kg_m2: f64,
-    pub interval_s: f64,
-}
-#[derive(Clone, Debug, PartialEq)]
-pub struct CoupledCandidate {
-    beginning_state_sha256: String,
-    state: CoupledOwnedState,
-    water_requests: Vec<WaterRequest>,
-    water_authorizations: Vec<WaterAuthorization>,
-    water_uses: Vec<WaterUse>,
-    nitrogen_requests: Vec<NitrogenRequest>,
-    nitrogen_authorizations: Vec<NitrogenAuthorization>,
-    nitrogen_uses: Vec<NitrogenUse>,
-    material_transfers: Vec<MaterialTransfer>,
-    ledger_operands: crate::ledger::FiveLedgerOperands,
-    energy_owner_operands: EnergyOwnerOperands,
-    diagnostics: ExecutionDiagnostics,
-}
-impl CoupledCandidate {
-    #[must_use]
-    pub fn transaction_id(&self) -> TransactionId {
-        self.diagnostics.transaction_id
-    }
-    #[must_use]
-    pub fn water_uses(&self) -> &[WaterUse] {
-        &self.water_uses
-    }
-    #[must_use]
-    pub fn nitrogen_protocol(
-        &self,
-    ) -> (&[NitrogenRequest], &[NitrogenAuthorization], &[NitrogenUse]) {
-        (
-            &self.nitrogen_requests,
-            &self.nitrogen_authorizations,
-            &self.nitrogen_uses,
-        )
-    }
-    #[must_use]
-    pub fn material_transfers(&self) -> &[MaterialTransfer] {
-        &self.material_transfers
-    }
-    #[must_use]
-    pub fn ledger_operands(&self) -> &FiveLedgerOperands {
-        &self.ledger_operands
-    }
-    #[must_use]
-    pub fn energy_owner_operands(&self) -> &EnergyOwnerOperands {
-        &self.energy_owner_operands
-    }
-    #[must_use]
-    pub fn water_protocol(&self) -> (&[WaterRequest], &[WaterAuthorization], &[WaterUse]) {
-        (
-            &self.water_requests,
-            &self.water_authorizations,
-            &self.water_uses,
-        )
-    }
-    #[must_use]
-    pub fn diagnostics(&self) -> &ExecutionDiagnostics {
-        &self.diagnostics
-    }
-}
-#[derive(Clone, Debug, PartialEq)]
-pub struct CommitReceipt {
-    pub transaction_id: TransactionId,
-    pub ending_state_sha256: String,
-}
+pub use crate::vegetation_candidate::UncommittedVegetationCandidate as CoupledCandidate;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FailurePoint {
@@ -693,14 +616,28 @@ pub enum FailurePoint {
     Allocation,
     ReceiverConstruction,
     ClosureValidation,
+    BiogeochemistryCandidate,
+    ProposalReceiptValidation,
+    EnergyOperandConstruction,
+    EnergyOwnerValidation,
+    CrossOwnerValidation,
+    CrossOwnerWaterCandidateMismatch,
+    CrossOwnerNitrogenProtocolMismatch,
+    CrossOwnerEnergyIdentityMismatch,
+    CrossOwnerTransactionMismatch,
+    CrossOwnerBeginningStateMismatch,
+    CrossOwnerMaterialReceiptMismatch,
+    WaterOwnerValidation,
+    BiogeochemistryOwnerValidation,
+    VegetationOwnerValidation,
     BeforeCommit,
     OwnerValidation,
 }
 
-/// Executes the complete uncommitted V7 water and mineral-nitrogen phases.
+/// Constructs the complete, sealed, and uncommitted V7 vegetation proposal.
 ///
-/// Persistent multi-owner candidate construction remains deliberately
-/// fail-closed.
+/// This value has no commit method. Only the diagnostic all-owner transaction
+/// may publish its ending vegetation state.
 pub fn execute_candidate(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
@@ -727,9 +664,7 @@ pub fn execute_candidate(
             &nitrogen_phase,
         )?;
     vegetation_candidate.validate_sealed()?;
-    Err(VegetationError::Unsupported(
-        "V7 post-nitrogen multi-owner candidate is implementation-incomplete",
-    ))
+    Ok(vegetation_candidate)
 }
 
 /// Failure-injection entry point retained while the post-water transaction is incomplete.
@@ -766,17 +701,12 @@ pub fn execute_candidate_with_failure(
     let label = match failure {
         Some(FailurePoint::NitrogenAuthorization) => Some("nitrogen authorization"),
         Some(FailurePoint::Allocation) => Some("allocation"),
-        Some(FailurePoint::ReceiverConstruction) => Some("receiver construction"),
-        Some(FailurePoint::ClosureValidation) => Some("closure validation"),
-        Some(FailurePoint::BeforeCommit) => Some("before commit"),
         _ => None,
     };
     if let Some(label) = label {
         return Err(VegetationError::InjectedFailure(label));
     }
-    Err(VegetationError::Unsupported(
-        "V7 post-nitrogen multi-owner candidate is implementation-incomplete",
-    ))
+    Ok(vegetation_candidate)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1972,6 +1902,29 @@ mod milestone_one_tests {
         assert_eq!(candidate.carbon_ledgers().len(), config.strata.len());
         assert_eq!(candidate.nitrogen_ledgers().len(), config.strata.len());
         assert_eq!(candidate.dry_material_ledgers().len(), config.strata.len());
+        assert_eq!(
+            candidate.energy_proposals().identity.transaction_id,
+            TransactionId(1)
+        );
+        assert_eq!(
+            candidate.energy_proposals().identity.beginning_state_sha256,
+            state.state_sha256
+        );
+        assert_eq!(
+            candidate.energy_proposals().occupancies.len(),
+            config.expected_occupancies().len()
+        );
+        assert!(
+            candidate
+                .energy_proposals()
+                .occupancies
+                .iter()
+                .all(|proposal| {
+                    proposal.transaction_id == TransactionId(1)
+                        && proposal.spectral_absorption.len() == 4
+                        && !proposal.finalized_layer_withdrawal_kg_m2_tile.is_empty()
+                })
+        );
         assert!(!candidate.material_proposals().is_empty());
         for (index, proposal) in candidate.material_proposals().iter().enumerate() {
             assert_eq!(proposal.transaction_id, 1);
@@ -2061,9 +2014,7 @@ mod milestone_one_tests {
         );
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
-            Err(VegetationError::Unsupported(
-                "V7 post-nitrogen multi-owner candidate is implementation-incomplete"
-            ))
+            Ok(candidate.clone())
         );
 
         let forged = ModelDefinition {
@@ -2128,30 +2079,4 @@ fn validate_displayed_leaf_identity(
         return Err(VegetationError::Domain("V4 displayed leaf N without LAI"));
     }
     Ok(())
-}
-
-/// Commit remains unavailable until E16--E22 and every receiving-owner
-/// candidate can be validated together.
-pub fn validate_and_commit(
-    _beginning: &mut CoupledOwnedState,
-    _candidate: CoupledCandidate,
-) -> Result<CommitReceipt, VegetationError> {
-    Err(VegetationError::Unsupported(
-        "V7 multi-owner candidate and atomic commit are implementation-incomplete",
-    ))
-}
-
-/// Failure-injection commit entry point retained while the all-owner transaction is incomplete.
-pub fn validate_and_commit_with_failure(
-    beginning: &mut CoupledOwnedState,
-    candidate: CoupledCandidate,
-    failure: Option<FailurePoint>,
-) -> Result<CommitReceipt, VegetationError> {
-    if failure == Some(FailurePoint::OwnerValidation) {
-        return Err(VegetationError::InjectedFailure("owner validation"));
-    }
-    if failure == Some(FailurePoint::BeforeCommit) {
-        return Err(VegetationError::InjectedFailure("before commit"));
-    }
-    validate_and_commit(beginning, candidate)
 }

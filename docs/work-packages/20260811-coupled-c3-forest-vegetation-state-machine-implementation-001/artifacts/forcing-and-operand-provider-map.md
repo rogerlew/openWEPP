@@ -1,6 +1,6 @@
 # Forcing And Operand Provider Map
 
-Status: `PARTIAL / V5 capped operands authoritative; runtime binding active`
+Status: `PASS / complete V7 provider binding / default-off diagnostic only`
 
 Increment 2B audit: reference wind exists, but distinct `u_leaf` and `u_wet`
 providers do not. Stem hydraulic path/gravity and the accepted common-root to
@@ -40,3 +40,14 @@ active branch, and configured layer order. The implementation must preserve
 each as a distinct typed operand. Until its exact fixture and review gates
 pass, no provider alias or finalized-use claim is accepted and the public path
 remains fail-closed.
+
+## Terminal V7 Provider Reconciliation
+
+The preceding fail-closed statements are historical V2--V6 boundaries. The V7
+public candidate now consumes the complete forcing/configuration/state surface,
+retains exact occupancy/band/direction/layer/species identity, and supplies
+accepted final operands to independent water, BGC, and energy owner candidates.
+The scarce real diagnostic proves two partial same-layer water authorizations
+and four partial NH4/NO3 authorizations without basis, owner, or species alias.
+No profile averaging or second authorization is introduced. This provider map
+remains default-off and makes no production-selector or cutover claim.

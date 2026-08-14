@@ -1,11 +1,11 @@
 # Diagnostics And Output Manifest
 
-Status: `PARTIAL / V5 capped diagnostic authority bound; implementation active`
+Status: `PASS / complete V7 default-off diagnostics and owner outputs`
 
-No opaque solver failure was added. The audit also confirms that existing
-numerical errors do not yet retain the required partial iterations, residuals,
-steps, backtracking, and active-bound payload; this remains part of the
-authority-lift/resumption boundary.
+No opaque solver failure remains in the V7 path. Numerical failures retain the
+required partial iterations, residuals, steps, backtracking, active-bound/cap,
+bracket/pivot/matrix, pass, solve, transaction, and occupancy payload while
+returning no candidate or finalized use.
 
 Increment 2A carries occupancy solver iteration count and normalized residuals
 without using them as fallback inputs. Its routed result exposes distinct
@@ -13,9 +13,18 @@ throughfall, initial drainage, second drainage, stemflow, local layer water,
 and occupancy/tile closure operands. A producer-supplied closure scalar is
 ignored and replaced with independent reconstruction.
 
-The full nested solver diagnostics, public request/authorization/final-use
-triples, energy owner operands, five-ledger public candidate, and atomic commit
-remain pending. Historical helper structs do not establish those public claims.
+Full nested solver diagnostics and public request/authorization/final-use
+triples are retained by the uncommitted phases. Final capped execution now also
+retains component-level energy operands and exact whole-tile radiation
+boundaries without a producer residual. The independent energy owner produces
+typed occupancy receipts and a stand ledger. Milestone 5 seals these with the
+vegetation, retained water-owner, and BGC candidates; validates the complete
+cross-owner identity envelope; and atomically replaces the default-off
+diagnostic state. Twenty-seven injected phase and malformed-owner failure
+points retain exact rollback bytes. Prior accepted energy operands are
+revalidated for lineage, finite domain, and closure before continuation.
+Milestone 6 diagnostic closure and package-wide terminal evidence remain
+pending.
 
 The V3 exact numerical-failure diagnostics and production potential evaluator
 remain imported unchanged through V5. V5 additionally requires configured-
@@ -25,3 +34,15 @@ iteration/step/backtracking/pivot/matrix payloads, and null candidate/use on
 every failure. The immutable fixture binds those diagnostics, but Rust
 implementation and review are still active. The capped path cannot publish
 diagnostics, finalized use, or an accepted candidate yet.
+
+## Terminal Reconciliation
+
+The preceding partial/pending statements are historical V2--V5 checkpoint
+boundaries. They are superseded by the current public V7 default-off path.
+Accepted potential and capped diagnostics retain nested iteration counts,
+normalized residuals, steps, backtracking, active bounds/caps, typed failure
+identity, and complete physical operands. Failed solves publish no candidate or
+use. Successful execution publishes the sealed vegetation candidate and exact
+water/N protocols to the independent water, BGC, and energy owners; the four-
+owner envelope then commits once. Final review is GO/PASS and the corrected
+implementation contract is 17/17.

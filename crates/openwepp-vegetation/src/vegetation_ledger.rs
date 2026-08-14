@@ -67,12 +67,14 @@ pub(crate) fn validate_vegetation_ledgers(
     nitrogen: &[VegetationNitrogenLedger],
     dry_material: &[VegetationDryMaterialLedger],
 ) -> Result<(), VegetationError> {
-    if expected_strata.is_empty()
-        || carbon.len() != expected_strata.len()
+    if carbon.len() != expected_strata.len()
         || carbon.len() != nitrogen.len()
         || carbon.len() != dry_material.len()
     {
         return Err(VegetationError::V7Candidate("stratum cardinality"));
+    }
+    if expected_strata.is_empty() {
+        return Ok(());
     }
     let first_identity = &carbon[0].identity;
     validate_identity(first_identity)?;

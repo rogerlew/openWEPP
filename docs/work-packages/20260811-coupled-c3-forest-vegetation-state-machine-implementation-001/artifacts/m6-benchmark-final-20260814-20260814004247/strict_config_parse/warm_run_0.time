@@ -1,0 +1,8 @@
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `release` profile [optimized] target(s) in 1m 49s
+     Running unittests src/lib.rs (target/release/deps/openwepp_vegetation-105f16acdcc9ae80)
+time_real_seconds=109.92
+time_user_seconds=122.64
+time_sys_seconds=2.85
+max_rss_kb=869344
+

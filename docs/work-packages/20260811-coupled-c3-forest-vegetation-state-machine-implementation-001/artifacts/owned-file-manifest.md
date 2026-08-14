@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: `reconciled through V5 authority intake / implementation active`
+Status: `reconciled through V7 Milestone 6 implementation / terminal gates active`
 
 Evidence mode: `Static`
 
@@ -11,6 +11,8 @@ Evidence mode: `Static`
 - BGC arbitration/receivers: `crates/openwepp-biogeochemistry/src/lib.rs`.
 - Default-off consumer: `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs`.
 - Authority binding catalog: `tools/release/authority-policy/impact-map.json`.
+- Authority science-surface classifier:
+  `tools/release/check_science_contract_admission.sh`.
 - Authority and implementation tests: the two registered vegetation integration
   targets, retained V1 migration/oracle fixtures, and crate-local V2
   configuration/state/migration tests.
@@ -66,14 +68,42 @@ Evidence mode: `Static`
   `src/vegetation_candidate.rs`, `src/vegetation_ledger.rs`, bounded phase
   accessors in `src/persistent_phase.rs`, public-path containment wiring and
   focused tests in `src/transaction.rs`, plus module registration. The sealed
-  type has no commit method and no public re-export.
+  type has no commit method; its public re-export exposes candidate inspection,
+  not mutation or commit.
 - Increment 4B BGC receiving-owner slice:
   `crates/openwepp-biogeochemistry/src/lib.rs` owns proposal-input validation,
   BGC-constructed receipts, exact mineral debit, receiver operands, ending
   state, and focused poisons. The default-off adapter update in
   `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` consumes
-  that owner candidate. Independent energy ownership and all-owner commit are
-  still pending.
+  that owner candidate.
+- Increment 4B component-energy receiving-owner slice:
+  `crates/openwepp-vegetation/src/energy_proposal.rs`, bounded accepted-result
+  projection in `column.rs` and `occupancy_solver/evaluator.rs`, and
+  `crates/openwepp-hillslope-orchestrator/src/vegetation_energy_owner.rs` own
+  immutable physical proposals, independent occupancy/radiation/stand
+  reconstruction, typed equilibrium-zero storage, receipts, and focused
+  poisons. The default-off diagnostic aggregate seam is removed.
+- Milestone 5 all-owner connection:
+  `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` owns the
+  sealed vegetation/water/BGC/energy envelope, exact cross-owner protocol and
+  receipt validation, 27-point rollback/malformed-owner matrix, and one non-fallible whole-
+  state replacement. `crates/openwepp-biogeochemistry/src/lib.rs` retains the
+  exact nitrogen request/authorization/final-use protocol for cross-owner
+  validation. `crates/openwepp-vegetation/src/transaction.rs` exposes the
+  sealed candidate and contains no vegetation-only commit API.
+- Milestone 6 resource-boundary remediation:
+  `crates/openwepp-kernel-contract/src/lib_mod/resource_transaction.rs`
+  centralizes deterministic compensated proportional arbitration by projected
+  owner-supply identity while preserving the full request key;
+  `crates/openwepp-vegetation/src/error.rs`, water/N boundary modules, the
+  diagnostic, and BGC owner preserve the distinct canonical outer VEGTXN and
+  inner BGC error families.
+- Milestone 6 selection and performance evidence:
+  `tests/integration/c3_vegetation_implementation_contract.rs` recursively
+  proves the diagnostic has no production runner/direct-runtime selector;
+  `artifacts/m6-benchmark-final-20260814-20260814004247/` retains the final
+  corrected five-surface release benchmark matrix. The rejected first matrix
+  and its incomplete invalid-filter metadata remain separately visible.
 
 Protected implementation boundaries: production runner selectors, CLI defaults,
 production outputs, canopy-snow, soil-transformation, deployment, and consumer

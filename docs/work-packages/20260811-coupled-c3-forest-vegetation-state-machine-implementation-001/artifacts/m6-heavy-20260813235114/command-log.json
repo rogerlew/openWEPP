@@ -1,0 +1,56 @@
+{
+  "run_id": "m6-heavy-20260813235114",
+  "tmp_root": "/tmp/openwepp-m6-heavy-20260813235114",
+  "commands": [
+    {
+      "step": 1,
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "log": "clippy_step.log",
+      "time_log": "clippy_step.time",
+      "exit": 0,
+      "retry": null
+    },
+    {
+      "step": 2,
+      "command": "cargo nextest run --workspace --profile full",
+      "log": "nextest_full.log",
+      "time_log": "nextest_full.time",
+      "exit": 0,
+      "retry": null,
+      "note": "summary in time log: 2270? tests run: 2670 passed (35 slow), 33 skipped"
+    },
+    {
+      "step": 3,
+      "command": "cargo test --doc --workspace",
+      "log": "doc_tests.log",
+      "time_log": "doc_tests.time",
+      "exit": 0,
+      "retry": null
+    },
+    {
+      "step": 4,
+      "command": "cargo deny check",
+      "log": "cargo_deny.log",
+      "time_log": "cargo_deny.time",
+      "exit": 0,
+      "retry": null,
+      "warning": "warning[license-not-encountered]: license was not encountered at deny.toml:14 unmatched MIT-0"
+    },
+    {
+      "step": 5,
+      "command": "cargo fmt --all -- --check",
+      "log": "fmt_check.log",
+      "time_log": "fmt_check.time",
+      "exit": 0,
+      "retry": null
+    },
+    {
+      "step": 6,
+      "command": "git diff --check",
+      "log": "diff_check.log",
+      "time_log": "diff_check.time",
+      "exit": 0,
+      "retry": null
+    }
+  ]
+}

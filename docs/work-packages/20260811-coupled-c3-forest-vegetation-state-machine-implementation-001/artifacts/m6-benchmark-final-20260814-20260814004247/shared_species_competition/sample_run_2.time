@@ -1,0 +1,7 @@
+    Finished `release` profile [optimized] target(s) in 0.15s
+     Running tests/integration/c3_vegetation_implementation_contract.rs (target/release/deps/c3_vegetation_implementation_contract-89465b7bdca1953f)
+time_real_seconds=0.45
+time_user_seconds=0.38
+time_sys_seconds=0.08
+max_rss_kb=58752
+

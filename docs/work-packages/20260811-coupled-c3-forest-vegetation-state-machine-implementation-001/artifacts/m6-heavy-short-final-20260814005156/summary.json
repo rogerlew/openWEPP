@@ -1,0 +1,69 @@
+{
+  "run_id": "m6-heavy-short-final-20260814005156",
+  "artifact_dir": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156",
+  "tmp_dir": "/tmp/owm6f-lQkG1z",
+  "exit_codes": {
+    "clippy_step": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/clippy_step.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/clippy_step.time",
+      "time_real_seconds": 3.07,
+      "time_user_seconds": 35.16,
+      "time_sys_seconds": 18.67,
+      "max_rss_kb": 188976.0
+    },
+    "nextest_full": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/nextest_full.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/nextest_full.time",
+      "time_real_seconds": 2290.56,
+      "time_user_seconds": 10683.01,
+      "time_sys_seconds": 548.45,
+      "max_rss_kb": 1055888.0,
+      "summary_elapsed_s": 2289.165,
+      "tests_run": 2671,
+      "tests_passed": 2671,
+      "tests_slow": 34,
+      "tests_skipped": 33,
+      "nextest_run_id": "471dafdc-4948-436f-8201-63fd4ad7326f"
+    },
+    "doc_tests": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/doc_tests.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/doc_tests.time",
+      "time_real_seconds": 8.28,
+      "time_user_seconds": 5.45,
+      "time_sys_seconds": 2.43,
+      "max_rss_kb": 244224.0,
+      "doc_passed": 0,
+      "doc_failed": 0,
+      "doc_ignored": 0,
+      "doc_measured": 0,
+      "doc_filtered": 0
+    },
+    "deny_check": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/deny_check.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/deny_check.time",
+      "time_real_seconds": 0.92,
+      "time_user_seconds": 1.05,
+      "time_sys_seconds": 0.55,
+      "max_rss_kb": 86300.0,
+      "warnings": [
+        "warning[license-not-encountered]: license was not encountered"
+      ]
+    },
+    "fmt_check": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/fmt_check.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/fmt_check.time",
+      "time_real_seconds": 3.16,
+      "time_user_seconds": 3.05,
+      "time_sys_seconds": 0.14,
+      "max_rss_kb": 74112.0
+    },
+    "diff_check": {
+      "log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/diff_check.log",
+      "time_log": "/home/workdir/openWEPP/docs/work-packages/20260811-coupled-c3-forest-vegetation-state-machine-implementation-001/artifacts/m6-heavy-short-final-20260814005156/diff_check.time",
+      "time_real_seconds": 0.14,
+      "time_user_seconds": 0.12,
+      "time_sys_seconds": 0.2,
+      "max_rss_kb": 20808.0
+    }
+  }
+}

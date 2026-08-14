@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `EXECUTED-HOLD / V5 bounded capped-core checkpoint / public path fail-closed`
+Status: `COMPLETE / dual terminal verification PASS / prompt archived`
 
 Evidence mode: `Ran`
 
@@ -615,3 +615,220 @@ The historical failed and HOLD rows above remain unchanged.
 | authority guards | PASS / Ran | anti-evasion PASS; science admission `A0_ADMITTED contracts=45 science_surfaces=1`, base `f96f27bb3d4da10f864938e374c2c1801fac4217`, authority SHA-256 `942e9e0eb3f017345833aa085b9bfe4efc87f8eb01ff5047f7aa59ca3df77c6b` |
 | energy receiving owner | PENDING | existing aggregate diagnostic reconstruction is not accepted as Increment 4B completion evidence |
 | Increment 4B / Milestone 5 | INCOMPLETE | sealed V7 cross-owner connection, independent energy candidate, and atomic commit remain unavailable |
+
+## Increment 4B Component-Level Energy Receiving Owner
+
+The preceding pending rows remain historical evidence. This increment replaces
+the aggregate self-referential diagnostic seam; it does not rewrite the earlier
+result.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| production energy proposal | PASS / Ran | final capped occupancies retain component physical operands without residuals; exact V7 model/configuration/beginning/transaction/interval and whole-tile radiation boundaries are bound into one immutable batch |
+| independent occupancy reconstruction | PASS / Ran | sun/shade leaf, wet surface, dry stem, canopy-air sensible/vapor, and finalized layer withdrawal closure reconstruct outside vegetation |
+| independent radiation/stand reconstruction | PASS / Ran | direct/diffuse VIS/NIR ownership closes per tile before exactly one tile-fraction weighting; stand energy closes with typed equilibrium-zero canopy storage |
+| real production fixture | PASS / Ran | `v7_public_water_phase_executes_and_full_candidate_remains_fail_closed` feeds actual full-water capped operands to the independent energy owner and preserves beginning bytes |
+| component poison matrix | PASS / Ran | missing/doubled fraction, wrong tile, omitted/substituted stem, direct/diffuse alias, VIS/NIR alias, authorization-as-use, wet sign, and interval identity reject |
+| vegetation quick | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick`: 223/223 |
+| hillslope-orchestrator quick | PASS / Ran | `cargo nextest run -p openwepp-hillslope-orchestrator --profile quick`: 492/492, including three pre-existing slow routing-oracle tests |
+| affected strict Clippy | PASS / Ran | vegetation and hillslope-orchestrator all-target `-D warnings` passed |
+| four affected checks/Clippy | PASS / Ran | kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator checks and all-target strict Clippy passed |
+| implementation/authority/AUTH11 | PASS / Ran | implementation contract 13/13, vegetation authority 25/25, and AUTH11 3/3 passed |
+| authority anti-evasion | PASS / Ran | source-level authority-suite guard passed |
+| science admission | FAIL then PASS / Ran | first run correctly rejected the new owner without an impact-map binding; exact `SC-VEGETATION-001` binding and executable hillslope A1 target were added; retry returned `A0_ADMITTED contracts=45 science_surfaces=3`, base `cd51fef9583f77973a2f4898864b9fe12b42545a`, authority SHA-256 `4315c57da1c7f34b01f55a6714394bce770e0b14d9331b1e21b6f2af9cae81f8` |
+| formatting and diff hygiene | PASS / Ran | `cargo fmt --all -- --check`; `git diff --check` |
+| package Markdown | PASS / Ran | 55 files, 0 errors, 0 warnings |
+| Increment 4B | COMPLETE focused | BGC and energy receiving-owner candidate constructors are available and independently reconstruct their scoped operands |
+| Milestone 5 | INCOMPLETE | sealed vegetation/water/BGC/energy envelope, exact cross-owner identity validation, rollback matrix, and atomic replacement remain unavailable |
+
+## Milestone 5 Four-Owner Connection
+
+The preceding incomplete row is preserved as pre-connection evidence. The
+following results apply to the subsequent exact owner-envelope bytes.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| public vegetation candidate | PASS / Ran | `execute_candidate()` returns a validated sealed candidate with no commit method |
+| retained water owner | PASS / Ran | the coupled envelope consumes the water arbiter's exact candidate; no second water debit is reconstructed |
+| exact BGC protocol | PASS / Ran | BGC candidate retains and validates the complete request/authorization/final-use triples used by vegetation |
+| independent energy owner | PASS / Ran | component/radiation/stand reconstruction consumes exact final capped operands and ending vegetation identity |
+| cross-owner envelope | PASS / Ran | transaction, model/configuration, beginning state, D/A/F, proposal/receipt, and occupancy-energy identities validate exactly |
+| atomic replacement | PASS / Ran | one complete `DiagnosticOwnedState` is constructed before the non-fallible assignment; no vegetation-only commit route exists |
+| rollback matrix | PASS / Ran | 27 injected phase/owner-validation/malformed-owner failures preserve the complete serialized beginning state byte-for-byte; exact error-origin assertions cover the real envelope branches |
+| focused vegetation | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick`: 223/223 |
+| focused BGC | PASS / Ran | `cargo nextest run -p openwepp-biogeochemistry --profile quick`: 5/5 |
+| focused hillslope | PASS / Ran | `cargo nextest run -p openwepp-hillslope-orchestrator --profile quick`: 494/494, including three known slow routing-oracle tests |
+| implementation contract | PASS / Ran | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 15/15, including the empty-stand zero-demand transaction and corrupted prior-energy rollback |
+| authority/AUTH11 | PASS / Ran | vegetation authority 25/25; AUTH11 3/3 |
+| focused energy owner | PASS / Ran | four component, sign, topology, interval, identity, and poison tests passed |
+| four affected checks/Clippy | PASS / Ran | kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator checks and all-target strict Clippy passed |
+| anti-evasion/admission | FAIL then PASS / Ran | prior 14-surface PASS omitted the changed BGC crate and was rejected by QA; the classifier plus separate exact `SC-BIOGEOCHEM-001` and `SC-VEGETATIONTRANSACTION-001` bindings were added; final rerun returns `A0_ADMITTED contracts=45 science_surfaces=18`, base `cd51fef9583f77973a2f4898864b9fe12b42545a`, authority SHA-256 `a73a905dbb85929561d1c55e442350429518e17705ddcd1ea95d65a71e9f6f0a` |
+| formatting/diff/package Markdown | FAIL then PASS / Ran | formatting and diff hygiene passed; first Markdown invocation used an invalid positional path, corrected to `--path`, then 55 files passed with 0 errors and 0 warnings |
+| final correctness/QA rereviews | GO / PASS | all accepted empty-stand, taxonomy, failure-origin, prior-energy, cross-owner-poison, BGC-admission, and lifecycle findings corrected; no material finding remains |
+| Milestone 5 | **CLOSED focused** | complete V7 multi-owner transaction active in the default-off diagnostic; Milestone 6 and terminal closure remain pending |
+
+## Milestone 5 Campaign-Strength Workspace Gates
+
+The first delegated attempts overlapped review remediation and were invalidated;
+their failures are preserved in this record. The final single-process run used
+`/tmp/openwepp-v7-m5-campaign-final/20260814T051119Z-1786684279326221412`.
+
+| Command | Result | Evidence |
+|---|---|---|
+| `cargo nextest run --workspace --profile full` | PASS / Ran | 2,664/2,664 passed, 35 slow, 33 skipped; 2,299.367 s |
+| `cargo test --doc --workspace` | PASS / Ran | command completed with no failing doctests; 8.116 s |
+| `cargo deny check` | PASS / Ran | exit 0; retained nonblocking unmatched MIT-0 warning; 0.872 s |
+| initial final-tree workspace Clippy | FAIL / Ran | two empty-stand test assertions triggered `clippy::float_cmp`; production bytes and the full behavioral run passed |
+| exact-head `cargo clippy --workspace --all-targets -- -D warnings` retry | PASS / Ran | assertions changed to exact positive-zero bit comparisons; 7.19 s |
+| exact-head implementation contract | PASS / Ran | 15/15 after the assertion-only Clippy correction |
+| `cargo fmt --all -- --check` | PASS / Ran | final exact bytes |
+| `git diff --check` | PASS / Ran | final exact bytes |
+| package Markdown | PASS / Ran | 55 files, 0 errors, 0 warnings |
+
+The full-workspace behavioral run preceded only the assertion-expression
+change from floating equality to an equivalent stronger exact-bit check. No
+production byte changed afterward; workspace Clippy and the affected 15-test
+target were rerun on final exact bytes.
+
+## Milestone 6 Diagnostic Selection Guard
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| default-off public consumer | PASS / Ran | the implementation contract invokes the real `run_default_off_diagnostic_at_phase` four-owner path |
+| production-selector negative proof | PASS / Ran | `v7_diagnostic_has_no_production_selector_or_legacy_pmet_gsi_entry_point` scans every Rust source below `openwepp-runner/src` and hillslope `direct_runtime`; none references either diagnostic entry point, the V7 selector identity, or vegetation candidate execution |
+| protected-path exact diff | PASS / Ran | the exact diff from `cd51fef9583f77973a2f4898864b9fe12b42545a` contains no runner, hillslope `direct_runtime`, or `runtime_inputs.rs` path |
+| implementation contract | PASS / Ran | 16/16 after adding the production-selector negative proof |
+| strict target Clippy | PASS / Ran | `cargo clippy --test c3_vegetation_implementation_contract -- -D warnings` |
+| formatting/diff hygiene | PASS / Ran | `cargo fmt --all`; `git diff --check` |
+
+This evidence proves nonselection only. It does not claim runtime activation,
+production consumer cutover, or replacement of legacy PMET/GSI behavior.
+
+## Milestone 6 Performance Matrix
+
+The delegated comparator used the absolute temporary root
+`/tmp/openwepp-m6-bench-20260813`. Complete logs and metadata are retained in
+`artifacts/m6-benchmark-20260813234912/`.
+
+| Surface | Result | Median | Maximum / first clean |
+|---|---|---:|---:|
+| strict V7 configuration/state parse and hash | PASS / Ran | 0.25 s | 1.0000 |
+| exact two-rank radiation fixture and poisons | FAIL zero-filter, corrected, then PASS / Ran | 0.16 s | 1.0625 |
+| public sealed candidate with real capped energy operands | PASS / Ran | 0.32 s | 1.0625 |
+| upper-cap descendant rerouting | FAIL zero-filter, corrected, then PASS / Ran | 0.19 s | 1.0000 |
+| active water/N and complete rollback matrix | PASS / Ran | 1.13 s | 1.02655 |
+
+The initial runner's command metadata records the invalid exact-filter attempts
+but did not retain separate raw zero-filter logs, and final review proved that
+the parse/default and abundant single-occupancy rows did not exercise their
+claimed surfaces. This entire first matrix is retained as rejected historical
+evidence and does not close Milestone 6.
+
+## Corrected Milestone 6 Performance Matrix
+
+The authoritative run used the unique temporary root
+`/tmp/openwepp-m6-release-m6-benchmark-final-20260814-20260814004247` and is
+retained in `artifacts/m6-benchmark-final-20260814-20260814004247/`. Every
+recorded command is the command actually executed; all warm/sample logs exist;
+and every zero-test guard passed.
+
+| Surface | Result | Median | Maximum / first clean |
+|---|---|---:|---:|
+| strict V7 configuration parse and canonical hash | PASS / Ran | 0.15 s | 1.0000 |
+| strict complete state parse and configuration/state identity | PASS / Ran | 0.16 s | 1.0000 |
+| exact two-rank radiation | PASS / Ran | 0.16 s | 1.0000 |
+| public sealed candidate and independent energy owner | PASS / Ran | 0.32 s | 1.0000 |
+| real two-stratum shared-layer water and NH4/NO3 competition plus rollback | PASS / Ran | 0.45 s | 1.02174 |
+
+The final competition fixture executes the real public/default-off path and
+asserts exactly two partial water authorizations, four partial NH4/NO3
+authorizations, positive bounded finalized uses, exact owner debit/lineage, and
+byte-identical rollback. All five surfaces pass the frozen 2x budget; the worst
+ratio is 1.02174.
+
+## Final Exact-Worktree Authority Guards
+
+| Command | Result | Evidence |
+|---|---|---|
+| science-contract admission against `cd51fef9583f77973a2f4898864b9fe12b42545a` | PASS / Ran | `A0_ADMITTED contracts=45 science_surfaces=21 head=WORKTREE authority_sha256=94b65f16b8a60018e92588d5f662ea99ac1e445c9475602e9dea170aba341507` |
+| authority-suite anti-evasion | PASS / Ran | restored A0 suite and required binding checks remain present |
+| `SC-VEGETATION-001` unit compliance | PASS / Ran | no findings |
+| `SC-BIOGEOCHEM-001` unit compliance | PASS / Ran | no findings |
+
+These are the final post-taxonomy worktree results. They supersede earlier
+surface-count attempts without deleting their historical failure/retry
+evidence.
+
+## Milestone 6 Exact-Head Heavy Closure Campaign
+
+The delegated comparator used
+`/tmp/openwepp-m6-heavy-20260813235114`. Complete environment, command,
+timing, summary, and stdout/stderr evidence is retained in
+`artifacts/m6-heavy-20260813235114/`.
+
+| Command | Result | Exact evidence |
+|---|---|---|
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS / Ran | exit 0; 29.19 s; no warning; no retry |
+| `cargo nextest run --workspace --profile full` | PASS / Ran | 2,670/2,670 passed; 35 slow; 33 skipped; 2,299.92 s; no retry |
+| `cargo test --doc --workspace` | PASS / Ran | exit 0; 8.30 s; all workspace crates reported zero doctests; no retry |
+| `cargo deny check` | PASS / Ran | exit 0; 0.80 s; retained nonfatal unmatched `MIT-0` allowance warning |
+| `cargo fmt --all -- --check` | PASS / Ran | exit 0; 3.19 s; no retry |
+| `git diff --check` | PASS / Ran | exit 0; 0.09 s; no retry |
+
+Hardware: Linux `6.8.0-136-generic`, Intel Xeon E5-2697 v2 at 2.70 GHz,
+`rustc 1.92.0 (ded5c06cf 2025-12-08)`. All six required steps passed on the
+reviewed implementation bytes. This exact-head campaign supersedes the earlier
+2,664-test Milestone 5 campaign while preserving that earlier result and its
+test-only Clippy retry as historical evidence.
+
+Final named gate reruns after the heavy campaign also pass: implementation
+contract 16/16, restored vegetation authority contract 25/25, and AUTH11 3/3.
+
+## Corrected Exact-Head Heavy Campaign
+
+The accepted benchmark-evidence remediation added one real scarce-competition
+integration test and two diagnostic receipt counters, invalidating the earlier
+2,670-test identity. The first complete rerun is retained in
+`artifacts/m6-heavy-final-20260814004723/`; it failed at test 151 because the
+generated TMPDIR exceeded Unix-domain socket `SUN_LEN`. An automatic same-path
+retry was stopped because it could not correct that environmental condition.
+
+The final comparator used the short unique absolute root
+`/tmp/owm6f-lQkG1z` (17 characters). Complete commands, environment, raw
+stdout/stderr, timings, exit codes, and the post-processed accurate summary are
+retained in `artifacts/m6-heavy-short-final-20260814005156/`.
+
+| Command | Result | Exact evidence |
+|---|---|---|
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS / Ran | exit 0; 3.07 s |
+| `cargo nextest run --workspace --profile full` | PASS / Ran | 2,671/2,671 passed; 34 slow; 33 skipped; run ID `471dafdc-4948-436f-8201-63fd4ad7326f`; 2,290.56 s |
+| `cargo test --doc --workspace` | PASS / Ran | exit 0; zero doctests; 8.28 s |
+| `cargo deny check` | PASS / Ran | exit 0; retained nonfatal unmatched-license allowance warning; 0.92 s |
+| `cargo fmt --all -- --check` | PASS / Ran | exit 0; 3.16 s |
+| `git diff --check` | PASS / Ran | exit 0; 0.14 s |
+
+This short-root campaign is the authoritative exact-head Critical result. The
+earlier 2,670-test PASS and long-root failure remain historical evidence and do
+not substitute for it.
+
+Final post-benchmark-remediation authority guards pass: science admission is
+`A0_ADMITTED contracts=45 science_surfaces=21` against
+`cd51fef9583f77973a2f4898864b9fe12b42545a`, with worktree authority SHA-256
+`cf46825756ad8d17ff03b34316379a430199444287cda9363f3590cbf508c68a`;
+authority anti-evasion passes; and both SC-VEGETATION-001 and
+SC-BIOGEOCHEM-001 unit-compliance checks report no finding.
+
+## Terminal Verification And Prompt Archive
+
+| Gate | Result | Exact evidence |
+|---|---|---|
+| independent terminal verifier A | PASS / Ran | `verification_agent_a.md`; SHA-256 `9c59184e47b29237ad641e8091b6c2ca966731ab376c3ff5a2e29b3173cc8b72` |
+| independent terminal verifier B | PASS / Ran | `verification_agent_b.md`; SHA-256 `cee9de03ce7f846feb203998cae74fdc3e54b70dd1aaa684624dcd0dce2dc198` |
+| kickoff prompt archive | PASS / Ran | byte-preserved move to `prompts/archived/`; SHA-256 `e532f3e5c16a5e40bb9e18b5e2d804b1ed6621ce5966fead77f0830536b8399f` |
+
+Both verifiers independently confirmed all seven Review-B corrections, public
+E01--E22 consumption, typed water and mineral-N identity, five independent
+ledgers, all-owner rollback, the real default-off diagnostic, unchanged
+production selectors and legacy behavior, explicit exclusions, complete
+finding disposition, line-count governance, the corrected benchmark, and the
+authoritative 2,671-test heavy campaign. No material finding remains.

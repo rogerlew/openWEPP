@@ -1,13 +1,14 @@
 # Milestone Gate Matrix
 
-Status: `executing / V7 sealed vegetation candidate active; all-owner transaction pending`
+Status: `COMPLETE / Milestones 0--6 and terminal closure passed`
 
 The former Stage-B portability blocker is lifted. The focused E11--E15
 equation/ownership gate passes under V6. The real public water stage now invokes
 the potential and fixed-cap column passes, exposes typed finalized ownership
-operands, and remains structurally uncommittable. Milestone 2/3 closure review
-and broader exact topology vectors remain pending; no Milestone 4/5 claim is
-made.
+operands, and feeds the sealed four-owner default-off transaction. Final
+science/correctness and QA review found no remaining E01--E22, closure,
+ownership, rollback, or selection defect. Milestones 2--5 are closed;
+Milestone 6 heavy and terminal evidence is active.
 
 | Milestone | Direct current-scope gates |
 |---|---|
@@ -41,14 +42,43 @@ correctness and QA reviews pass; and the internal final-column pass proves
 finalized-use identity, rerouting, `F<=A<=D`, diagnostics, and rollback.
 Therefore `STAGE_B_E11_E15_EXACT_ORACLE` is PASS. The public water phase now
 consumes that accepted final pass from original beginning state, authorizes
-once, preserves typed D/A/F identity, independently validates the receiving
-water-owner debit, and publishes no committable vegetation candidate. Formal
-Milestone 2/3 disposition awaits the focused public-integration review and
-remaining multi-rank production vectors.
+once, preserves typed D/A/F identity, and independently validates the receiving
+water-owner debit. The final public-integration review and production vectors
+also pass. Exact two-rank radiation, conditional-area topology,
+interception/rerouting, potential and cap-active solver fixtures, typed D/A/F,
+finalized energy operands, alternate/failure trajectories, and the real
+default-off consumer are invoked by the public candidate path. Final Rust
+correctness returned GO and science/closure QA returned PASS with no material
+finding. Milestones 2 and 3 are closed; this does not authorize production
+selection or consumer cutover.
 
 Increment 4A closes Milestone 4: V7 persistent
 state is constructed with exact ending pools and derived caches, final capped
 occupancy lanes, deterministic material proposals, canonical state identity,
 and independently reconstructed vegetation C/N/DM operands. Final correctness
-and QA reviews returned GO/PASS. BGC mineral/material receiving ownership,
-independent energy ownership, and atomic four-owner commit remain Milestone 5.
+and QA reviews returned GO/PASS. Focused BGC mineral/material and component-
+energy receiving-owner construction now pass. Their sealed cross-owner
+connection and atomic four-owner commit were completed by Milestone 5.
+
+Increment 4B completes the focused receiving-owner construction sub-gate. The
+BGC owner constructs mineral/material receipts from proposals, while the
+orchestrator energy owner independently reconstructs production capped
+component operands and weighted stand closure. This alone did not close
+Milestone 5; the subsequent all-owner envelope and atomic replacement do.
+
+Milestone 5 validates one exact vegetation/water/BGC/energy candidate envelope,
+including D/A/F, proposal/receipt, occupancy-energy, model/configuration,
+beginning-state, and transaction lineage. It commits by one non-fallible
+`DiagnosticOwnedState` replacement. Twenty-seven injected phase, owner-
+validation, and malformed-owner failures preserve the complete serialized
+beginning state. The admitted empty stand passes the same owner envelope with
+zero water/N demand and no storage debit.
+
+Milestone 6 now has the real default-off diagnostic, recursive protected-path
+selector negative proof, exact protected-path diff, fresh GO/PASS reviews, the
+corrected five-surface release benchmark matrix. The first post-remediation
+full run failed because its generated TMPDIR exceeded Unix socket `SUN_LEN`;
+the preserved rerun under `/tmp/owm6f-lQkG1z` passes strict workspace Clippy,
+2,671/2,671 full-profile tests, doctest, dependency policy, formatting, and
+diff hygiene. Dual terminal verification subsequently returned PASS and the
+byte-preserved kickoff prompt is archived.

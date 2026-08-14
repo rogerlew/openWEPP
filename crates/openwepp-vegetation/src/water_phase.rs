@@ -55,7 +55,6 @@ impl WaterOwnerSnapshot {
         >,
     ) -> Result<Self, VegetationError> {
         if beginning_kg_m2_by_layer.is_empty()
-            || authorization_facts.is_empty()
             || beginning_kg_m2_by_layer
                 .values()
                 .any(|value| !value.is_finite() || *value < 0.0)
@@ -247,6 +246,9 @@ pub fn reconstruct_water_ending(
         *debits.entry(key.layer_id).or_default() += amount;
     }
     let mut ending = snapshot.beginning_kg_m2_by_layer.clone();
+    if debits.is_empty() {
+        return Ok(ending);
+    }
     if ending.keys().ne(debits.keys()) {
         return Err(VegetationError::Receipt(
             "finalized water layer identity".into(),
@@ -265,7 +267,8 @@ pub fn reconstruct_water_ending(
 }
 
 /// Complete physical water stage. This type deliberately has no conversion to
-/// [`crate::transaction::CoupledCandidate`] and no commit method.
+/// accepted state and has no commit method. The later sealed vegetation
+/// proposal retains this phase for receiving-owner validation.
 #[derive(Clone, Debug, PartialEq)]
 pub struct UncommittedWaterPhase {
     beginning_state_sha256: String,
@@ -292,6 +295,10 @@ impl UncommittedWaterPhase {
     #[must_use]
     pub fn transaction_id(&self) -> TransactionId {
         self.transaction_id
+    }
+    #[must_use]
+    pub fn interval_s(&self) -> f64 {
+        self.interval_s
     }
     #[must_use]
     pub fn protocol(&self) -> (&[WaterRequest], &[WaterAuthorization], &[WaterUse]) {
@@ -420,7 +427,7 @@ pub fn execute_uncommitted_water_phase_with_failure(
         beginning,
         forcing,
         transaction_id,
-        owner_id,
+        owner_id.clone(),
         &top_rain,
         &potential_evaluator,
     )?;
@@ -429,13 +436,17 @@ pub fn execute_uncommitted_water_phase_with_failure(
     if failure == Some(FailurePoint::WaterAuthorization) {
         return Err(VegetationError::InjectedFailure("water authorization"));
     }
-    let arbitration = water.authorize(&requests)?;
-    validate_arbitration(&requests, &arbitration)?;
+    let arbitration = if requests.is_empty() {
+        water.authorize_zero_demand(transaction_id, &owner_id)?
+    } else {
+        water.authorize(&requests)?
+    };
+    validate_arbitration(transaction_id, &owner_id, &requests, &arbitration)?;
     let validated = ValidatedWaterAuthorizations::try_new(
         &potential.water_requests,
         arbitration.authorizations.clone(),
     )
-    .map_err(|error| VegetationError::Receipt(error.to_string()))?;
+    .map_err(VegetationError::from)?;
     let authorizations = requests
         .iter()
         .map(|request| {
@@ -499,32 +510,30 @@ pub fn execute_uncommitted_water_phase_with_failure(
 }
 
 fn validate_arbitration(
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
     requests: &[WaterRequest],
     arbitration: &WaterArbitration,
 ) -> Result<(), VegetationError> {
-    let owner_id = requests
-        .first()
-        .map(|request| &request.owner_id)
-        .ok_or_else(|| VegetationError::Receipt("empty V6 water arbitration".into()))?;
-    let transaction_id = requests[0].transaction_id;
     let layers = requests
         .iter()
         .map(|request| request.key.layer_id.clone())
         .collect::<BTreeSet<_>>();
     if arbitration.snapshot.transaction_id != transaction_id
         || &arbitration.snapshot.owner_id != owner_id
-        || arbitration
-            .snapshot
-            .beginning_kg_m2_by_layer
-            .keys()
-            .cloned()
-            .collect::<BTreeSet<_>>()
-            != layers
+        || (!requests.is_empty()
+            && arbitration
+                .snapshot
+                .beginning_kg_m2_by_layer
+                .keys()
+                .cloned()
+                .collect::<BTreeSet<_>>()
+                != layers)
         || arbitration.reasons != arbitration.snapshot.authorization_facts
         || arbitration.authorizations.len() != requests.len()
         || arbitration.reasons.len() != requests.len()
     {
-        return Err(VegetationError::Receipt(
+        return Err(VegetationError::ResourceIdentity(
             "V6 immutable water snapshot identity".into(),
         ));
     }
@@ -535,10 +544,10 @@ fn validate_arbitration(
     let mut authorized_by_layer = BTreeMap::<SoilLayerId, f64>::new();
     for authorization in &arbitration.authorizations {
         let request = requests_by_key.get(&authorization.key).ok_or_else(|| {
-            VegetationError::Receipt("V6 water arbitration request identity".into())
+            VegetationError::ResourceIdentity("V6 water arbitration request identity".into())
         })?;
         let reason = arbitration.reasons.get(&authorization.key).ok_or_else(|| {
-            VegetationError::Receipt("V6 water authorization reason missing".into())
+            VegetationError::ResourceIdentity("V6 water authorization reason missing".into())
         })?;
         let valid_reason = match reason {
             WaterAuthorizationReason::ZeroDemand => {
@@ -566,7 +575,7 @@ fn validate_arbitration(
             }
         };
         if !valid_reason {
-            return Err(VegetationError::Receipt(
+            return Err(VegetationError::ResourceIdentity(
                 "V6 water authorization reason mismatch".into(),
             ));
         }
@@ -578,7 +587,7 @@ fn validate_arbitration(
         !authorized.is_finite()
             || *authorized > arbitration.snapshot.beginning_kg_m2_by_layer[layer]
     }) {
-        return Err(VegetationError::Receipt(
+        return Err(VegetationError::ResourceBound(
             "V6 water snapshot overbooking".into(),
         ));
     }
@@ -598,16 +607,15 @@ fn validate_water_owner_candidate(
         || candidate.transaction_id != transaction_id
         || candidate.finalized_uses != finalized_uses
     {
-        return Err(VegetationError::Receipt(
+        return Err(VegetationError::ResourceIdentity(
             "V6 water-owner candidate protocol identity".into(),
         ));
     }
     let owner_id = requests
         .first()
-        .map(|request| &request.owner_id)
-        .ok_or_else(|| VegetationError::Receipt("empty V6 water protocol".into()))?;
+        .map_or(&arbitration.snapshot.owner_id, |request| &request.owner_id);
     if &candidate.owner_id != owner_id {
-        return Err(VegetationError::Receipt(
+        return Err(VegetationError::ResourceIdentity(
             "V6 water-owner candidate owner identity".into(),
         ));
     }
@@ -618,9 +626,9 @@ fn validate_water_owner_candidate(
         requests.iter().zip(authorizations).zip(finalized_uses)
     {
         validate_resource_protocol(request, authorization, finalized)
-            .map_err(|error| VegetationError::Receipt(format!("{error:?}")))?;
+            .map_err(VegetationError::from)?;
         if !keys.insert(request.key.clone()) {
-            return Err(VegetationError::Receipt(
+            return Err(VegetationError::ResourceIdentity(
                 "duplicate V6 finalized water identity".into(),
             ));
         }
@@ -635,7 +643,7 @@ fn validate_water_owner_candidate(
             .keys()
             .ne(expected_ending.keys())
     {
-        return Err(VegetationError::Receipt(
+        return Err(VegetationError::ResourceIdentity(
             "V6 water-owner candidate layer identity".into(),
         ));
     }
@@ -645,12 +653,16 @@ fn validate_water_owner_candidate(
             || beginning < 0.0
             || !ending.is_finite()
             || ending < 0.0
-            || maximum_authorizations[&layer_id] > beginning
+            || maximum_authorizations
+                .get(&layer_id)
+                .copied()
+                .unwrap_or(0.0)
+                > beginning
             || candidate.snapshot.beginning_kg_m2_by_layer[&layer_id].to_bits()
                 != beginning.to_bits()
             || candidate.ending_kg_m2_by_layer[&layer_id].to_bits() != ending.to_bits()
         {
-            return Err(VegetationError::Receipt(
+            return Err(VegetationError::ResourceBound(
                 "V6 independently reconstructed water-owner debit".into(),
             ));
         }
@@ -970,7 +982,7 @@ mod tests {
                 &forcing(),
                 &owner,
             ),
-            Err(VegetationError::Receipt(_))
+            Err(VegetationError::ResourceBound(_))
         ));
         assert_eq!(serde_json::to_vec(&beginning).expect("after bytes"), bytes);
     }
@@ -1043,7 +1055,8 @@ mod tests {
         let arbitration =
             WaterArbitration::try_new(snapshot.clone(), authorizations.clone(), reasons.clone())
                 .expect("arbitration");
-        validate_arbitration(&requests, &arbitration).expect("reason and snapshot bound");
+        validate_arbitration(transaction_id, &owner_id, &requests, &arbitration)
+            .expect("reason and snapshot bound");
         let ending = reconstruct_water_ending(&snapshot, &uses).expect("canonical shared debit");
         assert_eq!(
             ending[&layer_id].to_bits(),
@@ -1093,7 +1106,7 @@ mod tests {
 
         let stale_snapshot = WaterOwnerSnapshot::try_new(
             transaction_id,
-            owner_id,
+            owner_id.clone(),
             BTreeMap::from([(layer_id, 2.0)]),
             reasons.clone(),
         )
@@ -1121,9 +1134,9 @@ mod tests {
         let mut wrong_reason = arbitration.clone();
         *wrong_reason.reasons.get_mut(&keys[0]).expect("reason") =
             WaterAuthorizationReason::FrozenExclusion;
-        assert!(validate_arbitration(&requests, &wrong_reason).is_err());
+        assert!(validate_arbitration(transaction_id, &owner_id, &requests, &wrong_reason).is_err());
         *wrong_reason.reasons.get_mut(&keys[0]).expect("reason") =
             WaterAuthorizationReason::RootingExclusion;
-        assert!(validate_arbitration(&requests, &wrong_reason).is_err());
+        assert!(validate_arbitration(transaction_id, &owner_id, &requests, &wrong_reason).is_err());
     }
 }

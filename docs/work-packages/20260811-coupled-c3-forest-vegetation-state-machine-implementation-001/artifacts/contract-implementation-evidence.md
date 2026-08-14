@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: `executing / V5 capped contract authority bound; implementation active`
+Status: `PASS / OPENWEPP_C3_WOODY_V7 implemented / default-off diagnostic only`
 
 Increment 2B adds only a non-constitutive typed water request/authorization
 boundary. No radiation or potential solver output was retained; the exact
@@ -85,3 +85,13 @@ nitrogen, and dry-material operands are reconstructed by a module outside the
 constitutive producers. This binds `INV-VEGETATION-030/031/068/069/070` at the
 vegetation-owner boundary only; the independent BGC receipt, energy owner, and
 atomic owner-set commit remain implementation obligations.
+
+## Terminal V7 Implementation Evidence
+
+The preceding Increment 4A obligation statement is historical. Increment 4B
+and Milestone 5 now construct independent BGC material/mineral receipts and the
+component-level energy owner, validate the retained water owner, seal the exact
+four-owner envelope, and commit by one non-fallible whole-state replacement.
+The public V7 candidate invokes E01--E22; 27 phase/malformed-owner failures and
+the scarce two-stratum competition fixture prove byte-identical rollback. Final
+Rust correctness is GO and science/closure QA is PASS.

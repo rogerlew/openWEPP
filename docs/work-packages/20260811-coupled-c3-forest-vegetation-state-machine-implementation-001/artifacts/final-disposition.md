@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / Milestone 4 closed / Increment 4B receiving owners active / public path fail-closed`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V7 science implementation complete / default-off diagnostic only`
 
 Evidence mode: `Static + Ran`
 
@@ -51,8 +51,9 @@ conclusion was rejected on continuation: canonical E19 finalization already
 bounds final external use by authorization and contains no
 `Ndem_final<=Ndem_pot` invariant. Remediation removes the implementation-only
 ordering guard without tolerance, clamp, request inflation, or model-version
-change. This is an in-progress placeholder; the public multi-owner candidate
-and commit remain fail-closed.
+change. At that historical E19 checkpoint the public multi-owner candidate and
+commit remained fail-closed; Milestone 5 subsequently connected them in the
+default-off diagnostic.
 
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 
@@ -63,19 +64,29 @@ mineral-N request, one authorization, finalized use, and receipt-bound growth
 composition are implemented as an uncommitted candidate. The exact two-ULP
 fixture and the separate one-ULP aggregate-`Nused` regression pass without a
 tolerance, clamp, request inflation, or second authorization. Fresh Rust
-correctness review is GO and fresh QA review is PASS. This does not complete
-the package: BGC and energy owner candidates, independent all-owner ledgers,
-atomic commit, public E01--E22 completion, heavy gates, terminal verification,
-prompt archival, runtime activation, and calibration remain pending.
+correctness review is GO and fresh QA review is PASS. The BGC owner candidate
+also passes focused construction, mineral-debit, and independent-receipt tests.
+The component-level energy owner independently reconstructs the actual capped
+full-water fixture and rejects identity, basis, sign, ownership, and finalized-
+water poisons. All receiving-owner constructors are therefore available at
+focused scope. Their sealed cross-owner connection now validates one complete
+vegetation/water/BGC/energy envelope and commits by one non-fallible whole-
+state replacement; 27 phase and malformed-owner failures preserve exact
+beginning bytes. This
+closes Milestone 5 but does not complete the package: Milestone 6 diagnostic
+closure, fresh final reviews, heavy gates,
+terminal verification, prompt archival, runtime activation, and calibration
+remain pending.
 
-Increment 4A now additionally constructs a crate-private, sealed vegetation
+Increment 4A now additionally constructs a sealed vegetation
 owner candidate. It consumes only final capped occupancy states, advances exact
 transaction lineage, recomputes leaf/stem/root caches from ending displayed
 leaf C, binds deterministic positive material proposal identities, computes a
 new canonical V7 state digest, and independently reconstructs vegetation
-carbon, nitrogen, and dry-material obligations. The type has no commit method;
-`execute_candidate()` still returns the typed post-nitrogen multi-owner
-implementation-incomplete failure after constructing and validating it.
+carbon, nitrogen, and dry-material obligations. The type has no commit method.
+`execute_candidate()` returns this validated uncommitted candidate for
+consumption by the complete default-off owner envelope; vegetation cannot
+commit independently.
 
 The scoped V3 shared-C/N state HOLD is lifted by `SC-VEGETATION-001` v8 and
 `OPENWEPP_C3_WOODY_V4` digest
@@ -106,8 +117,66 @@ rejected capped hydraulic `backtracking_limit.step_norm`. Accepted solver
 behavior and all physical/numerical authority remain unchanged. V6 runtime
 identity, complete snapshot/diagnostic migration, and the formerly blocked
 Stage-B rejected-failure vector now pass focused gates and final bounded Rust
-correctness/QA review. Finalized-use owner closure, all-owner rollback, public
-E01--E22 candidate, Milestones 2/3, broad
-implementation gates, terminal verification, and prompt archive are not yet
-complete. `execute_candidate()` remains fail-closed and publishes no candidate
-or finalized use.
+correctness/QA review. Subsequent V7 work now publishes only a sealed
+uncommitted candidate, connects finalized-use owner closure, and proves
+all-owner rollback in the default-off diagnostic. Broad implementation gates,
+Milestone 6, terminal verification, and prompt archive were not yet complete at
+that checkpoint; the current terminal-candidate result follows.
+
+## Terminal Closure Candidate
+
+`science_implementation_status=IMPLEMENTED`
+
+The current exact implementation executes every E01--E22 family through the
+real public candidate path and the default-off diagnostic. It preserves typed
+water and mineral-N identity through request, authorization, finalized use,
+owner debit, and receipt; independently reconstructs water, energy, carbon,
+nitrogen, and dry material; validates one complete vegetation/water/BGC/energy
+owner envelope; and commits by one non-fallible whole-state replacement.
+Twenty-seven phase, owner-validation, and malformed-envelope failures preserve
+the complete beginning state byte-for-byte.
+
+Final focused correctness is GO and science/closure QA is PASS. The release
+benchmark matrix passes all five surfaces with a worst observed
+sample-to-first ratio of 1.02174 against the frozen 2x budget. The first
+post-remediation full run failed because its generated temporary path exceeded
+Unix socket `SUN_LEN`; that environmental failure remains preserved. The full
+rerun under `/tmp/owm6f-lQkG1z` passes strict workspace Clippy, 2,671/2,671
+full-profile tests, workspace doctest invocation, dependency policy,
+formatting, and diff hygiene. Final named gates pass implementation, restored
+A0 authority, and AUTH11. Exact admission covers 45 contracts and 21 science
+surfaces; anti-evasion and both affected science-contract unit checks pass.
+
+The diagnostic remains default-off. Production runtime selectors and legacy
+PMET/GSI-final-canopy behavior are unchanged. This package claims no runtime
+activation, real production-consumer cutover, calibration, empirical
+validation, transferability, canopy snow, nonneutral/calm aerodynamics, or soil
+biogeochemical transformations.
+
+The remaining lifecycle actions are dual terminal verification and the
+verifier-authorized byte-for-byte move of the kickoff prompt from
+`prompts/active/` to `prompts/archived/`. Until these pass, this is a terminal
+candidate rather than the final `COMPLETE` disposition.
+
+## Terminal Disposition
+
+The preceding terminal-candidate statement is historical. Independent terminal
+verifiers A and B both returned PASS on the exact implementation bytes and
+authorized only the byte-preserving kickoff-prompt archive plus truthful
+terminal metadata. Their reports have SHA-256 values
+`9c59184e47b29237ad641e8091b6c2ca966731ab376c3ff5a2e29b3173cc8b72`
+and
+`cee9de03ce7f846feb203998cae74fdc3e54b70dd1aaa684624dcd0dce2dc198`.
+The kickoff prompt moved from `prompts/active/` to `prompts/archived/` without
+byte change; its SHA-256 remains
+`e532f3e5c16a5e40bb9e18b5e2d804b1ed6621ce5966fead77f0830536b8399f`.
+
+`science_implementation_status=IMPLEMENTED`
+
+`calibration_evidence_status=NOT_CALIBRATION_READY`
+
+`identifiability_status=NOT_ASSESSED`
+
+No runtime activation, production-consumer cutover, calibration, empirical
+validation, transferability, canopy snow, nonneutral/calm aerodynamic branch,
+or soil biogeochemical transformation is claimed.

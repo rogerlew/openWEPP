@@ -1,0 +1,11 @@
+warning[license-not-encountered]: license was not encountered
+   ┌─ /home/workdir/openWEPP/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+
+time_real_seconds=0.80
+time_user_seconds=0.95
+time_sys_seconds=0.49
+max_rss_kb=86364
+

@@ -2,6 +2,7 @@
 
 pub mod runtime_inputs;
 pub mod vegetation_diagnostic;
+pub mod vegetation_energy_owner;
 
 mod constants;
 mod direct_runtime;

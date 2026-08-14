@@ -7,6 +7,7 @@ pub mod column;
 pub mod config;
 pub mod diagnostics;
 pub mod energy;
+pub mod energy_proposal;
 pub mod error;
 pub mod hydraulics;
 pub mod interception;

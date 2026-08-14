@@ -1,6 +1,6 @@
 # Line-Count Governance
 
-Status: `WARN / V5 remediation in progress; no 3,000-line blocker`
+Status: `WARN / Milestone 5 focused-closed; retained files remain below 3,000-line blocker`
 
 ## 2026-08-13 V7 Focused Recount
 
@@ -175,3 +175,55 @@ Increment 4B BGC slice recount after formatting:
 |---|---:|---|
 | `crates/openwepp-biogeochemistry/src/lib.rs` | 672 | PASS; owner construction and focused tests remain below WARN threshold |
 | `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` | 378 | PASS; default-off adapter only |
+
+Increment 4B energy-owner recount after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_energy_owner.rs` | 968 | PASS; independent component owner and focused poison fixtures remain isolated from vegetation production equations |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` | 366 | PASS; aggregate energy reconstruction removed |
+| `crates/openwepp-vegetation/src/energy_proposal.rs` | 172 | PASS; immutable identity/boundary batch only |
+| `crates/openwepp-vegetation/src/occupancy_solver/evaluator.rs` | 1,409 | PASS; bounded proposal projection added to the existing constitutive adapter |
+| `crates/openwepp-vegetation/src/transaction.rs` | 2,168 | WARN retained; module-local transaction test extraction remains a terminal-closure obligation |
+| `tests/integration/c3_vegetation_implementation_contract.rs` | 784 | PASS |
+
+No changed non-generated Rust file reaches the mandatory 3,000-line split
+threshold. The energy owner is already isolated in its own module; its focused
+fixtures may be extracted during terminal cleanup if subsequent owner-envelope
+work would push the production module past the warning threshold.
+
+## 2026-08-13 Milestone 5 Recount
+
+Ran after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-vegetation/src/transaction.rs` | 2,082 | WARN retained; module-local transaction test extraction remains required before terminal closure |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_energy_owner.rs` | 1,232 | PASS; independent owner and poison tests remain isolated |
+| `crates/openwepp-vegetation/src/vegetation_candidate.rs` | 568 | PASS |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` | 503 | PASS; complete owner envelope, typed mismatch poisons, and atomic replacement |
+| `crates/openwepp-vegetation/src/energy_proposal.rs` | 185 | PASS |
+
+No changed non-generated Rust file reaches the mandatory 3,000-line split
+threshold. The retained transaction and carbon/nitrogen WARN obligations remain
+terminal cleanup work; they do not block this focused Milestone 5 closure.
+
+## 2026-08-13 Milestone 6 Exact Recount
+
+Ran after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-vegetation/src/migration.rs` | 2,873 | WARN; versioned migration responsibilities remain explicit and below the mandatory 3,000-line threshold |
+| `crates/openwepp-vegetation/src/occupancy_solver/constitutive.rs` | 2,790 | WARN; exact solver and its authority-vector tests remain cohesive and below the mandatory threshold |
+| `crates/openwepp-vegetation/src/carbon_nitrogen.rs` | 2,214 | WARN; exact six-tissue kernels and tests remain cohesive and below the mandatory threshold |
+| `crates/openwepp-vegetation/src/transaction.rs` | 2,082 | WARN; production code ends before the module-local identity/state test population; below the mandatory threshold |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_energy_owner.rs` | 1,232 | PASS |
+| `crates/openwepp-hillslope-orchestrator/src/vegetation_diagnostic.rs` | 503 | PASS |
+| `tests/integration/c3_vegetation_implementation_contract.rs` | 1,216 | PASS |
+| `crates/openwepp-biogeochemistry/src/lib.rs` | 827 | PASS |
+
+No changed non-generated Rust file reaches 3,000 lines. The WARN modules are
+accepted test-heavy cohesion debt rather than closure blockers; no public API,
+numerical ordering, or canonical serialization is changed solely to reduce
+line count at stable terminal bytes.

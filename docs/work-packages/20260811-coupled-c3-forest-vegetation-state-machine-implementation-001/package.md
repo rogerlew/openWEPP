@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / Milestone 4 closed / Increment 4B receiving owners active`
+Status: `COMPLETE / OPENWEPP_C3_WOODY_V7 science implementation complete / default-off diagnostic only`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -448,18 +448,23 @@ closure, and line-count governance, not artifact presence alone.
   the released V5 fixed-authorization authority at commit `b7e6f08b6`.
   Definition, vectors, generator, dual science reviews, focused/heavy gates,
   and dual terminal verification are frozen and passing.
-- [ ] Implement and independently review the exact V6-bound capped second pass,
+- [x] Implement and independently review the exact V6-bound capped second pass,
   including V5-to-V6 identity rebinding, fixed authorization conversion,
   equality-active complementarity, generalized-Jacobian branches, typed
   diagnostics, finalized-use debit, and rollback. The bounded core is
   checkpointed. The former portability HOLD remains historical evidence in
   `artifacts/v5-failure-payload-portability-hold-legitimacy-audit.md`; V6
   authority commit `b326173e2` lifted it. Runtime identity, complete snapshot
-  migration, and the exact failure comparator pass focused gates. Final bounded
-  Rust correctness review returned GO and QA returned PASS with no material
-  finding. The public path remains fail-closed.
-- [ ] Execute Milestone 2: radiation, topology, and interception.
-- [ ] Execute Milestone 3: gas exchange, energy, and hydraulics.
+  migration, the exact failure comparator, fixed-cap public rerouting, and
+  final owner operands pass focused gates. Final Rust correctness review
+  returned GO and QA returned PASS with no material finding.
+- [x] Execute Milestone 2: radiation, topology, and interception. Exact
+  whole-column radiation, conditional area, interception, descendant routing,
+  local/column/stand closure, and public-path identity vectors pass final
+  review.
+- [x] Execute Milestone 3: gas exchange, energy, and hydraulics. Potential and
+  fixed-cap E07--E15 solves, exact Stage-B oracle/failure vectors, typed D/A/F,
+  final energy operands, and rollback pass final review.
 - [x] Execute Milestone 4: persistent C/N and phenology.
   V7 executable identity and strict V6-to-V7 migration are implemented. The
   pure storage-to-transfer preparation and all-six-tissue onset deployment pass
@@ -467,17 +472,31 @@ closure, and line-count governance, not artifact presence alone.
   accepted-shape vegetation state construction, deterministic material
   proposal binding, and independent vegetation C/N/dry-material ledgers now
   pass as a sealed uncommitted candidate. Final independent correctness and QA
-  reviews returned GO/PASS. BGC/energy receiving candidates and all-owner
-  commit remain Milestone 5 work.
-- [ ] Execute Milestone 5: whole transaction and atomic commit.
-  Increment 4B is active. The BGC owner now constructs its own exact material
+  reviews returned GO/PASS. Focused BGC and component-energy receiving-owner
+  candidates pass and are connected by the completed Milestone 5 envelope.
+- [x] Execute Milestone 5: whole transaction and atomic commit.
+  Increment 4B is complete. The BGC owner constructs its own exact material
   receipts, mineral debit, ending state, and independent mineral/C/N/dry-
   material receiver operands from vegetation proposals and finalized N use.
-  The independent energy owner and connection to the sealed V7 transaction
-  remain pending; no commit is available.
-- [ ] Execute Milestone 6: diagnostic consumer and Critical closure.
-- [ ] Complete dual reviews, finding disposition, dual terminal verification,
-  prompt archival, and truthful final disposition.
+  The independent energy owner reconstructs production capped component
+  operands and weighted stand closure. The default-off diagnostic seals all
+  four owner candidates, validates exact shared identity/protocol/receipt
+  lineage, and commits by one non-fallible whole-state replacement. Twenty-seven
+  injected phase and malformed-owner failures preserve every beginning owner
+  byte. The canonical empty stand executes as an exact zero-demand transaction.
+  No vegetation-
+  only commit route remains.
+- [x] Execute Milestone 6: diagnostic consumer and Critical closure. The real
+  default-off four-owner diagnostic, production-selector negative proof,
+  exact protected-path diff, final GO/PASS reviews, five-surface release
+  corrected benchmark matrix passes. The first post-remediation full run failed
+  because its generated TMPDIR exceeded Unix socket `SUN_LEN`; that failure is
+  preserved. The complete rerun under `/tmp/owm6f-lQkG1z` passes workspace
+  strict Clippy, 2,671/2,671 full-profile tests, doctest, dependency policy,
+  formatting, and diff hygiene.
+- [x] Complete dual reviews, finding disposition, dual terminal verification,
+  prompt archival, and truthful final disposition. Both exact-byte terminal
+  verifiers returned PASS and authorized the byte-preserving prompt archive.
 
 ## Surprises & Discoveries
 

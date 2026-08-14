@@ -1,0 +1,27 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.64s
+   Doc-tests openwepp
+   Doc-tests openwepp_assurance
+   Doc-tests openwepp_biogeochemistry
+   Doc-tests openwepp_climate_runtime_adapter
+   Doc-tests openwepp_comparator_metadata
+   Doc-tests openwepp_hillslope_orchestrator
+   Doc-tests openwepp_hillslope_output
+   Doc-tests openwepp_input_contract
+   Doc-tests openwepp_kernel_contract
+   Doc-tests openwepp_landuse_migrate
+   Doc-tests openwepp_legacy_bridge
+   Doc-tests openwepp_management_schema
+   Doc-tests openwepp_meteorology
+   Doc-tests openwepp_plant_phenology
+   Doc-tests openwepp_runner
+   Doc-tests openwepp_sim_contract
+   Doc-tests openwepp_summary_accumulator
+   Doc-tests openwepp_topology
+   Doc-tests openwepp_unit_boundary
+   Doc-tests openwepp_vegetation
+   Doc-tests openwepp_watershed_orchestrator
+   Doc-tests openwepp_watershed_output
+time_real_seconds=8.28
+time_user_seconds=5.45
+time_sys_seconds=2.43
+max_rss_kb=244224

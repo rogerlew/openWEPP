@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / Milestone 4 closed / Increment 4B receiving owners active / public candidate fail-closed`
+Status: `executing / Milestones 2--5 closed / Milestone 6 terminal gates active`
 
 ## V7 Storage-Transfer Phenology Increment
 
@@ -215,5 +215,109 @@ Ran: BGC quick passed 5/5; hillslope-orchestrator quick passed 490/490; strict
 all-target BGC and hillslope Clippy and affected checks passed. Poisons cover
 duplicate proposal identity, wrong-species finalized use, missing receiver,
 unsupported transformations, and authorization distinct from finalized debit.
-The independent energy owner and sealed V7 cross-owner connection remain
-pending, so Increment 4B and Milestone 5 are not closed.
+## Increment 4B Component-Level Energy Owner
+
+Static + Ran: the final capped evaluator now retains immutable component
+operands rather than a residual: exact transaction/occupancy/tile identity,
+interval and tile fraction, four-band/component shortwave ownership, surface
+geometry and accepted temperatures, conductances, atmospheric forcing, signed
+wet phase change, class transpiration, and finalized layer withdrawals.
+`construct_energy_proposal_batch` binds these records to V7 model,
+configuration, beginning-state, transaction, and interval identities and
+retains one whole-column radiation boundary per tile.
+
+Static + Ran: `vegetation_energy_owner` is outside the vegetation producer. It
+independently reconstructs sun-leaf, shade-leaf, wet-surface, dry-stem,
+canopy-air sensible, canopy-air vapor, finalized-water, spectral-radiation,
+and weighted-stand energy closure. It weights tile-ground operands exactly
+once after local closure and admits zero canopy heat storage only through the
+typed `EquilibriumZero` branch. The prior aggregate diagnostic reconstruction,
+literal unexplained zero, and producer aggregate DTO were removed.
+
+Ran: the actual V7 full-water fixture constructs production capped energy
+operands and the independent energy candidate successfully. Component tests
+reject missing/doubled tile weighting, wrong tile, omitted or substituted stem
+energy, direct/diffuse and VIS/NIR aliases, authorization-as-use, wet-flux sign,
+and interval identity. Vegetation quick passed 223/223 and hillslope-
+orchestrator quick passed 492/492; both affected strict Clippy gates pass.
+
+All receiving-owner candidate constructors are now available at focused scope.
+The subsequent Milestone 5 increment connects them under one sealed owner
+envelope and one four-owner atomic commit.
+
+## Milestone 5 Four-Owner Transaction
+
+Static + Ran: `execute_candidate()` now returns the validated sealed vegetation
+candidate, which has no commit method. The diagnostic reuses the water arbiter's
+exact `WaterOwnerCandidate`; constructs BGC and energy candidates independently;
+and validates one `UncommittedCoupledTransaction`. That envelope checks exact
+transaction, model/configuration, beginning-state, water D/A/F, nitrogen D/A/F,
+material proposal/receipt, and occupancy-energy identity.
+
+Static + Ran: after all four owner validations, the diagnostic constructs one
+complete ending `DiagnosticOwnedState`. No fallible operation occurs below the
+single assignment. The integration rollback matrix injects 27 failures across
+the real public phases, receiving-owner construction, ledger/receipt checks,
+each owner validation, cross-owner validation, and the precommit boundary; each
+failure preserves the serialized complete beginning state byte-for-byte.
+
+Ran: vegetation quick passed 223/223; biogeochemistry quick passed 5/5;
+implementation contract passed 15/15; focused energy-owner tests passed 4/4;
+and strict all-target Clippy passed for vegetation, biogeochemistry, and the
+hillslope orchestrator. Final focused review and campaign-strength comparator
+results are recorded separately when complete.
+
+Post-HOLD remediation adds the admitted empty-stand zero-demand transaction,
+typed `VEGTXN-E-007` owner-envelope failures, exact prior-energy-ledger
+validation, and malformed-but-constructible water, nitrogen, energy,
+transaction, beginning-state, and material-receipt poisons. The BGC crate is
+now explicitly classified and bound to `SC-VEGETATIONTRANSACTION-001` by the
+science-admission policy.
+
+Delegated campaign validation passed 2,664/2,664 full-workspace tests, workspace
+doctests, dependency policy, formatting, and diff hygiene. The first final-tree
+workspace Clippy run rejected two test-only floating equality assertions; they
+were replaced by exact positive-zero bit checks, after which exact-head
+workspace Clippy and the 15/15 implementation contract passed. No production
+byte changed after the full behavioral run.
+
+## Milestone 6 Default-Off Selection Evidence
+
+Static + Ran: the real four-owner diagnostic remains a public, explicit
+diagnostic call rather than a runtime selector branch. A source-level negative
+test walks the complete production runner and hillslope direct-runtime Rust
+trees and rejects either diagnostic entry point, the V7 selector identity, or
+direct vegetation candidate execution. The test passed as part of the 16/16
+implementation-contract target. An exact protected-path diff from
+`cd51fef9583f77973a2f4898864b9fe12b42545a` is empty, so the legacy PMET/GSI
+runtime bytes were not edited by this increment.
+## Milestone 6 Benchmark Evidence
+
+Ran: independent review rejected the first matrix because its source-only
+default test did not parse/hash V7 state and its abundant one-occupancy
+diagnostic could not activate same-supply competition. The corrected matrix
+uses real strict configuration and complete state parse/hash tests, the exact
+two-rank radiation vector, the sealed public candidate, and a real two-stratum
+scarce diagnostic with active shared-layer water plus NH4/NO3 competition and
+rollback. Five samples after one warm run yield medians of 0.15, 0.16, 0.16,
+0.32, and 0.45 seconds respectively; the worst ratio is 1.02174 against the 2x
+budget. Exact commands, all logs/timings, zero-test guards, metadata, and
+summary are retained under
+`artifacts/m6-benchmark-final-20260814-20260814004247/`. The rejected first run
+remains visible and supplies no closure claim.
+
+## Milestone 6 Exact-Head Critical Gates
+
+Ran: the delegated final campaign passed workspace strict Clippy, 2,670/2,670
+full-profile tests, workspace doctest invocation, dependency policy, formatting,
+and diff hygiene without a retry. The only diagnostic was the retained
+nonfatal `cargo deny` warning for an unmatched `MIT-0` allowance. Environment,
+commands, logs, timings, and summary are retained in
+`artifacts/m6-heavy-20260813235114/`.
+
+Post-review benchmark remediation changed the diagnostic/test bytes. The first
+fresh full run failed only because its generated temporary path exceeded Unix
+socket `SUN_LEN`; the failure is preserved. The authoritative rerun used
+`/tmp/owm6f-lQkG1z` and passed strict workspace Clippy, 2,671/2,671 full tests,
+doctest invocation, dependency policy, formatting, and diff hygiene. Complete
+evidence is retained in `artifacts/m6-heavy-short-final-20260814005156/`.

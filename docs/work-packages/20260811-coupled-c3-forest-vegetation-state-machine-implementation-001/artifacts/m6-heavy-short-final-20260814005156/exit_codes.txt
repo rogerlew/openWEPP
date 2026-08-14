@@ -1,0 +1,6 @@
+clippy_step=0
+nextest_full=0
+doc_tests=0
+deny_check=0
+fmt_check=0
+diff_check=0

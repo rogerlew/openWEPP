@@ -164,8 +164,8 @@ for contract_id in input_ids:
     checked += 1
 
 science_tokens = (
-    "climate", "hillslope", "input-contract", "kernel", "landuse", "legacy",
-    "management", "meteorology", "phenology", "runner", "sim-contract",
+    "biogeochemistry", "climate", "hillslope", "input-contract", "kernel", "landuse", "legacy",
+    "management", "meteorology", "phenology", "runner", "sim-contract", "vegetation",
     "summary", "topology", "unit-boundary", "watershed",
 )
 impact = json.loads(Path("tools/release/authority-policy/impact-map.json").read_text())

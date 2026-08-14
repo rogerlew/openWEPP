@@ -15,6 +15,7 @@ use crate::config::{StratumConfiguration, VegetationConfiguration};
 use crate::diagnostics::{CappedNumericalOperands, CoupledSolvePass, NormalizedResidual};
 use crate::interception::InterceptionResult;
 use crate::occupancy_state::OccupancyState;
+use crate::radiation::{IncidentComponent, RadiationBand};
 use crate::transaction::{CoupledOwnedState, SnowFreeForcing, StratumSharedState};
 
 /// One validated topology column in deterministic top-to-bottom order.
@@ -93,6 +94,10 @@ pub struct OccupancyPassResult {
     /// Exact accepted FvCB/Rd operands. Controlled routing solvers leave this
     /// absent; production potential and capped evaluators must populate it.
     pub carbon_operands: Option<OccupancyCarbonOperands>,
+    /// Immutable solved physical operands for independent energy ownership.
+    /// Controlled routing solvers leave this absent; production evaluators
+    /// populate it for both potential and capped passes.
+    pub energy_proposal: Option<OccupancyEnergyProposal>,
     pub diagnostics: OccupancyDiagnostics,
 }
 
@@ -107,6 +112,62 @@ pub struct OccupancyCarbonOperands {
     pub shade_gross_assimilation_umol_co2_m2_leaf_s: f64,
     pub sun_dark_respiration_umol_co2_m2_leaf_s: f64,
     pub shade_dark_respiration_umol_co2_m2_leaf_s: f64,
+}
+
+/// Final solved occupancy energy operands without a producer residual.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OccupancyEnergyProposal {
+    pub transaction_id: TransactionId,
+    pub occupancy_id: OccupancyId,
+    pub tile_fraction: f64,
+    pub interval_s: f64,
+    pub sun_leaf_absorbed_shortwave_w_m2_tile: f64,
+    pub shade_leaf_absorbed_shortwave_w_m2_tile: f64,
+    pub wet_surface_absorbed_shortwave_w_m2_tile: f64,
+    pub dry_stem_absorbed_shortwave_w_m2_tile: f64,
+    pub spectral_absorption: Vec<SpectralEnergyAbsorption>,
+    pub dry_sun_leaf_area_m2_m2_tile: f64,
+    pub dry_shade_leaf_area_m2_m2_tile: f64,
+    pub wet_leaf_area_m2_m2_tile: f64,
+    pub wet_stem_area_m2_m2_tile: f64,
+    pub dry_stem_area_m2_m2_tile: f64,
+    pub sun_leaf_temperature_k: f64,
+    pub shade_leaf_temperature_k: f64,
+    pub wet_surface_temperature_k: f64,
+    pub dry_stem_temperature_k: f64,
+    pub canopy_air_temperature_k: f64,
+    pub canopy_air_specific_humidity_kg_kg: f64,
+    pub air_temperature_k: f64,
+    pub air_specific_humidity_kg_kg: f64,
+    pub pressure_pa: f64,
+    pub longwave_down_w_m2: f64,
+    pub longwave_up_w_m2: f64,
+    pub gb_leaf_m_s: f64,
+    pub gb_wet_m_s: f64,
+    pub gb_stem_m_s: f64,
+    pub rah_s_m: f64,
+    pub raw_s_m: f64,
+    pub leaf_emissivity: f64,
+    pub wet_emissivity: f64,
+    pub stem_emissivity: f64,
+    pub cp_air_j_kg_k: f64,
+    pub rdry_j_kg_k: f64,
+    pub latent_heat_j_kg: f64,
+    pub sun_transpiration_kg_m2_tile: f64,
+    pub shade_transpiration_kg_m2_tile: f64,
+    /// Signed: positive evaporation, negative condensation.
+    pub wet_phase_change_kg_m2_tile: f64,
+    pub finalized_layer_withdrawal_kg_m2_tile: Vec<(SoilLayerId, f64)>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SpectralEnergyAbsorption {
+    pub band: RadiationBand,
+    pub component: IncidentComponent,
+    pub sun_leaf_w_m2_tile: f64,
+    pub shade_leaf_w_m2_tile: f64,
+    pub wet_surface_w_m2_tile: f64,
+    pub dry_stem_w_m2_tile: f64,
 }
 
 /// Constitutive seam used by the internal routing engine. Controlled test
@@ -175,6 +236,7 @@ pub struct RoutedOccupancyResult {
     pub release: OccupancyLiquidRelease,
     pub stand_ground_layer_water_kg_m2: BTreeMap<WaterResourceKey, f64>,
     pub carbon_operands: Option<OccupancyCarbonOperands>,
+    pub energy_proposal: Option<OccupancyEnergyProposal>,
     pub diagnostics: OccupancyDiagnostics,
 }
 
@@ -501,6 +563,7 @@ fn accept_occupancy_result(
             release,
             stand_ground_layer_water_kg_m2,
             carbon_operands: result.carbon_operands,
+            energy_proposal: result.energy_proposal,
             diagnostics: result.diagnostics,
         },
         ledger,
@@ -908,6 +971,7 @@ mod tests {
                 liquid,
                 local_layer_water_kg_m2_tile_ground,
                 carbon_operands: None,
+                energy_proposal: None,
                 diagnostics: OccupancyDiagnostics {
                     pass: match input.local_authorizations_kg_m2_tile_ground {
                         Some(_) => CoupledSolvePass::Capped,

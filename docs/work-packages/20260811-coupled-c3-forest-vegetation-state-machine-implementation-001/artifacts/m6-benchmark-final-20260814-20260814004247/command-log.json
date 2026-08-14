@@ -1,0 +1,31 @@
+{
+  "run_id": "m6-benchmark-final-20260814-20260814004247",
+  "tmp_root": "/tmp/openwepp-m6-release-m6-benchmark-final-20260814-20260814004247",
+  "commands": [
+    {
+      "label": "strict_config_parse",
+      "command": "cargo test --release -p openwepp-vegetation --lib identity_rebound_v7_configuration_parses_strictly",
+      "status": "PASS"
+    },
+    {
+      "label": "strict_state_parse",
+      "command": "cargo test --release -p openwepp-vegetation --lib complete_two_tile_two_stratum_state_is_exact",
+      "status": "PASS"
+    },
+    {
+      "label": "radiation",
+      "command": "cargo test --release -p openwepp-vegetation --lib v3_two_rank_visible_direct_fixture_and_named_poisons",
+      "status": "PASS"
+    },
+    {
+      "label": "public_candidate",
+      "command": "cargo test --release --test c3_vegetation_implementation_contract v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands -- --exact",
+      "status": "PASS"
+    },
+    {
+      "label": "shared_species_competition",
+      "command": "cargo test --release --test c3_vegetation_implementation_contract v7_real_diagnostic_activates_shared_water_and_species_n_competition -- --exact",
+      "status": "PASS"
+    }
+  ]
+}

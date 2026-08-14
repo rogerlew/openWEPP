@@ -1,0 +1,23 @@
+run_id=m6-heavy-20260813235114
+Linux forest 6.8.0-136-generic #136-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 21:53:05 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2676.298
+cache size	: 30720 KB
+siblings	: 24
+core id		: 0
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 1200.000
+cache size	: 30720 KB
+siblings	: 24
+core id		: 1
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 1200.000
+cache size	: 30720 KB
+siblings	: 24
+core id		: 2
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 1200.000
+rustc 1.92.0 (ded5c06cf 2025-12-08)

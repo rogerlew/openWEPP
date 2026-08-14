@@ -1,0 +1,288 @@
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.000
+cache size	: 30720 KB
+siblings	: 24
+core id		: 0
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.987
+cache size	: 30720 KB
+siblings	: 24
+core id		: 1
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.994
+cache size	: 30720 KB
+siblings	: 24
+core id		: 2
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.990
+cache size	: 30720 KB
+siblings	: 24
+core id		: 3
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.994
+cache size	: 30720 KB
+siblings	: 24
+core id		: 4
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.991
+cache size	: 30720 KB
+siblings	: 24
+core id		: 5
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.974
+cache size	: 30720 KB
+siblings	: 24
+core id		: 8
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.992
+cache size	: 30720 KB
+siblings	: 24
+core id		: 9
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.018
+cache size	: 30720 KB
+siblings	: 24
+core id		: 10
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.008
+cache size	: 30720 KB
+siblings	: 24
+core id		: 11
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.013
+cache size	: 30720 KB
+siblings	: 24
+core id		: 12
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.001
+cache size	: 30720 KB
+siblings	: 24
+core id		: 13
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.991
+cache size	: 30720 KB
+siblings	: 24
+core id		: 0
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.975
+cache size	: 30720 KB
+siblings	: 24
+core id		: 1
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.998
+cache size	: 30720 KB
+siblings	: 24
+core id		: 2
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.968
+cache size	: 30720 KB
+siblings	: 24
+core id		: 3
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.994
+cache size	: 30720 KB
+siblings	: 24
+core id		: 4
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.995
+cache size	: 30720 KB
+siblings	: 24
+core id		: 5
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.993
+cache size	: 30720 KB
+siblings	: 24
+core id		: 8
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.006
+cache size	: 30720 KB
+siblings	: 24
+core id		: 9
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.983
+cache size	: 30720 KB
+siblings	: 24
+core id		: 10
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.986
+cache size	: 30720 KB
+siblings	: 24
+core id		: 11
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.970
+cache size	: 30720 KB
+siblings	: 24
+core id		: 12
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.023
+cache size	: 30720 KB
+siblings	: 24
+core id		: 13
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.006
+cache size	: 30720 KB
+siblings	: 24
+core id		: 0
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.021
+cache size	: 30720 KB
+siblings	: 24
+core id		: 1
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.999
+cache size	: 30720 KB
+siblings	: 24
+core id		: 2
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.989
+cache size	: 30720 KB
+siblings	: 24
+core id		: 3
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.006
+cache size	: 30720 KB
+siblings	: 24
+core id		: 4
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.028
+cache size	: 30720 KB
+siblings	: 24
+core id		: 5
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.011
+cache size	: 30720 KB
+siblings	: 24
+core id		: 8
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.993
+cache size	: 30720 KB
+siblings	: 24
+core id		: 9
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.996
+cache size	: 30720 KB
+siblings	: 24
+core id		: 10
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.015
+cache size	: 30720 KB
+siblings	: 24
+core id		: 11
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.994
+cache size	: 30720 KB
+siblings	: 24
+core id		: 12
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.005
+cache size	: 30720 KB
+siblings	: 24
+core id		: 13
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.986
+cache size	: 30720 KB
+siblings	: 24
+core id		: 0
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.979
+cache size	: 30720 KB
+siblings	: 24
+core id		: 1
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.010
+cache size	: 30720 KB
+siblings	: 24
+core id		: 2
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.967
+cache size	: 30720 KB
+siblings	: 24
+core id		: 3
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.001
+cache size	: 30720 KB
+siblings	: 24
+core id		: 4
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.995
+cache size	: 30720 KB
+siblings	: 24
+core id		: 5
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.001
+cache size	: 30720 KB
+siblings	: 24
+core id		: 8
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.838
+cache size	: 30720 KB
+siblings	: 24
+core id		: 9
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.001
+cache size	: 30720 KB
+siblings	: 24
+core id		: 10
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.007
+cache size	: 30720 KB
+siblings	: 24
+core id		: 11
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2993.042
+cache size	: 30720 KB
+siblings	: 24
+core id		: 12
+cpu cores	: 12
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+cpu MHz		: 2992.978
+cache size	: 30720 KB
+siblings	: 24
+core id		: 13
+cpu cores	: 12

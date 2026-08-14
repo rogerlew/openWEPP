@@ -1,0 +1,6 @@
+run_id=m6-benchmark-final-20260814-20260814004247
+rc1=0
+rc2=0
+rc3=0
+rc4=0
+rc5=0

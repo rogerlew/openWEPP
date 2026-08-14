@@ -1,0 +1,7 @@
+    Finished `release` profile [optimized] target(s) in 0.07s
+     Running unittests src/lib.rs (target/release/deps/openwepp_vegetation-105f16acdcc9ae80)
+time_real_seconds=0.16
+time_user_seconds=0.10
+time_sys_seconds=0.06
+max_rss_kb=41856
+

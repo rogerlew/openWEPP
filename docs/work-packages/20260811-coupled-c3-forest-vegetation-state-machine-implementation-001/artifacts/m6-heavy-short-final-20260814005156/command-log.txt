@@ -1,0 +1,6 @@
+[clippy_step] cargo clippy --workspace --all-targets -- -D warnings
+[nextest_full] cargo nextest run --workspace --profile full
+[doc_tests] cargo test --doc --workspace
+[deny_check] cargo deny check
+[fmt_check] cargo fmt --all -- --check
+[diff_check] git diff --check

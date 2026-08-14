@@ -214,6 +214,31 @@ pub enum ResourceProtocolViolation {
     DuplicateRequestIdentity,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ResourceProtocolCategory {
+    Identity,
+    Operand,
+    Bound,
+}
+
+impl ResourceProtocolViolation {
+    #[must_use]
+    pub const fn category(self) -> ResourceProtocolCategory {
+        match self {
+            Self::BasisMismatch | Self::NonFinite | Self::Negative => {
+                ResourceProtocolCategory::Operand
+            }
+            Self::AuthorizationExceedsRequest | Self::FinalizedUseExceedsAuthorization => {
+                ResourceProtocolCategory::Bound
+            }
+            Self::TransactionMismatch
+            | Self::OwnerMismatch
+            | Self::KeyMismatch
+            | Self::DuplicateRequestIdentity => ResourceProtocolCategory::Identity,
+        }
+    }
+}
+
 pub fn validate_unique_request_identities<K: Ord, Q>(
     requests: &[ResourceRequest<K, Q>],
 ) -> Result<(), ResourceProtocolViolation> {
@@ -251,8 +276,24 @@ pub fn authorize_proportionally<K: Clone + Ord>(
     available: &BTreeMap<K, f64>,
     expected_basis: ResourceAmountBasis,
 ) -> Result<Vec<MaximumAuthorization<K, f64>>, ResourceProtocolViolation> {
+    authorize_proportionally_by(requests, available, expected_basis, Clone::clone)
+}
+
+/// Proportionally authorize requests grouped by an owner-supply identity while
+/// preserving each request's complete resource key in the returned record.
+pub fn authorize_proportionally_by<K, S, F>(
+    requests: &[ResourceRequest<K, f64>],
+    available: &BTreeMap<S, f64>,
+    expected_basis: ResourceAmountBasis,
+    supply_key: F,
+) -> Result<Vec<MaximumAuthorization<K, f64>>, ResourceProtocolViolation>
+where
+    K: Clone + Ord,
+    S: Clone + Ord,
+    F: Fn(&K) -> S,
+{
     validate_request_batch(requests)?;
-    let mut grouped = BTreeMap::<&K, Vec<&ResourceRequest<K, f64>>>::new();
+    let mut grouped = BTreeMap::<S, Vec<&ResourceRequest<K, f64>>>::new();
     for request in requests {
         if !request.amount.is_finite() {
             return Err(ResourceProtocolViolation::NonFinite);
@@ -263,7 +304,10 @@ pub fn authorize_proportionally<K: Clone + Ord>(
         if request.basis != expected_basis {
             return Err(ResourceProtocolViolation::BasisMismatch);
         }
-        grouped.entry(&request.key).or_default().push(request);
+        grouped
+            .entry(supply_key(&request.key))
+            .or_default()
+            .push(request);
     }
     let mut totals = BTreeMap::new();
     for (key, values) in &mut grouped {
@@ -271,6 +315,8 @@ pub fn authorize_proportionally<K: Clone + Ord>(
             left.owner_id
                 .cmp(&right.owner_id)
                 .then(left.transaction_id.cmp(&right.transaction_id))
+                .then(left.key.cmp(&right.key))
+                .then(left.basis.cmp(&right.basis))
         });
         let mut sum = 0.0;
         let mut compensation = 0.0;
@@ -280,19 +326,20 @@ pub fn authorize_proportionally<K: Clone + Ord>(
             compensation = (next - sum) - adjusted;
             sum = next;
         }
-        totals.insert(*key, sum);
+        totals.insert(key.clone(), sum);
     }
     requests
         .iter()
         .map(|request| {
-            let supply = available.get(&request.key).copied().unwrap_or(0.0);
+            let key = supply_key(&request.key);
+            let supply = available.get(&key).copied().unwrap_or(0.0);
             if !supply.is_finite() {
                 return Err(ResourceProtocolViolation::NonFinite);
             }
             if supply < 0.0 {
                 return Err(ResourceProtocolViolation::Negative);
             }
-            let total = totals.get(&request.key).copied().unwrap_or(0.0);
+            let total = totals.get(&key).copied().unwrap_or(0.0);
             let amount = if total <= supply {
                 request.amount
             } else if total == 0.0 {
@@ -470,6 +517,62 @@ mod tests {
             Ok(())
         );
         assert_eq!(finalized.key, key);
+    }
+
+    #[test]
+    fn projected_supply_identity_competes_without_erasing_request_identity() {
+        let mut upper = water_request(water_key("upper", "tile", "soil-1"));
+        upper.amount = 2.0;
+        let mut lower = water_request(water_key("lower", "tile", "soil-1"));
+        lower.amount = 6.0;
+        let requests = [upper.clone(), lower.clone()];
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), 4.0)]);
+        let authorizations = authorize_proportionally_by(
+            &requests,
+            &available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .expect("same-layer authorization");
+
+        assert_eq!(authorizations[0].key, upper.key);
+        assert_eq!(authorizations[1].key, lower.key);
+        assert_eq!(authorizations[0].amount.to_bits(), 1.0_f64.to_bits());
+        assert_eq!(authorizations[1].amount.to_bits(), 3.0_f64.to_bits());
+    }
+
+    #[test]
+    fn projected_supply_compensation_is_canonical_under_request_reversal() {
+        let amounts = [
+            2.413_412_142_132_508e-9,
+            9_750.505_570_619_86,
+            10_575.027_912_829_331,
+            1.168_047_125_227_263_8e-7,
+        ];
+        let requests = ["a", "b", "c", "d"]
+            .into_iter()
+            .zip(amounts)
+            .map(|(stratum, amount)| ResourceRequest {
+                amount,
+                ..water_request(water_key(stratum, "tile", "soil-1"))
+            })
+            .collect::<Vec<_>>();
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), 10_000.0)]);
+        let authorize = |batch: &[ResourceRequest<WaterResourceKey, f64>]| {
+            authorize_proportionally_by(
+                batch,
+                &available,
+                ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+                |key| key.layer_id.clone(),
+            )
+            .unwrap()
+            .into_iter()
+            .map(|authorization| (authorization.key, authorization.amount.to_bits()))
+            .collect::<BTreeMap<_, _>>()
+        };
+        let mut reversed = requests.clone();
+        reversed.reverse();
+        assert_eq!(authorize(&requests), authorize(&reversed));
     }
 
     #[test]

@@ -1,0 +1,15 @@
+{
+  "commands": [
+    {"label":"parse_hash","command":"cargo test --release --test c3_vegetation_implementation_contract v7_configuration_state_and_migration_inputs_have_no_default_path -- --exact","mode":"warm+5_samples","exit":"pass"},
+    {"label":"radiation_unit","command":"cargo test --release -p openwepp-vegetation --lib v3_two_rank_visible_direct_fixture_and_named_poisons -- --exact","mode":"warm+5_samples","exit":"pass_zero_filter_corr","corrective":"rerun without --exact to capture test because filter matched zero initially"},
+    {"label":"public_integration","command":"cargo test --release --test c3_vegetation_implementation_contract v7_public_candidate_is_sealed_and_energy_owner_consumes_real_capped_operands -- --exact","mode":"warm+5_samples","exit":"pass"},
+    {"label":"upper_cap","command":"cargo test --release -p openwepp-vegetation --lib upper_cap_changes_final_release_received_by_descendant -- --exact","mode":"warm+5_samples","exit":"pass_zero_filter_corr","corrective":"rerun without --exact to capture test because filter matched zero initially"},
+    {"label":"rollback_integration","command":"cargo test --release --test c3_vegetation_implementation_contract v7_default_off_diagnostic_commits_all_owners_once_and_rolls_back_every_phase -- --exact","mode":"warm+5_samples","exit":"pass"}
+  ],
+  "environment": {
+    "tmp_root": "/tmp/openwepp-m6-bench-20260813",
+    "platform": "Linux forest 6.8.0-136-generic x86_64",
+    "cpu": "Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz",
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+  }
+}

@@ -52,17 +52,14 @@ impl UncommittedNitrogenPhase {
         self.transaction_id
     }
 
-    #[cfg(test)]
     pub(crate) fn requests(&self) -> &[PotentialMineralNitrogenRequest] {
         &self.requests
     }
 
-    #[cfg(test)]
     pub(crate) fn authorizations(&self) -> &[MineralNitrogenMaximumAuthorization] {
         &self.authorizations
     }
 
-    #[cfg(test)]
     pub(crate) fn finalized_uses(&self) -> &[MineralNitrogenFinalizedUse] {
         &self.finalized_uses
     }
@@ -212,7 +209,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
             potential_demand.demand,
             candidate.retranslocation_n,
         )
-        .map_err(|error| VegetationError::Receipt(error.to_string()))?;
+        .map_err(VegetationError::from)?;
         let final_demand =
             nitrogen_demand(final_offer.offer, candidate.retranslocation_n, &parameters)?.demand;
         all_requests.extend_from_slice(request_batch.requests());
@@ -232,7 +229,11 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
     }
 
     // One call is the same-snapshot competition boundary for every stratum.
-    let authorizations = nitrogen.authorize(&all_requests)?;
+    let authorizations = if all_requests.is_empty() {
+        Vec::new()
+    } else {
+        nitrogen.authorize(&all_requests)?
+    };
     let mut by_owner = BTreeMap::<ResourceOwnerId, Vec<_>>::new();
     for authorization in &authorizations {
         by_owner
@@ -252,10 +253,10 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
             &item.request_batch,
             owner_authorizations,
         )
-        .map_err(|error| VegetationError::Receipt(error.to_string()))?;
+        .map_err(VegetationError::from)?;
         let nitrogen_finalization = validated
             .finalize(item.final_demand)
-            .map_err(|error| VegetationError::Receipt(error.to_string()))?;
+            .map_err(VegetationError::from)?;
         let growth_finalization = finalize_growth(
             &mut item.state.tissues,
             &item.final_offer,

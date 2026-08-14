@@ -1,6 +1,6 @@
 # State Ownership Map
 
-Status: `V7 sealed vegetation candidate active / receiving BGC and energy owners pending`
+Status: `V7 four-owner candidate envelope and atomic default-off commit focused PASS`
 
 The authority audit confirmed that the V2 per-layer root-potential lanes have
 no canonical accepted-update mapping from E14's common root-node solution.
@@ -118,10 +118,10 @@ displayed leaf C, and a new canonical whole-state digest is validated.
 Material proposals are transaction escrow owned by typed `stratum:<id>`
 donors; they are not inserted into accepted-state `pending_transfers` and
 cannot be committed before a receiving-owner candidate exists. Vegetation
-independently reconstructs its C/N/DM obligations. BGC still owns mineral
-debit and material receipts, energy still owns its candidate, and the
-orchestrator still owns the only eventual all-owner commit. The sealed type has
-no commit method and is not publicly exported.
+independently reconstructs its C/N/DM obligations. BGC owns mineral debit and
+material receipts, energy owns its candidate, and the orchestrator owns the
+only all-owner commit. The sealed vegetation type has no commit method; its
+public surface permits inspection by that envelope, not mutation or commit.
 
 ## Increment 4B Biogeochemistry Receiving Ownership
 
@@ -136,7 +136,29 @@ beginning owner and has no commit method.
 
 The default-off diagnostic adapter now maps the historical public proposal DTO
 to a proposal input and consumes the BGC-produced ending state; it no longer
-passes the same vector as both proposal and receipt. This is boundary hardening
-only because the current V7 public transaction remains fail-closed before that
-diagnostic path. Energy receiving ownership and all-owner commit remain
-pending.
+passes the same vector as both proposal and receipt. Milestone 5 consumes this
+owner candidate in the complete default-off transaction.
+
+## Increment 4B Energy Receiving Ownership
+
+Vegetation owns solved constitutive state and emits immutable physical energy
+proposals without residuals. The hillslope-orchestrator energy owner owns the
+independent component receipts, typed equilibrium-zero canopy-storage branch,
+and weighted stand ledger. It reconstructs finalized water rather than maximum
+authorization and preserves occupancy/tile/band/component identity. The old
+aggregate self-comparison path is removed. The actual production capped full-
+water proposal passes independent construction. Milestone 5 connects it with
+vegetation, the retained water-owner candidate, and BGC under one sealed owner
+envelope and one non-fallible whole-state replacement.
+
+## Milestone 5 Atomic Ownership
+
+`UncommittedCoupledTransaction` validates exact owner transaction, model,
+configuration, beginning-state, water D/A/F, nitrogen D/A/F, material proposal/
+receipt, and occupancy-energy identity. It reuses the water arbiter's candidate
+instead of reconstructing a second debit. After every owner validation passes,
+it constructs one complete `DiagnosticOwnedState`; no fallible operation occurs
+below the single replacement. Twenty-seven injected phase, owner-validation,
+and malformed-owner failures leave that complete serialized beginning state
+byte-identical. The empty-stand branch advances owner lineage while preserving
+exactly zero vegetation demand and unchanged water/mineral stores.

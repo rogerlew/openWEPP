@@ -22,7 +22,8 @@ use super::request_pass::PotentialOccupancyEvaluator;
 use crate::VegetationError;
 use crate::carbon_nitrogen::{Tissue, atkin_rd25, update_t10};
 use crate::column::{
-    OccupancyCarbonOperands, OccupancyDiagnostics, OccupancyPassInput, OccupancyPassResult,
+    OccupancyCarbonOperands, OccupancyDiagnostics, OccupancyEnergyProposal, OccupancyPassInput,
+    OccupancyPassResult, SpectralEnergyAbsorption,
 };
 use crate::config::VegetationConfiguration;
 use crate::diagnostics::CoupledSolvePass;
@@ -108,6 +109,7 @@ fn solve_occupancy(
         input.interval_s,
     )?;
     let case = prepare_case(input, radiation, preliminary, advanced_t10_k)?;
+    let energy_case = case.clone();
     let context = ConstitutiveSolveContext {
         transaction_id: input.transaction_id,
         occupancy_id: input.occupancy_id.clone(),
@@ -177,6 +179,13 @@ fn solve_occupancy(
             "V3 potential gas/hydraulic diagnostic",
         ));
     }
+    let energy_proposal = occupancy_energy_proposal(
+        input,
+        &energy_case,
+        &accepted.canopy,
+        radiation,
+        &local_layer_water_kg_m2_tile_ground,
+    )?;
 
     Ok(OccupancyPassResult {
         candidate_state,
@@ -203,6 +212,7 @@ fn solve_occupancy(
                 .shade
                 .dark_respiration_umol_co2_m2_leaf_s,
         }),
+        energy_proposal: Some(energy_proposal),
         diagnostics: OccupancyDiagnostics {
             pass,
             ci_iterations_sun: accepted.canopy.sun.ci_iterations,
@@ -253,6 +263,164 @@ fn solve_occupancy(
                 .flatten(),
         },
     })
+}
+
+fn occupancy_energy_proposal(
+    input: &OccupancyPassInput<'_>,
+    case: &V3PotentialCase,
+    accepted: &super::constitutive::CanopyEnergyResult,
+    radiation: &OccupancyRadiation,
+    finalized_layer_withdrawal: &[(SoilLayerId, f64)],
+) -> Result<OccupancyEnergyProposal, VegetationError> {
+    let forcing = &case.gas_energy;
+    let wet_fraction = forcing.wet_fraction;
+    let dry_fraction = 1.0 - wet_fraction;
+    let sun_area = accepted.sun.leaf_area_m2_m2_tile_ground;
+    let shade_area = accepted.shade.leaf_area_m2_m2_tile_ground;
+    let wet_leaf_area = wet_fraction * (sun_area + shade_area);
+    let wet_stem_area = wet_fraction * forcing.stem_area;
+    let dry_stem_area = dry_fraction * forcing.stem_area;
+    let sun_sw = dry_fraction * case.classes.sun.absorbed_shortwave_w_m2_tile;
+    let shade_sw = dry_fraction * case.classes.shade.absorbed_shortwave_w_m2_tile;
+    let wet_sw = wet_fraction
+        * (case.classes.sun.absorbed_shortwave_w_m2_tile
+            + case.classes.shade.absorbed_shortwave_w_m2_tile
+            + forcing.stem_absorbed_shortwave_w_m2_tile);
+    let dry_stem_sw = dry_fraction * forcing.stem_absorbed_shortwave_w_m2_tile;
+    let spectral_absorption = [
+        &radiation.visible_direct,
+        &radiation.visible_diffuse,
+        &radiation.near_infrared_direct,
+        &radiation.near_infrared_diffuse,
+    ]
+    .into_iter()
+    .map(|component| {
+        let owned = &component.absorption;
+        SpectralEnergyAbsorption {
+            band: component.band,
+            component: component.component,
+            sun_leaf_w_m2_tile: dry_fraction * owned.absorbed_leaf_sun,
+            shade_leaf_w_m2_tile: dry_fraction * owned.absorbed_leaf_shade,
+            wet_surface_w_m2_tile: wet_fraction
+                * (owned.absorbed_leaf_sun + owned.absorbed_leaf_shade + owned.absorbed_stem),
+            dry_stem_w_m2_tile: dry_fraction * owned.absorbed_stem,
+        }
+    })
+    .collect();
+    let proposal = OccupancyEnergyProposal {
+        transaction_id: input.transaction_id,
+        occupancy_id: input.occupancy_id.clone(),
+        tile_fraction: input.tile_fraction,
+        interval_s: input.interval_s,
+        sun_leaf_absorbed_shortwave_w_m2_tile: sun_sw,
+        shade_leaf_absorbed_shortwave_w_m2_tile: shade_sw,
+        wet_surface_absorbed_shortwave_w_m2_tile: wet_sw,
+        dry_stem_absorbed_shortwave_w_m2_tile: dry_stem_sw,
+        spectral_absorption,
+        dry_sun_leaf_area_m2_m2_tile: dry_fraction * sun_area,
+        dry_shade_leaf_area_m2_m2_tile: dry_fraction * shade_area,
+        wet_leaf_area_m2_m2_tile: wet_leaf_area,
+        wet_stem_area_m2_m2_tile: wet_stem_area,
+        dry_stem_area_m2_m2_tile: dry_stem_area,
+        sun_leaf_temperature_k: accepted.sun.leaf_temperature_k,
+        shade_leaf_temperature_k: accepted.shade.leaf_temperature_k,
+        wet_surface_temperature_k: accepted.wet_surface_temperature_k,
+        dry_stem_temperature_k: accepted.dry_stem_temperature_k,
+        canopy_air_temperature_k: accepted.canopy_air_temperature_k,
+        canopy_air_specific_humidity_kg_kg: accepted.canopy_air_specific_humidity_kg_kg,
+        air_temperature_k: forcing.air_temperature_k,
+        air_specific_humidity_kg_kg: forcing.air_specific_humidity_kg_kg,
+        pressure_pa: forcing.pressure_pa,
+        longwave_down_w_m2: forcing.longwave_down_w_m2,
+        longwave_up_w_m2: forcing.longwave_up_w_m2,
+        gb_leaf_m_s: forcing.gb_leaf_m_s,
+        gb_wet_m_s: forcing.gb_wet_m_s,
+        gb_stem_m_s: forcing.gb_stem_m_s,
+        rah_s_m: forcing.rah_s_m,
+        raw_s_m: forcing.raw_s_m,
+        leaf_emissivity: forcing.leaf_emissivity,
+        wet_emissivity: forcing.wet_emissivity,
+        stem_emissivity: forcing.stem_emissivity,
+        cp_air_j_kg_k: forcing.cp_air_j_kg_k,
+        rdry_j_kg_k: forcing.rdry_j_kg_k,
+        latent_heat_j_kg: forcing.latent_heat_j_kg,
+        sun_transpiration_kg_m2_tile: accepted.sun.transpiration_kg_m2_tile_s * input.interval_s,
+        shade_transpiration_kg_m2_tile: accepted.shade.transpiration_kg_m2_tile_s
+            * input.interval_s,
+        wet_phase_change_kg_m2_tile: accepted.wet_actual_kg_m2_s * input.interval_s,
+        finalized_layer_withdrawal_kg_m2_tile: finalized_layer_withdrawal.to_vec(),
+    };
+    validate_energy_proposal_shape(&proposal)?;
+    Ok(proposal)
+}
+
+fn validate_energy_proposal_shape(
+    proposal: &OccupancyEnergyProposal,
+) -> Result<(), VegetationError> {
+    let nonnegative = [
+        proposal.tile_fraction,
+        proposal.interval_s,
+        proposal.sun_leaf_absorbed_shortwave_w_m2_tile,
+        proposal.shade_leaf_absorbed_shortwave_w_m2_tile,
+        proposal.wet_surface_absorbed_shortwave_w_m2_tile,
+        proposal.dry_stem_absorbed_shortwave_w_m2_tile,
+        proposal.dry_sun_leaf_area_m2_m2_tile,
+        proposal.dry_shade_leaf_area_m2_m2_tile,
+        proposal.wet_leaf_area_m2_m2_tile,
+        proposal.wet_stem_area_m2_m2_tile,
+        proposal.dry_stem_area_m2_m2_tile,
+        proposal.sun_transpiration_kg_m2_tile,
+        proposal.shade_transpiration_kg_m2_tile,
+    ];
+    let positive = [
+        proposal.sun_leaf_temperature_k,
+        proposal.shade_leaf_temperature_k,
+        proposal.wet_surface_temperature_k,
+        proposal.dry_stem_temperature_k,
+        proposal.canopy_air_temperature_k,
+        proposal.air_temperature_k,
+        proposal.pressure_pa,
+        proposal.gb_leaf_m_s,
+        proposal.gb_wet_m_s,
+        proposal.gb_stem_m_s,
+        proposal.rah_s_m,
+        proposal.raw_s_m,
+        proposal.cp_air_j_kg_k,
+        proposal.rdry_j_kg_k,
+        proposal.latent_heat_j_kg,
+    ];
+    if proposal.transaction_id.0 == 0
+        || nonnegative
+            .iter()
+            .any(|value| !value.is_finite() || *value < 0.0)
+        || positive
+            .iter()
+            .any(|value| !value.is_finite() || *value <= 0.0)
+        || !proposal.wet_phase_change_kg_m2_tile.is_finite()
+        || proposal
+            .finalized_layer_withdrawal_kg_m2_tile
+            .iter()
+            .any(|(_, amount)| !amount.is_finite() || *amount < 0.0)
+    {
+        return Err(VegetationError::Domain("occupancy energy proposal"));
+    }
+    if proposal.spectral_absorption.len() != 4
+        || proposal.spectral_absorption.iter().any(|component| {
+            [
+                component.sun_leaf_w_m2_tile,
+                component.shade_leaf_w_m2_tile,
+                component.wet_surface_w_m2_tile,
+                component.dry_stem_w_m2_tile,
+            ]
+            .iter()
+            .any(|value| !value.is_finite() || *value < 0.0)
+        })
+    {
+        return Err(VegetationError::Domain(
+            "occupancy spectral energy proposal",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_identity(

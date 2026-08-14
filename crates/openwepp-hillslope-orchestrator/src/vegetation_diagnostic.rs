@@ -4,23 +4,27 @@
 use std::collections::BTreeMap;
 
 use openwepp_biogeochemistry::{
-    BiogeochemistryError, BiogeochemistryState, MaterialPool, MaterialProposal,
-    TransformationsMode, authorize_proportionally, available_by_key,
-    construct_biogeochemistry_candidate,
+    BiogeochemistryError, BiogeochemistryOwnerCandidate, BiogeochemistryState, MaterialPool,
+    MaterialProposal, TransformationsMode, available_by_key, construct_biogeochemistry_candidate,
 };
 use openwepp_kernel_contract::{
-    MaximumAuthorization, MineralNitrogenKey, ResourceAmountBasis, SoilLayerId, TransactionId,
-    validate_request_batch,
+    MineralNitrogenKey, ResourceAmountBasis, SoilLayerId, TransactionId,
+    authorize_proportionally as authorize_resources_proportionally, authorize_proportionally_by,
 };
-use openwepp_vegetation::energy::LATENT_HEAT_VAPORIZATION;
 use openwepp_vegetation::{
-    CoupledOwnedState, FailurePoint, ModelDefinition, NitrogenArbiter, NitrogenAuthorization,
-    NitrogenRequest, SnowFreeForcing, VegetationConfiguration, VegetationError, WaterArbiter,
-    WaterArbitration, WaterAuthorizationReason, WaterOwnerCandidate, WaterOwnerSnapshot,
-    WaterRequest, WaterUse, execute_candidate_with_failure, reconstruct_water_ending,
-    validate_and_commit_with_failure,
+    CoupledCandidate, CoupledOwnedState, FailurePoint, ModelDefinition, NitrogenArbiter,
+    NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, VegetationConfiguration,
+    VegetationError, WaterArbiter, WaterArbitration, WaterAuthorizationReason, WaterOwnerCandidate,
+    WaterOwnerSnapshot, WaterRequest, WaterUse, execute_candidate_with_failure,
+    reconstruct_water_ending,
 };
 use serde::{Deserialize, Serialize};
+
+pub use crate::vegetation_energy_owner::DiagnosticEnergyState;
+use crate::vegetation_energy_owner::{
+    CanopyHeatStorageMode, DiagnosticEnergyOwnerCandidate, EnergyOwnerError,
+    construct_energy_owner_candidate,
+};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct DiagnosticOwnedState {
@@ -36,25 +40,106 @@ pub struct DiagnosticWaterState {
     pub last_transaction_id: u128,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct DiagnosticEnergyState {
-    pub last_transaction_id: u128,
-    pub last_operands: Option<openwepp_vegetation::ledger::EnergyLedgerOperands>,
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct DiagnosticReceipt {
     pub transaction_id: TransactionId,
     pub water_used: f64,
     pub nitrogen_used: f64,
+    pub water_partial_authorizations: usize,
+    pub nitrogen_partial_authorizations: usize,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct UncommittedCoupledTransaction {
+    transaction_id: TransactionId,
+    vegetation: CoupledCandidate,
+    water: WaterOwnerCandidate,
+    biogeochemistry: BiogeochemistryOwnerCandidate,
+    energy: DiagnosticEnergyOwnerCandidate,
+}
+
+impl UncommittedCoupledTransaction {
+    #[must_use]
+    pub fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    fn validate(&self, beginning: &DiagnosticOwnedState) -> Result<(), DiagnosticError> {
+        self.vegetation.validate_sealed()?;
+        self.biogeochemistry.validate()?;
+        if self.vegetation.transaction_id() != self.transaction_id
+            || self.water.transaction_id() != self.transaction_id
+            || self.biogeochemistry.transaction_id() != self.transaction_id
+            || self.energy.transaction_id() != self.transaction_id
+            || self.vegetation.beginning_state_sha256() != beginning.vegetation.state_sha256
+            || self.water.beginning_kg_m2_by_layer() != &beginning.water.liquid_kg_m2
+            || self.biogeochemistry.beginning() != &beginning.biogeochemistry
+            || self.energy.beginning() != &beginning.energy
+            || self.energy.proposal_identity().ending_state_sha256
+                != self.vegetation.ending_state().state_sha256
+            || self.vegetation.water_phase().water_owner_candidate() != &self.water
+            || self.biogeochemistry.protocol() != self.vegetation.nitrogen_protocol()
+        {
+            return Err(DiagnosticError::OwnerEnvelopeIdentity(
+                "VEGTXN-E-007 owner envelope identity",
+            ));
+        }
+        let proposals = material_proposals(&self.vegetation)?;
+        if proposals.len() != self.biogeochemistry.receipts().len()
+            || proposals
+                .iter()
+                .zip(self.biogeochemistry.receipts())
+                .any(|(proposal, receipt)| {
+                    proposal.transaction_id != receipt.transaction_id
+                        || proposal.owner_id != receipt.owner_id
+                        || proposal.donor != receipt.donor
+                        || proposal.receiver != receipt.receiver
+                        || proposal.proposal_id != receipt.proposal_id
+                        || proposal.amounts != receipt.amounts
+                })
+        {
+            return Err(DiagnosticError::Biogeochemistry(
+                BiogeochemistryError::MaterialClosure,
+            ));
+        }
+        Ok(())
+    }
+
+    fn ending_state(&self) -> DiagnosticOwnedState {
+        DiagnosticOwnedState {
+            vegetation: self.vegetation.ending_state().clone(),
+            water: DiagnosticWaterState {
+                liquid_kg_m2: self.water.ending_kg_m2_by_layer().clone(),
+                last_transaction_id: self.transaction_id.0,
+            },
+            biogeochemistry: self.biogeochemistry.ending().clone(),
+            energy: self.energy.ending().clone(),
+        }
+    }
 }
 
 #[derive(Debug)]
 pub enum DiagnosticError {
     Vegetation(VegetationError),
     Biogeochemistry(BiogeochemistryError),
+    Energy(EnergyOwnerError),
+    OwnerEnvelopeIdentity(&'static str),
     InjectedFailure,
 }
+
+impl std::fmt::Display for DiagnosticError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Vegetation(error) => write!(formatter, "{error}"),
+            Self::Biogeochemistry(error) => write!(formatter, "{error}"),
+            Self::Energy(error) => write!(formatter, "{error}"),
+            Self::OwnerEnvelopeIdentity(message) => write!(formatter, "{message}"),
+            Self::InjectedFailure => write!(formatter, "VEGTXN-E-008 injected rollback failure"),
+        }
+    }
+}
+
+impl std::error::Error for DiagnosticError {}
 
 impl From<VegetationError> for DiagnosticError {
     fn from(value: VegetationError) -> Self {
@@ -66,50 +151,32 @@ impl From<BiogeochemistryError> for DiagnosticError {
         Self::Biogeochemistry(value)
     }
 }
+impl From<EnergyOwnerError> for DiagnosticError {
+    fn from(value: EnergyOwnerError) -> Self {
+        Self::Energy(value)
+    }
+}
 
 struct ProportionalWater<'a> {
     available: &'a BTreeMap<SoilLayerId, f64>,
 }
 impl WaterArbiter for ProportionalWater<'_> {
     fn authorize(&self, requests: &[WaterRequest]) -> Result<WaterArbitration, VegetationError> {
-        validate_request_batch(requests)
-            .map_err(|error| VegetationError::Receipt(format!("{error:?}")))?;
-        if requests.iter().any(|request| {
-            request.basis != ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval
-                || !request.amount.is_finite()
-                || request.amount < 0.0
-        }) {
-            return Err(VegetationError::Receipt(
-                "invalid stand-ground water request".into(),
+        if requests
+            .iter()
+            .any(|request| !self.available.contains_key(&request.key.layer_id))
+        {
+            return Err(VegetationError::ResourceIdentity(
+                "water request names an unknown owner layer".into(),
             ));
         }
-        let mut demand = BTreeMap::<SoilLayerId, f64>::new();
-        for request in requests {
-            *demand.entry(request.key.layer_id.clone()).or_default() += request.amount;
-        }
-        let authorizations = requests
-            .iter()
-            .map(|request| {
-                let supply = self
-                    .available
-                    .get(&request.key.layer_id)
-                    .copied()
-                    .ok_or(VegetationError::Domain("unknown water layer"))?;
-                let total = demand[&request.key.layer_id];
-                let fraction = if total == 0.0 {
-                    0.0
-                } else {
-                    (supply / total).min(1.0)
-                };
-                Ok(MaximumAuthorization {
-                    transaction_id: request.transaction_id,
-                    owner_id: request.owner_id.clone(),
-                    key: request.key.clone(),
-                    amount: request.amount * fraction,
-                    basis: request.basis,
-                })
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+        let authorizations = authorize_proportionally_by(
+            requests,
+            self.available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .map_err(VegetationError::from)?;
         let owner_id = requests
             .first()
             .map(|request| request.owner_id.clone())
@@ -163,7 +230,22 @@ impl WaterArbiter for ProportionalWater<'_> {
             finalized_uses.to_vec(),
         )
     }
+
+    fn authorize_zero_demand(
+        &self,
+        transaction_id: TransactionId,
+        owner_id: &openwepp_kernel_contract::ResourceOwnerId,
+    ) -> Result<WaterArbitration, VegetationError> {
+        let snapshot = WaterOwnerSnapshot::try_new(
+            transaction_id,
+            owner_id.clone(),
+            self.available.clone(),
+            BTreeMap::new(),
+        )?;
+        WaterArbitration::try_new(snapshot, Vec::new(), BTreeMap::new())
+    }
 }
+
 struct ProportionalNitrogen<'a> {
     available: &'a BTreeMap<MineralNitrogenKey, f64>,
 }
@@ -178,9 +260,36 @@ impl NitrogenArbiter for ProportionalNitrogen<'_> {
         &self,
         requests: &[NitrogenRequest],
     ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
-        authorize_proportionally(requests, self.available)
-            .map_err(|error| VegetationError::Receipt(error.to_string()))
+        authorize_resources_proportionally(
+            requests,
+            self.available,
+            ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        )
+        .map_err(VegetationError::from)
     }
+}
+
+fn material_proposals(
+    vegetation: &CoupledCandidate,
+) -> Result<Vec<MaterialProposal>, VegetationError> {
+    vegetation
+        .material_proposals()
+        .iter()
+        .map(|transfer| {
+            Ok(MaterialProposal {
+                transaction_id: transfer.transaction_id,
+                owner_id: transfer.owner_id.clone(),
+                donor: transfer.donor,
+                receiver: transfer.receiver,
+                proposal_id: transfer.proposal_id,
+                amounts: MaterialPool {
+                    carbon: transfer.carbon,
+                    nitrogen: transfer.nitrogen,
+                    dry_matter: transfer.dry_matter,
+                },
+            })
+        })
+        .collect()
 }
 
 pub fn run_default_off_diagnostic(
@@ -210,10 +319,17 @@ pub fn run_default_off_diagnostic_at_phase(
     available_water: &BTreeMap<SoilLayerId, f64>,
     failure: Option<FailurePoint>,
 ) -> Result<DiagnosticReceipt, DiagnosticError> {
-    if available_water != &owned.water.liquid_kg_m2 {
-        return Err(DiagnosticError::Vegetation(VegetationError::Receipt(
-            "diagnostic water snapshot mismatch".into(),
-        )));
+    if available_water != &owned.water.liquid_kg_m2
+        || owned.water.last_transaction_id != owned.vegetation.last_transaction_id
+        || owned.biogeochemistry.last_transaction_id != owned.vegetation.last_transaction_id
+        || owned.energy.last_transaction_id != owned.vegetation.last_transaction_id
+        || owned.energy.model_definition_sha256 != owned.vegetation.model_definition_sha256
+        || owned.energy.configuration_sha256 != owned.vegetation.configuration_sha256
+        || owned.energy.accepted_vegetation_state_sha256 != owned.vegetation.state_sha256
+    {
+        return Err(DiagnosticError::OwnerEnvelopeIdentity(
+            "VEGTXN-E-007 diagnostic owner snapshot mismatch",
+        ));
     }
     let water = ProportionalWater {
         available: available_water,
@@ -222,6 +338,11 @@ pub fn run_default_off_diagnostic_at_phase(
     let nitrogen = ProportionalNitrogen {
         available: &available_n,
     };
+    let vegetation_failure = if failure == Some(FailurePoint::OwnerValidation) {
+        None
+    } else {
+        failure
+    };
     let vegetation_candidate = execute_candidate_with_failure(
         model,
         config,
@@ -229,150 +350,154 @@ pub fn run_default_off_diagnostic_at_phase(
         forcing,
         &water,
         &nitrogen,
-        failure,
+        vegetation_failure,
     )?;
-    let transfers = vegetation_candidate
-        .material_transfers()
-        .iter()
-        .map(|transfer| {
-            Ok(MaterialProposal {
-                transaction_id: transfer.transaction_id,
-                owner_id: transfer.owner_id.clone(),
-                donor: transfer.donor,
-                receiver: transfer.receiver,
-                proposal_id: transfer.proposal_id,
-                amounts: MaterialPool {
-                    carbon: transfer.carbon,
-                    nitrogen: transfer.nitrogen,
-                    dry_matter: transfer.dry_matter,
-                },
-            })
-        })
-        .collect::<Result<Vec<_>, VegetationError>>()?;
+    inject(failure, FailurePoint::ReceiverConstruction)?;
+    let mut transfers = material_proposals(&vegetation_candidate)?;
+    if failure == Some(FailurePoint::CrossOwnerMaterialReceiptMismatch) {
+        let transfer = transfers
+            .first_mut()
+            .ok_or(DiagnosticError::InjectedFailure)?;
+        transfer.amounts.carbon += f64::EPSILON * transfer.amounts.carbon.abs().max(1.0);
+    }
     let (nitrogen_requests, nitrogen_authorizations, nitrogen_uses) =
         vegetation_candidate.nitrogen_protocol();
+    let mut bgc_requests = nitrogen_requests.to_vec();
+    if failure == Some(FailurePoint::CrossOwnerNitrogenProtocolMismatch) {
+        let request = bgc_requests
+            .first_mut()
+            .ok_or(DiagnosticError::InjectedFailure)?;
+        request.amount += f64::EPSILON * request.amount.abs().max(1.0);
+    }
+    inject(failure, FailurePoint::BiogeochemistryCandidate)?;
     let bgc_candidate = construct_biogeochemistry_candidate(
         &owned.biogeochemistry,
         vegetation_candidate.transaction_id(),
-        nitrogen_requests,
+        &bgc_requests,
         nitrogen_authorizations,
         nitrogen_uses,
         &transfers,
         TransformationsMode::Disabled,
     )?;
-    if transfers.len() != bgc_candidate.receipts().len()
-        || transfers
+    inject(failure, FailurePoint::ProposalReceiptValidation)?;
+    let mut water_candidate = vegetation_candidate
+        .water_phase()
+        .water_owner_candidate()
+        .clone();
+    if failure == Some(FailurePoint::CrossOwnerWaterCandidateMismatch) {
+        let mut altered_ending = water_candidate.ending_kg_m2_by_layer().clone();
+        let ending = altered_ending
+            .values_mut()
+            .next()
+            .ok_or(DiagnosticError::InjectedFailure)?;
+        *ending += f64::EPSILON * ending.abs().max(1.0);
+        let authorization_facts = vegetation_candidate
+            .water_phase()
+            .protocol()
+            .1
             .iter()
-            .zip(bgc_candidate.receipts())
-            .any(|(proposal, receipt)| {
-                proposal.transaction_id != receipt.transaction_id
-                    || proposal.owner_id != receipt.owner_id
-                    || proposal.donor != receipt.donor
-                    || proposal.receiver != receipt.receiver
-                    || proposal.proposal_id != receipt.proposal_id
-                    || proposal.amounts != receipt.amounts
+            .map(|authorization| {
+                (
+                    authorization.key.clone(),
+                    WaterAuthorizationReason::FullySupplied,
+                )
             })
-    {
-        return Err(DiagnosticError::Biogeochemistry(
-            BiogeochemistryError::MaterialClosure,
-        ));
+            .collect();
+        let snapshot = WaterOwnerSnapshot::try_new(
+            water_candidate.transaction_id(),
+            water_candidate.owner_id().clone(),
+            water_candidate.beginning_kg_m2_by_layer().clone(),
+            authorization_facts,
+        )?;
+        water_candidate = WaterOwnerCandidate::try_new(
+            water_candidate.transaction_id(),
+            water_candidate.owner_id().clone(),
+            snapshot,
+            altered_ending,
+            water_candidate.finalized_uses().to_vec(),
+        )?;
     }
-    let mut water_candidate = owned.water.clone();
-    for finalized in vegetation_candidate.water_uses() {
-        let store = water_candidate
-            .liquid_kg_m2
-            .get_mut(&finalized.key.layer_id)
-            .ok_or(VegetationError::Domain("unknown diagnostic water layer"))?;
-        if finalized.amount > *store {
-            return Err(VegetationError::Receipt("diagnostic water overdraft".into()).into());
-        }
-        *store -= finalized.amount;
-    }
-    water_candidate.last_transaction_id = vegetation_candidate.transaction_id().0;
-    let water_used = vegetation_candidate
-        .water_uses()
+    let water_used = water_candidate
+        .finalized_uses()
         .iter()
-        .map(|value| value.amount)
-        .sum();
+        .fold(0.0, |total, value| total + value.amount);
+    let (water_requests, water_authorizations, _) = vegetation_candidate.water_phase().protocol();
+    let water_partial_authorizations = water_requests
+        .iter()
+        .zip(water_authorizations)
+        .filter(|(request, authorization)| {
+            authorization.amount > 0.0 && authorization.amount < request.amount
+        })
+        .count();
     let nitrogen_total_used = vegetation_candidate
         .nitrogen_protocol()
         .2
         .iter()
-        .map(|value| value.amount)
-        .sum();
+        .fold(0.0, |total, value| total + value.amount);
+    let nitrogen_partial_authorizations = nitrogen_requests
+        .iter()
+        .zip(nitrogen_authorizations)
+        .filter(|(request, authorization)| {
+            authorization.amount > 0.0 && authorization.amount < request.amount
+        })
+        .count();
     let transaction_id = vegetation_candidate.transaction_id();
-    let components = vegetation_candidate.energy_owner_operands();
-    let identity = vegetation_candidate
-        .ledger_operands()
-        .energy
-        .identity
-        .clone();
-    let reconstructed_energy = openwepp_vegetation::ledger::EnergyLedgerOperands {
-        identity,
-        incident_shortwave_j_m2: components.incident_shortwave_w_m2 * components.interval_s,
-        incident_longwave_j_m2: components.incident_longwave_j_m2,
-        reflected_shortwave_j_m2: components.reflected_shortwave_w_m2 * components.interval_s,
-        terminal_shortwave_j_m2: components.terminal_shortwave_w_m2 * components.interval_s,
-        emitted_longwave_j_m2: components.emitted_longwave_j_m2,
-        sensible_j_m2: components.sensible_j_m2,
-        latent_j_m2: LATENT_HEAT_VAPORIZATION
-            * (components.transpiration_kg_m2 + components.wet_phase_change_kg_m2),
-        ground_or_storage_j_m2: 0.0,
-    };
-    let energy_candidate = DiagnosticEnergyState {
-        last_transaction_id: transaction_id.0,
-        last_operands: Some(reconstructed_energy),
-    };
-    validate_owner_candidates(
-        &vegetation_candidate,
-        &water_candidate,
-        bgc_candidate.ending(),
-        &energy_candidate,
+    inject(failure, FailurePoint::EnergyOperandConstruction)?;
+    let mut energy_proposals = vegetation_candidate.energy_proposals().clone();
+    if failure == Some(FailurePoint::CrossOwnerEnergyIdentityMismatch) {
+        energy_proposals.identity.ending_state_sha256 = "0".repeat(64);
+    }
+    let energy_candidate = construct_energy_owner_candidate(
+        &owned.energy,
+        &crate::vegetation_energy_owner::EnergyOwnerTopology::from_configuration(config)?,
+        &energy_proposals,
+        CanopyHeatStorageMode::EquilibriumZero,
     )?;
-    let mut vegetation_commit = owned.vegetation.clone();
-    validate_and_commit_with_failure(&mut vegetation_commit, vegetation_candidate, failure)?;
-    owned.vegetation = vegetation_commit;
-    owned.water = water_candidate;
-    owned.biogeochemistry = bgc_candidate.ending().clone();
-    owned.energy = energy_candidate;
+    inject(failure, FailurePoint::EnergyOwnerValidation)?;
+    inject(failure, FailurePoint::ClosureValidation)?;
+    let envelope_transaction_id = if failure == Some(FailurePoint::CrossOwnerTransactionMismatch) {
+        TransactionId(transaction_id.0.checked_add(1).ok_or(
+            DiagnosticError::OwnerEnvelopeIdentity("VEGTXN-E-007 poison transaction overflow"),
+        )?)
+    } else {
+        transaction_id
+    };
+    let transaction = UncommittedCoupledTransaction {
+        transaction_id: envelope_transaction_id,
+        vegetation: vegetation_candidate,
+        water: water_candidate,
+        biogeochemistry: bgc_candidate,
+        energy: energy_candidate,
+    };
+    inject(failure, FailurePoint::VegetationOwnerValidation)?;
+    inject(failure, FailurePoint::WaterOwnerValidation)?;
+    inject(failure, FailurePoint::BiogeochemistryOwnerValidation)?;
+    inject(failure, FailurePoint::OwnerValidation)?;
+    inject(failure, FailurePoint::CrossOwnerValidation)?;
+    let mut validation_beginning = None;
+    if failure == Some(FailurePoint::CrossOwnerBeginningStateMismatch) {
+        let mut mismatched = owned.clone();
+        mismatched.vegetation.state_sha256 = "0".repeat(64);
+        validation_beginning = Some(mismatched);
+    }
+    transaction.validate(validation_beginning.as_ref().unwrap_or(owned))?;
+    let ending = transaction.ending_state();
+    inject(failure, FailurePoint::BeforeCommit)?;
+
+    // No fallible operation below this atomic replacement boundary.
+    *owned = ending;
     Ok(DiagnosticReceipt {
         transaction_id,
         water_used,
         nitrogen_used: nitrogen_total_used,
+        water_partial_authorizations,
+        nitrogen_partial_authorizations,
     })
 }
 
-fn validate_owner_candidates(
-    vegetation: &openwepp_vegetation::CoupledCandidate,
-    water: &DiagnosticWaterState,
-    bgc: &BiogeochemistryState,
-    energy: &DiagnosticEnergyState,
-) -> Result<(), DiagnosticError> {
-    let ledgers = vegetation.ledger_operands();
-    for store in &ledgers.water.soil {
-        if water.liquid_kg_m2.get(&store.layer_id).copied() != Some(store.ending_kg_m2) {
-            return Err(VegetationError::Receipt("water owner/ledger mismatch".into()).into());
-        }
-    }
-    for store in &ledgers.nitrogen.mineral {
-        let layer = bgc
-            .layers
-            .get(store.key.layer_id.as_str())
-            .ok_or(VegetationError::Receipt(
-                "BGC owner/ledger layer mismatch".into(),
-            ))?;
-        let ending = match store.key.species {
-            openwepp_kernel_contract::MineralNitrogenSpecies::Ammonium => layer.ammonium_n,
-            openwepp_kernel_contract::MineralNitrogenSpecies::Nitrate => layer.nitrate_n,
-        };
-        if ending.to_bits() != store.ending_kg_m2.to_bits() {
-            return Err(VegetationError::Receipt("BGC owner/ledger mismatch".into()).into());
-        }
-    }
-    if energy.last_transaction_id != vegetation.transaction_id().0
-        || energy.last_operands.as_ref() != Some(&ledgers.energy)
-    {
-        return Err(VegetationError::Receipt("energy owner/ledger mismatch".into()).into());
+fn inject(failure: Option<FailurePoint>, point: FailurePoint) -> Result<(), DiagnosticError> {
+    if failure == Some(point) {
+        return Err(DiagnosticError::InjectedFailure);
     }
     Ok(())
 }

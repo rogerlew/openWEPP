@@ -1,0 +1,6 @@
+
+running 1 test
+test v7_default_off_diagnostic_commits_all_owners_once_and_rolls_back_every_phase ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.87s
+

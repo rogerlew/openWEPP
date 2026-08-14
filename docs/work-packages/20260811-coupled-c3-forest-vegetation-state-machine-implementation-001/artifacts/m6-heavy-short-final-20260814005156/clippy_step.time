@@ -1,0 +1,6 @@
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.66s
+time_real_seconds=3.07
+time_user_seconds=35.16
+time_sys_seconds=18.67
+max_rss_kb=188976
