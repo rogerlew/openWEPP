@@ -4,7 +4,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{ResourceOwnerId, TileId, TransactionId};
+use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 use openwepp_land_surface_energy::{
     CondensationCredit, GroundWaterKey, OfeId, RequestingComponent, SourceId,
     StandGroundWaterAmountBasis, SurfaceClass, SurfaceId, WaterAmount, WaterAuthorization,
@@ -31,6 +31,192 @@ pub enum DirectSurfaceLiquidError {
     Bound(&'static str),
     #[error("surface-liquid closure failure: {0}")]
     Closure(&'static str),
+    #[error("{0}")]
+    Failure(Box<DirectSurfaceLiquidFailure>),
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum DirectSurfaceLiquidErrorCode {
+    #[serde(rename = "SURFACELIQUID-E-001")]
+    E001,
+    #[serde(rename = "SURFACELIQUID-E-002")]
+    E002,
+    #[serde(rename = "SURFACELIQUID-E-003")]
+    E003,
+    #[serde(rename = "SURFACELIQUID-E-004")]
+    E004,
+    #[serde(rename = "SURFACELIQUID-E-005")]
+    E005,
+    #[serde(rename = "SURFACELIQUID-E-006")]
+    E006,
+    #[serde(rename = "SURFACELIQUID-E-007")]
+    E007,
+    #[serde(rename = "SURFACELIQUID-E-008")]
+    E008,
+    #[serde(rename = "SURFACELIQUID-E-009")]
+    E009,
+    #[serde(rename = "SURFACELIQUID-E-010")]
+    E010,
+    #[serde(rename = "SURFACELIQUID-E-011")]
+    E011,
+}
+
+impl DirectSurfaceLiquidErrorCode {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::E001 => "SURFACELIQUID-E-001",
+            Self::E002 => "SURFACELIQUID-E-002",
+            Self::E003 => "SURFACELIQUID-E-003",
+            Self::E004 => "SURFACELIQUID-E-004",
+            Self::E005 => "SURFACELIQUID-E-005",
+            Self::E006 => "SURFACELIQUID-E-006",
+            Self::E007 => "SURFACELIQUID-E-007",
+            Self::E008 => "SURFACELIQUID-E-008",
+            Self::E009 => "SURFACELIQUID-E-009",
+            Self::E010 => "SURFACELIQUID-E-010",
+            Self::E011 => "SURFACELIQUID-E-011",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DirectSurfaceLiquidPhase {
+    Configuration,
+    Restart,
+    Authorization,
+    ResourceCandidate,
+    IngressCandidate,
+    IndependentClosure,
+    AtomicEnvelope,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectSurfaceLiquidErrorContext {
+    pub transaction_id: Option<TransactionId>,
+    pub ofe_id: Option<OfeId>,
+    pub tile_id: Option<TileId>,
+    pub surface_id: Option<SurfaceId>,
+    pub source_id: Option<SourceId>,
+    pub parcel_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectSurfaceLiquidRollbackHashes {
+    pub beginning_owner_sha256: Option<String>,
+    pub attempted_owner_sha256: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectSurfaceLiquidFailure {
+    pub code: DirectSurfaceLiquidErrorCode,
+    pub phase: DirectSurfaceLiquidPhase,
+    pub context: DirectSurfaceLiquidErrorContext,
+    pub rollback: DirectSurfaceLiquidRollbackHashes,
+    pub detail: String,
+}
+
+impl std::fmt::Display for DirectSurfaceLiquidFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "{} {:?}: {}",
+            self.code.as_str(),
+            self.phase,
+            self.detail
+        )
+    }
+}
+
+impl DirectSurfaceLiquidError {
+    #[must_use]
+    pub fn canonical_failure(
+        code: DirectSurfaceLiquidErrorCode,
+        phase: DirectSurfaceLiquidPhase,
+        context: DirectSurfaceLiquidErrorContext,
+        rollback: DirectSurfaceLiquidRollbackHashes,
+        detail: impl Into<String>,
+    ) -> Self {
+        Self::Failure(Box::new(DirectSurfaceLiquidFailure {
+            code,
+            phase,
+            context,
+            rollback,
+            detail: detail.into(),
+        }))
+    }
+
+    #[must_use]
+    pub fn failure(&self) -> Option<&DirectSurfaceLiquidFailure> {
+        match self {
+            Self::Failure(failure) => Some(failure),
+            _ => None,
+        }
+    }
+
+    #[must_use]
+    pub const fn code(&self) -> DirectSurfaceLiquidErrorCode {
+        match self {
+            Self::Schema(_) => DirectSurfaceLiquidErrorCode::E001,
+            Self::Identity(_) => DirectSurfaceLiquidErrorCode::E002,
+            Self::Domain(_) => DirectSurfaceLiquidErrorCode::E003,
+            Self::Protocol(_) => DirectSurfaceLiquidErrorCode::E005,
+            Self::Bound(_) => DirectSurfaceLiquidErrorCode::E006,
+            Self::Closure(_) => DirectSurfaceLiquidErrorCode::E010,
+            Self::Failure(failure) => failure.code,
+        }
+    }
+
+    fn contextualize(
+        self,
+        code: DirectSurfaceLiquidErrorCode,
+        phase: DirectSurfaceLiquidPhase,
+        context: DirectSurfaceLiquidErrorContext,
+        beginning_owner_sha256: Option<String>,
+        attempted_owner_sha256: Option<String>,
+    ) -> Self {
+        if matches!(self, Self::Failure(_)) {
+            return self;
+        }
+        Self::Failure(Box::new(DirectSurfaceLiquidFailure {
+            code,
+            phase,
+            context,
+            rollback: DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+            },
+            detail: self.to_string(),
+        }))
+    }
+
+    fn recontextualize(
+        self,
+        code: DirectSurfaceLiquidErrorCode,
+        phase: DirectSurfaceLiquidPhase,
+        context: DirectSurfaceLiquidErrorContext,
+        beginning_owner_sha256: Option<String>,
+        attempted_owner_sha256: Option<String>,
+    ) -> Self {
+        let detail = match self {
+            Self::Failure(failure) => failure.detail,
+            other => other.to_string(),
+        };
+        Self::Failure(Box::new(DirectSurfaceLiquidFailure {
+            code,
+            phase,
+            context,
+            rollback: DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+            },
+            detail,
+        }))
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -64,14 +250,47 @@ pub struct DirectSurfaceLiquidConfigurationRecord {
     pub runon_destination_tile_id: Option<TileId>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
+pub struct DirectSurfaceLiquidOfeBinding {
+    pub ofe_id: OfeId,
+    pub production_lane_index: usize,
+    pub production_lane_id: u32,
+    pub ordered_soil_layer_ids: Vec<SoilLayerId>,
+    pub infiltration_soil_thermal_layer_id: SoilLayerId,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct DirectSurfaceLiquidConfiguration {
     pub owner_id: ResourceOwnerId,
     pub run_id: u64,
     pub configuration_sha256: String,
     pub ofe_topology: Vec<OfeId>,
+    pub ofe_bindings: Vec<DirectSurfaceLiquidOfeBinding>,
     pub records: Vec<DirectSurfaceLiquidConfigurationRecord>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalSurfaceLiquidConfigurationRecord {
+    key: DirectSurfaceLiquidStoreKey,
+    tile_fraction: String,
+    capacity_kg_m2_tile: String,
+    ofe_area_m2: String,
+    ground_ingress_mode: DirectGroundIngressMode,
+    runon_destination_ofe_id: Option<OfeId>,
+    runon_destination_tile_id: Option<TileId>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalSurfaceLiquidConfiguration {
+    owner_id: ResourceOwnerId,
+    run_id: u64,
+    configuration_sha256: String,
+    ofe_topology: Vec<OfeId>,
+    ofe_bindings: Vec<DirectSurfaceLiquidOfeBinding>,
+    records: Vec<CanonicalSurfaceLiquidConfigurationRecord>,
 }
 
 impl DirectSurfaceLiquidConfiguration {
@@ -79,6 +298,26 @@ impl DirectSurfaceLiquidConfiguration {
         owner_id: ResourceOwnerId,
         run_id: u64,
         ofe_topology: Vec<OfeId>,
+        ofe_bindings: Vec<DirectSurfaceLiquidOfeBinding>,
+        records: Vec<DirectSurfaceLiquidConfigurationRecord>,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        Self::new_inner(owner_id, run_id, ofe_topology, ofe_bindings, records).map_err(|error| {
+            let code = error.code();
+            error.contextualize(
+                code,
+                DirectSurfaceLiquidPhase::Configuration,
+                DirectSurfaceLiquidErrorContext::default(),
+                None,
+                None,
+            )
+        })
+    }
+
+    fn new_inner(
+        owner_id: ResourceOwnerId,
+        run_id: u64,
+        ofe_topology: Vec<OfeId>,
+        ofe_bindings: Vec<DirectSurfaceLiquidOfeBinding>,
         mut records: Vec<DirectSurfaceLiquidConfigurationRecord>,
     ) -> Result<Self, DirectSurfaceLiquidError> {
         let topology_rank = ofe_topology
@@ -97,6 +336,7 @@ impl DirectSurfaceLiquidConfiguration {
             run_id,
             configuration_sha256: ZERO_SHA256.into(),
             ofe_topology,
+            ofe_bindings,
             records,
         };
         configuration.validate_structure()?;
@@ -105,6 +345,19 @@ impl DirectSurfaceLiquidConfiguration {
     }
 
     pub fn validate(&self) -> Result<(), DirectSurfaceLiquidError> {
+        self.validate_inner().map_err(|error| {
+            let code = error.code();
+            error.contextualize(
+                code,
+                DirectSurfaceLiquidPhase::Configuration,
+                DirectSurfaceLiquidErrorContext::default(),
+                None,
+                None,
+            )
+        })
+    }
+
+    fn validate_inner(&self) -> Result<(), DirectSurfaceLiquidError> {
         self.validate_structure()?;
         if !is_sha256(&self.configuration_sha256)
             || self.configuration_sha256 != self.recomputed_sha256()?
@@ -130,6 +383,7 @@ impl DirectSurfaceLiquidConfiguration {
                 "duplicate OFE topology identity",
             ));
         }
+        self.validate_ofe_bindings()?;
         self.validate_canonical_record_order()?;
         let mut fraction_by_ofe = BTreeMap::<OfeId, f64>::new();
         let mut area_by_ofe = BTreeMap::<OfeId, u64>::new();
@@ -174,6 +428,42 @@ impl DirectSurfaceLiquidConfiguration {
             )?;
         }
         self.validate_topology_and_routes(&topology_set, &fraction_by_ofe, &route_by_ofe)
+    }
+
+    fn validate_ofe_bindings(&self) -> Result<(), DirectSurfaceLiquidError> {
+        if self.ofe_bindings.len() != self.ofe_topology.len() {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "OFE binding cardinality mismatch",
+            ));
+        }
+        let mut lane_ids = BTreeSet::new();
+        for (rank, (ofe_id, binding)) in
+            self.ofe_topology.iter().zip(&self.ofe_bindings).enumerate()
+        {
+            if binding.ofe_id != *ofe_id
+                || binding.production_lane_index != rank
+                || binding.production_lane_id == 0
+                || !lane_ids.insert(binding.production_lane_id)
+            {
+                return Err(DirectSurfaceLiquidError::Identity(
+                    "wrong-order, duplicate, or wrong-lane OFE binding",
+                ));
+            }
+            let unique_layers = binding
+                .ordered_soil_layer_ids
+                .iter()
+                .collect::<BTreeSet<_>>();
+            if binding.ordered_soil_layer_ids.is_empty()
+                || unique_layers.len() != binding.ordered_soil_layer_ids.len()
+                || binding.ordered_soil_layer_ids.first()
+                    != Some(&binding.infiltration_soil_thermal_layer_id)
+            {
+                return Err(DirectSurfaceLiquidError::Identity(
+                    "invalid ordered soil-layer or thermal-recipient binding",
+                ));
+            }
+        }
+        Ok(())
     }
 
     fn validate_canonical_record_order(&self) -> Result<(), DirectSurfaceLiquidError> {
@@ -260,45 +550,92 @@ impl DirectSurfaceLiquidConfiguration {
         Ok(())
     }
 
+    pub fn canonical_bytes(&self) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+        self.validate()?;
+        self.canonical_bytes_with_digest(&self.configuration_sha256)
+    }
+
+    pub fn from_canonical_bytes(bytes: &[u8]) -> Result<Self, DirectSurfaceLiquidError> {
+        Self::from_canonical_bytes_inner(bytes).map_err(|error| {
+            let code = error.code();
+            error.recontextualize(
+                code,
+                DirectSurfaceLiquidPhase::Configuration,
+                DirectSurfaceLiquidErrorContext::default(),
+                None,
+                None,
+            )
+        })
+    }
+
+    fn from_canonical_bytes_inner(bytes: &[u8]) -> Result<Self, DirectSurfaceLiquidError> {
+        let canonical: CanonicalSurfaceLiquidConfiguration = serde_json::from_slice(bytes)
+            .map_err(|_| DirectSurfaceLiquidError::Schema("canonical configuration parse"))?;
+        let records = canonical
+            .records
+            .into_iter()
+            .map(|record| {
+                Ok(DirectSurfaceLiquidConfigurationRecord {
+                    key: record.key,
+                    tile_fraction: parse_f64_bits(&record.tile_fraction)?,
+                    capacity_kg_m2_tile: parse_f64_bits(&record.capacity_kg_m2_tile)?,
+                    ofe_area_m2: parse_f64_bits(&record.ofe_area_m2)?,
+                    ground_ingress_mode: record.ground_ingress_mode,
+                    runon_destination_ofe_id: record.runon_destination_ofe_id,
+                    runon_destination_tile_id: record.runon_destination_tile_id,
+                })
+            })
+            .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
+        let configuration = Self {
+            owner_id: canonical.owner_id,
+            run_id: canonical.run_id,
+            configuration_sha256: canonical.configuration_sha256,
+            ofe_topology: canonical.ofe_topology,
+            ofe_bindings: canonical.ofe_bindings,
+            records,
+        };
+        configuration.validate()?;
+        if configuration.canonical_bytes()? != bytes {
+            return Err(DirectSurfaceLiquidError::Schema(
+                "noncanonical configuration bytes",
+            ));
+        }
+        Ok(configuration)
+    }
+
     pub(super) fn recomputed_sha256(&self) -> Result<String, DirectSurfaceLiquidError> {
-        #[derive(Serialize)]
-        struct Record<'a> {
-            key: &'a DirectSurfaceLiquidStoreKey,
-            tile_fraction_bits: String,
-            capacity_bits: String,
-            ofe_area_bits: String,
-            ground_ingress_mode: DirectGroundIngressMode,
-            runon_destination_ofe_id: &'a Option<OfeId>,
-            runon_destination_tile_id: &'a Option<TileId>,
-        }
-        #[derive(Serialize)]
-        struct View<'a> {
-            owner_id: &'a ResourceOwnerId,
-            run_id: u64,
-            configuration_sha256: &'static str,
-            ofe_topology: &'a [OfeId],
-            records: Vec<Record<'a>>,
-        }
+        Ok(format!(
+            "{:x}",
+            Sha256::digest(self.canonical_bytes_with_digest(ZERO_SHA256)?)
+        ))
+    }
+
+    fn canonical_bytes_with_digest(
+        &self,
+        digest: &str,
+    ) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
         let records = self
             .records
             .iter()
-            .map(|record| Record {
-                key: &record.key,
-                tile_fraction_bits: f64_bits(record.tile_fraction),
-                capacity_bits: f64_bits(record.capacity_kg_m2_tile),
-                ofe_area_bits: f64_bits(record.ofe_area_m2),
+            .map(|record| CanonicalSurfaceLiquidConfigurationRecord {
+                key: record.key.clone(),
+                tile_fraction: f64_bits(record.tile_fraction),
+                capacity_kg_m2_tile: f64_bits(record.capacity_kg_m2_tile),
+                ofe_area_m2: f64_bits(record.ofe_area_m2),
                 ground_ingress_mode: record.ground_ingress_mode,
-                runon_destination_ofe_id: &record.runon_destination_ofe_id,
-                runon_destination_tile_id: &record.runon_destination_tile_id,
+                runon_destination_ofe_id: record.runon_destination_ofe_id.clone(),
+                runon_destination_tile_id: record.runon_destination_tile_id.clone(),
             })
             .collect();
-        digest_json(&View {
-            owner_id: &self.owner_id,
+        serde_json::to_vec(&CanonicalSurfaceLiquidConfiguration {
+            owner_id: self.owner_id.clone(),
             run_id: self.run_id,
-            configuration_sha256: ZERO_SHA256,
-            ofe_topology: &self.ofe_topology,
+            configuration_sha256: digest.into(),
+            ofe_topology: self.ofe_topology.clone(),
+            ofe_bindings: self.ofe_bindings.clone(),
             records,
         })
+        .map_err(|_| DirectSurfaceLiquidError::Schema("canonical configuration serialization"))
     }
 
     fn record_for_key(
@@ -373,8 +710,7 @@ pub struct DirectSurfaceLiquidContinuationState {
     pub last_accepted_transaction_id: Option<TransactionId>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct DirectSurfaceLiquidOwnedState {
     pub owner_id: ResourceOwnerId,
     pub configuration_sha256: String,
@@ -383,8 +719,54 @@ pub struct DirectSurfaceLiquidOwnedState {
     pub continuations: Vec<DirectSurfaceLiquidContinuationState>,
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalSurfaceLiquidStateRecord {
+    key: DirectSurfaceLiquidStoreKey,
+    liquid_kg_m2_tile: String,
+    last_accepted_transaction_id: Option<TransactionId>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalSurfaceLiquidContinuationState {
+    ofe_id: OfeId,
+    day_index: usize,
+    next_interval_index: u8,
+    cumulative_supply_m: String,
+    cumulative_infiltration_m: String,
+    last_accepted_transaction_id: Option<TransactionId>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalSurfaceLiquidOwnedState {
+    owner_id: ResourceOwnerId,
+    configuration_sha256: String,
+    state_sha256: String,
+    records: Vec<CanonicalSurfaceLiquidStateRecord>,
+    continuations: Vec<CanonicalSurfaceLiquidContinuationState>,
+}
+
 impl DirectSurfaceLiquidOwnedState {
     pub fn new_initial(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        liquid_by_key: &BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
+        day_index: usize,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        Self::new_initial_inner(configuration, liquid_by_key, day_index).map_err(|error| {
+            let code = error.code();
+            error.contextualize(
+                code,
+                DirectSurfaceLiquidPhase::Restart,
+                DirectSurfaceLiquidErrorContext::default(),
+                None,
+                None,
+            )
+        })
+    }
+
+    fn new_initial_inner(
         configuration: &DirectSurfaceLiquidConfiguration,
         liquid_by_key: &BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
         day_index: usize,
@@ -434,6 +816,22 @@ impl DirectSurfaceLiquidOwnedState {
     }
 
     pub fn validate(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        self.validate_inner(configuration).map_err(|error| {
+            let code = error.code();
+            error.contextualize(
+                code,
+                DirectSurfaceLiquidPhase::Restart,
+                DirectSurfaceLiquidErrorContext::default(),
+                Some(self.state_sha256.clone()),
+                None,
+            )
+        })
+    }
+
+    fn validate_inner(
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<(), DirectSurfaceLiquidError> {
@@ -541,62 +939,133 @@ impl DirectSurfaceLiquidOwnedState {
                     "cumulative infiltration exceeds supply",
                 ));
             }
+            match expected_lineage {
+                None if continuation.next_interval_index == 0
+                    && continuation.cumulative_supply_m.to_bits() == 0.0_f64.to_bits()
+                    && continuation.cumulative_infiltration_m.to_bits() == 0.0_f64.to_bits() => {}
+                Some(_) if (1..=48).contains(&continuation.next_interval_index) => {}
+                None => {
+                    return Err(DirectSurfaceLiquidError::Identity(
+                        "initial continuation must be interval zero with zero carry",
+                    ));
+                }
+                Some(_) => {
+                    return Err(DirectSurfaceLiquidError::Identity(
+                        "accepted continuation must have interval 1..=48",
+                    ));
+                }
+            }
         }
         Ok(())
     }
 
+    pub fn canonical_bytes(&self) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
+        self.canonical_bytes_with_digest(&self.state_sha256)
+    }
+
+    pub fn from_canonical_bytes(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        bytes: &[u8],
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        Self::from_canonical_bytes_inner(configuration, bytes).map_err(|error| {
+            let code = error.code();
+            error.recontextualize(
+                code,
+                DirectSurfaceLiquidPhase::Restart,
+                DirectSurfaceLiquidErrorContext::default(),
+                None,
+                None,
+            )
+        })
+    }
+
+    fn from_canonical_bytes_inner(
+        configuration: &DirectSurfaceLiquidConfiguration,
+        bytes: &[u8],
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        let canonical: CanonicalSurfaceLiquidOwnedState = serde_json::from_slice(bytes)
+            .map_err(|_| DirectSurfaceLiquidError::Schema("canonical state parse"))?;
+        let records = canonical
+            .records
+            .into_iter()
+            .map(|record| {
+                Ok(DirectSurfaceLiquidStateRecord {
+                    key: record.key,
+                    liquid_kg_m2_tile: parse_f64_bits(&record.liquid_kg_m2_tile)?,
+                    last_accepted_transaction_id: record.last_accepted_transaction_id,
+                })
+            })
+            .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
+        let continuations = canonical
+            .continuations
+            .into_iter()
+            .map(|continuation| {
+                Ok(DirectSurfaceLiquidContinuationState {
+                    ofe_id: continuation.ofe_id,
+                    day_index: continuation.day_index,
+                    next_interval_index: continuation.next_interval_index,
+                    cumulative_supply_m: parse_f64_bits(&continuation.cumulative_supply_m)?,
+                    cumulative_infiltration_m: parse_f64_bits(
+                        &continuation.cumulative_infiltration_m,
+                    )?,
+                    last_accepted_transaction_id: continuation.last_accepted_transaction_id,
+                })
+            })
+            .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
+        let state = Self {
+            owner_id: canonical.owner_id,
+            configuration_sha256: canonical.configuration_sha256,
+            state_sha256: canonical.state_sha256,
+            records,
+            continuations,
+        };
+        state.validate(configuration)?;
+        if state.canonical_bytes()? != bytes {
+            return Err(DirectSurfaceLiquidError::Schema("noncanonical state bytes"));
+        }
+        Ok(state)
+    }
+
     pub(super) fn recomputed_sha256(&self) -> Result<String, DirectSurfaceLiquidError> {
-        #[derive(Serialize)]
-        struct Record<'a> {
-            key: &'a DirectSurfaceLiquidStoreKey,
-            liquid_bits: String,
-            last_accepted_transaction_id: Option<TransactionId>,
-        }
-        #[derive(Serialize)]
-        struct Continuation<'a> {
-            ofe_id: &'a OfeId,
-            day_index: usize,
-            next_interval_index: u8,
-            cumulative_supply_bits: String,
-            cumulative_infiltration_bits: String,
-            last_accepted_transaction_id: Option<TransactionId>,
-        }
-        #[derive(Serialize)]
-        struct View<'a> {
-            owner_id: &'a ResourceOwnerId,
-            configuration_sha256: &'a str,
-            state_sha256: &'static str,
-            records: Vec<Record<'a>>,
-            continuations: Vec<Continuation<'a>>,
-        }
+        Ok(format!(
+            "{:x}",
+            Sha256::digest(self.canonical_bytes_with_digest(ZERO_SHA256)?)
+        ))
+    }
+
+    fn canonical_bytes_with_digest(
+        &self,
+        digest: &str,
+    ) -> Result<Vec<u8>, DirectSurfaceLiquidError> {
         let records = self
             .records
             .iter()
-            .map(|record| Record {
-                key: &record.key,
-                liquid_bits: f64_bits(record.liquid_kg_m2_tile),
+            .map(|record| CanonicalSurfaceLiquidStateRecord {
+                key: record.key.clone(),
+                liquid_kg_m2_tile: f64_bits(record.liquid_kg_m2_tile),
                 last_accepted_transaction_id: record.last_accepted_transaction_id,
             })
             .collect();
         let continuations = self
             .continuations
             .iter()
-            .map(|state| Continuation {
-                ofe_id: &state.ofe_id,
+            .map(|state| CanonicalSurfaceLiquidContinuationState {
+                ofe_id: state.ofe_id.clone(),
                 day_index: state.day_index,
                 next_interval_index: state.next_interval_index,
-                cumulative_supply_bits: f64_bits(state.cumulative_supply_m),
-                cumulative_infiltration_bits: f64_bits(state.cumulative_infiltration_m),
+                cumulative_supply_m: f64_bits(state.cumulative_supply_m),
+                cumulative_infiltration_m: f64_bits(state.cumulative_infiltration_m),
                 last_accepted_transaction_id: state.last_accepted_transaction_id,
             })
             .collect();
-        digest_json(&View {
-            owner_id: &self.owner_id,
-            configuration_sha256: &self.configuration_sha256,
-            state_sha256: ZERO_SHA256,
+        serde_json::to_vec(&CanonicalSurfaceLiquidOwnedState {
+            owner_id: self.owner_id.clone(),
+            configuration_sha256: self.configuration_sha256.clone(),
+            state_sha256: digest.into(),
             records,
             continuations,
         })
+        .map_err(|_| DirectSurfaceLiquidError::Schema("canonical state serialization"))
     }
 }
 
@@ -620,15 +1089,94 @@ pub struct DirectCondensationOverflow {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSurfaceLiquidResourceCandidate {
-    pub transaction_id: TransactionId,
-    pub beginning_state: DirectSurfaceLiquidOwnedState,
-    pub working_state: DirectSurfaceLiquidOwnedState,
-    pub finalized_uses: Vec<WaterAmount>,
-    pub condensation_credits: Vec<CondensationCredit>,
-    pub condensation_overflow: Vec<DirectCondensationOverflow>,
+    transaction_id: TransactionId,
+    beginning_state: DirectSurfaceLiquidOwnedState,
+    working_state: DirectSurfaceLiquidOwnedState,
+    finalized_uses: Vec<WaterAmount>,
+    condensation_credits: Vec<CondensationCredit>,
+    condensation_overflow: Vec<DirectCondensationOverflow>,
+}
+
+impl DirectSurfaceLiquidResourceCandidate {
+    #[must_use]
+    pub const fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub const fn beginning_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.beginning_state
+    }
+
+    #[must_use]
+    pub const fn working_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.working_state
+    }
+
+    #[must_use]
+    pub fn finalized_uses(&self) -> &[WaterAmount] {
+        &self.finalized_uses
+    }
+
+    #[must_use]
+    pub fn condensation_credits(&self) -> &[CondensationCredit] {
+        &self.condensation_credits
+    }
+
+    #[must_use]
+    pub fn condensation_overflow(&self) -> &[DirectCondensationOverflow] {
+        &self.condensation_overflow
+    }
+
+    pub fn validate(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        validate_resource_candidate(configuration, self).map_err(|error| {
+            error.recontextualize(
+                DirectSurfaceLiquidErrorCode::E009,
+                DirectSurfaceLiquidPhase::ResourceCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(self.transaction_id),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(self.beginning_state.state_sha256.clone()),
+                self.working_state.recomputed_sha256().ok(),
+            )
+        })
+    }
 }
 
 pub fn authorize_surface_liquid_withdrawals(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning: &DirectSurfaceLiquidOwnedState,
+    transaction_id: TransactionId,
+    expected_predecessor: Option<TransactionId>,
+    requests: &[WaterAmount],
+) -> Result<DirectSurfaceLiquidArbitration, DirectSurfaceLiquidError> {
+    authorize_surface_liquid_withdrawals_inner(
+        configuration,
+        beginning,
+        transaction_id,
+        expected_predecessor,
+        requests,
+    )
+    .map_err(|error| {
+        let code = error.code();
+        error.recontextualize(
+            code,
+            DirectSurfaceLiquidPhase::Authorization,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(beginning.state_sha256.clone()),
+            None,
+        )
+    })
+}
+
+fn authorize_surface_liquid_withdrawals_inner(
     configuration: &DirectSurfaceLiquidConfiguration,
     beginning: &DirectSurfaceLiquidOwnedState,
     transaction_id: TransactionId,
@@ -738,6 +1286,33 @@ pub fn apply_surface_liquid_resource_phase(
     finalized_uses: &[WaterAmount],
     condensation_credits: &[CondensationCredit],
 ) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
+    apply_surface_liquid_resource_phase_inner(
+        configuration,
+        arbitration,
+        finalized_uses,
+        condensation_credits,
+    )
+    .map_err(|error| {
+        let code = error.code();
+        error.recontextualize(
+            code,
+            DirectSurfaceLiquidPhase::ResourceCandidate,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(arbitration.transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(arbitration.beginning_state.state_sha256.clone()),
+            None,
+        )
+    })
+}
+
+fn apply_surface_liquid_resource_phase_inner(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    arbitration: &DirectSurfaceLiquidArbitration,
+    finalized_uses: &[WaterAmount],
+    condensation_credits: &[CondensationCredit],
+) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
     arbitration.beginning_state.validate_for_transaction(
         configuration,
         arbitration.transaction_id,
@@ -759,15 +1334,12 @@ pub fn apply_surface_liquid_resource_phase(
         let raw =
             state.liquid_kg_m2_tile - debit / config.tile_fraction + credit / config.tile_fraction;
         if raw < 0.0 {
-            return Err(DirectSurfaceLiquidError::Closure("negative resource state"));
+            return Err(candidate_closure("negative resource state"));
         }
         if raw > config.capacity_kg_m2_tile {
-            let detail =
-                credit_details
-                    .get(&state.key)
-                    .ok_or(DirectSurfaceLiquidError::Closure(
-                        "overflow without condensation credit",
-                    ))?;
+            let detail = credit_details
+                .get(&state.key)
+                .ok_or_else(|| candidate_closure("overflow without condensation credit"))?;
             overflows.push(DirectCondensationOverflow {
                 store_key: state.key.clone(),
                 amount_kg_m2_ofe_ground: config.tile_fraction * (raw - config.capacity_kg_m2_tile),
@@ -777,14 +1349,155 @@ pub fn apply_surface_liquid_resource_phase(
         }
         state.liquid_kg_m2_tile = raw.min(config.capacity_kg_m2_tile);
     }
-    Ok(DirectSurfaceLiquidResourceCandidate {
+    let candidate = DirectSurfaceLiquidResourceCandidate {
         transaction_id: arbitration.transaction_id,
         beginning_state: arbitration.beginning_state.clone(),
         working_state,
         finalized_uses: finalized_uses.to_vec(),
         condensation_credits: condensation_credits.to_vec(),
         condensation_overflow: overflows,
-    })
+    };
+    candidate.validate(configuration)?;
+    Ok(candidate)
+}
+
+fn validate_resource_candidate(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    candidate: &DirectSurfaceLiquidResourceCandidate,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let predecessor = candidate.beginning_state.accepted_transaction()?;
+    candidate.beginning_state.validate_for_transaction(
+        configuration,
+        candidate.transaction_id,
+        predecessor,
+    )?;
+    if candidate.working_state.owner_id != candidate.beginning_state.owner_id
+        || candidate.working_state.configuration_sha256
+            != candidate.beginning_state.configuration_sha256
+        || candidate.working_state.state_sha256 != candidate.beginning_state.state_sha256
+        || candidate.working_state.continuations != candidate.beginning_state.continuations
+        || candidate.working_state.records.len() != candidate.beginning_state.records.len()
+    {
+        return Err(DirectSurfaceLiquidError::Closure(
+            "resource candidate changed non-resource owner state",
+        ));
+    }
+    let (debit_by_store, credit_by_store, credit_details) =
+        reconstruct_resource_candidate_operands(configuration, candidate)?;
+    let mut expected_overflow = Vec::new();
+    for ((beginning, working), config) in candidate
+        .beginning_state
+        .records
+        .iter()
+        .zip(&candidate.working_state.records)
+        .zip(&configuration.records)
+    {
+        if beginning.key != working.key || beginning.key != config.key {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "resource candidate record key mismatch",
+            ));
+        }
+        let debit = debit_by_store.get(&beginning.key).copied().unwrap_or(0.0);
+        let credit = credit_by_store.get(&beginning.key).copied().unwrap_or(0.0);
+        let raw = beginning.liquid_kg_m2_tile - debit / config.tile_fraction
+            + credit / config.tile_fraction;
+        let expected_liquid = raw.min(config.capacity_kg_m2_tile);
+        if !raw.is_finite()
+            || raw < 0.0
+            || working.liquid_kg_m2_tile.to_bits() != expected_liquid.to_bits()
+            || working.last_accepted_transaction_id != beginning.last_accepted_transaction_id
+        {
+            return Err(DirectSurfaceLiquidError::Closure(
+                "independent W0-F+C resource reconstruction mismatch",
+            ));
+        }
+        if raw > config.capacity_kg_m2_tile {
+            let detail =
+                credit_details
+                    .get(&beginning.key)
+                    .ok_or(DirectSurfaceLiquidError::Closure(
+                        "overflow without condensation credit",
+                    ))?;
+            expected_overflow.push(DirectCondensationOverflow {
+                store_key: beginning.key.clone(),
+                amount_kg_m2_ofe_ground: config.tile_fraction * (raw - config.capacity_kg_m2_tile),
+                temperature_k: detail.temperature_k,
+                specific_liquid_enthalpy_j_kg: detail.specific_liquid_enthalpy_j_kg,
+            });
+        }
+    }
+    if !overflow_eq_bits(&expected_overflow, &candidate.condensation_overflow) {
+        return Err(DirectSurfaceLiquidError::Closure(
+            "independent condensation-overflow reconstruction mismatch",
+        ));
+    }
+    Ok(())
+}
+
+type ResourceCandidateOperands<'a> = (
+    BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
+    BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
+    BTreeMap<DirectSurfaceLiquidStoreKey, &'a CondensationCredit>,
+);
+
+fn reconstruct_resource_candidate_operands<'a>(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    candidate: &'a DirectSurfaceLiquidResourceCandidate,
+) -> Result<ResourceCandidateOperands<'a>, DirectSurfaceLiquidError> {
+    let mut debit_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
+    let mut finalized_keys = BTreeSet::new();
+    for finalized in &candidate.finalized_uses {
+        finalized
+            .key
+            .validate(candidate.transaction_id)
+            .map_err(|_| DirectSurfaceLiquidError::Identity("invalid finalized-use key"))?;
+        require_nonnegative(finalized.amount_kg_m2_stand_ground, "finalized use")?;
+        if !finalized_keys.insert(finalized.key.clone()) {
+            return Err(DirectSurfaceLiquidError::Protocol(
+                "duplicate finalized use in candidate",
+            ));
+        }
+        let store = configuration.store_key_for_water(&finalized.key)?;
+        *debit_by_store.entry(store).or_default() += finalized.amount_kg_m2_stand_ground;
+    }
+    let mut credit_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
+    let mut credit_details = BTreeMap::<DirectSurfaceLiquidStoreKey, &CondensationCredit>::new();
+    for credit in &candidate.condensation_credits {
+        validate_candidate_condensation_credit(configuration, candidate.transaction_id, credit)?;
+        let store = configuration
+            .records
+            .iter()
+            .find(|record| {
+                record.key.ofe_id == credit.ofe_id
+                    && record.key.tile_id == credit.tile_id
+                    && record.key.surface_id == credit.surface_id
+            })
+            .map(|record| record.key.clone())
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "condensation store missing",
+            ))?;
+        if credit_details.insert(store.clone(), credit).is_some() {
+            return Err(DirectSurfaceLiquidError::Protocol(
+                "duplicate condensation credit in candidate",
+            ));
+        }
+        credit_by_store.insert(store, credit.amount_kg_m2_stand_ground);
+    }
+    Ok((debit_by_store, credit_by_store, credit_details))
+}
+
+fn overflow_eq_bits(
+    left: &[DirectCondensationOverflow],
+    right: &[DirectCondensationOverflow],
+) -> bool {
+    left.len() == right.len()
+        && left.iter().zip(right).all(|(left, right)| {
+            left.store_key == right.store_key
+                && left.amount_kg_m2_ofe_ground.to_bits() == right.amount_kg_m2_ofe_ground.to_bits()
+                && left.temperature_k.to_bits() == right.temperature_k.to_bits()
+                && left.specific_liquid_enthalpy_j_kg.to_bits()
+                    == right.specific_liquid_enthalpy_j_kg.to_bits()
+        })
 }
 
 fn validate_finalized_uses(
@@ -873,7 +1586,15 @@ fn validate_condensation_credit(
     arbitration: &DirectSurfaceLiquidArbitration,
     credit: &CondensationCredit,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if credit.transaction_id != arbitration.transaction_id
+    validate_candidate_condensation_credit(configuration, arbitration.transaction_id, credit)
+}
+
+fn validate_candidate_condensation_credit(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    transaction_id: TransactionId,
+    credit: &CondensationCredit,
+) -> Result<(), DirectSurfaceLiquidError> {
+    if credit.transaction_id != transaction_id
         || credit.hydrology_owner_id != configuration.owner_id
         || credit.amount_basis != StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval
     {
@@ -893,7 +1614,7 @@ fn validate_condensation_credit(
     if credit.specific_liquid_enthalpy_j_kg.to_bits()
         != openwepp_land_surface_energy::liquid_enthalpy_j_kg(credit.temperature_k).to_bits()
     {
-        return Err(DirectSurfaceLiquidError::Closure(
+        return Err(candidate_closure(
             "condensation temperature/enthalpy mismatch",
         ));
     }
@@ -917,6 +1638,19 @@ fn validate_store_pair(
             "invalid surface/source pair",
         ))
     }
+}
+
+fn candidate_closure(detail: &'static str) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E009,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext::default(),
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
 }
 
 fn validate_same_ofe_value<T: Eq>(
@@ -961,10 +1695,19 @@ fn f64_bits(value: f64) -> String {
     format!("{:016x}", value.to_bits())
 }
 
-fn digest_json<T: Serialize>(value: &T) -> Result<String, DirectSurfaceLiquidError> {
-    let bytes = serde_json::to_vec(value)
-        .map_err(|_| DirectSurfaceLiquidError::Schema("canonical serialization"))?;
-    Ok(format!("{:x}", Sha256::digest(bytes)))
+fn parse_f64_bits(value: &str) -> Result<f64, DirectSurfaceLiquidError> {
+    if value.len() != 16
+        || !value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return Err(DirectSurfaceLiquidError::Schema(
+            "canonical f64 must be 16 lowercase hexadecimal digits",
+        ));
+    }
+    let bits = u64::from_str_radix(value, 16)
+        .map_err(|_| DirectSurfaceLiquidError::Schema("canonical f64 parse"))?;
+    Ok(f64::from_bits(bits))
 }
 
 fn is_sha256(value: &str) -> bool {
@@ -996,6 +1739,21 @@ mod tests {
 
     fn source(value: &str) -> SourceId {
         SourceId::try_new(value).expect("valid source")
+    }
+
+    fn layer(value: &str) -> SoilLayerId {
+        SoilLayerId::try_new(value).expect("valid soil layer")
+    }
+
+    fn binding(ofe_id: &str, lane_index: usize) -> DirectSurfaceLiquidOfeBinding {
+        let top_layer = layer(&format!("{ofe_id}-soil-1"));
+        DirectSurfaceLiquidOfeBinding {
+            ofe_id: ofe(ofe_id),
+            production_lane_index: lane_index,
+            production_lane_id: u32::try_from(lane_index + 1).expect("test lane id"),
+            ordered_soil_layer_ids: vec![top_layer.clone(), layer(&format!("{ofe_id}-soil-2"))],
+            infiltration_soil_thermal_layer_id: top_layer,
+        }
     }
 
     fn record(
@@ -1030,6 +1788,7 @@ mod tests {
             owner("hydrology"),
             71,
             vec![ofe("ofe-z")],
+            vec![binding("ofe-z", 0)],
             vec![
                 record(
                     "ofe-z",
@@ -1104,26 +1863,26 @@ mod tests {
         let state = state(&configuration);
         state.validate(&configuration).expect("state");
 
-        let config_json = serde_json::to_string(&configuration).expect("serialize config");
-        let parsed: DirectSurfaceLiquidConfiguration =
-            serde_json::from_str(&config_json).expect("parse config");
+        let config_bytes = configuration.canonical_bytes().expect("serialize config");
+        let parsed = DirectSurfaceLiquidConfiguration::from_canonical_bytes(&config_bytes)
+            .expect("parse config");
         assert_eq!(parsed, configuration);
-        let state_json = serde_json::to_string(&state).expect("serialize state");
-        let parsed_state: DirectSurfaceLiquidOwnedState =
-            serde_json::from_str(&state_json).expect("parse state");
+        let state_bytes = state.canonical_bytes().expect("serialize state");
+        let parsed_state =
+            DirectSurfaceLiquidOwnedState::from_canonical_bytes(&configuration, &state_bytes)
+                .expect("parse state");
         assert_eq!(parsed_state, state);
 
         let mut changed = configuration.clone();
         let open = record_index(&changed, "open");
         changed.records[open].ground_ingress_mode = DirectGroundIngressMode::CoveredCanopyRelease;
-        assert!(matches!(
-            changed.validate(),
-            Err(DirectSurfaceLiquidError::Identity(
-                "configuration digest mismatch"
-            ))
-        ));
+        let error = changed.validate().expect_err("digest drift");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E002);
+        let config_json = String::from_utf8(config_bytes).expect("canonical UTF-8");
         let with_unknown = config_json.replacen('{', r#"{"unknown":1,"#, 1);
-        assert!(serde_json::from_str::<DirectSurfaceLiquidConfiguration>(&with_unknown).is_err());
+        let error = DirectSurfaceLiquidConfiguration::from_canonical_bytes(with_unknown.as_bytes())
+            .expect_err("unknown field");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E001);
     }
 
     #[test]
@@ -1144,6 +1903,7 @@ mod tests {
                 owner("hydrology"),
                 71,
                 vec![ofe("ofe-z")],
+                vec![binding("ofe-z", 0)],
                 vec![first, second],
             )
             .is_err()
@@ -1173,6 +1933,7 @@ mod tests {
             owner("hydrology"),
             71,
             vec![ofe("z-upstream"), ofe("a-downstream")],
+            vec![binding("z-upstream", 0), binding("a-downstream", 1)],
             vec![downstream, upstream],
         )
         .expect("explicit nonlexical topology");
@@ -1274,12 +2035,10 @@ mod tests {
             temperature_k: 280.0,
             specific_liquid_enthalpy_j_kg: f64::from_bits(exact.to_bits() + 1),
         };
-        assert!(matches!(
-            apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[condensation]),
-            Err(DirectSurfaceLiquidError::Closure(
-                "condensation temperature/enthalpy mismatch"
-            ))
-        ));
+        let error =
+            apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[condensation])
+                .expect_err("enthalpy poison");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E009);
         assert_eq!(arbitration.beginning_state, beginning);
     }
 
@@ -1302,10 +2061,10 @@ mod tests {
             key: demand.key.clone(),
             amount_kg_m2_stand_ground: 0.5,
         };
-        assert!(matches!(
-            apply_surface_liquid_resource_phase(&configuration, &arbitration, &[invalid], &[]),
-            Err(DirectSurfaceLiquidError::Bound("F <= A <= D"))
-        ));
+        let error =
+            apply_surface_liquid_resource_phase(&configuration, &arbitration, &[invalid], &[])
+                .expect_err("authorization is not finalized use");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E006);
         assert_eq!(arbitration.beginning_state, beginning);
     }
 
@@ -1345,5 +2104,231 @@ mod tests {
         );
         assert_eq!(candidate.condensation_overflow.len(), 1);
         assert!((candidate.condensation_overflow[0].amount_kg_m2_ofe_ground - 0.4).abs() < 1.0e-15);
+    }
+
+    #[test]
+    fn every_configuration_and_binding_field_changes_the_digest() {
+        let original = configuration();
+        let open = record_index(&original, "open");
+        let digest = original.recomputed_sha256().expect("digest");
+        let mut mutations = Vec::new();
+        let mut changed = original.clone();
+        changed.owner_id = owner("other-owner");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.run_id += 1;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_topology[0] = ofe("other-ofe");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_bindings[0].ofe_id = ofe("other-ofe");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_bindings[0].production_lane_index += 1;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_bindings[0].production_lane_id += 1;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_bindings[0].ordered_soil_layer_ids.swap(0, 1);
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.ofe_bindings[0].infiltration_soil_thermal_layer_id = layer("other-layer");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.run_id += 1;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.ofe_id = ofe("other-ofe");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.tile_id = tile("other-tile");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.surface_id = surface("other-surface");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.surface_class = SurfaceClass::ForestLitter;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.source_type = WaterSourceType::LitterLiquid;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].key.source_id = source("other-source");
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].tile_fraction =
+            f64::from_bits(changed.records[open].tile_fraction.to_bits() + 1);
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].capacity_kg_m2_tile =
+            f64::from_bits(changed.records[open].capacity_kg_m2_tile.to_bits() + 1);
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].ofe_area_m2 =
+            f64::from_bits(changed.records[open].ofe_area_m2.to_bits() + 1);
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].ground_ingress_mode = DirectGroundIngressMode::CoveredCanopyRelease;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].runon_destination_ofe_id = Some(ofe("destination"));
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.records[open].runon_destination_tile_id = Some(tile("destination"));
+        mutations.push(changed);
+
+        for changed in mutations {
+            assert_ne!(changed.recomputed_sha256().expect("mutated digest"), digest);
+        }
+    }
+
+    #[test]
+    fn canonical_bytes_keep_schema_names_and_exact_bit_hex() {
+        let configuration = configuration();
+        let bytes = configuration.canonical_bytes().expect("canonical bytes");
+        let text = std::str::from_utf8(&bytes).expect("UTF-8 JSON");
+        assert!(text.contains(r#""tile_fraction":"3fd999999999999a""#));
+        assert!(text.contains(r#""capacity_kg_m2_tile":"4000000000000000""#));
+        assert!(text.contains(r#""ofe_bindings""#));
+        assert!(!text.contains("_bits"));
+        assert_eq!(
+            DirectSurfaceLiquidConfiguration::from_canonical_bytes(&bytes)
+                .expect("canonical round trip"),
+            configuration
+        );
+    }
+
+    #[test]
+    fn state_digest_binds_every_restart_field_and_rejects_invalid_combinations() {
+        let configuration = configuration();
+        let initial = state(&configuration);
+        let digest = initial.recomputed_sha256().expect("state digest");
+        let mut mutations = Vec::new();
+        let mut changed = initial.clone();
+        changed.owner_id = owner("other-owner");
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.configuration_sha256 = "1".repeat(64);
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.records[0].key.tile_id = tile("other-tile");
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.records[0].liquid_kg_m2_tile =
+            f64::from_bits(changed.records[0].liquid_kg_m2_tile.to_bits() + 1);
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.records[0].last_accepted_transaction_id = Some(TransactionId(1));
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].ofe_id = ofe("other-ofe");
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].day_index += 1;
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].next_interval_index = 1;
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].cumulative_supply_m = f64::from_bits(1);
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].cumulative_infiltration_m = f64::from_bits(1);
+        mutations.push(changed);
+        let mut changed = initial.clone();
+        changed.continuations[0].last_accepted_transaction_id = Some(TransactionId(1));
+        mutations.push(changed);
+        for changed in mutations {
+            assert_ne!(changed.recomputed_sha256().expect("mutated digest"), digest);
+        }
+
+        let mut invalid_initial = initial.clone();
+        invalid_initial.continuations[0].next_interval_index = 1;
+        invalid_initial.state_sha256 = invalid_initial.recomputed_sha256().expect("digest");
+        assert_eq!(
+            invalid_initial
+                .validate(&configuration)
+                .expect_err("invalid initial restart")
+                .code(),
+            DirectSurfaceLiquidErrorCode::E002
+        );
+
+        let mut invalid_accepted = initial;
+        for record in &mut invalid_accepted.records {
+            record.last_accepted_transaction_id = Some(TransactionId(7));
+        }
+        for continuation in &mut invalid_accepted.continuations {
+            continuation.last_accepted_transaction_id = Some(TransactionId(7));
+        }
+        invalid_accepted.state_sha256 = invalid_accepted.recomputed_sha256().expect("digest");
+        assert_eq!(
+            invalid_accepted
+                .validate(&configuration)
+                .expect_err("accepted interval zero")
+                .code(),
+            DirectSurfaceLiquidErrorCode::E002
+        );
+    }
+
+    #[test]
+    fn sealed_candidate_revalidation_rejects_forged_and_stale_state_with_e009() {
+        let configuration = configuration();
+        let beginning = state(&configuration);
+        let arbitration = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            TransactionId(901),
+            None,
+            &[],
+        )
+        .expect("arbitration");
+        let candidate = apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[])
+            .expect("candidate");
+        let mut forged = candidate.clone();
+        forged.working_state.records[0].liquid_kg_m2_tile += 0.25;
+        let error = forged
+            .validate(&configuration)
+            .expect_err("forged working state");
+        let failure = error.failure().expect("canonical payload");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(901)));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256,
+            Some(beginning.state_sha256.clone())
+        );
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+
+        let mut stale = candidate;
+        stale.beginning_state.configuration_sha256 = "1".repeat(64);
+        assert_eq!(
+            stale
+                .validate(&configuration)
+                .expect_err("stale candidate")
+                .code(),
+            DirectSurfaceLiquidErrorCode::E009
+        );
+    }
+
+    #[test]
+    fn canonical_error_codes_cover_e001_through_e011_exactly() {
+        let codes = [
+            DirectSurfaceLiquidErrorCode::E001,
+            DirectSurfaceLiquidErrorCode::E002,
+            DirectSurfaceLiquidErrorCode::E003,
+            DirectSurfaceLiquidErrorCode::E004,
+            DirectSurfaceLiquidErrorCode::E005,
+            DirectSurfaceLiquidErrorCode::E006,
+            DirectSurfaceLiquidErrorCode::E007,
+            DirectSurfaceLiquidErrorCode::E008,
+            DirectSurfaceLiquidErrorCode::E009,
+            DirectSurfaceLiquidErrorCode::E010,
+            DirectSurfaceLiquidErrorCode::E011,
+        ];
+        for (index, code) in codes.into_iter().enumerate() {
+            assert_eq!(code.as_str(), format!("SURFACELIQUID-E-{:03}", index + 1));
+        }
     }
 }

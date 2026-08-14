@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / implementation focused gates passed / independent review active`
+Status: `executing / implementation review remediation active`
 
 Date: `2026-08-14`
 
@@ -51,6 +51,10 @@ definition bytes remain immutable.
   hydrology owner state and candidate operations;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/**`
   for the resumed owner bridge;
+- `crates/openwepp-hillslope-orchestrator/src/vegetation_real_hydrology_shadow.rs`
+  for canonical production-snapshot and lane-map accessors;
+- `tools/release/authority-policy/impact-map.json` for atomic authority bindings
+  on every new custody science surface;
 - affected crate exports and focused integration tests; and
 - Cargo test registration only when required.
 
@@ -64,7 +68,9 @@ branch, PR or push is in scope.
 - [x] (2026-08-14) Admit canonical surface-liquid hydrology authority and bind contract-derived tests.
 - [x] (2026-08-14) Record a passing pre-implementation contract gate.
 - [x] (2026-08-14) Implement persistent state, restart, D/A/F, credit, ingress and rollback.
-- [ ] Pass focused gates and dual independent review/verification. Focused gates pass; reviews are active.
+- [ ] Pass focused gates and dual independent review/verification. All eleven
+  accepted implementation-review findings have focused passing remediation;
+  exact-byte re-review is next.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

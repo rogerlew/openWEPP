@@ -27,5 +27,11 @@ Core authority and process reading:
   `evapotranspiration.rs`, `runoff.rs`, `storage.rs`, and
   `land_surface_energy_shadow/mod.rs`.
 
+Remediation instruction discovery also covered the new
+`direct_runtime/surface_liquid_closure.rs`,
+`direct_runtime/surface_liquid_wb14.rs`, and
+`tools/release/authority-policy/impact-map.json`. Their applicable instruction
+chains are root `AGENTS.md`, plus `crates/AGENTS.md` for both Rust modules.
+
 The complete contract and implementation authority surfaces remain required as
 the schema and algorithm are frozen.

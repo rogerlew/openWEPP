@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -92,7 +92,18 @@ exactly once at the owner boundary.
 ### Strict configuration
 
 Configuration contains owner ID, configuration digest, run identity, ordered
-OFE topology, and an exact ordered set of records:
+OFE topology, an exact ordered production-owner binding for every OFE, and an
+exact ordered set of records:
+
+```text
+SurfaceLiquidOfeBinding {
+    ofe_id,
+    production_lane_index,
+    production_lane_id,
+    ordered_soil_layer_ids,
+    infiltration_soil_thermal_layer_id
+}
+```
 
 ```text
 SurfaceLiquidConfigurationRecord {
@@ -119,6 +130,12 @@ The exact admitted pairs are:
 | `forest_litter` | `litter_liquid` | Hydrology-owned liquid held by forest litter. |
 
 `soil_layer_liquid` remains the soil-layer owner and is not duplicated here.
+The OFE binding at topology rank `r` must name production lane index `r`, its
+exact lane ID, and the exact ordered soil-layer identities carried by the real
+hydrology adapter. Its configured `A_o` must be bitwise equal to the production
+lane area. `infiltration_soil_thermal_layer_id` names the actual top receiving
+layer in the LSE soil-thermal candidate. Missing, extra, reordered, duplicate,
+or wrong-lane bindings reject before snapshot construction.
 `ground_ingress_mode` is exactly `open_raw_precipitation` or
 `covered_canopy_release`. A bare or litter surface may use either mode according
 to canopy topology; surface class does not infer exposure. The exact mode enters
@@ -144,8 +161,8 @@ snake-case tokens above; integers use canonical decimal form; finite `f64`
 values are encoded by their 16-character lowercase big-endian IEEE-754 hex
 bits. `configuration_sha256` is lowercase SHA-256 over the UTF-8 bytes after
 replacing only its own value with 64 zeroes. Owner, run, topology,
-destinations, all identities, fractions, capacities, OFE areas, and ingress
-modes enter the
+destinations, all identities, production lane and layer bindings, fractions,
+capacities, OFE areas, and ingress modes enter the
 digest.
 
 ### Persistent state and restart
@@ -198,7 +215,9 @@ Continuation records serialize after store records in ascending OFE topology
 order. Every field enters `state_sha256`. All entries carry the same accepted
 transaction lineage as store records. Initial state uses a caller-supplied
 `day_index`, exact interval zero, zero cumulatives, and null lineage. Accepted
-state uses interval `1..=48`. At a new-day transaction, only a beginning entry
+state uses interval `1..=48` and nonnull lineage. These combinations are strict
+state-validation rules, not deferred execution checks. At a new-day
+transaction, only a beginning entry
 at interval 48 may increment the day and reset candidate interval/cumulatives
 before advancing interval zero. Any failure preserves the prior boundary bytes.
 
@@ -213,9 +232,11 @@ typed LSE requests, authorizations, finalized uses, condensation credits, timed
 current-ingress parcels, and the actual WB14 production inputs for each OFE.
 
 Outputs are the one authorization batch, one uncommitted ending owner
-candidate, retained/infiltration/routed/outlet receipts, independent ledger
-operands, state digest, and rollback hashes. No function in this contract
-independently commits production state.
+candidate, actual production soil-liquid candidate credit, typed soil-thermal
+infiltration candidate receipt, retained LSE tile-state candidate credit,
+retained/infiltration/routed/outlet receipts, independent ledger operands,
+state digest, and rollback hashes. No function in this contract independently
+commits production state.
 
 The shadow cadence is exactly 48 consecutive `1800 s` transactions per direct
 runtime day. Configuration or forcing with another interval is unsupported.
@@ -329,7 +350,11 @@ interval:
 5. preserve production conductivity, matric potential, and infiltration
    storage capacity;
 6. return interval infiltration/excess plus the advanced continuation;
-7. retain no legacy depression amount: the equivalent
+7. apply interval infiltration once with the same production
+   `apply_same_pass_infiltration` transition and exact production tillage depth
+   to the bound candidate lane, never directly to the surface store; and
+8. independently reconstruct the resulting ordered soil-layer mass deltas.
+9. retain no legacy depression amount: the equivalent
    `depression_storage_capacity_m` is exact zero.
 
 The shared production transition is extracted from
@@ -425,8 +450,10 @@ W_1 = W_0 - sum(F/f_t) + sum(C/f_t)
 
 For every source parcel independently reconstruct mass and enthalpy across
 infiltration, retention, routed runoff, and outlet runoff. Infiltration credits
-the exact soil-liquid and soil-thermal recipients. Retained enthalpy credits
-the exact LSE tile state after one OFE-to-tile conversion. Recompute the strict
+the exact bound production lane through the shared same-pass transition. Its
+enthalpy credits the exact named soil-thermal layer candidate. Retained
+enthalpy credits the exact LSE tile state after one OFE-to-tile conversion.
+Recompute the strict
 state and WB14-continuation digest, set accepted transaction lineage, and
 validate all owner joins. All operations use clones. No fallible operation may
 follow the later all-owner atomic replacement.
@@ -447,8 +474,11 @@ follow the later all-owner atomic replacement.
 | 10 | local/owner/soil join closure failure | independent closure | Reject candidate. | `SURFACELIQUID-E-010` |
 | 11 | rollback or complete-owner mismatch | atomic envelope | Reject envelope. | `SURFACELIQUID-E-011` |
 
-Errors use this precedence and include transaction, OFE, tile, surface/source,
-parcel when applicable, phase, and beginning/attempt hashes.
+Errors use this precedence. Every public failure exposes its exact
+`SURFACELIQUID-E-001..011` code, phase, transaction when available, OFE, tile,
+surface/source and parcel when applicable, plus beginning and attempted owner
+hashes. An unavailable identity is represented by typed absence, not an empty
+string. A generic category plus prose detail is not the canonical payload.
 
 ## Producer Obligations
 
@@ -619,3 +649,4 @@ This contract authorizes no production activation or publication.
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |
 | 2026-08-14 | 3 | Codex | Bind the exact 1800-second/48-step stateful WB14 continuation, mutually exclusive open-rain/covered-canopy supply, conservative mixed enthalpy, exact tile/source retention, retained LSE energy receipt, water density, machine-readable registry seams, continuation restart schema, and basis-rekeyed unequal-area OFE routing. |
 | 2026-08-14 | 4 | Codex | Add the strict per-tile `ground_ingress_mode` discriminator required to validate mutually exclusive open-precipitation and covered-canopy ingress without caller-driven branch inference. |
+| 2026-08-14 | 5 | Codex | Bind every surface OFE to the actual production lane and ordered soil layers; require strict restart combinations; require shared production same-pass infiltration credit, typed soil-thermal and retained-LSE receipts, independent full-equation closure, and canonical contextual failure payloads. |

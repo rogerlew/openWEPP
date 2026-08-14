@@ -21,4 +21,21 @@ Final contract/profile reviewer: `PASS`.
 
 Final hydrology/ownership reviewer: `PASS`.
 
-Rust implementation review and terminal verification remain pending.
+## Runtime implementation findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| Actual soil-liquid and soil-thermal infiltration recipients absent | Accepted | Remediated; focused PASS |
+| Producer-self-referential and partial closure | Accepted | Remediated; focused PASS |
+| Strict restart combinations under-validated | Accepted | Remediated; focused PASS |
+| Production OFE/lane/area/day identity unbound | Accepted | Remediated; focused PASS |
+| Canonical typed error identity and rollback context absent | Accepted | Remediated; focused PASS |
+| Actual LSE/soil-thermal receiver candidates and rollback hashes discarded | Accepted | Remediated; focused PASS |
+| Public mutable/forgeable resource candidate | Accepted | Remediated; focused PASS |
+| Canonical persistence bytes differ from digest representation | Accepted | Remediated; focused PASS |
+| Unified digest uses legacy 64-bit token rather than canonical soil bytes | Accepted | Remediated; focused PASS |
+| `runoff.rs` exceeds mandatory line threshold; WARN files undispositioned | Accepted | Remediated; focused PASS |
+| Complete WB14 interval transition duplicated | Accepted | Remediated; focused PASS |
+
+No runtime finding is rejected, deferred, or moved to follow-up. Exact-byte
+Rust and hydrology re-reviews and terminal verification remain pending.

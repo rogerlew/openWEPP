@@ -206,10 +206,14 @@ fn live_impact_map_has_no_planner_admission_rows() {
             })
             .collect::<Vec<_>>();
         contracts.sort_unstable();
+        let expected = if shared_path.ends_with("direct_runtime/00_core_frames.rs") {
+            vec!["SC-OUTPUT-WAT5-001", "SC-PLANT-001", "SC-SURFACELIQUID-001"]
+        } else {
+            vec!["SC-OUTPUT-WAT5-001", "SC-PLANT-001"]
+        };
         assert_eq!(
-            contracts,
-            ["SC-OUTPUT-WAT5-001", "SC-PLANT-001"],
-            "shared runtime path must retain both independent authorities: {shared_path}"
+            contracts, expected,
+            "shared runtime path must retain all independent authorities: {shared_path}"
         );
     }
 

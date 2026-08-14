@@ -13,23 +13,24 @@ use std::collections::{BTreeMap, BTreeSet};
 use openwepp_kernel_contract::{TransactionId, canonical_resource_amount_sum};
 pub use openwepp_land_surface_energy::{
     BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
-    OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem, PotentialWaterRequestBatch,
-    RequestingComponent, RuntimeTileIdentity, Sha256Digest, SoilThermalLayerSnapshot,
-    SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot, SourceId,
+    OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem, OwnerKind,
+    OwnerRollbackHash, PotentialWaterRequestBatch, RequestingComponent, RuntimeTileIdentity,
+    Sha256Digest, SoilThermalLayerCandidate, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
+    SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
     StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
-    WaterAmount, WaterAuthorizationReason, WaterProtocol, WaterSourceType, finalize_open_phase,
-    solve_open_potential_phase,
+    TileState, WaterAmount, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
+    WaterSourceType, finalize_open_phase, solve_open_potential_phase,
 };
 use openwepp_land_surface_energy::{
-    LandSurfaceEnergyError, OpenSurfaceSolveOutcome, WaterAuthorization, WaterBranch,
-    solve_open_surface,
+    LandSurfaceEnergyError, OpenSurfaceSolveOutcome, WaterBranch, solve_open_surface,
 };
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 use crate::direct_runtime::{
     DirectLayerWithdrawalRequest, aggregate_direct_soil_water,
-    apply_direct_finalized_layer_liquid_debit, authorize_direct_layer_withdrawals,
+    apply_direct_finalized_layer_liquid_debit, apply_direct_same_pass_infiltration,
+    authorize_direct_layer_withdrawals,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyShadowAdapter, RealHydrologyShadowError, RealHydrologySourceKey,
@@ -37,6 +38,8 @@ use crate::vegetation_real_hydrology_shadow::{
 use crate::{
     DirectRunFrame, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidError, DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidParcelReceipt,
+    DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
     DirectSurfaceLiquidResourceCandidate, apply_surface_liquid_resource_phase,
     authorize_surface_liquid_withdrawals, execute_surface_liquid_ingress,
 };
@@ -123,6 +126,9 @@ pub struct MixedRealHydrologyCandidate {
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnifiedLseFinalization {
     pub water_protocol: WaterProtocol,
+    pub ending_tile_states_pre_ingress: Vec<TileState>,
+    pub soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
+    pub rollback_hashes: Vec<OwnerRollbackHash>,
 }
 
 /// One logical authorization spanning production soil and surface-liquid owners.
@@ -146,6 +152,9 @@ pub struct UnifiedRealHydrologyCandidate {
     pub condensation_credits: Vec<CondensationCredit>,
     pub surface_resource: DirectSurfaceLiquidResourceCandidate,
     pub surface_ingress: DirectSurfaceLiquidIngressCandidate,
+    pub ending_lse_tile_states: Vec<TileState>,
+    pub soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
+    pub rollback_hashes: Vec<OwnerRollbackHash>,
 }
 
 /// Digest the complete immutable soil-layer and surface-liquid owner snapshot.
@@ -154,6 +163,7 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
     surface_configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
     surface_configuration.validate()?;
+    validate_surface_production_binding(soil_adapter.owner, surface_configuration)?;
     if &surface_configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
         return Err(LandSurfaceEnergyShadowError::Identity(
             "mixed unified hydrology owner",
@@ -168,20 +178,55 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
             "missing beginning surface-liquid owner",
         ))?;
     surface_state.validate(surface_configuration)?;
-    let transaction = soil_adapter.owner.transaction_id().0.to_string();
     let mut digest = Sha256::new();
-    for value in [
-        "openwepp-unified-hydrology-snapshot-v1",
-        soil_adapter.owner.hydrology_owner_id().as_str(),
-        &transaction,
-        soil_adapter.owner.snapshot_fingerprint(),
-        &surface_configuration.configuration_sha256,
-        &surface_state.state_sha256,
+    for bytes in [
+        b"openwepp-unified-hydrology-snapshot-v2".as_slice(),
+        soil_adapter.owner.hydrology_owner_id().as_str().as_bytes(),
+        soil_adapter.owner.snapshot_bytes(),
+        surface_configuration.configuration_sha256.as_bytes(),
+        surface_state.state_sha256.as_bytes(),
     ] {
-        digest.update((value.len() as u64).to_be_bytes());
-        digest.update(value.as_bytes());
+        digest.update((bytes.len() as u64).to_be_bytes());
+        digest.update(bytes);
     }
     Sha256Digest::try_new(format!("{:x}", digest.finalize())).map_err(Into::into)
+}
+
+fn validate_surface_production_binding(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let frame = owner.beginning_frame();
+    if configuration.run_id != frame.identity.run_id
+        || configuration.ofe_bindings.len() != frame.lanes.len()
+        || owner.layer_maps().len() != frame.lanes.len()
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "surface production run or lane count",
+        ));
+    }
+    for ((binding, mapping), lane) in configuration
+        .ofe_bindings
+        .iter()
+        .zip(owner.layer_maps())
+        .zip(&frame.lanes)
+    {
+        if binding.production_lane_index != mapping.ofe_lane.lane_index
+            || binding.production_lane_id != mapping.ofe_lane.lane_id
+            || binding.production_lane_id != lane.lane_id
+            || binding.ordered_soil_layer_ids != mapping.layer_ids
+            || binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len()
+            || configuration.records.iter().any(|record| {
+                record.key.ofe_id == binding.ofe_id
+                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+            })
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "surface production OFE/lane/area/layer binding",
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// Join one immutable LSE request batch to both actual water owners.
@@ -204,6 +249,8 @@ where
         unified_beginning_hydrology_snapshot_sha256(soil_adapter, surface_configuration)?;
     if request_batch.transaction_id != soil_adapter.owner.transaction_id()
         || ingress.transaction_id != request_batch.transaction_id
+        || ingress.day_index != soil_adapter.owner.day_index()
+        || ingress.interval_s.to_bits() != soil_adapter.owner.interval_s().to_bits()
         || &actual_snapshot != expected_beginning_hydrology_snapshot_sha256
     {
         return Err(LandSurfaceEnergyShadowError::Identity(
@@ -353,30 +400,309 @@ fn construct_unified_candidate(
     finalized: UnifiedLseFinalization,
     ingress: &DirectSurfaceLiquidIngressInput,
 ) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
+    let UnifiedLseFinalization {
+        water_protocol,
+        mut ending_tile_states_pre_ingress,
+        mut soil_thermal_candidates,
+        rollback_hashes,
+    } = finalized;
     let (soil_uses, surface_uses) =
-        partition_finalized_uses(&arbitration, &finalized.water_protocol.finalized_uses)?;
+        partition_finalized_uses(&arbitration, &water_protocol.finalized_uses)?;
     let soil_candidate =
         soil_adapter.candidate_from_finalized_uses(&arbitration.soil, &soil_uses)?;
     let surface_resource = apply_surface_liquid_resource_phase(
         surface_configuration,
         &arbitration.surface,
         &surface_uses,
-        &finalized.water_protocol.condensation_credits,
+        &water_protocol.condensation_credits,
     )?;
     let surface_ingress =
         execute_surface_liquid_ingress(surface_configuration, &surface_resource, ingress)?;
     let mut ending_frame = soil_candidate.ending_frame().clone();
+    apply_ingress_to_real_receivers(
+        soil_adapter.owner,
+        surface_configuration,
+        &surface_ingress,
+        &mut ending_frame,
+        &mut ending_tile_states_pre_ingress,
+        &mut soil_thermal_candidates,
+        &rollback_hashes,
+        &water_protocol.beginning_snapshot_sha256,
+    )?;
     ending_frame.surface_liquid_shadow = Some(Box::new(surface_ingress.ending_state.clone()));
     Ok(UnifiedRealHydrologyCandidate {
         transaction_id: arbitration.transaction_id,
         beginning_frame: soil_candidate.beginning_frame().clone(),
         ending_frame,
         arbitration,
-        finalized_uses: finalized.water_protocol.finalized_uses,
-        condensation_credits: finalized.water_protocol.condensation_credits,
+        finalized_uses: water_protocol.finalized_uses,
+        condensation_credits: water_protocol.condensation_credits,
         surface_resource,
         surface_ingress,
+        ending_lse_tile_states: ending_tile_states_pre_ingress,
+        soil_thermal_candidates,
+        rollback_hashes,
     })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn apply_ingress_to_real_receivers(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    ingress: &DirectSurfaceLiquidIngressCandidate,
+    ending_frame: &mut DirectRunFrame,
+    lse_tiles: &mut [TileState],
+    soil_thermal: &mut [SoilThermalTileCandidate],
+    rollback_hashes: &[OwnerRollbackHash],
+    beginning_hydrology_snapshot_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    validate_surface_production_binding(owner, configuration)?;
+    validate_receiver_sets(configuration, lse_tiles, soil_thermal, rollback_hashes)?;
+    validate_rollback_joins(
+        owner,
+        soil_thermal,
+        rollback_hashes,
+        beginning_hydrology_snapshot_sha256,
+    )?;
+    let mut infiltration_m_by_lane = BTreeMap::<usize, f64>::new();
+    for receipt in &ingress.receipts {
+        if let Some((lane_index, infiltration_m)) =
+            apply_receiver_receipt(configuration, receipt, lse_tiles, soil_thermal)?
+        {
+            *infiltration_m_by_lane.entry(lane_index).or_default() += infiltration_m;
+        }
+    }
+    apply_production_infiltration(owner, ending_frame, infiltration_m_by_lane)
+}
+
+fn validate_receiver_sets(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    lse_tiles: &[TileState],
+    soil_thermal: &[SoilThermalTileCandidate],
+    rollback_hashes: &[OwnerRollbackHash],
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let expected_tiles = configuration
+        .records
+        .iter()
+        .map(|record| (record.key.ofe_id.clone(), record.key.tile_id.clone()))
+        .collect::<BTreeSet<_>>();
+    let actual_lse_tiles = lse_tiles
+        .iter()
+        .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
+        .collect::<BTreeSet<_>>();
+    let actual_thermal_tiles = soil_thermal
+        .iter()
+        .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
+        .collect::<BTreeSet<_>>();
+    if actual_lse_tiles.len() != lse_tiles.len()
+        || actual_thermal_tiles.len() != soil_thermal.len()
+        || actual_lse_tiles != expected_tiles
+        || actual_thermal_tiles != expected_tiles
+        || rollback_hashes.is_empty()
+        || rollback_hashes
+            .iter()
+            .any(|hash| hash.before_sha256 != hash.after_sha256)
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "incomplete LSE/soil-thermal/rollback receiver set",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_rollback_joins(
+    owner: &RealHydrologyShadowAdapter,
+    soil_thermal: &[SoilThermalTileCandidate],
+    rollback_hashes: &[OwnerRollbackHash],
+    beginning_hydrology_snapshot_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let rollback_kinds = rollback_hashes
+        .iter()
+        .map(|hash| hash.owner_kind)
+        .collect::<BTreeSet<_>>();
+    if ![
+        OwnerKind::LandSurfaceEnergy,
+        OwnerKind::Hydrology,
+        OwnerKind::SoilThermal,
+        OwnerKind::Vegetation,
+        OwnerKind::Biogeochemistry,
+    ]
+    .into_iter()
+    .all(|kind| rollback_kinds.contains(&kind))
+        || !rollback_hashes.iter().any(|hash| {
+            hash.owner_kind == OwnerKind::Hydrology
+                && hash.owner_id == owner.hydrology_owner_id().as_str()
+                && &hash.before_sha256 == beginning_hydrology_snapshot_sha256
+        })
+        || soil_thermal.iter().any(|candidate| {
+            !rollback_hashes.iter().any(|hash| {
+                hash.owner_kind == OwnerKind::SoilThermal
+                    && hash.owner_id == candidate.owner_id.as_str()
+                    && hash.before_sha256 == candidate.beginning_state_sha256
+            })
+        })
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "rollback owner join",
+        ));
+    }
+    Ok(())
+}
+
+fn apply_receiver_receipt(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    receipt: &DirectSurfaceLiquidParcelReceipt,
+    lse_tiles: &mut [TileState],
+    soil_thermal: &mut [SoilThermalTileCandidate],
+) -> Result<Option<(usize, f64)>, LandSurfaceEnergyShadowError> {
+    let binding = configuration
+        .ofe_bindings
+        .iter()
+        .find(|binding| binding.ofe_id == receipt.recipient_store_key.ofe_id)
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "ingress receipt OFE binding",
+        ))?;
+    match (&receipt.disposition, &receipt.recipient) {
+        (
+            DirectSurfaceLiquidReceiptDisposition::Infiltration,
+            DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+                ofe_id,
+                production_lane_index,
+                production_lane_id,
+                ordered_soil_layer_ids,
+                soil_thermal_layer_id,
+            },
+        ) => credit_infiltration_receipt(
+            binding,
+            receipt,
+            soil_thermal,
+            ofe_id,
+            *production_lane_index,
+            *production_lane_id,
+            ordered_soil_layer_ids,
+            soil_thermal_layer_id,
+        )
+        .map(Some),
+        (
+            DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
+            DirectSurfaceLiquidReceiptRecipient::SurfaceStore { store_key },
+        ) => credit_retained_receipt(configuration, receipt, store_key, lse_tiles).map(|()| None),
+        (
+            DirectSurfaceLiquidReceiptDisposition::RoutedRunoff,
+            DirectSurfaceLiquidReceiptRecipient::RoutedOfe { .. },
+        )
+        | (
+            DirectSurfaceLiquidReceiptDisposition::OutletRunoff,
+            DirectSurfaceLiquidReceiptRecipient::Outlet { .. },
+        ) => Ok(None),
+        _ => Err(LandSurfaceEnergyShadowError::Identity(
+            "receipt disposition/recipient join",
+        )),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn credit_infiltration_receipt(
+    binding: &DirectSurfaceLiquidOfeBinding,
+    receipt: &DirectSurfaceLiquidParcelReceipt,
+    soil_thermal: &mut [SoilThermalTileCandidate],
+    ofe_id: &OfeId,
+    production_lane_index: usize,
+    production_lane_id: u32,
+    ordered_soil_layer_ids: &[openwepp_kernel_contract::SoilLayerId],
+    soil_thermal_layer_id: &openwepp_kernel_contract::SoilLayerId,
+) -> Result<(usize, f64), LandSurfaceEnergyShadowError> {
+    if ofe_id != &binding.ofe_id
+        || production_lane_index != binding.production_lane_index
+        || production_lane_id != binding.production_lane_id
+        || ordered_soil_layer_ids != binding.ordered_soil_layer_ids
+        || soil_thermal_layer_id != &binding.infiltration_soil_thermal_layer_id
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "infiltration receipt production receiver binding",
+        ));
+    }
+    let thermal = soil_thermal
+        .iter_mut()
+        .find(|candidate| {
+            candidate.ofe_id == receipt.recipient_store_key.ofe_id
+                && candidate.tile_id == receipt.recipient_store_key.tile_id
+        })
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing infiltration soil-thermal tile receiver",
+        ))?;
+    let layer = thermal
+        .layers
+        .iter_mut()
+        .find(|layer| layer.layer_id == binding.infiltration_soil_thermal_layer_id)
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing infiltration soil-thermal layer receiver",
+        ))?;
+    layer.infiltration_enthalpy_credit_j_m2_ofe_ground += receipt.enthalpy_j_m2_basis_ofe_ground;
+    layer.ending_enthalpy_j_m2_ofe_ground += receipt.enthalpy_j_m2_basis_ofe_ground;
+    Ok((
+        binding.production_lane_index,
+        receipt.mass_kg_m2_basis_ofe_ground / WATER_DENSITY_KG_M3,
+    ))
+}
+
+fn credit_retained_receipt(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    receipt: &DirectSurfaceLiquidParcelReceipt,
+    store_key: &crate::DirectSurfaceLiquidStoreKey,
+    lse_tiles: &mut [TileState],
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    if store_key != &receipt.recipient_store_key {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "retained receipt typed receiver",
+        ));
+    }
+    let tile = lse_tiles
+        .iter_mut()
+        .find(|tile| {
+            tile.ofe_id == receipt.recipient_store_key.ofe_id
+                && tile.tile_id == receipt.recipient_store_key.tile_id
+        })
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing retained LSE tile receiver",
+        ))?;
+    let record = configuration
+        .records
+        .iter()
+        .find(|record| record.key == receipt.recipient_store_key)
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "retained receipt store receiver",
+        ))?;
+    tile.surface_enthalpy_j_m2_tile_ground +=
+        receipt.enthalpy_j_m2_basis_ofe_ground / record.tile_fraction;
+    Ok(())
+}
+
+fn apply_production_infiltration(
+    owner: &RealHydrologyShadowAdapter,
+    ending_frame: &mut DirectRunFrame,
+    infiltration_m_by_lane: BTreeMap<usize, f64>,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    for (lane_index, infiltration_m) in infiltration_m_by_lane {
+        let lane = ending_frame.lanes.get_mut(lane_index).ok_or(
+            LandSurfaceEnergyShadowError::Identity("infiltration production lane receiver"),
+        )?;
+        let day = owner.beginning_day_frames().get(lane_index).ok_or(
+            LandSurfaceEnergyShadowError::Identity("infiltration production day receiver"),
+        )?;
+        apply_direct_same_pass_infiltration(
+            &mut lane.subsurface_layers,
+            infiltration_m,
+            day.percolation_inputs.tillage_depth_m,
+        )
+        .map_err(|_| LandSurfaceEnergyShadowError::Bound("production infiltration receiver"))?;
+        lane.water.soil_water_m = aggregate_direct_soil_water(
+            &lane.subsurface_layers,
+            "land_surface_energy_shadow.ingress_soil_water",
+        )
+        .map_err(|_| LandSurfaceEnergyShadowError::Bound("ingress soil reconstruction"))?;
+    }
+    Ok(())
 }
 
 fn partition_finalized_uses(

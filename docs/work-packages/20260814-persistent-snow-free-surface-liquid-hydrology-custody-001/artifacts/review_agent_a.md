@@ -25,3 +25,29 @@ retained-energy basis, and unequal-area routing.
 Bounded v4 amendment review: `PASS`. The strict, digest-bound
 `ground_ingress_mode` closes caller-driven branch inference without a new
 material ambiguity or unit-registry seam.
+
+## Rust implementation review at `a92cd5db5`
+
+Evidence class: `Static exact-byte`.
+
+Verdict: `HOLD / implementation remediation required`.
+
+The reviewer accepted seven material findings:
+
+1. The unified finalization discarded actual LSE, soil-thermal, retained
+   enthalpy, infiltration, and rollback candidates.
+2. Public mutable resource-candidate fields made the ingress closure
+   self-referential and forgeable.
+3. Derived restart JSON and separately named digest views did not implement one
+   canonical persisted representation; restart combinations were under-checked.
+4. Unified identity omitted exact production OFE/lane/area/day binding and
+   hashed only the legacy 64-bit soil fingerprint rather than canonical bytes.
+5. `runoff.rs` crossed the mandatory 3000-line threshold; two other touched
+   files require WARN rationale.
+6. Runtime errors lacked canonical codes, precedence, identity, and rollback
+   context.
+7. The complete WB14 interval state transition was duplicated between daily
+   and continuation wrappers, with insufficient boundary parity vectors.
+
+All findings are accepted for this package. No GO or terminal claim is carried
+forward from the earlier bounded authority review.

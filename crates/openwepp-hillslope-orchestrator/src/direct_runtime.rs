@@ -169,8 +169,11 @@ mod runoff;
 mod storage;
 mod subhourly_generation;
 mod subsurface;
+pub(crate) use subsurface::apply_direct_same_pass_infiltration;
+mod surface_liquid_closure;
 mod surface_liquid_ingress;
 mod surface_liquid_owner;
+mod surface_liquid_wb14;
 
 pub use decomposition::{
     DirectDecompositionAction, DirectDecompositionActiveContext,
@@ -373,18 +376,24 @@ pub use subsurface::{
     DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
 };
+pub use surface_liquid_closure::{
+    DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,
+    DirectSurfaceLiquidStoreClosureOperands,
+};
 pub use surface_liquid_ingress::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
     DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
     DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
-    DirectTileGroundIngress, execute_surface_liquid_ingress,
+    DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, execute_surface_liquid_ingress,
 };
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,
-    DirectSurfaceLiquidError, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
-    DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidFailure, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
 };
 

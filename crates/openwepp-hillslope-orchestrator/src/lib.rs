@@ -137,9 +137,11 @@ pub use direct_runtime::{
 
 pub use direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
-    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
-    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
+    DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidIngressCandidate,
+    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidIngressLedger,
+    DirectSurfaceLiquidParcelClosureOperands, DirectSurfaceLiquidParcelKind,
     DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
+    DirectSurfaceLiquidReceiptRecipient, DirectSurfaceLiquidStoreClosureOperands,
     DirectTileGroundIngress, execute_surface_liquid_ingress,
 };
 pub use direct_runtime::{
@@ -156,8 +158,10 @@ pub use direct_runtime::{
 pub use direct_runtime::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,
-    DirectSurfaceLiquidError, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
-    DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidFailure, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
 };
 pub use direct_runtime::{

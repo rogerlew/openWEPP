@@ -630,16 +630,61 @@ impl DirectRunFrame {
         configuration: &DirectSurfaceLiquidConfiguration,
         state: DirectSurfaceLiquidOwnedState,
     ) -> Result<(), DirectRuntimeError> {
+        configuration
+            .validate()
+            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
+                field: "surface_liquid.configuration",
+            })?;
         if configuration.run_id != self.identity.run_id {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: "surface_liquid.run_identity",
             });
         }
-        state.validate(configuration).map_err(|_| {
-            DirectRuntimeError::DirectDomainViolation {
-                field: "surface_liquid.state",
+        if configuration.ofe_bindings.len() != self.lanes.len()
+            || configuration.ofe_topology.len() != self.lanes.len()
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "surface_liquid.production_lane_count",
+            });
+        }
+        for (topology_index, (ofe_id, binding)) in configuration
+            .ofe_topology
+            .iter()
+            .zip(&configuration.ofe_bindings)
+            .enumerate()
+        {
+            let lane = self.lanes.get(topology_index).ok_or(
+                DirectRuntimeError::DirectDomainViolation {
+                    field: "surface_liquid.production_lane_index",
+                },
+            )?;
+            if &binding.ofe_id != ofe_id
+                || binding.production_lane_index != topology_index
+                || binding.production_lane_id != lane.lane_id
+            {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "surface_liquid.production_lane_identity",
+                });
             }
-        })?;
+            if binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len() {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "surface_liquid.production_soil_layer_count",
+                });
+            }
+            if configuration.records.iter().any(|record| {
+                record.key.ofe_id == *ofe_id
+                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+            }) {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "surface_liquid.production_lane_area_m2",
+                });
+            }
+        }
+        state
+            .validate(configuration)
+            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
+                field: "surface_liquid.state",
+            })?;
         self.surface_liquid_shadow = Some(Box::new(state));
         Ok(())
     }

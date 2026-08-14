@@ -247,6 +247,7 @@ pub struct RealHydrologyShadowAdapter {
     hydrology_owner_id: ResourceOwnerId,
     layer_facts: BTreeMap<RealHydrologySourceKey, RealHydrologyLayerFact>,
     layer_indexes: BTreeMap<RealHydrologySourceKey, usize>,
+    layer_maps: Vec<RealHydrologyLaneLayerMap>,
     snapshot_bytes: Vec<u8>,
     snapshot_fingerprint: String,
 }
@@ -305,6 +306,7 @@ impl RealHydrologyShadowAdapter {
             hydrology_owner_id,
             layer_facts,
             layer_indexes,
+            layer_maps: layer_maps.to_vec(),
             snapshot_bytes,
             snapshot_fingerprint,
         })
@@ -343,8 +345,23 @@ impl RealHydrologyShadowAdapter {
     }
 
     #[must_use]
-    pub(crate) fn snapshot_fingerprint(&self) -> &str {
-        &self.snapshot_fingerprint
+    pub(crate) fn day_index(&self) -> usize {
+        self.day_index
+    }
+
+    #[must_use]
+    pub(crate) fn interval_s(&self) -> f64 {
+        self.interval_s
+    }
+
+    #[must_use]
+    pub(crate) fn layer_maps(&self) -> &[RealHydrologyLaneLayerMap] {
+        &self.layer_maps
+    }
+
+    #[must_use]
+    pub fn snapshot_bytes(&self) -> &[u8] {
+        &self.snapshot_bytes
     }
 
     pub fn authorize(

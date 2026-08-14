@@ -529,7 +529,7 @@ impl DirectDayFrame {
         )?;
 
         for _ in 0..self.percolation_inputs.lane_substeps {
-            apply_same_pass_infiltration(
+            apply_direct_same_pass_infiltration(
                 &mut layers,
                 self.percolation_inputs.same_pass_infiltration_m / lane_substeps_f64,
                 self.percolation_inputs.tillage_depth_m,
@@ -1199,7 +1199,7 @@ fn aggregate_soil_water(layers: &[DirectSubsurfaceLayerState]) -> Result<f64, Di
     super::aggregate_direct_soil_water(layers, "percolation.aggregate_soil_water_m")
 }
 
-fn apply_same_pass_infiltration(
+pub(crate) fn apply_direct_same_pass_infiltration(
     layers: &mut [DirectSubsurfaceLayerState],
     infiltration_m: f64,
     tillage_depth_m: f64,

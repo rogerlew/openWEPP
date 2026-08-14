@@ -235,9 +235,41 @@ Further results append below; failed attempts are retained.
   the focused integration target remained 8/8 and affected check, strict
   Clippy, formatting, diff hygiene, and science admission remained green.
 
-Raw logs were retained outside the checkout under the short `/tmp` gate
-directories reported by the command output. They are execution evidence only
-and are not committed.
+Earlier focused raw logs were retained outside the checkout under the short
+`/tmp` directories reported by their command output. The later comparator logs
+under `artifacts/gate-run-20260814-*` are retained package evidence, including
+failed attempts.
+
+## Implementation review round 1
+
+- HOLD (hydrology/ownership): five material findings covering real infiltration
+  recipients, independent closure, strict restart combinations, production
+  identity binding, and canonical failure payloads.
+- HOLD (Rust correctness): six material findings covering the complete receiver
+  set, candidate sealing, canonical persistence, canonical snapshot bytes,
+  line-count governance, and duplicated WB14 transition.
+- Disposition: all eleven findings accepted; none rejected, deferred, or moved
+  to follow-up.
+
+## Review remediation focused gate
+
+- PASS: surface owner/ingress/shared-WB14 unit selection, 25/25.
+- PASS: surface-liquid authority contract, 9/9.
+- PASS: real-LSE/real-hydrology integration contract, 13/13.
+- PASS: advisory authority linter, 7/7; the earlier full-workspace failure from
+  the missing `SC-SURFACELIQUID-001` expected authority is preserved in
+  `artifacts/gate-run-20260814-2/04_nextest_workspace.log`.
+- PASS: affected orchestrator strict all-target Clippy.
+- PASS: complete orchestrator quick suite, 532/532 in 145.986 seconds; retained
+  slow OFE-routing tests completed successfully.
+- PASS: LSE quick suite, 27/27, and strict all-target Clippy.
+- PASS: affected kernel-contract, LSE, and orchestrator checks.
+- PASS: science admission from the frozen base, 46 contracts and 14 changed
+  science surfaces.
+- PASS: anti-evasion, AUTH11 3/3, SC unit compliance, formatting, diff hygiene,
+  JSON impact-map parse, and package Markdown lint (18 files, zero findings).
+- Static: `runoff.rs` is 2,852 lines; all remaining files are below 3,000 and
+  WARN files are dispositioned in `line-count-governance.md`.
 
 ## Heavy comparator attempt 1
 
@@ -258,3 +290,19 @@ and are not committed.
 
 The small attempt-1 raw logs are retained under
 `artifacts/gate-run-20260814-1/`.
+
+## Heavy comparator attempt 2 at `e82ba462a`
+
+- PASS: formatting, diff hygiene, workspace strict Clippy, workspace doctests,
+  and dependency policy. `cargo deny` retained one non-failing unmatched
+  `MIT-0` allowance warning.
+- FAIL: full workspace nextest stopped fail-fast after 84 passes and one
+  failure; 2710 selected tests did not run. The advisory authority-map test
+  expected only WAT5 and plant authority on `00_core_frames.rs`, while the
+  new exact surface-liquid binding correctly adds
+  `SC-SURFACELIQUID-001`. The expected per-path set now includes the new
+  authority only for that changed shared path.
+- The full-workspace run is not counted as PASS and must be rerun after all
+  accepted implementation review findings are corrected.
+
+Attempt-2 raw logs are retained under `artifacts/gate-run-20260814-2/`.

@@ -4,15 +4,19 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{TileId, TransactionId};
+use openwepp_kernel_contract::{SoilLayerId, TileId, TransactionId};
 use openwepp_land_surface_energy::{OfeId, SurfaceId};
 use serde::{Deserialize, Serialize};
 
 use super::runoff::{DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval};
+use super::surface_liquid_closure::{
+    DirectSurfaceLiquidClosureOperands, capture_and_validate_surface_liquid_closure,
+};
 use super::surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidConfiguration,
-    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError,
-    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
+    DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
     DirectSurfaceLiquidStoreKey,
 };
 
@@ -20,8 +24,9 @@ const INTERVAL_S: f64 = 1_800.0;
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
 const LIQUID_HEAT_CAPACITY_J_KG_K: f64 = 4_218.0;
 const REFERENCE_TEMPERATURE_K: f64 = 273.15;
+#[cfg(test)]
 const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
-const ENTHALPY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-9;
+#[cfg(test)]
 const SCALE_MULTIPLIER: f64 = 64.0;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -100,7 +105,7 @@ pub enum DirectTileGroundIngress {
 }
 
 impl DirectTileGroundIngress {
-    fn identity(&self) -> (&OfeId, &TileId, &SurfaceId) {
+    pub(super) fn identity(&self) -> (&OfeId, &TileId, &SurfaceId) {
         match self {
             Self::OpenRawPrecipitation {
                 ofe_id,
@@ -154,13 +159,38 @@ pub enum DirectSurfaceLiquidReceiptDisposition {
     OutletRunoff,
 }
 
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case", tag = "recipient_kind", deny_unknown_fields)]
+pub enum DirectSurfaceLiquidReceiptRecipient {
+    SoilInfiltration {
+        ofe_id: OfeId,
+        production_lane_index: usize,
+        production_lane_id: u32,
+        ordered_soil_layer_ids: Vec<SoilLayerId>,
+        soil_thermal_layer_id: SoilLayerId,
+    },
+    SurfaceStore {
+        store_key: DirectSurfaceLiquidStoreKey,
+    },
+    RoutedOfe {
+        source_ofe_id: OfeId,
+        destination_ofe_id: OfeId,
+        destination_store_key: DirectSurfaceLiquidStoreKey,
+    },
+    Outlet {
+        ofe_id: OfeId,
+    },
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectSurfaceLiquidParcelReceipt {
     pub parcel_id: String,
+    pub source_parcel_id: String,
     pub transaction_id: TransactionId,
     pub origin_store_key: DirectSurfaceLiquidStoreKey,
     pub recipient_store_key: DirectSurfaceLiquidStoreKey,
+    pub recipient: DirectSurfaceLiquidReceiptRecipient,
     pub basis_ofe_id: OfeId,
     pub kind: DirectSurfaceLiquidParcelKind,
     pub disposition: DirectSurfaceLiquidReceiptDisposition,
@@ -193,6 +223,14 @@ pub struct DirectSurfaceLiquidIngressCandidate {
     pub receipts: Vec<DirectSurfaceLiquidParcelReceipt>,
     pub ledgers: Vec<DirectSurfaceLiquidIngressLedger>,
     pub wb14_calls_by_ofe: BTreeMap<OfeId, u8>,
+    closure_operands: DirectSurfaceLiquidClosureOperands,
+}
+
+impl DirectSurfaceLiquidIngressCandidate {
+    #[must_use]
+    pub const fn closure_operands(&self) -> &DirectSurfaceLiquidClosureOperands {
+        &self.closure_operands
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -232,9 +270,40 @@ pub fn execute_surface_liquid_ingress(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+    execute_surface_liquid_ingress_inner(configuration, resource, input).map_err(|error| {
+        let code = error.code();
+        let phase = if code == DirectSurfaceLiquidErrorCode::E010 {
+            DirectSurfaceLiquidPhase::IndependentClosure
+        } else {
+            DirectSurfaceLiquidPhase::IngressCandidate
+        };
+        let detail = error
+            .failure()
+            .map_or_else(|| error.to_string(), |failure| failure.detail.clone());
+        DirectSurfaceLiquidError::canonical_failure(
+            code,
+            phase,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: Some(resource.beginning_state().state_sha256.clone()),
+                attempted_owner_sha256: None,
+            },
+            detail,
+        )
+    })
+}
+
+fn execute_surface_liquid_ingress_inner(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
     configuration.validate()?;
-    resource.beginning_state.validate(configuration)?;
-    if input.transaction_id != resource.transaction_id
+    resource.beginning_state().validate(configuration)?;
+    if input.transaction_id != resource.transaction_id()
         || input.transaction_id.0 == 0
         || input.interval_s.to_bits() != INTERVAL_S.to_bits()
     {
@@ -243,10 +312,10 @@ pub fn execute_surface_liquid_ingress(
         ));
     }
     validate_resource_working_state(configuration, resource)?;
-    validate_cadence(&resource.beginning_state, input)?;
+    validate_cadence(resource.beginning_state(), input)?;
     let parameters = validate_parameters(configuration, &input.wb14_parameters)?;
     let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
-    let mut ending = resource.working_state.clone();
+    let mut ending = resource.working_state().clone();
     let mut receipts = Vec::new();
     let mut ledgers = Vec::new();
     let mut call_count = BTreeMap::new();
@@ -259,7 +328,7 @@ pub fn execute_surface_liquid_ingress(
             .ok_or(DirectSurfaceLiquidError::Identity(
                 "missing WB14 continuation",
             ))?;
-        let beginning_continuation = &resource.beginning_state.continuations[continuation_index];
+        let beginning_continuation = &resource.beginning_state().continuations[continuation_index];
         let (cumulative_supply_m, cumulative_infiltration_m) =
             continuation_start(beginning_continuation, input)?;
         let ofe_parcels = pending.remove(ofe_id).unwrap_or_default();
@@ -295,7 +364,6 @@ pub fn execute_surface_liquid_ingress(
             Some(input.transaction_id);
         receipts.extend(advanced.receipts);
         if let Some(ledger) = advanced.ledger {
-            validate_ledger(&ledger)?;
             ledgers.push(ledger);
         }
         route_runoff(
@@ -317,14 +385,21 @@ pub fn execute_surface_liquid_ingress(
     }
     ending.state_sha256 = ending.recomputed_sha256()?;
     ending.validate(configuration)?;
-    validate_candidate_store_closure(configuration, resource, &ending, &receipts)?;
+    let closure_operands = capture_and_validate_surface_liquid_closure(
+        configuration,
+        resource,
+        input,
+        &ending,
+        &receipts,
+    )?;
     Ok(DirectSurfaceLiquidIngressCandidate {
         transaction_id: input.transaction_id,
-        beginning_state: resource.beginning_state.clone(),
+        beginning_state: resource.beginning_state().clone(),
         ending_state: ending,
         receipts,
         ledgers,
         wb14_calls_by_ofe: call_count,
+        closure_operands,
     })
 }
 
@@ -332,21 +407,21 @@ fn validate_resource_working_state(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if resource.working_state.owner_id != resource.beginning_state.owner_id
-        || resource.working_state.configuration_sha256
-            != resource.beginning_state.configuration_sha256
-        || resource.working_state.records.len() != configuration.records.len()
-        || resource.working_state.continuations != resource.beginning_state.continuations
+    if resource.working_state().owner_id != resource.beginning_state().owner_id
+        || resource.working_state().configuration_sha256
+            != resource.beginning_state().configuration_sha256
+        || resource.working_state().records.len() != configuration.records.len()
+        || resource.working_state().continuations != resource.beginning_state().continuations
     {
         return Err(DirectSurfaceLiquidError::Identity(
             "resource working-state identity mismatch",
         ));
     }
     for ((working, beginning), configured) in resource
-        .working_state
+        .working_state()
         .records
         .iter()
-        .zip(&resource.beginning_state.records)
+        .zip(&resource.beginning_state().records)
         .zip(&configuration.records)
     {
         if working.key != configured.key
@@ -491,7 +566,7 @@ fn validate_and_build_local_ingress(
             pending.entry(ofe_id.clone()).or_default(),
         )?;
     }
-    for overflow in &resource.condensation_overflow {
+    for overflow in resource.condensation_overflow() {
         require_nonnegative(
             overflow.amount_kg_m2_ofe_ground,
             "condensation overflow mass",
@@ -612,6 +687,13 @@ fn advance_one_ofe(
     mut cumulative_infiltration_m: f64,
     transaction_id: TransactionId,
 ) -> Result<OfeAdvance, DirectSurfaceLiquidError> {
+    let binding = configuration
+        .ofe_bindings
+        .iter()
+        .find(|binding| &binding.ofe_id == ofe_id)
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "missing infiltration recipient binding",
+        ))?;
     parcels.sort_by(parcel_order);
     let mut boundaries = parcels
         .iter()
@@ -695,6 +777,13 @@ fn advance_one_ofe(
             receipts.push(receipt(
                 parcel,
                 DirectSurfaceLiquidReceiptDisposition::Infiltration,
+                DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+                    ofe_id: binding.ofe_id.clone(),
+                    production_lane_index: binding.production_lane_index,
+                    production_lane_id: binding.production_lane_id,
+                    ordered_soil_layer_ids: binding.ordered_soil_layer_ids.clone(),
+                    soil_thermal_layer_id: binding.infiltration_soil_thermal_layer_id.clone(),
+                },
                 ofe_id.clone(),
                 start_s,
                 end_s,
@@ -802,6 +891,9 @@ fn retain_excess_proportionally(
                 retained_receipts.push(receipt(
                     parcel,
                     DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
+                    DirectSurfaceLiquidReceiptRecipient::SurfaceStore {
+                        store_key: parcel.recipient_store_key.clone(),
+                    },
                     parcel.basis_ofe_id.clone(),
                     start_s,
                     end_s,
@@ -864,6 +956,11 @@ fn route_runoff(
                 receipts.push(receipt(
                     &parcel,
                     DirectSurfaceLiquidReceiptDisposition::RoutedRunoff,
+                    DirectSurfaceLiquidReceiptRecipient::RoutedOfe {
+                        source_ofe_id: parcel.basis_ofe_id.clone(),
+                        destination_ofe_id: destination_ofe.clone(),
+                        destination_store_key: destination.key.clone(),
+                    },
                     parcel.basis_ofe_id.clone(),
                     parcel.start_s,
                     parcel.end_s,
@@ -895,6 +992,9 @@ fn route_runoff(
                 receipts.push(receipt(
                     &parcel,
                     DirectSurfaceLiquidReceiptDisposition::OutletRunoff,
+                    DirectSurfaceLiquidReceiptRecipient::Outlet {
+                        ofe_id: parcel.basis_ofe_id.clone(),
+                    },
                     parcel.basis_ofe_id.clone(),
                     parcel.start_s,
                     parcel.end_s,
@@ -918,6 +1018,7 @@ fn route_runoff(
 fn receipt(
     parcel: &TimedParcel,
     disposition: DirectSurfaceLiquidReceiptDisposition,
+    recipient: DirectSurfaceLiquidReceiptRecipient,
     basis_ofe_id: OfeId,
     start_s: f64,
     end_s: f64,
@@ -933,9 +1034,11 @@ fn receipt(
             start_s.to_bits(),
             end_s.to_bits()
         ),
+        source_parcel_id: parcel.parcel_id.clone(),
         transaction_id,
         origin_store_key: parcel.origin_store_key.clone(),
         recipient_store_key: parcel.recipient_store_key.clone(),
+        recipient,
         basis_ofe_id,
         kind: parcel.kind,
         disposition,
@@ -945,74 +1048,6 @@ fn receipt(
         temperature_k,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     }
-}
-
-fn validate_ledger(
-    ledger: &DirectSurfaceLiquidIngressLedger,
-) -> Result<(), DirectSurfaceLiquidError> {
-    let mass_residual = ledger.ingress_mass_kg_m2_ofe_ground
-        - ledger.infiltration_mass_kg_m2_ofe_ground
-        - ledger.retained_mass_kg_m2_ofe_ground
-        - ledger.runoff_mass_kg_m2_ofe_ground;
-    let mass_scale = ledger.ingress_mass_kg_m2_ofe_ground.abs()
-        + ledger.infiltration_mass_kg_m2_ofe_ground.abs()
-        + ledger.retained_mass_kg_m2_ofe_ground.abs()
-        + ledger.runoff_mass_kg_m2_ofe_ground.abs();
-    if mass_residual.abs() > mass_tolerance(mass_scale) {
-        return Err(DirectSurfaceLiquidError::Closure("OFE ingress mass ledger"));
-    }
-    let enthalpy_residual = ledger.ingress_enthalpy_j_m2_ofe_ground
-        - ledger.infiltration_enthalpy_j_m2_ofe_ground
-        - ledger.retained_enthalpy_j_m2_ofe_ground
-        - ledger.runoff_enthalpy_j_m2_ofe_ground;
-    let enthalpy_scale = ledger.ingress_enthalpy_j_m2_ofe_ground.abs()
-        + ledger.infiltration_enthalpy_j_m2_ofe_ground.abs()
-        + ledger.retained_enthalpy_j_m2_ofe_ground.abs()
-        + ledger.runoff_enthalpy_j_m2_ofe_ground.abs();
-    if enthalpy_residual.abs() > enthalpy_tolerance(enthalpy_scale) {
-        return Err(DirectSurfaceLiquidError::Closure(
-            "OFE ingress enthalpy ledger",
-        ));
-    }
-    Ok(())
-}
-
-fn validate_candidate_store_closure(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    resource: &DirectSurfaceLiquidResourceCandidate,
-    ending: &DirectSurfaceLiquidOwnedState,
-    receipts: &[DirectSurfaceLiquidParcelReceipt],
-) -> Result<(), DirectSurfaceLiquidError> {
-    for ((beginning, resource_state), (ending_state, configured)) in resource
-        .beginning_state
-        .records
-        .iter()
-        .zip(&resource.working_state.records)
-        .zip(ending.records.iter().zip(&configuration.records))
-    {
-        let retained = receipts
-            .iter()
-            .filter(|receipt| {
-                receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RetainedSurface
-                    && receipt.recipient_store_key == configured.key
-            })
-            .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground)
-            .sum::<f64>();
-        let expected = resource_state.liquid_kg_m2_tile + retained / configured.tile_fraction;
-        if (ending_state.liquid_kg_m2_tile - expected).abs()
-            > mass_tolerance(
-                beginning.liquid_kg_m2_tile.abs()
-                    + resource_state.liquid_kg_m2_tile.abs()
-                    + ending_state.liquid_kg_m2_tile.abs()
-                    + retained.abs(),
-            )
-        {
-            return Err(DirectSurfaceLiquidError::Closure(
-                "ending surface-liquid store ledger",
-            ));
-        }
-    }
-    Ok(())
 }
 
 fn parcel_order(left: &TimedParcel, right: &TimedParcel) -> std::cmp::Ordering {
@@ -1052,12 +1087,9 @@ fn require_nonnegative(value: f64, field: &'static str) -> Result<(), DirectSurf
     }
 }
 
+#[cfg(test)]
 fn mass_tolerance(scale: f64) -> f64 {
     MASS_ABSOLUTE_TOLERANCE_KG_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
-}
-
-fn enthalpy_tolerance(scale: f64) -> f64 {
-    ENTHALPY_ABSOLUTE_TOLERANCE_J_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
 }
 
 #[cfg(test)]
@@ -1069,7 +1101,8 @@ mod tests {
 
     use super::*;
     use crate::direct_runtime::{
-        apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+        DirectSurfaceLiquidOfeBinding, apply_surface_liquid_resource_phase,
+        authorize_surface_liquid_withdrawals,
     };
 
     fn owner(value: &str) -> ResourceOwnerId {
@@ -1090,6 +1123,17 @@ mod tests {
 
     fn source(value: &str) -> SourceId {
         SourceId::try_new(value).expect("source")
+    }
+
+    fn binding(ofe_name: &str, lane_index: usize) -> DirectSurfaceLiquidOfeBinding {
+        let top_layer = SoilLayerId::try_new(format!("soil-{ofe_name}-top")).expect("soil layer");
+        DirectSurfaceLiquidOfeBinding {
+            ofe_id: ofe(ofe_name),
+            production_lane_index: lane_index,
+            production_lane_id: u32::try_from(lane_index + 1).expect("lane id"),
+            ordered_soil_layer_ids: vec![top_layer.clone()],
+            infiltration_soil_thermal_layer_id: top_layer,
+        }
     }
 
     fn config_record(
@@ -1124,6 +1168,7 @@ mod tests {
             owner("surface-water"),
             91,
             vec![ofe("upper"), ofe("lower")],
+            vec![binding("upper", 0), binding("lower", 1)],
             vec![
                 config_record(
                     "upper",
@@ -1151,6 +1196,7 @@ mod tests {
             owner("surface-water"),
             91,
             vec![ofe("only")],
+            vec![binding("only", 0)],
             vec![config_record("only", "tile", 100.0, 0.1, mode, None)],
         )
         .expect("configuration")
@@ -1323,14 +1369,13 @@ mod tests {
             wb14_parameters: parameters(&configuration),
         };
         let before = resource.clone();
-        assert!(matches!(
-            execute_surface_liquid_ingress(&configuration, &resource, &input),
-            Err(DirectSurfaceLiquidError::Identity(
-                "open/covered ingress mode mismatch"
-            ))
-        ));
+        let error = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect_err("wrong ingress mode");
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
         assert_eq!(resource, before);
-        assert_eq!(beginning, resource.beginning_state);
+        assert_eq!(&beginning, resource.beginning_state());
     }
 
     #[test]
@@ -1357,7 +1402,7 @@ mod tests {
             None,
             &[condensation],
         );
-        assert_eq!(resource.condensation_overflow.len(), 1);
+        assert_eq!(resource.condensation_overflow().len(), 1);
         let input = DirectSurfaceLiquidIngressInput {
             transaction_id,
             day_index: 3,
@@ -1408,8 +1453,8 @@ mod tests {
                 tile_id: configuration.records[0].key.tile_id.clone(),
                 surface_id: configuration.records[0].key.surface_id.clone(),
                 release: DirectCanopyLiquidRelease {
-                    throughfall: amount(0.2, 284.0, 0.0, INTERVAL_S),
-                    initial_drainage: amount(0.3, 284.0, 0.0, INTERVAL_S),
+                    throughfall: amount(0.2, 280.0, 0.0, INTERVAL_S),
+                    initial_drainage: amount(0.3, 290.0, 0.0, INTERVAL_S),
                     second_drainage: zero.clone(),
                     stemflow: zero,
                 },
@@ -1491,10 +1536,10 @@ mod tests {
     }
 
     #[test]
-    fn wb14_failure_preserves_every_resource_candidate_byte() {
+    fn independent_closure_rejects_wrong_infiltration_recipient() {
         let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
         let beginning = initial_state(&configuration, 0.0);
-        let transaction_id = TransactionId(401);
+        let transaction_id = TransactionId(390);
         let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
         let input = DirectSurfaceLiquidIngressInput {
             transaction_id,
@@ -1502,24 +1547,146 @@ mod tests {
             interval_index: 0,
             interval_s: INTERVAL_S,
             tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let mut candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("valid candidate");
+        let infiltration = candidate
+            .receipts
+            .iter_mut()
+            .find(|receipt| {
+                receipt.disposition == DirectSurfaceLiquidReceiptDisposition::Infiltration
+            })
+            .expect("infiltration receipt");
+        if let DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+            production_lane_id, ..
+        } = &mut infiltration.recipient
+        {
+            *production_lane_id += 100;
+        } else {
+            panic!("wrong receipt variant");
+        }
+        assert!(matches!(
+            super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+                &configuration,
+                &resource,
+                candidate.closure_operands(),
+                &candidate.receipts,
+            ),
+            Err(DirectSurfaceLiquidError::Closure(
+                "wrong typed parcel recipient"
+            ))
+        ));
+    }
+
+    #[test]
+    fn independent_closure_rejects_poisoned_source_operand() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(391);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("valid candidate");
+        let mut poisoned = candidate.closure_operands().clone();
+        poisoned.poison_first_beginning_for_test();
+        assert!(
+            super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+                &configuration,
+                &resource,
+                &poisoned,
+                &candidate.receipts,
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn wb14_failure_preserves_every_resource_candidate_byte() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let first_transaction_id = TransactionId(401);
+        let first_resource =
+            resource_candidate(&configuration, &beginning, first_transaction_id, None, &[]);
+        let first = execute_surface_liquid_ingress(
+            &configuration,
+            &first_resource,
+            &DirectSurfaceLiquidIngressInput {
+                transaction_id: first_transaction_id,
+                day_index: 3,
+                interval_index: 0,
+                interval_s: INTERVAL_S,
+                tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+                wb14_parameters: vec![DirectOfeWb14Parameters {
+                    ofe_id: configuration.ofe_topology[0].clone(),
+                    effective_conductivity_m_s: 1.0e-6,
+                    matric_potential_m: 0.1,
+                    infiltration_storage_capacity_m: 1.0,
+                }],
+            },
+        )
+        .expect("first continuation");
+        assert!(first.ending_state.continuations[0].cumulative_infiltration_m > 0.0);
+        let transaction_id = TransactionId(402);
+        let resource = resource_candidate(
+            &configuration,
+            &first.ending_state,
+            transaction_id,
+            Some(first_transaction_id),
+            &[],
+        );
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 1,
+            interval_s: INTERVAL_S,
+            tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
             wb14_parameters: vec![DirectOfeWb14Parameters {
                 ofe_id: configuration.ofe_topology[0].clone(),
-                effective_conductivity_m_s: 1.0e-20,
+                effective_conductivity_m_s: 1.0e-6,
                 matric_potential_m: 0.1,
-                infiltration_storage_capacity_m: 1.0,
+                infiltration_storage_capacity_m: 0.0,
             }],
         };
         let before_candidate = resource.clone();
-        let before = serde_json::to_vec(&(&resource.beginning_state, &resource.working_state))
-            .expect("serialize before");
-        assert!(matches!(
-            execute_surface_liquid_ingress(&configuration, &resource, &input),
-            Err(DirectSurfaceLiquidError::Domain(
-                "WB14 continuation failure"
-            ))
-        ));
-        let after = serde_json::to_vec(&(&resource.beginning_state, &resource.working_state))
-            .expect("serialize after");
+        let before = (
+            resource
+                .beginning_state()
+                .canonical_bytes()
+                .expect("beginning bytes before"),
+            resource
+                .working_state()
+                .canonical_bytes()
+                .expect("working bytes before"),
+        );
+        let error = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect_err("invalid continuation bound");
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(failure.rollback.attempted_owner_sha256, None);
+        let after = (
+            resource
+                .beginning_state()
+                .canonical_bytes()
+                .expect("beginning bytes after"),
+            resource
+                .working_state()
+                .canonical_bytes()
+                .expect("working bytes after"),
+        );
         assert_eq!(after, before);
         assert_eq!(resource, before_candidate);
     }
