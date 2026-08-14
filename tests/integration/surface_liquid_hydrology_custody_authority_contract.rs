@@ -72,13 +72,15 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 3",
+        "contract_version: 4",
         "INV-SURFACELIQUID-001",
         "INV-SURFACELIQUID-002",
         "(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)",
         "`bare_mineral_soil` | `surface_liquid`",
         "`forest_litter` | `litter_liquid`",
         "`soil_layer_liquid` remains the soil-layer owner",
+        "`ground_ingress_mode` is exactly `open_raw_precipitation` or",
+        "surface class does not infer exposure",
         "Only `state_sha256`",
         "No executable `Default`",
         "SURFACELIQUID-E-001",
