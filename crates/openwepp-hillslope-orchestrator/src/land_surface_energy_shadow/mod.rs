@@ -231,6 +231,39 @@ pub struct RealReceiverClosureOperands {
     pub lse_tiles: Vec<LseTileReceiverOperands>,
 }
 
+#[derive(Clone, Debug)]
+struct ReceiverEnvelopeViolation {
+    owner_id: Option<ResourceOwnerId>,
+    ofe_id: Option<OfeId>,
+    tile_id: Option<TileId>,
+    detail: &'static str,
+}
+
+impl ReceiverEnvelopeViolation {
+    fn for_tile(
+        owner_id: Option<ResourceOwnerId>,
+        ofe_id: OfeId,
+        tile_id: TileId,
+        detail: &'static str,
+    ) -> Self {
+        Self {
+            owner_id,
+            ofe_id: Some(ofe_id),
+            tile_id: Some(tile_id),
+            detail,
+        }
+    }
+
+    fn for_owner(owner_id: Option<ResourceOwnerId>, detail: &'static str) -> Self {
+        Self {
+            owner_id,
+            ofe_id: None,
+            tile_id: None,
+            detail,
+        }
+    }
+}
+
 impl UnifiedReceiverExpectations {
     pub fn try_new(
         lse_owner_id: ResourceOwnerId,
@@ -277,44 +310,18 @@ impl UnifiedLseFinalization {
         rollback_hashes: Vec<OwnerRollbackHash>,
     ) -> Result<Self, LandSurfaceEnergyShadowError> {
         water_protocol.validate()?;
-        let tile_ids = ending_tile_states_pre_ingress
-            .iter()
-            .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
-            .collect::<BTreeSet<_>>();
-        let thermal_ids = soil_thermal_candidates
-            .iter()
-            .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
-            .collect::<BTreeSet<_>>();
-        let rollback_ids = rollback_hashes
-            .iter()
-            .map(|row| (row.owner_kind, row.owner_id.clone()))
-            .collect::<BTreeSet<_>>();
-        if ending_tile_states_pre_ingress.is_empty()
-            || tile_ids.len() != ending_tile_states_pre_ingress.len()
-            || thermal_ids.len() != soil_thermal_candidates.len()
-            || tile_ids != thermal_ids
-            || soil_thermal_candidates.iter().any(|candidate| {
-                candidate.layers.is_empty()
-                    || candidate
-                        .layers
-                        .iter()
-                        .map(|layer| layer.layer_id.clone())
-                        .collect::<BTreeSet<_>>()
-                        .len()
-                        != candidate.layers.len()
-            })
-            || rollback_ids.len() != rollback_hashes.len()
-            || rollback_hashes
-                .iter()
-                .any(|row| row.before_sha256 != row.after_sha256)
-        {
-            let first_receiver = ending_tile_states_pre_ingress.first();
+        if let Some(violation) = first_sealed_finalization_violation(
+            &water_protocol,
+            &ending_tile_states_pre_ingress,
+            &soil_thermal_candidates,
+            &rollback_hashes,
+        ) {
             return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(water_protocol.transaction_id),
-                    owner_id: Some(water_protocol.hydrology_owner_id.clone()),
-                    ofe_id: first_receiver.map(|tile| tile.ofe_id.clone()),
-                    tile_id: first_receiver.map(|tile| tile.tile_id.clone()),
+                    owner_id: violation.owner_id,
+                    ofe_id: violation.ofe_id,
+                    tile_id: violation.tile_id,
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
                 Some(water_protocol.beginning_snapshot_sha256.to_string()),
@@ -323,7 +330,7 @@ impl UnifiedLseFinalization {
                     &soil_thermal_candidates,
                     &rollback_hashes,
                 )),
-                "invalid sealed LSE finalization receiver envelope",
+                violation.detail,
             )
             .into());
         }
@@ -354,6 +361,122 @@ impl UnifiedLseFinalization {
     pub fn rollback_hashes(&self) -> &[OwnerRollbackHash] {
         &self.rollback_hashes
     }
+}
+
+fn first_sealed_finalization_violation(
+    protocol: &WaterProtocol,
+    lse_tiles: &[TileState],
+    thermal_tiles: &[SoilThermalTileCandidate],
+    rollback_hashes: &[OwnerRollbackHash],
+) -> Option<ReceiverEnvelopeViolation> {
+    let lse_owner = protocol
+        .requests
+        .iter()
+        .find(|request| request.key.requesting_component == RequestingComponent::GroundSurface)
+        .map(|request| request.key.requesting_owner_id.clone());
+    if lse_tiles.is_empty() {
+        return Some(ReceiverEnvelopeViolation::for_owner(
+            lse_owner,
+            "missing sealed LSE tile receiver",
+        ));
+    }
+    if let Some(tile) = first_duplicate_lse_tile(lse_tiles) {
+        return Some(ReceiverEnvelopeViolation::for_tile(
+            lse_owner,
+            tile.ofe_id.clone(),
+            tile.tile_id.clone(),
+            "duplicate sealed LSE tile receiver",
+        ));
+    }
+    if let Some(tile) = first_duplicate_thermal_tile(thermal_tiles) {
+        return Some(ReceiverEnvelopeViolation::for_tile(
+            Some(tile.owner_id.clone()),
+            tile.ofe_id.clone(),
+            tile.tile_id.clone(),
+            "duplicate sealed soil-thermal tile receiver",
+        ));
+    }
+    for index in 0..lse_tiles.len().max(thermal_tiles.len()) {
+        let lse = lse_tiles.get(index);
+        let thermal = thermal_tiles.get(index);
+        if lse.map(|tile| (&tile.ofe_id, &tile.tile_id))
+            != thermal.map(|tile| (&tile.ofe_id, &tile.tile_id))
+        {
+            return Some(match thermal {
+                Some(tile) => ReceiverEnvelopeViolation::for_tile(
+                    Some(tile.owner_id.clone()),
+                    tile.ofe_id.clone(),
+                    tile.tile_id.clone(),
+                    "sealed LSE/soil-thermal tile receiver mismatch",
+                ),
+                None => ReceiverEnvelopeViolation::for_tile(
+                    lse_owner,
+                    lse?.ofe_id.clone(),
+                    lse?.tile_id.clone(),
+                    "missing sealed soil-thermal tile receiver",
+                ),
+            });
+        }
+    }
+    if let Some(candidate) = thermal_tiles.iter().find(|candidate| {
+        candidate.layers.is_empty()
+            || candidate
+                .layers
+                .iter()
+                .map(|layer| &layer.layer_id)
+                .collect::<BTreeSet<_>>()
+                .len()
+                != candidate.layers.len()
+    }) {
+        return Some(ReceiverEnvelopeViolation::for_tile(
+            Some(candidate.owner_id.clone()),
+            candidate.ofe_id.clone(),
+            candidate.tile_id.clone(),
+            "invalid sealed soil-thermal layer receiver set",
+        ));
+    }
+    first_sealed_rollback_violation(rollback_hashes)
+}
+
+fn first_duplicate_lse_tile(tiles: &[TileState]) -> Option<&TileState> {
+    let mut seen = BTreeSet::new();
+    tiles
+        .iter()
+        .find(|tile| !seen.insert((tile.ofe_id.clone(), tile.tile_id.clone())))
+}
+
+fn first_duplicate_thermal_tile(
+    tiles: &[SoilThermalTileCandidate],
+) -> Option<&SoilThermalTileCandidate> {
+    let mut seen = BTreeSet::new();
+    tiles
+        .iter()
+        .find(|tile| !seen.insert((tile.ofe_id.clone(), tile.tile_id.clone())))
+}
+
+fn first_sealed_rollback_violation(
+    rows: &[OwnerRollbackHash],
+) -> Option<ReceiverEnvelopeViolation> {
+    let mut seen = BTreeSet::new();
+    rows.iter()
+        .find(|row| {
+            row.before_sha256 != row.after_sha256
+                || !seen.insert((row.owner_kind, row.owner_id.clone()))
+        })
+        .map(|row| {
+            let detail = match row.owner_kind {
+                OwnerKind::LandSurfaceEnergy => "invalid sealed LSE rollback row",
+                OwnerKind::SoilThermal => "invalid sealed soil-thermal rollback row",
+                OwnerKind::Hydrology => "invalid sealed hydrology rollback row",
+                OwnerKind::Vegetation => "invalid sealed vegetation rollback row",
+                OwnerKind::Biogeochemistry => "invalid sealed biogeochemistry rollback row",
+                OwnerKind::Envelope => "invalid sealed envelope rollback row",
+            };
+            ReceiverEnvelopeViolation::for_owner(
+                ResourceOwnerId::try_new(row.owner_id.clone()).ok(),
+                detail,
+            )
+        })
 }
 
 fn finalization_receiver_sets_sha256(
@@ -1005,31 +1128,21 @@ fn apply_ingress_to_real_receivers(
     validate_surface_production_binding(owner, configuration)?;
     let receiver_attempt_sha256 =
         finalization_receiver_sets_sha256(lse_tiles, soil_thermal, rollback_hashes);
-    let first_receiver = configuration.records.first();
-    let envelope_failure = |detail: &'static str| {
-        LandSurfaceEnergyShadowError::from(DirectSurfaceLiquidError::atomic_envelope_failure(
-            DirectSurfaceLiquidErrorContext {
-                transaction_id: Some(ingress.transaction_id()),
-                owner_id: Some(owner.hydrology_owner_id().clone()),
-                ofe_id: first_receiver.map(|record| record.key.ofe_id.clone()),
-                tile_id: first_receiver.map(|record| record.key.tile_id.clone()),
-                surface_id: first_receiver.map(|record| record.key.surface_id.clone()),
-                source_id: first_receiver.map(|record| record.key.source_id.clone()),
-                ..DirectSurfaceLiquidErrorContext::default()
-            },
-            Some(beginning_hydrology_snapshot_sha256.to_string()),
-            Some(receiver_attempt_sha256.clone()),
-            detail,
-        ))
-    };
     validate_receiver_sets(
         configuration,
         receiver_expectations,
         lse_tiles,
         soil_thermal,
-        rollback_hashes,
     )
-    .map_err(|_| envelope_failure("incomplete LSE/soil-thermal/rollback receiver set"))?;
+    .map_err(|violation| {
+        receiver_envelope_failure(
+            ingress.transaction_id(),
+            configuration,
+            violation,
+            beginning_hydrology_snapshot_sha256,
+            &receiver_attempt_sha256,
+        )
+    })?;
     validate_rollback_joins(
         owner,
         receiver_expectations,
@@ -1037,7 +1150,15 @@ fn apply_ingress_to_real_receivers(
         rollback_hashes,
         beginning_hydrology_snapshot_sha256,
     )
-    .map_err(|_| envelope_failure("rollback owner join"))?;
+    .map_err(|violation| {
+        receiver_envelope_failure(
+            ingress.transaction_id(),
+            configuration,
+            violation,
+            beginning_hydrology_snapshot_sha256,
+            &receiver_attempt_sha256,
+        )
+    })?;
     let beginning_frame = ending_frame.clone();
     let beginning_lse_tiles = lse_tiles.to_vec();
     let beginning_soil_thermal = soil_thermal.to_vec();
@@ -1071,84 +1192,151 @@ fn validate_receiver_sets(
     expectations: &UnifiedReceiverExpectations,
     lse_tiles: &[TileState],
     soil_thermal: &[SoilThermalTileCandidate],
-    rollback_hashes: &[OwnerRollbackHash],
-) -> Result<(), LandSurfaceEnergyShadowError> {
+) -> Result<(), ReceiverEnvelopeViolation> {
     let expected_tiles = configuration
         .records
         .iter()
         .map(|record| (record.key.ofe_id.clone(), record.key.tile_id.clone()))
         .collect::<Vec<_>>();
+    validate_receiver_topologies(&expected_tiles, expectations, lse_tiles, soil_thermal)?;
+    for candidate in soil_thermal {
+        validate_thermal_receiver(configuration, expectations, candidate)?;
+    }
+    Ok(())
+}
+
+fn validate_receiver_topologies(
+    expected_tiles: &[(OfeId, TileId)],
+    expectations: &UnifiedReceiverExpectations,
+    lse_tiles: &[TileState],
+    soil_thermal: &[SoilThermalTileCandidate],
+) -> Result<(), ReceiverEnvelopeViolation> {
+    let expected_expectations = expectations
+        .ordered_thermal_layers
+        .iter()
+        .map(|(identity, _)| identity.clone())
+        .collect::<Vec<_>>();
+    if let Some(violation) = first_expected_identity_violation(
+        expected_tiles,
+        &expected_expectations,
+        &expectations.soil_thermal_owner_id,
+        "independent soil-thermal expectation topology mismatch",
+    ) {
+        return Err(violation);
+    }
     let actual_lse_tiles = lse_tiles
         .iter()
         .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
         .collect::<Vec<_>>();
+    if let Some(violation) = first_expected_identity_violation(
+        expected_tiles,
+        &actual_lse_tiles,
+        &expectations.lse_owner_id,
+        "LSE tile receiver topology mismatch",
+    ) {
+        return Err(violation);
+    }
     let actual_thermal_tiles = soil_thermal
         .iter()
         .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
         .collect::<Vec<_>>();
-    if actual_lse_tiles != expected_tiles
-        || actual_thermal_tiles != expected_tiles
-        || expectations
-            .ordered_thermal_layers
-            .iter()
-            .map(|(identity, _)| identity.clone())
-            .collect::<Vec<_>>()
-            != expected_tiles
-        || rollback_hashes
-            .iter()
-            .any(|hash| hash.before_sha256 != hash.after_sha256)
-        || soil_thermal.iter().any(|candidate| {
-            let Some(binding) = configuration
-                .ofe_bindings
-                .iter()
-                .find(|binding| binding.ofe_id == candidate.ofe_id)
-            else {
-                return true;
-            };
-            let Some(expected_layers) = expectations
-                .ordered_thermal_layers
-                .iter()
-                .find(|(identity, _)| {
-                    identity == &(candidate.ofe_id.clone(), candidate.tile_id.clone())
-                })
-                .map(|(_, layers)| layers)
-            else {
-                return true;
-            };
-            candidate.owner_id != expectations.soil_thermal_owner_id
-                || candidate.beginning_state_sha256
-                    != expectations.beginning_soil_thermal_state_sha256
-                || candidate
-                    .layers
-                    .iter()
-                    .map(|layer| layer.layer_id.clone())
-                    .collect::<Vec<_>>()
-                    != *expected_layers
-                || candidate.layers.iter().any(|layer| {
-                    !layer.beginning_enthalpy_j_m2_ofe_ground.is_finite()
-                        || !layer.ground_heat_credit_j_m2_ofe_ground.is_finite()
-                        || !layer
-                            .infiltration_enthalpy_credit_j_m2_ofe_ground
-                            .is_finite()
-                        || !layer.ending_enthalpy_j_m2_ofe_ground.is_finite()
-                        || !layer.ending_temperature_k.is_finite()
-                })
-                || candidate.layers.is_empty()
-                || candidate.layers[0].layer_id != binding.infiltration_soil_thermal_layer_id
-                || candidate
-                    .layers
-                    .iter()
-                    .map(|layer| layer.layer_id.clone())
-                    .collect::<BTreeSet<_>>()
-                    .len()
-                    != candidate.layers.len()
-        })
-    {
-        return Err(LandSurfaceEnergyShadowError::Identity(
-            "incomplete LSE/soil-thermal/rollback receiver set",
-        ));
+    if let Some(index) = first_identity_mismatch(expected_tiles, &actual_thermal_tiles) {
+        let violation = if let Some(candidate) = soil_thermal.get(index) {
+            ReceiverEnvelopeViolation::for_tile(
+                Some(candidate.owner_id.clone()),
+                candidate.ofe_id.clone(),
+                candidate.tile_id.clone(),
+                "soil-thermal tile receiver topology mismatch",
+            )
+        } else {
+            let (ofe_id, tile_id) = &expected_tiles[index];
+            ReceiverEnvelopeViolation::for_tile(
+                Some(expectations.soil_thermal_owner_id.clone()),
+                ofe_id.clone(),
+                tile_id.clone(),
+                "missing soil-thermal tile receiver",
+            )
+        };
+        return Err(violation);
     }
     Ok(())
+}
+
+fn validate_thermal_receiver(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    expectations: &UnifiedReceiverExpectations,
+    candidate: &SoilThermalTileCandidate,
+) -> Result<(), ReceiverEnvelopeViolation> {
+    let violation = ReceiverEnvelopeViolation::for_tile(
+        Some(candidate.owner_id.clone()),
+        candidate.ofe_id.clone(),
+        candidate.tile_id.clone(),
+        "invalid soil-thermal receiver row",
+    );
+    let Some(binding) = configuration
+        .ofe_bindings
+        .iter()
+        .find(|binding| binding.ofe_id == candidate.ofe_id)
+    else {
+        return Err(violation);
+    };
+    let Some(expected_layers) = expectations
+        .ordered_thermal_layers
+        .iter()
+        .find(|(identity, _)| identity == &(candidate.ofe_id.clone(), candidate.tile_id.clone()))
+        .map(|(_, layers)| layers)
+    else {
+        return Err(violation);
+    };
+    let layers = candidate
+        .layers
+        .iter()
+        .map(|layer| layer.layer_id.clone())
+        .collect::<Vec<_>>();
+    let has_nonfinite = candidate.layers.iter().any(|layer| {
+        !layer.beginning_enthalpy_j_m2_ofe_ground.is_finite()
+            || !layer.ground_heat_credit_j_m2_ofe_ground.is_finite()
+            || !layer
+                .infiltration_enthalpy_credit_j_m2_ofe_ground
+                .is_finite()
+            || !layer.ending_enthalpy_j_m2_ofe_ground.is_finite()
+            || !layer.ending_temperature_k.is_finite()
+    });
+    let has_duplicate_layer = layers.iter().collect::<BTreeSet<_>>().len() != layers.len();
+    if candidate.owner_id != expectations.soil_thermal_owner_id
+        || candidate.beginning_state_sha256 != expectations.beginning_soil_thermal_state_sha256
+        || layers != *expected_layers
+        || has_nonfinite
+        || candidate.layers.is_empty()
+        || candidate.layers[0].layer_id != binding.infiltration_soil_thermal_layer_id
+        || has_duplicate_layer
+    {
+        return Err(violation);
+    }
+    Ok(())
+}
+
+fn first_identity_mismatch(
+    expected: &[(OfeId, TileId)],
+    actual: &[(OfeId, TileId)],
+) -> Option<usize> {
+    (0..expected.len().max(actual.len())).find(|&index| expected.get(index) != actual.get(index))
+}
+
+fn first_expected_identity_violation(
+    expected: &[(OfeId, TileId)],
+    actual: &[(OfeId, TileId)],
+    owner_id: &ResourceOwnerId,
+    detail: &'static str,
+) -> Option<ReceiverEnvelopeViolation> {
+    let index = first_identity_mismatch(expected, actual)?;
+    let (ofe_id, tile_id) = actual.get(index).or_else(|| expected.get(index))?;
+    Some(ReceiverEnvelopeViolation::for_tile(
+        Some(owner_id.clone()),
+        ofe_id.clone(),
+        tile_id.clone(),
+        detail,
+    ))
 }
 
 fn validate_rollback_joins(
@@ -1157,11 +1345,7 @@ fn validate_rollback_joins(
     soil_thermal: &[SoilThermalTileCandidate],
     rollback_hashes: &[OwnerRollbackHash],
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
-) -> Result<(), LandSurfaceEnergyShadowError> {
-    let rollback_identities = rollback_hashes
-        .iter()
-        .map(|hash| (hash.owner_kind, hash.owner_id.clone()))
-        .collect::<BTreeSet<_>>();
+) -> Result<(), ReceiverEnvelopeViolation> {
     let expected = [
         (
             OwnerKind::LandSurfaceEnergy,
@@ -1179,28 +1363,104 @@ fn validate_rollback_joins(
             &expectations.beginning_soil_thermal_state_sha256,
         ),
     ];
-    if rollback_hashes.len() != expected.len()
-        || rollback_identities.len() != rollback_hashes.len()
-        || rollback_hashes
-            .iter()
-            .zip(expected)
-            .any(|(actual, (kind, owner_id, beginning))| {
-                actual.owner_kind != kind
-                    || actual.owner_id != owner_id
-                    || &actual.before_sha256 != beginning
-                    || &actual.after_sha256 != beginning
-            })
-        || soil_thermal.iter().any(|candidate| {
-            candidate.owner_id != expectations.soil_thermal_owner_id
-                || candidate.beginning_state_sha256
-                    != expectations.beginning_soil_thermal_state_sha256
-        })
-    {
-        return Err(LandSurfaceEnergyShadowError::Identity(
-            "rollback owner join",
+    for index in 0..rollback_hashes.len().max(expected.len()) {
+        let actual = rollback_hashes.get(index);
+        let expected_row = expected.get(index);
+        match (actual, expected_row) {
+            (Some(actual), Some((kind, owner_id, beginning)))
+                if actual.owner_kind != *kind
+                    || actual.owner_id != *owner_id
+                    || &actual.before_sha256 != *beginning
+                    || &actual.after_sha256 != *beginning =>
+            {
+                return Err(rollback_violation(actual, "rollback owner row mismatch"));
+            }
+            (Some(actual), None) => {
+                return Err(rollback_violation(actual, "unexpected rollback owner row"));
+            }
+            (None, Some((kind, owner_id, _))) => {
+                return Err(ReceiverEnvelopeViolation::for_owner(
+                    ResourceOwnerId::try_new((*owner_id).to_owned()).ok(),
+                    missing_rollback_detail(*kind),
+                ));
+            }
+            _ => {}
+        }
+    }
+    if let Some(candidate) = soil_thermal.iter().find(|candidate| {
+        candidate.owner_id != expectations.soil_thermal_owner_id
+            || candidate.beginning_state_sha256 != expectations.beginning_soil_thermal_state_sha256
+    }) {
+        return Err(ReceiverEnvelopeViolation::for_tile(
+            Some(candidate.owner_id.clone()),
+            candidate.ofe_id.clone(),
+            candidate.tile_id.clone(),
+            "soil-thermal rollback lineage mismatch",
         ));
     }
     Ok(())
+}
+
+fn rollback_violation(
+    row: &OwnerRollbackHash,
+    fallback: &'static str,
+) -> ReceiverEnvelopeViolation {
+    let detail = match row.owner_kind {
+        OwnerKind::LandSurfaceEnergy => "LSE rollback owner row mismatch",
+        OwnerKind::SoilThermal => "soil-thermal rollback owner row mismatch",
+        OwnerKind::Hydrology => "hydrology rollback owner row mismatch",
+        OwnerKind::Vegetation => "vegetation rollback owner row mismatch",
+        OwnerKind::Biogeochemistry => "biogeochemistry rollback owner row mismatch",
+        OwnerKind::Envelope => fallback,
+    };
+    ReceiverEnvelopeViolation::for_owner(
+        ResourceOwnerId::try_new(row.owner_id.clone()).ok(),
+        detail,
+    )
+}
+
+const fn missing_rollback_detail(kind: OwnerKind) -> &'static str {
+    match kind {
+        OwnerKind::LandSurfaceEnergy => "missing LSE rollback owner row",
+        OwnerKind::Hydrology => "missing hydrology rollback owner row",
+        OwnerKind::SoilThermal => "missing soil-thermal rollback owner row",
+        OwnerKind::Vegetation => "missing vegetation rollback owner row",
+        OwnerKind::Biogeochemistry => "missing biogeochemistry rollback owner row",
+        OwnerKind::Envelope => "missing envelope rollback owner row",
+    }
+}
+
+fn receiver_envelope_failure(
+    transaction_id: TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    violation: ReceiverEnvelopeViolation,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+) -> LandSurfaceEnergyShadowError {
+    let record = violation.ofe_id.as_ref().and_then(|ofe_id| {
+        configuration.records.iter().find(|record| {
+            &record.key.ofe_id == ofe_id
+                && violation
+                    .tile_id
+                    .as_ref()
+                    .is_some_and(|tile_id| &record.key.tile_id == tile_id)
+        })
+    });
+    DirectSurfaceLiquidError::atomic_envelope_failure(
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: violation.owner_id,
+            ofe_id: violation.ofe_id,
+            tile_id: violation.tile_id,
+            surface_id: record.map(|record| record.key.surface_id.clone()),
+            source_id: record.map(|record| record.key.source_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        Some(beginning_sha256.to_string()),
+        Some(attempted_sha256.to_owned()),
+        violation.detail,
+    )
+    .into()
 }
 
 fn apply_receiver_receipt(

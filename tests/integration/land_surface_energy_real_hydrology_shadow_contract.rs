@@ -1367,7 +1367,7 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
         configuration.records[0].key.source_id.clone(),
         1.0,
     );
-    for poison in 0..13 {
+    for poison in 0..14 {
         let result = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
@@ -1411,7 +1411,8 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
                     }
                     10 => rollback[0].owner_id = "wrong-lse-owner".into(),
                     11 => rollback.swap(0, 1),
-                    _ => rollback[0].before_sha256 = digest('7'),
+                    12 => rollback[0].before_sha256 = digest('7'),
+                    _ => rollback[2].owner_id = "wrong-thermal-owner".into(),
                 }
                 UnifiedLseFinalization::try_new(
                     finalization.water_protocol().clone(),
@@ -1425,13 +1426,102 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
         let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
             panic!("receiver poison {poison} must retain canonical envelope failure");
         };
+        let failure = surface_error.failure().expect("failure payload");
         assert_eq!(
-            surface_error.failure().expect("failure payload").code,
+            failure.code,
             DirectSurfaceLiquidErrorCode::E011,
             "receiver poison {poison}"
         );
+        if poison == 10 {
+            assert_eq!(
+                failure
+                    .context
+                    .owner_id
+                    .as_ref()
+                    .map(ResourceOwnerId::as_str),
+                Some("wrong-lse-owner")
+            );
+        } else if poison == 13 {
+            assert_eq!(
+                failure
+                    .context
+                    .owner_id
+                    .as_ref()
+                    .map(ResourceOwnerId::as_str),
+                Some("wrong-thermal-owner")
+            );
+        }
         assert_eq!(frame, original, "receiver poison {poison} mutated owner");
     }
+}
+
+#[test]
+fn sealed_two_tile_finalization_reports_the_actual_second_thermal_receiver() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let result = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |authorizations| {
+            let finalization =
+                unified_finalization(accepted_surface_protocol(&batch, authorizations, &snapshot));
+            let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
+            let mut second_lse = tiles[0].clone();
+            second_lse.tile_id = TileId::try_new("covered").expect("second LSE tile");
+            tiles.push(second_lse);
+            let mut thermal = finalization.soil_thermal_candidates().to_vec();
+            let mut second_thermal = thermal[0].clone();
+            second_thermal.tile_id =
+                TileId::try_new("wrong-second").expect("offending thermal tile");
+            thermal.push(second_thermal);
+            UnifiedLseFinalization::try_new(
+                finalization.water_protocol().clone(),
+                tiles,
+                thermal,
+                finalization.rollback_hashes().to_vec(),
+            )
+        },
+    );
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+        result.expect_err("second-row receiver mismatch must reject")
+    else {
+        panic!("second-row receiver mismatch must retain E011");
+    };
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("soil-thermal")
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("ofe-1")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("wrong-second")
+    );
 }
 
 fn rust_sources_below(path: &Path, sources: &mut Vec<std::path::PathBuf>) {
