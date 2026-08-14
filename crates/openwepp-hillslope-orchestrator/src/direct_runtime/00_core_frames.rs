@@ -689,7 +689,7 @@ impl DirectRunFrame {
         Ok(total_area_m2)
     }
 
-    fn seed_day_frame(
+    pub(crate) fn seed_day_frame(
         &self,
         lane_index: usize,
         day_index: usize,

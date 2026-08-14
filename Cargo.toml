@@ -801,6 +801,10 @@ name = "c3_vegetation_implementation_contract"
 path = "tests/integration/c3_vegetation_implementation_contract.rs"
 
 [[test]]
+name = "vegetation_real_hydrology_shadow_contract"
+path = "tests/integration/vegetation_real_hydrology_shadow_contract.rs"
+
+[[test]]
 name = "peak_hourly_authority_contract"
 path = "tests/integration/peak_hourly_authority_contract.rs"
 

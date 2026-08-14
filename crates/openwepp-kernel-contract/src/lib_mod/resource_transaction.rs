@@ -279,6 +279,88 @@ pub fn authorize_proportionally<K: Clone + Ord>(
     authorize_proportionally_by(requests, available, expected_basis, Clone::clone)
 }
 
+fn compensated_sum(
+    values: impl IntoIterator<Item = f64>,
+) -> Result<f64, ResourceProtocolViolation> {
+    let mut sum = 0.0;
+    let mut compensation = 0.0;
+    for value in values {
+        let adjusted = value - compensation;
+        let next = sum + adjusted;
+        if !adjusted.is_finite() || !next.is_finite() {
+            return Err(ResourceProtocolViolation::NonFinite);
+        }
+        compensation = (next - sum) - adjusted;
+        sum = next;
+    }
+    Ok(sum)
+}
+
+fn next_down_nonnegative(value: f64) -> f64 {
+    if value.to_bits() == 0.0_f64.to_bits() {
+        0.0
+    } else {
+        f64::from_bits(value.to_bits() - 1)
+    }
+}
+
+/// Canonically reconstruct a nonnegative resource amount from an ordered
+/// identity map. Every owner validator uses this join rather than caller order.
+pub fn canonical_resource_amount_sum<K: Ord>(
+    amounts: &BTreeMap<K, f64>,
+) -> Result<f64, ResourceProtocolViolation> {
+    if amounts.values().any(|amount| !amount.is_finite()) {
+        return Err(ResourceProtocolViolation::NonFinite);
+    }
+    if amounts.values().any(|amount| *amount < 0.0) {
+        return Err(ResourceProtocolViolation::Negative);
+    }
+    compensated_sum(amounts.values().copied())
+}
+
+fn bounded_group_authorizations<K>(
+    requests: &[&ResourceRequest<K, f64>],
+    total: f64,
+    supply: f64,
+) -> Result<Vec<f64>, ResourceProtocolViolation> {
+    let mut remaining = supply;
+    let last_positive_index = requests.iter().rposition(|request| request.amount > 0.0);
+    let mut amounts = Vec::with_capacity(requests.len());
+    for (index, request) in requests.iter().enumerate() {
+        let amount = if total <= supply {
+            request.amount
+        } else if total == 0.0 {
+            0.0
+        } else if Some(index) == last_positive_index {
+            remaining.min(request.amount)
+        } else if last_positive_index.is_some_and(|last| index > last) {
+            0.0
+        } else {
+            let proportional = supply * (request.amount / total);
+            proportional.min(remaining).min(request.amount)
+        };
+        remaining = (remaining - amount).max(0.0);
+        amounts.push(amount);
+    }
+    let group_sum = compensated_sum(amounts.iter().copied())?;
+    if group_sum > supply {
+        let closing_index = amounts
+            .iter()
+            .rposition(|amount| *amount > 0.0)
+            .ok_or(ResourceProtocolViolation::NonFinite)?;
+        let excess = (group_sum - supply).max(0.0);
+        amounts[closing_index] = (amounts[closing_index] - excess).max(0.0);
+        while compensated_sum(amounts.iter().copied())? > supply {
+            let next = next_down_nonnegative(amounts[closing_index]);
+            if next.to_bits() == amounts[closing_index].to_bits() {
+                return Err(ResourceProtocolViolation::NonFinite);
+            }
+            amounts[closing_index] = next;
+        }
+    }
+    Ok(amounts)
+}
+
 /// Proportionally authorize requests grouped by an owner-supply identity while
 /// preserving each request's complete resource key in the returned record.
 pub fn authorize_proportionally_by<K, S, F>(
@@ -318,43 +400,49 @@ where
                 .then(left.key.cmp(&right.key))
                 .then(left.basis.cmp(&right.basis))
         });
-        let mut sum = 0.0;
-        let mut compensation = 0.0;
-        for request in values.iter() {
-            let adjusted = request.amount - compensation;
-            let next = sum + adjusted;
-            compensation = (next - sum) - adjusted;
-            sum = next;
+        totals.insert(
+            key.clone(),
+            compensated_sum(values.iter().map(|request| request.amount))?,
+        );
+    }
+    let mut amounts_by_identity = BTreeMap::new();
+    for (key, values) in &grouped {
+        let supply = available.get(key).copied().unwrap_or(0.0);
+        if !supply.is_finite() {
+            return Err(ResourceProtocolViolation::NonFinite);
         }
-        totals.insert(key.clone(), sum);
+        if supply < 0.0 {
+            return Err(ResourceProtocolViolation::Negative);
+        }
+        let total = totals.get(key).copied().unwrap_or(0.0);
+        let group_amounts = bounded_group_authorizations(values, total, supply)?;
+        for (request, amount) in values.iter().zip(group_amounts) {
+            amounts_by_identity.insert(
+                (
+                    request.transaction_id,
+                    request.owner_id.clone(),
+                    request.key.clone(),
+                    request.basis,
+                ),
+                amount,
+            );
+        }
     }
     requests
         .iter()
-        .map(|request| {
-            let key = supply_key(&request.key);
-            let supply = available.get(&key).copied().unwrap_or(0.0);
-            if !supply.is_finite() {
-                return Err(ResourceProtocolViolation::NonFinite);
-            }
-            if supply < 0.0 {
-                return Err(ResourceProtocolViolation::Negative);
-            }
-            let total = totals.get(&key).copied().unwrap_or(0.0);
-            let amount = if total <= supply {
-                request.amount
-            } else if total == 0.0 {
-                0.0
-            } else {
-                supply * (request.amount / total)
-            };
-            Ok(MaximumAuthorization {
-                transaction_id: request.transaction_id,
-                owner_id: request.owner_id.clone(),
-                key: request.key.clone(),
-                amount,
-                basis: request.basis,
-            })
+        .map(|request| MaximumAuthorization {
+            transaction_id: request.transaction_id,
+            owner_id: request.owner_id.clone(),
+            key: request.key.clone(),
+            amount: amounts_by_identity[&(
+                request.transaction_id,
+                request.owner_id.clone(),
+                request.key.clone(),
+                request.basis,
+            )],
+            basis: request.basis,
         })
+        .map(Ok)
         .collect()
 }
 
@@ -573,6 +661,153 @@ mod tests {
         let mut reversed = requests.clone();
         reversed.reverse();
         assert_eq!(authorize(&requests), authorize(&reversed));
+    }
+
+    #[test]
+    fn proportional_roundoff_cannot_overdraw_the_source() {
+        let requests = [
+            ResourceRequest {
+                amount: 8.485_679_527_629_57,
+                ..water_request(water_key("a", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: 9.282_475_483_155_647,
+                ..water_request(water_key("b", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: 0.0,
+                ..water_request(water_key("z", "tile", "soil-1"))
+            },
+        ];
+        let supply = 15.653_309_008_252_922;
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), supply)]);
+        let authorizations = authorize_proportionally_by(
+            &requests,
+            &available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .expect("bounded authorization");
+        let authorized_sum = authorizations.iter().map(|value| value.amount).sum::<f64>();
+        assert!(authorized_sum <= supply);
+        assert_eq!(authorized_sum.to_bits(), supply.to_bits());
+        assert!(
+            authorizations
+                .iter()
+                .zip(requests.iter())
+                .all(|(authorization, request)| authorization.amount <= request.amount)
+        );
+        assert_eq!(authorizations[2].amount.to_bits(), 0.0_f64.to_bits());
+    }
+
+    #[test]
+    fn proportional_roundoff_cannot_exceed_an_individual_request() {
+        let requests = [
+            ResourceRequest {
+                amount: 1.158_624_076_366_919_7e-240,
+                ..water_request(water_key("a", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: 1.474_276_488_852_636_2e83,
+                ..water_request(water_key("b", "tile", "soil-1"))
+            },
+        ];
+        let available = BTreeMap::from([(
+            SoilLayerId::try_new("soil-1").unwrap(),
+            1.265_476_617_660_733_5e83,
+        )]);
+        let authorizations = authorize_proportionally_by(
+            &requests,
+            &available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .expect("bounded authorization");
+        assert!(
+            authorizations
+                .iter()
+                .zip(requests.iter())
+                .all(|(authorization, request)| authorization.amount <= request.amount)
+        );
+    }
+
+    #[test]
+    fn canonical_authorization_sum_cannot_exceed_supply_by_one_ulp() {
+        let requests = [
+            ResourceRequest {
+                amount: 8.035_722_597_406_164e-9,
+                ..water_request(water_key("a", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: 2.006_737_253_250_081_8e-8,
+                ..water_request(water_key("b", "tile", "soil-1"))
+            },
+        ];
+        let supply = 1.383_450_275_530_851e-8;
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), supply)]);
+        let authorizations = authorize_proportionally_by(
+            &requests,
+            &available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .expect("bounded authorization");
+        let amounts = authorizations
+            .iter()
+            .map(|authorization| (authorization.key.clone(), authorization.amount))
+            .collect::<BTreeMap<_, _>>();
+        assert!(canonical_resource_amount_sum(&amounts).unwrap() <= supply);
+    }
+
+    #[test]
+    fn finite_request_operands_with_overflowing_total_are_rejected() {
+        let requests = [
+            ResourceRequest {
+                amount: f64::MAX,
+                ..water_request(water_key("a", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: f64::MAX,
+                ..water_request(water_key("b", "tile", "soil-1"))
+            },
+        ];
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), 1.0)]);
+        assert_eq!(
+            authorize_proportionally_by(
+                &requests,
+                &available,
+                ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+                |key| key.layer_id.clone(),
+            ),
+            Err(ResourceProtocolViolation::NonFinite)
+        );
+    }
+
+    #[test]
+    fn positive_requests_against_zero_supply_receive_exact_zero() {
+        let requests = [
+            ResourceRequest {
+                amount: 1.0,
+                ..water_request(water_key("a", "tile", "soil-1"))
+            },
+            ResourceRequest {
+                amount: 2.0,
+                ..water_request(water_key("b", "tile", "soil-1"))
+            },
+        ];
+        let available = BTreeMap::from([(SoilLayerId::try_new("soil-1").unwrap(), 0.0)]);
+        let authorizations = authorize_proportionally_by(
+            &requests,
+            &available,
+            ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            |key| key.layer_id.clone(),
+        )
+        .expect("zero authorization");
+        assert!(
+            authorizations
+                .iter()
+                .all(|authorization| authorization.amount.to_bits() == 0.0_f64.to_bits())
+        );
     }
 
     #[test]

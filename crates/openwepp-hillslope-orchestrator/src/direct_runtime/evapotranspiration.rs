@@ -1625,13 +1625,7 @@ fn apply_post_et_upper_limit_redistribution(
 }
 
 fn aggregate_soil_water(layers: &[DirectSubsurfaceLayerState]) -> Result<f64, DirectRuntimeError> {
-    let mut soil_water_m = 0.0;
-    for layer in layers {
-        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
-        soil_water_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
-        validate_finite("evapotranspiration.aggregate_soil_water_m", soil_water_m)?;
-    }
-    Ok(soil_water_m.max(0.0))
+    super::aggregate_direct_soil_water(layers, "evapotranspiration.aggregate_soil_water_m")
 }
 
 fn effective_swu_plant_tolerance(raw_plant_tolerance: f64) -> f64 {
@@ -1640,6 +1634,22 @@ fn effective_swu_plant_tolerance(raw_plant_tolerance: f64) -> f64 {
     } else {
         raw_plant_tolerance.clamp(WB17_PLTOL_MIN, WB17_PLTOL_MAX)
     }
+}
+
+/// Production hydrology-owned exact layer-liquid debit used by both the
+/// native root-uptake span and the default-off real-owner shadow candidate.
+pub(crate) fn apply_direct_finalized_layer_liquid_debit(
+    layer: &mut DirectSubsurfaceLayerState,
+    debit_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("root_uptake.finalized_layer_debit_m", debit_m)?;
+    if debit_m > layer.theta_m {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "root_uptake.finalized_layer_debit_m",
+        });
+    }
+    layer.theta_m -= debit_m;
+    validate_nonnegative_direct_m("root_uptake.layer_theta_after_m", layer.theta_m)
 }
 
 fn run_swu_root_uptake(
@@ -1697,7 +1707,7 @@ fn run_swu_root_uptake(
             layer_uptake_m = 0.0;
         }
         layer_uptake_actual_m[index] = layer_uptake_m;
-        layers[index].theta_m -= layer_uptake_m;
+        apply_direct_finalized_layer_liquid_debit(&mut layers[index], layer_uptake_m)?;
         if layers[index].theta_m < 1.0e-10 {
             layers[index].theta_m = 0.0;
         }

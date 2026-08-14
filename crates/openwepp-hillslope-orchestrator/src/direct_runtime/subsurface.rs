@@ -1196,13 +1196,7 @@ fn count_to_f64(field: &'static str, count: usize) -> Result<f64, DirectRuntimeE
 }
 
 fn aggregate_soil_water(layers: &[DirectSubsurfaceLayerState]) -> Result<f64, DirectRuntimeError> {
-    let mut soil_water_m = 0.0;
-    for layer in layers {
-        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
-        soil_water_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
-        validate_finite("percolation.aggregate_soil_water_m", soil_water_m)?;
-    }
-    Ok(soil_water_m.max(0.0))
+    super::aggregate_direct_soil_water(layers, "percolation.aggregate_soil_water_m")
 }
 
 fn apply_same_pass_infiltration(

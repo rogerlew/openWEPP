@@ -593,7 +593,7 @@
 State as of `2026-08-14 UTC`:
 
 - `20260814-snow-free-land-surface-real-hydrology-integration-001/`
-  - EXECUTING / CHILD 1 COMPLETE / CHILD 2 REAL-HYDROLOGY SHADOW ACTIVE:
+  - EXECUTING / CHILDREN 1-2 COMPLETE / CHILD 3 LSE RUNTIME NEXT:
     coordinates four
     independently closed packages for complete snow-free ground/forest-floor
     authority, V8 arbitration against the real hillslope hydrology owner, a
@@ -609,7 +609,8 @@ State as of `2026-08-14 UTC`:
     activation, production cutover, calibration or validation is claimed.
 
 - `20260814-vegetation-real-hydrology-arbitration-shadow-001/`
-  - EXECUTING / REAL HYDROLOGY OWNER EXTRACTION: connect the V8 request and
+  - COMPLETE / V7 VEGETATION-REAL-HYDROLOGY ARBITRATION SHADOW IMPLEMENTED /
+    PRODUCTION UNCHANGED: connects the V7 request and
     fixed-cap path to an exact default-off clone/candidate of production
     hydrology while preserving production bytes and legacy behavior.
 

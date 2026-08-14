@@ -8,7 +8,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{
-    ResourceOwnerId, SoilLayerId, TileId, TransactionId, validate_resource_protocol,
+    ResourceOwnerId, SoilLayerId, TileId, TransactionId, canonical_resource_amount_sum,
+    validate_resource_protocol,
 };
 
 use crate::column::{OccupancyDiagnostics, TileColumnsResult};
@@ -236,15 +237,23 @@ pub fn reconstruct_water_ending(
             "duplicate finalized water identity".into(),
         ));
     }
-    let mut debits = BTreeMap::<SoilLayerId, f64>::new();
+    let mut amounts_by_layer =
+        BTreeMap::<SoilLayerId, BTreeMap<openwepp_kernel_contract::WaterResourceKey, f64>>::new();
     for (key, amount) in by_key {
         if !amount.is_finite() || amount < 0.0 {
             return Err(VegetationError::Receipt(
                 "invalid finalized water amount".into(),
             ));
         }
-        *debits.entry(key.layer_id).or_default() += amount;
+        amounts_by_layer
+            .entry(key.layer_id.clone())
+            .or_default()
+            .insert(key, amount);
     }
+    let debits = amounts_by_layer
+        .into_iter()
+        .map(|(layer, amounts)| canonical_resource_amount_sum(&amounts).map(|sum| (layer, sum)))
+        .collect::<Result<BTreeMap<_, _>, _>>()?;
     let mut ending = snapshot.beginning_kg_m2_by_layer.clone();
     if debits.is_empty() {
         return Ok(ending);
@@ -541,7 +550,24 @@ fn validate_arbitration(
         .iter()
         .map(|request| (request.key.clone(), request))
         .collect::<BTreeMap<_, _>>();
-    let mut authorized_by_layer = BTreeMap::<SoilLayerId, f64>::new();
+    let positive_eligible_request_count_by_layer = requests.iter().fold(
+        BTreeMap::<SoilLayerId, usize>::new(),
+        |mut counts, request| {
+            let excluded = matches!(
+                arbitration.reasons.get(&request.key),
+                Some(
+                    WaterAuthorizationReason::FrozenExclusion
+                        | WaterAuthorizationReason::RootingExclusion
+                )
+            );
+            if request.amount > 0.0 && !excluded {
+                *counts.entry(request.key.layer_id.clone()).or_default() += 1;
+            }
+            counts
+        },
+    );
+    let mut authorized_by_layer =
+        BTreeMap::<SoilLayerId, BTreeMap<openwepp_kernel_contract::WaterResourceKey, f64>>::new();
     for authorization in &arbitration.authorizations {
         let request = requests_by_key.get(&authorization.key).ok_or_else(|| {
             VegetationError::ResourceIdentity("V6 water arbitration request identity".into())
@@ -551,8 +577,7 @@ fn validate_arbitration(
         })?;
         let valid_reason = match reason {
             WaterAuthorizationReason::ZeroDemand => {
-                request.amount.to_bits() == 0.0_f64.to_bits()
-                    && authorization.amount.to_bits() == 0.0_f64.to_bits()
+                request.amount == 0.0 && authorization.amount == 0.0
             }
             WaterAuthorizationReason::FullySupplied => {
                 request.amount > 0.0 && authorization.amount.to_bits() == request.amount.to_bits()
@@ -560,18 +585,19 @@ fn validate_arbitration(
             WaterAuthorizationReason::LiquidStorageLimit => {
                 request.amount > 0.0
                     && authorization.amount < request.amount
-                    && arbitration.snapshot.beginning_kg_m2_by_layer[&request.key.layer_id]
-                        .to_bits()
-                        == 0.0_f64.to_bits()
+                    && (arbitration.snapshot.beginning_kg_m2_by_layer[&request.key.layer_id] == 0.0
+                        || positive_eligible_request_count_by_layer[&request.key.layer_id] == 1)
             }
             WaterAuthorizationReason::CompetingDemand => {
                 request.amount > 0.0
                     && authorization.amount >= 0.0
                     && authorization.amount < request.amount
+                    && positive_eligible_request_count_by_layer[&request.key.layer_id] > 1
+                    && arbitration.snapshot.beginning_kg_m2_by_layer[&request.key.layer_id] > 0.0
             }
             WaterAuthorizationReason::FrozenExclusion
             | WaterAuthorizationReason::RootingExclusion => {
-                request.amount > 0.0 && authorization.amount.to_bits() == 0.0_f64.to_bits()
+                request.amount > 0.0 && authorization.amount == 0.0
             }
         };
         if !valid_reason {
@@ -579,17 +605,18 @@ fn validate_arbitration(
                 "V6 water authorization reason mismatch".into(),
             ));
         }
-        *authorized_by_layer
+        authorized_by_layer
             .entry(request.key.layer_id.clone())
-            .or_default() += authorization.amount;
+            .or_default()
+            .insert(request.key.clone(), authorization.amount);
     }
-    if authorized_by_layer.iter().any(|(layer, authorized)| {
-        !authorized.is_finite()
-            || *authorized > arbitration.snapshot.beginning_kg_m2_by_layer[layer]
-    }) {
-        return Err(VegetationError::ResourceBound(
-            "V6 water snapshot overbooking".into(),
-        ));
+    for (layer, amounts) in &authorized_by_layer {
+        let authorized = canonical_resource_amount_sum(amounts)?;
+        if authorized > arbitration.snapshot.beginning_kg_m2_by_layer[layer] {
+            return Err(VegetationError::ResourceBound(
+                "V6 water snapshot overbooking".into(),
+            ));
+        }
     }
     Ok(())
 }
@@ -1138,5 +1165,123 @@ mod tests {
         *wrong_reason.reasons.get_mut(&keys[0]).expect("reason") =
             WaterAuthorizationReason::RootingExclusion;
         assert!(validate_arbitration(transaction_id, &owner_id, &requests, &wrong_reason).is_err());
+    }
+
+    #[test]
+    fn reason_validation_distinguishes_zero_supply_and_excluded_competitors() {
+        use openwepp_kernel_contract::{
+            OccupancyId, ResourceOwnerId, ResourceRequest, StratumId, WaterResourceKey,
+        };
+
+        let transaction_id = TransactionId(10);
+        let owner_id = ResourceOwnerId::try_new("vegetation").expect("owner");
+        let layer_id = SoilLayerId::try_new("soil-shared").expect("layer");
+        let key = |stratum: &str| WaterResourceKey {
+            occupancy_id: OccupancyId {
+                stratum_id: StratumId::try_new(stratum).expect("stratum"),
+                tile_id: TileId::try_new("tile").expect("tile"),
+            },
+            layer_id: layer_id.clone(),
+        };
+        let requests = [key("eligible"), key("excluded")]
+            .into_iter()
+            .map(|key| ResourceRequest {
+                transaction_id,
+                owner_id: owner_id.clone(),
+                key,
+                amount: 5.0,
+                basis: ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            })
+            .collect::<Vec<_>>();
+
+        let validate =
+            |beginning: f64, amounts: [f64; 2], reasons: [WaterAuthorizationReason; 2]| {
+                let authorizations = requests
+                    .iter()
+                    .zip(amounts)
+                    .map(|(request, amount)| MaximumAuthorization {
+                        transaction_id,
+                        owner_id: owner_id.clone(),
+                        key: request.key.clone(),
+                        amount,
+                        basis: request.basis,
+                    })
+                    .collect::<Vec<_>>();
+                let reason_map = requests
+                    .iter()
+                    .zip(reasons)
+                    .map(|(request, reason)| (request.key.clone(), reason))
+                    .collect::<BTreeMap<_, _>>();
+                let snapshot = WaterOwnerSnapshot::try_new(
+                    transaction_id,
+                    owner_id.clone(),
+                    BTreeMap::from([(layer_id.clone(), beginning)]),
+                    reason_map.clone(),
+                )
+                .expect("snapshot");
+                let arbitration = WaterArbitration::try_new(snapshot, authorizations, reason_map)
+                    .expect("surface");
+                validate_arbitration(transaction_id, &owner_id, &requests, &arbitration)
+            };
+
+        validate(
+            0.0,
+            [0.0, 0.0],
+            [
+                WaterAuthorizationReason::LiquidStorageLimit,
+                WaterAuthorizationReason::LiquidStorageLimit,
+            ],
+        )
+        .expect("zero supply precedes competition");
+        validate(
+            4.0,
+            [4.0, 0.0],
+            [
+                WaterAuthorizationReason::LiquidStorageLimit,
+                WaterAuthorizationReason::RootingExclusion,
+            ],
+        )
+        .expect("excluded request is not an eligible competitor");
+    }
+
+    #[test]
+    fn ending_reconstruction_is_canonical_for_disparate_uses_and_reversal() {
+        use openwepp_kernel_contract::{
+            FinalizedUse, OccupancyId, ResourceOwnerId, StratumId, WaterResourceKey,
+        };
+
+        let transaction_id = TransactionId(11);
+        let owner_id = ResourceOwnerId::try_new("vegetation").expect("owner");
+        let layer_id = SoilLayerId::try_new("soil-shared").expect("layer");
+        let amounts = [1.0e-18, 0.125, 0.0625];
+        let uses = ["a", "b", "c"]
+            .into_iter()
+            .zip(amounts)
+            .map(|(stratum, amount)| FinalizedUse {
+                transaction_id,
+                owner_id: owner_id.clone(),
+                key: WaterResourceKey {
+                    occupancy_id: OccupancyId {
+                        stratum_id: StratumId::try_new(stratum).expect("stratum"),
+                        tile_id: TileId::try_new("tile").expect("tile"),
+                    },
+                    layer_id: layer_id.clone(),
+                },
+                amount,
+                basis: ResourceAmountBasis::WaterKgPerSquareMeterStandGroundInterval,
+            })
+            .collect::<Vec<_>>();
+        let snapshot = WaterOwnerSnapshot::try_new(
+            transaction_id,
+            owner_id,
+            BTreeMap::from([(layer_id.clone(), 1.0)]),
+            BTreeMap::new(),
+        )
+        .expect("snapshot");
+        let forward = reconstruct_water_ending(&snapshot, &uses).expect("forward");
+        let mut reversed = uses.clone();
+        reversed.reverse();
+        let backward = reconstruct_water_ending(&snapshot, &reversed).expect("reversed");
+        assert_eq!(forward[&layer_id].to_bits(), backward[&layer_id].to_bits());
     }
 }

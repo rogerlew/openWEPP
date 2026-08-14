@@ -164,6 +164,7 @@ mod growth;
 mod laned_active;
 mod normalization;
 mod projection;
+mod real_water_owner;
 mod runoff;
 mod storage;
 mod subhourly_generation;
@@ -222,6 +223,7 @@ pub use erosion_seed::{
     DirectWave1OperandSeed, Wave1InflowOperands, assemble_wave1_continuity_inputs,
     assemble_wave1_continuity_inputs_quantum,
 };
+pub(crate) use evapotranspiration::apply_direct_finalized_layer_liquid_debit;
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,
     DirectEvapotranspirationComputeShadowProjection, DirectEvapotranspirationComputeSpanReport,
@@ -257,6 +259,9 @@ pub use projection::{
     DirectHydrologyProjectionDownstreamOperands, DirectHydrologyProjectionInputs,
     DirectHydrologyProjectionShadowProjection, DirectHydrologyProjectionSpanReport,
     DirectHydrologyProjectionState,
+};
+pub(crate) use real_water_owner::{
+    DirectLayerWithdrawalRequest, authorize_direct_layer_withdrawals,
 };
 #[cfg(test)]
 pub(crate) fn dc01_test_hourly_supply_basis(
@@ -372,6 +377,19 @@ include!("direct_runtime/01_publication.rs");
 include!("direct_runtime/02_state_reports.rs");
 include!("direct_runtime/03_executor.rs");
 include!("direct_runtime/04_audit_error_helpers.rs");
+
+pub(crate) fn aggregate_direct_soil_water(
+    layers: &[DirectSubsurfaceLayerState],
+    field: &'static str,
+) -> Result<f64, DirectRuntimeError> {
+    let mut soil_water_m = 0.0;
+    for layer in layers {
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        soil_water_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
+        validate_finite(field, soil_water_m)?;
+    }
+    Ok(soil_water_m.max(0.0))
+}
 
 #[cfg(test)]
 mod cqr_row7_publication_tests {
