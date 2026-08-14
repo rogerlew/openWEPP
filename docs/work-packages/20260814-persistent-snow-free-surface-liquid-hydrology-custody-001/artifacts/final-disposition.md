@@ -1,9 +1,10 @@
 # Final Disposition
 
-Status: `in progress / remediation focused gates pass / re-review pending`
+Status: `in progress / re-review round 1 remediation active`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted
-findings now have focused passing corrections, but exact-byte re-review, heavy
-gates, and terminal verification remain. This is not yet a terminal custody-lift
-or resumed-Child-3 claim.
+findings had focused passing corrections. Hydrology re-review then accepted two
+remaining receiver-reconstruction and canonical-error defects; their in-package
+remediation is active. This is not yet a terminal custody-lift or resumed-Child-3
+claim.

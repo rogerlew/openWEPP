@@ -39,3 +39,13 @@ Final hydrology/ownership reviewer: `PASS`.
 
 No runtime finding is rejected, deferred, or moved to follow-up. Exact-byte
 Rust and hydrology re-reviews and terminal verification remain pending.
+
+## Re-review round 1
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-REMEDIATION-HIGH-001: actual receiver ending equations lack independent reconstruction | Accepted | Active |
+| B-REMEDIATION-HIGH-002: canonical E001--E011 runtime payload is incomplete | Accepted | Active |
+
+Both findings are in-scope implementation defects. Neither changes authority,
+model identity, production selection, or the package write envelope.

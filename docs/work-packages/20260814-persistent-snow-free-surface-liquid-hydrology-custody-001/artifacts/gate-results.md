@@ -271,6 +271,16 @@ failed attempts.
 - Static: `runoff.rs` is 2,852 lines; all remaining files are below 3,000 and
   WARN files are dispositioned in `line-count-governance.md`.
 
+## Exact-byte re-review round 1
+
+- HOLD (hydrology/ownership): two material findings. Actual receivers are now
+  mutated correctly, but their ordered soil-mass and energy ending equations
+  lack independent reconstruction; the E001--E011 schema is not yet emitted
+  end to end with complete contextual rollback payloads.
+- PASS evidence retained by reviewer: surface selection 25/25 and real-LSE
+  integration 13/13. These tests were insufficient to detect the two findings.
+- Disposition: both findings accepted for immediate in-package correction.
+
 ## Heavy comparator attempt 1
 
 - PASS: formatting and diff hygiene at `a92cd5db5`.
