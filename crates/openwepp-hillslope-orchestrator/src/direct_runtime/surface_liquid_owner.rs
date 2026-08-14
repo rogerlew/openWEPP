@@ -1333,11 +1333,12 @@ pub fn authorize_surface_liquid_withdrawals(
     )
     .map_err(|error| {
         let code = error.code();
-        error.recontextualize(
+        error.complete_context(
             code,
             DirectSurfaceLiquidPhase::Authorization,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
             Some(beginning.state_sha256.clone()),
@@ -1404,7 +1405,18 @@ fn authorize_surface_liquid_withdrawals_inner(
                     detail,
                 )
             })?;
-        *demand_by_store.entry(store_key.clone()).or_default() += request.amount_kg_m2_stand_ground;
+        let demand = demand_by_store.entry(store_key.clone()).or_default();
+        let accumulated = *demand + request.amount_kg_m2_stand_ground;
+        if !accumulated.is_finite() {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::Authorization,
+                transaction_id,
+                &request.key,
+                "same-store demand accumulation is nonfinite",
+            ));
+        }
+        *demand = accumulated;
         request_store_keys.push(store_key);
     }
     let mut authorization_amounts = vec![0.0; requests.len()];
@@ -1423,6 +1435,16 @@ fn authorize_surface_liquid_withdrawals_inner(
             .get(&store_key)
             .ok_or(DirectSurfaceLiquidError::Identity("request state vanished"))?;
         let supply = config.tile_fraction * state.liquid_kg_m2_tile;
+        let first_request = &requests[indexes[0]];
+        if !supply.is_finite() {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::Authorization,
+                transaction_id,
+                &first_request.key,
+                "same-store supply multiplication is nonfinite",
+            ));
+        }
         let total_demand = demand_by_store[&store_key];
         if total_demand <= supply {
             for index in indexes {
@@ -1435,9 +1457,39 @@ fn authorize_surface_liquid_withdrawals_inner(
             let mut allocated = 0.0;
             for (rank, index) in canonical_indexes.into_iter().enumerate() {
                 let amount = if rank == last_index {
-                    supply - allocated
+                    let remainder = supply - allocated;
+                    if !remainder.is_finite() {
+                        return Err(water_protocol_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            DirectSurfaceLiquidPhase::Authorization,
+                            transaction_id,
+                            &requests[index].key,
+                            "proportional authorization remainder is nonfinite",
+                        ));
+                    }
+                    remainder
                 } else {
-                    requests[index].amount_kg_m2_stand_ground * supply / total_demand
+                    let numerator = requests[index].amount_kg_m2_stand_ground * supply;
+                    if !numerator.is_finite() {
+                        return Err(water_protocol_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            DirectSurfaceLiquidPhase::Authorization,
+                            transaction_id,
+                            &requests[index].key,
+                            "proportional authorization numerator is nonfinite",
+                        ));
+                    }
+                    let share = numerator / total_demand;
+                    if !share.is_finite() {
+                        return Err(water_protocol_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            DirectSurfaceLiquidPhase::Authorization,
+                            transaction_id,
+                            &requests[index].key,
+                            "proportional authorization division is nonfinite",
+                        ));
+                    }
+                    share
                 };
                 if !amount.is_finite()
                     || amount < 0.0
@@ -1452,7 +1504,17 @@ fn authorize_surface_liquid_withdrawals_inner(
                     ));
                 }
                 authorization_amounts[index] = amount;
-                allocated += amount;
+                let next_allocated = allocated + amount;
+                if !next_allocated.is_finite() {
+                    return Err(water_protocol_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        DirectSurfaceLiquidPhase::Authorization,
+                        transaction_id,
+                        &requests[index].key,
+                        "proportional authorization accumulation is nonfinite",
+                    ));
+                }
+                allocated = next_allocated;
             }
         }
     }
@@ -1500,11 +1562,12 @@ pub fn apply_surface_liquid_resource_phase(
     )
     .map_err(|error| {
         let code = error.code();
-        error.recontextualize(
+        error.complete_context(
             code,
             DirectSurfaceLiquidPhase::ResourceCandidate,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(arbitration.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
             Some(arbitration.beginning_state.state_sha256.clone()),
@@ -2326,6 +2389,115 @@ mod tests {
         assert!((arbitration.authorizations[0].amount_kg_m2_stand_ground - 0.15).abs() < 1.0e-15);
         assert!((arbitration.authorizations[1].amount_kg_m2_stand_ground - 0.25).abs() < 1.0e-15);
         assert_eq!(arbitration.beginning_state, beginning);
+    }
+
+    #[test]
+    fn same_store_finite_demand_overflow_fails_before_authorization_or_candidate() {
+        let configuration = configuration();
+        let beginning = state(&configuration);
+        let transaction = TransactionId(111);
+        let open = record_index(&configuration, "open");
+        let mut first = request(&configuration, open, transaction, f64::MAX * 0.75);
+        first.key.requesting_owner_id = owner("overflow-first");
+        let mut second = first.clone();
+        second.key.requesting_owner_id = owner("overflow-second");
+        let requests = vec![first.clone(), second.clone()];
+
+        let error = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &requests,
+        )
+        .expect_err("finite requests with an infinite sum must fail closed");
+        let failure = error.failure().expect("canonical overflow failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+        assert_eq!(failure.context.transaction_id, Some(transaction));
+        assert_eq!(failure.context.owner_id, Some(owner("overflow-second")));
+        assert_eq!(failure.context.ofe_id, Some(second.key.ofe_id.clone()));
+        assert_eq!(failure.context.tile_id, second.key.source_tile_id.clone());
+        assert_eq!(failure.context.surface_id, second.key.surface_id.clone());
+        assert_eq!(
+            failure.context.source_id,
+            Some(second.key.source_id.clone())
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(beginning.state_sha256.as_str())
+        );
+
+        let store = configuration
+            .store_key_for_water(&first.key)
+            .expect("configured store");
+        let forged = DirectSurfaceLiquidArbitration {
+            transaction_id: transaction,
+            expected_predecessor: None,
+            beginning_state: beginning,
+            requests,
+            authorizations: vec![
+                WaterAuthorization {
+                    key: first.key,
+                    amount_kg_m2_stand_ground: 0.0,
+                    reason: WaterAuthorizationReason::DrySource,
+                },
+                WaterAuthorization {
+                    key: second.key,
+                    amount_kg_m2_stand_ground: 0.0,
+                    reason: WaterAuthorizationReason::DrySource,
+                },
+            ],
+            request_store_keys: vec![store.clone(), store],
+        };
+        let error = apply_surface_liquid_resource_phase(
+            &configuration,
+            &forged,
+            &[
+                WaterAmount {
+                    key: forged.requests[0].key.clone(),
+                    amount_kg_m2_stand_ground: 0.0,
+                },
+                WaterAmount {
+                    key: forged.requests[1].key.clone(),
+                    amount_kg_m2_stand_ground: 0.0,
+                },
+            ],
+            &[],
+        )
+        .expect_err("candidate boundary must independently reject overflow");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
+    }
+
+    #[test]
+    fn adjacent_large_finite_same_store_demands_authorize_proportionally() {
+        let configuration = configuration();
+        let beginning = state(&configuration);
+        let transaction = TransactionId(112);
+        let open = record_index(&configuration, "open");
+        let mut first = request(&configuration, open, transaction, f64::MAX / 4.0);
+        first.key.requesting_owner_id = owner("large-first");
+        let mut second = first.clone();
+        second.key.requesting_owner_id = owner("large-second");
+        let arbitration = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &[first, second],
+        )
+        .expect("large finite nonoverflow total");
+        assert!(arbitration.authorizations.iter().all(|row| {
+            row.amount_kg_m2_stand_ground.is_finite() && row.amount_kg_m2_stand_ground > 0.0
+        }));
+        let authorized = arbitration
+            .authorizations
+            .iter()
+            .map(|row| row.amount_kg_m2_stand_ground)
+            .sum::<f64>();
+        let record = &configuration.records[open];
+        let supply = record.tile_fraction * beginning.records[open].liquid_kg_m2_tile;
+        assert!((authorized - supply).abs() <= 4.0 * f64::EPSILON * supply.abs());
     }
 
     #[test]
