@@ -9,9 +9,9 @@ use openwepp_kernel_contract::{ResourceOwnerId, StratumId, TransactionId};
 
 use crate::VegetationError;
 use crate::carbon_nitrogen::{
-    CarbonOffer, CnParameters, MaterialTransferAmounts, PhenologyMode, PhenologyUpdate,
-    RootRespirationOperand, advance_phenology, advance_turnover, carbon_offer,
-    maintenance_respiration, nitrogen_demand,
+    CarbonOffer, CnParameters, GrowthFinalization, GrowthNitrogenReceipt, MaterialTransferAmounts,
+    PhenologyMode, PhenologyUpdate, RootRespirationOperand, advance_phenology, advance_turnover,
+    carbon_offer, finalize_growth, maintenance_respiration, nitrogen_demand,
 };
 use crate::config::{PhenologyType, StratumConfiguration, VegetationConfiguration};
 use crate::nitrogen_protocol::{
@@ -24,10 +24,12 @@ use crate::water_phase::UncommittedWaterPhase;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct StratumPreallocation {
-    pub candidate_before_growth: StratumSharedState,
+    pub candidate_after_growth: StratumSharedState,
     pub potential_carbon_offer: CarbonOffer,
     pub final_carbon_offer: CarbonOffer,
+    pub potential_request_batch: PotentialMineralNitrogenRequestBatch,
     pub nitrogen_finalization: MineralNitrogenFinalization,
+    pub growth_finalization: GrowthFinalization,
     pub material_transfers: Vec<MaterialTransferAmounts>,
 }
 
@@ -41,8 +43,28 @@ pub(crate) struct UncommittedNitrogenPhase {
     strata: BTreeMap<StratumId, StratumPreallocation>,
 }
 
+#[cfg(test)]
+impl UncommittedNitrogenPhase {
+    pub(crate) fn requests(&self) -> &[PotentialMineralNitrogenRequest] {
+        &self.requests
+    }
+
+    pub(crate) fn authorizations(&self) -> &[MineralNitrogenMaximumAuthorization] {
+        &self.authorizations
+    }
+
+    pub(crate) fn finalized_uses(&self) -> &[MineralNitrogenFinalizedUse] {
+        &self.finalized_uses
+    }
+
+    pub(crate) fn strata(&self) -> &BTreeMap<StratumId, StratumPreallocation> {
+        &self.strata
+    }
+}
+
 struct PreparedStratum {
     state: StratumSharedState,
+    parameters: CnParameters,
     potential_offer: CarbonOffer,
     final_offer: CarbonOffer,
     final_demand: f64,
@@ -178,19 +200,12 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         .map_err(|error| VegetationError::Receipt(error.to_string()))?;
         let final_demand =
             nitrogen_demand(final_offer.offer, candidate.retranslocation_n, &parameters)?.demand;
-        if final_demand > request_batch.potential_total_demand() {
-            return Err(VegetationError::NitrogenDemandOrdering {
-                potential_carbon_offer: potential_offer.offer,
-                final_carbon_offer: final_offer.offer,
-                potential_demand: request_batch.potential_total_demand(),
-                final_demand,
-            });
-        }
         all_requests.extend_from_slice(request_batch.requests());
         prepared.insert(
             stratum.stratum_id.clone(),
             PreparedStratum {
                 state: candidate,
+                parameters,
                 potential_offer,
                 final_offer,
                 final_demand,
@@ -212,7 +227,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
 
     let mut strata = BTreeMap::new();
     let mut finalized_uses = Vec::new();
-    for (stratum_id, item) in prepared {
+    for (stratum_id, mut item) in prepared {
         let owner_id = item.request_batch.owner_id().clone();
         let owner_authorizations = by_owner.remove(&owner_id).ok_or_else(|| {
             VegetationError::Receipt("mineral-nitrogen authorization owner absent".into())
@@ -225,14 +240,30 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         let nitrogen_finalization = validated
             .finalize(item.final_demand)
             .map_err(|error| VegetationError::Receipt(error.to_string()))?;
+        let growth_finalization = finalize_growth(
+            &mut item.state.tissues,
+            &item.final_offer,
+            GrowthNitrogenReceipt {
+                final_total_demand: nitrogen_finalization.final_total_demand,
+                internal_use: nitrogen_finalization.internal_use,
+                external_use: nitrogen_finalization.external_use,
+                internal_remaining: nitrogen_finalization.internal_remaining,
+            },
+            &item.parameters,
+        )?;
+        item.state.retranslocation_n = nitrogen_finalization.internal_remaining;
+        item.state.nsc_c = growth_finalization.nsc_next;
+        item.state.xs_c = growth_finalization.xs_next;
         finalized_uses.extend_from_slice(&nitrogen_finalization.finalized_uses);
         strata.insert(
             stratum_id,
             StratumPreallocation {
-                candidate_before_growth: item.state,
+                candidate_after_growth: item.state,
                 potential_carbon_offer: item.potential_offer,
                 final_carbon_offer: item.final_offer,
+                potential_request_batch: item.request_batch,
                 nitrogen_finalization,
+                growth_finalization,
                 material_transfers: item.transfers,
             },
         );

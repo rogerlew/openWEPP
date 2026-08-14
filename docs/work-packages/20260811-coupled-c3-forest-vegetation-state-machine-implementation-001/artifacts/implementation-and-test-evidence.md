@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `executing / V7 onset kernel active / full candidate fail-closed at E16`
+Status: `executing / V7 uncommitted E19 composition active / full candidate fail-closed`
 
 ## V7 Storage-Transfer Phenology Increment
 
@@ -138,3 +138,29 @@ affected vegetation/orchestrator strict all-target Clippy, formatting, and diff
 hygiene pass. Public integration review and remaining multi-rank production
 vectors are pending; E16--E22, energy/BGC candidates, atomic commit, runtime
 activation, and terminal completion remain unclaimed.
+
+## V7 E19 Final-Demand Ordering Correction
+
+Static: SC-VEGETATION-001@11 contains no
+`Ndem_final<=Ndem_pot` invariant. Its canonical finalization retains the
+potential request batch, caps `Fext` by `Asum`, distributes `F_N`
+proportionally, computes common `eta` from actual internal plus external use,
+and retains unsupported final carbon in NSC. SC-BIOGEOCHEM-001 independently
+requires `F<=A<=D`.
+
+Static + Ran: the implementation-only ordering errors and guards are removed.
+`persistent_phase` prepares every stratum request before one global arbitration
+call, validates exact returned authorizations, finalizes use once, and passes a
+receipt containing exact final demand/internal use/external use/internal
+remainder to six-tissue growth. Growth independently reconstructs demand from
+the final carbon offer, applies one common eta, updates the uncommitted
+candidate, and closes carbon and nitrogen. It does not recompute external use
+from authorization.
+
+Ran: the actual full-water fixture preserves exact potential/final carbon and
+N-demand values separated by two ULPs. It makes one nitrogen-authorizer call,
+does not modify the potential requests, retains the final demand without clamp,
+obeys every layer/species `F<=A<=D` bound, produces `eta<1` and positive NSC,
+and leaves serialized beginning vegetation bytes unchanged. The public path
+still returns typed post-nitrogen implementation-incomplete and cannot publish
+or commit a multi-owner candidate.

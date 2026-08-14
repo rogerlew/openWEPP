@@ -545,3 +545,33 @@ Historical results above remain unchanged.
 | remediated fully supplied composition | **HOLD / Ran** | all-strata preflight now rejects before arbitration (zero calls/requests); observed `Coffer_final-Coffer_pot=2e-18 kg C m^-2` and `Ndem_final-Ndem_pot=2e-20 kg N m^-2`; no phase result/candidate; compared vegetation input bytes identical; no whole-owner rollback claim |
 | authority audit | HOLD | `e19-potential-final-numerical-hold-legitimacy-audit.md`; no V6 tolerance spread, clamp, or request inflation admitted |
 | independent bounded-checkpoint reviews | GO / PASS | final Rust correctness and QA re-reviews found no material implementation/evidence defect; multi-stratum arbitration, explicit wrong-pass poison, full-owner rollback, and public candidate integration remain pending and unclaimed |
+
+## V7 E19 Implementation-Overconstraint Remediation
+
+The historical failed/HOLD rows above remain unchanged. The authority
+conclusion is corrected in
+`e19-potential-final-ordering-disposition.md`; no contract or model identity
+changed.
+
+| Gate component | Result | Evidence |
+|---|---|---|
+| canonical authority trace | PASS / Static | SC-VEGETATION-001@11 defines `Fext=min(Dext_final,Asum)`, proportional `F_N`, receipt-bounded `eta`, and NSC retention; SC-BIOGEOCHEM-001 defines `F<=A<=D`; neither requires `Ndem_final<=Ndem_pot` |
+| ordering-guard removal | PASS / Static | removed both noncanonical error variants and both potential/final monotonicity rejections; retained finite/nonnegative and full identity/bound validation |
+| direct nitrogen protocol | PASS / Ran | equal, below, one-ULP-above, observed two-ULP-above, materially-above, zero/partial authorization, internal-full/partial, and exact layer/species/owner/basis branches pass |
+| real two-ULP full-water fixture | PASS / Ran | exact four frozen values retained; one complete two-species request batch; one arbiter call; final demand unchanged; `external_use=authorization_sum<final_external_demand`; `eta<1`; positive NSC retention; exact beginning vegetation bytes unchanged |
+| receipt-bound growth | PASS / Ran | allocator reconstructs final demand from the final carbon offer, consumes exact internal/external finalized-use scalars once, allocates all six tissues with common eta, closes C/N, and rejects a potential-offer/clamped-demand alias without mutation |
+| first fresh correctness review | HOLD / accepted | reviewer found a secondary implementation-only `nused>final_total_demand` rejection when valid internal plus external use rounds one ULP above demand; removed the guard and bound the exact binary64 counterexample to canonical `eta=min(1,Nused/Ndem_final)` |
+| post-finding vegetation quick | PASS / Ran | `cargo nextest run -p openwepp-vegetation --profile quick`: 215/215 |
+| implementation contract | PASS / Ran | `cargo nextest run --test c3_vegetation_implementation_contract --profile quick`: 13/13 |
+| vegetation authority | PASS / Ran | `cargo nextest run --test vegetation_boundary_authority_contract --profile quick`: 25/25 |
+| AUTH11 | PASS / Ran | `cargo nextest run --test auth11_required_suite_obligation_guards_contract`: 3/3 |
+| four affected crate checks | PASS / Ran | kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator `cargo check` all passed |
+| strict affected Clippy | FAIL then PASS / Ran | first vegetation run rejected exact float assertions under `clippy::float_cmp`; intentional exact-bit test scope was annotated, then kernel-contract, vegetation, biogeochemistry, and hillslope-orchestrator all-target `-D warnings` runs passed; post-review-finding vegetation strict Clippy also passed |
+| authority anti-evasion | PASS / Ran | `bash tools/release/check_authority_suite_antievasion.sh` |
+| science admission | PASS / Ran | `A0_ADMITTED contracts=45 science_surfaces=0`, base `ecff4ba00a2e8e7a6e3cffe07fa0bef7f671824e`, worktree authority SHA-256 `f6b4bd151dff6e62a1462170d892ea145558cc676c80a5a84ad1ce51b8b533b2` |
+| formatting | FAIL then PASS, FAIL then PASS / Ran | first check found one post-format integration-test wrap; the post-review regression added one further wrap failure; each was formatted and each exact retry passed |
+| diff hygiene | PASS / Ran | `git diff --check` |
+| package Markdown | PASS / Ran | `markdown-doc lint --path <active-package> --format plain`: 55 files, 0 errors, 0 warnings |
+| fresh Rust correctness review | HOLD then GO / Static + Ran | initial review found the rounded aggregate-`Nused` ordering guard; accepted correction and exact adjacent-bit regression passed; final review found no remaining correctness issue |
+| fresh QA review | evidence HOLD then PASS / Static + Ran | stale count/disposition evidence and explicit one-ULP assertion were corrected; final review found no material QA issue |
+| bounded phase disposition | PASS / Static + Ran | V7 phenology/turnover and E19 mineral-N request/authorization/final-use/growth composition are implemented as an uncommitted candidate; BGC debit, energy owner, all-owner candidate/commit, activation, and calibration remain unclaimed |

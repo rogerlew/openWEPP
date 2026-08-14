@@ -1,6 +1,6 @@
 # Review Agent B: Independent Science And Closure Review
 
-Status: `FAIL — closure-blocking findings; package must remain HOLD`
+Status: `historical Review-B FAIL preserved / current bounded E19 QA PASS`
 
 Evidence mode: `Static + Ran`
 
@@ -154,3 +154,30 @@ complete-package disposition.
 Review disposition: `FAIL / HOLD`. All seven findings are material and
 undispositioned at review time; B-CRITICAL-001 through B-CRITICAL-005 are
 closure-blocking scientific correctness defects.
+
+## 2026-08-13 Fresh E19 QA Review
+
+Evidence mode: `Static + Ran`
+
+The historical Review-B failure above remains immutable. This fresh review is
+limited to the bounded E19 ordering-remediation increment.
+
+Initial disposition: code correction PASS, lifecycle evidence HOLD. QA
+accepted the correctness review's aggregate-`Nused` finding and additionally
+found stale test-count/line-count evidence plus a regression that proved only
+`Nused>demand`, not the exact one-ULP adjacency. All findings were accepted.
+
+Corrections:
+
+- removed the aggregate `Nused>final_total_demand` overconstraint;
+- asserted exact `rounded_nused.to_bits()==demand.to_bits()+1`;
+- documented why canonical eta owns the bounded aggregate ratio;
+- updated the gate history to 215/215 and preserved the initial review HOLD;
+- refreshed formatted line-count governance to 2,214 lines.
+
+Final disposition: `PASS`. No material QA finding remains. Neither canonical
+contract orders final physiological demand below potential demand; immutable
+potential requests, one authorization, `F<=A<=D`, receipt-bound eta/NSC, and
+beginning-state immutability are covered. Fresh vegetation 215/215, formatting,
+and diff hygiene passed. BGC debit, energy-owner completion, atomic commit,
+heavy gates, runtime activation, and calibration remain explicitly unclaimed.

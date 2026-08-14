@@ -134,3 +134,19 @@ No newly touched Rust file reaches 2,000 lines. The earlier `migration.rs` and
 No touched Rust file reaches 3,000 lines. The `carbon_nitrogen.rs` WARN is
 explicit decomposition debt and does not justify bypassing the bounded E19
 authority HOLD.
+
+## 2026-08-13 E19 Ordering-Remediation Recount
+
+Ran after formatting:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-vegetation/src/carbon_nitrogen.rs` | 2,214 | WARN; existing cohesive C/N/phenology test-heavy module, below mandatory 3,000-line split threshold |
+| `crates/openwepp-vegetation/src/transaction.rs` | 1,965 | below WARN threshold |
+| `crates/openwepp-vegetation/src/nitrogen_protocol.rs` | 910 | below WARN threshold |
+| `crates/openwepp-vegetation/src/persistent_phase.rs` | 486 | below WARN threshold |
+| `tests/integration/c3_vegetation_implementation_contract.rs` | 767 | below WARN threshold |
+
+No changed non-generated Rust file reaches 3,000 lines. The
+`carbon_nitrogen.rs` WARN is retained as decomposition debt and does not block
+this bounded uncommitted E19 increment.

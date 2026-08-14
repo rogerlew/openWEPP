@@ -5,8 +5,9 @@ use openwepp_kernel_contract::{
     TransactionId, WaterResourceKey,
 };
 use openwepp_vegetation::carbon_nitrogen::{
-    CnParameters, ElementPool, PhenologyMode, ReceiverClass, Tissue, TissuePool, advance_phenology,
-    carbon_offer, finalize_growth, material_transfer,
+    CnParameters, ElementPool, GrowthNitrogenReceipt, PhenologyMode, ReceiverClass, Tissue,
+    TissuePool, advance_phenology, carbon_offer, finalize_growth, material_transfer,
+    nitrogen_demand,
 };
 use openwepp_vegetation::energy::{
     energy_residual, neutral_resistance, saturation_specific_humidity,
@@ -182,9 +183,18 @@ fn assert_fvcb_vector(
 fn v7_public_water_phase_executes_and_full_candidate_remains_fail_closed() {
     let source = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
         .expect("transaction source");
+    assert!(source.contains("V7 post-nitrogen multi-owner candidate is implementation-incomplete"));
     assert!(
-        source.contains("V7 E19 potential/final nitrogen ordering is implementation-incomplete")
+        source.contains("V7 multi-owner candidate and atomic commit are implementation-incomplete")
     );
+    assert!(!source.contains("NitrogenDemandOrdering"));
+    let nitrogen_source = fs::read_to_string("crates/openwepp-vegetation/src/nitrogen_protocol.rs")
+        .expect("nitrogen protocol source");
+    assert!(!nitrogen_source.contains("FinalDemandExceedsPotential"));
+    assert!(!nitrogen_source.contains("potential_total_demand.max"));
+    assert!(!nitrogen_source.contains("final_total_demand.min(self.request_batch"));
+    assert!(!nitrogen_source.contains("3.0e-7"));
+    assert!(!nitrogen_source.contains("step_norm"));
     let water_source =
         fs::read_to_string("crates/openwepp-vegetation/src/water_phase.rs").expect("water source");
     assert!(water_source.contains("execute_potential_column_pass"));
@@ -467,12 +477,18 @@ fn six_tissue_allocation_and_phenology_match_oracle_vectors() {
     let parameters = cn_vector_parameters();
     let mut tissues = empty_tissues();
     let offer = carbon_offer(0.018, 0.006, -0.030, 0.004, 86_400.0, 30.0).expect("carbon offer");
-    let mut internal_n = 0.00007;
+    let internal_n = 0.00007;
+    let demand = nitrogen_demand(offer.offer, internal_n, &parameters).expect("nitrogen demand");
+    let external_use = 0.000_274_527_112_063_062_8;
     let growth = finalize_growth(
         &mut tissues,
         &offer,
-        &mut internal_n,
-        0.000_274_527_112_063_062_8,
+        GrowthNitrogenReceipt {
+            final_total_demand: demand.demand,
+            internal_use: internal_n.min(demand.demand),
+            external_use,
+            internal_remaining: internal_n - internal_n.min(demand.demand),
+        },
         &parameters,
     )
     .expect("growth finalization");

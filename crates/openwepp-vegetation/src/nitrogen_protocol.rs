@@ -32,8 +32,6 @@ pub enum NitrogenProtocolError {
     NonFiniteAmount,
     #[error("mineral-nitrogen amount is negative")]
     NegativeAmount,
-    #[error("final mineral-nitrogen demand exceeds potential demand")]
-    FinalDemandExceedsPotential,
     #[error("mineral-nitrogen request identity is duplicated")]
     DuplicateRequestIdentity,
     #[error("mineral-nitrogen authorization identity is duplicated")]
@@ -274,10 +272,6 @@ impl ValidatedMineralNitrogenAuthorizations {
         final_total_demand: f64,
     ) -> Result<MineralNitrogenFinalization, NitrogenProtocolError> {
         validate_amount(final_total_demand)?;
-        if final_total_demand > self.request_batch.potential_total_demand {
-            return Err(NitrogenProtocolError::FinalDemandExceedsPotential);
-        }
-
         let internal_use = self.request_batch.internal_offer.min(final_total_demand);
         let final_external_demand = final_total_demand - internal_use;
         let ordered_authorizations = self
@@ -472,6 +466,8 @@ fn map_protocol_violation(violation: ResourceProtocolViolation) -> NitrogenProto
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
+
     use super::*;
     use crate::config::RootLayer;
     use openwepp_kernel_contract::SoilLayerId;
@@ -546,6 +542,58 @@ mod tests {
                 basis: request.basis,
             })
             .collect()
+    }
+
+    fn assert_identity_and_bounds(
+        batch: &PotentialMineralNitrogenRequestBatch,
+        validated: &ValidatedMineralNitrogenAuthorizations,
+        finalization: &MineralNitrogenFinalization,
+    ) {
+        assert_eq!(finalization.finalized_uses.len(), batch.requests().len());
+        for ((request, finalized), authorization) in batch
+            .requests()
+            .iter()
+            .zip(&finalization.finalized_uses)
+            .map(|pair| {
+                let authorization = &validated.authorizations()[&pair.0.key];
+                (pair, authorization)
+            })
+        {
+            assert_eq!(finalized.transaction_id, request.transaction_id);
+            assert_eq!(finalized.owner_id, request.owner_id);
+            assert_eq!(finalized.key, request.key);
+            assert_eq!(finalized.basis, request.basis);
+            assert!(finalized.amount <= authorization.amount);
+            assert!(authorization.amount <= request.amount);
+        }
+    }
+
+    fn finalize_full(
+        potential_demand: f64,
+        final_demand: f64,
+        internal_offer: f64,
+    ) -> (
+        PotentialMineralNitrogenRequestBatch,
+        ValidatedMineralNitrogenAuthorizations,
+        MineralNitrogenFinalization,
+    ) {
+        let request_batch = batch(potential_demand, internal_offer);
+        let request_snapshot = request_batch.requests().to_vec();
+        let validated = ValidatedMineralNitrogenAuthorizations::try_new(
+            &request_batch,
+            full_authorizations(&request_batch),
+        )
+        .expect("full authorizations");
+        let finalization = validated
+            .finalize(final_demand)
+            .expect("canonical finalization");
+        assert_eq!(request_batch.requests(), request_snapshot);
+        assert_eq!(
+            finalization.final_total_demand.to_bits(),
+            final_demand.to_bits()
+        );
+        assert_identity_and_bounds(&request_batch, &validated, &finalization);
+        (request_batch, validated, finalization)
     }
 
     #[test]
@@ -663,6 +711,105 @@ mod tests {
     }
 
     #[test]
+    fn final_demand_equal_below_and_one_ulp_above_potential_preserve_requests() {
+        let potential = 0.125_f64;
+        for final_demand in [potential, 0.0625, f64::from_bits(potential.to_bits() + 1)] {
+            let (batch, validated, finalization) = finalize_full(potential, final_demand, 0.0);
+            let expected_external = final_demand.min(
+                validated
+                    .authorizations()
+                    .values()
+                    .map(|authorization| authorization.amount)
+                    .sum(),
+            );
+            assert_eq!(
+                finalization.external_use.to_bits(),
+                expected_external.to_bits()
+            );
+            assert_eq!(
+                batch.potential_total_demand().to_bits(),
+                potential.to_bits()
+            );
+        }
+    }
+
+    #[test]
+    fn observed_two_ulp_final_demand_uses_immutable_potential_request_batch() {
+        let potential = f64::from_bits(4_546_826_747_422_758_608);
+        let final_demand = f64::from_bits(4_546_826_747_422_758_610);
+        assert_eq!(potential, 0.000_097_555_468_386_935_4);
+        assert_eq!(final_demand, 0.000_097_555_468_386_935_42);
+        let (batch, validated, finalization) = finalize_full(potential, final_demand, 0.0);
+        assert_eq!(
+            batch.potential_total_demand().to_bits(),
+            potential.to_bits()
+        );
+        assert_eq!(
+            finalization.final_total_demand.to_bits(),
+            final_demand.to_bits()
+        );
+        assert_eq!(finalization.external_use.to_bits(), potential.to_bits());
+        assert!(finalization.external_use < finalization.final_total_demand);
+        assert_eq!(
+            finalization.authorization_sum.to_bits(),
+            potential.to_bits()
+        );
+        assert_identity_and_bounds(&batch, &validated, &finalization);
+    }
+
+    #[test]
+    fn materially_greater_final_demand_is_bounded_by_potential_authorization() {
+        let (batch, validated, finalization) = finalize_full(1.0, 3.0, 0.0);
+        assert_eq!(finalization.final_total_demand, 3.0);
+        assert_eq!(finalization.authorization_sum, 1.0);
+        assert_eq!(finalization.external_use, 1.0);
+        assert_eq!(finalization.final_external_demand, 3.0);
+        assert_identity_and_bounds(&batch, &validated, &finalization);
+    }
+
+    #[test]
+    fn zero_authorization_finalizes_zero_for_every_layer_and_species() {
+        let request_batch = batch(8.0, 2.0);
+        let zero = request_batch
+            .requests()
+            .iter()
+            .map(|request| MineralNitrogenMaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: 0.0,
+                basis: request.basis,
+            })
+            .collect();
+        let validated = ValidatedMineralNitrogenAuthorizations::try_new(&request_batch, zero)
+            .expect("zero authorizations");
+        let finalization = validated.finalize(9.0).expect("zero finalization");
+        assert_eq!(finalization.internal_use, 2.0);
+        assert_eq!(finalization.external_use, 0.0);
+        assert!(
+            finalization
+                .finalized_uses
+                .iter()
+                .all(|use_| use_.amount == 0.0)
+        );
+        assert_identity_and_bounds(&request_batch, &validated, &finalization);
+    }
+
+    #[test]
+    fn internal_n_full_and_partial_branches_preserve_external_finalization_identity() {
+        let (_, _, full_internal) = finalize_full(1.0, 0.5, 2.0);
+        assert_eq!(full_internal.internal_use, 0.5);
+        assert_eq!(full_internal.internal_remaining, 1.5);
+        assert_eq!(full_internal.external_use, 0.0);
+
+        let (_, _, partial_internal) = finalize_full(8.0, 5.0, 2.0);
+        assert_eq!(partial_internal.internal_use, 2.0);
+        assert_eq!(partial_internal.internal_remaining, 0.0);
+        assert_eq!(partial_internal.final_external_demand, 3.0);
+        assert_eq!(partial_internal.external_use, 3.0);
+    }
+
+    #[test]
     fn authorization_rejects_wrong_layer_species_missing_duplicate_and_basis() {
         let request_batch = batch(8.0, 2.0);
         let complete = full_authorizations(&request_batch);
@@ -749,8 +896,15 @@ mod tests {
         )
         .expect("authorization");
         assert_eq!(
-            validated.finalize(9.0),
-            Err(NitrogenProtocolError::FinalDemandExceedsPotential)
+            validated.finalize(f64::NAN),
+            Err(NitrogenProtocolError::NonFiniteAmount)
         );
+        assert_eq!(
+            validated.finalize(-1.0),
+            Err(NitrogenProtocolError::NegativeAmount)
+        );
+        let finalization = validated.finalize(9.0).expect("canonical finalization");
+        assert_eq!(finalization.final_total_demand, 9.0);
+        assert_eq!(finalization.external_use, 6.0);
     }
 }

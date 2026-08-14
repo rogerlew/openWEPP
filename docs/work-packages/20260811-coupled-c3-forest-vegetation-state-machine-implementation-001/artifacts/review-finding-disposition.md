@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `executed-hold / bounded capped core accepted / Stage B not passed`
+Status: `executing / bounded E19 remediation reviewed GO/PASS / public candidate pending`
 
 The former heterogeneous E04 liquid-topology omission was lifted by V2.
 Increment 2B independently exposed additional load-bearing omissions and did
@@ -139,6 +139,23 @@ mandatory threshold. Neither review approves the still-fail-closed public
 E01--E22 transaction or completes Milestones 2/3.
 
 No finding is rejected, deferred, or used to activate the public candidate.
+
+## E19 Ordering-Remediation Review Disposition
+
+| Finding | Decision and correction | Status |
+|---|---|---|
+| potential/final monotonicity errors and guards were noncanonical | accepted; removed `FinalDemandExceedsPotential`, `NitrogenDemandOrdering`, and both direct monotonicity checks | corrected |
+| receipt-bound growth still rejected rounded `Nused>demand` | accepted; removed aggregate ordering guard and retained canonical eta clamp | corrected |
+| exact aggregate-rounding poison missing | accepted; bound a binary64 case with `Nused` exactly one ULP above demand, `eta=1`, and zero NSC | corrected |
+| lifecycle test/count evidence stale after review correction | accepted; preserved initial HOLD, recorded 215/215, and refreshed 2,214-line WARN | corrected |
+| six-tissue assertions and source-substring guards could be stronger | accepted as Low/non-blocking QA debt; existing exact C/N closure and behavioral tests support only the bounded uncommitted claim | visible debt |
+
+Final fresh review: Rust correctness `GO`; QA `PASS`. No material finding is
+unresolved. The reviews explicitly confirm that neither canonical contract
+requires `Ndem_final<=Ndem_pot` and trace immutable requests, one arbitration,
+typed `F_N`, common eta, NSC retention, and beginning-state immutability for the
+two-ULP fixture. No finding authorizes public candidate publication, BGC debit,
+atomic commit, activation, or calibration claims.
 
 ## V6 Public Water-Phase Review Disposition
 

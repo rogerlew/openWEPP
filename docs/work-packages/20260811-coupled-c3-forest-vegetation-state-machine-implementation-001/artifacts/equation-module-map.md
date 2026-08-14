@@ -1,6 +1,6 @@
 # Equation Module Map
 
-Status: `executing / V7 onset kernel active / full candidate fail-closed at E16`
+Status: `executing / V7 uncommitted E19 composition active / full candidate fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -40,20 +40,21 @@ fails closed before shared C/N and the all-owner candidate.
 | E15 | `occupancy_solver::potential::solve_uncapped_stage_a` and constitutive evaluator; V5 capped evaluator with V6 portability evidence | V3 accepted potential/failure vectors and V5 vectors SHA-256 `6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d` | distinct-beta, class/aggregate equality, exact `F<=A<=D`, equality/near-tie, alternate warm starts, failed-iterate operands, complete vulnerability residual operands, diagnostics, rollback, and 27 capped poisons | `water_phase::execute_uncommitted_water_phase` | `STAGE_B_E11_E15_EXACT_ORACLE` and public water integration PASS |
 | E16 | `occupancy_solver::constitutive`; `carbon_phase::aggregate_stratum_carbon`; `carbon_nitrogen::gpp_kg_c` | accepted production water-phase plus C/N vector | capped gross/net separation, exact class area, interval and tile weighting | final capped physical state | accepted Ag retained and aggregated once per stratum; persistent transition pending |
 | E17 | accepted class Rd operands; `aggregate_stratum_carbon`; `update_t10`; `maintenance_respiration`; `carbon_offer` | V3 respiration plus V4 displayed-leaf-N ownership vectors | class-resolved leaf Rd debited once; storage/transfer leaf-N poison; non-leaf tissue/layer respiration and signed reserve priority | final carbon offer | capped Rd/T10 operands retained; persistent public transition pending |
-| E18 | `nitrogen_demand`; `finalize_growth` | six-tissue allocation vector | N-sufficient/limited common-eta allocation and NSC retention | post-N-authorization state | focused pass |
-| E19 | `persistent_phase` potential/final preparation; `nitrogen_protocol`; proportional BGC arbitration | request/finalized bucket vectors plus real V7 full-water composition | layer/species/owner identity, unused authorization, strict final-greater-than-potential rejection, and rollback | public N request/auth/use path | internal composition reached exact numerical-ordering HOLD; public path fail-closed |
+| E18 | `nitrogen_demand`; receipt-bound `finalize_growth` | six-tissue allocation vector | independently reconstructed final demand, N-sufficient/limited common-eta allocation, exact internal-use debit, and NSC retention | uncommitted post-N-authorization stratum candidate | focused uncommitted composition PASS |
+| E19 | `persistent_phase` potential/final preparation; `nitrogen_protocol`; proportional BGC arbitration | request/finalized bucket vectors plus real V7 full-water two-ULP composition | layer/species/owner identity, immutable potential requests, one arbitration, `F<=A<=D`, final-above-potential branches, no tolerance/clamp/inflation, and beginning-state immutability | public N request/auth/use path | uncommitted request/authorization/final-use and growth composition PASS; BGC debit/public candidate pending |
 | E20 | `prepare_storage_for_onset`; `advance_phenology`; V4 displayed-leaf-C/SLA area ownership | V7 six-tissue preparation, first/multi-interval onset, terminal remainder, evergreen, migration, and poison vectors | exact half of beginning storage; add to existing transfer; all-six C/N deployment; exact-zero all-12 Active gate; no same-interval recycling; evergreen rejection; byte-identical failure input | persistent stratum state | V7 pure kernel and migration focused PASS; public persistent transaction pending |
 | E21 | `advance_turnover` | fine-root/livewood/CWD vectors | ordered bounded turnover and receiver identity | material proposals | focused pass |
 | E22 | `material_transfer`; BGC `MaterialReceipt` | litter C/N/DM vectors | carbon-as-dry-matter and duplicate-receipt poisons | BGC receiver candidate | focused pass |
 
 The public consumer executes E01--E15 through an explicitly uncommittable water
-stage, constructs typed D/A/F and a receiving-owner water debit, and enters an
-internal E19 preflight that cannot call the caller's nitrogen owner while the
-HOLD remains open. Separate sealed potential and final carbon operands and a
-crate-private all-strata nitrogen composition exist, but the real fully
-supplied vector exposes the bounded numerical-ordering HOLD recorded in
-`e19-potential-final-numerical-hold-legitimacy-audit.md`. No E16--E22 public
-request, candidate, or all-owner commit is claimed.
+stage, constructs typed D/A/F and a receiving-owner water debit, then executes
+one crate-private all-strata E19 arbitration from immutable potential requests.
+The historical two-ULP HOLD audit is preserved, while
+`e19-potential-final-ordering-disposition.md` records why its authority
+conclusion was an implementation overconstraint. Final demand is not clamped;
+final use remains bounded by potential authorization and unsupported carbon is
+retained in NSC. No BGC owner debit, public `CoupledCandidate`, or all-owner
+commit is claimed.
 
 V7 lifts `GAP-VEGETATION-027` and implements the standalone E20 preparation and
 deployment kernel. This is not yet a public E20 claim: turnover/retranslocation,

@@ -590,27 +590,6 @@ pub trait NitrogenArbiter {
     ) -> Result<Vec<NitrogenAuthorization>, VegetationError>;
 }
 
-/// Internal sentinel proving E19 preflight can complete without publishing a
-/// request batch to the caller-supplied owner while the ordering HOLD is open.
-struct PreflightOnlyNitrogen;
-
-impl NitrogenArbiter for PreflightOnlyNitrogen {
-    fn beginning_amount(&self, _: &MineralNitrogenKey) -> Result<f64, VegetationError> {
-        Err(VegetationError::Unsupported(
-            "V7 E19 nitrogen owner preflight has no inventory access",
-        ))
-    }
-
-    fn authorize(
-        &self,
-        _: &[NitrogenRequest],
-    ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
-        Err(VegetationError::Unsupported(
-            "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
-        ))
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExecutionDiagnostics {
     pub transaction_id: TransactionId,
@@ -718,16 +697,17 @@ pub enum FailurePoint {
     OwnerValidation,
 }
 
-/// Executes the complete uncommitted V7 water phase and the crate-private E19
-/// preflight, which fails closed before arbitration for the unresolved
-/// potential/final numerical ordering case.
+/// Executes the complete uncommitted V7 water and mineral-nitrogen phases.
+///
+/// Persistent multi-owner candidate construction remains deliberately
+/// fail-closed.
 pub fn execute_candidate(
     model: &ModelDefinition,
     config: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
     water: &dyn WaterArbiter,
-    _nitrogen: &dyn NitrogenArbiter,
+    nitrogen: &dyn NitrogenArbiter,
 ) -> Result<CoupledCandidate, VegetationError> {
     let water_phase = crate::water_phase::execute_uncommitted_water_phase(
         model, config, beginning, forcing, water,
@@ -737,10 +717,10 @@ pub fn execute_candidate(
         beginning,
         forcing,
         &water_phase,
-        &PreflightOnlyNitrogen,
+        nitrogen,
     )?;
     Err(VegetationError::Unsupported(
-        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
+        "V7 post-nitrogen multi-owner candidate is implementation-incomplete",
     ))
 }
 
@@ -751,7 +731,7 @@ pub fn execute_candidate_with_failure(
     beginning: &CoupledOwnedState,
     forcing: &SnowFreeForcing,
     water: &dyn WaterArbiter,
-    _nitrogen: &dyn NitrogenArbiter,
+    nitrogen: &dyn NitrogenArbiter,
     failure: Option<FailurePoint>,
 ) -> Result<CoupledCandidate, VegetationError> {
     let water_phase = crate::water_phase::execute_uncommitted_water_phase_with_failure(
@@ -765,7 +745,7 @@ pub fn execute_candidate_with_failure(
         beginning,
         forcing,
         &water_phase,
-        &PreflightOnlyNitrogen,
+        nitrogen,
     )?;
     let label = match failure {
         Some(FailurePoint::NitrogenAuthorization) => Some("nitrogen authorization"),
@@ -779,7 +759,7 @@ pub fn execute_candidate_with_failure(
         return Err(VegetationError::InjectedFailure(label));
     }
     Err(VegetationError::Unsupported(
-        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
+        "V7 post-nitrogen multi-owner candidate is implementation-incomplete",
     ))
 }
 
@@ -1698,7 +1678,7 @@ mod milestone_one_tests {
 
     #[test]
     #[allow(clippy::too_many_lines)]
-    fn public_transaction_fails_closed_at_v7_nitrogen_ordering_boundary() {
+    fn public_transaction_finalizes_observed_two_ulp_nitrogen_case_then_fails_closed() {
         struct NoArbiter;
         impl WaterArbiter for NoArbiter {
             fn authorize(
@@ -1777,7 +1757,7 @@ mod milestone_one_tests {
         }
         struct CountingNitrogen {
             calls: std::cell::Cell<u32>,
-            request_count: std::cell::Cell<usize>,
+            requests: std::cell::RefCell<Vec<NitrogenRequest>>,
         }
         impl NitrogenArbiter for CountingNitrogen {
             fn beginning_amount(&self, _: &MineralNitrogenKey) -> Result<f64, VegetationError> {
@@ -1788,7 +1768,7 @@ mod milestone_one_tests {
                 requests: &[NitrogenRequest],
             ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
                 self.calls.set(self.calls.get() + 1);
-                self.request_count.set(requests.len());
+                self.requests.replace(requests.to_vec());
                 NitrogenArbiter::authorize(&NoArbiter, requests)
             }
         }
@@ -1828,41 +1808,85 @@ mod milestone_one_tests {
         let beginning_bytes = serde_json::to_vec(&state).expect("beginning bytes");
         let counting_nitrogen = CountingNitrogen {
             calls: std::cell::Cell::new(0),
-            request_count: std::cell::Cell::new(0),
+            requests: std::cell::RefCell::new(Vec::new()),
         };
         let water_phase = crate::water_phase::execute_uncommitted_water_phase(
             &model, &config, &state, &forcing, &NoArbiter,
         )
         .expect("complete water phase");
+        let phase = crate::persistent_phase::execute_uncommitted_nitrogen_phase(
+            &config,
+            &state,
+            &forcing,
+            &water_phase,
+            &counting_nitrogen,
+        )
+        .expect("two-ULP demand finalizes against immutable potential requests");
+        assert_eq!(counting_nitrogen.calls.get(), 1);
         assert_eq!(
-            crate::persistent_phase::execute_uncommitted_nitrogen_phase(
-                &config,
-                &state,
-                &forcing,
-                &water_phase,
-                &counting_nitrogen,
-            ),
-            Err(VegetationError::NitrogenDemandOrdering {
-                potential_carbon_offer: f64::from_bits(4_571_873_354_058_590_328),
-                final_carbon_offer: f64::from_bits(4_571_873_354_058_590_330),
-                potential_demand: f64::from_bits(4_546_826_747_422_758_608),
-                final_demand: f64::from_bits(4_546_826_747_422_758_610),
-            })
+            counting_nitrogen.requests.borrow().as_slice(),
+            phase.requests()
         );
-        assert_eq!(counting_nitrogen.calls.get(), 0);
-        assert_eq!(counting_nitrogen.request_count.get(), 0);
+        assert_eq!(phase.requests().len(), 2);
+        assert_eq!(phase.authorizations().len(), 2);
+        assert_eq!(phase.finalized_uses().len(), 2);
+        let stratum = phase
+            .strata()
+            .get(&config.strata[0].stratum_id)
+            .expect("stratum phase result");
+        assert_eq!(
+            stratum.potential_carbon_offer.offer.to_bits(),
+            f64::from_bits(4_571_873_354_058_590_328).to_bits()
+        );
+        assert_eq!(
+            stratum.final_carbon_offer.offer.to_bits(),
+            f64::from_bits(4_571_873_354_058_590_330).to_bits()
+        );
+        assert_eq!(
+            stratum
+                .potential_request_batch
+                .potential_total_demand()
+                .to_bits(),
+            f64::from_bits(4_546_826_747_422_758_608).to_bits()
+        );
+        assert_eq!(
+            stratum.nitrogen_finalization.final_total_demand.to_bits(),
+            f64::from_bits(4_546_826_747_422_758_610).to_bits()
+        );
+        assert_eq!(
+            stratum.nitrogen_finalization.external_use.to_bits(),
+            stratum.nitrogen_finalization.authorization_sum.to_bits()
+        );
+        assert!(
+            stratum.nitrogen_finalization.final_external_demand
+                > stratum.nitrogen_finalization.authorization_sum
+        );
+        assert!(stratum.growth_finalization.eta < 1.0);
+        assert!(stratum.growth_finalization.nsc_next > 0.0);
+        assert_eq!(
+            stratum.candidate_after_growth.nsc_c.to_bits(),
+            stratum.growth_finalization.nsc_next.to_bits()
+        );
+        for ((request, authorization), finalized) in phase
+            .requests()
+            .iter()
+            .zip(phase.authorizations())
+            .zip(phase.finalized_uses())
+        {
+            assert_eq!(request.key, authorization.key);
+            assert_eq!(request.key, finalized.key);
+            assert!(finalized.amount <= authorization.amount);
+            assert!(authorization.amount <= request.amount);
+        }
         assert_eq!(
             serde_json::to_vec(&state).expect("unchanged beginning bytes"),
             beginning_bytes
         );
         assert_eq!(
             execute_candidate(&model, &config, &state, &forcing, &NoArbiter, &NoArbiter),
-            Err(VegetationError::NitrogenDemandOrdering {
-                potential_carbon_offer: f64::from_bits(4_571_873_354_058_590_328),
-                final_carbon_offer: f64::from_bits(4_571_873_354_058_590_330),
-                potential_demand: f64::from_bits(4_546_826_747_422_758_608),
-                final_demand: f64::from_bits(4_546_826_747_422_758_610),
-            })
+            Err(VegetationError::Unsupported(
+                "V7 post-nitrogen multi-owner candidate is implementation-incomplete"
+            ))
         );
 
         let forged = ModelDefinition {
@@ -1921,7 +1945,7 @@ pub fn validate_and_commit(
     _candidate: CoupledCandidate,
 ) -> Result<CommitReceipt, VegetationError> {
     Err(VegetationError::Unsupported(
-        "V7 E19 potential/final nitrogen ordering is implementation-incomplete",
+        "V7 multi-owner candidate and atomic commit are implementation-incomplete",
     ))
 }
 

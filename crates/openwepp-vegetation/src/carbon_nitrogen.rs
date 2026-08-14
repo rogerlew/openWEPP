@@ -529,20 +529,49 @@ pub struct GrowthFinalization {
     pub nitrogen_residual: f64,
 }
 
+/// Final E19 nitrogen receipt consumed by persistent growth allocation.
+///
+/// These values are produced by the typed mineral-N protocol after owner
+/// authorization. Growth allocation validates their internal identity and
+/// never re-finalizes external use from an authorization amount.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct GrowthNitrogenReceipt {
+    pub final_total_demand: f64,
+    pub internal_use: f64,
+    pub external_use: f64,
+    pub internal_remaining: f64,
+}
+
 pub fn finalize_growth(
     tissues: &mut std::collections::BTreeMap<Tissue, TissuePool>,
     final_offer: &CarbonOffer,
-    internal_n: &mut f64,
-    external_authorized: f64,
+    nitrogen: GrowthNitrogenReceipt,
     p: &CnParameters,
 ) -> Result<GrowthFinalization, VegetationError> {
-    let demand = nitrogen_demand(final_offer.offer, *internal_n, p)?;
-    if !external_authorized.is_finite() || external_authorized < 0.0 {
-        return Err(VegetationError::Domain("nitrogen authorization"));
+    let internal_offer = nitrogen.internal_use + nitrogen.internal_remaining;
+    if [
+        nitrogen.final_total_demand,
+        nitrogen.internal_use,
+        nitrogen.external_use,
+        nitrogen.internal_remaining,
+        internal_offer,
+    ]
+    .iter()
+    .any(|value| !value.is_finite() || *value < 0.0)
+    {
+        return Err(VegetationError::Domain("finalized nitrogen receipt"));
     }
-    let external_use = demand.external_shortfall.min(external_authorized);
-    let internal_use = (*internal_n).min(demand.demand);
-    let nused = internal_use + external_use;
+    let demand = nitrogen_demand(final_offer.offer, internal_offer, p)?;
+    if demand.demand.to_bits() != nitrogen.final_total_demand.to_bits()
+        || nitrogen.internal_use.to_bits()
+            != internal_offer.min(nitrogen.final_total_demand).to_bits()
+        || nitrogen.external_use > demand.external_shortfall
+    {
+        return Err(VegetationError::Receipt(
+            "growth nitrogen receipt does not match final carbon demand".into(),
+        ));
+    }
+    let nused = nitrogen.internal_use + nitrogen.external_use;
     let eta = if demand.demand == 0.0 {
         1.0
     } else {
@@ -575,8 +604,9 @@ pub fn finalize_growth(
         Tissue::LiveCoarseRoot,
         Tissue::DeadCoarseRoot,
     ];
+    let mut candidate_tissues = tissues.clone();
     for index in 0..6 {
-        let pool = tissues
+        let pool = candidate_tissues
             .get_mut(&identities[index])
             .ok_or(VegetationError::Domain("missing tissue pool"))?;
         let display = tissue_carbon[index] * p.current_growth_fraction;
@@ -586,7 +616,6 @@ pub fn finalize_growth(
         pool.display.nitrogen += tissue_nitrogen[index] * p.current_growth_fraction;
         pool.storage.nitrogen += tissue_nitrogen[index] * (1.0 - p.current_growth_fraction);
     }
-    *internal_n -= internal_use;
     let growth_respiration = p.growth_respiration_ratio * tissue_carbon.iter().sum::<f64>();
     let nsc = (1.0 - eta) * final_offer.offer;
     let carbon_residual =
@@ -598,12 +627,13 @@ pub fn finalize_growth(
             residual: carbon_residual.abs().max(nitrogen_residual.abs()),
         });
     }
+    *tissues = candidate_tissues;
     Ok(GrowthFinalization {
         tissue_carbon,
         tissue_nitrogen,
         growth_respiration,
-        n_internal_use: internal_use,
-        n_external_use: external_use,
+        n_internal_use: nitrogen.internal_use,
+        n_external_use: nitrogen.external_use,
         eta,
         nsc_next: nsc,
         xs_next: final_offer.xs_next,
@@ -1521,17 +1551,22 @@ mod tests {
             .into_iter()
             .map(|tissue| (tissue, tissues.get(&tissue).expect("tissue").transfer))
             .collect();
-        let mut internal_n = 1.0;
+        let offer = CarbonOffer {
+            maintenance_from_gpp: 0.0,
+            reserve_recovery: 0.0,
+            offer: 1.0,
+            xs_next: 0.0,
+        };
+        let demand = nitrogen_demand(offer.offer, 1.0, &parameters()).expect("demand");
         finalize_growth(
             &mut tissues,
-            &CarbonOffer {
-                maintenance_from_gpp: 0.0,
-                reserve_recovery: 0.0,
-                offer: 1.0,
-                xs_next: 0.0,
+            &offer,
+            GrowthNitrogenReceipt {
+                final_total_demand: demand.demand,
+                internal_use: demand.demand,
+                external_use: 0.0,
+                internal_remaining: 1.0 - demand.demand,
             },
-            &mut internal_n,
-            0.0,
             &parameters(),
         )
         .expect("current interval growth allocation");
@@ -1546,6 +1581,134 @@ mod tests {
                 *accepted_transfer.get(&tissue).expect("accepted transfer")
             );
         }
+    }
+
+    #[test]
+    fn growth_consumes_finalized_receipt_once_and_retains_n_limited_carbon_in_nsc() {
+        let parameters = parameters();
+        let offer = CarbonOffer {
+            maintenance_from_gpp: 0.0,
+            reserve_recovery: 0.0,
+            offer: 1.0,
+            xs_next: -0.125,
+        };
+        let internal_offer = 0.001;
+        let demand = nitrogen_demand(offer.offer, internal_offer, &parameters).expect("demand");
+        let external_use = 0.25 * demand.external_shortfall;
+        let internal_use = internal_offer.min(demand.demand);
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        let result = finalize_growth(
+            &mut tissues,
+            &offer,
+            GrowthNitrogenReceipt {
+                final_total_demand: demand.demand,
+                internal_use,
+                external_use,
+                internal_remaining: internal_offer - internal_use,
+            },
+            &parameters,
+        )
+        .expect("receipt-bound growth");
+        let expected_eta = (internal_use + external_use) / demand.demand;
+        assert_eq!(result.eta.to_bits(), expected_eta.to_bits());
+        assert!(result.eta < 1.0);
+        assert_eq!(
+            result.nsc_next.to_bits(),
+            ((1.0 - expected_eta) * offer.offer).to_bits()
+        );
+        assert_eq!(result.n_internal_use.to_bits(), internal_use.to_bits());
+        assert_eq!(result.n_external_use.to_bits(), external_use.to_bits());
+        assert!(result.carbon_residual.abs() <= 1.0e-12);
+        assert!(result.nitrogen_residual.abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn growth_rejects_clamped_or_wrong_pass_demand_without_mutation() {
+        let parameters = parameters();
+        let final_offer = CarbonOffer {
+            maintenance_from_gpp: 0.0,
+            reserve_recovery: 0.0,
+            offer: 1.0,
+            xs_next: 0.0,
+        };
+        let potential_offer = 0.75;
+        let wrong_demand =
+            nitrogen_demand(potential_offer, 0.0, &parameters).expect("wrong demand");
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        let before = tissues.clone();
+        assert!(matches!(
+            finalize_growth(
+                &mut tissues,
+                &final_offer,
+                GrowthNitrogenReceipt {
+                    final_total_demand: wrong_demand.demand,
+                    internal_use: 0.0,
+                    external_use: wrong_demand.demand,
+                    internal_remaining: 0.0,
+                },
+                &parameters,
+            ),
+            Err(VegetationError::Receipt(_))
+        ));
+        assert_eq!(tissues, before);
+    }
+
+    #[test]
+    fn growth_eta_handles_one_ulp_nused_roundoff_without_a_second_ordering_guard() {
+        let parameters = CnParameters {
+            growth_respiration_ratio: 0.0,
+            a1_froot_leaf: 0.0,
+            a2_croot_stem: 0.0,
+            a3_stem_leaf: 0.0,
+            a4_livewood_fraction: 0.0,
+            current_growth_fraction: 1.0,
+            cn_leaf: 1.0,
+            cn_leaf_litter: 1.0,
+            cn_froot: 1.0,
+            cn_livewood: 1.0,
+            cn_deadwood: 1.0,
+            drymatter_carbon_fraction: 0.5,
+            xs_recovery_days: 1.0,
+            leaf_lifetime_s: 1.0,
+            froot_lifetime_s: 1.0,
+            livewood_turnover_s: 1.0,
+            mortality_rate_s1: 0.0,
+            leaf_litter_fractions: [1.0, 0.0, 0.0],
+            froot_litter_fractions: [1.0, 0.0, 0.0],
+        };
+        let offer = CarbonOffer {
+            maintenance_from_gpp: 0.0,
+            reserve_recovery: 0.0,
+            offer: f64::from_bits(0x3f0e_a427_2e3e_c631),
+            xs_next: 0.0,
+        };
+        let demand = nitrogen_demand(offer.offer, 0.0, &parameters).expect("exact demand");
+        assert_eq!(demand.demand.to_bits(), offer.offer.to_bits());
+        let internal_use = f64::from_bits(0x3eec_72cf_e2ee_7a8e);
+        let external_use = f64::from_bits(0x3f07_8773_3583_278e);
+        assert_eq!(
+            external_use.to_bits(),
+            (demand.demand - internal_use).to_bits()
+        );
+        let rounded_nused = internal_use + external_use;
+        assert_eq!(rounded_nused.to_bits(), demand.demand.to_bits() + 1);
+
+        let mut tissues = tissues_with_leaf(ElementPool::default());
+        let result = finalize_growth(
+            &mut tissues,
+            &offer,
+            GrowthNitrogenReceipt {
+                final_total_demand: demand.demand,
+                internal_use,
+                external_use,
+                internal_remaining: 0.0,
+            },
+            &parameters,
+        )
+        .expect("canonical eta clamp accepts rounded Nused");
+        assert_eq!(result.eta.to_bits(), 1.0_f64.to_bits());
+        assert_eq!(result.nsc_next.to_bits(), 0.0_f64.to_bits());
+        assert!(result.nitrogen_residual.abs() <= 1.0e-12);
     }
 
     #[test]

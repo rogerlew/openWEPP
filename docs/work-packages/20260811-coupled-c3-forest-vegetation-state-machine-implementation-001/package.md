@@ -1,6 +1,6 @@
 # Implement the Coupled C3 Forest Vegetation State Machine
 
-Status: `executing / V7 storage-transfer active / bounded E19 numerical-authority HOLD`
+Status: `executing / E19 implementation-overconstraint remediation active`
 
 Package ID: `20260811-coupled-c3-forest-vegetation-state-machine-implementation-001`
 
@@ -656,6 +656,15 @@ terminal verifiers returned PASS. Implementation remediation is now active
 against those exact bytes. Until the capped solver, exact fixture gate,
 independent implementation reviews, and whole-owner rollback pass, the public
 candidate remains fail-closed and Milestones 2 and 3 remain incomplete.
+
+E19 ordering continuation outcome (active): the historical two-ULP HOLD audit
+is preserved, but its authority conclusion is rejected by
+`artifacts/e19-potential-final-ordering-disposition.md`. SC-VEGETATION-001@11
+already finalizes external use with `min(Dext_final, Asum)` and retains unmet
+carbon through `eta` and `NSC_C`; SC-BIOGEOCHEM-001 constrains finalized use,
+authorization, and request without ordering final and potential physiological
+demand. The implementation-only monotonicity guards are being removed without
+tolerance, clamp, request inflation, reauthorization, or model-version change.
 
 ## Idempotence And Recovery
 

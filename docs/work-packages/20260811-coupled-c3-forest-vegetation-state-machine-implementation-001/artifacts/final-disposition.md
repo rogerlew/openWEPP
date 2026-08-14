@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / bounded E19 numerical-authority HOLD / public path fail-closed`
+Status: `in progress / E19 implementation-overconstraint remediation active / public path fail-closed`
 
 Evidence mode: `Static + Ran`
 
@@ -44,16 +44,29 @@ fail-closed until the V3 capped second pass passes its focused oracle gate.
 
 The V7 storage-transfer authority is implemented at its focused kernel
 boundary. Subsequent real potential/final E19 composition found a binary64
-ordering case in which fully supplied `Ndem_final` exceeds `Ndem_pot` by about
-`2e-20 kg N m^-2 interval`. No admitted rule authorizes tolerance, clamping, or
-request inflation, and the V6 diagnostic-only tolerance explicitly cannot
-spread. The bounded hold and exact lift action are recorded in
-`e19-potential-final-numerical-hold-legitimacy-audit.md`; the package remains
-in progress and the public path remains fail-closed.
+ordering case in which fully supplied `Ndem_final` exceeds `Ndem_pot` by two
+ULPs. The original HOLD analysis remains immutable in
+`e19-potential-final-numerical-hold-legitimacy-audit.md`, but its authority
+conclusion was rejected on continuation: canonical E19 finalization already
+bounds final external use by authorization and contains no
+`Ndem_final<=Ndem_pot` invariant. Remediation removes the implementation-only
+ordering guard without tolerance, clamp, request inflation, or model-version
+change. This is an in-progress placeholder; the public multi-owner candidate
+and commit remain fail-closed.
 
 `calibration_evidence_status=NOT_CALIBRATION_READY`
 
 `identifiability_status=NOT_ASSESSED`
+
+Current bounded increment disposition: V7 phenology/turnover and E19
+mineral-N request, one authorization, finalized use, and receipt-bound growth
+composition are implemented as an uncommitted candidate. The exact two-ULP
+fixture and the separate one-ULP aggregate-`Nused` regression pass without a
+tolerance, clamp, request inflation, or second authorization. Fresh Rust
+correctness review is GO and fresh QA review is PASS. This does not complete
+the package: BGC and energy owner candidates, independent all-owner ledgers,
+atomic commit, public E01--E22 completion, heavy gates, terminal verification,
+prompt archival, runtime activation, and calibration remain pending.
 
 The scoped V3 shared-C/N state HOLD is lifted by `SC-VEGETATION-001` v8 and
 `OPENWEPP_C3_WOODY_V4` digest
