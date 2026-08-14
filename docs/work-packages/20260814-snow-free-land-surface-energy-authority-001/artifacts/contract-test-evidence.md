@@ -44,3 +44,19 @@ the LSE authority target passed 7/7; the final focused authority population,
 strict workspace Clippy, 2,674-test full workspace run, doctest invocation,
 dependency policy, Markdown, formatting, and diff-hygiene gates passed. Exact
 commands, failed attempts, and retry history remain in `gate-results.md`.
+
+## Post-release canonical-JSON evidence correction
+
+Child-3 Rust execution found that the strict positive state retained a stale
+embedded digest after its final forest-tile projection. The corrected generator
+`9278be79...` binds that digest after all state fields reach final bytes and
+regenerates vectors `9f171b0f...`. Exact recursive comparison against the
+historical release fixture found four changed leaves only: the strict-state
+digest in two locations and the two dependent schema-instance hashes.
+
+Ran: the corrected authority contract passed 7/7 and the strict Rust runtime
+surface passed 21/21 with strict all-target Clippy. The LSE/V8 definitions, six
+schemas, joint core, physics values, numerical tolerances, accepted candidates,
+failure branches and poison results remain byte- or value-identical as
+applicable. The original release hashes and reviews above remain historical
+evidence rather than being rewritten.

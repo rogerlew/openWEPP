@@ -43,11 +43,11 @@ Terminal frozen and independently confirmed digests:
 - V8 model definition:
   `622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b`;
 - top-level generator:
-  `1156fa88a6d7e4dd98f6dd70fe5b891f69e0b6825694179ac4d687a38907c859`;
+  `9278be79b1a74d4d609ab5857d00071b1e5717e036cc7323cbfcbf970795666c`;
 - joint canopy-ground core:
   `c9555b2dd02a5d6f11d71eb923fb60bc882e9638ec20eb79accc96cec9018be5`;
 - committed vectors:
-  `7b6a303ae434ca6ad59c7082ebf486300214427d6abe20c36bfaa9b8cbdab91c`;
+  `9f171b0fd0e9a9a2e40d6ea8773d120b961c343e2aad6ad951ae705c8d683f3b`;
 - configuration schema:
   `6499b98cc1e25f1379bc0ad6052a7536e20c4bfbb9335f9ba5c8de191ae2f009`;
 - coupled-transaction schema:
@@ -63,9 +63,11 @@ Terminal frozen and independently confirmed digests:
 
 Historical: two controlled post-third-review regenerations produced
 byte-identical fixture digest `68ebdb09...`; the subsequent release reviews
-failed and invalidated that candidate. The terminal bytes are frozen at the
-full hashes above. Final independent regeneration was byte-identical at
-`7b6a303a...`, and both terminal reviews returned `PASS / GO`. The exact core
+failed and invalidated that candidate. The historical release regeneration was
+byte-identical at `7b6a303a...`, and both terminal reviews returned `PASS / GO`.
+The later canonical-JSON evidence correction binds the strict positive state
+after its final forest-tile projection; corrected vectors are `9f171b0f...`.
+The exact core
 executes 22 mandatory families. Its
 natural singular-pivot, iteration-limit, and backtracking-limit branches return
 no candidate and preserve the beginning-state rollback hash. The top-level

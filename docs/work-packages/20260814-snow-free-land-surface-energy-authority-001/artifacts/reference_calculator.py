@@ -2390,7 +2390,12 @@ def build_authority_vectors() -> dict[str, Any]:
             ["surface_enthalpy_j_m2_tile_ground"],
         "surface_temperature_warm_start_k": transaction["authority_inputs"]
             ["ground_state"]["surface_temperature_warm_start_k"]})
-    actual_lse_state["state_sha256"] = beginning["land_surface_energy"]["state_sha256"]
+    # The strict positive state is a distinct, fully projected forest-tile
+    # instance. Bind its digest only after every identity and state field has
+    # reached final bytes; reusing the owner-envelope beginning digest here
+    # left a schema-valid but cryptographically stale positive fixture.
+    actual_lse_state["state_sha256"] = digest(
+        {**actual_lse_state, "state_sha256": ""})
     coupled["beginning_lse_state"] = actual_lse_state
     hydrology_schema_stores = []
     for row in beginning_stores:

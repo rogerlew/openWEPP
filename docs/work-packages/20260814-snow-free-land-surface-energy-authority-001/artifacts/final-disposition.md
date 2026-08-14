@@ -2,18 +2,30 @@
 
 Status: `COMPLETE / snow-free land-surface-energy implementation authority released`
 
-`OPENWEPP_SNOW_FREE_LSE_V1` and the coupled successor
-`OPENWEPP_C3_WOODY_V8` are released as implementation authority. Every failed
-review and verification attempt remains historical evidence. The final exact
-finding inventory is 57/57 with no missing or extra ID; both terminal
-verifiers return `PASS / GO` after the evidence-only lifecycle corrections.
+The prior release, findings and verifier reports remain historical evidence.
+Independent Rust execution exposed that the positive fixture's digest uses a
+two-digit exponent lexical form (`1e-07`) while one package summary incorrectly
+described numbers as shortest-form. It also exposed a stale digest embedded in
+the projected strict positive state. Physics, accepted values, schemas and
+model-definition bytes are unchanged. The fixture bytes changed only in two
+copies of the corrected state digest and their two dependent instance hashes.
+The bounded correction binds and freshly verifies those evidence repairs.
 
-The release binds LSE definition `e1736b8c...`, V8 definition `622bc900...`,
-calculator `1156fa88...`, joint core `c9555b2d...`, and vectors
-`7b6a303a...`. Focused authority, anti-evasion, admission, unit, strict
+The historical release bound calculator `1156fa88...` and vectors
+`7b6a303a...`. The correction candidate binds calculator `9278be79...`,
+unchanged joint core `c9555b2d...`, corrected vectors `9f171b0f...`, unchanged
+LSE definition `e1736b8c...`, and unchanged V8 definition `622bc900...`.
+Focused authority, anti-evasion, admission, unit, strict
 workspace Clippy, 2,674-test full workspace, doctest invocation, dependency,
 documentation, formatting, and diff-hygiene gates pass. The exact 15 unrelated
 baseline documentation failures remain unchanged.
+
+The correction received an independent focused review and two independent
+terminal verifier PASS/GO results. Both verifiers regenerated vectors
+byte-identically at `9f171b0f...`, independently reconstructed strict-state
+digest `6ff22f0d...`, and found exactly the four declared digest-related fixture
+changes. The correction prompt is archived byte-for-byte at SHA-256
+`187fac9833436e3ff4514fc99045cf3b0da9de2e8d657c62dd726b354b9e70f5`.
 
 This disposition authorizes Child-2 owner integration and Child-3
 constitutive runtime implementation within their declared default-off scopes.

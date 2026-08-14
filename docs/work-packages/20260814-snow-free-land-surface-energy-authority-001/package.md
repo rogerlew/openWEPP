@@ -1,6 +1,6 @@
 # Admit Snow-Free Land-Surface-Energy Implementation Authority
 
-Status: `COMPLETE / snow-free land-surface-energy implementation authority released`
+Status: `COMPLETE / implementation authority released / canonical JSON evidence correction verified`
 
 Date: `2026-08-14`
 
@@ -56,6 +56,8 @@ catalog lifecycle entries.
 - [x] Complete heavy full-workspace, dependency, formatting and documentation
   gates.
 - [x] Complete dual terminal verification and prompt archive.
+- [ ] Bind the already-frozen positive-instance exponent lexical rule exposed
+  by independent Rust execution and repeat focused review/verification.
 
 ## Delegation
 

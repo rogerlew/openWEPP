@@ -140,7 +140,7 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
     );
     assert_eq!(
         format!("{:x}", Sha256::digest(vectors.as_bytes())),
-        "7b6a303ae434ca6ad59c7082ebf486300214427d6abe20c36bfaa9b8cbdab91c"
+        "9f171b0fd0e9a9a2e40d6ea8773d120b961c343e2aad6ad951ae705c8d683f3b"
     );
 
     let fixture: serde_json::Value = serde_json::from_str(&vectors).expect("LSE vectors");
@@ -470,7 +470,7 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
     for (path, expected) in [
         (
             "reference_calculator.py",
-            "1156fa88a6d7e4dd98f6dd70fe5b891f69e0b6825694179ac4d687a38907c859",
+            "9278be79b1a74d4d609ab5857d00071b1e5717e036cc7323cbfcbf970795666c",
         ),
         (
             "reference_joint_canopy_core.py",

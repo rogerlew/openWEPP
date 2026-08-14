@@ -109,8 +109,11 @@ hashes. No producer residual is a candidate-acceptance operand.
 ## Canonical Serialization And Digest
 
 Serialization uses UTF-8 canonical JSON with lexicographically ordered object
-keys, identity-sorted arrays, shortest round-trip finite JSON numbers, no
-insignificant whitespace, and no Unicode normalization. The digest input
+keys, identity-sorted arrays, no insignificant whitespace, and no Unicode
+normalization. Finite numbers use the frozen oracle lexical form: lowercase
+`e`, an explicit exponent sign, and at least two exponent digits (for example,
+`1e-07`); integral-valued floating operands retain `.0`. This is a
+representation rule only and does not change their binary64 values. The digest input
 includes model identity, configuration/topology identity, every scientific
 field, every class discriminator, exact array order, and transaction lineage.
 Only the digest field being computed is replaced by the empty string. NaN,
