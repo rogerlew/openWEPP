@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -105,6 +105,7 @@ SurfaceLiquidConfigurationRecord {
     tile_fraction,
     capacity_kg_m2_tile,
     ofe_area_m2,
+    ground_ingress_mode,
     runon_destination_ofe_id,
     runon_destination_tile_id
 }
@@ -118,6 +119,11 @@ The exact admitted pairs are:
 | `forest_litter` | `litter_liquid` | Hydrology-owned liquid held by forest litter. |
 
 `soil_layer_liquid` remains the soil-layer owner and is not duplicated here.
+`ground_ingress_mode` is exactly `open_raw_precipitation` or
+`covered_canopy_release`. A bare or litter surface may use either mode according
+to canopy topology; surface class does not infer exposure. The exact mode enters
+configuration bytes/digest and the runtime must receive the matching ingress
+variant for every tile exactly once.
 Every `surface_id`, `source_id`, and `tile_id` must equal the corresponding
 `GroundWaterKey` fields used by LSE. IDs are nonempty typed values. Keys are
 unique. `0 < f_t <= 1`; `W_max > 0`; `A_o > 0`; all are finite. Every record
@@ -138,7 +144,8 @@ snake-case tokens above; integers use canonical decimal form; finite `f64`
 values are encoded by their 16-character lowercase big-endian IEEE-754 hex
 bits. `configuration_sha256` is lowercase SHA-256 over the UTF-8 bytes after
 replacing only its own value with 64 zeroes. Owner, run, topology,
-destinations, all identities, fractions, capacities, and OFE areas enter the
+destinations, all identities, fractions, capacities, OFE areas, and ingress
+modes enter the
 digest.
 
 ### Persistent state and restart
@@ -611,3 +618,4 @@ This contract authorizes no production activation or publication.
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |
 | 2026-08-14 | 3 | Codex | Bind the exact 1800-second/48-step stateful WB14 continuation, mutually exclusive open-rain/covered-canopy supply, conservative mixed enthalpy, exact tile/source retention, retained LSE energy receipt, water density, machine-readable registry seams, continuation restart schema, and basis-rekeyed unequal-area OFE routing. |
+| 2026-08-14 | 4 | Codex | Add the strict per-tile `ground_ingress_mode` discriminator required to validate mutually exclusive open-precipitation and covered-canopy ingress without caller-driven branch inference. |

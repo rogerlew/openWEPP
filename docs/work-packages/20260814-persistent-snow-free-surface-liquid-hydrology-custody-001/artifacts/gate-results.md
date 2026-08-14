@@ -148,3 +148,21 @@ Further results append below; failed attempts are retained.
   registry (12 files total), with zero errors or warnings.
 - PASS: final contract/profile and hydrology/ownership reviews reported no
   material finding. The pre-implementation gate is closed.
+
+## Authority amendment v4 intake
+
+- Static: implementation-schema preparation found the contract's required
+  open-versus-covered branch lacked a strict configuration discriminator.
+  Inferring it from caller-provided ingress would weaken exact-one water
+  ownership. Contract v4 adds `ground_ingress_mode`, binds it into configuration
+  digest bytes, and requires one matching variant per tile. Runtime edits remain
+  paused pending focused amendment review/admission.
+
+## Authority amendment v4 review
+
+- PASS: focused authority suite 9/9, SC unit compliance, formatting, and diff
+  hygiene.
+- PASS: bounded contract/profile and hydrology/ownership amendment reviews;
+  both reported no material finding.
+- PASS: final v4 science admission from the frozen campaign base and SC unit
+  compliance. Runtime implementation authority is restored.

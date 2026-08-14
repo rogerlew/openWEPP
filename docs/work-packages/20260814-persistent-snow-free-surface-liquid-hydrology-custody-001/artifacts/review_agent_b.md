@@ -19,3 +19,7 @@ The final review confirmed the 48-step stateful WB14 continuation and restart
 lineage, shared production transition, exact open-versus-covered ingress, zero
 legacy depression custody, mixed-temperature partition, exact tile/source
 retention, and once-only unequal-area mass/enthalpy routing.
+
+Bounded v4 amendment review: `PASS`. Exact-one ground supply remains intact:
+open tiles contribute only raw precipitation and covered tiles contribute only
+accepted canopy releases.

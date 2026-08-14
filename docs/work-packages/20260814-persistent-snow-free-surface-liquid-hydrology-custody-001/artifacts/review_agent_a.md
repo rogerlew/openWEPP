@@ -21,3 +21,7 @@ The final review confirmed exact LSE identity, embedded per-OFE continuations,
 source/tile-local retention, `basis_ofe_id` re-keying, machine-readable units,
 truthful runtime-parity deferral, no raw-rain/canopy duplication,
 retained-energy basis, and unequal-area routing.
+
+Bounded v4 amendment review: `PASS`. The strict, digest-bound
+`ground_ingress_mode` closes caller-driven branch inference without a new
+material ambiguity or unit-registry seam.
