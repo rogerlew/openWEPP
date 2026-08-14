@@ -46,6 +46,9 @@ Rust and hydrology re-reviews and terminal verification remain pending.
 |---|---|---|
 | B-REMEDIATION-HIGH-001: actual receiver ending equations lack independent reconstruction | Accepted | Active |
 | B-REMEDIATION-HIGH-002: canonical E001--E011 runtime payload is incomplete | Accepted | Active |
+| A-REMEDIATION-HIGH-001: mutable arbitration can forge proportional authorization | Accepted | Active |
+| A-REMEDIATION-MEDIUM-004: invalid public state can emit canonical bytes | Accepted | Active |
+| A-REMEDIATION-MEDIUM-005: ingress/unified candidates remain mutable and duplicated | Accepted | Active |
 
-Both findings are in-scope implementation defects. Neither changes authority,
+All findings are in-scope implementation defects. Neither changes authority,
 model identity, production selection, or the package write envelope.

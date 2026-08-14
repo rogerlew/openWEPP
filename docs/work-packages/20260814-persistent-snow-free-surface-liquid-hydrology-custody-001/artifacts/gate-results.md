@@ -280,6 +280,12 @@ failed attempts.
 - PASS evidence retained by reviewer: surface selection 25/25 and real-LSE
   integration 13/13. These tests were insufficient to detect the two findings.
 - Disposition: both findings accepted for immediate in-package correction.
+- HOLD (Rust correctness): three high and two medium findings. Two overlap the
+  hydrology receiver/error findings; the additional defects are mutable
+  arbitration, unchecked canonical state serialization, and mutable duplicated
+  ingress/unified candidate representations.
+- Disposition: all five Rust findings accepted. No finding is rejected,
+  deferred, or moved to follow-up.
 
 ## Heavy comparator attempt 1
 
