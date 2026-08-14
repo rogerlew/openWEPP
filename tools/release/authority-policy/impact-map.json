@@ -7,6 +7,26 @@
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
     {
+      "entry_id": "surface-liquid-unit-boundary-catalog",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-sim-contract", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-sim-contract"], "covering_test_targets": ["openwepp", "openwepp-sim-contract"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unit-boundary-types",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-sim-contract/src/units_mod/types.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-sim-contract", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-sim-contract"], "covering_test_targets": ["openwepp", "openwepp-sim-contract"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
       "entry_id": "c3-biogeochemistry-process",
       "matcher": { "kind": "path_prefix", "value": "crates/openwepp-biogeochemistry" },
       "owner": "openwepp-biogeochemistry-owner", "semantic_surface": "c3-biogeochemistry-process", "risk_floor": "CRITICAL",

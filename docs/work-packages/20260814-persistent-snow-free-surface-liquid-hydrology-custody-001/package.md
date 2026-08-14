@@ -30,7 +30,7 @@ but must reject forest-litter/surface-liquid withdrawal and condensation because
 
 Correction authority is `SC-LANDSURFACEENERGY-001` version 3 ownership,
 immutable-beginning and ingress-ordering rules, plus the contract-first
-`SC-WATBAL-001` amendment authored here. In scope are canonical hydrology owner
+`SC-SURFACELIQUID-001` contract authored here. In scope are canonical hydrology owner
 state, typed identities, strict restart encoding, snapshot extraction, D/A/F,
 signed condensation credit, capacity/overflow/infiltration/runoff/routing
 receipts, candidate validation, rollback and the default-off bridge.
@@ -43,10 +43,10 @@ definition bytes remain immutable.
 ## Intended Write Set
 
 - this package tree and campaign lifecycle artifacts;
-- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md` and its
-  lifecycle registry row;
+- new canonical `SC-SURFACELIQUID-001.md` and its lifecycle registry row;
 - contract-derived integration tests;
 - dependency-neutral resource identities only when needed;
+- machine-readable unit-registry entries for the new custody seams;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/**` for the actual
   hydrology owner state and candidate operations;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/**`
@@ -61,8 +61,8 @@ branch, PR or push is in scope.
 
 - [x] (2026-08-14) Verify exact clean checkpoint and preserve historical HOLD.
 - [x] (2026-08-14) Scaffold the contract-first dependency-lift package.
-- [ ] Amend canonical hydrology authority and bind contract-derived tests.
-- [ ] Record a passing pre-implementation contract gate.
+- [x] (2026-08-14) Admit canonical surface-liquid hydrology authority and bind contract-derived tests.
+- [x] (2026-08-14) Record a passing pre-implementation contract gate.
 - [ ] Implement persistent state, restart, D/A/F, credit, ingress and rollback.
 - [ ] Pass focused gates and dual independent review/verification.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
