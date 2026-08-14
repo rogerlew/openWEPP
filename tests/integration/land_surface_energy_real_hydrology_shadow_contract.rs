@@ -1086,6 +1086,88 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
     );
 }
 
+fn apply_native_entry_poison(
+    frame: &mut DirectRunFrame,
+    poison: usize,
+) -> DirectSurfaceLiquidErrorCode {
+    match poison {
+        0 => {
+            frame.lanes[0].winter_column.snow.runtime_swe_m = 0.001;
+            DirectSurfaceLiquidErrorCode::E004
+        }
+        1 => {
+            frame.lanes[0]
+                .day_inputs
+                .push(DirectDayConstructorInputs::zero());
+            frame.lanes[0].day_inputs[0]
+                .infiltration_depression_inputs
+                .depression_storage_delta_handoff_m = 0.001;
+            DirectSurfaceLiquidErrorCode::E007
+        }
+        2 => {
+            frame.lanes[0].subsurface_layers[0].frozen_depth_m =
+                frame.lanes[0].subsurface_layers[0].depth_m;
+            frame.lanes[0].subsurface_layers[0].frozen_water_m =
+                frame.lanes[0].subsurface_layers[0].theta_m;
+            DirectSurfaceLiquidErrorCode::E004
+        }
+        3 => {
+            frame.lanes[0].winter_column.frost.active_frost_coupling = true;
+            DirectSurfaceLiquidErrorCode::E004
+        }
+        4 => {
+            frame.lanes[0].frost_runtime_carry =
+                Some(DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero()));
+            DirectSurfaceLiquidErrorCode::E004
+        }
+        _ => {
+            frame.lanes[0].winter_column.snow.liquid_water_retained_m = 0.001;
+            DirectSurfaceLiquidErrorCode::E004
+        }
+    }
+}
+
+fn assert_native_entry_failure(
+    error: LandSurfaceEnergyShadowError,
+    expected_code: DirectSurfaceLiquidErrorCode,
+    snapshot: &Sha256Digest,
+) {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+        panic!("entry poison must retain canonical surface-liquid failure");
+    };
+    let failure = surface_error.failure().expect("canonical entry failure");
+    assert_eq!(failure.code, expected_code);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("production-hydrology")
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("ofe-1")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("open")
+    );
+    assert_eq!(
+        failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+        Some("surface:ofe-1:open")
+    );
+    assert_eq!(
+        failure.context.source_id.as_ref().map(SourceId::as_str),
+        Some("surface-store:ofe-1:open")
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str())
+    );
+}
+
 #[test]
 fn unified_entry_rejects_frozen_snow_and_duplicate_legacy_surface_custody() {
     for poison in 0..6 {
@@ -1094,41 +1176,7 @@ fn unified_entry_rejects_frozen_snow_and_duplicate_legacy_surface_custody() {
             WaterSourceType::SurfaceLiquid,
             1.0,
         );
-        let expected_code = match poison {
-            0 => {
-                frame.lanes[0].winter_column.snow.runtime_swe_m = 0.001;
-                DirectSurfaceLiquidErrorCode::E004
-            }
-            1 => {
-                frame.lanes[0]
-                    .day_inputs
-                    .push(DirectDayConstructorInputs::zero());
-                frame.lanes[0].day_inputs[0]
-                    .infiltration_depression_inputs
-                    .depression_storage_delta_handoff_m = 0.001;
-                DirectSurfaceLiquidErrorCode::E007
-            }
-            2 => {
-                frame.lanes[0].subsurface_layers[0].frozen_depth_m =
-                    frame.lanes[0].subsurface_layers[0].depth_m;
-                frame.lanes[0].subsurface_layers[0].frozen_water_m =
-                    frame.lanes[0].subsurface_layers[0].theta_m;
-                DirectSurfaceLiquidErrorCode::E004
-            }
-            3 => {
-                frame.lanes[0].winter_column.frost.active_frost_coupling = true;
-                DirectSurfaceLiquidErrorCode::E004
-            }
-            4 => {
-                frame.lanes[0].frost_runtime_carry =
-                    Some(DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero()));
-                DirectSurfaceLiquidErrorCode::E004
-            }
-            _ => {
-                frame.lanes[0].winter_column.snow.liquid_water_retained_m = 0.001;
-                DirectSurfaceLiquidErrorCode::E004
-            }
-        };
+        let expected_code = apply_native_entry_poison(&mut frame, poison);
         let original = frame.clone();
         let (owner, _) = owner(&frame);
         let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
@@ -1156,45 +1204,10 @@ fn unified_entry_rejects_frozen_snow_and_duplicate_legacy_surface_custody() {
             },
         );
         assert!(!callback_called, "entry poison {poison} reached callback");
-        let error = result.expect_err("entry poison must fail");
-        let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
-            panic!("entry poison must retain canonical surface-liquid failure");
-        };
-        let failure = surface_error.failure().expect("canonical entry failure");
-        assert_eq!(failure.code, expected_code);
-        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
-        assert_eq!(
-            failure
-                .context
-                .owner_id
-                .as_ref()
-                .map(ResourceOwnerId::as_str),
-            Some("production-hydrology")
-        );
-        assert_eq!(
-            failure.context.ofe_id.as_ref().map(OfeId::as_str),
-            Some("ofe-1")
-        );
-        assert_eq!(
-            failure.context.tile_id.as_ref().map(TileId::as_str),
-            Some("open")
-        );
-        assert_eq!(
-            failure.context.surface_id.as_ref().map(SurfaceId::as_str),
-            Some("surface:ofe-1:open")
-        );
-        assert_eq!(
-            failure.context.source_id.as_ref().map(SourceId::as_str),
-            Some("surface-store:ofe-1:open")
-        );
-        assert!(failure.rollback.beginning_owner_sha256.is_some());
-        assert_eq!(
-            failure
-                .rollback
-                .beginning_owner_sha256
-                .as_ref()
-                .map(String::as_str),
-            Some(snapshot.as_str())
+        assert_native_entry_failure(
+            result.expect_err("entry poison must fail"),
+            expected_code,
+            &snapshot,
         );
         assert_eq!(
             frame, original,
@@ -1440,6 +1453,76 @@ fn assert_receiver_e011(
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
+fn poison_receiver_finalization(
+    finalization: &UnifiedLseFinalization,
+    poison: usize,
+) -> Result<UnifiedLseFinalization, LandSurfaceEnergyShadowError> {
+    let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
+    let mut thermal = finalization.soil_thermal_candidates().to_vec();
+    let mut rollback = finalization.rollback_hashes().to_vec();
+    match poison {
+        0 => thermal.clear(),
+        1 => tiles.clear(),
+        2 => rollback[0].after_sha256 = digest('9'),
+        3 => tiles.push(tiles[0].clone()),
+        4 => thermal.push(thermal[0].clone()),
+        5 => rollback.push(rollback[0].clone()),
+        6 => rollback.push(OwnerRollbackHash {
+            owner_kind: OwnerKind::Envelope,
+            owner_id: "unexpected-envelope".into(),
+            before_sha256: digest('8'),
+            after_sha256: digest('8'),
+        }),
+        7 => {
+            rollback.remove(0);
+        }
+        8 => {
+            let mut extra = thermal[0].layers[0].clone();
+            extra.layer_id = SoilLayerId::try_new("thermal-extra").expect("extra layer");
+            thermal[0].layers.push(extra);
+        }
+        9 => thermal[0].layers[0].ending_enthalpy_j_m2_ofe_ground = f64::NAN,
+        10 => rollback[0].owner_id = "wrong-lse-owner".into(),
+        11 => rollback.swap(0, 1),
+        12 => rollback[0].before_sha256 = digest('7'),
+        _ => rollback[2].owner_id = "wrong-thermal-owner".into(),
+    }
+    UnifiedLseFinalization::try_new(
+        finalization.water_protocol().clone(),
+        tiles,
+        thermal,
+        rollback,
+    )
+}
+
+fn assert_receiver_join_failure(error: LandSurfaceEnergyShadowError, poison: usize) {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+        panic!("receiver poison {poison} must retain canonical envelope failure");
+    };
+    let failure = surface_error.failure().expect("failure payload");
+    assert_eq!(
+        failure.code,
+        DirectSurfaceLiquidErrorCode::E011,
+        "receiver poison {poison}"
+    );
+    let expected_owner = match poison {
+        7 => Some("land-surface-energy-v1"),
+        10 => Some("wrong-lse-owner"),
+        13 => Some("wrong-thermal-owner"),
+        _ => None,
+    };
+    if let Some(expected_owner) = expected_owner {
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some(expected_owner)
+        );
+    }
+}
+
 #[test]
 fn unified_receiver_join_poisons_return_no_partial_candidate() {
     let (frame, configuration) = configured_surface_frame(
@@ -1472,85 +1555,10 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
                     authorizations,
                     &snapshot,
                 ));
-                let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
-                let mut thermal = finalization.soil_thermal_candidates().to_vec();
-                let mut rollback = finalization.rollback_hashes().to_vec();
-                match poison {
-                    0 => thermal.clear(),
-                    1 => tiles.clear(),
-                    2 => rollback[0].after_sha256 = digest('9'),
-                    3 => tiles.push(tiles[0].clone()),
-                    4 => thermal.push(thermal[0].clone()),
-                    5 => rollback.push(rollback[0].clone()),
-                    6 => rollback.push(OwnerRollbackHash {
-                        owner_kind: OwnerKind::Envelope,
-                        owner_id: "unexpected-envelope".into(),
-                        before_sha256: digest('8'),
-                        after_sha256: digest('8'),
-                    }),
-                    7 => {
-                        rollback.remove(0);
-                    }
-                    8 => {
-                        let mut extra = thermal[0].layers[0].clone();
-                        extra.layer_id =
-                            SoilLayerId::try_new("thermal-extra").expect("extra layer");
-                        thermal[0].layers.push(extra);
-                    }
-                    9 => {
-                        thermal[0].layers[0].ending_enthalpy_j_m2_ofe_ground = f64::NAN;
-                    }
-                    10 => rollback[0].owner_id = "wrong-lse-owner".into(),
-                    11 => rollback.swap(0, 1),
-                    12 => rollback[0].before_sha256 = digest('7'),
-                    _ => rollback[2].owner_id = "wrong-thermal-owner".into(),
-                }
-                UnifiedLseFinalization::try_new(
-                    finalization.water_protocol().clone(),
-                    tiles,
-                    thermal,
-                    rollback,
-                )
+                poison_receiver_finalization(&finalization, poison)
             },
         );
-        let error = result.expect_err("receiver poison must reject");
-        let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
-            panic!("receiver poison {poison} must retain canonical envelope failure");
-        };
-        let failure = surface_error.failure().expect("failure payload");
-        assert_eq!(
-            failure.code,
-            DirectSurfaceLiquidErrorCode::E011,
-            "receiver poison {poison}"
-        );
-        if poison == 7 {
-            assert_eq!(
-                failure
-                    .context
-                    .owner_id
-                    .as_ref()
-                    .map(ResourceOwnerId::as_str),
-                Some("land-surface-energy-v1")
-            );
-        } else if poison == 10 {
-            assert_eq!(
-                failure
-                    .context
-                    .owner_id
-                    .as_ref()
-                    .map(ResourceOwnerId::as_str),
-                Some("wrong-lse-owner")
-            );
-        } else if poison == 13 {
-            assert_eq!(
-                failure
-                    .context
-                    .owner_id
-                    .as_ref()
-                    .map(ResourceOwnerId::as_str),
-                Some("wrong-thermal-owner")
-            );
-        }
+        assert_receiver_join_failure(result.expect_err("receiver poison must reject"), poison);
         assert_eq!(frame, original, "receiver poison {poison} mutated owner");
     }
 }
