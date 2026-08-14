@@ -324,6 +324,19 @@ failed attempts.
   thermal, matching the owners this Child-3 bridge constructs.
 - Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
 
+## Terminal-context remediation at `6a107303c`
+
+- HOLD retained: terminal exact-byte reviews found a later independent thermal
+  expectation still named the first LSE receiver, and a missing non-terminal
+  rollback row named the shifted following owner.
+- PASS: expectation preflight reports soil-thermal plus the exact first
+  mismatch (or expected missing row) before callback execution.
+- PASS: rollback sequence validation reports the first absent expected owner
+  for deletions and retains actual identity for equal-length malformed rows.
+- PASS: real-LSE/real-hydrology integration, 18/18; surface-liquid focused
+  tests, 30/30; affected strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
+
 ## Exact-offender E011 remediation at `75ba70681`
 
 - HOLD retained: both fresh exact-byte reviewers found that E011 substituted a

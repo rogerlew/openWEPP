@@ -11,7 +11,7 @@ Current affected-file counts after remediation:
 | `direct_runtime/surface_liquid_owner.rs` | 2,818 | WARN: cohesive owner schema, canonical persistence, D/A/F reconstruction, failure payloads, and candidate validation; below the mandatory threshold. |
 | `vegetation_real_hydrology_shadow.rs` | 2,157 | WARN: only canonical snapshot and production-lane accessors changed; no new constitutive owner was added. |
 | `direct_runtime/surface_liquid_ingress.rs` | 1,959 | PASS. Independent closure was extracted instead of growing this file further. |
-| `land_surface_energy_shadow/mod.rs` | 2,521 | WARN: cohesive default-off arbitration plus complete receiver reconstruction; strict helpers are decomposed and a future campaign split may separate receiver closure DTOs. |
+| `land_surface_energy_shadow/mod.rs` | 2,565 | WARN: cohesive default-off arbitration plus complete receiver reconstruction; strict helpers are decomposed and a future campaign split may separate receiver closure DTOs. |
 | `direct_runtime/surface_liquid_closure.rs` | 769 | PASS; dedicated independent validator. |
 | `direct_runtime/surface_liquid_wb14.rs` | 303 | PASS; dedicated shared production transition. |
 

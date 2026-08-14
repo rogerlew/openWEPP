@@ -12,5 +12,6 @@ nonzero-residual soil reconstruction defects. Those corrections now pass the
 focused gates at `26e34e024`. A fresh pass then found one E011
 offender-context defect; the correction at `75ba70681` reports the actual first
 offending receiver or rollback owner and passes focused gates. Fresh exact-byte
-review remains required. This is not yet a terminal custody-lift or
-resumed-Child-3 claim.
+review found two remaining E011 preflight/deletion context paths. Their focused
+passing correction is frozen at `6a107303c`; fresh exact-byte review remains
+required. This is not yet a terminal custody-lift or resumed-Child-3 claim.

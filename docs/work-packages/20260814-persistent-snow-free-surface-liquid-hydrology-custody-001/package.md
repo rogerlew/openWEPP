@@ -73,7 +73,9 @@ branch, PR or push is in scope.
   remediation, including exact receiver identity, contextual canonical errors,
   and nonzero-residual production-soil reconstruction. A fresh exact-byte
   re-review found one bounded E011 offender-context defect; its focused passing
-  correction is frozen at `75ba70681` and awaits fresh exact-byte review.
+  correction at `75ba70681` received another exact-byte review, which found
+  two remaining preflight/deletion context paths. Their focused passing
+  correction is frozen at `6a107303c` and awaits fresh exact-byte review.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

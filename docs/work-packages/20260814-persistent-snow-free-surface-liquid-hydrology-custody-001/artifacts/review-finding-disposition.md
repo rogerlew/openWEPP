@@ -77,3 +77,14 @@ The first canonical structural offender now supplies typed owner, OFE and tile
 context. Missing rows use the exact expected owner/identity; malformed or extra
 rows retain their actual identity. Two-row thermal and wrong LSE/soil-thermal
 rollback poisons assert the payload rather than only the error code.
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-TERMINAL-HIGH-001 / A-TERMINAL-HIGH-001: later independent thermal expectation mismatch reports first LSE receiver | Accepted | Remediated; focused PASS |
+| A-TERMINAL-HIGH-002: missing non-terminal rollback row reports shifted following owner | Accepted | Remediated; focused PASS |
+
+Expectation preflight now reports the soil-thermal owner and the exact first
+actual mismatch, or expected missing row. Rollback sequence validation detects
+a deletion before treating the shifted row as malformed, so a missing first
+LSE row identifies the expected LSE owner. Equal-length wrong rows continue to
+identify their actual wrong owner.
