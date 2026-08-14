@@ -58,9 +58,13 @@ No finding is closed until final exact-byte re-review passes.
 
 | Finding | Disposition | Remediation status |
 |---|---|---|
-| B-FINAL-HIGH-001: extra/nonfinite thermal layers and forged rollback owner identity accepted | Accepted | Active |
-| B-FINAL-HIGH-002: E004/E007/E011 omit available offending identity context | Accepted | Active |
-| A-FINAL-HIGH-001: independent soil aggregate omits valid residual/frozen storage | Accepted | Active |
+| B-FINAL-HIGH-001: extra/nonfinite thermal layers and forged rollback owner identity accepted | Accepted | Remediated; focused PASS |
+| B-FINAL-HIGH-002: E004/E007/E011 omit available offending identity context | Accepted | Remediated; focused PASS |
+| A-FINAL-HIGH-001: independent soil aggregate omits valid residual/frozen storage | Accepted | Remediated; focused PASS |
 
 These are bounded implementation defects in the existing bridge and receiver
-validator. No new authority or package is indicated.
+validator. The correction seals independent LSE and soil-thermal receiver
+expectations, narrows the Child-3 rollback set to its actual three owners,
+reconstructs production aggregate soil water with residual water over unfrozen
+depth, and includes typed owner/OFE/tile context when known. No new authority or
+package is indicated. Fresh exact-byte review remains pending.

@@ -310,6 +310,20 @@ failed attempts.
   nonzero-residual profiles hidden by the zero-residual fixture.
 - Disposition: all three findings accepted for immediate bridge/test correction.
 
+## Final exact-byte finding remediation at `26e34e024`
+
+- PASS: real-LSE/real-hydrology integration, 16/16, including a nonzero
+  residual-water production aggregate and independent poisons for extra,
+  nonfinite, reordered, missing, duplicate and forged receiver identity.
+- PASS: surface-liquid focused tests, 30/30, including typed owner context in
+  canonical failure serialization.
+- PASS: affected orchestrator check and strict all-target Clippy.
+- PASS: formatting and diff hygiene.
+- Static: the bridge accepts an independently frozen receiver-expectation
+  object; the rollback envelope is exactly ordered LSE, hydrology and soil
+  thermal, matching the owners this Child-3 bridge constructs.
+- Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
+
 ## Heavy comparator attempt 1
 
 - PASS: formatting and diff hygiene at `a92cd5db5`.

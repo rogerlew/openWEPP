@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / final re-review remediation active`
+Status: `executing / final exact-byte re-review pending`
 
 Date: `2026-08-14`
 
@@ -68,11 +68,11 @@ branch, PR or push is in scope.
 - [x] (2026-08-14) Admit canonical surface-liquid hydrology authority and bind contract-derived tests.
 - [x] (2026-08-14) Record a passing pre-implementation contract gate.
 - [x] (2026-08-14) Implement persistent state, restart, D/A/F, credit, ingress and rollback.
-- [ ] Pass focused gates and dual independent review/verification. All eleven
-  accepted implementation-review findings had focused passing remediation;
-  exact-byte hydrology and Rust re-review findings now have focused passing
-  corrections; final exact-byte re-review found bounded receiver-envelope,
-  context, and residual-soil reconstruction defects now active in-package.
+- [ ] Pass focused gates and dual independent review/verification. All fourteen
+  accepted implementation-review findings now have focused passing
+  remediation, including exact receiver identity, contextual canonical errors,
+  and nonzero-residual production-soil reconstruction. A fresh exact-byte
+  re-review is pending against commit `26e34e024`.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries
