@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / contract-first dependency lift`
+Status: `executing / implementation focused gates passed / independent review active`
 
 Date: `2026-08-14`
 
@@ -63,8 +63,8 @@ branch, PR or push is in scope.
 - [x] (2026-08-14) Scaffold the contract-first dependency-lift package.
 - [x] (2026-08-14) Admit canonical surface-liquid hydrology authority and bind contract-derived tests.
 - [x] (2026-08-14) Record a passing pre-implementation contract gate.
-- [ ] Implement persistent state, restart, D/A/F, credit, ingress and rollback.
-- [ ] Pass focused gates and dual independent review/verification.
+- [x] (2026-08-14) Implement persistent state, restart, D/A/F, credit, ingress and rollback.
+- [ ] Pass focused gates and dual independent review/verification. Focused gates pass; reviews are active.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

@@ -166,3 +166,75 @@ Further results append below; failed attempts are retained.
   both reported no material finding.
 - PASS: final v4 science admission from the frozen campaign base and SC unit
   compliance. Runtime implementation authority is restored.
+
+## Runtime owner attempt 1
+
+- PASS: affected orchestrator `cargo check` after the initial strict
+  configuration/state and D/A/F implementation.
+- WARN: the initial public re-export was unreachable from the crate root and
+  all new owner surfaces were therefore dead code. The crate root now exports
+  the default-off API; no production dispatch reference was added.
+- FAIL: five of six focused tests assumed input record order even though the
+  strict constructor canonically sorts by topology and complete key. Tests were
+  corrected to select records by typed tile identity; implementation ordering
+  was retained.
+
+## Runtime owner attempt 2
+
+- PASS: surface-liquid owner focused suite, 6/6.
+- FAIL: strict orchestrator Clippy found two oversized implementation functions
+  and one strict floating comparison in a test. Validation, routing, resource
+  and condensation helpers were decomposed; the test uses a bounded scalar
+  assertion. No broad Clippy allowance was added.
+- PASS: strict orchestrator Clippy on the focused owner bytes after correction.
+
+## LSE condensation receipt increment
+
+- PASS: LSE quick suite, 27/27.
+- PASS: strict LSE all-target Clippy.
+- Static: accepted condensation now produces a typed hydrology credit only for
+  an admitted surface/litter source. Amount, transaction, owner, OFE, tile,
+  surface, temperature and canonical specific-liquid enthalpy are retained.
+  A soil-layer condensation target remains rejected.
+
+## Production WB14 continuation parity attempt 1
+
+- PASS: 48-step cumulative infiltration was bit-identical to the unchanged
+  daily WB14 wrapper and legacy depression retention was exact zero.
+- FAIL: total excess compared bitwise differed by one ULP because the
+  continuation summed 48 segment excesses while the daily result summed 24
+  hourly bins. The retry uses the existing admitted scale-aware depth closure
+  rule for this differently grouped diagnostic sum. Production Green-Ampt
+  arithmetic, infiltration, state acceptance and conservation were unchanged.
+
+## Complete implementation focused gate
+
+- FAIL: science admission initially found that the changed orchestrator
+  manifest lacked an atomic current-contract impact-map binding. The manifest
+  and every dual-contract surface now have separate atomic bindings; no runtime
+  or scientific equation changed.
+- PASS: science admission from
+  `af9a989063aa8751dfadb14c442e1b360653658c`, 46 contracts and 11 changed
+  science surfaces.
+- PASS: affected crate checks and strict all-target Clippy for the orchestrator
+  and land-surface-energy crates.
+- PASS: focused surface-liquid owner and ingress selection, 14/14.
+- PASS: real-hydrology/LSE shadow integration, 8/8, including the actual public
+  potential and fixed-cap LSE protocol.
+- PASS: land-surface-energy crate quick suite, 27/27.
+- PASS: complete orchestrator quick suite, 521/521. Three pre-existing
+  OFE-routing oracle tests exceeded 60 seconds; all completed successfully.
+- PASS: surface-liquid authority 9/9, LSE authority 7/7, AUTH11 3/3,
+  anti-evasion, SC unit compliance, formatting and diff hygiene.
+- FAIL: one preserved command used the nonexistent target name
+  `land_surface_energy_authority_contract`. Cargo identified the registered
+  target; the corrected `land_surface_energy_balance_authority_contract`
+  invocation passed 7/7.
+- PASS: canonical Markdown lint, 13 files with zero errors or warnings.
+- PASS: after binding the complete soil-plus-surface beginning snapshot digest,
+  the focused integration target remained 8/8 and affected check, strict
+  Clippy, formatting, diff hygiene, and science admission remained green.
+
+Raw logs were retained outside the checkout under the short `/tmp` gate
+directories reported by the command output. They are execution evidence only
+and are not committed.

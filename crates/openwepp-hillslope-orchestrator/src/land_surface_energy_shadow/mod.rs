@@ -1,10 +1,10 @@
 //! Default-off snow-free LSE arbitration against the actual direct hydrology owner.
 //!
-//! Only production-backed soil-layer liquid is admitted here. Direct runtime's
-//! `residue_interception_m` is an ET input rebuilt from growth operands, not a
-//! persistent hydrology-owned store, so forest-litter withdrawal is typed
-//! unsupported. Direct runtime likewise has no accepted condensation-credit
-//! endpoint; condensation remains fail-closed.
+//! Soil-layer liquid remains in the production layer owner. Snow-free surface
+//! and litter liquid use the digest-bound `DirectSurfaceLiquidOwnedState`.
+//! Their separately constructed candidates join only after exact LSE water
+//! protocol validation, and timed ingress installs the validated surface ending
+//! state into a clone; the production frame is never mutated.
 
 #![allow(clippy::missing_errors_doc)]
 
@@ -12,24 +12,33 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{TransactionId, canonical_resource_amount_sum};
 pub use openwepp_land_surface_energy::{
-    BandDirectionalFluxes, BareSoilParameters, ComponentId, GroundWaterKey, OfeId,
-    OpenNeutralGeometry, OpenSurfaceProblem, RequestingComponent, SoilThermalNodeOperands,
-    SourceId, StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId,
-    SurfaceStorageBranch, WaterAmount, WaterAuthorizationReason, WaterSourceType,
+    BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
+    OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem, PotentialWaterRequestBatch,
+    RequestingComponent, RuntimeTileIdentity, Sha256Digest, SoilThermalLayerSnapshot,
+    SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot, SourceId,
+    StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
+    WaterAmount, WaterAuthorizationReason, WaterProtocol, WaterSourceType, finalize_open_phase,
+    solve_open_potential_phase,
 };
 use openwepp_land_surface_energy::{
     LandSurfaceEnergyError, OpenSurfaceSolveOutcome, WaterAuthorization, WaterBranch,
     solve_open_surface,
 };
+use sha2::{Digest, Sha256};
 use thiserror::Error;
 
-use crate::DirectRunFrame;
 use crate::direct_runtime::{
     DirectLayerWithdrawalRequest, aggregate_direct_soil_water,
     apply_direct_finalized_layer_liquid_debit, authorize_direct_layer_withdrawals,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyShadowAdapter, RealHydrologyShadowError, RealHydrologySourceKey,
+};
+use crate::{
+    DirectRunFrame, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidResourceCandidate, apply_surface_liquid_resource_phase,
+    authorize_surface_liquid_withdrawals, execute_surface_liquid_ingress,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -46,6 +55,8 @@ pub enum LandSurfaceEnergyShadowError {
     UnsupportedCustody(&'static str),
     #[error(transparent)]
     LandSurface(#[from] LandSurfaceEnergyError),
+    #[error(transparent)]
+    SurfaceLiquid(#[from] DirectSurfaceLiquidError),
 }
 
 impl From<RealHydrologyShadowError> for LandSurfaceEnergyShadowError {
@@ -106,6 +117,312 @@ pub struct MixedRealHydrologyCandidate {
     ending_frame: DirectRunFrame,
     finalized_uses: Vec<MixedRealHydrologyUse>,
     transaction_id: TransactionId,
+}
+
+/// Exact result of the LSE fixed-authorization solve.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UnifiedLseFinalization {
+    pub water_protocol: WaterProtocol,
+}
+
+/// One logical authorization spanning production soil and surface-liquid owners.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UnifiedRealHydrologyArbitration {
+    pub transaction_id: TransactionId,
+    pub requests: Vec<WaterAmount>,
+    pub authorizations: Vec<WaterAuthorization>,
+    soil: MixedRealHydrologyArbitration,
+    surface: DirectSurfaceLiquidArbitration,
+}
+
+/// Complete default-off water candidate after resource use and timed ingress.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UnifiedRealHydrologyCandidate {
+    pub transaction_id: TransactionId,
+    pub beginning_frame: DirectRunFrame,
+    pub ending_frame: DirectRunFrame,
+    pub arbitration: UnifiedRealHydrologyArbitration,
+    pub finalized_uses: Vec<WaterAmount>,
+    pub condensation_credits: Vec<CondensationCredit>,
+    pub surface_resource: DirectSurfaceLiquidResourceCandidate,
+    pub surface_ingress: DirectSurfaceLiquidIngressCandidate,
+}
+
+/// Digest the complete immutable soil-layer and surface-liquid owner snapshot.
+pub fn unified_beginning_hydrology_snapshot_sha256(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
+    surface_configuration.validate()?;
+    if &surface_configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "mixed unified hydrology owner",
+        ));
+    }
+    let surface_state = soil_adapter
+        .owner
+        .beginning_frame()
+        .surface_liquid_shadow
+        .as_deref()
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing beginning surface-liquid owner",
+        ))?;
+    surface_state.validate(surface_configuration)?;
+    let transaction = soil_adapter.owner.transaction_id().0.to_string();
+    let mut digest = Sha256::new();
+    for value in [
+        "openwepp-unified-hydrology-snapshot-v1",
+        soil_adapter.owner.hydrology_owner_id().as_str(),
+        &transaction,
+        soil_adapter.owner.snapshot_fingerprint(),
+        &surface_configuration.configuration_sha256,
+        &surface_state.state_sha256,
+    ] {
+        digest.update((value.len() as u64).to_be_bytes());
+        digest.update(value.as_bytes());
+    }
+    Sha256Digest::try_new(format!("{:x}", digest.finalize())).map_err(Into::into)
+}
+
+/// Join one immutable LSE request batch to both actual water owners.
+pub fn execute_unified_real_hydrology_shadow<F>(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    request_batch: &PotentialWaterRequestBatch,
+    expected_beginning_hydrology_snapshot_sha256: &Sha256Digest,
+    soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
+    ingress: &DirectSurfaceLiquidIngressInput,
+    finalize_fixed_caps: F,
+) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError>
+where
+    F: FnOnce(
+        &[WaterAuthorization],
+    ) -> Result<UnifiedLseFinalization, LandSurfaceEnergyShadowError>,
+{
+    request_batch.validate()?;
+    let actual_snapshot =
+        unified_beginning_hydrology_snapshot_sha256(soil_adapter, surface_configuration)?;
+    if request_batch.transaction_id != soil_adapter.owner.transaction_id()
+        || ingress.transaction_id != request_batch.transaction_id
+        || &actual_snapshot != expected_beginning_hydrology_snapshot_sha256
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "unified transaction or beginning snapshot identity",
+        ));
+    }
+    let beginning_surface = soil_adapter
+        .owner
+        .beginning_frame()
+        .surface_liquid_shadow
+        .as_deref()
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing beginning surface-liquid owner",
+        ))?;
+    let (soil_requests, surface_requests) = partition_requests(request_batch, soil_sources)?;
+    let soil = soil_adapter.authorize(&soil_requests)?;
+    let surface = authorize_surface_liquid_withdrawals(
+        surface_configuration,
+        beginning_surface,
+        request_batch.transaction_id,
+        beginning_surface
+            .records
+            .first()
+            .and_then(|record| record.last_accepted_transaction_id),
+        &surface_requests,
+    )?;
+    let authorizations = restore_authorization_order(request_batch, &soil, &surface)?;
+    let arbitration = UnifiedRealHydrologyArbitration {
+        transaction_id: request_batch.transaction_id,
+        requests: request_batch.requests.clone(),
+        authorizations,
+        soil,
+        surface,
+    };
+    let finalized = finalize_fixed_caps(&arbitration.authorizations)?;
+    validate_final_protocol(
+        &finalized.water_protocol,
+        &arbitration,
+        expected_beginning_hydrology_snapshot_sha256,
+        &surface_configuration.owner_id,
+    )?;
+    construct_unified_candidate(
+        soil_adapter,
+        surface_configuration,
+        arbitration,
+        finalized,
+        ingress,
+    )
+}
+
+fn validate_final_protocol(
+    protocol: &WaterProtocol,
+    arbitration: &UnifiedRealHydrologyArbitration,
+    expected_snapshot: &Sha256Digest,
+    expected_owner: &openwepp_kernel_contract::ResourceOwnerId,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    protocol.validate()?;
+    if protocol.transaction_id != arbitration.transaction_id
+        || &protocol.hydrology_owner_id != expected_owner
+        || &protocol.beginning_snapshot_sha256 != expected_snapshot
+        || protocol.requests != arbitration.requests
+        || protocol.authorizations != arbitration.authorizations
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "final water protocol lineage or D/A identity",
+        ));
+    }
+    Ok(())
+}
+
+fn partition_requests(
+    batch: &PotentialWaterRequestBatch,
+    soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
+) -> Result<(Vec<MixedRealHydrologyRequest>, Vec<WaterAmount>), LandSurfaceEnergyShadowError> {
+    let mut soil = Vec::new();
+    let mut surface = Vec::new();
+    let mut consumed_soil_keys = BTreeSet::new();
+    for request in &batch.requests {
+        match request.key.source_type {
+            WaterSourceType::SoilLayerLiquid => {
+                let source = soil_sources.get(&request.key).ok_or(
+                    LandSurfaceEnergyShadowError::Identity("missing soil source mapping"),
+                )?;
+                consumed_soil_keys.insert(request.key.clone());
+                soil.push(MixedRealHydrologyRequest {
+                    request: request.clone(),
+                    source: source.clone(),
+                });
+            }
+            WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid => {
+                if soil_sources.contains_key(&request.key) {
+                    return Err(LandSurfaceEnergyShadowError::Identity(
+                        "surface request has soil mapping",
+                    ));
+                }
+                surface.push(request.clone());
+            }
+        }
+    }
+    if consumed_soil_keys.len() != soil_sources.len() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "unused soil source mapping",
+        ));
+    }
+    Ok((soil, surface))
+}
+
+fn restore_authorization_order(
+    batch: &PotentialWaterRequestBatch,
+    soil: &MixedRealHydrologyArbitration,
+    surface: &DirectSurfaceLiquidArbitration,
+) -> Result<Vec<WaterAuthorization>, LandSurfaceEnergyShadowError> {
+    let by_key = soil
+        .authorizations
+        .iter()
+        .map(|row| (row.authorization.key.clone(), row.authorization.clone()))
+        .chain(
+            surface
+                .authorizations
+                .iter()
+                .map(|row| (row.key.clone(), row.clone())),
+        )
+        .collect::<BTreeMap<_, _>>();
+    if by_key.len() != batch.requests.len() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "incomplete unified authorization",
+        ));
+    }
+    batch
+        .requests
+        .iter()
+        .map(|request| {
+            by_key
+                .get(&request.key)
+                .cloned()
+                .ok_or(LandSurfaceEnergyShadowError::Identity(
+                    "authorization order identity",
+                ))
+        })
+        .collect()
+}
+
+fn construct_unified_candidate(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    arbitration: UnifiedRealHydrologyArbitration,
+    finalized: UnifiedLseFinalization,
+    ingress: &DirectSurfaceLiquidIngressInput,
+) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
+    let (soil_uses, surface_uses) =
+        partition_finalized_uses(&arbitration, &finalized.water_protocol.finalized_uses)?;
+    let soil_candidate =
+        soil_adapter.candidate_from_finalized_uses(&arbitration.soil, &soil_uses)?;
+    let surface_resource = apply_surface_liquid_resource_phase(
+        surface_configuration,
+        &arbitration.surface,
+        &surface_uses,
+        &finalized.water_protocol.condensation_credits,
+    )?;
+    let surface_ingress =
+        execute_surface_liquid_ingress(surface_configuration, &surface_resource, ingress)?;
+    let mut ending_frame = soil_candidate.ending_frame().clone();
+    ending_frame.surface_liquid_shadow = Some(Box::new(surface_ingress.ending_state.clone()));
+    Ok(UnifiedRealHydrologyCandidate {
+        transaction_id: arbitration.transaction_id,
+        beginning_frame: soil_candidate.beginning_frame().clone(),
+        ending_frame,
+        arbitration,
+        finalized_uses: finalized.water_protocol.finalized_uses,
+        condensation_credits: finalized.water_protocol.condensation_credits,
+        surface_resource,
+        surface_ingress,
+    })
+}
+
+fn partition_finalized_uses(
+    arbitration: &UnifiedRealHydrologyArbitration,
+    finalized_uses: &[WaterAmount],
+) -> Result<(Vec<MixedRealHydrologyUse>, Vec<WaterAmount>), LandSurfaceEnergyShadowError> {
+    let soil_sources = arbitration
+        .soil
+        .requests
+        .iter()
+        .map(|row| (row.request.key.clone(), row.source.clone()))
+        .collect::<BTreeMap<_, _>>();
+    let surface_keys = arbitration
+        .surface
+        .requests
+        .iter()
+        .map(|row| row.key.clone())
+        .collect::<BTreeSet<_>>();
+    let mut seen = BTreeSet::new();
+    let mut soil = Vec::new();
+    let mut surface = Vec::new();
+    for row in finalized_uses {
+        if !seen.insert(row.key.clone()) {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "duplicate unified finalized use",
+            ));
+        }
+        if let Some(source) = soil_sources.get(&row.key) {
+            soil.push(MixedRealHydrologyUse {
+                finalized_use: row.clone(),
+                source: source.clone(),
+            });
+        } else if surface_keys.contains(&row.key) {
+            surface.push(row.clone());
+        } else {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "unknown unified finalized use",
+            ));
+        }
+    }
+    if seen.len() != arbitration.requests.len() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "incomplete unified finalized use",
+        ));
+    }
+    Ok((soil, surface))
 }
 
 impl MixedRealHydrologyCandidate {

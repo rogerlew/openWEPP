@@ -13,12 +13,12 @@ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, Transaction
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AIR_HEAT_CAPACITY_J_KG_K, AcceptedOpenSurface, ComponentId, CoveredColumnCandidate,
-    CoveredColumnInputs, CoveredColumnSolveOutcome, CoveredWaterCaps, DRY_AIR_GAS_CONSTANT_J_KG_K,
-    DiagnosticFailureKind, GroundHeatJoinOperands, GroundWaterKey, LandSurfaceEnergyError,
-    LandSurfaceEnergyState, LatentJoinOperands, MODEL_DEFINITION_SHA256, MODEL_VERSION,
-    NormalizedResidual, NumericalDiagnostics, NumericalFailure, NumericalFailureCode,
-    NumericalFailureKind, OfeId, OpenSurfaceProblem, OpenSurfaceSolveOutcome,
+    AIR_HEAT_CAPACITY_J_KG_K, AcceptedOpenSurface, ComponentId, CondensationCredit,
+    CoveredColumnCandidate, CoveredColumnInputs, CoveredColumnSolveOutcome, CoveredWaterCaps,
+    DRY_AIR_GAS_CONSTANT_J_KG_K, DiagnosticFailureKind, GroundHeatJoinOperands, GroundWaterKey,
+    LandSurfaceEnergyError, LandSurfaceEnergyState, LatentJoinOperands, MODEL_DEFINITION_SHA256,
+    MODEL_VERSION, NormalizedResidual, NumericalDiagnostics, NumericalFailure,
+    NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem, OpenSurfaceSolveOutcome,
     OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash, RequestingComponent, ResidualUnit,
     Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
     StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
@@ -728,6 +728,14 @@ pub fn finalize_open_phase(
                 .finalized_use_kg_m2_stand_ground
         },
     };
+    let condensation_credits = condensation_credits(
+        &phase.identity,
+        final_value
+            .evaluation
+            .water
+            .condensation_credit_kg_m2_stand_ground,
+        final_value.evaluation.surface_temperature_k,
+    )?;
     let protocol = WaterProtocol {
         transaction_id: phase.identity.transaction_id,
         hydrology_owner_id: phase.identity.hydrology_owner_id.clone(),
@@ -735,7 +743,7 @@ pub fn finalize_open_phase(
         requests: phase.request_batch.requests.clone(),
         authorizations: vec![fixed],
         finalized_uses: vec![finalized],
-        condensation_credits: Vec::new(),
+        condensation_credits,
     };
     protocol.validate()?;
     let (energy_operands, soil_thermal) =
@@ -1028,6 +1036,13 @@ fn covered_water_protocol(
         key: ground_key,
         amount_kg_m2_stand_ground: ground_amount,
     });
+    let condensation_credits = condensation_credits(
+        &phase.identity,
+        final_value
+            .ground_water
+            .condensation_credit_kg_m2_stand_ground,
+        final_value.evaluation.ground_temperature_k,
+    )?;
     let protocol = WaterProtocol {
         transaction_id: phase.identity.transaction_id,
         hydrology_owner_id: phase.identity.hydrology_owner_id.clone(),
@@ -1035,10 +1050,44 @@ fn covered_water_protocol(
         requests: phase.request_batch.requests.clone(),
         authorizations: exact.into_values().collect(),
         finalized_uses: finalized,
-        condensation_credits: Vec::new(),
+        condensation_credits,
     };
     protocol.validate()?;
     Ok(protocol)
+}
+
+fn condensation_credits(
+    identity: &RuntimeTileIdentity,
+    amount_kg_m2_stand_ground: f64,
+    temperature_k: f64,
+) -> Result<Vec<CondensationCredit>, LandSurfaceEnergyError> {
+    if !amount_kg_m2_stand_ground.is_finite() || amount_kg_m2_stand_ground < 0.0 {
+        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            "invalid condensation amount",
+        ));
+    }
+    if amount_kg_m2_stand_ground == 0.0 {
+        return Ok(Vec::new());
+    }
+    if !matches!(
+        identity.ground_source_type,
+        WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid
+    ) {
+        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            "condensation requires tile surface-liquid source",
+        ));
+    }
+    Ok(vec![CondensationCredit {
+        transaction_id: identity.transaction_id,
+        hydrology_owner_id: identity.hydrology_owner_id.clone(),
+        ofe_id: identity.ofe_id.clone(),
+        tile_id: identity.tile_id.clone(),
+        surface_id: identity.surface_id.clone(),
+        amount_kg_m2_stand_ground,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+        temperature_k,
+        specific_liquid_enthalpy_j_kg: liquid_enthalpy_j_kg(temperature_k),
+    }])
 }
 
 fn active_cap_keys(protocol: &WaterProtocol) -> Vec<GroundWaterKey> {
@@ -1539,6 +1588,25 @@ mod tests {
                 .owner_rollback_hashes
                 .iter()
                 .all(|row| row.before_sha256 == row.after_sha256)
+        );
+    }
+
+    #[test]
+    fn condensation_receipt_binds_exact_surface_identity_temperature_and_enthalpy() {
+        let mut identity = identity();
+        identity.ground_source_type = WaterSourceType::SurfaceLiquid;
+        identity.ground_source_tile_id = Some(identity.tile_id.clone());
+        identity.ground_soil_layer_id = None;
+        let credits = condensation_credits(&identity, 0.0125, 281.0).expect("credit");
+        assert_eq!(credits.len(), 1);
+        let credit = &credits[0];
+        assert_eq!(credit.transaction_id, identity.transaction_id);
+        assert_eq!(credit.tile_id, identity.tile_id);
+        assert_eq!(credit.surface_id, identity.surface_id);
+        assert!((credit.amount_kg_m2_stand_ground - 0.0125).abs() < f64::EPSILON);
+        assert_eq!(
+            credit.specific_liquid_enthalpy_j_kg.to_bits(),
+            liquid_enthalpy_j_kg(281.0).to_bits()
         );
     }
 }

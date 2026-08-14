@@ -169,6 +169,8 @@ mod runoff;
 mod storage;
 mod subhourly_generation;
 mod subsurface;
+mod surface_liquid_ingress;
+mod surface_liquid_owner;
 
 pub use decomposition::{
     DirectDecompositionAction, DirectDecompositionActiveContext,
@@ -370,6 +372,20 @@ pub use subsurface::{
     DirectSubsurfaceComputeDownstreamOperands, DirectSubsurfaceComputeInputs,
     DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
+};
+pub use surface_liquid_ingress::{
+    DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
+    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
+    DirectTileGroundIngress, execute_surface_liquid_ingress,
+};
+pub use surface_liquid_owner::{
+    DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
 };
 
 include!("direct_runtime/00_core_frames.rs");

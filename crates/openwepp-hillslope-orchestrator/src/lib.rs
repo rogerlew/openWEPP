@@ -134,6 +134,14 @@ pub use direct_runtime::{
     wave1_quantum_is_hydraulically_active, wave1_runge_step, wave1_xcrit,
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
+
+pub use direct_runtime::{
+    DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
+    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
+    DirectTileGroundIngress, execute_surface_liquid_ingress,
+};
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
     ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
@@ -144,6 +152,13 @@ pub use direct_runtime::{
     DirectErosionInflowIntake, DirectErosionRuntimeCarry, DirectWave1DailyState,
     DirectWave1OperandSeed, Wave1InflowOperands, assemble_wave1_continuity_inputs,
     assemble_wave1_continuity_inputs_quantum,
+};
+pub use direct_runtime::{
+    DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
 };
 pub use direct_runtime::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,

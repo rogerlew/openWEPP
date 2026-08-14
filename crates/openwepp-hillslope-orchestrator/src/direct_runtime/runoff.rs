@@ -2110,7 +2110,7 @@ fn validate_wb14_infiltration_inputs(
     Ok(())
 }
 
-fn compute_green_ampt_interval_infiltration(
+pub(super) fn compute_green_ampt_interval_infiltration(
     cumulative_infiltration_m: f64,
     rainfall_m: f64,
     duration_s: f64,
@@ -2152,6 +2152,95 @@ fn compute_green_ampt_interval_infiltration(
         ponded_infiltration_m,
     )?;
     Ok((unponded_infiltration_m + ponded_infiltration_m).min(rainfall_m))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(super) struct DirectWb14ContinuationIntervalInputs {
+    pub cumulative_supply_m: f64,
+    pub cumulative_infiltration_m: f64,
+    pub interval_supply_m: f64,
+    pub interval_duration_s: f64,
+    pub effective_conductivity_m_s: f64,
+    pub matric_potential_m: f64,
+    pub storage_capacity_m: f64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::struct_field_names)]
+pub(super) struct DirectWb14ContinuationIntervalOutcome {
+    pub cumulative_supply_m: f64,
+    pub cumulative_infiltration_m: f64,
+    pub interval_infiltration_m: f64,
+    pub interval_excess_m: f64,
+}
+
+/// Advance the same production Green-Ampt interval transition used by WB14
+/// without replaying or resetting the already accepted day continuation.
+pub(super) fn advance_wb14_continuation_interval(
+    inputs: DirectWb14ContinuationIntervalInputs,
+) -> Result<DirectWb14ContinuationIntervalOutcome, DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "surface_liquid.cumulative_supply_m",
+        inputs.cumulative_supply_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "surface_liquid.cumulative_infiltration_m",
+        inputs.cumulative_infiltration_m,
+    )?;
+    validate_nonnegative_direct_m("surface_liquid.interval_supply_m", inputs.interval_supply_m)?;
+    validate_positive_direct(
+        "surface_liquid.interval_duration_s",
+        inputs.interval_duration_s,
+    )?;
+    validate_positive_direct(
+        "surface_liquid.effective_conductivity_m_s",
+        inputs.effective_conductivity_m_s,
+    )?;
+    validate_nonnegative_direct_m(
+        "surface_liquid.matric_potential_m",
+        inputs.matric_potential_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "surface_liquid.storage_capacity_m",
+        inputs.storage_capacity_m,
+    )?;
+    if inputs.cumulative_infiltration_m > inputs.cumulative_supply_m
+        || inputs.cumulative_infiltration_m > inputs.storage_capacity_m
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "surface_liquid.continuation_bounds",
+        });
+    }
+    let remaining_storage_m = inputs.storage_capacity_m - inputs.cumulative_infiltration_m;
+    let interval_infiltration_m = if remaining_storage_m <= WB11_ZERO_THRESHOLD {
+        0.0
+    } else {
+        compute_green_ampt_interval_infiltration(
+            inputs.cumulative_infiltration_m,
+            inputs.interval_supply_m.min(remaining_storage_m),
+            inputs.interval_duration_s,
+            inputs.interval_supply_m / inputs.interval_duration_s,
+            inputs.effective_conductivity_m_s,
+            inputs.matric_potential_m,
+        )?
+    };
+    let cumulative_supply_m = inputs.cumulative_supply_m + inputs.interval_supply_m;
+    let cumulative_infiltration_m = inputs.cumulative_infiltration_m + interval_infiltration_m;
+    let interval_excess_m = inputs.interval_supply_m - interval_infiltration_m;
+    validate_nonnegative_direct_m("surface_liquid.interval_excess_m", interval_excess_m)?;
+    if cumulative_infiltration_m > cumulative_supply_m
+        || cumulative_infiltration_m > inputs.storage_capacity_m
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "surface_liquid.ending_continuation_bounds",
+        });
+    }
+    Ok(DirectWb14ContinuationIntervalOutcome {
+        cumulative_supply_m,
+        cumulative_infiltration_m,
+        interval_infiltration_m,
+        interval_excess_m,
+    })
 }
 
 fn solve_green_ampt_ponded_end(
@@ -2881,4 +2970,66 @@ pub struct DirectPeakRunoffSpanReport {
     pub shadow_projection_count: u64,
     pub compatibility_edge_invocation_count: u64,
     pub peak_runoff_shadow_projection: DirectPeakRunoffShadowProjection,
+}
+
+#[cfg(test)]
+mod surface_liquid_continuation_tests {
+    use super::*;
+
+    #[test]
+    fn forty_eight_stateful_intervals_match_the_existing_daily_wb14_wrapper() {
+        let interval_supply_m = 0.000_45;
+        let hyetograph = (0..48)
+            .map(|index| {
+                let start_s = f64::from(index) * 1_800.0;
+                DirectWb14HyetographInterval {
+                    start_s,
+                    end_s: start_s + 1_800.0,
+                    intensity_m_s: interval_supply_m / 1_800.0,
+                }
+            })
+            .collect();
+        let inputs = DirectWb14InfiltrationProducerInputs {
+            hyetograph,
+            hourly_additional_supply_m: [0.0; DC01_HOUR_BIN_COUNT],
+            effective_conductivity_m_s: 1.1e-7,
+            matric_potential_m: 0.12,
+            storage_capacity_m: 0.015,
+            depression_storage_capacity_m: 0.0,
+        };
+        let daily = compute_wb14_infiltration_depression_with_profile(&inputs)
+            .expect("daily production wrapper");
+        let mut cumulative_supply_m = 0.0;
+        let mut cumulative_infiltration_m = 0.0;
+        let mut interval_excess_m = 0.0;
+        for _ in 0..48 {
+            let outcome =
+                advance_wb14_continuation_interval(DirectWb14ContinuationIntervalInputs {
+                    cumulative_supply_m,
+                    cumulative_infiltration_m,
+                    interval_supply_m,
+                    interval_duration_s: 1_800.0,
+                    effective_conductivity_m_s: inputs.effective_conductivity_m_s,
+                    matric_potential_m: inputs.matric_potential_m,
+                    storage_capacity_m: inputs.storage_capacity_m,
+                })
+                .expect("stateful interval");
+            cumulative_supply_m = outcome.cumulative_supply_m;
+            cumulative_infiltration_m = outcome.cumulative_infiltration_m;
+            interval_excess_m += outcome.interval_excess_m;
+        }
+        assert_eq!(
+            cumulative_infiltration_m.to_bits(),
+            daily.state.cumulative_infiltration_m.to_bits()
+        );
+        let daily_excess_m = daily.hourly_excess_m.iter().sum::<f64>();
+        assert!(
+            (interval_excess_m - daily_excess_m).abs()
+                <= scale_aware_depth_closure_tolerance_m(&[interval_excess_m, daily_excess_m,])
+        );
+        assert_eq!(
+            daily.state.depression_storage_delta_m.to_bits(),
+            0.0_f64.to_bits()
+        );
+    }
 }

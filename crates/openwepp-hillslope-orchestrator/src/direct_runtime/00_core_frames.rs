@@ -551,6 +551,10 @@ pub struct DirectRunFrame {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
     pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
     pub groundwater: DirectGroundwaterRunState,
+    /// Default-off native snow-free surface/depression and litter liquid.
+    /// `None` preserves the production lane exactly; shadow consumers must
+    /// provide a strict digest-bound state before requesting this owner.
+    pub surface_liquid_shadow: Option<Box<DirectSurfaceLiquidOwnedState>>,
     /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
     /// activation selector inside the orchestrator (the runner sets it from
     /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
@@ -577,6 +581,7 @@ impl DirectRunFrame {
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
+            surface_liquid_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -605,6 +610,7 @@ impl DirectRunFrame {
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
+            surface_liquid_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -616,6 +622,25 @@ impl DirectRunFrame {
     ) -> Result<(), DirectRuntimeError> {
         let total_area_m2 = self.total_area_m2()?;
         self.groundwater = DirectGroundwaterRunState::from_authority(authority, total_area_m2)?;
+        Ok(())
+    }
+
+    pub fn configure_surface_liquid_shadow(
+        &mut self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        state: DirectSurfaceLiquidOwnedState,
+    ) -> Result<(), DirectRuntimeError> {
+        if configuration.run_id != self.identity.run_id {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "surface_liquid.run_identity",
+            });
+        }
+        state.validate(configuration).map_err(|_| {
+            DirectRuntimeError::DirectDomainViolation {
+                field: "surface_liquid.state",
+            }
+        })?;
+        self.surface_liquid_shadow = Some(Box::new(state));
         Ok(())
     }
 

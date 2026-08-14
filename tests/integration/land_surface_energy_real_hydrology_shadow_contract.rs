@@ -1,19 +1,27 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
 use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
-    BandDirectionalFluxes, BareSoilParameters, ComponentId, GroundWaterKey,
+    BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, MixedRealHydrologyRequest,
-    MixedRealHydrologyUse, OfeId, OpenNeutralGeometry, OpenSurfaceProblem, SoilThermalNodeOperands,
-    SourceId, StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId,
-    SurfaceStorageBranch, WaterSourceType, execute_open_bare_soil_shadow,
+    MixedRealHydrologyUse, OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem,
+    RuntimeTileIdentity, Sha256Digest, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
+    SoilThermalOfeSnapshot, SoilThermalSnapshot, SourceId, StandGroundWaterAmountBasis,
+    SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch, UnifiedLseFinalization,
+    WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
+    execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
+    unified_beginning_hydrology_snapshot_sha256,
 };
 use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
     RealHydrologySourceKey,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectRunFrame, DirectRunIdentity, DirectSubsurfaceLayerState,
+    DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters, DirectRunFrame,
+    DirectRunIdentity, DirectSubsurfaceLayerState, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 
@@ -158,6 +166,167 @@ fn open_problem() -> OpenSurfaceProblem {
                 beginning_temperature_k: 291.5 - 1.1 * f64::from(index),
             })
             .collect(),
+    }
+}
+
+fn digest(byte: char) -> Sha256Digest {
+    Sha256Digest::try_new(byte.to_string().repeat(64)).expect("digest")
+}
+
+fn surface_configuration(
+    class: SurfaceClass,
+    source_type: WaterSourceType,
+) -> DirectSurfaceLiquidConfiguration {
+    DirectSurfaceLiquidConfiguration::new(
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        83,
+        vec![OfeId::try_new("ofe-1").expect("OFE")],
+        vec![DirectSurfaceLiquidConfigurationRecord {
+            key: DirectSurfaceLiquidStoreKey {
+                run_id: 83,
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                tile_id: TileId::try_new("open").expect("tile"),
+                surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
+                surface_class: class,
+                source_type,
+                source_id: SourceId::try_new("surface-store:ofe-1:open").expect("source"),
+            },
+            tile_fraction: 1.0,
+            capacity_kg_m2_tile: 3.0,
+            ofe_area_m2: 100.0,
+            ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+            runon_destination_ofe_id: None,
+            runon_destination_tile_id: None,
+        }],
+    )
+    .expect("surface configuration")
+}
+
+fn configured_surface_frame(
+    class: SurfaceClass,
+    source_type: WaterSourceType,
+    liquid: f64,
+) -> (DirectRunFrame, DirectSurfaceLiquidConfiguration) {
+    let configuration = surface_configuration(class, source_type);
+    let initial = BTreeMap::from([(configuration.records[0].key.clone(), liquid)]);
+    let state = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &initial, 0)
+        .expect("surface state");
+    let mut frame = production_frame(0.02, false);
+    frame
+        .configure_surface_liquid_shadow(&configuration, state)
+        .expect("configure surface owner");
+    (frame, configuration)
+}
+
+fn surface_potential_batch(
+    class: SurfaceClass,
+    source_type: WaterSourceType,
+    source_id: SourceId,
+    liquid: f64,
+) -> openwepp_hillslope_orchestrator::land_surface_energy_shadow::PotentialWaterRequestBatch {
+    surface_potential_phase(class, source_type, source_id, liquid).request_batch
+}
+
+fn surface_potential_phase(
+    class: SurfaceClass,
+    source_type: WaterSourceType,
+    source_id: SourceId,
+    liquid: f64,
+) -> OpenPotentialPhase {
+    surface_potential_phase_with_snapshot(class, source_type, source_id, liquid, digest('3'))
+}
+
+fn surface_potential_phase_with_snapshot(
+    class: SurfaceClass,
+    source_type: WaterSourceType,
+    source_id: SourceId,
+    liquid: f64,
+    beginning_hydrology_snapshot_sha256: Sha256Digest,
+) -> OpenPotentialPhase {
+    let mut problem = open_problem();
+    problem.surface_liquid_kg_m2_tile = liquid;
+    problem.class = match class {
+        SurfaceClass::BareMineralSoil => SurfaceClassKind::BareMineralSoil,
+        SurfaceClass::ForestLitter => SurfaceClassKind::ForestLitter,
+    };
+    if class == SurfaceClass::ForestLitter {
+        problem.litter_capacity_kg_m2_tile = Some(3.0);
+        problem.bare_soil = None;
+    }
+    solve_open_potential_phase(
+        RuntimeTileIdentity {
+            transaction_id: TransactionId(41),
+            lse_owner_id: ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+            hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                .expect("hydrology owner"),
+            soil_thermal_owner_id: ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+            configuration_sha256: digest('1'),
+            beginning_lse_state_sha256: digest('2'),
+            beginning_hydrology_snapshot_sha256,
+            beginning_soil_thermal_state_sha256: digest('4'),
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            tile_id: TileId::try_new("open").expect("tile"),
+            surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
+            surface_class: class,
+            ground_source_type: source_type,
+            ground_source_id: source_id,
+            ground_source_tile_id: Some(TileId::try_new("open").expect("source tile")),
+            ground_soil_layer_id: None,
+            tile_fraction: 1.0,
+            interval_s: 1_800.0,
+        },
+        &problem,
+        None,
+    )
+    .expect("surface potential")
+}
+
+fn soil_thermal_snapshot() -> SoilThermalSnapshot {
+    SoilThermalSnapshot {
+        owner_id: ResourceOwnerId::try_new("soil-thermal").expect("owner"),
+        configuration_sha256: digest('5'),
+        state_sha256: digest('4'),
+        snapshot_sha256: digest('6'),
+        last_accepted_transaction_id: None,
+        ofes: vec![SoilThermalOfeSnapshot {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            ordered_layers: (0..4)
+                .map(|index| SoilThermalLayerSnapshot {
+                    layer_id: SoilLayerId::try_new(format!("thermal-{}", index + 1))
+                        .expect("layer"),
+                    temperature_k: 291.5 - 1.1 * f64::from(index),
+                    enthalpy_j_m2_ofe_ground: 1.0e6 * f64::from(index + 1),
+                })
+                .collect(),
+        }],
+    }
+}
+
+fn ingress_input() -> DirectSurfaceLiquidIngressInput {
+    let temperature_k = 294.0;
+    DirectSurfaceLiquidIngressInput {
+        transaction_id: TransactionId(41),
+        day_index: 0,
+        interval_index: 0,
+        interval_s: 1_800.0,
+        tile_ingress: vec![DirectTileGroundIngress::OpenRawPrecipitation {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            tile_id: TileId::try_new("open").expect("tile"),
+            surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
+            raw_precipitation: DirectIngressAmount {
+                mass_kg_m2_tile_ground: 0.0,
+                temperature_k,
+                specific_liquid_enthalpy_j_kg: 4_218.0 * (temperature_k - 273.15),
+                start_s: 0.0,
+                end_s: 1_800.0,
+            },
+        }],
+        wb14_parameters: vec![DirectOfeWb14Parameters {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            effective_conductivity_m_s: 1.0e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 0.04,
+        }],
     }
 }
 
@@ -318,22 +487,270 @@ fn full_supply_frozen_duplicate_wrong_layer_and_rollback_are_fail_closed() {
 }
 
 #[test]
-fn litter_and_condensation_remain_typed_unsupported_without_production_store() {
-    let frame = production_frame(0.02, false);
-    let (real_owner, source) = owner(&frame);
+fn unified_surface_owner_accepts_open_and_litter_without_rewriting_keys() {
+    for (class, source_type) in [
+        (
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+        ),
+        (SurfaceClass::ForestLitter, WaterSourceType::LitterLiquid),
+    ] {
+        let (frame, configuration) = configured_surface_frame(class, source_type, 1.0);
+        let original = frame.clone();
+        let source_id = configuration.records[0].key.source_id.clone();
+        let batch = surface_potential_batch(class, source_type, source_id, 1.0);
+        let request_keys = batch
+            .requests
+            .iter()
+            .map(|row| row.key.clone())
+            .collect::<Vec<_>>();
+        let (real_owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+        let hydrology_snapshot =
+            unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+                .expect("unified snapshot");
+        let candidate = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &batch,
+            &hydrology_snapshot,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |authorizations| {
+                Ok(UnifiedLseFinalization {
+                    water_protocol: WaterProtocol {
+                        transaction_id: TransactionId(41),
+                        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                            .expect("owner"),
+                        beginning_snapshot_sha256: hydrology_snapshot.clone(),
+                        requests: batch.requests.clone(),
+                        authorizations: authorizations.to_vec(),
+                        finalized_uses: authorizations
+                            .iter()
+                            .map(|row| openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                                key: row.key.clone(),
+                                amount_kg_m2_stand_ground: row.amount_kg_m2_stand_ground,
+                            })
+                            .collect(),
+                        condensation_credits: Vec::new(),
+                    },
+                })
+            },
+        )
+        .expect("unified surface transaction");
+        assert_eq!(
+            candidate
+                .arbitration
+                .requests
+                .iter()
+                .map(|row| row.key.clone())
+                .collect::<Vec<_>>(),
+            request_keys
+        );
+        assert_eq!(frame, original, "production frame changed");
+        assert_eq!(candidate.beginning_frame, original);
+        assert_eq!(
+            candidate
+                .ending_frame
+                .surface_liquid_shadow
+                .as_ref()
+                .expect("ending surface state")
+                .as_ref(),
+            &candidate.surface_ingress.ending_state
+        );
+    }
+}
+
+#[test]
+fn unified_surface_owner_consumes_the_actual_fixed_cap_lse_water_protocol() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let (real_owner, _) = owner(&frame);
     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
-    let mut litter = request("ground", 1.0, &source);
-    litter.request.key.source_type = WaterSourceType::LitterLiquid;
-    litter.request.key.source_tile_id = Some(TileId::try_new("open").expect("tile"));
-    litter.request.key.soil_layer_id = None;
+    let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("unified snapshot");
+    let phase = surface_potential_phase_with_snapshot(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+        hydrology_snapshot.clone(),
+    );
+    let candidate = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &phase.request_batch,
+        &hydrology_snapshot,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |authorizations| {
+            let authorization = authorizations
+                .iter()
+                .find(|row| row.key == phase.request_batch.requests[0].key)
+                .ok_or(LandSurfaceEnergyShadowError::Identity(
+                    "actual fixed-cap authorization missing",
+                ))?;
+            let final_candidate = finalize_open_phase(
+                &phase,
+                &digest('2'),
+                authorization,
+                None,
+                &soil_thermal_snapshot(),
+            )?;
+            Ok(UnifiedLseFinalization {
+                water_protocol: final_candidate.water_protocol,
+            })
+        },
+    )
+    .expect("actual LSE fixed-cap protocol accepted by real owner");
+    assert_eq!(frame, original);
+    assert_eq!(candidate.arbitration.requests, phase.request_batch.requests);
+    assert_eq!(
+        candidate.finalized_uses[0].key,
+        candidate.arbitration.authorizations[0].key
+    );
+}
+
+#[test]
+fn unified_surface_owner_applies_signed_condensation_credit_before_ingress() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::ForestLitter,
+        WaterSourceType::LitterLiquid,
+        0.2,
+    );
+    let original = frame.clone();
+    let batch = surface_potential_batch(
+        SurfaceClass::ForestLitter,
+        WaterSourceType::LitterLiquid,
+        configuration.records[0].key.source_id.clone(),
+        0.2,
+    );
+    let (real_owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+    let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("unified snapshot");
+    let temperature_k = 291.0;
+    let candidate = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &batch,
+        &hydrology_snapshot,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |authorizations| {
+            Ok(UnifiedLseFinalization {
+                water_protocol: WaterProtocol {
+                    transaction_id: TransactionId(41),
+                    hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                        .expect("owner"),
+                    beginning_snapshot_sha256: hydrology_snapshot.clone(),
+                    requests: batch.requests.clone(),
+                    authorizations: authorizations.to_vec(),
+                    finalized_uses: authorizations
+                        .iter()
+                        .map(|row| openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                                key: row.key.clone(),
+                                amount_kg_m2_stand_ground: 0.0,
+                            })
+                        .collect(),
+                    condensation_credits: vec![CondensationCredit {
+                        transaction_id: TransactionId(41),
+                        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                            .expect("owner"),
+                        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                        tile_id: TileId::try_new("open").expect("tile"),
+                        surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
+                        amount_kg_m2_stand_ground: 0.1,
+                        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                        temperature_k,
+                        specific_liquid_enthalpy_j_kg: 4_218.0 * (temperature_k - 273.15),
+                    }],
+                },
+            })
+        },
+    )
+    .expect("condensation resource/ingress transaction");
+    assert_eq!(frame, original);
+    assert_eq!(candidate.surface_resource.condensation_credits.len(), 1);
+    assert_eq!(
+        candidate.condensation_credits[0].amount_kg_m2_stand_ground,
+        0.1
+    );
+}
+
+#[test]
+fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let (real_owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+    let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("unified snapshot");
+    let wrong_beginning = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &batch,
+        &digest('3'),
+        &BTreeMap::new(),
+        &ingress_input(),
+        |_| panic!("fixed-cap solve must not run for a stale beginning snapshot"),
+    );
     assert!(matches!(
-        adapter.authorize(&[litter]),
-        Err(LandSurfaceEnergyShadowError::UnsupportedCustody(_))
+        wrong_beginning,
+        Err(LandSurfaceEnergyShadowError::Identity(
+            "unified transaction or beginning snapshot identity"
+        ))
     ));
+    assert_eq!(frame, original);
+    let result = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &batch,
+        &hydrology_snapshot,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |authorizations| {
+            Ok(UnifiedLseFinalization {
+                water_protocol: WaterProtocol {
+                    transaction_id: TransactionId(41),
+                    hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                        .expect("owner"),
+                    beginning_snapshot_sha256: digest('9'),
+                    requests: batch.requests.clone(),
+                    authorizations: authorizations.to_vec(),
+                    finalized_uses: authorizations
+                        .iter()
+                        .map(|row| openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                            key: row.key.clone(),
+                            amount_kg_m2_stand_ground: row.amount_kg_m2_stand_ground,
+                        })
+                        .collect(),
+                    condensation_credits: Vec::new(),
+                },
+            })
+        },
+    );
     assert!(matches!(
-        adapter.reject_condensation_credit(),
-        LandSurfaceEnergyShadowError::UnsupportedCustody(_)
+        result,
+        Err(LandSurfaceEnergyShadowError::Identity(
+            "final water protocol lineage or D/A identity"
+        ))
     ));
+    assert_eq!(frame, original);
 }
 
 fn rust_sources_below(path: &Path, sources: &mut Vec<std::path::PathBuf>) {

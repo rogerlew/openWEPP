@@ -337,6 +337,16 @@ impl RealHydrologyShadowAdapter {
         self.transaction_id
     }
 
+    #[must_use]
+    pub(crate) fn hydrology_owner_id(&self) -> &ResourceOwnerId {
+        &self.hydrology_owner_id
+    }
+
+    #[must_use]
+    pub(crate) fn snapshot_fingerprint(&self) -> &str {
+        &self.snapshot_fingerprint
+    }
+
     pub fn authorize(
         &self,
         requests: &[RealHydrologyWaterRequest],
