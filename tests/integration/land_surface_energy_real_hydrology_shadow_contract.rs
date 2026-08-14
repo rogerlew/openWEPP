@@ -229,6 +229,52 @@ fn configured_surface_frame(
     (frame, configuration)
 }
 
+fn configured_two_tile_surface_frame() -> (DirectRunFrame, DirectSurfaceLiquidConfiguration) {
+    let mut open = surface_configuration(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+    )
+    .records[0]
+        .clone();
+    open.tile_fraction = 0.4;
+    let mut covered = open.clone();
+    covered.key.tile_id = TileId::try_new("covered").expect("covered tile");
+    covered.key.surface_id = SurfaceId::try_new("surface:ofe-1:covered").expect("covered surface");
+    covered.key.surface_class = SurfaceClass::ForestLitter;
+    covered.key.source_type = WaterSourceType::LitterLiquid;
+    covered.key.source_id =
+        SourceId::try_new("surface-store:ofe-1:covered").expect("covered source");
+    covered.tile_fraction = 0.6;
+    covered.ground_ingress_mode = DirectGroundIngressMode::CoveredCanopyRelease;
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        83,
+        vec![OfeId::try_new("ofe-1").expect("OFE")],
+        vec![DirectSurfaceLiquidOfeBinding {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            production_lane_index: 0,
+            production_lane_id: 1,
+            ordered_soil_layer_ids: vec![SoilLayerId::try_new("thermal-1").expect("layer")],
+            infiltration_soil_thermal_layer_id: SoilLayerId::try_new("thermal-1")
+                .expect("thermal layer"),
+        }],
+        vec![open, covered],
+    )
+    .expect("two-tile surface configuration");
+    let initial = configuration
+        .records
+        .iter()
+        .map(|record| (record.key.clone(), 1.0))
+        .collect();
+    let state = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &initial, 0)
+        .expect("two-tile surface state");
+    let mut frame = production_frame(0.02, false);
+    frame
+        .configure_surface_liquid_shadow(&configuration, state)
+        .expect("configure two-tile surface owner");
+    (frame, configuration)
+}
+
 fn surface_potential_batch(
     class: SurfaceClass,
     source_type: WaterSourceType,
@@ -1432,7 +1478,16 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
             DirectSurfaceLiquidErrorCode::E011,
             "receiver poison {poison}"
         );
-        if poison == 10 {
+        if poison == 7 {
+            assert_eq!(
+                failure
+                    .context
+                    .owner_id
+                    .as_ref()
+                    .map(ResourceOwnerId::as_str),
+                Some("land-surface-energy-v1")
+            );
+        } else if poison == 10 {
             assert_eq!(
                 failure
                     .context
@@ -1503,6 +1558,80 @@ fn sealed_two_tile_finalization_reports_the_actual_second_thermal_receiver() {
         result.expect_err("second-row receiver mismatch must reject")
     else {
         panic!("second-row receiver mismatch must retain E011");
+    };
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("soil-thermal")
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("ofe-1")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("wrong-second")
+    );
+}
+
+#[test]
+fn public_bridge_reports_wrong_second_independent_thermal_expectation_before_callback() {
+    let (frame, configuration) = configured_two_tile_surface_frame();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let expectations = UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        snapshot,
+        ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        digest('4'),
+        vec![
+            (
+                configuration.records[0].key.ofe_id.clone(),
+                configuration.records[0].key.tile_id.clone(),
+                vec![SoilLayerId::try_new("thermal-1").expect("layer")],
+            ),
+            (
+                configuration.records[1].key.ofe_id.clone(),
+                TileId::try_new("wrong-second").expect("offending tile"),
+                vec![SoilLayerId::try_new("thermal-1").expect("layer")],
+            ),
+        ],
+    )
+    .expect("structurally valid independent expectations");
+    let mut callback_called = false;
+    let result = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &expectations,
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |_| {
+            callback_called = true;
+            Err(LandSurfaceEnergyShadowError::Identity(
+                "callback must not run",
+            ))
+        },
+    );
+    assert!(!callback_called, "malformed expectations reached callback");
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+        result.expect_err("second expectation mismatch must reject")
+    else {
+        panic!("expectation mismatch must retain E011");
     };
     let failure = error.failure().expect("canonical receiver failure");
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);

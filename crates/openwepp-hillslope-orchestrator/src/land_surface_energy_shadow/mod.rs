@@ -916,7 +916,6 @@ fn validate_receiver_expectations(
     if request_batch.beginning_lse_state_sha256 != expectations.beginning_lse_state_sha256
         || lse_owners.len() != 1
         || !lse_owners.contains(&expectations.lse_owner_id)
-        || thermal_tiles != expected_tiles
     {
         let first = configuration.records.first();
         return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
@@ -929,7 +928,27 @@ fn validate_receiver_expectations(
             },
             Some(beginning_hydrology_snapshot_sha256.to_string()),
             Some(receiver_expectations_sha256(expectations)),
-            "independent LSE/soil-thermal receiver expectations",
+            "independent LSE receiver expectations",
+        )
+        .into());
+    }
+    if let Some(violation) = first_expected_identity_violation(
+        &expected_tiles,
+        &thermal_tiles,
+        &expectations.soil_thermal_owner_id,
+        "independent soil-thermal receiver expectation topology",
+    ) {
+        return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(owner.transaction_id()),
+                owner_id: violation.owner_id,
+                ofe_id: violation.ofe_id,
+                tile_id: violation.tile_id,
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(beginning_hydrology_snapshot_sha256.to_string()),
+            Some(receiver_expectations_sha256(expectations)),
+            violation.detail,
         )
         .into());
     }
@@ -1363,6 +1382,19 @@ fn validate_rollback_joins(
             &expectations.beginning_soil_thermal_state_sha256,
         ),
     ];
+    if rollback_hashes.len() < expected.len() {
+        for (kind, owner_id, _) in expected {
+            let expected_present = rollback_hashes
+                .iter()
+                .any(|actual| actual.owner_kind == kind && actual.owner_id == owner_id);
+            if !expected_present {
+                return Err(ReceiverEnvelopeViolation::for_owner(
+                    ResourceOwnerId::try_new(owner_id.to_owned()).ok(),
+                    missing_rollback_detail(kind),
+                ));
+            }
+        }
+    }
     for index in 0..rollback_hashes.len().max(expected.len()) {
         let actual = rollback_hashes.get(index);
         let expected_row = expected.get(index);
