@@ -674,6 +674,7 @@ fn validate_and_build_local_ingress(
                 DirectSurfaceLiquidPhase::IngressCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
                     ofe_id: Some(ofe_id.clone()),
                     tile_id: Some(tile_id.clone()),
                     surface_id: Some(surface_id.clone()),
@@ -701,6 +702,7 @@ fn validate_and_build_local_ingress(
                     DirectSurfaceLiquidPhase::IngressCandidate,
                     DirectSurfaceLiquidErrorContext {
                         transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
                         ofe_id: Some(ofe_id.clone()),
                         tile_id: Some(tile_id.clone()),
                         surface_id: Some(surface_id.clone()),
@@ -720,6 +722,7 @@ fn validate_and_build_local_ingress(
                 DirectSurfaceLiquidPhase::IngressCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
                     ofe_id: Some(configured.key.ofe_id.clone()),
                     tile_id: Some(configured.key.tile_id.clone()),
                     surface_id: Some(configured.key.surface_id.clone()),
@@ -750,6 +753,7 @@ fn validate_and_build_local_ingress(
                 DirectSurfaceLiquidPhase::IngressCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
                     ofe_id: Some(configured.key.ofe_id.clone()),
                     tile_id: Some(configured.key.tile_id.clone()),
                     surface_id: Some(configured.key.surface_id.clone()),
@@ -773,6 +777,7 @@ fn validate_and_build_local_ingress(
                 input.transaction_id,
                 DirectSurfaceLiquidErrorContext {
                     ofe_id: Some(overflow.store_key.ofe_id.clone()),
+                    owner_id: Some(configuration.owner_id.clone()),
                     tile_id: Some(overflow.store_key.tile_id.clone()),
                     surface_id: Some(overflow.store_key.surface_id.clone()),
                     source_id: Some(overflow.store_key.source_id.clone()),

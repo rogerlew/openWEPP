@@ -35,6 +35,7 @@ fn contextual_closure_failure(
         DirectSurfaceLiquidPhase::IndependentClosure,
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(transaction_id),
+            owner_id: None,
             ofe_id: Some(store_key.ofe_id.clone()),
             tile_id: Some(store_key.tile_id.clone()),
             surface_id: Some(store_key.surface_id.clone()),
@@ -217,6 +218,7 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
             DirectSurfaceLiquidPhase::IndependentClosure,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(input.transaction_id),
+                owner_id: Some(resource.beginning_state().owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
             Some(resource.beginning_state().state_sha256.clone()),

@@ -10,7 +10,7 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     SoilThermalLayerSnapshot, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
     SoilThermalTileCandidate, SourceId, StandGroundWaterAmountBasis, SurfaceClass,
     SurfaceClassKind, SurfaceId, SurfaceStorageBranch, TileState, UnifiedLseFinalization,
-    WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
+    UnifiedReceiverExpectations, WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
     execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
     unified_beginning_hydrology_snapshot_sha256, validate_real_receiver_closure,
 };
@@ -328,8 +328,6 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
             water_protocol.beginning_snapshot_sha256.clone(),
         ),
         (OwnerKind::SoilThermal, "soil-thermal", soil_digest.clone()),
-        (OwnerKind::Vegetation, "vegetation", lse_digest.clone()),
-        (OwnerKind::Biogeochemistry, "biogeochemistry", lse_digest),
     ];
     UnifiedLseFinalization::try_new(
         water_protocol,
@@ -364,6 +362,27 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
             .collect(),
     )
     .expect("sealed finalization")
+}
+
+fn receiver_expectations(
+    layer_count: usize,
+    hydrology_snapshot: Sha256Digest,
+) -> UnifiedReceiverExpectations {
+    UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        hydrology_snapshot,
+        ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        digest('4'),
+        vec![(
+            OfeId::try_new("ofe-1").expect("OFE"),
+            TileId::try_new("open").expect("tile"),
+            (0..layer_count)
+                .map(|index| SoilLayerId::try_new(format!("thermal-{}", index + 1)).expect("layer"))
+                .collect(),
+        )],
+    )
+    .expect("receiver expectations")
 }
 
 fn ingress_input() -> DirectSurfaceLiquidIngressInput {
@@ -607,8 +626,8 @@ fn unified_surface_owner_accepts_open_and_litter_without_rewriting_keys() {
         let candidate = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
+            &receiver_expectations(1, hydrology_snapshot.clone()),
             &batch,
-            &hydrology_snapshot,
             &BTreeMap::new(),
             &ingress_input(),
             |authorizations| {
@@ -705,8 +724,8 @@ fn unified_surface_owner_consumes_the_actual_fixed_cap_lse_water_protocol() {
     let candidate = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(4, hydrology_snapshot.clone()),
         &phase.request_batch,
-        &hydrology_snapshot,
         &BTreeMap::new(),
         &ingress_input(),
         |authorizations| {
@@ -727,7 +746,18 @@ fn unified_surface_owner_consumes_the_actual_fixed_cap_lse_water_protocol() {
                 final_candidate.water_protocol,
                 vec![final_candidate.ending_tile_state_pre_ingress],
                 vec![final_candidate.soil_thermal],
-                final_candidate.rollback_hashes,
+                final_candidate
+                    .rollback_hashes
+                    .into_iter()
+                    .filter(|row| {
+                        matches!(
+                            row.owner_kind,
+                            OwnerKind::LandSurfaceEnergy
+                                | OwnerKind::Hydrology
+                                | OwnerKind::SoilThermal
+                        )
+                    })
+                    .collect(),
             )
         },
     )
@@ -765,8 +795,8 @@ fn unified_surface_owner_applies_signed_condensation_credit_before_ingress() {
     let candidate = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, hydrology_snapshot.clone()),
         &batch,
-        &hydrology_snapshot,
         &BTreeMap::new(),
         &ingress_input(),
         |authorizations| {
@@ -833,8 +863,8 @@ fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
     let wrong_beginning = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, digest('3')),
         &batch,
-        &digest('3'),
         &BTreeMap::new(),
         &ingress_input(),
         |_| panic!("fixed-cap solve must not run for a stale beginning snapshot"),
@@ -849,8 +879,8 @@ fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
     let result = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, hydrology_snapshot.clone()),
         &batch,
-        &hydrology_snapshot,
         &BTreeMap::new(),
         &ingress_input(),
         |authorizations| {
@@ -968,8 +998,8 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
         execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
+            &receiver_expectations(1, snapshot.clone()),
             &batch,
-            &snapshot,
             &BTreeMap::new(),
             &stale_day,
             |_| panic!("wrong day rejects before final solve"),
@@ -982,8 +1012,8 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
     let wrong_ofe = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, snapshot.clone()),
         &batch,
-        &snapshot,
         &BTreeMap::new(),
         &ingress_input(),
         |authorizations| {
@@ -1048,8 +1078,8 @@ fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
         let result = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
+            &receiver_expectations(1, snapshot.clone()),
             &batch,
-            &snapshot,
             &BTreeMap::new(),
             &ingress_input(),
             |_| panic!("unsupported owner state rejects before fixed-cap solve"),
@@ -1061,6 +1091,22 @@ fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
         let failure = surface_error.failure().expect("canonical entry failure");
         assert_eq!(failure.code, expected_code);
         assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some("production-hydrology")
+        );
+        assert_eq!(
+            failure.context.ofe_id.as_ref().map(OfeId::as_str),
+            Some("ofe-1")
+        );
+        assert_eq!(
+            failure.context.tile_id.as_ref().map(TileId::as_str),
+            Some("open")
+        );
         assert!(failure.rollback.beginning_owner_sha256.is_some());
         assert_eq!(frame, original, "entry poison mutated production owner");
     }
@@ -1087,8 +1133,8 @@ fn unified_ingress_updates_exact_real_receivers_and_preserves_rollback() {
     let candidate = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, snapshot.clone()),
         &batch,
-        &snapshot,
         &BTreeMap::new(),
         &ingress_input_with_mass(50.0),
         |authorizations| {
@@ -1165,8 +1211,8 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     let candidate = execute_unified_real_hydrology_shadow(
         &adapter,
         &configuration,
+        &receiver_expectations(1, snapshot.clone()),
         &batch,
-        &snapshot,
         &BTreeMap::new(),
         &ingress_input_with_mass(50.0),
         |authorizations| {
@@ -1197,6 +1243,8 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
                 beginning_liquid_m: 0.0,
                 ending_liquid_m: second_addition,
                 layer_depth_m: 0.2,
+                residual_theta: 0.0,
+                frozen_depth_m: 0.0,
             },
         );
         lane.beginning_aggregate_soil_water_m = beginning;
@@ -1235,6 +1283,59 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     }
 }
 
+#[test]
+fn production_aggregate_reconstructs_nonzero_residual_unfrozen_water() {
+    let (mut frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let layer = &mut frame.lanes[0].subsurface_layers[0];
+    layer.residual_theta = 0.05;
+    layer.frozen_depth_m = 0.0;
+    let residual_water_m = layer.residual_theta * (layer.depth_m - layer.frozen_depth_m);
+    frame.lanes[0].water.soil_water_m = layer.theta_m + residual_water_m;
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let candidate = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input_with_mass(50.0),
+        |authorizations| {
+            Ok(unified_finalization(accepted_surface_protocol(
+                &batch,
+                authorizations,
+                &snapshot,
+            )))
+        },
+    )
+    .expect("nonzero residual receiver candidate");
+    let operands = candidate.receiver_closure_operands();
+    assert_eq!(
+        operands.production_soil[0].ordered_layers[0]
+            .residual_theta
+            .to_bits(),
+        0.05_f64.to_bits()
+    );
+    validate_real_receiver_closure(operands).expect("residual aggregate closes");
+
+    let mut poison = operands.clone();
+    poison.production_soil[0].beginning_aggregate_soil_water_m -= residual_water_m;
+    poison.production_soil[0].ending_aggregate_soil_water_m -= residual_water_m;
+    assert_receiver_e011(validate_real_receiver_closure(&poison));
+}
+
 fn assert_receiver_e011(
     result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
 ) {
@@ -1242,6 +1343,7 @@ fn assert_receiver_e011(
     let failure = error.failure().expect("canonical receiver failure");
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
     assert!(failure.context.transaction_id.is_some());
+    assert!(failure.context.owner_id.is_some());
     assert!(failure.context.ofe_id.is_some());
     assert!(failure.rollback.beginning_owner_sha256.is_some());
     assert!(failure.rollback.attempted_owner_sha256.is_some());
@@ -1265,12 +1367,12 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
         configuration.records[0].key.source_id.clone(),
         1.0,
     );
-    for poison in 0..8 {
+    for poison in 0..13 {
         let result = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
+            &receiver_expectations(1, snapshot.clone()),
             &batch,
-            &snapshot,
             &BTreeMap::new(),
             &ingress_input_with_mass(50.0),
             |authorizations| {
@@ -1295,9 +1397,21 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
                         before_sha256: digest('8'),
                         after_sha256: digest('8'),
                     }),
-                    _ => {
+                    7 => {
                         rollback.remove(0);
                     }
+                    8 => {
+                        let mut extra = thermal[0].layers[0].clone();
+                        extra.layer_id =
+                            SoilLayerId::try_new("thermal-extra").expect("extra layer");
+                        thermal[0].layers.push(extra);
+                    }
+                    9 => {
+                        thermal[0].layers[0].ending_enthalpy_j_m2_ofe_ground = f64::NAN;
+                    }
+                    10 => rollback[0].owner_id = "wrong-lse-owner".into(),
+                    11 => rollback.swap(0, 1),
+                    _ => rollback[0].before_sha256 = digest('7'),
                 }
                 UnifiedLseFinalization::try_new(
                     finalization.water_protocol().clone(),

@@ -10,7 +10,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{SoilLayerId, TileId, TransactionId, canonical_resource_amount_sum};
+use openwepp_kernel_contract::{
+    ResourceOwnerId, SoilLayerId, TileId, TransactionId, canonical_resource_amount_sum,
+};
 pub use openwepp_land_surface_energy::{
     BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
     OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem, OwnerKind,
@@ -132,6 +134,17 @@ pub struct UnifiedLseFinalization {
     rollback_hashes: Vec<OwnerRollbackHash>,
 }
 
+/// Independently frozen LSE and soil-thermal receiver identities.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UnifiedReceiverExpectations {
+    lse_owner_id: ResourceOwnerId,
+    beginning_lse_state_sha256: Sha256Digest,
+    beginning_hydrology_snapshot_sha256: Sha256Digest,
+    soil_thermal_owner_id: ResourceOwnerId,
+    beginning_soil_thermal_state_sha256: Sha256Digest,
+    ordered_thermal_layers: Vec<((OfeId, TileId), Vec<SoilLayerId>)>,
+}
+
 /// One logical authorization spanning production soil and surface-liquid owners.
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnifiedRealHydrologyArbitration {
@@ -166,6 +179,8 @@ pub struct ProductionSoilLayerReceiverOperands {
     pub beginning_liquid_m: f64,
     pub ending_liquid_m: f64,
     pub layer_depth_m: f64,
+    pub residual_theta: f64,
+    pub frozen_depth_m: f64,
 }
 
 /// One bound production lane before and after the shared infiltration transition.
@@ -209,10 +224,49 @@ pub struct LseTileReceiverOperands {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RealReceiverClosureOperands {
     pub transaction_id: TransactionId,
+    pub hydrology_owner_id: ResourceOwnerId,
     pub beginning_hydrology_snapshot_sha256: Sha256Digest,
     pub production_soil: Vec<ProductionSoilReceiverOperands>,
     pub soil_thermal: Vec<SoilThermalReceiverOperands>,
     pub lse_tiles: Vec<LseTileReceiverOperands>,
+}
+
+impl UnifiedReceiverExpectations {
+    pub fn try_new(
+        lse_owner_id: ResourceOwnerId,
+        beginning_lse_state_sha256: Sha256Digest,
+        beginning_hydrology_snapshot_sha256: Sha256Digest,
+        soil_thermal_owner_id: ResourceOwnerId,
+        beginning_soil_thermal_state_sha256: Sha256Digest,
+        ordered_thermal_layers: Vec<(OfeId, TileId, Vec<SoilLayerId>)>,
+    ) -> Result<Self, LandSurfaceEnergyShadowError> {
+        let mut identities = BTreeSet::new();
+        let mut layers_by_tile = Vec::new();
+        for (ofe_id, tile_id, layers) in ordered_thermal_layers {
+            if layers.is_empty()
+                || layers.iter().collect::<BTreeSet<_>>().len() != layers.len()
+                || !identities.insert((ofe_id.clone(), tile_id.clone()))
+            {
+                return Err(LandSurfaceEnergyShadowError::Identity(
+                    "invalid independent receiver expectations",
+                ));
+            }
+            layers_by_tile.push(((ofe_id, tile_id), layers));
+        }
+        if layers_by_tile.is_empty() {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "empty independent receiver expectations",
+            ));
+        }
+        Ok(Self {
+            lse_owner_id,
+            beginning_lse_state_sha256,
+            beginning_hydrology_snapshot_sha256,
+            soil_thermal_owner_id,
+            beginning_soil_thermal_state_sha256,
+            ordered_thermal_layers: layers_by_tile,
+        })
+    }
 }
 
 impl UnifiedLseFinalization {
@@ -254,9 +308,13 @@ impl UnifiedLseFinalization {
                 .iter()
                 .any(|row| row.before_sha256 != row.after_sha256)
         {
+            let first_receiver = ending_tile_states_pre_ingress.first();
             return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(water_protocol.transaction_id),
+                    owner_id: Some(water_protocol.hydrology_owner_id.clone()),
+                    ofe_id: first_receiver.map(|tile| tile.ofe_id.clone()),
+                    tile_id: first_receiver.map(|tile| tile.tile_id.clone()),
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
                 Some(water_protocol.beginning_snapshot_sha256.to_string()),
@@ -553,8 +611,8 @@ fn validate_surface_production_binding(
 pub fn execute_unified_real_hydrology_shadow<F>(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     request_batch: &PotentialWaterRequestBatch,
-    expected_beginning_hydrology_snapshot_sha256: &Sha256Digest,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
     finalize_fixed_caps: F,
@@ -564,6 +622,8 @@ where
         &[WaterAuthorization],
     ) -> Result<UnifiedLseFinalization, LandSurfaceEnergyShadowError>,
 {
+    let expected_beginning_hydrology_snapshot_sha256 =
+        &receiver_expectations.beginning_hydrology_snapshot_sha256;
     request_batch.validate()?;
     let actual_snapshot =
         unified_beginning_hydrology_snapshot_sha256(soil_adapter, surface_configuration)?;
@@ -579,6 +639,14 @@ where
     }
     validate_native_shadow_domain(
         soil_adapter.owner,
+        surface_configuration,
+        expected_beginning_hydrology_snapshot_sha256,
+    )?;
+    validate_receiver_expectations(
+        soil_adapter.owner,
+        surface_configuration,
+        receiver_expectations,
+        request_batch,
         expected_beginning_hydrology_snapshot_sha256,
     )?;
     let beginning_surface = soil_adapter
@@ -619,6 +687,7 @@ where
     construct_unified_candidate(
         soil_adapter,
         surface_configuration,
+        receiver_expectations,
         arbitration,
         finalized,
         ingress,
@@ -627,24 +696,21 @@ where
 
 fn validate_native_shadow_domain(
     owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let context = DirectSurfaceLiquidErrorContext {
-        transaction_id: Some(owner.transaction_id()),
-        ..DirectSurfaceLiquidErrorContext::default()
-    };
-    if owner.beginning_frame().lanes.iter().any(|lane| {
+    if let Some(lane_index) = owner.beginning_frame().lanes.iter().position(|lane| {
         lane.winter_column.snow.has_runtime_state() || lane.snow_runtime_carry.is_some()
     }) {
         return Err(DirectSurfaceLiquidError::unsupported_domain_failure(
             DirectSurfaceLiquidPhase::AtomicEnvelope,
-            context,
+            first_lane_error_context(owner, configuration, lane_index),
             Some(beginning_hydrology_snapshot_sha256.to_string()),
             "snow-present or snow-terminal production frame",
         )
         .into());
     }
-    let legacy_custody = owner.beginning_day_frames().iter().any(|day| {
+    let legacy_custody = owner.beginning_day_frames().iter().position(|day| {
         day.infiltration_depression_inputs
             .depression_storage_delta_handoff_m
             .to_bits()
@@ -662,10 +728,10 @@ fn validate_native_shadow_domain(
                 .to_bits()
                 != 0.0_f64.to_bits()
     });
-    if legacy_custody {
+    if let Some(lane_index) = legacy_custody {
         return Err(DirectSurfaceLiquidError::exact_one_owner_failure(
             DirectSurfaceLiquidPhase::AtomicEnvelope,
-            context,
+            first_lane_error_context(owner, configuration, lane_index),
             Some(beginning_hydrology_snapshot_sha256.to_string()),
             None,
             "legacy infiltration/depression liquid custody is nonzero",
@@ -673,6 +739,106 @@ fn validate_native_shadow_domain(
         .into());
     }
     Ok(())
+}
+
+fn first_lane_error_context(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    lane_index: usize,
+) -> DirectSurfaceLiquidErrorContext {
+    let binding = configuration
+        .ofe_bindings
+        .iter()
+        .find(|binding| binding.production_lane_index == lane_index);
+    let record = binding.and_then(|binding| {
+        configuration
+            .records
+            .iter()
+            .find(|record| record.key.ofe_id == binding.ofe_id)
+    });
+    DirectSurfaceLiquidErrorContext {
+        transaction_id: Some(owner.transaction_id()),
+        owner_id: Some(owner.hydrology_owner_id().clone()),
+        ofe_id: binding.map(|binding| binding.ofe_id.clone()),
+        tile_id: record.map(|record| record.key.tile_id.clone()),
+        surface_id: record.map(|record| record.key.surface_id.clone()),
+        source_id: record.map(|record| record.key.source_id.clone()),
+        ..DirectSurfaceLiquidErrorContext::default()
+    }
+}
+
+fn validate_receiver_expectations(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    expectations: &UnifiedReceiverExpectations,
+    request_batch: &PotentialWaterRequestBatch,
+    beginning_hydrology_snapshot_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let lse_owners = request_batch
+        .requests
+        .iter()
+        .filter(|request| request.key.requesting_component == RequestingComponent::GroundSurface)
+        .map(|request| request.key.requesting_owner_id.clone())
+        .collect::<BTreeSet<_>>();
+    let expected_tiles = configuration
+        .records
+        .iter()
+        .map(|record| (record.key.ofe_id.clone(), record.key.tile_id.clone()))
+        .collect::<Vec<_>>();
+    let thermal_tiles = expectations
+        .ordered_thermal_layers
+        .iter()
+        .map(|(identity, _)| identity.clone())
+        .collect::<Vec<_>>();
+    if request_batch.beginning_lse_state_sha256 != expectations.beginning_lse_state_sha256
+        || lse_owners.len() != 1
+        || !lse_owners.contains(&expectations.lse_owner_id)
+        || thermal_tiles != expected_tiles
+    {
+        let first = configuration.records.first();
+        return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(owner.transaction_id()),
+                owner_id: Some(expectations.lse_owner_id.clone()),
+                ofe_id: first.map(|record| record.key.ofe_id.clone()),
+                tile_id: first.map(|record| record.key.tile_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(beginning_hydrology_snapshot_sha256.to_string()),
+            Some(receiver_expectations_sha256(expectations)),
+            "independent LSE/soil-thermal receiver expectations",
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn receiver_expectations_sha256(expectations: &UnifiedReceiverExpectations) -> String {
+    let mut digest = Sha256::new();
+    digest.update(b"openwepp-unified-receiver-expectations-v1");
+    digest.update(expectations.lse_owner_id.as_str().as_bytes());
+    digest.update(expectations.beginning_lse_state_sha256.as_str().as_bytes());
+    digest.update(
+        expectations
+            .beginning_hydrology_snapshot_sha256
+            .as_str()
+            .as_bytes(),
+    );
+    digest.update(expectations.soil_thermal_owner_id.as_str().as_bytes());
+    digest.update(
+        expectations
+            .beginning_soil_thermal_state_sha256
+            .as_str()
+            .as_bytes(),
+    );
+    for ((ofe_id, tile_id), layers) in &expectations.ordered_thermal_layers {
+        digest.update(ofe_id.as_str().as_bytes());
+        digest.update(tile_id.as_str().as_bytes());
+        for layer in layers {
+            digest.update(layer.as_str().as_bytes());
+        }
+    }
+    format!("{:x}", digest.finalize())
 }
 
 fn validate_final_protocol(
@@ -770,6 +936,7 @@ fn restore_authorization_order(
 fn construct_unified_candidate(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     arbitration: UnifiedRealHydrologyArbitration,
     finalized: UnifiedLseFinalization,
     ingress: &DirectSurfaceLiquidIngressInput,
@@ -796,6 +963,7 @@ fn construct_unified_candidate(
     let receiver_closure_operands = apply_ingress_to_real_receivers(
         soil_adapter.owner,
         surface_configuration,
+        receiver_expectations,
         &surface_ingress,
         &mut ending_frame,
         &mut ending_tile_states_pre_ingress,
@@ -826,6 +994,7 @@ fn construct_unified_candidate(
 fn apply_ingress_to_real_receivers(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     ingress: &DirectSurfaceLiquidIngressCandidate,
     ending_frame: &mut DirectRunFrame,
     lse_tiles: &mut [TileState],
@@ -836,10 +1005,16 @@ fn apply_ingress_to_real_receivers(
     validate_surface_production_binding(owner, configuration)?;
     let receiver_attempt_sha256 =
         finalization_receiver_sets_sha256(lse_tiles, soil_thermal, rollback_hashes);
+    let first_receiver = configuration.records.first();
     let envelope_failure = |detail: &'static str| {
         LandSurfaceEnergyShadowError::from(DirectSurfaceLiquidError::atomic_envelope_failure(
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(ingress.transaction_id()),
+                owner_id: Some(owner.hydrology_owner_id().clone()),
+                ofe_id: first_receiver.map(|record| record.key.ofe_id.clone()),
+                tile_id: first_receiver.map(|record| record.key.tile_id.clone()),
+                surface_id: first_receiver.map(|record| record.key.surface_id.clone()),
+                source_id: first_receiver.map(|record| record.key.source_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
             Some(beginning_hydrology_snapshot_sha256.to_string()),
@@ -847,10 +1022,17 @@ fn apply_ingress_to_real_receivers(
             detail,
         ))
     };
-    validate_receiver_sets(configuration, lse_tiles, soil_thermal, rollback_hashes)
-        .map_err(|_| envelope_failure("incomplete LSE/soil-thermal/rollback receiver set"))?;
+    validate_receiver_sets(
+        configuration,
+        receiver_expectations,
+        lse_tiles,
+        soil_thermal,
+        rollback_hashes,
+    )
+    .map_err(|_| envelope_failure("incomplete LSE/soil-thermal/rollback receiver set"))?;
     validate_rollback_joins(
         owner,
+        receiver_expectations,
         soil_thermal,
         rollback_hashes,
         beginning_hydrology_snapshot_sha256,
@@ -886,6 +1068,7 @@ fn apply_ingress_to_real_receivers(
 
 fn validate_receiver_sets(
     configuration: &DirectSurfaceLiquidConfiguration,
+    expectations: &UnifiedReceiverExpectations,
     lse_tiles: &[TileState],
     soil_thermal: &[SoilThermalTileCandidate],
     rollback_hashes: &[OwnerRollbackHash],
@@ -905,6 +1088,12 @@ fn validate_receiver_sets(
         .collect::<Vec<_>>();
     if actual_lse_tiles != expected_tiles
         || actual_thermal_tiles != expected_tiles
+        || expectations
+            .ordered_thermal_layers
+            .iter()
+            .map(|(identity, _)| identity.clone())
+            .collect::<Vec<_>>()
+            != expected_tiles
         || rollback_hashes
             .iter()
             .any(|hash| hash.before_sha256 != hash.after_sha256)
@@ -916,7 +1105,35 @@ fn validate_receiver_sets(
             else {
                 return true;
             };
-            candidate.layers.is_empty()
+            let Some(expected_layers) = expectations
+                .ordered_thermal_layers
+                .iter()
+                .find(|(identity, _)| {
+                    identity == &(candidate.ofe_id.clone(), candidate.tile_id.clone())
+                })
+                .map(|(_, layers)| layers)
+            else {
+                return true;
+            };
+            candidate.owner_id != expectations.soil_thermal_owner_id
+                || candidate.beginning_state_sha256
+                    != expectations.beginning_soil_thermal_state_sha256
+                || candidate
+                    .layers
+                    .iter()
+                    .map(|layer| layer.layer_id.clone())
+                    .collect::<Vec<_>>()
+                    != *expected_layers
+                || candidate.layers.iter().any(|layer| {
+                    !layer.beginning_enthalpy_j_m2_ofe_ground.is_finite()
+                        || !layer.ground_heat_credit_j_m2_ofe_ground.is_finite()
+                        || !layer
+                            .infiltration_enthalpy_credit_j_m2_ofe_ground
+                            .is_finite()
+                        || !layer.ending_enthalpy_j_m2_ofe_ground.is_finite()
+                        || !layer.ending_temperature_k.is_finite()
+                })
+                || candidate.layers.is_empty()
                 || candidate.layers[0].layer_id != binding.infiltration_soil_thermal_layer_id
                 || candidate
                     .layers
@@ -936,6 +1153,7 @@ fn validate_receiver_sets(
 
 fn validate_rollback_joins(
     owner: &RealHydrologyShadowAdapter,
+    expectations: &UnifiedReceiverExpectations,
     soil_thermal: &[SoilThermalTileCandidate],
     rollback_hashes: &[OwnerRollbackHash],
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
@@ -944,33 +1162,38 @@ fn validate_rollback_joins(
         .iter()
         .map(|hash| (hash.owner_kind, hash.owner_id.clone()))
         .collect::<BTreeSet<_>>();
-    let required_kinds = [
-        OwnerKind::LandSurfaceEnergy,
-        OwnerKind::Hydrology,
-        OwnerKind::SoilThermal,
-        OwnerKind::Vegetation,
-        OwnerKind::Biogeochemistry,
+    let expected = [
+        (
+            OwnerKind::LandSurfaceEnergy,
+            expectations.lse_owner_id.as_str(),
+            &expectations.beginning_lse_state_sha256,
+        ),
+        (
+            OwnerKind::Hydrology,
+            owner.hydrology_owner_id().as_str(),
+            beginning_hydrology_snapshot_sha256,
+        ),
+        (
+            OwnerKind::SoilThermal,
+            expectations.soil_thermal_owner_id.as_str(),
+            &expectations.beginning_soil_thermal_state_sha256,
+        ),
     ];
-    if rollback_hashes.len() != required_kinds.len()
+    if rollback_hashes.len() != expected.len()
         || rollback_identities.len() != rollback_hashes.len()
-        || required_kinds.into_iter().any(|kind| {
-            rollback_hashes
-                .iter()
-                .filter(|hash| hash.owner_kind == kind)
-                .count()
-                != 1
-        })
-        || !rollback_hashes.iter().any(|hash| {
-            hash.owner_kind == OwnerKind::Hydrology
-                && hash.owner_id == owner.hydrology_owner_id().as_str()
-                && &hash.before_sha256 == beginning_hydrology_snapshot_sha256
-        })
-        || soil_thermal.iter().any(|candidate| {
-            !rollback_hashes.iter().any(|hash| {
-                hash.owner_kind == OwnerKind::SoilThermal
-                    && hash.owner_id == candidate.owner_id.as_str()
-                    && hash.before_sha256 == candidate.beginning_state_sha256
+        || rollback_hashes
+            .iter()
+            .zip(expected)
+            .any(|(actual, (kind, owner_id, beginning))| {
+                actual.owner_kind != kind
+                    || actual.owner_id != owner_id
+                    || &actual.before_sha256 != beginning
+                    || &actual.after_sha256 != beginning
             })
+        || soil_thermal.iter().any(|candidate| {
+            candidate.owner_id != expectations.soil_thermal_owner_id
+                || candidate.beginning_state_sha256
+                    != expectations.beginning_soil_thermal_state_sha256
         })
     {
         return Err(LandSurfaceEnergyShadowError::Identity(
@@ -1169,6 +1392,7 @@ fn freeze_real_receiver_closure_operands(
     )?;
     Ok(RealReceiverClosureOperands {
         transaction_id: ingress.transaction_id(),
+        hydrology_owner_id: owner.hydrology_owner_id().clone(),
         beginning_hydrology_snapshot_sha256: beginning_hydrology_snapshot_sha256.clone(),
         production_soil,
         soil_thermal,
@@ -1264,6 +1488,8 @@ fn freeze_production_soil_receivers(
                     beginning_liquid_m: beginning.theta_m,
                     ending_liquid_m: ending.theta_m,
                     layer_depth_m: beginning.depth_m,
+                    residual_theta: beginning.residual_theta,
+                    frozen_depth_m: beginning.frozen_depth_m,
                 },
             )
             .collect();
@@ -1388,62 +1614,7 @@ fn freeze_energy_receivers(
 pub fn validate_real_receiver_closure(
     operands: &RealReceiverClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    for lane in &operands.production_soil {
-        if lane.ordered_layers.is_empty()
-            || !lane.infiltration_m.is_finite()
-            || lane.infiltration_m < 0.0
-            || !lane.tillage_depth_m.is_finite()
-        {
-            return Err(receiver_atomic_failure(
-                operands,
-                Some(&lane.ofe_id),
-                None,
-                "production soil receiver operand domain",
-            ));
-        }
-        let expected = independently_reconstruct_infiltration(lane).ok_or_else(|| {
-            receiver_atomic_failure(
-                operands,
-                Some(&lane.ofe_id),
-                None,
-                "production soil receiver reconstruction domain",
-            )
-        })?;
-        for (layer, expected_ending) in lane.ordered_layers.iter().zip(expected) {
-            if !mass_m_close(layer.ending_liquid_m, expected_ending) {
-                return Err(receiver_atomic_failure(
-                    operands,
-                    Some(&lane.ofe_id),
-                    None,
-                    "ordered production soil-layer infiltration equation",
-                ));
-            }
-        }
-        let beginning_sum = lane
-            .ordered_layers
-            .iter()
-            .map(|layer| layer.beginning_liquid_m)
-            .sum::<f64>();
-        let ending_sum = lane
-            .ordered_layers
-            .iter()
-            .map(|layer| layer.ending_liquid_m)
-            .sum::<f64>();
-        if !mass_m_close(lane.beginning_aggregate_soil_water_m, beginning_sum)
-            || !mass_m_close(lane.ending_aggregate_soil_water_m, ending_sum)
-            || !mass_m_close(
-                lane.ending_aggregate_soil_water_m,
-                lane.beginning_aggregate_soil_water_m + lane.infiltration_m,
-            )
-        {
-            return Err(receiver_atomic_failure(
-                operands,
-                Some(&lane.ofe_id),
-                None,
-                "aggregate production soil-water ending equation",
-            ));
-        }
-    }
+    validate_production_soil_receiver_closure(operands)?;
     for thermal in &operands.soil_thermal {
         let expected_credit = thermal.beginning_infiltration_credit_j_m2_ofe_ground
             + thermal.infiltration_enthalpy_j_m2_ofe_ground;
@@ -1485,6 +1656,74 @@ pub fn validate_real_receiver_closure(
     Ok(())
 }
 
+fn validate_production_soil_receiver_closure(
+    operands: &RealReceiverClosureOperands,
+) -> Result<(), DirectSurfaceLiquidError> {
+    for lane in &operands.production_soil {
+        if lane.ordered_layers.is_empty()
+            || !lane.infiltration_m.is_finite()
+            || lane.infiltration_m < 0.0
+            || !lane.tillage_depth_m.is_finite()
+        {
+            return Err(receiver_atomic_failure(
+                operands,
+                Some(&lane.ofe_id),
+                None,
+                "production soil receiver operand domain",
+            ));
+        }
+        let expected = independently_reconstruct_infiltration(lane).ok_or_else(|| {
+            receiver_atomic_failure(
+                operands,
+                Some(&lane.ofe_id),
+                None,
+                "production soil receiver reconstruction domain",
+            )
+        })?;
+        for (layer, expected_ending) in lane.ordered_layers.iter().zip(expected) {
+            if !mass_m_close(layer.ending_liquid_m, expected_ending) {
+                return Err(receiver_atomic_failure(
+                    operands,
+                    Some(&lane.ofe_id),
+                    None,
+                    "ordered production soil-layer infiltration equation",
+                ));
+            }
+        }
+        let beginning_sum = lane
+            .ordered_layers
+            .iter()
+            .map(|layer| {
+                layer.beginning_liquid_m
+                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
+            })
+            .sum::<f64>();
+        let ending_sum = lane
+            .ordered_layers
+            .iter()
+            .map(|layer| {
+                layer.ending_liquid_m
+                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
+            })
+            .sum::<f64>();
+        if !mass_m_close(lane.beginning_aggregate_soil_water_m, beginning_sum)
+            || !mass_m_close(lane.ending_aggregate_soil_water_m, ending_sum)
+            || !mass_m_close(
+                lane.ending_aggregate_soil_water_m,
+                lane.beginning_aggregate_soil_water_m + lane.infiltration_m,
+            )
+        {
+            return Err(receiver_atomic_failure(
+                operands,
+                Some(&lane.ofe_id),
+                None,
+                "aggregate production soil-water ending equation",
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn independently_reconstruct_infiltration(
     lane: &ProductionSoilReceiverOperands,
 ) -> Option<Vec<f64>> {
@@ -1508,7 +1747,13 @@ fn independently_reconstruct_infiltration(
         if remaining <= 0.0 {
             break;
         }
-        if !layer.layer_depth_m.is_finite() || layer.layer_depth_m <= 0.0 {
+        if !layer.layer_depth_m.is_finite()
+            || layer.layer_depth_m <= 0.0
+            || !layer.residual_theta.is_finite()
+            || layer.residual_theta < 0.0
+            || !layer.frozen_depth_m.is_finite()
+            || layer.frozen_depth_m < 0.0
+        {
             return None;
         }
         cumulative_depth_m += layer.layer_depth_m;
@@ -1549,6 +1794,7 @@ fn receiver_atomic_failure(
     DirectSurfaceLiquidError::atomic_envelope_failure(
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(operands.transaction_id),
+            owner_id: Some(operands.hydrology_owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
             ..DirectSurfaceLiquidErrorContext::default()
@@ -1563,6 +1809,7 @@ fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
     let mut digest = Sha256::new();
     digest.update(b"openwepp-real-receiver-closure-operands-v1");
     digest.update(operands.transaction_id.0.to_be_bytes());
+    digest.update(operands.hydrology_owner_id.as_str().as_bytes());
     for lane in &operands.production_soil {
         digest.update(lane.ofe_id.as_str().as_bytes());
         digest.update(lane.production_lane_index.to_be_bytes());
@@ -1580,6 +1827,8 @@ fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
             digest.update(layer.beginning_liquid_m.to_bits().to_be_bytes());
             digest.update(layer.ending_liquid_m.to_bits().to_be_bytes());
             digest.update(layer.layer_depth_m.to_bits().to_be_bytes());
+            digest.update(layer.residual_theta.to_bits().to_be_bytes());
+            digest.update(layer.frozen_depth_m.to_bits().to_be_bytes());
         }
     }
     for thermal in &operands.soil_thermal {

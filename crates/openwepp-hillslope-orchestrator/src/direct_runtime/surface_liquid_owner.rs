@@ -96,6 +96,7 @@ pub enum DirectSurfaceLiquidPhase {
 #[serde(deny_unknown_fields)]
 pub struct DirectSurfaceLiquidErrorContext {
     pub transaction_id: Option<TransactionId>,
+    pub owner_id: Option<ResourceOwnerId>,
     pub ofe_id: Option<OfeId>,
     pub tile_id: Option<TileId>,
     pub surface_id: Option<SurfaceId>,
@@ -291,6 +292,9 @@ impl DirectSurfaceLiquidError {
             Self::Failure(mut failure) => {
                 if failure.context.transaction_id.is_none() {
                     failure.context.transaction_id = fallback_context.transaction_id;
+                }
+                if failure.context.owner_id.is_none() {
+                    failure.context.owner_id = fallback_context.owner_id;
                 }
                 if failure.context.ofe_id.is_none() {
                     failure.context.ofe_id = fallback_context.ofe_id;
@@ -1976,6 +1980,7 @@ fn water_protocol_failure(
         phase,
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(transaction_id),
+            owner_id: Some(key.requesting_owner_id.clone()),
             ofe_id: Some(key.ofe_id.clone()),
             tile_id: key.source_tile_id.clone(),
             surface_id: key.surface_id.clone(),
@@ -2696,6 +2701,7 @@ mod tests {
     fn public_failure_constructors_carry_identity_and_rollback_context() {
         let context = DirectSurfaceLiquidErrorContext {
             transaction_id: Some(TransactionId(902)),
+            owner_id: Some(owner("hydrology-owner")),
             ofe_id: Some(ofe("ofe-a")),
             tile_id: Some(tile("tile-a")),
             surface_id: Some(surface("surface-a")),
@@ -2732,6 +2738,13 @@ mod tests {
             assert_eq!(failure.code, expected);
             assert_eq!(failure.context, context);
             assert!(failure.rollback.beginning_owner_sha256.is_some());
+            let bytes = serde_json::to_vec(failure).expect("serialize typed failure");
+            let round_trip: DirectSurfaceLiquidFailure =
+                serde_json::from_slice(&bytes).expect("parse typed failure");
+            assert_eq!(round_trip, *failure);
+            let mut wrong_owner = round_trip;
+            wrong_owner.context.owner_id = Some(owner("wrong-owner"));
+            assert_ne!(wrong_owner, *failure);
         }
     }
 
