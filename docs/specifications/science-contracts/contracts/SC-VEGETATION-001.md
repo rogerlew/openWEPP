@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-14
 supersedes: []
 superseded_by: []
 ---
@@ -68,6 +68,12 @@ six-tissue carbon/nitrogen storage-to-transfer preparation at a seasonal
 ordering, evergreen zero-pool posture, identity-only migration, conservation,
 and failure rules. V1--V6 remain immutable historical identities and are not
 V7 runtime aliases.
+Version 12 admits `OPENWEPP_C3_WOODY_V8` as the default-off coupled
+land-surface successor. V8 replaces prescribed ground longwave and independent
+occupancy canopy-air nodes with reciprocal arbitrary-rank longwave and one
+shared tile canopy-air node receiving ground sensible and vapor exchange. Every
+other V7 equation remains unchanged. V1--V7 remain immutable historical
+identities and are not V8 runtime aliases.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -119,6 +125,13 @@ for
 `docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001/artifacts/openwepp_c3_woody_v7_definition.json`.
 That definition normatively imports exact V6 and supersedes only the seasonal
 storage/transfer/onset delta in the Version 11 amendment below.
+
+The immutable V8 definition identity is
+`sha256:622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b`
+for
+`docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json`.
+It imports exact V7 and supersedes only the longwave, shared canopy-air,
+joint-solve and migration delta in the Version 12 amendment below.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -2200,6 +2213,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
 | 2026-08-13 | 11 | Codex | Admitted `OPENWEPP_C3_WOODY_V7` exact six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen zero-pool posture, conservation, failure, migration, and independent fixtures; preserved V1--V6 bytes. |
 | 2026-08-13 | 10 | Codex | Admitted `OPENWEPP_C3_WOODY_V6` narrowly scoped portable comparison for rejected cross-runtime `backtracking_limit.step_norm`, with exact eligibility and anti-laundering guards plus independent binary64 boundary fixtures; preserved all V1--V5 bytes and accepted numerical/physical authority unchanged. |
 | 2026-08-13 | 9 | Codex | Admitted `OPENWEPP_C3_WOODY_V5` exact fixed-authorization E11--E15 cap conversion, independently evaluated hydraulic-law flux, deterministic complementarity/generalized-Jacobian branches, capped residual scaling, complete operands/diagnostics/rollback, exact V4-to-V5 identity transition, and independent capped-pass fixtures; preserved V1--V4 bytes as historical authority. |
@@ -2211,3 +2225,106 @@ calibration, identifiability, empirical validity, or transferability.
 | 2026-08-11 | 5 | Codex | Admitted `OPENWEPP_C3_WOODY_V1`, its complete coupled equation/state/numerical authority, caller-only parameter/state posture, and `SC-BIOGEOCHEM-001` transaction boundary; released implementation authority without runtime or empirical claims. |
 | 2026-08-12 | 6 | Codex | Admitted `OPENWEPP_C3_WOODY_V2` tile-resolved occupancy liquid state, same-tile column routing, occupancy-local nonlinear wet-energy/physiology/hydraulics, occupancy-preserving water transactions, exact migration, and local/stand closure; preserved V1 bytes as historical authority. |
 | 2026-08-08 | 1 | Codex | Initial native-stratum, Stage A/B/C, ownership, transaction, conservation, compatibility, firewall, and non-promotable-gap authority. |
+
+## `OPENWEPP_C3_WOODY_V8` Coupled Ground-Energy Amendment
+
+V8 imports V7 byte-for-byte except where this section prospectively supersedes
+its longwave boundary, canopy-air topology, joint numerical transaction and
+state migration. `OPENWEPP_SNOW_FREE_LSE_V1` in
+`SC-LANDSURFACEENERGY-001@3` is the only admitted coupled ground model.
+
+### Reciprocal multirank longwave
+
+The two scalar V7 prescribed `longwave_down_w_m2` and
+`longwave_up_w_m2` forcing operands are unavailable in V8 execution. Each tile
+receives atmospheric downward longwave and solved ground temperature. Current
+trial component temperatures and the exact arbitrary-rank recurrence in
+`SC-LANDSURFACEENERGY-001@3` determine every interface flux, occupancy
+absorption, ground absorption and above-canopy emission. Unit emissivity and no
+reflection are exact V8 domain rules.
+
+For occupancy `i`,
+`tau_i=exp[-0.8*Omega_i*(LAI_i+SAI_i)]`. Within that occupancy, component `j`
+in `{sun_leaf,shade_leaf,wet_surface,dry_stem}` has exact emissive-area weight
+`w_j`. Its current-trial net longwave is
+
+```text
+w_j*(1-tau_i)*(Ldn_i+Lup_(i+1))
+  - 2*w_j*(1-tau_i)*sigma*T_i,j^4.
+```
+
+It is not a repartition of net radiation computed from a bulk canopy
+temperature. Stem or wet area is never assigned to photosynthetic leaf energy;
+zero component area owns exactly zero longwave. Radiation closes locally, by
+tile, and after tile weighting.
+
+### Shared tile canopy air
+
+V8 replaces occupancy-local canopy-air temperature and humidity with one pair
+per tile. All occupancy components and the tile ground exchange with that node;
+the node exchanges once with reference air. Its heat and vapor residuals include
+every occupancy component plus the one ground term. Ground exchange is neither
+omitted nor repeated for each occupancy. Open tiles without vegetation use the
+LSE neutral reference-air branch.
+
+Every V7 gas, FvCB, Medlyn, interception, hydraulic, C/N, phenology and
+material equation remains unchanged, but is reevaluated using the current
+shared-node trial state. A V7 function that closes canopy air without ground is
+not an executable V8 endpoint.
+
+### Potential/final coupled transaction
+
+The potential and fixed-cap final passes solve the complete current-temperature
+V8 canopy plus LSE residual system. A nested implementation is conforming only
+when each inner system converges at every outer evaluation and the complete
+joint residual and step criteria pass. One-way or stale-boundary evaluation is
+prohibited.
+
+The potential pass publishes all V8 root requests jointly with ground requests.
+The immutable water snapshot is taken before current rain, runon, or canopy
+liquid release. The real hydrology owner authorizes exactly once from beginning
+stores only. The final pass rebuilds from immutable beginning state under fixed
+caps; final canopy liquid releases, ground state and all energy terms are
+recomputed. Only after the capped solve accepts does hydrology receive and
+partition current ingress. No authorization is transferred between canopy/root
+and ground, current ingress cannot satisfy same-interval ET, and no PMET
+complement exists.
+
+Within an occupancy, all canopy liquid is isothermal with its accepted
+`wet_surface_temperature_k`. Throughfall, first drainage, second drainage, and
+stemflow each carry that exact temperature and
+`h_l=C_w*(wet_surface_temperature_k-273.15)` with their own mass and lineage.
+No persistent canopy-liquid-temperature lane is added. A release temperature
+copied from air, dry stem, ground, or a previous interval is invalid.
+
+### State and migration
+
+V8 removes `canopy_air_temperature_k` and
+`canopy_air_specific_humidity_kg_kg` from occupancy state and adds the same two
+fields to exact tile state. All other V7 shared and occupancy fields remain.
+Migration validates complete V7 identity and may migrate a tile only when all
+its occupancy canopy-air values are bit-identical; that common pair becomes the
+tile state. Otherwise both tile fields are exhaustively unresolved. Averaging,
+selecting one occupancy, resetting or synthesizing a value is prohibited.
+
+V8 state/configuration/digest identity is distinct. V7 input cannot execute as
+V8 and V8 state cannot execute under V7. Failures preserve every owner byte.
+
+### V8 guards
+
+| ID | Binding rule |
+|---|---|
+| `INV-VEGETATION-110` | Current-trial arbitrary-rank longwave pairs every ground/canopy exchange once and replaces prescribed V7 upward ground forcing. |
+| `INV-VEGETATION-111` | One tile canopy-air node receives all occupancy and one ground H/E term; no occupancy-local or duplicate ground exchange remains. |
+| `INV-VEGETATION-112` | Potential and capped passes solve the complete V8/LSE system from immutable beginning state with one authorization. |
+| `INV-VEGETATION-113` | V7-to-V8 migration requires bit-identical tile canopy-air lanes and preserves all other V7 bytes. |
+| `INV-VEGETATION-114` | All occupancy canopy-liquid releases carry the accepted wet-surface temperature and matching liquid enthalpy exactly once. |
+| `VEG-E-110` | Stale/prescribed ground longwave, wrong rank/component ownership or failed radiation closure rejects. |
+| `VEG-E-111` | Missing/duplicate/wrong-node ground heat or vapor rejects. |
+| `VEG-E-112` | Sequential stale-boundary solve, second authorization, demand donation or partial candidate rejects. |
+| `VEG-E-113` | Ambiguous migration reports complete unresolved tile fields and returns no V8 state. |
+| `VEG-E-114` | Missing, stale, wrong-node, or duplicated canopy-liquid release enthalpy rejects the complete owner set. |
+
+This amendment authorizes later default-off shadow implementation only. It
+does not alter V7 runtime bytes, activate a selector, support canopy snow, or
+make calibration, empirical validation or transferability claims.

@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/diagnostics",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 complete typed numerical diagnostics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_version",
+    "canonical_contract",
+    "model_definition_sha256",
+    "configuration_sha256",
+    "beginning_state_sha256",
+    "transaction_id",
+    "ofe_id",
+    "tile_id",
+    "occupancy_id",
+    "pass",
+    "solve",
+    "accepted",
+    "failure_code",
+    "failure_kind",
+    "iterations",
+    "backtracking_count",
+    "ordered_residuals",
+    "step_norms",
+    "active_bounds",
+    "active_water_caps",
+    "bracket",
+    "pivot_magnitude",
+    "matrix_infinity_norm",
+    "owner_rollback_hashes"
+  ],
+  "properties": {
+    "model_version": { "const": "OPENWEPP_SNOW_FREE_LSE_V1" },
+    "canonical_contract": { "const": "SC-LANDSURFACEENERGY-001@3" },
+    "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+    "configuration_sha256": { "$ref": "#/$defs/sha256" },
+    "beginning_state_sha256": { "$ref": "#/$defs/sha256" },
+    "transaction_id": { "type": "integer", "minimum": 1 },
+    "ofe_id": { "$ref": "#/$defs/nonempty" },
+    "tile_id": { "$ref": "#/$defs/nonempty" },
+    "occupancy_id": {
+      "oneOf": [
+        { "$ref": "#/$defs/nonempty" },
+        { "type": "null" }
+      ]
+    },
+    "pass": { "enum": ["potential", "final_fixed_cap"] },
+    "solve": {
+      "enum": [
+        "joint_canopy_ground",
+        "canopy_component_ci",
+        "canopy_component_energy",
+        "shared_canopy_air",
+        "surface_energy",
+        "hydraulic_system",
+        "soil_thermal_system",
+        "independent_closure"
+      ]
+    },
+    "accepted": { "type": "boolean" },
+    "failure_code": {
+      "enum": [
+        null,
+        "LSEB-E-030",
+        "LSEB-E-031",
+        "LSEB-E-032",
+        "LSEB-E-033",
+        "LSEB-E-034",
+        "LSEB-E-035",
+        "LSEB-E-036",
+        "LSEB-E-037",
+        "LSEB-E-038",
+        "LSEB-E-039",
+        "LSEB-E-040"
+      ]
+    },
+    "failure_kind": {
+      "enum": [
+        null,
+        "malformed_serialization",
+        "identity",
+        "topology_or_owner",
+        "nonfinite_operand",
+        "unsupported_domain",
+        "constitutive_domain",
+        "water_identity_or_bound",
+        "singular_pivot",
+        "backtracking_limit",
+        "iteration_limit",
+        "accepted_step_or_residual",
+        "component_closure",
+        "control_volume_closure",
+        "cross_owner_join"
+      ]
+    },
+    "iterations": { "type": "integer", "minimum": 0, "maximum": 50 },
+    "backtracking_count": { "type": "integer", "minimum": 0 },
+    "ordered_residuals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/residual" }
+    },
+    "step_norms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["temperature_k", "humidity_kg_kg", "ci_pa", "hydraulic_mm", "beta"],
+      "properties": {
+        "temperature_k": { "$ref": "#/$defs/nullable_nonnegative" },
+        "humidity_kg_kg": { "$ref": "#/$defs/nullable_nonnegative" },
+        "ci_pa": { "$ref": "#/$defs/nullable_nonnegative" },
+        "hydraulic_mm": { "$ref": "#/$defs/nullable_nonnegative" },
+        "beta": { "$ref": "#/$defs/nullable_nonnegative" }
+      }
+    },
+    "active_bounds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonempty" }
+    },
+    "active_water_caps": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "lse_v1_water_protocol_schema.json#/$defs/key" }
+    },
+    "bracket": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": { "type": "number" },
+            "upper": { "type": "number" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "pivot_magnitude": {
+      "oneOf": [
+        { "type": "number", "minimum": 0 },
+        { "type": "null" }
+      ]
+    },
+    "matrix_infinity_norm": {
+      "oneOf": [
+        { "type": "number", "minimum": 0 },
+        { "type": "null" }
+      ]
+    },
+    "owner_rollback_hashes": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/owner_rollback" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "accepted": { "const": true } },
+        "required": ["accepted"]
+      },
+      "then": {
+        "properties": {
+          "failure_code": { "type": "null" },
+          "failure_kind": { "type": "null" }
+        }
+      },
+      "else": {
+        "properties": {
+          "failure_code": { "not": { "type": "null" } },
+          "failure_kind": { "not": { "type": "null" } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "failure_kind": { "const": "unsupported_domain" } },
+        "required": ["failure_kind"]
+      },
+      "then": { "properties": { "failure_code": { "const": "LSEB-E-030" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "failure_kind": {
+            "enum": ["singular_pivot", "backtracking_limit", "iteration_limit"]
+          }
+        },
+        "required": ["failure_kind"]
+      },
+      "then": { "properties": { "failure_code": { "const": "LSEB-E-034" } } }
+    },
+    {
+      "if": {
+        "properties": { "failure_code": { "const": "LSEB-E-030" } },
+        "required": ["failure_code"]
+      },
+      "then": { "properties": { "failure_kind": { "const": "unsupported_domain" } } }
+    },
+    {
+      "if": {
+        "properties": { "failure_code": { "const": "LSEB-E-034" } },
+        "required": ["failure_code"]
+      },
+      "then": {
+        "properties": {
+          "failure_kind": {
+            "enum": [
+              "singular_pivot",
+              "backtracking_limit",
+              "iteration_limit",
+              "accepted_step_or_residual"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nullable_nonnegative": {
+      "oneOf": [
+        { "type": "number", "minimum": 0 },
+        { "type": "null" }
+      ]
+    },
+    "residual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "raw", "scale", "tolerance", "normalized", "unit"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/nonempty" },
+        "raw": { "type": "number" },
+        "scale": { "type": "number", "minimum": 0 },
+        "tolerance": { "type": "number", "exclusiveMinimum": 0 },
+        "normalized": { "type": "number" },
+        "unit": {
+          "enum": ["w_m-2", "kg_m-2_s-1", "pa", "mm", "kg_kg-1", "dimensionless"]
+        }
+      }
+    },
+    "owner_rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_kind", "owner_id", "before_sha256", "after_sha256"],
+      "properties": {
+        "owner_kind": {
+          "enum": ["vegetation", "hydrology", "land_surface_energy", "biogeochemistry", "soil_thermal", "envelope"]
+        },
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "before_sha256": { "$ref": "#/$defs/sha256" },
+        "after_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

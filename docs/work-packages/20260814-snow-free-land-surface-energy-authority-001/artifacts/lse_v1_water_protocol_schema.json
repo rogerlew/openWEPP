@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/water_protocol",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 strict source-keyed D/A/F protocol",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transaction_id",
+    "hydrology_owner_id",
+    "beginning_snapshot_sha256",
+    "requests",
+    "authorizations",
+    "finalized_uses",
+    "condensation_credits"
+  ],
+  "properties": {
+    "transaction_id": { "type": "integer", "minimum": 1 },
+    "hydrology_owner_id": { "$ref": "#/$defs/nonempty" },
+    "beginning_snapshot_sha256": { "$ref": "#/$defs/sha256" },
+    "requests": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/amount" }
+    },
+    "authorizations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/authorization" }
+    },
+    "finalized_uses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/amount" }
+    },
+    "condensation_credits": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/condensation_credit" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "requesting_owner_id",
+        "requesting_component",
+        "ofe_id",
+        "requesting_tile_id",
+        "occupancy_id",
+        "surface_id",
+        "surface_class",
+        "source_type",
+        "source_id",
+        "source_tile_id",
+        "soil_layer_id",
+        "amount_basis"
+      ],
+      "properties": {
+        "transaction_id": { "type": "integer", "minimum": 1 },
+        "requesting_owner_id": { "$ref": "#/$defs/nonempty" },
+        "requesting_component": {
+          "enum": ["vegetation_root", "ground_surface"]
+        },
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "requesting_tile_id": { "$ref": "#/$defs/nonempty" },
+        "occupancy_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "surface_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "surface_class": {
+          "oneOf": [
+            { "enum": ["bare_mineral_soil", "forest_litter"] },
+            { "type": "null" }
+          ]
+        },
+        "source_type": {
+          "enum": ["surface_liquid", "litter_liquid", "soil_layer_liquid"]
+        },
+        "source_id": { "$ref": "#/$defs/nonempty" },
+        "source_tile_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "soil_layer_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "amount_basis": { "const": "kg_h2o_m-2_stand_ground_interval" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "requesting_component": { "const": "vegetation_root" } },
+            "required": ["requesting_component"]
+          },
+          "then": {
+            "properties": {
+              "occupancy_id": { "$ref": "#/$defs/nonempty" },
+              "surface_id": { "type": "null" },
+              "surface_class": { "type": "null" },
+              "source_type": { "const": "soil_layer_liquid" },
+              "source_tile_id": { "type": "null" },
+              "soil_layer_id": { "$ref": "#/$defs/nonempty" }
+            }
+          },
+          "else": {
+            "properties": {
+              "occupancy_id": { "type": "null" },
+              "surface_id": { "$ref": "#/$defs/nonempty" },
+              "surface_class": { "enum": ["bare_mineral_soil", "forest_litter"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "source_type": { "const": "soil_layer_liquid" } },
+            "required": ["source_type"]
+          },
+          "then": {
+            "properties": {
+              "source_tile_id": { "type": "null" },
+              "soil_layer_id": { "$ref": "#/$defs/nonempty" }
+            }
+          },
+          "else": {
+            "properties": {
+              "source_tile_id": { "$ref": "#/$defs/nonempty" },
+              "soil_layer_id": { "type": "null" }
+            }
+          }
+        }
+      ]
+    },
+    "amount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "amount_kg_m2_stand_ground"],
+      "properties": {
+        "key": { "$ref": "#/$defs/key" },
+        "amount_kg_m2_stand_ground": { "type": "number", "minimum": 0 }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "amount_kg_m2_stand_ground", "reason"],
+      "properties": {
+        "key": { "$ref": "#/$defs/key" },
+        "amount_kg_m2_stand_ground": { "type": "number", "minimum": 0 },
+        "reason": {
+          "enum": [
+            "full_supply",
+            "proportional_supply",
+            "zero_supply",
+            "dry_source",
+            "frozen_source",
+            "inaccessible_source"
+          ]
+        }
+      }
+    },
+    "condensation_credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "hydrology_owner_id",
+        "ofe_id",
+        "tile_id",
+        "surface_id",
+        "amount_kg_m2_stand_ground",
+        "amount_basis",
+        "temperature_k",
+        "specific_liquid_enthalpy_j_kg"
+      ],
+      "properties": {
+        "transaction_id": { "type": "integer", "minimum": 1 },
+        "hydrology_owner_id": { "$ref": "#/$defs/nonempty" },
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "tile_id": { "$ref": "#/$defs/nonempty" },
+        "surface_id": { "$ref": "#/$defs/nonempty" },
+        "amount_kg_m2_stand_ground": { "type": "number", "exclusiveMinimum": 0 },
+        "amount_basis": { "const": "kg_h2o_m-2_stand_ground_interval" },
+        "temperature_k": { "type": "number", "minimum": 200, "maximum": 350 },
+        "specific_liquid_enthalpy_j_kg": { "type": "number" }
+      }
+    }
+  }
+}

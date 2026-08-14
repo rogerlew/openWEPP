@@ -590,7 +590,34 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-09 UTC`:
+State as of `2026-08-14 UTC`:
+
+- `20260814-snow-free-land-surface-real-hydrology-integration-001/`
+  - EXECUTING / CHILD 1 COMPLETE / CHILD 2 REAL-HYDROLOGY SHADOW ACTIVE:
+    coordinates four
+    independently closed packages for complete snow-free ground/forest-floor
+    authority, V8 arbitration against the real hillslope hydrology owner, a
+    default-off LSE runtime, and a real scheduler consumer. Local base is the
+    unpushed governance commit `0db196012`; production selection, state,
+    outputs, calibration, deployment and cutover remain excluded.
+
+- `20260814-snow-free-land-surface-energy-authority-001/`
+  - COMPLETE / SNOW-FREE LAND-SURFACE-ENERGY IMPLEMENTATION AUTHORITY
+    RELEASED / TERMINAL A+B PASS: exact mineral-soil and forest-litter
+    authority, V8 reciprocal canopy coupling, water/thermal custody, numerics,
+    independent fixtures and failure posture are frozen. No runtime,
+    activation, production cutover, calibration or validation is claimed.
+
+- `20260814-vegetation-real-hydrology-arbitration-shadow-001/`
+  - EXECUTING / REAL HYDROLOGY OWNER EXTRACTION: connect the V8 request and
+    fixed-cap path to an exact default-off clone/candidate of production
+    hydrology while preserving production bytes and legacy behavior.
+
+- `20260814-snow-free-land-surface-energy-runtime-shadow-001/` and
+  `20260814-vegetation-land-surface-real-consumer-shadow-001/`
+  - QUEUED in that dependency order under the active campaign. Each owns its
+    own review, gate, verification and terminal disposition; no child borrows a
+    predecessor PASS.
 
 - `20260813-c3-woody-storage-transfer-phenology-authority-001/`
   - COMPLETE / V7 STORAGE-TRANSFER PHENOLOGY AUTHORITY RELEASED / TERMINAL

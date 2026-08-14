@@ -1955,3 +1955,103 @@ Biome-BGC parameter value becomes a default.
 `mortality.c`, and `check_balance.c`; Appendices A-C for fields and constants.
 **Rights / distribution**: `restricted-pending-review`; official bytes contain
 no affirmative redistribution statement.
+
+## R-155: ISBA-MEB coupled surface energy budgets
+
+**Citation**: Boone, A., Samuelsson, P., Gollvik, S., Napoly, A., Jarlan, L.,
+Brun, E., and Decharme, B. (2017). "The interactions between
+soil--biosphere--atmosphere land surface model multi-energy balance option in
+SURFEXv8 -- Part 1." *Geoscientific Model Development*, 10, 843--872.
+https://doi.org/10.5194/gmd-10-843-2017
+**Local path**: `vendorable/gmd-10-843-2017-isba-meb-part1.pdf`; acquired
+2026-08-14 from Copernicus. SHA-256
+`e63ec3dd516dae8984739046613ae72300c5b4a46e3d63019575088718fd464e`.
+**Reference quality**: `verified-established-model-peer-reviewed-definition`.
+**Topic**: Fully coupled vegetation, canopy-air, ground, snow, and atmospheric
+energy budgets; turbulent pathways; longwave coupling; implicit numerical
+solution; tile aggregation.
+**openWEPP role**: Reference-model definition for the selected snow-free
+canopy-air/ground turbulent network, explicit surface-temperature state, and
+implicit coupled-solve topology. Snow equations and parameter defaults are not
+selected.
+**Supporting locators**: Sections 2.2--2.6, equations (4)--(28), Appendix A,
+Appendix F, and Appendix I.
+**Rights / distribution**: `CC-BY-3.0`; redistribution is permitted with
+attribution.
+
+## R-156: ISBA-MEB forest-litter surface
+
+**Citation**: Napoly, A., Boone, A., Samuelsson, P., Gollvik, S., Martin, E.,
+Seferian, R., Carrer, D., Decharme, B., and Jarlan, L. (2017). "The
+interactions between soil--biosphere--atmosphere land surface model
+multi-energy balance option in SURFEXv8 -- Part 2: Introduction of a litter
+formulation." *Geoscientific Model Development*, 10, 1621--1644.
+https://doi.org/10.5194/gmd-10-1621-2017
+**Local path**: `vendorable/gmd-10-1621-2017-isba-meb-litter.pdf`; acquired
+2026-08-14 from Copernicus. SHA-256
+`2a8c14d912651457bf9205a4a963b78dd12f1aa7f243bccb025e4b81ce99716d`.
+**Reference quality**: `verified-established-model-peer-reviewed-definition`.
+**Topic**: One-layer forest-litter temperature, liquid/ice water, radiation,
+sensible and latent exchange, humidity response, conduction, interception,
+drainage, conductivity, and heat capacity.
+**openWEPP role**: Exact reference-model definition for the selected forest
+floor. Caller configuration supplies litter thickness, dry density, optics,
+and storage capacity; openWEPP does not adopt site defaults.
+**Supporting locators**: Section 2.3 and Appendix A, equations (A1)--(A14).
+**Rights / distribution**: `CC-BY-3.0`; redistribution is permitted with
+attribution.
+
+## R-157: FSM2.1.1 multilayer forest radiation and energy
+
+**Citation**: Essery, R., Mazzotti, G., Barr, S., Jonas, T., Quaife, T., and
+Rutter, N. (2025). "A Flexible Snow Model (FSM 2.1.1) including a forest
+canopy." *Geoscientific Model Development*, 18, 3583--3605.
+https://doi.org/10.5194/gmd-18-3583-2025
+**Local path**: `vendorable/gmd-18-3583-2025-fsm2-forest-canopy.pdf`; acquired
+2026-08-14 from Copernicus. SHA-256
+`31e9d99f9e1102cb67028479cab4ec08fb73490da4f3fdb9bdee067860075c5c`.
+**Reference quality**: `verified-established-model-peer-reviewed-definition`.
+**Topic**: One- and two-layer forest shortwave and longwave transfer, canopy
+air heat/vapor exchange, surface energy, and simultaneous nonlinear solution.
+**openWEPP role**: Direct authority for the no-longwave-reflection multilayer
+flux recurrence and ground/canopy reciprocity selected for the successor woody
+model. Snow processes, Beer-law shortwave, and calm-wind floors are rejected.
+**Supporting locators**: Section 2.3, equations (25)--(30) for the one-layer
+unit-emissivity/no-reflection longwave identities and equations (31)--(34) for
+the two-layer reduction; Section 2.4, equations (35)--(65) for the named
+turbulent resistance/flux network; Section 2.5, equations (66)--(72), for the
+surface and canopy energy residuals and their simultaneous nonlinear solve.
+Only the longwave reciprocity/source identities are load-bearing for the V8
+arbitrary-rank selection; FSM2 Beer-law shortwave, snow, stability corrections,
+and parameter defaults are not selected.
+**Rights / distribution**: `CC-BY-4.0`; redistribution is permitted with
+attribution.
+
+## R-158: ORCHIDEE multilevel canopy longwave transfer matrix
+
+**Citation**: Ryder, J., Polcher, J., Peylin, P., Ottlé, C., Chen, Y., van
+Gorsel, E., Haverd, V., McGrath, M. J., Naudts, K., Otto, J., Valade, A., and
+Luyssaert, S. (2016). "A multi-layer land surface energy budget model for
+implicit coupling with global atmospheric simulations." *Geoscientific Model
+Development*, 9, 223--245. Supplement: "Supplementary material to: A
+multi-layer land surface energy budget for implicit coupling with global
+atmospheric simulations." https://doi.org/10.5194/gmd-9-223-2016
+**Local path**:
+`vendorable/gmd-9-223-2016-multilevel-canopy-supplement.pdf`; acquired
+2026-08-14 from Copernicus. SHA-256
+`52df13b80758e2fd250e200335b5e91d024029e0123d7b795e8d247b90c89fab`.
+**Reference quality**: `verified-established-model-peer-reviewed-supplement`.
+**Topic**: Arbitrary-level canopy longwave exchange matrix and implicit leaf
+and canopy-air heat/vapor equations.
+**openWEPP role**: Independent corroboration and arbitrary-rank form for the
+selected FSM2-compatible longwave recurrence. Its alternate shortwave and
+transport schemes are not selected.
+**Supporting locators**: Supplement Sections S2.3--S2.5, equations
+(S2.4)--(S2.12), for leaf, sensible, and latent component balances; Section
+S2.7.1, equations (S2.16)--(S2.24), for the arbitrary-level longwave transfer
+matrix, cumulative leaf-area coordinate, structural transmission function,
+source-resolved layer-temperature terms, and implicit linearization; Section
+S4, equations (S4.1)--(S4.12), for upper/lower boundary identities. The
+alternate ORCHIDEE shortwave and transport closures are not selected.
+**Rights / distribution**: `CC-BY-3.0`; redistribution is permitted with
+attribution.

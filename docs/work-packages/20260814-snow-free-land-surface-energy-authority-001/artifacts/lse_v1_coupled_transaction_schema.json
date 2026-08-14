@@ -1,0 +1,376 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/coupled_transaction",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 strict coupled-owner transaction envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transaction_id",
+    "lse_configuration_sha256",
+    "forcing",
+    "beginning_vegetation_owner",
+    "beginning_lse_state",
+    "beginning_hydrology_snapshot",
+    "beginning_soil_thermal_snapshot",
+    "beginning_biogeochemistry_owner",
+    "water_protocol",
+    "final_canopy_liquid_releases",
+    "candidate_owner_bodies",
+    "candidate_owner_receipts"
+  ],
+  "properties": {
+    "transaction_id": { "type": "integer", "minimum": 1 },
+    "lse_configuration_sha256": { "$ref": "#/$defs/sha256" },
+    "forcing": { "$ref": "lse_v1_forcing_schema.json" },
+    "beginning_vegetation_owner": { "$ref": "#/$defs/v8_owner_ref" },
+    "beginning_lse_state": { "$ref": "lse_v1_state_schema.json" },
+    "beginning_hydrology_snapshot": { "$ref": "#/$defs/hydrology_snapshot" },
+    "beginning_soil_thermal_snapshot": { "$ref": "#/$defs/soil_thermal_snapshot" },
+    "beginning_biogeochemistry_owner": { "$ref": "#/$defs/owner_state_ref" },
+    "water_protocol": { "$ref": "lse_v1_water_protocol_schema.json" },
+    "final_canopy_liquid_releases": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/canopy_liquid_release" }
+    },
+    "candidate_owner_bodies": { "$ref": "#/$defs/candidate_owner_bodies" },
+    "candidate_owner_receipts": { "$ref": "#/$defs/candidate_owner_receipts" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_state_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_id",
+        "model_version",
+        "model_definition_sha256",
+        "configuration_sha256",
+        "state_sha256",
+        "last_accepted_transaction_id"
+      ],
+      "properties": {
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "model_version": { "$ref": "#/$defs/nonempty" },
+        "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" },
+        "state_sha256": { "$ref": "#/$defs/sha256" },
+        "last_accepted_transaction_id": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "v8_owner_ref": {
+      "allOf": [
+        { "$ref": "#/$defs/owner_state_ref" },
+        {
+          "type": "object",
+          "properties": {
+            "model_version": { "const": "OPENWEPP_C3_WOODY_V8" },
+            "model_definition_sha256": {
+              "const": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+            }
+          }
+        }
+      ]
+    },
+    "hydrology_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_id",
+        "configuration_sha256",
+        "state_sha256",
+        "snapshot_sha256",
+        "last_accepted_transaction_id",
+        "availability_time",
+        "stores"
+      ],
+      "properties": {
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" },
+        "state_sha256": { "$ref": "#/$defs/sha256" },
+        "snapshot_sha256": { "$ref": "#/$defs/sha256" },
+        "last_accepted_transaction_id": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        },
+        "availability_time": { "const": "immutable_beginning_before_current_interval_ingress" },
+        "stores": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/hydrology_store" }
+        }
+      }
+    },
+    "hydrology_store": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ofe_id",
+        "tile_id",
+        "source_type",
+        "source_id",
+        "soil_layer_id",
+        "amount_basis",
+        "liquid_amount_kg_m2",
+        "ice_amount_kg_m2",
+        "frozen",
+        "thawing"
+      ],
+      "properties": {
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "tile_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "source_type": {
+          "enum": ["surface_liquid", "litter_liquid", "soil_layer_liquid"]
+        },
+        "source_id": { "$ref": "#/$defs/nonempty" },
+        "soil_layer_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonempty" },
+            { "type": "null" }
+          ]
+        },
+        "amount_basis": {
+          "enum": [
+            "kg_h2o_m-2_tile_ground",
+            "kg_h2o_m-2_stand_ground"
+          ]
+        },
+        "liquid_amount_kg_m2": { "type": "number", "minimum": 0 },
+        "ice_amount_kg_m2": { "type": "number", "minimum": 0 },
+        "frozen": { "const": false },
+        "thawing": { "const": false }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "source_type": { "const": "soil_layer_liquid" } },
+            "required": ["source_type"]
+          },
+          "then": {
+            "properties": {
+              "tile_id": { "type": "null" },
+              "soil_layer_id": { "$ref": "#/$defs/nonempty" },
+              "amount_basis": { "const": "kg_h2o_m-2_stand_ground" }
+            }
+          },
+          "else": {
+            "properties": {
+              "tile_id": { "$ref": "#/$defs/nonempty" },
+              "soil_layer_id": { "type": "null" },
+              "amount_basis": { "const": "kg_h2o_m-2_tile_ground" },
+              "ice_amount_kg_m2": { "const": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "soil_thermal_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_id",
+        "configuration_sha256",
+        "state_sha256",
+        "snapshot_sha256",
+        "last_accepted_transaction_id",
+        "ofes"
+      ],
+      "properties": {
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" },
+        "state_sha256": { "$ref": "#/$defs/sha256" },
+        "snapshot_sha256": { "$ref": "#/$defs/sha256" },
+        "last_accepted_transaction_id": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        },
+        "ofes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ofe_id", "ordered_layers"],
+            "properties": {
+              "ofe_id": { "$ref": "#/$defs/nonempty" },
+              "ordered_layers": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/soil_thermal_layer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "soil_thermal_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "temperature_k", "enthalpy_j_m2_ofe_ground"],
+      "properties": {
+        "layer_id": { "$ref": "#/$defs/nonempty" },
+        "temperature_k": { "type": "number", "minimum": 200, "maximum": 350 },
+        "enthalpy_j_m2_ofe_ground": { "type": "number" }
+      }
+    },
+    "canopy_liquid_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "vegetation_owner_id",
+        "ofe_id",
+        "tile_id",
+        "occupancy_id",
+        "release_kind",
+        "amount_kg_m2_tile_ground",
+        "wet_surface_temperature_k",
+        "specific_liquid_enthalpy_j_kg"
+      ],
+      "properties": {
+        "transaction_id": { "type": "integer", "minimum": 1 },
+        "vegetation_owner_id": { "$ref": "#/$defs/nonempty" },
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "tile_id": { "$ref": "#/$defs/nonempty" },
+        "occupancy_id": { "$ref": "#/$defs/nonempty" },
+        "release_kind": {
+          "enum": ["throughfall", "first_drainage", "second_drainage", "stemflow"]
+        },
+        "amount_kg_m2_tile_ground": { "type": "number", "exclusiveMinimum": 0 },
+        "wet_surface_temperature_k": { "type": "number", "minimum": 200, "maximum": 350 },
+        "specific_liquid_enthalpy_j_kg": { "type": "number" }
+      }
+    },
+    "candidate_owner_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "owner_kind",
+        "owner_id",
+        "beginning_state_sha256",
+        "candidate_state_sha256"
+      ],
+      "properties": {
+        "transaction_id": { "type": "integer", "minimum": 1 },
+        "owner_kind": {
+          "enum": ["vegetation", "hydrology", "land_surface_energy", "biogeochemistry", "soil_thermal"]
+        },
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "beginning_state_sha256": { "$ref": "#/$defs/sha256" },
+        "candidate_state_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "candidate_owner_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "owner_id",
+        "model_version",
+        "model_definition_sha256",
+        "configuration_sha256",
+        "beginning_state_sha256",
+        "ending_state"
+      ],
+      "properties": {
+        "transaction_id": { "type": "integer", "minimum": 1 },
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "model_version": { "$ref": "#/$defs/nonempty" },
+        "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" },
+        "beginning_state_sha256": { "$ref": "#/$defs/sha256" },
+        "ending_state": {
+          "type": "object",
+          "minProperties": 1
+        },
+        "water_protocol_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "candidate_owner_bodies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vegetation",
+        "hydrology",
+        "land_surface_energy",
+        "soil_thermal",
+        "biogeochemistry"
+      ],
+      "properties": {
+        "vegetation": { "$ref": "#/$defs/candidate_owner_body" },
+        "hydrology": { "$ref": "#/$defs/candidate_owner_body" },
+        "land_surface_energy": { "$ref": "#/$defs/candidate_owner_body" },
+        "soil_thermal": { "$ref": "#/$defs/candidate_owner_body" },
+        "biogeochemistry": { "$ref": "#/$defs/candidate_owner_body" }
+      }
+    },
+    "candidate_owner_receipts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vegetation",
+        "hydrology",
+        "land_surface_energy",
+        "soil_thermal",
+        "biogeochemistry"
+      ],
+      "properties": {
+        "vegetation": {
+          "allOf": [
+            { "$ref": "#/$defs/candidate_owner_receipt" },
+            { "properties": { "owner_kind": { "const": "vegetation" } } }
+          ]
+        },
+        "hydrology": {
+          "allOf": [
+            { "$ref": "#/$defs/candidate_owner_receipt" },
+            { "properties": { "owner_kind": { "const": "hydrology" } } }
+          ]
+        },
+        "land_surface_energy": {
+          "allOf": [
+            { "$ref": "#/$defs/candidate_owner_receipt" },
+            { "properties": { "owner_kind": { "const": "land_surface_energy" } } }
+          ]
+        },
+        "soil_thermal": {
+          "allOf": [
+            { "$ref": "#/$defs/candidate_owner_receipt" },
+            { "properties": { "owner_kind": { "const": "soil_thermal" } } }
+          ]
+        },
+        "biogeochemistry": {
+          "allOf": [
+            { "$ref": "#/$defs/candidate_owner_receipt" },
+            { "properties": { "owner_kind": { "const": "biogeochemistry" } } }
+          ]
+        }
+      }
+    }
+  }
+}

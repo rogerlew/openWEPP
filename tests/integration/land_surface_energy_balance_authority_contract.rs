@@ -3,6 +3,8 @@ use std::fs;
 const CONTRACT: &str =
     "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md";
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
+const AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -71,23 +73,437 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 }
 
 #[test]
-fn authority_gaps_block_surrogate_or_production_claims() {
+fn version_three_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "science_implementation_status = NOT_IMPLEMENTED",
-        "calibration_evidence_status = NOT_APPLICABLE",
-        "identifiability_status = NOT_APPLICABLE",
-        "AUTHORITY_MISSING",
-        "NON_PROMOTABLE",
+        "contract_version: 3",
+        "status: approved",
+        "maturity: active",
+        "OPENWEPP_SNOW_FREE_LSE_V1",
+        "OPENWEPP_C3_WOODY_V8",
+        "AUTHORITY_ADMITTED",
+        "IMPLEMENTATION_MISSING",
         "GAP-LANDSURFACEENERGY-001",
         "GAP-LANDSURFACEENERGY-006",
-        "No production implementation is promotable",
         "provisional, surrogate, heuristic, or comparator-targeted physics",
-        "Real-consumer proof remains intentionally unsatisfied",
-        "Exact future precondition",
-        "Exact future\npostcondition",
+        "authorizes no production selector/default/output",
+        "calibration, empirical validation or transferability",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
+fn version_three_binds_surface_classes_reciprocal_coupling_and_water_custody() {
+    let contract = read(CONTRACT);
+    for required in [
+        "bare_mineral_soil",
+        "forest_litter",
+        "Hydrology exclusively owns ponded, litter-held and soil-layer water mass",
+        "Ldn_(i+1) = tau_i*Ldn_i + (1-tau_i)*E_i",
+        "Lup_i     = tau_i*Lup_(i+1) + (1-tau_i)*E_i",
+        "R_Tc = sum_j H_j + H_s - H_c->atm",
+        "R_qc = sum_j v_j + v_s - v_c->atm",
+        "h_ul     = 0.5*(1-cos(pi*W_l/W_l,max))",
+        "h_l(T)=C_w*(T-T_ref)",
+        "T_mix=T_ref+sum(m_i*h_i)/(C_w*sum(m_i))",
+        "L_v(T)=2.501e6-2369*(T-T_ref) J kg^-1",
+        "The water snapshot precedes all current-interval rain, runon, and canopy liquid",
+        "No second\nauthorization",
+        "No wind floor",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)] // One digest-bound authority record is audited as an indivisible fixture.
+fn immutable_definitions_and_independent_vectors_are_digest_bound() {
+    use sha2::{Digest, Sha256};
+
+    let lse = read(&format!(
+        "{AUTHORITY_PACKAGE}/openwepp_snow_free_lse_v1_definition.json"
+    ));
+    let vegetation = read(&format!(
+        "{AUTHORITY_PACKAGE}/openwepp_c3_woody_v8_definition.json"
+    ));
+    let vectors = read(&format!(
+        "{AUTHORITY_PACKAGE}/openwepp_snow_free_lse_v1_vectors.json"
+    ));
+    assert_eq!(
+        format!("{:x}", Sha256::digest(lse.as_bytes())),
+        "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"
+    );
+    assert_eq!(
+        format!("{:x}", Sha256::digest(vegetation.as_bytes())),
+        "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+    );
+    assert_eq!(
+        format!("{:x}", Sha256::digest(vectors.as_bytes())),
+        "7b6a303ae434ca6ad59c7082ebf486300214427d6abe20c36bfaa9b8cbdab91c"
+    );
+
+    let fixture: serde_json::Value = serde_json::from_str(&vectors).expect("LSE vectors");
+    assert_eq!(
+        fixture["schema"],
+        "openwepp-snow-free-lse-v1-joint-authority-vectors-3"
+    );
+    assert_eq!(fixture["model"], "OPENWEPP_SNOW_FREE_LSE_V1");
+    assert_eq!(
+        fixture["model_definition_sha256"],
+        "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"
+    );
+    let invariants = &fixture["reconstructed_invariants"];
+    assert_eq!(invariants["all_poisons_rejected"], true);
+    assert_eq!(invariants["all_schema_instances_validated"], true);
+    assert_eq!(invariants["all_validation_failures_rollback_exact"], true);
+    assert_eq!(invariants["final_rebuilt_from_beginning"]["proved"], true);
+    assert_eq!(
+        invariants["single_immutable_authorization"]["call_count"],
+        1
+    );
+    assert_eq!(invariants["single_immutable_authorization"]["proved"], true);
+    assert!(
+        invariants["post_ingress_energy_closure"]
+            .as_f64()
+            .expect("energy closure")
+            .abs()
+            < 1.0e-9
+    );
+    assert_eq!(invariants["post_ingress_mass_closure"], 0.0);
+
+    let mandatory = fixture["mandatory_exact_scenario_vectors"]
+        .as_object()
+        .expect("mandatory exact scenarios");
+    assert_eq!(mandatory.len(), 22);
+    for required in [
+        "open_bare_day",
+        "open_bare_night",
+        "covered_column",
+        "dry_litter_covered",
+        "wet_litter_covered",
+        "supported_condensation",
+        "partial_surface_cap",
+        "partial_top_layer_cap",
+        "alternate_starts",
+        "storage",
+        "ground_albedo_lower_boundary_feedback",
+        "frozen_ground_cap_centered_probe",
+    ] {
+        assert!(mandatory.contains_key(required), "missing {required}");
+    }
+
+    let equilibrium = &fixture["equilibrium_zero_storage_branch"];
+    assert_eq!(equilibrium["accepted"], true);
+    assert_eq!(
+        equilibrium["candidate"]["land_surface_energy"]["surface_enthalpy_j_m2_tile"],
+        0.0
+    );
+    assert_eq!(equilibrium["components"]["surface_storage_w_m2_tile"], 0.0);
+    assert_eq!(
+        fixture["executed_poison_vectors"]
+            .as_object()
+            .expect("executed poison vectors")
+            .len(),
+        76
+    );
+    assert!(
+        fixture["executed_poison_vectors"]
+            .as_object()
+            .expect("executed poison vectors")
+            .values()
+            .all(|value| value["accepted"] == false
+                && value["candidate"].is_null()
+                && value["typed_failure"].is_string())
+    );
+    let failures = fixture["executed_failure_vectors"]
+        .as_object()
+        .expect("executed failure vectors");
+    assert_eq!(failures.len(), 11);
+    assert!(failures.values().all(|value| value["accepted"] == false
+        && value["candidate"].is_null()
+        && value["rollback_exact"] == true));
+    for (name, code, kind, typed_failure) in [
+        ("singular", "LSEB-E-034", "singular_pivot", "singular"),
+        (
+            "iteration_limit",
+            "LSEB-E-034",
+            "iteration_limit",
+            "iteration_limit",
+        ),
+        (
+            "backtracking_limit",
+            "LSEB-E-034",
+            "backtracking_limit",
+            "backtracking_limit",
+        ),
+        (
+            "calm_wind",
+            "LSEB-E-030",
+            "unsupported_domain",
+            "LSEB-E-030:calm_or_nonfinite_wind",
+        ),
+        (
+            "nonneutral",
+            "LSEB-E-030",
+            "unsupported_domain",
+            "LSEB-E-030:nonneutral_stability",
+        ),
+    ] {
+        assert_eq!(failures[name]["diagnostics"]["failure_code"], code);
+        assert_eq!(failures[name]["diagnostics"]["failure_kind"], kind);
+        assert_eq!(failures[name]["typed_failure"], typed_failure);
+    }
+    for required in ["singular", "iteration_limit", "backtracking_limit"] {
+        assert!(failures.contains_key(required), "missing {required}");
+        assert_eq!(
+            failures[required]["owner_and_envelope_rollback_before"],
+            failures[required]["owner_and_envelope_rollback_after"],
+            "{required} owner envelope changed"
+        );
+        assert_eq!(
+            failures[required]["owner_and_envelope_rollback_before"]
+                .as_object()
+                .expect("full owner rollback envelope")
+                .len(),
+            6
+        );
+    }
+
+    assert_eq!(
+        fixture["complete_water_transaction"]["potential"]["accepted"],
+        true
+    );
+    assert_eq!(
+        fixture["complete_water_transaction"]["final"]["accepted"],
+        true
+    );
+    assert_eq!(
+        fixture["shared_layer_root_ground_competition"]["arbitration_call_count"],
+        1
+    );
+    assert_eq!(
+        fixture["shared_layer_root_ground_competition"]["both_rebuilt_from_beginning"],
+        true
+    );
+    let owner_candidates = fixture["post_ingress_owner_candidates"]["candidates"]
+        .as_object()
+        .expect("owner candidates");
+    assert_eq!(owner_candidates.len(), 5);
+    for owner in [
+        "vegetation",
+        "hydrology",
+        "land_surface_energy",
+        "biogeochemistry",
+        "soil_thermal",
+    ] {
+        let candidate = &owner_candidates[owner];
+        assert!(
+            candidate["ending_state"].is_object(),
+            "{owner} body missing"
+        );
+        assert!(
+            !candidate["ending_state"]
+                .as_object()
+                .expect("candidate body")
+                .is_empty(),
+            "{owner} body empty"
+        );
+        assert!(candidate["beginning_state_sha256"].is_string());
+        assert_eq!(candidate["transaction_id"], 20_260_814_001_u64);
+    }
+    let owner_validation = fixture["post_ingress_owner_candidates"]["owner_validation"]
+        .as_object()
+        .expect("independent owner validation");
+    for join in [
+        "owner_candidate_set_sha256",
+        "water_protocol_sha256",
+        "material_join_sha256",
+        "ground_heat_join_sha256",
+    ] {
+        assert!(owner_validation[join].is_string(), "missing {join}");
+    }
+    let soil_beginning = &fixture["post_ingress_owner_candidates"]["beginning"]["soil_thermal"]["state"]
+        ["temperatures_k"];
+    let soil_candidate = &owner_candidates["soil_thermal"]["ending_state"];
+    let soil_operands = &fixture["post_ingress_owner_candidates"]["joins"]["soil_thermal_operands"];
+    assert_eq!(soil_candidate["temperatures_k"][0], 292.283_549_961_068_84);
+    let beginning_t1 = soil_beginning[0].as_f64().expect("beginning soil T1");
+    let tile_fraction = soil_operands["layers"][0]["tile_fraction"]
+        .as_f64()
+        .expect("soil tile fraction");
+    let capacity = soil_operands["layers"][0]["areal_heat_capacity_j_m2_k"]
+        .as_f64()
+        .expect("soil capacity");
+    let ground_heat = soil_operands["layers"][0]["ground_heat_receipt_j_m2_stand_ground"]
+        .as_f64()
+        .expect("ground heat receipt");
+    let infiltration = soil_operands["infiltration_enthalpy_receipt_j_m2_stand_ground"]
+        .as_f64()
+        .expect("infiltration enthalpy receipt");
+    let reconstructed_t1 = beginning_t1 + (ground_heat + infiltration) / tile_fraction / capacity;
+    assert!(
+        (soil_candidate["temperatures_k"][0]
+            .as_f64()
+            .expect("candidate soil T1")
+            - reconstructed_t1)
+            .abs()
+            < 1.0e-12
+    );
+    assert_eq!(
+        soil_operands["infiltration_receiver_layer_id"],
+        soil_operands["layers"][0]["layer_id"]
+    );
+    for (poison, failure) in [
+        (
+            "infiltration_enthalpy_omitted_from_soil_node",
+            "infiltration_enthalpy_receipt_join",
+        ),
+        (
+            "infiltration_enthalpy_duplicated_in_soil_node",
+            "infiltration_enthalpy_receipt_join",
+        ),
+        (
+            "infiltration_enthalpy_wrong_soil_node",
+            "infiltration_enthalpy_wrong_soil_node",
+        ),
+        (
+            "infiltration_enthalpy_wrong_area_basis",
+            "infiltration_enthalpy_wrong_area_basis",
+        ),
+    ] {
+        let record = &fixture["executed_poison_vectors"][poison];
+        assert_eq!(record["accepted"], false);
+        assert!(record["candidate"].is_null());
+        assert_eq!(record["typed_failure"], failure);
+    }
+    assert_eq!(
+        fixture["post_ingress_owner_candidates"]["owner_receipts"]
+            .as_object()
+            .expect("owner receipts")
+            .len(),
+        5
+    );
+    assert!(
+        fixture["post_ingress_owner_candidates"]["owner_receipts"]
+            .as_object()
+            .expect("owner receipts")
+            .values()
+            .all(|receipt| receipt["beginning_state_sha256"].is_string()
+                && receipt["candidate_state_sha256"].is_string()
+                && receipt["owner_id"].is_string()
+                && receipt["owner_kind"].is_string()
+                && receipt["transaction_id"] == 20_260_814_001_u64)
+    );
+    let ingress = &fixture["post_ingress_owner_candidates"]["ingress"];
+    let ending = ingress["ending_surface_enthalpy_j_m2_tile_ground"]
+        .as_f64()
+        .expect("ending surface enthalpy");
+    let dry = ingress["ending_dry_body_enthalpy_j_m2_tile_ground"]
+        .as_f64()
+        .expect("ending dry-body enthalpy");
+    let liquid = ingress["ending_liquid_enthalpy_j_m2_tile_ground"]
+        .as_f64()
+        .expect("ending liquid enthalpy");
+    assert!((ending - dry - liquid).abs() < 1.0e-9);
+    assert_eq!(
+        fixture["shared_layer_root_ground_competition"]["finalized_uses"]
+            .as_array()
+            .expect("shared finalized uses")
+            .len(),
+        19
+    );
+    assert_eq!(
+        fixture["shared_layer_root_ground_competition"]["source_ending_store_ledger"]
+            .as_array()
+            .expect("source ending-store ledger")
+            .len(),
+        6
+    );
+    assert!(
+        fixture["positive_condensation_owner_transaction"]["condensation_energy_credit"]
+            ["amount_kg_m2_stand_ground"]
+            .as_f64()
+            .expect("positive condensation credit")
+            > 0.0
+    );
+    assert_eq!(
+        fixture["positive_condensation_owner_transaction"]["owner_receipts"]
+            .as_object()
+            .expect("condensation owner receipts")
+            .len(),
+        5
+    );
+    let route_join = &fixture["multi_ofe_routed_owner_vector"]["route_join"];
+    assert_eq!(route_join["source_ofe_area_m2"], 120.0);
+    assert_eq!(route_join["destination_ofe_area_m2"], 200.0);
+    assert_eq!(route_join["upstream_mass_kg_m2"], 0.6);
+    assert_eq!(route_join["downstream_mass_kg_m2"], 0.36);
+    assert_eq!(route_join["extensive_mass_kg"], 72.0);
+    assert_eq!(
+        route_join["extensive_mass_kg"],
+        route_join["downstream_reconstructed_extensive_mass_kg"]
+    );
+    assert_eq!(
+        route_join["extensive_energy_j"],
+        route_join["downstream_reconstructed_extensive_energy_j"]
+    );
+    assert_eq!(
+        route_join["upstream_state_sha256"],
+        route_join["downstream_source_state_sha256"]
+    );
+    assert_eq!(
+        fixture["strict_schema_instances"]
+            .as_object()
+            .expect("schema instances")
+            .len(),
+        6
+    );
+    assert!(
+        fixture["strict_schema_validation"]
+            .as_object()
+            .expect("schema validation")
+            .values()
+            .all(|value| value["validated"] == true)
+    );
+
+    for (path, expected) in [
+        (
+            "reference_calculator.py",
+            "1156fa88a6d7e4dd98f6dd70fe5b891f69e0b6825694179ac4d687a38907c859",
+        ),
+        (
+            "reference_joint_canopy_core.py",
+            "c9555b2dd02a5d6f11d71eb923fb60bc882e9638ec20eb79accc96cec9018be5",
+        ),
+        (
+            "lse_v1_configuration_schema.json",
+            "6499b98cc1e25f1379bc0ad6052a7536e20c4bfbb9335f9ba5c8de191ae2f009",
+        ),
+        (
+            "lse_v1_coupled_transaction_schema.json",
+            "02dfa522b7d070df9a7d3e904d4f538a7f734eb6c8315fcbf033b7628b28e07f",
+        ),
+        (
+            "lse_v1_diagnostics_schema.json",
+            "41fb7909d073b4fdf4e59c9fa7da26b9a965ad916688b7867a56525d1bf1460c",
+        ),
+        (
+            "lse_v1_forcing_schema.json",
+            "f1fb785e9e582ae9e20eac4b5f44fa2b5f0651f8535d0972520dbfff3d926b55",
+        ),
+        (
+            "lse_v1_state_schema.json",
+            "91243e4087fa2c4775cb3629fe14c64379def4977d3c54a72348ac56d5fa4ee8",
+        ),
+        (
+            "lse_v1_water_protocol_schema.json",
+            "2e5ade752deb0751bb31222da5d8fe3f6a1e5fbee407e20780fa26242a7afd07",
+        ),
+    ] {
+        let bytes = fs::read(format!("{AUTHORITY_PACKAGE}/{path}"))
+            .unwrap_or_else(|error| panic!("read {path}: {error}"));
+        assert_eq!(format!("{:x}", Sha256::digest(bytes)), expected, "{path}");
     }
 }
 
@@ -229,22 +645,13 @@ fn schema_sections_test_vectors_and_registry_are_bound() {
         );
     }
 
-    for gap in ["001", "002", "003", "004", "005", "006"] {
+    for gap in ["001", "002", "003", "006"] {
         let line = row(&contract, &format!("GAP-LANDSURFACEENERGY-{gap}"));
         assert!(
-            line.contains("`NON_PROMOTABLE`"),
-            "gap {gap} lost NON_PROMOTABLE"
+            line.contains("AUTHORITY_ADMITTED") || line.contains("authority portion admitted"),
+            "gap {gap} lacks admitted authority"
         );
-        if gap == "004" {
-            assert!(
-                line.contains("`IMPLEMENTATION_MISSING`"),
-                "gap 004 lost IMPLEMENTATION_MISSING"
-            );
-        } else {
-            assert!(
-                line.contains("`AUTHORITY_MISSING`"),
-                "gap {gap} lost AUTHORITY_MISSING"
-            );
-        }
     }
+    assert!(row(&contract, "GAP-LANDSURFACEENERGY-004").contains("`IMPLEMENTATION_MISSING`"));
+    assert!(row(&contract, "GAP-LANDSURFACEENERGY-005").contains("`AUTHORITY_MISSING`"));
 }

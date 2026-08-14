@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/state",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 strict persistent owner state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_definition_sha256",
+    "configuration_sha256",
+    "state_sha256",
+    "owner_id",
+    "last_accepted_transaction_id",
+    "tiles"
+  ],
+  "properties": {
+    "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+    "configuration_sha256": { "$ref": "#/$defs/sha256" },
+    "state_sha256": { "$ref": "#/$defs/sha256" },
+    "owner_id": { "$ref": "#/$defs/nonempty" },
+    "last_accepted_transaction_id": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "null" }
+      ]
+    },
+    "tiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/tile_state" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tile_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ofe_id",
+        "tile_id",
+        "surface_enthalpy_j_m2_tile_ground",
+        "surface_temperature_warm_start_k"
+      ],
+      "properties": {
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "tile_id": { "$ref": "#/$defs/nonempty" },
+        "surface_enthalpy_j_m2_tile_ground": { "type": "number" },
+        "surface_temperature_warm_start_k": {
+          "type": "number",
+          "minimum": 200,
+          "maximum": 350
+        }
+      }
+    }
+  }
+}

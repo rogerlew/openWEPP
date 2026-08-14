@@ -1,36 +1,42 @@
 ---
 contract_id: SC-LANDSURFACEENERGY-001
 title: Land-Surface Energy-Balance Process Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
-evidence_level: static
-last_reviewed: 2026-08-08
+evidence_level: static+independent_oracle
+last_reviewed: 2026-08-14
 supersedes: []
 superseded_by: []
 ---
 
 # SC-LANDSURFACEENERGY-001 Land-Surface Energy-Balance Process Contract
 
-Status: `in_review`
-Maturity: `draft`
-Evidence mode: `static`
+Status: `approved`
+Maturity: `active`
+Evidence mode: `static + independent oracle`
 
 ## Purpose
 
-Define the first-class control-volume, conservation, custody, and failure
-authority required for a future snow-free land-surface energy balance and a
-future post-snow receiving surface. This version admits no complete production
-algorithm: the pinned WEPP baseline contains authoritative adjacent water,
-evaporation, and frost processes, but no single prognostic snow-free surface
-temperature and energy solver. Missing constitutive authority is retained as
-`AUTHORITY_MISSING` and `NON_PROMOTABLE`, not replaced by proxy physics.
+Define the first-class control-volume, conservation, custody, constitutive and
+failure authority for the default-off `OPENWEPP_SNOW_FREE_LSE_V1` model.
+Version 3 releases implementation authority for snow-free bare-mineral and
+forest-litter surfaces coupled to `OPENWEPP_C3_WOODY_V8`; it authorizes no
+production selector, cutover, calibration or snow-terminal recipient.
+
+Sections from "Scientific Scope" through the gap register preserve the
+version-2 conservation and missing-authority baseline as historical context.
+Where those sections say `future`, `missing`, `gap`, `NON_PROMOTABLE`, or
+describe `M_l` as LSE-mutated, the named Version-3 constitutive authority below
+prospectively supersedes that statement for `OPENWEPP_SNOW_FREE_LSE_V1` only.
+All exact-one conservation, failure, adjacent-owner and no-real-consumer rules
+not expressly superseded remain binding.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -370,12 +376,12 @@ non-authoritative and introduces no separate binding entry.
 
 | Gap ID | Gap | Required closure | Label |
 |---|---|---|---|
-| `GAP-LANDSURFACEENERGY-001` | No top-down complete snow-free surface-temperature and coupled energy-storage algorithm has been admitted. | Canonical literature/baseline authority, equations, domains, parameters, and independent review. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-LANDSURFACEENERGY-002` | Sensible, latent, ground, precipitation/runon/infiltration/runoff advection, and storage constitutive families are not jointly authorized for this control volume. | Admit each family and liquid enthalpy/reference-state convention without duplicating adjacent owners. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-LANDSURFACEENERGY-003` | `L_v(T_s)`, heat capacity/storage, roughness/resistance, substrate, and closure tolerances lack complete LSE-specific authority. | Fixed provenance, domains, unit registry, typed guards, and tests. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-LANDSURFACEENERGY-001` | V1/v2 lacked a complete snow-free surface-temperature and coupled energy-storage algorithm. | Version 3 named model and independent vectors. | `AUTHORITY_ADMITTED`, implementation pending |
+| `GAP-LANDSURFACEENERGY-002` | V1/v2 lacked jointly authorized sensible, latent, ground, liquid advection, and storage families. | Version 3 exact owner/source equations. | `AUTHORITY_ADMITTED`, implementation pending |
+| `GAP-LANDSURFACEENERGY-003` | V1/v2 lacked complete latent heat, storage, resistance, substrate, and tolerance authority. | Version 3 strict configuration and numerical contract. | `AUTHORITY_ADMITTED`, implementation pending |
 | `GAP-LANDSURFACEENERGY-004` | No first-class runtime state, ledger, domain error, scheduler span, or real downstream consumer exists. | Later scoped implementation plus real-consumer proof. | `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
 | `GAP-LANDSURFACEENERGY-005` | Schema-v8 snow terminal liquid, energy, and remaining time are censored. | Atomic two-contract cutover with exact-one custody, rollback/defaults, and receiving-surface closure. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
-| `GAP-LANDSURFACEENERGY-006` | Legacy daily ET neglects/approximates soil heat and frost accepts rather than solves `surtmp`; neither is complete LSE authority. | Do not generalize these routines; obtain explicit surface authority. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-LANDSURFACEENERGY-006` | Legacy daily ET and frost mechanics are not complete LSE authority. | Version 3 uses the selected external stack; legacy remains unchanged comparator behavior. | authority portion admitted; runtime/cutover pending |
 
 The first safe later implementation slice is a default-off, snow-free-only
 typed request/state/component-ledger/result using only admitted operands,
@@ -384,9 +390,499 @@ consumer. It must reject snow and terminal handoffs and must not mutate ET,
 runoff, infiltration, soil, or frost. That slice is evaluation mechanics only;
 production coupling requires later authority and a real process consumer.
 
+The immutable definition identity is
+`sha256:e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f`
+for
+`docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_definition.json`.
+
+## `OPENWEPP_SNOW_FREE_LSE_V1` Constitutive Authority
+
+Version 3 prospectively supersedes the version-2 missing-authority posture only
+for this named model and supported domain. Historical conservation and custody
+requirements remain binding.
+
+### Selected sources and domain
+
+The selected reference-model stack is CLM5 equations 2.5.72--2.5.81,
+2.5.86--2.5.153 and 2.6.1--2.6.91; Boone et al. (2017) ISBA-MEB Part 1
+equations 4--28 and Appendix I; Napoly et al. (2017) Appendix A equations
+A1--A14; FSM2.1.1 equations 25--34; and the ORCHIDEE arbitrary-level longwave
+matrix S2.16--S2.24. The exact retained bytes and rights are recorded as
+R-153 and R-155--R-158 in `references/annotated_bibliography.md`.
+
+The executable domain requires snow absent at both endpoints, no terminal snow
+payload, positive finite neutral-domain wind, positive finite interval and
+area, liquid/unfrozen water and soil, complete forcing/configuration/state, one
+ground class per tile, and exact owner identity. `bare_mineral_soil` and
+`forest_litter` are admitted. Calm wind, nonneutral stability, snow, terminal
+snow, frozen or thawing material, multiple ground classes per tile and missing
+liquid-temperature lineage return typed unsupported errors before calculation.
+
+### Exact ownership and state
+
+Hydrology exclusively owns ponded, litter-held and soil-layer water mass.
+More completely, it owns every water mass: ponded/depression storage,
+litter-held water, and every soil-layer liquid/frozen store. LSE owns one
+surface thermal node per tile and no water amount. The surface dry body and any
+positive hydrology-owned surface store are isothermal at that node. The
+soil-thermal owner, not LSE, owns all `N` soil temperatures and enthalpies.
+Vegetation retains all canopy processes. No model state contains two mutable
+representations of the same mass, temperature, or enthalpy.
+
+Strict configuration, state, forcing, water-protocol, diagnostics, and coupled
+owner-envelope machine surfaces are the six package artifacts named
+`lse_v1_*_schema.json`; every frozen digest is part of the model definition.
+Configuration supplies OFE/tile
+topology, one surface class per
+tile, VIS/NIR albedo, neutral aerodynamic geometry, surface dry heat capacity,
+surface thickness/conductivity, soil-layer geometry and thermal properties,
+and litter properties where applicable. LSE persistent state supplies one
+physical `surface_enthalpy_j_m2_tile` per tile plus numerical warm starts,
+transaction lineage, and digests. `surface_temperature_k` is retained only as
+a solver warm start/diagnostic and is reconstructed from enthalpy, immutable
+hydrology-owned `W`, and `C_dry` before use; it is not a second physical state.
+Hydrology supplies all beginning water amounts, and soil thermal supplies its
+`N` temperatures/enthalpies, through immutable owner snapshots with exact
+digest lineage. No executable default supplies a scientific value. Unknown,
+missing, extra, duplicate, stale, nonfinite, wrong-owner, or out-of-domain
+fields reject.
+
+For one OFE, tile fractions are finite, positive, unique by tile ID, and sum
+to one under the topology tolerance. `stand-ground` in this contract means
+that one OFE's horizontal ground area; it never means an entire routed
+hillslope. Tile-local amounts become OFE-ground amounts by multiplication by
+`f_t` exactly once. Cross-OFE runon retains source and destination OFE IDs.
+
+### Shortwave and reciprocal longwave
+
+V8 performs the unchanged V7 two-stream shortwave solve using ground
+surface-class VIS/NIR albedos as the full-column lower boundary. Ground receives
+terminal direct/diffuse VIS/NIR exactly once; reflected radiation traverses
+the overlying column and is never sent directly to the atmosphere.
+
+V1 selects unit longwave emissivity and no longwave reflection. For top-to-
+bottom occupancies `i=0..n-1`, `P_i=LAI_i+SAI_i` on tile-ground basis and
+
+```text
+tau_i = exp[-0.8*Omega_i*P_i].
+```
+
+The coefficient `0.8` has units `m2 plant area m-2 ground`; clumping
+`0<Omega_i<=1` is applied exactly once. With atmospheric boundary `Ldn_0` and
+current trial surface temperature `T_s`,
+
+```text
+Ldn_(i+1) = tau_i*Ldn_i + (1-tau_i)*E_i
+Lup_n     = sigma*T_s^4
+Lup_i     = tau_i*Lup_(i+1) + (1-tau_i)*E_i.
+```
+
+For component `j` in the ordered set `{sun_leaf, shade_leaf, wet_surface,
+dry_stem}`, let `a_j>=0` be its exact tile-ground emissive area and
+`w_j=a_j/sum(a_j)`. If `sum(a_j)=0`, `tau_i=1` and every component longwave
+term is exact zero. Otherwise the component net is
+
+```text
+R_lw,i,j = w_j*(1-tau_i)*(Ldn_i+Lup_(i+1))
+             - 2*w_j*(1-tau_i)*sigma*T_i,j^4.
+```
+
+Thus `sum_j R_lw,i,j` equals the layer net and each physical temperature enters
+its own emission. The ground term is `R_lw,s=Ldn_n-sigma*T_s^4`. All terms are
+recomputed from current nonlinear trial temperatures. A bulk canopy
+temperature, prescribed upward ground longwave, stale previous-step ground
+temperature, or direct ground-to-atmosphere bypass is noncanonical.
+
+### Neutral turbulent heat and vapor network
+
+Flux signs in this section are positive away from the surface/component and
+toward its air recipient. Let `rho_a` and `c_p` be the V8 forcing-derived moist
+air density and heat capacity and let `q_s` be the admitted surface humidity.
+For any surface-to-air resistance `r_h,r_v>0`,
+
+```text
+H_s = rho_a*c_p*(T_s-T_recipient)/r_h
+v_s = rho_a*(q_s-q_recipient)/r_v.
+```
+
+The signed vapor flux `v_s>0` is evaporation and `v_s<0` is condensation. It
+is never clipped to zero.
+
+An open tile has `d=0` and uses the exact neutral log-law
+
+```text
+r_h = ln(z_ref/z0m)*ln(z_ref/z0h)/(kappa^2*u_ref)
+r_v = ln(z_ref/z0m)*ln(z_ref/z0q)/(kappa^2*u_ref),
+```
+
+where `kappa=0.4`, `u_ref>0`, and
+`z_ref>max(z0m,z0h,z0q)>0`. No wind floor, stability correction, convective
+velocity, or alternate roughness is admitted.
+
+A covered tile owns one zero-storage canopy-air node `(T_c,q_c)`. Every V8
+component uses its unchanged component boundary/stomatal conductance to that
+shared node. Ground/litter exchange uses ISBA-MEB equations 54--63 specialized
+exactly to `psi_H=1` and `f_hv=1`:
+
+```text
+Re       = u_l*l_w/nu
+c_d      = 1.328*(2/sqrt(Re)) + 0.45*((1-chi_L)/pi)^1.6
+d        = 1.1*z_hv*ln[1+(c_d*LAI)^0.25]
+u_hv     = u_ref
+u_star   = kappa*u_hv/ln[(z_hv-d)/z0v]
+K_hv     = kappa*u_star*(z_hv-d)
+r_gn     = z_hv/(phi_v*K_hv)
+           * {exp[phi_v*(1-z0g/z_hv)]
+              - exp[phi_v*(1-(d+z0v)/z_hv)]}
+r_g-c    = r_gn/psi_H = r_gn
+z_r      = z_ref-d
+phi_z    = (z_hv-d)/z_r <= 1.
+```
+
+The frozen constants are `phi_v=2`, `z0g=0.007 m`, `chi_L=0.12`,
+`u_l=1 m s-1`, `l_w=0.02 m`, and `nu=1.5e-5 m2 s-1`. Configuration supplies
+`z_hv,z0v,z_ref,LAI`; it must satisfy `LAI>0`, `z_hv>d+z0v>z0g>0`,
+`z_ref-d>=z_hv-d>0`, and every logarithm/exponential/resistance must be finite
+and positive. Heat and vapor use this same neutral ground-to-canopy path as
+distinct semantic operands. The canopy-to-reference paths use the open neutral
+log-law above with configured canopy `d,z0m,z0h,z0q` and
+`z_ref>d+max(z0m,z0h,z0q)`.
+
+The exact shared zero-storage residuals are
+
+```text
+R_Tc = sum_j H_j + H_s - H_c->atm
+R_qc = sum_j v_j + v_s - v_c->atm.
+```
+
+Ground terms occur exactly once per tile, not once per occupancy. Reference-air
+ground transfer beneath a canopy, a ground term omitted from the canopy-air
+node, or a producer-aggregated canopy flux is invalid.
+
+### Surface humidity, surface enthalpy, litter, and soil heat
+
+One surface node is used for both admitted classes. With hydrology-owned
+surface water `W>=0`, configured dry areal heat capacity
+`C_dry>=0 J m^-2 K^-1`, and `T_ref=273.15 K`, its authoritative enthalpy is
+
+```text
+U_s = (C_dry + W*C_w)*(T_s-T_ref).
+```
+
+`W` is an immutable hydrology operand during a solve, never an LSE state field.
+The configured `finite_capacity` branch requires `C_dry+W*C_w>0`; its accepted
+ending enthalpy is the sole physical LSE state. Temperature is derived using
+the hydrology candidate's ending `W`; a retained temperature warm start must be
+bit-identical to that derived candidate value and cannot be independently
+adjusted. The
+configured `equilibrium_zero` branch requires `C_dry=0`, `W=0`, and `U_s=0`
+exactly and replaces the storage difference by exact zero while retaining
+`T_s` as the algebraic surface-energy unknown. No other zero-capacity branch is
+admitted.
+
+For bare mineral soil without positive surface water, V1 transcribes CLM5
+equations 5.72--5.81. With top-layer hydrology operands
+`W_liq,1,W_ice,1,dz_1,theta_sat,psi_sat,B,Phi`:
+
+```text
+s_1       = min(1,max(0.01,(W_liq,1/rho_w + W_ice,1/rho_i)
+                          /(dz_1*theta_sat)))
+theta_1   = W_liq,1/(rho_w*dz_1)
+psi_1     = max(-1e8, psi_sat*s_1^(-B))                 [mm]
+alpha     = exp(psi_1*g/(1000*R_wv*T_s))
+theta_air = Phi*(psi_sat/psi_air)^(1/B)
+DSL       = D_max*(theta_init-theta_1)/(theta_init-theta_air)
+            when theta_1<theta_init, otherwise 0
+Phi_air   = Phi-theta_air
+tau_pore  = Phi_air^2*(Phi_air/Phi)^(3/B)
+D_v       = 2.12e-5*(T_s/T_ref)^1.75
+r_soil    = DSL/(D_v*tau_pore)
+q_soil    = alpha*q_sat(T_s,p).
+```
+
+The constants are `D_max=0.015 m`, `psi_air=-1e7 mm`,
+`R_wv=461.5 J kg^-1 K^-1`,
+`rho_w=1000 kg m^-3`, `rho_i=917 kg m^-3`, and `g=9.80665 m s^-2`.
+If `q_sat(T_s)>q_recipient>q_soil`, V1 selects the CLM branch
+`q_soil=q_recipient`, yielding exact zero vapor flux. Otherwise
+`v_s=rho_a*(q_soil-q_recipient)/(r_v+r_soil)`. All denominators and powers
+must be defined; this bounded CLM branch is the only admitted humidity
+normalization. Positive surface water instead selects
+`q_s=q_sat(T_s,p)`, `r_soil=0`, and its request source is that exact store.
+Snow-free frozen/thawing states reject before these equations.
+
+Forest litter is the Napoly/ISBA single layer. With hydrology-owned liquid
+`W_l`, configured capacity `W_l,max`, thickness `dz_l`, dry density `rho_ld`,
+and dry specific heat `c_ld`,
+
+```text
+h_ul     = 0.5*(1-cos(pi*W_l/W_l,max))
+q_l      = h_ul*q_sat(T_s,p) + (1-h_ul)*q_recipient
+v_l      = rho_a*(q_l-q_recipient)/r_l-c
+lambda_l = 0.1 + 0.03*W_l/(rho_w*dz_l)
+C_dry    = dz_l*rho_ld*c_ld.
+```
+
+`W_l,max>0` and `0<=W_l<=W_l,max`. Litter blocks direct mineral-soil
+evaporation and upward capillary supply during this interval. `r_l-c` is the
+covered neutral `r_g-c` or open neutral `r_v` as topology requires. Overflow
+remains hydrology-owned ingress.
+
+The soil-thermal owner has exact ordered nodes `k=1..N`, each with
+`dz_k>0`, `lambda_k>0`, and areal heat capacity `C_k>0`. The surface has
+`dz_s>0,lambda_s>0`; for litter these are `dz_l,lambda_l`, and bare soil has
+its own configured mineral skin. Define
+
+```text
+g_s1     = 2/(dz_s/lambda_s + dz_1/lambda_1)
+g_k,k+1  = 2/(dz_k/lambda_k + dz_(k+1)/lambda_(k+1))
+G_s1     = g_s1*(T_s-T_1)
+G_k,k+1  = g_k,k+1*(T_k-T_(k+1)).
+```
+
+All `G` here are positive downward. The surface residual contains `-G_s1`;
+the soil-thermal candidate contains `+G_s1` exactly once. For Crank--Nicolson,
+`bar(G)=0.5*(G_begin+G_end)` and
+
+```text
+C_1*(T_1,1-T_1,0)/dt = bar(G_s1)-bar(G_1,2)
+C_k*(T_k,1-T_k,0)/dt = bar(G_k-1,k)-bar(G_k,k+1)
+C_N*(T_N,1-T_N,0)/dt = bar(G_N-1,N),
+```
+
+with exact zero lower flux. `N>=1`; for `N=1` this reduces to
+`C_1*(T_1,1-T_1,0)/dt=bar(G_s1)`. Phase change, frozen or thawing soil, an
+LSE-owned duplicate soil temperature, and a second independently calculated
+surface/soil flux are unsupported.
+
+For `finite_capacity`, `G_s1,begin` uses the beginning surface temperature
+derived from authoritative beginning `U_s,W,C_dry`, and `G_s1,end` uses the
+trial ending surface temperature. For `equilibrium_zero`, no physical
+beginning surface temperature exists: the current algebraic trial `T_s` is the
+surface-side operand at both Crank--Nicolson endpoints,
+`G_s1,begin=g_s1*(T_s-T_1,0)` and
+`G_s1,end=g_s1*(T_s-T_1,1)`. The caller temperature warm start is numerical
+only and must never enter `G_s1,begin` as a physical state operand.
+
+### Signed vapor and liquid enthalpy
+
+The liquid reference state is `T_ref=273.15 K`; `C_w=4218 J kg^-1 K^-1`.
+Each parcel carries `h_l(T)=C_w*(T-T_ref)` and `Q=m*h_l(T)`. Positive-mass
+mixing conserves enthalpy exactly:
+`T_mix=T_ref+sum(m_i*h_i)/(C_w*sum(m_i))`. A zero-mass crossing has neither
+temperature nor energy. Rain temperature is the exact retained output
+`hydrometeor_temperature_c+273.15` from
+`openwepp_meteorology::phase::hydrometeor_temperature_from_relative_humidity`
+on the active `harder_pomeroy_hourly` provider required by
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-075`; LSE neither recomputes nor partially
+transcribes that solver. Runon must carry the typed temperature and enthalpy of
+the accepted upstream outlet parcel. Missing runon temperature rejects; air,
+soil, freezing, or downstream surface temperature is never substituted.
+Infiltration and runoff carry the exact accepted source-parcel or conservative
+mixture temperature selected by hydrology.
+
+The selected liquid vaporization enthalpy is
+`L_v(T)=2.501e6-2369*(T-T_ref) J kg^-1`. The signed vapor-energy flux leaving
+the surface is
+
+```text
+Q_v = v_s*[h_l(T_s)+L_v(T_s)]                 [W m^-2].
+```
+
+Thus evaporation (`v_s>0`) removes both liquid sensible enthalpy and latent
+energy, while condensation (`v_s<0`) credits both. Evaporation produces a
+positive water request `D=max(v_s,0)*dt`; only finalized positive use is
+debited. Condensation produces no withdrawal request and hydrology credits the
+exact amount `-v_s*dt` to the typed surface store. Any clipping, absolute
+value, latent-only record, authorization-as-use, or missing condensation mass
+credit fails.
+
+The interval surface equation before current-ingress advection is
+
+```text
+(U_pre-U_0)/dt = R_sw + R_lw - H_s - Q_v - G_s1.
+```
+
+`U_pre` uses the hydrology-owned pre-ingress mass after finalized evaporation
+debit or condensation credit. Every term is evaluated at the accepted trial
+surface state and occurs exactly once.
+
+### Immutable-beginning water transaction and current ingress
+
+The water snapshot precedes all current-interval rain, runon, and canopy liquid
+release. Only immutable beginning surface/litter and soil-layer liquid stores
+are available to root uptake and ground evaporation. Current precipitation,
+runon, throughfall, both canopy drainage terms, stemflow, and litter overflow
+cannot satisfy or reduce a same-interval withdrawal request.
+
+From immutable beginning vegetation/LSE/soil-thermal state and that immutable
+hydrology snapshot, solve the complete current-temperature canopy--ground
+system without owner caps. Publish root, surface/litter, and soil-layer
+requests with transaction/OFE/tile/occupancy/surface/source/layer/basis
+identity. Hydrology authorizes all same-snapshot requests exactly once, before
+current ingress. Therefore a changed final canopy release cannot shrink or
+enlarge authorized supply.
+
+Rebuild the complete system from the original beginning state with fixed
+source-specific caps. The cap is active iff `cap_rate<=q_law`; equality selects
+the cap branch and zero generalized derivative. Gas, canopy energy, surface
+energy, shared air, hydraulics and soil thermal state re-solve together. Final
+use is `F=f_tile*q*dt`, independently checked as `0<=F<=A<=D`. No second
+authorization, donation, scalar stress or potential-state continuation exists.
+
+After the capped solve accepts, hydrology applies finalized beginning-store
+debits and the explicit condensation credit, then accepts final current
+precipitation, runon, and canopy release. Hydrology partitions that ingress
+exactly once into retained surface/litter store, infiltration, routed runoff,
+and outlet runoff. This is owner candidate construction, not a second
+authorization. Ingress parcels retain their individual enthalpies. Retained
+ingress updates surface `U`; infiltration energy credits soil thermal node 1;
+routed runoff transfers the same accepted parcel mass and enthalpy to the
+downstream OFE; outlet runoff transfers them out. The ending surface
+temperature is obtained only from the authoritative ending `U_s,W,C_dry`
+identity. Current ingress does not feed the already accepted same-interval
+H/LE/G flux evaluation.
+
+```text
+U_s,1       = U_pre + sum(Q_retained_ingress)
+E_soil,1,1  = E_soil,1,pre + sum(Q_infiltration)
+Q_runon,dst = Q_routed_runoff,src
+Q_outlet    = sum(Q_outlet_runoff).
+```
+
+Each equality uses the identical accepted mass/enthalpy parcel; zero mass has
+zero energy and no temperature. The soil owner reconstructs its first-layer
+temperature from the credited enthalpy. Hydrology may combine parcels only by
+the conservative mixing equation above.
+
+Potential and final passes use identical operator ordering. Only the final
+pass constructs owner candidates and applies the once-only ingress partition.
+
+### Ordered numerical algorithm, active branches, and error precedence
+
+For each OFE, tiles sort by typed tile ID. Within each tile, canopy occupancies
+sort top-to-bottom by rank and then typed occupancy ID. The exact unknown order
+is: every V8 occupancy unknown block in that order (with the V7 within-block
+order), the shared tile `(T_c,q_c)` when covered, `T_s`, and soil thermal
+`T_1..T_N`. The exact residual order is: matching V8 gas/component-energy/
+hydraulic blocks, shared canopy-air heat, shared canopy-air vapor, surface
+energy, then soil thermal layers `1..N`. Open tiles omit only the two shared-air
+unknowns/residuals and use reference-air fluxes.
+
+The nonlinear unknown bounds are `200<=T<=350 K`,
+`0<=q_c<=0.1 kg kg^-1`, and the unchanged V8 bounds for `ci`, hydraulic
+potentials, and `beta`. Configuration/domain validation precedes numerical
+bounds; an invalid physical input is not reported as nonconvergence.
+
+The joint system may be monolithic or a mathematically equivalent nested solve
+only when every inner solve converges at every outer residual evaluation and
+the complete ordered residual vector passes. Residuals are normalized by the
+dimensional thresholds below before the infinity norm is formed. Starting from
+the complete caller warm start, each Newton iteration uses centered finite
+differences `delta_i=sqrt(epsilon)*max(abs(x_i),unit_scale_i)`, evaluating the
+minus point and then the plus point, solves with deterministic partial-pivot
+LU, and accepts the first factor `2^-b`, `b=0..20`, producing a strict decrease
+in normalized infinity norm. Equal pivot magnitudes choose the lowest row.
+Failure to decrease through `b=20` is backtracking limit. A pivot below
+`64*epsilon*matrix_inf_norm` is singular. The iteration limit is 50 completed
+Newton updates. Unit scales are `1 K`, `0.001 kg kg^-1`, `1 Pa`, `1000 mm`,
+and `1` for beta.
+
+Each energy residual threshold is
+`1e-6 W m^-2+1e-10*max(1,sum(abs(component operands)))`. Each water/vapor
+residual threshold is `1e-12 kg m^-2 s^-1+1e-9*scale`. Accepted temperature
+step is at most `1e-8 K`; humidity step at most `1e-12 kg kg^-1`; accepted
+hydraulic step is at most `1e-7 mm`; and beta step at most `1e-10`.
+Convergence requires all residual and step criteria on the same accepted
+iterate. Active branches are evaluated in this order: typed domain; surface
+class; covered/open turbulence; positive-surface-water versus dry-soil vapor;
+vapor sign; water cap (`cap<=law`, equality cap-active); then numerical solve.
+Identity, unit, basis, owner, layer, band, direction and D/A/F inequalities are
+exact and cannot be tolerance-repaired.
+
+Error precedence is: malformed serialization; model/configuration/state/
+transaction identity; missing/duplicate topology or owner; nonfinite operand;
+unsupported snow/frozen/thawing/calm/nonneutral/domain branch; constitutive
+domain; request/authorization identity or bound; singular pivot;
+backtracking limit; iteration limit; accepted-step/residual failure;
+component closure; control-volume closure; cross-owner join. Only the first
+error is returned, with diagnostics accumulated up to that point.
+
+Every failure includes typed model/configuration/state/transaction/OFE/tile/
+occupancy/pass/solve identity, ordered residuals, iteration and backtracking
+counts, step, bounds/caps, bracket/pivot/matrix evidence and rollback hashes.
+No failed iterate or partial owner candidate is usable.
+
+### Independent closure and errors
+
+Independent validators reconstruct local then weighted OFE-ground shortwave,
+longwave, sensible, signed vapor enthalpy, surface storage, soil storage,
+ground and advected energy; hydrology mass;
+latent mass/energy; and equal/opposite ground heat. They consume primitive
+operands, never producer residuals. Required new error families are:
+
+- `LSEB-E-030` unsupported domain;
+- `LSEB-E-031` strict configuration/state/identity;
+- `LSEB-E-032` radiation or turbulent ownership;
+- `LSEB-E-033` source-water D/A/F;
+- `LSEB-E-034` numerical convergence;
+- `LSEB-E-035` component/control-volume closure;
+- `LSEB-E-036` liquid enthalpy/latent join; and
+- `LSEB-E-037` ground-heat or atomic-owner join.
+
+Additional typed failures are `LSEB-E-038` current-ingress ordering or
+same-interval availability, `LSEB-E-039` condensation mass/energy credit, and
+`LSEB-E-040` soil-thermal owner/state/enthalpy mismatch.
+
+Any error preserves vegetation, hydrology, LSE, BGC, soil-thermal and envelope
+bytes. `GAP-LANDSURFACEENERGY-001..003` and the authority portion of 006 are
+`AUTHORITY_ADMITTED`; gap 004 remains `IMPLEMENTATION_MISSING`; gap 005 remains
+outside the snow-free model.
+
+### V1 invariants and independent fixtures
+
+| ID | Binding V1 rule |
+|---|---|
+| `INV-LANDSURFACEENERGY-100` | Hydrology owns every water mass; LSE owns one surface thermal node per tile; soil thermal owns all `N` soil temperatures and enthalpies. |
+| `INV-LANDSURFACEENERGY-101` | Component longwave uses current component temperature and `tau=exp[-0.8*Omega*(LAI+SAI)]`; no bulk-canopy or stale-ground operand is accepted. |
+| `INV-LANDSURFACEENERGY-102` | Neutral open and covered turbulent paths use only the exact equations/constants/domains above; no wind floor or stability substitute exists. |
+| `INV-LANDSURFACEENERGY-103` | Surface enthalpy is `(C_dry+W*C_w)*(T_s-T_ref)` using hydrology's exact mass, while every soil enthalpy remains independently owned. |
+| `INV-LANDSURFACEENERGY-104` | Signed vapor mass and `v*[h_l+L_v]` energy preserve sign; condensation has one explicit hydrology credit. |
+| `INV-LANDSURFACEENERGY-105` | Root and ground requests share beginning stores before ingress; accepted current ingress is partitioned exactly once after the capped solve. |
+| `INV-LANDSURFACEENERGY-106` | Surface `-G_s1` and soil `+G_s1`, infiltration energy, and routed runoff enthalpy join once by exact OFE/tile/interval identity. |
+| `INV-LANDSURFACEENERGY-107` | Local tile closure precedes one `f_t` weighting to OFE ground; no cross-OFE aggregate is called stand ground. |
+| `INV-LANDSURFACEENERGY-108` | Ordered unknowns, residuals, branches, finite differences, pivots, backtracking, tolerances, and error precedence are deterministic. |
+
+The digest-bound independent fixture family must include open bare-soil day and
+night, dry and wet litter, covered and open tiles, two heterogeneous columns,
+zero shortwave, longwave and ground-heat sign reversal, ground feedback to
+canopy air, evaporation and condensation, full and partial surface/top-layer
+authorization, concurrent root/ground scarcity, dry source, rain/runon/
+infiltration/runoff advection, equilibrium-zero and finite heat storage,
+alternate warm starts, singular/backtracking/iteration failures, and exact
+rollback. Frozen, snow, terminal-snow, calm, and nonneutral inputs are typed
+rejection vectors.
+
+Required poisons independently distinguish bulk/repartitioned longwave,
+prescribed upward ground longwave, reference-air ground exchange beneath
+canopy, omitted ground canopy-air H/v, agricultural PMET donation, current
+ingress counted as available water, final canopy release shrinking
+authorization, missing/doubled `f_t`, authorization as finalized use, vapor
+zero-clipping, condensation sign reversal or missing mass credit, latent-only
+vapor energy, omitted/swapped liquid advection, duplicated `G`, an LSE-owned
+soil temperature, hidden wind floor, and producer-supplied residual.
+
+### Scope
+
+This version authorizes contract-derived fixtures and later default-off shadow
+implementation. It authorizes no production selector/default/output, snow
+handoff, calibration, empirical validation or transferability claim, or
+cutover.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-14 | 3 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V1`: explicit bare-soil and forest-litter thermal state, reciprocal V8 canopy-ground radiation/turbulence, hydrology-owned water mass, liquid enthalpy, coupled potential/final solve, strict numerics and independent closure; no runtime or cutover. |
 | 2026-08-08 | 2 | Codex | VEGETATION-BOUNDARY-AUTHORITY amendment: separated canopy/ground/litter/snow/soil radiation lineage and bound actual transpiration to one independently reconstructed latent-energy debit without admitting constitutive physics. |
 | 2026-08-08 | 1 | Codex | Initial control-volume, custody, conservation, ownership, guard, test-vector, and non-promotable authority-gap contract. |

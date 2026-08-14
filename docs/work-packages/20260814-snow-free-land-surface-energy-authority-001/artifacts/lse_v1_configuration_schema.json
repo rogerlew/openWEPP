@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/configuration",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 strict canonical configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_version",
+    "model_definition_sha256",
+    "configuration_sha256",
+    "owner_id",
+    "vegetation_configuration",
+    "hydrology_configuration",
+    "soil_thermal_configuration",
+    "numerics",
+    "ofes"
+  ],
+  "properties": {
+    "model_version": { "const": "OPENWEPP_SNOW_FREE_LSE_V1" },
+    "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+    "configuration_sha256": { "$ref": "#/$defs/sha256" },
+    "owner_id": { "$ref": "#/$defs/nonempty" },
+    "vegetation_configuration": {
+      "allOf": [
+        { "$ref": "#/$defs/owner_configuration_ref" },
+        {
+          "type": "object",
+          "properties": {
+            "model_version": { "const": "OPENWEPP_C3_WOODY_V8" },
+            "model_definition_sha256": {
+              "const": "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+            }
+          }
+        }
+      ]
+    },
+    "hydrology_configuration": { "$ref": "#/$defs/owner_configuration_ref" },
+    "soil_thermal_configuration": { "$ref": "#/$defs/owner_configuration_ref" },
+    "numerics": { "$ref": "#/$defs/numerics" },
+    "ofes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/ofe" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_configuration_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_id",
+        "model_version",
+        "model_definition_sha256",
+        "configuration_sha256"
+      ],
+      "properties": {
+        "owner_id": { "$ref": "#/$defs/nonempty" },
+        "model_version": { "$ref": "#/$defs/nonempty" },
+        "model_definition_sha256": { "$ref": "#/$defs/sha256" },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "numerics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "iteration_limit",
+        "backtracking_exponents",
+        "finite_difference",
+        "pivot_threshold",
+        "equal_pivot_rule",
+        "temperature_bounds_k",
+        "humidity_bounds_kg_kg",
+        "temperature_step_tolerance_k",
+        "humidity_step_tolerance_kg_kg",
+        "hydraulic_step_tolerance_mm",
+        "beta_step_tolerance"
+      ],
+      "properties": {
+        "iteration_limit": { "const": 50 },
+        "backtracking_exponents": {
+          "const": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        },
+        "finite_difference": { "const": "centered_sqrt_binary64_epsilon_minus_then_plus" },
+        "pivot_threshold": { "const": "64_times_binary64_epsilon_times_matrix_infinity_norm" },
+        "equal_pivot_rule": { "const": "lowest_row" },
+        "temperature_bounds_k": { "const": [200, 350] },
+        "humidity_bounds_kg_kg": { "const": [0, 0.1] },
+        "temperature_step_tolerance_k": { "const": 1e-8 },
+        "humidity_step_tolerance_kg_kg": { "const": 1e-12 },
+        "hydraulic_step_tolerance_mm": { "const": 1e-7 },
+        "beta_step_tolerance": { "const": 1e-10 }
+      }
+    },
+    "ofe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ofe_id", "area_m2", "soil_interface_layers", "tiles"],
+      "properties": {
+        "ofe_id": { "$ref": "#/$defs/nonempty" },
+        "area_m2": { "type": "number", "exclusiveMinimum": 0 },
+        "soil_interface_layers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/soil_interface_layer" }
+        },
+        "tiles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/tile" }
+        }
+      }
+    },
+    "soil_interface_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "thickness_m",
+        "thermal_conductivity_w_m_k",
+        "areal_heat_capacity_j_m2_k"
+      ],
+      "properties": {
+        "layer_id": { "$ref": "#/$defs/nonempty" },
+        "thickness_m": { "type": "number", "exclusiveMinimum": 0 },
+        "thermal_conductivity_w_m_k": { "type": "number", "exclusiveMinimum": 0 },
+        "areal_heat_capacity_j_m2_k": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "tile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tile_id",
+        "fraction_ofe_ground",
+        "vegetation_tile_id",
+        "surface_vis_albedo",
+        "surface_nir_albedo",
+        "surface_heat_storage_mode",
+        "turbulence",
+        "surface"
+      ],
+      "properties": {
+        "tile_id": { "$ref": "#/$defs/nonempty" },
+        "fraction_ofe_ground": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "vegetation_tile_id": { "$ref": "#/$defs/nonempty" },
+        "surface_vis_albedo": { "type": "number", "minimum": 0, "maximum": 1 },
+        "surface_nir_albedo": { "type": "number", "minimum": 0, "maximum": 1 },
+        "surface_heat_storage_mode": {
+          "enum": ["finite_capacity", "equilibrium_zero"]
+        },
+        "turbulence": {
+          "oneOf": [
+            { "$ref": "#/$defs/open_turbulence" },
+            { "$ref": "#/$defs/covered_turbulence" }
+          ]
+        },
+        "surface": {
+          "oneOf": [
+            { "$ref": "#/$defs/bare_surface" },
+            { "$ref": "#/$defs/litter_surface" }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "surface_heat_storage_mode": { "const": "equilibrium_zero" } },
+            "required": ["surface_heat_storage_mode"]
+          },
+          "then": {
+            "properties": {
+              "surface": {
+                "allOf": [
+                  { "$ref": "#/$defs/bare_surface" },
+                  {
+                    "properties": {
+                      "dry_areal_heat_capacity_j_m2_k": { "const": 0 }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "open_turbulence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "reference_height_m",
+        "roughness_momentum_m",
+        "roughness_heat_m",
+        "roughness_vapor_m"
+      ],
+      "properties": {
+        "mode": { "const": "open_neutral" },
+        "reference_height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "roughness_momentum_m": { "type": "number", "exclusiveMinimum": 0 },
+        "roughness_heat_m": { "type": "number", "exclusiveMinimum": 0 },
+        "roughness_vapor_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "covered_turbulence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "canopy_height_m",
+        "ground_exchange_roughness_m",
+        "leaf_area_index_m2_m2_tile_ground",
+        "canopy_to_reference"
+      ],
+      "properties": {
+        "mode": { "const": "covered_neutral" },
+        "canopy_height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "ground_exchange_roughness_m": { "type": "number", "exclusiveMinimum": 0 },
+        "leaf_area_index_m2_m2_tile_ground": { "type": "number", "exclusiveMinimum": 0 },
+        "canopy_to_reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reference_height_m",
+            "displacement_m",
+            "roughness_momentum_m",
+            "roughness_heat_m",
+            "roughness_vapor_m"
+          ],
+          "properties": {
+            "reference_height_m": { "type": "number", "exclusiveMinimum": 0 },
+            "displacement_m": { "type": "number", "minimum": 0 },
+            "roughness_momentum_m": { "type": "number", "exclusiveMinimum": 0 },
+            "roughness_heat_m": { "type": "number", "exclusiveMinimum": 0 },
+            "roughness_vapor_m": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      }
+    },
+    "bare_surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surface_class",
+        "dry_areal_heat_capacity_j_m2_k",
+        "mineral_skin_thickness_m",
+        "mineral_skin_thermal_conductivity_w_m_k",
+        "top_layer_saturated_water_content_m3_m3",
+        "top_layer_porosity_m3_m3",
+        "top_layer_saturated_matric_potential_mm",
+        "top_layer_clapp_hornberger_b",
+        "top_layer_initial_water_content_m3_m3"
+      ],
+      "properties": {
+        "surface_class": { "const": "bare_mineral_soil" },
+        "dry_areal_heat_capacity_j_m2_k": { "type": "number", "minimum": 0 },
+        "mineral_skin_thickness_m": { "type": "number", "exclusiveMinimum": 0 },
+        "mineral_skin_thermal_conductivity_w_m_k": { "type": "number", "exclusiveMinimum": 0 },
+        "top_layer_saturated_water_content_m3_m3": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "top_layer_porosity_m3_m3": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "top_layer_saturated_matric_potential_mm": {
+          "type": "number",
+          "exclusiveMaximum": 0
+        },
+        "top_layer_clapp_hornberger_b": { "type": "number", "exclusiveMinimum": 0 },
+        "top_layer_initial_water_content_m3_m3": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "litter_surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surface_class",
+        "liquid_capacity_kg_m2_tile_ground",
+        "thickness_m",
+        "dry_density_kg_m3",
+        "dry_specific_heat_j_kg_k"
+      ],
+      "properties": {
+        "surface_class": { "const": "forest_litter" },
+        "liquid_capacity_kg_m2_tile_ground": { "type": "number", "exclusiveMinimum": 0 },
+        "thickness_m": { "type": "number", "exclusiveMinimum": 0 },
+        "dry_density_kg_m3": { "type": "number", "exclusiveMinimum": 0 },
+        "dry_specific_heat_j_kg_k": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

@@ -21,6 +21,8 @@ const V6_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260813-c3-woody-failure-diagnostic-portability-authority-001";
 const V7_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001";
+const V8_AUTHORITY_PACKAGE: &str =
+    "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -187,7 +189,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 11",
+        "contract_version: 12",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
@@ -209,8 +211,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-13` |",
-        "OPENWEPP_C3_WOODY_V7",
+        "| `static` | `2026-08-14` |",
+        "OPENWEPP_C3_WOODY_V8",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -630,7 +632,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 11",
+        "contract_version: 12",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
@@ -638,6 +640,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
         "OPENWEPP_C3_WOODY_V5",
         "OPENWEPP_C3_WOODY_V6",
         "OPENWEPP_C3_WOODY_V7",
+        "OPENWEPP_C3_WOODY_V8",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -718,26 +721,34 @@ fn v2_tile_liquid_authority_is_digest_bound_and_v1_is_historical() {
     ] {
         assert!(v2.contains(expected));
     }
-    for (path, expected) in [
+    for (path, historical_expected, amended) in [
         (
             "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
             "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+            false,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
             "7de4887f9d62202427552f7ef9a677ac9668811cca84fa5d816dd9dc45bf9f69",
+            true,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
             "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
+            false,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
             "c94d3c5745fd801b092f992b46fb6f5d4684b70acf24f198c4d4d6fdc42785c8",
+            true,
         ),
     ] {
-        assert_eq!(sha256(path), expected);
-        assert!(v2.contains(expected));
+        if amended {
+            assert_ne!(sha256(path), historical_expected);
+        } else {
+            assert_eq!(sha256(path), historical_expected);
+        }
+        assert!(v2.contains(historical_expected));
     }
     for required in [
         "INV-VEGETATION-073",
@@ -790,30 +801,38 @@ fn v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable() 
 
     assert_v3_section_digests(&vegetation, &parsed);
 
-    for (path, key, expected) in [
+    for (path, key, historical_expected, amended) in [
         (
             "docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
             "biogeochemistry_contract",
             "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4",
+            false,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
             "land_surface_energy_contract",
             "7de4887f9d62202427552f7ef9a677ac9668811cca84fa5d816dd9dc45bf9f69",
+            true,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
             "water_balance_contract",
             "c30b7c243a36f7fc2aec316c3ba590c8f7629759d36bf1f91b60c0cf0c419188",
+            false,
         ),
         (
             "docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
             "vegetation_transaction_contract",
             "c94d3c5745fd801b092f992b46fb6f5d4684b70acf24f198c4d4d6fdc42785c8",
+            true,
         ),
     ] {
-        assert_eq!(sha256(path), expected);
-        assert_eq!(parsed["canonical_section_sha256"][key], expected);
+        if amended {
+            assert_ne!(sha256(path), historical_expected);
+        } else {
+            assert_eq!(sha256(path), historical_expected);
+        }
+        assert_eq!(parsed["canonical_section_sha256"][key], historical_expected);
     }
 
     assert_eq!(
@@ -2396,4 +2415,53 @@ fn v7_vectors_bind_six_tissues_ordering_migration_poisons_and_rollback() {
     assert_v7_migration(&fixture);
     assert_v7_poisons(&fixture);
     assert_v7_rollback(&fixture);
+}
+
+#[test]
+fn v8_ground_energy_successor_is_digest_bound_and_v7_is_immutable() {
+    let vegetation = read(CONTRACT);
+    let definition_path =
+        format!("{V8_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v8_definition.json");
+    let definition: Value =
+        serde_json::from_str(&read(&definition_path)).expect("V8 definition JSON");
+
+    assert_eq!(
+        sha256(&definition_path),
+        "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+    );
+    assert_eq!(definition["model_version"], "OPENWEPP_C3_WOODY_V8");
+    assert_eq!(definition["canonical_contract"], "SC-VEGETATION-001@12");
+    assert_eq!(
+        definition["base_model_definition_sha256"],
+        "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f"
+    );
+    let v8_heading = "## `OPENWEPP_C3_WOODY_V8` Coupled Ground-Energy Amendment\n";
+    let v8_offset = vegetation.find(v8_heading).expect("V8 section heading");
+    assert_eq!(
+        sha256_text(&vegetation[v8_offset..]),
+        definition["canonical_section_sha256"]
+            .as_str()
+            .expect("V8 section digest")
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V7_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v7_definition.json"
+        )),
+        "a78264d8cd24d2718e099420357e1632ac09f2ba18c4a42d21e7e5b282aa459f"
+    );
+    for required in [
+        "INV-VEGETATION-110",
+        "INV-VEGETATION-111",
+        "INV-VEGETATION-112",
+        "INV-VEGETATION-113",
+        "VEG-E-110",
+        "VEG-E-111",
+        "VEG-E-112",
+        "VEG-E-113",
+    ] {
+        assert!(
+            vegetation.contains(required),
+            "missing V8 authority {required}"
+        );
+    }
 }

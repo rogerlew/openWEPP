@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/schema/lse/openwepp_snow_free_lse_v1/forcing",
+  "title": "OPENWEPP_SNOW_FREE_LSE_V1 meteorology and current-ingress forcing",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forcing_sha256",
+    "transaction_id",
+    "interval_s",
+    "air_temperature_k",
+    "air_specific_humidity_kg_kg",
+    "air_pressure_pa",
+    "reference_wind_m_s",
+    "neutral_stability",
+    "snow_present_at_beginning",
+    "snow_present_at_end",
+    "snow_terminal_payload_present",
+    "direct_vis_w_m2",
+    "diffuse_vis_w_m2",
+    "direct_nir_w_m2",
+    "diffuse_nir_w_m2",
+    "atmospheric_downward_longwave_w_m2",
+    "precipitation_parcels",
+    "runon_parcels"
+  ],
+  "properties": {
+    "forcing_sha256": { "$ref": "#/$defs/sha256" },
+    "transaction_id": { "type": "integer", "minimum": 1 },
+    "interval_s": { "type": "number", "exclusiveMinimum": 0 },
+    "air_temperature_k": { "type": "number", "exclusiveMinimum": 0 },
+    "air_specific_humidity_kg_kg": { "type": "number", "minimum": 0 },
+    "air_pressure_pa": { "type": "number", "exclusiveMinimum": 0 },
+    "reference_wind_m_s": { "type": "number", "exclusiveMinimum": 0 },
+    "neutral_stability": { "const": true },
+    "snow_present_at_beginning": { "const": false },
+    "snow_present_at_end": { "const": false },
+    "snow_terminal_payload_present": { "const": false },
+    "direct_vis_w_m2": { "type": "number", "minimum": 0 },
+    "diffuse_vis_w_m2": { "type": "number", "minimum": 0 },
+    "direct_nir_w_m2": { "type": "number", "minimum": 0 },
+    "diffuse_nir_w_m2": { "type": "number", "minimum": 0 },
+    "atmospheric_downward_longwave_w_m2": { "type": "number", "minimum": 0 },
+    "precipitation_parcels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/liquid_parcel" },
+          {
+            "properties": {
+              "parcel_kind": { "const": "precipitation" },
+              "temperature_provider": { "const": "harder_pomeroy_hourly" }
+            }
+          }
+        ]
+      }
+    },
+    "runon_parcels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/liquid_parcel" },
+          {
+            "properties": {
+              "parcel_kind": { "const": "routed_runon" },
+              "temperature_provider": { "const": "accepted_upstream_outlet_parcel" }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "liquid_parcel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parcel_kind",
+        "parcel_id",
+        "source_owner_id",
+        "source_ofe_id",
+        "source_tile_id",
+        "destination_ofe_id",
+        "destination_tile_id",
+        "amount_kg_m2_destination_tile_ground",
+        "temperature_provider"
+      ],
+      "properties": {
+        "parcel_kind": {
+          "enum": ["precipitation", "routed_runon"]
+        },
+        "parcel_id": { "$ref": "#/$defs/nonempty" },
+        "source_owner_id": { "$ref": "#/$defs/nonempty" },
+        "source_ofe_id": { "$ref": "#/$defs/nonempty" },
+        "source_tile_id": { "$ref": "#/$defs/nonempty" },
+        "destination_ofe_id": { "$ref": "#/$defs/nonempty" },
+        "destination_tile_id": { "$ref": "#/$defs/nonempty" },
+        "amount_kg_m2_destination_tile_ground": { "type": "number", "minimum": 0 },
+        "temperature_k": { "type": "number", "exclusiveMinimum": 0 },
+        "specific_liquid_enthalpy_j_kg": { "type": "number" },
+        "temperature_provider": {
+          "enum": ["harder_pomeroy_hourly", "accepted_upstream_outlet_parcel"]
+        },
+        "source_state_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "parcel_kind": { "const": "precipitation" } },
+            "required": ["parcel_kind"]
+          },
+          "then": {
+            "properties": {
+              "temperature_provider": { "const": "harder_pomeroy_hourly" }
+            }
+          },
+          "else": {
+            "properties": {
+              "temperature_provider": { "const": "accepted_upstream_outlet_parcel" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "amount_kg_m2_destination_tile_ground": { "exclusiveMinimum": 0 }
+            },
+            "required": ["amount_kg_m2_destination_tile_ground"]
+          },
+          "then": {
+            "required": [
+              "temperature_k",
+              "specific_liquid_enthalpy_j_kg",
+              "source_state_sha256"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                { "required": ["temperature_k"] },
+                { "required": ["specific_liquid_enthalpy_j_kg"] }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

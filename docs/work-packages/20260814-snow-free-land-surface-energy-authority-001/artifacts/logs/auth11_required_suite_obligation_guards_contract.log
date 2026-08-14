@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID df99c996-dc6a-4461-b22c-73e3224f7455 with nextest profile: default
+    Starting 3 tests across 1 binary
+       START [         ] (1/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_all_active_required_suite_targets_exist_and_are_registered
+
+running 1 test
+test auth11_all_active_required_suite_targets_exist_and_are_registered ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+        PASS [   0.008s] (1/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_all_active_required_suite_targets_exist_and_are_registered
+       START [         ] (2/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_obligations_schema_and_anchor_bindings_are_enforced
+
+running 1 test
+test auth11_obligations_schema_and_anchor_bindings_are_enforced ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+        PASS [   0.007s] (2/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_obligations_schema_and_anchor_bindings_are_enforced
+       START [         ] (3/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_registry_posture_and_protocol_guard_paths_exist
+
+running 1 test
+test auth11_registry_posture_and_protocol_guard_paths_exist ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+        PASS [   0.007s] (3/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_registry_posture_and_protocol_guard_paths_exist
+────────────
+     Summary [   0.023s] 3 tests run: 3 passed, 0 skipped
