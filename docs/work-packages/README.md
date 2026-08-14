@@ -592,6 +592,13 @@
 
 State as of `2026-08-14 UTC`:
 
+- `20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/`
+  - EXECUTING / CONTRACT-FIRST DEPENDENCY LIFT: admits and implements the
+    persistent per-OFE/tile/surface-class hydrology owner named by the Child-3
+    HOLD, including strict restart lineage, D/A/F debit, signed condensation
+    credit, ingress routing and rollback. Production selection and behavior
+    remain protected; the held Child 3 resumes only after this package passes.
+
 - `20260814-snow-free-land-surface-real-hydrology-integration-001/`
   - HOLD / CHILDREN 1-2 COMPLETE / CHILD 3 FOREST SURFACE-LIQUID CUSTODY
     ABSENT: coordinates four
