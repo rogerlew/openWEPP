@@ -88,3 +88,15 @@ actual mismatch, or expected missing row. Rollback sequence validation detects
 a deletion before treating the shifted row as malformed, so a missing first
 LSE row identifies the expected LSE owner. Equal-length wrong rows continue to
 identify their actual wrong owner.
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-RELEASE-HIGH-001: public bridge admits represented frozen/thawing and snow-retained-liquid-only state | Accepted | Remediated; focused PASS |
+| A-RELEASE-HIGH-002: finite same-store demand accumulation can overflow and produce non-proportional authorization | Accepted | Remediated; focused PASS |
+
+The public bridge now returns contextual E004 before authorization or callback
+for snow runtime/carry, retained snow liquid, frost runtime/carry, or positive
+production-layer frozen depth/water. The poison matrix proves callback
+non-invocation and byte-identical production state. Demand accumulation and
+every proportional-allocation intermediate now fail closed on nonfinite
+results; retained arbitration reconstruction independently repeats the guard.

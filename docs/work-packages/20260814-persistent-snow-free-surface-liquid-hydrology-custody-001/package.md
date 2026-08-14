@@ -75,7 +75,10 @@ branch, PR or push is in scope.
   re-review found one bounded E011 offender-context defect; its focused passing
   correction at `75ba70681` received another exact-byte review, which found
   two remaining preflight/deletion context paths. Their focused passing
-  correction is frozen at `6a107303c` and awaits fresh exact-byte review.
+  correction at `6a107303c` received release review, which found an incomplete
+  E004 frozen/thaw/snow-liquid-only domain guard and a finite-input aggregate
+  authorization overflow. Their focused passing corrections are frozen at
+  `0cb11eb12` and `93c46d3db`; fresh exact-byte review remains pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

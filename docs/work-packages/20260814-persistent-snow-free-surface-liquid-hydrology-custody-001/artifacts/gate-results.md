@@ -324,6 +324,30 @@ failed attempts.
   thermal, matching the owners this Child-3 bridge constructs.
 - Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
 
+## Authorization-overflow release remediation at `93c46d3db`
+
+- HOLD retained: Rust release review found that two finite same-store demands
+  could overflow their aggregate and yield a non-proportional authorization.
+- PASS: demand accumulation, supply multiplication, proportional numerator,
+  division, remainder and allocated-total intermediates now fail closed as
+  contextual E003 before any batch or candidate exists.
+- PASS: surface-liquid focused tests, 32/32, including distinct-requester
+  finite-overflow and adjacent large-finite proportional controls; affected
+  strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte reviews.
+
+## Frozen-domain release remediation at `0cb11eb12`
+
+- HOLD retained: release review found that the public bridge rejected only
+  selected snow state and admitted represented frost/thaw, frozen layers, and
+  snow-retained-liquid-only state.
+- PASS: E004 preflight now covers snow runtime/carry, retained snow liquid,
+  frost runtime/carry, and any positive production-layer frozen depth/water,
+  with exact hydrology owner and OFE/tile/source context.
+- PASS: real-LSE/real-hydrology integration, 18/18; surface-liquid focused
+  tests, 30/30; affected strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte hydrology/ownership and Rust correctness review.
+
 ## Terminal-context remediation at `6a107303c`
 
 - HOLD retained: terminal exact-byte reviews found a later independent thermal
