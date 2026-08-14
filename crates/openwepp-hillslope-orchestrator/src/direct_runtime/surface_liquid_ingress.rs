@@ -16,8 +16,7 @@ use super::surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
-    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
-    DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidStoreKey,
 };
 
 const INTERVAL_S: f64 = 1_800.0;
@@ -28,6 +27,45 @@ const REFERENCE_TEMPERATURE_K: f64 = 273.15;
 const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
 #[cfg(test)]
 const SCALE_MULTIPLIER: f64 = 64.0;
+
+fn production_binding_failure(
+    transaction_id: TransactionId,
+    ofe_id: Option<OfeId>,
+    detail: impl Into<String>,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E008,
+        DirectSurfaceLiquidPhase::IngressCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            ofe_id,
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn candidate_failure(
+    transaction_id: TransactionId,
+    mut context: DirectSurfaceLiquidErrorContext,
+    detail: impl Into<String>,
+) -> DirectSurfaceLiquidError {
+    context.transaction_id = Some(transaction_id);
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E009,
+        DirectSurfaceLiquidPhase::IngressCandidate,
+        context,
+        super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -217,19 +255,87 @@ pub struct DirectSurfaceLiquidIngressLedger {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSurfaceLiquidIngressCandidate {
-    pub transaction_id: TransactionId,
-    pub beginning_state: DirectSurfaceLiquidOwnedState,
-    pub ending_state: DirectSurfaceLiquidOwnedState,
-    pub receipts: Vec<DirectSurfaceLiquidParcelReceipt>,
-    pub ledgers: Vec<DirectSurfaceLiquidIngressLedger>,
-    pub wb14_calls_by_ofe: BTreeMap<OfeId, u8>,
+    transaction_id: TransactionId,
+    beginning_state: DirectSurfaceLiquidOwnedState,
+    ending_state: DirectSurfaceLiquidOwnedState,
+    receipts: Vec<DirectSurfaceLiquidParcelReceipt>,
+    ledgers: Vec<DirectSurfaceLiquidIngressLedger>,
+    wb14_calls_by_ofe: BTreeMap<OfeId, u8>,
     closure_operands: DirectSurfaceLiquidClosureOperands,
 }
 
 impl DirectSurfaceLiquidIngressCandidate {
     #[must_use]
+    pub const fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub const fn beginning_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.beginning_state
+    }
+
+    #[must_use]
+    pub const fn ending_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.ending_state
+    }
+
+    #[must_use]
+    pub fn receipts(&self) -> &[DirectSurfaceLiquidParcelReceipt] {
+        &self.receipts
+    }
+
+    #[must_use]
+    pub fn ledgers(&self) -> &[DirectSurfaceLiquidIngressLedger] {
+        &self.ledgers
+    }
+
+    #[must_use]
+    pub const fn wb14_calls_by_ofe(&self) -> &BTreeMap<OfeId, u8> {
+        &self.wb14_calls_by_ofe
+    }
+
+    #[must_use]
     pub const fn closure_operands(&self) -> &DirectSurfaceLiquidClosureOperands {
         &self.closure_operands
+    }
+
+    pub fn validate(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        resource: &DirectSurfaceLiquidResourceCandidate,
+        input: &DirectSurfaceLiquidIngressInput,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        let expected = execute_surface_liquid_ingress_inner(configuration, resource, input)
+            .map_err(|error| {
+                let code = error.code();
+                error.complete_context(
+                    code,
+                    DirectSurfaceLiquidPhase::IngressCandidate,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        ..DirectSurfaceLiquidErrorContext::default()
+                    },
+                    Some(resource.beginning_state().state_sha256.clone()),
+                    self.ending_state.recomputed_sha256().ok(),
+                )
+            })?;
+        if &expected != self {
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E009,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: Some(resource.beginning_state().state_sha256.clone()),
+                    attempted_owner_sha256: self.ending_state.recomputed_sha256().ok(),
+                },
+                "ingress candidate does not reconstruct from immutable inputs",
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -272,30 +378,24 @@ pub fn execute_surface_liquid_ingress(
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
     execute_surface_liquid_ingress_inner(configuration, resource, input).map_err(|error| {
         let code = error.code();
-        let phase = if code == DirectSurfaceLiquidErrorCode::E010 {
-            DirectSurfaceLiquidPhase::IndependentClosure
-        } else {
-            DirectSurfaceLiquidPhase::IngressCandidate
+        let phase = match code {
+            DirectSurfaceLiquidErrorCode::E010 => DirectSurfaceLiquidPhase::IndependentClosure,
+            _ => DirectSurfaceLiquidPhase::IngressCandidate,
         };
-        let detail = error
-            .failure()
-            .map_or_else(|| error.to_string(), |failure| failure.detail.clone());
-        DirectSurfaceLiquidError::canonical_failure(
+        error.complete_context(
             code,
             phase,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(input.transaction_id),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
-            DirectSurfaceLiquidRollbackHashes {
-                beginning_owner_sha256: Some(resource.beginning_state().state_sha256.clone()),
-                attempted_owner_sha256: None,
-            },
-            detail,
+            Some(resource.beginning_state().state_sha256.clone()),
+            resource.working_state().recomputed_sha256().ok(),
         )
     })
 }
 
+#[allow(clippy::too_many_lines)]
 fn execute_surface_liquid_ingress_inner(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
@@ -303,17 +403,22 @@ fn execute_surface_liquid_ingress_inner(
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
     configuration.validate()?;
     resource.beginning_state().validate(configuration)?;
-    if input.transaction_id != resource.transaction_id()
-        || input.transaction_id.0 == 0
-        || input.interval_s.to_bits() != INTERVAL_S.to_bits()
-    {
+    if input.transaction_id != resource.transaction_id() || input.transaction_id.0 == 0 {
         return Err(DirectSurfaceLiquidError::Identity(
-            "ingress transaction or cadence mismatch",
+            "ingress transaction mismatch",
+        ));
+    }
+    if input.interval_s.to_bits() != INTERVAL_S.to_bits() {
+        return Err(production_binding_failure(
+            input.transaction_id,
+            None,
+            "ingress cadence is not exactly 1800 seconds",
         ));
     }
     validate_resource_working_state(configuration, resource)?;
     validate_cadence(resource.beginning_state(), input)?;
-    let parameters = validate_parameters(configuration, &input.wb14_parameters)?;
+    let parameters =
+        validate_parameters(configuration, input.transaction_id, &input.wb14_parameters)?;
     let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
     let mut ending = resource.working_state().clone();
     let mut receipts = Vec::new();
@@ -325,9 +430,13 @@ fn execute_surface_liquid_ingress_inner(
             .continuations
             .iter()
             .position(|row| &row.ofe_id == ofe_id)
-            .ok_or(DirectSurfaceLiquidError::Identity(
-                "missing WB14 continuation",
-            ))?;
+            .ok_or_else(|| {
+                production_binding_failure(
+                    input.transaction_id,
+                    Some(ofe_id.clone()),
+                    "missing WB14 continuation",
+                )
+            })?;
         let beginning_continuation = &resource.beginning_state().continuations[continuation_index];
         let (cumulative_supply_m, cumulative_infiltration_m) =
             continuation_start(beginning_continuation, input)?;
@@ -348,15 +457,21 @@ fn execute_surface_liquid_ingress_inner(
             input.transaction_id,
         )?;
         if call_count.insert(ofe_id.clone(), 1).is_some() {
-            return Err(DirectSurfaceLiquidError::Protocol(
+            return Err(production_binding_failure(
+                input.transaction_id,
+                Some(ofe_id.clone()),
                 "duplicate high-level WB14 call",
             ));
         }
         ending.continuations[continuation_index].day_index = input.day_index;
-        ending.continuations[continuation_index].next_interval_index = input
-            .interval_index
-            .checked_add(1)
-            .ok_or(DirectSurfaceLiquidError::Domain("interval index overflow"))?;
+        ending.continuations[continuation_index].next_interval_index =
+            input.interval_index.checked_add(1).ok_or_else(|| {
+                production_binding_failure(
+                    input.transaction_id,
+                    Some(ofe_id.clone()),
+                    "WB14 interval index overflow",
+                )
+            })?;
         ending.continuations[continuation_index].cumulative_supply_m = advanced.cumulative_supply_m;
         ending.continuations[continuation_index].cumulative_infiltration_m =
             advanced.cumulative_infiltration_m;
@@ -376,7 +491,9 @@ fn execute_surface_liquid_ingress_inner(
         )?;
     }
     if pending.values().any(|rows| !rows.is_empty()) {
-        return Err(DirectSurfaceLiquidError::Closure(
+        return Err(candidate_failure(
+            input.transaction_id,
+            DirectSurfaceLiquidErrorContext::default(),
             "unresolved routed surface-liquid parcel",
         ));
     }
@@ -458,7 +575,9 @@ fn validate_cadence(
                 || continuation.cumulative_infiltration_m.to_bits() != 0.0_f64.to_bits()))
             || (!initial && continuation.next_interval_index == 0)
         {
-            return Err(DirectSurfaceLiquidError::Identity(
+            return Err(production_binding_failure(
+                input.transaction_id,
+                Some(continuation.ofe_id.clone()),
                 "initial or accepted WB14 continuation mismatch",
             ));
         }
@@ -471,7 +590,9 @@ fn validate_cadence(
             )
         };
         if expected.0 != Some(input.day_index) || expected.1 != input.interval_index {
-            return Err(DirectSurfaceLiquidError::Identity(
+            return Err(production_binding_failure(
+                input.transaction_id,
+                Some(continuation.ofe_id.clone()),
                 "WB14 day or interval continuation mismatch",
             ));
         }
@@ -485,7 +606,9 @@ fn continuation_start(
 ) -> Result<(f64, f64), DirectSurfaceLiquidError> {
     if beginning.next_interval_index == 48 {
         if input.interval_index != 0 || input.day_index != beginning.day_index + 1 {
-            return Err(DirectSurfaceLiquidError::Identity(
+            return Err(production_binding_failure(
+                input.transaction_id,
+                Some(beginning.ofe_id.clone()),
                 "invalid WB14 day rollover",
             ));
         }
@@ -500,17 +623,22 @@ fn continuation_start(
 
 fn validate_parameters<'a>(
     configuration: &DirectSurfaceLiquidConfiguration,
+    transaction_id: TransactionId,
     rows: &'a [DirectOfeWb14Parameters],
 ) -> Result<BTreeMap<OfeId, &'a DirectOfeWb14Parameters>, DirectSurfaceLiquidError> {
     if rows.len() != configuration.ofe_topology.len() {
-        return Err(DirectSurfaceLiquidError::Identity(
+        return Err(production_binding_failure(
+            transaction_id,
+            None,
             "WB14 parameter cardinality mismatch",
         ));
     }
     let mut result = BTreeMap::new();
     for (row, expected) in rows.iter().zip(&configuration.ofe_topology) {
         if &row.ofe_id != expected || result.insert(row.ofe_id.clone(), row).is_some() {
-            return Err(DirectSurfaceLiquidError::Identity(
+            return Err(production_binding_failure(
+                transaction_id,
+                Some(row.ofe_id.clone()),
                 "WB14 parameter order or identity mismatch",
             ));
         }
@@ -524,6 +652,7 @@ fn validate_parameters<'a>(
     Ok(result)
 }
 
+#[allow(clippy::too_many_lines)]
 fn validate_and_build_local_ingress(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
@@ -540,7 +669,21 @@ fn validate_and_build_local_ingress(
         let (ofe_id, tile_id, surface_id) = ingress.identity();
         let identity = (ofe_id.clone(), tile_id.clone(), surface_id.clone());
         if !seen.insert(identity) {
-            return Err(DirectSurfaceLiquidError::Protocol(
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E005,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    ofe_id: Some(ofe_id.clone()),
+                    tile_id: Some(tile_id.clone()),
+                    surface_id: Some(surface_id.clone()),
+                    source_id: None,
+                    parcel_id: None,
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
                 "duplicate tile ground ingress",
             ));
         }
@@ -552,11 +695,41 @@ fn validate_and_build_local_ingress(
                     && &row.key.tile_id == tile_id
                     && &row.key.surface_id == surface_id
             })
-            .ok_or(DirectSurfaceLiquidError::Identity(
-                "unknown tile ground ingress",
-            ))?;
+            .ok_or_else(|| {
+                DirectSurfaceLiquidError::canonical_failure(
+                    DirectSurfaceLiquidErrorCode::E002,
+                    DirectSurfaceLiquidPhase::IngressCandidate,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        ofe_id: Some(ofe_id.clone()),
+                        tile_id: Some(tile_id.clone()),
+                        surface_id: Some(surface_id.clone()),
+                        source_id: None,
+                        parcel_id: None,
+                    },
+                    super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                        beginning_owner_sha256: None,
+                        attempted_owner_sha256: None,
+                    },
+                    "unknown tile ground ingress",
+                )
+            })?;
         if ingress.mode() != configured.ground_ingress_mode {
-            return Err(DirectSurfaceLiquidError::Identity(
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E002,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    ofe_id: Some(configured.key.ofe_id.clone()),
+                    tile_id: Some(configured.key.tile_id.clone()),
+                    surface_id: Some(configured.key.surface_id.clone()),
+                    source_id: Some(configured.key.source_id.clone()),
+                    parcel_id: None,
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
                 "open/covered ingress mode mismatch",
             ));
         }
@@ -564,7 +737,29 @@ fn validate_and_build_local_ingress(
             configured,
             ingress,
             pending.entry(ofe_id.clone()).or_default(),
-        )?;
+        )
+        .map_err(|error| {
+            let original_code = error.code();
+            let code = if original_code == DirectSurfaceLiquidErrorCode::E010 {
+                DirectSurfaceLiquidErrorCode::E009
+            } else {
+                original_code
+            };
+            error.complete_context(
+                code,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    ofe_id: Some(configured.key.ofe_id.clone()),
+                    tile_id: Some(configured.key.tile_id.clone()),
+                    surface_id: Some(configured.key.surface_id.clone()),
+                    source_id: Some(configured.key.source_id.clone()),
+                    parcel_id: None,
+                },
+                None,
+                None,
+            )
+        })?;
     }
     for overflow in resource.condensation_overflow() {
         require_nonnegative(
@@ -574,7 +769,16 @@ fn validate_and_build_local_ingress(
         require_temperature(overflow.temperature_k)?;
         let expected = liquid_specific_enthalpy(overflow.temperature_k);
         if overflow.specific_liquid_enthalpy_j_kg.to_bits() != expected.to_bits() {
-            return Err(DirectSurfaceLiquidError::Closure(
+            return Err(candidate_failure(
+                input.transaction_id,
+                DirectSurfaceLiquidErrorContext {
+                    ofe_id: Some(overflow.store_key.ofe_id.clone()),
+                    tile_id: Some(overflow.store_key.tile_id.clone()),
+                    surface_id: Some(overflow.store_key.surface_id.clone()),
+                    source_id: Some(overflow.store_key.source_id.clone()),
+                    parcel_id: None,
+                    transaction_id: None,
+                },
                 "condensation overflow temperature/enthalpy mismatch",
             ));
         }
@@ -751,7 +955,13 @@ fn advance_one_ofe(
             matric_potential_m: parameter.matric_potential_m,
             storage_capacity_m: parameter.infiltration_storage_capacity_m,
         })
-        .map_err(|_| DirectSurfaceLiquidError::Domain("WB14 continuation failure"))?;
+        .map_err(|_| {
+            production_binding_failure(
+                transaction_id,
+                Some(ofe_id.clone()),
+                "WB14 continuation transition rejected",
+            )
+        })?;
         cumulative_supply_m = outcome.cumulative_supply_m;
         cumulative_infiltration_m = outcome.cumulative_infiltration_m;
         if supply_mass == 0.0 {
@@ -1566,17 +1776,15 @@ mod tests {
         } else {
             panic!("wrong receipt variant");
         }
-        assert!(matches!(
-            super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
-                &configuration,
-                &resource,
-                candidate.closure_operands(),
-                &candidate.receipts,
-            ),
-            Err(DirectSurfaceLiquidError::Closure(
-                "wrong typed parcel recipient"
-            ))
-        ));
+        let error = candidate
+            .validate(&configuration, &resource, &input)
+            .expect_err("wrong infiltration recipient");
+        let failure = error.failure().expect("canonical candidate failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
     }
 
     #[test]
@@ -1659,35 +1867,88 @@ mod tests {
         let before = (
             resource
                 .beginning_state()
-                .canonical_bytes()
+                .canonical_bytes(&configuration)
                 .expect("beginning bytes before"),
             resource
                 .working_state()
-                .canonical_bytes()
+                .canonical_bytes(&configuration)
                 .expect("working bytes before"),
         );
         let error = execute_surface_liquid_ingress(&configuration, &resource, &input)
             .expect_err("invalid continuation bound");
         let failure = error.failure().expect("canonical failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E008);
         assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
         assert_eq!(failure.context.transaction_id, Some(transaction_id));
         assert_eq!(
             failure.rollback.beginning_owner_sha256.as_deref(),
             Some(resource.beginning_state().state_sha256.as_str())
         );
-        assert_eq!(failure.rollback.attempted_owner_sha256, None);
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
         let after = (
             resource
                 .beginning_state()
-                .canonical_bytes()
+                .canonical_bytes(&configuration)
                 .expect("beginning bytes after"),
             resource
                 .working_state()
-                .canonical_bytes()
+                .canonical_bytes(&configuration)
                 .expect("working bytes after"),
         );
         assert_eq!(after, before);
         assert_eq!(resource, before_candidate);
+    }
+
+    #[test]
+    fn cadence_failure_is_e008_with_exact_transaction_and_attempt_hash() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(411);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S + 1.0,
+            tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let error = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect_err("wrong cadence");
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E008);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+    }
+
+    #[test]
+    fn sealed_ingress_candidate_reconstructs_and_rejects_forgery() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(412);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let mut candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("valid candidate");
+        candidate
+            .validate(&configuration, &resource, &input)
+            .expect("candidate reconstruction");
+        candidate.ending_state.records[0].liquid_kg_m2_tile += 0.25;
+        let error = candidate
+            .validate(&configuration, &resource, &input)
+            .expect_err("forged ending state");
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
     }
 }

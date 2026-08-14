@@ -2,7 +2,7 @@
 
 Evidence class: `Static`
 
-Status: `in progress / exact-byte re-review pending`
+Status: `in progress / re-review corrections stable / final exact-byte re-review pending`
 
 The current diff reconciles to the declared dependency-lift objective:
 
@@ -15,6 +15,10 @@ The current diff reconciles to the declared dependency-lift objective:
 - the unified bridge hashes canonical production bytes and returns the complete
   LSE, hydrology, and soil-thermal receiver set from cloned state; and
 - tests and impact-map entries bind every changed science surface.
+- the second correction increment independently reconstructs all actual
+  receiver endings, seals all candidate/arbitration envelopes, re-derives
+  proportional authorization, validates canonical state emission, and makes
+  every applicable typed failure branch executable.
 
 The two new Rust modules and every modified path are inside the amended intended
 write set. No unrelated source change is present. Final hashes and commit identity

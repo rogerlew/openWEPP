@@ -2,7 +2,7 @@
 
 Evidence class: `Static + Ran`
 
-Status: `review remediation complete / focused gates PASS / re-review pending`
+Status: `re-review corrections complete / focused gates PASS / final re-review pending`
 
 ## Implemented Surfaces
 
@@ -50,6 +50,16 @@ Status: `review remediation complete / focused gates PASS / re-review pending`
 - An external closure module reconstructs `W1 = W0 - F + C - overflow + retained`
   and every parcel mass/enthalpy/routing join from immutable operands; it does
   not consume a producer residual.
+- The unified receiver validator freezes and reconstructs every ordered
+  production-layer infiltration delta, aggregate soil-water ending, named
+  soil-thermal enthalpy credit, and retained LSE tile enthalpy. Aggregate-equal
+  wrong-layer distribution and omitted/doubled credits are rejected.
+- Arbitration, ingress finalization, and unified candidates are sealed and
+  expose read-only operands plus complete validators. Stored authorizations are
+  independently re-derived from immutable `W0 + D`; a forged proportional
+  allocation cannot reach resource debit.
+- Runtime domain/envelope guards emit E004, E007, E008, E009, E010, and E011
+  with phase, available typed identities, and beginning/attempted hashes.
 - The real public LSE open-surface potential and fixed-authorization final
   functions are exercised through that unified bridge. The production frame is
   byte-identical after both successful and rejected shadow attempts.
@@ -58,12 +68,12 @@ Status: `review remediation complete / focused gates PASS / re-review pending`
 
 | Command | Result |
 |---|---|
-| `cargo test -p openwepp-hillslope-orchestrator surface_liquid --no-fail-fast` | PASS, 25/25 selected; 507 filtered |
+| `cargo test -p openwepp-hillslope-orchestrator surface_liquid --no-fail-fast` | PASS, 30/30 selected; 507 filtered |
 | `cargo clippy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings` | PASS after splitting oversized functions and removing strict float comparison |
 | `cargo nextest run -p openwepp-land-surface-energy --profile quick` | PASS, 27/27 |
 | `cargo clippy -p openwepp-land-surface-energy --all-targets -- -D warnings` | PASS |
-| `cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick` | PASS, 13/13 |
-| `cargo nextest run -p openwepp-hillslope-orchestrator --profile quick` | PASS, 532/532; retained slow OFE-routing tests |
+| `cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick` | PASS, 15/15 |
+| `cargo nextest run -p openwepp-hillslope-orchestrator --profile quick` | PASS, 537/537; retained slow OFE-routing tests |
 | `cargo check -p openwepp-hillslope-orchestrator` | PASS |
 | `cargo check -p openwepp-land-surface-energy` | PASS |
 | `cargo fmt --all -- --check` | PASS on complete implementation bytes |
@@ -75,7 +85,7 @@ Status: `review remediation complete / focused gates PASS / re-review pending`
 | `bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md` | PASS |
 | `bash tools/release/check_science_contract_admission.sh --base-ref af9a989063aa8751dfadb14c442e1b360653658c --worktree` | PASS, 46 contracts / 14 science surfaces |
 | `cargo nextest run --test advisory_linter_authority_contract --profile quick` | PASS, 7/7 |
-| `markdown-doc lint --path <package> --path SC-SURFACELIQUID-001.md` | PASS, 18 files / zero warnings |
+| `markdown-doc lint --path <package> --path SC-SURFACELIQUID-001.md` | PASS, 20 files / zero warnings |
 
 ## Preserved Failed Evidence
 

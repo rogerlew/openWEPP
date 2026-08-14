@@ -14,14 +14,40 @@ use super::surface_liquid_ingress::{
 };
 use super::surface_liquid_owner::{
     DirectCondensationOverflow, DirectSurfaceLiquidConfiguration,
-    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError,
-    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
+    DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
     DirectSurfaceLiquidStoreKey,
 };
 
 const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
 const ENTHALPY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-9;
 const SCALE_MULTIPLIER: f64 = 64.0;
+
+fn contextual_closure_failure(
+    transaction_id: TransactionId,
+    store_key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
+    detail: impl Into<String>,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E010,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            ofe_id: Some(store_key.ofe_id.clone()),
+            tile_id: Some(store_key.tile_id.clone()),
+            surface_id: Some(store_key.surface_id.clone()),
+            source_id: Some(store_key.source_id.clone()),
+            parcel_id,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
 
 /// Frozen, non-residual operands consumed by the independent closure validator.
 #[derive(Clone, Debug, PartialEq)]
@@ -179,9 +205,24 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
     ending: &DirectSurfaceLiquidOwnedState,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
 ) -> Result<DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidError> {
-    let operands = capture_operands(configuration, resource, input, ending, receipts)?;
-    validate_surface_liquid_closure_operands(configuration, resource, &operands, receipts)?;
-    Ok(operands)
+    (|| {
+        let operands = capture_operands(configuration, resource, input, ending, receipts)?;
+        validate_surface_liquid_closure_operands(configuration, resource, &operands, receipts)?;
+        Ok(operands)
+    })()
+    .map_err(|error: DirectSurfaceLiquidError| {
+        let code = error.code();
+        error.complete_context(
+            code,
+            DirectSurfaceLiquidPhase::IndependentClosure,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(resource.beginning_state().state_sha256.clone()),
+            ending.recomputed_sha256().ok(),
+        )
+    })
 }
 
 fn capture_operands(
@@ -387,7 +428,10 @@ fn validate_store_equations(
         if row.store_key != configured.key
             || row.tile_fraction.to_bits() != configured.tile_fraction.to_bits()
         {
-            return Err(DirectSurfaceLiquidError::Closure(
+            return Err(contextual_closure_failure(
+                operands.transaction_id,
+                &configured.key,
+                None,
                 "independent store operand identity",
             ));
         }
@@ -401,16 +445,33 @@ fn validate_store_equations(
             working.liquid_kg_m2_tile,
             pre_ingress,
             "resource state does not reconstruct from W0, F, C, and overflow",
-        )?;
+        )
+        .map_err(|_| {
+            contextual_closure_failure(
+                operands.transaction_id,
+                &configured.key,
+                None,
+                "resource state does not reconstruct from W0, F, C, and overflow",
+            )
+        })?;
         require_close_mass(
             row.ending_liquid_kg_m2_tile,
             expected_ending,
             "W1 does not reconstruct from W0, F, C, overflow, and retained excess",
-        )?;
+        )
+        .map_err(|_| {
+            contextual_closure_failure(
+                operands.transaction_id,
+                &configured.key,
+                None,
+                "W1 does not reconstruct from W0, F, C, overflow, and retained excess",
+            )
+        })?;
     }
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 fn validate_parcel_joins(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
@@ -469,12 +530,32 @@ fn validate_parcel_joins(
                             .origin_store_key
                     || !seen_receipt_ids.insert(receipt.parcel_id.clone())
                 {
-                    return Err(DirectSurfaceLiquidError::Closure(
+                    return Err(contextual_closure_failure(
+                        operands.transaction_id,
+                        &receipt.origin_store_key,
+                        Some(receipt.parcel_id.clone()),
                         "duplicate or wrong-identity parcel receipt",
                     ));
                 }
-                validate_receipt_recipient(configuration, binding, route_record, receipt)?;
-                validate_receipt_enthalpy(receipt)?;
+                validate_receipt_recipient(configuration, binding, route_record, receipt).map_err(
+                    |_| {
+                        contextual_closure_failure(
+                            operands.transaction_id,
+                            &receipt.origin_store_key,
+                            Some(receipt.parcel_id.clone()),
+                            "wrong typed parcel recipient",
+                        )
+                    },
+                )?;
+                validate_receipt_enthalpy(receipt).map_err(|error| {
+                    let detail = error.to_string();
+                    contextual_closure_failure(
+                        operands.transaction_id,
+                        &receipt.origin_store_key,
+                        Some(receipt.parcel_id.clone()),
+                        detail,
+                    )
+                })?;
                 actual.add(
                     receipt.mass_kg_m2_basis_ofe_ground,
                     receipt.enthalpy_j_m2_basis_ofe_ground,

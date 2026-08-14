@@ -287,6 +287,19 @@ failed attempts.
 - Disposition: all five Rust findings accepted. No finding is rejected,
   deferred, or moved to follow-up.
 
+## Re-review round 1 correction gate
+
+- PASS: surface owner/ingress/WB14 selection, 30/30.
+- PASS: real-LSE/real-hydrology integration, 15/15.
+- PASS: complete orchestrator quick suite, 537/537.
+- PASS: affected check and strict all-target Clippy.
+- PASS: science admission, 46 contracts and 14 science surfaces; authority
+  anti-evasion; surface authority 9/9; AUTH11 3/3; SC unit compliance;
+  formatting, diff hygiene, and Markdown lint (20 files, zero findings).
+- Static: all five accepted re-review finding families have implemented poison
+  coverage and no file exceeds 3,000 lines. Final exact-byte re-review remains
+  required before closure.
+
 ## Heavy comparator attempt 1
 
 - PASS: formatting and diff hygiene at `a92cd5db5`.

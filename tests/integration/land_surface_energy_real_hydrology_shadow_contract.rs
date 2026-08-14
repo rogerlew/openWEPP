@@ -12,18 +12,18 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     SurfaceClassKind, SurfaceId, SurfaceStorageBranch, TileState, UnifiedLseFinalization,
     WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
     execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
-    unified_beginning_hydrology_snapshot_sha256,
+    unified_beginning_hydrology_snapshot_sha256, validate_real_receiver_closure,
 };
 use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
     RealHydrologySourceKey,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters, DirectRunFrame,
-    DirectRunIdentity, DirectSubsurfaceLayerState, DirectSurfaceLiquidConfiguration,
-    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidIngressInput,
-    DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey,
-    DirectTileGroundIngress,
+    DirectDayConstructorInputs, DirectGroundIngressMode, DirectIngressAmount,
+    DirectOfeWb14Parameters, DirectRunFrame, DirectRunIdentity, DirectSubsurfaceLayerState,
+    DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord,
+    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding,
+    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 use sha2::{Digest, Sha256};
@@ -331,15 +331,15 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
         (OwnerKind::Vegetation, "vegetation", lse_digest.clone()),
         (OwnerKind::Biogeochemistry, "biogeochemistry", lse_digest),
     ];
-    UnifiedLseFinalization {
+    UnifiedLseFinalization::try_new(
         water_protocol,
-        ending_tile_states_pre_ingress: vec![TileState {
+        vec![TileState {
             ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
             tile_id: TileId::try_new("open").expect("tile"),
             surface_enthalpy_j_m2_tile_ground: 10.0,
             surface_temperature_warm_start_k: 291.0,
         }],
-        soil_thermal_candidates: vec![SoilThermalTileCandidate {
+        vec![SoilThermalTileCandidate {
             owner_id: ResourceOwnerId::try_new("soil-thermal").expect("owner"),
             beginning_state_sha256: soil_digest,
             ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
@@ -353,7 +353,7 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
                 ending_temperature_k: 291.5,
             }],
         }],
-        rollback_hashes: owners
+        owners
             .into_iter()
             .map(|(owner_kind, owner_id, digest)| OwnerRollbackHash {
                 owner_kind,
@@ -362,7 +362,8 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
                 after_sha256: digest,
             })
             .collect(),
-    }
+    )
+    .expect("sealed finalization")
 }
 
 fn ingress_input() -> DirectSurfaceLiquidIngressInput {
@@ -632,7 +633,7 @@ fn unified_surface_owner_accepts_open_and_litter_without_rewriting_keys() {
         .expect("unified surface transaction");
         assert_eq!(
             candidate
-                .arbitration
+                .arbitration()
                 .requests
                 .iter()
                 .map(|row| row.key.clone())
@@ -640,15 +641,15 @@ fn unified_surface_owner_accepts_open_and_litter_without_rewriting_keys() {
             request_keys
         );
         assert_eq!(frame, original, "production frame changed");
-        assert_eq!(candidate.beginning_frame, original);
+        assert_eq!(candidate.beginning_frame(), &original);
         assert_eq!(
             candidate
-                .ending_frame
+                .ending_frame()
                 .surface_liquid_shadow
                 .as_ref()
                 .expect("ending surface state")
                 .as_ref(),
-            &candidate.surface_ingress.ending_state
+            candidate.surface_ingress().ending_state()
         );
     }
 }
@@ -722,20 +723,23 @@ fn unified_surface_owner_consumes_the_actual_fixed_cap_lse_water_protocol() {
                 None,
                 &soil_thermal_snapshot(),
             )?;
-            Ok(UnifiedLseFinalization {
-                water_protocol: final_candidate.water_protocol,
-                ending_tile_states_pre_ingress: vec![final_candidate.ending_tile_state_pre_ingress],
-                soil_thermal_candidates: vec![final_candidate.soil_thermal],
-                rollback_hashes: final_candidate.rollback_hashes,
-            })
+            UnifiedLseFinalization::try_new(
+                final_candidate.water_protocol,
+                vec![final_candidate.ending_tile_state_pre_ingress],
+                vec![final_candidate.soil_thermal],
+                final_candidate.rollback_hashes,
+            )
         },
     )
     .expect("actual LSE fixed-cap protocol accepted by real owner");
     assert_eq!(frame, original);
-    assert_eq!(candidate.arbitration.requests, phase.request_batch.requests);
     assert_eq!(
-        candidate.finalized_uses[0].key,
-        candidate.arbitration.authorizations[0].key
+        candidate.arbitration().requests,
+        phase.request_batch.requests
+    );
+    assert_eq!(
+        candidate.finalized_uses()[0].key,
+        candidate.arbitration().authorizations[0].key
     );
 }
 
@@ -799,9 +803,9 @@ fn unified_surface_owner_applies_signed_condensation_credit_before_ingress() {
     )
     .expect("condensation resource/ingress transaction");
     assert_eq!(frame, original);
-    assert_eq!(candidate.surface_resource.condensation_credits().len(), 1);
+    assert_eq!(candidate.surface_resource().condensation_credits().len(), 1);
     assert_eq!(
-        candidate.condensation_credits[0]
+        candidate.condensation_credits()[0]
             .amount_kg_m2_stand_ground
             .to_bits(),
         0.1_f64.to_bits()
@@ -983,19 +987,83 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
         &BTreeMap::new(),
         &ingress_input(),
         |authorizations| {
-            let mut finalization =
+            let finalization =
                 unified_finalization(accepted_surface_protocol(&batch, authorizations, &snapshot));
-            finalization.ending_tile_states_pre_ingress[0].ofe_id =
-                OfeId::try_new("ofe-wrong").expect("wrong OFE");
-            Ok(finalization)
+            let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
+            tiles[0].ofe_id = OfeId::try_new("ofe-wrong").expect("wrong OFE");
+            UnifiedLseFinalization::try_new(
+                finalization.water_protocol().clone(),
+                tiles,
+                finalization.soil_thermal_candidates().to_vec(),
+                finalization.rollback_hashes().to_vec(),
+            )
         },
     );
-    assert!(matches!(
-        wrong_ofe,
-        Err(LandSurfaceEnergyShadowError::Identity(
-            "incomplete LSE/soil-thermal/rollback receiver set"
-        ))
-    ));
+    let error = wrong_ofe.expect_err("wrong OFE finalization must fail");
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+        panic!("sealed finalization must emit canonical envelope failure");
+    };
+    assert_eq!(
+        surface_error.failure().expect("failure payload").code,
+        DirectSurfaceLiquidErrorCode::E011
+    );
+}
+
+#[test]
+fn unified_entry_rejects_snow_and_duplicate_legacy_surface_custody() {
+    for expected_code in [
+        DirectSurfaceLiquidErrorCode::E004,
+        DirectSurfaceLiquidErrorCode::E007,
+    ] {
+        let (mut frame, configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        match expected_code {
+            DirectSurfaceLiquidErrorCode::E004 => {
+                frame.lanes[0].winter_column.snow.runtime_swe_m = 0.001;
+            }
+            DirectSurfaceLiquidErrorCode::E007 => {
+                frame.lanes[0]
+                    .day_inputs
+                    .push(DirectDayConstructorInputs::zero());
+                frame.lanes[0].day_inputs[0]
+                    .infiltration_depression_inputs
+                    .depression_storage_delta_handoff_m = 0.001;
+            }
+            _ => unreachable!("bounded entry poison"),
+        }
+        let original = frame.clone();
+        let (owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+        let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+            .expect("poison snapshot remains representable");
+        let batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        let result = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &batch,
+            &snapshot,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |_| panic!("unsupported owner state rejects before fixed-cap solve"),
+        );
+        let error = result.expect_err("entry poison must fail");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+            panic!("entry poison must retain canonical surface-liquid failure");
+        };
+        let failure = surface_error.failure().expect("canonical entry failure");
+        assert_eq!(failure.code, expected_code);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+        assert_eq!(frame, original, "entry poison mutated production owner");
+    }
 }
 
 #[test]
@@ -1033,8 +1101,8 @@ fn unified_ingress_updates_exact_real_receivers_and_preserves_rollback() {
     )
     .expect("real receiver candidate");
     let infiltration_enthalpy = candidate
-        .surface_ingress
-        .receipts
+        .surface_ingress()
+        .receipts()
         .iter()
         .filter(|receipt| {
             receipt.disposition
@@ -1043,8 +1111,8 @@ fn unified_ingress_updates_exact_real_receivers_and_preserves_rollback() {
         .map(|receipt| receipt.enthalpy_j_m2_basis_ofe_ground)
         .sum::<f64>();
     let retained_enthalpy = candidate
-        .surface_ingress
-        .receipts
+        .surface_ingress()
+        .receipts()
         .iter()
         .filter(|receipt| {
             receipt.disposition
@@ -1053,17 +1121,17 @@ fn unified_ingress_updates_exact_real_receivers_and_preserves_rollback() {
         .map(|receipt| receipt.enthalpy_j_m2_basis_ofe_ground)
         .sum::<f64>();
     assert!(
-        candidate.ending_frame.lanes[0].subsurface_layers[0].theta_m
+        candidate.ending_frame().lanes[0].subsurface_layers[0].theta_m
             > original.lanes[0].subsurface_layers[0].theta_m
     );
     assert_eq!(
-        candidate.soil_thermal_candidates[0].layers[0]
+        candidate.soil_thermal_candidates()[0].layers[0]
             .infiltration_enthalpy_credit_j_m2_ofe_ground
             .to_bits(),
         infiltration_enthalpy.to_bits()
     );
     assert_eq!(
-        candidate.ending_lse_tile_states[0]
+        candidate.ending_lse_tile_states()[0]
             .surface_enthalpy_j_m2_tile_ground
             .to_bits(),
         (10.0 + retained_enthalpy).to_bits()
@@ -1071,10 +1139,112 @@ fn unified_ingress_updates_exact_real_receivers_and_preserves_rollback() {
     assert_eq!(frame, original, "all receiver work remains clone-only");
     assert!(
         candidate
-            .rollback_hashes
+            .rollback_hashes()
             .iter()
             .all(|hash| hash.before_sha256 == hash.after_sha256)
     );
+}
+
+#[test]
+fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let candidate = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &batch,
+        &snapshot,
+        &BTreeMap::new(),
+        &ingress_input_with_mass(50.0),
+        |authorizations| {
+            Ok(unified_finalization(accepted_surface_protocol(
+                &batch,
+                authorizations,
+                &snapshot,
+            )))
+        },
+    )
+    .expect("receiver candidate");
+    validate_real_receiver_closure(candidate.receiver_closure_operands())
+        .expect("independent receiver closure");
+
+    let mut wrong_distribution = candidate.receiver_closure_operands().clone();
+    {
+        let lane = &mut wrong_distribution.production_soil[0];
+        assert!(lane.infiltration_m > 0.0, "fixture must infiltrate");
+        let beginning = lane.ordered_layers[0].beginning_liquid_m;
+        let first_addition = lane.infiltration_m / 3.0;
+        let second_addition = lane.infiltration_m - first_addition;
+        lane.tillage_depth_m = 0.3;
+        lane.ordered_layers[0].layer_depth_m = 0.1;
+        lane.ordered_layers[0].ending_liquid_m = beginning + first_addition;
+        lane.ordered_layers.push(
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::ProductionSoilLayerReceiverOperands {
+                layer_id: SoilLayerId::try_new("thermal-2").expect("second layer"),
+                beginning_liquid_m: 0.0,
+                ending_liquid_m: second_addition,
+                layer_depth_m: 0.2,
+            },
+        );
+        lane.beginning_aggregate_soil_water_m = beginning;
+        lane.ending_aggregate_soil_water_m = beginning + lane.infiltration_m;
+    }
+    validate_real_receiver_closure(&wrong_distribution).expect("two-layer reconstruction");
+    let lane = &mut wrong_distribution.production_soil[0];
+    let transfer = lane.infiltration_m / 10.0;
+    lane.ordered_layers[0].ending_liquid_m -= transfer;
+    lane.ordered_layers[1].ending_liquid_m += transfer;
+    assert_receiver_e011(validate_real_receiver_closure(&wrong_distribution));
+
+    let infiltration_enthalpy =
+        candidate.receiver_closure_operands().soil_thermal[0].infiltration_enthalpy_j_m2_ofe_ground;
+    assert_ne!(infiltration_enthalpy.to_bits(), 0.0_f64.to_bits());
+    for multiplier in [0.0, 2.0] {
+        let mut poison = candidate.receiver_closure_operands().clone();
+        let thermal = &mut poison.soil_thermal[0];
+        thermal.ending_infiltration_credit_j_m2_ofe_ground = thermal
+            .beginning_infiltration_credit_j_m2_ofe_ground
+            + multiplier * infiltration_enthalpy;
+        thermal.ending_enthalpy_j_m2_ofe_ground =
+            thermal.beginning_enthalpy_j_m2_ofe_ground + multiplier * infiltration_enthalpy;
+        assert_receiver_e011(validate_real_receiver_closure(&poison));
+    }
+
+    let retained_enthalpy =
+        candidate.receiver_closure_operands().lse_tiles[0].retained_enthalpy_j_m2_ofe_ground;
+    assert_ne!(retained_enthalpy.to_bits(), 0.0_f64.to_bits());
+    for multiplier in [0.0, 2.0] {
+        let mut poison = candidate.receiver_closure_operands().clone();
+        let tile = &mut poison.lse_tiles[0];
+        tile.ending_enthalpy_j_m2_tile_ground = tile.beginning_enthalpy_j_m2_tile_ground
+            + multiplier * retained_enthalpy / tile.tile_fraction;
+        assert_receiver_e011(validate_real_receiver_closure(&poison));
+    }
+}
+
+fn assert_receiver_e011(
+    result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
+) {
+    let error = result.expect_err("receiver poison must fail");
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert!(failure.context.transaction_id.is_some());
+    assert!(failure.context.ofe_id.is_some());
+    assert!(failure.rollback.beginning_owner_sha256.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
 #[test]
@@ -1095,7 +1265,7 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
         configuration.records[0].key.source_id.clone(),
         1.0,
     );
-    for poison in 0..3 {
+    for poison in 0..8 {
         let result = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,
@@ -1104,20 +1274,48 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
             &BTreeMap::new(),
             &ingress_input_with_mass(50.0),
             |authorizations| {
-                let mut finalization = unified_finalization(accepted_surface_protocol(
+                let finalization = unified_finalization(accepted_surface_protocol(
                     &batch,
                     authorizations,
                     &snapshot,
                 ));
+                let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
+                let mut thermal = finalization.soil_thermal_candidates().to_vec();
+                let mut rollback = finalization.rollback_hashes().to_vec();
                 match poison {
-                    0 => finalization.soil_thermal_candidates.clear(),
-                    1 => finalization.ending_tile_states_pre_ingress.clear(),
-                    _ => finalization.rollback_hashes[0].after_sha256 = digest('9'),
+                    0 => thermal.clear(),
+                    1 => tiles.clear(),
+                    2 => rollback[0].after_sha256 = digest('9'),
+                    3 => tiles.push(tiles[0].clone()),
+                    4 => thermal.push(thermal[0].clone()),
+                    5 => rollback.push(rollback[0].clone()),
+                    6 => rollback.push(OwnerRollbackHash {
+                        owner_kind: OwnerKind::Envelope,
+                        owner_id: "unexpected-envelope".into(),
+                        before_sha256: digest('8'),
+                        after_sha256: digest('8'),
+                    }),
+                    _ => {
+                        rollback.remove(0);
+                    }
                 }
-                Ok(finalization)
+                UnifiedLseFinalization::try_new(
+                    finalization.water_protocol().clone(),
+                    tiles,
+                    thermal,
+                    rollback,
+                )
             },
         );
-        assert!(result.is_err(), "receiver poison {poison} must reject");
+        let error = result.expect_err("receiver poison must reject");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+            panic!("receiver poison {poison} must retain canonical envelope failure");
+        };
+        assert_eq!(
+            surface_error.failure().expect("failure payload").code,
+            DirectSurfaceLiquidErrorCode::E011,
+            "receiver poison {poison}"
+        );
         assert_eq!(frame, original, "receiver poison {poison} mutated owner");
     }
 }
