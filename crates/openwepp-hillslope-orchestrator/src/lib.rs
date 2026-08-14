@@ -1,5 +1,6 @@
 #![allow(clippy::missing_errors_doc)]
 
+pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
 pub mod vegetation_diagnostic;
 pub mod vegetation_energy_owner;

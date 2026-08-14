@@ -593,13 +593,17 @@
 State as of `2026-08-14 UTC`:
 
 - `20260814-snow-free-land-surface-real-hydrology-integration-001/`
-  - EXECUTING / CHILDREN 1-2 COMPLETE / CHILD 3 LSE RUNTIME NEXT:
-    coordinates four
+  - HOLD / CHILDREN 1-2 COMPLETE / CHILD 3 FOREST SURFACE-LIQUID CUSTODY
+    ABSENT: coordinates four
     independently closed packages for complete snow-free ground/forest-floor
     authority, V8 arbitration against the real hillslope hydrology owner, a
     default-off LSE runtime, and a real scheduler consumer. Local base is the
     unpushed governance commit `0db196012`; production selection, state,
-    outputs, calibration, deployment and cutover remain excluded.
+    outputs, calibration, deployment and cutover remain excluded. Child 3
+    retains a passing exact runtime and production soil-layer bridge, but
+    cannot close the forest endpoint until hydrology owns a persistent
+    per-OFE/tile surface or litter liquid state with signed condensation
+    credit. Child 4 has not started.
 
 - `20260814-snow-free-land-surface-energy-authority-001/`
   - COMPLETE / SNOW-FREE LAND-SURFACE-ENERGY IMPLEMENTATION AUTHORITY
@@ -614,11 +618,16 @@ State as of `2026-08-14 UTC`:
     fixed-cap path to an exact default-off clone/candidate of production
     hydrology while preserving production bytes and legacy behavior.
 
-- `20260814-snow-free-land-surface-energy-runtime-shadow-001/` and
-  `20260814-vegetation-land-surface-real-consumer-shadow-001/`
-  - QUEUED in that dependency order under the active campaign. Each owns its
-    own review, gate, verification and terminal disposition; no child borrows a
-    predecessor PASS.
+- `20260814-snow-free-land-surface-energy-runtime-shadow-001/`
+  - EXECUTED-HOLD / EXACT RUNTIME CORE AND SOIL-LAYER REAL-OWNER BRIDGE PASS /
+    FOREST-LITTER WATER CUSTODY ABSENT: the retained default-off checkpoint
+    passes its bounded focused gates. It does not claim the prohibited
+    bare-soil-only forest endpoint. Its active kickoff prompt remains active.
+
+- `20260814-vegetation-land-surface-real-consumer-shadow-001/`
+  - NOT STARTED / BLOCKED ON COMPLETE CHILD 3 FOREST ENDPOINT. No package PASS,
+    real scheduler consumer, heavy campaign gate or terminal evidence is
+    claimed.
 
 - `20260813-c3-woody-storage-transfer-phenology-authority-001/`
   - COMPLETE / V7 STORAGE-TRANSFER PHENOLOGY AUTHORITY RELEASED / TERMINAL

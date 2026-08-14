@@ -1,6 +1,6 @@
 # Execute Snow-Free Land-Surface and Real-Hydrology Integration
 
-Status: `executing / Child 1 authority complete / Child 2 real-hydrology shadow active`
+Status: `executed-hold / Children 1-2 complete / Child 3 blocked on real surface-liquid custody`
 
 Date: `2026-08-14`
 
@@ -53,7 +53,9 @@ default, publication, or deployment path is in scope.
 - [x] (2026-08-14) Confirmed no existing exact-objective campaign package.
 - [x] Complete Stage 0 owner, scheduler, authority-gap, and baseline freeze.
 - [x] Complete Child 1 authority admission and terminal verification.
-- [ ] Complete Child 2 real-hydrology arbitration shadow.
+- [x] Complete Child 2 real-hydrology arbitration shadow.
+- [x] Retain Child 3's exact LSE runtime and soil-layer real-owner bridge as a
+  bounded passing checkpoint.
 - [ ] Complete Child 3 LSE runtime shadow.
 - [ ] Complete Child 4 real hillslope consumer shadow.
 - [ ] Run campaign-wide reviews, heavy gates, terminal verification, archive
@@ -85,5 +87,16 @@ scan introduces no new broken link; and terminal limitations remain explicit.
 
 ## Outcomes And Retrospective
 
-In progress. Stage 0 is tracing the existing owner and scheduler surfaces
-before any constitutive Rust edit.
+The campaign is held at Child 3. The exact LSE runtime core and a default-off
+bridge to the production soil-layer water owner pass their bounded focused
+gates, but production hydrology exposes no persistent, restart-serialized
+forest-floor/surface-liquid beginning store, candidate debit, ending state or
+signed condensation-credit operation. Residue interception inputs,
+depression/WAT5 diagnostics and snow liquid are not valid aliases.
+
+The first lift action is a hydrology-owned per-OFE/tile surface or litter
+liquid state with immutable snapshot, request/authorization/final-use debit,
+condensation credit, capacity/infiltration/runoff joins and atomic rollback.
+Child 3 then resumes in place. Child 4 has not started, campaign-wide heavy
+gates and terminal verification have not run, and no campaign completion or
+production claim is made.

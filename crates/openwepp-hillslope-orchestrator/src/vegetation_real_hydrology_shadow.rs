@@ -325,6 +325,18 @@ impl RealHydrologyShadowAdapter {
         &self.layer_facts
     }
 
+    pub(crate) fn layer_index_for_source(
+        &self,
+        source: &RealHydrologySourceKey,
+    ) -> Result<usize, RealHydrologyShadowError> {
+        self.layer_index(source)
+    }
+
+    #[must_use]
+    pub(crate) fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
     pub fn authorize(
         &self,
         requests: &[RealHydrologyWaterRequest],

@@ -1055,6 +1055,7 @@ dependencies = [
  "openwepp-climate-runtime-adapter",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
+ "openwepp-land-surface-energy",
  "openwepp-meteorology",
  "openwepp-sim-contract",
  "openwepp-topology",
@@ -1062,6 +1063,7 @@ dependencies = [
  "openwepp-vegetation",
  "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -1093,6 +1095,17 @@ dependencies = [
  "openwepp-unit-boundary",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "openwepp-land-surface-energy"
+version = "0.1.0"
+dependencies = [
+ "openwepp-kernel-contract",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
 ]
 
 [[package]]

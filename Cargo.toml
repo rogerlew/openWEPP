@@ -19,6 +19,7 @@ members = [
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
+    "crates/openwepp-land-surface-energy",
     "crates/openwepp-vegetation",
     "crates/openwepp-biogeochemistry",
     "crates/openwepp-topology",
@@ -803,6 +804,10 @@ path = "tests/integration/c3_vegetation_implementation_contract.rs"
 [[test]]
 name = "vegetation_real_hydrology_shadow_contract"
 path = "tests/integration/vegetation_real_hydrology_shadow_contract.rs"
+
+[[test]]
+name = "land_surface_energy_real_hydrology_shadow_contract"
+path = "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
 
 [[test]]
 name = "peak_hourly_authority_contract"

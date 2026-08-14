@@ -25,5 +25,7 @@ openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0"
 openwepp-meteorology = { path = "../openwepp-meteorology", version = "0.1.0" }
 openwepp-vegetation = { path = "../openwepp-vegetation", version = "0.1.0" }
 openwepp-biogeochemistry = { path = "../openwepp-biogeochemistry", version = "0.1.0" }
+openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
+thiserror = "2"
