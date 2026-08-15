@@ -1392,6 +1392,7 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     thermal_overflow.soil_thermal[0].infiltration_enthalpy_j_m2_ofe_ground = f64::MAX;
     assert_receiver_e003(
         "thermal-overflow",
+        &thermal_overflow,
         validate_real_receiver_closure(&thermal_overflow),
     );
 
@@ -1400,6 +1401,7 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     lse_overflow.lse_tiles[0].retained_enthalpy_j_m2_ofe_ground = f64::MAX;
     assert_receiver_e003(
         "lse-overflow",
+        &lse_overflow,
         validate_real_receiver_closure(&lse_overflow),
     );
 
@@ -1408,6 +1410,7 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     lse_underflow.lse_tiles[0].retained_enthalpy_j_m2_ofe_ground = f64::MIN_POSITIVE;
     assert_receiver_e003(
         "lse-underflow",
+        &lse_underflow,
         validate_real_receiver_closure(&lse_underflow),
     );
 }
@@ -1480,6 +1483,7 @@ fn assert_receiver_e011(
 
 fn assert_receiver_e003(
     label: &str,
+    operands: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::RealReceiverClosureOperands,
     result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
 ) {
     let error = result.expect_err("receiver arithmetic poison must fail");
@@ -1487,8 +1491,17 @@ fn assert_receiver_e003(
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003, "{label}");
     assert!(failure.context.transaction_id.is_some());
     assert!(failure.context.owner_id.is_some());
-    assert!(failure.rollback.beginning_owner_sha256.is_some());
-    assert!(failure.rollback.attempted_owner_sha256.is_some());
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(operands.beginning_hydrology_snapshot_sha256.as_str()),
+        "{label} beginning rollback hash"
+    );
+    let attempted = operands.canonical_sha256();
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(attempted.as_str()),
+        "{label} attempted rollback hash"
+    );
 }
 
 fn poison_receiver_finalization(

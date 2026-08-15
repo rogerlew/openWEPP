@@ -334,6 +334,26 @@ impl DirectSurfaceLiquidIngressCandidate {
         resource: &DirectSurfaceLiquidResourceCandidate,
         input: &DirectSurfaceLiquidIngressInput,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            configuration,
+            resource,
+            &self.closure_operands,
+            &self.receipts,
+        )
+        .map_err(|error| {
+            let code = error.code();
+            error.complete_context(
+                code,
+                DirectSurfaceLiquidPhase::IndependentClosure,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(resource.beginning_state().state_sha256.clone()),
+                self.ending_state.recomputed_sha256().ok(),
+            )
+        })?;
         let expected = execute_surface_liquid_ingress_inner(configuration, resource, input)
             .map_err(|error| {
                 let code = error.code();
@@ -342,6 +362,7 @@ impl DirectSurfaceLiquidIngressCandidate {
                     DirectSurfaceLiquidPhase::IngressCandidate,
                     DirectSurfaceLiquidErrorContext {
                         transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
                         ..DirectSurfaceLiquidErrorContext::default()
                     },
                     Some(resource.beginning_state().state_sha256.clone()),
@@ -354,6 +375,7 @@ impl DirectSurfaceLiquidIngressCandidate {
                 DirectSurfaceLiquidPhase::IngressCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
                 super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
@@ -2228,8 +2250,8 @@ mod tests {
             .validate(&configuration, &resource, &input)
             .expect_err("wrong infiltration recipient");
         let failure = error.failure().expect("canonical candidate failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
-        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
         assert_eq!(failure.context.transaction_id, Some(transaction_id));
         assert!(failure.rollback.beginning_owner_sha256.is_some());
         assert!(failure.rollback.attempted_owner_sha256.is_some());
@@ -2253,15 +2275,21 @@ mod tests {
             .expect("valid candidate");
         let mut poisoned = candidate.closure_operands().clone();
         poisoned.poison_first_beginning_for_test();
-        assert!(
-            super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
-                &configuration,
-                &resource,
-                &poisoned,
-                &candidate.receipts,
-            )
-            .is_err()
-        );
+        let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &poisoned,
+            &candidate.receipts,
+        )
+        .expect_err("ordinary closure mismatch");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+
+        let mut producer_poison = candidate;
+        producer_poison.closure_operands = poisoned;
+        let error = producer_poison
+            .validate(&configuration, &resource, &input)
+            .expect_err("public producer mismatch");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
     }
 
     #[test]
@@ -2290,6 +2318,41 @@ mod tests {
         )
         .expect_err("large finite closure arithmetic must fail closed");
         assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
+
+        let mut producer_poison = candidate.clone();
+        producer_poison
+            .closure_operands
+            .poison_first_store_arithmetic_overflow_for_test();
+        let expected_attempted = producer_poison
+            .ending_state
+            .recomputed_sha256()
+            .expect("attempted digest");
+        let error = producer_poison
+            .validate(&configuration, &resource, &input)
+            .expect_err("public producer closure must retain arithmetic failure");
+        let failure = error.failure().expect("canonical public closure failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(
+            failure.context.ofe_id,
+            Some(configuration.records[0].key.ofe_id.clone())
+        );
+        assert_eq!(
+            failure.context.tile_id,
+            Some(configuration.records[0].key.tile_id.clone())
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(expected_attempted.as_str())
+        );
     }
 
     #[test]

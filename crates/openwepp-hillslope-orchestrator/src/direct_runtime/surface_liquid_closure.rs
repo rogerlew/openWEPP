@@ -4,7 +4,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::TransactionId;
+use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
 use openwepp_land_surface_energy::OfeId;
 
 use super::surface_liquid_ingress::{
@@ -60,6 +60,34 @@ fn contextual_closure_arithmetic_failure(
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(transaction_id),
             owner_id: None,
+            ofe_id: Some(store_key.ofe_id.clone()),
+            tile_id: Some(store_key.tile_id.clone()),
+            surface_id: Some(store_key.surface_id.clone()),
+            source_id: Some(store_key.source_id.clone()),
+            parcel_id,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn contextual_comparison_failure(
+    code: DirectSurfaceLiquidErrorCode,
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
+    store_key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: Some(owner_id.clone()),
             ofe_id: Some(store_key.ofe_id.clone()),
             tile_id: Some(store_key.tile_id.clone()),
             surface_id: Some(store_key.surface_id.clone()),
@@ -574,29 +602,21 @@ fn validate_store_equations(
         require_close_mass(
             working.liquid_kg_m2_tile,
             pre_ingress,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &configured.key,
+            None,
             "resource state does not reconstruct from W0, F, C, and overflow",
-        )
-        .map_err(|_| {
-            contextual_closure_failure(
-                operands.transaction_id,
-                &configured.key,
-                None,
-                "resource state does not reconstruct from W0, F, C, and overflow",
-            )
-        })?;
+        )?;
         require_close_mass(
             row.ending_liquid_kg_m2_tile,
             expected_ending,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &configured.key,
+            None,
             "W1 does not reconstruct from W0, F, C, overflow, and retained excess",
-        )
-        .map_err(|_| {
-            contextual_closure_failure(
-                operands.transaction_id,
-                &configured.key,
-                None,
-                "W1 does not reconstruct from W0, F, C, overflow, and retained excess",
-            )
-        })?;
+        )?;
     }
     Ok(())
 }
@@ -694,15 +714,7 @@ fn validate_parcel_joins(
                         )
                     },
                 )?;
-                validate_receipt_enthalpy(receipt).map_err(|error| {
-                    let detail = error.to_string();
-                    contextual_closure_failure(
-                        operands.transaction_id,
-                        &receipt.origin_store_key,
-                        Some(receipt.parcel_id.clone()),
-                        detail,
-                    )
-                })?;
+                validate_receipt_enthalpy(&configuration.owner_id, receipt)?;
                 actual
                     .checked_add(
                         receipt.mass_kg_m2_basis_ofe_ground,
@@ -769,7 +781,15 @@ fn validate_parcel_joins(
                         })?;
                 }
             }
-            require_close_mass(actual.mass, expected_amount.mass, "parcel mass join")?;
+            require_close_mass(
+                actual.mass,
+                expected_amount.mass,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &route_record.key,
+                Some(key.source_parcel_id.clone()),
+                "parcel mass join",
+            )?;
             actual_ofe_enthalpy = checked_surface_liquid_add(actual_ofe_enthalpy, actual.enthalpy)
                 .ok_or_else(|| {
                     contextual_closure_arithmetic_failure(
@@ -783,6 +803,10 @@ fn validate_parcel_joins(
         require_close_enthalpy(
             actual_ofe_enthalpy,
             expected_ofe_enthalpy,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &route_record.key,
+            None,
             "OFE parcel enthalpy join",
         )?;
     }
@@ -893,6 +917,7 @@ fn route_destination<'a>(
 }
 
 fn validate_receipt_enthalpy(
+    owner_id: &ResourceOwnerId,
     receipt: &DirectSurfaceLiquidParcelReceipt,
 ) -> Result<(), DirectSurfaceLiquidError> {
     if !receipt.mass_kg_m2_basis_ofe_ground.is_finite()
@@ -917,12 +942,21 @@ fn validate_receipt_enthalpy(
         .and_then(|specific| {
             checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, specific)
         })
-        .ok_or(DirectSurfaceLiquidError::Closure(
-            "parcel temperature/enthalpy arithmetic is nonfinite or underflowed",
-        ))?;
+        .ok_or_else(|| {
+            contextual_closure_arithmetic_failure(
+                receipt.transaction_id,
+                &receipt.origin_store_key,
+                Some(receipt.parcel_id.clone()),
+                "parcel temperature/enthalpy arithmetic is nonfinite or underflowed",
+            )
+        })?;
     require_close_enthalpy(
         receipt.enthalpy_j_m2_basis_ofe_ground,
         expected,
+        receipt.transaction_id,
+        owner_id,
+        &receipt.origin_store_key,
+        Some(receipt.parcel_id.clone()),
         "parcel temperature/enthalpy join",
     )
 }
@@ -942,30 +976,63 @@ fn water_key_matches_record(
 fn require_close_mass(
     actual: f64,
     expected: f64,
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
+    store_key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
     detail: &'static str,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassKgM2)
-        == Some(true)
-    {
-        Ok(())
-    } else {
-        Err(DirectSurfaceLiquidError::Closure(detail))
+    match checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassKgM2) {
+        Some(true) => Ok(()),
+        Some(false) => Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            transaction_id,
+            owner_id,
+            store_key,
+            parcel_id,
+            detail,
+        )),
+        None => Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            transaction_id,
+            owner_id,
+            store_key,
+            parcel_id,
+            detail,
+        )),
     }
 }
 
 fn require_close_enthalpy(
     actual: f64,
     expected: f64,
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
+    store_key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
     detail: &'static str,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if checked_surface_liquid_close(
+    match checked_surface_liquid_close(
         actual,
         expected,
         DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
-    ) == Some(true)
-    {
-        Ok(())
-    } else {
-        Err(DirectSurfaceLiquidError::Closure(detail))
+    ) {
+        Some(true) => Ok(()),
+        Some(false) => Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            transaction_id,
+            owner_id,
+            store_key,
+            parcel_id,
+            detail,
+        )),
+        None => Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            transaction_id,
+            owner_id,
+            store_key,
+            parcel_id,
+            detail,
+        )),
     }
 }
