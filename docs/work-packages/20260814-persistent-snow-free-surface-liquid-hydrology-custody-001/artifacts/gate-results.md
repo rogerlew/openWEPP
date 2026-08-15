@@ -498,6 +498,24 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: every edited Rust file remains below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology closure review.
 
+## Window/disposition and independent routing remediation at `b5453e7d8`
+
+- HOLD retained: closure6 review found join keys omitted support-window and
+  disposition identity, expected downstream routed support was read from the
+  actual receipt, and support/mass/temperature domains missed global E003
+  precedence.
+- PASS: exact join identity is source, basis OFE, support start/end and
+  disposition; canonical contribution ordering matches production semantics.
+- PASS: expected outlet/routed runoff, including multi-hop support, mass and Q,
+  is derived only from frozen upstream sources and configuration route topology
+  with area conversion; actual receipts project separately.
+- PASS: partial-support two-hop positives, route disposition/mass drift and
+  cross-window Q/T swap poisons distinguish E010; exhaustive support, negative
+  mass and temperature poisons return contextual E003 before E009/E010.
+- PASS: orchestrator quick suite, 558/558; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; check; strict Clippy; formatting; diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Chronological mixing and support remediation at `c4114fc8c`
 
 - HOLD retained: closure5 reviews found independent closure computed one

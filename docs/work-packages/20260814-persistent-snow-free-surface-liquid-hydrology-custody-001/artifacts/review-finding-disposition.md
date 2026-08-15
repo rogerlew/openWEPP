@@ -209,3 +209,15 @@ Independent closure now reconstructs the canonical chronological support
 partition and per-window mixture from actual frozen source operands. Source
 identity is canonicalized independently of caller order; production physics is
 unchanged.
+
+## Window identity, routed expectation and domain findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-CLOSURE6-CRITICAL-001: join key drops window identity and routed expectation copies actual receipt | Accepted | Remediated at `b5453e7d8`; focused PASS |
+| A-TERMINAL-CLOSURE6-HIGH-002: support/mass/temperature domain violations miss global E003 precedence | Accepted | Remediated at `b5453e7d8`; focused PASS |
+
+Window/disposition identity is explicit. Expected local and multi-hop routed
+segments are independently derived from frozen inputs/topology. Domain
+preflight covers every frozen and actual support/amount/temperature before
+producer or closure comparison.

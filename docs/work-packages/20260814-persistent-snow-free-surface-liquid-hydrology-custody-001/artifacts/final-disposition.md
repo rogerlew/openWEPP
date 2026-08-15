@@ -48,8 +48,10 @@ context. The correction at `e19bcdbcf` restores canonical `h_mix`, separates
 raw-source and post-mix ledgers, validates every source row and carries only
 known aggregate identity. Closure5 review found the independent ledger still
 collapsed chronological support into one whole-OFE mixture and hardcoded
-source support/order. The correction at `c4114fc8c` reconstructs exact support
-windows and canonical source order without changing correct production mixing.
-Focused gates pass, but fresh exact-byte reviews and terminal verification
-remain required. This is not yet a terminal custody-lift or resumed-Child-3
-claim.
+source support/order. The correction at `c4114fc8c` reconstructed chronology,
+but closure6 review found omitted window/disposition join identity, circular
+expected routed support and missing E003 support-domain precedence. The
+correction at `b5453e7d8` derives exact multi-hop expected routes independently
+and binds every support window/disposition. Focused gates pass, but fresh
+exact-byte reviews and terminal verification remain required. This is not yet a
+terminal custody-lift or resumed-Child-3 claim.

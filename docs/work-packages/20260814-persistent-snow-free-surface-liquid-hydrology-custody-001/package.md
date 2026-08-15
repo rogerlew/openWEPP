@@ -107,10 +107,14 @@ branch, PR or push is in scope.
   Closure5 review found evidence still collapsed chronological support into one
   whole-OFE mixture and hardcoded source support/order. The correction at
   `c4114fc8c` reconstructs per-window `h_mix,b`, actual support and canonical
-  source order without changing production physics. It passes 556/556
-  orchestrator, 19/19 focused integration and 9/9 authority tests, strict
-  Clippy, formatting, diff hygiene, and line-count governance. Fresh exact-byte
-  reviews remain pending.
+  source order without changing production physics. Closure6 review found join
+  keys omitted window/disposition identity, expected routed support was circular
+  from actual receipts, and support domains missed E003 precedence. The
+  correction at `b5453e7d8` binds exact window/disposition, derives expected
+  multi-hop routing from frozen inputs/topology and exhaustively preflights
+  domains. It passes 558/558 orchestrator, 19/19 focused integration and 9/9
+  authority tests, strict Clippy, formatting, diff hygiene, and line-count
+  governance. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries
