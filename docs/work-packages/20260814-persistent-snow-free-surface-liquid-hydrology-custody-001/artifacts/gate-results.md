@@ -706,3 +706,16 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - Pending: fresh exact-byte Rust and hydrology closure review.
+
+## Authority-impact binding correction
+
+- FAIL retained: the first current-base science-admission run rejected the new
+  extracted `surface_liquid_ingress_tests.rs` because it lacked a current SC
+  impact-map binding.
+- PASS: impact-map generation 26 binds both extracted crate-local custody test
+  modules and the integration authority contract to `SC-SURFACELIQUID-001`.
+- PASS: `check_science_contract_admission.sh --base-ref af9a989... --worktree`
+  returned `A0_ADMITTED contracts=46 science_surfaces=16`.
+- PASS: authority-suite anti-evasion.
+- PASS: AUTH11, 3/3.
+- PASS: SC-SURFACELIQUID unit-compliance lint.
