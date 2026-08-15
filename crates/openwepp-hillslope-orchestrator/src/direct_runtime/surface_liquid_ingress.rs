@@ -434,6 +434,20 @@ impl DirectSurfaceLiquidIngressCandidate {
                 base(),
             ));
         }
+        if let Some((key, parcel_id)) = self
+            .closure_operands
+            .first_source_identity_mismatch(&expected.closure_operands)
+        {
+            return Some(DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ofe_id: Some(key.ofe_id),
+                tile_id: Some(key.tile_id),
+                surface_id: Some(key.surface_id),
+                source_id: Some(key.source_id),
+                parcel_id: Some(parcel_id),
+            });
+        }
         if self.receipts != expected.receipts {
             let receipt =
                 first_identity_aware_mismatch(&self.receipts, &expected.receipts, |row| {

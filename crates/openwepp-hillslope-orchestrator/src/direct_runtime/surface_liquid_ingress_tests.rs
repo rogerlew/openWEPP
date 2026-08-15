@@ -944,14 +944,14 @@ fn frozen_source_identity_rejects_zero_row_deletion_rekey_duplicate_and_kind_swa
         },
     ] {
         let attempted = poison.ending_state.recomputed_sha256().expect("digest");
-        assert_closure_failure(
+        assert_producer_e009(
             &poison
                 .validate(&configuration, &resource, &input)
                 .expect_err("frozen identity poison"),
-            DirectSurfaceLiquidErrorCode::E010,
             transaction_id,
             &configuration,
-            key,
+            Some(&key.ofe_id),
+            Some(&key.tile_id),
             Some(&parcel_id),
             &resource.beginning_state().state_sha256,
             &attempted,
@@ -1010,6 +1010,92 @@ fn source_specific_output_temperature_is_not_the_interval_mixture() {
     let failure = error.failure().expect("typed closure failure");
     assert_eq!(failure.context.ofe_id, Some(ofe("only")));
     assert_eq!(failure.context.tile_id, Some(tile("tile")));
+}
+
+#[test]
+fn chronological_partial_overlap_closure_and_support_identity() {
+    let configuration = multi_tile_one_ofe_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(405);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![
+            open_ingress(&configuration.records[0], 0.2),
+            open_ingress(&configuration.records[1], 0.2),
+        ],
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut input = input;
+    let DirectTileGroundIngress::OpenRawPrecipitation {
+        raw_precipitation, ..
+    } = &mut input.tile_ingress[0]
+    else {
+        panic!("open input");
+    };
+    *raw_precipitation = amount(0.2, 280.0, 0.0, 1_200.0);
+    let DirectTileGroundIngress::OpenRawPrecipitation {
+        raw_precipitation, ..
+    } = &mut input.tile_ingress[1]
+    else {
+        panic!("open input");
+    };
+    *raw_precipitation = amount(0.2, 300.0, 600.0, INTERVAL_S);
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("multi-boundary candidate");
+    candidate
+        .validate(&configuration, &resource, &input)
+        .expect("chronological independent closure");
+
+    let mut poison = candidate;
+    let parcel_id = poison
+        .closure_operands
+        .poison_first_source_support_for_test();
+    let attempted = poison.ending_state.recomputed_sha256().expect("digest");
+    assert_producer_e009(
+        &poison
+            .validate(&configuration, &resource, &input)
+            .expect_err("wrong frozen support"),
+        transaction_id,
+        &configuration,
+        Some(&ofe("only")),
+        Some(&configuration.records[0].key.tile_id),
+        Some(&parcel_id),
+        &resource.beginning_state().state_sha256,
+        &attempted,
+    );
+}
+
+#[test]
+fn caller_tile_ingress_order_does_not_change_canonical_sources_or_results() {
+    let configuration = multi_tile_one_ofe_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(406);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let mut input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: configuration
+            .records
+            .iter()
+            .map(|record| open_ingress(record, 0.1))
+            .collect(),
+        wb14_parameters: parameters(&configuration),
+    };
+    let ordered =
+        execute_surface_liquid_ingress(&configuration, &resource, &input).expect("ordered ingress");
+    input.tile_ingress.reverse();
+    let reversed = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("reversed ingress");
+    assert_eq!(ordered.ending_state, reversed.ending_state);
+    assert_eq!(ordered.receipts, reversed.receipts);
+    assert_eq!(ordered.ledgers, reversed.ledgers);
+    assert_eq!(ordered.closure_operands, reversed.closure_operands);
 }
 
 #[test]
@@ -1365,40 +1451,6 @@ fn assert_producer_e009(
     );
     assert_eq!(failure.context.ofe_id.as_ref(), ofe_id);
     assert_eq!(failure.context.tile_id.as_ref(), tile_id);
-    assert_eq!(failure.context.parcel_id.as_deref(), parcel_id);
-    assert_eq!(
-        failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning_sha256)
-    );
-    assert_eq!(
-        failure.rollback.attempted_owner_sha256.as_deref(),
-        Some(attempted_sha256)
-    );
-}
-
-#[allow(clippy::too_many_arguments)]
-fn assert_closure_failure(
-    error: &DirectSurfaceLiquidError,
-    code: DirectSurfaceLiquidErrorCode,
-    transaction_id: TransactionId,
-    configuration: &DirectSurfaceLiquidConfiguration,
-    key: &DirectSurfaceLiquidStoreKey,
-    parcel_id: Option<&str>,
-    beginning_sha256: &str,
-    attempted_sha256: &str,
-) {
-    let failure = error.failure().expect("canonical closure failure");
-    assert_eq!(failure.code, code);
-    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
-    assert_eq!(failure.context.transaction_id, Some(transaction_id));
-    assert_eq!(
-        failure.context.owner_id,
-        Some(configuration.owner_id.clone())
-    );
-    assert_eq!(failure.context.ofe_id.as_ref(), Some(&key.ofe_id));
-    assert_eq!(failure.context.tile_id.as_ref(), Some(&key.tile_id));
-    assert_eq!(failure.context.surface_id.as_ref(), Some(&key.surface_id));
-    assert_eq!(failure.context.source_id.as_ref(), Some(&key.source_id));
     assert_eq!(failure.context.parcel_id.as_deref(), parcel_id);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),

@@ -150,6 +150,41 @@ impl DirectSurfaceLiquidClosureOperands {
         &self.source_parcels
     }
 
+    pub(super) fn first_source_identity_mismatch(
+        &self,
+        expected: &Self,
+    ) -> Option<(DirectSurfaceLiquidStoreKey, String)> {
+        let actual = self
+            .source_parcels
+            .iter()
+            .map(FrozenSourceIdentity::from)
+            .collect::<Vec<_>>();
+        let frozen = expected
+            .source_parcels
+            .iter()
+            .map(FrozenSourceIdentity::from)
+            .collect::<Vec<_>>();
+        if actual.len() < frozen.len() {
+            let actual_set = actual.iter().cloned().collect::<BTreeSet<_>>();
+            if let Some(missing) = frozen.iter().find(|row| !actual_set.contains(*row)) {
+                return Some((
+                    missing.origin_store_key.clone(),
+                    missing.source_parcel_id.clone(),
+                ));
+            }
+        }
+        actual
+            .iter()
+            .zip(&frozen)
+            .find(|(actual_row, expected_row)| actual_row != expected_row)
+            .map(|(row, _)| (row.origin_store_key.clone(), row.source_parcel_id.clone()))
+            .or_else(|| {
+                actual
+                    .get(frozen.len())
+                    .map(|row| (row.origin_store_key.clone(), row.source_parcel_id.clone()))
+            })
+    }
+
     #[cfg(test)]
     pub(super) fn poison_first_beginning_for_test(&mut self) {
         if let Some(first) = self.stores.first_mut() {
@@ -183,6 +218,7 @@ impl DirectSurfaceLiquidClosureOperands {
         }
         self.source_parcels
             .iter_mut()
+            .filter(|parcel| parcel.mass_kg_m2_basis_ofe_ground > 0.0)
             .take(2)
             .map(|parcel| {
                 parcel.enthalpy_j_m2_basis_ofe_ground = f64::MAX * 0.3;
@@ -237,6 +273,13 @@ impl DirectSurfaceLiquidClosureOperands {
         let (first, rest) = self.source_parcels.split_first_mut().expect("first parcel");
         let second = rest.first_mut().expect("second parcel");
         std::mem::swap(&mut first.kind, &mut second.kind);
+        first.source_parcel_id.clone()
+    }
+
+    #[cfg(test)]
+    pub(super) fn poison_first_source_support_for_test(&mut self) -> String {
+        let first = self.source_parcels.first_mut().expect("source parcel");
+        first.start_s += 1.0;
         first.source_parcel_id.clone()
     }
 }
@@ -382,6 +425,15 @@ impl From<&DirectSurfaceLiquidParcelClosureOperands> for FrozenSourceIdentity {
 
 #[derive(Clone, Copy, Debug, Default)]
 struct AmountPair {
+    mass: f64,
+    enthalpy: f64,
+}
+
+#[derive(Clone)]
+struct RawParcelSegment {
+    key: ParcelJoinKey,
+    start_s: f64,
+    end_s: f64,
     mass: f64,
     enthalpy: f64,
 }
@@ -757,6 +809,7 @@ fn capture_source_parcels(
     for overflow in resource.condensation_overflow() {
         result.push(capture_overflow(input.transaction_id, overflow)?);
     }
+    result.sort_by_key(|row| FrozenSourceIdentity::from(row));
     Ok(result)
 }
 
@@ -793,8 +846,8 @@ fn capture_amount(
         origin_store_key: configured.key.clone(),
         basis_ofe_id: configured.key.ofe_id.clone(),
         kind,
-        start_s: 0.0,
-        end_s: INTERVAL_S,
+        start_s: amount.start_s,
+        end_s: amount.end_s,
         mass_kg_m2_basis_ofe_ground: mass,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
@@ -893,6 +946,17 @@ fn validate_frozen_source_identities(
             end_s_bits: INTERVAL_S.to_bits(),
         });
     }
+    for expected_row in &mut expected {
+        if let Some(actual_row) = operands
+            .source_parcels
+            .iter()
+            .find(|row| row.source_parcel_id == expected_row.source_parcel_id)
+        {
+            expected_row.start_s_bits = actual_row.start_s.to_bits();
+            expected_row.end_s_bits = actual_row.end_s.to_bits();
+        }
+    }
+    expected.sort();
     let actual = operands
         .source_parcels
         .iter()
@@ -934,6 +998,7 @@ fn project_parcel_arithmetic(
     receipts: &[DirectSurfaceLiquidParcelReceipt],
 ) -> Result<ParcelArithmeticProjection, DirectSurfaceLiquidError> {
     let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
+    let mut raw_segments = Vec::<RawParcelSegment>::new();
     for parcel in &operands.source_parcels {
         if !parcel.mass_kg_m2_basis_ofe_ground.is_finite()
             || parcel.mass_kg_m2_basis_ofe_ground < 0.0
@@ -948,26 +1013,18 @@ fn project_parcel_arithmetic(
                 "source parcel arithmetic domain",
             ));
         }
-        expected
-            .entry(ParcelJoinKey {
-                source_parcel_id: parcel.source_parcel_id.clone(),
-                basis_ofe_id: parcel.basis_ofe_id.clone(),
-            })
-            .or_default()
-            .checked_add(
-                parcel.mass_kg_m2_basis_ofe_ground,
-                parcel.enthalpy_j_m2_basis_ofe_ground,
-            )
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    &parcel.origin_store_key,
-                    Some(parcel.source_parcel_id.clone()),
-                    "source parcel aggregate arithmetic",
-                )
-            })?;
+        let key = ParcelJoinKey {
+            source_parcel_id: parcel.source_parcel_id.clone(),
+            basis_ofe_id: parcel.basis_ofe_id.clone(),
+        };
+        expected.entry(key.clone()).or_default();
+        raw_segments.push(RawParcelSegment {
+            key,
+            start_s: parcel.start_s,
+            end_s: parcel.end_s,
+            mass: parcel.mass_kg_m2_basis_ofe_ground,
+            enthalpy: parcel.enthalpy_j_m2_basis_ofe_ground,
+        });
     }
     let mut actual = BTreeMap::<ParcelJoinKey, AmountPair>::new();
     for receipt in receipts {
@@ -1036,81 +1093,155 @@ fn project_parcel_arithmetic(
                     "route area/amount arithmetic",
                 )
             })?;
-        expected
-            .entry(ParcelJoinKey {
-                source_parcel_id: receipt.source_parcel_id.clone(),
-                basis_ofe_id: destination_ofe.clone(),
-            })
-            .or_default()
-            .checked_add(routed.0, routed.1)
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    &destination.key,
-                    Some(receipt.parcel_id.clone()),
-                    "routed parcel aggregate arithmetic",
-                )
-            })?;
+        let key = ParcelJoinKey {
+            source_parcel_id: receipt.source_parcel_id.clone(),
+            basis_ofe_id: destination_ofe.clone(),
+        };
+        expected.entry(key.clone()).or_default();
+        raw_segments.push(RawParcelSegment {
+            key,
+            start_s: receipt.start_s,
+            end_s: receipt.end_s,
+            mass: routed.0,
+            enthalpy: routed.1,
+        });
     }
 
     let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
-    for (key, amount) in &expected {
-        let store_key = projection_key_store(configuration, operands, receipts, key)?;
-        raw_totals
-            .entry(key.basis_ofe_id.clone())
-            .or_default()
-            .checked_add(amount.mass, amount.enthalpy)
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    store_key,
-                    Some(key.source_parcel_id.clone()),
-                    "raw OFE mixture aggregate arithmetic",
-                )
-            })?;
-    }
-    for (ofe_id, total) in &raw_totals {
-        let h_mix = if total.mass == 0.0 {
-            if total.enthalpy != 0.0 {
-                return Err(contextual_ofe_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    ofe_id,
-                    "zero-mass OFE mixture has nonzero enthalpy",
-                ));
+    for ofe_id in &configuration.ofe_topology {
+        let segments = raw_segments
+            .iter()
+            .filter(|segment| &segment.key.basis_ofe_id == ofe_id)
+            .collect::<Vec<_>>();
+        let mut boundaries = segments
+            .iter()
+            .flat_map(|segment| [segment.start_s, segment.end_s])
+            .collect::<Vec<_>>();
+        boundaries.extend([0.0, INTERVAL_S]);
+        boundaries.sort_by(f64::total_cmp);
+        boundaries.dedup_by(|left, right| left.to_bits() == right.to_bits());
+        for window in boundaries.windows(2) {
+            let start_s = window[0];
+            let end_s = window[1];
+            if end_s <= start_s {
+                continue;
             }
-            0.0
-        } else {
-            checked_surface_liquid_div(total.enthalpy, total.mass).ok_or_else(|| {
+            let mut contributions = Vec::new();
+            for segment in segments
+                .iter()
+                .filter(|segment| segment.start_s <= start_s && segment.end_s >= end_s)
+            {
+                let fraction =
+                    checked_surface_liquid_div(end_s - start_s, segment.end_s - segment.start_s)
+                        .ok_or_else(|| {
+                            contextual_ofe_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                ofe_id,
+                                "window support fraction arithmetic",
+                            )
+                        })?;
+                let mass = checked_surface_liquid_mul(segment.mass, fraction).ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "window raw mass arithmetic",
+                    )
+                })?;
+                let enthalpy =
+                    checked_surface_liquid_mul(segment.enthalpy, fraction).ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "window raw enthalpy arithmetic",
+                        )
+                    })?;
+                contributions.push((*segment, mass, enthalpy));
+            }
+            let mass = checked_surface_liquid_sum(contributions.iter().map(|row| row.1))
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "window mass aggregate arithmetic",
+                    )
+                })?;
+            let enthalpy = checked_surface_liquid_sum(contributions.iter().map(|row| row.2))
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "window enthalpy aggregate arithmetic",
+                    )
+                })?;
+            if mass == 0.0 {
+                if enthalpy != 0.0 {
+                    return Err(contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "zero-mass window has nonzero enthalpy",
+                    ));
+                }
+                continue;
+            }
+            let h_mix = checked_surface_liquid_div(enthalpy, mass).ok_or_else(|| {
                 contextual_ofe_comparison_failure(
                     DirectSurfaceLiquidErrorCode::E003,
                     operands.transaction_id,
                     &configuration.owner_id,
                     ofe_id,
-                    "OFE mixture specific enthalpy arithmetic",
-                )
-            })?
-        };
-        for (key, amount) in expected
-            .iter_mut()
-            .filter(|(key, _)| &key.basis_ofe_id == ofe_id)
-        {
-            let store_key = projection_key_store(configuration, operands, receipts, key)?;
-            amount.enthalpy = checked_surface_liquid_mul(amount.mass, h_mix).ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    store_key,
-                    Some(key.source_parcel_id.clone()),
-                    "post-mix source enthalpy attribution arithmetic",
+                    "window mixture specific enthalpy arithmetic",
                 )
             })?;
+            raw_totals
+                .entry(ofe_id.clone())
+                .or_default()
+                .checked_add(mass, enthalpy)
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "interval raw aggregate arithmetic",
+                    )
+                })?;
+            for (segment, segment_mass, _) in contributions {
+                let attributed =
+                    checked_surface_liquid_mul(segment_mass, h_mix).ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "window post-mix attribution arithmetic",
+                        )
+                    })?;
+                expected
+                    .entry(segment.key.clone())
+                    .or_default()
+                    .checked_add(segment_mass, attributed)
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "source interval attribution arithmetic",
+                        )
+                    })?;
+            }
         }
     }
 
