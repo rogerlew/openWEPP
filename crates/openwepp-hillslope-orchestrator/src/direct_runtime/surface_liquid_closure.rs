@@ -1100,15 +1100,31 @@ pub(super) fn validate_surface_liquid_closure_operands(
     receipts: &[DirectSurfaceLiquidParcelReceipt],
     ending: &DirectSurfaceLiquidOwnedState,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if operands.transaction_id != resource.transaction_id() {
-        return Err(DirectSurfaceLiquidError::Closure(
-            "independent closure transaction mismatch",
-        ));
-    }
-    preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
-    validate_frozen_source_identities(configuration, resource, operands)?;
-    validate_store_equations(configuration, resource, operands)?;
-    validate_parcel_joins(configuration, operands, receipts, ending)
+    let result = (|| {
+        if operands.transaction_id != resource.transaction_id() {
+            return Err(DirectSurfaceLiquidError::Closure(
+                "independent closure transaction mismatch",
+            ));
+        }
+        preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
+        validate_frozen_source_identities(configuration, resource, operands)?;
+        validate_store_equations(configuration, resource, operands)?;
+        validate_parcel_joins(configuration, operands, receipts, ending)
+    })();
+    result.map_err(|error| {
+        let code = error.code();
+        error.complete_context(
+            code,
+            DirectSurfaceLiquidPhase::IndependentClosure,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(operands.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            Some(resource.beginning_state().state_sha256.clone()),
+            ending.recomputed_sha256().ok(),
+        )
+    })
 }
 
 fn validate_frozen_source_identities(
@@ -2324,26 +2340,31 @@ fn validate_projected_ending_digest(
 }
 
 fn first_membership_aware_mismatch<T: Clone + Ord>(actual: &[T], expected: &[T]) -> Option<T> {
-    let actual_set = actual.iter().cloned().collect::<BTreeSet<_>>();
-    let expected_set = expected.iter().cloned().collect::<BTreeSet<_>>();
-    expected
-        .iter()
-        .find(|row| !actual_set.contains(*row))
-        .cloned()
-        .or_else(|| {
-            actual
-                .iter()
-                .find(|row| !expected_set.contains(*row))
-                .cloned()
-        })
-        .or_else(|| {
-            actual
-                .iter()
-                .zip(expected)
-                .find(|(actual, expected)| actual != expected)
-                .map(|(actual, _)| actual.clone())
-        })
-        .or_else(|| actual.get(expected.len()).cloned())
+    match actual.len().cmp(&expected.len()) {
+        std::cmp::Ordering::Less => expected
+            .iter()
+            .find(|row| {
+                actual.iter().filter(|actual| *actual == *row).count()
+                    < expected.iter().filter(|expected| *expected == *row).count()
+            })
+            .cloned(),
+        std::cmp::Ordering::Greater => actual
+            .iter()
+            .enumerate()
+            .find(|(index, row)| {
+                actual[..=*index]
+                    .iter()
+                    .filter(|actual| *actual == *row)
+                    .count()
+                    > expected.iter().filter(|expected| *expected == *row).count()
+            })
+            .map(|(_, row)| row.clone()),
+        std::cmp::Ordering::Equal => actual
+            .iter()
+            .zip(expected)
+            .find(|(actual, expected)| actual != expected)
+            .map(|(actual, _)| actual.clone()),
+    }
 }
 
 fn validate_projected_ending_state(

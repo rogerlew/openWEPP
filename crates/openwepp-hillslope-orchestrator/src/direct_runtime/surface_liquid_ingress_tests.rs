@@ -2224,6 +2224,152 @@ fn producer_upper_and_middle_deletions_report_the_missing_identity() {
     }
 }
 
+fn assert_independent_store_e010(
+    error: &DirectSurfaceLiquidError,
+    transaction_id: TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    expected: &DirectSurfaceLiquidStoreKey,
+    beginning_sha256: &str,
+    attempted_sha256: &str,
+    label: &str,
+) {
+    let failure = error.failure().expect("typed store failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
+    assert_eq!(
+        failure.phase,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.transaction_id,
+        Some(transaction_id),
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone()),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.context.ofe_id.as_ref(),
+            failure.context.tile_id.as_ref(),
+            failure.context.surface_id.as_ref(),
+            failure.context.source_id.as_ref(),
+            failure.context.parcel_id.as_ref(),
+        ),
+        (
+            Some(&expected.ofe_id),
+            Some(&expected.tile_id),
+            Some(&expected.surface_id),
+            Some(&expected.source_id),
+            None,
+        ),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            failure.rollback.attempted_owner_sha256.as_deref(),
+        ),
+        (Some(beginning_sha256), Some(attempted_sha256)),
+        "{label}"
+    );
+}
+
+fn assert_independent_continuation_e010(
+    error: &DirectSurfaceLiquidError,
+    transaction_id: TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    expected_ofe: &OfeId,
+    beginning_sha256: &str,
+    attempted_sha256: &str,
+    label: &str,
+) {
+    let failure = error.failure().expect("typed continuation failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
+    assert_eq!(
+        failure.phase,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.transaction_id,
+        Some(transaction_id),
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone()),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.context.ofe_id.as_ref(),
+            failure.context.tile_id.as_ref(),
+            failure.context.surface_id.as_ref(),
+            failure.context.source_id.as_ref(),
+            failure.context.parcel_id.as_ref(),
+        ),
+        (Some(expected_ofe), None, None, None, None),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            failure.rollback.attempted_owner_sha256.as_deref(),
+        ),
+        (Some(beginning_sha256), Some(attempted_sha256)),
+        "{label}"
+    );
+}
+
+fn assert_independent_aggregate_e010(
+    error: &DirectSurfaceLiquidError,
+    transaction_id: TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning_sha256: &str,
+    attempted_sha256: &str,
+    label: &str,
+) {
+    let failure = error.failure().expect("typed aggregate failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
+    assert_eq!(
+        failure.phase,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.transaction_id,
+        Some(transaction_id),
+        "{label}"
+    );
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone()),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.context.ofe_id.as_ref(),
+            failure.context.tile_id.as_ref(),
+            failure.context.surface_id.as_ref(),
+            failure.context.source_id.as_ref(),
+            failure.context.parcel_id.as_ref(),
+        ),
+        (None, None, None, None, None),
+        "{label}"
+    );
+    assert_eq!(
+        (
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            failure.rollback.attempted_owner_sha256.as_deref(),
+        ),
+        (Some(beginning_sha256), Some(attempted_sha256)),
+        "{label}"
+    );
+}
+
 #[test]
 #[allow(clippy::too_many_lines)]
 fn independent_projection_binds_persistent_stores_continuations_and_digest() {
@@ -2253,31 +2399,59 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
         &candidate.ending_state,
     )
     .expect("persistent projection baseline");
-
-    let upper_store = configuration.records[0].key.clone();
-    let middle_store = configuration.records[1].key.clone();
+    let store_keys = configuration
+        .records
+        .iter()
+        .map(|row| row.key.clone())
+        .collect::<Vec<_>>();
     let mut store_poisons = Vec::new();
     let mut wrong_store = candidate.ending_state.clone();
     wrong_store.records[0].liquid_kg_m2_tile += 0.001;
-    store_poisons.push(("wrong ending store", wrong_store, upper_store.clone()));
-    let mut missing_store = candidate.ending_state.clone();
-    missing_store.records.remove(1);
-    store_poisons.push(("missing ending store", missing_store, middle_store.clone()));
-    let mut extra_store = candidate.ending_state.clone();
-    extra_store.records.push(extra_store.records[0].clone());
-    store_poisons.push(("extra ending store", extra_store, upper_store.clone()));
-    let mut reordered_store = candidate.ending_state.clone();
-    reordered_store.records.swap(0, 1);
     store_poisons.push((
-        "reordered ending store",
-        reordered_store,
-        middle_store.clone(),
+        "wrong ending store value".to_owned(),
+        wrong_store,
+        store_keys[0].clone(),
     ));
-    let mut wrong_store_id = candidate.ending_state.clone();
-    wrong_store_id.records[0].key = configuration.records[1].key.clone();
-    store_poisons.push(("wrong ending store identity", wrong_store_id, upper_store));
+    for (index, expected_store) in store_keys.iter().enumerate() {
+        let mut ending = candidate.ending_state.clone();
+        ending.records.remove(index);
+        store_poisons.push((
+            format!("missing ending store {index}"),
+            ending,
+            expected_store.clone(),
+        ));
+        let mut ending = candidate.ending_state.clone();
+        ending.records.push(ending.records[index].clone());
+        store_poisons.push((
+            format!("extra ending store {index}"),
+            ending,
+            expected_store.clone(),
+        ));
+        let mut ending = candidate.ending_state.clone();
+        let forged = DirectSurfaceLiquidStoreKey {
+            run_id: 91,
+            ofe_id: ofe(&format!("forged-{index}")),
+            tile_id: tile(&format!("forged-tile-{index}")),
+            surface_id: surface(&format!("forged-surface-{index}")),
+            surface_class: SurfaceClass::BareMineralSoil,
+            source_type: openwepp_land_surface_energy::WaterSourceType::SurfaceLiquid,
+            source_id: source(&format!("forged-source-{index}")),
+        };
+        ending.records[index].key = forged.clone();
+        store_poisons.push((format!("replacement ending store {index}"), ending, forged));
+    }
+    for (left, right) in [(0, 1), (1, 2), (0, 2)] {
+        let mut ending = candidate.ending_state.clone();
+        ending.records.swap(left, right);
+        store_poisons.push((
+            format!("reordered ending stores {left}/{right}"),
+            ending,
+            store_keys[right].clone(),
+        ));
+    }
     for (label, mut ending, expected_store) in store_poisons {
         ending.state_sha256 = ending.recomputed_sha256().expect("poison digest");
+        let attempted_sha256 = ending.recomputed_sha256().expect("attempted digest");
         let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
             &configuration,
             &resource,
@@ -2285,46 +2459,75 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
             &candidate.receipts,
             &ending,
         )
-        .expect_err(label);
-        let failure = error.failure().expect("typed store failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
-        assert_eq!(failure.context.ofe_id, Some(expected_store.ofe_id));
-        assert_eq!(failure.context.tile_id, Some(expected_store.tile_id));
+        .expect_err(&label);
+        assert_independent_store_e010(
+            &error,
+            transaction_id,
+            &configuration,
+            &expected_store,
+            &resource.beginning_state().state_sha256,
+            &attempted_sha256,
+            &label,
+        );
     }
-
     let mut poisons = Vec::new();
     let mut supply = candidate.ending_state.clone();
     supply.continuations[0].cumulative_supply_m += 1.0e-6;
-    poisons.push(("cumulative supply", supply, ofe("upper")));
+    poisons.push(("cumulative supply".to_owned(), supply, ofe("upper")));
     let mut infiltration = candidate.ending_state.clone();
     infiltration.continuations[0].cumulative_infiltration_m += 1.0e-6;
-    poisons.push(("cumulative infiltration", infiltration, ofe("upper")));
+    poisons.push((
+        "cumulative infiltration".to_owned(),
+        infiltration,
+        ofe("upper"),
+    ));
     let mut rollover_day = candidate.ending_state.clone();
     rollover_day.continuations[0].day_index += 1;
-    poisons.push(("rollover day", rollover_day, ofe("upper")));
+    poisons.push(("rollover day".to_owned(), rollover_day, ofe("upper")));
     let mut rollover_interval = candidate.ending_state.clone();
     rollover_interval.continuations[0].next_interval_index = 48;
-    poisons.push(("rollover interval", rollover_interval, ofe("upper")));
+    poisons.push((
+        "rollover interval".to_owned(),
+        rollover_interval,
+        ofe("upper"),
+    ));
     let mut stale_transaction = candidate.ending_state.clone();
     stale_transaction.continuations[0].last_accepted_transaction_id = Some(TransactionId(410));
-    poisons.push(("continuation transaction", stale_transaction, ofe("upper")));
-    let mut missing = candidate.ending_state.clone();
-    missing.continuations.remove(1);
-    poisons.push(("missing continuation", missing, ofe("middle")));
-    let mut duplicate = candidate.ending_state.clone();
-    duplicate
-        .continuations
-        .push(duplicate.continuations[0].clone());
-    poisons.push(("duplicate continuation", duplicate, ofe("upper")));
-    let mut reordered = candidate.ending_state.clone();
-    reordered.continuations.swap(0, 1);
-    poisons.push(("reordered continuation", reordered, ofe("middle")));
-    let mut wrong_ofe = candidate.ending_state.clone();
-    wrong_ofe.continuations[0].ofe_id = ofe("forged");
-    poisons.push(("wrong continuation OFE", wrong_ofe, ofe("upper")));
-
+    poisons.push((
+        "continuation transaction".to_owned(),
+        stale_transaction,
+        ofe("upper"),
+    ));
+    for (index, expected_ofe) in configuration.ofe_topology.iter().cloned().enumerate() {
+        let mut ending = candidate.ending_state.clone();
+        ending.continuations.remove(index);
+        poisons.push((
+            format!("missing continuation {index}"),
+            ending,
+            expected_ofe.clone(),
+        ));
+        let mut ending = candidate.ending_state.clone();
+        ending
+            .continuations
+            .push(ending.continuations[index].clone());
+        poisons.push((format!("extra continuation {index}"), ending, expected_ofe));
+        let mut ending = candidate.ending_state.clone();
+        let forged = ofe(&format!("forged-{index}"));
+        ending.continuations[index].ofe_id = forged.clone();
+        poisons.push((format!("replacement continuation {index}"), ending, forged));
+    }
+    for (left, right) in [(0, 1), (1, 2), (0, 2)] {
+        let mut ending = candidate.ending_state.clone();
+        ending.continuations.swap(left, right);
+        poisons.push((
+            format!("reordered continuations {left}/{right}"),
+            ending,
+            configuration.ofe_topology[right].clone(),
+        ));
+    }
     for (label, mut ending, expected_ofe) in poisons {
         ending.state_sha256 = ending.recomputed_sha256().expect("poison digest");
+        let attempted_sha256 = ending.recomputed_sha256().expect("attempted digest");
         let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
             &configuration,
             &resource,
@@ -2332,12 +2535,17 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
             &candidate.receipts,
             &ending,
         )
-        .expect_err(label);
-        let failure = error.failure().expect("typed continuation failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
-        assert_eq!(failure.context.ofe_id, Some(expected_ofe), "{label}");
+        .expect_err(&label);
+        assert_independent_continuation_e010(
+            &error,
+            transaction_id,
+            &configuration,
+            &expected_ofe,
+            &resource.beginning_state().state_sha256,
+            &attempted_sha256,
+            &label,
+        );
     }
-
     let mut forged = candidate.clone();
     forged
         .closure_operands
@@ -2359,6 +2567,7 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
 
     let mut digest = candidate.ending_state.clone();
     digest.state_sha256.push('0');
+    let attempted_sha256 = digest.recomputed_sha256().expect("attempted digest");
     let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
         &configuration,
         &resource,
@@ -2367,14 +2576,19 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
         &digest,
     )
     .expect_err("ending digest mismatch after joins");
-    let failure = error.failure().expect("typed digest failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
-    assert_eq!(failure.context.ofe_id, None);
-    assert_eq!(failure.context.tile_id, None);
+    assert_independent_aggregate_e010(
+        &error,
+        transaction_id,
+        &configuration,
+        &resource.beginning_state().state_sha256,
+        &attempted_sha256,
+        "ending digest mismatch",
+    );
 
     let mut aggregate = candidate.ending_state.clone();
     aggregate.owner_id = owner("forged-owner");
     aggregate.state_sha256 = aggregate.recomputed_sha256().expect("aggregate digest");
+    let attempted_sha256 = aggregate.recomputed_sha256().expect("attempted digest");
     let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
         &configuration,
         &resource,
@@ -2383,10 +2597,35 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
         &aggregate,
     )
     .expect_err("aggregate owner mismatch");
-    let failure = error.failure().expect("typed aggregate failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
-    assert_eq!(failure.context.ofe_id, None);
-    assert_eq!(failure.context.tile_id, None);
+    assert_independent_aggregate_e010(
+        &error,
+        transaction_id,
+        &configuration,
+        &resource.beginning_state().state_sha256,
+        &attempted_sha256,
+        "aggregate owner mismatch",
+    );
+
+    let mut aggregate = candidate.ending_state.clone();
+    aggregate.configuration_sha256.push('0');
+    aggregate.state_sha256 = aggregate.recomputed_sha256().expect("aggregate digest");
+    let attempted_sha256 = aggregate.recomputed_sha256().expect("attempted digest");
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &candidate.closure_operands,
+        &candidate.receipts,
+        &aggregate,
+    )
+    .expect_err("aggregate configuration mismatch");
+    assert_independent_aggregate_e010(
+        &error,
+        transaction_id,
+        &configuration,
+        &resource.beginning_state().state_sha256,
+        &attempted_sha256,
+        "aggregate configuration mismatch",
+    );
 }
 
 #[test]
