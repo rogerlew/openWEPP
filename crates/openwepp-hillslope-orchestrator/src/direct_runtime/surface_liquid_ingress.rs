@@ -388,6 +388,7 @@ impl DirectSurfaceLiquidIngressCandidate {
             resource,
             &self.closure_operands,
             &self.receipts,
+            &self.ending_state,
         )
         .map_err(|error| {
             let code = error.code();

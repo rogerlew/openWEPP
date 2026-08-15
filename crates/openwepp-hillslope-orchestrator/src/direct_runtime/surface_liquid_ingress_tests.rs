@@ -389,6 +389,7 @@ fn partial_support_routes_independently_across_multiple_hops() {
             &resource,
             &disposition_drift.closure_operands,
             &disposition_drift.receipts,
+            &disposition_drift.ending_state,
         )
         .expect_err("actual routed disposition drift");
     assert_eq!(disposition_error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -410,6 +411,7 @@ fn partial_support_routes_independently_across_multiple_hops() {
             &resource,
             &kind_drift.closure_operands,
             &kind_drift.receipts,
+            &kind_drift.ending_state,
         )
         .expect_err("routed descendant kind drift");
     assert_eq!(kind_error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -431,6 +433,7 @@ fn partial_support_routes_independently_across_multiple_hops() {
         &resource,
         &drift.closure_operands,
         &drift.receipts,
+        &drift.ending_state,
     )
     .expect_err("actual routed receipt drift");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -724,6 +727,7 @@ fn independent_closure_rejects_poisoned_source_operand() {
         &resource,
         &poisoned,
         &candidate.receipts,
+        &candidate.ending_state,
     )
     .expect_err("ordinary closure mismatch");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -786,6 +790,7 @@ fn independent_closure_rejects_large_finite_store_arithmetic_overflow() {
         &resource,
         &poisoned,
         &candidate.receipts,
+        &candidate.ending_state,
     )
     .expect_err("large finite closure arithmetic must fail closed");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
@@ -1135,6 +1140,7 @@ fn source_specific_output_temperature_is_not_the_interval_mixture() {
         &resource,
         &candidate.closure_operands,
         &candidate.receipts,
+        &candidate.ending_state,
     )
     .expect_err("source-specific output temperature");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -1206,6 +1212,7 @@ fn chronological_partial_overlap_closure_and_support_identity() {
             &resource,
             &window_swap.closure_operands,
             &window_swap.receipts,
+            &window_swap.ending_state,
         )
         .expect_err("cross-window Q/T swap");
     assert_eq!(swap_error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -1271,6 +1278,7 @@ fn independent_partition_rejects_owner_and_cross_tile_receipt_swaps() {
         &resource,
         &owner_swap.closure_operands,
         &owner_swap.receipts,
+        &owner_swap.ending_state,
     )
     .expect_err("coordinated infiltration-retention owner swap");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -1311,6 +1319,7 @@ fn independent_partition_rejects_owner_and_cross_tile_receipt_swaps() {
         &resource,
         &cross_tile.closure_operands,
         &cross_tile.receipts,
+        &cross_tile.ending_state,
     )
     .expect_err("cross-tile retention");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
@@ -1730,6 +1739,115 @@ fn producer_upper_and_middle_deletions_report_the_missing_identity() {
             &attempted,
         );
     }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn independent_projection_binds_persistent_stores_continuations_and_digest() {
+    let configuration = three_ofe_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(411);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: configuration
+            .records
+            .iter()
+            .map(|record| open_ingress(record, 0.1))
+            .collect(),
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("three-OFE candidate");
+    super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &candidate.closure_operands,
+        &candidate.receipts,
+        &candidate.ending_state,
+    )
+    .expect("persistent projection baseline");
+
+    let mut poisons = Vec::new();
+    let mut wrong_store = candidate.ending_state.clone();
+    wrong_store.records[0].liquid_kg_m2_tile += 0.001;
+    poisons.push(("wrong ending store", wrong_store));
+    let mut supply = candidate.ending_state.clone();
+    supply.continuations[0].cumulative_supply_m += 1.0e-6;
+    poisons.push(("cumulative supply", supply));
+    let mut infiltration = candidate.ending_state.clone();
+    infiltration.continuations[0].cumulative_infiltration_m += 1.0e-6;
+    poisons.push(("cumulative infiltration", infiltration));
+    let mut rollover_day = candidate.ending_state.clone();
+    rollover_day.continuations[0].day_index += 1;
+    poisons.push(("rollover day", rollover_day));
+    let mut rollover_interval = candidate.ending_state.clone();
+    rollover_interval.continuations[0].next_interval_index = 48;
+    poisons.push(("rollover interval", rollover_interval));
+    let mut stale_transaction = candidate.ending_state.clone();
+    stale_transaction.continuations[0].last_accepted_transaction_id = Some(TransactionId(410));
+    poisons.push(("continuation transaction", stale_transaction));
+    let mut missing = candidate.ending_state.clone();
+    missing.continuations.remove(1);
+    poisons.push(("missing continuation", missing));
+    let mut duplicate = candidate.ending_state.clone();
+    duplicate
+        .continuations
+        .push(duplicate.continuations[0].clone());
+    poisons.push(("duplicate continuation", duplicate));
+    let mut reordered = candidate.ending_state.clone();
+    reordered.continuations.swap(0, 1);
+    poisons.push(("reordered continuation", reordered));
+    let mut wrong_ofe = candidate.ending_state.clone();
+    wrong_ofe.continuations[0].ofe_id = ofe("forged");
+    poisons.push(("wrong continuation OFE", wrong_ofe));
+
+    for (label, mut ending) in poisons {
+        ending.state_sha256 = ending.recomputed_sha256().expect("poison digest");
+        let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &candidate.closure_operands,
+            &candidate.receipts,
+            &ending,
+        )
+        .expect_err(label);
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010, "{label}");
+    }
+
+    let mut forged = candidate.clone();
+    forged
+        .closure_operands
+        .forge_first_store_retained_and_ending_for_test(0.001);
+    forged.ending_state.records[0].liquid_kg_m2_tile += 0.001;
+    forged.ending_state.state_sha256 = forged
+        .ending_state
+        .recomputed_sha256()
+        .expect("forged digest");
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &forged.closure_operands,
+        &forged.receipts,
+        &forged.ending_state,
+    )
+    .expect_err("self-consistent producer store operands");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+
+    let mut digest = candidate.ending_state.clone();
+    digest.state_sha256.push('0');
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &candidate.closure_operands,
+        &candidate.receipts,
+        &digest,
+    )
+    .expect_err("ending digest mismatch after joins");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
 }
 
 #[test]

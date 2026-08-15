@@ -144,6 +144,8 @@ struct DirectSurfaceLiquidPartitionClosureOperands {
     infiltration_storage_capacity_m: f64,
     beginning_cumulative_supply_m: f64,
     beginning_cumulative_infiltration_m: f64,
+    ending_day_index: usize,
+    ending_next_interval_index: u8,
 }
 
 impl DirectSurfaceLiquidClosureOperands {
@@ -229,6 +231,13 @@ impl DirectSurfaceLiquidClosureOperands {
             first.beginning_liquid_kg_m2_tile = f64::MAX;
             first.retained_excess_kg_m2_ofe_ground = f64::MAX;
         }
+    }
+
+    #[cfg(test)]
+    pub(super) fn forge_first_store_retained_and_ending_for_test(&mut self, delta_tile: f64) {
+        let first = self.stores.first_mut().expect("store operand");
+        first.retained_excess_kg_m2_ofe_ground += delta_tile * first.tile_fraction;
+        first.ending_liquid_kg_m2_tile += delta_tile;
     }
 
     #[cfg(test)]
@@ -503,6 +512,17 @@ struct ParcelArithmeticProjection {
     expected_ofe_enthalpy: BTreeMap<OfeId, f64>,
     actual_ofe_enthalpy: BTreeMap<OfeId, f64>,
     raw_ofe_enthalpy: BTreeMap<OfeId, f64>,
+    expected_store_liquid: BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
+    expected_continuations: BTreeMap<OfeId, DirectProjectedContinuation>,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProjectedContinuation {
+    day_index: usize,
+    next_interval_index: u8,
+    cumulative_supply_m: f64,
+    cumulative_infiltration_m: f64,
+    transaction_id: TransactionId,
 }
 
 #[derive(Clone, Copy)]
@@ -631,7 +651,13 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
 ) -> Result<DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidError> {
     (|| {
         let operands = capture_operands(configuration, resource, input, ending, receipts)?;
-        validate_surface_liquid_closure_operands(configuration, resource, &operands, receipts)?;
+        validate_surface_liquid_closure_operands(
+            configuration,
+            resource,
+            &operands,
+            receipts,
+            ending,
+        )?;
         Ok(operands)
     })()
     .map_err(|error: DirectSurfaceLiquidError| {
@@ -792,6 +818,10 @@ fn capture_operands(
                 infiltration_storage_capacity_m: parameter.infiltration_storage_capacity_m,
                 beginning_cumulative_supply_m,
                 beginning_cumulative_infiltration_m,
+                ending_day_index: input.day_index,
+                ending_next_interval_index: input.interval_index.checked_add(1).ok_or(
+                    DirectSurfaceLiquidError::Closure("closure interval index overflow"),
+                )?,
             })
         })
         .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
@@ -940,6 +970,7 @@ pub(super) fn validate_surface_liquid_closure_operands(
     resource: &DirectSurfaceLiquidResourceCandidate,
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
+    ending: &DirectSurfaceLiquidOwnedState,
 ) -> Result<(), DirectSurfaceLiquidError> {
     if operands.transaction_id != resource.transaction_id() {
         return Err(DirectSurfaceLiquidError::Closure(
@@ -948,7 +979,7 @@ pub(super) fn validate_surface_liquid_closure_operands(
     }
     validate_frozen_source_identities(configuration, resource, operands)?;
     validate_store_equations(configuration, resource, operands)?;
-    validate_parcel_joins(configuration, operands, receipts)
+    validate_parcel_joins(configuration, operands, receipts, ending)
 }
 
 fn validate_frozen_source_identities(
@@ -1160,6 +1191,7 @@ fn project_parcel_arithmetic(
 
     let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
     let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
+    let mut expected_continuations = BTreeMap::<OfeId, DirectProjectedContinuation>::new();
     for ofe_id in &configuration.ofe_topology {
         let partition = operands
             .partition_inputs
@@ -1647,6 +1679,16 @@ fn project_parcel_arithmetic(
                 store_liquid.insert(store_key, retained_tile);
             }
         }
+        expected_continuations.insert(
+            ofe_id.clone(),
+            DirectProjectedContinuation {
+                day_index: partition.ending_day_index,
+                next_interval_index: partition.ending_next_interval_index,
+                cumulative_supply_m,
+                cumulative_infiltration_m,
+                transaction_id: operands.transaction_id,
+            },
+        );
         raw_segments.extend(routed_segments);
     }
 
@@ -1693,6 +1735,8 @@ fn project_parcel_arithmetic(
             .into_iter()
             .map(|(ofe_id, amount)| (ofe_id, amount.enthalpy))
             .collect(),
+        expected_store_liquid: store_liquid,
+        expected_continuations,
     })
 }
 
@@ -1835,6 +1879,7 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
             || partition.beginning_cumulative_supply_m < 0.0
             || !partition.beginning_cumulative_infiltration_m.is_finite()
             || partition.beginning_cumulative_infiltration_m < 0.0
+            || !(1..=48).contains(&partition.ending_next_interval_index)
         {
             return Err(contextual_ofe_comparison_failure(
                 DirectSurfaceLiquidErrorCode::E003,
@@ -2019,6 +2064,7 @@ fn validate_parcel_joins(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
+    ending: &DirectSurfaceLiquidOwnedState,
 ) -> Result<(), DirectSurfaceLiquidError> {
     let projection = project_parcel_arithmetic(configuration, operands, receipts)?;
     let mut seen_receipt_ids = BTreeSet::new();
@@ -2088,7 +2134,102 @@ fn validate_parcel_joins(
         operands,
         &projection,
         ComparisonDisposition::RequireClosure,
-    )
+    )?;
+    validate_projected_ending_state(configuration, operands, ending, &projection)
+}
+
+fn validate_projected_ending_state(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    ending: &DirectSurfaceLiquidOwnedState,
+    projection: &ParcelArithmeticProjection,
+) -> Result<(), DirectSurfaceLiquidError> {
+    if ending.owner_id != configuration.owner_id
+        || ending.configuration_sha256 != configuration.configuration_sha256
+        || ending.records.len() != configuration.records.len()
+        || ending.continuations.len() != configuration.ofe_topology.len()
+    {
+        return Err(contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            operands.transaction_id,
+            &configuration.owner_id,
+            configuration
+                .ofe_topology
+                .first()
+                .ok_or(DirectSurfaceLiquidError::Closure("empty OFE topology"))?,
+            "projected ending-state owner/configuration/cardinality",
+        ));
+    }
+    for (actual, configured) in ending.records.iter().zip(&configuration.records) {
+        let expected_liquid = projection
+            .expected_store_liquid
+            .get(&configured.key)
+            .copied()
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "projected ending store missing",
+            ))?;
+        if actual.key != configured.key
+            || actual.liquid_kg_m2_tile.to_bits() != expected_liquid.to_bits()
+            || actual.last_accepted_transaction_id != Some(operands.transaction_id)
+        {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E010,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &configured.key,
+                None,
+                "projected ending store join",
+            ));
+        }
+    }
+    for (actual, expected_ofe) in ending.continuations.iter().zip(&configuration.ofe_topology) {
+        let expected = projection.expected_continuations.get(expected_ofe).ok_or(
+            DirectSurfaceLiquidError::Closure("projected ending continuation missing"),
+        )?;
+        if &actual.ofe_id != expected_ofe
+            || actual.day_index != expected.day_index
+            || actual.next_interval_index != expected.next_interval_index
+            || actual.cumulative_supply_m.to_bits() != expected.cumulative_supply_m.to_bits()
+            || actual.cumulative_infiltration_m.to_bits()
+                != expected.cumulative_infiltration_m.to_bits()
+            || actual.last_accepted_transaction_id != Some(expected.transaction_id)
+        {
+            return Err(contextual_ofe_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E010,
+                operands.transaction_id,
+                &configuration.owner_id,
+                expected_ofe,
+                "projected ending continuation join",
+            ));
+        }
+    }
+    let recomputed = ending.recomputed_sha256().map_err(|_| {
+        contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &configuration.ofe_topology[0],
+            "projected ending-state digest reconstruction",
+        )
+    })?;
+    if ending.state_sha256 != recomputed {
+        return Err(contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &configuration.ofe_topology[0],
+            "projected ending-state digest join",
+        ));
+    }
+    ending.validate(configuration).map_err(|_| {
+        contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &configuration.ofe_topology[0],
+            "projected ending-state complete validation",
+        )
+    })
 }
 
 fn validate_receipt_recipient(
