@@ -225,7 +225,7 @@ pub enum DirectSurfaceLiquidReceiptDisposition {
     OutletRunoff,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case", tag = "recipient_kind", deny_unknown_fields)]
 pub enum DirectSurfaceLiquidReceiptRecipient {
     SoilInfiltration {
@@ -446,6 +446,17 @@ impl DirectSurfaceLiquidIngressCandidate {
                 surface_id: Some(key.surface_id),
                 source_id: Some(key.source_id),
                 parcel_id: Some(parcel_id),
+            });
+        }
+        if let Some(ofe_id) = self
+            .closure_operands
+            .first_partition_input_mismatch(&expected.closure_operands)
+        {
+            return Some(DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ofe_id: Some(ofe_id),
+                ..DirectSurfaceLiquidErrorContext::default()
             });
         }
         if self.receipts != expected.receipts {
