@@ -734,23 +734,16 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
-    surface_configuration.validate().map_err(|error| {
-        snapshot_failure(
-            error.code(),
-            soil_adapter.owner,
-            surface_configuration,
-            "invalid surface-liquid configuration",
-        )
-    })?;
-    validate_surface_production_binding(soil_adapter.owner, surface_configuration)?;
-    if &surface_configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
-        return Err(snapshot_failure(
-            DirectSurfaceLiquidErrorCode::E002,
-            soil_adapter.owner,
-            surface_configuration,
-            "mixed unified hydrology owner",
-        ));
-    }
+    surface_configuration
+        .preflight_schema_and_identity_structure()
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                surface_configuration,
+                "invalid surface-liquid configuration",
+            )
+        })?;
     let surface_state = soil_adapter
         .owner
         .beginning_frame()
@@ -764,6 +757,51 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
                 "missing beginning surface-liquid owner",
             )
         })?;
+    validate_surface_production_binding(soil_adapter.owner, surface_configuration)?;
+    if &surface_configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
+        return Err(snapshot_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            soil_adapter.owner,
+            surface_configuration,
+            "mixed unified hydrology owner",
+        ));
+    }
+    surface_state
+        .preflight_schema_and_identity_structure(surface_configuration)
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                surface_configuration,
+                "invalid beginning surface-liquid owner",
+            )
+        })?;
+    surface_configuration
+        .preflight_declared_digest()
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                surface_configuration,
+                "invalid surface-liquid configuration",
+            )
+        })?;
+    surface_state.preflight_declared_digest().map_err(|error| {
+        snapshot_failure(
+            error.code(),
+            soil_adapter.owner,
+            surface_configuration,
+            "invalid beginning surface-liquid owner",
+        )
+    })?;
+    surface_configuration.validate().map_err(|error| {
+        snapshot_failure(
+            error.code(),
+            soil_adapter.owner,
+            surface_configuration,
+            "invalid surface-liquid configuration",
+        )
+    })?;
     surface_state
         .validate(surface_configuration)
         .map_err(|error| {

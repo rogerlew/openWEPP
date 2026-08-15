@@ -517,3 +517,12 @@ No `fb89e5a55` finding is rejected, deferred or moved to another package.
 | A-TERMINAL-3AC-RISK-004: typed public error-shape compatibility and duplicated thermodynamic constants need explicit disposition | Accepted for disposition | Dispositioned: the typed public error-shape change is an intentional package-authorized source break; no compatibility fallback is admitted because it would restore ambiguous taxonomy. LSE and direct-runtime constants remain bit-identical (`4218.0`, `273.15`); duplication is retained as a documented maintenance risk because centralization would broaden scientific-authority coupling outside this correction |
 
 No `3ac61997d` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `413c0c32a`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-413-HIGH-001: configuration/state declared digest E002 can be masked by numeric E003 | Accepted | Remediated: public attachment, snapshot, standalone ingress and unified entry use staged structural identity, contextual cross-input identity, declared-digest identity and numeric-domain validation; isolated configuration/state stale-digest-plus-NaN vectors return E002 with callback zero and unchanged bytes |
+| A-TERMINAL-413-HIGH-002: ingress-identity attempted hash omits raw configuration/state bytes | Accepted | Remediated: ingress E002 contextualization joins the raw snapshot attempt with the unified projection; same stale digest and ingress defect with distinct raw NaN payloads produce distinct attempted hashes |
+
+No `413c0c32a` finding is rejected, deferred or moved to another package.

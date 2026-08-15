@@ -1546,24 +1546,23 @@ fn surface_attachment_preserves_invalid_configuration_failure_and_rolls_back() {
     )
     .expect("attempted state");
     let declared_attempted_hash = attempted_state.state_sha256.clone();
-    let expected_key = configuration.records[0].key.clone();
     configuration.records[0].capacity_kg_m2_tile = f64::NAN;
 
     let error = frame
         .configure_surface_liquid_shadow(&configuration, attempted_state)
         .expect_err("invalid configuration must fail closed");
     let failure = error.failure().expect("canonical configuration failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Configuration);
     assert_eq!(failure.context.transaction_id, None);
     assert_eq!(
         failure.context.owner_id,
         Some(configuration.owner_id.clone())
     );
-    assert_eq!(failure.context.ofe_id, Some(expected_key.ofe_id));
-    assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
-    assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
-    assert_eq!(failure.context.source_id, Some(expected_key.source_id));
+    assert_eq!(failure.context.ofe_id, None);
+    assert_eq!(failure.context.tile_id, None);
+    assert_eq!(failure.context.surface_id, None);
+    assert_eq!(failure.context.source_id, None);
     assert!(failure.rollback.beginning_owner_sha256.is_some());
     assert!(failure.rollback.attempted_owner_sha256.is_some());
     assert_ne!(
@@ -1595,7 +1594,7 @@ fn first_surface_attachment_preserves_invalid_restart_attempt_hash_without_begin
         .configure_surface_liquid_shadow(&configuration, attempted_state)
         .expect_err("invalid first restart state must fail closed");
     let failure = error.failure().expect("canonical restart failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
     assert_eq!(failure.rollback.beginning_owner_sha256, None);
     assert!(failure.rollback.attempted_owner_sha256.is_some());
@@ -1628,7 +1627,7 @@ fn surface_attachment_preserves_invalid_restart_failure_and_rolls_back() {
         .configure_surface_liquid_shadow(&configuration, attempted_state)
         .expect_err("invalid restart state must fail closed");
     let failure = error.failure().expect("canonical restart failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
     assert_eq!(failure.context.transaction_id, None);
     assert_eq!(

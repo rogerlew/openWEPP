@@ -1039,6 +1039,46 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `413c0c32a`
+
+- HOLD: both reviewers found that identity-only configuration/state preflight
+  omits canonical self-digest recomputation, allowing stale digest plus NaN to
+  return E003 before E002.
+- HOLD: the Rust reviewer found ingress-identity E002 attempted hashing omits
+  raw configuration/state bytes and can alias raw-invalid attempts sharing the
+  same declared digest.
+- PASS but non-dispositive: LSE 28/28; unified integration 64/64; custody
+  authority 10/10; affected strict Clippy; formatting and diff hygiene.
+- Closed surfaces retained: complete standalone ground D/A/F coverage, real
+  E003/E006 water taxonomy, source/OFE/tile identity, persistent restart
+  custody, signed condensation and rollback.
+- Pending: remediate both accepted findings and repeat fresh dual exact-byte
+  review. Heavy execution remains blocked.
+
+## `413c0c32a` HOLD remediation
+
+- Ran: LSE crate — PASS, 28/28; unified integration — PASS, 66/66; custody
+  authority — PASS, 10/10; orchestrator library — PASS, 600/600 with three
+  slow tests.
+- Ran: affected strict all-target/all-feature Clippy, formatting and diff
+  hygiene — PASS.
+- Ran: science admission from `af9a989063aa8751dfadb14c442e1b360653658c`
+  — PASS, 46 contracts and 28 science surfaces; authority anti-evasion — PASS;
+  AUTH11 — PASS, 3/3; surface-liquid unit compliance — PASS.
+- Ran: package Markdown lint — PASS, 100 files with zero errors and warnings.
+- Preserved focused retries: 57/66 exposed nine legacy precedence/expectation
+  failures; 59/66 localized seven remaining context/assertion issues; the final
+  staged-preflight implementation passed 66/66.
+- Preserved library retry: the first fail-fast run exposed four legacy owner-
+  fixture and standalone-ingress ordering failures. Exact expectation updates
+  and structural→contextual identity→digest→numeric ordering produced the
+  final 600/600 run.
+- Static + Ran: isolated configuration and state stale-digest-plus-NaN vectors
+  now return E002, retain complete hashes, exclude callback execution and
+  preserve owner bytes. Ingress E002 attempted hashing is raw-bit-sensitive.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

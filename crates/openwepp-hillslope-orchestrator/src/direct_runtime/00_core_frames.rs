@@ -636,23 +636,12 @@ impl DirectRunFrame {
             self.surface_liquid_shadow.as_deref(),
         );
         configuration
-            .preflight_schema_and_identities()
+            .preflight_schema_and_identity_structure()
             .map_err(|error| {
                 surface_liquid_attachment_error(
                     error,
                     DirectSurfaceLiquidPhase::Configuration,
                     surface_liquid_configuration_context(configuration, None),
-                    beginning_owner_sha256.clone(),
-                    attempted_owner_sha256.clone(),
-                )
-            })?;
-        state
-            .preflight_schema_and_identities(configuration)
-            .map_err(|error| {
-                surface_liquid_attachment_error(
-                    error,
-                    DirectSurfaceLiquidPhase::Restart,
-                    surface_liquid_state_context(&state),
                     beginning_owner_sha256.clone(),
                     attempted_owner_sha256.clone(),
                 )
@@ -664,6 +653,35 @@ impl DirectRunFrame {
             beginning_owner_sha256.clone(),
             attempted_owner_sha256.clone(),
         )?;
+        state
+            .preflight_schema_and_identity_structure(configuration)
+            .map_err(|error| {
+                surface_liquid_attachment_error(
+                    error,
+                    DirectSurfaceLiquidPhase::Restart,
+                    surface_liquid_state_context(&state),
+                    beginning_owner_sha256.clone(),
+                    attempted_owner_sha256.clone(),
+                )
+            })?;
+        configuration.preflight_declared_digest().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Configuration,
+                surface_liquid_configuration_context(configuration, None),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
+        state.preflight_declared_digest().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Restart,
+                surface_liquid_state_context(&state),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
         configuration.validate().map_err(|error| {
             surface_liquid_attachment_error(
                 error,

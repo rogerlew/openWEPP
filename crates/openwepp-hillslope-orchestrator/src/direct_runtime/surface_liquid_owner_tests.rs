@@ -1415,6 +1415,9 @@ fn configuration_and_restart_record_failures_preserve_available_identity() {
     let expected_key = configuration.records[open].key.clone();
     let mut invalid_configuration = configuration.clone();
     invalid_configuration.records[open].capacity_kg_m2_tile = f64::NAN;
+    invalid_configuration.configuration_sha256 = invalid_configuration
+        .recomputed_sha256()
+        .expect("invalid-domain configuration digest");
     let failure = invalid_configuration
         .validate()
         .expect_err("invalid record capacity")
@@ -1453,6 +1456,9 @@ fn configuration_and_restart_record_failures_preserve_available_identity() {
         .validate(&configuration)
         .expect("valid accepted state");
     accepted.records[open].liquid_kg_m2_tile = f64::NAN;
+    accepted.state_sha256 = accepted
+        .recomputed_sha256()
+        .expect("invalid-domain state digest");
     let failure = accepted
         .validate(&configuration)
         .expect_err("invalid restart store")
@@ -1590,6 +1596,9 @@ fn invalid_restart_cannot_emit_canonical_persistence_bytes() {
     let configuration = configuration();
     let mut invalid = state(&configuration);
     invalid.records[0].liquid_kg_m2_tile = f64::NAN;
+    invalid.state_sha256 = invalid
+        .recomputed_sha256()
+        .expect("invalid-domain state digest");
     let error = invalid
         .canonical_bytes(&configuration)
         .expect_err("invalid state must not serialize");
@@ -1607,6 +1616,9 @@ fn restart_store_capacity_is_domain_and_identity_precedes_capacity() {
     let open = record_index(&configuration, "open");
     above_capacity.records[open].liquid_kg_m2_tile =
         f64::from_bits(configuration.records[open].capacity_kg_m2_tile.to_bits() + 1);
+    above_capacity.state_sha256 = above_capacity
+        .recomputed_sha256()
+        .expect("above-capacity state digest");
     let failure = above_capacity
         .validate(&configuration)
         .expect_err("finite state liquid above capacity is out of domain")

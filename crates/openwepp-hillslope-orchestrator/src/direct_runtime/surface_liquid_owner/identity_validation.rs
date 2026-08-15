@@ -7,7 +7,7 @@ use openwepp_kernel_contract::TransactionId;
 use super::{
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorContext,
     DirectSurfaceLiquidOwnedState, OfeId, TileId, configuration_record_failure, configured_ofes,
-    restart_binding_failure, restart_record_failure, surface_liquid_store_context,
+    is_sha256, restart_binding_failure, restart_record_failure, surface_liquid_store_context,
     validate_same_ofe_value, validate_store_pair,
 };
 
@@ -16,12 +16,31 @@ impl DirectSurfaceLiquidConfiguration {
     /// numeric domain operands. Public seams use this after E001 schema checks
     /// so a later E002 record cannot be hidden by an earlier E003 record.
     pub(crate) fn preflight_schema_and_identities(&self) -> Result<(), DirectSurfaceLiquidError> {
+        self.preflight_schema_and_identity_structure()?;
+        self.preflight_declared_digest()
+    }
+
+    pub(crate) fn preflight_schema_and_identity_structure(
+        &self,
+    ) -> Result<(), DirectSurfaceLiquidError> {
         if self.run_id == 0 || self.records.is_empty() || self.ofe_topology.is_empty() {
             return Err(DirectSurfaceLiquidError::Schema(
                 "empty run or configuration records",
             ));
         }
-        self.preflight_complete_identity_set()
+        self.preflight_complete_identity_set()?;
+        Ok(())
+    }
+
+    pub(crate) fn preflight_declared_digest(&self) -> Result<(), DirectSurfaceLiquidError> {
+        if !is_sha256(&self.configuration_sha256)
+            || self.configuration_sha256 != self.recomputed_sha256()?
+        {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "configuration digest mismatch",
+            ));
+        }
+        Ok(())
     }
 
     pub(super) fn preflight_complete_identity_set(&self) -> Result<(), DirectSurfaceLiquidError> {
@@ -166,6 +185,15 @@ impl DirectSurfaceLiquidOwnedState {
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<Option<TransactionId>, DirectSurfaceLiquidError> {
+        let expected_lineage = self.preflight_schema_and_identity_structure(configuration)?;
+        self.preflight_declared_digest()?;
+        Ok(expected_lineage)
+    }
+
+    pub(crate) fn preflight_schema_and_identity_structure(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+    ) -> Result<Option<TransactionId>, DirectSurfaceLiquidError> {
         let expected_lineage = self.accepted_transaction()?;
         if self.owner_id != configuration.owner_id
             || self.configuration_sha256 != configuration.configuration_sha256
@@ -239,5 +267,12 @@ impl DirectSurfaceLiquidOwnedState {
             }
         }
         Ok(expected_lineage)
+    }
+
+    pub(crate) fn preflight_declared_digest(&self) -> Result<(), DirectSurfaceLiquidError> {
+        if !is_sha256(&self.state_sha256) || self.state_sha256 != self.recomputed_sha256()? {
+            return Err(DirectSurfaceLiquidError::Identity("state digest mismatch"));
+        }
+        Ok(())
     }
 }

@@ -672,6 +672,68 @@ fn every_cross_input_e002_precedes_config_or_state_e003_without_callback() {
 }
 
 #[test]
+fn stale_config_or_state_digest_with_nonfinite_bits_is_identity_failure_without_callback() {
+    for poisoned_owner in 0..2 {
+        let (mut frame, mut configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        let clean_snapshot = {
+            let (clean_owner, _) = owner(&frame);
+            unified_beginning_hydrology_snapshot_sha256(
+                &LandSurfaceEnergyRealHydrologyAdapter::new(&clean_owner),
+                &configuration,
+            )
+            .expect("clean snapshot")
+        };
+        if poisoned_owner == 0 {
+            configuration.records[0].capacity_kg_m2_tile = f64::NAN;
+        } else {
+            frame
+                .surface_liquid_shadow
+                .as_deref_mut()
+                .expect("surface state")
+                .records[0]
+                .liquid_kg_m2_tile = f64::NAN;
+        }
+        let before = owner(&frame).0.snapshot_bytes().to_vec();
+        let (real_owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+        let batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        let callback_count = std::cell::Cell::new(0);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, clean_snapshot),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| {
+                    callback_count.set(callback_count.get() + 1);
+                    panic!("stale digest/nonfinite poison reached callback")
+                },
+            )
+            .expect_err("stale self-digest must fail as identity"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_hashes(&failure);
+        assert_eq!(callback_count.get(), 0);
+        assert_eq!(
+            owner(&frame).0.snapshot_bytes(),
+            before,
+            "identity failure mutated owner bytes"
+        );
+    }
+}
+
+#[test]
 fn exact_one_custody_precedes_finite_cadence_failure() {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,

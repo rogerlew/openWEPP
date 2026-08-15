@@ -82,7 +82,7 @@ fn unified_snapshot_failure_hashes_bind_raw_invalid_configuration_bits() {
             panic!("snapshot failure must retain canonical surface-liquid context");
         };
         let failure = error.failure().expect("canonical snapshot failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
         assert!(failure.rollback.beginning_owner_sha256.is_some());
         failure
             .rollback
@@ -189,5 +189,64 @@ fn unified_entry_joins_raw_configuration_and_state_attempts_with_v3_envelope() {
         finite_state_attempt.0, nonfinite_state_attempt.0,
         "finite detail: {}; nonfinite detail: {}",
         finite_state_attempt.1, nonfinite_state_attempt.1
+    );
+}
+
+#[test]
+fn ingress_identity_attempt_binds_differing_raw_invalid_configuration_bits() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (real_owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+    let clean_snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("clean snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let attempted = |raw_bits| {
+        let mut poisoned_configuration = configuration.clone();
+        poisoned_configuration.records[0].capacity_kg_m2_tile = f64::from_bits(raw_bits);
+        assert_eq!(
+            poisoned_configuration.configuration_sha256,
+            configuration.configuration_sha256,
+        );
+        let mut ingress = ingress_input();
+        match &mut ingress.tile_ingress[0] {
+            DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+            | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
+                *tile_id = TileId::try_new("unknown-tile").expect("tile")
+            }
+        }
+        let error = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &poisoned_configuration,
+            &receiver_expectations(1, clean_snapshot.clone()),
+            &batch,
+            &BTreeMap::new(),
+            &ingress,
+            |_| panic!("raw/ingress poison reached callback"),
+        )
+        .expect_err("raw/ingress poison");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+            panic!("canonical failure");
+        };
+        let failure = error.failure().expect("failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("attempted hash")
+    };
+    assert_ne!(
+        attempted(0x7ff8_0000_0000_0701),
+        attempted(0x7ff8_0000_0000_0702),
+        "same stale digest and ingress defect must bind raw invalid bits",
     );
 }

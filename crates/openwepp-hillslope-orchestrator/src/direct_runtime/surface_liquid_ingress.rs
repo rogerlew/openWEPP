@@ -838,10 +838,10 @@ fn preflight_surface_liquid_ingress_public_identities(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    configuration.preflight_schema_and_identities()?;
+    configuration.preflight_schema_and_identity_structure()?;
     resource
         .beginning_state()
-        .preflight_schema_and_identities(configuration)?;
+        .preflight_schema_and_identity_structure(configuration)?;
     if input.transaction_id != resource.transaction_id() || input.transaction_id.0 == 0 {
         return Err(DirectSurfaceLiquidError::Identity(
             "ingress transaction mismatch",
@@ -849,6 +849,8 @@ fn preflight_surface_liquid_ingress_public_identities(
     }
     preflight_resource_working_state_identities(configuration, resource)?;
     preflight_surface_liquid_ingress_input_identities(configuration, input)?;
+    configuration.preflight_declared_digest()?;
+    resource.beginning_state().preflight_declared_digest()?;
     Ok(())
 }
 

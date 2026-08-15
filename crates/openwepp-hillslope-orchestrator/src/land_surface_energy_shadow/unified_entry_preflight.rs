@@ -151,7 +151,7 @@ fn preflight_unified_entry_identity_envelope(
         expected_snapshot,
     );
     configuration
-        .preflight_schema_and_identities()
+        .preflight_schema_and_identity_structure()
         .map_err(|error| {
             join_raw_and_unified_attempt(
                 snapshot_failure(
@@ -179,19 +179,6 @@ fn preflight_unified_entry_identity_envelope(
                 &provisional_unified_attempt,
             )
         })?;
-    surface_state
-        .preflight_schema_and_identities(configuration)
-        .map_err(|error| {
-            join_raw_and_unified_attempt(
-                snapshot_failure(
-                    error.code(),
-                    soil_adapter.owner,
-                    configuration,
-                    "invalid beginning surface-liquid identity envelope",
-                ),
-                &provisional_unified_attempt,
-            )
-        })?;
     validate_surface_production_binding(soil_adapter.owner, configuration)
         .map_err(|error| join_raw_and_unified_attempt(error, &provisional_unified_attempt))?;
     if &configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
@@ -205,6 +192,19 @@ fn preflight_unified_entry_identity_envelope(
             &provisional_unified_attempt,
         ));
     }
+    surface_state
+        .preflight_schema_and_identity_structure(configuration)
+        .map_err(|error| {
+            join_raw_and_unified_attempt(
+                snapshot_failure(
+                    error.code(),
+                    soil_adapter.owner,
+                    configuration,
+                    "invalid beginning surface-liquid identity envelope",
+                ),
+                &provisional_unified_attempt,
+            )
+        })?;
     let actual_snapshot = compose_unified_beginning_hydrology_snapshot_sha256(
         soil_adapter,
         configuration,
@@ -264,6 +264,30 @@ fn preflight_unified_entry_identity_envelope(
         )
         .into());
     }
+    configuration.preflight_declared_digest().map_err(|error| {
+        complete_unified_failure(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid surface-liquid configuration identity envelope",
+            ),
+            &actual_snapshot,
+            &attempted_sha256,
+        )
+    })?;
+    surface_state.preflight_declared_digest().map_err(|error| {
+        complete_unified_failure(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid beginning surface-liquid identity envelope",
+            ),
+            &actual_snapshot,
+            &attempted_sha256,
+        )
+    })?;
     configuration.validate().map_err(|error| {
         join_raw_and_unified_attempt(
             snapshot_failure(
@@ -434,20 +458,33 @@ fn contextualize_ingress_identity_failure(
     context
         .owner_id
         .get_or_insert_with(|| configuration.owner_id.clone());
+    let unified_attempt = unified_entry_attempt_sha256(
+        soil_adapter,
+        request_batch,
+        soil_sources,
+        ingress,
+        receiver_expectations,
+        actual_snapshot,
+        expected_snapshot,
+    );
+    let raw_attempt = surface_liquid_raw_snapshot_attempt_sha256(
+        soil_adapter.owner.snapshot_bytes(),
+        configuration,
+        soil_adapter
+            .owner
+            .beginning_frame()
+            .surface_liquid_shadow
+            .as_deref(),
+    );
     DirectSurfaceLiquidError::canonical_failure(
         code,
         DirectSurfaceLiquidPhase::Authorization,
         context,
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(actual_snapshot.to_string()),
-            attempted_owner_sha256: Some(unified_entry_attempt_sha256(
-                soil_adapter,
-                request_batch,
-                soil_sources,
-                ingress,
-                receiver_expectations,
-                actual_snapshot,
-                expected_snapshot,
+            attempted_owner_sha256: Some(raw_and_unified_attempt_sha256(
+                &raw_attempt,
+                &unified_attempt,
             )),
         },
         detail,

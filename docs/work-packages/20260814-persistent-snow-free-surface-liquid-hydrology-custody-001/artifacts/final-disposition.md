@@ -96,4 +96,11 @@ typed public error shape is intentionally source-breaking within package
 authority; duplicated thermodynamic constants remain bit-identical and are
 recorded as a maintenance risk rather than broadened here. A clean remediation
 commit, fresh dual exact-byte reviews and terminal verification remain
-required. This is not yet a terminal custody-lift or resumed-Child-3 claim.
+required. Exact-byte review at `413c0c32a` then found declared-digest identity
+could still be masked by numeric E003 and ingress-identity attempted hashing
+omitted raw configuration/state bytes. The current worktree corrects both with
+staged structural/contextual/digest/domain preflight and raw-plus-unified
+attempt framing. Focused evidence passes 28/28 LSE, 66/66 integration, 10/10
+authority and 600/600 orchestrator-library tests. A clean remediation commit,
+fresh dual exact-byte reviews and terminal verification remain required. This
+is not yet a terminal custody-lift or resumed-Child-3 claim.
