@@ -334,6 +334,54 @@ impl DirectSurfaceLiquidIngressCandidate {
         resource: &DirectSurfaceLiquidResourceCandidate,
         input: &DirectSurfaceLiquidIngressInput,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        if let Err(error) = super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            configuration,
+            resource,
+            &self.closure_operands,
+            &self.receipts,
+        ) {
+            if error.code() == DirectSurfaceLiquidErrorCode::E003 {
+                return Err(error.complete_context(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    DirectSurfaceLiquidPhase::IndependentClosure,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
+                        ..DirectSurfaceLiquidErrorContext::default()
+                    },
+                    Some(resource.beginning_state().state_sha256.clone()),
+                    self.ending_state.recomputed_sha256().ok(),
+                ));
+            }
+        }
+        let expected = execute_surface_liquid_ingress_inner(configuration, resource, input)
+            .map_err(|error| {
+                let code = error.code();
+                error.complete_context(
+                    code,
+                    DirectSurfaceLiquidPhase::IngressCandidate,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
+                        ..DirectSurfaceLiquidErrorContext::default()
+                    },
+                    Some(resource.beginning_state().state_sha256.clone()),
+                    self.ending_state.recomputed_sha256().ok(),
+                )
+            })?;
+        if !self.producer_fields_equal(&expected) {
+            let context = self.producer_mismatch_context(&expected, configuration, input);
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E009,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                context,
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: Some(resource.beginning_state().state_sha256.clone()),
+                    attempted_owner_sha256: self.ending_state.recomputed_sha256().ok(),
+                },
+                "ingress candidate does not reconstruct from immutable inputs",
+            ));
+        }
         super::surface_liquid_closure::validate_surface_liquid_closure_operands(
             configuration,
             resource,
@@ -354,38 +402,49 @@ impl DirectSurfaceLiquidIngressCandidate {
                 self.ending_state.recomputed_sha256().ok(),
             )
         })?;
-        let expected = execute_surface_liquid_ingress_inner(configuration, resource, input)
-            .map_err(|error| {
-                let code = error.code();
-                error.complete_context(
-                    code,
-                    DirectSurfaceLiquidPhase::IngressCandidate,
-                    DirectSurfaceLiquidErrorContext {
-                        transaction_id: Some(input.transaction_id),
-                        owner_id: Some(configuration.owner_id.clone()),
-                        ..DirectSurfaceLiquidErrorContext::default()
-                    },
-                    Some(resource.beginning_state().state_sha256.clone()),
-                    self.ending_state.recomputed_sha256().ok(),
-                )
-            })?;
-        if &expected != self {
-            return Err(DirectSurfaceLiquidError::canonical_failure(
-                DirectSurfaceLiquidErrorCode::E009,
-                DirectSurfaceLiquidPhase::IngressCandidate,
-                DirectSurfaceLiquidErrorContext {
-                    transaction_id: Some(input.transaction_id),
-                    owner_id: Some(configuration.owner_id.clone()),
-                    ..DirectSurfaceLiquidErrorContext::default()
-                },
-                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
-                    beginning_owner_sha256: Some(resource.beginning_state().state_sha256.clone()),
-                    attempted_owner_sha256: self.ending_state.recomputed_sha256().ok(),
-                },
-                "ingress candidate does not reconstruct from immutable inputs",
-            ));
-        }
         Ok(())
+    }
+
+    fn producer_fields_equal(&self, expected: &Self) -> bool {
+        self.transaction_id == expected.transaction_id
+            && self.beginning_state == expected.beginning_state
+            && self.ending_state == expected.ending_state
+            && self.receipts == expected.receipts
+            && self.ledgers == expected.ledgers
+            && self.wb14_calls_by_ofe == expected.wb14_calls_by_ofe
+    }
+
+    fn producer_mismatch_context(
+        &self,
+        expected: &Self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        input: &DirectSurfaceLiquidIngressInput,
+    ) -> DirectSurfaceLiquidErrorContext {
+        let receipt = (0..self.receipts.len().max(expected.receipts.len()))
+            .find(|&index| self.receipts.get(index) != expected.receipts.get(index))
+            .and_then(|index| {
+                self.receipts
+                    .get(index)
+                    .or_else(|| expected.receipts.get(index))
+            });
+        let fallback = configuration.records.first();
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(input.transaction_id),
+            owner_id: Some(configuration.owner_id.clone()),
+            ofe_id: receipt
+                .map(|row| row.recipient_store_key.ofe_id.clone())
+                .or_else(|| fallback.map(|row| row.key.ofe_id.clone())),
+            tile_id: receipt
+                .map(|row| row.recipient_store_key.tile_id.clone())
+                .or_else(|| fallback.map(|row| row.key.tile_id.clone())),
+            surface_id: receipt
+                .map(|row| row.recipient_store_key.surface_id.clone())
+                .or_else(|| fallback.map(|row| row.key.surface_id.clone())),
+            source_id: receipt
+                .map(|row| row.recipient_store_key.source_id.clone())
+                .or_else(|| fallback.map(|row| row.key.source_id.clone())),
+            parcel_id: receipt.map(|row| row.parcel_id.clone()),
+        }
     }
 }
 
@@ -2246,15 +2305,46 @@ mod tests {
         } else {
             panic!("wrong receipt variant");
         }
+        let offending = candidate
+            .receipts
+            .iter()
+            .find(|receipt| {
+                receipt.disposition == DirectSurfaceLiquidReceiptDisposition::Infiltration
+            })
+            .expect("offending infiltration receipt")
+            .clone();
+        let expected_attempted = candidate
+            .ending_state
+            .recomputed_sha256()
+            .expect("attempted digest");
         let error = candidate
             .validate(&configuration, &resource, &input)
             .expect_err("wrong infiltration recipient");
         let failure = error.failure().expect("canonical candidate failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
-        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
         assert_eq!(failure.context.transaction_id, Some(transaction_id));
-        assert!(failure.rollback.beginning_owner_sha256.is_some());
-        assert!(failure.rollback.attempted_owner_sha256.is_some());
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(
+            failure.context.ofe_id,
+            Some(offending.recipient_store_key.ofe_id.clone())
+        );
+        assert_eq!(
+            failure.context.tile_id,
+            Some(offending.recipient_store_key.tile_id.clone())
+        );
+        assert_eq!(failure.context.parcel_id, Some(offending.parcel_id));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(expected_attempted.as_str())
+        );
     }
 
     #[test]
@@ -2286,10 +2376,37 @@ mod tests {
 
         let mut producer_poison = candidate;
         producer_poison.closure_operands = poisoned;
+        let expected_attempted = producer_poison
+            .ending_state
+            .recomputed_sha256()
+            .expect("attempted digest");
         let error = producer_poison
             .validate(&configuration, &resource, &input)
             .expect_err("public producer mismatch");
-        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+        let failure = error.failure().expect("canonical public closure failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(
+            failure.context.ofe_id,
+            Some(configuration.records[0].key.ofe_id.clone())
+        );
+        assert_eq!(
+            failure.context.tile_id,
+            Some(configuration.records[0].key.tile_id.clone())
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(expected_attempted.as_str())
+        );
     }
 
     #[test]
