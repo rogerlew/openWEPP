@@ -479,6 +479,25 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: affected production files remain below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology re-review.
 
+## Multi-record precedence and attribution remediation at `ee240618c`
+
+- HOLD retained: Rust closure review found that the local arithmetic preflight
+  invoked a short-circuit full closure validator, so an earlier finite E010
+  could hide a later-store E003; non-receipt E009 context also fell back to the
+  first configured store.
+- PASS: a dedicated exhaustive arithmetic-only preflight scans every store,
+  source parcel, receipt, route conversion, routed aggregate and OFE aggregate
+  without stopping at finite closure mismatch.
+- PASS: producer comparison is structural in canonical order across
+  transaction, beginning/ending records and continuations, receipts, ledgers
+  and WB14, with no first-record fallback.
+- PASS: multi-store and multi-OFE poisons assert exact later E003/E009 context
+  and rollback hashes; independent E010 remains a distinct final control.
+- PASS: orchestrator quick suite, 546/546; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- PASS: affected production files remain below 3,000 lines.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Final ingress-precedence remediation at `47f959b43`
 
 - HOLD retained: both final exact-byte reviewers found that independent E010

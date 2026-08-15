@@ -31,6 +31,10 @@ remained unchecked. The correction at `3b9e5ed13` preserves tri-state E003
 precedence and checks those joins. Final re-review found that E010 independent
 closure preempted producer E009 attribution. The correction at `47f959b43`
 performs E003 arithmetic/domain preflight, one immutable E009 producer
-reconstruction, then E010 independent closure. Focused gates pass, but fresh
-exact-byte reviews and terminal verification remain required. This is not yet
-a terminal custody-lift or resumed-Child-3 claim.
+reconstruction, then E010 independent closure. Closure review found that local
+ordering still allowed an earlier finite E010 to hide a later-record E003 and
+later-record E009 context fell back to the first store. The correction at
+`ee240618c` performs exhaustive arithmetic preflight and exact structural
+producer attribution across the complete candidate. Focused gates pass, but
+fresh exact-byte reviews and terminal verification remain required. This is not
+yet a terminal custody-lift or resumed-Child-3 claim.

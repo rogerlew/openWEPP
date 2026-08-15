@@ -89,10 +89,13 @@ branch, PR or push is in scope.
   two receiver sums remained unchecked. The correction at `3b9e5ed13`
   propagates arithmetic failure as contextual E003. Final re-review found that
   independent E010 closure validation preempted producer E009 attribution.
-  The correction at `47f959b43` restores canonical E003 then E009 then E010
-  ordering and passes 544/544 orchestrator, 19/19 focused integration and 9/9
-  authority tests, strict Clippy, formatting, diff hygiene, and line-count
-  governance. Fresh exact-byte reviews remain pending.
+  The correction at `47f959b43` restored local ordering, but Rust closure review
+  found an earlier finite E010 could hide a later-record E003 and later-record
+  E009 context fell back to the first store. The multi-record correction at
+  `ee240618c` exhaustively preflights arithmetic and structurally attributes
+  producer mismatches. It passes 546/546 orchestrator, 19/19 focused
+  integration and 9/9 authority tests, strict Clippy, formatting, diff hygiene,
+  and line-count governance. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

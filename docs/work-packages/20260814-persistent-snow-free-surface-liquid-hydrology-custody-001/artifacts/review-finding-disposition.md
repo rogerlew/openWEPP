@@ -149,3 +149,15 @@ Ingress candidate validation now preserves the canonical branch order: E003
 domain/arithmetic preflight, immutable producer reconstruction and attribution
 as E009, then independent closure as E010. The three branches have distinct
 public poisons and exact rollback assertions.
+
+## Multi-record closure review findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-CLOSURE-HIGH-001: earlier finite E010 hides later-store E003 | Accepted | Remediated at `ee240618c`; focused PASS |
+| A-TERMINAL-CLOSURE-HIGH-002: later producer E009 mismatch falls back to first store context | Accepted | Remediated at `ee240618c`; focused PASS |
+
+The arithmetic preflight now scans the complete candidate without executing or
+short-circuiting on finite closure comparisons. Producer comparison localizes
+the exact first structural mismatch across every record, ledger and WB14 row;
+no configured-first fallback remains.
