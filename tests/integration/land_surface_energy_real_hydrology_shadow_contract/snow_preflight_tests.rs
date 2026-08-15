@@ -312,6 +312,99 @@ fn set_frost_scalar(
     }
 }
 
+fn frost_shadow(
+    layer_index: usize,
+) -> openwepp_hillslope_orchestrator::DirectFrostLayerShadowState {
+    openwepp_hillslope_orchestrator::DirectFrostLayerShadowState {
+        layer_index,
+        st_m: 0.0,
+        soil_water_m: 0.0,
+        frozen_depth_m: 0.0,
+        frozen_water_m: 0.0,
+        soilf_m: 0.0,
+        yst_m: 0.0,
+        nwfrzz_m: 0.0,
+    }
+}
+
+fn frost_fine(
+    layer_index: usize,
+    fine_index: usize,
+) -> openwepp_hillslope_orchestrator::DirectFrostFineLayerState {
+    openwepp_hillslope_orchestrator::DirectFrostFineLayerState {
+        layer_index,
+        fine_index,
+        fgfrst: 0.0,
+        slfsd_m: 0.0,
+        slsic_m: 0.0,
+        slsw_theta: 0.0,
+        sltime_s: 0.0,
+    }
+}
+
+fn valid_frost_container() -> openwepp_hillslope_orchestrator::DirectFrostLaneState {
+    let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+    frost.total_fine_layer_count = 3.0;
+    frost.layer_shadows = vec![frost_shadow(1), frost_shadow(2)];
+    frost.fine_layers = vec![frost_fine(1, 1), frost_fine(1, 2), frost_fine(2, 1)];
+    frost
+}
+
+fn poison_frost_structure(
+    frost: &mut openwepp_hillslope_orchestrator::DirectFrostLaneState,
+    poison: usize,
+) {
+    match poison {
+        0 => frost.total_fine_layer_count = f64::NAN,
+        1 => frost.total_fine_layer_count = -1.0,
+        2 => frost.total_fine_layer_count = 2.5,
+        3 => frost.total_fine_layer_count = 2.0,
+        4 => frost.layer_shadows[1].layer_index = 1,
+        5 => frost.layer_shadows.swap(0, 1),
+        6 => frost.layer_shadows[0].layer_index = 0,
+        7 => frost.fine_layers[1] = frost.fine_layers[0],
+        8 => frost.fine_layers.swap(0, 2),
+        9 => frost.fine_layers[1].fine_index = 3,
+        10 => frost.fine_layers[2].layer_index = 3,
+        11 => frost.fine_layers[0].fine_index = 2,
+        12 => {
+            frost.layer_shadows.pop();
+        }
+        _ => unreachable!("complete frost structure poison table"),
+    }
+}
+
+#[test]
+fn frost_container_structure_precedes_unsupported_state_and_carry() {
+    for runtime_carry in [false, true] {
+        for poison in 0..13 {
+            assert_mutation_code(
+                move |frame| {
+                    let mut frost = valid_frost_container();
+                    poison_frost_structure(&mut frost, poison);
+                    if runtime_carry {
+                        frame.lanes[0].frost_runtime_carry = Some(frost.into());
+                    } else {
+                        frame.lanes[0].winter_column.frost = frost;
+                    }
+                },
+                DirectSurfaceLiquidErrorCode::E003,
+            );
+        }
+        assert_mutation_code(
+            move |frame| {
+                let frost = valid_frost_container();
+                if runtime_carry {
+                    frame.lanes[0].frost_runtime_carry = Some(frost.into());
+                } else {
+                    frame.lanes[0].winter_column.frost = frost;
+                }
+            },
+            DirectSurfaceLiquidErrorCode::E004,
+        );
+    }
+}
+
 #[test]
 fn frost_lane_and_runtime_carry_scalar_domains_precede_e004() {
     for runtime_carry in [false, true] {

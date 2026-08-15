@@ -848,9 +848,16 @@ fn preflight_surface_liquid_ingress_public_identities(
         ));
     }
     preflight_resource_working_state_identities(configuration, resource)?;
-    preflight_tile_ingress_identities(configuration, input)?;
-    preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)?;
+    preflight_surface_liquid_ingress_input_identities(configuration, input)?;
     Ok(())
+}
+
+pub(crate) fn preflight_surface_liquid_ingress_input_identities(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(), DirectSurfaceLiquidError> {
+    preflight_tile_ingress_identities(configuration, input)?;
+    preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)
 }
 
 fn preflight_resource_working_state_identities(

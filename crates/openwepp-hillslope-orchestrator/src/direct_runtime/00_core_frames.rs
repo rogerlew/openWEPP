@@ -2412,7 +2412,63 @@ fn validate_direct_frost_runtime_carry(
 ) -> Result<(), DirectRuntimeError> {
     validate_direct_frost_runtime_scalar_carry(carry)?;
     validate_direct_frost_runtime_layer_shadows(carry)?;
-    validate_direct_frost_runtime_fine_layers(carry)
+    validate_direct_frost_runtime_fine_layers(carry)?;
+    validate_direct_frost_runtime_structure(carry)
+}
+
+fn validate_direct_frost_runtime_structure(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    let expected_fine_layer_count =
+        crate::hydrology::Wb11HydrologyKernel::diagnostic_count_to_f64(carry.fine_layers.len());
+    if carry.total_fine_layer_count.to_bits() != expected_fine_layer_count.to_bits() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.total_fine_layer_count",
+        });
+    }
+    if carry
+        .layer_shadows
+        .windows(2)
+        .any(|pair| pair[0].layer_index >= pair[1].layer_index)
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
+    }
+    let mut prior: Option<(usize, usize)> = None;
+    for fine in &carry.fine_layers {
+        if !carry.layer_shadows.is_empty()
+            && carry
+                .layer_shadows
+                .binary_search_by_key(&fine.layer_index, |layer| layer.layer_index)
+                .is_err()
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.layer_index",
+            });
+        }
+        let expected_fine_index = match prior {
+            Some((layer_index, fine_index)) if layer_index == fine.layer_index => fine_index
+                .checked_add(1)
+                .ok_or(DirectRuntimeError::DirectDomainViolation {
+                    field: "constructor.frost_runtime_carry.fine_layer.fine_index",
+                })?,
+            Some((layer_index, _)) if layer_index < fine.layer_index => 1,
+            None => 1,
+            _ => {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "constructor.frost_runtime_carry.fine_layer.layer_index",
+                });
+            }
+        };
+        if fine.fine_index != expected_fine_index {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.fine_index",
+            });
+        }
+        prior = Some((fine.layer_index, fine.fine_index));
+    }
+    Ok(())
 }
 
 /// Validate the complete persisted winter domain before a production lane is consumed.

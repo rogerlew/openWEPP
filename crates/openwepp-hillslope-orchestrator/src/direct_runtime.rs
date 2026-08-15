@@ -387,6 +387,7 @@ pub use surface_liquid_closure::{
     DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,
     DirectSurfaceLiquidStoreClosureOperands,
 };
+pub(crate) use surface_liquid_ingress::preflight_surface_liquid_ingress_input_identities;
 pub use surface_liquid_ingress::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
@@ -569,6 +570,7 @@ mod cqr_row9_direct_runtime_tests {
 
     fn row9_frost_carry() -> DirectFrostRuntimeCarry {
         let mut frost = DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero());
+        frost.total_fine_layer_count = 1.0;
         frost.fine_layers = vec![DirectFrostFineLayerCarry {
             layer_index: 1,
             fine_index: 1,

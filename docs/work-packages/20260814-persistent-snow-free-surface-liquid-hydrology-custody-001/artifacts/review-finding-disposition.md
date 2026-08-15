@@ -439,3 +439,15 @@ Fresh review is pending on the corrected exact bytes.
 
 No `a5c2243e6` finding is rejected, deferred, or moved to another package.
 Fresh review is pending on the corrected exact bytes.
+
+## Exact-head terminal-review findings at `85358c9b2`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-853-HIGH-001: standalone receiver failures can publish hydrology rollback provenance for LSE/soil-thermal owners or drop the implicated owner | Accepted | Remediated in worktree: complete rollback rows are digest-bound and one canonical owner-kind/owner-ID resolver supplies exact beginning hash or typed absence; E003/E010/E011 poisons PASS |
+| A-TERMINAL-853-HIGH-002: malformed frost counts, indices, order and membership can fall through as E004 | Accepted | Remediated in worktree: complete structural winter validation and state/runtime poison matrix PASS |
+| A-TERMINAL-853-HIGH-003: unified entry preflights only outer identity before E003 checks and callback execution | Accepted | Remediated in worktree: complete input-only ingress identity preflight precedes request/winter arithmetic and callback; mixed poisons PASS |
+
+No `85358c9b2` finding is rejected, deferred, or moved to another package. The
+fresh hydrology/ownership review returned PASS; its interrupted broader run is
+retained as non-evidence.

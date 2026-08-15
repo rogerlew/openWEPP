@@ -2216,9 +2216,14 @@ fn reject_receiver_topology_poisons(
             Some(owner)
         );
         assert_eq!(failure.context.tile_id.as_ref().map(TileId::as_str), tile);
+        let expected_beginning = match owner {
+            "land-surface-energy-v1" => digest('2'),
+            "soil-thermal" => digest('4'),
+            _ => baseline.beginning_hydrology_snapshot_sha256.clone(),
+        };
         assert_eq!(
             failure.rollback.beginning_owner_sha256.as_deref(),
-            Some(baseline.beginning_hydrology_snapshot_sha256.as_str())
+            Some(expected_beginning.as_str())
         );
         assert_eq!(
             failure.rollback.attempted_owner_sha256.as_deref(),
@@ -2290,6 +2295,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
     assert_receiver_e003(
         "thermal-overflow",
         &thermal_overflow,
+        &digest('4'),
         validate_real_receiver_closure(&thermal_overflow),
     );
 
@@ -2299,6 +2305,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
     assert_receiver_e003(
         "lse-overflow",
         &lse_overflow,
+        &digest('2'),
         validate_real_receiver_closure(&lse_overflow),
     );
 
@@ -2308,6 +2315,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
     assert_receiver_e003(
         "lse-underflow",
         &lse_underflow,
+        &digest('2'),
         validate_real_receiver_closure(&lse_underflow),
     );
 
@@ -2317,6 +2325,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
     assert_receiver_e003(
         "later-domain-outranks-earlier-equation",
         &precedence,
+        &digest('2'),
         validate_real_receiver_closure(&precedence),
     );
 
@@ -2327,6 +2336,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
     assert_receiver_e003(
         "derived-overflow-outranks-structural-envelope",
         &structural_precedence,
+        &digest('2'),
         validate_real_receiver_closure(&structural_precedence),
     );
 }
@@ -2517,6 +2527,7 @@ fn assert_receiver_e010(
 fn assert_receiver_e003(
     label: &str,
     operands: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::RealReceiverClosureOperands,
+    expected_beginning_sha256: &Sha256Digest,
     result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
 ) {
     let error = result.expect_err("receiver arithmetic poison must fail");
@@ -2526,7 +2537,7 @@ fn assert_receiver_e003(
     assert!(failure.context.owner_id.is_some());
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(operands.beginning_hydrology_snapshot_sha256.as_str()),
+        Some(expected_beginning_sha256.as_str()),
         "{label} beginning rollback hash"
     );
     let attempted = operands.canonical_sha256();
@@ -2605,6 +2616,28 @@ fn assert_receiver_join_failure(error: LandSurfaceEnergyShadowError, poison: usi
                 .map(ResourceOwnerId::as_str),
             Some(expected_owner)
         );
+    }
+    match poison {
+        5 | 7 => assert_eq!(
+            failure.rollback.beginning_owner_sha256, None,
+            "ambiguous or absent receiver rollback row must use typed absence"
+        ),
+        10 => assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(digest('2').as_str()),
+            "unique wrong-LSE row retains its actual beginning digest"
+        ),
+        13 => assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(digest('4').as_str()),
+            "unique wrong-thermal row retains its actual beginning digest"
+        ),
+        9 => assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(digest('4').as_str()),
+            "thermal numeric failure must use the thermal beginning digest"
+        ),
+        _ => {}
     }
 }
 

@@ -1,3 +1,4 @@
+use super::receiver_failure::{canonical_receiver_failure, receiver_operand_failure};
 use super::{
     CondensationCredit, Digest, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
@@ -1039,6 +1040,8 @@ pub fn validate_real_receiver_closure(
             expected_credit.zip(expected_ending).ok_or_else(|| {
                 receiver_arithmetic_failure(
                     operands,
+                    OwnerKind::SoilThermal,
+                    &operands.soil_thermal_owner_id,
                     Some(&thermal.ofe_id),
                     Some(&thermal.tile_id),
                     "soil-thermal infiltration enthalpy arithmetic",
@@ -1046,6 +1049,7 @@ pub fn validate_real_receiver_closure(
             })?;
         require_receiver_close(
             operands,
+            OwnerKind::SoilThermal,
             &operands.soil_thermal_owner_id,
             thermal.ending_infiltration_credit_j_m2_ofe_ground,
             expected_credit,
@@ -1056,6 +1060,7 @@ pub fn validate_real_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            OwnerKind::SoilThermal,
             &operands.soil_thermal_owner_id,
             thermal.ending_enthalpy_j_m2_ofe_ground,
             expected_ending,
@@ -1069,6 +1074,8 @@ pub fn validate_real_receiver_closure(
         if !tile.tile_fraction.is_finite() || tile.tile_fraction <= 0.0 {
             return Err(receiver_atomic_failure(
                 operands,
+                OwnerKind::LandSurfaceEnergy,
+                &operands.lse_owner_id,
                 Some(&tile.ofe_id),
                 Some(&tile.tile_id),
                 "LSE retained tile fraction",
@@ -1082,6 +1089,8 @@ pub fn validate_real_receiver_closure(
                 .ok_or_else(|| {
                     receiver_arithmetic_failure(
                         operands,
+                        OwnerKind::LandSurfaceEnergy,
+                        &operands.lse_owner_id,
                         Some(&tile.ofe_id),
                         Some(&tile.tile_id),
                         "LSE retained enthalpy arithmetic",
@@ -1089,6 +1098,7 @@ pub fn validate_real_receiver_closure(
                 })?;
         require_receiver_close(
             operands,
+            OwnerKind::LandSurfaceEnergy,
             &operands.lse_owner_id,
             tile.ending_enthalpy_j_m2_tile_ground,
             expected,
@@ -1113,6 +1123,8 @@ fn validate_production_soil_receiver_closure(
         {
             return Err(receiver_atomic_failure(
                 operands,
+                OwnerKind::Hydrology,
+                &operands.hydrology_owner_id,
                 Some(&lane.ofe_id),
                 None,
                 "production soil receiver operand domain",
@@ -1121,6 +1133,8 @@ fn validate_production_soil_receiver_closure(
         let expected = independently_reconstruct_infiltration(lane).ok_or_else(|| {
             receiver_atomic_failure(
                 operands,
+                OwnerKind::Hydrology,
+                &operands.hydrology_owner_id,
                 Some(&lane.ofe_id),
                 None,
                 "production soil receiver reconstruction domain",
@@ -1129,6 +1143,7 @@ fn validate_production_soil_receiver_closure(
         for (layer, expected_ending) in lane.ordered_layers.iter().zip(expected) {
             require_receiver_close(
                 operands,
+                OwnerKind::Hydrology,
                 &operands.hydrology_owner_id,
                 layer.ending_liquid_m,
                 expected_ending,
@@ -1153,6 +1168,8 @@ fn validate_production_soil_receiver_closure(
             .ok_or_else(|| {
                 receiver_arithmetic_failure(
                     operands,
+                    OwnerKind::Hydrology,
+                    &operands.hydrology_owner_id,
                     Some(&lane.ofe_id),
                     None,
                     "beginning aggregate soil-water arithmetic",
@@ -1163,6 +1180,8 @@ fn validate_production_soil_receiver_closure(
             .ok_or_else(|| {
                 receiver_arithmetic_failure(
                     operands,
+                    OwnerKind::Hydrology,
+                    &operands.hydrology_owner_id,
                     Some(&lane.ofe_id),
                     None,
                     "ending aggregate soil-water arithmetic",
@@ -1173,6 +1192,8 @@ fn validate_production_soil_receiver_closure(
                 .ok_or_else(|| {
                     receiver_arithmetic_failure(
                         operands,
+                        OwnerKind::Hydrology,
+                        &operands.hydrology_owner_id,
                         Some(&lane.ofe_id),
                         None,
                         "aggregate soil-water ending arithmetic",
@@ -1180,6 +1201,7 @@ fn validate_production_soil_receiver_closure(
                 })?;
         require_receiver_close(
             operands,
+            OwnerKind::Hydrology,
             &operands.hydrology_owner_id,
             lane.beginning_aggregate_soil_water_m,
             beginning_sum,
@@ -1190,6 +1212,7 @@ fn validate_production_soil_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            OwnerKind::Hydrology,
             &operands.hydrology_owner_id,
             lane.ending_aggregate_soil_water_m,
             ending_sum,
@@ -1200,6 +1223,7 @@ fn validate_production_soil_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            OwnerKind::Hydrology,
             &operands.hydrology_owner_id,
             lane.ending_aggregate_soil_water_m,
             expected_aggregate_ending,
@@ -1273,6 +1297,7 @@ fn independently_reconstruct_infiltration(
 #[allow(clippy::too_many_arguments)]
 pub(super) fn require_receiver_close(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
     owner_id: &ResourceOwnerId,
     actual: f64,
     expected: f64,
@@ -1284,88 +1309,70 @@ pub(super) fn require_receiver_close(
     match checked_surface_liquid_close(actual, expected, unit) {
         Some(true) => Ok(()),
         Some(false) => Err(receiver_equation_failure(
-            operands, owner_id, ofe_id, tile_id, detail,
+            operands, owner_kind, owner_id, ofe_id, tile_id, detail,
         )),
         None => Err(receiver_arithmetic_failure(
-            operands, ofe_id, tile_id, detail,
+            operands, owner_kind, owner_id, ofe_id, tile_id, detail,
         )),
     }
 }
 
 fn receiver_equation_failure(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
     owner_id: &ResourceOwnerId,
     ofe_id: Option<&OfeId>,
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
-    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
-    DirectSurfaceLiquidError::canonical_failure(
+    receiver_operand_failure(
+        operands,
         DirectSurfaceLiquidErrorCode::E010,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(operands.transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ofe_id: ofe_id.cloned(),
-            tile_id: tile_id.cloned(),
-            surface_id,
-            source_id,
-            parcel_id: None,
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
-            attempted_owner_sha256: Some(receiver_operands_sha256(operands)),
-        },
+        owner_kind,
+        owner_id,
+        ofe_id,
+        tile_id,
         detail,
     )
 }
 
 pub(super) fn receiver_atomic_failure(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
+    owner_id: &ResourceOwnerId,
     ofe_id: Option<&OfeId>,
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
-    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
-    DirectSurfaceLiquidError::atomic_envelope_failure(
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(operands.transaction_id),
-            owner_id: Some(operands.hydrology_owner_id.clone()),
-            ofe_id: ofe_id.cloned(),
-            tile_id: tile_id.cloned(),
-            surface_id,
-            source_id,
-            parcel_id: None,
-        },
-        Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
-        Some(receiver_operands_sha256(operands)),
+    receiver_operand_failure(
+        operands,
+        DirectSurfaceLiquidErrorCode::E011,
+        DirectSurfaceLiquidPhase::AtomicEnvelope,
+        owner_kind,
+        owner_id,
+        ofe_id,
+        tile_id,
         detail,
     )
 }
 
 fn receiver_arithmetic_failure(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
+    owner_id: &ResourceOwnerId,
     ofe_id: Option<&OfeId>,
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
-    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
-    DirectSurfaceLiquidError::canonical_failure(
+    receiver_operand_failure(
+        operands,
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(operands.transaction_id),
-            owner_id: Some(operands.hydrology_owner_id.clone()),
-            ofe_id: ofe_id.cloned(),
-            tile_id: tile_id.cloned(),
-            surface_id,
-            source_id,
-            parcel_id: None,
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
-            attempted_owner_sha256: Some(receiver_operands_sha256(operands)),
-        },
+        owner_kind,
+        owner_id,
+        ofe_id,
+        tile_id,
         detail,
     )
 }
@@ -1435,6 +1442,7 @@ fn validate_configured_receiver_context(
             .or_else(|| configured_tiles.get(index));
         return Err(receiver_envelope_failure(
             operands,
+            OwnerKind::Hydrology,
             &operands.hydrology_owner_id,
             identity.map(|row| &row.0),
             identity.map(|row| &row.1),
@@ -1466,6 +1474,7 @@ pub(super) fn validate_receiver_envelope(
     operands: &RealReceiverClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
     validate_numeric_domains(operands)?;
+    validate_frozen_rollback_provenance(operands)?;
     validate_configured_receiver_context(operands)?;
     let production = actual_production_identities(operands);
     if production != operands.expected_production_soil {
@@ -1477,6 +1486,7 @@ pub(super) fn validate_receiver_envelope(
         if production.len() != operands.expected_production_soil.len() {
             return Err(receiver_envelope_failure(
                 operands,
+                OwnerKind::Hydrology,
                 &operands.hydrology_owner_id,
                 ofe,
                 None,
@@ -1485,6 +1495,7 @@ pub(super) fn validate_receiver_envelope(
         }
         return Err(join_failure(
             operands,
+            OwnerKind::Hydrology,
             &operands.hydrology_owner_id,
             ofe,
             None,
@@ -1510,6 +1521,7 @@ pub(super) fn validate_receiver_envelope(
         if thermal.len() != operands.expected_soil_thermal.len() {
             return Err(receiver_envelope_failure(
                 operands,
+                OwnerKind::SoilThermal,
                 &operands.soil_thermal_owner_id,
                 identity.map(|row| &row.0),
                 identity.map(|row| &row.1),
@@ -1518,6 +1530,7 @@ pub(super) fn validate_receiver_envelope(
         }
         return Err(join_failure(
             operands,
+            OwnerKind::SoilThermal,
             &operands.soil_thermal_owner_id,
             identity.map(|row| &row.0),
             identity.map(|row| &row.1),
@@ -1537,6 +1550,7 @@ pub(super) fn validate_receiver_envelope(
         if lse.len() != operands.expected_lse_tiles.len() {
             return Err(receiver_envelope_failure(
                 operands,
+                OwnerKind::LandSurfaceEnergy,
                 &operands.lse_owner_id,
                 identity.map(|row| &row.0),
                 identity.map(|row| &row.1),
@@ -1545,10 +1559,106 @@ pub(super) fn validate_receiver_envelope(
         }
         return Err(join_failure(
             operands,
+            OwnerKind::LandSurfaceEnergy,
             &operands.lse_owner_id,
             identity.map(|row| &row.0),
             identity.map(|row| &row.1),
             "LSE tile receiver topology mismatch",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_frozen_rollback_provenance(
+    operands: &RealReceiverClosureOperands,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let expected = [
+        (
+            OwnerKind::LandSurfaceEnergy,
+            &operands.lse_owner_id,
+            &operands.beginning_lse_state_sha256,
+        ),
+        (
+            OwnerKind::Hydrology,
+            &operands.hydrology_owner_id,
+            &operands.beginning_hydrology_snapshot_sha256,
+        ),
+        (
+            OwnerKind::SoilThermal,
+            &operands.soil_thermal_owner_id,
+            &operands.beginning_soil_thermal_state_sha256,
+        ),
+    ];
+    for (owner_kind, owner_id, _) in expected {
+        let count = operands
+            .rollback_hashes
+            .iter()
+            .filter(|row| row.owner_kind == owner_kind && row.owner_id == owner_id.as_str())
+            .count();
+        if count != 1 {
+            return Err(receiver_operand_failure(
+                operands,
+                DirectSurfaceLiquidErrorCode::E011,
+                DirectSurfaceLiquidPhase::AtomicEnvelope,
+                owner_kind,
+                owner_id,
+                None,
+                None,
+                if count == 0 {
+                    "missing frozen receiver rollback row"
+                } else {
+                    "duplicate frozen receiver rollback row"
+                },
+            ));
+        }
+    }
+    for (index, (owner_kind, owner_id, beginning)) in expected.into_iter().enumerate() {
+        let Some(actual) = operands.rollback_hashes.get(index) else {
+            return Err(receiver_operand_failure(
+                operands,
+                DirectSurfaceLiquidErrorCode::E011,
+                DirectSurfaceLiquidPhase::AtomicEnvelope,
+                owner_kind,
+                owner_id,
+                None,
+                None,
+                "missing ordered frozen receiver rollback row",
+            ));
+        };
+        if actual.owner_kind != owner_kind
+            || actual.owner_id != owner_id.as_str()
+            || &actual.before_sha256 != beginning
+            || &actual.after_sha256 != beginning
+        {
+            return Err(receiver_operand_failure(
+                operands,
+                DirectSurfaceLiquidErrorCode::E011,
+                DirectSurfaceLiquidPhase::AtomicEnvelope,
+                owner_kind,
+                owner_id,
+                None,
+                None,
+                "frozen receiver rollback row mismatch",
+            ));
+        }
+    }
+    if operands.rollback_hashes.len() != expected.len() {
+        let actual = &operands.rollback_hashes[expected.len()];
+        let owner_id = ResourceOwnerId::try_new(actual.owner_id.clone()).ok();
+        return Err(canonical_receiver_failure(
+            DirectSurfaceLiquidErrorCode::E011,
+            DirectSurfaceLiquidPhase::AtomicEnvelope,
+            operands.transaction_id,
+            Some(actual.owner_kind),
+            owner_id.as_ref(),
+            None,
+            None,
+            None,
+            None,
+            None,
+            &operands.rollback_hashes,
+            &receiver_operands_sha256(operands),
+            "unexpected frozen receiver rollback row",
         ));
     }
     Ok(())
@@ -1676,17 +1786,19 @@ pub(super) fn preflight_sealed_finalization_numerics(
     } else {
         return Ok(());
     };
-    let beginning_owner_sha256 = context.owner_id.as_ref().and_then(|owner_id| {
-        unique_owner_beginning_rollback(rollback_hashes, owner_kind, owner_id)
-    });
-    Err(DirectSurfaceLiquidError::canonical_failure(
+    Err(canonical_receiver_failure(
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        context,
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256,
-            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
-        },
+        protocol.transaction_id,
+        Some(owner_kind),
+        context.owner_id.as_ref(),
+        context.ofe_id.as_ref(),
+        context.tile_id.as_ref(),
+        context.surface_id,
+        context.source_id,
+        context.parcel_id,
+        rollback_hashes,
+        attempted_sha256,
         detail,
     )
     .into())
@@ -1708,43 +1820,25 @@ fn finalization_numeric_failure(
         .records
         .iter()
         .find(|row| &row.key.ofe_id == ofe_id && &row.key.tile_id == tile_id);
-    DirectSurfaceLiquidError::canonical_failure(
+    canonical_receiver_failure(
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ofe_id: Some(ofe_id.clone()),
-            tile_id: Some(tile_id.clone()),
-            surface_id: record.map(|row| row.key.surface_id.clone()),
-            source_id: record.map(|row| row.key.source_id.clone()),
-            parcel_id: None,
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: unique_owner_beginning_rollback(
-                rollback_hashes,
-                owner_kind,
-                owner_id,
-            ),
-            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
-        },
+        transaction_id,
+        Some(owner_kind),
+        Some(owner_id),
+        Some(ofe_id),
+        Some(tile_id),
+        record.map(|row| row.key.surface_id.clone()),
+        record.map(|row| row.key.source_id.clone()),
+        None,
+        rollback_hashes,
+        attempted_sha256,
         detail,
     )
     .into()
 }
 
-pub(super) fn unique_owner_beginning_rollback(
-    rows: &[OwnerRollbackHash],
-    owner_kind: OwnerKind,
-    owner_id: &ResourceOwnerId,
-) -> Option<String> {
-    let mut matching = rows
-        .iter()
-        .filter(|row| row.owner_kind == owner_kind && row.owner_id.as_str() == owner_id.as_str());
-    let beginning = matching.next()?.before_sha256.to_string();
-    matching.next().is_none().then_some(beginning)
-}
-
+#[allow(clippy::too_many_lines)] // Explicit complete owner-domain scan preserves E003 precedence.
 fn validate_numeric_domains(
     operands: &RealReceiverClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
@@ -1782,6 +1876,8 @@ fn validate_numeric_domains(
         {
             return Err(receiver_arithmetic_failure(
                 operands,
+                OwnerKind::Hydrology,
+                &operands.hydrology_owner_id,
                 Some(&lane.ofe_id),
                 None,
                 "production soil receiver operand domain",
@@ -1811,6 +1907,8 @@ fn validate_numeric_domains(
         {
             return Err(receiver_arithmetic_failure(
                 operands,
+                OwnerKind::SoilThermal,
+                &operands.soil_thermal_owner_id,
                 Some(&row.ofe_id),
                 Some(&row.tile_id),
                 "soil-thermal receiver operand domain",
@@ -1836,6 +1934,8 @@ fn validate_numeric_domains(
         {
             return Err(receiver_arithmetic_failure(
                 operands,
+                OwnerKind::LandSurfaceEnergy,
+                &operands.lse_owner_id,
                 Some(&row.ofe_id),
                 Some(&row.tile_id),
                 "LSE tile receiver operand domain",
@@ -1877,84 +1977,46 @@ fn first_mismatch<T: PartialEq>(expected: &[T], actual: &[T]) -> usize {
 
 fn join_failure(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
     owner_id: &ResourceOwnerId,
     ofe_id: Option<&OfeId>,
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
-    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
-    DirectSurfaceLiquidError::canonical_failure(
+    receiver_operand_failure(
+        operands,
         DirectSurfaceLiquidErrorCode::E010,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(operands.transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ofe_id: ofe_id.cloned(),
-            tile_id: tile_id.cloned(),
-            surface_id,
-            source_id,
-            parcel_id: None,
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
-            attempted_owner_sha256: Some(receiver_operands_sha256(operands)),
-        },
+        owner_kind,
+        owner_id,
+        ofe_id,
+        tile_id,
         detail,
     )
 }
 
 fn receiver_envelope_failure(
     operands: &RealReceiverClosureOperands,
+    owner_kind: OwnerKind,
     owner_id: &ResourceOwnerId,
     ofe_id: Option<&OfeId>,
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
-    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
-    DirectSurfaceLiquidError::atomic_envelope_failure(
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(operands.transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ofe_id: ofe_id.cloned(),
-            tile_id: tile_id.cloned(),
-            surface_id,
-            source_id,
-            parcel_id: None,
-        },
-        Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
-        Some(receiver_operands_sha256(operands)),
+    receiver_operand_failure(
+        operands,
+        DirectSurfaceLiquidErrorCode::E011,
+        DirectSurfaceLiquidPhase::AtomicEnvelope,
+        owner_kind,
+        owner_id,
+        ofe_id,
+        tile_id,
         detail,
     )
 }
-
-fn configured_receiver_context(
-    operands: &RealReceiverClosureOperands,
-    ofe_id: Option<&OfeId>,
-    tile_id: Option<&TileId>,
-) -> (Option<SurfaceId>, Option<SourceId>) {
-    let Some(ofe_id) = ofe_id else {
-        return (None, None);
-    };
-    let exact = tile_id.and_then(|tile_id| {
-        operands
-            .configured_surface_context
-            .iter()
-            .find(|(ofe, tile, _, _)| ofe == ofe_id && tile == tile_id)
-    });
-    let context = exact.or_else(|| {
-        let mut matches = operands
-            .configured_surface_context
-            .iter()
-            .filter(|(ofe, _, _, _)| ofe == ofe_id);
-        let first = matches.next()?;
-        matches.next().is_none().then_some(first)
-    });
-    context.map_or((None, None), |(_, _, surface, source)| {
-        (Some(surface.clone()), Some(source.clone()))
-    })
-}
+#[allow(clippy::too_many_lines)] // Complete explicit framing is the canonical anti-aliasing surface.
 pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
-    let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v4");
+    let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v5");
     out.u128("transaction", operands.transaction_id.0);
     out.string("hydrology_owner", operands.hydrology_owner_id.as_str());
     out.string("lse_owner", operands.lse_owner_id.as_str());
@@ -1963,6 +2025,15 @@ pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -
         "beginning_hydrology_snapshot",
         operands.beginning_hydrology_snapshot_sha256.as_str(),
     );
+    out.string(
+        "beginning_lse_state",
+        operands.beginning_lse_state_sha256.as_str(),
+    );
+    out.string(
+        "beginning_soil_thermal_state",
+        operands.beginning_soil_thermal_state_sha256.as_str(),
+    );
+    frame_receiver_rollback_hashes(&mut out, &operands.rollback_hashes);
     out.count(
         "expected_production_count",
         operands.expected_production_soil.len(),
@@ -2052,6 +2123,27 @@ pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -
         );
     }
     out.finish()
+}
+
+fn frame_receiver_rollback_hashes(out: &mut FramedSha256, rows: &[OwnerRollbackHash]) {
+    out.count("rollback_count", rows.len());
+    for row in rows {
+        out.string("rollback_owner_kind", owner_kind_tag(row.owner_kind));
+        out.string("rollback_owner", &row.owner_id);
+        out.string("rollback_before", row.before_sha256.as_str());
+        out.string("rollback_after", row.after_sha256.as_str());
+    }
+}
+
+const fn owner_kind_tag(owner_kind: OwnerKind) -> &'static str {
+    match owner_kind {
+        OwnerKind::LandSurfaceEnergy => "land-surface-energy",
+        OwnerKind::Hydrology => "hydrology",
+        OwnerKind::SoilThermal => "soil-thermal",
+        OwnerKind::Vegetation => "vegetation",
+        OwnerKind::Biogeochemistry => "biogeochemistry",
+        OwnerKind::Envelope => "envelope",
+    }
 }
 
 fn frame_configured_receiver_context(
@@ -2334,6 +2426,28 @@ mod tests {
             .collect();
         RealReceiverClosureOperands {
             transaction_id: TransactionId(41),
+            rollback_hashes: vec![
+                OwnerRollbackHash {
+                    owner_kind: OwnerKind::LandSurfaceEnergy,
+                    owner_id: lse_owner_id.as_str().to_owned(),
+                    before_sha256: digest('b'),
+                    after_sha256: digest('b'),
+                },
+                OwnerRollbackHash {
+                    owner_kind: OwnerKind::Hydrology,
+                    owner_id: hydrology_owner_id.as_str().to_owned(),
+                    before_sha256: digest('a'),
+                    after_sha256: digest('a'),
+                },
+                OwnerRollbackHash {
+                    owner_kind: OwnerKind::SoilThermal,
+                    owner_id: soil_thermal_owner_id.as_str().to_owned(),
+                    before_sha256: digest('c'),
+                    after_sha256: digest('c'),
+                },
+            ],
+            beginning_lse_state_sha256: digest('b'),
+            beginning_soil_thermal_state_sha256: digest('c'),
             hydrology_owner_id,
             lse_owner_id,
             soil_thermal_owner_id,
@@ -2428,6 +2542,7 @@ mod tests {
         ] {
             let error = require_receiver_close(
                 &operands,
+                OwnerKind::SoilThermal,
                 &operands.soil_thermal_owner_id,
                 actual,
                 expected,

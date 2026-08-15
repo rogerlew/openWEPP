@@ -788,6 +788,52 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
 
+## Exact-byte review at `85358c9b2`
+
+- PASS: fresh hydrology/science/ownership review found no material finding on
+  the exact clean bytes. Its 58 focused integration tests, diff hygiene and
+  clean-tree checks passed.
+- INTERRUPTED retained: the hydrology reviewer stopped a broader exploratory
+  run after 597 passes when three unrelated routing-oracle tests exceeded 60
+  seconds. This is non-evidence and does not replace a later comparator run.
+- HOLD: fresh Rust correctness review found owner/hash drift in standalone
+  receiver E003/E010/E011 and structural sealing, incomplete frost-container
+  validation that could misclassify malformed state as E004, and an incomplete
+  unified-entry E002 ingress preflight that allowed E003 to mask identity and
+  callback execution on invalid input.
+- PASS in remediation worktree: complete winter-state structural poisons,
+  focused CQR, direct R7G frost 17/17, strict library Clippy, formatting and
+  diff hygiene.
+- Pending: complete receiver provenance and unified-entry corrections, freeze
+  exact bytes, then obtain fresh dual review before any terminal heavy gate.
+
+## `85358c9b2` HOLD remediation
+
+- FAIL retained: the first combined integration run passed 39 rows and failed
+  one stale thermal rollback assertion that still expected the hydrology
+  digest; five rows were cancelled by fail-fast. The assertion was corrected
+  to require the exact thermal-owner digest.
+- FAIL retained: the first strict affected-crate Clippy run found two newly
+  lengthened explicit scanners and two needless pass-by-value arguments. The
+  owner-domain scan and explicit anti-aliasing digest retain narrow documented
+  allowances; both arguments now borrow.
+- PASS: frozen receiver operands bind hydrology, LSE and soil-thermal beginning
+  digests plus every ordered rollback row. One canonical resolver supplies the
+  exact unique `(OwnerKind, owner_id)` beginning digest or typed absence for a
+  missing/duplicate row across E003, E010, E011 and sealing.
+- PASS: frost validation rejects nonintegral/cardinality-mismatched counts,
+  duplicate/reordered/nonpositive indices, missing-first/gapped fine indices
+  and undeclared membership before the unsupported E004 branch.
+- PASS: the unified input-only identity preflight covers tile, OFE, surface,
+  source, ingress mode and WB14 parameter identity before request/winter E003,
+  authorization or callback. Mixed request-domain and winter-domain poisons
+  return E002 and prove the callback was not invoked.
+- PASS on the corrected combined worktree: selected orchestrator library
+  145/145; unified integration 46/46; custody authority 10/10; strict affected
+  all-target/all-feature Clippy; formatting and diff hygiene.
+- Pending: freeze the corrected bytes and obtain fresh dual exact-byte review
+  before any terminal heavy execution.
+
 ## Fifth exact-byte review remediation
 
 - HOLD retained: exact `fe6cc4bd5` reviews found unified/global precedence,

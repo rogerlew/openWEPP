@@ -134,7 +134,12 @@ branch, PR or push is in scope.
   key and the full line-count inventory lacked three WARN dispositions. The
   correction at `2dfd0af64` reports the actual replacement row and binds the
   full position/cardinality/context/rollback matrix; governance records every
-  affected large module below. Fresh exact-byte reviews remain pending.
+  affected large module below. Subsequent exact-byte review at `85358c9b2`
+  found receiver owner/hash drift, incomplete frost-container structure and an
+  incomplete unified ingress E002 preflight. Their corrections now pass 145
+  selected library tests, 46 unified integration tests, 10 custody authority
+  tests, strict affected Clippy, formatting and diff hygiene. Fresh exact-byte
+  reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

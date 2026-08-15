@@ -68,6 +68,9 @@ order/source ID plus exact mixed-route outputs were not fully frozen. The
 correction at `aacf181d7` closes those context and evidence seams. Focused gates
 pass. Closure10 Rust review then found replacement rows were still attributed to
 the missing expected key; `2dfd0af64` makes cardinality/direction explicit and
-adds the exact context/rollback matrix. Fresh exact-byte reviews and terminal
-verification remain required. This is not yet a terminal custody-lift or
-resumed-Child-3 claim.
+adds the exact context/rollback matrix. A later exact-byte Rust review at
+`85358c9b2` found receiver owner/hash drift, incomplete frost-container
+structure and incomplete unified ingress identity preflight. All three are
+corrected in the current worktree with focused passing evidence. Fresh
+exact-byte reviews and terminal verification remain required. This is not yet
+a terminal custody-lift or resumed-Child-3 claim.

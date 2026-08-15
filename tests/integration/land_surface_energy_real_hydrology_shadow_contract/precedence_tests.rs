@@ -147,6 +147,66 @@ fn request_identity_native_domain_cardinality_and_bound_precedence_is_canonical(
 }
 
 #[test]
+fn ingress_identity_precedes_request_and_winter_e003_without_callback() {
+    for poison in 0..2 {
+        let (mut frame, configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        let mut batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        let mut ingress = ingress_input();
+        match poison {
+            0 => {
+                batch.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+                match &mut ingress.tile_ingress[0] {
+                    DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
+                        *tile_id = TileId::try_new("unknown-tile").expect("unknown tile")
+                    }
+                }
+            }
+            1 => {
+                frame.lanes[0].winter_column.frost.total_fine_layer_count = 0.5;
+                ingress.wb14_parameters[0].ofe_id =
+                    OfeId::try_new("unknown-ofe").expect("unknown OFE");
+            }
+            _ => unreachable!("bounded ingress precedence poison"),
+        }
+        let original = frame.clone();
+        let (owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+        let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+            .expect("identity poison snapshot remains representable");
+        let callback_called = std::cell::Cell::new(false);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot),
+                &batch,
+                &BTreeMap::new(),
+                &ingress,
+                |_| {
+                    callback_called.set(true);
+                    panic!("invalid ingress identity reached finalization callback")
+                },
+            )
+            .expect_err("ingress identity poison must fail"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert!(!callback_called.get());
+        assert_hashes(&failure);
+        assert_eq!(frame, original, "ingress identity poison mutated owner");
+    }
+}
+
+#[test]
 fn public_attachment_rejects_each_nonfinite_production_lane_area_as_e003() {
     for lane_index in 0..2 {
         for nonfinite_area in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {

@@ -6,9 +6,9 @@ use super::{
     DirectRunFrame, DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidParcelReceipt,
     DirectSurfaceLiquidReceiptDisposition, LandSurfaceEnergyShadowError, OfeId, OwnerRollbackHash,
-    ReceiverFailureScope, Sha256Digest, SoilThermalTileCandidate, TileId, TileState,
-    UnifiedReceiverExpectations, WATER_DENSITY_KG_M3, apply_production_infiltration,
-    apply_receiver_receipt, checked_surface_liquid_add, checked_surface_liquid_div,
+    ReceiverFailureScope, SoilThermalTileCandidate, TileId, TileState, UnifiedReceiverExpectations,
+    WATER_DENSITY_KG_M3, apply_production_infiltration, apply_receiver_receipt,
+    checked_surface_liquid_add, checked_surface_liquid_div,
 };
 
 pub(super) type OfeAmountMap = BTreeMap<OfeId, f64>;
@@ -38,7 +38,6 @@ pub(super) fn preflight_receiver_derived_arithmetic(
     lse_tiles: &[TileState],
     soil_thermal: &[SoilThermalTileCandidate],
     rollback_hashes: &[OwnerRollbackHash],
-    beginning_hydrology_snapshot_sha256: &Sha256Digest,
     receiver_attempt_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let scope = ReceiverFailureScope {
@@ -46,7 +45,6 @@ pub(super) fn preflight_receiver_derived_arithmetic(
         configuration,
         expectations: receiver_expectations,
         hydrology_owner_id: owner.hydrology_owner_id(),
-        beginning_hydrology_sha256: beginning_hydrology_snapshot_sha256.as_str(),
         rollback_hashes,
         attempted_sha256: receiver_attempt_sha256,
     };
@@ -207,7 +205,7 @@ mod tests {
 
     use super::*;
     use crate::land_surface_energy_shadow::{
-        OwnerKind, SourceId, SurfaceClass, SurfaceId, WaterSourceType,
+        OwnerKind, Sha256Digest, SourceId, SurfaceClass, SurfaceId, WaterSourceType,
     };
 
     fn digest(character: char) -> Sha256Digest {
@@ -391,7 +389,6 @@ mod tests {
             configuration: &configuration,
             expectations: &expectations,
             hydrology_owner_id: &hydrology_owner,
-            beginning_hydrology_sha256: rollback[1].before_sha256.as_str(),
             rollback_hashes: &rollback,
             attempted_sha256: attempted,
         };
@@ -425,7 +422,6 @@ mod tests {
             configuration: &configuration,
             expectations: &expectations,
             hydrology_owner_id: &hydrology_owner,
-            beginning_hydrology_sha256: rollback[1].before_sha256.as_str(),
             rollback_hashes: &missing_lse,
             attempted_sha256: attempted,
         };
