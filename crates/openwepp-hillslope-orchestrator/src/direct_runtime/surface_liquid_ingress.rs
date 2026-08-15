@@ -334,12 +334,14 @@ impl DirectSurfaceLiquidIngressCandidate {
         resource: &DirectSurfaceLiquidResourceCandidate,
         input: &DirectSurfaceLiquidIngressInput,
     ) -> Result<(), DirectSurfaceLiquidError> {
-        if let Err(error) = super::surface_liquid_closure::validate_surface_liquid_closure_operands(
-            configuration,
-            resource,
-            &self.closure_operands,
-            &self.receipts,
-        ) {
+        if let Err(error) =
+            super::surface_liquid_closure::preflight_surface_liquid_closure_arithmetic(
+                configuration,
+                resource,
+                &self.closure_operands,
+                &self.receipts,
+            )
+        {
             if error.code() == DirectSurfaceLiquidErrorCode::E003 {
                 return Err(error.complete_context(
                     DirectSurfaceLiquidErrorCode::E003,
@@ -369,8 +371,7 @@ impl DirectSurfaceLiquidIngressCandidate {
                     self.ending_state.recomputed_sha256().ok(),
                 )
             })?;
-        if !self.producer_fields_equal(&expected) {
-            let context = self.producer_mismatch_context(&expected, configuration, input);
+        if let Some(context) = self.producer_mismatch_context(&expected, configuration, input) {
             return Err(DirectSurfaceLiquidError::canonical_failure(
                 DirectSurfaceLiquidErrorCode::E009,
                 DirectSurfaceLiquidPhase::IngressCandidate,
@@ -405,47 +406,109 @@ impl DirectSurfaceLiquidIngressCandidate {
         Ok(())
     }
 
-    fn producer_fields_equal(&self, expected: &Self) -> bool {
-        self.transaction_id == expected.transaction_id
-            && self.beginning_state == expected.beginning_state
-            && self.ending_state == expected.ending_state
-            && self.receipts == expected.receipts
-            && self.ledgers == expected.ledgers
-            && self.wb14_calls_by_ofe == expected.wb14_calls_by_ofe
-    }
-
     fn producer_mismatch_context(
         &self,
         expected: &Self,
         configuration: &DirectSurfaceLiquidConfiguration,
         input: &DirectSurfaceLiquidIngressInput,
-    ) -> DirectSurfaceLiquidErrorContext {
-        let receipt = (0..self.receipts.len().max(expected.receipts.len()))
-            .find(|&index| self.receipts.get(index) != expected.receipts.get(index))
-            .and_then(|index| {
-                self.receipts
-                    .get(index)
-                    .or_else(|| expected.receipts.get(index))
-            });
-        let fallback = configuration.records.first();
-        DirectSurfaceLiquidErrorContext {
+    ) -> Option<DirectSurfaceLiquidErrorContext> {
+        let base = || DirectSurfaceLiquidErrorContext {
             transaction_id: Some(input.transaction_id),
             owner_id: Some(configuration.owner_id.clone()),
-            ofe_id: receipt
-                .map(|row| row.recipient_store_key.ofe_id.clone())
-                .or_else(|| fallback.map(|row| row.key.ofe_id.clone())),
-            tile_id: receipt
-                .map(|row| row.recipient_store_key.tile_id.clone())
-                .or_else(|| fallback.map(|row| row.key.tile_id.clone())),
-            surface_id: receipt
-                .map(|row| row.recipient_store_key.surface_id.clone())
-                .or_else(|| fallback.map(|row| row.key.surface_id.clone())),
-            source_id: receipt
-                .map(|row| row.recipient_store_key.source_id.clone())
-                .or_else(|| fallback.map(|row| row.key.source_id.clone())),
-            parcel_id: receipt.map(|row| row.parcel_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
+        };
+        if self.transaction_id != expected.transaction_id {
+            return Some(base());
         }
+        if self.beginning_state != expected.beginning_state {
+            return Some(state_mismatch_context(
+                &self.beginning_state,
+                &expected.beginning_state,
+                base(),
+            ));
+        }
+        if self.ending_state != expected.ending_state {
+            return Some(state_mismatch_context(
+                &self.ending_state,
+                &expected.ending_state,
+                base(),
+            ));
+        }
+        if self.receipts != expected.receipts {
+            let receipt = first_positional_mismatch(&self.receipts, &expected.receipts);
+            return Some(
+                receipt.map_or_else(base, |row| DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(row.recipient_store_key.ofe_id.clone()),
+                    tile_id: Some(row.recipient_store_key.tile_id.clone()),
+                    surface_id: Some(row.recipient_store_key.surface_id.clone()),
+                    source_id: Some(row.recipient_store_key.source_id.clone()),
+                    parcel_id: Some(row.parcel_id.clone()),
+                }),
+            );
+        }
+        if self.ledgers != expected.ledgers {
+            let ledger = first_positional_mismatch(&self.ledgers, &expected.ledgers);
+            return Some(
+                ledger.map_or_else(base, |row| DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(row.ofe_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                }),
+            );
+        }
+        if self.wb14_calls_by_ofe != expected.wb14_calls_by_ofe {
+            let ofe_id = self
+                .wb14_calls_by_ofe
+                .iter()
+                .find(|(key, value)| expected.wb14_calls_by_ofe.get(*key) != Some(*value))
+                .map(|(key, _)| key)
+                .or_else(|| {
+                    expected
+                        .wb14_calls_by_ofe
+                        .keys()
+                        .find(|key| !self.wb14_calls_by_ofe.contains_key(*key))
+                });
+            return Some(
+                ofe_id.map_or_else(base, |ofe_id| DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(ofe_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                }),
+            );
+        }
+        None
     }
+}
+
+fn first_positional_mismatch<'a, T: PartialEq>(
+    actual: &'a [T],
+    expected: &'a [T],
+) -> Option<&'a T> {
+    (0..actual.len().max(expected.len()))
+        .find(|&index| actual.get(index) != expected.get(index))
+        .and_then(|index| actual.get(index).or_else(|| expected.get(index)))
+}
+
+fn state_mismatch_context(
+    actual: &DirectSurfaceLiquidOwnedState,
+    expected: &DirectSurfaceLiquidOwnedState,
+    mut context: DirectSurfaceLiquidErrorContext,
+) -> DirectSurfaceLiquidErrorContext {
+    if let Some(row) = first_positional_mismatch(&actual.records, &expected.records) {
+        context.ofe_id = Some(row.key.ofe_id.clone());
+        context.tile_id = Some(row.key.tile_id.clone());
+        context.surface_id = Some(row.key.surface_id.clone());
+        context.source_id = Some(row.key.source_id.clone());
+        return context;
+    }
+    if let Some(row) = first_positional_mismatch(&actual.continuations, &expected.continuations) {
+        context.ofe_id = Some(row.ofe_id.clone());
+    }
+    context
 }
 
 #[derive(Clone, Debug)]
@@ -2469,6 +2532,173 @@ mod tests {
         assert_eq!(
             failure.rollback.attempted_owner_sha256.as_deref(),
             Some(expected_attempted.as_str())
+        );
+    }
+
+    #[test]
+    fn arithmetic_preflight_finds_later_store_e003_after_earlier_finite_mismatch() {
+        let configuration = routed_configuration();
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(395);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: configuration
+                .records
+                .iter()
+                .map(|record| open_ingress(record, 0.1))
+                .collect(),
+            wb14_parameters: parameters(&configuration),
+        };
+        let mut candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("two-store candidate");
+        candidate
+            .closure_operands
+            .poison_first_finite_and_last_arithmetic_for_test();
+        let attempted = candidate
+            .ending_state
+            .recomputed_sha256()
+            .expect("attempted digest");
+        let error = candidate
+            .validate(&configuration, &resource, &input)
+            .expect_err("later arithmetic failure must outrank earlier finite mismatch");
+        let failure = error.failure().expect("canonical arithmetic failure");
+        let last = configuration.records.last().expect("last store");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(failure.context.ofe_id, Some(last.key.ofe_id.clone()));
+        assert_eq!(failure.context.tile_id, Some(last.key.tile_id.clone()));
+        assert_eq!(failure.context.parcel_id, None);
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(attempted.as_str())
+        );
+    }
+
+    #[test]
+    fn producer_second_store_ledger_and_wb14_mismatches_report_exact_identity() {
+        let configuration = routed_configuration();
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(396);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: configuration
+                .records
+                .iter()
+                .map(|record| open_ingress(record, 0.1))
+                .collect(),
+            wb14_parameters: parameters(&configuration),
+        };
+        let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("two-store candidate");
+        let second = &configuration.records[1];
+
+        let mut ending_poison = candidate.clone();
+        ending_poison.ending_state.records[1].liquid_kg_m2_tile += 0.01;
+        let ending_attempted = ending_poison
+            .ending_state
+            .recomputed_sha256()
+            .expect("ending attempted digest");
+        assert_producer_e009(
+            &ending_poison
+                .validate(&configuration, &resource, &input)
+                .expect_err("second ending store mismatch"),
+            transaction_id,
+            &configuration,
+            Some(&second.key.ofe_id),
+            Some(&second.key.tile_id),
+            None,
+            &resource.beginning_state().state_sha256,
+            &ending_attempted,
+        );
+
+        let mut ledger_poison = candidate.clone();
+        ledger_poison.ledgers[1].runoff_mass_kg_m2_ofe_ground += 0.01;
+        let ledger_attempted = ledger_poison
+            .ending_state
+            .recomputed_sha256()
+            .expect("ledger attempted digest");
+        assert_producer_e009(
+            &ledger_poison
+                .validate(&configuration, &resource, &input)
+                .expect_err("second ledger mismatch"),
+            transaction_id,
+            &configuration,
+            Some(&second.key.ofe_id),
+            None,
+            None,
+            &resource.beginning_state().state_sha256,
+            &ledger_attempted,
+        );
+
+        let mut wb14_poison = candidate;
+        *wb14_poison
+            .wb14_calls_by_ofe
+            .get_mut(&second.key.ofe_id)
+            .expect("second WB14 counter") += 1;
+        let wb14_attempted = wb14_poison
+            .ending_state
+            .recomputed_sha256()
+            .expect("WB14 attempted digest");
+        assert_producer_e009(
+            &wb14_poison
+                .validate(&configuration, &resource, &input)
+                .expect_err("second WB14 mismatch"),
+            transaction_id,
+            &configuration,
+            Some(&second.key.ofe_id),
+            None,
+            None,
+            &resource.beginning_state().state_sha256,
+            &wb14_attempted,
+        );
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn assert_producer_e009(
+        error: &DirectSurfaceLiquidError,
+        transaction_id: TransactionId,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        ofe_id: Option<&OfeId>,
+        tile_id: Option<&TileId>,
+        parcel_id: Option<&str>,
+        beginning_sha256: &str,
+        attempted_sha256: &str,
+    ) {
+        let failure = error.failure().expect("canonical producer failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(failure.context.ofe_id.as_ref(), ofe_id);
+        assert_eq!(failure.context.tile_id.as_ref(), tile_id);
+        assert_eq!(failure.context.parcel_id.as_deref(), parcel_id);
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(beginning_sha256)
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(attempted_sha256)
         );
     }
 
