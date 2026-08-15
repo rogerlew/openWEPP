@@ -375,3 +375,13 @@ does not override the Rust correctness HOLD.
 No `f249431d4` finding is rejected, deferred, or moved to another package. The
 fresh hydrology/ownership review returned PASS; the interrupted full-workspace
 attempt is not terminal evidence.
+
+## Exact-head terminal-review finding at `7b208bb26`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-7B2-MEDIUM-001: public unified execution and finalization do not apply global precedence across independent input sets | Accepted | Remediated: category-wide identity/domain/cardinality/bound preflights span all public inputs; cross-set permutation poisons PASS |
+
+No `7b208bb26` finding is rejected, deferred, or moved to another package. The
+fresh hydrology/ownership review returned PASS; an accidental broad run with
+584 passes and three SIGINT results is retained as interrupted non-evidence.

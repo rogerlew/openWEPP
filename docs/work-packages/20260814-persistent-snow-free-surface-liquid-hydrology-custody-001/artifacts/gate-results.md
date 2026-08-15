@@ -891,6 +891,37 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   zero errors or warnings.
 - Pending: freeze new exact bytes and obtain fresh independent dual review.
 
+## Exact-byte review at `7b208bb26`
+
+- PASS: fresh hydrology/science/ownership review found no material finding and
+  passed 77/77 surface-liquid, 10/10 authority, 35/35 unified real-hydrology and
+  4/4 receiver tests.
+- HOLD: fresh Rust review found two public cross-input seams where lower
+  priority configuration/state domain or protocol cardinality/bounds can mask
+  higher-priority request identity or receiver arithmetic failure.
+- PASS: the same Rust review confirmed the `f249431d4` whole-record precedence
+  and shared receiver-fold findings are corrected.
+- INTERRUPTED retained: an accidental broad orchestrator run recorded 584
+  passes and three SIGINT results. It is not evidence.
+- Pending: remediate category-wide cross-input precedence, freeze new bytes and
+  repeat fresh dual review before terminal heavy execution.
+
+## `7b208bb26` HOLD remediation
+
+- PASS: unified execution preflights configuration/state schema and identity,
+  request identity, production binding and outer transaction/snapshot identity
+  before any configuration/state E003 domain validation.
+- PASS: finalization now applies protocol E002 identity, then protocol and both
+  receiver sets' E003 arithmetic, then E005 cardinality and E006 bounds.
+  Cross-set mixed poisons cover both receiver classes and both state-record
+  positions.
+- PASS on the combined worktree: new reproductions 2/2; unified integration
+  37/37; surface-liquid 77/77; custody authority 10/10; orchestrator quick
+  587/587; AUTH11 3/3; strict affected Clippy; admission with 46 contracts and
+  22 science surfaces; anti-evasion; SC unit compliance; formatting and exact
+  diff hygiene.
+- Pending: freeze new exact bytes and obtain fresh independent dual review.
+
 ## Fourth exact-byte review remediation
 
 - HOLD retained: exact `dd8127b04` Rust and hydrology reviews found joint

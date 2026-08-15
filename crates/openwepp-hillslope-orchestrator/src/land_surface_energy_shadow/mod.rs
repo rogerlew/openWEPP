@@ -409,6 +409,17 @@ impl UnifiedLseFinalization {
         let attempted_protocol = water_protocol_sha256(&water_protocol);
         preflight_protocol_identities(&water_protocol, &beginning, &attempted_protocol)?;
         preflight_protocol_domains(&water_protocol, &beginning, &attempted_protocol)?;
+        let attempted_receivers = finalization_receiver_sets_sha256(
+            &ending_tile_states_pre_ingress,
+            &soil_thermal_candidates,
+            &rollback_hashes,
+        );
+        receiver_validation::preflight_sealed_finalization_numerics(
+            &water_protocol,
+            &ending_tile_states_pre_ingress,
+            &soil_thermal_candidates,
+            &attempted_receivers,
+        )?;
         preflight_protocol_cardinality(&water_protocol, &beginning, &attempted_protocol)?;
         preflight_protocol_bounds(&water_protocol, &beginning, &attempted_protocol)?;
         if let Err(error) = water_protocol.validate() {
@@ -421,17 +432,6 @@ impl UnifiedLseFinalization {
                 detail,
             ));
         }
-        let attempted_receivers = finalization_receiver_sets_sha256(
-            &ending_tile_states_pre_ingress,
-            &soil_thermal_candidates,
-            &rollback_hashes,
-        );
-        receiver_validation::preflight_sealed_finalization_numerics(
-            &water_protocol,
-            &ending_tile_states_pre_ingress,
-            &soil_thermal_candidates,
-            &attempted_receivers,
-        )?;
         if let Some(violation) = first_sealed_finalization_violation(
             &water_protocol,
             &ending_tile_states_pre_ingress,
@@ -788,6 +788,18 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
                 "invalid beginning surface-liquid owner",
             )
         })?;
+    compose_unified_beginning_hydrology_snapshot_sha256(
+        soil_adapter,
+        surface_configuration,
+        surface_state,
+    )
+}
+
+fn compose_unified_beginning_hydrology_snapshot_sha256(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    surface_state: &crate::DirectSurfaceLiquidOwnedState,
+) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
     let mut digest = Sha256::new();
     for bytes in [
         b"openwepp-unified-hydrology-snapshot-v2".as_slice(),
@@ -903,45 +915,25 @@ fn validate_unified_entry(
     ingress: &DirectSurfaceLiquidIngressInput,
     expected_snapshot: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let actual_snapshot = unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
-    let entry_failure = |code, detail| {
-        let mut attempted = FramedSha256::new("openwepp-unified-entry-v1");
-        attempted.u128("request_transaction", request_batch.transaction_id.0);
-        attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
-        attempted.u128("ingress_transaction", ingress.transaction_id.0);
-        attempted.u64("ingress_day", ingress.day_index as u64);
-        attempted.f64("ingress_interval", ingress.interval_s);
-        attempted.string("actual_snapshot", actual_snapshot.as_str());
-        DirectSurfaceLiquidError::canonical_failure(
-            code,
-            DirectSurfaceLiquidPhase::Authorization,
-            DirectSurfaceLiquidErrorContext {
-                transaction_id: Some(request_batch.transaction_id),
-                owner_id: Some(configuration.owner_id.clone()),
-                ..DirectSurfaceLiquidErrorContext::default()
-            },
-            DirectSurfaceLiquidRollbackHashes {
-                beginning_owner_sha256: Some(expected_snapshot.to_string()),
-                attempted_owner_sha256: Some(attempted.finish()),
-            },
-            detail,
-        )
-    };
-    if request_batch.transaction_id.0 == 0
-        || request_batch.transaction_id != soil_adapter.owner.transaction_id()
-        || ingress.transaction_id != request_batch.transaction_id
-        || &actual_snapshot != expected_snapshot
-    {
-        return Err(entry_failure(
-            DirectSurfaceLiquidErrorCode::E002,
-            "unified transaction or beginning snapshot identity",
-        )
-        .into());
-    }
-    preflight_request_identities(request_batch, expected_snapshot)?;
+    let actual_snapshot = preflight_unified_entry_identity_envelope(
+        soil_adapter,
+        configuration,
+        request_batch,
+        ingress,
+        expected_snapshot,
+    )?;
+    // Identity is complete across configuration, restart state, request, and
+    // outer transaction inputs before any E003 domain operand is inspected.
+    unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
     if !ingress.interval_s.is_finite() {
-        return Err(entry_failure(
+        return Err(unified_entry_failure(
             DirectSurfaceLiquidErrorCode::E003,
+            soil_adapter,
+            configuration,
+            request_batch,
+            ingress,
+            expected_snapshot,
+            &actual_snapshot,
             "nonfinite ingress interval",
         )
         .into());
@@ -974,13 +966,128 @@ fn validate_unified_entry(
     if ingress.day_index != soil_adapter.owner.day_index()
         || ingress.interval_s.to_bits() != soil_adapter.owner.interval_s().to_bits()
     {
-        return Err(entry_failure(
+        return Err(unified_entry_failure(
             DirectSurfaceLiquidErrorCode::E008,
+            soil_adapter,
+            configuration,
+            request_batch,
+            ingress,
+            expected_snapshot,
+            &actual_snapshot,
             "unified ingress cadence or continuation",
         )
         .into());
     }
     Ok(())
+}
+
+fn preflight_unified_entry_identity_envelope(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    request_batch: &PotentialWaterRequestBatch,
+    ingress: &DirectSurfaceLiquidIngressInput,
+    expected_snapshot: &Sha256Digest,
+) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
+    configuration
+        .preflight_schema_and_identities()
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid surface-liquid configuration identity envelope",
+            )
+        })?;
+    let surface_state = soil_adapter
+        .owner
+        .beginning_frame()
+        .surface_liquid_shadow
+        .as_deref()
+        .ok_or_else(|| {
+            snapshot_failure(
+                DirectSurfaceLiquidErrorCode::E002,
+                soil_adapter.owner,
+                configuration,
+                "missing beginning surface-liquid owner",
+            )
+        })?;
+    surface_state
+        .preflight_schema_and_identities(configuration)
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid beginning surface-liquid identity envelope",
+            )
+        })?;
+    preflight_request_identities(request_batch, expected_snapshot)?;
+    validate_surface_production_binding(soil_adapter.owner, configuration)?;
+    if &configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
+        return Err(snapshot_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            soil_adapter.owner,
+            configuration,
+            "mixed unified hydrology owner",
+        ));
+    }
+    let actual_snapshot = compose_unified_beginning_hydrology_snapshot_sha256(
+        soil_adapter,
+        configuration,
+        surface_state,
+    )?;
+    if request_batch.transaction_id.0 == 0
+        || request_batch.transaction_id != soil_adapter.owner.transaction_id()
+        || ingress.transaction_id != request_batch.transaction_id
+        || &actual_snapshot != expected_snapshot
+    {
+        return Err(unified_entry_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            soil_adapter,
+            configuration,
+            request_batch,
+            ingress,
+            expected_snapshot,
+            &actual_snapshot,
+            "unified transaction or beginning snapshot identity",
+        )
+        .into());
+    }
+    Ok(actual_snapshot)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn unified_entry_failure(
+    code: DirectSurfaceLiquidErrorCode,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    request_batch: &PotentialWaterRequestBatch,
+    ingress: &DirectSurfaceLiquidIngressInput,
+    expected_snapshot: &Sha256Digest,
+    actual_snapshot: &Sha256Digest,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    let mut attempted = FramedSha256::new("openwepp-unified-entry-v1");
+    attempted.u128("request_transaction", request_batch.transaction_id.0);
+    attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
+    attempted.u128("ingress_transaction", ingress.transaction_id.0);
+    attempted.u64("ingress_day", ingress.day_index as u64);
+    attempted.f64("ingress_interval", ingress.interval_s);
+    attempted.string("actual_snapshot", actual_snapshot.as_str());
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        DirectSurfaceLiquidPhase::Authorization,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(request_batch.transaction_id),
+            owner_id: Some(configuration.owner_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(expected_snapshot.to_string()),
+            attempted_owner_sha256: Some(attempted.finish()),
+        },
+        detail,
+    )
 }
 
 fn validate_native_shadow_supported_domain(
