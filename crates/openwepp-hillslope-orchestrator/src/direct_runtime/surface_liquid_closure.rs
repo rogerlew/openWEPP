@@ -151,6 +151,21 @@ impl DirectSurfaceLiquidClosureOperands {
             last.retained_excess_kg_m2_ofe_ground = f64::MAX;
         }
     }
+
+    #[cfg(test)]
+    pub(super) fn poison_finite_store_and_two_parcel_aggregate_for_test(&mut self) -> Vec<String> {
+        if let Some(first) = self.stores.first_mut() {
+            first.beginning_liquid_kg_m2_tile += 0.25;
+        }
+        self.source_parcels
+            .iter_mut()
+            .take(2)
+            .map(|parcel| {
+                parcel.enthalpy_j_m2_basis_ofe_ground = f64::MAX * 0.3;
+                parcel.source_parcel_id.clone()
+            })
+            .collect()
+    }
 }
 
 /// The exact full-equation terms for one persistent surface store.
@@ -261,6 +276,13 @@ struct ParcelJoinKey {
 struct AmountPair {
     mass: f64,
     enthalpy: f64,
+}
+
+struct ParcelArithmeticProjection {
+    expected: BTreeMap<ParcelJoinKey, AmountPair>,
+    actual: BTreeMap<ParcelJoinKey, AmountPair>,
+    expected_ofe_enthalpy: BTreeMap<OfeId, f64>,
+    actual_ofe_enthalpy: BTreeMap<OfeId, f64>,
 }
 
 impl AmountPair {
@@ -551,6 +573,199 @@ pub(super) fn validate_surface_liquid_closure_operands(
     validate_parcel_joins(configuration, operands, receipts)
 }
 
+#[allow(clippy::too_many_lines)]
+fn project_parcel_arithmetic(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    receipts: &[DirectSurfaceLiquidParcelReceipt],
+) -> Result<ParcelArithmeticProjection, DirectSurfaceLiquidError> {
+    let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
+    for parcel in &operands.source_parcels {
+        if !parcel.mass_kg_m2_basis_ofe_ground.is_finite()
+            || parcel.mass_kg_m2_basis_ofe_ground < 0.0
+            || !parcel.enthalpy_j_m2_basis_ofe_ground.is_finite()
+        {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &parcel.origin_store_key,
+                Some(parcel.source_parcel_id.clone()),
+                "source parcel arithmetic domain",
+            ));
+        }
+        expected
+            .entry(ParcelJoinKey {
+                source_parcel_id: parcel.source_parcel_id.clone(),
+                basis_ofe_id: parcel.basis_ofe_id.clone(),
+            })
+            .or_default()
+            .checked_add(
+                parcel.mass_kg_m2_basis_ofe_ground,
+                parcel.enthalpy_j_m2_basis_ofe_ground,
+            )
+            .ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &parcel.origin_store_key,
+                    Some(parcel.source_parcel_id.clone()),
+                    "source parcel aggregate arithmetic",
+                )
+            })?;
+    }
+    let mut actual = BTreeMap::<ParcelJoinKey, AmountPair>::new();
+    for receipt in receipts {
+        if let Err(error) = validate_receipt_enthalpy(&configuration.owner_id, receipt) {
+            if error.code() == DirectSurfaceLiquidErrorCode::E003 {
+                return Err(error);
+            }
+        }
+        actual
+            .entry(ParcelJoinKey {
+                source_parcel_id: receipt.source_parcel_id.clone(),
+                basis_ofe_id: receipt.basis_ofe_id.clone(),
+            })
+            .or_default()
+            .checked_add(
+                receipt.mass_kg_m2_basis_ofe_ground,
+                receipt.enthalpy_j_m2_basis_ofe_ground,
+            )
+            .ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "receipt aggregate arithmetic",
+                )
+            })?;
+        if receipt.disposition != DirectSurfaceLiquidReceiptDisposition::RoutedRunoff {
+            continue;
+        }
+        let Some(source) = configuration
+            .records
+            .iter()
+            .find(|row| row.key.ofe_id == receipt.basis_ofe_id)
+        else {
+            continue;
+        };
+        let Some(destination_ofe) = source.runon_destination_ofe_id.as_ref() else {
+            continue;
+        };
+        let Some(destination_tile) = source.runon_destination_tile_id.as_ref() else {
+            continue;
+        };
+        let Some(destination) = configuration
+            .records
+            .iter()
+            .find(|row| &row.key.ofe_id == destination_ofe && &row.key.tile_id == destination_tile)
+        else {
+            continue;
+        };
+        let ratio = checked_surface_liquid_div(source.ofe_area_m2, destination.ofe_area_m2);
+        let routed = ratio
+            .and_then(|value| {
+                checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, value).zip(
+                    checked_surface_liquid_mul(receipt.enthalpy_j_m2_basis_ofe_ground, value),
+                )
+            })
+            .ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &source.key,
+                    Some(receipt.parcel_id.clone()),
+                    "route area/amount arithmetic",
+                )
+            })?;
+        expected
+            .entry(ParcelJoinKey {
+                source_parcel_id: receipt.source_parcel_id.clone(),
+                basis_ofe_id: destination_ofe.clone(),
+            })
+            .or_default()
+            .checked_add(routed.0, routed.1)
+            .ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &source.key,
+                    Some(receipt.parcel_id.clone()),
+                    "routed parcel aggregate arithmetic",
+                )
+            })?;
+    }
+
+    let mut expected_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
+    for (key, amount) in &expected {
+        let source = operands
+            .source_parcels
+            .iter()
+            .find(|parcel| parcel.source_parcel_id == key.source_parcel_id)
+            .map(|parcel| &parcel.origin_store_key)
+            .or_else(|| {
+                configuration
+                    .records
+                    .iter()
+                    .find(|row| row.key.ofe_id == key.basis_ofe_id)
+                    .map(|row| &row.key)
+            })
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "expected OFE aggregate has no store identity",
+            ))?;
+        let accumulated = expected_ofe_enthalpy
+            .entry(key.basis_ofe_id.clone())
+            .or_default();
+        *accumulated =
+            checked_surface_liquid_add(*accumulated, amount.enthalpy).ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    source,
+                    Some(key.source_parcel_id.clone()),
+                    "expected OFE enthalpy aggregate arithmetic",
+                )
+            })?;
+    }
+    let mut actual_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
+    for (key, amount) in &actual {
+        let accumulated = actual_ofe_enthalpy
+            .entry(key.basis_ofe_id.clone())
+            .or_default();
+        let receipt = receipts
+            .iter()
+            .find(|row| {
+                row.source_parcel_id == key.source_parcel_id && row.basis_ofe_id == key.basis_ofe_id
+            })
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "actual OFE aggregate has no receipt identity",
+            ))?;
+        *accumulated =
+            checked_surface_liquid_add(*accumulated, amount.enthalpy).ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "actual OFE enthalpy aggregate arithmetic",
+                )
+            })?;
+    }
+    Ok(ParcelArithmeticProjection {
+        expected,
+        actual,
+        expected_ofe_enthalpy,
+        actual_ofe_enthalpy,
+    })
+}
+
 /// Scan every frozen arithmetic surface without evaluating finite closure equality.
 ///
 /// This pass deliberately ignores identity and finite `Some(false)` comparisons so a
@@ -643,216 +858,70 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
         }
     }
 
-    let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
-    for parcel in &operands.source_parcels {
-        if !parcel.mass_kg_m2_basis_ofe_ground.is_finite()
-            || parcel.mass_kg_m2_basis_ofe_ground < 0.0
-            || !parcel.enthalpy_j_m2_basis_ofe_ground.is_finite()
+    let projection = project_parcel_arithmetic(configuration, operands, receipts)?;
+    for (key, expected_amount) in &projection.expected {
+        let Some(actual_amount) = projection.actual.get(key) else {
+            continue;
+        };
+        let Some(source) = operands
+            .source_parcels
+            .iter()
+            .find(|parcel| parcel.source_parcel_id == key.source_parcel_id)
+        else {
+            continue;
+        };
+        for (actual, expected, unit, detail) in [
+            (
+                actual_amount.mass,
+                expected_amount.mass,
+                DirectSurfaceLiquidClosureUnit::MassKgM2,
+                "parcel mass comparison arithmetic",
+            ),
+            (
+                actual_amount.enthalpy,
+                expected_amount.enthalpy,
+                DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+                "parcel enthalpy comparison arithmetic",
+            ),
+        ] {
+            if checked_surface_liquid_close(actual, expected, unit).is_none() {
+                return Err(contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    &source.origin_store_key,
+                    Some(key.source_parcel_id.clone()),
+                    detail,
+                ));
+            }
+        }
+    }
+    for (ofe_id, expected) in &projection.expected_ofe_enthalpy {
+        let Some(actual) = projection.actual_ofe_enthalpy.get(ofe_id) else {
+            continue;
+        };
+        let Some(record) = configuration
+            .records
+            .iter()
+            .find(|row| &row.key.ofe_id == ofe_id)
+        else {
+            continue;
+        };
+        if checked_surface_liquid_close(
+            *actual,
+            *expected,
+            DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+        )
+        .is_none()
         {
             return Err(contextual_comparison_failure(
                 DirectSurfaceLiquidErrorCode::E003,
                 operands.transaction_id,
                 &configuration.owner_id,
-                &parcel.origin_store_key,
-                Some(parcel.source_parcel_id.clone()),
-                "source parcel arithmetic domain",
+                &record.key,
+                None,
+                "OFE parcel enthalpy comparison arithmetic",
             ));
-        }
-        expected
-            .entry(ParcelJoinKey {
-                source_parcel_id: parcel.source_parcel_id.clone(),
-                basis_ofe_id: parcel.basis_ofe_id.clone(),
-            })
-            .or_default()
-            .checked_add(
-                parcel.mass_kg_m2_basis_ofe_ground,
-                parcel.enthalpy_j_m2_basis_ofe_ground,
-            )
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    &parcel.origin_store_key,
-                    Some(parcel.source_parcel_id.clone()),
-                    "source parcel aggregate arithmetic",
-                )
-            })?;
-    }
-
-    let mut actual = BTreeMap::<ParcelJoinKey, AmountPair>::new();
-    let mut routed_expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
-    let mut routed_enthalpy_by_ofe = BTreeMap::<OfeId, f64>::new();
-    for receipt in receipts {
-        if let Err(error) = validate_receipt_enthalpy(&configuration.owner_id, receipt) {
-            if error.code() == DirectSurfaceLiquidErrorCode::E003 {
-                return Err(error);
-            }
-        }
-        actual
-            .entry(ParcelJoinKey {
-                source_parcel_id: receipt.source_parcel_id.clone(),
-                basis_ofe_id: receipt.basis_ofe_id.clone(),
-            })
-            .or_default()
-            .checked_add(
-                receipt.mass_kg_m2_basis_ofe_ground,
-                receipt.enthalpy_j_m2_basis_ofe_ground,
-            )
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    &receipt.origin_store_key,
-                    Some(receipt.parcel_id.clone()),
-                    "receipt aggregate arithmetic",
-                )
-            })?;
-        if receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff {
-            let Some(source) = configuration
-                .records
-                .iter()
-                .find(|row| row.key.ofe_id == receipt.basis_ofe_id)
-            else {
-                continue;
-            };
-            let Some(destination_ofe) = source.runon_destination_ofe_id.as_ref() else {
-                continue;
-            };
-            let Some(destination_tile) = source.runon_destination_tile_id.as_ref() else {
-                continue;
-            };
-            let Some(destination) = configuration.records.iter().find(|row| {
-                &row.key.ofe_id == destination_ofe && &row.key.tile_id == destination_tile
-            }) else {
-                continue;
-            };
-            let ratio = checked_surface_liquid_div(source.ofe_area_m2, destination.ofe_area_m2);
-            let routed_mass = ratio.and_then(|value| {
-                checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, value)
-            });
-            let routed_enthalpy = ratio.and_then(|value| {
-                checked_surface_liquid_mul(receipt.enthalpy_j_m2_basis_ofe_ground, value)
-            });
-            let (routed_mass, routed_enthalpy) =
-                routed_mass.zip(routed_enthalpy).ok_or_else(|| {
-                    contextual_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        &source.key,
-                        Some(receipt.parcel_id.clone()),
-                        "route area/amount arithmetic",
-                    )
-                })?;
-            routed_expected
-                .entry(ParcelJoinKey {
-                    source_parcel_id: receipt.source_parcel_id.clone(),
-                    basis_ofe_id: destination_ofe.clone(),
-                })
-                .or_default()
-                .checked_add(routed_mass, routed_enthalpy)
-                .ok_or_else(|| {
-                    contextual_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        &source.key,
-                        Some(receipt.parcel_id.clone()),
-                        "routed parcel aggregate arithmetic",
-                    )
-                })?;
-            let routed_ofe_enthalpy = routed_enthalpy_by_ofe
-                .entry(destination_ofe.clone())
-                .or_default();
-            *routed_ofe_enthalpy =
-                checked_surface_liquid_add(*routed_ofe_enthalpy, routed_enthalpy).ok_or_else(
-                    || {
-                        contextual_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            &source.key,
-                            Some(receipt.parcel_id.clone()),
-                            "routed OFE enthalpy aggregate arithmetic",
-                        )
-                    },
-                )?;
-        }
-    }
-
-    let mut expected_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
-    for parcel in &operands.source_parcels {
-        let accumulated = expected_ofe_enthalpy
-            .entry(parcel.basis_ofe_id.clone())
-            .or_default();
-        *accumulated =
-            checked_surface_liquid_add(*accumulated, parcel.enthalpy_j_m2_basis_ofe_ground)
-                .ok_or_else(|| {
-                    contextual_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        &parcel.origin_store_key,
-                        Some(parcel.source_parcel_id.clone()),
-                        "expected OFE enthalpy aggregate arithmetic",
-                    )
-                })?;
-    }
-    let mut actual_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
-    for receipt in receipts {
-        let accumulated = actual_ofe_enthalpy
-            .entry(receipt.basis_ofe_id.clone())
-            .or_default();
-        *accumulated =
-            checked_surface_liquid_add(*accumulated, receipt.enthalpy_j_m2_basis_ofe_ground)
-                .ok_or_else(|| {
-                    contextual_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        &receipt.origin_store_key,
-                        Some(receipt.parcel_id.clone()),
-                        "actual OFE enthalpy aggregate arithmetic",
-                    )
-                })?;
-    }
-
-    for (key, expected_amount) in expected {
-        if let Some(actual_amount) = actual.get(&key) {
-            let Some(source) = operands
-                .source_parcels
-                .iter()
-                .find(|parcel| parcel.source_parcel_id == key.source_parcel_id)
-            else {
-                continue;
-            };
-            for (actual, expected, unit, detail) in [
-                (
-                    actual_amount.mass,
-                    expected_amount.mass,
-                    DirectSurfaceLiquidClosureUnit::MassKgM2,
-                    "parcel mass comparison arithmetic",
-                ),
-                (
-                    actual_amount.enthalpy,
-                    expected_amount.enthalpy,
-                    DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
-                    "parcel enthalpy comparison arithmetic",
-                ),
-            ] {
-                if checked_surface_liquid_close(actual, expected, unit).is_none() {
-                    return Err(contextual_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        &source.origin_store_key,
-                        Some(key.source_parcel_id.clone()),
-                        detail,
-                    ));
-                }
-            }
         }
     }
     Ok(())
@@ -945,37 +1014,70 @@ fn validate_parcel_joins(
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
 ) -> Result<(), DirectSurfaceLiquidError> {
-    let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
-    for parcel in &operands.source_parcels {
-        expected
-            .entry(ParcelJoinKey {
-                source_parcel_id: parcel.source_parcel_id.clone(),
-                basis_ofe_id: parcel.basis_ofe_id.clone(),
-            })
-            .or_default()
-            .checked_add(
-                parcel.mass_kg_m2_basis_ofe_ground,
-                parcel.enthalpy_j_m2_basis_ofe_ground,
-            )
+    let projection = project_parcel_arithmetic(configuration, operands, receipts)?;
+    let mut seen_receipt_ids = BTreeSet::new();
+    for receipt in receipts {
+        let source = operands
+            .source_parcels
+            .iter()
+            .find(|parcel| parcel.source_parcel_id == receipt.source_parcel_id)
             .ok_or_else(|| {
-                contextual_closure_arithmetic_failure(
+                contextual_closure_failure(
                     operands.transaction_id,
-                    &parcel.origin_store_key,
-                    Some(parcel.source_parcel_id.clone()),
-                    "source parcel join accumulation is nonfinite or underflowed",
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "receipt source parcel has no frozen operand",
                 )
             })?;
-    }
-    let mut seen_receipt_ids = BTreeSet::new();
-    let mut consumed_receipts = BTreeSet::new();
-    for ofe_id in &configuration.ofe_topology {
+        if receipt.transaction_id != operands.transaction_id
+            || receipt.origin_store_key != source.origin_store_key
+            || !seen_receipt_ids.insert(receipt.parcel_id.clone())
+        {
+            return Err(contextual_closure_failure(
+                operands.transaction_id,
+                &receipt.origin_store_key,
+                Some(receipt.parcel_id.clone()),
+                "duplicate or wrong-identity parcel receipt",
+            ));
+        }
         let binding = configuration
             .ofe_bindings
             .iter()
-            .find(|binding| &binding.ofe_id == ofe_id)
-            .ok_or(DirectSurfaceLiquidError::Closure(
-                "closure OFE binding missing",
-            ))?;
+            .find(|binding| binding.ofe_id == receipt.basis_ofe_id)
+            .ok_or_else(|| {
+                contextual_closure_failure(
+                    operands.transaction_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "receipt OFE binding missing",
+                )
+            })?;
+        let route_record = configuration
+            .records
+            .iter()
+            .find(|record| record.key.ofe_id == receipt.basis_ofe_id)
+            .ok_or_else(|| {
+                contextual_closure_failure(
+                    operands.transaction_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "receipt route record missing",
+                )
+            })?;
+        validate_receipt_recipient(configuration, binding, route_record, receipt).map_err(
+            |_| {
+                contextual_closure_failure(
+                    operands.transaction_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "wrong typed parcel recipient",
+                )
+            },
+        )?;
+        validate_receipt_enthalpy(&configuration.owner_id, receipt)?;
+    }
+
+    for ofe_id in &configuration.ofe_topology {
         let route_record = configuration
             .records
             .iter()
@@ -983,144 +1085,32 @@ fn validate_parcel_joins(
             .ok_or(DirectSurfaceLiquidError::Closure(
                 "closure route record missing",
             ))?;
-        let keys = parcel_keys_for_ofe(&expected, ofe_id);
-        let mut expected_ofe_enthalpy = 0.0;
-        let mut actual_ofe_enthalpy = 0.0;
-        for key in keys {
-            let expected_amount = expected[&key];
-            expected_ofe_enthalpy =
-                checked_surface_liquid_add(expected_ofe_enthalpy, expected_amount.enthalpy)
-                    .ok_or_else(|| {
-                        contextual_closure_arithmetic_failure(
-                            operands.transaction_id,
-                            &route_record.key,
-                            Some(key.source_parcel_id.clone()),
-                            "expected OFE enthalpy accumulation is nonfinite or underflowed",
-                        )
-                    })?;
-            let mut actual = AmountPair::default();
-            for (index, receipt) in receipts.iter().enumerate().filter(|(_, receipt)| {
-                receipt.source_parcel_id == key.source_parcel_id
-                    && receipt.basis_ofe_id == key.basis_ofe_id
-            }) {
-                if receipt.transaction_id != operands.transaction_id
-                    || receipt.origin_store_key
-                        != operands
-                            .source_parcels
-                            .iter()
-                            .find(|parcel| parcel.source_parcel_id == key.source_parcel_id)
-                            .ok_or(DirectSurfaceLiquidError::Closure(
-                                "receipt source parcel has no frozen operand",
-                            ))?
-                            .origin_store_key
-                    || !seen_receipt_ids.insert(receipt.parcel_id.clone())
-                {
-                    return Err(contextual_closure_failure(
-                        operands.transaction_id,
-                        &receipt.origin_store_key,
-                        Some(receipt.parcel_id.clone()),
-                        "duplicate or wrong-identity parcel receipt",
-                    ));
-                }
-                validate_receipt_recipient(configuration, binding, route_record, receipt).map_err(
-                    |_| {
-                        contextual_closure_failure(
-                            operands.transaction_id,
-                            &receipt.origin_store_key,
-                            Some(receipt.parcel_id.clone()),
-                            "wrong typed parcel recipient",
-                        )
-                    },
-                )?;
-                validate_receipt_enthalpy(&configuration.owner_id, receipt)?;
-                actual
-                    .checked_add(
-                        receipt.mass_kg_m2_basis_ofe_ground,
-                        receipt.enthalpy_j_m2_basis_ofe_ground,
-                    )
-                    .ok_or_else(|| {
-                        contextual_closure_arithmetic_failure(
-                            operands.transaction_id,
-                            &receipt.origin_store_key,
-                            Some(receipt.parcel_id.clone()),
-                            "actual parcel join accumulation is nonfinite or underflowed",
-                        )
-                    })?;
-                consumed_receipts.insert(index);
-                if receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff {
-                    let (destination_ofe, destination_record) =
-                        route_destination(configuration, route_record)?;
-                    let ratio = checked_surface_liquid_div(
-                        route_record.ofe_area_m2,
-                        destination_record.ofe_area_m2,
-                    )
-                    .ok_or_else(|| {
-                        contextual_closure_arithmetic_failure(
-                            operands.transaction_id,
-                            &route_record.key,
-                            Some(receipt.parcel_id.clone()),
-                            "independent routed OFE area ratio is nonfinite or underflowed",
-                        )
-                    })?;
-                    let routed_mass =
-                        checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, ratio)
-                            .ok_or_else(|| {
-                                contextual_closure_arithmetic_failure(
-                                    operands.transaction_id,
-                                    &route_record.key,
-                                    Some(receipt.parcel_id.clone()),
-                                    "independent routed mass is nonfinite or underflowed",
-                                )
-                            })?;
-                    let routed_enthalpy =
-                        checked_surface_liquid_mul(receipt.enthalpy_j_m2_basis_ofe_ground, ratio)
-                            .ok_or_else(|| {
-                            contextual_closure_arithmetic_failure(
-                                operands.transaction_id,
-                                &route_record.key,
-                                Some(receipt.parcel_id.clone()),
-                                "independent routed enthalpy is nonfinite or underflowed",
-                            )
-                        })?;
-                    expected
-                        .entry(ParcelJoinKey {
-                            source_parcel_id: key.source_parcel_id.clone(),
-                            basis_ofe_id: destination_ofe,
-                        })
-                        .or_default()
-                        .checked_add(routed_mass, routed_enthalpy)
-                        .ok_or_else(|| {
-                            contextual_closure_arithmetic_failure(
-                                operands.transaction_id,
-                                &route_record.key,
-                                Some(receipt.parcel_id.clone()),
-                                "independent routed join accumulation is nonfinite or underflowed",
-                            )
-                        })?;
-                }
-            }
+        for key in parcel_keys_for_ofe(&projection.expected, ofe_id) {
+            let expected = projection.expected[&key];
+            let actual = projection.actual.get(&key).copied().unwrap_or_default();
             require_close_mass(
                 actual.mass,
-                expected_amount.mass,
+                expected.mass,
                 operands.transaction_id,
                 &configuration.owner_id,
                 &route_record.key,
                 Some(key.source_parcel_id.clone()),
                 "parcel mass join",
             )?;
-            actual_ofe_enthalpy = checked_surface_liquid_add(actual_ofe_enthalpy, actual.enthalpy)
-                .ok_or_else(|| {
-                    contextual_closure_arithmetic_failure(
-                        operands.transaction_id,
-                        &route_record.key,
-                        Some(key.source_parcel_id.clone()),
-                        "actual OFE enthalpy accumulation is nonfinite or underflowed",
-                    )
-                })?;
         }
+        let expected_enthalpy = projection
+            .expected_ofe_enthalpy
+            .get(ofe_id)
+            .copied()
+            .unwrap_or_default();
+        let actual_enthalpy = projection
+            .actual_ofe_enthalpy
+            .get(ofe_id)
+            .copied()
+            .unwrap_or_default();
         require_close_enthalpy(
-            actual_ofe_enthalpy,
-            expected_ofe_enthalpy,
+            actual_enthalpy,
+            expected_enthalpy,
             operands.transaction_id,
             &configuration.owner_id,
             &route_record.key,
@@ -1128,8 +1118,24 @@ fn validate_parcel_joins(
             "OFE parcel enthalpy join",
         )?;
     }
-    if consumed_receipts.len() != receipts.len() {
-        return Err(DirectSurfaceLiquidError::Closure(
+    if let Some(unexpected) = projection
+        .actual
+        .keys()
+        .find(|key| !projection.expected.contains_key(*key))
+    {
+        let receipt = receipts
+            .iter()
+            .find(|row| {
+                row.source_parcel_id == unexpected.source_parcel_id
+                    && row.basis_ofe_id == unexpected.basis_ofe_id
+            })
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "unexpected projected receipt has no identity",
+            ))?;
+        return Err(contextual_closure_failure(
+            operands.transaction_id,
+            &receipt.origin_store_key,
+            Some(receipt.parcel_id.clone()),
             "receipt has no independently frozen parcel operand",
         ));
     }
