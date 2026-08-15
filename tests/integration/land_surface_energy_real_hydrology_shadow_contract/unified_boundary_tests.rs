@@ -375,8 +375,12 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
             DirectSurfaceLiquidErrorCode::E002,
         ),
         (
-            LandSurfaceEnergyError::Topology("duplicate"),
+            LandSurfaceEnergyError::topology_cardinality("duplicate"),
             DirectSurfaceLiquidErrorCode::E005,
+        ),
+        (
+            LandSurfaceEnergyError::topology_domain("open_trial_shape"),
+            DirectSurfaceLiquidErrorCode::E003,
         ),
         (
             LandSurfaceEnergyError::NonFinite("operand"),
@@ -391,16 +395,24 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
             DirectSurfaceLiquidErrorCode::E003,
         ),
         (
-            LandSurfaceEnergyError::WaterIdentityOrBound("identity mismatch"),
+            LandSurfaceEnergyError::water_identity("identity mismatch"),
             DirectSurfaceLiquidErrorCode::E002,
         ),
         (
-            LandSurfaceEnergyError::WaterIdentityOrBound("duplicate request"),
+            LandSurfaceEnergyError::water_domain("nonfinite authorization"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::water_cardinality("missing authorization"),
             DirectSurfaceLiquidErrorCode::E005,
         ),
         (
-            LandSurfaceEnergyError::WaterIdentityOrBound("authorization exceeds request"),
+            LandSurfaceEnergyError::water_bound("D/A/F"),
             DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            LandSurfaceEnergyError::water_closure("pre_ingress_source_mass_closure"),
+            DirectSurfaceLiquidErrorCode::E010,
         ),
         (
             LandSurfaceEnergyError::StateLineage("stale"),
@@ -462,7 +474,54 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
         configuration.records[0].key.source_id.clone(),
         1.0,
     );
-    for (poison, expected) in cases {
+    let missing_authorization = WaterProtocol {
+        transaction_id: batch.transaction_id,
+        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        beginning_snapshot_sha256: snapshot.clone(),
+        requests: batch.requests.clone(),
+        authorizations: Vec::new(),
+        finalized_uses: Vec::new(),
+        condensation_credits: Vec::new(),
+    }
+    .validate()
+    .expect_err("missing authorization");
+    let real_cases = vec![
+        (
+            OfeId::try_new("").expect_err("empty OFE is topology cardinality"),
+            DirectSurfaceLiquidErrorCode::E005,
+        ),
+        (
+            evaluate_open_surface(&open_problem(), &[], None, None)
+                .expect_err("wrong open trial shape"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            validate_water_use(WaterUseOperands {
+                request_kg_m2: 1.0,
+                authorization_kg_m2: 0.5,
+                finalized_use_kg_m2: 0.6,
+                beginning_store_kg_m2: 1.0,
+                condensation_credit_kg_m2: 0.0,
+                ending_pre_ingress_store_kg_m2: 0.4,
+            })
+            .expect_err("D/A/F"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            validate_water_use(WaterUseOperands {
+                request_kg_m2: 1.0,
+                authorization_kg_m2: 0.5,
+                finalized_use_kg_m2: 0.4,
+                beginning_store_kg_m2: 1.0,
+                condensation_credit_kg_m2: 0.0,
+                ending_pre_ingress_store_kg_m2: 0.5,
+            })
+            .expect_err("pre-ingress closure"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+        (missing_authorization, DirectSurfaceLiquidErrorCode::E005),
+    ];
+    for (poison, expected) in cases.into_iter().chain(real_cases) {
         let error = execute_unified_real_hydrology_shadow(
             &adapter,
             &configuration,

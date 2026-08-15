@@ -11,9 +11,10 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
     StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
     TileState, UnifiedLseFinalization, UnifiedReceiverExpectations, WaterAuthorization,
-    WaterAuthorizationReason, WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
-    execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
-    unified_beginning_hydrology_snapshot_sha256, validate_real_receiver_closure,
+    WaterAuthorizationReason, WaterProtocol, WaterSourceType, WaterUseOperands,
+    evaluate_open_surface, execute_open_bare_soil_shadow, execute_unified_real_hydrology_shadow,
+    finalize_open_phase, solve_open_potential_phase, unified_beginning_hydrology_snapshot_sha256,
+    validate_real_receiver_closure, validate_water_use,
 };
 use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,

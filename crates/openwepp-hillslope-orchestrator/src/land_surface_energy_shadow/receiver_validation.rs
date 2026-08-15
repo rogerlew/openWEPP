@@ -3,8 +3,8 @@ use super::{
     CondensationCredit, Digest, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, GroundWaterKey,
-    LandSurfaceEnergyError, LandSurfaceEnergyShadowError, OfeId, OwnerKind, OwnerRollbackHash,
-    PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
+    LandSurfaceEnergyError, LandSurfaceEnergyErrorClass, LandSurfaceEnergyShadowError, OfeId,
+    OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
     ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
     ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
     SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol,
@@ -18,36 +18,15 @@ use crate::direct_runtime::{
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
 
 pub(super) fn lse_error_code(error: &LandSurfaceEnergyError) -> DirectSurfaceLiquidErrorCode {
-    match error {
-        LandSurfaceEnergyError::MalformedSerialization(_) => DirectSurfaceLiquidErrorCode::E001,
-        LandSurfaceEnergyError::Identity { .. } | LandSurfaceEnergyError::StateLineage(_) => {
-            DirectSurfaceLiquidErrorCode::E002
-        }
-        LandSurfaceEnergyError::Topology(_) => DirectSurfaceLiquidErrorCode::E005,
-        LandSurfaceEnergyError::NonFinite(_)
-        | LandSurfaceEnergyError::ConstitutiveDomain(_)
-        | LandSurfaceEnergyError::NumericalSingular { .. }
-        | LandSurfaceEnergyError::NumericalBacktrackingLimit
-        | LandSurfaceEnergyError::NumericalIterationLimit
-        | LandSurfaceEnergyError::NumericalAcceptedResidual => DirectSurfaceLiquidErrorCode::E003,
-        LandSurfaceEnergyError::UnsupportedDomain(_) => DirectSurfaceLiquidErrorCode::E004,
-        LandSurfaceEnergyError::WaterIdentityOrBound(detail) => {
-            if detail.contains("exceed") || detail.contains("negative") {
-                DirectSurfaceLiquidErrorCode::E006
-            } else if detail.contains("duplicate")
-                || detail.contains("without exact")
-                || detail.contains("incomplete")
-            {
-                DirectSurfaceLiquidErrorCode::E005
-            } else {
-                DirectSurfaceLiquidErrorCode::E002
-            }
-        }
-        LandSurfaceEnergyError::OwnerEnvelope(_) => DirectSurfaceLiquidErrorCode::E011,
-        LandSurfaceEnergyError::ComponentClosure(_)
-        | LandSurfaceEnergyError::ControlVolumeClosure(_)
-        | LandSurfaceEnergyError::LatentJoin(_)
-        | LandSurfaceEnergyError::GroundHeatJoin(_) => DirectSurfaceLiquidErrorCode::E010,
+    match error.class() {
+        LandSurfaceEnergyErrorClass::Malformed => DirectSurfaceLiquidErrorCode::E001,
+        LandSurfaceEnergyErrorClass::Identity => DirectSurfaceLiquidErrorCode::E002,
+        LandSurfaceEnergyErrorClass::Domain => DirectSurfaceLiquidErrorCode::E003,
+        LandSurfaceEnergyErrorClass::Unsupported => DirectSurfaceLiquidErrorCode::E004,
+        LandSurfaceEnergyErrorClass::Cardinality => DirectSurfaceLiquidErrorCode::E005,
+        LandSurfaceEnergyErrorClass::Bound => DirectSurfaceLiquidErrorCode::E006,
+        LandSurfaceEnergyErrorClass::Closure => DirectSurfaceLiquidErrorCode::E010,
+        LandSurfaceEnergyErrorClass::OwnerEnvelope => DirectSurfaceLiquidErrorCode::E011,
     }
 }
 

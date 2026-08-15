@@ -216,7 +216,7 @@ impl NumericalDiagnostics {
         let mut residual_ids = BTreeSet::new();
         for residual in &self.ordered_residuals {
             if residual.identity.trim().is_empty() || !residual_ids.insert(&residual.identity) {
-                return Err(LandSurfaceEnergyError::Topology(
+                return Err(LandSurfaceEnergyError::topology_cardinality(
                     "duplicate residual identity",
                 ));
             }

@@ -2,7 +2,9 @@
 
 use std::collections::BTreeMap;
 
-use crate::direct_runtime::preflight_surface_liquid_ingress_input_identities;
+use crate::direct_runtime::{
+    preflight_surface_liquid_ingress_input_identities, surface_liquid_raw_snapshot_attempt_sha256,
+};
 
 use super::{
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
@@ -148,17 +150,19 @@ fn preflight_unified_entry_identity_envelope(
         expected_snapshot,
         expected_snapshot,
     );
-    configuration.validate().map_err(|error| {
-        join_raw_and_unified_attempt(
-            snapshot_failure(
-                error.code(),
-                soil_adapter.owner,
-                configuration,
-                "invalid surface-liquid configuration identity envelope",
-            ),
-            &provisional_unified_attempt,
-        )
-    })?;
+    configuration
+        .preflight_schema_and_identities()
+        .map_err(|error| {
+            join_raw_and_unified_attempt(
+                snapshot_failure(
+                    error.code(),
+                    soil_adapter.owner,
+                    configuration,
+                    "invalid surface-liquid configuration identity envelope",
+                ),
+                &provisional_unified_attempt,
+            )
+        })?;
     let surface_state = soil_adapter
         .owner
         .beginning_frame()
@@ -206,7 +210,7 @@ fn preflight_unified_entry_identity_envelope(
         configuration,
         surface_state,
     )?;
-    let attempted_sha256 = unified_entry_attempt_sha256(
+    let unified_attempt = unified_entry_attempt_sha256(
         soil_adapter,
         request_batch,
         soil_sources,
@@ -215,8 +219,25 @@ fn preflight_unified_entry_identity_envelope(
         &actual_snapshot,
         expected_snapshot,
     );
+    let raw_attempt = surface_liquid_raw_snapshot_attempt_sha256(
+        soil_adapter.owner.snapshot_bytes(),
+        configuration,
+        Some(surface_state),
+    );
+    let attempted_sha256 = raw_and_unified_attempt_sha256(&raw_attempt, &unified_attempt);
     preflight_request_identities(request_batch, &actual_snapshot)
         .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
+    configuration.validate().map_err(|error| {
+        join_raw_and_unified_attempt(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid surface-liquid configuration",
+            ),
+            &attempted_sha256,
+        )
+    })?;
     surface_state.validate(configuration).map_err(|error| {
         join_raw_and_unified_attempt(
             snapshot_failure(
@@ -283,22 +304,32 @@ fn join_raw_and_unified_attempt(
     let Some(failure) = surface_error.failure() else {
         return LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error);
     };
-    let mut joined = FramedSha256::new("openwepp-unified-entry-raw-attempt-join-v1");
-    if let Some(raw_attempt) = &failure.rollback.attempted_owner_sha256 {
-        joined.string("raw_attempt", raw_attempt);
-    }
-    joined.string("unified_attempt", unified_attempt);
+    let attempted_owner_sha256 = failure
+        .rollback
+        .attempted_owner_sha256
+        .as_deref()
+        .map_or_else(
+            || unified_attempt.to_owned(),
+            |raw_attempt| raw_and_unified_attempt_sha256(raw_attempt, unified_attempt),
+        );
     DirectSurfaceLiquidError::canonical_failure(
         failure.code,
         failure.phase,
         failure.context.clone(),
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: failure.rollback.beginning_owner_sha256.clone(),
-            attempted_owner_sha256: Some(joined.finish()),
+            attempted_owner_sha256: Some(attempted_owner_sha256),
         },
         failure.detail.clone(),
     )
     .into()
+}
+
+fn raw_and_unified_attempt_sha256(raw_attempt: &str, unified_attempt: &str) -> String {
+    let mut joined = FramedSha256::new("openwepp-unified-entry-raw-attempt-join-v1");
+    joined.string("raw_attempt", raw_attempt);
+    joined.string("unified_attempt", unified_attempt);
+    joined.finish()
 }
 
 pub(super) fn complete_unified_failure(

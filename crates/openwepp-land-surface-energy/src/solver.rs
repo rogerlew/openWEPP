@@ -191,11 +191,13 @@ impl OpenSurfaceProblem {
             ));
         }
         if self.soil_nodes.is_empty() {
-            return Err(LandSurfaceEnergyError::Topology("soil_nodes"));
+            return Err(LandSurfaceEnergyError::topology_cardinality("soil_nodes"));
         }
         for node in &self.soil_nodes {
             if node.layer_id.is_empty() {
-                return Err(LandSurfaceEnergyError::Topology("soil_layer_id"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "soil_layer_id",
+                ));
             }
             for (value, field) in [
                 (node.depth_m, "soil_depth_m"),
@@ -278,7 +280,7 @@ pub fn evaluate_open_surface(
 ) -> Result<OpenSurfaceEvaluation, LandSurfaceEnergyError> {
     problem.validate()?;
     if trial.len() != problem.soil_nodes.len() + 1 {
-        return Err(LandSurfaceEnergyError::Topology("open_trial_shape"));
+        return Err(LandSurfaceEnergyError::topology_domain("open_trial_shape"));
     }
     if !temperature_trial_is_valid(trial) {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -290,7 +292,7 @@ pub fn evaluate_open_surface(
             return Err(LandSurfaceEnergyError::NonFinite("authorization_cap_rate"));
         }
         if cap < 0.0 {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_bound(
                 "negative_authorization_cap_rate",
             ));
         }
@@ -352,7 +354,7 @@ pub fn evaluate_open_surface(
     let branch = frozen.map_or(natural_branch, |value| value.ground);
     let final_vapor = match branch {
         WaterBranch::AuthorizationActiveOrTie => authorization_cap_rate_kg_m2_tile_s.ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("frozen_cap_without_authorization"),
+            LandSurfaceEnergyError::water_cardinality("frozen_cap_without_authorization"),
         )?,
         WaterBranch::ConstitutiveLaw | WaterBranch::Condensation => law,
     };
@@ -365,7 +367,7 @@ pub fn evaluate_open_surface(
         problem.surface_liquid_kg_m2_tile
     };
     if ending_pre_ingress_water < -1.0e-14 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "surface_water_negative_after_finalized_vapor",
         ));
     }
@@ -474,7 +476,7 @@ pub fn evaluate_open_surface(
     let authorization_amount = authorization_cap_rate_kg_m2_tile_s
         .map(|cap| cap * problem.tile_fraction * problem.interval_s);
     let finalized_use = if branch == WaterBranch::AuthorizationActiveOrTie {
-        authorization_amount.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        authorization_amount.ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_active_authorization",
         ))?
     } else {
@@ -616,7 +618,9 @@ where
     B: Clone,
 {
     if initial.len() != unit_scales.len() || initial.is_empty() {
-        return Err(LandSurfaceEnergyError::Topology("normalized_solver_shape"));
+        return Err(LandSurfaceEnergyError::topology_domain(
+            "normalized_solver_shape",
+        ));
     }
     let mut x = initial;
     let mut last_step = None;
@@ -1252,7 +1256,9 @@ fn evaluate_covered_occupancy(
     let canopy_air_q = context.canopy_air_q;
     let component_longwave_w_m2 = context.component_longwave_w_m2;
     if block.len() != 10 {
-        return Err(LandSurfaceEnergyError::Topology("covered_occupancy_trial"));
+        return Err(LandSurfaceEnergyError::topology_domain(
+            "covered_occupancy_trial",
+        ));
     }
     let (psi_sun, psi_shade, psi_stem, psi_root) = (block[0], block[1], block[2], block[3]);
     let (beta_sun, beta_shade) = (block[4], block[5]);
@@ -1371,7 +1377,7 @@ fn evaluate_covered_occupancy(
             .and_then(|value| value.root.get(&key).copied())
             .unwrap_or(natural_branch);
         let final_flux = if branch == WaterBranch::AuthorizationActiveOrTie {
-            cap_rate.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            cap_rate.ok_or(LandSurfaceEnergyError::water_cardinality(
                 "frozen_root_cap_without_authorization",
             ))?
         } else {
@@ -1383,7 +1389,7 @@ fn evaluate_covered_occupancy(
         let authorization =
             cap_rate.map(|amount| amount * column.tile_fraction * column.interval_s);
         let finalized = if branch == WaterBranch::AuthorizationActiveOrTie {
-            authorization.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            authorization.ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing_root_authorization",
             ))?
         } else {
@@ -1558,7 +1564,7 @@ fn validate_covered_caps(
         .collect();
     let actual: BTreeSet<_> = caps.root.keys().cloned().collect();
     if expected != actual {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_identity(
             "covered_root_authorization_identity",
         ));
     }
@@ -1569,11 +1575,22 @@ fn validate_covered_caps(
         .any(|value| {
             !value.request_rate_kg_m2_tile_s.is_finite()
                 || !value.authorization_rate_kg_m2_tile_s.is_finite()
-                || value.authorization_rate_kg_m2_tile_s < 0.0
+        })
+    {
+        return Err(LandSurfaceEnergyError::water_domain(
+            "covered_authorization_domain",
+        ));
+    }
+    if caps
+        .root
+        .values()
+        .chain(std::iter::once(&caps.ground))
+        .any(|value| {
+            value.authorization_rate_kg_m2_tile_s < 0.0
                 || value.request_rate_kg_m2_tile_s < value.authorization_rate_kg_m2_tile_s
         })
     {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "covered_authorization_domain",
         ));
     }
@@ -1610,7 +1627,9 @@ pub fn evaluate_covered_column(
     frozen: Option<&CoveredFrozenBranches>,
 ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
     if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
-        return Err(LandSurfaceEnergyError::Topology("covered_column"));
+        return Err(LandSurfaceEnergyError::topology_cardinality(
+            "covered_column",
+        ));
     }
     validate_covered_caps(column, caps)?;
     let expected = 10 * column.occupancies.len() + 3 + column.ground.soil_nodes.len();
@@ -1730,7 +1749,7 @@ pub fn evaluate_covered_column(
         .and_then(|value| value.ground)
         .unwrap_or(natural_ground_branch);
     let final_ground_vapor = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
-        caps.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        caps.ok_or(LandSurfaceEnergyError::water_cardinality(
             "frozen_ground_cap_without_authorization",
         ))?
         .ground
@@ -1747,7 +1766,7 @@ pub fn evaluate_covered_column(
         ground.surface_liquid_kg_m2_tile
     };
     if ending_water < -1.0e-14 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "covered_surface_water_negative",
         ));
     }
@@ -1864,7 +1883,7 @@ pub fn evaluate_covered_column(
         value.ground.authorization_rate_kg_m2_tile_s * column.tile_fraction * column.interval_s
     });
     let ground_finalized = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
-        ground_authorization.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        ground_authorization.ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_ground_authorization",
         ))?
     } else {
@@ -2216,13 +2235,13 @@ pub fn execute_covered_potential_final(
         let cap = caps
             .root
             .get(&(source.occupancy_id.clone(), source.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing_potential_root_request_identity",
             ))?;
         let potential_rate =
             source.request_kg_m2_stand_ground / (beginning.tile_fraction * beginning.interval_s);
         if cap.request_rate_kg_m2_tile_s != potential_rate {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_identity(
                 "changed_potential_root_request",
             ));
         }
@@ -2230,7 +2249,7 @@ pub fn execute_covered_potential_final(
     let ground_potential_rate = potential.ground_water.request_kg_m2_stand_ground
         / (beginning.tile_fraction * beginning.interval_s);
     if caps.ground.request_rate_kg_m2_tile_s != ground_potential_rate {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_identity(
             "changed_potential_ground_request",
         ));
     }
@@ -2243,24 +2262,24 @@ pub fn execute_covered_potential_final(
     };
     for source in &final_pass.root_water {
         let authorization = source.authorization_kg_m2_stand_ground.ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("missing_final_root_authorization"),
+            LandSurfaceEnergyError::water_cardinality("missing_final_root_authorization"),
         )?;
         if source.finalized_use_kg_m2_stand_ground > authorization
             || authorization > source.request_kg_m2_stand_ground
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound("root_D/A/F"));
+            return Err(LandSurfaceEnergyError::water_bound("root_D/A/F"));
         }
     }
     let ground_authorization = final_pass
         .ground_water
         .authorization_kg_m2_stand_ground
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_final_ground_authorization",
         ))?;
     if final_pass.ground_water.finalized_use_kg_m2_stand_ground > ground_authorization
         || ground_authorization > final_pass.ground_water.request_kg_m2_stand_ground
     {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound("ground_D/A/F"));
+        return Err(LandSurfaceEnergyError::water_bound("ground_D/A/F"));
     }
     Ok(CoveredPotentialFinalTransaction {
         potential,

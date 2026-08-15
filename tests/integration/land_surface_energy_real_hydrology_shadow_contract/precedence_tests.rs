@@ -540,6 +540,57 @@ fn request_identity_precedes_nonfinite_beginning_surface_state() {
 }
 
 #[test]
+fn request_identity_precedes_stale_digest_nonfinite_configuration_and_binds_raw_bits() {
+    let mut attempted_hashes = Vec::new();
+    for raw_bits in [0x7ff8_0000_0000_0601, 0x7ff8_0000_0000_0602] {
+        let (frame, mut configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        let (owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+        let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+            .expect("clean mixed-input snapshot");
+        let stale_digest = configuration.configuration_sha256.clone();
+        configuration.records[0].capacity_kg_m2_tile = f64::from_bits(raw_bits);
+        assert_eq!(configuration.configuration_sha256, stale_digest);
+        let mut batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            open_surface_source_id(&configuration),
+            1.0,
+        );
+        batch.requests[0].key.transaction_id = TransactionId(42);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| panic!("mixed configuration/request poison reached finalization"),
+            )
+            .expect_err("request identity must precede nonfinite configuration"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(42)));
+        assert_hashes(&failure);
+        attempted_hashes.push(
+            failure
+                .rollback
+                .attempted_owner_sha256
+                .expect("raw-bound unified attempt"),
+        );
+    }
+    assert_ne!(
+        attempted_hashes[0], attempted_hashes[1],
+        "request E002 attempt must bind stale-digest NaN payload bits",
+    );
+}
+
+#[test]
 fn exact_one_custody_precedes_finite_cadence_failure() {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,

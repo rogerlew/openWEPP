@@ -946,6 +946,47 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `fb89e5a55`
+
+- HOLD: both reviewers found full configuration domain validation preceding
+  request identity, allowing configuration E003 to mask canonical request E002.
+- HOLD: the Rust reviewer found the centralized taxonomy still semantically
+  incomplete because combined topology and water identity/bound enum variants
+  require prose inference. Real open-trial domain, D/A/F, closure and missing-
+  authorization constructors are misclassified.
+- PASS but non-dispositive: selected orchestrator 145/145; unified integration
+  61/61; focused integration/authority 78/78; complete orchestrator library
+  600/600; strict Clippy; formatting and diff hygiene.
+- Pending: restore complete identity-before-domain ordering and replace prose-
+  based taxonomy with typed LSE error classes covering every production
+  constructor, then repeat fresh dual exact-byte review. Heavy gates remain
+  blocked.
+
+## `fb89e5a55` HOLD remediation
+
+- PASS: configuration schema/identity preflight again precedes complete request
+  E002; full numeric configuration validation follows identity checks while its
+  raw attempt is framed-joined with unified v3.
+- PASS: LSE now owns typed `TopologyErrorClass`, `WaterErrorClass` and exhaustive
+  `LandSurfaceEnergyErrorClass`; every production constructor is migrated and
+  mixed numeric/bound/cardinality guards are split without prose matching.
+- PASS: real production vectors map open-trial topology to E003, empty topology
+  to E005, D/A/F to E006, pre-ingress source closure to E010 and missing
+  authorization to E005. Every enum semantic subclass is covered.
+- FAIL retained: first integration rerun passed 61/62 because distinct stale-
+  digest NaN configuration attempts still aliased; joining the raw snapshot
+  attempt with v3 corrected the evidence.
+- FAIL retained: one compile retry exposed missing re-exports for the new real-
+  vector helpers; explicit orchestrator re-exports corrected it.
+- FAIL retained: first strict Clippy retry found a `map(...).unwrap_or_else(...)`
+  form; it was replaced with `map_or_else` without semantic change.
+- PASS on final worktree: LSE 28/28; unified integration 62/62; custody
+  authority 10/10; orchestrator library 600/600 in 145.035 seconds; strict LSE
+  and orchestrator Clippy; formatting and diff hygiene.
+- PASS: every changed Rust file remains below 3,000 lines.
+- Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

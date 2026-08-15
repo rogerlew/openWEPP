@@ -497,3 +497,12 @@ not override the Rust correctness HOLD.
 | A-TERMINAL-FC65-MEDIUM-005: duplicated error-taxonomy translation has drifted | Accepted | Remediated in worktree: one boundary-aware taxonomy serves receiver and unified callback paths; strict Clippy PASS |
 
 No `fc65b2819` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `fb89e5a55`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-FB89-HIGH-001: full configuration E003 validation precedes request identity E002 | Accepted | Remediated in worktree: schema/identity-only configuration preflight precedes complete request E002; full numeric validation follows with raw+v3 attempt join; dual poison PASS |
+| A-TERMINAL-FB89-MEDIUM-002: combined LSE error variants prevent semantically complete canonical taxonomy | Accepted | Remediated in worktree: LSE owns typed topology/water error classes and exhaustive class(); all production constructors migrated and real semantic vectors PASS |
+
+No `fb89e5a55` finding is rejected, deferred or moved to another package.

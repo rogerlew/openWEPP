@@ -15,13 +15,15 @@ use openwepp_kernel_contract::{
 };
 pub use openwepp_land_surface_energy::{
     BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
-    LandSurfaceEnergyError, OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem,
-    OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, RequestingComponent,
-    RuntimeTileIdentity, Sha256Digest, SoilThermalLayerCandidate, SoilThermalLayerSnapshot,
-    SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate,
-    SourceId, StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId,
-    SurfaceStorageBranch, TileState, WaterAmount, WaterAuthorization, WaterAuthorizationReason,
-    WaterProtocol, WaterSourceType, finalize_open_phase, solve_open_potential_phase,
+    LandSurfaceEnergyError, LandSurfaceEnergyErrorClass, OfeId, OpenNeutralGeometry,
+    OpenPotentialPhase, OpenSurfaceProblem, OwnerKind, OwnerRollbackHash,
+    PotentialWaterRequestBatch, RequestingComponent, RuntimeTileIdentity, Sha256Digest,
+    SoilThermalLayerCandidate, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
+    SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
+    StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
+    TileState, WaterAmount, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
+    WaterSourceType, WaterUseOperands, evaluate_open_surface, finalize_open_phase,
+    solve_open_potential_phase, validate_water_use,
 };
 use openwepp_land_surface_energy::{OpenSurfaceSolveOutcome, WaterBranch, solve_open_surface};
 use sha2::{Digest, Sha256};

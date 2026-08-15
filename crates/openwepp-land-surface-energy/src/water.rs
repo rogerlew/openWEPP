@@ -60,7 +60,7 @@ pub struct GroundWaterKey {
 impl GroundWaterKey {
     pub fn validate(&self, transaction_id: TransactionId) -> Result<(), LandSurfaceEnergyError> {
         if self.transaction_id.0 == 0 || self.transaction_id != transaction_id {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_identity(
                 "water key transaction mismatch",
             ));
         }
@@ -73,7 +73,7 @@ impl GroundWaterKey {
                     || self.source_tile_id.is_some()
                     || self.soil_layer_id.is_none()
                 {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "invalid vegetation-root water identity",
                     ));
                 }
@@ -83,7 +83,7 @@ impl GroundWaterKey {
                     || self.surface_id.is_none()
                     || self.surface_class.is_none()
                 {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "invalid ground-surface water identity",
                     ));
                 }
@@ -92,14 +92,14 @@ impl GroundWaterKey {
         match self.source_type {
             WaterSourceType::SoilLayerLiquid => {
                 if self.source_tile_id.is_some() || self.soil_layer_id.is_none() {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "invalid soil-layer source identity",
                     ));
                 }
             }
             WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid => {
                 if self.source_tile_id.is_none() || self.soil_layer_id.is_some() {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "invalid tile-water source identity",
                     ));
                 }
@@ -164,7 +164,7 @@ pub struct WaterProtocol {
 impl WaterProtocol {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         if self.transaction_id.0 == 0 {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_identity(
                 "zero water transaction",
             ));
         }
@@ -176,7 +176,7 @@ impl WaterProtocol {
                 .insert(row.key.clone(), row.amount_kg_m2_stand_ground)
                 .is_some()
             {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "duplicate water request",
                 ));
             }
@@ -188,11 +188,11 @@ impl WaterProtocol {
             let request =
                 requests
                     .get(&row.key)
-                    .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    .ok_or(LandSurfaceEnergyError::water_cardinality(
                         "authorization without exact request",
                     ))?;
             if row.amount_kg_m2_stand_ground > *request {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_bound(
                     "authorization exceeds request",
                 ));
             }
@@ -200,7 +200,7 @@ impl WaterProtocol {
                 .insert(row.key.clone(), row.amount_kg_m2_stand_ground)
                 .is_some()
             {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "duplicate water authorization",
                 ));
             }
@@ -209,24 +209,25 @@ impl WaterProtocol {
         for row in &self.finalized_uses {
             row.key.validate(self.transaction_id)?;
             require_finite_nonnegative(row.amount_kg_m2_stand_ground, "finalized water use")?;
-            let authorization = authorizations.get(&row.key).ok_or(
-                LandSurfaceEnergyError::WaterIdentityOrBound(
-                    "finalized use without exact authorization",
-                ),
-            )?;
+            let authorization =
+                authorizations
+                    .get(&row.key)
+                    .ok_or(LandSurfaceEnergyError::water_cardinality(
+                        "finalized use without exact authorization",
+                    ))?;
             if row.amount_kg_m2_stand_ground > *authorization {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_bound(
                     "finalized use exceeds authorization",
                 ));
             }
             if !uses.insert(row.key.clone()) {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "duplicate finalized water use",
                 ));
             }
         }
         if requests.len() != authorizations.len() || requests.len() != uses.len() {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "incomplete request-authorization-use identity set",
             ));
         }
@@ -235,7 +236,7 @@ impl WaterProtocol {
             if credit.transaction_id != self.transaction_id
                 || credit.hydrology_owner_id != self.hydrology_owner_id
             {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_identity(
                     "condensation identity mismatch",
                 ));
             }
@@ -256,7 +257,7 @@ impl WaterProtocol {
                 credit.surface_id.clone(),
             );
             if !credits.insert(key) {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "duplicate condensation credit",
                 ));
             }

@@ -84,6 +84,8 @@ expectation-hash gaps. Those findings are corrected in the current worktree
 with focused passing evidence. Fresh review then found callback boundary
 taxonomy, raw-attempt preservation and pre-callback thermal-layer gaps. Those
 findings are corrected in the current worktree with focused passing evidence.
-Fresh
+Fresh review then found configuration/request precedence and semantically
+combined LSE error categories. Those findings are corrected with typed LSE-
+owned classes and focused passing evidence. Fresh
 exact-byte reviews and terminal verification remain required. This is not yet
 a terminal custody-lift or resumed-Child-3 claim.

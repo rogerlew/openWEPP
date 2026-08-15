@@ -70,7 +70,7 @@ impl RuntimeTileIdentity {
         match self.ground_source_type {
             WaterSourceType::SoilLayerLiquid => {
                 if self.ground_source_tile_id.is_some() || self.ground_soil_layer_id.is_none() {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "ground soil source identity",
                     ));
                 }
@@ -79,7 +79,7 @@ impl RuntimeTileIdentity {
                 if self.ground_source_tile_id.as_ref() != Some(&self.tile_id)
                     || self.ground_soil_layer_id.is_some()
                 {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "ground tile source identity",
                     ));
                 }
@@ -132,19 +132,31 @@ pub struct PotentialWaterRequestBatch {
 
 impl PotentialWaterRequestBatch {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        if self.transaction_id.0 == 0 || self.requests.is_empty() {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        if self.transaction_id.0 == 0 {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "empty or zero-transaction potential request batch",
+            ));
+        }
+        if self.requests.is_empty() {
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "empty or zero-transaction potential request batch",
             ));
         }
         let mut keys = BTreeSet::new();
         for request in &self.requests {
             request.key.validate(self.transaction_id)?;
-            if !request.amount_kg_m2_stand_ground.is_finite()
-                || request.amount_kg_m2_stand_ground < 0.0
-                || !keys.insert(request.key.clone())
-            {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            if !request.amount_kg_m2_stand_ground.is_finite() {
+                return Err(LandSurfaceEnergyError::NonFinite(
+                    "invalid or duplicate potential request",
+                ));
+            }
+            if request.amount_kg_m2_stand_ground < 0.0 {
+                return Err(LandSurfaceEnergyError::water_bound(
+                    "invalid or duplicate potential request",
+                ));
+            }
+            if !keys.insert(request.key.clone()) {
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "invalid or duplicate potential request",
                 ));
             }
@@ -281,7 +293,7 @@ pub fn solve_covered_potential_phase(
         if root.source_id.as_str() != root.layer_id.as_str()
             || identities.insert(key, root).is_some()
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "duplicate or aliased root source identity",
             ));
         }
@@ -292,7 +304,7 @@ pub fn solve_covered_potential_phase(
         .map(|row| (row.occupancy_id.clone(), row.layer_id.clone()))
         .collect();
     if expected != identities.keys().cloned().collect() {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_cardinality(
             "root identity set mismatch",
         ));
     }
@@ -300,7 +312,7 @@ pub fn solve_covered_potential_phase(
     for row in &accepted.root_water {
         let key = identities
             .get(&(row.occupancy_id.clone(), row.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing root identity",
             ))?;
         requests.push(WaterAmount {
@@ -400,23 +412,35 @@ fn exact_authorization_map(
     let mut result = BTreeMap::new();
     for authorization in authorizations {
         authorization.key.validate(batch.transaction_id)?;
-        let request = requests.get(&authorization.key).ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("authorization without potential request"),
-        )?;
-        if !authorization.amount_kg_m2_stand_ground.is_finite()
-            || authorization.amount_kg_m2_stand_ground < 0.0
+        let request =
+            requests
+                .get(&authorization.key)
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
+                    "authorization without potential request",
+                ))?;
+        if !authorization.amount_kg_m2_stand_ground.is_finite() {
+            return Err(LandSurfaceEnergyError::NonFinite(
+                "invalid or duplicate fixed authorization",
+            ));
+        }
+        if authorization.amount_kg_m2_stand_ground < 0.0
             || authorization.amount_kg_m2_stand_ground > *request
-            || result
-                .insert(authorization.key.clone(), authorization)
-                .is_some()
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_bound(
+                "invalid or duplicate fixed authorization",
+            ));
+        }
+        if result
+            .insert(authorization.key.clone(), authorization)
+            .is_some()
+        {
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "invalid or duplicate fixed authorization",
             ));
         }
     }
     if result.len() != requests.len() {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_cardinality(
             "incomplete fixed authorization set",
         ));
     }
@@ -702,7 +726,7 @@ pub fn finalize_open_phase(
         exact_authorization_map(&phase.request_batch, vec![authorization.clone()])?;
     let fixed = authorizations
         .remove(&phase.request_batch.requests[0].key)
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing exact ground authorization",
         ))?;
     let cap_rate = fixed.amount_kg_m2_stand_ground
@@ -950,12 +974,12 @@ fn covered_caps_from_authorizations(
             .requests
             .iter()
             .find(|row| row.key == key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing covered potential root request",
             ))?;
         let authorization = exact
             .get(&key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing covered root authorization",
             ))?;
         root.insert(
@@ -973,15 +997,14 @@ fn covered_caps_from_authorizations(
         .requests
         .iter()
         .find(|row| row.key == ground_key)
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing covered potential ground request",
         ))?;
-    let authorization =
-        exact
-            .get(&ground_key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
-                "missing covered ground authorization",
-            ))?;
+    let authorization = exact
+        .get(&ground_key)
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
+            "missing covered ground authorization",
+        ))?;
     Ok(CoveredWaterCaps {
         root,
         ground: SourceWaterCap {
@@ -1001,14 +1024,14 @@ fn covered_water_protocol(
         let runtime = phase
             .root_identities
             .get(&(row.occupancy_id.clone(), row.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_identity(
                 "final covered root identity mismatch",
             ))?;
         let key = root_key(&phase.identity, runtime);
         let amount = if row.branch == crate::WaterBranch::AuthorizationActiveOrTie {
             exact
                 .get(&key)
-                .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
                     "missing exact active root authorization",
                 ))?
                 .amount_kg_m2_stand_ground
@@ -1025,7 +1048,7 @@ fn covered_water_protocol(
         if final_value.ground_water.branch == crate::WaterBranch::AuthorizationActiveOrTie {
             exact
                 .get(&ground_key)
-                .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
                     "missing exact active ground authorization",
                 ))?
                 .amount_kg_m2_stand_ground
@@ -1061,8 +1084,13 @@ fn condensation_credits(
     amount_kg_m2_stand_ground: f64,
     temperature_k: f64,
 ) -> Result<Vec<CondensationCredit>, LandSurfaceEnergyError> {
-    if !amount_kg_m2_stand_ground.is_finite() || amount_kg_m2_stand_ground < 0.0 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+    if !amount_kg_m2_stand_ground.is_finite() {
+        return Err(LandSurfaceEnergyError::NonFinite(
+            "invalid condensation amount",
+        ));
+    }
+    if amount_kg_m2_stand_ground < 0.0 {
+        return Err(LandSurfaceEnergyError::water_bound(
             "invalid condensation amount",
         ));
     }
@@ -1073,7 +1101,7 @@ fn condensation_credits(
         identity.ground_source_type,
         WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid
     ) {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_identity(
             "condensation requires tile surface-liquid source",
         ));
     }
@@ -1258,7 +1286,7 @@ pub fn build_lse_ending_state(
         .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
         .collect();
     if expected != actual || tiles.len() != actual.len() {
-        return Err(LandSurfaceEnergyError::Topology(
+        return Err(LandSurfaceEnergyError::topology_cardinality(
             "ending LSE tile identity set",
         ));
     }
