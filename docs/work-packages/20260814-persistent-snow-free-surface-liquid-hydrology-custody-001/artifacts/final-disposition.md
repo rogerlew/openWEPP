@@ -78,6 +78,9 @@ provenance. All findings are corrected in the current worktree with focused
 passing evidence. Fresh review at `73299b981` then found cross-OFE soil-source
 aliasing, unbound standalone LSE rollback lineage and incomplete attempted-hash
 propagation. Those findings and the requested frost-cardinality poison are now
-corrected in the current worktree with focused passing evidence. Fresh
+corrected in the current worktree with focused passing evidence. Fresh Rust
+review then found callback error-envelope, expectation-precedence and
+expectation-hash gaps. Those findings are corrected in the current worktree
+with focused passing evidence. Fresh
 exact-byte reviews and terminal verification remain required. This is not yet
 a terminal custody-lift or resumed-Child-3 claim.

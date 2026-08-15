@@ -448,10 +448,19 @@ fn empty_frost_state_and_runtime_carry_remain_valid_initial_states() {
             assert_snow_failure(error, &snapshot, DirectSurfaceLiquidErrorCode::E004);
         } else {
             assert!(callback_called);
-            assert!(matches!(
-                error,
-                LandSurfaceEnergyShadowError::Identity("snow scalar poison reached callback")
-            ));
+            let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+                panic!("callback identity must be canonicalized");
+            };
+            let failure = error.failure().expect("canonical callback failure");
+            assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+            assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+            assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+            assert_eq!(failure.context.owner_id, None);
+            assert_eq!(
+                failure.rollback.beginning_owner_sha256.as_deref(),
+                Some(snapshot.as_str())
+            );
+            assert!(failure.rollback.attempted_owner_sha256.is_some());
         }
     }
 }

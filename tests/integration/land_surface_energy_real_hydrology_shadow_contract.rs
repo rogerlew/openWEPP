@@ -4,16 +4,16 @@ use std::path::Path;
 
 use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
-    LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, MixedRealHydrologyRequest,
-    MixedRealHydrologyUse, OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem,
-    OwnerKind, OwnerRollbackHash, RuntimeTileIdentity, Sha256Digest, SoilThermalLayerCandidate,
-    SoilThermalLayerSnapshot, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SoilThermalTileCandidate, SourceId, StandGroundWaterAmountBasis, SurfaceClass,
-    SurfaceClassKind, SurfaceId, SurfaceStorageBranch, TileState, UnifiedLseFinalization,
-    UnifiedReceiverExpectations, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
-    WaterSourceType, execute_open_bare_soil_shadow, execute_unified_real_hydrology_shadow,
-    finalize_open_phase, solve_open_potential_phase, unified_beginning_hydrology_snapshot_sha256,
-    validate_real_receiver_closure,
+    LandSurfaceEnergyError, LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
+    MixedRealHydrologyRequest, MixedRealHydrologyUse, OfeId, OpenNeutralGeometry,
+    OpenPotentialPhase, OpenSurfaceProblem, OwnerKind, OwnerRollbackHash, RuntimeTileIdentity,
+    Sha256Digest, SoilThermalLayerCandidate, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
+    SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
+    StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
+    TileState, UnifiedLseFinalization, UnifiedReceiverExpectations, WaterAuthorization,
+    WaterAuthorizationReason, WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
+    execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
+    unified_beginning_hydrology_snapshot_sha256, validate_real_receiver_closure,
 };
 use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
@@ -47,6 +47,8 @@ mod sealed_receiver_context_tests;
 use finalization_test_support::finalization_expectations;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs"]
 mod source_binding_tests;
+#[path = "land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs"]
+mod unified_boundary_tests;
 
 fn production_frame(supply_m: f64, frozen: bool) -> DirectRunFrame {
     let identity = DirectRunIdentity::new(83, 11, 1, 1).expect("identity");
@@ -2157,7 +2159,7 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
 }
 
 #[test]
-fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
+fn invalid_expectation_precedes_receiver_construction_overflow() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
         WaterSourceType::SurfaceLiquid,
@@ -2188,8 +2190,7 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
         )],
     )
     .expect("structurally valid mismatched receiver expectations");
-    let mut attempted = None;
-    let expected_lse_beginning = digest('2');
+    let callback_called = std::cell::Cell::new(false);
     let ingress = ingress_input_with_mass(50.0);
     let result = execute_unified_real_hydrology_shadow(
         &adapter,
@@ -2199,6 +2200,7 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
         &BTreeMap::new(),
         &ingress,
         |authorizations| {
+            callback_called.set(true);
             let finalization =
                 unified_finalization(accepted_surface_protocol(&batch, authorizations, &snapshot));
             let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
@@ -2213,7 +2215,6 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
                 finalization.soil_thermal_candidates().to_vec(),
                 finalization.rollback_hashes().to_vec(),
             )?;
-            attempted = Some(poisoned.receiver_sets_sha256());
             Ok(poisoned)
         },
     );
@@ -2222,10 +2223,11 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
         panic!("receiver overflow must retain canonical failure");
     };
     let failure = error.failure().expect("failure payload");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert!(!callback_called.get());
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
     assert_eq!(
         failure.phase,
-        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::IndependentClosure,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::AtomicEnvelope,
         "{failure:?}"
     );
     assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
@@ -2238,25 +2240,16 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
         Some("land-surface-energy-v1"),
         "{failure:?}"
     );
-    assert_eq!(
-        failure.context.ofe_id.as_ref().map(OfeId::as_str),
-        Some("ofe-1")
-    );
-    assert_eq!(
-        failure.context.tile_id.as_ref().map(TileId::as_str),
-        Some("open")
-    );
-    assert_eq!(
-        failure.context.surface_id.as_ref().map(SurfaceId::as_str),
-        Some("surface:ofe-1:open")
-    );
+    assert_eq!(failure.context.ofe_id, None);
+    assert_eq!(failure.context.tile_id, None);
+    assert_eq!(failure.context.surface_id, None);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(expected_lse_beginning.as_str())
+        Some(snapshot.as_str())
     );
-    assert_eq!(failure.rollback.attempted_owner_sha256, attempted);
-    assert!(failure.context.source_id.is_some());
-    assert!(failure.context.parcel_id.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+    assert_eq!(failure.context.source_id, None);
+    assert_eq!(failure.context.parcel_id, None);
     assert_eq!(frame, original, "overflow mutated caller owner");
 }
 
@@ -2414,7 +2407,11 @@ fn poison_receiver_finalization(
     )
 }
 
-fn assert_receiver_join_failure(error: LandSurfaceEnergyShadowError, poison: usize) {
+fn assert_receiver_join_failure(
+    error: LandSurfaceEnergyShadowError,
+    poison: usize,
+    snapshot: &Sha256Digest,
+) {
     let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
         panic!("receiver poison {poison} must retain canonical envelope failure");
     };
@@ -2441,28 +2438,11 @@ fn assert_receiver_join_failure(error: LandSurfaceEnergyShadowError, poison: usi
             Some(expected_owner)
         );
     }
-    match poison {
-        5 | 7 => assert_eq!(
-            failure.rollback.beginning_owner_sha256, None,
-            "ambiguous or absent receiver rollback row must use typed absence"
-        ),
-        10 => assert_eq!(
-            failure.rollback.beginning_owner_sha256.as_deref(),
-            Some(digest('2').as_str()),
-            "unique wrong-LSE row retains its actual beginning digest"
-        ),
-        13 => assert_eq!(
-            failure.rollback.beginning_owner_sha256.as_deref(),
-            Some(digest('4').as_str()),
-            "unique wrong-thermal row retains its actual beginning digest"
-        ),
-        9 => assert_eq!(
-            failure.rollback.beginning_owner_sha256.as_deref(),
-            Some(digest('4').as_str()),
-            "thermal numeric failure must use the thermal beginning digest"
-        ),
-        _ => {}
-    }
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str()),
+        "public callback failure uses the actual unified beginning snapshot"
+    );
 }
 
 #[test]
@@ -2500,7 +2480,11 @@ fn unified_receiver_join_poisons_return_no_partial_candidate() {
                 poison_receiver_finalization(&finalization, poison)
             },
         );
-        assert_receiver_join_failure(result.expect_err("receiver poison must reject"), poison);
+        assert_receiver_join_failure(
+            result.expect_err("receiver poison must reject"),
+            poison,
+            &snapshot,
+        );
         assert_eq!(frame, original, "receiver poison {poison} mutated owner");
     }
 }
@@ -2579,7 +2563,7 @@ fn sealed_two_tile_finalization_reports_the_actual_second_thermal_receiver() {
 }
 
 #[test]
-fn public_bridge_reports_wrong_second_independent_thermal_expectation_after_arithmetic_preflight() {
+fn public_bridge_rejects_wrong_second_independent_thermal_expectation_before_callback() {
     let (frame, configuration) = configured_two_tile_surface_frame();
     let (owner, _) = owner(&frame);
     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
@@ -2630,8 +2614,8 @@ fn public_bridge_reports_wrong_second_independent_thermal_expectation_after_arit
         },
     );
     assert!(
-        callback_called,
-        "arithmetic preflight requires final receivers"
+        !callback_called,
+        "invalid expectations must precede callback"
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
         result.expect_err("second expectation mismatch must reject")
@@ -2659,8 +2643,7 @@ fn public_bridge_reports_wrong_second_independent_thermal_expectation_after_arit
 }
 
 #[test]
-fn public_bridge_reports_deleted_first_independent_thermal_expectation_after_arithmetic_preflight()
-{
+fn public_bridge_rejects_deleted_first_independent_thermal_expectation_before_callback() {
     let (frame, configuration) = configured_two_tile_surface_frame();
     let (owner, _) = owner(&frame);
     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
@@ -2705,8 +2688,8 @@ fn public_bridge_reports_deleted_first_independent_thermal_expectation_after_ari
         },
     );
     assert!(
-        callback_called,
-        "arithmetic preflight requires final receivers"
+        !callback_called,
+        "invalid expectations must precede callback"
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
         result.expect_err("deleted first expectation must reject")
@@ -2736,9 +2719,10 @@ fn public_bridge_reports_deleted_first_independent_thermal_expectation_after_ari
         failure.rollback.beginning_owner_sha256.as_deref(),
         Some(snapshot.as_str())
     );
-    assert_eq!(
+    assert_ne!(
         failure.rollback.attempted_owner_sha256.as_deref(),
-        Some(attempted_hash.as_str())
+        Some(attempted_hash.as_str()),
+        "public attempted hash must frame more than receiver expectations"
     );
 }
 

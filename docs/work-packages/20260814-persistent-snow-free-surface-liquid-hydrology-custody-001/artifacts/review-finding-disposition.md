@@ -473,3 +473,15 @@ No `5d298ca1c` finding is rejected, deferred or moved to another package.
 | A-TERMINAL-732-TEST-004: frost layer indices beyond production cardinality lack a poison | Accepted | Remediated in worktree: shadow and fine layer indices beyond production cardinality return E003 before E004; poisons PASS |
 
 No `73299b981` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `e33f4cdd4`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-E33-HIGH-001: arbitrary callback errors escape the canonical public failure envelope | Accepted | Remediated in worktree: all callback variants canonicalize at ResourceCandidate with actual beginning and complete attempted hashes; poison matrix PASS |
+| A-TERMINAL-E33-HIGH-002: receiver expectations are validated only after callback execution | Accepted | Remediated in worktree: complete expectation identity/topology/lineage validation precedes authorization and callback; callback-zero matrix PASS |
+| A-TERMINAL-E33-MEDIUM-003: attempted-input hash omits receiver expectations and caller expected snapshot | Accepted | Remediated in worktree: v3 framing binds every raw expectation field, ordered topology, canonical digest, actual snapshot and caller expected snapshot; mutation matrix PASS |
+
+No `e33f4cdd4` finding is rejected, deferred or moved to another package. The
+fresh hydrology/ownership review of the same bytes returned PASS, but it does
+not override the Rust correctness HOLD.

@@ -9,13 +9,14 @@ use super::{
     DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidPhase,
     DirectSurfaceLiquidRollbackHashes, FramedSha256, GroundWaterKey,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, MixedRealHydrologyRequest,
-    PotentialWaterRequestBatch, RealHydrologySourceKey, Sha256Digest, WaterAmount,
-    compose_unified_beginning_hydrology_snapshot_sha256, partition_requests,
+    PotentialWaterRequestBatch, RealHydrologySourceKey, Sha256Digest, UnifiedReceiverExpectations,
+    WaterAmount, compose_unified_beginning_hydrology_snapshot_sha256, partition_requests,
     preflight_request_bounds, preflight_request_cardinality, preflight_request_domains,
-    preflight_request_identities, protocol_error_code_and_detail, request_failure,
-    snapshot_failure, unified_beginning_hydrology_snapshot_sha256,
+    preflight_request_identities, protocol_error_code_and_detail, receiver_expectations_sha256,
+    request_failure, snapshot_failure, unified_beginning_hydrology_snapshot_sha256,
     validate_native_shadow_exact_one_custody, validate_native_shadow_supported_domain,
-    validate_surface_production_binding, water_request_batch_sha256,
+    validate_receiver_expectations, validate_surface_production_binding,
+    water_request_batch_sha256,
 };
 
 pub(super) struct UnifiedEntryPreflight {
@@ -28,6 +29,7 @@ pub(super) struct UnifiedEntryPreflight {
 pub(super) fn validate_unified_entry(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     request_batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
@@ -37,6 +39,7 @@ pub(super) fn validate_unified_entry(
         preflight_unified_entry_identity_envelope(
             soil_adapter,
             configuration,
+            receiver_expectations,
             request_batch,
             soil_sources,
             ingress,
@@ -49,10 +52,12 @@ pub(super) fn validate_unified_entry(
             DirectSurfaceLiquidErrorCode::E003,
             soil_adapter,
             configuration,
+            receiver_expectations,
             request_batch,
             soil_sources,
             ingress,
             &actual_snapshot,
+            expected_snapshot,
             "nonfinite ingress interval",
         )
         .into());
@@ -90,14 +95,24 @@ pub(super) fn validate_unified_entry(
             DirectSurfaceLiquidErrorCode::E008,
             soil_adapter,
             configuration,
+            receiver_expectations,
             request_batch,
             soil_sources,
             ingress,
             &actual_snapshot,
+            expected_snapshot,
             "unified ingress cadence or continuation",
         )
         .into());
     }
+    validate_receiver_expectations(
+        soil_adapter.owner,
+        configuration,
+        receiver_expectations,
+        request_batch,
+        &actual_snapshot,
+    )
+    .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     Ok(UnifiedEntryPreflight {
         actual_snapshot,
         attempted_sha256,
@@ -106,9 +121,11 @@ pub(super) fn validate_unified_entry(
     })
 }
 
+#[allow(clippy::too_many_lines)]
 fn preflight_unified_entry_identity_envelope(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     request_batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
@@ -174,7 +191,9 @@ fn preflight_unified_entry_identity_envelope(
         request_batch,
         soil_sources,
         ingress,
+        receiver_expectations,
         &actual_snapshot,
+        expected_snapshot,
     );
     preflight_request_identities(request_batch, &actual_snapshot)
         .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
@@ -183,10 +202,12 @@ fn preflight_unified_entry_identity_envelope(
             &error,
             soil_adapter,
             configuration,
+            receiver_expectations,
             request_batch,
             soil_sources,
             ingress,
             &actual_snapshot,
+            expected_snapshot,
         )
         .into());
     }
@@ -203,10 +224,12 @@ fn preflight_unified_entry_identity_envelope(
             DirectSurfaceLiquidErrorCode::E002,
             soil_adapter,
             configuration,
+            receiver_expectations,
             request_batch,
             soil_sources,
             ingress,
             &actual_snapshot,
+            expected_snapshot,
             "unified transaction or beginning snapshot identity",
         )
         .into());
@@ -257,15 +280,60 @@ pub(super) fn complete_unified_failure(
     .into()
 }
 
+pub(super) fn canonicalize_callback_failure(
+    error: LandSurfaceEnergyShadowError,
+    transaction_id: super::TransactionId,
+    actual_snapshot: &Sha256Digest,
+    attempted_sha256: &str,
+) -> LandSurfaceEnergyShadowError {
+    let (code, detail) = match error {
+        LandSurfaceEnergyShadowError::SurfaceLiquid(error) => {
+            return complete_unified_failure(
+                LandSurfaceEnergyShadowError::SurfaceLiquid(error),
+                actual_snapshot,
+                attempted_sha256,
+            );
+        }
+        LandSurfaceEnergyShadowError::Identity(detail)
+        | LandSurfaceEnergyShadowError::UnsupportedCustody(detail) => {
+            (DirectSurfaceLiquidErrorCode::E002, detail)
+        }
+        LandSurfaceEnergyShadowError::Operand(detail) => {
+            (DirectSurfaceLiquidErrorCode::E003, detail)
+        }
+        LandSurfaceEnergyShadowError::Bound(detail) => (DirectSurfaceLiquidErrorCode::E006, detail),
+        LandSurfaceEnergyShadowError::LandSurface(_) => (
+            DirectSurfaceLiquidErrorCode::E003,
+            "LSE fixed-authorization callback",
+        ),
+    };
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(actual_snapshot.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
+        detail,
+    )
+    .into()
+}
+
 #[allow(clippy::too_many_arguments)]
 fn contextualize_ingress_identity_failure(
     error: &DirectSurfaceLiquidError,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     request_batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
     actual_snapshot: &Sha256Digest,
+    expected_snapshot: &Sha256Digest,
 ) -> DirectSurfaceLiquidError {
     let code = error.code();
     let (mut context, detail) = error.failure().map_or_else(
@@ -294,7 +362,9 @@ fn contextualize_ingress_identity_failure(
                 request_batch,
                 soil_sources,
                 ingress,
+                receiver_expectations,
                 actual_snapshot,
+                expected_snapshot,
             )),
         },
         detail,
@@ -306,10 +376,12 @@ fn unified_entry_failure(
     code: DirectSurfaceLiquidErrorCode,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
     request_batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
     actual_snapshot: &Sha256Digest,
+    expected_snapshot: &Sha256Digest,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
     DirectSurfaceLiquidError::canonical_failure(
@@ -327,7 +399,9 @@ fn unified_entry_failure(
                 request_batch,
                 soil_sources,
                 ingress,
+                receiver_expectations,
                 actual_snapshot,
+                expected_snapshot,
             )),
         },
         detail,
@@ -339,9 +413,11 @@ fn unified_entry_attempt_sha256(
     request_batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress: &DirectSurfaceLiquidIngressInput,
+    receiver_expectations: &UnifiedReceiverExpectations,
     actual_snapshot: &Sha256Digest,
+    expected_snapshot: &Sha256Digest,
 ) -> String {
-    let mut attempted = FramedSha256::new("openwepp-unified-entry-v2");
+    let mut attempted = FramedSha256::new("openwepp-unified-entry-v3");
     attempted.u128("request_transaction", request_batch.transaction_id.0);
     attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
     attempted.u128("ingress_transaction", ingress.transaction_id.0);
@@ -373,7 +449,52 @@ fn unified_entry_attempt_sha256(
         attempted.u64("soil_source_lane_id", u64::from(source.ofe_lane.lane_id));
         attempted.string("soil_source_layer", source.layer_id.as_str());
     }
+    attempted.string(
+        "expected_lse_owner",
+        receiver_expectations.lse_owner_id.as_str(),
+    );
+    attempted.string(
+        "expected_lse_beginning",
+        receiver_expectations.beginning_lse_state_sha256.as_str(),
+    );
+    attempted.string(
+        "expected_hydrology_owner",
+        receiver_expectations.hydrology_owner_id.as_str(),
+    );
+    attempted.string(
+        "expected_hydrology_beginning",
+        receiver_expectations
+            .beginning_hydrology_snapshot_sha256
+            .as_str(),
+    );
+    attempted.string(
+        "expected_thermal_owner",
+        receiver_expectations.soil_thermal_owner_id.as_str(),
+    );
+    attempted.string(
+        "expected_thermal_beginning",
+        receiver_expectations
+            .beginning_soil_thermal_state_sha256
+            .as_str(),
+    );
+    attempted.count(
+        "expected_thermal_tile_count",
+        receiver_expectations.ordered_thermal_layers.len(),
+    );
+    for ((ofe_id, tile_id), layers) in &receiver_expectations.ordered_thermal_layers {
+        attempted.string("expected_thermal_ofe", ofe_id.as_str());
+        attempted.string("expected_thermal_tile", tile_id.as_str());
+        attempted.count("expected_thermal_layer_count", layers.len());
+        for layer_id in layers {
+            attempted.string("expected_thermal_layer", layer_id.as_str());
+        }
+    }
+    attempted.string(
+        "receiver_expectations",
+        &receiver_expectations_sha256(receiver_expectations),
+    );
     attempted.string("actual_snapshot", actual_snapshot.as_str());
+    attempted.string("expected_snapshot", expected_snapshot.as_str());
     attempted.finish()
 }
 

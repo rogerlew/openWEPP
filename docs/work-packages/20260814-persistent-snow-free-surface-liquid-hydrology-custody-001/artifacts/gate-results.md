@@ -864,6 +864,43 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   surfaces; anti-evasion passes; AUTH11 passes 3/3; SC-SURFACELIQUID-001 unit
   compliance passes.
 
+## Exact-byte review at `e33f4cdd4`
+
+- PASS: fresh hydrology/science/ownership review found zero unresolved material
+  finding and reran the focused, authority and strict affected gates.
+- HOLD: fresh Rust review found arbitrary callback errors escaping without the
+  canonical public failure envelope, independently knowable receiver
+  expectations reaching the callback before validation, and attempted hashes
+  omitting receiver expectations plus the caller expected snapshot.
+- PASS but non-dispositive: 86 focused surface-liquid tests, 54 unified
+  integration tests, 10 custody authority tests, AUTH11 3/3, strict Clippy,
+  formatting, anti-evasion and diff hygiene.
+- Pending: remediate all three findings and repeat fresh dual exact-byte review.
+  Heavy execution remains blocked.
+
+## `e33f4cdd4` HOLD remediation
+
+- PASS: complete receiver expectations are validated before authorization or
+  callback; invalid LSE, hydrology, soil-thermal lineage and topology produce
+  contextual E011 with callback count zero.
+- PASS: unified attempted-input framing v3 binds every raw receiver-expectation
+  field, ordered topology/layers, its canonical digest, the actual snapshot and
+  the caller expected snapshot. Field-by-field mutation poisons distinguish
+  every attempted input.
+- PASS: callback-returned Identity, Operand, Bound, Unsupported, LandSurface
+  and existing SurfaceLiquid variants emerge from the public boundary as
+  canonical ResourceCandidate failures with actual beginning and complete
+  attempted hashes; available lower context is preserved and unavailable row
+  identity is not fabricated.
+- PASS on the combined worktree: selected orchestrator 145/145; unified
+  integration 57/57; custody authority 10/10; four affected crate checks;
+  strict orchestrator all-target/all-feature Clippy; formatting and diff
+  hygiene.
+- PASS: every governed Rust file remains below 3,000 lines after extracting the
+  360-line unified public-boundary poison matrix.
+- Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
