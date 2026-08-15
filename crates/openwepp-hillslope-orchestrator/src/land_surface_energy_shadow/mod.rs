@@ -484,11 +484,21 @@ impl UnifiedLseFinalization {
     /// Canonical attempted receiver-set hash used by construction failures.
     #[must_use]
     pub fn receiver_sets_sha256(&self) -> String {
-        finalization_receiver_sets_sha256(
+        Self::candidate_receiver_sets_sha256(
             &self.ending_tile_states_pre_ingress,
             &self.soil_thermal_candidates,
             &self.rollback_hashes,
         )
+    }
+
+    /// Canonical attempted hash for an unsealed receiver-set candidate.
+    #[must_use]
+    pub fn candidate_receiver_sets_sha256(
+        lse_tiles: &[TileState],
+        thermal_tiles: &[SoilThermalTileCandidate],
+        rollback_hashes: &[OwnerRollbackHash],
+    ) -> String {
+        finalization_receiver_sets_sha256(lse_tiles, thermal_tiles, rollback_hashes)
     }
 }
 

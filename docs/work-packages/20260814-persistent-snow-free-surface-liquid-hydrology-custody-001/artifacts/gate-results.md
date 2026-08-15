@@ -918,6 +918,39 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: commit corrected bytes and repeat fresh independent dual review
   before any terminal heavy execution.
 
+## Exact-byte review at `a5c2243e6`
+
+- HOLD: Rust review found ingress-candidate E003 could mask whole-input
+  E001/E002, and temporal mass splitting plus replay shared a one-ULP
+  nonconservative formula.
+- HOLD: hydrology review found sealed nonfinite LSE receiver errors attributed
+  to the hydrology owner instead of the recoverable LSE owner.
+- PASS on reviewed bytes: WB14 5/5, receiver validation 3/3, custody authority
+  10/10 and unified integration 39/39.
+
+## `a5c2243e6` HOLD remediation
+
+- PASS: candidate revalidation shares the complete identity-only ingress
+  preflight before independent closure arithmetic.
+- PASS: temporal mass assigns the exact parent remainder to the canonical last
+  window; raw mass closure reconstructs from frozen parents and rejects the
+  old five-ratio and one-ULP child alternatives.
+- PASS: sealed LSE E003 uses the exact LSE request owner and applicable
+  configured surface/source identity; thermal ownership and exact rollback
+  hashes remain intact.
+- FAIL retained: an initial comparison made aggregate proportional-mixing mass
+  bit-exact and failed two legitimate rounded attribution cases. Exactness was
+  narrowed to per-parcel authority joins.
+- FAIL retained: an attempted raw-parent-only enthalpy reconstruction failed
+  three routed/mixed cases because thermal mixing changes source attribution.
+  Independent replay remains the enthalpy authority; frozen parents are the
+  raw mass authority only.
+- PASS on final combined worktree: selected library 103/103, unified integration
+  39/39, custody authority 10/10, strict affected all-target/all-feature Clippy,
+  formatting and diff hygiene.
+- Pending: commit corrected bytes and repeat fresh independent dual review
+  before any terminal heavy execution.
+
 ## Exact-byte review at `c9524729a`
 
 - HOLD: fresh Rust review found producer and independent closure assign child

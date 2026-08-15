@@ -405,3 +405,15 @@ No `c9524729a` finding is rejected, deferred, or moved to another package.
 
 No `10b914da1` finding is rejected, deferred, or moved to another package.
 Fresh review is pending on the corrected exact bytes.
+
+## Exact-head terminal-review findings at `a5c2243e6`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-A5C-HIGH-001: ingress candidate validation allows closure E003 to mask whole-input E001/E002 | Accepted | Remediated: shared identity-only public preflight precedes closure arithmetic; mixed poison PASS |
+| A-TERMINAL-A5C-HIGH-002: temporal mass children lack canonical-last remainder and closure duplicates the drift | Accepted | Remediated: exact parent remainder plus frozen-parent raw mass reconstruction; five-window and one-ULP poisons PASS |
+| A-TERMINAL-A5C-MEDIUM-003: exact-head line-count evidence is stale | Accepted | Remediated: complete corrected-worktree inventory and extracted helper/test modules recorded |
+| B-TERMINAL-A5C-MEDIUM-001: sealed LSE numeric E003 reports hydrology owner | Accepted | Remediated: exact ground-surface request owner and applicable configured context with exact hashes; focused PASS |
+
+No `a5c2243e6` finding is rejected, deferred, or moved to another package.
+Fresh review is pending on the corrected exact bytes.

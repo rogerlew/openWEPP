@@ -334,6 +334,21 @@ impl DirectSurfaceLiquidIngressCandidate {
         resource: &DirectSurfaceLiquidResourceCandidate,
         input: &DirectSurfaceLiquidIngressInput,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        preflight_surface_liquid_ingress_public_identities(configuration, resource, input)
+            .map_err(|error| {
+                let code = error.code();
+                error.complete_context(
+                    code,
+                    DirectSurfaceLiquidPhase::IngressCandidate,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
+                        ..DirectSurfaceLiquidErrorContext::default()
+                    },
+                    Some(resource.beginning_state().state_sha256.clone()),
+                    self.ending_state.recomputed_sha256().ok(),
+                )
+            })?;
         if let Err(error) =
             super::surface_liquid_closure::preflight_surface_liquid_closure_arithmetic(
                 configuration,
@@ -692,18 +707,7 @@ fn execute_surface_liquid_ingress_inner(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
-    configuration.preflight_schema_and_identities()?;
-    resource
-        .beginning_state()
-        .preflight_schema_and_identities(configuration)?;
-    if input.transaction_id != resource.transaction_id() || input.transaction_id.0 == 0 {
-        return Err(DirectSurfaceLiquidError::Identity(
-            "ingress transaction mismatch",
-        ));
-    }
-    preflight_resource_working_state_identities(configuration, resource)?;
-    preflight_tile_ingress_identities(configuration, input)?;
-    preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)?;
+    preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
     configuration.validate()?;
     resource.beginning_state().validate(configuration)?;
     validate_resource_working_state_domains(configuration, resource)?;
@@ -827,6 +831,26 @@ fn execute_surface_liquid_ingress_inner(
         wb14_calls_by_ofe: call_count,
         closure_operands,
     })
+}
+
+fn preflight_surface_liquid_ingress_public_identities(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(), DirectSurfaceLiquidError> {
+    configuration.preflight_schema_and_identities()?;
+    resource
+        .beginning_state()
+        .preflight_schema_and_identities(configuration)?;
+    if input.transaction_id != resource.transaction_id() || input.transaction_id.0 == 0 {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "ingress transaction mismatch",
+        ));
+    }
+    preflight_resource_working_state_identities(configuration, resource)?;
+    preflight_tile_ingress_identities(configuration, input)?;
+    preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)?;
+    Ok(())
 }
 
 fn preflight_resource_working_state_identities(
@@ -1553,6 +1577,7 @@ fn advance_one_ofe(
     let mut retained_enthalpy = 0.0;
     let mut runoff_mass = 0.0;
     let mut runoff_enthalpy = 0.0;
+    let mut allocated_temporal_mass = vec![0.0; parcels.len()];
     let mut allocated_temporal_enthalpy = vec![0.0; parcels.len()];
 
     for boundary in boundaries.windows(2) {
@@ -1593,15 +1618,40 @@ fn advance_one_ofe(
                         "parcel support fraction is nonfinite or underflowed",
                     )
                 })?;
-            let mass = checked_surface_liquid_mul(parcel.mass_kg_m2_basis_ofe_ground, fraction)
-                .ok_or_else(|| {
-                    ingress_arithmetic_failure(
-                        transaction_id,
-                        arithmetic_key,
-                        Some(parcel.parcel_id.clone()),
-                        "parcel interval mass is nonfinite or underflowed",
-                    )
-                })?;
+            let mass = if end_s.to_bits() == parcel.end_s.to_bits() {
+                checked_surface_liquid_sub(
+                    parcel.mass_kg_m2_basis_ofe_ground,
+                    allocated_temporal_mass[parcel_index],
+                )
+            } else {
+                checked_surface_liquid_mul(parcel.mass_kg_m2_basis_ofe_ground, fraction)
+            }
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "parcel interval mass is nonfinite or underflowed",
+                )
+            })?;
+            if mass < 0.0 {
+                return Err(ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "parcel interval mass remainder is negative",
+                ));
+            }
+            allocated_temporal_mass[parcel_index] =
+                checked_surface_liquid_add(allocated_temporal_mass[parcel_index], mass)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "parcel interval mass accumulation is nonfinite",
+                        )
+                    })?;
             let enthalpy = if end_s.to_bits() == parcel.end_s.to_bits() {
                 checked_surface_liquid_sub(
                     parcel.enthalpy_j_m2_basis_ofe_ground,

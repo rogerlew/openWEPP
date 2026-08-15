@@ -4,11 +4,11 @@ use super::{
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, GroundWaterKey,
     LandSurfaceEnergyError, LandSurfaceEnergyShadowError, OfeId, OwnerRollbackHash,
     PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
-    ProductionSoilReceiverOperands, RealReceiverClosureOperands, ResourceOwnerId, Sha256,
-    Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId, SurfaceId, TileId, TileState,
-    UnifiedReceiverExpectations, WaterProtocol, checked_surface_liquid_add,
-    checked_surface_liquid_close, checked_surface_liquid_div, checked_surface_liquid_mul,
-    checked_surface_liquid_sub, checked_surface_liquid_sum,
+    ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
+    ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
+    SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol,
+    checked_surface_liquid_add, checked_surface_liquid_close, checked_surface_liquid_div,
+    checked_surface_liquid_mul, checked_surface_liquid_sub, checked_surface_liquid_sum,
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
@@ -1624,18 +1624,48 @@ pub(super) fn preflight_sealed_finalization_numerics(
                 || !layer.ending_temperature_k.is_finite()
         })
     });
-    let (owner_id, ofe_id, tile_id, detail) = if let Some(tile) = lse_failure {
+    let (context, detail) = if let Some(tile) = lse_failure {
+        let ground_request = protocol
+            .requests
+            .iter()
+            .find(|request| {
+                request.key.requesting_component == RequestingComponent::GroundSurface
+                    && request.key.ofe_id == tile.ofe_id
+                    && request.key.requesting_tile_id == tile.tile_id
+            })
+            .map(|request| &request.key);
+        let lse_owner_id = ground_request
+            .or_else(|| {
+                protocol
+                    .requests
+                    .iter()
+                    .find(|request| {
+                        request.key.requesting_component == RequestingComponent::GroundSurface
+                    })
+                    .map(|request| &request.key)
+            })
+            .map(|key| key.requesting_owner_id.clone());
         (
-            &protocol.hydrology_owner_id,
-            &tile.ofe_id,
-            &tile.tile_id,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(protocol.transaction_id),
+                owner_id: lse_owner_id,
+                ofe_id: Some(tile.ofe_id.clone()),
+                tile_id: Some(tile.tile_id.clone()),
+                surface_id: ground_request.and_then(|key| key.surface_id.clone()),
+                source_id: ground_request.map(|key| key.source_id.clone()),
+                parcel_id: None,
+            },
             "nonfinite sealed LSE tile receiver",
         )
     } else if let Some(tile) = thermal_failure {
         (
-            &tile.owner_id,
-            &tile.ofe_id,
-            &tile.tile_id,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(protocol.transaction_id),
+                owner_id: Some(tile.owner_id.clone()),
+                ofe_id: Some(tile.ofe_id.clone()),
+                tile_id: Some(tile.tile_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
             "nonfinite sealed soil-thermal tile receiver",
         )
     } else {
@@ -1644,13 +1674,7 @@ pub(super) fn preflight_sealed_finalization_numerics(
     Err(DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(protocol.transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ofe_id: Some(ofe_id.clone()),
-            tile_id: Some(tile_id.clone()),
-            ..DirectSurfaceLiquidErrorContext::default()
-        },
+        context,
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(protocol.beginning_snapshot_sha256.to_string()),
             attempted_owner_sha256: Some(attempted_sha256.to_owned()),

@@ -1,16 +1,164 @@
 //! Public canonical-context poisons for the surface-liquid ingress boundary.
 
-use openwepp_kernel_contract::TransactionId;
+use openwepp_kernel_contract::{TileId, TransactionId};
+use openwepp_land_surface_energy::{SourceId, SurfaceId};
 
 use super::tests::{
     initial_state, one_tile_configuration, open_ingress, parameters, resource_candidate,
 };
 use super::{
-    DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidErrorCode,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidPhase,
+    DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidPhase,
     DirectSurfaceLiquidReceiptDisposition, DirectTileGroundIngress, INTERVAL_S,
     WATER_DENSITY_KG_M3, execute_surface_liquid_ingress, liquid_specific_enthalpy,
 };
+
+fn five_window_configuration() -> DirectSurfaceLiquidConfiguration {
+    let base = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let records = (0..5)
+        .map(|index| {
+            let mut record = base.records[0].clone();
+            record.key.tile_id = TileId::try_new(format!("tile-{index}")).expect("tile");
+            record.key.surface_id =
+                SurfaceId::try_new(format!("surface-tile-{index}")).expect("surface");
+            record.key.source_id =
+                SourceId::try_new(format!("source-tile-{index}")).expect("source");
+            record.tile_fraction = 0.2;
+            record.capacity_kg_m2_tile = 1.0;
+            record
+        })
+        .collect();
+    DirectSurfaceLiquidConfiguration::new(
+        base.owner_id,
+        base.run_id,
+        base.ofe_topology,
+        base.ofe_bindings,
+        records,
+    )
+    .expect("five-window configuration")
+}
+
+#[test]
+fn candidate_validation_preflights_public_schema_and_identity_before_closure_arithmetic() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(4_140);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut candidate =
+        execute_surface_liquid_ingress(&configuration, &resource, &input).expect("valid candidate");
+    candidate
+        .closure_operands
+        .poison_first_store_arithmetic_overflow_for_test();
+
+    let mut wrong_transaction = input.clone();
+    wrong_transaction.transaction_id = TransactionId(4_141);
+    let error = candidate
+        .validate(&configuration, &resource, &wrong_transaction)
+        .expect_err("identity preflight must precede closure arithmetic");
+    let failure = error.failure().expect("canonical identity failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IngressCandidate);
+    assert!(failure.rollback.beginning_owner_sha256.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+
+    let mut empty_configuration = configuration.clone();
+    empty_configuration.records.clear();
+    let error = candidate
+        .validate(&empty_configuration, &resource, &input)
+        .expect_err("schema preflight must precede closure arithmetic");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E001);
+}
+
+#[test]
+fn five_window_temporal_mass_uses_exact_parent_remainder_and_rejects_one_ulp_loss() {
+    let configuration = five_window_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(4_142);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let mut ingress = configuration
+        .records
+        .iter()
+        .enumerate()
+        .map(|(index, record)| open_ingress(record, if index == 0 { 0.5 } else { 0.0 }))
+        .collect::<Vec<_>>();
+    let support_windows = [
+        (360.0, 720.0),
+        (720.0, 1_080.0),
+        (1_080.0, 1_440.0),
+        (1_440.0, 1_800.0),
+    ];
+    for (row, (start_s, end_s)) in ingress.iter_mut().skip(1).zip(support_windows) {
+        let DirectTileGroundIngress::OpenRawPrecipitation {
+            raw_precipitation, ..
+        } = row
+        else {
+            panic!("open ingress fixture");
+        };
+        raw_precipitation.start_s = start_s;
+        raw_precipitation.end_s = end_s;
+    }
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: ingress,
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("five-window candidate");
+    candidate
+        .validate(&configuration, &resource, &input)
+        .expect("exact temporal mass closure");
+
+    let parent = candidate
+        .closure_operands()
+        .source_parcels()
+        .iter()
+        .find(|row| row.mass_kg_m2_basis_ofe_ground().to_bits() == 0.1_f64.to_bits())
+        .expect("0.1 kg/m2 parent");
+    let attributed = candidate
+        .receipts()
+        .iter()
+        .filter(|row| row.source_parcel_id == parent.source_parcel_id())
+        .map(|row| row.mass_kg_m2_basis_ofe_ground)
+        .sum::<f64>();
+    assert_eq!(
+        attributed.to_bits(),
+        parent.mass_kg_m2_basis_ofe_ground().to_bits()
+    );
+    let all_ratio = (0..5).map(|_| 0.1 * (360.0 / 1_800.0)).sum::<f64>();
+    assert_ne!(all_ratio.to_bits(), 0.1_f64.to_bits());
+
+    let mut poison = candidate.clone();
+    let receipt = poison
+        .receipts
+        .iter_mut()
+        .find(|row| {
+            row.source_parcel_id == parent.source_parcel_id()
+                && row.mass_kg_m2_basis_ofe_ground > 0.0
+        })
+        .expect("positive temporal child");
+    receipt.mass_kg_m2_basis_ofe_ground =
+        f64::from_bits(receipt.mass_kg_m2_basis_ofe_ground.to_bits() - 1);
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &poison.closure_operands,
+        &poison.receipts,
+        &poison.ending_state,
+    )
+    .expect_err("one-ULP temporal mass loss must fail exact closure");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+}
 
 #[test]
 fn cadence_failure_is_e008_with_exact_transaction_and_attempt_hash() {

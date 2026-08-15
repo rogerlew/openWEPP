@@ -4,6 +4,8 @@
 
 #[path = "surface_liquid_enthalpy_closure.rs"]
 mod enthalpy_reconstruction;
+#[path = "surface_liquid_raw_parent_closure.rs"]
+mod raw_parent_reconstruction;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -1350,8 +1352,9 @@ fn project_parcel_arithmetic(
         .collect::<Result<BTreeMap<_, _>, _>>()?;
 
     let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
-    let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
-    let mut raw_source_mass = BTreeMap::<(OfeId, String), f64>::new();
+    let (raw_ofe_mass, raw_source_mass) =
+        raw_parent_reconstruction::reconstruct_raw_parent_mass(configuration, operands)?;
+    let mut replayed_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
     let mut expected_continuations = BTreeMap::<OfeId, DirectProjectedContinuation>::new();
     for ofe_id in &configuration.ofe_topology {
         let partition = operands
@@ -1397,6 +1400,7 @@ fn project_parcel_arithmetic(
         let mut cumulative_supply_m = partition.beginning_cumulative_supply_m;
         let mut cumulative_infiltration_m = partition.beginning_cumulative_infiltration_m;
         let mut routed_segments = Vec::new();
+        let mut allocated_temporal_mass = vec![0.0; segments.len()];
         let mut allocated_temporal_enthalpy = vec![0.0; segments.len()];
         for window in boundaries.windows(2) {
             let start_s = window[0];
@@ -1413,6 +1417,21 @@ fn project_parcel_arithmetic(
                         end_s - start_s,
                         segment.end_s - segment.start_s,
                     )?;
+                    // Replay the producer's temporal child identity separately
+                    // so receipt bits remain independently checked. Raw mass
+                    // custody is reconstructed above only from frozen parents,
+                    // never from these replayed children.
+                    let is_last = end_s.to_bits() == segment.end_s.to_bits();
+                    let (mass, allocated) = enthalpy_reconstruction::allocate_ordered_child(
+                        segment.mass,
+                        allocated_temporal_mass[segment_index],
+                        checked_surface_liquid_mul(segment.mass, fraction),
+                        is_last,
+                    )?;
+                    if mass < 0.0 {
+                        return None;
+                    }
+                    allocated_temporal_mass[segment_index] = allocated;
                     let (enthalpy, allocated) = enthalpy_reconstruction::allocate_ordered_child(
                         segment.enthalpy,
                         allocated_temporal_enthalpy[segment_index],
@@ -1421,14 +1440,10 @@ fn project_parcel_arithmetic(
                             end_s - start_s,
                             segment.end_s - segment.start_s,
                         ),
-                        end_s.to_bits() == segment.end_s.to_bits(),
+                        is_last,
                     )?;
                     allocated_temporal_enthalpy[segment_index] = allocated;
-                    Some((
-                        segment.clone(),
-                        checked_surface_liquid_mul(segment.mass, fraction)?,
-                        enthalpy,
-                    ))
+                    Some((segment.clone(), mass, enthalpy))
                 })
                 .collect::<Option<Vec<_>>>()
                 .ok_or_else(|| {
@@ -1465,6 +1480,17 @@ fn project_parcel_arithmetic(
             if supply_mass == 0.0 {
                 continue;
             }
+            let raw_enthalpy = replayed_ofe_enthalpy.entry(ofe_id.clone()).or_default();
+            *raw_enthalpy =
+                checked_surface_liquid_add(*raw_enthalpy, supply_enthalpy).ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "partition raw enthalpy aggregate arithmetic",
+                    )
+                })?;
             let duration_s = end_s - start_s;
             let interval_supply_m = checked_surface_liquid_div(supply_mass, WATER_DENSITY_KG_M3)
                 .ok_or_else(|| {
@@ -1523,36 +1549,6 @@ fn project_parcel_arithmetic(
                         "partition mixture enthalpy arithmetic",
                     )
                 })?;
-            raw_totals
-                .entry(ofe_id.clone())
-                .or_default()
-                .checked_add(supply_mass, supply_enthalpy)
-                .ok_or_else(|| {
-                    contextual_ofe_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        ofe_id,
-                        "partition raw aggregate arithmetic",
-                    )
-                })?;
-            for (segment, mass, _) in &contributions {
-                let accumulated = raw_source_mass
-                    .entry((ofe_id.clone(), segment.source_parcel_id.clone()))
-                    .or_default();
-                *accumulated =
-                    checked_surface_liquid_add(*accumulated, *mass).ok_or_else(|| {
-                        contextual_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            &segment.origin_store_key,
-                            Some(segment.source_parcel_id.clone()),
-                            "partition raw source mass arithmetic",
-                        )
-                    })?;
-            }
-
             let mut allocated_infiltration = 0.0;
             let mut allocated_mixed_enthalpy = 0.0;
             let count = contributions.len();
@@ -2015,16 +2011,10 @@ fn project_parcel_arithmetic(
         raw_source_mass,
         expected_ofe_mass,
         actual_ofe_mass,
-        raw_ofe_mass: raw_totals
-            .iter()
-            .map(|(ofe_id, amount)| (ofe_id.clone(), amount.mass))
-            .collect(),
+        raw_ofe_mass,
         expected_ofe_enthalpy,
         actual_ofe_enthalpy,
-        raw_ofe_enthalpy: raw_totals
-            .into_iter()
-            .map(|(ofe_id, amount)| (ofe_id, amount.enthalpy))
-            .collect(),
+        raw_ofe_enthalpy: replayed_ofe_enthalpy,
         expected_store_liquid: store_liquid,
         expected_continuations,
     })
@@ -2061,11 +2051,6 @@ fn compare_source_mass_projection(
             .get(&(ofe_id.clone(), source_parcel_id.clone()))
             .copied()
             .unwrap_or_default();
-        let raw = projection
-            .raw_source_mass
-            .get(&(ofe_id, source_parcel_id.clone()))
-            .copied()
-            .unwrap_or_default();
         compare_projected_value(
             actual,
             expected,
@@ -2077,17 +2062,23 @@ fn compare_source_mass_projection(
             Some(source_parcel_id.clone()),
             "source parcel attributed mass join",
         )?;
-        compare_projected_value(
-            expected,
-            raw,
-            DirectSurfaceLiquidClosureUnit::MassKgM2,
-            disposition,
-            operands.transaction_id,
-            &configuration.owner_id,
-            &source.origin_store_key,
-            Some(source_parcel_id),
-            "raw source parcel mass equals attributed mass",
-        )?;
+        if let Some(raw) = projection
+            .raw_source_mass
+            .get(&(ofe_id, source_parcel_id.clone()))
+            .copied()
+        {
+            compare_projected_value(
+                expected,
+                raw,
+                DirectSurfaceLiquidClosureUnit::MassKgM2,
+                disposition,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &source.origin_store_key,
+                Some(source_parcel_id),
+                "raw parent source mass equals attributed mass",
+            )?;
+        }
     }
     Ok(())
 }
@@ -2131,20 +2122,45 @@ fn compare_ofe_mass_projection(
             &ofe_id,
             "OFE attributed mass join",
         )?;
+        let expected_raw = checked_surface_liquid_sum(
+            operands
+                .source_parcels
+                .iter()
+                .filter(|source| source.basis_ofe_id == ofe_id)
+                .map(|source| {
+                    projection
+                        .expected_source_mass
+                        .get(&(ofe_id.clone(), source.source_parcel_id.clone()))
+                        .copied()
+                        .unwrap_or_default()
+                }),
+        )
+        .ok_or_else(|| {
+            contextual_ofe_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &ofe_id,
+                "raw parent OFE attribution arithmetic",
+            )
+        })?;
         compare_ofe_value(
-            expected,
+            expected_raw,
             raw,
             DirectSurfaceLiquidClosureUnit::MassKgM2,
             disposition,
             operands.transaction_id,
             &configuration.owner_id,
             &ofe_id,
-            "raw OFE mass equals attributed mass",
+            "raw parent OFE mass equals attributed mass",
         )?;
     }
     Ok(())
 }
 
+// The comparison order is contract-significant: identity, dimensional value,
+// exact parcel mass/enthalpy, source mass, OFE mass, then OFE enthalpy.
+#[allow(clippy::too_many_lines)]
 fn compare_parcel_projection(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
@@ -2182,6 +2198,18 @@ fn compare_parcel_projection(
             Some(key.source_parcel_id.clone()),
             "parcel mass join",
         )?;
+        if matches!(disposition, ComparisonDisposition::RequireClosure)
+            && actual.mass.to_bits() != expected.mass.to_bits()
+        {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E010,
+                operands.transaction_id,
+                &configuration.owner_id,
+                store_key,
+                Some(key.source_parcel_id.clone()),
+                "parcel exact mass authority join",
+            ));
+        }
         if matches!(disposition, ComparisonDisposition::RequireClosure)
             && !enthalpy_reconstruction::exact_q_match(actual.enthalpy, expected.enthalpy)
         {
