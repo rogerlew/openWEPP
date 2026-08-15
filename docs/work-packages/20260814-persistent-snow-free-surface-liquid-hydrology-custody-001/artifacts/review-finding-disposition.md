@@ -184,3 +184,16 @@ replacement/reorder handling for every canonical record class.
 Per-source mass and enthalpy, OFE aggregate enthalpy, routed destination
 identity, and store arithmetic now flow through shared projections and a shared
 comparison disposition. Replacement/reorder controls retain the actual row.
+
+## Constitutive mixed-enthalpy and source-identity findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B/A-TERMINAL-CLOSURE4-CRITICAL-001: production replaces canonical interval `h_mix` with source-specific temperature | Accepted | Remediated at `e19bcdbcf`; focused PASS |
+| A-TERMINAL-CLOSURE4-HIGH-002: zero frozen source identity/cardinality fails open | Accepted | Remediated at `e19bcdbcf`; focused PASS |
+| A-TERMINAL-CLOSURE4-HIGH-003: multi-tile aggregate failure fabricates first-tile context | Accepted | Remediated at `e19bcdbcf`; focused PASS |
+
+Canonical interval mixing is restored without tolerance or model change. Raw
+source identity and enthalpy remain independently frozen; post-mix attribution
+uses the single accepted `h_mix`. Aggregate failures expose only identities
+that are actually known.

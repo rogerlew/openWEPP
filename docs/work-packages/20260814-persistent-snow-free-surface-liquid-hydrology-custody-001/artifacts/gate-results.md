@@ -498,6 +498,28 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: every edited Rust file remains below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology closure review.
 
+## Canonical mixed-enthalpy and source-identity remediation at `e19bcdbcf`
+
+- CRITICAL HOLD retained: closure4 reviews found production had replaced the
+  required interval-wide `h_mix = sum(Q) / sum(m)` with source-specific
+  temperatures, changing accepted infiltration, retention, runoff and routing
+  energy for mixed-temperature inputs.
+- HOLD retained: frozen zero-source identity/cardinality was not validated and
+  multi-tile OFE aggregate failures fabricated first-tile context.
+- PASS: producer checked-sums raw interval mass/enthalpy, applies the canonical
+  zero-supply branch, derives one `h_mix`, and assigns it to every attributed
+  infiltration/retained/runoff/routed parcel.
+- PASS: independent operands preserve raw source mass/Q and exact identity,
+  including zero rows, then reconstruct post-mix per-source `mass * h_mix` and
+  raw-total-to-mixed-total energy separately.
+- PASS: deletion, rekey, duplicate and kind-swap poisons fail closed; unequal
+  source temperatures and source order produce identical accepted mixed state.
+- PASS: OFE-only aggregate failures carry owner/OFE and typed absence for
+  tile/surface/source when a unique identity cannot be proven.
+- PASS: orchestrator quick suite, 554/554; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; check; strict Clippy; formatting; diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Multi-record precedence and attribution remediation at `ee240618c`
 
 - HOLD retained: Rust closure review found that the local arithmetic preflight

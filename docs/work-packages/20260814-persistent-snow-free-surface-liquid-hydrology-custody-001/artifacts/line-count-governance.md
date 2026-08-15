@@ -11,10 +11,10 @@ Current affected-file counts after remediation:
 | `direct_runtime/surface_liquid_owner.rs` | 2,347 | WARN: cohesive owner schema, canonical persistence, D/A/F reconstruction, failure payloads, and candidate validation; crate-local tests were extracted below the mandatory threshold. |
 | `direct_runtime/surface_liquid_owner_tests.rs` | 876 | PASS; crate-local owner and checked-arithmetic tests extracted mechanically from the production module. |
 | `vegetation_real_hydrology_shadow.rs` | 2,157 | WARN: only canonical snapshot and production-lane accessors changed; no new constitutive owner was added. |
-| `direct_runtime/surface_liquid_ingress.rs` | 1,954 | PASS: ingress construction, source-specific enthalpy and canonical validation precedence; crate-local tests are separate. |
-| `direct_runtime/surface_liquid_ingress_tests.rs` | 1,453 | PASS; focused ingress, multi-record precedence, attribution and routed-context tests. |
+| `direct_runtime/surface_liquid_ingress.rs` | 1,927 | PASS: ingress construction, canonical interval-mixed enthalpy and validation precedence; crate-local tests are separate. |
+| `direct_runtime/surface_liquid_ingress_tests.rs` | 1,601 | PASS; focused ingress, mixed-enthalpy, source-identity and multi-record tests. |
 | `land_surface_energy_shadow/mod.rs` | 2,881 | WARN: cohesive default-off arbitration plus complete receiver reconstruction; strict helpers are decomposed and a future campaign split may separate receiver closure DTOs. |
-| `direct_runtime/surface_liquid_closure.rs` | 1,396 | PASS; shared store/parcel projection, exhaustive arithmetic preflight and independent validator. |
+| `direct_runtime/surface_liquid_closure.rs` | 1,662 | PASS; raw-source/post-mix projections, exhaustive arithmetic preflight and independent validator. |
 | `direct_runtime/surface_liquid_wb14.rs` | 303 | PASS; dedicated shared production transition. |
 
 Strict affected-crate Clippy passes with `-D warnings`; no line-count lint is

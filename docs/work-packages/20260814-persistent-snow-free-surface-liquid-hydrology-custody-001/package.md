@@ -99,10 +99,14 @@ branch, PR or push is in scope.
   per-source enthalpy, routed errors used origin rather than destination
   context, and store arithmetic remained duplicated. The correction at
   `636dd36be` shares comparison/store projection, closes per-key mass and
-  enthalpy plus OFE totals, and uses destination context. It passes 552/552
-  orchestrator, 19/19 focused integration and 9/9 authority tests, strict
-  Clippy, formatting, diff hygiene, and line-count governance. Fresh exact-byte
-  reviews remain pending.
+  enthalpy plus OFE totals, but closure4 review found a critical constitutive
+  regression from canonical interval `h_mix` to source-specific temperatures,
+  unvalidated zero-source identity, and fabricated first-tile aggregate
+  context. The correction at `e19bcdbcf` restores `h_mix`, freezes every raw
+  source identity and uses typed absent context where identity is unknowable.
+  It passes 554/554 orchestrator, 19/19 focused integration and 9/9 authority
+  tests, strict Clippy, formatting, diff hygiene, and line-count governance.
+  Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

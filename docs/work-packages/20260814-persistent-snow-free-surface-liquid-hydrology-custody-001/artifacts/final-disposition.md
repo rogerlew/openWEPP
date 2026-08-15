@@ -41,7 +41,11 @@ attribution in producer sequences. The correction at `86ddb8aa2` uses one
 shared projection for preflight/final closure and membership-aware attribution.
 Closure3 review then found per-source enthalpy comparison absent, routed errors
 using origin instead of destination context, and duplicated store arithmetic.
-The correction at `636dd36be` closes those joins through shared projections and
-disposition. Focused gates pass, but fresh exact-byte reviews and terminal
-verification remain required. This is not yet a terminal custody-lift or
-resumed-Child-3 claim.
+The correction at `636dd36be` closed those joins but introduced a critical
+constitutive regression from interval `h_mix` to source-specific temperatures,
+left zero-source identity unvalidated and fabricated first-tile aggregate
+context. The correction at `e19bcdbcf` restores canonical `h_mix`, separates
+raw-source and post-mix ledgers, validates every source row and carries only
+known aggregate identity. Focused gates pass, but fresh exact-byte reviews and
+terminal verification remain required. This is not yet a terminal custody-lift
+or resumed-Child-3 claim.
