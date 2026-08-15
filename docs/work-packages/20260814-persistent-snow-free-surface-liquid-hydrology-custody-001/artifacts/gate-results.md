@@ -719,3 +719,10 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: authority-suite anti-evasion.
 - PASS: AUTH11, 3/3.
 - PASS: SC-SURFACELIQUID unit-compliance lint.
+
+## Line-count inventory reconciliation
+
+- HOLD retained: closure12 hydrology review found `runoff.rs` appeared twice
+  with conflicting incomplete and WARN dispositions.
+- PASS: the obsolete duplicate row is removed; one authoritative WARN row
+  records current count, rationale and follow-on split intent.

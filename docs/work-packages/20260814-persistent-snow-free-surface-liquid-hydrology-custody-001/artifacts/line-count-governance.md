@@ -6,7 +6,6 @@ Current affected-file counts after remediation:
 
 | File | Lines | Disposition |
 |---|---:|---|
-| `direct_runtime/runoff.rs` | 2,852 | Below the mandatory 3,000-line threshold after extracting the shared WB14 transition. |
 | `direct_runtime/00_core_frames.rs` | 2,783 | WARN: the increment adds only the bounded optional-owner attachment and validation seam; a broader split is outside this custody package. |
 | `direct_runtime/surface_liquid_owner.rs` | 2,347 | WARN: cohesive owner schema, canonical persistence, D/A/F reconstruction, failure payloads, and candidate validation; crate-local tests were extracted, and a future campaign split will separate persistence/schema from arbitration validation. |
 | `direct_runtime/surface_liquid_owner_tests.rs` | 876 | PASS; crate-local owner and checked-arithmetic tests extracted mechanically from the production module. |

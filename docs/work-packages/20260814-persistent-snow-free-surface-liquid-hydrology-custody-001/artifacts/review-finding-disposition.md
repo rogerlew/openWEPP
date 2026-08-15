@@ -282,3 +282,9 @@ ordering drift.
 The ending join now distinguishes missing, excess, replacement and reorder by
 cardinality and sequence direction. Tests bind exact context availability and
 rollback hashes at every structural position.
+
+## Line-count inventory finding
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-TERMINAL-CLOSURE12-MEDIUM-001: duplicate `runoff.rs` rows carry conflicting dispositions | Accepted | Remediated by removing the obsolete row; Markdown lint PASS |
