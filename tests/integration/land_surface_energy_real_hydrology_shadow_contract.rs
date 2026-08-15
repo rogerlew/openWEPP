@@ -24,8 +24,9 @@ use openwepp_hillslope_orchestrator::{
     DirectFrostRuntimeCarry, DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectRunFrame, DirectRunIdentity, DirectSubsurfaceLayerState,
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord,
-    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding,
-    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase, DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey,
     DirectTileGroundIngress,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};

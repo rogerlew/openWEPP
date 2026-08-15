@@ -485,3 +485,15 @@ No `73299b981` finding is rejected, deferred or moved to another package.
 No `e33f4cdd4` finding is rejected, deferred or moved to another package. The
 fresh hydrology/ownership review of the same bytes returned PASS, but it does
 not override the Rust correctness HOLD.
+
+## Exact-head terminal-review findings at `fc65b2819`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-FC65-HIGH-001: surface-liquid callback variants retain wrong boundary phase/context | Accepted | Remediated in worktree: raw and canonical variants rebind to ResourceCandidate with known transaction and complete hashes while retaining applicable row identity; matrix PASS |
+| A-TERMINAL-FC65-HIGH-002: nested land-surface error taxonomy is collapsed to E003 | Accepted | Remediated in worktree: exhaustive centralized mapping preserves E001/E002/E003/E004/E010/E011 classes; 19-case matrix PASS |
+| A/B-TERMINAL-FC65-HIGH-003: v3 attempted framing discards raw malformed configuration/state attempt | Accepted | Remediated in worktree: raw configuration/state attempts are framed-joined with unified v3; stale-digest finite/nonfinite mutation poisons PASS |
+| A-TERMINAL-FC65-HIGH-004: pre-callback receiver expectations omit configured infiltration thermal layer | Accepted | Remediated in worktree: exact configured infiltration layer must be first in every expected tile before callback; wrong/deleted/replaced poisons PASS |
+| A-TERMINAL-FC65-MEDIUM-005: duplicated error-taxonomy translation has drifted | Accepted | Remediated in worktree: one boundary-aware taxonomy serves receiver and unified callback paths; strict Clippy PASS |
+
+No `fc65b2819` finding is rejected, deferred or moved to another package.

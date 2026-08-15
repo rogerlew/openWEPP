@@ -62,8 +62,8 @@ use receiver_validation::{
     preflight_request_cardinality, preflight_request_domains, preflight_request_identities,
     protocol_error_code_and_detail, protocol_failure, receiver_atomic_failure,
     receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
-    request_failure, require_receiver_close, snapshot_failure, validate_surface_production_binding,
-    water_protocol_sha256, water_request_batch_sha256,
+    request_failure, require_receiver_close, shadow_error_code, snapshot_failure,
+    validate_surface_production_binding, water_protocol_sha256, water_request_batch_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -872,7 +872,7 @@ where
     };
     let finalized = finalize_fixed_caps(&arbitration.authorizations).map_err(|error| {
         unified_entry_preflight::canonicalize_callback_failure(
-            error,
+            &error,
             request_batch.transaction_id,
             &actual_snapshot,
             &attempted_sha256,
@@ -1041,6 +1041,7 @@ fn first_lane_error_context(
     }
 }
 
+#[allow(clippy::too_many_lines)]
 pub(super) fn validate_receiver_expectations(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
@@ -1134,6 +1135,28 @@ pub(super) fn validate_receiver_expectations(
             violation.detail,
         )
         .into());
+    }
+    for ((ofe_id, tile_id), layers) in &expectations.ordered_thermal_layers {
+        let configured_infiltration_layer = configuration
+            .ofe_bindings
+            .iter()
+            .find(|binding| &binding.ofe_id == ofe_id)
+            .map(|binding| &binding.infiltration_soil_thermal_layer_id);
+        if configured_infiltration_layer != layers.first() {
+            return Err(DirectSurfaceLiquidError::atomic_envelope_failure(
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(owner.transaction_id()),
+                    owner_id: Some(expectations.soil_thermal_owner_id.clone()),
+                    ofe_id: Some(ofe_id.clone()),
+                    tile_id: Some(tile_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(beginning_hydrology_snapshot_sha256.to_string()),
+                Some(receiver_expectations_sha256(expectations)),
+                "soil-thermal infiltration layer is not the configured first layer",
+            )
+            .into());
+        }
     }
     Ok(())
 }

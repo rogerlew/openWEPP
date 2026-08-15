@@ -13,10 +13,10 @@ use super::{
     WaterAmount, compose_unified_beginning_hydrology_snapshot_sha256, partition_requests,
     preflight_request_bounds, preflight_request_cardinality, preflight_request_domains,
     preflight_request_identities, protocol_error_code_and_detail, receiver_expectations_sha256,
-    request_failure, snapshot_failure, unified_beginning_hydrology_snapshot_sha256,
-    validate_native_shadow_exact_one_custody, validate_native_shadow_supported_domain,
-    validate_receiver_expectations, validate_surface_production_binding,
-    water_request_batch_sha256,
+    request_failure, shadow_error_code, snapshot_failure,
+    unified_beginning_hydrology_snapshot_sha256, validate_native_shadow_exact_one_custody,
+    validate_native_shadow_supported_domain, validate_receiver_expectations,
+    validate_surface_production_binding, water_request_batch_sha256,
 };
 
 pub(super) struct UnifiedEntryPreflight {
@@ -139,46 +139,66 @@ fn preflight_unified_entry_identity_envelope(
     ),
     LandSurfaceEnergyShadowError,
 > {
-    configuration
-        .preflight_schema_and_identities()
-        .map_err(|error| {
+    let provisional_unified_attempt = unified_entry_attempt_sha256(
+        soil_adapter,
+        request_batch,
+        soil_sources,
+        ingress,
+        receiver_expectations,
+        expected_snapshot,
+        expected_snapshot,
+    );
+    configuration.validate().map_err(|error| {
+        join_raw_and_unified_attempt(
             snapshot_failure(
                 error.code(),
                 soil_adapter.owner,
                 configuration,
                 "invalid surface-liquid configuration identity envelope",
-            )
-        })?;
+            ),
+            &provisional_unified_attempt,
+        )
+    })?;
     let surface_state = soil_adapter
         .owner
         .beginning_frame()
         .surface_liquid_shadow
         .as_deref()
         .ok_or_else(|| {
-            snapshot_failure(
-                DirectSurfaceLiquidErrorCode::E002,
-                soil_adapter.owner,
-                configuration,
-                "missing beginning surface-liquid owner",
+            join_raw_and_unified_attempt(
+                snapshot_failure(
+                    DirectSurfaceLiquidErrorCode::E002,
+                    soil_adapter.owner,
+                    configuration,
+                    "missing beginning surface-liquid owner",
+                ),
+                &provisional_unified_attempt,
             )
         })?;
     surface_state
         .preflight_schema_and_identities(configuration)
         .map_err(|error| {
-            snapshot_failure(
-                error.code(),
-                soil_adapter.owner,
-                configuration,
-                "invalid beginning surface-liquid identity envelope",
+            join_raw_and_unified_attempt(
+                snapshot_failure(
+                    error.code(),
+                    soil_adapter.owner,
+                    configuration,
+                    "invalid beginning surface-liquid identity envelope",
+                ),
+                &provisional_unified_attempt,
             )
         })?;
-    validate_surface_production_binding(soil_adapter.owner, configuration)?;
+    validate_surface_production_binding(soil_adapter.owner, configuration)
+        .map_err(|error| join_raw_and_unified_attempt(error, &provisional_unified_attempt))?;
     if &configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
-        return Err(snapshot_failure(
-            DirectSurfaceLiquidErrorCode::E002,
-            soil_adapter.owner,
-            configuration,
-            "mixed unified hydrology owner",
+        return Err(join_raw_and_unified_attempt(
+            snapshot_failure(
+                DirectSurfaceLiquidErrorCode::E002,
+                soil_adapter.owner,
+                configuration,
+                "mixed unified hydrology owner",
+            ),
+            &provisional_unified_attempt,
         ));
     }
     let actual_snapshot = compose_unified_beginning_hydrology_snapshot_sha256(
@@ -197,6 +217,17 @@ fn preflight_unified_entry_identity_envelope(
     );
     preflight_request_identities(request_batch, &actual_snapshot)
         .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
+    surface_state.validate(configuration).map_err(|error| {
+        join_raw_and_unified_attempt(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid beginning surface-liquid owner",
+            ),
+            &attempted_sha256,
+        )
+    })?;
     if let Err(error) = preflight_surface_liquid_ingress_input_identities(configuration, ingress) {
         return Err(contextualize_ingress_identity_failure(
             &error,
@@ -242,6 +273,34 @@ fn preflight_unified_entry_identity_envelope(
     ))
 }
 
+fn join_raw_and_unified_attempt(
+    error: LandSurfaceEnergyShadowError,
+    unified_attempt: &str,
+) -> LandSurfaceEnergyShadowError {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error) = error else {
+        return error;
+    };
+    let Some(failure) = surface_error.failure() else {
+        return LandSurfaceEnergyShadowError::SurfaceLiquid(surface_error);
+    };
+    let mut joined = FramedSha256::new("openwepp-unified-entry-raw-attempt-join-v1");
+    if let Some(raw_attempt) = &failure.rollback.attempted_owner_sha256 {
+        joined.string("raw_attempt", raw_attempt);
+    }
+    joined.string("unified_attempt", unified_attempt);
+    DirectSurfaceLiquidError::canonical_failure(
+        failure.code,
+        failure.phase,
+        failure.context.clone(),
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: failure.rollback.beginning_owner_sha256.clone(),
+            attempted_owner_sha256: Some(joined.finish()),
+        },
+        failure.detail.clone(),
+    )
+    .into()
+}
+
 pub(super) fn complete_unified_failure(
     error: LandSurfaceEnergyShadowError,
     actual_snapshot: &Sha256Digest,
@@ -281,39 +340,32 @@ pub(super) fn complete_unified_failure(
 }
 
 pub(super) fn canonicalize_callback_failure(
-    error: LandSurfaceEnergyShadowError,
+    error: &LandSurfaceEnergyShadowError,
     transaction_id: super::TransactionId,
     actual_snapshot: &Sha256Digest,
     attempted_sha256: &str,
 ) -> LandSurfaceEnergyShadowError {
-    let (code, detail) = match error {
-        LandSurfaceEnergyShadowError::SurfaceLiquid(error) => {
-            return complete_unified_failure(
-                LandSurfaceEnergyShadowError::SurfaceLiquid(error),
-                actual_snapshot,
-                attempted_sha256,
-            );
-        }
-        LandSurfaceEnergyShadowError::Identity(detail)
-        | LandSurfaceEnergyShadowError::UnsupportedCustody(detail) => {
-            (DirectSurfaceLiquidErrorCode::E002, detail)
-        }
-        LandSurfaceEnergyShadowError::Operand(detail) => {
-            (DirectSurfaceLiquidErrorCode::E003, detail)
-        }
-        LandSurfaceEnergyShadowError::Bound(detail) => (DirectSurfaceLiquidErrorCode::E006, detail),
-        LandSurfaceEnergyShadowError::LandSurface(_) => (
-            DirectSurfaceLiquidErrorCode::E003,
-            "LSE fixed-authorization callback",
+    let code = shadow_error_code(error);
+    let (mut context, detail) = match error {
+        LandSurfaceEnergyShadowError::SurfaceLiquid(error) => error.failure().map_or_else(
+            || {
+                (
+                    DirectSurfaceLiquidErrorContext::default(),
+                    error.to_string(),
+                )
+            },
+            |failure| (failure.context.clone(), failure.detail.clone()),
+        ),
+        _ => (
+            DirectSurfaceLiquidErrorContext::default(),
+            error.to_string(),
         ),
     };
+    context.transaction_id = Some(transaction_id);
     DirectSurfaceLiquidError::canonical_failure(
         code,
         DirectSurfaceLiquidPhase::ResourceCandidate,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(transaction_id),
-            ..DirectSurfaceLiquidErrorContext::default()
-        },
+        context,
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(actual_snapshot.to_string()),
             attempted_owner_sha256: Some(attempted_sha256.to_owned()),

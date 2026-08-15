@@ -901,6 +901,51 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `fc65b2819`
+
+- HOLD: both reviewers found that raw surface-liquid callback failures retain
+  an earlier phase or empty context rather than the known ResourceCandidate
+  transaction boundary.
+- HOLD: the Rust reviewer found nested land-surface taxonomy collapsed to E003
+  and receiver expectations missing the configured infiltration thermal layer
+  before callback execution.
+- HOLD: both reviewers found unified v3 overwriting complete raw malformed
+  configuration/state attempted evidence.
+- HOLD: the Rust reviewer traced the taxonomy drift to three duplicated
+  translation tables and requested one boundary-aware canonical mapping.
+- PASS but non-dispositive: selected orchestrator 145/145, full orchestrator
+  library 600/600, unified integration 57/57, custody authority 10/10, strict
+  affected Clippy, formatting and diff hygiene.
+- Pending: remediate all findings and repeat fresh dual exact-byte review.
+  Heavy execution remains blocked.
+
+## `fc65b2819` HOLD remediation
+
+- PASS: raw and canonical surface-liquid callback variants are rebound to the
+  public ResourceCandidate phase with the known transaction, actual beginning
+  and complete attempted hashes while preserving applicable lower row context.
+- PASS: one centralized boundary-aware taxonomy maps all 19 materially distinct
+  nested land-surface/shadow classes to canonical E001/E002/E003/E004/E010/E011.
+- PASS: unified attempted framing joins raw invalid configuration/state bytes
+  with the v3 envelope; distinct stale-digest finite and nonfinite mutations do
+  not alias.
+- PASS: exact configured infiltration thermal layers are validated before
+  authorization/callback; wrong-first, deleted and replaced layers retain
+  callback count zero.
+- FAIL retained: the first focused run passed 60/61 because the state poison
+  reached the expected-snapshot E002 branch; full state validation was placed
+  after request identity so raw state evidence is joined without weakening
+  precedence.
+- FAIL retained: the next run exposed request-identity-before-nonfinite-state
+  precedence when state validation was too early; the final ordering preserves
+  request identity first and the raw state-attempt join.
+- PASS on final worktree: unified integration 61/61; custody authority 10/10;
+  complete orchestrator library 600/600 in 146.948 seconds; strict affected
+  Clippy; formatting and diff hygiene.
+- PASS: every governed Rust file remains below 3,000 lines; `mod.rs` is 2,896.
+- Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

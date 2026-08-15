@@ -17,6 +17,53 @@ use crate::direct_runtime::{
 };
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
 
+pub(super) fn lse_error_code(error: &LandSurfaceEnergyError) -> DirectSurfaceLiquidErrorCode {
+    match error {
+        LandSurfaceEnergyError::MalformedSerialization(_) => DirectSurfaceLiquidErrorCode::E001,
+        LandSurfaceEnergyError::Identity { .. } | LandSurfaceEnergyError::StateLineage(_) => {
+            DirectSurfaceLiquidErrorCode::E002
+        }
+        LandSurfaceEnergyError::Topology(_) => DirectSurfaceLiquidErrorCode::E005,
+        LandSurfaceEnergyError::NonFinite(_)
+        | LandSurfaceEnergyError::ConstitutiveDomain(_)
+        | LandSurfaceEnergyError::NumericalSingular { .. }
+        | LandSurfaceEnergyError::NumericalBacktrackingLimit
+        | LandSurfaceEnergyError::NumericalIterationLimit
+        | LandSurfaceEnergyError::NumericalAcceptedResidual => DirectSurfaceLiquidErrorCode::E003,
+        LandSurfaceEnergyError::UnsupportedDomain(_) => DirectSurfaceLiquidErrorCode::E004,
+        LandSurfaceEnergyError::WaterIdentityOrBound(detail) => {
+            if detail.contains("exceed") || detail.contains("negative") {
+                DirectSurfaceLiquidErrorCode::E006
+            } else if detail.contains("duplicate")
+                || detail.contains("without exact")
+                || detail.contains("incomplete")
+            {
+                DirectSurfaceLiquidErrorCode::E005
+            } else {
+                DirectSurfaceLiquidErrorCode::E002
+            }
+        }
+        LandSurfaceEnergyError::OwnerEnvelope(_) => DirectSurfaceLiquidErrorCode::E011,
+        LandSurfaceEnergyError::ComponentClosure(_)
+        | LandSurfaceEnergyError::ControlVolumeClosure(_)
+        | LandSurfaceEnergyError::LatentJoin(_)
+        | LandSurfaceEnergyError::GroundHeatJoin(_) => DirectSurfaceLiquidErrorCode::E010,
+    }
+}
+
+pub(super) fn shadow_error_code(
+    error: &LandSurfaceEnergyShadowError,
+) -> DirectSurfaceLiquidErrorCode {
+    match error {
+        LandSurfaceEnergyShadowError::Identity(_) => DirectSurfaceLiquidErrorCode::E002,
+        LandSurfaceEnergyShadowError::Operand(_) => DirectSurfaceLiquidErrorCode::E003,
+        LandSurfaceEnergyShadowError::Bound(_) => DirectSurfaceLiquidErrorCode::E006,
+        LandSurfaceEnergyShadowError::UnsupportedCustody(_) => DirectSurfaceLiquidErrorCode::E004,
+        LandSurfaceEnergyShadowError::LandSurface(error) => lse_error_code(error),
+        LandSurfaceEnergyShadowError::SurfaceLiquid(error) => error.code(),
+    }
+}
+
 pub(super) fn validate_surface_production_binding(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
@@ -227,18 +274,7 @@ pub(super) fn canonicalize_unified_error(
                 error.to_string(),
             );
         }
-        LandSurfaceEnergyShadowError::Identity(detail)
-        | LandSurfaceEnergyShadowError::UnsupportedCustody(detail) => {
-            (DirectSurfaceLiquidErrorCode::E002, detail)
-        }
-        LandSurfaceEnergyShadowError::Operand(detail) => {
-            (DirectSurfaceLiquidErrorCode::E003, detail)
-        }
-        LandSurfaceEnergyShadowError::Bound(detail) => (DirectSurfaceLiquidErrorCode::E006, detail),
-        LandSurfaceEnergyShadowError::LandSurface(_) => (
-            DirectSurfaceLiquidErrorCode::E003,
-            "real hydrology authorization",
-        ),
+        error => (shadow_error_code(&error), error.to_string()),
     };
     request_failure(code, batch, beginning_sha256, None, detail)
 }
@@ -621,30 +657,8 @@ pub(super) fn preflight_protocol_cardinality(
 
 pub(super) fn protocol_error_code_and_detail(
     error: &LandSurfaceEnergyError,
-) -> (DirectSurfaceLiquidErrorCode, &'static str) {
-    match error {
-        LandSurfaceEnergyError::NonFinite(detail)
-        | LandSurfaceEnergyError::ConstitutiveDomain(detail) => {
-            (DirectSurfaceLiquidErrorCode::E003, *detail)
-        }
-        LandSurfaceEnergyError::WaterIdentityOrBound(detail) => {
-            let code = if detail.contains("duplicate")
-                || detail.contains("without exact")
-                || detail.contains("incomplete")
-            {
-                DirectSurfaceLiquidErrorCode::E005
-            } else if detail.contains("exceeds") {
-                DirectSurfaceLiquidErrorCode::E006
-            } else {
-                DirectSurfaceLiquidErrorCode::E002
-            };
-            (code, *detail)
-        }
-        _ => (
-            DirectSurfaceLiquidErrorCode::E002,
-            "invalid final water protocol",
-        ),
-    }
+) -> (DirectSurfaceLiquidErrorCode, String) {
+    (lse_error_code(error), error.to_string())
 }
 
 pub(super) fn protocol_failure(
@@ -652,7 +666,7 @@ pub(super) fn protocol_failure(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
-    detail: &'static str,
+    detail: impl Into<String>,
 ) -> LandSurfaceEnergyShadowError {
     let key = protocol
         .requests
@@ -681,18 +695,7 @@ pub(super) fn canonicalize_finalized_error(
         LandSurfaceEnergyShadowError::SurfaceLiquid(error) => {
             return LandSurfaceEnergyShadowError::SurfaceLiquid(error);
         }
-        LandSurfaceEnergyShadowError::Identity(detail)
-        | LandSurfaceEnergyShadowError::UnsupportedCustody(detail) => {
-            (DirectSurfaceLiquidErrorCode::E002, detail)
-        }
-        LandSurfaceEnergyShadowError::Operand(detail) => {
-            (DirectSurfaceLiquidErrorCode::E003, detail)
-        }
-        LandSurfaceEnergyShadowError::Bound(detail) => (DirectSurfaceLiquidErrorCode::E006, detail),
-        LandSurfaceEnergyShadowError::LandSurface(_) => (
-            DirectSurfaceLiquidErrorCode::E003,
-            "finalized real hydrology candidate",
-        ),
+        error => (shadow_error_code(&error), error.to_string()),
     };
     protocol_failure(
         code,
@@ -709,7 +712,7 @@ fn protocol_failure_for_key(
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
     key: &GroundWaterKey,
-    detail: &'static str,
+    detail: impl Into<String>,
 ) -> LandSurfaceEnergyShadowError {
     DirectSurfaceLiquidError::canonical_failure(
         code,
@@ -737,7 +740,7 @@ fn protocol_failure_for_condensation(
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
     credit: &CondensationCredit,
-    detail: &'static str,
+    detail: impl Into<String>,
 ) -> LandSurfaceEnergyShadowError {
     DirectSurfaceLiquidError::canonical_failure(
         code,
@@ -770,7 +773,7 @@ fn protocol_failure_with_context(
     tile_id: Option<TileId>,
     surface_id: Option<SurfaceId>,
     source_id: Option<SourceId>,
-    detail: &'static str,
+    detail: impl Into<String>,
 ) -> LandSurfaceEnergyShadowError {
     DirectSurfaceLiquidError::canonical_failure(
         code,

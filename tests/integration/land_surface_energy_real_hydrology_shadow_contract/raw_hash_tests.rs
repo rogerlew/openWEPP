@@ -98,3 +98,96 @@ fn unified_snapshot_failure_hashes_bind_raw_invalid_configuration_bits() {
         "raw invalid snapshot attempts must not collide"
     );
 }
+
+#[test]
+fn unified_entry_joins_raw_configuration_and_state_attempts_with_v3_envelope() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let entry_failure =
+        |attempted_frame: &DirectRunFrame,
+         attempted_configuration: &DirectSurfaceLiquidConfiguration| {
+            let (attempted_owner, _) = owner(attempted_frame);
+            let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&attempted_owner);
+            let batch = surface_potential_batch(
+                SurfaceClass::BareMineralSoil,
+                WaterSourceType::SurfaceLiquid,
+                configuration.records[0].key.source_id.clone(),
+                1.0,
+            );
+            let error = execute_unified_real_hydrology_shadow(
+                &adapter,
+                attempted_configuration,
+                &receiver_expectations(1, digest('9')),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| panic!("invalid raw envelope reached callback"),
+            )
+            .expect_err("invalid raw unified entry");
+            let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+                panic!("raw unified entry must be canonical");
+            };
+            let failure = error.failure().expect("failure");
+            assert!(failure.rollback.beginning_owner_sha256.is_some());
+            (
+                failure
+                    .rollback
+                    .attempted_owner_sha256
+                    .clone()
+                    .expect("joined raw plus v3 attempt"),
+                failure.detail.clone(),
+            )
+        };
+
+    let mut finite_configuration = configuration.clone();
+    finite_configuration.records[0].ofe_area_m2 = 101.0;
+    let mut nonfinite_configuration = configuration.clone();
+    nonfinite_configuration.records[0].ofe_area_m2 = f64::from_bits(0x7ff8_0000_0000_0401);
+    assert_eq!(
+        finite_configuration.configuration_sha256,
+        nonfinite_configuration.configuration_sha256
+    );
+    let finite_configuration_attempt = entry_failure(&frame, &finite_configuration);
+    let nonfinite_configuration_attempt = entry_failure(&frame, &nonfinite_configuration);
+    assert_ne!(
+        finite_configuration_attempt.0,
+        nonfinite_configuration_attempt.0
+    );
+
+    let mut finite_state_frame = frame.clone();
+    finite_state_frame
+        .surface_liquid_shadow
+        .as_mut()
+        .expect("state")
+        .records[0]
+        .liquid_kg_m2_tile = 0.75;
+    let mut nonfinite_state_frame = frame.clone();
+    nonfinite_state_frame
+        .surface_liquid_shadow
+        .as_mut()
+        .expect("state")
+        .records[0]
+        .liquid_kg_m2_tile = f64::from_bits(0x7ff8_0000_0000_0501);
+    assert_eq!(
+        finite_state_frame
+            .surface_liquid_shadow
+            .as_ref()
+            .expect("state")
+            .state_sha256,
+        nonfinite_state_frame
+            .surface_liquid_shadow
+            .as_ref()
+            .expect("state")
+            .state_sha256
+    );
+    let finite_state_attempt = entry_failure(&finite_state_frame, &configuration);
+    let nonfinite_state_attempt = entry_failure(&nonfinite_state_frame, &configuration);
+    assert_ne!(
+        finite_state_attempt.0, nonfinite_state_attempt.0,
+        "finite detail: {}; nonfinite detail: {}",
+        finite_state_attempt.1, nonfinite_state_attempt.1
+    );
+}

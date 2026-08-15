@@ -81,6 +81,9 @@ propagation. Those findings and the requested frost-cardinality poison are now
 corrected in the current worktree with focused passing evidence. Fresh Rust
 review then found callback error-envelope, expectation-precedence and
 expectation-hash gaps. Those findings are corrected in the current worktree
-with focused passing evidence. Fresh
+with focused passing evidence. Fresh review then found callback boundary
+taxonomy, raw-attempt preservation and pre-callback thermal-layer gaps. Those
+findings are corrected in the current worktree with focused passing evidence.
+Fresh
 exact-byte reviews and terminal verification remain required. This is not yet
 a terminal custody-lift or resumed-Child-3 claim.

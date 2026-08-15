@@ -312,7 +312,7 @@ fn raw_callback_errors_are_canonicalized_without_fabricated_row_identity() {
         (0, DirectSurfaceLiquidErrorCode::E002),
         (1, DirectSurfaceLiquidErrorCode::E003),
         (2, DirectSurfaceLiquidErrorCode::E006),
-        (3, DirectSurfaceLiquidErrorCode::E002),
+        (3, DirectSurfaceLiquidErrorCode::E004),
         (4, DirectSurfaceLiquidErrorCode::E003),
     ] {
         let callback_count = std::cell::Cell::new(0);
@@ -356,5 +356,332 @@ fn raw_callback_errors_are_canonicalized_without_fabricated_row_identity() {
         assert!(failure.rollback.attempted_owner_sha256.is_some());
         assert_eq!(callback_count.get(), 1);
         assert_eq!(frame, original);
+    }
+}
+
+#[test]
+fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
+    let cases = vec![
+        (
+            LandSurfaceEnergyError::MalformedSerialization("bad".into()),
+            DirectSurfaceLiquidErrorCode::E001,
+        ),
+        (
+            LandSurfaceEnergyError::Identity {
+                field: "owner",
+                expected: "a".into(),
+                found: "b".into(),
+            },
+            DirectSurfaceLiquidErrorCode::E002,
+        ),
+        (
+            LandSurfaceEnergyError::Topology("duplicate"),
+            DirectSurfaceLiquidErrorCode::E005,
+        ),
+        (
+            LandSurfaceEnergyError::NonFinite("operand"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::UnsupportedDomain("snow"),
+            DirectSurfaceLiquidErrorCode::E004,
+        ),
+        (
+            LandSurfaceEnergyError::ConstitutiveDomain("temperature"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::WaterIdentityOrBound("identity mismatch"),
+            DirectSurfaceLiquidErrorCode::E002,
+        ),
+        (
+            LandSurfaceEnergyError::WaterIdentityOrBound("duplicate request"),
+            DirectSurfaceLiquidErrorCode::E005,
+        ),
+        (
+            LandSurfaceEnergyError::WaterIdentityOrBound("authorization exceeds request"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            LandSurfaceEnergyError::StateLineage("stale"),
+            DirectSurfaceLiquidErrorCode::E002,
+        ),
+        (
+            LandSurfaceEnergyError::OwnerEnvelope("wrong owner"),
+            DirectSurfaceLiquidErrorCode::E011,
+        ),
+        (
+            LandSurfaceEnergyError::NumericalSingular {
+                pivot: 0.0,
+                matrix_norm: 1.0,
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::NumericalBacktrackingLimit,
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::NumericalIterationLimit,
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::NumericalAcceptedResidual,
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            LandSurfaceEnergyError::ComponentClosure("component"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+        (
+            LandSurfaceEnergyError::ControlVolumeClosure("volume"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+        (
+            LandSurfaceEnergyError::LatentJoin("latent"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+        (
+            LandSurfaceEnergyError::GroundHeatJoin("ground"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+    ];
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    for (poison, expected) in cases {
+        let error = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &receiver_expectations(1, snapshot.clone()),
+            &batch,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |_| Err(LandSurfaceEnergyShadowError::LandSurface(poison)),
+        )
+        .expect_err("callback poison");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+            panic!("callback error escaped canonical boundary");
+        };
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, expected);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(snapshot.as_str())
+        );
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+        assert_eq!(frame, original);
+    }
+}
+
+#[test]
+fn raw_and_canonical_surface_errors_rebind_and_preserve_exact_lower_identity() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let raw = vec![
+        (
+            DirectSurfaceLiquidError::Schema("schema"),
+            DirectSurfaceLiquidErrorCode::E001,
+        ),
+        (
+            DirectSurfaceLiquidError::Identity("identity"),
+            DirectSurfaceLiquidErrorCode::E002,
+        ),
+        (
+            DirectSurfaceLiquidError::Domain("domain"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
+        (
+            DirectSurfaceLiquidError::Protocol("protocol"),
+            DirectSurfaceLiquidErrorCode::E005,
+        ),
+        (
+            DirectSurfaceLiquidError::Bound("bound"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            DirectSurfaceLiquidError::Closure("closure"),
+            DirectSurfaceLiquidErrorCode::E010,
+        ),
+    ];
+    for (poison, expected) in raw {
+        let error = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &receiver_expectations(1, snapshot.clone()),
+            &batch,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |_| Err(poison.into()),
+        )
+        .expect_err("raw surface callback poison");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+            panic!("canonical");
+        };
+        let failure = error.failure().expect("failure");
+        assert_eq!(failure.code, expected);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(failure.context.owner_id, None);
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(snapshot.as_str())
+        );
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+    }
+
+    let lower_context = DirectSurfaceLiquidErrorContext {
+        transaction_id: Some(TransactionId(999)),
+        owner_id: Some(ResourceOwnerId::try_new("exact-lower-owner").expect("owner")),
+        ofe_id: Some(OfeId::try_new("ofe-1").expect("OFE")),
+        tile_id: Some(TileId::try_new("open").expect("tile")),
+        surface_id: Some(SurfaceId::try_new("surface:ofe-1:open").expect("surface")),
+        source_id: Some(SourceId::try_new("surface-liquid:ofe-1:open").expect("source")),
+        parcel_id: None,
+    };
+    let poison = DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E011,
+        DirectSurfaceLiquidPhase::Authorization,
+        lower_context.clone(),
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some("lower-beginning".into()),
+            attempted_owner_sha256: Some("lower-attempt".into()),
+        },
+        "canonical lower failure",
+    );
+    let error = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |_| Err(poison.into()),
+    )
+    .expect_err("canonical callback poison");
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+        panic!("canonical");
+    };
+    let failure = error.failure().expect("failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+    assert_eq!(failure.context.owner_id, lower_context.owner_id);
+    assert_eq!(failure.context.ofe_id, lower_context.ofe_id);
+    assert_eq!(failure.context.tile_id, lower_context.tile_id);
+    assert_eq!(failure.context.surface_id, lower_context.surface_id);
+    assert_eq!(failure.context.source_id, lower_context.source_id);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str())
+    );
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+}
+
+#[test]
+fn configured_infiltration_thermal_layer_must_be_first_before_callback() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    for layers in [
+        vec!["thermal-2", "thermal-1", "thermal-3"],
+        vec!["thermal-2", "thermal-3"],
+        vec!["thermal-other", "thermal-2", "thermal-3"],
+    ] {
+        let expectations = UnifiedReceiverExpectations::try_new(
+            ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+            digest('2'),
+            ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
+            snapshot.clone(),
+            ResourceOwnerId::try_new("soil-thermal").expect("thermal owner"),
+            digest('4'),
+            vec![(
+                OfeId::try_new("ofe-1").expect("OFE"),
+                TileId::try_new("open").expect("tile"),
+                layers
+                    .into_iter()
+                    .map(|layer| SoilLayerId::try_new(layer).expect("layer"))
+                    .collect(),
+            )],
+        )
+        .expect("structural expectations");
+        let callback_count = std::cell::Cell::new(0);
+        let error = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &expectations,
+            &batch,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |_| {
+                callback_count.set(callback_count.get() + 1);
+                panic!("invalid layer order reached callback")
+            },
+        )
+        .expect_err("wrong infiltration layer order");
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+            panic!("canonical");
+        };
+        let failure = error.failure().expect("failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::AtomicEnvelope);
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some("soil-thermal")
+        );
+        assert_eq!(
+            failure.context.ofe_id.as_ref().map(OfeId::as_str),
+            Some("ofe-1")
+        );
+        assert_eq!(
+            failure.context.tile_id.as_ref().map(TileId::as_str),
+            Some("open")
+        );
+        assert_eq!(callback_count.get(), 0);
     }
 }
