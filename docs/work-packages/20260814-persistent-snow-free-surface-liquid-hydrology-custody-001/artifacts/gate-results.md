@@ -459,3 +459,22 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: `surface_liquid_owner.rs` is 2,347 lines after cohesive extraction of
   its crate-local tests; no nonexempt 3,000-line file was introduced.
 - Pending: fresh exact-byte Rust and hydrology reviews.
+
+## Terminal arithmetic-precedence remediation at `3b9e5ed13`
+
+- HOLD retained: both exact-byte re-reviewers found that checked-close
+  arithmetic failure (`None`) was collapsed into ordinary E010/E011 closure
+  mismatch, and receiver depth/enthalpy aggregation retained unchecked
+  division/addition.
+- PASS: every checked-close caller now distinguishes arithmetic indeterminacy
+  (contextual E003) from an ordinary finite mismatch (E010/E011).
+- PASS: production-lane/OFE depth, infiltration/retained enthalpy, receiver
+  state joins, aggregate layers, mixed debit and cap-rate basis use checked
+  arithmetic with canonical precedence.
+- PASS: public producer and independent receiver overflow/underflow poisons
+  assert exact context and rollback hashes; finite mismatch controls retain
+  their original closure codes.
+- PASS: orchestrator quick suite, 544/544; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- PASS: affected production files remain below 3,000 lines.
+- Pending: fresh exact-byte Rust and hydrology re-review.

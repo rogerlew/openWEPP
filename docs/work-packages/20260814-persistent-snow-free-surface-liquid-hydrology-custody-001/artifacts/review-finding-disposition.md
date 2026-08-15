@@ -127,3 +127,14 @@ actual offending identity. Checked unit-aware arithmetic rejects nonfinite or
 nonzero-underflowed conversion, sum, difference, scale and tolerance values
 before a closure predicate can pass. No tolerance, source operand, authority,
 model identity or production selector changed.
+
+## Terminal arithmetic-precedence re-review finding
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-REREVIEW-HIGH-001: checked-close indeterminacy collapses into E010/E011 and receiver aggregation remains unchecked | Accepted | Remediated at `3b9e5ed13`; focused PASS |
+
+Checked comparison is now propagated as a tri-state at every caller. An
+arithmetic failure returns contextual E003 with available identity and rollback
+hashes; only a finite `Some(false)` result returns the appropriate closure code.
+All cited receiver divisions and accumulations use the same checked arithmetic.

@@ -84,9 +84,13 @@ branch, PR or push is in scope.
   Stage-0 source guard pass a complete exact-head heavy rerun at `74d512f44`
   (2,783/2,783). Terminal Rust review then found nonterminal receiver-deletion
   attribution and large-finite closure arithmetic defects. Their correction at
-  `82bfdc3a0` passes 544/544 orchestrator and 19/19 focused integration tests,
-  strict Clippy, formatting, diff hygiene, and line-count governance. Fresh
-  exact-byte reviews remain pending.
+  `82bfdc3a0` exposed one remaining shared error-precedence defect on re-review:
+  checked arithmetic failure was collapsed into ordinary closure failure and
+  two receiver sums remained unchecked. The correction at `3b9e5ed13`
+  propagates arithmetic failure as contextual E003 and passes 544/544
+  orchestrator, 19/19 focused integration and 9/9 authority tests, strict
+  Clippy, formatting, diff hygiene, and line-count governance. Fresh exact-byte
+  reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries
