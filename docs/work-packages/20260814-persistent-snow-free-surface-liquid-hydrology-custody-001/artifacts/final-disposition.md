@@ -55,6 +55,9 @@ correction at `b5453e7d8` derived routes/windows, but closure7 review found
 expected nonrouted disposition/mass still copied actual receipts, recipient
 tile identity was incomplete, routed kind drifted and raw Q was unjoined. The
 correction at `c3fdeca50` independently replays WB14 from frozen inputs with no
-expected-side receipt access and binds complete recipient identity. Focused
-gates pass, but fresh exact-byte reviews and terminal verification remain
-required. This is not yet a terminal custody-lift or resumed-Child-3 claim.
+expected-side receipt access and binds complete recipient identity. Closure8
+hydrology review found the replay's final stores and WB14 continuation were not
+joined to the persistent ending state. The correction at `862f26bb7` performs
+that direct join before strict digest/state validation. Focused gates pass, but
+fresh exact-byte reviews and terminal verification remain required. This is not
+yet a terminal custody-lift or resumed-Child-3 claim.

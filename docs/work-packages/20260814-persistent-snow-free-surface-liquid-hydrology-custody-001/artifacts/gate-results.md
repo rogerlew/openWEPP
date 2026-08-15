@@ -631,3 +631,22 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - PASS: affected production files remain below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology re-review.
+
+## Persistent endpoint join remediation at `862f26bb7`
+
+- HOLD retained: closure8 hydrology review found the receipt-free replay
+  computed authoritative final stores and cumulative WB14 continuation values
+  but discarded them before comparison with persistent ending/restart state.
+- PASS: independent projection now retains every configured ending store and
+  every OFE continuation, including day, next interval, cumulative supply,
+  cumulative infiltration and accepted transaction identity.
+- PASS: those values join directly to the actual ending owner with exact
+  cardinality/order/OFE/store identity before recomputed digest and full strict
+  state validation.
+- PASS: coordinated poisons cover wrong store with correct receipts, cumulative
+  drift, cadence and transaction drift, missing/duplicate/reordered/wrong-OFE
+  continuations, forged self-consistent producer store operands and forged
+  digest.
+- PASS: orchestrator quick suite, 560/560; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.

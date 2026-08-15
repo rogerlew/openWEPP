@@ -235,3 +235,13 @@ producer or closure comparison.
 Expected nonrouted and routed partitions are wholly independent of actual
 receipts. Complete current/recipient identity, canonical routed kind and raw
 mass/enthalpy relations are first-class closure seams.
+
+## Persistent endpoint join finding
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-TERMINAL-CLOSURE8-CRITICAL-001: independently replayed final stores and WB14 continuation are discarded before persistent-state/restart join | Accepted | Remediated at `862f26bb7`; focused PASS |
+
+The receipt-free replay now returns exact expected ending store and continuation
+values. Independent validation joins them to the persistent owner, accepted
+transaction lineage and strict restart digest before the candidate can pass.

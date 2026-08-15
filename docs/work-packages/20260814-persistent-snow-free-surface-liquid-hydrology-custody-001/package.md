@@ -115,9 +115,12 @@ branch, PR or push is in scope.
   identity was incomplete, routed kind drifted, and raw Q was unjoined. The
   correction at `c3fdeca50` independently replays WB14 from frozen operands and
   binds complete current/recipient identity with zero expected-side receipt
-  access. It passes 559/559 orchestrator, 19/19 focused integration and 9/9
-  authority tests, strict Clippy, formatting, diff hygiene, and line-count
-  governance. Fresh exact-byte reviews remain pending.
+  access. Closure8 hydrology review found the replayed final store and WB14
+  continuation were discarded before the persistent-state join. The correction
+  at `862f26bb7` joins those independent endpoint values to the strict ending
+  state and restart digest. It passes 560/560 orchestrator, 19/19 focused
+  integration and 9/9 authority tests, strict Clippy, formatting, diff hygiene,
+  and line-count governance. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries
