@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / final exact-byte re-review pending`
+Status: `in progress / terminal exact-byte review pending`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted
@@ -16,5 +16,11 @@ review found two remaining E011 preflight/deletion context paths. Their focused
 passing correction at `6a107303c` received release review, which found one
 incomplete E004 frozen/thaw/snow-liquid-only preflight and one finite-input
 same-store demand overflow. Their corrections at `0cb11eb12` and `93c46d3db`
-pass focused gates; fresh exact-byte review remains required. This is not yet a
-terminal custody-lift or resumed-Child-3 claim.
+pass focused gates. Hydrology closure review returned PASS at `ab703c83a`.
+The Rust closure review retained two evidence-only blockers: exact workspace
+strict Clippy and a complete exact-head full suite. Test-only lint corrections
+and the narrowed Stage-0 meteorology source guard now pass at `74d512f44`,
+including 2,783/2,783 full-workspace tests, doctests, dependency policy,
+all-feature strict Clippy, formatting and diff hygiene. Fresh terminal reviews
+and terminal verification remain required. This is not yet a terminal
+custody-lift or resumed-Child-3 claim.

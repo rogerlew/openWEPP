@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / final exact-byte re-review pending`
+Status: `executing / terminal exact-byte review pending`
 
 Date: `2026-08-14`
 
@@ -78,7 +78,11 @@ branch, PR or push is in scope.
   correction at `6a107303c` received release review, which found an incomplete
   E004 frozen/thaw/snow-liquid-only domain guard and a finite-input aggregate
   authorization overflow. Their focused passing corrections are frozen at
-  `0cb11eb12` and `93c46d3db`; fresh exact-byte review remains pending.
+  `0cb11eb12` and `93c46d3db`. Hydrology closure review returned PASS at
+  `ab703c83a`. The Rust closure review found only exact workspace Clippy and
+  full-suite evidence blockers; test-only lint correction and the scoped
+  Stage-0 source guard now pass a complete exact-head heavy rerun at
+  `74d512f44` (2,783/2,783). Fresh terminal reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

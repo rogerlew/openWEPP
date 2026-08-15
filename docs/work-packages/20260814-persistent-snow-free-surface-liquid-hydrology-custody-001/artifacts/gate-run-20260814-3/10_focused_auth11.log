@@ -1,0 +1,10 @@
+command: cargo nextest run --test auth11_required_suite_obligation_guards_contract
+start_utc: 2026-08-15T00:38:08Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+────────────
+ Nextest run ID 01659caf-fce8-4dac-ad3c-20d28b720ab8 with nextest profile: default
+    Starting 3 tests across 1 binary
+────────────
+     Summary [   0.008s] 3 tests run: 3 passed, 0 skipped
+elapsed_sec=0.68 user_sec=0.46 sys_sec=0.27
+exit_code: 0

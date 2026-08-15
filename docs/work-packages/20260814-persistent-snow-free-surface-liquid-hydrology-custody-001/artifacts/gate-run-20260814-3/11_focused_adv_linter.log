@@ -1,0 +1,10 @@
+command: cargo nextest run --test advisory_linter_authority_contract --profile quick
+start_utc: 2026-08-15T00:38:08Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID 0df20d01-0935-4dff-b1a9-98df6cc9b138 with nextest profile: quick
+    Starting 7 tests across 1 binary
+────────────
+     Summary [   0.072s] 7 tests run: 7 passed, 0 skipped
+elapsed_sec=0.74 user_sec=0.57 sys_sec=0.31
+exit_code: 0

@@ -100,3 +100,16 @@ production-layer frozen depth/water. The poison matrix proves callback
 non-invocation and byte-identical production state. Demand accumulation and
 every proportional-allocation intermediate now fail closed on nonfinite
 results; retained arbitration reconstruction independently repeats the guard.
+
+## Closure review and evidence findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| Rust closure review: exact workspace all-feature Clippy failed on three package-owned integration-test lints | Accepted | Remediated; exact workspace Clippy PASS |
+| Rust closure review: exact-head full-workspace PASS absent | Accepted | Remediated; 2,783/2,783 PASS at `74d512f44` |
+| Heavy attempt 3: Stage-0 source scan aliases admitted LSE crate name with protected meteorology module | Accepted | Remediated; exact module-path guard and full-suite PASS |
+
+The hydrology closure review at `ab703c83a` returned PASS with no material
+finding. The three closure findings above are evidence and test-governance
+defects only; their correction changes no constitutive source, authority,
+model identity, candidate, owner, or production selector behavior.

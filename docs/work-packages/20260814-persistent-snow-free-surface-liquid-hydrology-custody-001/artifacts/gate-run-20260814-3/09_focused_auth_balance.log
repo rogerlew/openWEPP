@@ -1,0 +1,10 @@
+command: cargo nextest run --test land_surface_energy_balance_authority_contract --profile quick
+start_utc: 2026-08-15T00:38:07Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+────────────
+ Nextest run ID e0841576-579a-4d76-af7f-e7b20471282d with nextest profile: quick
+    Starting 7 tests across 1 binary
+────────────
+     Summary [   0.251s] 7 tests run: 7 passed, 0 skipped
+elapsed_sec=0.90 user_sec=0.71 sys_sec=0.33
+exit_code: 0

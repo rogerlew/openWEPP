@@ -409,3 +409,32 @@ The small attempt-1 raw logs are retained under
   accepted implementation review findings are corrected.
 
 Attempt-2 raw logs are retained under `artifacts/gate-run-20260814-2/`.
+
+## Heavy comparator attempt 3 at `d2e9cd09e`
+
+- PASS: formatting, diff hygiene, workspace strict all-target/all-feature
+  Clippy, workspace doctests, dependency policy, and every focused custody,
+  authority, AUTH11 and advisory gate.
+- FAIL: the complete full-workspace run executed all 2,783 selected tests;
+  2,782 passed and one historical Stage-0 source scan failed. The scan matched
+  the generic token `surface_energy` in the independently admitted
+  `openwepp_land_surface_energy` crate name even though its protected target is
+  `openwepp_meteorology::surface_energy` Stage-0 primitive wiring.
+- Correction: narrow only that source-scan token to the exact meteorology
+  module path. No primitive-function token, production selector, constitutive
+  implementation, model identity, or runtime behavior changed.
+
+Attempt-3 raw logs are retained under `artifacts/gate-run-20260814-3/`.
+
+## Heavy comparator attempt 4 at `74d512f44`
+
+- PASS: `cargo fmt --all -- --check`.
+- PASS: `git diff --check`.
+- PASS: `cargo clippy --workspace --all-targets --all-features -- -D warnings`.
+- PASS: `TMPDIR=/tmp/ow-nextest-openwepp-20260814-4 cargo nextest run
+  --workspace --profile full`, 2,783/2,783 passed, 33 skipped.
+- PASS: `cargo test --doc --workspace`.
+- PASS: `cargo deny check`; the retained unmatched `MIT-0` allowance warning
+  is non-failing policy output.
+
+Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
