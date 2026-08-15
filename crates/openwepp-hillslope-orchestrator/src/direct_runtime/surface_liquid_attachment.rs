@@ -573,6 +573,29 @@ pub(crate) fn surface_liquid_frame_identity_error(
     )
 }
 
+fn surface_liquid_frame_domain_error(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    ofe_id: &OfeId,
+    beginning_owner_sha256: Option<String>,
+    attempted_owner_sha256: Option<String>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E003,
+        DirectSurfaceLiquidPhase::Configuration,
+        DirectSurfaceLiquidErrorContext {
+            owner_id: Some(configuration.owner_id.clone()),
+            ofe_id: Some(ofe_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256,
+            attempted_owner_sha256,
+        },
+        detail,
+    )
+}
+
 pub(crate) fn validate_surface_liquid_frame_identities(
     run_id: u64,
     lanes: &[DirectLaneFrame],
@@ -635,6 +658,7 @@ pub(crate) fn validate_surface_liquid_frame_identities(
             record.key.ofe_id == *ofe_id
                 && record.ofe_area_m2.is_finite()
                 && lane.area_m2.is_finite()
+                && lane.area_m2 > 0.0
                 && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
         }) {
             return Err(surface_liquid_frame_identity_error(
@@ -643,6 +667,17 @@ pub(crate) fn validate_surface_liquid_frame_identities(
                 beginning_owner_sha256,
                 attempted_owner_sha256,
                 "surface-liquid configured OFE area does not match the direct production lane",
+            ));
+        }
+    }
+    for (topology_index, ofe_id) in configuration.ofe_topology.iter().enumerate() {
+        if !lanes[topology_index].area_m2.is_finite() || lanes[topology_index].area_m2 <= 0.0 {
+            return Err(surface_liquid_frame_domain_error(
+                configuration,
+                ofe_id,
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+                "surface-liquid production lane area is not positive finite",
             ));
         }
     }

@@ -19,6 +19,74 @@ fn assert_hashes(failure: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidF
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
+fn two_ofe_attachment_fixture() -> (
+    DirectRunFrame,
+    DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidOwnedState,
+) {
+    let identity = DirectRunIdentity::new(83, 11, 2, 1).expect("identity");
+    let mut frame = DirectRunFrame::skeleton(identity).expect("frame");
+    let layer_template = production_frame(0.02, false).lanes[0]
+        .subsurface_layers
+        .clone();
+    let ofes = [
+        OfeId::try_new("ofe-upper").expect("upper OFE"),
+        OfeId::try_new("ofe-lower").expect("lower OFE"),
+    ];
+    let tiles = [
+        TileId::try_new("upper-open").expect("upper tile"),
+        TileId::try_new("lower-open").expect("lower tile"),
+    ];
+    let layer = SoilLayerId::try_new("thermal-1").expect("layer");
+    let mut bindings = Vec::new();
+    let mut records = Vec::new();
+    for index in 0..2 {
+        frame.lanes[index].area_m2 = [100.0, 200.0][index];
+        frame.lanes[index].subsurface_layers = layer_template.clone();
+        frame.lanes[index].water.soil_water_m = 0.02;
+        bindings.push(DirectSurfaceLiquidOfeBinding {
+            ofe_id: ofes[index].clone(),
+            production_lane_index: index,
+            production_lane_id: frame.lanes[index].lane_id,
+            ordered_soil_layer_ids: vec![layer.clone()],
+            infiltration_soil_thermal_layer_id: layer.clone(),
+        });
+        records.push(DirectSurfaceLiquidConfigurationRecord {
+            key: DirectSurfaceLiquidStoreKey {
+                run_id: 83,
+                ofe_id: ofes[index].clone(),
+                tile_id: tiles[index].clone(),
+                surface_id: SurfaceId::try_new(format!("surface-{index}")).expect("surface"),
+                surface_class: SurfaceClass::BareMineralSoil,
+                source_type: WaterSourceType::SurfaceLiquid,
+                source_id: SourceId::try_new(format!("surface-store-{index}")).expect("source"),
+            },
+            tile_fraction: 1.0,
+            capacity_kg_m2_tile: 3.0,
+            ofe_area_m2: frame.lanes[index].area_m2,
+            ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+            runon_destination_ofe_id: (index == 0).then(|| ofes[1].clone()),
+            runon_destination_tile_id: (index == 0).then(|| tiles[1].clone()),
+        });
+    }
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        83,
+        ofes.into_iter().collect(),
+        bindings,
+        records,
+    )
+    .expect("two-OFE configuration");
+    let initial = configuration
+        .records
+        .iter()
+        .map(|record| (record.key.clone(), 1.0))
+        .collect();
+    let state = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &initial, 0)
+        .expect("two-OFE state");
+    (frame, configuration, state)
+}
+
 #[test]
 fn request_identity_native_domain_cardinality_and_bound_precedence_is_canonical() {
     for poison in 0..3 {
@@ -75,6 +143,71 @@ fn request_identity_native_domain_cardinality_and_bound_precedence_is_canonical(
         );
         assert_hashes(&failure);
         assert_eq!(frame, original, "mixed request poison mutated owner");
+    }
+}
+
+#[test]
+fn public_attachment_rejects_each_nonfinite_production_lane_area_as_e003() {
+    for lane_index in 0..2 {
+        for nonfinite_area in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let (mut frame, configuration, state) = two_ofe_attachment_fixture();
+            frame
+                .configure_surface_liquid_shadow(&configuration, state.clone())
+                .expect("initial attachment");
+            let beginning_surface = frame
+                .surface_liquid_shadow
+                .as_deref()
+                .expect("beginning surface owner")
+                .clone();
+            frame.lanes[lane_index].area_m2 = nonfinite_area;
+            let error = frame
+                .configure_surface_liquid_shadow(&configuration, state)
+                .expect_err("nonfinite lane area must reject at attachment");
+            let failure = canonical_failure(LandSurfaceEnergyShadowError::SurfaceLiquid(error));
+            assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+            assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Configuration);
+            assert_eq!(
+                failure.context.owner_id.as_ref(),
+                Some(&configuration.owner_id)
+            );
+            assert_eq!(
+                failure.context.ofe_id.as_ref(),
+                Some(&configuration.ofe_topology[lane_index]),
+            );
+            assert_eq!(failure.context.tile_id, None);
+            assert_eq!(failure.context.surface_id, None);
+            assert_eq!(failure.context.source_id, None);
+            assert_hashes(&failure);
+            assert_eq!(
+                frame.surface_liquid_shadow.as_deref(),
+                Some(&beginning_surface),
+                "failed reattachment replaced the accepted owner",
+            );
+        }
+    }
+}
+
+#[test]
+fn attachment_lane_identity_precedes_nonfinite_area_in_any_position() {
+    for domain_lane_index in 0..2 {
+        let (mut frame, configuration, state) = two_ofe_attachment_fixture();
+        frame
+            .configure_surface_liquid_shadow(&configuration, state.clone())
+            .expect("initial attachment");
+        frame.lanes[domain_lane_index].area_m2 = f64::NAN;
+        let identity_lane_index = 1 - domain_lane_index;
+        let mut wrong_identity = configuration.clone();
+        wrong_identity.ofe_bindings[identity_lane_index].production_lane_id += 100;
+        let error = frame
+            .configure_surface_liquid_shadow(&wrong_identity, state)
+            .expect_err("lane identity must precede another lane's domain");
+        let failure = canonical_failure(LandSurfaceEnergyShadowError::SurfaceLiquid(error));
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(
+            failure.context.ofe_id.as_ref(),
+            Some(&configuration.ofe_topology[identity_lane_index]),
+        );
+        assert_hashes(&failure);
     }
 }
 

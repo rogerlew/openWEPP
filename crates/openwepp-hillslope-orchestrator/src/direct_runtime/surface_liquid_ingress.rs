@@ -1529,6 +1529,7 @@ fn advance_one_ofe(
     let mut retained_enthalpy = 0.0;
     let mut runoff_mass = 0.0;
     let mut runoff_enthalpy = 0.0;
+    let mut allocated_temporal_enthalpy = vec![0.0; parcels.len()];
 
     for boundary in boundaries.windows(2) {
         let start_s = boundary[0];
@@ -1537,9 +1538,10 @@ fn advance_one_ofe(
             continue;
         }
         let mut contributions = Vec::new();
-        for parcel in parcels
+        for (parcel_index, parcel) in parcels
             .iter()
-            .filter(|parcel| parcel.start_s <= start_s && parcel.end_s >= end_s)
+            .enumerate()
+            .filter(|(_, parcel)| parcel.start_s <= start_s && parcel.end_s >= end_s)
         {
             let window = checked_surface_liquid_sub(end_s, start_s).ok_or_else(|| {
                 ingress_arithmetic_failure(
@@ -1576,14 +1578,31 @@ fn advance_one_ofe(
                         "parcel interval mass is nonfinite or underflowed",
                     )
                 })?;
-            let enthalpy =
-                checked_surface_liquid_mul(parcel.enthalpy_j_m2_basis_ofe_ground, fraction)
+            let enthalpy = if end_s.to_bits() == parcel.end_s.to_bits() {
+                checked_surface_liquid_sub(
+                    parcel.enthalpy_j_m2_basis_ofe_ground,
+                    allocated_temporal_enthalpy[parcel_index],
+                )
+            } else {
+                checked_surface_liquid_mul(parcel.enthalpy_j_m2_basis_ofe_ground, window)
+                    .and_then(|numerator| checked_surface_liquid_div(numerator, parcel_duration))
+            }
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "parcel interval enthalpy is nonfinite or underflowed",
+                )
+            })?;
+            allocated_temporal_enthalpy[parcel_index] =
+                checked_surface_liquid_add(allocated_temporal_enthalpy[parcel_index], enthalpy)
                     .ok_or_else(|| {
                         ingress_arithmetic_failure(
                             transaction_id,
                             arithmetic_key,
                             Some(parcel.parcel_id.clone()),
-                            "parcel interval enthalpy is nonfinite or underflowed",
+                            "parcel interval enthalpy accumulation is nonfinite",
                         )
                     })?;
             if mass > 0.0 {
@@ -1693,9 +1712,35 @@ fn advance_one_ofe(
                 )
             })?;
         let mut allocated_infiltration = 0.0;
+        let mut allocated_mixed_enthalpy = 0.0;
         let contribution_count = contributions.len();
         let mut excess_parts = Vec::with_capacity(contribution_count);
         for (index, (parcel, mass, _)) in contributions.into_iter().enumerate() {
+            let mixed_part_q = if index + 1 == contribution_count {
+                checked_surface_liquid_sub(supply_enthalpy, allocated_mixed_enthalpy)
+            } else {
+                checked_surface_liquid_mul(supply_enthalpy, mass)
+                    .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))
+            }
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "mixed parcel enthalpy allocation is nonfinite or underflowed",
+                )
+            })?;
+            allocated_mixed_enthalpy =
+                checked_surface_liquid_add(allocated_mixed_enthalpy, mixed_part_q).ok_or_else(
+                    || {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "mixed parcel enthalpy accumulation is nonfinite",
+                        )
+                    },
+                )?;
             let infiltrated = if full_infiltration {
                 mass
             } else if index + 1 == contribution_count {
@@ -1747,13 +1792,29 @@ fn advance_one_ofe(
                     "parcel excess mass is nonfinite",
                 )
             })?;
-            let infiltration_q =
-                checked_surface_liquid_mul(infiltrated, h_mix).ok_or_else(|| {
+            let infiltration_q = if excess == 0.0 {
+                Some(mixed_part_q)
+            } else if infiltrated == 0.0 {
+                Some(0.0)
+            } else {
+                checked_surface_liquid_mul(mixed_part_q, infiltrated)
+                    .and_then(|numerator| checked_surface_liquid_div(numerator, mass))
+            }
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "infiltration enthalpy is nonfinite or underflowed",
+                )
+            })?;
+            let excess_q =
+                checked_surface_liquid_sub(mixed_part_q, infiltration_q).ok_or_else(|| {
                     ingress_arithmetic_failure(
                         transaction_id,
                         arithmetic_key,
                         Some(parcel.parcel_id.clone()),
-                        "infiltration enthalpy is nonfinite or underflowed",
+                        "parcel excess enthalpy remainder is nonfinite",
                     )
                 })?;
             infiltration_mass = checked_surface_liquid_add(infiltration_mass, infiltrated)
@@ -1794,13 +1855,12 @@ fn advance_one_ofe(
                 infiltration_q,
                 transaction_id,
             ));
-            excess_parts.push((parcel, excess));
+            excess_parts.push((parcel, excess, excess_q));
         }
         let (retained_parts, runoff_parts) = retain_excess_proportionally(
             configuration,
             ending,
             excess_parts,
-            h_mix,
             temperature_k,
             start_s,
             end_s,
@@ -1880,19 +1940,18 @@ fn advance_one_ofe(
 fn retain_excess_proportionally(
     configuration: &DirectSurfaceLiquidConfiguration,
     ending: &mut DirectSurfaceLiquidOwnedState,
-    excess_parts: Vec<(&TimedParcel, f64)>,
-    h_mix: f64,
+    excess_parts: Vec<(&TimedParcel, f64, f64)>,
     temperature_k: f64,
     start_s: f64,
     end_s: f64,
     transaction_id: TransactionId,
 ) -> Result<(Vec<DirectSurfaceLiquidParcelReceipt>, Vec<TimedParcel>), DirectSurfaceLiquidError> {
-    let mut grouped = BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(&TimedParcel, f64)>>::new();
-    for (parcel, excess) in excess_parts {
+    let mut grouped = BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(&TimedParcel, f64, f64)>>::new();
+    for (parcel, excess, excess_q) in excess_parts {
         grouped
             .entry(parcel.recipient_store_key.clone())
             .or_default()
-            .push((parcel, excess));
+            .push((parcel, excess, excess_q));
     }
     let mut retained_receipts = Vec::new();
     let mut runoff_parcels = Vec::new();
@@ -1943,7 +2002,7 @@ fn retain_excess_proportionally(
         let total_retained = total_excess.min(available);
         let mut allocated_retained = 0.0;
         let count = parts.len();
-        for (part_index, (parcel, excess)) in parts.into_iter().enumerate() {
+        for (part_index, (parcel, excess, excess_q)) in parts.into_iter().enumerate() {
             let retained_mass = if part_index + 1 == count {
                 checked_surface_liquid_sub(total_retained, allocated_retained).ok_or_else(|| {
                     ingress_arithmetic_failure(
@@ -1992,6 +2051,30 @@ fn retain_excess_proportionally(
                         "runoff mass difference is nonfinite",
                     )
                 })?;
+            let retained_q = if runoff_mass == 0.0 {
+                Some(excess_q)
+            } else if retained_mass == 0.0 {
+                Some(0.0)
+            } else {
+                checked_surface_liquid_mul(excess_q, retained_mass)
+                    .and_then(|numerator| checked_surface_liquid_div(numerator, excess))
+            }
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    Some(parcel.parcel_id.clone()),
+                    "retained enthalpy is nonfinite or underflowed",
+                )
+            })?;
+            let runoff_q = checked_surface_liquid_sub(excess_q, retained_q).ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    Some(parcel.parcel_id.clone()),
+                    "runoff enthalpy remainder is nonfinite",
+                )
+            })?;
             if retained_mass > 0.0 {
                 retained_receipts.push(receipt(
                     parcel,
@@ -2004,14 +2087,7 @@ fn retain_excess_proportionally(
                     end_s,
                     retained_mass,
                     temperature_k,
-                    checked_surface_liquid_mul(retained_mass, h_mix).ok_or_else(|| {
-                        ingress_arithmetic_failure(
-                            transaction_id,
-                            &store_key,
-                            Some(parcel.parcel_id.clone()),
-                            "retained enthalpy is nonfinite or underflowed",
-                        )
-                    })?,
+                    retained_q,
                     transaction_id,
                 ));
             }
@@ -2025,15 +2101,7 @@ fn retain_excess_proportionally(
                     start_s,
                     end_s,
                     mass_kg_m2_basis_ofe_ground: runoff_mass,
-                    enthalpy_j_m2_basis_ofe_ground: checked_surface_liquid_mul(runoff_mass, h_mix)
-                        .ok_or_else(|| {
-                            ingress_arithmetic_failure(
-                                transaction_id,
-                                &store_key,
-                                Some(parcel.parcel_id.clone()),
-                                "runoff enthalpy is nonfinite or underflowed",
-                            )
-                        })?,
+                    enthalpy_j_m2_basis_ofe_ground: runoff_q,
                 });
             }
         }

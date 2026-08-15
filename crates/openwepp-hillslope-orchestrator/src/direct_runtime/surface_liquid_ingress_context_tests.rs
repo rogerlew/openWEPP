@@ -244,3 +244,70 @@ fn full_infiltration_preserves_exact_source_mass_and_never_debits_surface_store(
         assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
     }
 }
+
+#[test]
+fn canonical_last_enthalpy_remainders_close_exactly_and_reject_one_ulp_loss() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(414);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.3)],
+        wb14_parameters: vec![DirectOfeWb14Parameters {
+            ofe_id: configuration.ofe_topology[0].clone(),
+            effective_conductivity_m_s: 1.0e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 3.0e-5,
+        }],
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("partial-infiltration enthalpy fixture");
+    let receipt = |disposition| {
+        candidate
+            .receipts
+            .iter()
+            .find(|row| row.disposition == disposition)
+            .expect("required split receipt")
+    };
+    let infiltration = receipt(DirectSurfaceLiquidReceiptDisposition::Infiltration);
+    let retained = receipt(DirectSurfaceLiquidReceiptDisposition::RetainedSurface);
+    let runoff = receipt(DirectSurfaceLiquidReceiptDisposition::OutletRunoff);
+    assert!(
+        (infiltration.mass_kg_m2_basis_ofe_ground - 0.03).abs() <= 8.0 * f64::EPSILON,
+        "fixture must exercise I≈0.03 kg/m²"
+    );
+    let parent_q = candidate.closure_operands.source_parcels()[0].enthalpy_j_m2_basis_ofe_ground();
+    let excess_q = retained.enthalpy_j_m2_basis_ofe_ground + runoff.enthalpy_j_m2_basis_ofe_ground;
+    assert_eq!(
+        excess_q.to_bits(),
+        (parent_q - infiltration.enthalpy_j_m2_basis_ofe_ground).to_bits(),
+        "retention + runoff must exactly reconstruct excess Q"
+    );
+    assert_eq!(
+        (infiltration.enthalpy_j_m2_basis_ofe_ground + excess_q).to_bits(),
+        parent_q.to_bits(),
+        "infiltration + excess must exactly reconstruct parent Q"
+    );
+
+    let mut poison = candidate.clone();
+    let poisoned = poison
+        .receipts
+        .iter_mut()
+        .find(|row| row.disposition == DirectSurfaceLiquidReceiptDisposition::OutletRunoff)
+        .expect("canonical-last runoff receipt");
+    poisoned.enthalpy_j_m2_basis_ofe_ground =
+        f64::from_bits(poisoned.enthalpy_j_m2_basis_ofe_ground.to_bits() - 1);
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &poison.closure_operands,
+        &poison.receipts,
+        &poison.ending_state,
+    )
+    .expect_err("one-ULP canonical-last energy loss must fail exact closure");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+}

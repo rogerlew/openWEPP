@@ -891,6 +891,40 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   zero errors or warnings.
 - Pending: freeze new exact bytes and obtain fresh independent dual review.
 
+## Exact-byte review at `c9524729a`
+
+- HOLD: fresh Rust review found producer and independent closure assign child
+  enthalpies independently as `m*h`, contrary to exact authoritative-parent Q
+  plus canonical-last subtraction remainders. A valid vector loses one ULP
+  while the existing tolerance masks it.
+- HOLD: both fresh reviews found condensation T/h E009 drops exact credit
+  identity; Rust review additionally found nonfinite production-lane area is
+  attached and later misclassified E002 rather than E003.
+- PASS: surface-liquid 77/77, unified integration 37/37, custody authority
+  10/10 and diff hygiene on the reviewed bytes. Heavy gates were not run.
+- Pending: remediate all three accepted findings, freeze new bytes and repeat
+  fresh dual review before terminal heavy execution.
+
+## `c9524729a` HOLD remediation
+
+- PASS: temporal, mixed-source, infiltration/excess and retention/runoff
+  enthalpy splits now retain one authoritative parent Q and assign the
+  canonical-last exact subtraction remainder. Independent closure reconstructs
+  from frozen raw operands through a separate closure-only module.
+- PASS: the `T=285 K`, `M=0.3`, `I≈0.03` vector proves exact parent/child bits;
+  a one-ULP canonical-last poison now fails independent closure as E010. The
+  dimensional tolerance is unchanged.
+- PASS: condensation temperature and enthalpy E009 failures carry complete
+  transaction/owner/OFE/tile/surface/source context and raw beginning/attempt
+  hashes. Attachment rejects NaN and both infinities in either lane as E003
+  after complete identity preflight.
+- PASS on the combined worktree: surface-liquid 80/80; unified integration
+  39/39; custody authority 10/10; orchestrator quick 590/590; AUTH11 3/3;
+  strict affected Clippy; admission with 46 contracts and 23 science surfaces;
+  anti-evasion; SC unit compliance; formatting and exact diff hygiene;
+  Markdown 77 files with zero errors or warnings.
+- Pending: freeze new exact bytes and obtain fresh independent dual review.
+
 ## Exact-byte review at `7b208bb26`
 
 - PASS: fresh hydrology/science/ownership review found no material finding and

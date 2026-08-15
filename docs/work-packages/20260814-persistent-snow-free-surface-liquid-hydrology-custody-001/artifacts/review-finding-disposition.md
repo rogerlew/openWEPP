@@ -385,3 +385,13 @@ attempt is not terminal evidence.
 No `7b208bb26` finding is rejected, deferred, or moved to another package. The
 fresh hydrology/ownership review returned PASS; an accidental broad run with
 584 passes and three SIGINT results is retained as interrupted non-evidence.
+
+## Exact-head terminal-review findings at `c9524729a`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-C952-HIGH-001: child enthalpies do not use authoritative parent Q and canonical-last subtraction remainders; independent replay duplicates the drift | Accepted | Remediated: exact parent-Q splitting at every stage, independent frozen-operand reconstruction and one-ULP E010 poison PASS |
+| A/B-TERMINAL-C952-HIGH-002: condensation T/h E009 omits available OFE/tile/surface/source context | Accepted at higher hydrology severity | Remediated: credit-contextual E009 carries complete identity and raw rollback hashes; both records/fields PASS |
+| A-TERMINAL-C952-MEDIUM-003: nonfinite production-lane area attaches and is later reported as E002 | Accepted | Remediated: all-lane identity then domain preflight rejects NaN/±infinity as contextual E003; position/precedence poisons PASS |
+
+No `c9524729a` finding is rejected, deferred, or moved to another package.

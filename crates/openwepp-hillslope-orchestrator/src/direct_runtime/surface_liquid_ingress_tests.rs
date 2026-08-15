@@ -498,7 +498,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_655_631_299_166_339_072,
             4_584_964_660_638_322_962,
             4_643_780_029_834_417_493,
-            4_656_912_838_609_132_156
+            4_656_912_838_609_132_155
         ),
         expected_row!(
             drainage,
@@ -534,7 +534,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_655_631_299_166_339_072,
             4_595_172_819_793_696_086,
             4_643_780_029_834_417_493,
-            4_667_093_643_747_725_594
+            4_667_093_643_747_725_595
         ),
         expected_row!(
             drainage,
@@ -546,7 +546,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_648_488_871_632_306_176,
             4_580_461_061_010_952_465,
             4_643_780_029_834_417_493,
-            4_652_409_238_981_761_657
+            4_652_409_238_981_761_659
         ),
         expected_row!(
             throughfall,
@@ -558,7 +558,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_648_488_871_632_306_176,
             4_584_964_660_638_322_962,
             4_643_780_029_834_417_493,
-            4_656_912_838_609_132_154
+            4_656_912_838_609_132_156
         ),
         expected_row!(
             drainage,
@@ -570,7 +570,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_648_488_871_632_306_176,
             4_573_055_141_623_720_988,
             4_643_780_029_834_417_493,
-            4_644_966_847_572_157_265
+            4_644_966_847_572_157_268
         ),
         expected_row!(
             throughfall,
@@ -582,7 +582,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_648_488_871_632_306_176,
             4_577_558_741_251_091_480,
             4_643_780_029_834_417_493,
-            4_649_470_447_199_527_757
+            4_649_470_447_199_527_760
         ),
         expected_row!(
             drainage,
@@ -714,7 +714,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_654_311_885_213_007_872,
             4_598_625_579_508_013_466,
             4_643_828_408_346_039_637,
-            4_671_447_160_954_164_354
+            4_671_447_160_954_164_353
         ),
         expected_row!(
             drainage,
@@ -726,7 +726,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_655_631_299_166_339_072,
             4_577_558_741_251_091_480,
             4_643_780_029_834_417_493,
-            4_649_470_447_199_527_757
+            4_649_470_447_199_527_760
         ),
         expected_row!(
             throughfall,
@@ -738,7 +738,7 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             4_655_631_299_166_339_072,
             4_582_062_340_878_461_976,
             4_643_780_029_834_417_493,
-            4_653_974_046_826_898_253
+            4_653_974_046_826_898_256
         ),
     ];
     assert_eq!(actual, expected);

@@ -2,6 +2,9 @@
 
 #![allow(clippy::missing_errors_doc)]
 
+#[path = "surface_liquid_enthalpy_closure.rs"]
+mod enthalpy_reconstruction;
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
@@ -1272,12 +1275,11 @@ fn add_expected_partition(
     expected: &mut BTreeMap<ParcelJoinKey, AmountPair>,
     key: ParcelJoinKey,
     mass: f64,
-    h_mix: f64,
+    enthalpy: f64,
 ) -> Option<()> {
-    if !mass.is_finite() || mass < 0.0 {
+    if !mass.is_finite() || mass < 0.0 || !enthalpy.is_finite() {
         return None;
     }
-    let enthalpy = checked_surface_liquid_mul(mass, h_mix)?;
     expected.entry(key).or_default().checked_add(mass, enthalpy)
 }
 
@@ -1395,6 +1397,7 @@ fn project_parcel_arithmetic(
         let mut cumulative_supply_m = partition.beginning_cumulative_supply_m;
         let mut cumulative_infiltration_m = partition.beginning_cumulative_infiltration_m;
         let mut routed_segments = Vec::new();
+        let mut allocated_temporal_enthalpy = vec![0.0; segments.len()];
         for window in boundaries.windows(2) {
             let start_s = window[0];
             let end_s = window[1];
@@ -1403,16 +1406,28 @@ fn project_parcel_arithmetic(
             }
             let mut contributions = segments
                 .iter()
-                .filter(|segment| segment.start_s <= start_s && segment.end_s >= end_s)
-                .map(|segment| {
+                .enumerate()
+                .filter(|(_, segment)| segment.start_s <= start_s && segment.end_s >= end_s)
+                .map(|(segment_index, segment)| {
                     let fraction = checked_surface_liquid_div(
                         end_s - start_s,
                         segment.end_s - segment.start_s,
                     )?;
+                    let (enthalpy, allocated) = enthalpy_reconstruction::allocate_ordered_child(
+                        segment.enthalpy,
+                        allocated_temporal_enthalpy[segment_index],
+                        enthalpy_reconstruction::proportional_q(
+                            segment.enthalpy,
+                            end_s - start_s,
+                            segment.end_s - segment.start_s,
+                        ),
+                        end_s.to_bits() == segment.end_s.to_bits(),
+                    )?;
+                    allocated_temporal_enthalpy[segment_index] = allocated;
                     Some((
                         segment.clone(),
                         checked_surface_liquid_mul(segment.mass, fraction)?,
-                        checked_surface_liquid_mul(segment.enthalpy, fraction)?,
+                        enthalpy,
                     ))
                 })
                 .collect::<Option<Vec<_>>>()
@@ -1498,7 +1513,7 @@ fn project_parcel_arithmetic(
                         )
                     })?
             };
-            let h_mix =
+            let _h_mix =
                 checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
                     contextual_ofe_comparison_failure(
                         DirectSurfaceLiquidErrorCode::E003,
@@ -1539,10 +1554,27 @@ fn project_parcel_arithmetic(
             }
 
             let mut allocated_infiltration = 0.0;
+            let mut allocated_mixed_enthalpy = 0.0;
             let count = contributions.len();
             let mut excess_by_store =
-                BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(RawParcelSegment, f64)>>::new();
+                BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(RawParcelSegment, f64, f64)>>::new();
             for (index, (segment, mass, _)) in contributions.into_iter().enumerate() {
+                let (mixed_part_q, allocated) = enthalpy_reconstruction::allocate_ordered_child(
+                    supply_enthalpy,
+                    allocated_mixed_enthalpy,
+                    enthalpy_reconstruction::proportional_q(supply_enthalpy, mass, supply_mass),
+                    index + 1 == count,
+                )
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "partition mixed enthalpy allocation arithmetic",
+                    )
+                })?;
+                allocated_mixed_enthalpy = allocated;
                 let infiltrated = if full_infiltration {
                     Some(mass)
                 } else if index + 1 == count {
@@ -1588,17 +1620,6 @@ fn project_parcel_arithmetic(
                     start_s,
                     end_s,
                 );
-                add_expected_partition(&mut expected, key, infiltrated, h_mix).ok_or_else(
-                    || {
-                        contextual_ofe_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            ofe_id,
-                            "partition infiltration enthalpy arithmetic",
-                        )
-                    },
-                )?;
                 let excess = checked_surface_liquid_sub(mass, infiltrated).ok_or_else(|| {
                     contextual_ofe_comparison_failure(
                         DirectSurfaceLiquidErrorCode::E003,
@@ -1608,10 +1629,36 @@ fn project_parcel_arithmetic(
                         "partition excess arithmetic",
                     )
                 })?;
+                let (infiltration_q, excess_q) =
+                    enthalpy_reconstruction::split_first_then_remainder(
+                        mixed_part_q,
+                        mass,
+                        infiltrated,
+                        excess,
+                    )
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "partition infiltration enthalpy arithmetic",
+                        )
+                    })?;
+                add_expected_partition(&mut expected, key, infiltrated, infiltration_q)
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "partition infiltration enthalpy arithmetic",
+                        )
+                    })?;
                 excess_by_store
                     .entry(segment.recipient_store_key.clone())
                     .or_default()
-                    .push((segment, excess));
+                    .push((segment, excess, excess_q));
             }
 
             for (store_key, mut parts) in excess_by_store {
@@ -1664,7 +1711,7 @@ fn project_parcel_arithmetic(
                 let total_retained = total_excess.min(available);
                 let mut allocated_retained = 0.0;
                 let part_count = parts.len();
-                for (index, (segment, excess)) in parts.into_iter().enumerate() {
+                for (index, (segment, excess, excess_q)) in parts.into_iter().enumerate() {
                     let retained = if index + 1 == part_count {
                         checked_surface_liquid_sub(total_retained, allocated_retained)
                     } else if total_excess == 0.0 {
@@ -1694,6 +1741,30 @@ fn project_parcel_arithmetic(
                             "partition retained accumulation arithmetic",
                         )
                     })?;
+                    let runoff = checked_surface_liquid_sub(excess, retained).ok_or_else(|| {
+                        contextual_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            &store_key,
+                            Some(segment.source_parcel_id.clone()),
+                            "partition runoff arithmetic",
+                        )
+                    })?;
+                    let (retained_q, runoff_q) =
+                        enthalpy_reconstruction::split_first_then_remainder(
+                            excess_q, excess, retained, runoff,
+                        )
+                        .ok_or_else(|| {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &store_key,
+                                Some(segment.source_parcel_id.clone()),
+                                "partition retained enthalpy arithmetic",
+                            )
+                        })?;
                     if retained > 0.0 {
                         let key = parcel_join_key(
                             &configuration.owner_id,
@@ -1705,8 +1776,8 @@ fn project_parcel_arithmetic(
                             start_s,
                             end_s,
                         );
-                        add_expected_partition(&mut expected, key, retained, h_mix).ok_or_else(
-                            || {
+                        add_expected_partition(&mut expected, key, retained, retained_q)
+                            .ok_or_else(|| {
                                 contextual_comparison_failure(
                                     DirectSurfaceLiquidErrorCode::E003,
                                     operands.transaction_id,
@@ -1715,19 +1786,8 @@ fn project_parcel_arithmetic(
                                     Some(segment.source_parcel_id.clone()),
                                     "partition retained enthalpy arithmetic",
                                 )
-                            },
-                        )?;
+                            })?;
                     }
-                    let runoff = checked_surface_liquid_sub(excess, retained).ok_or_else(|| {
-                        contextual_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            &store_key,
-                            Some(segment.source_parcel_id.clone()),
-                            "partition runoff arithmetic",
-                        )
-                    })?;
                     if runoff == 0.0 {
                         continue;
                     }
@@ -1771,7 +1831,7 @@ fn project_parcel_arithmetic(
                                     "partition routed mass arithmetic",
                                 )
                             })?;
-                        let routed_enthalpy = checked_surface_liquid_mul(routed_mass, h_mix)
+                        let routed_enthalpy = checked_surface_liquid_mul(runoff_q, area_ratio)
                             .ok_or_else(|| {
                                 contextual_comparison_failure(
                                     DirectSurfaceLiquidErrorCode::E003,
@@ -1817,16 +1877,18 @@ fn project_parcel_arithmetic(
                         start_s,
                         end_s,
                     );
-                    add_expected_partition(&mut expected, key, runoff, h_mix).ok_or_else(|| {
-                        contextual_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            &store_key,
-                            Some(segment.source_parcel_id.clone()),
-                            "partition runoff enthalpy arithmetic",
-                        )
-                    })?;
+                    add_expected_partition(&mut expected, key, runoff, runoff_q).ok_or_else(
+                        || {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &store_key,
+                                Some(segment.source_parcel_id.clone()),
+                                "partition runoff enthalpy arithmetic",
+                            )
+                        },
+                    )?;
                 }
                 let retained_tile =
                     checked_surface_liquid_div(total_retained, configured.tile_fraction)
@@ -2109,31 +2171,28 @@ fn compare_parcel_projection(
         let expected = projection.expected.get(&key).copied().unwrap_or_default();
         let actual = projection.actual.get(&key).copied().unwrap_or_default();
         let store_key = projection_key_store(&key);
-        for (actual_value, expected_value, unit, detail) in [
-            (
-                actual.mass,
-                expected.mass,
-                DirectSurfaceLiquidClosureUnit::MassKgM2,
-                "parcel mass join",
-            ),
-            (
-                actual.enthalpy,
-                expected.enthalpy,
-                DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
-                "parcel enthalpy join",
-            ),
-        ] {
-            compare_projected_value(
-                actual_value,
-                expected_value,
-                unit,
-                disposition,
+        compare_projected_value(
+            actual.mass,
+            expected.mass,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            store_key,
+            Some(key.source_parcel_id.clone()),
+            "parcel mass join",
+        )?;
+        if matches!(disposition, ComparisonDisposition::RequireClosure)
+            && !enthalpy_reconstruction::exact_q_match(actual.enthalpy, expected.enthalpy)
+        {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E010,
                 operands.transaction_id,
                 &configuration.owner_id,
                 store_key,
                 Some(key.source_parcel_id.clone()),
-                detail,
-            )?;
+                "parcel exact enthalpy authority join",
+            ));
         }
     }
 

@@ -2474,7 +2474,10 @@ fn validate_candidate_condensation_credit(
     if credit.specific_liquid_enthalpy_j_kg.to_bits()
         != openwepp_land_surface_energy::liquid_enthalpy_j_kg(credit.temperature_k).to_bits()
     {
-        return Err(candidate_closure(
+        return Err(condensation_candidate_closure(
+            configuration,
+            transaction_id,
+            credit,
             "condensation temperature/enthalpy mismatch",
         ));
     }
@@ -2505,6 +2508,41 @@ fn candidate_closure(detail: &'static str) -> DirectSurfaceLiquidError {
         DirectSurfaceLiquidErrorCode::E009,
         DirectSurfaceLiquidPhase::ResourceCandidate,
         DirectSurfaceLiquidErrorContext::default(),
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn condensation_candidate_closure(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    transaction_id: TransactionId,
+    credit: &CondensationCredit,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    let source_id = configuration
+        .records
+        .iter()
+        .find(|record| {
+            record.key.ofe_id == credit.ofe_id
+                && record.key.tile_id == credit.tile_id
+                && record.key.surface_id == credit.surface_id
+        })
+        .map(|record| record.key.source_id.clone());
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E009,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: Some(configuration.owner_id.clone()),
+            ofe_id: Some(credit.ofe_id.clone()),
+            tile_id: Some(credit.tile_id.clone()),
+            surface_id: Some(credit.surface_id.clone()),
+            source_id,
+            parcel_id: None,
+        },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: None,
             attempted_owner_sha256: None,

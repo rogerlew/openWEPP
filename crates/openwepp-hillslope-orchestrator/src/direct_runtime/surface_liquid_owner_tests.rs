@@ -973,24 +973,73 @@ fn condensation_rejects_one_bit_temperature_enthalpy_alias() {
     let arbitration =
         authorize_surface_liquid_withdrawals(&configuration, &beginning, transaction, None, &[])
             .expect("authorize empty");
-    let open = record_index(&configuration, "open");
-    let record = &configuration.records[open];
-    let exact = openwepp_land_surface_energy::liquid_enthalpy_j_kg(280.0);
-    let condensation = CondensationCredit {
-        transaction_id: transaction,
-        hydrology_owner_id: configuration.owner_id.clone(),
-        ofe_id: record.key.ofe_id.clone(),
-        tile_id: record.key.tile_id.clone(),
-        surface_id: record.key.surface_id.clone(),
-        amount_kg_m2_stand_ground: 0.1,
-        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
-        temperature_k: 280.0,
-        specific_liquid_enthalpy_j_kg: f64::from_bits(exact.to_bits() + 1),
-    };
-    let error =
-        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[condensation])
-            .expect_err("enthalpy poison");
-    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E009);
+    for record in &configuration.records {
+        for poison in 0..2 {
+            let exact = openwepp_land_surface_energy::liquid_enthalpy_j_kg(280.0);
+            let mut condensation = CondensationCredit {
+                transaction_id: transaction,
+                hydrology_owner_id: configuration.owner_id.clone(),
+                ofe_id: record.key.ofe_id.clone(),
+                tile_id: record.key.tile_id.clone(),
+                surface_id: record.key.surface_id.clone(),
+                amount_kg_m2_stand_ground: 0.1,
+                amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                temperature_k: 280.0,
+                specific_liquid_enthalpy_j_kg: exact,
+            };
+            match poison {
+                0 => {
+                    condensation.temperature_k =
+                        f64::from_bits(condensation.temperature_k.to_bits() + 1);
+                }
+                1 => {
+                    condensation.specific_liquid_enthalpy_j_kg =
+                        f64::from_bits(exact.to_bits() + 1);
+                }
+                _ => unreachable!("bounded condensation poison table"),
+            }
+            let expected_attempt =
+                super::super::surface_liquid_attachment::surface_liquid_raw_resource_attempt_sha256(
+                    &configuration,
+                    &arbitration,
+                    &[],
+                    std::slice::from_ref(&condensation),
+                );
+            let error = apply_surface_liquid_resource_phase(
+                &configuration,
+                &arbitration,
+                &[],
+                &[condensation],
+            )
+            .expect_err("temperature/enthalpy poison");
+            let failure = error.failure().expect("canonical condensation failure");
+            assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+            assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+            assert_eq!(failure.context.transaction_id, Some(transaction));
+            assert_eq!(
+                failure.context.owner_id.as_ref(),
+                Some(&configuration.owner_id)
+            );
+            assert_eq!(failure.context.ofe_id.as_ref(), Some(&record.key.ofe_id));
+            assert_eq!(failure.context.tile_id.as_ref(), Some(&record.key.tile_id));
+            assert_eq!(
+                failure.context.surface_id.as_ref(),
+                Some(&record.key.surface_id),
+            );
+            assert_eq!(
+                failure.context.source_id.as_ref(),
+                Some(&record.key.source_id)
+            );
+            assert_eq!(
+                failure.rollback.beginning_owner_sha256.as_deref(),
+                Some(raw_state_hash(&beginning).as_str()),
+            );
+            assert_eq!(
+                failure.rollback.attempted_owner_sha256.as_deref(),
+                Some(expected_attempt.as_str()),
+            );
+        }
+    }
     assert_eq!(arbitration.beginning_state, beginning);
 }
 
