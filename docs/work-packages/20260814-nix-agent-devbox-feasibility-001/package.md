@@ -120,7 +120,7 @@ heavy-run time alone.
 - [x] Define unique absolute `/tmp` scratch allocation outside every checkout.
 - [x] Add collision/ownership checks that reject a target directory already
   owned by another active task.
-- [ ] Benchmark Cargo incremental compilation against
+- [x] Benchmark Cargo incremental compilation against
   `CARGO_INCREMENTAL=0` plus shared sccache.
 - [ ] Benchmark the system linker against Clang plus mold without committing a
   global optimization before evidence exists.

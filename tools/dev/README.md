@@ -9,8 +9,9 @@ nix develop
 
 The shell shares Cargo downloads, uv downloads, and the future sccache store,
 but derives unique Cargo target and `/tmp` paths from the absolute worktree
-path. It also holds a nonblocking ownership lock for that target. A second shell
-for the same task fails explicitly instead of sharing incremental build state.
+path. It also records an atomic live-process ownership claim for that target. A
+second shell for the same task fails explicitly instead of sharing incremental
+build state.
 
 Use one worktree per write-capable agent. If two independent tasks must operate
 from the same checkout, give each one an explicit identity before entering:

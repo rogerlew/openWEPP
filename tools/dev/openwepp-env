@@ -33,12 +33,33 @@ mkdir -p "$CARGO_HOME" "$SCCACHE_DIR" "$UV_CACHE_DIR" "$CARGO_TARGET_DIR" "$open
 mkdir -p "$TMPDIR"
 chmod 0700 "$TMPDIR"
 
-exec {openwepp_target_lock_fd}>"$openwepp_cache_root/locks/$openwepp_task_id.lock"
-if ! flock -n "$openwepp_target_lock_fd"; then
+openwepp_owner_file="$openwepp_cache_root/locks/$openwepp_task_id.lock"
+exec {openwepp_claim_fd}>"$openwepp_owner_file"
+flock "$openwepp_claim_fd"
+
+read -r openwepp_owner_pid openwepp_owner_start <"$openwepp_owner_file" || true
+openwepp_owner_active=false
+if [[ "$openwepp_owner_pid" =~ ^[0-9]+$ && "$openwepp_owner_start" =~ ^[0-9]+$ ]]; then
+    openwepp_live_start="$(awk '{ print $22 }' "/proc/$openwepp_owner_pid/stat" 2>/dev/null || true)"
+    if [[ "$openwepp_live_start" == "$openwepp_owner_start" ]]; then
+        openwepp_owner_active=true
+    fi
+fi
+
+if [[ "$openwepp_owner_active" == true && "$openwepp_owner_pid" != "$PPID" ]]; then
+    flock -u "$openwepp_claim_fd"
+    exec {openwepp_claim_fd}>&-
     echo "error: task '$openwepp_task_id' already owns this Cargo target" >&2
     echo "use a separate worktree or set a unique OPENWEPP_TASK_ID" >&2
     return 1
 fi
-export OPENWEPP_TARGET_LOCK_FD="$openwepp_target_lock_fd"
 
-unset openwepp_repo_root openwepp_repo_key openwepp_cache_root openwepp_task_id openwepp_target_lock_fd
+openwepp_parent_start="$(awk '{ print $22 }' "/proc/$PPID/stat")"
+printf '%s %s\n' "$PPID" "$openwepp_parent_start" >"$openwepp_owner_file"
+flock -u "$openwepp_claim_fd"
+exec {openwepp_claim_fd}>&-
+export OPENWEPP_TARGET_OWNER_FILE="$openwepp_owner_file"
+
+unset openwepp_repo_root openwepp_repo_key openwepp_cache_root openwepp_task_id
+unset openwepp_claim_fd openwepp_owner_file openwepp_owner_pid openwepp_owner_start
+unset openwepp_owner_active openwepp_live_start openwepp_parent_start

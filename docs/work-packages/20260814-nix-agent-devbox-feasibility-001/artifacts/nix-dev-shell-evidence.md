@@ -89,7 +89,12 @@ error: task 'openWEPP-295c6e060aa9' already owns this Cargo target
 use a separate worktree or set a unique OPENWEPP_TASK_ID
 ```
 
-The lock is nonblocking and is released when the owning shell exits.
+The first implementation kept an advisory lock descriptor open for the shell
+lifetime. A background sccache server inherited that descriptor and retained
+ownership after the shell exited. The implementation now serializes claim-file
+updates with a short advisory lock and records the parent `nix develop` PID plus
+Linux process start time. Live PID/start-time identity rejects overlap; stale
+claims are replaced atomically; no descriptor is inherited by build daemons.
 
 ## Capacity
 
