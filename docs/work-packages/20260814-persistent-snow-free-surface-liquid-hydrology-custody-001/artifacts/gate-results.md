@@ -1198,6 +1198,46 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `537345efa`
+
+- PASS: fresh hydrology/science/ownership review found no material finding
+  across receiver area domain, protocol stages, D/A/F, rollback, restart,
+  condensation, ingress and closure.
+- HOLD: fresh Rust review found owner-envelope configuration/receipt identity
+  can be masked by protocol E003/E005/E006 and is incorrectly merged into E011.
+- HOLD: Rust review found duplicated attachment/receiver lane-domain scanning
+  and a redundant full `protocol.validate()` after the four canonical stages.
+- PASS but non-dispositive: LSE 29/29; integration 69/69; custody authority
+  10/10; selected orchestrator 86/86; AUTH11 3/3; anti-evasion; affected strict
+  Clippy; unit compliance; formatting and diff hygiene.
+- Pending: centralize complete owner-envelope identity and lane-domain scanning,
+  remove redundant validation and repeat fresh dual review. Heavy execution
+  remains blocked.
+
+## `537345efa` HOLD remediation
+
+- Ran: LSE — PASS, 31/31; unified integration — PASS, 69/69; custody authority
+  — PASS, 10/10; orchestrator library — PASS, 601/601 with three slow tests;
+  affected strict all-target/all-feature Clippy, compile checks, formatting and
+  diff hygiene — PASS.
+- Ran: science admission — PASS, 46 contracts and 28 surfaces; anti-evasion —
+  PASS; AUTH11 — PASS, 3/3; surface-liquid unit compliance — PASS; package
+  Markdown — PASS, 108 files with zero errors and warnings.
+- Static + Ran: outer/protocol/configuration identity, all five receipt
+  transactions and the applicable hydrology receipt-owner binding precede every
+  protocol numeric/cardinality/bound stage. Zero/mismatch/configuration/receipt/
+  owner identity × NaN/duplicate/negative D-A-F forms a 45-case E002 matrix.
+- Ran: wrong receipt kind and duplicate owner-ID controls remain E011, preserving
+  genuine owner-role-set semantics.
+- Static + Ran: one typed first-invalid production-lane projection now serves
+  attachment and receiver domain checks with path-specific completion; the
+  redundant final full-protocol validation was removed.
+- Preserved retry: strict Clippy first found nine test-only missing-semicolon
+  findings; mechanical correction produced the terminal strict pass. No focused
+  vector failed.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

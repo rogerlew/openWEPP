@@ -554,3 +554,13 @@ finding is rejected, deferred or moved to another package.
 | B-TERMINAL-2AF-HIGH-001: receiver exact-bit lane-area identity maps invalid numeric area to E002 instead of E003 | Accepted | Remediated: the shared projection is finite-positive-aware; public snapshot/unified paths complete all E002 checks then run an explicit all-lane E003 domain gate; NaN/±Inf/zero/negative and mixed later-E002 vectors PASS with complete rollback/callback evidence |
 
 No `2afffa9dc` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `537345efa`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-537-HIGH-001: owner-envelope configuration/receipt identity can be masked by protocol E003/E005/E006 and is misclassified as E011 | Accepted | Remediated: complete outer/protocol/configuration/receipt transaction and hydrology-owner identity precedes protocol numeric/cardinality/bounds; 45 cross-poisons return E002 while genuine role-set/duplicate-owner failures remain E011 |
+| A-TERMINAL-537-MEDIUM-002: production-lane domain validation remains duplicated and final-protocol validation redundantly reruns full validate | Accepted | Remediated: attachment and receiver consume one typed first-invalid-lane projection with path-specific completion; redundant post-stage full protocol validation removed |
+
+The hydrology review returned PASS with no material finding. No `537345efa`
+finding is rejected, deferred or moved to another package.

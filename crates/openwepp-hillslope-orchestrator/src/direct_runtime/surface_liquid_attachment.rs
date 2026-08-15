@@ -665,6 +665,23 @@ pub(crate) enum SurfaceLiquidFrameIdentityMismatch {
     },
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum SurfaceLiquidFrameDomainViolation {
+    ProductionLaneAreaNotFinitePositive { topology_index: usize },
+}
+
+pub(crate) fn first_invalid_surface_liquid_production_lane(
+    lanes: &[DirectLaneFrame],
+) -> Option<SurfaceLiquidFrameDomainViolation> {
+    lanes.iter().enumerate().find_map(|(topology_index, lane)| {
+        (!lane.area_m2.is_finite() || lane.area_m2 <= 0.0).then_some(
+            SurfaceLiquidFrameDomainViolation::ProductionLaneAreaNotFinitePositive {
+                topology_index,
+            },
+        )
+    })
+}
+
 pub(crate) fn first_surface_liquid_frame_identity_mismatch<F>(
     run_id: u64,
     lanes: &[DirectLaneFrame],
@@ -730,16 +747,17 @@ pub(crate) fn validate_surface_liquid_frame_domains(
     beginning_owner_sha256: Option<&str>,
     attempted_owner_sha256: Option<&str>,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    for (topology_index, ofe_id) in configuration.ofe_topology.iter().enumerate() {
-        if !lanes[topology_index].area_m2.is_finite() || lanes[topology_index].area_m2 <= 0.0 {
-            return Err(surface_liquid_frame_domain_error(
-                configuration,
-                ofe_id,
-                beginning_owner_sha256.map(str::to_owned),
-                attempted_owner_sha256.map(str::to_owned),
-                "surface-liquid production lane area is not positive finite",
-            ));
-        }
-    }
-    Ok(())
+    let Some(SurfaceLiquidFrameDomainViolation::ProductionLaneAreaNotFinitePositive {
+        topology_index,
+    }) = first_invalid_surface_liquid_production_lane(lanes)
+    else {
+        return Ok(());
+    };
+    Err(surface_liquid_frame_domain_error(
+        configuration,
+        &configuration.ofe_topology[topology_index],
+        beginning_owner_sha256.map(str::to_owned),
+        attempted_owner_sha256.map(str::to_owned),
+        "surface-liquid production lane area is not positive finite",
+    ))
 }

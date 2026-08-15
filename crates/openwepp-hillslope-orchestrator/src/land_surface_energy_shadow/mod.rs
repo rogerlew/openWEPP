@@ -1238,16 +1238,6 @@ fn validate_final_protocol(
     preflight_protocol_domains(protocol, expected_snapshot, &attempted_sha256)?;
     preflight_protocol_cardinality(protocol, expected_snapshot, &attempted_sha256)?;
     preflight_protocol_bounds(protocol, expected_snapshot, &attempted_sha256)?;
-    if let Err(error) = protocol.validate() {
-        let (code, detail) = protocol_error_code_and_detail(&error);
-        return Err(protocol_failure(
-            code,
-            protocol,
-            expected_snapshot,
-            &attempted_sha256,
-            detail,
-        ));
-    }
     Ok(())
 }
 

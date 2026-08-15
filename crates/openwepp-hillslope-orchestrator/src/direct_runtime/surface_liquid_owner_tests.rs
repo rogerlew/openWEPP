@@ -1,5 +1,6 @@
 use super::super::surface_liquid_attachment::{
-    SurfaceLiquidFrameIdentityMismatch, first_surface_liquid_frame_identity_mismatch,
+    SurfaceLiquidFrameDomainViolation, SurfaceLiquidFrameIdentityMismatch,
+    first_invalid_surface_liquid_production_lane, first_surface_liquid_frame_identity_mismatch,
 };
 use super::*;
 use crate::direct_runtime::{
@@ -246,6 +247,37 @@ fn assert_frame_receiver_identity_projection_equivalence() {
         ),
         Some(SurfaceLiquidFrameIdentityMismatch::Lane { topology_index: 0 }),
         "frame identity must remain earlier than lane numeric domain",
+    );
+}
+
+#[test]
+fn first_invalid_production_lane_projection_is_ordered_and_finite_positive() {
+    for topology_index in 0..2 {
+        for invalid_area in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, -1.0] {
+            let clean_lane = attachment_frame().lanes[0].clone();
+            let mut lanes = vec![clean_lane.clone(), clean_lane];
+            lanes[topology_index].area_m2 = invalid_area;
+            assert_eq!(
+                first_invalid_surface_liquid_production_lane(&lanes),
+                Some(
+                    SurfaceLiquidFrameDomainViolation::ProductionLaneAreaNotFinitePositive {
+                        topology_index,
+                    },
+                ),
+            );
+        }
+    }
+
+    let mut lanes = vec![attachment_frame().lanes[0].clone(); 2];
+    lanes[0].area_m2 = -1.0;
+    lanes[1].area_m2 = f64::NAN;
+    assert_eq!(
+        first_invalid_surface_liquid_production_lane(&lanes),
+        Some(
+            SurfaceLiquidFrameDomainViolation::ProductionLaneAreaNotFinitePositive {
+                topology_index: 0,
+            },
+        ),
     );
 }
 

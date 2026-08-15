@@ -14,7 +14,8 @@ use super::{
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
-    SurfaceLiquidFrameIdentityMismatch, first_surface_liquid_frame_identity_mismatch,
+    SurfaceLiquidFrameDomainViolation, SurfaceLiquidFrameIdentityMismatch,
+    first_invalid_surface_liquid_production_lane, first_surface_liquid_frame_identity_mismatch,
     surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
 };
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
@@ -116,11 +117,9 @@ pub(super) fn validate_surface_production_lane_domains(
     configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let frame = owner.beginning_frame();
-    let Some((topology_index, _)) = frame
-        .lanes
-        .iter()
-        .enumerate()
-        .find(|(_, lane)| !lane.area_m2.is_finite() || lane.area_m2 <= 0.0)
+    let Some(SurfaceLiquidFrameDomainViolation::ProductionLaneAreaNotFinitePositive {
+        topology_index,
+    }) = first_invalid_surface_liquid_production_lane(&frame.lanes)
     else {
         return Ok(());
     };

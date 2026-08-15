@@ -609,13 +609,9 @@ pub fn validate_five_owner_envelope(
     identity: &OwnerEnvelopeIdentity,
     expected_configuration_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyError> {
-    identity.validate()?;
-    if &identity.lse_configuration_sha256 != expected_configuration_sha256 {
-        return Err(LandSurfaceEnergyError::OwnerEnvelope(
-            "five-owner LSE configuration mismatch",
-        ));
-    }
-    Ok(())
+    identity
+        .validate_identity_stage_with_expected_configuration(Some(expected_configuration_sha256))?;
+    identity.validate_after_identity_stage()
 }
 
 fn build_energy_and_soil(

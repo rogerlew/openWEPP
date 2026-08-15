@@ -290,6 +290,40 @@ pub struct CandidateReceiptSet {
 
 impl CandidateReceiptSet {
     pub fn validate(&self, transaction_id: TransactionId) -> Result<(), LandSurfaceEnergyError> {
+        self.validate_transaction_identities(transaction_id)?;
+        self.validate_owner_set()
+    }
+
+    fn validate_transaction_identities(
+        &self,
+        transaction_id: TransactionId,
+    ) -> Result<(), LandSurfaceEnergyError> {
+        for receipt in self.rows().map(|(receipt, _)| receipt) {
+            if receipt.transaction_id != transaction_id {
+                return Err(LandSurfaceEnergyError::Identity {
+                    field: "candidate_receipt.transaction_id",
+                    expected: transaction_id.0.to_string(),
+                    found: receipt.transaction_id.0.to_string(),
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_owner_set(&self) -> Result<(), LandSurfaceEnergyError> {
+        let rows = self.rows();
+        let mut owners = BTreeSet::new();
+        for (receipt, expected_kind) in rows {
+            if receipt.owner_kind != expected_kind || !owners.insert(receipt.owner_id.clone()) {
+                return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                    "candidate receipt owner-set mismatch",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn rows(&self) -> impl Iterator<Item = (&CandidateOwnerReceipt, CandidateOwnerKind)> {
         let rows = [
             (&self.vegetation, CandidateOwnerKind::Vegetation),
             (&self.hydrology, CandidateOwnerKind::Hydrology),
@@ -300,18 +334,7 @@ impl CandidateReceiptSet {
             (&self.soil_thermal, CandidateOwnerKind::SoilThermal),
             (&self.biogeochemistry, CandidateOwnerKind::Biogeochemistry),
         ];
-        let mut owners = BTreeSet::new();
-        for (receipt, expected_kind) in rows {
-            if receipt.transaction_id != transaction_id
-                || receipt.owner_kind != expected_kind
-                || !owners.insert(receipt.owner_id.clone())
-            {
-                return Err(LandSurfaceEnergyError::OwnerEnvelope(
-                    "candidate receipt owner-set mismatch",
-                ));
-            }
-        }
-        Ok(())
+        rows.into_iter()
     }
 }
 
@@ -327,12 +350,67 @@ pub struct OwnerEnvelopeIdentity {
 
 impl OwnerEnvelopeIdentity {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        if self.transaction_id.0 == 0 || self.water_protocol.transaction_id != self.transaction_id {
-            return Err(LandSurfaceEnergyError::OwnerEnvelope(
-                "owner envelope transaction mismatch",
+        self.validate_identity_stage()?;
+        self.validate_after_identity_stage()
+    }
+
+    pub fn validate_identity_stage(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.validate_identity_stage_with_expected_configuration(None)
+    }
+
+    pub(crate) fn validate_identity_stage_with_expected_configuration(
+        &self,
+        expected_configuration_sha256: Option<&Sha256Digest>,
+    ) -> Result<(), LandSurfaceEnergyError> {
+        if self.transaction_id.0 == 0 {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "zero owner envelope transaction",
             ));
         }
-        self.water_protocol.validate()?;
-        self.candidate_owner_receipts.validate(self.transaction_id)
+        if self.water_protocol.transaction_id != self.transaction_id {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "owner_envelope.transaction_id",
+                expected: self.transaction_id.0.to_string(),
+                found: self.water_protocol.transaction_id.0.to_string(),
+            });
+        }
+        if let Some(expected) = expected_configuration_sha256
+            && &self.lse_configuration_sha256 != expected
+        {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "owner_envelope.lse_configuration_sha256",
+                expected: expected.to_string(),
+                found: self.lse_configuration_sha256.to_string(),
+            });
+        }
+        self.water_protocol
+            .validate_identity_stage()
+            .map_err(|violation| violation.error)?;
+        self.candidate_owner_receipts
+            .validate_transaction_identities(self.transaction_id)?;
+        if self.candidate_owner_receipts.hydrology.owner_id
+            != self.water_protocol.hydrology_owner_id
+        {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "candidate_receipt.hydrology.owner_id",
+                expected: self.water_protocol.hydrology_owner_id.as_str().to_owned(),
+                found: self
+                    .candidate_owner_receipts
+                    .hydrology
+                    .owner_id
+                    .as_str()
+                    .to_owned(),
+            });
+        }
+        Ok(())
+    }
+
+    pub(crate) fn validate_after_identity_stage(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.water_protocol
+            .validate_domain_stage()
+            .and_then(|()| self.water_protocol.validate_cardinality_stage())
+            .and_then(|()| self.water_protocol.validate_bound_stage())
+            .map_err(|violation| violation.error)?;
+        self.candidate_owner_receipts.validate_owner_set()
     }
 }
