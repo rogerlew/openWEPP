@@ -853,6 +853,17 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze exact bytes and repeat fresh dual review. Heavy execution
   remains blocked until both reviews return PASS.
 
+## Extracted sealing authority binding
+
+- FAIL retained: the first science-admission run rejected the new
+  `finalization_sealing.rs` because the impact map lacked an exact current
+  contract binding.
+- PASS: generation 34 atomically binds the extracted sealing module to both
+  SC-SURFACELIQUID-001 and SC-LANDSURFACEENERGY-001.
+- PASS after correction: science admission reports 46 contracts and 28 science
+  surfaces; anti-evasion passes; AUTH11 passes 3/3; SC-SURFACELIQUID-001 unit
+  compliance passes.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
