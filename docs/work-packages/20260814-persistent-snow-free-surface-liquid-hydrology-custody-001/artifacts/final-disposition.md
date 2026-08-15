@@ -28,6 +28,9 @@ checked unit-aware arithmetic, guards every named conversion/accumulation and
 reports missing expected receiver identity. Re-review found that arithmetic
 indeterminacy was still collapsed into E010/E011 and two receiver aggregations
 remained unchecked. The correction at `3b9e5ed13` preserves tri-state E003
-precedence and checks those joins; focused gates pass, but fresh exact-byte
-reviews and terminal verification remain required. This is not yet a terminal
-custody-lift or resumed-Child-3 claim.
+precedence and checks those joins. Final re-review found that E010 independent
+closure preempted producer E009 attribution. The correction at `47f959b43`
+performs E003 arithmetic/domain preflight, one immutable E009 producer
+reconstruction, then E010 independent closure. Focused gates pass, but fresh
+exact-byte reviews and terminal verification remain required. This is not yet
+a terminal custody-lift or resumed-Child-3 claim.

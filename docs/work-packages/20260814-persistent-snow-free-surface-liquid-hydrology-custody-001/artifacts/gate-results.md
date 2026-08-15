@@ -478,3 +478,19 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - PASS: affected production files remain below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology re-review.
+
+## Final ingress-precedence remediation at `47f959b43`
+
+- HOLD retained: both final exact-byte reviewers found that independent E010
+  closure validation preempted immutable producer attribution/routing failures
+  canonically assigned to E009.
+- PASS: ingress candidate validation now runs bounded E003 arithmetic/domain
+  preflight, one immutable E009 producer reconstruction and field comparison,
+  then independent E010 closure.
+- PASS: the wrong-infiltration-recipient poison is restored to
+  E009/`IngressCandidate`; separate public E003, E009 and E010 poisons assert
+  exact available identity and rollback hashes.
+- PASS: orchestrator quick suite, 544/544; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- PASS: affected production files remain below 3,000 lines.
+- Pending: fresh exact-byte Rust and hydrology re-review.

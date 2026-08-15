@@ -138,3 +138,14 @@ Checked comparison is now propagated as a tri-state at every caller. An
 arithmetic failure returns contextual E003 with available identity and rollback
 hashes; only a finite `Some(false)` result returns the appropriate closure code.
 All cited receiver divisions and accumulations use the same checked arithmetic.
+
+## Final ingress-precedence review finding
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-FINAL-HIGH-001: independent E010 closure preempts producer attribution/routing E009 | Accepted | Remediated at `47f959b43`; focused PASS |
+
+Ingress candidate validation now preserves the canonical branch order: E003
+domain/arithmetic preflight, immutable producer reconstruction and attribution
+as E009, then independent closure as E010. The three branches have distinct
+public poisons and exact rollback assertions.
