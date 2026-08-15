@@ -314,6 +314,107 @@ fn unequal_area_runoff_routes_once_and_preserves_mass_and_enthalpy() {
 }
 
 #[test]
+fn partial_support_routes_independently_across_multiple_hops() {
+    let configuration = three_ofe_configuration();
+    let beginning = initial_state(&configuration, 1.0);
+    let transaction_id = TransactionId(408);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let mut input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![
+            open_ingress(&configuration.records[0], 1.0),
+            open_ingress(&configuration.records[1], 0.0),
+            open_ingress(&configuration.records[2], 0.0),
+        ],
+        wb14_parameters: parameters(&configuration),
+    };
+    let DirectTileGroundIngress::OpenRawPrecipitation {
+        raw_precipitation, ..
+    } = &mut input.tile_ingress[0]
+    else {
+        panic!("open input");
+    };
+    *raw_precipitation = amount(1.0, 287.0, 300.0, 1_500.0);
+
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("partial-support multi-hop candidate");
+    candidate
+        .validate(&configuration, &resource, &input)
+        .expect("independently projected multi-hop route");
+    let source_id = candidate
+        .closure_operands
+        .source_parcels()
+        .iter()
+        .find(|source| source.basis_ofe_id() == &ofe("upper"))
+        .expect("upper source")
+        .source_parcel_id()
+        .to_owned();
+    let routed = candidate
+        .receipts
+        .iter()
+        .filter(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(routed.len(), 2);
+    assert!(routed.iter().all(|receipt| {
+        receipt.start_s.to_bits() == 300.0_f64.to_bits()
+            && receipt.end_s.to_bits() == 1_500.0_f64.to_bits()
+    }));
+    assert!(candidate.receipts.iter().any(|receipt| {
+        receipt.source_parcel_id == source_id
+            && receipt.basis_ofe_id == ofe("lower")
+            && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::OutletRunoff
+    }));
+
+    let mut disposition_drift = candidate.clone();
+    disposition_drift
+        .receipts
+        .iter_mut()
+        .find(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.basis_ofe_id == ofe("middle")
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+        })
+        .expect("first routed receipt")
+        .disposition = DirectSurfaceLiquidReceiptDisposition::RetainedSurface;
+    let disposition_error =
+        super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &disposition_drift.closure_operands,
+            &disposition_drift.receipts,
+        )
+        .expect_err("actual routed disposition drift");
+    assert_eq!(disposition_error.code(), DirectSurfaceLiquidErrorCode::E010);
+
+    let mut drift = candidate;
+    let routed_receipt = drift
+        .receipts
+        .iter_mut()
+        .find(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.basis_ofe_id == ofe("middle")
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+        })
+        .expect("first routed receipt");
+    routed_receipt.mass_kg_m2_basis_ofe_ground *= 0.9;
+    routed_receipt.enthalpy_j_m2_basis_ofe_ground *= 0.9;
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &drift.closure_operands,
+        &drift.receipts,
+    )
+    .expect_err("actual routed receipt drift");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+}
+
+#[test]
 fn open_and_covered_ingress_are_structurally_exclusive() {
     let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
     let beginning = initial_state(&configuration, 0.0);
@@ -1050,6 +1151,35 @@ fn chronological_partial_overlap_closure_and_support_identity() {
         .validate(&configuration, &resource, &input)
         .expect("chronological independent closure");
 
+    let mut window_swap = candidate.clone();
+    let indices = window_swap
+        .receipts
+        .iter()
+        .enumerate()
+        .filter(|(_, receipt)| receipt.mass_kg_m2_basis_ofe_ground > 0.0)
+        .map(|(index, _)| index)
+        .take(2)
+        .collect::<Vec<_>>();
+    assert_eq!(indices.len(), 2);
+    let (left, right) = window_swap.receipts.split_at_mut(indices[1]);
+    std::mem::swap(
+        &mut left[indices[0]].temperature_k,
+        &mut right[0].temperature_k,
+    );
+    std::mem::swap(
+        &mut left[indices[0]].enthalpy_j_m2_basis_ofe_ground,
+        &mut right[0].enthalpy_j_m2_basis_ofe_ground,
+    );
+    let swap_error =
+        super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &window_swap.closure_operands,
+            &window_swap.receipts,
+        )
+        .expect_err("cross-window Q/T swap");
+    assert_eq!(swap_error.code(), DirectSurfaceLiquidErrorCode::E010);
+
     let mut poison = candidate;
     let parcel_id = poison
         .closure_operands
@@ -1096,6 +1226,81 @@ fn caller_tile_ingress_order_does_not_change_canonical_sources_or_results() {
     assert_eq!(ordered.receipts, reversed.receipts);
     assert_eq!(ordered.ledgers, reversed.ledgers);
     assert_eq!(ordered.closure_operands, reversed.closure_operands);
+}
+
+#[test]
+fn exhaustive_source_and_receipt_domains_fail_e003_before_producer_comparison() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(407);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate =
+        execute_surface_liquid_ingress(&configuration, &resource, &input).expect("candidate");
+
+    let mut poisons = Vec::new();
+    let mut frozen_nan = candidate.clone();
+    let parcel_id = frozen_nan
+        .closure_operands
+        .poison_first_source_nan_support_for_test();
+    poisons.push((frozen_nan, parcel_id));
+    let mut reversed = candidate.clone();
+    reversed.receipts[0].end_s = reversed.receipts[0].start_s;
+    poisons.push((reversed.clone(), reversed.receipts[0].parcel_id.clone()));
+    let mut out_of_range = candidate.clone();
+    out_of_range.receipts[0].end_s = INTERVAL_S + 1.0;
+    poisons.push((
+        out_of_range.clone(),
+        out_of_range.receipts[0].parcel_id.clone(),
+    ));
+    let mut receipt_nan = candidate.clone();
+    receipt_nan.receipts[0].start_s = f64::NAN;
+    poisons.push((
+        receipt_nan.clone(),
+        receipt_nan.receipts[0].parcel_id.clone(),
+    ));
+    let mut negative = candidate.clone();
+    negative.receipts[0].mass_kg_m2_basis_ofe_ground = -1.0;
+    poisons.push((negative.clone(), negative.receipts[0].parcel_id.clone()));
+    let mut hot = candidate;
+    hot.receipts[0].temperature_k = 350.000_1;
+    poisons.push((hot.clone(), hot.receipts[0].parcel_id.clone()));
+
+    for (poison, parcel_id) in poisons {
+        let attempted = poison.ending_state.recomputed_sha256().expect("digest");
+        let error = poison
+            .validate(&configuration, &resource, &input)
+            .expect_err("domain poison");
+        let failure = error.failure().expect("typed E003");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+        assert_eq!(failure.context.transaction_id, Some(transaction_id));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(configuration.owner_id.clone())
+        );
+        assert_eq!(failure.context.ofe_id, Some(ofe("only")));
+        assert_eq!(failure.context.tile_id, Some(tile("tile")));
+        assert_eq!(
+            failure.context.parcel_id.as_deref(),
+            Some(parcel_id.as_str())
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(resource.beginning_state().state_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(attempted.as_str())
+        );
+    }
 }
 
 #[test]

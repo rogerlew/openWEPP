@@ -282,6 +282,13 @@ impl DirectSurfaceLiquidClosureOperands {
         first.start_s += 1.0;
         first.source_parcel_id.clone()
     }
+
+    #[cfg(test)]
+    pub(super) fn poison_first_source_nan_support_for_test(&mut self) -> String {
+        let first = self.source_parcels.first_mut().expect("source parcel");
+        first.start_s = f64::NAN;
+        first.source_parcel_id.clone()
+    }
 }
 
 /// The exact full-equation terms for one persistent surface store.
@@ -348,6 +355,8 @@ pub struct DirectSurfaceLiquidParcelClosureOperands {
     kind: DirectSurfaceLiquidParcelKind,
     start_s: f64,
     end_s: f64,
+    temperature_k: f64,
+    specific_liquid_enthalpy_j_kg: f64,
     mass_kg_m2_basis_ofe_ground: f64,
     enthalpy_j_m2_basis_ofe_ground: f64,
 }
@@ -398,6 +407,9 @@ impl DirectSurfaceLiquidParcelClosureOperands {
 struct ParcelJoinKey {
     source_parcel_id: String,
     basis_ofe_id: OfeId,
+    start_s_bits: u64,
+    end_s_bits: u64,
+    disposition: Option<DirectSurfaceLiquidReceiptDisposition>,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -432,6 +444,8 @@ struct AmountPair {
 #[derive(Clone)]
 struct RawParcelSegment {
     key: ParcelJoinKey,
+    origin_store_key: DirectSurfaceLiquidStoreKey,
+    kind: DirectSurfaceLiquidParcelKind,
     start_s: f64,
     end_s: f64,
     mass: f64,
@@ -848,6 +862,8 @@ fn capture_amount(
         kind,
         start_s: amount.start_s,
         end_s: amount.end_s,
+        temperature_k: amount.temperature_k,
+        specific_liquid_enthalpy_j_kg: amount.specific_liquid_enthalpy_j_kg,
         mass_kg_m2_basis_ofe_ground: mass,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
@@ -880,6 +896,8 @@ fn capture_overflow(
         kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
         start_s: 0.0,
         end_s: INTERVAL_S,
+        temperature_k: overflow.temperature_k,
+        specific_liquid_enthalpy_j_kg: overflow.specific_liquid_enthalpy_j_kg,
         mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     })
@@ -1016,10 +1034,14 @@ fn project_parcel_arithmetic(
         let key = ParcelJoinKey {
             source_parcel_id: parcel.source_parcel_id.clone(),
             basis_ofe_id: parcel.basis_ofe_id.clone(),
+            start_s_bits: parcel.start_s.to_bits(),
+            end_s_bits: parcel.end_s.to_bits(),
+            disposition: None,
         };
-        expected.entry(key.clone()).or_default();
         raw_segments.push(RawParcelSegment {
             key,
+            origin_store_key: parcel.origin_store_key.clone(),
+            kind: parcel.kind,
             start_s: parcel.start_s,
             end_s: parcel.end_s,
             mass: parcel.mass_kg_m2_basis_ofe_ground,
@@ -1037,6 +1059,9 @@ fn project_parcel_arithmetic(
             .entry(ParcelJoinKey {
                 source_parcel_id: receipt.source_parcel_id.clone(),
                 basis_ofe_id: receipt.basis_ofe_id.clone(),
+                start_s_bits: receipt.start_s.to_bits(),
+                end_s_bits: receipt.end_s.to_bits(),
+                disposition: Some(receipt.disposition),
             })
             .or_default()
             .checked_add(
@@ -1053,62 +1078,11 @@ fn project_parcel_arithmetic(
                     "receipt aggregate arithmetic",
                 )
             })?;
-        if receipt.disposition != DirectSurfaceLiquidReceiptDisposition::RoutedRunoff {
-            continue;
-        }
-        let Some(source) = configuration
-            .records
-            .iter()
-            .find(|row| row.key.ofe_id == receipt.basis_ofe_id)
-        else {
-            continue;
-        };
-        let Some(destination_ofe) = source.runon_destination_ofe_id.as_ref() else {
-            continue;
-        };
-        let Some(destination_tile) = source.runon_destination_tile_id.as_ref() else {
-            continue;
-        };
-        let Some(destination) = configuration
-            .records
-            .iter()
-            .find(|row| &row.key.ofe_id == destination_ofe && &row.key.tile_id == destination_tile)
-        else {
-            continue;
-        };
-        let ratio = checked_surface_liquid_div(source.ofe_area_m2, destination.ofe_area_m2);
-        let routed = ratio
-            .and_then(|value| {
-                checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, value).zip(
-                    checked_surface_liquid_mul(receipt.enthalpy_j_m2_basis_ofe_ground, value),
-                )
-            })
-            .ok_or_else(|| {
-                contextual_comparison_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    operands.transaction_id,
-                    &configuration.owner_id,
-                    &destination.key,
-                    Some(receipt.parcel_id.clone()),
-                    "route area/amount arithmetic",
-                )
-            })?;
-        let key = ParcelJoinKey {
-            source_parcel_id: receipt.source_parcel_id.clone(),
-            basis_ofe_id: destination_ofe.clone(),
-        };
-        expected.entry(key.clone()).or_default();
-        raw_segments.push(RawParcelSegment {
-            key,
-            start_s: receipt.start_s,
-            end_s: receipt.end_s,
-            mass: routed.0,
-            enthalpy: routed.1,
-        });
     }
 
     let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
     for ofe_id in &configuration.ofe_topology {
+        let mut routed_segments = Vec::new();
         let segments = raw_segments
             .iter()
             .filter(|segment| &segment.key.basis_ofe_id == ofe_id)
@@ -1163,6 +1137,20 @@ fn project_parcel_arithmetic(
                     })?;
                 contributions.push((*segment, mass, enthalpy));
             }
+            contributions.sort_by(|left, right| {
+                left.0
+                    .start_s
+                    .total_cmp(&right.0.start_s)
+                    .then_with(|| left.0.end_s.total_cmp(&right.0.end_s))
+                    .then_with(|| left.0.origin_store_key.cmp(&right.0.origin_store_key))
+                    .then_with(|| left.0.kind.cmp(&right.0.kind))
+                    .then_with(|| {
+                        left.0
+                            .key
+                            .source_parcel_id
+                            .cmp(&right.0.key.source_parcel_id)
+                    })
+            });
             let mass = checked_surface_liquid_sum(contributions.iter().map(|row| row.1))
                 .ok_or_else(|| {
                     contextual_ofe_comparison_failure(
@@ -1218,31 +1206,200 @@ fn project_parcel_arithmetic(
                     )
                 })?;
             for (segment, segment_mass, _) in contributions {
-                let attributed =
-                    checked_surface_liquid_mul(segment_mass, h_mix).ok_or_else(|| {
-                        contextual_ofe_comparison_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            operands.transaction_id,
-                            &configuration.owner_id,
-                            ofe_id,
-                            "window post-mix attribution arithmetic",
-                        )
-                    })?;
-                expected
-                    .entry(segment.key.clone())
-                    .or_default()
-                    .checked_add(segment_mass, attributed)
+                let nonrouted_receipts = receipts
+                    .iter()
+                    .filter(|receipt| {
+                        receipt.source_parcel_id == segment.key.source_parcel_id
+                            && receipt.basis_ofe_id == segment.key.basis_ofe_id
+                            && receipt.start_s.to_bits() == start_s.to_bits()
+                            && receipt.end_s.to_bits() == end_s.to_bits()
+                                && matches!(
+                                    (receipt.disposition, &receipt.recipient),
+                                    (
+                                        DirectSurfaceLiquidReceiptDisposition::Infiltration,
+                                        super::surface_liquid_ingress::DirectSurfaceLiquidReceiptRecipient::SoilInfiltration { .. }
+                                    ) | (
+                                        DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
+                                        super::surface_liquid_ingress::DirectSurfaceLiquidReceiptRecipient::SurfaceStore { .. }
+                                    )
+                                )
+                    })
+                    .collect::<Vec<_>>();
+                let nonrouted_mass = checked_surface_liquid_sum(
+                    nonrouted_receipts
+                        .iter()
+                        .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground),
+                )
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "window nonrouted mass arithmetic",
+                    )
+                })?;
+                let runoff_mass = checked_surface_liquid_sub(segment_mass, nonrouted_mass)
                     .ok_or_else(|| {
                         contextual_ofe_comparison_failure(
                             DirectSurfaceLiquidErrorCode::E003,
                             operands.transaction_id,
                             &configuration.owner_id,
                             ofe_id,
-                            "source interval attribution arithmetic",
+                            "window runoff mass arithmetic",
                         )
                     })?;
+                if runoff_mass < 0.0 {
+                    return Err(contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E010,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "window nonrouted mass exceeds attributed source mass",
+                    ));
+                }
+                let source_route = configuration
+                    .records
+                    .iter()
+                    .find(|record| &record.key.ofe_id == ofe_id)
+                    .ok_or(DirectSurfaceLiquidError::Closure(
+                        "route source OFE missing",
+                    ))?;
+                for receipt in nonrouted_receipts {
+                    let expected_enthalpy =
+                        checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, h_mix)
+                            .ok_or_else(|| {
+                                contextual_ofe_comparison_failure(
+                                    DirectSurfaceLiquidErrorCode::E003,
+                                    operands.transaction_id,
+                                    &configuration.owner_id,
+                                    ofe_id,
+                                    "nonrouted post-mix attribution arithmetic",
+                                )
+                            })?;
+                    expected
+                        .entry(ParcelJoinKey {
+                            source_parcel_id: segment.key.source_parcel_id.clone(),
+                            basis_ofe_id: segment.key.basis_ofe_id.clone(),
+                            start_s_bits: start_s.to_bits(),
+                            end_s_bits: end_s.to_bits(),
+                            disposition: Some(receipt.disposition),
+                        })
+                        .or_default()
+                        .checked_add(receipt.mass_kg_m2_basis_ofe_ground, expected_enthalpy)
+                        .ok_or_else(|| {
+                            contextual_ofe_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                ofe_id,
+                                "nonrouted source interval attribution arithmetic",
+                            )
+                        })?;
+                }
+                let runoff_disposition = if source_route.runon_destination_ofe_id.is_some() {
+                    DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+                } else {
+                    DirectSurfaceLiquidReceiptDisposition::OutletRunoff
+                };
+                let runoff_enthalpy =
+                    checked_surface_liquid_mul(runoff_mass, h_mix).ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "runoff post-mix attribution arithmetic",
+                        )
+                    })?;
+                expected
+                    .entry(ParcelJoinKey {
+                        source_parcel_id: segment.key.source_parcel_id.clone(),
+                        basis_ofe_id: segment.key.basis_ofe_id.clone(),
+                        start_s_bits: start_s.to_bits(),
+                        end_s_bits: end_s.to_bits(),
+                        disposition: Some(runoff_disposition),
+                    })
+                    .or_default()
+                    .checked_add(runoff_mass, runoff_enthalpy)
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "runoff source interval attribution arithmetic",
+                        )
+                    })?;
+                if let (Some(destination_ofe), Some(destination_tile)) = (
+                    source_route.runon_destination_ofe_id.as_ref(),
+                    source_route.runon_destination_tile_id.as_ref(),
+                ) {
+                    let destination = configuration
+                        .records
+                        .iter()
+                        .find(|record| {
+                            &record.key.ofe_id == destination_ofe
+                                && &record.key.tile_id == destination_tile
+                        })
+                        .ok_or(DirectSurfaceLiquidError::Closure(
+                            "route destination store missing",
+                        ))?;
+                    let area_ratio = checked_surface_liquid_div(
+                        source_route.ofe_area_m2,
+                        destination.ofe_area_m2,
+                    )
+                    .ok_or_else(|| {
+                        contextual_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            &destination.key,
+                            Some(segment.key.source_parcel_id.clone()),
+                            "independent route area arithmetic",
+                        )
+                    })?;
+                    let routed_mass = checked_surface_liquid_mul(runoff_mass, area_ratio)
+                        .ok_or_else(|| {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &destination.key,
+                                Some(segment.key.source_parcel_id.clone()),
+                                "independent routed mass arithmetic",
+                            )
+                        })?;
+                    let routed_enthalpy = checked_surface_liquid_mul(routed_mass, h_mix)
+                        .ok_or_else(|| {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &destination.key,
+                                Some(segment.key.source_parcel_id.clone()),
+                                "independent routed enthalpy arithmetic",
+                            )
+                        })?;
+                    routed_segments.push(RawParcelSegment {
+                        key: ParcelJoinKey {
+                            source_parcel_id: segment.key.source_parcel_id.clone(),
+                            basis_ofe_id: destination_ofe.clone(),
+                            start_s_bits: start_s.to_bits(),
+                            end_s_bits: end_s.to_bits(),
+                            disposition: None,
+                        },
+                        origin_store_key: segment.origin_store_key.clone(),
+                        kind: segment.kind,
+                        start_s,
+                        end_s,
+                        mass: routed_mass,
+                        enthalpy: routed_enthalpy,
+                    });
+                }
             }
         }
+        raw_segments.extend(routed_segments);
     }
 
     let mut expected_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
@@ -1395,6 +1552,59 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
 ) -> Result<(), DirectSurfaceLiquidError> {
+    for parcel in &operands.source_parcels {
+        let support_valid = parcel.start_s.is_finite()
+            && parcel.end_s.is_finite()
+            && parcel.start_s >= 0.0
+            && parcel.start_s < parcel.end_s
+            && parcel.end_s <= INTERVAL_S;
+        let amount_valid = parcel.mass_kg_m2_basis_ofe_ground.is_finite()
+            && parcel.mass_kg_m2_basis_ofe_ground >= 0.0
+            && parcel.enthalpy_j_m2_basis_ofe_ground.is_finite();
+        let temperature_valid = parcel.temperature_k.is_finite()
+            && (200.0..=350.0).contains(&parcel.temperature_k)
+            && parcel.specific_liquid_enthalpy_j_kg.is_finite();
+        let expected_specific = checked_surface_liquid_sub(parcel.temperature_k, 273.15)
+            .and_then(|delta| checked_surface_liquid_mul(4_218.0, delta));
+        if !support_valid
+            || !amount_valid
+            || !temperature_valid
+            || expected_specific.is_none()
+            || expected_specific.map(f64::to_bits)
+                != Some(parcel.specific_liquid_enthalpy_j_kg.to_bits())
+        {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &parcel.origin_store_key,
+                Some(parcel.source_parcel_id.clone()),
+                "frozen source parcel domain",
+            ));
+        }
+    }
+    for receipt in receipts {
+        let support_valid = receipt.start_s.is_finite()
+            && receipt.end_s.is_finite()
+            && receipt.start_s >= 0.0
+            && receipt.start_s < receipt.end_s
+            && receipt.end_s <= INTERVAL_S;
+        let amount_valid = receipt.mass_kg_m2_basis_ofe_ground.is_finite()
+            && receipt.mass_kg_m2_basis_ofe_ground >= 0.0
+            && receipt.enthalpy_j_m2_basis_ofe_ground.is_finite();
+        let temperature_valid =
+            receipt.temperature_k.is_finite() && (200.0..=350.0).contains(&receipt.temperature_k);
+        if !support_valid || !amount_valid || !temperature_valid {
+            return Err(contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &receipt.recipient_store_key,
+                Some(receipt.parcel_id.clone()),
+                "parcel receipt domain",
+            ));
+        }
+    }
     for row in &operands.stores {
         let key = &row.store_key;
         let Some(projected) = project_store_arithmetic(row) else {
