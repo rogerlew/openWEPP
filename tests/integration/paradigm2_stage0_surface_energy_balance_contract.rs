@@ -21,7 +21,10 @@ const RUNTIME_SOURCE_DIRS: &[&str] = &[
 ];
 
 const SURFACE_ENERGY_RUNTIME_TOKENS: &[&str] = &[
-    "surface_energy",
+    // Bind the Stage-0 meteorology module specifically. The separately admitted
+    // `openwepp_land_surface_energy` crate shares an English name but is not a
+    // wiring path to these retained meteorology primitives.
+    "openwepp_meteorology::surface_energy",
     "net_all_wave_radiation",
     "turbulent_fluxes_monin_obukhov",
     "conductive_heat_flux",
