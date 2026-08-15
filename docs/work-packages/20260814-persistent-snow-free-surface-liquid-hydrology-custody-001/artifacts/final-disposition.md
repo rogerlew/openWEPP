@@ -134,3 +134,8 @@ and removes redundant protocol revalidation. Focused evidence passes 31/31 LSE,
 69/69 integration, 10/10 custody authority and 601/601 orchestrator-library
 tests. A clean commit and fresh dual exact-byte review remain required before
 heavy gates. This remains nonterminal and does not resume Child 3.
+Fresh dual exact-byte review at `7df1ad0e0` returned hydrology/science PASS and
+Rust correctness PASS with no material finding. Heavy comparator execution is
+now legitimate. This remains an in-progress placeholder pending heavy gates,
+terminal diff reconciliation, dual terminal verification and prompt archival;
+Child 3 is not yet resumed.

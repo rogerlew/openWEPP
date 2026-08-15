@@ -1238,6 +1238,18 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte dual review at `7df1ad0e0`
+
+- PASS: fresh hydrology/science/ownership review found no material finding.
+- PASS: fresh Rust correctness review found no material finding.
+- Ran by reviewers: LSE 31/31; integration 69/69; custody authority 10/10;
+  focused orchestrator 95/95; affected checks and strict Clippy; AUTH11 3/3;
+  science admission; anti-evasion; unit compliance; formatting and diff hygiene.
+- Preserved non-evidence retry: unsupported `nextest list --message-format
+  terse` was replaced by supported `oneline` output.
+- Disposition: all focused-review blockers are closed. Heavy comparator gates
+  are now legitimate; terminal verification remains pending.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

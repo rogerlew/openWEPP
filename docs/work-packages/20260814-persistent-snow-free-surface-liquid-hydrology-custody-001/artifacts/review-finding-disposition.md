@@ -564,3 +564,13 @@ No `2afffa9dc` finding is rejected, deferred or moved to another package.
 
 The hydrology review returned PASS with no material finding. No `537345efa`
 finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal review at `7df1ad0e0`
+
+Fresh hydrology/science/ownership review: `PASS`, no material finding.
+
+Fresh Rust correctness review: `PASS`, no material finding.
+
+All accepted findings through `537345efa` remain remediated. No finding is
+unresolved, rejected, deferred or moved to another package. Heavy comparator
+and terminal-verification evidence remains pending.
