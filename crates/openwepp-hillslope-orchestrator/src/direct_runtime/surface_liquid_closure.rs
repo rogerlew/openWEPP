@@ -10,7 +10,7 @@ use openwepp_land_surface_energy::OfeId;
 use super::surface_liquid_ingress::{
     DirectIngressAmount, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
     DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
-    DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress,
+    DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, INTERVAL_S,
 };
 use super::surface_liquid_owner::{
     DirectCondensationOverflow, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
@@ -93,6 +93,30 @@ fn contextual_comparison_failure(
             surface_id: Some(store_key.surface_id.clone()),
             source_id: Some(store_key.source_id.clone()),
             parcel_id,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn contextual_ofe_comparison_failure(
+    code: DirectSurfaceLiquidErrorCode,
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
+    ofe_id: &OfeId,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: Some(owner_id.clone()),
+            ofe_id: Some(ofe_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
         },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: None,
@@ -189,18 +213,31 @@ impl DirectSurfaceLiquidClosureOperands {
     }
 
     #[cfg(test)]
-    pub(super) fn add_downstream_projection_poison_for_test(
-        &mut self,
-        destination_ofe_id: OfeId,
-        enthalpy: f64,
-    ) -> String {
-        let mut projected = self.source_parcels.first().expect("source parcel").clone();
-        projected.basis_ofe_id = destination_ofe_id;
-        projected.mass_kg_m2_basis_ofe_ground = 0.0;
-        projected.enthalpy_j_m2_basis_ofe_ground = enthalpy;
-        let source_parcel_id = projected.source_parcel_id.clone();
-        self.source_parcels.push(projected);
-        source_parcel_id
+    pub(super) fn remove_source_for_test(&mut self, index: usize) -> String {
+        self.source_parcels.remove(index).source_parcel_id
+    }
+
+    #[cfg(test)]
+    pub(super) fn duplicate_first_source_for_test(&mut self) -> String {
+        let duplicate = self.source_parcels.first().expect("source parcel").clone();
+        let id = duplicate.source_parcel_id.clone();
+        self.source_parcels.push(duplicate);
+        id
+    }
+
+    #[cfg(test)]
+    pub(super) fn rekey_first_source_for_test(&mut self) -> String {
+        let first = self.source_parcels.first_mut().expect("source parcel");
+        first.source_parcel_id.push_str(":rekeyed");
+        first.source_parcel_id.clone()
+    }
+
+    #[cfg(test)]
+    pub(super) fn swap_first_two_source_kinds_for_test(&mut self) -> String {
+        let (first, rest) = self.source_parcels.split_first_mut().expect("first parcel");
+        let second = rest.first_mut().expect("second parcel");
+        std::mem::swap(&mut first.kind, &mut second.kind);
+        first.source_parcel_id.clone()
     }
 }
 
@@ -266,6 +303,8 @@ pub struct DirectSurfaceLiquidParcelClosureOperands {
     origin_store_key: DirectSurfaceLiquidStoreKey,
     basis_ofe_id: OfeId,
     kind: DirectSurfaceLiquidParcelKind,
+    start_s: f64,
+    end_s: f64,
     mass_kg_m2_basis_ofe_ground: f64,
     enthalpy_j_m2_basis_ofe_ground: f64,
 }
@@ -292,6 +331,16 @@ impl DirectSurfaceLiquidParcelClosureOperands {
     }
 
     #[must_use]
+    pub const fn start_s(&self) -> f64 {
+        self.start_s
+    }
+
+    #[must_use]
+    pub const fn end_s(&self) -> f64 {
+        self.end_s
+    }
+
+    #[must_use]
     pub const fn mass_kg_m2_basis_ofe_ground(&self) -> f64 {
         self.mass_kg_m2_basis_ofe_ground
     }
@@ -308,6 +357,29 @@ struct ParcelJoinKey {
     basis_ofe_id: OfeId,
 }
 
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+struct FrozenSourceIdentity {
+    source_parcel_id: String,
+    kind: DirectSurfaceLiquidParcelKind,
+    origin_store_key: DirectSurfaceLiquidStoreKey,
+    basis_ofe_id: OfeId,
+    start_s_bits: u64,
+    end_s_bits: u64,
+}
+
+impl From<&DirectSurfaceLiquidParcelClosureOperands> for FrozenSourceIdentity {
+    fn from(parcel: &DirectSurfaceLiquidParcelClosureOperands) -> Self {
+        Self {
+            source_parcel_id: parcel.source_parcel_id.clone(),
+            kind: parcel.kind,
+            origin_store_key: parcel.origin_store_key.clone(),
+            basis_ofe_id: parcel.basis_ofe_id.clone(),
+            start_s_bits: parcel.start_s.to_bits(),
+            end_s_bits: parcel.end_s.to_bits(),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 struct AmountPair {
     mass: f64,
@@ -319,6 +391,7 @@ struct ParcelArithmeticProjection {
     actual: BTreeMap<ParcelJoinKey, AmountPair>,
     expected_ofe_enthalpy: BTreeMap<OfeId, f64>,
     actual_ofe_enthalpy: BTreeMap<OfeId, f64>,
+    raw_ofe_enthalpy: BTreeMap<OfeId, f64>,
 }
 
 #[derive(Clone, Copy)]
@@ -367,20 +440,6 @@ fn project_store_arithmetic(
     })
 }
 
-fn projection_store_key<'a>(
-    configuration: &'a DirectSurfaceLiquidConfiguration,
-    basis_ofe_id: &OfeId,
-) -> Result<&'a DirectSurfaceLiquidStoreKey, DirectSurfaceLiquidError> {
-    configuration
-        .records
-        .iter()
-        .find(|row| &row.key.ofe_id == basis_ofe_id)
-        .map(|row| &row.key)
-        .ok_or(DirectSurfaceLiquidError::Closure(
-            "projection basis OFE has no canonical store",
-        ))
-}
-
 fn projection_key_store<'a>(
     configuration: &'a DirectSurfaceLiquidConfiguration,
     operands: &'a DirectSurfaceLiquidClosureOperands,
@@ -420,7 +479,21 @@ fn projection_key_store<'a>(
     }) {
         return Ok(&receipt.recipient_store_key);
     }
-    projection_store_key(configuration, &key.basis_ofe_id)
+    let mut candidates = configuration
+        .records
+        .iter()
+        .filter(|record| record.key.ofe_id == key.basis_ofe_id);
+    let first = candidates.next();
+    if let (Some(unique), None) = (first, candidates.next()) {
+        return Ok(&unique.key);
+    }
+    Err(contextual_ofe_comparison_failure(
+        DirectSurfaceLiquidErrorCode::E010,
+        operands.transaction_id,
+        &configuration.owner_id,
+        &key.basis_ofe_id,
+        "projection key does not prove a unique destination store",
+    ))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -451,6 +524,38 @@ fn compare_projected_value(
                 owner_id,
                 store_key,
                 parcel_id,
+                detail,
+            ))
+        }
+        Some(_) => Ok(()),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compare_ofe_value(
+    actual: f64,
+    expected: f64,
+    unit: DirectSurfaceLiquidClosureUnit,
+    disposition: ComparisonDisposition,
+    transaction_id: TransactionId,
+    owner_id: &ResourceOwnerId,
+    ofe_id: &OfeId,
+    detail: &'static str,
+) -> Result<(), DirectSurfaceLiquidError> {
+    match checked_surface_liquid_close(actual, expected, unit) {
+        None => Err(contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            transaction_id,
+            owner_id,
+            ofe_id,
+            detail,
+        )),
+        Some(false) if matches!(disposition, ComparisonDisposition::RequireClosure) => {
+            Err(contextual_ofe_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E010,
+                transaction_id,
+                owner_id,
+                ofe_id,
                 detail,
             ))
         }
@@ -688,6 +793,8 @@ fn capture_amount(
         origin_store_key: configured.key.clone(),
         basis_ofe_id: configured.key.ofe_id.clone(),
         kind,
+        start_s: 0.0,
+        end_s: INTERVAL_S,
         mass_kg_m2_basis_ofe_ground: mass,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
@@ -718,6 +825,8 @@ fn capture_overflow(
         origin_store_key: overflow.store_key.clone(),
         basis_ofe_id: overflow.store_key.ofe_id.clone(),
         kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
+        start_s: 0.0,
+        end_s: INTERVAL_S,
         mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     })
@@ -734,8 +843,88 @@ pub(super) fn validate_surface_liquid_closure_operands(
             "independent closure transaction mismatch",
         ));
     }
+    validate_frozen_source_identities(configuration, resource, operands)?;
     validate_store_equations(configuration, resource, operands)?;
     validate_parcel_joins(configuration, operands, receipts)
+}
+
+fn validate_frozen_source_identities(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    operands: &DirectSurfaceLiquidClosureOperands,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let mut expected = Vec::new();
+    for record in &configuration.records {
+        let kinds: &[DirectSurfaceLiquidParcelKind] = match record.ground_ingress_mode {
+            super::surface_liquid_owner::DirectGroundIngressMode::OpenRawPrecipitation => {
+                &[DirectSurfaceLiquidParcelKind::RawPrecipitation]
+            }
+            super::surface_liquid_owner::DirectGroundIngressMode::CoveredCanopyRelease => &[
+                DirectSurfaceLiquidParcelKind::CanopyThroughfall,
+                DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
+                DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
+                DirectSurfaceLiquidParcelKind::CanopyStemflow,
+            ],
+        };
+        for kind in kinds {
+            expected.push(FrozenSourceIdentity {
+                source_parcel_id: format!(
+                    "local:{:?}:{:?}:{kind:?}",
+                    record.key.ofe_id, record.key.tile_id
+                ),
+                kind: *kind,
+                origin_store_key: record.key.clone(),
+                basis_ofe_id: record.key.ofe_id.clone(),
+                start_s_bits: 0.0_f64.to_bits(),
+                end_s_bits: INTERVAL_S.to_bits(),
+            });
+        }
+    }
+    for overflow in resource.condensation_overflow() {
+        expected.push(FrozenSourceIdentity {
+            source_parcel_id: format!(
+                "condensation:{}:{:?}:{:?}",
+                operands.transaction_id.0, overflow.store_key.ofe_id, overflow.store_key.tile_id
+            ),
+            kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
+            origin_store_key: overflow.store_key.clone(),
+            basis_ofe_id: overflow.store_key.ofe_id.clone(),
+            start_s_bits: 0.0_f64.to_bits(),
+            end_s_bits: INTERVAL_S.to_bits(),
+        });
+    }
+    let actual = operands
+        .source_parcels
+        .iter()
+        .map(FrozenSourceIdentity::from)
+        .collect::<Vec<_>>();
+    if actual == expected {
+        return Ok(());
+    }
+    let actual_set = actual.iter().cloned().collect::<BTreeSet<_>>();
+    let offending = if actual.len() < expected.len() {
+        expected
+            .iter()
+            .find(|row| !actual_set.contains(*row))
+            .or_else(|| actual.first())
+    } else {
+        actual
+            .iter()
+            .zip(&expected)
+            .find(|(actual_row, expected_row)| actual_row != expected_row)
+            .map(|(actual_row, _)| actual_row)
+            .or_else(|| actual.get(expected.len()))
+            .or_else(|| expected.first())
+    }
+    .ok_or(DirectSurfaceLiquidError::Closure(
+        "empty frozen source identity mismatch",
+    ))?;
+    Err(contextual_closure_failure(
+        operands.transaction_id,
+        &offending.origin_store_key,
+        Some(offending.source_parcel_id.clone()),
+        "frozen source parcel identity mismatch",
+    ))
 }
 
 #[allow(clippy::too_many_lines)]
@@ -866,6 +1055,65 @@ fn project_parcel_arithmetic(
             })?;
     }
 
+    let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
+    for (key, amount) in &expected {
+        let store_key = projection_key_store(configuration, operands, receipts, key)?;
+        raw_totals
+            .entry(key.basis_ofe_id.clone())
+            .or_default()
+            .checked_add(amount.mass, amount.enthalpy)
+            .ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    store_key,
+                    Some(key.source_parcel_id.clone()),
+                    "raw OFE mixture aggregate arithmetic",
+                )
+            })?;
+    }
+    for (ofe_id, total) in &raw_totals {
+        let h_mix = if total.mass == 0.0 {
+            if total.enthalpy != 0.0 {
+                return Err(contextual_ofe_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    ofe_id,
+                    "zero-mass OFE mixture has nonzero enthalpy",
+                ));
+            }
+            0.0
+        } else {
+            checked_surface_liquid_div(total.enthalpy, total.mass).ok_or_else(|| {
+                contextual_ofe_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    ofe_id,
+                    "OFE mixture specific enthalpy arithmetic",
+                )
+            })?
+        };
+        for (key, amount) in expected
+            .iter_mut()
+            .filter(|(key, _)| &key.basis_ofe_id == ofe_id)
+        {
+            let store_key = projection_key_store(configuration, operands, receipts, key)?;
+            amount.enthalpy = checked_surface_liquid_mul(amount.mass, h_mix).ok_or_else(|| {
+                contextual_comparison_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    operands.transaction_id,
+                    &configuration.owner_id,
+                    store_key,
+                    Some(key.source_parcel_id.clone()),
+                    "post-mix source enthalpy attribution arithmetic",
+                )
+            })?;
+        }
+    }
+
     let mut expected_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
     for (key, amount) in &expected {
         let store_key = projection_key_store(configuration, operands, receipts, key)?;
@@ -907,6 +1155,10 @@ fn project_parcel_arithmetic(
         actual,
         expected_ofe_enthalpy,
         actual_ofe_enthalpy,
+        raw_ofe_enthalpy: raw_totals
+            .into_iter()
+            .map(|(ofe_id, amount)| (ofe_id, amount.enthalpy))
+            .collect(),
     })
 }
 
@@ -972,16 +1224,30 @@ fn compare_parcel_projection(
             .get(&ofe_id)
             .copied()
             .unwrap_or_default();
-        compare_projected_value(
+        compare_ofe_value(
             actual,
             expected,
             DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
             disposition,
             operands.transaction_id,
             &configuration.owner_id,
-            projection_store_key(configuration, &ofe_id)?,
-            None,
+            &ofe_id,
             "OFE parcel enthalpy join",
+        )?;
+        let raw = projection
+            .raw_ofe_enthalpy
+            .get(&ofe_id)
+            .copied()
+            .unwrap_or_default();
+        compare_ofe_value(
+            expected,
+            raw,
+            DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &ofe_id,
+            "raw OFE enthalpy equals post-mix attributed enthalpy",
         )?;
     }
     Ok(())
