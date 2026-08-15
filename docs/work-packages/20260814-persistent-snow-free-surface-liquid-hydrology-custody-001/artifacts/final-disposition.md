@@ -35,6 +35,10 @@ reconstruction, then E010 independent closure. Closure review found that local
 ordering still allowed an earlier finite E010 to hide a later-record E003 and
 later-record E009 context fell back to the first store. The correction at
 `ee240618c` performs exhaustive arithmetic preflight and exact structural
-producer attribution across the complete candidate. Focused gates pass, but
-fresh exact-byte reviews and terminal verification remain required. This is not
-yet a terminal custody-lift or resumed-Child-3 claim.
+producer attribution across the complete candidate. Closure re-review found the
+per-OFE aggregate comparison absent from preflight and shifted-row deletion
+attribution in producer sequences. The correction at `86ddb8aa2` uses one
+shared projection for preflight/final closure and membership-aware attribution.
+Focused gates pass, but fresh exact-byte reviews and terminal verification
+remain required. This is not yet a terminal custody-lift or resumed-Child-3
+claim.

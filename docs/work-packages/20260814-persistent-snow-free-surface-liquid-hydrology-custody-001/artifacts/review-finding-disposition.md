@@ -161,3 +161,14 @@ The arithmetic preflight now scans the complete candidate without executing or
 short-circuiting on finite closure comparisons. Producer comparison localizes
 the exact first structural mismatch across every record, ledger and WB14 row;
 no configured-first fallback remains.
+
+## Aggregate projection and deletion review findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-CLOSURE2-HIGH-001: preflight omits checked per-OFE aggregate comparison | Accepted | Remediated at `86ddb8aa2`; focused PASS |
+| A-TERMINAL-CLOSURE2-HIGH-002: positional producer comparison misattributes nonterminal deletion | Accepted | Remediated at `86ddb8aa2`; focused PASS |
+
+Preflight and final closure now consume the same projected per-key and per-OFE
+maps. Producer sequence comparison is membership-aware before positional
+replacement/reorder handling for every canonical record class.

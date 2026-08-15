@@ -498,6 +498,25 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: affected production files remain below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology closure review.
 
+## Aggregate projection and deletion remediation at `86ddb8aa2`
+
+- HOLD retained: closure2 reviews found that preflight accumulated per-OFE
+  enthalpy without performing the checked aggregate comparison, and positional
+  producer localization misattributed nonterminal deletions to shifted rows.
+- PASS: one shared parcel/routing projection drives both exhaustive E003
+  preflight and final E010 closure, including checked per-key and per-OFE
+  aggregate comparisons.
+- PASS: membership-aware sequence/map attribution covers state records,
+  continuations, receipts, ledgers and WB14; upper/middle deletions report the
+  missing expected identity while replacements/reorders retain actual identity.
+- PASS: combined multi-parcel aggregate-scale E003 poisons outrank concurrent
+  E009 and earlier finite E010 with exact context and rollback hashes.
+- PASS: orchestrator quick suite, 548/548; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- PASS: ingress tests were extracted mechanically; every edited Rust file is
+  below 3,000 lines.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Final ingress-precedence remediation at `47f959b43`
 
 - HOLD retained: both final exact-byte reviewers found that independent E010

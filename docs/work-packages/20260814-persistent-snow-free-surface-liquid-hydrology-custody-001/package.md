@@ -92,8 +92,11 @@ branch, PR or push is in scope.
   The correction at `47f959b43` restored local ordering, but Rust closure review
   found an earlier finite E010 could hide a later-record E003 and later-record
   E009 context fell back to the first store. The multi-record correction at
-  `ee240618c` exhaustively preflights arithmetic and structurally attributes
-  producer mismatches. It passes 546/546 orchestrator, 19/19 focused
+  `ee240618c` improved multi-record handling, but closure re-review found the
+  per-OFE aggregate comparison absent from preflight and shifted-row deletion
+  attribution in producer sequences. The correction at `86ddb8aa2` shares one
+  projection between preflight and final closure and uses membership-aware
+  producer attribution. It passes 548/548 orchestrator, 19/19 focused
   integration and 9/9 authority tests, strict Clippy, formatting, diff hygiene,
   and line-count governance. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
