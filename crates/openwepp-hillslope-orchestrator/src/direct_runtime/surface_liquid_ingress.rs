@@ -16,7 +16,9 @@ use super::surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
-    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidStoreKey, checked_surface_liquid_add,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
 
 const INTERVAL_S: f64 = 1_800.0;
@@ -59,6 +61,32 @@ fn candidate_failure(
         DirectSurfaceLiquidErrorCode::E009,
         DirectSurfaceLiquidPhase::IngressCandidate,
         context,
+        super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn ingress_arithmetic_failure(
+    transaction_id: TransactionId,
+    key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E003,
+        DirectSurfaceLiquidPhase::IngressCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: None,
+            ofe_id: Some(key.ofe_id.clone()),
+            tile_id: Some(key.tile_id.clone()),
+            surface_id: Some(key.surface_id.clone()),
+            source_id: Some(key.source_id.clone()),
+            parcel_id,
+        },
         super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: None,
             attempted_owner_sha256: None,
@@ -352,13 +380,26 @@ struct TimedParcel {
     enthalpy_j_m2_basis_ofe_ground: f64,
 }
 
-impl TimedParcel {
-    fn temperature_k(&self) -> f64 {
-        REFERENCE_TEMPERATURE_K
-            + self.enthalpy_j_m2_basis_ofe_ground
-                / self.mass_kg_m2_basis_ofe_ground
-                / LIQUID_HEAT_CAPACITY_J_KG_K
-    }
+fn parcel_temperature_k(
+    parcel: &TimedParcel,
+    transaction_id: TransactionId,
+    key: &DirectSurfaceLiquidStoreKey,
+) -> Result<f64, DirectSurfaceLiquidError> {
+    let specific_enthalpy = checked_surface_liquid_div(
+        parcel.enthalpy_j_m2_basis_ofe_ground,
+        parcel.mass_kg_m2_basis_ofe_ground,
+    )
+    .and_then(|value| checked_surface_liquid_div(value, LIQUID_HEAT_CAPACITY_J_KG_K))
+    .and_then(|value| checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, value))
+    .ok_or_else(|| {
+        ingress_arithmetic_failure(
+            transaction_id,
+            key,
+            Some(parcel.parcel_id.clone()),
+            "parcel temperature reconstruction is nonfinite or underflowed",
+        )
+    })?;
+    Ok(specific_enthalpy)
 }
 
 #[derive(Default)]
@@ -739,6 +780,7 @@ fn validate_and_build_local_ingress(
         append_tile_ingress(
             configured,
             ingress,
+            input.transaction_id,
             pending.entry(ofe_id.clone()).or_default(),
         )
         .map_err(|error| {
@@ -791,6 +833,18 @@ fn validate_and_build_local_ingress(
             "condensation:{}:{:?}:{:?}",
             input.transaction_id.0, overflow.store_key.ofe_id, overflow.store_key.tile_id
         );
+        let enthalpy = checked_surface_liquid_mul(
+            overflow.amount_kg_m2_ofe_ground,
+            overflow.specific_liquid_enthalpy_j_kg,
+        )
+        .ok_or_else(|| {
+            ingress_arithmetic_failure(
+                input.transaction_id,
+                &overflow.store_key,
+                Some(id.clone()),
+                "condensation-overflow enthalpy is nonfinite or underflowed",
+            )
+        })?;
         pending
             .entry(overflow.store_key.ofe_id.clone())
             .or_default()
@@ -803,8 +857,7 @@ fn validate_and_build_local_ingress(
                 start_s: 0.0,
                 end_s: INTERVAL_S,
                 mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
-                enthalpy_j_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground
-                    * overflow.specific_liquid_enthalpy_j_kg,
+                enthalpy_j_m2_basis_ofe_ground: enthalpy,
             });
     }
     Ok(pending)
@@ -813,6 +866,7 @@ fn validate_and_build_local_ingress(
 fn append_tile_ingress(
     configured: &DirectSurfaceLiquidConfigurationRecord,
     ingress: &DirectTileGroundIngress,
+    transaction_id: TransactionId,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
     match ingress {
@@ -823,6 +877,7 @@ fn append_tile_ingress(
             DirectSurfaceLiquidParcelKind::RawPrecipitation,
             raw_precipitation,
             false,
+            transaction_id,
             parcels,
         ),
         DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
@@ -831,6 +886,7 @@ fn append_tile_ingress(
                 DirectSurfaceLiquidParcelKind::CanopyThroughfall,
                 &release.throughfall,
                 true,
+                transaction_id,
                 parcels,
             )?;
             append_amount(
@@ -838,6 +894,7 @@ fn append_tile_ingress(
                 DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
                 &release.initial_drainage,
                 true,
+                transaction_id,
                 parcels,
             )?;
             append_amount(
@@ -845,6 +902,7 @@ fn append_tile_ingress(
                 DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
                 &release.second_drainage,
                 true,
+                transaction_id,
                 parcels,
             )?;
             append_amount(
@@ -852,6 +910,7 @@ fn append_tile_ingress(
                 DirectSurfaceLiquidParcelKind::CanopyStemflow,
                 &release.stemflow,
                 true,
+                transaction_id,
                 parcels,
             )
         }
@@ -863,10 +922,28 @@ fn append_amount(
     kind: DirectSurfaceLiquidParcelKind,
     amount: &DirectIngressAmount,
     require_full_interval: bool,
+    transaction_id: TransactionId,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
     amount.validate(require_full_interval)?;
-    let mass = configured.tile_fraction * amount.mass_kg_m2_tile_ground;
+    let mass = checked_surface_liquid_mul(configured.tile_fraction, amount.mass_kg_m2_tile_ground)
+        .ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                &configured.key,
+                None,
+                "tile-to-OFE ingress mass conversion is nonfinite or underflowed",
+            )
+        })?;
+    let enthalpy = checked_surface_liquid_mul(mass, amount.specific_liquid_enthalpy_j_kg)
+        .ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                &configured.key,
+                None,
+                "parcel enthalpy construction is nonfinite or underflowed",
+            )
+        })?;
     let id = format!(
         "local:{:?}:{:?}:{kind:?}",
         configured.key.ofe_id, configured.key.tile_id
@@ -880,7 +957,7 @@ fn append_amount(
         start_s: amount.start_s,
         end_s: amount.end_s,
         mass_kg_m2_basis_ofe_ground: mass,
-        enthalpy_j_m2_basis_ofe_ground: mass * amount.specific_liquid_enthalpy_j_kg,
+        enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
     Ok(())
 }
@@ -903,6 +980,14 @@ fn advance_one_ofe(
         .ok_or(DirectSurfaceLiquidError::Identity(
             "missing infiltration recipient binding",
         ))?;
+    let arithmetic_key = configuration
+        .records
+        .iter()
+        .find(|record| &record.key.ofe_id == ofe_id)
+        .map(|record| &record.key)
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "missing ingress arithmetic store",
+        ))?;
     parcels.sort_by(parcel_order);
     let mut boundaries = parcels
         .iter()
@@ -913,14 +998,32 @@ fn advance_one_ofe(
     boundaries.dedup_by(|left, right| left.to_bits() == right.to_bits());
     let mut receipts = Vec::new();
     let mut runoff = Vec::new();
-    let ingress_mass = parcels
-        .iter()
-        .map(|parcel| parcel.mass_kg_m2_basis_ofe_ground)
-        .sum::<f64>();
-    let ingress_enthalpy = parcels
-        .iter()
-        .map(|parcel| parcel.enthalpy_j_m2_basis_ofe_ground)
-        .sum::<f64>();
+    let ingress_mass = checked_surface_liquid_sum(
+        parcels
+            .iter()
+            .map(|parcel| parcel.mass_kg_m2_basis_ofe_ground),
+    )
+    .ok_or_else(|| {
+        ingress_arithmetic_failure(
+            transaction_id,
+            arithmetic_key,
+            None,
+            "OFE ingress mass accumulation is nonfinite",
+        )
+    })?;
+    let ingress_enthalpy = checked_surface_liquid_sum(
+        parcels
+            .iter()
+            .map(|parcel| parcel.enthalpy_j_m2_basis_ofe_ground),
+    )
+    .ok_or_else(|| {
+        ingress_arithmetic_failure(
+            transaction_id,
+            arithmetic_key,
+            None,
+            "OFE ingress enthalpy accumulation is nonfinite",
+        )
+    })?;
     let mut infiltration_mass = 0.0;
     let mut infiltration_enthalpy = 0.0;
     let mut retained_mass = 0.0;
@@ -934,27 +1037,100 @@ fn advance_one_ofe(
         if end_s <= start_s {
             continue;
         }
-        let mut contributions = parcels
+        let mut contributions = Vec::new();
+        for parcel in parcels
             .iter()
             .filter(|parcel| parcel.start_s <= start_s && parcel.end_s >= end_s)
-            .map(|parcel| {
-                let fraction = (end_s - start_s) / (parcel.end_s - parcel.start_s);
-                (
-                    parcel,
-                    parcel.mass_kg_m2_basis_ofe_ground * fraction,
-                    parcel.enthalpy_j_m2_basis_ofe_ground * fraction,
+        {
+            let window = checked_surface_liquid_sub(end_s, start_s).ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "parcel window duration is nonfinite",
                 )
-            })
-            .filter(|(_, mass, _)| *mass > 0.0)
-            .collect::<Vec<_>>();
+            })?;
+            let parcel_duration = checked_surface_liquid_sub(parcel.end_s, parcel.start_s)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "parcel support duration is nonfinite",
+                    )
+                })?;
+            let fraction =
+                checked_surface_liquid_div(window, parcel_duration).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "parcel support fraction is nonfinite or underflowed",
+                    )
+                })?;
+            let mass = checked_surface_liquid_mul(parcel.mass_kg_m2_basis_ofe_ground, fraction)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "parcel interval mass is nonfinite or underflowed",
+                    )
+                })?;
+            let enthalpy =
+                checked_surface_liquid_mul(parcel.enthalpy_j_m2_basis_ofe_ground, fraction)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "parcel interval enthalpy is nonfinite or underflowed",
+                        )
+                    })?;
+            if mass > 0.0 {
+                contributions.push((parcel, mass, enthalpy));
+            }
+        }
         contributions.sort_by(|left, right| parcel_order(left.0, right.0));
-        let supply_mass = contributions.iter().map(|row| row.1).sum::<f64>();
-        let supply_enthalpy = contributions.iter().map(|row| row.2).sum::<f64>();
-        let duration_s = end_s - start_s;
+        let supply_mass = checked_surface_liquid_sum(contributions.iter().map(|row| row.1))
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    None,
+                    "interval supply mass accumulation is nonfinite",
+                )
+            })?;
+        let supply_enthalpy = checked_surface_liquid_sum(contributions.iter().map(|row| row.2))
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    None,
+                    "interval supply enthalpy accumulation is nonfinite",
+                )
+            })?;
+        let duration_s = checked_surface_liquid_sub(end_s, start_s).ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                arithmetic_key,
+                None,
+                "WB14 interval duration is nonfinite",
+            )
+        })?;
+        let interval_supply_m = checked_surface_liquid_div(supply_mass, WATER_DENSITY_KG_M3)
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    None,
+                    "WB14 supply depth conversion is nonfinite or underflowed",
+                )
+            })?;
         let outcome = advance_wb14_continuation_interval(DirectWb14ContinuationIntervalInputs {
             cumulative_supply_m,
             cumulative_infiltration_m,
-            interval_supply_m: supply_mass / WATER_DENSITY_KG_M3,
+            interval_supply_m,
             interval_duration_s: duration_s,
             effective_conductivity_m_s: parameter.effective_conductivity_m_s,
             matric_potential_m: parameter.matric_potential_m,
@@ -972,23 +1148,124 @@ fn advance_one_ofe(
         if supply_mass == 0.0 {
             continue;
         }
-        let total_infiltration = outcome.interval_infiltration_m * WATER_DENSITY_KG_M3;
-        let h_mix = supply_enthalpy / supply_mass;
-        let temperature_k = REFERENCE_TEMPERATURE_K + h_mix / LIQUID_HEAT_CAPACITY_J_KG_K;
+        let total_infiltration =
+            checked_surface_liquid_mul(outcome.interval_infiltration_m, WATER_DENSITY_KG_M3)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        None,
+                        "infiltration depth-to-mass conversion is nonfinite or underflowed",
+                    )
+                })?;
+        let h_mix = checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                arithmetic_key,
+                None,
+                "mixed parcel enthalpy is nonfinite or underflowed",
+            )
+        })?;
+        let temperature_offset = checked_surface_liquid_div(h_mix, LIQUID_HEAT_CAPACITY_J_KG_K)
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    None,
+                    "mixed parcel temperature offset is nonfinite or underflowed",
+                )
+            })?;
+        let temperature_k = checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, temperature_offset)
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    None,
+                    "mixed parcel temperature is nonfinite",
+                )
+            })?;
         let mut allocated_infiltration = 0.0;
         let contribution_count = contributions.len();
         let mut excess_parts = Vec::with_capacity(contribution_count);
         for (index, (parcel, mass, _)) in contributions.into_iter().enumerate() {
             let infiltrated = if index + 1 == contribution_count {
-                total_infiltration - allocated_infiltration
+                checked_surface_liquid_sub(total_infiltration, allocated_infiltration).ok_or_else(
+                    || {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "infiltration allocation remainder is nonfinite",
+                        )
+                    },
+                )?
             } else {
-                total_infiltration * mass / supply_mass
+                let numerator =
+                    checked_surface_liquid_mul(total_infiltration, mass).ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "infiltration allocation numerator is nonfinite or underflowed",
+                        )
+                    })?;
+                checked_surface_liquid_div(numerator, supply_mass).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "infiltration allocation share is nonfinite or underflowed",
+                    )
+                })?
             };
-            allocated_infiltration += infiltrated;
-            let excess = mass - infiltrated;
-            let infiltration_q = infiltrated * h_mix;
-            infiltration_mass += infiltrated;
-            infiltration_enthalpy += infiltration_q;
+            allocated_infiltration =
+                checked_surface_liquid_add(allocated_infiltration, infiltrated).ok_or_else(
+                    || {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "infiltration allocation accumulation is nonfinite",
+                        )
+                    },
+                )?;
+            let excess = checked_surface_liquid_sub(mass, infiltrated).ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "parcel excess mass is nonfinite",
+                )
+            })?;
+            let infiltration_q =
+                checked_surface_liquid_mul(infiltrated, h_mix).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "infiltration enthalpy is nonfinite or underflowed",
+                    )
+                })?;
+            infiltration_mass = checked_surface_liquid_add(infiltration_mass, infiltrated)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "infiltration mass accumulation is nonfinite",
+                    )
+                })?;
+            infiltration_enthalpy =
+                checked_surface_liquid_add(infiltration_enthalpy, infiltration_q).ok_or_else(
+                    || {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "infiltration enthalpy accumulation is nonfinite",
+                        )
+                    },
+                )?;
             receipts.push(receipt(
                 parcel,
                 DirectSurfaceLiquidReceiptDisposition::Infiltration,
@@ -1020,13 +1297,51 @@ fn advance_one_ofe(
             transaction_id,
         )?;
         for retained in retained_parts {
-            retained_mass += retained.mass_kg_m2_basis_ofe_ground;
-            retained_enthalpy += retained.enthalpy_j_m2_basis_ofe_ground;
+            retained_mass =
+                checked_surface_liquid_add(retained_mass, retained.mass_kg_m2_basis_ofe_ground)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(retained.parcel_id.clone()),
+                            "retained mass accumulation is nonfinite",
+                        )
+                    })?;
+            retained_enthalpy = checked_surface_liquid_add(
+                retained_enthalpy,
+                retained.enthalpy_j_m2_basis_ofe_ground,
+            )
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(retained.parcel_id.clone()),
+                    "retained enthalpy accumulation is nonfinite",
+                )
+            })?;
             receipts.push(retained);
         }
         for routed in runoff_parts {
-            runoff_mass += routed.mass_kg_m2_basis_ofe_ground;
-            runoff_enthalpy += routed.enthalpy_j_m2_basis_ofe_ground;
+            runoff_mass =
+                checked_surface_liquid_add(runoff_mass, routed.mass_kg_m2_basis_ofe_ground)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(routed.parcel_id.clone()),
+                            "runoff mass accumulation is nonfinite",
+                        )
+                    })?;
+            runoff_enthalpy =
+                checked_surface_liquid_add(runoff_enthalpy, routed.enthalpy_j_m2_basis_ofe_ground)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(routed.parcel_id.clone()),
+                            "runoff enthalpy accumulation is nonfinite",
+                        )
+                    })?;
             runoff.push(routed);
         }
     }
@@ -1051,6 +1366,7 @@ fn advance_one_ofe(
 }
 
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_lines)]
 fn retain_excess_proportionally(
     configuration: &DirectSurfaceLiquidConfiguration,
     ending: &mut DirectSurfaceLiquidOwnedState,
@@ -1081,27 +1397,91 @@ fn retain_excess_proportionally(
             ))?;
         let configured = &configuration.records[index];
         let state = &mut ending.records[index];
-        let available =
-            configured.tile_fraction * (configured.capacity_kg_m2_tile - state.liquid_kg_m2_tile);
+        let available_tile =
+            checked_surface_liquid_sub(configured.capacity_kg_m2_tile, state.liquid_kg_m2_tile)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        None,
+                        "surface retention capacity difference is nonfinite",
+                    )
+                })?;
+        let available = checked_surface_liquid_mul(configured.tile_fraction, available_tile)
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    None,
+                    "surface retention area conversion is nonfinite or underflowed",
+                )
+            })?;
         if available < 0.0 {
             return Err(DirectSurfaceLiquidError::Bound(
                 "negative surface retention capacity",
             ));
         }
-        let total_excess = parts.iter().map(|row| row.1).sum::<f64>();
+        let total_excess =
+            checked_surface_liquid_sum(parts.iter().map(|row| row.1)).ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    None,
+                    "surface excess mass accumulation is nonfinite",
+                )
+            })?;
         let total_retained = total_excess.min(available);
         let mut allocated_retained = 0.0;
         let count = parts.len();
         for (part_index, (parcel, excess)) in parts.into_iter().enumerate() {
             let retained_mass = if part_index + 1 == count {
-                total_retained - allocated_retained
+                checked_surface_liquid_sub(total_retained, allocated_retained).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        Some(parcel.parcel_id.clone()),
+                        "retained allocation remainder is nonfinite",
+                    )
+                })?
             } else if total_excess == 0.0 {
                 0.0
             } else {
-                total_retained * excess / total_excess
+                let numerator =
+                    checked_surface_liquid_mul(total_retained, excess).ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &store_key,
+                            Some(parcel.parcel_id.clone()),
+                            "retained allocation numerator is nonfinite or underflowed",
+                        )
+                    })?;
+                checked_surface_liquid_div(numerator, total_excess).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        Some(parcel.parcel_id.clone()),
+                        "retained allocation share is nonfinite or underflowed",
+                    )
+                })?
             };
-            allocated_retained += retained_mass;
-            let runoff_mass = excess - retained_mass;
+            allocated_retained = checked_surface_liquid_add(allocated_retained, retained_mass)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        Some(parcel.parcel_id.clone()),
+                        "retained allocation accumulation is nonfinite",
+                    )
+                })?;
+            let runoff_mass =
+                checked_surface_liquid_sub(excess, retained_mass).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        Some(parcel.parcel_id.clone()),
+                        "runoff mass difference is nonfinite",
+                    )
+                })?;
             if retained_mass > 0.0 {
                 retained_receipts.push(receipt(
                     parcel,
@@ -1114,7 +1494,14 @@ fn retain_excess_proportionally(
                     end_s,
                     retained_mass,
                     temperature_k,
-                    retained_mass * h_mix,
+                    checked_surface_liquid_mul(retained_mass, h_mix).ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &store_key,
+                            Some(parcel.parcel_id.clone()),
+                            "retained enthalpy is nonfinite or underflowed",
+                        )
+                    })?,
                     transaction_id,
                 ));
             }
@@ -1128,15 +1515,43 @@ fn retain_excess_proportionally(
                     start_s,
                     end_s,
                     mass_kg_m2_basis_ofe_ground: runoff_mass,
-                    enthalpy_j_m2_basis_ofe_ground: runoff_mass * h_mix,
+                    enthalpy_j_m2_basis_ofe_ground: checked_surface_liquid_mul(runoff_mass, h_mix)
+                        .ok_or_else(|| {
+                            ingress_arithmetic_failure(
+                                transaction_id,
+                                &store_key,
+                                Some(parcel.parcel_id.clone()),
+                                "runoff enthalpy is nonfinite or underflowed",
+                            )
+                        })?,
                 });
             }
         }
-        state.liquid_kg_m2_tile += total_retained / configured.tile_fraction;
+        let retained_tile = checked_surface_liquid_div(total_retained, configured.tile_fraction)
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    None,
+                    "retained OFE-to-tile conversion is nonfinite or underflowed",
+                )
+            })?;
+        state.liquid_kg_m2_tile =
+            checked_surface_liquid_add(state.liquid_kg_m2_tile, retained_tile).ok_or_else(
+                || {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        None,
+                        "ending surface store accumulation is nonfinite",
+                    )
+                },
+            )?;
     }
     Ok((retained_receipts, runoff_parcels))
 }
 
+#[allow(clippy::too_many_lines)]
 fn route_runoff(
     configuration: &DirectSurfaceLiquidConfiguration,
     ofe_id: &OfeId,
@@ -1166,8 +1581,37 @@ fn route_runoff(
                 .ok_or(DirectSurfaceLiquidError::Identity(
                     "route destination store missing",
                 ))?;
-            let area_ratio = route.ofe_area_m2 / destination.ofe_area_m2;
+            let area_ratio = checked_surface_liquid_div(route.ofe_area_m2, destination.ofe_area_m2)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &route.key,
+                        None,
+                        "OFE routing area ratio is nonfinite or underflowed",
+                    )
+                })?;
             for parcel in runoff {
+                let parcel_temperature = parcel_temperature_k(&parcel, transaction_id, &route.key)?;
+                let routed_mass =
+                    checked_surface_liquid_mul(parcel.mass_kg_m2_basis_ofe_ground, area_ratio)
+                        .ok_or_else(|| {
+                            ingress_arithmetic_failure(
+                                transaction_id,
+                                &route.key,
+                                Some(parcel.parcel_id.clone()),
+                                "routed mass area conversion is nonfinite or underflowed",
+                            )
+                        })?;
+                let routed_enthalpy =
+                    checked_surface_liquid_mul(parcel.enthalpy_j_m2_basis_ofe_ground, area_ratio)
+                        .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &route.key,
+                            Some(parcel.parcel_id.clone()),
+                            "routed enthalpy area conversion is nonfinite or underflowed",
+                        )
+                    })?;
                 receipts.push(receipt(
                     &parcel,
                     DirectSurfaceLiquidReceiptDisposition::RoutedRunoff,
@@ -1180,7 +1624,7 @@ fn route_runoff(
                     parcel.start_s,
                     parcel.end_s,
                     parcel.mass_kg_m2_basis_ofe_ground,
-                    parcel.temperature_k(),
+                    parcel_temperature,
                     parcel.enthalpy_j_m2_basis_ofe_ground,
                     transaction_id,
                 ));
@@ -1195,15 +1639,14 @@ fn route_runoff(
                         kind: DirectSurfaceLiquidParcelKind::UpstreamRunon,
                         start_s: parcel.start_s,
                         end_s: parcel.end_s,
-                        mass_kg_m2_basis_ofe_ground: parcel.mass_kg_m2_basis_ofe_ground
-                            * area_ratio,
-                        enthalpy_j_m2_basis_ofe_ground: parcel.enthalpy_j_m2_basis_ofe_ground
-                            * area_ratio,
+                        mass_kg_m2_basis_ofe_ground: routed_mass,
+                        enthalpy_j_m2_basis_ofe_ground: routed_enthalpy,
                     });
             }
         }
         (None, None) => {
             for parcel in runoff {
+                let parcel_temperature = parcel_temperature_k(&parcel, transaction_id, &route.key)?;
                 receipts.push(receipt(
                     &parcel,
                     DirectSurfaceLiquidReceiptDisposition::OutletRunoff,
@@ -1214,7 +1657,7 @@ fn route_runoff(
                     parcel.start_s,
                     parcel.end_s,
                     parcel.mass_kg_m2_basis_ofe_ground,
-                    parcel.temperature_k(),
+                    parcel_temperature,
                     parcel.enthalpy_j_m2_basis_ofe_ground,
                     transaction_id,
                 ));
@@ -1819,6 +2262,88 @@ mod tests {
             )
             .is_err()
         );
+    }
+
+    #[test]
+    fn independent_closure_rejects_large_finite_store_arithmetic_overflow() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(392);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect("valid candidate");
+        let mut poisoned = candidate.closure_operands().clone();
+        poisoned.poison_first_store_arithmetic_overflow_for_test();
+        let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &poisoned,
+            &candidate.receipts,
+        )
+        .expect_err("large finite closure arithmetic must fail closed");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
+    }
+
+    #[test]
+    fn finite_ingress_enthalpy_overflow_fails_before_candidate() {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let beginning = initial_state(&configuration, 0.0);
+        let transaction_id = TransactionId(393);
+        let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+        let input = DirectSurfaceLiquidIngressInput {
+            transaction_id,
+            day_index: 3,
+            interval_index: 0,
+            interval_s: INTERVAL_S,
+            tile_ingress: vec![open_ingress(&configuration.records[0], f64::MAX / 2.0)],
+            wb14_parameters: parameters(&configuration),
+        };
+        let error = execute_surface_liquid_ingress(&configuration, &resource, &input)
+            .expect_err("finite parcel enthalpy overflow must fail closed");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
+    }
+
+    #[test]
+    fn finite_routing_area_underflow_fails_before_receipt() {
+        let mut configuration = routed_configuration();
+        configuration.records[0].ofe_area_m2 = f64::MIN_POSITIVE;
+        configuration.records[1].ofe_area_m2 = f64::MAX;
+        configuration.configuration_sha256 = configuration.recomputed_sha256().expect("digest");
+        configuration.validate().expect("finite extreme areas");
+        let source = &configuration.records[0];
+        let parcel = TimedParcel {
+            parcel_id: "underflow-route".to_owned(),
+            origin_store_key: source.key.clone(),
+            recipient_store_key: source.key.clone(),
+            basis_ofe_id: source.key.ofe_id.clone(),
+            kind: DirectSurfaceLiquidParcelKind::RawPrecipitation,
+            start_s: 0.0,
+            end_s: INTERVAL_S,
+            mass_kg_m2_basis_ofe_ground: 1.0,
+            enthalpy_j_m2_basis_ofe_ground: 1.0,
+        };
+        let mut pending = BTreeMap::new();
+        let mut receipts = Vec::new();
+        let error = route_runoff(
+            &configuration,
+            &source.key.ofe_id,
+            vec![parcel],
+            &mut pending,
+            &mut receipts,
+            TransactionId(394),
+        )
+        .expect_err("finite area-ratio underflow must fail closed");
+        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E003);
+        assert!(pending.is_empty());
+        assert!(receipts.is_empty());
     }
 
     #[test]

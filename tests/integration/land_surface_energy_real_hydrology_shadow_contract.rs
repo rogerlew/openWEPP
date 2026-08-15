@@ -1385,6 +1385,31 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
             + multiplier * retained_enthalpy / tile.tile_fraction;
         assert_receiver_e011(validate_real_receiver_closure(&poison));
     }
+
+    let mut thermal_overflow = candidate.receiver_closure_operands().clone();
+    thermal_overflow.soil_thermal[0].beginning_infiltration_credit_j_m2_ofe_ground = f64::MAX;
+    thermal_overflow.soil_thermal[0].beginning_enthalpy_j_m2_ofe_ground = f64::MAX;
+    thermal_overflow.soil_thermal[0].infiltration_enthalpy_j_m2_ofe_ground = f64::MAX;
+    assert_receiver_e003(
+        "thermal-overflow",
+        validate_real_receiver_closure(&thermal_overflow),
+    );
+
+    let mut lse_overflow = candidate.receiver_closure_operands().clone();
+    lse_overflow.lse_tiles[0].beginning_enthalpy_j_m2_tile_ground = f64::MAX;
+    lse_overflow.lse_tiles[0].retained_enthalpy_j_m2_ofe_ground = f64::MAX;
+    assert_receiver_e003(
+        "lse-overflow",
+        validate_real_receiver_closure(&lse_overflow),
+    );
+
+    let mut lse_underflow = candidate.receiver_closure_operands().clone();
+    lse_underflow.lse_tiles[0].tile_fraction = f64::MAX;
+    lse_underflow.lse_tiles[0].retained_enthalpy_j_m2_ofe_ground = f64::MIN_POSITIVE;
+    assert_receiver_e003(
+        "lse-underflow",
+        validate_real_receiver_closure(&lse_underflow),
+    );
 }
 
 #[test]
@@ -1449,6 +1474,19 @@ fn assert_receiver_e011(
     assert!(failure.context.transaction_id.is_some());
     assert!(failure.context.owner_id.is_some());
     assert!(failure.context.ofe_id.is_some());
+    assert!(failure.rollback.beginning_owner_sha256.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+}
+
+fn assert_receiver_e003(
+    label: &str,
+    result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
+) {
+    let error = result.expect_err("receiver arithmetic poison must fail");
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003, "{label}");
+    assert!(failure.context.transaction_id.is_some());
+    assert!(failure.context.owner_id.is_some());
     assert!(failure.rollback.beginning_owner_sha256.is_some());
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
@@ -1703,6 +1741,83 @@ fn public_bridge_reports_wrong_second_independent_thermal_expectation_before_cal
     assert_eq!(
         failure.context.tile_id.as_ref().map(TileId::as_str),
         Some("wrong-second")
+    );
+}
+
+#[test]
+fn public_bridge_reports_deleted_first_independent_thermal_expectation_before_callback() {
+    let (frame, configuration) = configured_two_tile_surface_frame();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let expectations = UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        snapshot.clone(),
+        ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        digest('4'),
+        vec![(
+            configuration.records[1].key.ofe_id.clone(),
+            configuration.records[1].key.tile_id.clone(),
+            vec![SoilLayerId::try_new("thermal-1").expect("layer")],
+        )],
+    )
+    .expect("structurally valid deletion poison");
+    let attempted_hash = expectations.canonical_sha256();
+    let mut callback_called = false;
+    let result = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &expectations,
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |_| {
+            callback_called = true;
+            Err(LandSurfaceEnergyShadowError::Identity(
+                "callback must not run",
+            ))
+        },
+    );
+    assert!(!callback_called, "deleted expectation reached callback");
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+        result.expect_err("deleted first expectation must reject")
+    else {
+        panic!("expectation deletion must retain E011");
+    };
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("soil-thermal")
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some(configuration.records[0].key.ofe_id.as_str())
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some(configuration.records[0].key.tile_id.as_str())
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str())
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(attempted_hash.as_str())
     );
 }
 

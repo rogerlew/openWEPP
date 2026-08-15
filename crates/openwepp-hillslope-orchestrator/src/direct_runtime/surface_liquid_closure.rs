@@ -13,16 +13,14 @@ use super::surface_liquid_ingress::{
     DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress,
 };
 use super::surface_liquid_owner::{
-    DirectCondensationOverflow, DirectSurfaceLiquidConfiguration,
+    DirectCondensationOverflow, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
     DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
-    DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidStoreKey, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
-
-const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
-const ENTHALPY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-9;
-const SCALE_MULTIPLIER: f64 = 64.0;
 
 fn contextual_closure_failure(
     transaction_id: TransactionId,
@@ -32,6 +30,32 @@ fn contextual_closure_failure(
 ) -> DirectSurfaceLiquidError {
     DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E010,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: None,
+            ofe_id: Some(store_key.ofe_id.clone()),
+            tile_id: Some(store_key.tile_id.clone()),
+            surface_id: Some(store_key.surface_id.clone()),
+            source_id: Some(store_key.source_id.clone()),
+            parcel_id,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        detail,
+    )
+}
+
+fn contextual_closure_arithmetic_failure(
+    transaction_id: TransactionId,
+    store_key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<String>,
+    detail: impl Into<String>,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(transaction_id),
@@ -78,6 +102,14 @@ impl DirectSurfaceLiquidClosureOperands {
     pub(super) fn poison_first_beginning_for_test(&mut self) {
         if let Some(first) = self.stores.first_mut() {
             first.beginning_liquid_kg_m2_tile += 0.25;
+        }
+    }
+
+    #[cfg(test)]
+    pub(super) fn poison_first_store_arithmetic_overflow_for_test(&mut self) {
+        if let Some(first) = self.stores.first_mut() {
+            first.beginning_liquid_kg_m2_tile = f64::MAX;
+            first.retained_excess_kg_m2_ofe_ground = f64::MAX;
         }
     }
 }
@@ -193,9 +225,10 @@ struct AmountPair {
 }
 
 impl AmountPair {
-    fn add(&mut self, mass: f64, enthalpy: f64) {
-        self.mass += mass;
-        self.enthalpy += enthalpy;
+    fn checked_add(&mut self, mass: f64, enthalpy: f64) -> Option<()> {
+        self.mass = checked_surface_liquid_add(self.mass, mass)?;
+        self.enthalpy = checked_surface_liquid_add(self.enthalpy, enthalpy)?;
+        Some(())
     }
 }
 
@@ -227,6 +260,7 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
     })
 }
 
+#[allow(clippy::too_many_lines)]
 fn capture_operands(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
@@ -251,13 +285,22 @@ fn capture_operands(
             .ok_or(DirectSurfaceLiquidError::Identity(
                 "closure ending store missing",
             ))?;
-        let finalized = resource
+        let finalized_values = resource
             .finalized_uses()
             .iter()
             .filter(|row| water_key_matches_record(&row.key, configured))
             .map(|row| row.amount_kg_m2_stand_ground)
-            .sum();
-        let condensation = resource
+            .collect::<Vec<_>>();
+        let finalized =
+            checked_surface_liquid_sum(finalized_values.iter().copied()).ok_or_else(|| {
+                contextual_closure_arithmetic_failure(
+                    input.transaction_id,
+                    &configured.key,
+                    None,
+                    "finalized-use closure sum is nonfinite or underflowed",
+                )
+            })?;
+        let condensation_values = resource
             .condensation_credits()
             .iter()
             .filter(|row| {
@@ -266,14 +309,32 @@ fn capture_operands(
                     && row.surface_id == configured.key.surface_id
             })
             .map(|row| row.amount_kg_m2_stand_ground)
-            .sum();
-        let overflow = resource
+            .collect::<Vec<_>>();
+        let condensation = checked_surface_liquid_sum(condensation_values.iter().copied())
+            .ok_or_else(|| {
+                contextual_closure_arithmetic_failure(
+                    input.transaction_id,
+                    &configured.key,
+                    None,
+                    "condensation closure sum is nonfinite or underflowed",
+                )
+            })?;
+        let overflow_values = resource
             .condensation_overflow()
             .iter()
             .filter(|row| row.store_key == configured.key)
             .map(|row| row.amount_kg_m2_ofe_ground)
-            .sum();
-        let retained = receipts
+            .collect::<Vec<_>>();
+        let overflow =
+            checked_surface_liquid_sum(overflow_values.iter().copied()).ok_or_else(|| {
+                contextual_closure_arithmetic_failure(
+                    input.transaction_id,
+                    &configured.key,
+                    None,
+                    "overflow closure sum is nonfinite or underflowed",
+                )
+            })?;
+        let retained_values = receipts
             .iter()
             .filter(|receipt| {
                 receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RetainedSurface
@@ -284,7 +345,16 @@ fn capture_operands(
                     )
             })
             .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground)
-            .sum();
+            .collect::<Vec<_>>();
+        let retained =
+            checked_surface_liquid_sum(retained_values.iter().copied()).ok_or_else(|| {
+                contextual_closure_arithmetic_failure(
+                    input.transaction_id,
+                    &configured.key,
+                    None,
+                    "retained closure sum is nonfinite or underflowed",
+                )
+            })?;
         stores.push(DirectSurfaceLiquidStoreClosureOperands {
             store_key: configured.key.clone(),
             tile_fraction: configured.tile_fraction,
@@ -327,7 +397,8 @@ fn capture_source_parcels(
                 DirectSurfaceLiquidParcelKind::RawPrecipitation,
                 raw_precipitation,
                 &mut result,
-            ),
+                input.transaction_id,
+            )?,
             DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
                 for (kind, amount) in [
                     (
@@ -347,13 +418,13 @@ fn capture_source_parcels(
                         &release.stemflow,
                     ),
                 ] {
-                    capture_amount(configured, kind, amount, &mut result);
+                    capture_amount(configured, kind, amount, &mut result, input.transaction_id)?;
                 }
             }
         }
     }
     for overflow in resource.condensation_overflow() {
-        result.push(capture_overflow(input.transaction_id, overflow));
+        result.push(capture_overflow(input.transaction_id, overflow)?);
     }
     Ok(result)
 }
@@ -363,8 +434,26 @@ fn capture_amount(
     kind: DirectSurfaceLiquidParcelKind,
     amount: &DirectIngressAmount,
     result: &mut Vec<DirectSurfaceLiquidParcelClosureOperands>,
-) {
-    let mass = configured.tile_fraction * amount.mass_kg_m2_tile_ground;
+    transaction_id: TransactionId,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let mass = checked_surface_liquid_mul(configured.tile_fraction, amount.mass_kg_m2_tile_ground)
+        .ok_or_else(|| {
+            contextual_closure_arithmetic_failure(
+                transaction_id,
+                &configured.key,
+                None,
+                "ingress closure area conversion is nonfinite or underflowed",
+            )
+        })?;
+    let enthalpy = checked_surface_liquid_mul(mass, amount.specific_liquid_enthalpy_j_kg)
+        .ok_or_else(|| {
+            contextual_closure_arithmetic_failure(
+                transaction_id,
+                &configured.key,
+                None,
+                "ingress closure enthalpy is nonfinite or underflowed",
+            )
+        })?;
     result.push(DirectSurfaceLiquidParcelClosureOperands {
         source_parcel_id: format!(
             "local:{:?}:{:?}:{kind:?}",
@@ -374,15 +463,28 @@ fn capture_amount(
         basis_ofe_id: configured.key.ofe_id.clone(),
         kind,
         mass_kg_m2_basis_ofe_ground: mass,
-        enthalpy_j_m2_basis_ofe_ground: mass * amount.specific_liquid_enthalpy_j_kg,
+        enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
+    Ok(())
 }
 
 fn capture_overflow(
     transaction_id: TransactionId,
     overflow: &DirectCondensationOverflow,
-) -> DirectSurfaceLiquidParcelClosureOperands {
-    DirectSurfaceLiquidParcelClosureOperands {
+) -> Result<DirectSurfaceLiquidParcelClosureOperands, DirectSurfaceLiquidError> {
+    let enthalpy = checked_surface_liquid_mul(
+        overflow.amount_kg_m2_ofe_ground,
+        overflow.specific_liquid_enthalpy_j_kg,
+    )
+    .ok_or_else(|| {
+        contextual_closure_arithmetic_failure(
+            transaction_id,
+            &overflow.store_key,
+            None,
+            "overflow closure enthalpy is nonfinite or underflowed",
+        )
+    })?;
+    Ok(DirectSurfaceLiquidParcelClosureOperands {
         source_parcel_id: format!(
             "condensation:{}:{:?}:{:?}",
             transaction_id.0, overflow.store_key.ofe_id, overflow.store_key.tile_id
@@ -391,9 +493,8 @@ fn capture_overflow(
         basis_ofe_id: overflow.store_key.ofe_id.clone(),
         kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
         mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
-        enthalpy_j_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground
-            * overflow.specific_liquid_enthalpy_j_kg,
-    }
+        enthalpy_j_m2_basis_ofe_ground: enthalpy,
+    })
 }
 
 pub(super) fn validate_surface_liquid_closure_operands(
@@ -437,12 +538,39 @@ fn validate_store_equations(
                 "independent store operand identity",
             ));
         }
-        let pre_ingress = row.beginning_liquid_kg_m2_tile
-            - row.finalized_withdrawal_kg_m2_ofe_ground / row.tile_fraction
-            + row.condensation_credit_kg_m2_ofe_ground / row.tile_fraction
-            - row.condensation_overflow_kg_m2_ofe_ground / row.tile_fraction;
-        let expected_ending =
-            pre_ingress + row.retained_excess_kg_m2_ofe_ground / row.tile_fraction;
+        let finalized_tile = checked_surface_liquid_div(
+            row.finalized_withdrawal_kg_m2_ofe_ground,
+            row.tile_fraction,
+        );
+        let condensation_tile =
+            checked_surface_liquid_div(row.condensation_credit_kg_m2_ofe_ground, row.tile_fraction);
+        let overflow_tile = checked_surface_liquid_div(
+            row.condensation_overflow_kg_m2_ofe_ground,
+            row.tile_fraction,
+        );
+        let retained_tile =
+            checked_surface_liquid_div(row.retained_excess_kg_m2_ofe_ground, row.tile_fraction);
+        let pre_ingress = finalized_tile
+            .and_then(|finalized| {
+                checked_surface_liquid_sub(row.beginning_liquid_kg_m2_tile, finalized)
+            })
+            .and_then(|value| {
+                condensation_tile.and_then(|credit| checked_surface_liquid_add(value, credit))
+            })
+            .and_then(|value| {
+                overflow_tile.and_then(|overflow| checked_surface_liquid_sub(value, overflow))
+            });
+        let expected_ending = pre_ingress.and_then(|value| {
+            retained_tile.and_then(|retained| checked_surface_liquid_add(value, retained))
+        });
+        let (pre_ingress, expected_ending) = pre_ingress.zip(expected_ending).ok_or_else(|| {
+            contextual_closure_arithmetic_failure(
+                operands.transaction_id,
+                &configured.key,
+                None,
+                "store closure arithmetic is nonfinite or underflowed",
+            )
+        })?;
         require_close_mass(
             working.liquid_kg_m2_tile,
             pre_ingress,
@@ -487,10 +615,18 @@ fn validate_parcel_joins(
                 basis_ofe_id: parcel.basis_ofe_id.clone(),
             })
             .or_default()
-            .add(
+            .checked_add(
                 parcel.mass_kg_m2_basis_ofe_ground,
                 parcel.enthalpy_j_m2_basis_ofe_ground,
-            );
+            )
+            .ok_or_else(|| {
+                contextual_closure_arithmetic_failure(
+                    operands.transaction_id,
+                    &parcel.origin_store_key,
+                    Some(parcel.source_parcel_id.clone()),
+                    "source parcel join accumulation is nonfinite or underflowed",
+                )
+            })?;
     }
     let mut seen_receipt_ids = BTreeSet::new();
     let mut consumed_receipts = BTreeSet::new();
@@ -514,7 +650,16 @@ fn validate_parcel_joins(
         let mut actual_ofe_enthalpy = 0.0;
         for key in keys {
             let expected_amount = expected[&key];
-            expected_ofe_enthalpy += expected_amount.enthalpy;
+            expected_ofe_enthalpy =
+                checked_surface_liquid_add(expected_ofe_enthalpy, expected_amount.enthalpy)
+                    .ok_or_else(|| {
+                        contextual_closure_arithmetic_failure(
+                            operands.transaction_id,
+                            &route_record.key,
+                            Some(key.source_parcel_id.clone()),
+                            "expected OFE enthalpy accumulation is nonfinite or underflowed",
+                        )
+                    })?;
             let mut actual = AmountPair::default();
             for (index, receipt) in receipts.iter().enumerate().filter(|(_, receipt)| {
                 receipt.source_parcel_id == key.source_parcel_id
@@ -558,29 +703,82 @@ fn validate_parcel_joins(
                         detail,
                     )
                 })?;
-                actual.add(
-                    receipt.mass_kg_m2_basis_ofe_ground,
-                    receipt.enthalpy_j_m2_basis_ofe_ground,
-                );
+                actual
+                    .checked_add(
+                        receipt.mass_kg_m2_basis_ofe_ground,
+                        receipt.enthalpy_j_m2_basis_ofe_ground,
+                    )
+                    .ok_or_else(|| {
+                        contextual_closure_arithmetic_failure(
+                            operands.transaction_id,
+                            &receipt.origin_store_key,
+                            Some(receipt.parcel_id.clone()),
+                            "actual parcel join accumulation is nonfinite or underflowed",
+                        )
+                    })?;
                 consumed_receipts.insert(index);
                 if receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff {
                     let (destination_ofe, destination_record) =
                         route_destination(configuration, route_record)?;
-                    let ratio = route_record.ofe_area_m2 / destination_record.ofe_area_m2;
+                    let ratio = checked_surface_liquid_div(
+                        route_record.ofe_area_m2,
+                        destination_record.ofe_area_m2,
+                    )
+                    .ok_or_else(|| {
+                        contextual_closure_arithmetic_failure(
+                            operands.transaction_id,
+                            &route_record.key,
+                            Some(receipt.parcel_id.clone()),
+                            "independent routed OFE area ratio is nonfinite or underflowed",
+                        )
+                    })?;
+                    let routed_mass =
+                        checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, ratio)
+                            .ok_or_else(|| {
+                                contextual_closure_arithmetic_failure(
+                                    operands.transaction_id,
+                                    &route_record.key,
+                                    Some(receipt.parcel_id.clone()),
+                                    "independent routed mass is nonfinite or underflowed",
+                                )
+                            })?;
+                    let routed_enthalpy =
+                        checked_surface_liquid_mul(receipt.enthalpy_j_m2_basis_ofe_ground, ratio)
+                            .ok_or_else(|| {
+                            contextual_closure_arithmetic_failure(
+                                operands.transaction_id,
+                                &route_record.key,
+                                Some(receipt.parcel_id.clone()),
+                                "independent routed enthalpy is nonfinite or underflowed",
+                            )
+                        })?;
                     expected
                         .entry(ParcelJoinKey {
                             source_parcel_id: key.source_parcel_id.clone(),
                             basis_ofe_id: destination_ofe,
                         })
                         .or_default()
-                        .add(
-                            receipt.mass_kg_m2_basis_ofe_ground * ratio,
-                            receipt.enthalpy_j_m2_basis_ofe_ground * ratio,
-                        );
+                        .checked_add(routed_mass, routed_enthalpy)
+                        .ok_or_else(|| {
+                            contextual_closure_arithmetic_failure(
+                                operands.transaction_id,
+                                &route_record.key,
+                                Some(receipt.parcel_id.clone()),
+                                "independent routed join accumulation is nonfinite or underflowed",
+                            )
+                        })?;
                 }
             }
             require_close_mass(actual.mass, expected_amount.mass, "parcel mass join")?;
-            actual_ofe_enthalpy += actual.enthalpy;
+            actual_ofe_enthalpy = checked_surface_liquid_add(actual_ofe_enthalpy, actual.enthalpy)
+                .ok_or_else(|| {
+                    contextual_closure_arithmetic_failure(
+                        operands.transaction_id,
+                        &route_record.key,
+                        Some(key.source_parcel_id.clone()),
+                        "actual OFE enthalpy accumulation is nonfinite or underflowed",
+                    )
+                })?;
         }
         require_close_enthalpy(
             actual_ofe_enthalpy,
@@ -714,7 +912,14 @@ fn validate_receipt_enthalpy(
         }
         return Ok(());
     }
-    let expected = receipt.mass_kg_m2_basis_ofe_ground * 4_218.0 * (receipt.temperature_k - 273.15);
+    let expected = checked_surface_liquid_sub(receipt.temperature_k, 273.15)
+        .and_then(|delta| checked_surface_liquid_mul(4_218.0, delta))
+        .and_then(|specific| {
+            checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, specific)
+        })
+        .ok_or(DirectSurfaceLiquidError::Closure(
+            "parcel temperature/enthalpy arithmetic is nonfinite or underflowed",
+        ))?;
     require_close_enthalpy(
         receipt.enthalpy_j_m2_basis_ofe_ground,
         expected,
@@ -739,11 +944,8 @@ fn require_close_mass(
     expected: f64,
     detail: &'static str,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    let scale = actual.abs() + expected.abs();
-    if actual.is_finite()
-        && expected.is_finite()
-        && (actual - expected).abs()
-            <= MASS_ABSOLUTE_TOLERANCE_KG_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
+    if checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassKgM2)
+        == Some(true)
     {
         Ok(())
     } else {
@@ -756,11 +958,11 @@ fn require_close_enthalpy(
     expected: f64,
     detail: &'static str,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    let scale = actual.abs() + expected.abs();
-    if actual.is_finite()
-        && expected.is_finite()
-        && (actual - expected).abs()
-            <= ENTHALPY_ABSOLUTE_TOLERANCE_J_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
+    if checked_surface_liquid_close(
+        actual,
+        expected,
+        DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+    ) == Some(true)
     {
         Ok(())
     } else {

@@ -396,6 +396,11 @@ pub use surface_liquid_owner::{
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
 };
+pub(crate) use surface_liquid_owner::{
+    DirectSurfaceLiquidClosureUnit, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
+};
 
 include!("direct_runtime/00_core_frames.rs");
 include!("direct_runtime/01_publication.rs");

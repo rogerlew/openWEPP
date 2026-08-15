@@ -30,21 +30,24 @@ use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 use crate::direct_runtime::{
-    DirectLayerWithdrawalRequest, aggregate_direct_soil_water,
+    DirectLayerWithdrawalRequest, DirectSurfaceLiquidClosureUnit, aggregate_direct_soil_water,
     apply_direct_finalized_layer_liquid_debit, apply_direct_same_pass_infiltration,
-    authorize_direct_layer_withdrawals,
+    authorize_direct_layer_withdrawals, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyShadowAdapter, RealHydrologyShadowError, RealHydrologySourceKey,
 };
 use crate::{
     DirectRunFrame, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
-    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidIngressCandidate,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding,
-    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidPhase,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidPhase,
     DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
-    DirectSurfaceLiquidResourceCandidate, apply_surface_liquid_resource_phase,
-    authorize_surface_liquid_withdrawals, execute_surface_liquid_ingress,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
+    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+    execute_surface_liquid_ingress,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -265,6 +268,12 @@ impl ReceiverEnvelopeViolation {
 }
 
 impl UnifiedReceiverExpectations {
+    /// Canonical attempted-owner hash used by pre-callback receiver failures.
+    #[must_use]
+    pub fn canonical_sha256(&self) -> String {
+        receiver_expectations_sha256(self)
+    }
+
     pub fn try_new(
         lse_owner_id: ResourceOwnerId,
         beginning_lse_state_sha256: Sha256Digest,
@@ -1277,7 +1286,25 @@ fn validate_receiver_topologies(
         .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
         .collect::<Vec<_>>();
     if let Some(index) = first_identity_mismatch(expected_tiles, &actual_thermal_tiles) {
-        let violation = if let Some(candidate) = soil_thermal.get(index) {
+        let missing_expected = if actual_thermal_tiles.len() < expected_tiles.len() {
+            let actual_membership = actual_thermal_tiles.iter().collect::<BTreeSet<_>>();
+            expected_tiles
+                .iter()
+                .enumerate()
+                .find(|(_, identity)| !actual_membership.contains(identity))
+                .map(|(index, _)| index)
+        } else {
+            None
+        };
+        let violation = if let Some(missing_index) = missing_expected {
+            let (ofe_id, tile_id) = &expected_tiles[missing_index];
+            ReceiverEnvelopeViolation::for_tile(
+                Some(expectations.soil_thermal_owner_id.clone()),
+                ofe_id.clone(),
+                tile_id.clone(),
+                "missing soil-thermal tile receiver",
+            )
+        } else if let Some(candidate) = soil_thermal.get(index) {
             ReceiverEnvelopeViolation::for_tile(
                 Some(candidate.owner_id.clone()),
                 candidate.ofe_id.clone(),
@@ -1365,6 +1392,20 @@ fn first_expected_identity_violation(
     owner_id: &ResourceOwnerId,
     detail: &'static str,
 ) -> Option<ReceiverEnvelopeViolation> {
+    if actual.len() < expected.len() {
+        let actual_membership = actual.iter().collect::<BTreeSet<_>>();
+        if let Some((ofe_id, tile_id)) = expected
+            .iter()
+            .find(|identity| !actual_membership.contains(identity))
+        {
+            return Some(ReceiverEnvelopeViolation::for_tile(
+                Some(owner_id.clone()),
+                ofe_id.clone(),
+                tile_id.clone(),
+                detail,
+            ));
+        }
+    }
     let index = first_identity_mismatch(expected, actual)?;
     let (ofe_id, tile_id) = actual.get(index).or_else(|| expected.get(index))?;
     Some(ReceiverEnvelopeViolation::for_tile(
@@ -1601,12 +1642,26 @@ fn credit_infiltration_receipt(
         .ok_or(LandSurfaceEnergyShadowError::Identity(
             "missing infiltration soil-thermal layer receiver",
         ))?;
-    layer.infiltration_enthalpy_credit_j_m2_ofe_ground += receipt.enthalpy_j_m2_basis_ofe_ground;
-    layer.ending_enthalpy_j_m2_ofe_ground += receipt.enthalpy_j_m2_basis_ofe_ground;
-    Ok((
-        binding.production_lane_index,
-        receipt.mass_kg_m2_basis_ofe_ground / WATER_DENSITY_KG_M3,
-    ))
+    layer.infiltration_enthalpy_credit_j_m2_ofe_ground = checked_surface_liquid_add(
+        layer.infiltration_enthalpy_credit_j_m2_ofe_ground,
+        receipt.enthalpy_j_m2_basis_ofe_ground,
+    )
+    .ok_or(LandSurfaceEnergyShadowError::Bound(
+        "soil-thermal infiltration enthalpy arithmetic",
+    ))?;
+    layer.ending_enthalpy_j_m2_ofe_ground = checked_surface_liquid_add(
+        layer.ending_enthalpy_j_m2_ofe_ground,
+        receipt.enthalpy_j_m2_basis_ofe_ground,
+    )
+    .ok_or(LandSurfaceEnergyShadowError::Bound(
+        "soil-thermal ending enthalpy arithmetic",
+    ))?;
+    let infiltration_m =
+        checked_surface_liquid_div(receipt.mass_kg_m2_basis_ofe_ground, WATER_DENSITY_KG_M3)
+            .ok_or(LandSurfaceEnergyShadowError::Bound(
+                "infiltration mass-to-depth arithmetic",
+            ))?;
+    Ok((binding.production_lane_index, infiltration_m))
 }
 
 fn credit_retained_receipt(
@@ -1636,8 +1691,15 @@ fn credit_retained_receipt(
         .ok_or(LandSurfaceEnergyShadowError::Identity(
             "retained receipt store receiver",
         ))?;
-    tile.surface_enthalpy_j_m2_tile_ground +=
-        receipt.enthalpy_j_m2_basis_ofe_ground / record.tile_fraction;
+    let retained_tile =
+        checked_surface_liquid_div(receipt.enthalpy_j_m2_basis_ofe_ground, record.tile_fraction)
+            .ok_or(LandSurfaceEnergyShadowError::Bound(
+                "retained enthalpy OFE-to-tile arithmetic",
+            ))?;
+    tile.surface_enthalpy_j_m2_tile_ground =
+        checked_surface_liquid_add(tile.surface_enthalpy_j_m2_tile_ground, retained_tile).ok_or(
+            LandSurfaceEnergyShadowError::Bound("retained surface enthalpy arithmetic"),
+        )?;
     Ok(())
 }
 
@@ -1925,10 +1987,23 @@ pub fn validate_real_receiver_closure(
 ) -> Result<(), DirectSurfaceLiquidError> {
     validate_production_soil_receiver_closure(operands)?;
     for thermal in &operands.soil_thermal {
-        let expected_credit = thermal.beginning_infiltration_credit_j_m2_ofe_ground
-            + thermal.infiltration_enthalpy_j_m2_ofe_ground;
-        let expected_ending = thermal.beginning_enthalpy_j_m2_ofe_ground
-            + thermal.infiltration_enthalpy_j_m2_ofe_ground;
+        let expected_credit = checked_surface_liquid_add(
+            thermal.beginning_infiltration_credit_j_m2_ofe_ground,
+            thermal.infiltration_enthalpy_j_m2_ofe_ground,
+        );
+        let expected_ending = checked_surface_liquid_add(
+            thermal.beginning_enthalpy_j_m2_ofe_ground,
+            thermal.infiltration_enthalpy_j_m2_ofe_ground,
+        );
+        let (expected_credit, expected_ending) =
+            expected_credit.zip(expected_ending).ok_or_else(|| {
+                receiver_arithmetic_failure(
+                    operands,
+                    Some(&thermal.ofe_id),
+                    Some(&thermal.tile_id),
+                    "soil-thermal infiltration enthalpy arithmetic",
+                )
+            })?;
         if !enthalpy_close(
             thermal.ending_infiltration_credit_j_m2_ofe_ground,
             expected_credit,
@@ -1951,8 +2026,19 @@ pub fn validate_real_receiver_closure(
                 "LSE retained tile fraction",
             ));
         }
-        let expected = tile.beginning_enthalpy_j_m2_tile_ground
-            + tile.retained_enthalpy_j_m2_ofe_ground / tile.tile_fraction;
+        let expected =
+            checked_surface_liquid_div(tile.retained_enthalpy_j_m2_ofe_ground, tile.tile_fraction)
+                .and_then(|retained| {
+                    checked_surface_liquid_add(tile.beginning_enthalpy_j_m2_tile_ground, retained)
+                })
+                .ok_or_else(|| {
+                    receiver_arithmetic_failure(
+                        operands,
+                        Some(&tile.ofe_id),
+                        Some(&tile.tile_id),
+                        "LSE retained enthalpy arithmetic",
+                    )
+                })?;
         if !enthalpy_close(tile.ending_enthalpy_j_m2_tile_ground, expected) {
             return Err(receiver_atomic_failure(
                 operands,
@@ -1999,27 +2085,51 @@ fn validate_production_soil_receiver_closure(
                 ));
             }
         }
-        let beginning_sum = lane
+        let beginning_terms = lane
             .ordered_layers
             .iter()
-            .map(|layer| {
-                layer.beginning_liquid_m
-                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
-            })
-            .sum::<f64>();
-        let ending_sum = lane
+            .map(|layer| checked_receiver_layer_total(layer.beginning_liquid_m, layer))
+            .collect::<Option<Vec<_>>>();
+        let ending_terms = lane
             .ordered_layers
             .iter()
-            .map(|layer| {
-                layer.ending_liquid_m
-                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
-            })
-            .sum::<f64>();
+            .map(|layer| checked_receiver_layer_total(layer.ending_liquid_m, layer))
+            .collect::<Option<Vec<_>>>();
+        let beginning_sum = beginning_terms
+            .and_then(checked_surface_liquid_sum)
+            .ok_or_else(|| {
+                receiver_arithmetic_failure(
+                    operands,
+                    Some(&lane.ofe_id),
+                    None,
+                    "beginning aggregate soil-water arithmetic",
+                )
+            })?;
+        let ending_sum = ending_terms
+            .and_then(checked_surface_liquid_sum)
+            .ok_or_else(|| {
+                receiver_arithmetic_failure(
+                    operands,
+                    Some(&lane.ofe_id),
+                    None,
+                    "ending aggregate soil-water arithmetic",
+                )
+            })?;
+        let expected_aggregate_ending =
+            checked_surface_liquid_add(lane.beginning_aggregate_soil_water_m, lane.infiltration_m)
+                .ok_or_else(|| {
+                    receiver_arithmetic_failure(
+                        operands,
+                        Some(&lane.ofe_id),
+                        None,
+                        "aggregate soil-water ending arithmetic",
+                    )
+                })?;
         if !mass_m_close(lane.beginning_aggregate_soil_water_m, beginning_sum)
             || !mass_m_close(lane.ending_aggregate_soil_water_m, ending_sum)
             || !mass_m_close(
                 lane.ending_aggregate_soil_water_m,
-                lane.beginning_aggregate_soil_water_m + lane.infiltration_m,
+                expected_aggregate_ending,
             )
         {
             return Err(receiver_atomic_failure(
@@ -2031,6 +2141,15 @@ fn validate_production_soil_receiver_closure(
         }
     }
     Ok(())
+}
+
+fn checked_receiver_layer_total(
+    liquid_m: f64,
+    layer: &ProductionSoilLayerReceiverOperands,
+) -> Option<f64> {
+    let unfrozen_depth = checked_surface_liquid_sub(layer.layer_depth_m, layer.frozen_depth_m)?;
+    let residual = checked_surface_liquid_mul(layer.residual_theta, unfrozen_depth.max(0.0))?;
+    checked_surface_liquid_add(liquid_m, residual)
 }
 
 fn independently_reconstruct_infiltration(
@@ -2065,33 +2184,34 @@ fn independently_reconstruct_infiltration(
         {
             return None;
         }
-        cumulative_depth_m += layer.layer_depth_m;
+        cumulative_depth_m = checked_surface_liquid_add(cumulative_depth_m, layer.layer_depth_m)?;
         let addition = if cumulative_depth_m < resolved_tillage_depth_m - 1.0e-12 {
-            remaining * layer.layer_depth_m / resolved_tillage_depth_m
+            checked_surface_liquid_mul(remaining, layer.layer_depth_m)
+                .and_then(|value| checked_surface_liquid_div(value, resolved_tillage_depth_m))?
         } else {
             remaining
         };
-        *ending += addition.max(0.0);
-        remaining -= addition;
+        *ending = checked_surface_liquid_add(*ending, addition.max(0.0))?;
+        remaining = checked_surface_liquid_sub(remaining, addition)?;
     }
     if remaining > 0.0 {
-        *expected.last_mut()? += remaining;
+        let last = expected.last_mut()?;
+        *last = checked_surface_liquid_add(*last, remaining)?;
     }
     Some(expected)
 }
 
 fn mass_m_close(actual: f64, expected: f64) -> bool {
-    let scale = actual.abs() + expected.abs();
-    actual.is_finite()
-        && expected.is_finite()
-        && (actual - expected).abs() <= 1.0e-17 + 64.0 * f64::EPSILON * scale
+    checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassM)
+        == Some(true)
 }
 
 fn enthalpy_close(actual: f64, expected: f64) -> bool {
-    let scale = actual.abs() + expected.abs();
-    actual.is_finite()
-        && expected.is_finite()
-        && (actual - expected).abs() <= 1.0e-9 + 64.0 * f64::EPSILON * scale
+    checked_surface_liquid_close(
+        actual,
+        expected,
+        DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+    ) == Some(true)
 }
 
 fn receiver_atomic_failure(
@@ -2110,6 +2230,30 @@ fn receiver_atomic_failure(
         },
         Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
         Some(receiver_operands_sha256(operands)),
+        detail,
+    )
+}
+
+fn receiver_arithmetic_failure(
+    operands: &RealReceiverClosureOperands,
+    ofe_id: Option<&OfeId>,
+    tile_id: Option<&TileId>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E003,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(operands.transaction_id),
+            owner_id: Some(operands.hydrology_owner_id.clone()),
+            ofe_id: ofe_id.cloned(),
+            tile_id: tile_id.cloned(),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
+            attempted_owner_sha256: Some(receiver_operands_sha256(operands)),
+        },
         detail,
     )
 }
