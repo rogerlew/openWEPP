@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Report whether ow-dev-01 satisfies the agent-host storage and service baseline.
+set -euo pipefail
+
+failures=0
+
+pass() {
+    printf 'PASS  %s\n' "$1"
+}
+
+fail() {
+    printf 'FAIL  %s\n' "$1" >&2
+    failures=$((failures + 1))
+}
+
+check_mount() {
+    local target="$1"
+    local expected_source="$2"
+    local source fstype
+
+    source="$(findmnt -n -o SOURCE --target "$target" 2>/dev/null || true)"
+    fstype="$(findmnt -n -o FSTYPE --target "$target" 2>/dev/null || true)"
+    if [[ "$source" == "$expected_source" && "$fstype" == "ext4" ]]; then
+        pass "$target is ext4 on $expected_source"
+    else
+        fail "$target expected ext4 on $expected_source; found ${source:-unmounted} ${fstype:-unknown}"
+    fi
+}
+
+check_mount /tmp /dev/mapper/tmp_crypt
+check_mount /workdir /dev/mapper/workdir_crypt
+
+if [[ "$(stat -c '%a %U:%G' /tmp)" == "1777 root:root" ]]; then
+    pass "/tmp permissions are 1777 root:root"
+else
+    fail "/tmp permissions are $(stat -c '%a %U:%G' /tmp)"
+fi
+
+if [[ "$(stat -c '%a %U:%G' /workdir)" == "755 roger:roger" ]]; then
+    pass "/workdir permissions are 755 roger:roger"
+else
+    fail "/workdir permissions are $(stat -c '%a %U:%G' /workdir)"
+fi
+
+if systemctl is-active --quiet systemd-tmpfiles-clean.timer; then
+    pass "systemd-tmpfiles-clean.timer is active"
+else
+    fail "systemd-tmpfiles-clean.timer is not active"
+fi
+
+if systemd-tmpfiles --cat-config | grep -Fxq 'q /tmp 1777 root root 3d'; then
+    pass "/tmp retention policy is 3d"
+else
+    fail "/tmp retention policy is not 3d"
+fi
+
+if systemctl is-active --quiet nix-daemon.service; then
+    pass "nix-daemon.service is active"
+else
+    fail "nix-daemon.service is not active"
+fi
+
+df -h /tmp /workdir /nix/store
+
+if (( failures > 0 )); then
+    printf '%d host baseline check(s) failed\n' "$failures" >&2
+    exit 1
+fi
+
+printf 'All host baseline checks passed\n'

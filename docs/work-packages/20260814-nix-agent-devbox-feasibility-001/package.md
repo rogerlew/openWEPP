@@ -99,25 +99,25 @@ heavy-run time alone.
 - [x] Confirm the daily systemd tmpfiles cleanup timer.
 - [x] Override `/tmp` retention from the Ubuntu 10-day default to 3 days on
   `ow-dev-01`; verify configuration precedence and perform a dry run only.
-- [ ] Add a tracked host-setup check that reports, but does not silently mutate,
+- [x] Add a tracked host-setup check that reports, but does not silently mutate,
   required mount, permission, cleanup, disk-space, and timer state.
 
 ### Phase 1 — Implement The Pinned Nix Development Shell
 
 - [x] Install multi-user Nix on `ow-dev-01` using the official installer and
   record the installed Nix version and daemon state.
-- [ ] Add and lock the minimal openWEPP development flake.
-- [ ] Prove `nix develop` supplies every canonical developer and gate command.
-- [ ] Keep user authentication, secrets, and machine-specific credentials out
+- [x] Add and lock the minimal openWEPP development flake.
+- [x] Prove `nix develop` supplies every canonical developer and gate command.
+- [x] Keep user authentication, secrets, and machine-specific credentials out
   of the flake and repository.
-- [ ] Record closure size and verify the Nix store leaves adequate root-disk
+- [x] Record closure size and verify the Nix store leaves adequate root-disk
   headroom.
 
 ### Phase 2 — Implement Agent Isolation And Rust Optimization
 
-- [ ] Define stable `/workdir` locations for Cargo home, sccache, worktrees,
+- [x] Define stable `/workdir` locations for Cargo home, sccache, worktrees,
   per-task target directories, and benchmark results.
-- [ ] Define unique absolute `/tmp` scratch allocation outside every checkout.
+- [x] Define unique absolute `/tmp` scratch allocation outside every checkout.
 - [ ] Add collision/ownership checks that reject a target directory already
   owned by another active task.
 - [ ] Benchmark Cargo incremental compilation against

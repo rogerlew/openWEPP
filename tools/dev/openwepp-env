@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Source from the Nix shell to allocate collision-safe agent build state.
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    echo "error: source tools/dev/openwepp-env; do not execute it" >&2
+    exit 2
+fi
+
+openwepp_repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+openwepp_repo_key="$({ printf '%s' "$openwepp_repo_root" | sha256sum; } | cut -c1-12)"
+
+if [[ -n "${OPENWEPP_CACHE_ROOT:-}" ]]; then
+    openwepp_cache_root="$OPENWEPP_CACHE_ROOT"
+elif [[ -d /workdir && -w /workdir ]]; then
+    openwepp_cache_root="/workdir/.cache/openwepp"
+else
+    openwepp_cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/openwepp"
+fi
+
+openwepp_task_id="${OPENWEPP_TASK_ID:-$(basename "$openwepp_repo_root")-$openwepp_repo_key}"
+openwepp_task_id="${openwepp_task_id//[^a-zA-Z0-9_.-]/_}"
+
+export OPENWEPP_REPO_ROOT="$openwepp_repo_root"
+export OPENWEPP_CACHE_ROOT="$openwepp_cache_root"
+export OPENWEPP_TASK_ID="$openwepp_task_id"
+export CARGO_HOME="$openwepp_cache_root/cargo-home"
+export SCCACHE_DIR="$openwepp_cache_root/sccache"
+export UV_CACHE_DIR="$openwepp_cache_root/uv"
+export CARGO_TARGET_DIR="$openwepp_cache_root/targets/$openwepp_task_id"
+export TMPDIR="/tmp/openwepp-$USER-$openwepp_task_id"
+
+mkdir -p "$CARGO_HOME" "$SCCACHE_DIR" "$UV_CACHE_DIR" "$CARGO_TARGET_DIR"
+mkdir -p "$TMPDIR"
+chmod 0700 "$TMPDIR"
+
+unset openwepp_repo_root openwepp_repo_key openwepp_cache_root openwepp_task_id
