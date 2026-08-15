@@ -52,7 +52,9 @@ use crate::{
 
 mod receiver_validation;
 use receiver_validation::{
-    receiver_atomic_failure, receiver_operands_sha256, require_receiver_close,
+    FramedSha256, finalization_receiver_sets_sha256, receiver_atomic_failure,
+    receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
+    require_receiver_close, water_protocol_sha256, water_request_batch_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -300,6 +302,14 @@ impl UnifiedReceiverExpectations {
         beginning_soil_thermal_state_sha256: Sha256Digest,
         ordered_thermal_layers: Vec<(OfeId, TileId, Vec<SoilLayerId>)>,
     ) -> Result<Self, LandSurfaceEnergyShadowError> {
+        let attempted_sha256 = receiver_expectation_fields_sha256(
+            &lse_owner_id,
+            &beginning_lse_state_sha256,
+            &beginning_hydrology_snapshot_sha256,
+            &soil_thermal_owner_id,
+            &beginning_soil_thermal_state_sha256,
+            &ordered_thermal_layers,
+        );
         let mut identities = BTreeSet::new();
         let mut layers_by_tile = Vec::new();
         for (ofe_id, tile_id, layers) in ordered_thermal_layers {
@@ -307,14 +317,24 @@ impl UnifiedReceiverExpectations {
                 || layers.iter().collect::<BTreeSet<_>>().len() != layers.len()
                 || !identities.insert((ofe_id.clone(), tile_id.clone()))
             {
-                return Err(LandSurfaceEnergyShadowError::Identity(
+                return Err(receiver_expectation_cardinality_failure(
+                    &soil_thermal_owner_id,
+                    &beginning_hydrology_snapshot_sha256,
+                    &attempted_sha256,
+                    Some(ofe_id),
+                    Some(tile_id),
                     "invalid independent receiver expectations",
                 ));
             }
             layers_by_tile.push(((ofe_id, tile_id), layers));
         }
         if layers_by_tile.is_empty() {
-            return Err(LandSurfaceEnergyShadowError::Identity(
+            return Err(receiver_expectation_cardinality_failure(
+                &soil_thermal_owner_id,
+                &beginning_hydrology_snapshot_sha256,
+                &attempted_sha256,
+                None,
+                None,
                 "empty independent receiver expectations",
             ));
         }
@@ -329,6 +349,32 @@ impl UnifiedReceiverExpectations {
     }
 }
 
+fn receiver_expectation_cardinality_failure(
+    owner_id: &ResourceOwnerId,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+    ofe_id: Option<OfeId>,
+    tile_id: Option<TileId>,
+    detail: &'static str,
+) -> LandSurfaceEnergyShadowError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E005,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            owner_id: Some(owner_id.clone()),
+            ofe_id,
+            tile_id,
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
+        detail,
+    )
+    .into()
+}
+
 impl UnifiedLseFinalization {
     pub fn try_new(
         water_protocol: WaterProtocol,
@@ -336,7 +382,18 @@ impl UnifiedLseFinalization {
         soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
         rollback_hashes: Vec<OwnerRollbackHash>,
     ) -> Result<Self, LandSurfaceEnergyShadowError> {
-        water_protocol.validate()?;
+        if let Err(error) = water_protocol.validate() {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            let beginning = water_protocol.beginning_snapshot_sha256.clone();
+            let attempted = water_protocol_sha256(&water_protocol);
+            return Err(protocol_failure(
+                code,
+                &water_protocol,
+                &beginning,
+                &attempted,
+                detail,
+            ));
+        }
         if let Some(violation) = first_sealed_finalization_violation(
             &water_protocol,
             &ending_tile_states_pre_ingress,
@@ -514,57 +571,6 @@ fn first_sealed_rollback_violation(
                 detail,
             )
         })
-}
-
-fn finalization_receiver_sets_sha256(
-    lse_tiles: &[TileState],
-    soil_thermal: &[SoilThermalTileCandidate],
-    rollback_hashes: &[OwnerRollbackHash],
-) -> String {
-    let mut digest = Sha256::new();
-    digest.update(b"openwepp-sealed-lse-finalization-receivers-v1");
-    for tile in lse_tiles {
-        digest.update(tile.ofe_id.as_str().as_bytes());
-        digest.update(tile.tile_id.as_str().as_bytes());
-        digest.update(
-            tile.surface_enthalpy_j_m2_tile_ground
-                .to_bits()
-                .to_be_bytes(),
-        );
-        digest.update(
-            tile.surface_temperature_warm_start_k
-                .to_bits()
-                .to_be_bytes(),
-        );
-    }
-    for tile in soil_thermal {
-        digest.update(tile.owner_id.as_str().as_bytes());
-        digest.update(tile.beginning_state_sha256.as_str().as_bytes());
-        digest.update(tile.ofe_id.as_str().as_bytes());
-        digest.update(tile.tile_id.as_str().as_bytes());
-        for layer in &tile.layers {
-            digest.update(layer.layer_id.as_str().as_bytes());
-            digest.update(
-                layer
-                    .beginning_enthalpy_j_m2_ofe_ground
-                    .to_bits()
-                    .to_be_bytes(),
-            );
-            digest.update(
-                layer
-                    .ending_enthalpy_j_m2_ofe_ground
-                    .to_bits()
-                    .to_be_bytes(),
-            );
-        }
-    }
-    for row in rollback_hashes {
-        digest.update([row.owner_kind as u8]);
-        digest.update(row.owner_id.as_bytes());
-        digest.update(row.before_sha256.as_str().as_bytes());
-        digest.update(row.after_sha256.as_str().as_bytes());
-    }
-    format!("{:x}", digest.finalize())
 }
 
 impl UnifiedRealHydrologyCandidate {
@@ -790,19 +796,13 @@ where
 {
     let expected_beginning_hydrology_snapshot_sha256 =
         &receiver_expectations.beginning_hydrology_snapshot_sha256;
-    request_batch.validate()?;
-    let actual_snapshot =
-        unified_beginning_hydrology_snapshot_sha256(soil_adapter, surface_configuration)?;
-    if request_batch.transaction_id != soil_adapter.owner.transaction_id()
-        || ingress.transaction_id != request_batch.transaction_id
-        || ingress.day_index != soil_adapter.owner.day_index()
-        || ingress.interval_s.to_bits() != soil_adapter.owner.interval_s().to_bits()
-        || &actual_snapshot != expected_beginning_hydrology_snapshot_sha256
-    {
-        return Err(LandSurfaceEnergyShadowError::Identity(
-            "unified transaction or beginning snapshot identity",
-        ));
-    }
+    validate_unified_entry(
+        soil_adapter,
+        surface_configuration,
+        request_batch,
+        ingress,
+        expected_beginning_hydrology_snapshot_sha256,
+    )?;
     validate_native_shadow_domain(
         soil_adapter.owner,
         surface_configuration,
@@ -858,6 +858,69 @@ where
         finalized,
         ingress,
     )
+}
+
+fn validate_unified_entry(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    request_batch: &PotentialWaterRequestBatch,
+    ingress: &DirectSurfaceLiquidIngressInput,
+    expected_snapshot: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let actual_snapshot = unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
+    if let Err(error) = request_batch.validate() {
+        let (code, detail) = protocol_error_code_and_detail(&error);
+        let key = request_batch.requests.first().map(|row| &row.key);
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            code,
+            DirectSurfaceLiquidPhase::Authorization,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(request_batch.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ofe_id: key.map(|key| key.ofe_id.clone()),
+                tile_id: key.map(|key| key.requesting_tile_id.clone()),
+                surface_id: key.and_then(|key| key.surface_id.clone()),
+                source_id: key.map(|key| key.source_id.clone()),
+                parcel_id: None,
+            },
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: Some(expected_snapshot.to_string()),
+                attempted_owner_sha256: Some(water_request_batch_sha256(request_batch)),
+            },
+            detail,
+        )
+        .into());
+    }
+    if request_batch.transaction_id == soil_adapter.owner.transaction_id()
+        && ingress.transaction_id == request_batch.transaction_id
+        && ingress.day_index == soil_adapter.owner.day_index()
+        && ingress.interval_s.to_bits() == soil_adapter.owner.interval_s().to_bits()
+        && &actual_snapshot == expected_snapshot
+    {
+        return Ok(());
+    }
+    let mut attempted = FramedSha256::new("openwepp-unified-entry-v1");
+    attempted.u128("request_transaction", request_batch.transaction_id.0);
+    attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
+    attempted.u128("ingress_transaction", ingress.transaction_id.0);
+    attempted.u64("ingress_day", ingress.day_index as u64);
+    attempted.f64("ingress_interval", ingress.interval_s);
+    attempted.string("actual_snapshot", actual_snapshot.as_str());
+    Err(DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E002,
+        DirectSurfaceLiquidPhase::Authorization,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(request_batch.transaction_id),
+            owner_id: Some(configuration.owner_id.clone()),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(expected_snapshot.to_string()),
+            attempted_owner_sha256: Some(attempted.finish()),
+        },
+        "unified transaction or beginning snapshot identity",
+    )
+    .into())
 }
 
 fn validate_native_shadow_domain(
@@ -1015,52 +1078,100 @@ fn validate_receiver_expectations(
     Ok(())
 }
 
-fn receiver_expectations_sha256(expectations: &UnifiedReceiverExpectations) -> String {
-    let mut digest = Sha256::new();
-    digest.update(b"openwepp-unified-receiver-expectations-v1");
-    digest.update(expectations.lse_owner_id.as_str().as_bytes());
-    digest.update(expectations.beginning_lse_state_sha256.as_str().as_bytes());
-    digest.update(
-        expectations
-            .beginning_hydrology_snapshot_sha256
-            .as_str()
-            .as_bytes(),
-    );
-    digest.update(expectations.soil_thermal_owner_id.as_str().as_bytes());
-    digest.update(
-        expectations
-            .beginning_soil_thermal_state_sha256
-            .as_str()
-            .as_bytes(),
-    );
-    for ((ofe_id, tile_id), layers) in &expectations.ordered_thermal_layers {
-        digest.update(ofe_id.as_str().as_bytes());
-        digest.update(tile_id.as_str().as_bytes());
-        for layer in layers {
-            digest.update(layer.as_str().as_bytes());
-        }
-    }
-    format!("{:x}", digest.finalize())
-}
-
 fn validate_final_protocol(
     protocol: &WaterProtocol,
     arbitration: &UnifiedRealHydrologyArbitration,
     expected_snapshot: &Sha256Digest,
     expected_owner: &openwepp_kernel_contract::ResourceOwnerId,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    protocol.validate()?;
+    let attempted_sha256 = water_protocol_sha256(protocol);
+    if let Err(error) = protocol.validate() {
+        let (code, detail) = protocol_error_code_and_detail(&error);
+        return Err(protocol_failure(
+            code,
+            protocol,
+            expected_snapshot,
+            &attempted_sha256,
+            detail,
+        ));
+    }
     if protocol.transaction_id != arbitration.transaction_id
         || &protocol.hydrology_owner_id != expected_owner
         || &protocol.beginning_snapshot_sha256 != expected_snapshot
         || protocol.requests != arbitration.requests
         || protocol.authorizations != arbitration.authorizations
     {
-        return Err(LandSurfaceEnergyShadowError::Identity(
+        return Err(protocol_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            protocol,
+            expected_snapshot,
+            &attempted_sha256,
             "final water protocol lineage or D/A identity",
         ));
     }
     Ok(())
+}
+
+fn protocol_error_code_and_detail(
+    error: &LandSurfaceEnergyError,
+) -> (DirectSurfaceLiquidErrorCode, &'static str) {
+    match error {
+        LandSurfaceEnergyError::NonFinite(detail)
+        | LandSurfaceEnergyError::ConstitutiveDomain(detail) => {
+            (DirectSurfaceLiquidErrorCode::E006, *detail)
+        }
+        LandSurfaceEnergyError::WaterIdentityOrBound(detail) => {
+            let code = if detail.contains("duplicate")
+                || detail.contains("without exact")
+                || detail.contains("incomplete")
+            {
+                DirectSurfaceLiquidErrorCode::E005
+            } else if detail.contains("exceeds") {
+                DirectSurfaceLiquidErrorCode::E006
+            } else {
+                DirectSurfaceLiquidErrorCode::E002
+            };
+            (code, *detail)
+        }
+        _ => (
+            DirectSurfaceLiquidErrorCode::E002,
+            "invalid final water protocol",
+        ),
+    }
+}
+
+fn protocol_failure(
+    code: DirectSurfaceLiquidErrorCode,
+    protocol: &WaterProtocol,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+    detail: &'static str,
+) -> LandSurfaceEnergyShadowError {
+    let key = protocol
+        .requests
+        .first()
+        .map(|row| &row.key)
+        .or_else(|| protocol.authorizations.first().map(|row| &row.key))
+        .or_else(|| protocol.finalized_uses.first().map(|row| &row.key));
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(protocol.transaction_id),
+            owner_id: Some(protocol.hydrology_owner_id.clone()),
+            ofe_id: key.map(|key| key.ofe_id.clone()),
+            tile_id: key.map(|key| key.requesting_tile_id.clone()),
+            surface_id: key.and_then(|key| key.surface_id.clone()),
+            source_id: key.map(|key| key.source_id.clone()),
+            parcel_id: None,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
+        detail,
+    )
+    .into()
 }
 
 fn partition_requests(
@@ -1207,6 +1318,15 @@ fn apply_ingress_to_real_receivers(
     validate_surface_production_binding(owner, configuration)?;
     let receiver_attempt_sha256 =
         finalization_receiver_sets_sha256(lse_tiles, soil_thermal, rollback_hashes);
+    receiver_validation::preflight_finalization_receiver_numerics(
+        ingress.transaction_id(),
+        configuration,
+        receiver_expectations,
+        lse_tiles,
+        soil_thermal,
+        beginning_hydrology_snapshot_sha256,
+        &receiver_attempt_sha256,
+    )?;
     validate_receiver_sets(
         configuration,
         receiver_expectations,

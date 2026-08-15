@@ -845,8 +845,12 @@ impl DirectSurfaceLiquidConfiguration {
         };
         configuration.validate()?;
         if configuration.canonical_bytes()? != bytes {
-            return Err(DirectSurfaceLiquidError::Schema(
-                "noncanonical configuration bytes",
+            return Err(configuration_record_failure(
+                DirectSurfaceLiquidError::Schema("noncanonical configuration bytes"),
+                DirectSurfaceLiquidErrorContext {
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
             ));
         }
         Ok(configuration)
@@ -1324,7 +1328,15 @@ impl DirectSurfaceLiquidOwnedState {
         };
         state.validate(configuration)?;
         if state.canonical_bytes(configuration)? != bytes {
-            return Err(DirectSurfaceLiquidError::Schema("noncanonical state bytes"));
+            return Err(restart_record_failure_with_hash(
+                DirectSurfaceLiquidError::Schema("noncanonical state bytes"),
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: state.accepted_transaction()?,
+                    owner_id: Some(state.owner_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(state.state_sha256.clone()),
+            ));
         }
         Ok(state)
     }
@@ -1628,9 +1640,38 @@ fn authorize_surface_liquid_withdrawals_inner(
         } else if supply > 0.0 && total_demand > 0.0 {
             let mut canonical_indexes = indexes;
             canonical_indexes.sort_by(|left, right| requests[*left].key.cmp(&requests[*right].key));
+            let checked_shares = canonical_indexes
+                .iter()
+                .map(|index| {
+                    let numerator = checked_surface_liquid_mul(
+                        requests[*index].amount_kg_m2_stand_ground,
+                        supply,
+                    )
+                    .ok_or_else(|| {
+                        water_protocol_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            DirectSurfaceLiquidPhase::Authorization,
+                            transaction_id,
+                            &requests[*index].key,
+                            "proportional authorization numerator is nonfinite or underflowed",
+                        )
+                    })?;
+                    let share =
+                        checked_surface_liquid_div(numerator, total_demand).ok_or_else(|| {
+                            water_protocol_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                DirectSurfaceLiquidPhase::Authorization,
+                                transaction_id,
+                                &requests[*index].key,
+                                "proportional authorization division is nonfinite or underflowed",
+                            )
+                        })?;
+                    Ok((*index, share))
+                })
+                .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
             let last_index = canonical_indexes.len() - 1;
             let mut allocated = 0.0;
-            for (rank, index) in canonical_indexes.into_iter().enumerate() {
+            for (rank, (index, checked_share)) in checked_shares.into_iter().enumerate() {
                 let amount = if rank == last_index {
                     checked_surface_liquid_sub(supply, allocated).ok_or_else(|| {
                         water_protocol_failure(
@@ -1642,28 +1683,7 @@ fn authorize_surface_liquid_withdrawals_inner(
                         )
                     })?
                 } else {
-                    let numerator = checked_surface_liquid_mul(
-                        requests[index].amount_kg_m2_stand_ground,
-                        supply,
-                    )
-                    .ok_or_else(|| {
-                        water_protocol_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            DirectSurfaceLiquidPhase::Authorization,
-                            transaction_id,
-                            &requests[index].key,
-                            "proportional authorization numerator is nonfinite or underflowed",
-                        )
-                    })?;
-                    checked_surface_liquid_div(numerator, total_demand).ok_or_else(|| {
-                        water_protocol_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            DirectSurfaceLiquidPhase::Authorization,
-                            transaction_id,
-                            &requests[index].key,
-                            "proportional authorization division is nonfinite or underflowed",
-                        )
-                    })?
+                    checked_share
                 };
                 if !amount.is_finite()
                     || amount < 0.0

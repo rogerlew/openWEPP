@@ -17,4 +17,3 @@ material defects:
 
 The reviewer also required exact-head heavy evidence after remediation. All
 findings were accepted; none was deferred or rejected.
-

@@ -1,7 +1,7 @@
 # Review Agent A — Final Rust Correctness Re-review
 
-Evidence class: `Static exact-commit + Ran exact-commit`  
-Reviewed commit: `c0d5da743099a6dc760d5a231236543d0354d967`  
+Evidence class: `Static exact-commit + Ran exact-commit`
+Reviewed commit: `c0d5da743099a6dc760d5a231236543d0354d967`
 Verdict: `HOLD / NO-GO`.
 
 The worktree advanced during this review. All findings and commands below were

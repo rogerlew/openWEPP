@@ -24,7 +24,7 @@ use openwepp_hillslope_orchestrator::{
     DirectRunIdentity, DirectSubsurfaceLayerState, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidErrorCode,
     DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
-    DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidStoreKey, DirectTileGroundIngress,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 use sha2::{Digest, Sha256};
@@ -430,6 +430,72 @@ fn receiver_expectations(
         )],
     )
     .expect("receiver expectations")
+}
+
+#[test]
+fn receiver_expectation_hashes_are_framed_and_invalid_cardinality_is_canonical() {
+    let owner = ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner");
+    let thermal_owner = ResourceOwnerId::try_new("soil-thermal").expect("thermal owner");
+    let make = |ofe: &str, tile: &str, layers: &[&str]| {
+        UnifiedReceiverExpectations::try_new(
+            owner.clone(),
+            digest('2'),
+            digest('3'),
+            thermal_owner.clone(),
+            digest('4'),
+            vec![(
+                OfeId::try_new(ofe).expect("OFE"),
+                TileId::try_new(tile).expect("tile"),
+                layers
+                    .iter()
+                    .map(|layer| SoilLayerId::try_new(*layer).expect("layer"))
+                    .collect(),
+            )],
+        )
+    };
+    let split_left = make("a", "bc", &["thermal"]).expect("left split");
+    let split_right = make("ab", "c", &["thermal"]).expect("right split");
+    assert_ne!(
+        split_left.canonical_sha256(),
+        split_right.canonical_sha256()
+    );
+    let one_layer = make("ofe", "tile", &["ab"]).expect("one layer");
+    let two_layers = make("ofe", "tile", &["a", "b"]).expect("two layers");
+    assert_ne!(one_layer.canonical_sha256(), two_layers.canonical_sha256());
+
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+        make("ofe", "tile", &["a", "a"]).expect_err("duplicate layers")
+    else {
+        panic!("invalid expectations must retain canonical failure");
+    };
+    let failure = error.failure().expect("canonical expectation failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E005);
+    assert_eq!(
+        failure.phase,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::IndependentClosure
+    );
+    assert_eq!(failure.context.transaction_id, None);
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("soil-thermal")
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("ofe")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("tile")
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(digest('3').as_str())
+    );
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
 fn ingress_input() -> DirectSurfaceLiquidIngressInput {
@@ -916,12 +982,13 @@ fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
         &ingress_input(),
         |_| panic!("fixed-cap solve must not run for a stale beginning snapshot"),
     );
-    assert!(matches!(
-        wrong_beginning,
-        Err(LandSurfaceEnergyShadowError::Identity(
-            "unified transaction or beginning snapshot identity"
-        ))
-    ));
+    assert_public_surface_failure(
+        wrong_beginning.expect_err("stale beginning must reject"),
+        DirectSurfaceLiquidErrorCode::E002,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::Authorization,
+        &digest('3'),
+        None,
+    );
     assert_eq!(frame, original);
     let result = execute_unified_real_hydrology_shadow(
         &adapter,
@@ -951,13 +1018,127 @@ fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
             }))
         },
     );
-    assert!(matches!(
-        result,
-        Err(LandSurfaceEnergyShadowError::Identity(
-            "final water protocol lineage or D/A identity"
-        ))
-    ));
+    assert_public_surface_failure(
+        result.expect_err("wrong protocol lineage must reject"),
+        DirectSurfaceLiquidErrorCode::E002,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::ResourceCandidate,
+        &hydrology_snapshot,
+        Some("ofe-1"),
+    );
     assert_eq!(frame, original);
+}
+
+fn assert_public_surface_failure(
+    error: LandSurfaceEnergyShadowError,
+    code: DirectSurfaceLiquidErrorCode,
+    phase: openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase,
+    beginning: &Sha256Digest,
+    ofe_id: Option<&str>,
+) {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+        panic!("public bridge must retain canonical surface-liquid failure");
+    };
+    let failure = error.failure().expect("canonical public failure");
+    assert_eq!(failure.code, code);
+    assert_eq!(failure.phase, phase);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("production-hydrology")
+    );
+    assert_eq!(failure.context.ofe_id.as_ref().map(OfeId::as_str), ofe_id);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.as_str())
+    );
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+}
+
+#[test]
+fn final_protocol_cardinality_and_bounds_are_canonical() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    for (poison, expected) in [
+        (0_usize, DirectSurfaceLiquidErrorCode::E005),
+        (1_usize, DirectSurfaceLiquidErrorCode::E006),
+    ] {
+        let result = execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &receiver_expectations(1, snapshot.clone()),
+            &batch,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |authorizations| {
+                let finalization = unified_finalization(accepted_surface_protocol(
+                    &batch,
+                    authorizations,
+                    &snapshot,
+                ));
+                let mut protocol = finalization.water_protocol().clone();
+                if poison == 0 {
+                    protocol.requests.push(protocol.requests[0].clone());
+                } else {
+                    protocol.finalized_uses[0].amount_kg_m2_stand_ground =
+                        protocol.authorizations[0].amount_kg_m2_stand_ground + 1.0;
+                }
+                UnifiedLseFinalization::try_new(
+                    protocol,
+                    finalization.ending_tile_states_pre_ingress().to_vec(),
+                    finalization.soil_thermal_candidates().to_vec(),
+                    finalization.rollback_hashes().to_vec(),
+                )
+            },
+        );
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+            result.expect_err("invalid final protocol")
+        else {
+            panic!("invalid final protocol must retain canonical failure");
+        };
+        let failure = error.failure().expect("canonical protocol failure");
+        assert_eq!(failure.code, expected);
+        assert_eq!(
+            failure.phase,
+            openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::ResourceCandidate
+        );
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some("production-hydrology")
+        );
+        assert_eq!(
+            failure.context.ofe_id.as_ref().map(OfeId::as_str),
+            Some("ofe-1")
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(snapshot.as_str())
+        );
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+        assert_eq!(frame, original, "protocol poison mutated caller owner");
+    }
 }
 
 #[test]
@@ -1023,6 +1204,106 @@ fn surface_attachment_rejects_wrong_area_and_adapter_layer_map() {
 }
 
 #[test]
+fn surface_attachment_preserves_invalid_configuration_failure_and_rolls_back() {
+    let (mut frame, mut configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let attempted_state = DirectSurfaceLiquidOwnedState::new_initial(
+        &configuration,
+        &BTreeMap::from([(configuration.records[0].key.clone(), 2.0)]),
+        0,
+    )
+    .expect("attempted state");
+    let beginning_hash = frame
+        .surface_liquid_shadow
+        .as_ref()
+        .expect("attached beginning state")
+        .state_sha256
+        .clone();
+    let attempted_hash = attempted_state.state_sha256.clone();
+    let expected_key = configuration.records[0].key.clone();
+    configuration.records[0].capacity_kg_m2_tile = f64::NAN;
+
+    let error = frame
+        .configure_surface_liquid_shadow(&configuration, attempted_state)
+        .expect_err("invalid configuration must fail closed");
+    let failure = error.failure().expect("canonical configuration failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Configuration);
+    assert_eq!(failure.context.transaction_id, None);
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone())
+    );
+    assert_eq!(failure.context.ofe_id, Some(expected_key.ofe_id));
+    assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
+    assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
+    assert_eq!(failure.context.source_id, Some(expected_key.source_id));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256,
+        Some(beginning_hash)
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256,
+        Some(attempted_hash)
+    );
+    assert_eq!(frame, original);
+}
+
+#[test]
+fn surface_attachment_preserves_invalid_restart_failure_and_rolls_back() {
+    let (mut frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let mut attempted_state = DirectSurfaceLiquidOwnedState::new_initial(
+        &configuration,
+        &BTreeMap::from([(configuration.records[0].key.clone(), 2.0)]),
+        0,
+    )
+    .expect("attempted state");
+    let beginning_hash = frame
+        .surface_liquid_shadow
+        .as_ref()
+        .expect("attached beginning state")
+        .state_sha256
+        .clone();
+    let attempted_hash = attempted_state.state_sha256.clone();
+    let expected_key = attempted_state.records[0].key.clone();
+    attempted_state.records[0].liquid_kg_m2_tile = f64::NAN;
+
+    let error = frame
+        .configure_surface_liquid_shadow(&configuration, attempted_state)
+        .expect_err("invalid restart state must fail closed");
+    let failure = error.failure().expect("canonical restart failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
+    assert_eq!(failure.context.transaction_id, None);
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone())
+    );
+    assert_eq!(failure.context.ofe_id, Some(expected_key.ofe_id));
+    assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
+    assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
+    assert_eq!(failure.context.source_id, Some(expected_key.source_id));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256,
+        Some(beginning_hash)
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256,
+        Some(attempted_hash)
+    );
+    assert_eq!(frame, original);
+}
+
+#[test]
 fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -1041,20 +1322,29 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
     );
     let mut stale_day = ingress_input();
     stale_day.day_index = 1;
-    assert!(matches!(
-        execute_unified_real_hydrology_shadow(
-            &adapter,
-            &configuration,
-            &receiver_expectations(1, snapshot.clone()),
-            &batch,
-            &BTreeMap::new(),
-            &stale_day,
-            |_| panic!("wrong day rejects before final solve"),
-        ),
-        Err(LandSurfaceEnergyShadowError::Identity(
-            "unified transaction or beginning snapshot identity"
-        ))
-    ));
+    let stale = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &stale_day,
+        |_| panic!("wrong day rejects before final solve"),
+    );
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = stale.expect_err("stale day") else {
+        panic!("stale day must retain canonical failure");
+    };
+    let failure = error.failure().expect("canonical stale-day failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(
+        failure.phase,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::Authorization
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str())
+    );
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
 
     let wrong_ofe = execute_unified_real_hydrology_shadow(
         &adapter,
@@ -1694,11 +1984,12 @@ fn assert_receiver_join_failure(error: LandSurfaceEnergyShadowError, poison: usi
         panic!("receiver poison {poison} must retain canonical envelope failure");
     };
     let failure = surface_error.failure().expect("failure payload");
-    assert_eq!(
-        failure.code,
-        DirectSurfaceLiquidErrorCode::E011,
-        "receiver poison {poison}"
-    );
+    let expected_code = if poison == 9 {
+        DirectSurfaceLiquidErrorCode::E003
+    } else {
+        DirectSurfaceLiquidErrorCode::E011
+    };
+    assert_eq!(failure.code, expected_code, "receiver poison {poison}");
     let expected_owner = match poison {
         7 => Some("land-surface-energy-v1"),
         10 => Some("wrong-lse-owner"),

@@ -629,23 +629,44 @@ impl DirectRunFrame {
         &mut self,
         configuration: &DirectSurfaceLiquidConfiguration,
         state: DirectSurfaceLiquidOwnedState,
-    ) -> Result<(), DirectRuntimeError> {
-        configuration
-            .validate()
-            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
-                field: "surface_liquid.configuration",
-            })?;
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        let beginning_owner_sha256 = self
+            .surface_liquid_shadow
+            .as_ref()
+            .map(|beginning| beginning.state_sha256.clone());
+        let attempted_owner_sha256 = Some(state.state_sha256.clone());
+        configuration.validate().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Configuration,
+                surface_liquid_configuration_context(configuration, None),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
         if configuration.run_id != self.identity.run_id {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "surface_liquid.run_identity",
-            });
+            return Err(surface_liquid_frame_identity_error(
+                configuration,
+                None,
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+                "surface-liquid run identity does not match the direct frame",
+            ));
         }
         if configuration.ofe_bindings.len() != self.lanes.len()
             || configuration.ofe_topology.len() != self.lanes.len()
         {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "surface_liquid.production_lane_count",
-            });
+            let mismatch_index = self
+                .lanes
+                .len()
+                .min(configuration.ofe_topology.len().saturating_sub(1));
+            return Err(surface_liquid_frame_identity_error(
+                configuration,
+                configuration.ofe_topology.get(mismatch_index),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+                "surface-liquid production lane cardinality does not match the direct frame",
+            ));
         }
         for (topology_index, (ofe_id, binding)) in configuration
             .ofe_topology
@@ -653,38 +674,58 @@ impl DirectRunFrame {
             .zip(&configuration.ofe_bindings)
             .enumerate()
         {
-            let lane = self.lanes.get(topology_index).ok_or(
-                DirectRuntimeError::DirectDomainViolation {
-                    field: "surface_liquid.production_lane_index",
-                },
-            )?;
+            let lane = self.lanes.get(topology_index).ok_or_else(|| {
+                surface_liquid_frame_identity_error(
+                    configuration,
+                    Some(ofe_id),
+                    beginning_owner_sha256.clone(),
+                    attempted_owner_sha256.clone(),
+                    "surface-liquid production lane index is absent from the direct frame",
+                )
+            })?;
             if &binding.ofe_id != ofe_id
                 || binding.production_lane_index != topology_index
                 || binding.production_lane_id != lane.lane_id
             {
-                return Err(DirectRuntimeError::DirectDomainViolation {
-                    field: "surface_liquid.production_lane_identity",
-                });
+                return Err(surface_liquid_frame_identity_error(
+                    configuration,
+                    Some(ofe_id),
+                    beginning_owner_sha256,
+                    attempted_owner_sha256,
+                    "surface-liquid production lane identity does not match the direct frame",
+                ));
             }
             if binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len() {
-                return Err(DirectRuntimeError::DirectDomainViolation {
-                    field: "surface_liquid.production_soil_layer_count",
-                });
+                return Err(surface_liquid_frame_identity_error(
+                    configuration,
+                    Some(ofe_id),
+                    beginning_owner_sha256,
+                    attempted_owner_sha256,
+                    "surface-liquid production soil-layer cardinality does not match the direct frame",
+                ));
             }
-            if configuration.records.iter().any(|record| {
+            if let Some(record) = configuration.records.iter().find(|record| {
                 record.key.ofe_id == *ofe_id
                     && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
             }) {
-                return Err(DirectRuntimeError::DirectDomainViolation {
-                    field: "surface_liquid.production_lane_area_m2",
-                });
+                return Err(surface_liquid_frame_identity_error(
+                    configuration,
+                    Some(&record.key.ofe_id),
+                    beginning_owner_sha256,
+                    attempted_owner_sha256,
+                    "surface-liquid configured OFE area does not match the direct production lane",
+                ));
             }
         }
-        state
-            .validate(configuration)
-            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
-                field: "surface_liquid.state",
-            })?;
+        state.validate(configuration).map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Restart,
+                surface_liquid_state_context(&state),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+            )
+        })?;
         self.surface_liquid_shadow = Some(Box::new(state));
         Ok(())
     }

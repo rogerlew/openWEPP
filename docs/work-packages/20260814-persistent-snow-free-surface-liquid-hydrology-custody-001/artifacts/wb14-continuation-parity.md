@@ -24,4 +24,3 @@ Observed result:
 The earlier strict-bit excess assertion and its failure remain recorded in the
 package gate history. A later widening of this comparison requires new
 authority; this package does not create a generic portability tolerance.
-

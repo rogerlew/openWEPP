@@ -295,6 +295,50 @@ fn tiny_positive_same_store_oversubscription_fails_closed_without_key_priority()
 }
 
 #[test]
+fn canonical_last_tiny_request_is_checked_before_remainder_in_any_caller_order() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(116);
+    let open = record_index(&configuration, "open");
+    let mut large = request(&configuration, open, transaction, 1.0);
+    large.key.requesting_owner_id = owner("aa-large-request");
+    let mut tiny = request(&configuration, open, transaction, f64::from_bits(1));
+    tiny.key.requesting_owner_id = owner("zz-tiny-request");
+    assert!(large.key < tiny.key, "tiny request must be canonical last");
+
+    for requests in [
+        vec![large.clone(), tiny.clone()],
+        vec![tiny.clone(), large.clone()],
+    ] {
+        let error = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &requests,
+        )
+        .expect_err("canonical-last tiny share must be checked before remainder assignment");
+        let failure = error.failure().expect("canonical tiny-share failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+        assert_eq!(failure.context.transaction_id, Some(transaction));
+        assert_eq!(
+            failure.context.owner_id,
+            Some(tiny.key.requesting_owner_id.clone())
+        );
+        assert_eq!(failure.context.ofe_id, Some(tiny.key.ofe_id.clone()));
+        assert_eq!(failure.context.tile_id, tiny.key.source_tile_id.clone());
+        assert_eq!(failure.context.surface_id, tiny.key.surface_id.clone());
+        assert_eq!(failure.context.source_id, Some(tiny.key.source_id.clone()));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(beginning.state_sha256.as_str())
+        );
+        assert_eq!(failure.rollback.attempted_owner_sha256, None);
+    }
+}
+
+#[test]
 fn same_store_finite_demand_overflow_fails_before_authorization_or_candidate() {
     let configuration = configuration();
     let beginning = state(&configuration);
@@ -672,6 +716,65 @@ fn canonical_bytes_keep_schema_names_and_exact_bit_hex() {
             .expect("canonical round trip"),
         configuration
     );
+}
+
+#[test]
+fn valid_noncanonical_bytes_preserve_parsed_public_failure_context() {
+    let configuration = configuration();
+    let mut configuration_bytes = configuration
+        .canonical_bytes()
+        .expect("canonical configuration bytes");
+    configuration_bytes.push(b' ');
+    let failure = DirectSurfaceLiquidConfiguration::from_canonical_bytes(&configuration_bytes)
+        .expect_err("trailing whitespace is valid JSON but noncanonical")
+        .failure()
+        .expect("contextual noncanonical configuration failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E001);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Configuration);
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone())
+    );
+    assert_eq!(failure.context.transaction_id, None);
+    assert_eq!(failure.rollback.beginning_owner_sha256, None);
+    assert_eq!(failure.rollback.attempted_owner_sha256, None);
+
+    let transaction = TransactionId(117);
+    let mut accepted = state(&configuration);
+    for record in &mut accepted.records {
+        record.last_accepted_transaction_id = Some(transaction);
+    }
+    for continuation in &mut accepted.continuations {
+        continuation.next_interval_index = 1;
+        continuation.last_accepted_transaction_id = Some(transaction);
+    }
+    accepted.state_sha256 = accepted.recomputed_sha256().expect("accepted state digest");
+    accepted
+        .validate(&configuration)
+        .expect("valid accepted state");
+    let mut state_bytes = accepted
+        .canonical_bytes(&configuration)
+        .expect("canonical accepted state bytes");
+    state_bytes.push(b'\n');
+    let failure = DirectSurfaceLiquidOwnedState::from_canonical_bytes(&configuration, &state_bytes)
+        .expect_err("trailing whitespace is valid JSON but noncanonical")
+        .failure()
+        .expect("contextual noncanonical restart failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E001);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
+    assert_eq!(failure.context.transaction_id, Some(transaction));
+    assert_eq!(failure.context.owner_id, Some(accepted.owner_id.clone()));
+    assert_eq!(failure.context.ofe_id, None);
+    assert_eq!(failure.context.tile_id, None);
+    assert_eq!(failure.context.surface_id, None);
+    assert_eq!(failure.context.source_id, None);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256,
+        Some(accepted.state_sha256)
+    );
+    assert_eq!(failure.rollback.attempted_owner_sha256, None);
 }
 
 #[test]

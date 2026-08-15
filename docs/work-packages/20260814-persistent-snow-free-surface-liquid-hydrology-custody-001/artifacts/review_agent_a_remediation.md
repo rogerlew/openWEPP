@@ -1,7 +1,7 @@
 # Review Agent A — Rust Remediation Re-review
 
-Evidence class: `Static exact-commit + Ran exact-commit`  
-Reviewed commit: `a4138bee2ae2caefab20fbb9474612ed346b759e`  
+Evidence class: `Static exact-commit + Ran exact-commit`
+Reviewed commit: `a4138bee2ae2caefab20fbb9474612ed346b759e`
 Verdict: `HOLD / material Rust remediation required`.
 
 The live worktree changed after this review began. All source findings and the

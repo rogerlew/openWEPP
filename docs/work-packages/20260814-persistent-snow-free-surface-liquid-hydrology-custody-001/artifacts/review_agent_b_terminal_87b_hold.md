@@ -14,4 +14,3 @@ The reviewer otherwise confirmed persistent keyed custody, strict restart and
 lineage, immutable-snapshot D/A/F, signed condensation, chronological ingress,
 WB14 continuation, independent replay, ending-state joins, domain guards, and
 production exclusion. The finding was accepted without deferral.
-

@@ -1,12 +1,233 @@
 use super::{
     Digest, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
-    DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, OfeId,
-    ProductionSoilLayerReceiverOperands, ProductionSoilReceiverOperands,
-    RealReceiverClosureOperands, ResourceOwnerId, Sha256, SoilLayerId, TileId,
-    checked_surface_liquid_add, checked_surface_liquid_close, checked_surface_liquid_div,
-    checked_surface_liquid_mul, checked_surface_liquid_sub, checked_surface_liquid_sum,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, GroundWaterKey, OfeId,
+    OwnerRollbackHash, PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
+    ProductionSoilReceiverOperands, RealReceiverClosureOperands, ResourceOwnerId, Sha256,
+    SoilLayerId, SoilThermalTileCandidate, TileId, TileState, UnifiedReceiverExpectations,
+    WaterProtocol, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
+
+pub(super) struct FramedSha256(Sha256);
+
+impl FramedSha256 {
+    pub(super) fn new(domain: &'static str) -> Self {
+        let mut framed = Self(Sha256::new());
+        framed.bytes("domain", domain.as_bytes());
+        framed
+    }
+
+    pub(super) fn bytes(&mut self, tag: &'static str, value: &[u8]) {
+        self.0.update((tag.len() as u64).to_be_bytes());
+        self.0.update(tag.as_bytes());
+        self.0.update((value.len() as u64).to_be_bytes());
+        self.0.update(value);
+    }
+
+    pub(super) fn string(&mut self, tag: &'static str, value: &str) {
+        self.bytes(tag, value.as_bytes());
+    }
+
+    pub(super) fn count(&mut self, tag: &'static str, value: usize) {
+        self.bytes(tag, &(value as u64).to_be_bytes());
+    }
+
+    pub(super) fn u64(&mut self, tag: &'static str, value: u64) {
+        self.bytes(tag, &value.to_be_bytes());
+    }
+
+    pub(super) fn u128(&mut self, tag: &'static str, value: u128) {
+        self.bytes(tag, &value.to_be_bytes());
+    }
+
+    pub(super) fn f64(&mut self, tag: &'static str, value: f64) {
+        self.u64(tag, value.to_bits());
+    }
+
+    pub(super) fn finish(self) -> String {
+        format!("{:x}", self.0.finalize())
+    }
+}
+
+pub(super) fn receiver_expectation_fields_sha256(
+    lse_owner_id: &ResourceOwnerId,
+    beginning_lse: &super::Sha256Digest,
+    beginning_hydrology: &super::Sha256Digest,
+    thermal_owner_id: &ResourceOwnerId,
+    beginning_thermal: &super::Sha256Digest,
+    rows: &[(OfeId, TileId, Vec<SoilLayerId>)],
+) -> String {
+    let mut out = FramedSha256::new("openwepp-unified-receiver-expectations-v2");
+    out.string("lse_owner", lse_owner_id.as_str());
+    out.string("lse_beginning", beginning_lse.as_str());
+    out.string("hydrology_beginning", beginning_hydrology.as_str());
+    out.string("thermal_owner", thermal_owner_id.as_str());
+    out.string("thermal_beginning", beginning_thermal.as_str());
+    out.count("tile_count", rows.len());
+    for (ofe, tile, layers) in rows {
+        out.string("ofe", ofe.as_str());
+        out.string("tile", tile.as_str());
+        out.count("layer_count", layers.len());
+        for layer in layers {
+            out.string("layer", layer.as_str());
+        }
+    }
+    out.finish()
+}
+
+pub(super) fn receiver_expectations_sha256(value: &UnifiedReceiverExpectations) -> String {
+    let rows = value
+        .ordered_thermal_layers
+        .iter()
+        .map(|((ofe, tile), layers)| (ofe.clone(), tile.clone(), layers.clone()))
+        .collect::<Vec<_>>();
+    receiver_expectation_fields_sha256(
+        &value.lse_owner_id,
+        &value.beginning_lse_state_sha256,
+        &value.beginning_hydrology_snapshot_sha256,
+        &value.soil_thermal_owner_id,
+        &value.beginning_soil_thermal_state_sha256,
+        &rows,
+    )
+}
+
+pub(super) fn finalization_receiver_sets_sha256(
+    lse_tiles: &[TileState],
+    thermal_tiles: &[SoilThermalTileCandidate],
+    rollback: &[OwnerRollbackHash],
+) -> String {
+    let mut out = FramedSha256::new("openwepp-sealed-lse-finalization-receivers-v2");
+    out.count("lse_tile_count", lse_tiles.len());
+    for tile in lse_tiles {
+        out.string("lse_ofe", tile.ofe_id.as_str());
+        out.string("lse_tile", tile.tile_id.as_str());
+        out.f64("surface_enthalpy", tile.surface_enthalpy_j_m2_tile_ground);
+        out.f64("warm_start", tile.surface_temperature_warm_start_k);
+    }
+    out.count("thermal_tile_count", thermal_tiles.len());
+    for tile in thermal_tiles {
+        out.string("thermal_owner", tile.owner_id.as_str());
+        out.string("thermal_beginning", tile.beginning_state_sha256.as_str());
+        out.string("thermal_ofe", tile.ofe_id.as_str());
+        out.string("thermal_tile", tile.tile_id.as_str());
+        out.count("thermal_layer_count", tile.layers.len());
+        for layer in &tile.layers {
+            out.string("thermal_layer", layer.layer_id.as_str());
+            out.f64(
+                "thermal_beginning_enthalpy",
+                layer.beginning_enthalpy_j_m2_ofe_ground,
+            );
+            out.f64(
+                "thermal_ending_enthalpy",
+                layer.ending_enthalpy_j_m2_ofe_ground,
+            );
+        }
+    }
+    out.count("rollback_count", rollback.len());
+    for row in rollback {
+        out.u64("rollback_kind", row.owner_kind as u64);
+        out.string("rollback_owner", &row.owner_id);
+        out.string("rollback_before", row.before_sha256.as_str());
+        out.string("rollback_after", row.after_sha256.as_str());
+    }
+    out.finish()
+}
+
+pub(super) fn water_protocol_sha256(protocol: &WaterProtocol) -> String {
+    let mut out = FramedSha256::new("openwepp-water-protocol-attempt-v1");
+    out.u128("transaction", protocol.transaction_id.0);
+    out.string("owner", protocol.hydrology_owner_id.as_str());
+    out.string("beginning", protocol.beginning_snapshot_sha256.as_str());
+    out.count("request_count", protocol.requests.len());
+    for row in &protocol.requests {
+        frame_water_key(&mut out, &row.key);
+        out.f64("request_amount", row.amount_kg_m2_stand_ground);
+    }
+    out.count("authorization_count", protocol.authorizations.len());
+    for row in &protocol.authorizations {
+        frame_water_key(&mut out, &row.key);
+        out.f64("authorization_amount", row.amount_kg_m2_stand_ground);
+        out.string("authorization_reason", &format!("{:?}", row.reason));
+    }
+    out.count("use_count", protocol.finalized_uses.len());
+    for row in &protocol.finalized_uses {
+        frame_water_key(&mut out, &row.key);
+        out.f64("use_amount", row.amount_kg_m2_stand_ground);
+    }
+    out.count("credit_count", protocol.condensation_credits.len());
+    for row in &protocol.condensation_credits {
+        out.u128("credit_transaction", row.transaction_id.0);
+        out.string("credit_owner", row.hydrology_owner_id.as_str());
+        out.string("credit_ofe", row.ofe_id.as_str());
+        out.string("credit_tile", row.tile_id.as_str());
+        out.string("credit_surface", row.surface_id.as_str());
+        out.f64("credit_amount", row.amount_kg_m2_stand_ground);
+        out.string("credit_basis", &format!("{:?}", row.amount_basis));
+        out.f64("credit_temperature", row.temperature_k);
+        out.f64("credit_enthalpy", row.specific_liquid_enthalpy_j_kg);
+    }
+    out.finish()
+}
+
+pub(super) fn water_request_batch_sha256(batch: &PotentialWaterRequestBatch) -> String {
+    let mut out = FramedSha256::new("openwepp-water-request-batch-attempt-v1");
+    out.u128("transaction", batch.transaction_id.0);
+    out.string("beginning_lse", batch.beginning_lse_state_sha256.as_str());
+    out.string(
+        "potential_signature",
+        batch.potential_signature_sha256.as_str(),
+    );
+    out.count("request_count", batch.requests.len());
+    for row in &batch.requests {
+        frame_water_key(&mut out, &row.key);
+        out.f64("request_amount", row.amount_kg_m2_stand_ground);
+    }
+    out.finish()
+}
+
+fn frame_water_key(out: &mut FramedSha256, key: &GroundWaterKey) {
+    out.u128("key_transaction", key.transaction_id.0);
+    out.string("key_owner", key.requesting_owner_id.as_str());
+    out.string("key_component", &format!("{:?}", key.requesting_component));
+    out.string("key_ofe", key.ofe_id.as_str());
+    out.string("key_requesting_tile", key.requesting_tile_id.as_str());
+    frame_optional(
+        out,
+        "key_occupancy",
+        key.occupancy_id.as_ref().map(super::ComponentId::as_str),
+    );
+    frame_optional(
+        out,
+        "key_surface",
+        key.surface_id.as_ref().map(super::SurfaceId::as_str),
+    );
+    out.string("key_surface_class", &format!("{:?}", key.surface_class));
+    out.string("key_source_type", &format!("{:?}", key.source_type));
+    out.string("key_source", key.source_id.as_str());
+    frame_optional(
+        out,
+        "key_source_tile",
+        key.source_tile_id.as_ref().map(TileId::as_str),
+    );
+    frame_optional(
+        out,
+        "key_soil_layer",
+        key.soil_layer_id.as_ref().map(SoilLayerId::as_str),
+    );
+    out.string("key_basis", &format!("{:?}", key.amount_basis));
+}
+
+fn frame_optional(out: &mut FramedSha256, tag: &'static str, value: Option<&str>) {
+    match value {
+        Some(value) => {
+            out.u64("optional_presence", 1);
+            out.string(tag, value);
+        }
+        None => out.u64("optional_presence", 0),
+    }
+}
 
 /// Independently reconstruct all real receiver ending equations from frozen operands.
 pub fn validate_real_receiver_closure(
@@ -441,6 +662,91 @@ pub(super) fn validate_receiver_envelope(
     Ok(())
 }
 
+pub(super) fn preflight_finalization_receiver_numerics(
+    transaction_id: super::TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    expectations: &UnifiedReceiverExpectations,
+    lse_tiles: &[TileState],
+    thermal_tiles: &[SoilThermalTileCandidate],
+    beginning_sha256: &super::Sha256Digest,
+    attempted_sha256: &str,
+) -> Result<(), super::LandSurfaceEnergyShadowError> {
+    if let Some(tile) = lse_tiles.iter().find(|tile| {
+        !tile.surface_enthalpy_j_m2_tile_ground.is_finite()
+            || !tile.surface_temperature_warm_start_k.is_finite()
+    }) {
+        return Err(finalization_numeric_failure(
+            transaction_id,
+            configuration,
+            &expectations.lse_owner_id,
+            &tile.ofe_id,
+            &tile.tile_id,
+            beginning_sha256,
+            attempted_sha256,
+            "nonfinite LSE tile receiver",
+        ));
+    }
+    if let Some(tile) = thermal_tiles.iter().find(|tile| {
+        tile.layers.iter().any(|layer| {
+            !layer.beginning_enthalpy_j_m2_ofe_ground.is_finite()
+                || !layer.ground_heat_credit_j_m2_ofe_ground.is_finite()
+                || !layer
+                    .infiltration_enthalpy_credit_j_m2_ofe_ground
+                    .is_finite()
+                || !layer.ending_enthalpy_j_m2_ofe_ground.is_finite()
+                || !layer.ending_temperature_k.is_finite()
+        })
+    }) {
+        return Err(finalization_numeric_failure(
+            transaction_id,
+            configuration,
+            &tile.owner_id,
+            &tile.ofe_id,
+            &tile.tile_id,
+            beginning_sha256,
+            attempted_sha256,
+            "nonfinite soil-thermal tile receiver",
+        ));
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn finalization_numeric_failure(
+    transaction_id: super::TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    owner_id: &ResourceOwnerId,
+    ofe_id: &OfeId,
+    tile_id: &TileId,
+    beginning_sha256: &super::Sha256Digest,
+    attempted_sha256: &str,
+    detail: &'static str,
+) -> super::LandSurfaceEnergyShadowError {
+    let record = configuration
+        .records
+        .iter()
+        .find(|row| &row.key.ofe_id == ofe_id && &row.key.tile_id == tile_id);
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E003,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: Some(owner_id.clone()),
+            ofe_id: Some(ofe_id.clone()),
+            tile_id: Some(tile_id.clone()),
+            surface_id: record.map(|row| row.key.surface_id.clone()),
+            source_id: record.map(|row| row.key.source_id.clone()),
+            parcel_id: None,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
+        detail,
+    )
+    .into()
+}
+
 fn validate_numeric_domains(
     operands: &RealReceiverClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
@@ -595,85 +901,98 @@ fn join_failure(
         detail,
     )
 }
-
 pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
-    let mut digest = Sha256::new();
-    digest.update(b"openwepp-real-receiver-closure-operands-v2");
-    digest.update(operands.transaction_id.0.to_be_bytes());
-    for owner in [
-        &operands.hydrology_owner_id,
-        &operands.lse_owner_id,
-        &operands.soil_thermal_owner_id,
-    ] {
-        digest.update(owner.as_str().as_bytes());
-    }
+    let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v3");
+    out.u128("transaction", operands.transaction_id.0);
+    out.string("hydrology_owner", operands.hydrology_owner_id.as_str());
+    out.string("lse_owner", operands.lse_owner_id.as_str());
+    out.string("thermal_owner", operands.soil_thermal_owner_id.as_str());
+    out.count(
+        "expected_production_count",
+        operands.expected_production_soil.len(),
+    );
     for (ofe, index, lane_id, layers) in &operands.expected_production_soil {
-        digest.update(ofe.as_str().as_bytes());
-        digest.update(index.to_be_bytes());
-        digest.update(lane_id.to_be_bytes());
+        out.string("expected_production_ofe", ofe.as_str());
+        out.u64("expected_production_index", *index as u64);
+        out.u64("expected_production_lane", u64::from(*lane_id));
+        out.count("expected_production_layer_count", layers.len());
         for layer in layers {
-            digest.update(layer.as_str().as_bytes());
+            out.string("expected_production_layer", layer.as_str());
         }
     }
+    out.count(
+        "expected_thermal_count",
+        operands.expected_soil_thermal.len(),
+    );
     for (ofe, tile, layer) in &operands.expected_soil_thermal {
-        digest.update(ofe.as_str().as_bytes());
-        digest.update(tile.as_str().as_bytes());
-        digest.update(layer.as_str().as_bytes());
+        out.string("expected_thermal_ofe", ofe.as_str());
+        out.string("expected_thermal_tile", tile.as_str());
+        out.string("expected_thermal_layer", layer.as_str());
     }
+    out.count("expected_lse_count", operands.expected_lse_tiles.len());
     for (ofe, tile) in &operands.expected_lse_tiles {
-        digest.update(ofe.as_str().as_bytes());
-        digest.update(tile.as_str().as_bytes());
+        out.string("expected_lse_ofe", ofe.as_str());
+        out.string("expected_lse_tile", tile.as_str());
     }
+    out.count("production_count", operands.production_soil.len());
     for lane in &operands.production_soil {
-        digest.update(lane.ofe_id.as_str().as_bytes());
-        digest.update(lane.production_lane_index.to_be_bytes());
-        digest.update(lane.production_lane_id.to_be_bytes());
-        for value in [
-            lane.tillage_depth_m,
-            lane.infiltration_m,
+        out.string("production_ofe", lane.ofe_id.as_str());
+        out.u64("production_index", lane.production_lane_index as u64);
+        out.u64("production_lane", u64::from(lane.production_lane_id));
+        out.f64("tillage_depth", lane.tillage_depth_m);
+        out.f64("infiltration", lane.infiltration_m);
+        out.f64(
+            "beginning_soil_water",
             lane.beginning_aggregate_soil_water_m,
-            lane.ending_aggregate_soil_water_m,
-        ] {
-            digest.update(value.to_bits().to_be_bytes());
-        }
+        );
+        out.f64("ending_soil_water", lane.ending_aggregate_soil_water_m);
+        out.count("production_layer_count", lane.ordered_layers.len());
         for layer in &lane.ordered_layers {
-            digest.update(layer.layer_id.as_str().as_bytes());
-            for value in [
-                layer.beginning_liquid_m,
-                layer.ending_liquid_m,
-                layer.layer_depth_m,
-                layer.residual_theta,
-                layer.frozen_depth_m,
-            ] {
-                digest.update(value.to_bits().to_be_bytes());
-            }
+            out.string("production_layer", layer.layer_id.as_str());
+            out.f64("beginning_liquid", layer.beginning_liquid_m);
+            out.f64("ending_liquid", layer.ending_liquid_m);
+            out.f64("layer_depth", layer.layer_depth_m);
+            out.f64("residual_theta", layer.residual_theta);
+            out.f64("frozen_depth", layer.frozen_depth_m);
         }
     }
+    out.count("thermal_count", operands.soil_thermal.len());
     for thermal in &operands.soil_thermal {
-        digest.update(thermal.ofe_id.as_str().as_bytes());
-        digest.update(thermal.tile_id.as_str().as_bytes());
-        digest.update(thermal.layer_id.as_str().as_bytes());
-        for value in [
+        out.string("thermal_ofe", thermal.ofe_id.as_str());
+        out.string("thermal_tile", thermal.tile_id.as_str());
+        out.string("thermal_layer", thermal.layer_id.as_str());
+        out.f64(
+            "beginning_infiltration_credit",
             thermal.beginning_infiltration_credit_j_m2_ofe_ground,
+        );
+        out.f64(
+            "ending_infiltration_credit",
             thermal.ending_infiltration_credit_j_m2_ofe_ground,
+        );
+        out.f64(
+            "beginning_enthalpy",
             thermal.beginning_enthalpy_j_m2_ofe_ground,
+        );
+        out.f64(
+            "infiltration_enthalpy",
             thermal.infiltration_enthalpy_j_m2_ofe_ground,
-            thermal.ending_enthalpy_j_m2_ofe_ground,
-        ] {
-            digest.update(value.to_bits().to_be_bytes());
-        }
+        );
+        out.f64("ending_enthalpy", thermal.ending_enthalpy_j_m2_ofe_ground);
     }
+    out.count("lse_count", operands.lse_tiles.len());
     for tile in &operands.lse_tiles {
-        digest.update(tile.ofe_id.as_str().as_bytes());
-        digest.update(tile.tile_id.as_str().as_bytes());
-        for value in [
-            tile.tile_fraction,
+        out.string("lse_ofe", tile.ofe_id.as_str());
+        out.string("lse_tile", tile.tile_id.as_str());
+        out.f64("tile_fraction", tile.tile_fraction);
+        out.f64(
+            "beginning_surface_enthalpy",
             tile.beginning_enthalpy_j_m2_tile_ground,
-            tile.retained_enthalpy_j_m2_ofe_ground,
+        );
+        out.f64("retained_enthalpy", tile.retained_enthalpy_j_m2_ofe_ground);
+        out.f64(
+            "ending_surface_enthalpy",
             tile.ending_enthalpy_j_m2_tile_ground,
-        ] {
-            digest.update(value.to_bits().to_be_bytes());
-        }
+        );
     }
-    format!("{:x}", digest.finalize())
+    out.finish()
 }

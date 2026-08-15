@@ -170,6 +170,7 @@ mod storage;
 mod subhourly_generation;
 mod subsurface;
 pub(crate) use subsurface::apply_direct_same_pass_infiltration;
+mod surface_liquid_attachment;
 mod surface_liquid_closure;
 mod surface_liquid_ingress;
 mod surface_liquid_owner;
@@ -375,6 +376,10 @@ pub use subsurface::{
     DirectSubsurfaceComputeDownstreamOperands, DirectSubsurfaceComputeInputs,
     DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
+};
+pub(crate) use surface_liquid_attachment::{
+    surface_liquid_attachment_error, surface_liquid_configuration_context,
+    surface_liquid_frame_identity_error, surface_liquid_state_context,
 };
 pub use surface_liquid_closure::{
     DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,

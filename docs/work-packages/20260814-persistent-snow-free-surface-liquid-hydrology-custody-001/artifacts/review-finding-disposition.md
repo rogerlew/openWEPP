@@ -299,3 +299,16 @@ rollback hashes at every structural position.
 | A-TERMINAL-87B-MEDIUM-004: exact-head terminal evidence absent | Accepted | Pending fresh exact-byte reviews and heavy rerun after this remediation commit |
 
 No `87b187b19` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `2b713d659`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-2B7-HIGH-001: canonical-last tiny request bypasses checked proportional arithmetic | Accepted | Every row is checked before remainder assignment; both caller orders pass focused poisons |
+| A-TERMINAL-2B7-HIGH-002: frame and serialized-byte failures discard canonical context | Accepted | Attachment errors are transparent/context-completed; noncanonical bytes retain parsed owner/transaction/hash; focused PASS |
+| A-TERMINAL-2B7-HIGH-003: receiver E011 can preempt later E003 | Accepted | Global receiver numeric preflight precedes structural/closure checks; mixed poison PASS |
+| A/B-TERMINAL-2B7-MEDIUM-004: receiver hashes use ambiguous unframed concatenation | Accepted | One tagged, length-framed, cardinality-framed encoder drives all receiver hashes; collision poisons PASS |
+| B-TERMINAL-2B7-HIGH-005: unified public entry/protocol errors remain generic | Accepted | E002/E005/E006 contextual failures with rollback hashes implemented; focused PASS |
+| A/B-TERMINAL-2B7-EVIDENCE-006: exact-head heavy and terminal-diff evidence incomplete | Accepted | Historical whitespace corrected; fresh exact-head heavy run pending after remediation commit |
+
+No `2b713d659` finding is rejected, deferred, or moved to another package.

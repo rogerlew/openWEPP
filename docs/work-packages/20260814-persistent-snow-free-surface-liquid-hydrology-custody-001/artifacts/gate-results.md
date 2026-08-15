@@ -766,3 +766,23 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   and unified LSE/real-hydrology suites, 29/29; strict affected-crate Clippy;
   formatting; and diff hygiene.
 - Pending: fresh exact-byte dual review and complete heavy rerun.
+
+## Second exact-byte review remediation
+
+- HOLD retained: the `2b713d659` reviews found canonical-last underflow,
+  attachment/serialized-byte context loss, receiver E003 precedence,
+  unframed receiver hashes, generic unified public errors, and incomplete
+  terminal evidence.
+- PASS: every proportional row now executes checked arithmetic before canonical
+  remainder assignment; both caller orders reject the tiny-positive case as
+  contextual E003.
+- PASS: frame attachment and noncanonical configuration/restart failures retain
+  exact canonical code, phase, available identity and rollback hashes.
+- PASS: unified entry/protocol failures are contextual E002/E005/E006; receiver
+  numeric preflight precedes E011; all receiver hashes use one tagged,
+  length/cardinality-framed encoder with collision poisons.
+- PASS after integrated remediation: orchestrator quick suite, 566/566;
+  focused custody and unified LSE/real-hydrology suites, 33/33; strict affected
+  Clippy; science admission; formatting; and worktree plus terminal-diff
+  hygiene.
+- Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
