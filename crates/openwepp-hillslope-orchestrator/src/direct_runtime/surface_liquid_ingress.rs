@@ -699,6 +699,22 @@ fn execute_surface_liquid_ingress_inner(
             "ingress transaction mismatch",
         ));
     }
+    validate_resource_working_state(configuration, resource)?;
+    preflight_tile_ingress_identities(configuration, input)?;
+    preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)?;
+    if !input.interval_s.is_finite() {
+        return Err(DirectSurfaceLiquidError::Domain(
+            "nonfinite ingress interval",
+        ));
+    }
+    preflight_tile_ingress_domains(configuration, input)?;
+    preflight_parameter_domains(&input.wb14_parameters)?;
+    validate_tile_ingress_cardinality(configuration, input)?;
+    let parameters = validate_parameter_cardinality_and_order(
+        configuration,
+        input.transaction_id,
+        &input.wb14_parameters,
+    )?;
     if input.interval_s.to_bits() != INTERVAL_S.to_bits() {
         return Err(production_binding_failure(
             input.transaction_id,
@@ -706,10 +722,7 @@ fn execute_surface_liquid_ingress_inner(
             "ingress cadence is not exactly 1800 seconds",
         ));
     }
-    validate_resource_working_state(configuration, resource)?;
     validate_cadence(resource.beginning_state(), input)?;
-    let parameters =
-        validate_parameters(configuration, input.transaction_id, &input.wb14_parameters)?;
     let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
     let mut ending = resource.working_state().clone();
     let mut receipts = Vec::new();
@@ -912,27 +925,38 @@ fn continuation_start(
     }
 }
 
-fn validate_parameters<'a>(
+fn preflight_parameter_identities(
     configuration: &DirectSurfaceLiquidConfiguration,
     transaction_id: TransactionId,
-    rows: &'a [DirectOfeWb14Parameters],
-) -> Result<BTreeMap<OfeId, &'a DirectOfeWb14Parameters>, DirectSurfaceLiquidError> {
-    if rows.len() != configuration.ofe_topology.len() {
-        return Err(production_binding_failure(
-            transaction_id,
-            None,
-            "WB14 parameter cardinality mismatch",
+    rows: &[DirectOfeWb14Parameters],
+) -> Result<(), DirectSurfaceLiquidError> {
+    if let Some(row) = rows
+        .iter()
+        .find(|row| !configuration.ofe_topology.contains(&row.ofe_id))
+    {
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            DirectSurfaceLiquidPhase::IngressCandidate,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ofe_id: Some(row.ofe_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: None,
+                attempted_owner_sha256: None,
+            },
+            "unknown WB14 parameter OFE identity",
         ));
     }
-    let mut result = BTreeMap::new();
-    for (row, expected) in rows.iter().zip(&configuration.ofe_topology) {
-        if &row.ofe_id != expected || result.insert(row.ofe_id.clone(), row).is_some() {
-            return Err(production_binding_failure(
-                transaction_id,
-                Some(row.ofe_id.clone()),
-                "WB14 parameter order or identity mismatch",
-            ));
-        }
+    Ok(())
+}
+
+fn preflight_parameter_domains(
+    rows: &[DirectOfeWb14Parameters],
+) -> Result<(), DirectSurfaceLiquidError> {
+    for row in rows {
         require_positive(row.effective_conductivity_m_s, "effective conductivity")?;
         require_nonnegative(row.matric_potential_m, "matric potential")?;
         require_nonnegative(
@@ -940,7 +964,232 @@ fn validate_parameters<'a>(
             "infiltration storage capacity",
         )?;
     }
+    Ok(())
+}
+
+fn validate_parameter_cardinality_and_order<'a>(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    transaction_id: TransactionId,
+    rows: &'a [DirectOfeWb14Parameters],
+) -> Result<BTreeMap<OfeId, &'a DirectOfeWb14Parameters>, DirectSurfaceLiquidError> {
+    if rows.len() != configuration.ofe_topology.len() {
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            DirectSurfaceLiquidErrorCode::E005,
+            DirectSurfaceLiquidPhase::IngressCandidate,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: None,
+                attempted_owner_sha256: None,
+            },
+            "WB14 parameter cardinality mismatch",
+        ));
+    }
+    let mut result = BTreeMap::new();
+    for (row, expected) in rows.iter().zip(&configuration.ofe_topology) {
+        if result.insert(row.ofe_id.clone(), row).is_some() {
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E005,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(transaction_id),
+                    ofe_id: Some(row.ofe_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
+                "duplicate WB14 parameter identity",
+            ));
+        }
+        if &row.ofe_id != expected {
+            return Err(production_binding_failure(
+                transaction_id,
+                Some(row.ofe_id.clone()),
+                "WB14 parameter order mismatch",
+            ));
+        }
+    }
     Ok(result)
+}
+
+fn preflight_tile_ingress_identities(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(), DirectSurfaceLiquidError> {
+    for ingress in &input.tile_ingress {
+        let (ofe_id, tile_id, surface_id) = ingress.identity();
+        let configured = configuration
+            .records
+            .iter()
+            .find(|row| {
+                &row.key.ofe_id == ofe_id
+                    && &row.key.tile_id == tile_id
+                    && &row.key.surface_id == surface_id
+            })
+            .ok_or_else(|| {
+                DirectSurfaceLiquidError::canonical_failure(
+                    DirectSurfaceLiquidErrorCode::E002,
+                    DirectSurfaceLiquidPhase::IngressCandidate,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
+                        ofe_id: Some(ofe_id.clone()),
+                        tile_id: Some(tile_id.clone()),
+                        surface_id: Some(surface_id.clone()),
+                        source_id: None,
+                        parcel_id: None,
+                    },
+                    super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                        beginning_owner_sha256: None,
+                        attempted_owner_sha256: None,
+                    },
+                    "unknown tile ground ingress",
+                )
+            })?;
+        if ingress.mode() != configured.ground_ingress_mode {
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E002,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(ofe_id.clone()),
+                    tile_id: Some(tile_id.clone()),
+                    surface_id: Some(surface_id.clone()),
+                    source_id: Some(configured.key.source_id.clone()),
+                    parcel_id: None,
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
+                "open/covered ingress mode mismatch",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn preflight_tile_ingress_domains(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let invalid_amount = |amount: &DirectIngressAmount, require_full_interval: bool| {
+        if !amount.mass_kg_m2_tile_ground.is_finite() || amount.mass_kg_m2_tile_ground < 0.0 {
+            Some("ingress mass domain")
+        } else if !amount.temperature_k.is_finite()
+            || !(200.0..=350.0).contains(&amount.temperature_k)
+        {
+            Some("liquid temperature domain")
+        } else if !amount.specific_liquid_enthalpy_j_kg.is_finite()
+            || !amount.start_s.is_finite()
+            || !amount.end_s.is_finite()
+            || amount.start_s < 0.0
+            || amount.end_s <= amount.start_s
+            || amount.end_s > INTERVAL_S
+            || (require_full_interval
+                && (amount.start_s.to_bits() != 0.0_f64.to_bits()
+                    || amount.end_s.to_bits() != INTERVAL_S.to_bits()))
+        {
+            Some("invalid ingress amount domain")
+        } else {
+            None
+        }
+    };
+    for ingress in &input.tile_ingress {
+        let detail = match ingress {
+            DirectTileGroundIngress::OpenRawPrecipitation {
+                raw_precipitation, ..
+            } => invalid_amount(raw_precipitation, false),
+            DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
+                invalid_amount(&release.throughfall, true)
+                    .or_else(|| invalid_amount(&release.initial_drainage, true))
+                    .or_else(|| invalid_amount(&release.second_drainage, true))
+                    .or_else(|| invalid_amount(&release.stemflow, true))
+            }
+        };
+        if let Some(detail) = detail {
+            let (ofe_id, tile_id, surface_id) = ingress.identity();
+            let source_id = configuration
+                .records
+                .iter()
+                .find(|row| {
+                    &row.key.ofe_id == ofe_id
+                        && &row.key.tile_id == tile_id
+                        && &row.key.surface_id == surface_id
+                })
+                .map(|row| row.key.source_id.clone());
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(ofe_id.clone()),
+                    tile_id: Some(tile_id.clone()),
+                    surface_id: Some(surface_id.clone()),
+                    source_id,
+                    parcel_id: None,
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
+                detail,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_tile_ingress_cardinality(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(), DirectSurfaceLiquidError> {
+    if input.tile_ingress.len() != configuration.records.len() {
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            DirectSurfaceLiquidErrorCode::E005,
+            DirectSurfaceLiquidPhase::IngressCandidate,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(input.transaction_id),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: None,
+                attempted_owner_sha256: None,
+            },
+            "ground-ingress tile cardinality mismatch",
+        ));
+    }
+    let mut seen = BTreeSet::new();
+    for ingress in &input.tile_ingress {
+        let (ofe_id, tile_id, surface_id) = ingress.identity();
+        if !seen.insert((ofe_id.clone(), tile_id.clone(), surface_id.clone())) {
+            return Err(DirectSurfaceLiquidError::canonical_failure(
+                DirectSurfaceLiquidErrorCode::E005,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ofe_id: Some(ofe_id.clone()),
+                    tile_id: Some(tile_id.clone()),
+                    surface_id: Some(surface_id.clone()),
+                    source_id: None,
+                    parcel_id: None,
+                },
+                super::surface_liquid_owner::DirectSurfaceLiquidRollbackHashes {
+                    beginning_owner_sha256: None,
+                    attempted_owner_sha256: None,
+                },
+                "duplicate tile ground ingress",
+            ));
+        }
+    }
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1398,7 +1647,15 @@ fn advance_one_ofe(
         if supply_mass == 0.0 {
             continue;
         }
-        let total_infiltration =
+        // Preserve the source mass identity when WB14 accepts the complete
+        // interval supply. A kg->m->kg round trip can move upward by one ULP;
+        // the exact WB14 equality is the authoritative full-infiltration
+        // branch and therefore carries the original mass operand unchanged.
+        let full_infiltration =
+            outcome.interval_infiltration_m.to_bits() == interval_supply_m.to_bits();
+        let total_infiltration = if full_infiltration {
+            supply_mass
+        } else {
             checked_surface_liquid_mul(outcome.interval_infiltration_m, WATER_DENSITY_KG_M3)
                 .ok_or_else(|| {
                     ingress_arithmetic_failure(
@@ -1407,7 +1664,8 @@ fn advance_one_ofe(
                         None,
                         "infiltration depth-to-mass conversion is nonfinite or underflowed",
                     )
-                })?;
+                })?
+        };
         let h_mix = checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
             ingress_arithmetic_failure(
                 transaction_id,
@@ -1438,7 +1696,9 @@ fn advance_one_ofe(
         let contribution_count = contributions.len();
         let mut excess_parts = Vec::with_capacity(contribution_count);
         for (index, (parcel, mass, _)) in contributions.into_iter().enumerate() {
-            let infiltrated = if index + 1 == contribution_count {
+            let infiltrated = if full_infiltration {
+                mass
+            } else if index + 1 == contribution_count {
                 checked_surface_liquid_sub(total_infiltration, allocated_infiltration).ok_or_else(
                     || {
                         ingress_arithmetic_failure(

@@ -34,6 +34,9 @@ use sha2::{Digest, Sha256};
 #[path = "land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs"]
 mod raw_hash_tests;
 
+#[path = "land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs"]
+mod precedence_tests;
+
 fn production_frame(supply_m: f64, frozen: bool) -> DirectRunFrame {
     let identity = DirectRunIdentity::new(83, 11, 1, 1).expect("identity");
     let mut frame = DirectRunFrame::skeleton(identity).expect("frame");
@@ -1914,7 +1917,7 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
         panic!("stale day must retain canonical failure");
     };
     let failure = error.failure().expect("canonical stale-day failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E008);
     assert_eq!(
         failure.phase,
         openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::Authorization

@@ -54,11 +54,13 @@ mod receiver_preflight;
 mod receiver_validation;
 use receiver_validation::{
     FramedSha256, canonicalize_finalized_error, canonicalize_unified_error,
-    finalization_receiver_sets_sha256, preflight_protocol_numerics, preflight_request_numerics,
-    preflight_request_structure, protocol_error_code_and_detail, protocol_failure,
-    receiver_atomic_failure, receiver_expectation_fields_sha256, receiver_expectations_sha256,
-    receiver_operands_sha256, request_failure, require_receiver_close, snapshot_failure,
-    validate_surface_production_binding, water_protocol_sha256,
+    finalization_receiver_sets_sha256, preflight_protocol_bounds, preflight_protocol_cardinality,
+    preflight_protocol_domains, preflight_protocol_identities, preflight_request_bounds,
+    preflight_request_cardinality, preflight_request_domains, preflight_request_identities,
+    protocol_error_code_and_detail, protocol_failure, receiver_atomic_failure,
+    receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
+    request_failure, require_receiver_close, snapshot_failure, validate_surface_production_binding,
+    water_protocol_sha256, water_request_batch_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -405,7 +407,10 @@ impl UnifiedLseFinalization {
     ) -> Result<Self, LandSurfaceEnergyShadowError> {
         let beginning = water_protocol.beginning_snapshot_sha256.clone();
         let attempted_protocol = water_protocol_sha256(&water_protocol);
-        preflight_protocol_numerics(&water_protocol, &beginning, &attempted_protocol)?;
+        preflight_protocol_identities(&water_protocol, &beginning, &attempted_protocol)?;
+        preflight_protocol_domains(&water_protocol, &beginning, &attempted_protocol)?;
+        preflight_protocol_cardinality(&water_protocol, &beginning, &attempted_protocol)?;
+        preflight_protocol_bounds(&water_protocol, &beginning, &attempted_protocol)?;
         if let Err(error) = water_protocol.validate() {
             let (code, detail) = protocol_error_code_and_detail(&error);
             return Err(protocol_failure(
@@ -821,11 +826,6 @@ where
         ingress,
         expected_beginning_hydrology_snapshot_sha256,
     )?;
-    validate_native_shadow_domain(
-        soil_adapter.owner,
-        surface_configuration,
-        expected_beginning_hydrology_snapshot_sha256,
-    )?;
     let beginning_surface = soil_adapter
         .owner
         .beginning_frame()
@@ -904,17 +904,57 @@ fn validate_unified_entry(
     expected_snapshot: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let actual_snapshot = unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
-    preflight_request_numerics(request_batch, expected_snapshot)?;
-    if request_batch.requests.is_empty() {
-        return Err(request_failure(
-            DirectSurfaceLiquidErrorCode::E005,
-            request_batch,
-            expected_snapshot,
-            None,
-            "empty potential request cardinality",
-        ));
+    let entry_failure = |code, detail| {
+        let mut attempted = FramedSha256::new("openwepp-unified-entry-v1");
+        attempted.u128("request_transaction", request_batch.transaction_id.0);
+        attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
+        attempted.u128("ingress_transaction", ingress.transaction_id.0);
+        attempted.u64("ingress_day", ingress.day_index as u64);
+        attempted.f64("ingress_interval", ingress.interval_s);
+        attempted.string("actual_snapshot", actual_snapshot.as_str());
+        DirectSurfaceLiquidError::canonical_failure(
+            code,
+            DirectSurfaceLiquidPhase::Authorization,
+            DirectSurfaceLiquidErrorContext {
+                transaction_id: Some(request_batch.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
+                ..DirectSurfaceLiquidErrorContext::default()
+            },
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: Some(expected_snapshot.to_string()),
+                attempted_owner_sha256: Some(attempted.finish()),
+            },
+            detail,
+        )
+    };
+    if request_batch.transaction_id.0 == 0
+        || request_batch.transaction_id != soil_adapter.owner.transaction_id()
+        || ingress.transaction_id != request_batch.transaction_id
+        || &actual_snapshot != expected_snapshot
+    {
+        return Err(entry_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            "unified transaction or beginning snapshot identity",
+        )
+        .into());
     }
-    preflight_request_structure(request_batch, expected_snapshot)?;
+    preflight_request_identities(request_batch, expected_snapshot)?;
+    if !ingress.interval_s.is_finite() {
+        return Err(entry_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            "nonfinite ingress interval",
+        )
+        .into());
+    }
+    preflight_request_domains(request_batch, expected_snapshot)?;
+    validate_native_shadow_supported_domain(
+        soil_adapter.owner,
+        configuration,
+        expected_snapshot,
+        &water_request_batch_sha256(request_batch),
+    )?;
+    preflight_request_cardinality(request_batch, expected_snapshot)?;
+    preflight_request_bounds(request_batch, expected_snapshot)?;
     if let Err(error) = request_batch.validate() {
         let (code, detail) = protocol_error_code_and_detail(&error);
         return Err(request_failure(
@@ -925,42 +965,29 @@ fn validate_unified_entry(
             detail,
         ));
     }
-    if request_batch.transaction_id == soil_adapter.owner.transaction_id()
-        && ingress.transaction_id == request_batch.transaction_id
-        && ingress.day_index == soil_adapter.owner.day_index()
-        && ingress.interval_s.to_bits() == soil_adapter.owner.interval_s().to_bits()
-        && &actual_snapshot == expected_snapshot
+    validate_native_shadow_exact_one_custody(
+        soil_adapter.owner,
+        configuration,
+        expected_snapshot,
+        &water_request_batch_sha256(request_batch),
+    )?;
+    if ingress.day_index != soil_adapter.owner.day_index()
+        || ingress.interval_s.to_bits() != soil_adapter.owner.interval_s().to_bits()
     {
-        return Ok(());
+        return Err(entry_failure(
+            DirectSurfaceLiquidErrorCode::E008,
+            "unified ingress cadence or continuation",
+        )
+        .into());
     }
-    let mut attempted = FramedSha256::new("openwepp-unified-entry-v1");
-    attempted.u128("request_transaction", request_batch.transaction_id.0);
-    attempted.u128("owner_transaction", soil_adapter.owner.transaction_id().0);
-    attempted.u128("ingress_transaction", ingress.transaction_id.0);
-    attempted.u64("ingress_day", ingress.day_index as u64);
-    attempted.f64("ingress_interval", ingress.interval_s);
-    attempted.string("actual_snapshot", actual_snapshot.as_str());
-    Err(DirectSurfaceLiquidError::canonical_failure(
-        DirectSurfaceLiquidErrorCode::E002,
-        DirectSurfaceLiquidPhase::Authorization,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(request_batch.transaction_id),
-            owner_id: Some(configuration.owner_id.clone()),
-            ..DirectSurfaceLiquidErrorContext::default()
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(expected_snapshot.to_string()),
-            attempted_owner_sha256: Some(attempted.finish()),
-        },
-        "unified transaction or beginning snapshot identity",
-    )
-    .into())
+    Ok(())
 }
 
-fn validate_native_shadow_domain(
+fn validate_native_shadow_supported_domain(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
+    attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     if let Some(lane_index) = owner
         .beginning_frame()
@@ -968,14 +995,27 @@ fn validate_native_shadow_domain(
         .iter()
         .position(lane_has_unsupported_frozen_or_snow_state)
     {
-        return Err(DirectSurfaceLiquidError::unsupported_domain_failure(
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            DirectSurfaceLiquidErrorCode::E004,
             DirectSurfaceLiquidPhase::AtomicEnvelope,
             first_lane_error_context(owner, configuration, lane_index),
-            Some(beginning_hydrology_snapshot_sha256.to_string()),
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: Some(beginning_hydrology_snapshot_sha256.to_string()),
+                attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+            },
             "snow, terminal snow, frozen, or thawing production frame",
         )
         .into());
     }
+    Ok(())
+}
+
+fn validate_native_shadow_exact_one_custody(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning_hydrology_snapshot_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+) -> Result<(), LandSurfaceEnergyShadowError> {
     let legacy_custody = owner.beginning_day_frames().iter().position(|day| {
         day.infiltration_depression_inputs
             .depression_storage_delta_handoff_m
@@ -999,7 +1039,7 @@ fn validate_native_shadow_domain(
             DirectSurfaceLiquidPhase::AtomicEnvelope,
             first_lane_error_context(owner, configuration, lane_index),
             Some(beginning_hydrology_snapshot_sha256.to_string()),
-            None,
+            Some(attempted_sha256.to_owned()),
             "legacy infiltration/depression liquid custody is nonzero",
         )
         .into());
@@ -1119,17 +1159,6 @@ fn validate_final_protocol(
     expected_owner: &openwepp_kernel_contract::ResourceOwnerId,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let attempted_sha256 = water_protocol_sha256(protocol);
-    preflight_protocol_numerics(protocol, expected_snapshot, &attempted_sha256)?;
-    if let Err(error) = protocol.validate() {
-        let (code, detail) = protocol_error_code_and_detail(&error);
-        return Err(protocol_failure(
-            code,
-            protocol,
-            expected_snapshot,
-            &attempted_sha256,
-            detail,
-        ));
-    }
     if protocol.transaction_id != arbitration.transaction_id
         || &protocol.hydrology_owner_id != expected_owner
         || &protocol.beginning_snapshot_sha256 != expected_snapshot
@@ -1142,6 +1171,20 @@ fn validate_final_protocol(
             expected_snapshot,
             &attempted_sha256,
             "final water protocol lineage or D/A identity",
+        ));
+    }
+    preflight_protocol_identities(protocol, expected_snapshot, &attempted_sha256)?;
+    preflight_protocol_domains(protocol, expected_snapshot, &attempted_sha256)?;
+    preflight_protocol_cardinality(protocol, expected_snapshot, &attempted_sha256)?;
+    preflight_protocol_bounds(protocol, expected_snapshot, &attempted_sha256)?;
+    if let Err(error) = protocol.validate() {
+        let (code, detail) = protocol_error_code_and_detail(&error);
+        return Err(protocol_failure(
+            code,
+            protocol,
+            expected_snapshot,
+            &attempted_sha256,
+            detail,
         ));
     }
     Ok(())

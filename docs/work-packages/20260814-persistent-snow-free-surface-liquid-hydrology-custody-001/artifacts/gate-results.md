@@ -818,6 +818,43 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: stable commit, fresh exact-byte dual review, then complete heavy
   rerun.
 
+## Exact-byte review at `2e32a8a0e`
+
+- PASS: independent hydrology/science/ownership review found no material
+  custody, D/A/F, ingress, receiver, rollback or production-isolation defect.
+- HOLD: independent Rust correctness review found an upward one-ULP
+  mass/depth/mass full-infiltration round-trip that can produce a negative
+  remainder, together with missing independent raw-source mass reconstruction.
+- HOLD: the same review found mixed public failures can violate the canonical
+  E001 through E011 precedence at unified request/protocol/native-domain and
+  ingress boundaries.
+- Ran: reviewer-focused surface-liquid orchestrator tests, 70/70; unified
+  integration, 32/32; custody authority, 10/10; formatting and diff hygiene.
+- Pending: correct both accepted implementation findings, rerun focused gates,
+  freeze new exact bytes and obtain fresh dual review before heavy execution.
+
+## `2e32a8a0e` HOLD remediation
+
+- PASS: bit-exact full-infiltration recognition now returns each original raw
+  parcel mass instead of round-tripping it through metres. The ordinary
+  `0x1.f9e1df20c7aa4p-6` zero/nonzero-store regression proves nonnegative
+  partition, bitwise `I+E=X`, and no beginning-store debit.
+- PASS: the external reconstruction independently joins attributed mass to raw
+  source-parcel and OFE mass and rejects negative expected partitions; a
+  receipt-mass poison fails closure.
+- PASS: public unified and ingress validation now explicitly observes E002
+  identity, E003 domain, E004 unsupported, E005 cardinality, E006 bounds, E007
+  exact-one custody and E008 cadence. Mixed identity/NaN, snow/duplicate,
+  duplicate/negative, NaN-interval and unknown-ingress/cardinality poisons
+  pass with complete context and hashes.
+- PASS on the combined worktree: surface-liquid tests 73/73; unified
+  integration 35/35; custody authority 10/10; orchestrator quick 581/581;
+  AUTH11 3/3; affected check and strict all-target/all-feature Clippy;
+  admission with 46 contracts and 21 science surfaces; anti-evasion; SC unit
+  compliance; formatting; base/worktree diff hygiene; Markdown 71 files with
+  zero errors or warnings.
+- Pending: freeze a new exact commit and obtain fresh independent dual review.
+
 ## Fourth exact-byte review remediation
 
 - HOLD retained: exact `dd8127b04` Rust and hydrology reviews found joint

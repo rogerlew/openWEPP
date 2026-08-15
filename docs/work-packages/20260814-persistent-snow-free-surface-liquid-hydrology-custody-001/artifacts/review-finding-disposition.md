@@ -352,3 +352,15 @@ No `dd8127b04` finding is rejected, deferred, or moved to another package.
 | A-TERMINAL-FE6-EVIDENCE-007: exact-head heavy evidence absent | Accepted | Pending after fresh PASS review |
 
 No `fe6cc4bd5` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `2e32a8a0e`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-2E3-HIGH-001: full-infiltration mass/depth round-trip can create a negative source remainder and the independent replay lacks a raw-mass join | Accepted | Remediated: exact full-infiltration identity preserves raw source mass; independent source/OFE raw-mass joins and bit-frozen poisons PASS |
+| A-TERMINAL-2E3-HIGH-002: mixed public failures do not consistently observe canonical E001 through E011 precedence | Accepted | Remediated: unified and ingress boundaries enforce explicit E002 through E008 order; mixed precedence poisons PASS |
+| A-TERMINAL-2E3-EVIDENCE-003: exact-head heavy evidence is absent after material source corrections | Accepted | Pending fresh PASS reviews and complete external-target heavy rerun |
+
+No `2e32a8a0e` finding is rejected, deferred, or moved to another package. The
+independent hydrology/ownership review of the same bytes returned PASS, but it
+does not override the Rust correctness HOLD.

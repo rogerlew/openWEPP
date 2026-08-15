@@ -122,7 +122,7 @@ fn snapshot_failure_at(
     .into()
 }
 
-pub(super) fn preflight_request_numerics(
+pub(super) fn preflight_request_domains(
     batch: &PotentialWaterRequestBatch,
     beginning_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
@@ -139,6 +139,13 @@ pub(super) fn preflight_request_numerics(
             "nonfinite potential water request",
         ));
     }
+    Ok(())
+}
+
+pub(super) fn preflight_request_bounds(
+    batch: &PotentialWaterRequestBatch,
+    beginning_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
     if let Some(request) = batch
         .requests
         .iter()
@@ -236,7 +243,7 @@ pub(super) fn canonicalize_unified_error(
 }
 
 #[allow(clippy::too_many_lines)]
-pub(super) fn preflight_protocol_numerics(
+pub(super) fn preflight_protocol_domains(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
@@ -301,6 +308,15 @@ pub(super) fn preflight_protocol_numerics(
             "condensation temperature domain",
         ));
     }
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+pub(super) fn preflight_protocol_bounds(
+    protocol: &WaterProtocol,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+) -> Result<(), LandSurfaceEnergyShadowError> {
     for (detail, row) in protocol
         .requests
         .iter()
@@ -376,14 +392,13 @@ pub(super) fn preflight_protocol_numerics(
             "nonpositive condensation amount",
         ));
     }
-    preflight_protocol_structure(protocol, beginning_sha256, attempted_sha256)
+    Ok(())
 }
 
-pub(super) fn preflight_request_structure(
+pub(super) fn preflight_request_identities(
     batch: &PotentialWaterRequestBatch,
     beginning_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let mut keys = std::collections::BTreeSet::new();
     for request in &batch.requests {
         if let Err(error) = request.key.validate(batch.transaction_id) {
             let (code, detail) = protocol_error_code_and_detail(&error);
@@ -395,6 +410,25 @@ pub(super) fn preflight_request_structure(
                 detail,
             ));
         }
+    }
+    Ok(())
+}
+
+pub(super) fn preflight_request_cardinality(
+    batch: &PotentialWaterRequestBatch,
+    beginning_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    if batch.requests.is_empty() {
+        return Err(request_failure(
+            DirectSurfaceLiquidErrorCode::E005,
+            batch,
+            beginning_sha256,
+            None,
+            "empty potential request cardinality",
+        ));
+    }
+    let mut keys = std::collections::BTreeSet::new();
+    for request in &batch.requests {
         if !keys.insert(request.key.clone()) {
             return Err(request_failure(
                 DirectSurfaceLiquidErrorCode::E005,
@@ -409,12 +443,20 @@ pub(super) fn preflight_request_structure(
 }
 
 #[allow(clippy::too_many_lines)]
-fn preflight_protocol_structure(
+pub(super) fn preflight_protocol_identities(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let mut requests = std::collections::BTreeSet::new();
+    if protocol.transaction_id.0 == 0 {
+        return Err(protocol_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            protocol,
+            beginning_sha256,
+            attempted_sha256,
+            "zero water transaction",
+        ));
+    }
     for row in &protocol.requests {
         if let Err(error) = row.key.validate(protocol.transaction_id) {
             let (code, detail) = protocol_error_code_and_detail(&error);
@@ -427,6 +469,57 @@ fn preflight_protocol_structure(
                 detail,
             ));
         }
+    }
+    for row in &protocol.authorizations {
+        if let Err(error) = row.key.validate(protocol.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(protocol_failure_for_key(
+                code,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                detail,
+            ));
+        }
+    }
+    for row in &protocol.finalized_uses {
+        if let Err(error) = row.key.validate(protocol.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(protocol_failure_for_key(
+                code,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                detail,
+            ));
+        }
+    }
+    for credit in &protocol.condensation_credits {
+        if credit.transaction_id != protocol.transaction_id
+            || credit.hydrology_owner_id != protocol.hydrology_owner_id
+        {
+            return Err(protocol_failure_for_condensation(
+                DirectSurfaceLiquidErrorCode::E002,
+                beginning_sha256,
+                attempted_sha256,
+                credit,
+                "condensation identity mismatch",
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+pub(super) fn preflight_protocol_cardinality(
+    protocol: &WaterProtocol,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let mut requests = std::collections::BTreeSet::new();
+    for row in &protocol.requests {
         if !requests.insert(row.key.clone()) {
             return Err(protocol_failure_for_key(
                 DirectSurfaceLiquidErrorCode::E005,
@@ -440,17 +533,6 @@ fn preflight_protocol_structure(
     }
     let mut authorizations = std::collections::BTreeSet::new();
     for row in &protocol.authorizations {
-        if let Err(error) = row.key.validate(protocol.transaction_id) {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure_for_key(
-                code,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
         if !requests.contains(&row.key) {
             return Err(protocol_failure_for_key(
                 DirectSurfaceLiquidErrorCode::E005,
@@ -474,17 +556,6 @@ fn preflight_protocol_structure(
     }
     let mut finalized = std::collections::BTreeSet::new();
     for row in &protocol.finalized_uses {
-        if let Err(error) = row.key.validate(protocol.transaction_id) {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure_for_key(
-                code,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
         if !authorizations.contains(&row.key) {
             return Err(protocol_failure_for_key(
                 DirectSurfaceLiquidErrorCode::E005,
@@ -530,17 +601,6 @@ fn preflight_protocol_structure(
     }
     let mut credits = std::collections::BTreeSet::new();
     for credit in &protocol.condensation_credits {
-        if credit.transaction_id != protocol.transaction_id
-            || credit.hydrology_owner_id != protocol.hydrology_owner_id
-        {
-            return Err(protocol_failure_for_condensation(
-                DirectSurfaceLiquidErrorCode::E002,
-                beginning_sha256,
-                attempted_sha256,
-                credit,
-                "condensation identity mismatch",
-            ));
-        }
         if !credits.insert((
             credit.ofe_id.clone(),
             credit.tile_id.clone(),

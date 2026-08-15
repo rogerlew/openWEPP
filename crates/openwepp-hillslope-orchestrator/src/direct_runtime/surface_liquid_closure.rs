@@ -635,6 +635,12 @@ fn projected_parcel_order(left: &RawParcelSegment, right: &RawParcelSegment) -> 
 struct ParcelArithmeticProjection {
     expected: BTreeMap<ParcelJoinKey, AmountPair>,
     actual: BTreeMap<ParcelJoinKey, AmountPair>,
+    expected_source_mass: BTreeMap<(OfeId, String), f64>,
+    actual_source_mass: BTreeMap<(OfeId, String), f64>,
+    raw_source_mass: BTreeMap<(OfeId, String), f64>,
+    expected_ofe_mass: BTreeMap<OfeId, f64>,
+    actual_ofe_mass: BTreeMap<OfeId, f64>,
+    raw_ofe_mass: BTreeMap<OfeId, f64>,
     expected_ofe_enthalpy: BTreeMap<OfeId, f64>,
     actual_ofe_enthalpy: BTreeMap<OfeId, f64>,
     raw_ofe_enthalpy: BTreeMap<OfeId, f64>,
@@ -1268,6 +1274,9 @@ fn add_expected_partition(
     mass: f64,
     h_mix: f64,
 ) -> Option<()> {
+    if !mass.is_finite() || mass < 0.0 {
+        return None;
+    }
     let enthalpy = checked_surface_liquid_mul(mass, h_mix)?;
     expected.entry(key).or_default().checked_add(mass, enthalpy)
 }
@@ -1340,6 +1349,7 @@ fn project_parcel_arithmetic(
 
     let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
     let mut raw_totals = BTreeMap::<OfeId, AmountPair>::new();
+    let mut raw_source_mass = BTreeMap::<(OfeId, String), f64>::new();
     let mut expected_continuations = BTreeMap::<OfeId, DirectProjectedContinuation>::new();
     for ofe_id in &configuration.ofe_topology {
         let partition = operands
@@ -1472,7 +1482,11 @@ fn project_parcel_arithmetic(
                 })?;
             cumulative_supply_m = outcome.cumulative_supply_m;
             cumulative_infiltration_m = outcome.cumulative_infiltration_m;
-            let total_infiltration =
+            let full_infiltration =
+                outcome.interval_infiltration_m.to_bits() == interval_supply_m.to_bits();
+            let total_infiltration = if full_infiltration {
+                supply_mass
+            } else {
                 checked_surface_liquid_mul(outcome.interval_infiltration_m, WATER_DENSITY_KG_M3)
                     .ok_or_else(|| {
                         contextual_ofe_comparison_failure(
@@ -1482,7 +1496,8 @@ fn project_parcel_arithmetic(
                             ofe_id,
                             "partition infiltration mass arithmetic",
                         )
-                    })?;
+                    })?
+            };
             let h_mix =
                 checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
                     contextual_ofe_comparison_failure(
@@ -1506,13 +1521,31 @@ fn project_parcel_arithmetic(
                         "partition raw aggregate arithmetic",
                     )
                 })?;
+            for (segment, mass, _) in &contributions {
+                let accumulated = raw_source_mass
+                    .entry((ofe_id.clone(), segment.source_parcel_id.clone()))
+                    .or_default();
+                *accumulated =
+                    checked_surface_liquid_add(*accumulated, *mass).ok_or_else(|| {
+                        contextual_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            &segment.origin_store_key,
+                            Some(segment.source_parcel_id.clone()),
+                            "partition raw source mass arithmetic",
+                        )
+                    })?;
+            }
 
             let mut allocated_infiltration = 0.0;
             let count = contributions.len();
             let mut excess_by_store =
                 BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(RawParcelSegment, f64)>>::new();
             for (index, (segment, mass, _)) in contributions.into_iter().enumerate() {
-                let infiltrated = if index + 1 == count {
+                let infiltrated = if full_infiltration {
+                    Some(mass)
+                } else if index + 1 == count {
                     checked_surface_liquid_sub(total_infiltration, allocated_infiltration)
                 } else {
                     checked_surface_liquid_mul(total_infiltration, mass)
@@ -1824,8 +1857,36 @@ fn project_parcel_arithmetic(
         raw_segments.extend(routed_segments);
     }
 
+    let mut expected_source_mass = BTreeMap::<(OfeId, String), f64>::new();
+    let mut expected_ofe_mass = BTreeMap::<OfeId, f64>::new();
     let mut expected_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
     for (key, amount) in &expected {
+        let source_mass = expected_source_mass
+            .entry((key.basis_ofe_id.clone(), key.source_parcel_id.clone()))
+            .or_default();
+        *source_mass = checked_surface_liquid_add(*source_mass, amount.mass).ok_or_else(|| {
+            contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &key.recipient_store_key,
+                Some(key.source_parcel_id.clone()),
+                "expected source mass aggregate arithmetic",
+            )
+        })?;
+        let ofe_mass = expected_ofe_mass
+            .entry(key.basis_ofe_id.clone())
+            .or_default();
+        *ofe_mass = checked_surface_liquid_add(*ofe_mass, amount.mass).ok_or_else(|| {
+            contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &key.recipient_store_key,
+                Some(key.source_parcel_id.clone()),
+                "expected OFE mass aggregate arithmetic",
+            )
+        })?;
         let accumulated = expected_ofe_enthalpy
             .entry(key.basis_ofe_id.clone())
             .or_default();
@@ -1841,8 +1902,34 @@ fn project_parcel_arithmetic(
                 )
             })?;
     }
+    let mut actual_source_mass = BTreeMap::<(OfeId, String), f64>::new();
+    let mut actual_ofe_mass = BTreeMap::<OfeId, f64>::new();
     let mut actual_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
     for (key, amount) in &actual {
+        let source_mass = actual_source_mass
+            .entry((key.basis_ofe_id.clone(), key.source_parcel_id.clone()))
+            .or_default();
+        *source_mass = checked_surface_liquid_add(*source_mass, amount.mass).ok_or_else(|| {
+            contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &key.recipient_store_key,
+                Some(key.source_parcel_id.clone()),
+                "actual source mass aggregate arithmetic",
+            )
+        })?;
+        let ofe_mass = actual_ofe_mass.entry(key.basis_ofe_id.clone()).or_default();
+        *ofe_mass = checked_surface_liquid_add(*ofe_mass, amount.mass).ok_or_else(|| {
+            contextual_comparison_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                operands.transaction_id,
+                &configuration.owner_id,
+                &key.recipient_store_key,
+                Some(key.source_parcel_id.clone()),
+                "actual OFE mass aggregate arithmetic",
+            )
+        })?;
         let accumulated = actual_ofe_enthalpy
             .entry(key.basis_ofe_id.clone())
             .or_default();
@@ -1861,6 +1948,15 @@ fn project_parcel_arithmetic(
     Ok(ParcelArithmeticProjection {
         expected,
         actual,
+        expected_source_mass,
+        actual_source_mass,
+        raw_source_mass,
+        expected_ofe_mass,
+        actual_ofe_mass,
+        raw_ofe_mass: raw_totals
+            .iter()
+            .map(|(ofe_id, amount)| (ofe_id.clone(), amount.mass))
+            .collect(),
         expected_ofe_enthalpy,
         actual_ofe_enthalpy,
         raw_ofe_enthalpy: raw_totals
@@ -1870,6 +1966,121 @@ fn project_parcel_arithmetic(
         expected_store_liquid: store_liquid,
         expected_continuations,
     })
+}
+
+fn compare_source_mass_projection(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    projection: &ParcelArithmeticProjection,
+    disposition: ComparisonDisposition,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let source_keys = projection
+        .expected_source_mass
+        .keys()
+        .chain(projection.actual_source_mass.keys())
+        .chain(projection.raw_source_mass.keys())
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    for (ofe_id, source_parcel_id) in source_keys {
+        let source = operands
+            .source_parcels
+            .iter()
+            .find(|row| row.source_parcel_id == source_parcel_id)
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "source mass aggregate has no frozen source",
+            ))?;
+        let expected = projection
+            .expected_source_mass
+            .get(&(ofe_id.clone(), source_parcel_id.clone()))
+            .copied()
+            .unwrap_or_default();
+        let actual = projection
+            .actual_source_mass
+            .get(&(ofe_id.clone(), source_parcel_id.clone()))
+            .copied()
+            .unwrap_or_default();
+        let raw = projection
+            .raw_source_mass
+            .get(&(ofe_id, source_parcel_id.clone()))
+            .copied()
+            .unwrap_or_default();
+        compare_projected_value(
+            actual,
+            expected,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &source.origin_store_key,
+            Some(source_parcel_id.clone()),
+            "source parcel attributed mass join",
+        )?;
+        compare_projected_value(
+            expected,
+            raw,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &source.origin_store_key,
+            Some(source_parcel_id),
+            "raw source parcel mass equals attributed mass",
+        )?;
+    }
+    Ok(())
+}
+
+fn compare_ofe_mass_projection(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    projection: &ParcelArithmeticProjection,
+    disposition: ComparisonDisposition,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let ofe_ids = projection
+        .expected_ofe_mass
+        .keys()
+        .chain(projection.actual_ofe_mass.keys())
+        .chain(projection.raw_ofe_mass.keys())
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    for ofe_id in ofe_ids {
+        let expected = projection
+            .expected_ofe_mass
+            .get(&ofe_id)
+            .copied()
+            .unwrap_or_default();
+        let actual = projection
+            .actual_ofe_mass
+            .get(&ofe_id)
+            .copied()
+            .unwrap_or_default();
+        let raw = projection
+            .raw_ofe_mass
+            .get(&ofe_id)
+            .copied()
+            .unwrap_or_default();
+        compare_ofe_value(
+            actual,
+            expected,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &ofe_id,
+            "OFE attributed mass join",
+        )?;
+        compare_ofe_value(
+            expected,
+            raw,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+            disposition,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &ofe_id,
+            "raw OFE mass equals attributed mass",
+        )?;
+    }
+    Ok(())
 }
 
 fn compare_parcel_projection(
@@ -1925,6 +2136,9 @@ fn compare_parcel_projection(
             )?;
         }
     }
+
+    compare_source_mass_projection(configuration, operands, projection, disposition)?;
+    compare_ofe_mass_projection(configuration, operands, projection, disposition)?;
 
     let ofe_ids = projection
         .expected_ofe_enthalpy
