@@ -834,6 +834,20 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze the corrected bytes and obtain fresh dual exact-byte review
   before any terminal heavy execution.
 
+## Post-checkpoint focused authority gates
+
+- PASS at `5d298ca1c`: AUTH11 3/3, authority-suite anti-evasion, SC-SURFACELIQUID
+  unit compliance and the four affected crate checks.
+- FAIL retained: science admission from `af9a98906` first rejected the extracted
+  `surface_liquid_closure_preflight.rs` because the impact map lacked an exact
+  current contract binding.
+- FAIL retained: the first map correction bound two contracts in one entry;
+  admission correctly rejected the non-atomic receiver-failure binding.
+- PASS after correction: impact-map generation 33 binds each extracted closure,
+  receiver-failure, unified-entry-preflight and extracted test surface to one
+  atomic SC contract per entry. Admission reports 46 contracts and 27 science
+  surfaces.
+
 ## Fifth exact-byte review remediation
 
 - HOLD retained: exact `fe6cc4bd5` reviews found unified/global precedence,
