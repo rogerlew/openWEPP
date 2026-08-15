@@ -2363,6 +2363,7 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
     )
     .expect("structurally valid mismatched receiver expectations");
     let mut attempted = None;
+    let expected_lse_beginning = digest('2');
     let ingress = ingress_input_with_mass(50.0);
     let result = execute_unified_real_hydrology_shadow(
         &adapter,
@@ -2421,7 +2422,7 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
     );
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(snapshot.as_str())
+        Some(expected_lse_beginning.as_str())
     );
     assert_eq!(failure.rollback.attempted_owner_sha256, attempted);
     assert!(failure.context.source_id.is_some());

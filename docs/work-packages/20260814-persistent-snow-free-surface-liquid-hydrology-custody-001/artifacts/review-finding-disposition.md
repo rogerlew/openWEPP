@@ -406,6 +406,17 @@ No `c9524729a` finding is rejected, deferred, or moved to another package.
 No `10b914da1` finding is rejected, deferred, or moved to another package.
 Fresh review is pending on the corrected exact bytes.
 
+## Exact-head terminal-review findings at `73f22169a`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-73F-HIGH-001: arithmetic scan can stop at parcel E010 before later E003 | Accepted | Remediated: identity-only joins are nonterminal during arithmetic preflight; composed poison PASS |
+| A-TERMINAL-73F-HIGH-002: derived receiver E003 retains hydrology beginning digest | Accepted | Remediated: unique owner/kind rollback or typed absence; LSE/thermal/hydrology/missing/duplicate tests PASS |
+| A/B-TERMINAL-73F-HIGH-003: nested snow/albedo/layer/frost/carry domains bypass E003 | Accepted | Remediated: complete shared production winter validator and exhaustive category matrix PASS |
+
+No `73f22169a` finding is rejected, deferred, or moved to another package.
+Fresh review is pending on the corrected exact bytes.
+
 ## Exact-head terminal-review findings at `83e1ee296`
 
 | Finding | Disposition | Remediation status |

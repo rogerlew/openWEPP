@@ -1,7 +1,7 @@
 //! Public canonical-context poisons for the surface-liquid ingress boundary.
 
 use openwepp_kernel_contract::{TileId, TransactionId};
-use openwepp_land_surface_energy::{SourceId, SurfaceId};
+use openwepp_land_surface_energy::{OfeId, SourceId, SurfaceId};
 
 use super::tests::{
     initial_state, one_tile_configuration, open_ingress, parameters, resource_candidate,
@@ -10,8 +10,9 @@ use super::tests::{
 use super::{
     DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidPhase,
-    DirectSurfaceLiquidReceiptDisposition, DirectTileGroundIngress, INTERVAL_S,
-    WATER_DENSITY_KG_M3, execute_surface_liquid_ingress, liquid_specific_enthalpy,
+    DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
+    DirectTileGroundIngress, INTERVAL_S, REFERENCE_TEMPERATURE_K, WATER_DENSITY_KG_M3,
+    execute_surface_liquid_ingress, liquid_specific_enthalpy,
 };
 
 fn five_window_configuration() -> DirectSurfaceLiquidConfiguration {
@@ -37,6 +38,74 @@ fn five_window_configuration() -> DirectSurfaceLiquidConfiguration {
         records,
     )
     .expect("five-window configuration")
+}
+
+#[test]
+fn identity_mismatch_does_not_hide_later_comparison_scale_overflow() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(4_143);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut candidate =
+        execute_surface_liquid_ingress(&configuration, &resource, &input).expect("open candidate");
+    let source_id = candidate
+        .closure_operands
+        .poison_first_source_mass_comparison_scale_for_test();
+    let mut outlet = candidate
+        .receipts
+        .iter()
+        .find(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RetainedSurface
+        })
+        .expect("retained receipt")
+        .clone();
+    outlet.disposition = DirectSurfaceLiquidReceiptDisposition::OutletRunoff;
+    outlet.recipient = DirectSurfaceLiquidReceiptRecipient::Outlet {
+        ofe_id: outlet.basis_ofe_id.clone(),
+    };
+    outlet.mass_kg_m2_basis_ofe_ground = f64::MAX * 0.6;
+    outlet.temperature_k = REFERENCE_TEMPERATURE_K;
+    outlet.enthalpy_j_m2_basis_ofe_ground = 0.0;
+    candidate.receipts.push(outlet);
+    let infiltration = candidate
+        .receipts
+        .iter_mut()
+        .find(|receipt| receipt.disposition == DirectSurfaceLiquidReceiptDisposition::Infiltration)
+        .expect("infiltration receipt");
+    let DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+        production_lane_id, ..
+    } = &mut infiltration.recipient
+    else {
+        panic!("wrong receipt variant");
+    };
+    *production_lane_id += 100;
+
+    let failure = candidate
+        .validate(&configuration, &resource, &input)
+        .expect_err("later comparison arithmetic must outrank identity mismatch")
+        .failure()
+        .expect("failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("only")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("tile")
+    );
+    assert_eq!(failure.detail, "parcel mass join");
 }
 
 #[test]

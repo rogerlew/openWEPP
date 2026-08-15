@@ -1733,7 +1733,7 @@ fn finalization_numeric_failure(
     .into()
 }
 
-fn unique_owner_beginning_rollback(
+pub(super) fn unique_owner_beginning_rollback(
     rows: &[OwnerRollbackHash],
     owner_kind: OwnerKind,
     owner_id: &ResourceOwnerId,

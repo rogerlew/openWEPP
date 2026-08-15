@@ -2259,6 +2259,11 @@ fn validate_direct_snow_lane_state(
             .map_err(|_| DirectRuntimeError::DirectDomainViolation {
                 field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
             })?;
+        if state.runtime_swe_m <= 1.0e-9 || state.runtime_depth_m <= 1.0e-9 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
+            });
+        }
     }
     validate_direct_snow_layers(prefix, state)?;
     Ok(())
@@ -2282,12 +2287,40 @@ fn validate_direct_snow_layers(
             ("layers.thickness_m", layer.thickness_m),
             ("layers.density_kg_m3", layer.density_kg_m3),
             ("layers.settle_day_count", layer.settle_day_count),
+            ("layers.liquid_water_m", layer.liquid_water_m),
+            ("layers.cold_content_j_m2", layer.cold_content_j_m2),
+            ("layers.refrozen_liquid_m", layer.refrozen_liquid_m),
         ] {
             validate_nonnegative_direct_m(direct_snow_lane_validation_field(prefix, field), value)?;
         }
+        validate_finite(
+            direct_snow_lane_validation_field(prefix, "layers.temperature_c"),
+            layer.temperature_c,
+        )?;
         if layer.density_kg_m3 > 522.0 {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+            });
+        }
+        if layer.mass_swe_m > LAYER_CLOSURE_TOLERANCE_M
+            && layer.thickness_m > LAYER_CLOSURE_TOLERANCE_M
+        {
+            let reconstructed_density = layer.mass_swe_m * 1_000.0 / layer.thickness_m;
+            if (layer.density_kg_m3 - reconstructed_density).abs() > 1.0e-4 {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+                });
+            }
+        } else if layer.mass_swe_m > LAYER_CLOSURE_TOLERANCE_M
+            || layer.thickness_m > LAYER_CLOSURE_TOLERANCE_M
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+            });
+        }
+        if layer.liquid_water_m > layer.mass_swe_m || layer.refrozen_liquid_m > layer.mass_swe_m {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "layers.liquid_water_m"),
             });
         }
         layer_swe_sum_m += layer.mass_swe_m;
@@ -2309,6 +2342,12 @@ fn validate_direct_snow_layers(
     {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: direct_snow_lane_validation_field(prefix, "layers"),
+        });
+    }
+    let aggregate_density_kg_m3 = state.runtime_swe_m * 1_000.0 / state.runtime_depth_m;
+    if (state.runtime_density_kg_m3 - aggregate_density_kg_m3).abs() > 1.0e-4 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "runtime_density_kg_m3"),
         });
     }
     Ok(())
@@ -2374,6 +2413,21 @@ fn validate_direct_frost_runtime_carry(
     validate_direct_frost_runtime_scalar_carry(carry)?;
     validate_direct_frost_runtime_layer_shadows(carry)?;
     validate_direct_frost_runtime_fine_layers(carry)
+}
+
+/// Validate the complete persisted winter domain before a production lane is consumed.
+pub(crate) fn validate_direct_production_winter_lane_domain(
+    lane: &DirectLaneFrame,
+) -> Result<(), DirectRuntimeError> {
+    validate_direct_snow_lane_state("constructor.winter_column.snow", &lane.winter_column.snow)?;
+    if let Some(carry) = &lane.snow_runtime_carry {
+        validate_direct_snow_runtime_carry(carry)?;
+    }
+    validate_direct_frost_runtime_carry(&lane.winter_column.frost.clone().into())?;
+    if let Some(carry) = &lane.frost_runtime_carry {
+        validate_direct_frost_runtime_carry(carry)?;
+    }
+    Ok(())
 }
 
 fn validate_direct_frost_runtime_scalar_carry(

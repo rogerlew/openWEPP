@@ -359,6 +359,16 @@ impl DirectSurfaceLiquidClosureOperands {
     }
 
     #[cfg(test)]
+    pub(super) fn poison_first_source_mass_comparison_scale_for_test(&mut self) -> String {
+        let first = self.source_parcels.first_mut().expect("source parcel");
+        first.mass_kg_m2_basis_ofe_ground = f64::MAX * 0.6;
+        first.temperature_k = REFERENCE_TEMPERATURE_K;
+        first.specific_liquid_enthalpy_j_kg = 0.0;
+        first.enthalpy_j_m2_basis_ofe_ground = 0.0;
+        first.source_parcel_id.clone()
+    }
+
+    #[cfg(test)]
     pub(super) fn remove_source_for_test(&mut self, index: usize) -> String {
         self.source_parcels.remove(index).source_parcel_id
     }
@@ -2186,7 +2196,9 @@ fn compare_parcel_projection(
         .cloned()
         .collect::<BTreeSet<_>>();
     for key in keys {
-        if projection.expected.contains_key(&key) != projection.actual.contains_key(&key) {
+        if projection.expected.contains_key(&key) != projection.actual.contains_key(&key)
+            && matches!(disposition, ComparisonDisposition::RequireClosure)
+        {
             return Err(contextual_comparison_failure(
                 DirectSurfaceLiquidErrorCode::E010,
                 operands.transaction_id,

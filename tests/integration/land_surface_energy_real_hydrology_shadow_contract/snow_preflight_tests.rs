@@ -38,16 +38,24 @@ fn execute_snow_poison(
     value: f64,
     runtime_carry: bool,
 ) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
+    execute_winter_mutation(|frame| {
+        if runtime_carry {
+            set_snow_carry_scalar(frame, field, value);
+        } else {
+            set_snow_scalar(frame, field, value);
+        }
+    })
+}
+
+fn execute_winter_mutation(
+    mutate: impl FnOnce(&mut DirectRunFrame),
+) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
         WaterSourceType::SurfaceLiquid,
         1.0,
     );
-    if runtime_carry {
-        set_snow_carry_scalar(&mut frame, field, value);
-    } else {
-        set_snow_scalar(&mut frame, field, value);
-    }
+    mutate(&mut frame);
     let (owner, _) = owner(&frame);
     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
     let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
@@ -125,7 +133,7 @@ fn assert_snow_failure(
 }
 
 #[test]
-fn every_snow_lane_scalar_rejects_invalid_before_unsupported_snow() {
+fn snow_top_level_scalars_reject_invalid_before_unsupported_winter() {
     let mut attempted_sha256 = None;
     for runtime_carry in [false, true] {
         for field in 0..8 {
@@ -149,5 +157,286 @@ fn every_snow_lane_scalar_rejects_invalid_before_unsupported_snow() {
                 assert_snow_failure(error, &snapshot, DirectSurfaceLiquidErrorCode::E004);
             assert_eq!(attempted_sha256.as_ref(), Some(&attempted));
         }
+    }
+}
+
+fn valid_layered_snow() -> openwepp_hillslope_orchestrator::DirectSnowLaneState {
+    let layer = openwepp_hillslope_orchestrator::DirectSnowLayerState::new(0.1, 0.2, 500.0, 1.0)
+        .with_stage3_thermal_liquid_state(-5.0, 0.01, 1_000.0, 0.005);
+    let mut snow = openwepp_hillslope_orchestrator::DirectSnowLaneState::from_runtime_values(
+        0.1, 0.2, 500.0, 1.0,
+    );
+    snow.layers = vec![layer];
+    snow
+}
+
+fn assert_mutation_code(
+    mutate: impl FnOnce(&mut DirectRunFrame),
+    expected_code: DirectSurfaceLiquidErrorCode,
+) {
+    let (error, snapshot, callback_called) = execute_winter_mutation(mutate);
+    assert!(!callback_called);
+    assert_snow_failure(error, &snapshot, expected_code);
+}
+
+#[test]
+fn snow_nested_and_cross_field_domains_precede_e004() {
+    for field in 0..8 {
+        assert_mutation_code(
+            move |frame| {
+                let mut snow = valid_layered_snow();
+                let layer = &mut snow.layers[0];
+                match field {
+                    0 => layer.mass_swe_m = f64::NAN,
+                    1 => layer.thickness_m = f64::NAN,
+                    2 => layer.density_kg_m3 = f64::NAN,
+                    3 => layer.settle_day_count = f64::NAN,
+                    4 => layer.temperature_c = f64::NAN,
+                    5 => layer.liquid_water_m = f64::NAN,
+                    6 => layer.cold_content_j_m2 = f64::NAN,
+                    7 => layer.refrozen_liquid_m = f64::NAN,
+                    _ => unreachable!(),
+                }
+                frame.lanes[0].winter_column.snow = snow;
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        );
+    }
+    for poison in 0..7 {
+        assert_mutation_code(
+            move |frame| {
+                let mut snow = valid_layered_snow();
+                match poison {
+                    0 => snow.layers[0].density_kg_m3 = 523.0,
+                    1 => snow.layers[0].mass_swe_m = 0.09,
+                    2 => snow.layers[0].thickness_m = 0.19,
+                    3 => snow.layers[0].liquid_water_m = 0.11,
+                    4 => snow.layers[0].refrozen_liquid_m = 0.11,
+                    5 => snow.layers[0].density_kg_m3 = 400.0,
+                    6 => snow.runtime_density_kg_m3 = 400.0,
+                    _ => unreachable!(),
+                }
+                frame.lanes[0].winter_column.snow = snow;
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        );
+    }
+    for poison in 0..3 {
+        assert_mutation_code(
+            move |frame| {
+                let mut snow = if poison == 2 {
+                    openwepp_hillslope_orchestrator::DirectSnowLaneState::zero()
+                } else {
+                    valid_layered_snow()
+                };
+                snow.snow_albedo_state = Some(openwepp_hillslope_orchestrator::SnowAlbedoState {
+                    model:
+                        openwepp_hillslope_orchestrator::SnowAlbedoModel::Brock2000TemperatureAgeV1,
+                    albedo: if poison == 0 { f64::NAN } else { 0.8 },
+                    accumulated_positive_temperature_c_day: if poison == 1 { -1.0 } else { 1.0 },
+                });
+                frame.lanes[0].winter_column.snow = snow;
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        );
+    }
+    assert_mutation_code(
+        |frame| frame.lanes[0].winter_column.snow = valid_layered_snow(),
+        DirectSurfaceLiquidErrorCode::E004,
+    );
+}
+
+#[test]
+fn snow_runtime_carry_reuses_complete_nested_validation() {
+    for poison in 0..3 {
+        assert_mutation_code(
+            move |frame| {
+                let mut snow = valid_layered_snow();
+                match poison {
+                    0 => snow.layers[0].temperature_c = f64::INFINITY,
+                    1 => snow.layers[0].cold_content_j_m2 = -1.0,
+                    2 => {
+                        snow.snow_albedo_state = Some(
+                            openwepp_hillslope_orchestrator::SnowAlbedoState {
+                                model: openwepp_hillslope_orchestrator::SnowAlbedoModel::Brock2000TemperatureAgeV1,
+                                albedo: 2.0,
+                                accumulated_positive_temperature_c_day: 1.0,
+                            },
+                        );
+                    }
+                    _ => unreachable!(),
+                }
+                frame.lanes[0].snow_runtime_carry = Some(Box::new(
+                    openwepp_hillslope_orchestrator::DirectSnowRuntimeCarry::from(snow),
+                ));
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        );
+    }
+}
+
+fn set_frost_scalar(
+    frost: &mut openwepp_hillslope_orchestrator::DirectFrostLaneState,
+    field: usize,
+    value: f64,
+) {
+    match field {
+        0 => frost.dfrost_m = value,
+        1 => frost.dthaw_m = value,
+        2 => frost.nft = value,
+        3 => frost.ws_frz_m = value,
+        4 => frost.infcap_frz_m_s = value,
+        5 => frost.frwatc_soil_water_before_m = value,
+        6 => frost.frwatc_soil_water_after_m = value,
+        7 => frost.frwatc_frozen_water_before_m = value,
+        8 => frost.frwatc_frozen_water_after_m = value,
+        9 => frost.frwatc_freeze_debit_m = value,
+        10 => frost.frwatc_thaw_credit_m = value,
+        11 => frost.frwatc_net_liquid_delta_m = value,
+        12 => frost.frdp_m = value,
+        13 => frost.thdp_m = value,
+        14 => frost.tfrdp_m = value,
+        15 => frost.tthawd_m = value,
+        16 => frost.fgthwd_flag = value,
+        17 => frost.total_fine_layer_count = value,
+        18 => frost.conductivity_tilled_w_m_k = value,
+        19 => frost.conductivity_untilled_w_m_k = value,
+        20 => frost.conductivity_residue_w_m_k = value,
+        21 => frost.shadow_total_water_before_m = value,
+        22 => frost.shadow_total_water_after_m = value,
+        23 => frost.shadow_wb_delta_m = value,
+        24 => frost.shadow_frwatc_residual_m = value,
+        25 => frost.watpdg_m = value,
+        26 => frost.watbtm_m = value,
+        _ => unreachable!("complete DirectFrostLaneState scalar table"),
+    }
+}
+
+#[test]
+fn frost_lane_and_runtime_carry_scalar_domains_precede_e004() {
+    for runtime_carry in [false, true] {
+        for field in 0..27 {
+            assert_mutation_code(
+                move |frame| {
+                    let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+                    set_frost_scalar(&mut frost, field, f64::NAN);
+                    if runtime_carry {
+                        frame.lanes[0].frost_runtime_carry = Some(frost.into());
+                    } else {
+                        frame.lanes[0].winter_column.frost = frost;
+                    }
+                },
+                DirectSurfaceLiquidErrorCode::E003,
+            );
+        }
+    }
+    assert_mutation_code(
+        |frame| frame.lanes[0].winter_column.frost.dfrost_m = 0.001,
+        DirectSurfaceLiquidErrorCode::E004,
+    );
+}
+
+#[test]
+fn frost_nested_layer_and_fine_layer_domains_precede_e004() {
+    for runtime_carry in [false, true] {
+        for field in 0..7 {
+            assert_mutation_code(
+                move |frame| {
+                    let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+                    let mut layer = openwepp_hillslope_orchestrator::DirectFrostLayerShadowState {
+                        layer_index: 1,
+                        st_m: 0.0,
+                        soil_water_m: 0.0,
+                        frozen_depth_m: 0.0,
+                        frozen_water_m: 0.0,
+                        soilf_m: 0.0,
+                        yst_m: 0.0,
+                        nwfrzz_m: 0.0,
+                    };
+                    match field {
+                        0 => layer.st_m = f64::NAN,
+                        1 => layer.soil_water_m = f64::NAN,
+                        2 => layer.frozen_depth_m = f64::NAN,
+                        3 => layer.frozen_water_m = f64::NAN,
+                        4 => layer.soilf_m = f64::NAN,
+                        5 => layer.yst_m = f64::NAN,
+                        6 => layer.nwfrzz_m = f64::NAN,
+                        _ => unreachable!(),
+                    }
+                    frost.layer_shadows = vec![layer];
+                    if runtime_carry {
+                        frame.lanes[0].frost_runtime_carry = Some(frost.into());
+                    } else {
+                        frame.lanes[0].winter_column.frost = frost;
+                    }
+                },
+                DirectSurfaceLiquidErrorCode::E003,
+            );
+        }
+        for field in 0..5 {
+            assert_mutation_code(
+                move |frame| {
+                    let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+                    let mut fine = openwepp_hillslope_orchestrator::DirectFrostFineLayerState {
+                        layer_index: 1,
+                        fine_index: 1,
+                        fgfrst: 0.0,
+                        slfsd_m: 0.0,
+                        slsic_m: 0.0,
+                        slsw_theta: 0.0,
+                        sltime_s: 0.0,
+                    };
+                    match field {
+                        0 => fine.fgfrst = f64::NAN,
+                        1 => fine.slfsd_m = f64::NAN,
+                        2 => fine.slsic_m = f64::NAN,
+                        3 => fine.slsw_theta = f64::NAN,
+                        4 => fine.sltime_s = f64::NAN,
+                        _ => unreachable!(),
+                    }
+                    frost.fine_layers = vec![fine];
+                    if runtime_carry {
+                        frame.lanes[0].frost_runtime_carry = Some(frost.into());
+                    } else {
+                        frame.lanes[0].winter_column.frost = frost;
+                    }
+                },
+                DirectSurfaceLiquidErrorCode::E003,
+            );
+        }
+    }
+    for fine_layer in [false, true] {
+        assert_mutation_code(
+            move |frame| {
+                let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+                if fine_layer {
+                    frost.fine_layers =
+                        vec![openwepp_hillslope_orchestrator::DirectFrostFineLayerState {
+                            layer_index: 0,
+                            fine_index: 1,
+                            fgfrst: 0.0,
+                            slfsd_m: 0.0,
+                            slsic_m: 0.0,
+                            slsw_theta: 0.0,
+                            sltime_s: 0.0,
+                        }];
+                } else {
+                    frost.layer_shadows = vec![
+                        openwepp_hillslope_orchestrator::DirectFrostLayerShadowState {
+                            layer_index: 0,
+                            st_m: 0.0,
+                            soil_water_m: 0.0,
+                            frozen_depth_m: 0.0,
+                            frozen_water_m: 0.0,
+                            soilf_m: 0.0,
+                            yst_m: 0.0,
+                            nwfrzz_m: 0.0,
+                        },
+                    ];
+                }
+                frame.lanes[0].winter_column.frost = frost;
+            },
+            DirectSurfaceLiquidErrorCode::E003,
+        );
     }
 }

@@ -1108,12 +1108,9 @@ fn validate_native_shadow_supported_domain(
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    if let Some(lane_index) = owner
-        .beginning_frame()
-        .lanes
-        .iter()
-        .position(lane_has_invalid_snow_scalars)
-    {
+    if let Some(lane_index) = owner.beginning_frame().lanes.iter().position(|lane| {
+        crate::direct_runtime::validate_direct_production_winter_lane_domain(lane).is_err()
+    }) {
         return Err(DirectSurfaceLiquidError::canonical_failure(
             DirectSurfaceLiquidErrorCode::E003,
             DirectSurfaceLiquidPhase::AtomicEnvelope,
@@ -1145,37 +1142,6 @@ fn validate_native_shadow_supported_domain(
         .into());
     }
     Ok(())
-}
-
-fn lane_has_invalid_snow_scalars(lane: &crate::direct_runtime::DirectLaneFrame) -> bool {
-    let snow = &lane.winter_column.snow;
-    invalid_nonnegative_snow_scalars([
-        snow.runtime_swe_m,
-        snow.runtime_depth_m,
-        snow.runtime_density_kg_m3,
-        snow.runtime_settle_day_count,
-        snow.coe_boundary_depth_m,
-        snow.coe_boundary_density_kg_m3,
-        snow.coe_boundary_settle_day_count,
-        snow.liquid_water_retained_m,
-    ]) || lane.snow_runtime_carry.as_ref().is_some_and(|carry| {
-        invalid_nonnegative_snow_scalars([
-            carry.runtime_swe_m,
-            carry.runtime_depth_m,
-            carry.runtime_density_kg_m3,
-            carry.runtime_settle_day_count,
-            carry.coe_boundary_depth_m,
-            carry.coe_boundary_density_kg_m3,
-            carry.coe_boundary_settle_day_count,
-            carry.liquid_water_retained_m,
-        ])
-    })
-}
-
-fn invalid_nonnegative_snow_scalars(values: [f64; 8]) -> bool {
-    values
-        .into_iter()
-        .any(|value| !value.is_finite() || value < 0.0)
 }
 
 fn validate_native_shadow_exact_one_custody(
@@ -1554,6 +1520,7 @@ fn apply_ingress_to_real_receivers(
         ending_frame,
         lse_tiles,
         soil_thermal,
+        rollback_hashes,
         beginning_hydrology_snapshot_sha256,
         &receiver_attempt_sha256,
     )?;
@@ -1602,7 +1569,9 @@ fn apply_ingress_to_real_receivers(
         transaction_id: ingress.transaction_id(),
         configuration,
         expectations: receiver_expectations,
-        beginning_sha256: beginning_hydrology_snapshot_sha256.as_str(),
+        hydrology_owner_id: owner.hydrology_owner_id(),
+        beginning_hydrology_sha256: beginning_hydrology_snapshot_sha256.as_str(),
+        rollback_hashes,
         attempted_sha256: &receiver_attempt_sha256,
     };
     let mut infiltration_m_by_lane =
@@ -2000,11 +1969,38 @@ struct ReceiverFailureScope<'a> {
     transaction_id: TransactionId,
     configuration: &'a DirectSurfaceLiquidConfiguration,
     expectations: &'a UnifiedReceiverExpectations,
-    beginning_sha256: &'a str,
+    hydrology_owner_id: &'a ResourceOwnerId,
+    beginning_hydrology_sha256: &'a str,
+    rollback_hashes: &'a [OwnerRollbackHash],
     attempted_sha256: &'a str,
 }
 
 impl ReceiverFailureScope<'_> {
+    fn beginning_owner_sha256(
+        &self,
+        code: DirectSurfaceLiquidErrorCode,
+        owner_id: &ResourceOwnerId,
+    ) -> Option<String> {
+        if code != DirectSurfaceLiquidErrorCode::E003 || owner_id == self.hydrology_owner_id {
+            return Some(self.beginning_hydrology_sha256.to_owned());
+        }
+        if owner_id == &self.expectations.lse_owner_id {
+            return receiver_validation::unique_owner_beginning_rollback(
+                self.rollback_hashes,
+                OwnerKind::LandSurfaceEnergy,
+                owner_id,
+            );
+        }
+        if owner_id == &self.expectations.soil_thermal_owner_id {
+            return receiver_validation::unique_owner_beginning_rollback(
+                self.rollback_hashes,
+                OwnerKind::SoilThermal,
+                owner_id,
+            );
+        }
+        None
+    }
+
     fn failure(
         &self,
         code: DirectSurfaceLiquidErrorCode,
@@ -2025,7 +2021,7 @@ impl ReceiverFailureScope<'_> {
                 parcel_id: Some(receipt.parcel_id.clone()),
             },
             DirectSurfaceLiquidRollbackHashes {
-                beginning_owner_sha256: Some(self.beginning_sha256.to_owned()),
+                beginning_owner_sha256: self.beginning_owner_sha256(code, owner_id),
                 attempted_owner_sha256: Some(self.attempted_sha256.to_owned()),
             },
             detail,

@@ -918,6 +918,35 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: commit corrected bytes and repeat fresh independent dual review
   before any terminal heavy execution.
 
+## Exact-byte review at `73f22169a`
+
+- HOLD: both reviews found incomplete nested winter-domain E003-before-E004
+  coverage. Rust review also found parcel E010 can stop the later E003 scan and
+  derived receiver E003 still carries a hydrology beginning digest.
+- PASS on reviewed bytes: unified integration 40/40, custody authority 10/10
+  and selected orchestrator 103/103.
+
+## `73f22169a` HOLD remediation
+
+- PASS: one complete production winter validator covers snow, albedo, all snow
+  layers/cross-fields, frost scalars/layer shadows/fine layers and runtime
+  carries before the unsupported E004 branch.
+- PASS: parcel identity-only joins no longer terminate arithmetic preflight;
+  an earlier identity mismatch plus later E003 poison reports E003.
+- PASS: derived receiver E003 binds LSE/thermal owner rollback hashes, retains
+  hydrology hash for hydrology failures and uses typed absence for missing or
+  duplicate owner rows.
+- FAIL retained: an intermediate design propagated lower-priority E010 and
+  failed four focused cases; E003-only propagation was restored.
+- FAIL retained: three test-shaping attempts used an incorrect context/detail,
+  an incoherent source-domain poison and a nonexistent outlet fixture. They
+  were corrected before final evidence and are not product regressions.
+- PASS on final combined worktree: selected library 145/145, unified integration
+  44/44, custody authority 10/10, strict affected all-target/all-feature Clippy,
+  formatting and diff hygiene.
+- Pending: commit corrected bytes and repeat fresh independent dual review
+  before any terminal heavy execution.
+
 ## Exact-byte review at `83e1ee296`
 
 - HOLD: Rust review found partition E009 can preempt a later projection E003,
