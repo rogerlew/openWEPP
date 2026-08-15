@@ -749,3 +749,20 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   surface changed.
 - Pending: commit the test-only decomposition and rerun the complete heavy
   command set on exact committed bytes using a fresh external target.
+
+## Invalidated fresh-target heavy run and terminal review
+
+- INTERRUPTED retained: a new external-target heavy run began at
+  `87b187b19`; formatting, diff hygiene and strict workspace Clippy completed,
+  then the full suite was stopped when fresh independent review accepted
+  material source defects. Its partial logs are preserved and are not PASS
+  evidence.
+- HOLD retained: the Rust reviewer found checked-arithmetic underflow in
+  proportional authorization, an incomplete public receiver validator, and
+  noncanonical receiver/configuration/restart error payloads.
+- HOLD retained: the hydrology reviewer independently found generic receiver
+  mutation failures without canonical code, context, or rollback hashes.
+- PASS after remediation: orchestrator quick suite, 564/564; focused custody
+  and unified LSE/real-hydrology suites, 29/29; strict affected-crate Clippy;
+  formatting; and diff hygiene.
+- Pending: fresh exact-byte dual review and complete heavy rerun.

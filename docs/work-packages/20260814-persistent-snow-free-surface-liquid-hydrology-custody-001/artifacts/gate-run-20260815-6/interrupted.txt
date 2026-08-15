@@ -1,0 +1,7 @@
+This fresh-target heavy run began at exact commit 87b187b19.
+
+Formatting and diff hygiene completed. Workspace Clippy completed. The full
+workspace nextest run was deliberately interrupted after fresh independent
+review accepted material source defects that invalidated terminal closure.
+The partial log is preserved and is not counted as passing evidence.
+

@@ -245,6 +245,56 @@ fn same_store_requests_are_authorized_proportionally_from_one_snapshot() {
 }
 
 #[test]
+fn tiny_positive_same_store_oversubscription_fails_closed_without_key_priority() {
+    let configuration = configuration();
+    let open = record_index(&configuration, "open");
+    let liquid = configuration
+        .records
+        .iter()
+        .enumerate()
+        .map(|(index, record)| {
+            (
+                record.key.clone(),
+                if index == open { 1.0e-200 } else { 1.0 },
+            )
+        })
+        .collect();
+    let beginning = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &liquid, 3)
+        .expect("valid tiny-positive initial state");
+    let transaction = TransactionId(114);
+    let mut first = request(&configuration, open, transaction, 1.0e-200);
+    first.key.requesting_owner_id = owner("tiny-first");
+    let mut second = first.clone();
+    second.key.requesting_owner_id = owner("tiny-second");
+
+    let error = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[first.clone(), second],
+    )
+    .expect_err("nonzero proportional numerator underflow must fail closed");
+    let failure = error.failure().expect("canonical underflow failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+    assert_eq!(failure.context.transaction_id, Some(transaction));
+    assert_eq!(
+        failure.context.owner_id,
+        Some(first.key.requesting_owner_id)
+    );
+    assert_eq!(failure.context.ofe_id, Some(first.key.ofe_id));
+    assert_eq!(failure.context.tile_id, first.key.source_tile_id);
+    assert_eq!(failure.context.surface_id, first.key.surface_id);
+    assert_eq!(failure.context.source_id, Some(first.key.source_id));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+    assert_eq!(failure.rollback.attempted_owner_sha256, None);
+}
+
+#[test]
 fn same_store_finite_demand_overflow_fails_before_authorization_or_candidate() {
     let configuration = configuration();
     let beginning = state(&configuration);
@@ -694,6 +744,72 @@ fn state_digest_binds_every_restart_field_and_rejects_invalid_combinations() {
             .code(),
         DirectSurfaceLiquidErrorCode::E008
     );
+}
+
+#[test]
+fn configuration_and_restart_record_failures_preserve_available_identity() {
+    let configuration = configuration();
+    let open = record_index(&configuration, "open");
+    let expected_key = configuration.records[open].key.clone();
+    let mut invalid_configuration = configuration.clone();
+    invalid_configuration.records[open].capacity_kg_m2_tile = f64::NAN;
+    let failure = invalid_configuration
+        .validate()
+        .expect_err("invalid record capacity")
+        .failure()
+        .expect("contextual configuration failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Configuration);
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone())
+    );
+    assert_eq!(failure.context.ofe_id, Some(expected_key.ofe_id.clone()));
+    assert_eq!(failure.context.tile_id, Some(expected_key.tile_id.clone()));
+    assert_eq!(
+        failure.context.surface_id,
+        Some(expected_key.surface_id.clone())
+    );
+    assert_eq!(
+        failure.context.source_id,
+        Some(expected_key.source_id.clone())
+    );
+    assert_eq!(failure.context.transaction_id, None);
+
+    let transaction = TransactionId(115);
+    let mut accepted = state(&configuration);
+    for record in &mut accepted.records {
+        record.last_accepted_transaction_id = Some(transaction);
+    }
+    for continuation in &mut accepted.continuations {
+        continuation.next_interval_index = 1;
+        continuation.last_accepted_transaction_id = Some(transaction);
+    }
+    accepted.state_sha256 = accepted.recomputed_sha256().expect("accepted digest");
+    accepted
+        .validate(&configuration)
+        .expect("valid accepted state");
+    accepted.records[open].liquid_kg_m2_tile = f64::NAN;
+    let failure = accepted
+        .validate(&configuration)
+        .expect_err("invalid restart store")
+        .failure()
+        .expect("contextual restart failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
+    assert_eq!(failure.context.transaction_id, Some(transaction));
+    assert_eq!(failure.context.owner_id, Some(configuration.owner_id));
+    assert_eq!(failure.context.ofe_id, Some(expected_key.ofe_id));
+    assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
+    assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
+    assert_eq!(failure.context.source_id, Some(expected_key.source_id));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(accepted.state_sha256.as_str())
+    );
+    assert_eq!(failure.rollback.attempted_owner_sha256, None);
 }
 
 #[test]

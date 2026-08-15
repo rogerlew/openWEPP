@@ -288,3 +288,14 @@ rollback hashes at every structural position.
 | Finding | Disposition | Remediation status |
 |---|---|---|
 | B-TERMINAL-CLOSURE12-MEDIUM-001: duplicate `runoff.rs` rows carry conflicting dispositions | Accepted | Remediated by removing the obsolete row; Markdown lint PASS |
+
+## Exact-head terminal-review findings at `87b187b19`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-87B-HIGH-001: proportional authorization can underflow and bias the final canonical request | Accepted | Checked arithmetic and tiny-positive poison implemented; focused PASS |
+| A-TERMINAL-87B-HIGH-002: public receiver validation accepts incomplete or identity-invalid envelopes | Accepted | Expected topology is frozen and hashed; empty/missing/duplicate/reordered/rekeyed poisons implemented; focused PASS |
+| A/B-TERMINAL-87B-HIGH-003: receiver and record failures escape canonical taxonomy, context, hashes, and precedence | Accepted | E003/E009/E010 contextual paths and global arithmetic preflight implemented; focused PASS |
+| A-TERMINAL-87B-MEDIUM-004: exact-head terminal evidence absent | Accepted | Pending fresh exact-byte reviews and heavy rerun after this remediation commit |
+
+No `87b187b19` finding is rejected, deferred, or moved to another package.

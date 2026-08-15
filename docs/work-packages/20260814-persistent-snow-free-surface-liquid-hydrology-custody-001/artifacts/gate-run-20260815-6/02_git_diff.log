@@ -1,0 +1,12 @@
+command: git_diff_check
+start_utc: 2026-08-15T07:48:57Z
+cwd: /home/workdir/openWEPP
+commit_full: 87b187b19e2f13a1de9fe8406d8cf2c0a256dc44
+commit_short: 87b187b19
+command_index: 02
+tmpdir: /tmp/ow-nextest-custody-87b
+cargo_target_dir: /tmp/openwepp-custody-heavy-87b
+bash: line 1: git_diff_check: command not found
+Command exited with non-zero status 127
+elapsed_sec=0.01 user_sec=0.00 sys_sec=0.00
+exit_code: 127

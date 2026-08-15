@@ -5,8 +5,9 @@ Evidence class: `Static`
 The terminal package diff is restricted to:
 
 - canonical custody authority and registry metadata;
-- the persistent surface owner, ingress, independent closure, and shared WB14
-  transition under `openwepp-hillslope-orchestrator`;
+- the persistent surface owner, ingress, independent closure, shared WB14
+  transition, and extracted real-receiver validator under
+  `openwepp-hillslope-orchestrator`;
 - the optional `DirectRunFrame` attachment and production subsurface helper;
 - the existing real-hydrology adapter and LSE shadow bridge;
 - focused authority/integration tests;

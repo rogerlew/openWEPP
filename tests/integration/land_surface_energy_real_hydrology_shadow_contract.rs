@@ -1334,40 +1334,73 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     reject_receiver_layer_distribution_poison(&candidate);
     reject_receiver_enthalpy_poisons(&candidate);
     reject_receiver_nonfinite_arithmetic_poisons(&candidate);
+    reject_receiver_topology_poisons(&candidate);
+}
+
+fn reject_receiver_topology_poisons(
+    candidate: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+) {
+    let baseline = candidate.receiver_closure_operands();
+    let mut poisons = Vec::new();
+    let mut missing_production = baseline.clone();
+    missing_production.production_soil.clear();
+    poisons.push(("production-hydrology", None, missing_production));
+    let mut duplicate_thermal = baseline.clone();
+    duplicate_thermal
+        .soil_thermal
+        .push(duplicate_thermal.soil_thermal[0].clone());
+    poisons.push(("soil-thermal", Some("open"), duplicate_thermal));
+    let mut rekeyed_lse = baseline.clone();
+    rekeyed_lse.lse_tiles[0].tile_id = TileId::try_new("wrong-receiver").expect("poison tile");
+    poisons.push((
+        "land-surface-energy-v1",
+        Some("wrong-receiver"),
+        rekeyed_lse,
+    ));
+    for (owner, tile, poison) in poisons {
+        let attempted = poison.canonical_sha256();
+        let error = validate_real_receiver_closure(&poison).expect_err("topology poison");
+        let failure = error.failure().expect("canonical topology failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(
+            failure.phase,
+            openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::IndependentClosure
+        );
+        assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some(owner)
+        );
+        assert_eq!(failure.context.tile_id.as_ref().map(TileId::as_str), tile);
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(baseline.beginning_hydrology_snapshot_sha256.as_str())
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(attempted.as_str())
+        );
+    }
 }
 
 fn reject_receiver_layer_distribution_poison(
     candidate: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
 ) {
     let mut wrong_distribution = candidate.receiver_closure_operands().clone();
-    {
-        let lane = &mut wrong_distribution.production_soil[0];
-        assert!(lane.infiltration_m > 0.0, "fixture must infiltrate");
-        let beginning = lane.ordered_layers[0].beginning_liquid_m;
-        let first_addition = lane.infiltration_m / 3.0;
-        let second_addition = lane.infiltration_m - first_addition;
-        lane.tillage_depth_m = 0.3;
-        lane.ordered_layers[0].layer_depth_m = 0.1;
-        lane.ordered_layers[0].ending_liquid_m = beginning + first_addition;
-        lane.ordered_layers.push(
-            openwepp_hillslope_orchestrator::land_surface_energy_shadow::ProductionSoilLayerReceiverOperands {
-                layer_id: SoilLayerId::try_new("thermal-2").expect("second layer"),
-                beginning_liquid_m: 0.0,
-                ending_liquid_m: second_addition,
-                layer_depth_m: 0.2,
-                residual_theta: 0.0,
-                frozen_depth_m: 0.0,
-            },
-        );
-        lane.beginning_aggregate_soil_water_m = beginning;
-        lane.ending_aggregate_soil_water_m = beginning + lane.infiltration_m;
-    }
-    validate_real_receiver_closure(&wrong_distribution).expect("two-layer reconstruction");
-    let lane = &mut wrong_distribution.production_soil[0];
-    let transfer = lane.infiltration_m / 10.0;
-    lane.ordered_layers[0].ending_liquid_m -= transfer;
-    lane.ordered_layers[1].ending_liquid_m += transfer;
-    assert_receiver_e011(validate_real_receiver_closure(&wrong_distribution));
+    let duplicate = wrong_distribution.production_soil[0].ordered_layers[0].clone();
+    wrong_distribution.production_soil[0]
+        .ordered_layers
+        .push(duplicate);
+    let failure = validate_real_receiver_closure(&wrong_distribution)
+        .expect_err("extra production layer must reject");
+    assert_eq!(
+        failure.failure().expect("canonical failure").code,
+        DirectSurfaceLiquidErrorCode::E010
+    );
 }
 
 fn reject_receiver_enthalpy_poisons(
@@ -1429,6 +1462,100 @@ fn reject_receiver_nonfinite_arithmetic_poisons(
         &lse_underflow,
         validate_real_receiver_closure(&lse_underflow),
     );
+
+    let mut precedence = candidate.receiver_closure_operands().clone();
+    precedence.production_soil[0].ending_aggregate_soil_water_m += 1.0;
+    precedence.lse_tiles[0].tile_fraction = f64::NAN;
+    assert_receiver_e003(
+        "later-domain-outranks-earlier-equation",
+        &precedence,
+        validate_real_receiver_closure(&precedence),
+    );
+}
+
+#[test]
+fn receiver_construction_overflow_is_contextual_e003_and_rolls_back() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let original = frame.clone();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let mut attempted = None;
+    let ingress = ingress_input_with_mass(50.0);
+    let result = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &ingress,
+        |authorizations| {
+            let finalization =
+                unified_finalization(accepted_surface_protocol(&batch, authorizations, &snapshot));
+            let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
+            tiles[0].surface_enthalpy_j_m2_tile_ground = f64::MAX;
+            let poisoned = UnifiedLseFinalization::try_new(
+                finalization.water_protocol().clone(),
+                tiles,
+                finalization.soil_thermal_candidates().to_vec(),
+                finalization.rollback_hashes().to_vec(),
+            )?;
+            attempted = Some(poisoned.receiver_sets_sha256());
+            Ok(poisoned)
+        },
+    );
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = result.expect_err("finite overflow")
+    else {
+        panic!("receiver overflow must retain canonical failure");
+    };
+    let failure = error.failure().expect("failure payload");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(
+        failure.phase,
+        openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::IndependentClosure,
+        "{failure:?}"
+    );
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("land-surface-energy-v1"),
+        "{failure:?}"
+    );
+    assert_eq!(
+        failure.context.ofe_id.as_ref().map(OfeId::as_str),
+        Some("ofe-1")
+    );
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("open")
+    );
+    assert_eq!(
+        failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+        Some("surface:ofe-1:open")
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(snapshot.as_str())
+    );
+    assert_eq!(failure.rollback.attempted_owner_sha256, attempted);
+    assert!(failure.context.source_id.is_some());
+    assert!(failure.context.parcel_id.is_some());
+    assert_eq!(frame, original, "overflow mutated caller owner");
 }
 
 #[test]
