@@ -94,11 +94,15 @@ branch, PR or push is in scope.
   E009 context fell back to the first store. The multi-record correction at
   `ee240618c` improved multi-record handling, but closure re-review found the
   per-OFE aggregate comparison absent from preflight and shifted-row deletion
-  attribution in producer sequences. The correction at `86ddb8aa2` shares one
-  projection between preflight and final closure and uses membership-aware
-  producer attribution. It passes 548/548 orchestrator, 19/19 focused
-  integration and 9/9 authority tests, strict Clippy, formatting, diff hygiene,
-  and line-count governance. Fresh exact-byte reviews remain pending.
+  attribution in producer sequences. The correction at `86ddb8aa2` shared
+  projection and attribution, but closure3 review found final comparison omitted
+  per-source enthalpy, routed errors used origin rather than destination
+  context, and store arithmetic remained duplicated. The correction at
+  `636dd36be` shares comparison/store projection, closes per-key mass and
+  enthalpy plus OFE totals, and uses destination context. It passes 552/552
+  orchestrator, 19/19 focused integration and 9/9 authority tests, strict
+  Clippy, formatting, diff hygiene, and line-count governance. Fresh exact-byte
+  reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

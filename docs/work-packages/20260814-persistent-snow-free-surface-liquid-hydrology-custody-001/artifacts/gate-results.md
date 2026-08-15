@@ -479,6 +479,25 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: affected production files remain below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology re-review.
 
+## Per-source enthalpy and routed-context remediation at `636dd36be`
+
+- HOLD retained: closure3 reviews found that final E010 compared per-source
+  mass but not per-source enthalpy, routed failures could report origin rather
+  than destination context, and store arithmetic was duplicated between
+  preflight and final validation.
+- PASS: expected/actual `(source parcel, basis OFE)` keys compare both mass and
+  enthalpy, followed by independent OFE-total comparison through one shared
+  disposition helper.
+- PASS: same-OFE cross-parcel enthalpy substitution fails E010; per-source
+  comparison-scale overflow fails E003.
+- PASS: routed E003/E010 context resolves the exact destination identity and
+  retains rollback hashes; one shared checked store projection serves
+  preflight and final closure.
+- PASS: orchestrator quick suite, 552/552; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- PASS: every edited Rust file remains below 3,000 lines.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Multi-record precedence and attribution remediation at `ee240618c`
 
 - HOLD retained: Rust closure review found that the local arithmetic preflight

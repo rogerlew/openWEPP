@@ -172,3 +172,15 @@ no configured-first fallback remains.
 Preflight and final closure now consume the same projected per-key and per-OFE
 maps. Producer sequence comparison is membership-aware before positional
 replacement/reorder handling for every canonical record class.
+
+## Independent parcel-join review findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-CLOSURE3-HIGH-001: final closure omits per-source-parcel enthalpy comparison | Accepted | Remediated at `636dd36be`; focused PASS |
+| A-TERMINAL-CLOSURE3-HIGH-002: routed failure context uses origin rather than current basis OFE | Accepted | Remediated at `636dd36be`; focused PASS |
+| A-TERMINAL-CLOSURE3-MEDIUM-003: store arithmetic duplicated between preflight and final validation | Accepted | Remediated at `636dd36be`; focused PASS |
+
+Per-source mass and enthalpy, OFE aggregate enthalpy, routed destination
+identity, and store arithmetic now flow through shared projections and a shared
+comparison disposition. Replacement/reorder controls retain the actual row.
