@@ -48,4 +48,45 @@ was the decisive fresh-target proof.
 - Do not sacrifice per-agent target isolation to obtain same-target cache hits.
 - Retain sccache for later release/clean-rebuild experiments or revisit only if
   Cargo/sccache path identity changes.
-- Continue with mold and bounded job-count measurements.
+
+## Release Linker Intake
+
+Command:
+
+```text
+cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+```
+
+The mold arm used
+`RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=mold"`. Empty-target results:
+
+| Linker | Wall | User | System | Max RSS | Binary size |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Nix/GNU default | 84.10 s | 520.00 s | 13.64 s | 1,417,176 KiB | 11,932,992 B |
+| Clang + mold | 85.73 s | 518.78 s | 13.05 s | 1,413,560 KiB | 12,438,824 B |
+
+A source-mtime-only touch forced the runner bin to rebuild against warm
+dependency targets without changing tracked bytes:
+
+| Linker | Wall | User | System | Max RSS |
+| --- | ---: | ---: | ---: | ---: |
+| Nix/GNU default | 29.51 s | 139.57 s | 1.47 s | 1,390,160 KiB |
+| Clang + mold | 29.54 s | 140.75 s | 1.48 s | 1,388,340 KiB |
+
+There is no observed mold benefit for this target; Rust/LLVM code generation
+dominates. Keep mold available but opt-in.
+
+## Cargo Job-Count Intake
+
+Fresh isolated `cargo check --workspace` targets with downloads already warm:
+
+| Jobs | Wall | User | System | Max RSS |
+| ---: | ---: | ---: | ---: | ---: |
+| 8 | 18.18 s | 72.48 s | 8.05 s | 501,936 KiB |
+| 12 | 17.91 s | 79.82 s | 8.76 s | 502,172 KiB |
+| 16 | 17.57 s | 83.48 s | 9.29 s | 502,684 KiB |
+
+Sixteen was fastest in this single-job probe, but only 1.9% faster than 12.
+Do not select the host default until the realistic concurrent workload measures
+interactive latency and sustained thermal behavior. Twelve remains the leading
+provisional concurrency-safe candidate.

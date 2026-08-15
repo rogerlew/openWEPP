@@ -122,7 +122,7 @@ heavy-run time alone.
   owned by another active task.
 - [x] Benchmark Cargo incremental compilation against
   `CARGO_INCREMENTAL=0` plus shared sccache.
-- [ ] Benchmark the system linker against Clang plus mold without committing a
+- [x] Benchmark the system linker against Clang plus mold without committing a
   global optimization before evidence exists.
 - [ ] Select bounded Cargo/nextest concurrency and a one-heavy-run-per-host
   admission mechanism.
