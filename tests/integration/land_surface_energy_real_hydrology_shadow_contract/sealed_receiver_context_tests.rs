@@ -2,6 +2,130 @@
 
 use super::*;
 
+fn zero_ground_protocol() -> WaterProtocol {
+    let ground_key = key("ground", "thermal-1");
+    WaterProtocol {
+        transaction_id: TransactionId(41),
+        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        beginning_snapshot_sha256: digest('3'),
+        requests: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key.clone(),
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        authorizations: vec![WaterAuthorization {
+            key: ground_key.clone(),
+            amount_kg_m2_stand_ground: 0.0,
+            reason: WaterAuthorizationReason::ZeroSupply,
+        }],
+        finalized_uses: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key,
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        condensation_credits: Vec::new(),
+    }
+}
+
+fn sealed_error_code(
+    result: Result<UnifiedLseFinalization, LandSurfaceEnergyShadowError>,
+) -> DirectSurfaceLiquidErrorCode {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+        result.expect_err("sealed cardinality poison")
+    else {
+        panic!("sealed failure must be canonical");
+    };
+    error.failure().expect("failure").code
+}
+
+#[test]
+fn standalone_sealing_requires_complete_ground_daf_coverage() {
+    let baseline = unified_finalization(zero_ground_protocol());
+    assert_eq!(
+        baseline.water_protocol().requests[0].amount_kg_m2_stand_ground,
+        0.0
+    );
+
+    let empty = WaterProtocol {
+        transaction_id: TransactionId(41),
+        hydrology_owner_id: baseline.water_protocol().hydrology_owner_id.clone(),
+        beginning_snapshot_sha256: baseline.water_protocol().beginning_snapshot_sha256.clone(),
+        requests: Vec::new(),
+        authorizations: Vec::new(),
+        finalized_uses: Vec::new(),
+        condensation_credits: Vec::new(),
+    };
+    assert_eq!(
+        sealed_error_code(UnifiedLseFinalization::try_new(
+            &finalization_expectations(
+                baseline.water_protocol(),
+                baseline.soil_thermal_candidates(),
+            ),
+            empty,
+            baseline.ending_tile_states_pre_ingress().to_vec(),
+            baseline.soil_thermal_candidates().to_vec(),
+            baseline.rollback_hashes().to_vec(),
+        )),
+        DirectSurfaceLiquidErrorCode::E005,
+    );
+
+    let mut two_tiles = baseline.ending_tile_states_pre_ingress().to_vec();
+    let mut covered_lse = two_tiles[0].clone();
+    covered_lse.tile_id = TileId::try_new("covered").expect("tile");
+    two_tiles.push(covered_lse);
+    let mut two_thermal = baseline.soil_thermal_candidates().to_vec();
+    let mut covered_thermal = two_thermal[0].clone();
+    covered_thermal.tile_id = TileId::try_new("covered").expect("tile");
+    two_thermal.push(covered_thermal);
+    let two_expectations = finalization_expectations(baseline.water_protocol(), &two_thermal);
+    assert_eq!(
+        sealed_error_code(UnifiedLseFinalization::try_new(
+            &two_expectations,
+            baseline.water_protocol().clone(),
+            two_tiles,
+            two_thermal,
+            baseline.rollback_hashes().to_vec(),
+        )),
+        DirectSurfaceLiquidErrorCode::E005,
+    );
+
+    let mut extra = baseline.water_protocol().clone();
+    let mut extra_key = extra.requests[0].key.clone();
+    extra_key.requesting_tile_id = TileId::try_new("covered").expect("tile");
+    extra.requests.push(
+        openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+            key: extra_key.clone(),
+            amount_kg_m2_stand_ground: 0.0,
+        },
+    );
+    extra.authorizations.push(WaterAuthorization {
+        key: extra_key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+        reason: WaterAuthorizationReason::ZeroSupply,
+    });
+    extra.finalized_uses.push(
+        openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+            key: extra_key,
+            amount_kg_m2_stand_ground: 0.0,
+        },
+    );
+    assert_eq!(
+        sealed_error_code(UnifiedLseFinalization::try_new(
+            &finalization_expectations(
+                baseline.water_protocol(),
+                baseline.soil_thermal_candidates(),
+            ),
+            extra,
+            baseline.ending_tile_states_pre_ingress().to_vec(),
+            baseline.soil_thermal_candidates().to_vec(),
+            baseline.rollback_hashes().to_vec(),
+        )),
+        DirectSurfaceLiquidErrorCode::E005,
+    );
+}
+
 #[test]
 fn sealed_receiver_hash_covers_all_thermal_fields_and_numeric_preflight_precedes_topology() {
     let ground_key = key("ground", "thermal-1");

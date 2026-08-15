@@ -987,6 +987,58 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze exact bytes and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `3ac61997d`
+
+- HOLD: both reviewers found the complete E002 envelope still split around
+  configuration/state E003 validation for ingress, source-map, outer-
+  transaction and expected-snapshot identity.
+- HOLD: both reviewers found standalone sealing accepts an entirely empty
+  request/authorization/finalized-use protocol through vacuous set equality.
+- HOLD: the Rust reviewer found real LSE negative D/A/F and condensation-credit
+  operands construct domain E003 rather than bound E006.
+- RISK accepted for explicit disposition: typed public error variant shapes are
+  source-breaking, and thermodynamic constants remain duplicated across LSE
+  and direct ingress.
+- PASS but non-dispositive: LSE 28/28; unified 62/62; custody authority 10/10;
+  orchestrator 600/600; strict Clippy; formatting and diff hygiene.
+- Pending: remediate all findings, disposition both risks, and repeat fresh
+  dual exact-byte review. Heavy execution remains blocked.
+
+## `3ac61997d` HOLD remediation
+
+- Ran: `cargo nextest run -p openwepp-land-surface-energy --profile quick
+  --no-fail-fast` — PASS, 28/28.
+- Ran: `cargo nextest run --test
+  land_surface_energy_real_hydrology_shadow_contract --profile quick
+  --no-fail-fast` — PASS, 64/64.
+- Ran: `cargo nextest run --test
+  surface_liquid_hydrology_custody_authority_contract --profile quick` — PASS,
+  10/10.
+- Ran: affected strict all-target/all-feature Clippy for
+  `openwepp-land-surface-energy` and `openwepp-hillslope-orchestrator` — PASS.
+- Ran: science admission from `af9a989063aa8751dfadb14c442e1b360653658c`
+  — PASS, 46 contracts and 28 science surfaces.
+- Ran: authority anti-evasion — PASS; AUTH11 — PASS, 3/3; surface-liquid
+  contract unit compliance — PASS.
+- Ran: `cargo fmt --all -- --check`, `git diff --check`, and package Markdown
+  lint — PASS; Markdown validated 98 files with zero errors and warnings.
+- Ran by the remediation worker: orchestrator library — PASS, 600/600; three
+  tests exceeded the slow-test threshold and no test failed.
+- Preserved retries: the first compile used nonexistent
+  `WaterAuthorizationReason::FullDemand` and was corrected to `FullSupply`;
+  the first focused run passed 62/64, exposing incomplete raw-plus-unified
+  attempted hashing and an accidentally invalid soil-key fixture. Both defects
+  were corrected before the 64/64 run.
+- Static + Ran: global identity-first preflight, independently expected ground
+  D/A/F coverage, and real E003/E006 water-taxonomy vectors close all three
+  material findings.
+- Risk disposition: the typed public LSE error shape is intentionally
+  source-breaking within package authority. The duplicated LSE/direct-runtime
+  thermodynamic constants are bit-identical; centralization is deferred as a
+  maintenance risk because it would broaden scientific-authority coupling.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

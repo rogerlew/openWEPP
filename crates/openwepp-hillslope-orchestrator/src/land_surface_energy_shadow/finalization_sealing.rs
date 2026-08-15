@@ -108,6 +108,37 @@ pub(super) fn first_sealed_finalization_violation(
         .iter()
         .map(|(identity, _)| identity)
         .collect::<Vec<_>>();
+    let ground_requests = protocol
+        .requests
+        .iter()
+        .filter(|request| request.key.requesting_component == RequestingComponent::GroundSurface)
+        .collect::<Vec<_>>();
+    for expected in &expected_tiles {
+        if !ground_requests.iter().any(|request| {
+            request.key.ofe_id == expected.0 && request.key.requesting_tile_id == expected.1
+        }) {
+            return Some(ReceiverEnvelopeViolation::cardinality_for_tile(
+                OwnerKind::LandSurfaceEnergy,
+                Some(expectations.lse_owner_id.clone()),
+                expected.0.clone(),
+                expected.1.clone(),
+                "missing independently expected ground D/A/F identity",
+            ));
+        }
+    }
+    if let Some(request) = ground_requests.iter().find(|request| {
+        !expected_tiles.iter().any(|expected| {
+            request.key.ofe_id == expected.0 && request.key.requesting_tile_id == expected.1
+        })
+    }) {
+        return Some(ReceiverEnvelopeViolation::cardinality_for_tile(
+            OwnerKind::LandSurfaceEnergy,
+            Some(expectations.lse_owner_id.clone()),
+            request.key.ofe_id.clone(),
+            request.key.requesting_tile_id.clone(),
+            "unexpected ground D/A/F identity outside independent expectations",
+        ));
+    }
     for (index, expected) in expected_tiles.iter().enumerate() {
         let lse = lse_tiles.get(index);
         let thermal = thermal_tiles.get(index);

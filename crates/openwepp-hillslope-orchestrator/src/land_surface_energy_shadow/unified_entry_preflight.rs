@@ -227,28 +227,6 @@ fn preflight_unified_entry_identity_envelope(
     let attempted_sha256 = raw_and_unified_attempt_sha256(&raw_attempt, &unified_attempt);
     preflight_request_identities(request_batch, &actual_snapshot)
         .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
-    configuration.validate().map_err(|error| {
-        join_raw_and_unified_attempt(
-            snapshot_failure(
-                error.code(),
-                soil_adapter.owner,
-                configuration,
-                "invalid surface-liquid configuration",
-            ),
-            &attempted_sha256,
-        )
-    })?;
-    surface_state.validate(configuration).map_err(|error| {
-        join_raw_and_unified_attempt(
-            snapshot_failure(
-                error.code(),
-                soil_adapter.owner,
-                configuration,
-                "invalid beginning surface-liquid owner",
-            ),
-            &attempted_sha256,
-        )
-    })?;
     if let Err(error) = preflight_surface_liquid_ingress_input_identities(configuration, ingress) {
         return Err(contextualize_ingress_identity_failure(
             &error,
@@ -286,6 +264,28 @@ fn preflight_unified_entry_identity_envelope(
         )
         .into());
     }
+    configuration.validate().map_err(|error| {
+        join_raw_and_unified_attempt(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid surface-liquid configuration",
+            ),
+            &attempted_sha256,
+        )
+    })?;
+    surface_state.validate(configuration).map_err(|error| {
+        join_raw_and_unified_attempt(
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                configuration,
+                "invalid beginning surface-liquid owner",
+            ),
+            &attempted_sha256,
+        )
+    })?;
     Ok((
         actual_snapshot,
         attempted_sha256,
@@ -467,6 +467,24 @@ fn unified_entry_failure(
     expected_snapshot: &Sha256Digest,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let unified_attempt = unified_entry_attempt_sha256(
+        soil_adapter,
+        request_batch,
+        soil_sources,
+        ingress,
+        receiver_expectations,
+        actual_snapshot,
+        expected_snapshot,
+    );
+    let raw_attempt = surface_liquid_raw_snapshot_attempt_sha256(
+        soil_adapter.owner.snapshot_bytes(),
+        configuration,
+        soil_adapter
+            .owner
+            .beginning_frame()
+            .surface_liquid_shadow
+            .as_deref(),
+    );
     DirectSurfaceLiquidError::canonical_failure(
         code,
         DirectSurfaceLiquidPhase::Authorization,
@@ -477,14 +495,9 @@ fn unified_entry_failure(
         },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(actual_snapshot.to_string()),
-            attempted_owner_sha256: Some(unified_entry_attempt_sha256(
-                soil_adapter,
-                request_batch,
-                soil_sources,
-                ingress,
-                receiver_expectations,
-                actual_snapshot,
-                expected_snapshot,
+            attempted_owner_sha256: Some(raw_and_unified_attempt_sha256(
+                &raw_attempt,
+                &unified_attempt,
             )),
         },
         detail,

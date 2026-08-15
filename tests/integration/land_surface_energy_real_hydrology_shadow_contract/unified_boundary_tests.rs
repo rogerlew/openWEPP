@@ -2,6 +2,52 @@
 
 use super::*;
 
+fn protocol_numeric_vector(
+    request_amount: f64,
+    authorization_amount: f64,
+    finalized_amount: f64,
+    condensation_amount: Option<f64>,
+) -> WaterProtocol {
+    let ground_key = key("ground", "thermal-1");
+    WaterProtocol {
+        transaction_id: TransactionId(41),
+        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        beginning_snapshot_sha256: digest('3'),
+        requests: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key.clone(),
+                amount_kg_m2_stand_ground: request_amount,
+            },
+        ],
+        authorizations: vec![WaterAuthorization {
+            key: ground_key.clone(),
+            amount_kg_m2_stand_ground: authorization_amount,
+            reason: WaterAuthorizationReason::FullSupply,
+        }],
+        finalized_uses: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key,
+                amount_kg_m2_stand_ground: finalized_amount,
+            },
+        ],
+        condensation_credits: condensation_amount
+            .map(|amount| CondensationCredit {
+                transaction_id: TransactionId(41),
+                hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
+                    .expect("owner"),
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                tile_id: TileId::try_new("open").expect("tile"),
+                surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
+                amount_kg_m2_stand_ground: amount,
+                amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                temperature_k: 290.0,
+                specific_liquid_enthalpy_j_kg: 70_000.0,
+            })
+            .into_iter()
+            .collect(),
+    }
+}
+
 fn expectation(
     snapshot: Sha256Digest,
     lse_owner: &str,
@@ -520,6 +566,42 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
             DirectSurfaceLiquidErrorCode::E010,
         ),
         (missing_authorization, DirectSurfaceLiquidErrorCode::E005),
+        (
+            protocol_numeric_vector(-1.0, 0.0, 0.0, None)
+                .validate()
+                .expect_err("negative request"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            protocol_numeric_vector(1.0, -1.0, 0.0, None)
+                .validate()
+                .expect_err("negative authorization"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            protocol_numeric_vector(1.0, 1.0, -1.0, None)
+                .validate()
+                .expect_err("negative finalized use"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            protocol_numeric_vector(1.0, 1.0, 1.0, Some(-1.0))
+                .validate()
+                .expect_err("negative condensation"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            protocol_numeric_vector(1.0, 1.0, 1.0, Some(0.0))
+                .validate()
+                .expect_err("zero condensation"),
+            DirectSurfaceLiquidErrorCode::E006,
+        ),
+        (
+            protocol_numeric_vector(f64::NAN, 0.0, 0.0, None)
+                .validate()
+                .expect_err("nonfinite request"),
+            DirectSurfaceLiquidErrorCode::E003,
+        ),
     ];
     for (poison, expected) in cases.into_iter().chain(real_cases) {
         let error = execute_unified_real_hydrology_shadow(

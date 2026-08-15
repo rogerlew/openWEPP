@@ -289,6 +289,7 @@ impl RealReceiverClosureOperands {
 
 #[derive(Clone, Debug)]
 struct ReceiverEnvelopeViolation {
+    code: DirectSurfaceLiquidErrorCode,
     owner_kind: Option<OwnerKind>,
     owner_id: Option<ResourceOwnerId>,
     ofe_id: Option<OfeId>,
@@ -305,6 +306,7 @@ impl ReceiverEnvelopeViolation {
         detail: &'static str,
     ) -> Self {
         Self {
+            code: DirectSurfaceLiquidErrorCode::E011,
             owner_kind: Some(owner_kind),
             owner_id,
             ofe_id: Some(ofe_id),
@@ -319,10 +321,28 @@ impl ReceiverEnvelopeViolation {
         detail: &'static str,
     ) -> Self {
         Self {
+            code: DirectSurfaceLiquidErrorCode::E011,
             owner_kind: Some(owner_kind),
             owner_id,
             ofe_id: None,
             tile_id: None,
+            detail,
+        }
+    }
+
+    fn cardinality_for_tile(
+        owner_kind: OwnerKind,
+        owner_id: Option<ResourceOwnerId>,
+        ofe_id: OfeId,
+        tile_id: TileId,
+        detail: &'static str,
+    ) -> Self {
+        Self {
+            code: DirectSurfaceLiquidErrorCode::E005,
+            owner_kind: Some(owner_kind),
+            owner_id,
+            ofe_id: Some(ofe_id),
+            tile_id: Some(tile_id),
             detail,
         }
     }
@@ -472,7 +492,7 @@ impl UnifiedLseFinalization {
                 })
             });
             return Err(canonical_receiver_failure(
-                DirectSurfaceLiquidErrorCode::E011,
+                violation.code,
                 DirectSurfaceLiquidPhase::AtomicEnvelope,
                 water_protocol.transaction_id,
                 violation.owner_kind,

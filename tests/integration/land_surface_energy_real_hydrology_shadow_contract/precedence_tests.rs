@@ -591,6 +591,87 @@ fn request_identity_precedes_stale_digest_nonfinite_configuration_and_binds_raw_
 }
 
 #[test]
+fn every_cross_input_e002_precedes_config_or_state_e003_without_callback() {
+    for domain_owner in 0..2 {
+        for identity_poison in 0..4 {
+            let (mut frame, mut configuration) = configured_surface_frame(
+                SurfaceClass::BareMineralSoil,
+                WaterSourceType::SurfaceLiquid,
+                1.0,
+            );
+            let clean_snapshot = {
+                let (clean_owner, _) = owner(&frame);
+                unified_beginning_hydrology_snapshot_sha256(
+                    &LandSurfaceEnergyRealHydrologyAdapter::new(&clean_owner),
+                    &configuration,
+                )
+                .expect("clean snapshot")
+            };
+            if domain_owner == 0 {
+                configuration.records[0].capacity_kg_m2_tile = f64::NAN;
+            } else {
+                frame
+                    .surface_liquid_shadow
+                    .as_deref_mut()
+                    .expect("surface state")
+                    .records[0]
+                    .liquid_kg_m2_tile = f64::NAN;
+            }
+            let (real_owner, _) = owner(&frame);
+            let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+            let mut batch = surface_potential_batch(
+                SurfaceClass::BareMineralSoil,
+                WaterSourceType::SurfaceLiquid,
+                configuration.records[0].key.source_id.clone(),
+                1.0,
+            );
+            let mut ingress = ingress_input();
+            let mut expected_snapshot = clean_snapshot;
+            match identity_poison {
+                0 => match &mut ingress.tile_ingress[0] {
+                    DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
+                        *tile_id = TileId::try_new("unknown-tile").expect("tile")
+                    }
+                },
+                1 => {
+                    batch.requests[0].key.source_id =
+                        SourceId::try_new("wrong-configured-source").expect("source")
+                }
+                2 => {
+                    batch.transaction_id = TransactionId(42);
+                    for request in &mut batch.requests {
+                        request.key.transaction_id = TransactionId(42);
+                    }
+                    ingress.transaction_id = TransactionId(42);
+                }
+                3 => expected_snapshot = digest('9'),
+                _ => unreachable!("bounded identity poison"),
+            }
+            let callback_count = std::cell::Cell::new(0);
+            let failure = canonical_failure(
+                execute_unified_real_hydrology_shadow(
+                    &adapter,
+                    &configuration,
+                    &receiver_expectations(1, expected_snapshot),
+                    &batch,
+                    &BTreeMap::new(),
+                    &ingress,
+                    |_| {
+                        callback_count.set(callback_count.get() + 1);
+                        panic!("identity/domain cross-poison reached callback")
+                    },
+                )
+                .expect_err("identity must precede config/state domain"),
+            );
+            assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+            assert_hashes(&failure);
+            assert_eq!(callback_count.get(), 0);
+        }
+    }
+}
+
+#[test]
 fn exact_one_custody_precedes_finite_cadence_failure() {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,

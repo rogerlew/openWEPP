@@ -85,7 +85,15 @@ with focused passing evidence. Fresh review then found callback boundary
 taxonomy, raw-attempt preservation and pre-callback thermal-layer gaps. Those
 findings are corrected in the current worktree with focused passing evidence.
 Fresh review then found configuration/request precedence and semantically
-combined LSE error categories. Those findings are corrected with typed LSE-
-owned classes and focused passing evidence. Fresh
-exact-byte reviews and terminal verification remain required. This is not yet
-a terminal custody-lift or resumed-Child-3 claim.
+combined LSE error categories. Those findings were corrected with typed LSE-
+owned classes. Exact-byte review at `3ac61997d` then found three material
+defects: the global E002 envelope was split around E003 validation, standalone
+sealing admitted an empty D/A/F protocol, and real negative water operands
+mapped to E003 rather than E006. The current worktree corrects all three with
+28/28 LSE, 64/64 integration, 10/10 custody-authority, 600/600 orchestrator-
+library, strict affected Clippy, formatting and diff-hygiene evidence. The
+typed public error shape is intentionally source-breaking within package
+authority; duplicated thermodynamic constants remain bit-identical and are
+recorded as a maintenance risk rather than broadened here. A clean remediation
+commit, fresh dual exact-byte reviews and terminal verification remain
+required. This is not yet a terminal custody-lift or resumed-Child-3 claim.

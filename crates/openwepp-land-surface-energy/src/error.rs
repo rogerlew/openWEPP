@@ -200,6 +200,30 @@ pub(crate) fn require_finite_nonnegative(
     }
 }
 
+pub(crate) fn require_finite_water_nonnegative(
+    value: f64,
+    field: &'static str,
+) -> Result<(), LandSurfaceEnergyError> {
+    require_finite(value, field)?;
+    if value >= 0.0 {
+        Ok(())
+    } else {
+        Err(LandSurfaceEnergyError::water_bound(field))
+    }
+}
+
+pub(crate) fn require_finite_water_positive(
+    value: f64,
+    field: &'static str,
+) -> Result<(), LandSurfaceEnergyError> {
+    require_finite(value, field)?;
+    if value > 0.0 {
+        Ok(())
+    } else {
+        Err(LandSurfaceEnergyError::water_bound(field))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{LandSurfaceEnergyError, LandSurfaceEnergyErrorClass};

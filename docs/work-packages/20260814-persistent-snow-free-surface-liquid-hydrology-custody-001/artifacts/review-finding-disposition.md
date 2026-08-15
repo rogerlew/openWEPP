@@ -506,3 +506,14 @@ No `fc65b2819` finding is rejected, deferred or moved to another package.
 | A-TERMINAL-FB89-MEDIUM-002: combined LSE error variants prevent semantically complete canonical taxonomy | Accepted | Remediated in worktree: LSE owns typed topology/water error classes and exhaustive class(); all production constructors migrated and real semantic vectors PASS |
 
 No `fb89e5a55` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `3ac61997d`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-3AC-HIGH-001: complete unified E002 identity envelope remains split around config/state E003 | Accepted | Remediated: configuration/state schema and identity, request identity, ingress identity, configured-source mapping, and outer transaction/snapshot identity all precede full E003 numeric validation; eight cross-input poisons prove E002, complete raw-plus-unified attempted hashes, and zero callback execution |
+| A/B-TERMINAL-3AC-HIGH-002: standalone sealing accepts an entirely empty D/A/F protocol | Accepted | Remediated: independent receiver expectations require at least one exact ground request identity for every expected `(OFE,tile)` and reject missing/extra coverage; `WaterProtocol::validate()` retains exact request/authorization/use cardinality; empty, missing, extra, and zero-amount-complete vectors PASS |
+| A-TERMINAL-3AC-MEDIUM-003: real LSE negative D/A/F/credit operands construct E003 rather than E006 | Accepted | Remediated: water-specific finite/bound helpers preserve nonfinite E003 and classify negative request/authorization/use/credit plus zero credit as E006 through the real public callback translation |
+| A-TERMINAL-3AC-RISK-004: typed public error-shape compatibility and duplicated thermodynamic constants need explicit disposition | Accepted for disposition | Dispositioned: the typed public error-shape change is an intentional package-authorized source break; no compatibility fallback is admitted because it would restore ambiguous taxonomy. LSE and direct-runtime constants remain bit-identical (`4218.0`, `273.15`); duplication is retained as a documented maintenance risk because centralization would broaden scientific-authority coupling outside this correction |
+
+No `3ac61997d` finding is rejected, deferred or moved to another package.

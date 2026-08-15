@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ComponentId, LandSurfaceEnergyError, OfeId, Sha256Digest, SourceId, SurfaceId, require_finite,
-    require_finite_nonnegative, require_finite_positive,
+    require_finite_water_nonnegative, require_finite_water_positive,
 };
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -171,7 +171,7 @@ impl WaterProtocol {
         let mut requests = BTreeMap::new();
         for row in &self.requests {
             row.key.validate(self.transaction_id)?;
-            require_finite_nonnegative(row.amount_kg_m2_stand_ground, "water request")?;
+            require_finite_water_nonnegative(row.amount_kg_m2_stand_ground, "water request")?;
             if requests
                 .insert(row.key.clone(), row.amount_kg_m2_stand_ground)
                 .is_some()
@@ -184,7 +184,7 @@ impl WaterProtocol {
         let mut authorizations = BTreeMap::new();
         for row in &self.authorizations {
             row.key.validate(self.transaction_id)?;
-            require_finite_nonnegative(row.amount_kg_m2_stand_ground, "water authorization")?;
+            require_finite_water_nonnegative(row.amount_kg_m2_stand_ground, "water authorization")?;
             let request =
                 requests
                     .get(&row.key)
@@ -208,7 +208,7 @@ impl WaterProtocol {
         let mut uses = BTreeSet::new();
         for row in &self.finalized_uses {
             row.key.validate(self.transaction_id)?;
-            require_finite_nonnegative(row.amount_kg_m2_stand_ground, "finalized water use")?;
+            require_finite_water_nonnegative(row.amount_kg_m2_stand_ground, "finalized water use")?;
             let authorization =
                 authorizations
                     .get(&row.key)
@@ -240,7 +240,7 @@ impl WaterProtocol {
                     "condensation identity mismatch",
                 ));
             }
-            require_finite_positive(credit.amount_kg_m2_stand_ground, "condensation amount")?;
+            require_finite_water_positive(credit.amount_kg_m2_stand_ground, "condensation amount")?;
             require_finite(credit.temperature_k, "condensation temperature")?;
             if !(200.0..=350.0).contains(&credit.temperature_k) {
                 return Err(LandSurfaceEnergyError::ConstitutiveDomain(
