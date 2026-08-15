@@ -122,3 +122,145 @@ three-owner rollback, receiver reconstruction, and production-exclusion claims
 reviewed here are materially closed. The one remaining E011 exact-offender
 attribution path is in scope and must be corrected and independently re-reviewed
 at new exact bytes.
+
+---
+
+# Review Agent B Terminal Closure Review — Hydrology, Custody, And Science
+
+Evidence class: `Static exact-commit + Ran exact-commit`
+
+Reviewed commit: `6c786ca6d07881697d64205fe44b09f12369034b`
+
+Verdict: `PASS / GO / no unresolved material hydrology, custody, science, or evidence finding`.
+
+This fresh terminal review preserves the historical `4f50e494c` HOLD above.
+It read the complete version-5 `SC-SURFACELIQUID-001`, the controlling LSE and
+WATBAL ownership rules, the package and all retained finding/gate history, the
+strict owner and restart implementation, ingress and independent closure, the
+shared production WB14 transition, the unified LSE/real-hydrology bridge, the
+production state and frozen/snow preflight surfaces, and the focused authority
+and integration tests. It inspected the complete public custody path rather
+than only the most recent test-governance diff.
+
+No new material finding was identified. The exact executable custody source at
+this commit is unchanged from the hydrology closure PASS at `ab703c83a`; the
+subsequent executable-diff changes are confined to package-owned tests and the
+historical Stage-0 source guard. This review nevertheless re-inspected the
+current source and reran the focused custody suites at the exact reviewed
+commit.
+
+## Closure assessment
+
+- Persistent custody is exact per `(run, OFE, tile, surface, class, source
+  type, source ID)`. Configuration binds production lane/index, ordered soil
+  layers, receiving thermal layer, area, tile fraction, capacity, ingress mode,
+  and downstream routing. Strict canonical bytes, SHA-256 identity, complete
+  key sets, state bounds, and transaction lineage make the state
+  restart-representable without an executable default or scalar broadcast.
+- One immutable beginning state supplies proportional same-store
+  authorization. Complete request identity is retained, nonfinite aggregate
+  arithmetic fails closed, the candidate independently re-derives the
+  authorization, and exact `0 <= F <= A <= D` validation precedes debit. Only
+  finalized use changes the candidate store; unused authorization remains.
+- Accepted negative LSE vapor flux produces one positive, typed condensation
+  credit. It is credited before the capacity test. Overflow preserves mass,
+  temperature, enthalpy, transaction, OFE, tile, surface, and source mapping,
+  enters only the post-resource ingress stage, and cannot satisfy the current
+  interval's authorization.
+- Open raw precipitation and accepted covered-canopy release are mutually
+  exclusive through the digest-bound ingress mode. Throughfall, both drainage
+  terms, stemflow, condensation overflow, and upstream runon retain typed
+  timing and custody. Tile-to-OFE weighting and unequal-area OFE routing are
+  each applied exactly once.
+- Every OFE advances one persistent 1,800-second WB14 continuation per interval
+  through the same production transition used by the unchanged daily wrapper.
+  The candidate retains day/index/cumulative carry in restart bytes, replaces
+  legacy depression retention with exact-zero legacy capacity in this shadow,
+  and routes infiltration/excess without a copied proxy partition.
+- The actual production soil candidate is built on a clone using the shared
+  same-pass infiltration transition. Independent operands reconstruct every
+  ordered layer, aggregate soil liquid including residual water over unfrozen
+  depth, the named soil-thermal enthalpy credit, retained LSE tile enthalpy,
+  store mass, parcel mass/enthalpy, and routed/outlet joins. No producer residual
+  is accepted as closure evidence.
+- The public bridge rejects snow runtime/carry, retained snow liquid,
+  frost/thaw runtime/carry, and any positive production-layer frozen depth or
+  frozen water before authorization or the fixed-cap callback. These are the
+  exact typed unsupported branches required by the snow-free authority.
+- Receiver and rollback validation carries the first actual offending
+  owner/OFE/tile, or the exact expected missing identity. The earlier E011
+  substitution and missing-row findings are covered by later-row and
+  per-position poisons. The complete bridge owner set is exactly LSE,
+  hydrology, and soil thermal.
+- Success and every rejected path are candidate-only. The caller's production
+  frame remains byte-identical, normal `DirectRunFrame` constructors set
+  `surface_liquid_shadow=None`, and recursive source inspection finds no runner
+  selector, production dispatch/default, publication, activation, or cutover
+  consumer.
+
+## Evidence checked
+
+The retained exact executable-byte comparator rerun at `74d512f44` records:
+
+```text
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+PASS
+
+TMPDIR=/tmp/ow-nextest-openwepp-20260814-4 \
+  cargo nextest run --workspace --profile full
+PASS: 2,783/2,783; 33 skipped
+
+cargo test --doc --workspace
+PASS
+
+cargo deny check
+PASS (one retained non-failing unmatched MIT-0 allowance warning)
+
+cargo fmt --all -- --check
+PASS
+
+git diff --check
+PASS
+```
+
+Commit `6c786ca6d` adds only the retained terminal gate/finding evidence after
+the `74d512f44` executable bytes. Attempt 3's 2,782/2,783 failure and its exact
+Stage-0 source-scan correction remain preserved alongside the successful
+attempt 4 logs; no failed evidence was replaced.
+
+Commands rerun at exact commit `6c786ca6d`:
+
+```text
+cargo nextest run --profile quick \
+  --test surface_liquid_hydrology_custody_authority_contract \
+  --test land_surface_energy_real_hydrology_shadow_contract
+PASS: 27/27; 0 skipped
+
+cargo nextest run -p openwepp-hillslope-orchestrator \
+  surface_liquid --profile quick
+PASS: 32/32 selected; 507 skipped by filter
+
+git diff --check
+PASS before this appended review record
+```
+
+The current governed line counts are truthful: the largest new owner module is
+2,990 lines and remains below the mandatory 3,000-line refactor threshold; all
+2,000-line WARN files have an explicit package disposition.
+
+## Residual boundaries
+
+This verdict approves only the dependency package's persistent snow-free
+surface/litter custody and default-off real-owner bridge. It does not authorize
+production selection, production-state mutation, runtime activation,
+publication, calibration, snow/frozen custody, Child-3 completion, real
+consumer cutover, or campaign completion. Prompt archival, two terminal
+verifiers, terminal lifecycle reconciliation, and later Child-3 resumption are
+separate required steps.
+
+## Approval statement
+
+`GO`: exact commit `6c786ca6d07881697d64205fe44b09f12369034b` is acceptable from the
+hydrology, custody, and science-closure perspective. All retained material
+findings reviewed here are corrected, focused and full-workspace evidence is
+present, and no material finding remains for this review role.
