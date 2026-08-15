@@ -66,5 +66,8 @@ nondegenerate routed-order vector. Closure9/10 reviews found aggregate
 ending-state errors still fabricated first-OFE context and the canonical parcel
 order/source ID plus exact mixed-route outputs were not fully frozen. The
 correction at `aacf181d7` closes those context and evidence seams. Focused gates
-pass, but fresh exact-byte reviews and terminal verification remain required.
-This is not yet a terminal custody-lift or resumed-Child-3 claim.
+pass. Closure10 Rust review then found replacement rows were still attributed to
+the missing expected key; `2dfd0af64` makes cardinality/direction explicit and
+adds the exact context/rollback matrix. Fresh exact-byte reviews and terminal
+verification remain required. This is not yet a terminal custody-lift or
+resumed-Child-3 claim.

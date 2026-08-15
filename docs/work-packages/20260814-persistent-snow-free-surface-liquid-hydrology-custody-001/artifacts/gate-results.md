@@ -691,3 +691,18 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - Pending: fresh exact-byte Rust and hydrology closure review.
+
+## Cardinality-aware ending-context remediation at `2dfd0af64`
+
+- HOLD retained: closure10 Rust review found equal-length store/OFE replacement
+  reported the missing expected key instead of the available forged row, and
+  the tests did not bind the complete context/rollback matrix.
+- PASS: shorter actual sequences report missing expected identity; longer
+  sequences report the first excess/duplicate actual identity; equal-length
+  replacement or reorder reports the first actual mismatched row.
+- PASS: first/middle/last missing, appended duplicate, forged replacement and
+  pairwise reorder cases cover stores and continuations with exact E010 phase,
+  transaction, owner, applicable/absent identity and rollback hashes.
+- PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.

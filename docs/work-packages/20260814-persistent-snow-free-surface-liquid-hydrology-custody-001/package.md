@@ -129,8 +129,12 @@ branch, PR or push is in scope.
   incomplete centralization/frozen evidence for parcel order and source
   identity. The correction at `aacf181d7` centralizes those definitions,
   reports membership-aware or aggregate typed context, and freezes every
-  mixed-route receipt, remainder and continuation bit. Fresh exact-byte reviews
-  remain pending.
+  mixed-route receipt, remainder and continuation bit. Closure10 Rust review
+  found equal-length replacement context still pointed to the missing expected
+  key and the full line-count inventory lacked three WARN dispositions. The
+  correction at `2dfd0af64` reports the actual replacement row and binds the
+  full position/cardinality/context/rollback matrix; governance records every
+  affected large module below. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

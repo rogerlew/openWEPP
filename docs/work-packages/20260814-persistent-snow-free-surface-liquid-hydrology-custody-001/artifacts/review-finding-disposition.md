@@ -271,3 +271,14 @@ membership failures identify the exact available or missing key. Canonical
 non-arithmetic identity/order is shared, while a bit-frozen, nondegenerate
 fixture protects the independent physical implementations from coordinated
 ordering drift.
+
+## Cardinality-aware offender-context findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-CLOSURE10-HIGH-001: equal-length ending replacement reports missing expected rather than actual replacement identity | Accepted | Remediated at `2dfd0af64`; focused PASS |
+| A-TERMINAL-CLOSURE10-MEDIUM-002: complete large-file WARN inventory is absent | Accepted | Remediated in line-count governance; no runtime effect |
+
+The ending join now distinguishes missing, excess, replacement and reorder by
+cardinality and sequence direction. Tests bind exact context availability and
+rollback hashes at every structural position.
