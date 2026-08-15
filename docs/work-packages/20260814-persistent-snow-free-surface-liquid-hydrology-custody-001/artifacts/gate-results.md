@@ -788,6 +788,35 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
 
+## Exact-byte review at `5d298ca1c` and final focused remediation
+
+- HOLD retained: fresh hydrology and Rust reviews independently found that
+  standalone finalization did not seal the exact three-owner rollback set,
+  frost fine/shadow membership was not reciprocal, and unified E002 preflight
+  omitted configured request/source mapping and complete attempted-input
+  provenance. The Rust review also found two review files with a blank EOF.
+- PASS: standalone finalization now requires exactly one canonical LSE,
+  hydrology and soil-thermal rollback row and resolves thermal failure context
+  only from an applicable owner row.
+- PASS: persisted and runtime frost containers now require exact reciprocal
+  fine/shadow membership, ordering and count while retaining empty/empty as the
+  valid initial structural state.
+- PASS: unified preflight now validates complete configured source binding
+  before every E003 check and callback, hashes all ingress, WB14 and soil-source
+  operands, and records the computed beginning snapshot in rollback evidence.
+- FAIL retained: the first combined focused run exposed one stale internal
+  frost fixture with fine rows but no shadow row. The fixture was corrected to
+  canonical reciprocal structure; the validator was not weakened.
+- FAIL retained: first broader sealing and unified integration attempts exposed
+  stale expected error and snapshot assertions. They were corrected to the
+  canonical missing-owner E011 context and independently computed beginning
+  snapshot, then reran successfully.
+- PASS on the combined worktree: focused orchestrator 145/145; unified
+  real-hydrology/LSE integration 52/52; custody authority 10/10; affected
+  strict Clippy; formatting and diff hygiene.
+- Pending: freeze these exact bytes and obtain fresh independent dual review
+  before any heavy terminal execution.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
@@ -847,6 +876,20 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   receiver-failure, unified-entry-preflight and extracted test surface to one
   atomic SC contract per entry. Admission reports 46 contracts and 27 science
   surfaces.
+
+## Exact-byte review at `5d298ca1c`
+
+- HOLD: fresh Rust and hydrology reviews independently found incomplete
+  standalone rollback-owner sealing, nonreciprocal frost fine/shadow membership
+  and incomplete unified source/attempted-input E002 provenance.
+- PASS within both reviews: unified integration 46/46, selected library
+  145/145, custody authority 10/10; hydrology also ran R7G frost 17/17 and Rust
+  ran strict affected Clippy.
+- PASS: D/A/F, restart custody, signed condensation, mass/enthalpy joins,
+  ingress order, rollback isolation and selector exclusion had no new material
+  finding.
+- Pending: correct all accepted findings and repeat fresh dual exact-byte
+  review before heavy gates.
 
 ## Fifth exact-byte review remediation
 

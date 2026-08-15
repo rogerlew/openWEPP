@@ -70,7 +70,11 @@ pass. Closure10 Rust review then found replacement rows were still attributed to
 the missing expected key; `2dfd0af64` makes cardinality/direction explicit and
 adds the exact context/rollback matrix. A later exact-byte Rust review at
 `85358c9b2` found receiver owner/hash drift, incomplete frost-container
-structure and incomplete unified ingress identity preflight. All three are
-corrected in the current worktree with focused passing evidence. Fresh
+structure and incomplete unified ingress identity preflight. The subsequent
+`5d298ca1c` reviews found that standalone sealing still admitted incomplete
+rollback owner sets, frost membership was not reciprocal and unified E002
+preflight omitted configured source mapping and complete attempted-input
+provenance. All findings are corrected in the current worktree with focused
+passing evidence. Fresh
 exact-byte reviews and terminal verification remain required. This is not yet
 a terminal custody-lift or resumed-Child-3 claim.

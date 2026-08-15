@@ -2426,6 +2426,11 @@ fn validate_direct_frost_runtime_structure(
             field: "constructor.frost_runtime_carry.total_fine_layer_count",
         });
     }
+    if carry.layer_shadows.is_empty() != carry.fine_layers.is_empty() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
+    }
     if carry
         .layer_shadows
         .windows(2)
@@ -2467,6 +2472,16 @@ fn validate_direct_frost_runtime_structure(
             });
         }
         prior = Some((fine.layer_index, fine.fine_index));
+    }
+    if carry.layer_shadows.iter().any(|layer| {
+        !carry
+            .fine_layers
+            .iter()
+            .any(|fine| fine.layer_index == layer.layer_index)
+    }) {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
     }
     Ok(())
 }

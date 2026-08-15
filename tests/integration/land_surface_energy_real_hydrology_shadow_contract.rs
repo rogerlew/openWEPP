@@ -1055,7 +1055,7 @@ fn unified_bridge_rejects_a_valid_but_wrong_lineage_final_protocol() {
         wrong_beginning.expect_err("stale beginning must reject"),
         DirectSurfaceLiquidErrorCode::E002,
         openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::Authorization,
-        &digest('3'),
+        &hydrology_snapshot,
         None,
     );
     assert_eq!(frame, original);

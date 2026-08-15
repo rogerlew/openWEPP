@@ -207,6 +207,161 @@ fn ingress_identity_precedes_request_and_winter_e003_without_callback() {
 }
 
 #[test]
+fn configured_surface_source_identity_precedes_request_and_winter_e003() {
+    for poison in 0..2 {
+        let (mut frame, configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        let mut batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        match poison {
+            0 => {
+                batch.requests[0].key.source_id =
+                    SourceId::try_new("syntactically-valid-wrong-store").expect("wrong source");
+                batch.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+            }
+            1 => {
+                batch.requests[0].key.source_tile_id =
+                    Some(TileId::try_new("syntactically-valid-wrong-tile").expect("wrong tile"));
+                frame.lanes[0].winter_column.frost.total_fine_layer_count = 0.5;
+            }
+            _ => unreachable!("bounded configured-source poison"),
+        }
+        let original = frame.clone();
+        let (owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+        let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+            .expect("configured-source snapshot");
+        let callback_called = std::cell::Cell::new(false);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot.clone()),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| {
+                    callback_called.set(true);
+                    panic!("invalid source mapping reached finalization callback")
+                },
+            )
+            .expect_err("configured source identity must precede E003"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(snapshot.as_str())
+        );
+        assert!(!callback_called.get());
+        assert_hashes(&failure);
+        assert_eq!(frame, original, "configured-source poison mutated owner");
+    }
+}
+
+#[test]
+fn unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("attempt-hash snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let attempted = |mut ingress: DirectSurfaceLiquidIngressInput| {
+        ingress.interval_s = f64::NAN;
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot.clone()),
+                &batch,
+                &BTreeMap::new(),
+                &ingress,
+                |_| panic!("nonfinite cadence reached callback"),
+            )
+            .expect_err("nonfinite cadence"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .expect("attempted hash")
+    };
+    let baseline = attempted(ingress_input());
+    let mut mass = ingress_input();
+    let DirectTileGroundIngress::OpenRawPrecipitation {
+        raw_precipitation, ..
+    } = &mut mass.tile_ingress[0]
+    else {
+        panic!("open ingress fixture")
+    };
+    raw_precipitation.mass_kg_m2_tile_ground = 0.25;
+    let mut wb14 = ingress_input();
+    wb14.wb14_parameters[0].effective_conductivity_m_s = 2.0e-6;
+    let mut interval_index = ingress_input();
+    interval_index.interval_index = 1;
+    assert_ne!(baseline, attempted(mass));
+    assert_ne!(baseline, attempted(wb14));
+    assert_ne!(baseline, attempted(interval_index));
+}
+
+#[test]
+fn unified_snapshot_mismatch_reports_computed_beginning_hash() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let actual = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("actual snapshot");
+    let batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let expected = digest('f');
+    let failure = canonical_failure(
+        execute_unified_real_hydrology_shadow(
+            &adapter,
+            &configuration,
+            &receiver_expectations(1, expected.clone()),
+            &batch,
+            &BTreeMap::new(),
+            &ingress_input(),
+            |_| panic!("snapshot mismatch reached callback"),
+        )
+        .expect_err("snapshot mismatch"),
+    );
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(actual.as_str())
+    );
+    assert_ne!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(expected.as_str())
+    );
+}
+
+#[test]
 fn public_attachment_rejects_each_nonfinite_production_lane_area_as_e003() {
     for lane_index in 0..2 {
         for nonfinite_area in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {

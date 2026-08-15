@@ -451,3 +451,14 @@ Fresh review is pending on the corrected exact bytes.
 No `85358c9b2` finding is rejected, deferred, or moved to another package. The
 fresh hydrology/ownership review returned PASS; its interrupted broader run is
 retained as non-evidence.
+
+## Exact-head terminal-review findings at `5d298ca1c`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-5D2-HIGH-001: standalone sealing accepts incomplete/substituted rollback owner sets and can attribute missing thermal to LSE | Accepted | Remediated in worktree: exactly one canonical rollback row is required for each LSE, hydrology and soil-thermal owner; focused PASS |
+| A/B-TERMINAL-5D2-HIGH-002: frost fine/shadow membership is not reciprocal | Accepted | Remediated in worktree: persisted and runtime fine/shadow containers require exact reciprocal membership, order and count; focused PASS |
+| A/B-TERMINAL-5D2-HIGH-003: unified E002 preflight omits request/source mapping and complete attempted-input provenance | Accepted | Remediated in worktree: configured source binding precedes E003 and callback execution; attempted hashes bind ingress, WB14 and soil-source mappings; rollback reports the computed snapshot; focused PASS |
+| A-TERMINAL-5D2-LOW-004: two review artifacts add a blank line at EOF | Accepted | Remediated; terminal base diff hygiene will be rerun |
+
+No `5d298ca1c` finding is rejected, deferred or moved to another package.

@@ -370,6 +370,13 @@ fn poison_frost_structure(
         12 => {
             frost.layer_shadows.pop();
         }
+        // Fine groups without any declared layer shadow.
+        13 => frost.layer_shadows.clear(),
+        // A declared layer shadow without its reciprocal fine-layer group.
+        14 => {
+            frost.fine_layers.pop();
+            frost.total_fine_layer_count = 2.0;
+        }
         _ => unreachable!("complete frost structure poison table"),
     }
 }
@@ -377,7 +384,7 @@ fn poison_frost_structure(
 #[test]
 fn frost_container_structure_precedes_unsupported_state_and_carry() {
     for runtime_carry in [false, true] {
-        for poison in 0..13 {
+        for poison in 0..15 {
             assert_mutation_code(
                 move |frame| {
                     let mut frost = valid_frost_container();
@@ -402,6 +409,30 @@ fn frost_container_structure_precedes_unsupported_state_and_carry() {
             },
             DirectSurfaceLiquidErrorCode::E004,
         );
+    }
+}
+
+#[test]
+fn empty_frost_state_and_runtime_carry_remain_valid_initial_states() {
+    for runtime_carry in [false, true] {
+        let (error, snapshot, callback_called) = execute_winter_mutation(move |frame| {
+            let frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
+            frame.lanes[0].winter_column.frost = frost.clone();
+            frame.lanes[0].frost_runtime_carry = None;
+            if runtime_carry {
+                frame.lanes[0].frost_runtime_carry = Some(frost.into());
+            }
+        });
+        if runtime_carry {
+            assert!(!callback_called);
+            assert_snow_failure(error, &snapshot, DirectSurfaceLiquidErrorCode::E004);
+        } else {
+            assert!(callback_called);
+            assert!(matches!(
+                error,
+                LandSurfaceEnergyShadowError::Identity("snow scalar poison reached callback")
+            ));
+        }
     }
 }
 

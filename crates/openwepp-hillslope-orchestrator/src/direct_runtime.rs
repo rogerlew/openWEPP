@@ -571,6 +571,16 @@ mod cqr_row9_direct_runtime_tests {
     fn row9_frost_carry() -> DirectFrostRuntimeCarry {
         let mut frost = DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero());
         frost.total_fine_layer_count = 1.0;
+        frost.layer_shadows = vec![DirectFrostLayerShadowCarry {
+            layer_index: 1,
+            st_m: 0.0,
+            soil_water_m: 0.0,
+            frozen_depth_m: 0.0,
+            frozen_water_m: 0.0,
+            soilf_m: 0.0,
+            yst_m: 0.0,
+            nwfrzz_m: 0.0,
+        }];
         frost.fine_layers = vec![DirectFrostFineLayerCarry {
             layer_index: 1,
             fine_index: 1,
@@ -795,7 +805,7 @@ mod cqr_row9_direct_runtime_tests {
         populated_day.subsurface_compute_inputs.layers = vec![row9_layer_inputs(&layer)];
         populated_day.frost_layer_carry_projection = Some(vec![DirectFrostLayerCarryProjection {
             layer_index: 1,
-            fine_layer_count: 2,
+            fine_layer_count: 1,
             fine_layer_thickness_m: 0.05,
         }]);
         populated_day.snow_runtime_carry = Some(Box::new(row9_snow_carry()));

@@ -58,6 +58,174 @@ fn sealed_receiver_hash_covers_all_thermal_fields_and_numeric_preflight_precedes
     assert_topology_poison_context(&baseline);
 }
 
+#[test]
+fn sealed_finalization_requires_one_exact_rollback_row_per_owner() {
+    let ground_key = key("ground", "thermal-1");
+    let protocol = WaterProtocol {
+        transaction_id: TransactionId(41),
+        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        beginning_snapshot_sha256: digest('3'),
+        requests: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key.clone(),
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        authorizations: vec![WaterAuthorization {
+            key: ground_key.clone(),
+            amount_kg_m2_stand_ground: 0.0,
+            reason: WaterAuthorizationReason::ZeroSupply,
+        }],
+        finalized_uses: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key,
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        condensation_credits: Vec::new(),
+    };
+    let baseline = unified_finalization(protocol);
+    assert_eq!(baseline.rollback_hashes().len(), 3);
+
+    assert_sealed_rollback_failure(&baseline, Vec::new(), Some("land-surface-energy-v1"), None);
+
+    let mut missing_thermal = baseline.rollback_hashes().to_vec();
+    missing_thermal.pop();
+    assert_sealed_rollback_failure(&baseline, missing_thermal, Some("soil-thermal"), None);
+
+    let mut substituted = baseline.rollback_hashes().to_vec();
+    substituted[2].owner_id = "substituted-thermal".into();
+    assert_sealed_rollback_failure(
+        &baseline,
+        substituted,
+        Some("substituted-thermal"),
+        Some(&digest('4')),
+    );
+
+    let mut duplicate = baseline.rollback_hashes().to_vec();
+    duplicate.push(duplicate[2].clone());
+    assert_sealed_rollback_failure(&baseline, duplicate, Some("soil-thermal"), None);
+
+    let mut unexpected = baseline.rollback_hashes().to_vec();
+    unexpected.push(OwnerRollbackHash {
+        owner_kind: OwnerKind::Vegetation,
+        owner_id: "unexpected-vegetation".into(),
+        before_sha256: digest('7'),
+        after_sha256: digest('7'),
+    });
+    assert_sealed_rollback_failure(
+        &baseline,
+        unexpected,
+        Some("unexpected-vegetation"),
+        Some(&digest('7')),
+    );
+
+    let mut hydrology_changed = baseline.rollback_hashes().to_vec();
+    hydrology_changed[1].after_sha256 = digest('8');
+    assert_sealed_rollback_failure(
+        &baseline,
+        hydrology_changed,
+        Some("production-hydrology"),
+        Some(&digest('3')),
+    );
+}
+
+#[test]
+fn missing_sealed_thermal_receiver_never_borrows_lse_ownership() {
+    let ground_key = key("ground", "thermal-1");
+    let protocol = WaterProtocol {
+        transaction_id: TransactionId(41),
+        hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        beginning_snapshot_sha256: digest('3'),
+        requests: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key.clone(),
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        authorizations: vec![WaterAuthorization {
+            key: ground_key.clone(),
+            amount_kg_m2_stand_ground: 0.0,
+            reason: WaterAuthorizationReason::ZeroSupply,
+        }],
+        finalized_uses: vec![
+            openwepp_hillslope_orchestrator::land_surface_energy_shadow::WaterAmount {
+                key: ground_key,
+                amount_kg_m2_stand_ground: 0.0,
+            },
+        ],
+        condensation_credits: Vec::new(),
+    };
+    let baseline = unified_finalization(protocol);
+    let attempted = UnifiedLseFinalization::candidate_receiver_sets_sha256(
+        baseline.ending_tile_states_pre_ingress(),
+        &[],
+        baseline.rollback_hashes(),
+    );
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        baseline.water_protocol().clone(),
+        baseline.ending_tile_states_pre_ingress().to_vec(),
+        Vec::new(),
+        baseline.rollback_hashes().to_vec(),
+    )
+    .expect_err("missing thermal receiver must fail closed") else {
+        panic!("missing thermal receiver must retain canonical failure");
+    };
+    let failure = error.failure().expect("canonical receiver failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::AtomicEnvelope);
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some("soil-thermal")
+    );
+    assert_exact_hashes(failure, &digest('4'), &attempted);
+}
+
+fn assert_sealed_rollback_failure(
+    baseline: &UnifiedLseFinalization,
+    rollback_hashes: Vec<OwnerRollbackHash>,
+    expected_owner_id: Option<&str>,
+    expected_beginning: Option<&Sha256Digest>,
+) {
+    let attempted = UnifiedLseFinalization::candidate_receiver_sets_sha256(
+        baseline.ending_tile_states_pre_ingress(),
+        baseline.soil_thermal_candidates(),
+        &rollback_hashes,
+    );
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        baseline.water_protocol().clone(),
+        baseline.ending_tile_states_pre_ingress().to_vec(),
+        baseline.soil_thermal_candidates().to_vec(),
+        rollback_hashes,
+    )
+    .expect_err("malformed sealed rollback envelope must fail closed") else {
+        panic!("rollback envelope must retain canonical failure");
+    };
+    let failure = error.failure().expect("canonical rollback failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::AtomicEnvelope);
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        expected_owner_id
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        expected_beginning.map(Sha256Digest::as_str)
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(attempted.as_str())
+    );
+}
+
 fn assert_lse_numeric_context(baseline: &UnifiedLseFinalization) {
     let mut tiles = baseline.ending_tile_states_pre_ingress().to_vec();
     tiles[0].surface_enthalpy_j_m2_tile_ground = f64::NAN;

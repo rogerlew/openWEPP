@@ -26,4 +26,3 @@ The review requested owner-specific rollback provenance resolved from one
 canonical `(OwnerKind, owner_id)` lookup, complete structural winter
 validation and a complete input-only ingress identity preflight before every
 E003 check or callback. No broad or terminal gate was run by the reviewer.
-
