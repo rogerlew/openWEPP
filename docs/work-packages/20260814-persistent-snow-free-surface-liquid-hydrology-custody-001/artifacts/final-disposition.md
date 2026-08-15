@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / exact-byte review remediation active`
+Status: `in progress / heavy-gate test-lint remediation active`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted
@@ -136,6 +136,12 @@ tests. A clean commit and fresh dual exact-byte review remain required before
 heavy gates. This remains nonterminal and does not resume Child 3.
 Fresh dual exact-byte review at `7df1ad0e0` returned hydrology/science PASS and
 Rust correctness PASS with no material finding. Heavy comparator execution is
-now legitimate. This remains an in-progress placeholder pending heavy gates,
+now legitimate. Heavy attempt 5 at `ba22c88f5` passed the complete 2,901-test
+workspace, doctests, dependency policy and focused authority gates after one
+preserved missing-`TMPDIR` infrastructure retry. Workspace strict Clippy found
+14 custody-package test-only diagnostics; the current worktree contains only
+their semantic-neutral narrow correction, with 69/69 focused integration tests
+and target strict Clippy passing. This remains an in-progress placeholder
+pending a frozen correction commit, invalidated exact-head heavy gates,
 terminal diff reconciliation, dual terminal verification and prompt archival;
 Child 3 is not yet resumed.

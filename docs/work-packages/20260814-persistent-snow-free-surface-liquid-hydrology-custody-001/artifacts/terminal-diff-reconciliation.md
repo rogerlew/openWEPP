@@ -2,7 +2,7 @@
 
 Evidence class: `Static`
 
-Status: `in progress / re-review corrections stable / final exact-byte re-review pending`
+Status: `in progress / test-only heavy-gate correction not yet frozen`
 
 The current diff reconciles to the declared dependency-lift objective:
 
@@ -21,5 +21,8 @@ The current diff reconciles to the declared dependency-lift objective:
   every applicable typed failure branch executable.
 
 The two new Rust modules and every modified path are inside the amended intended
-write set. No unrelated source change is present. Final hashes and commit identity
-will be recorded after review remediation reaches stable bytes.
+write set. No unrelated source change is present. The only post-review source
+delta is a semantic-neutral strict-Clippy correction in five package-owned
+integration-test files; the failed lint output and successful focused retry are
+both retained. Final hashes and commit identity will be recorded after the
+correction is frozen and the invalidated exact-head gates pass.

@@ -50,12 +50,12 @@ fn execute_snow_poison(
 fn execute_winter_mutation(
     mutate: impl FnOnce(&mut DirectRunFrame),
 ) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
-    execute_winter_mutation_with_ingress(mutate, ingress_input())
+    execute_winter_mutation_with_ingress(mutate, &ingress_input())
 }
 
 fn execute_winter_mutation_with_ingress(
     mutate: impl FnOnce(&mut DirectRunFrame),
-    ingress: DirectSurfaceLiquidIngressInput,
+    ingress: &DirectSurfaceLiquidIngressInput,
 ) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -80,7 +80,7 @@ fn execute_winter_mutation_with_ingress(
         &receiver_expectations(1, snapshot.clone()),
         &batch,
         &BTreeMap::new(),
-        &ingress,
+        ingress,
         |_| {
             callback_called = true;
             Err(LandSurfaceEnergyShadowError::Identity(
@@ -97,7 +97,7 @@ fn winter_e004_attempt_hash_binds_wb14_inputs() {
     let run = |ingress| {
         let (error, snapshot, callback_called) = execute_winter_mutation_with_ingress(
             |frame| frame.lanes[0].winter_column.frost = valid_frost_container(),
-            ingress,
+            &ingress,
         );
         assert!(!callback_called);
         assert_snow_failure(error, &snapshot, DirectSurfaceLiquidErrorCode::E004)
@@ -490,6 +490,8 @@ fn frost_lane_and_runtime_carry_scalar_domains_precede_e004() {
 }
 
 #[test]
+// This exhaustive domain matrix is intentionally kept together for auditability.
+#[allow(clippy::too_many_lines)]
 fn frost_nested_layer_and_fine_layer_domains_precede_e004() {
     for runtime_carry in [false, true] {
         for field in 0..7 {

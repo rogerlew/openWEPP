@@ -65,7 +65,9 @@ fn two_ofe_attachment_fixture() -> (
     let mut records = Vec::new();
     for index in 0..2 {
         frame.lanes[index].area_m2 = [100.0, 200.0][index];
-        frame.lanes[index].subsurface_layers = layer_template.clone();
+        frame.lanes[index]
+            .subsurface_layers
+            .clone_from(&layer_template);
         frame.lanes[index].water.soil_water_m = 0.02;
         bindings.push(DirectSurfaceLiquidOfeBinding {
             ofe_id: ofes[index].clone(),
@@ -190,7 +192,7 @@ fn ingress_identity_precedes_request_and_winter_e003_without_callback() {
                 match &mut ingress.tile_ingress[0] {
                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
                     | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
-                        *tile_id = TileId::try_new("unknown-tile").expect("unknown tile")
+                        *tile_id = TileId::try_new("unknown-tile").expect("unknown tile");
                     }
                 }
             }
@@ -519,7 +521,7 @@ fn attachment_state_identity_precedes_nonfinite_lane_area_without_mutation() {
         match state_poison {
             0 => {
                 attempted_state.records[1].key.tile_id =
-                    TileId::try_new("wrong-state-tile").expect("wrong tile")
+                    TileId::try_new("wrong-state-tile").expect("wrong tile");
             }
             1 => attempted_state.records[1].liquid_kg_m2_tile = 1.25,
             _ => unreachable!("bounded state poison table"),
@@ -706,12 +708,12 @@ fn every_cross_input_e002_precedes_config_or_state_e003_without_callback() {
                 0 => match &mut ingress.tile_ingress[0] {
                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
                     | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
-                        *tile_id = TileId::try_new("unknown-tile").expect("tile")
+                        *tile_id = TileId::try_new("unknown-tile").expect("tile");
                     }
                 },
                 1 => {
                     batch.requests[0].key.source_id =
-                        SourceId::try_new("wrong-configured-source").expect("source")
+                        SourceId::try_new("wrong-configured-source").expect("source");
                 }
                 2 => {
                     batch.transaction_id = TransactionId(42);
@@ -888,7 +890,7 @@ fn receiver_state_identity_precedes_invalid_lane_domain_without_mutation_or_call
         match state_poison {
             0 => {
                 state.records[0].key.tile_id =
-                    TileId::try_new("wrong-state-tile").expect("wrong tile")
+                    TileId::try_new("wrong-state-tile").expect("wrong tile");
             }
             1 => state.records[0].liquid_kg_m2_tile = 1.25,
             _ => unreachable!("bounded state poison table"),

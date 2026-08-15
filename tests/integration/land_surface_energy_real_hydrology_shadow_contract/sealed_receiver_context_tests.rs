@@ -41,6 +41,8 @@ fn sealed_error_code(
 }
 
 #[test]
+// Exact zero is the protocol invariant under test, not an approximate measurement.
+#[allow(clippy::float_cmp)]
 fn standalone_sealing_requires_complete_ground_daf_coverage() {
     let baseline = unified_finalization(zero_ground_protocol());
     assert_eq!(

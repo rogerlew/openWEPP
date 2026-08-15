@@ -48,6 +48,8 @@ fn protocol_numeric_vector(
     }
 }
 
+// The helper mirrors the complete receiver-expectation field set explicitly.
+#[allow(clippy::too_many_arguments)]
 fn expectation(
     snapshot: Sha256Digest,
     lse_owner: &str,
@@ -75,6 +77,8 @@ fn expectation(
 }
 
 #[test]
+// This exhaustive field-binding matrix is intentionally kept together for auditability.
+#[allow(clippy::too_many_lines)]
 fn attempted_hash_binds_every_receiver_expectation_field_and_expected_snapshot() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -406,6 +410,8 @@ fn raw_callback_errors_are_canonicalized_without_fabricated_row_identity() {
 }
 
 #[test]
+// This exhaustive error-taxonomy matrix is intentionally kept together for auditability.
+#[allow(clippy::too_many_lines)]
 fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
     let cases = vec![
         (
@@ -631,6 +637,8 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
 }
 
 #[test]
+// This exhaustive boundary-error matrix is intentionally kept together for auditability.
+#[allow(clippy::too_many_lines)]
 fn raw_and_canonical_surface_errors_rebind_and_preserve_exact_lower_identity() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,

@@ -1250,6 +1250,36 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Disposition: all focused-review blockers are closed. Heavy comparator gates
   are now legitimate; terminal verification remains pending.
 
+## Heavy comparator attempt 5 at `ba22c88f5`
+
+- PASS: exact clean-tree identity, formatting, diff hygiene, science admission
+  from `af9a989063aa8751dfadb14c442e1b360653658c`, anti-evasion, AUTH11 3/3,
+  vegetation authority 26/26, C3 implementation 17/17, custody authority
+  10/10, LSE balance authority 7/7, SC-SURFACELIQUID unit compliance,
+  dependency policy and package/campaign Markdown lint.
+- FAIL retained: the first full-workspace and doctest commands used an absolute
+  short `TMPDIR` whose directory had not yet been created. Both failed before
+  test execution with `couldn't create a temp dir`. The runner created the
+  directory and repeated the same commands without changing repository bytes.
+- PASS on retry: full workspace nextest ran 2,901/2,901 tests successfully,
+  with 35 slow tests and 33 skipped by the frozen full profile. Workspace
+  doctests completed successfully with zero doctests and zero failures.
+- FAIL: workspace strict all-target/all-feature Clippy reported 14 diagnostic
+  sites in five custody-package integration-test files. No production or
+  unrelated baseline file failed. The findings comprised six missing
+  semicolons, one `assigning_clones`, one `needless_pass_by_value`, one exact-
+  zero `float_cmp`, one complete-field helper with eight arguments and four
+  intentionally exhaustive contract matrices over 100 lines.
+- PASS after correction in the uncommitted worktree: all mechanical findings
+  are corrected; the exact-zero and exhaustive-matrix cases use only narrow,
+  rationale-backed function allowances. Focused real-hydrology integration
+  passes 69/69, target strict Clippy passes, formatting and scoped diff hygiene
+  pass. No equation, identity, expected value or runtime path changed.
+- Raw command logs, including both failed attempts, are retained under
+  `artifacts/gate-run-batch-openwepp/`.
+- Pending: freeze the test-only correction, rerun invalidated exact-head heavy
+  gates, reconcile terminal bytes and obtain dual terminal verification.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
