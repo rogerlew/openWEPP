@@ -462,3 +462,14 @@ retained as non-evidence.
 | A-TERMINAL-5D2-LOW-004: two review artifacts add a blank line at EOF | Accepted | Remediated; terminal base diff hygiene will be rerun |
 
 No `5d298ca1c` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `73299b981`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-732-HIGH-001: soil request OFE is not bound to the configured production lane | Accepted | Remediated in worktree: exact OFE/lane-index/lane-ID/layer binding precedes E003 and callback; equal-layer cross-OFE poison PASS |
+| A/B-TERMINAL-732-HIGH-002: standalone sealing accepts equal-but-unbound LSE rollback lineage | Accepted | Remediated in worktree: the sole public constructor consumes independent receiver expectations and binds all three exact beginning digests; forged equal-LSE poison PASS |
+| A-TERMINAL-732-MEDIUM-003: several unified public failures omit complete attempted-input provenance | Accepted | Remediated in worktree: complete attempted framing is computed once and threaded through source-map, winter, exact-one and authorization failures; sensitivity poisons PASS |
+| A-TERMINAL-732-TEST-004: frost layer indices beyond production cardinality lack a poison | Accepted | Remediated in worktree: shadow and fine layer indices beyond production cardinality return E003 before E004; poisons PASS |
+
+No `73299b981` finding is rejected, deferred or moved to another package.

@@ -40,6 +40,10 @@ fn sealed_receiver_hash_covers_all_thermal_fields_and_numeric_preflight_precedes
             _ => unreachable!("bounded field table"),
         }
         let mutated = UnifiedLseFinalization::try_new(
+            &finalization_expectations(
+                baseline.water_protocol(),
+                baseline.soil_thermal_candidates(),
+            ),
             baseline.water_protocol().clone(),
             baseline.ending_tile_states_pre_ingress().to_vec(),
             thermal,
@@ -128,6 +132,25 @@ fn sealed_finalization_requires_one_exact_rollback_row_per_owner() {
         Some("production-hydrology"),
         Some(&digest('3')),
     );
+
+    let mut equal_but_wrong_lse = baseline.rollback_hashes().to_vec();
+    equal_but_wrong_lse[0].before_sha256 = digest('7');
+    equal_but_wrong_lse[0].after_sha256 = digest('7');
+    assert_sealed_rollback_failure(
+        &baseline,
+        equal_but_wrong_lse,
+        Some("land-surface-energy-v1"),
+        Some(&digest('7')),
+    );
+
+    let mut wrong_lse_after = baseline.rollback_hashes().to_vec();
+    wrong_lse_after[0].after_sha256 = digest('7');
+    assert_sealed_rollback_failure(
+        &baseline,
+        wrong_lse_after,
+        Some("land-surface-energy-v1"),
+        Some(&digest('2')),
+    );
 }
 
 #[test]
@@ -163,6 +186,10 @@ fn missing_sealed_thermal_receiver_never_borrows_lse_ownership() {
         baseline.rollback_hashes(),
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         baseline.water_protocol().clone(),
         baseline.ending_tile_states_pre_ingress().to_vec(),
         Vec::new(),
@@ -197,6 +224,10 @@ fn assert_sealed_rollback_failure(
         &rollback_hashes,
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         baseline.water_protocol().clone(),
         baseline.ending_tile_states_pre_ingress().to_vec(),
         baseline.soil_thermal_candidates().to_vec(),
@@ -235,6 +266,10 @@ fn assert_lse_numeric_context(baseline: &UnifiedLseFinalization) {
         baseline.rollback_hashes(),
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         baseline.water_protocol().clone(),
         tiles,
         baseline.soil_thermal_candidates().to_vec(),
@@ -281,6 +316,10 @@ fn assert_thermal_numeric_context(baseline: &UnifiedLseFinalization) {
         baseline.rollback_hashes(),
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         baseline.water_protocol().clone(),
         baseline.ending_tile_states_pre_ingress().to_vec(),
         thermal,
@@ -311,6 +350,10 @@ fn assert_topology_poison_context(baseline: &UnifiedLseFinalization) {
         baseline.rollback_hashes(),
     );
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         baseline.water_protocol().clone(),
         tiles,
         baseline.soil_thermal_candidates().to_vec(),

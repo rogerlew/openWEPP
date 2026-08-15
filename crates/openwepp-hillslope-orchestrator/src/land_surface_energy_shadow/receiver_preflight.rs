@@ -331,6 +331,7 @@ mod tests {
         let expectations = UnifiedReceiverExpectations::try_new(
             lse_owner.clone(),
             digest('2'),
+            hydrology_owner.clone(),
             digest('3'),
             thermal_owner.clone(),
             digest('4'),

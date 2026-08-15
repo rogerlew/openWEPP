@@ -40,8 +40,13 @@ mod precedence_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs"]
 mod snow_preflight_tests;
 
+#[path = "land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs"]
+mod finalization_test_support;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs"]
 mod sealed_receiver_context_tests;
+use finalization_test_support::finalization_expectations;
+#[path = "land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs"]
+mod source_binding_tests;
 
 fn production_frame(supply_m: f64, frozen: bool) -> DirectRunFrame {
     let identity = DirectRunIdentity::new(83, 11, 1, 1).expect("identity");
@@ -401,7 +406,9 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
         ),
         (OwnerKind::SoilThermal, "soil-thermal", soil_digest.clone()),
     ];
+    let expectations = receiver_expectations(1, water_protocol.beginning_snapshot_sha256.clone());
     UnifiedLseFinalization::try_new(
+        &expectations,
         water_protocol,
         vec![TileState {
             ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
@@ -446,7 +453,30 @@ fn two_tile_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalizatio
     let mut covered_thermal = thermal[0].clone();
     covered_thermal.tile_id = TileId::try_new("covered").expect("covered thermal tile");
     thermal.push(covered_thermal);
+    let expectations = UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
+        baseline.water_protocol().beginning_snapshot_sha256.clone(),
+        ResourceOwnerId::try_new("soil-thermal").expect("thermal owner"),
+        digest('4'),
+        thermal
+            .iter()
+            .map(|tile| {
+                (
+                    tile.ofe_id.clone(),
+                    tile.tile_id.clone(),
+                    tile.layers
+                        .iter()
+                        .map(|layer| layer.layer_id.clone())
+                        .collect(),
+                )
+            })
+            .collect(),
+    )
+    .expect("two-tile expectations");
     UnifiedLseFinalization::try_new(
+        &expectations,
         baseline.water_protocol().clone(),
         tiles,
         thermal,
@@ -462,6 +492,7 @@ fn receiver_expectations(
     UnifiedReceiverExpectations::try_new(
         ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
         digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
         hydrology_snapshot,
         ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
         digest('4'),
@@ -484,6 +515,7 @@ fn receiver_expectation_hashes_are_framed_and_invalid_cardinality_is_canonical()
         UnifiedReceiverExpectations::try_new(
             owner.clone(),
             digest('2'),
+            ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
             digest('3'),
             thermal_owner.clone(),
             digest('4'),
@@ -924,7 +956,12 @@ fn unified_surface_owner_consumes_the_actual_fixed_cap_lse_water_protocol() {
                 None,
                 &soil_thermal_snapshot(),
             )?;
+            let expectations = finalization_expectations(
+                &final_candidate.water_protocol,
+                std::slice::from_ref(&final_candidate.soil_thermal),
+            );
             UnifiedLseFinalization::try_new(
+                &expectations,
                 final_candidate.water_protocol,
                 vec![final_candidate.ending_tile_state_pre_ingress],
                 vec![final_candidate.soil_thermal],
@@ -1208,10 +1245,10 @@ fn unified_surface_authorization_failure_retains_complete_request_attempt_hash()
     );
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
     assert!(failure.rollback.beginning_owner_sha256.is_some());
-    assert_ne!(
+    assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
         Some(snapshot.as_str()),
-        "surface-owner raw state hash must not alias the unified aggregate snapshot"
+        "public unified failure must report the unified beginning snapshot"
     );
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
@@ -1299,33 +1336,16 @@ fn later_request_and_protocol_validation_preserve_exact_offender_context() {
     };
     later_authorization.key.transaction_id = TransactionId(42);
     invalid_protocol.authorizations.push(later_authorization);
+    let baseline = unified_finalization(protocol);
     let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            baseline.water_protocol(),
+            baseline.soil_thermal_candidates(),
+        ),
         invalid_protocol,
-        unified_finalization(protocol)
-            .ending_tile_states_pre_ingress()
-            .to_vec(),
-        unified_finalization(accepted_surface_protocol(
-            &valid_batch,
-            &[WaterAuthorization {
-                key: valid_batch.requests[0].key.clone(),
-                amount_kg_m2_stand_ground: valid_batch.requests[0].amount_kg_m2_stand_ground,
-                reason: WaterAuthorizationReason::FullSupply,
-            }],
-            &snapshot,
-        ))
-        .soil_thermal_candidates()
-        .to_vec(),
-        unified_finalization(accepted_surface_protocol(
-            &valid_batch,
-            &[WaterAuthorization {
-                key: valid_batch.requests[0].key.clone(),
-                amount_kg_m2_stand_ground: valid_batch.requests[0].amount_kg_m2_stand_ground,
-                reason: WaterAuthorizationReason::FullSupply,
-            }],
-            &snapshot,
-        ))
-        .rollback_hashes()
-        .to_vec(),
+        baseline.ending_tile_states_pre_ingress().to_vec(),
+        baseline.soil_thermal_candidates().to_vec(),
+        baseline.rollback_hashes().to_vec(),
     )
     .expect_err("later protocol identity poison") else {
         panic!("later protocol poison must remain canonical");
@@ -1393,6 +1413,10 @@ fn final_protocol_cardinality_and_bounds_are_canonical() {
                     _ => unreachable!("bounded poison table"),
                 }
                 UnifiedLseFinalization::try_new(
+                    &finalization_expectations(
+                        finalization.water_protocol(),
+                        finalization.soil_thermal_candidates(),
+                    ),
                     protocol,
                     finalization.ending_tile_states_pre_ingress().to_vec(),
                     finalization.soil_thermal_candidates().to_vec(),
@@ -1501,219 +1525,6 @@ fn surface_attachment_rejects_wrong_area_and_adapter_layer_map() {
     );
     assert!(failure.rollback.beginning_owner_sha256.is_some());
     assert!(failure.rollback.attempted_owner_sha256.is_some());
-}
-
-#[test]
-#[allow(clippy::too_many_lines)]
-fn multi_ofe_snapshot_binding_failure_reports_the_later_offender() {
-    let identity = DirectRunIdentity::new(83, 11, 2, 1).expect("identity");
-    let mut frame = DirectRunFrame::skeleton(identity).expect("frame");
-    let layer_template = production_frame(0.02, false).lanes[0]
-        .subsurface_layers
-        .clone();
-    for (index, lane) in frame.lanes.iter_mut().enumerate() {
-        lane.area_m2 = if index == 0 { 100.0 } else { 200.0 };
-        lane.subsurface_layers = layer_template.clone();
-        lane.water.soil_water_m = 0.02;
-    }
-    let upper_ofe = OfeId::try_new("ofe-upper").expect("upper OFE");
-    let lower_ofe = OfeId::try_new("ofe-lower").expect("lower OFE");
-    let upper_tile = TileId::try_new("upper-open").expect("upper tile");
-    let lower_tile = TileId::try_new("lower-open").expect("lower tile");
-    let layer = SoilLayerId::try_new("thermal-1").expect("layer");
-    let bindings = vec![
-        DirectSurfaceLiquidOfeBinding {
-            ofe_id: upper_ofe.clone(),
-            production_lane_index: 0,
-            production_lane_id: frame.lanes[0].lane_id,
-            ordered_soil_layer_ids: vec![layer.clone()],
-            infiltration_soil_thermal_layer_id: layer.clone(),
-        },
-        DirectSurfaceLiquidOfeBinding {
-            ofe_id: lower_ofe.clone(),
-            production_lane_index: 1,
-            production_lane_id: frame.lanes[1].lane_id,
-            ordered_soil_layer_ids: vec![layer.clone()],
-            infiltration_soil_thermal_layer_id: layer.clone(),
-        },
-    ];
-    let make_record =
-        |ofe_id: OfeId, tile_id: TileId, area: f64, destination: Option<(OfeId, TileId)>| {
-            DirectSurfaceLiquidConfigurationRecord {
-                key: DirectSurfaceLiquidStoreKey {
-                    run_id: 83,
-                    surface_id: SurfaceId::try_new(format!(
-                        "surface:{}:{}",
-                        ofe_id.as_str(),
-                        tile_id.as_str()
-                    ))
-                    .expect("surface"),
-                    source_id: SourceId::try_new(format!(
-                        "surface-store:{}:{}",
-                        ofe_id.as_str(),
-                        tile_id.as_str()
-                    ))
-                    .expect("source"),
-                    ofe_id,
-                    tile_id,
-                    surface_class: SurfaceClass::BareMineralSoil,
-                    source_type: WaterSourceType::SurfaceLiquid,
-                },
-                tile_fraction: 1.0,
-                capacity_kg_m2_tile: 3.0,
-                ofe_area_m2: area,
-                ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
-                runon_destination_ofe_id: destination.as_ref().map(|row| row.0.clone()),
-                runon_destination_tile_id: destination.map(|row| row.1),
-            }
-        };
-    let configuration = DirectSurfaceLiquidConfiguration::new(
-        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
-        83,
-        vec![upper_ofe.clone(), lower_ofe.clone()],
-        bindings.clone(),
-        vec![
-            make_record(
-                upper_ofe,
-                upper_tile,
-                100.0,
-                Some((lower_ofe.clone(), lower_tile.clone())),
-            ),
-            make_record(lower_ofe.clone(), lower_tile, 200.0, None),
-        ],
-    )
-    .expect("two-OFE configuration");
-    let initial = configuration
-        .records
-        .iter()
-        .map(|record| (record.key.clone(), 1.0))
-        .collect::<BTreeMap<_, _>>();
-    let state = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &initial, 0)
-        .expect("initial state");
-
-    let mut one_lane_frame = production_frame(0.02, false);
-    let excess_error = one_lane_frame
-        .configure_surface_liquid_shadow(&configuration, state.clone())
-        .expect_err("second configured OFE exceeds the production frame");
-    let excess_failure = excess_error.failure().expect("canonical excess failure");
-    let excess_key = &configuration.records[1].key;
-    assert_eq!(excess_failure.code, DirectSurfaceLiquidErrorCode::E002);
-    assert_eq!(
-        excess_failure.context.ofe_id.as_ref(),
-        Some(&excess_key.ofe_id)
-    );
-    assert_eq!(
-        excess_failure.context.tile_id.as_ref(),
-        Some(&excess_key.tile_id)
-    );
-    assert_eq!(
-        excess_failure.context.surface_id.as_ref(),
-        Some(&excess_key.surface_id)
-    );
-    assert_eq!(
-        excess_failure.context.source_id.as_ref(),
-        Some(&excess_key.source_id)
-    );
-
-    let short_configuration = surface_configuration(
-        SurfaceClass::BareMineralSoil,
-        WaterSourceType::SurfaceLiquid,
-    );
-    let short_state = DirectSurfaceLiquidOwnedState::new_initial(
-        &short_configuration,
-        &BTreeMap::from([(short_configuration.records[0].key.clone(), 1.0)]),
-        0,
-    )
-    .expect("short state");
-    let short_error = frame
-        .configure_surface_liquid_shadow(&short_configuration, short_state)
-        .expect_err("missing second configured OFE");
-    let short_failure = short_error.failure().expect("canonical short failure");
-    assert_eq!(short_failure.code, DirectSurfaceLiquidErrorCode::E002);
-    assert_eq!(
-        short_failure.context.owner_id.as_ref(),
-        Some(&short_configuration.owner_id)
-    );
-    assert_eq!(short_failure.context.ofe_id, None);
-    assert_eq!(short_failure.context.tile_id, None);
-    assert_eq!(short_failure.context.surface_id, None);
-    assert_eq!(short_failure.context.source_id, None);
-
-    frame
-        .configure_surface_liquid_shadow(&configuration, state)
-        .expect("attach exact owner");
-    let owner = RealHydrologyShadowAdapter::try_from_day_start(
-        &frame,
-        0,
-        TransactionId(41),
-        1_800.0,
-        configuration.owner_id.clone(),
-        &[
-            RealHydrologyLaneLayerMap {
-                ofe_lane: RealHydrologyOfeLaneId {
-                    lane_index: 0,
-                    lane_id: frame.lanes[0].lane_id,
-                },
-                layer_ids: vec![layer.clone()],
-            },
-            RealHydrologyLaneLayerMap {
-                ofe_lane: RealHydrologyOfeLaneId {
-                    lane_index: 1,
-                    lane_id: frame.lanes[1].lane_id,
-                },
-                layer_ids: vec![layer],
-            },
-        ],
-    )
-    .expect("two-OFE adapter");
-    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
-
-    let mut wrong_area_records = configuration.records.clone();
-    wrong_area_records[1].ofe_area_m2 = 201.0;
-    let wrong_area = DirectSurfaceLiquidConfiguration::new(
-        configuration.owner_id.clone(),
-        configuration.run_id,
-        configuration.ofe_topology.clone(),
-        bindings.clone(),
-        wrong_area_records,
-    )
-    .expect("structurally valid wrong second area");
-    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
-        unified_beginning_hydrology_snapshot_sha256(&adapter, &wrong_area)
-            .expect_err("wrong second area")
-    else {
-        panic!("wrong area must retain canonical failure");
-    };
-    let failure = error.failure().expect("area failure");
-    let lower = &wrong_area.records[1].key;
-    assert_eq!(failure.context.ofe_id.as_ref(), Some(&lower.ofe_id));
-    assert_eq!(failure.context.tile_id.as_ref(), Some(&lower.tile_id));
-    assert_eq!(failure.context.surface_id.as_ref(), Some(&lower.surface_id));
-    assert_eq!(failure.context.source_id.as_ref(), Some(&lower.source_id));
-
-    let mut wrong_layer_bindings = bindings;
-    let wrong_layer = SoilLayerId::try_new("thermal-wrong").expect("wrong layer");
-    wrong_layer_bindings[1].ordered_soil_layer_ids = vec![wrong_layer.clone()];
-    wrong_layer_bindings[1].infiltration_soil_thermal_layer_id = wrong_layer;
-    let wrong_layer = DirectSurfaceLiquidConfiguration::new(
-        configuration.owner_id.clone(),
-        configuration.run_id,
-        configuration.ofe_topology.clone(),
-        wrong_layer_bindings,
-        configuration.records.clone(),
-    )
-    .expect("structurally valid wrong second layer");
-    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
-        unified_beginning_hydrology_snapshot_sha256(&adapter, &wrong_layer)
-            .expect_err("wrong second layer")
-    else {
-        panic!("wrong layer must retain canonical failure");
-    };
-    let failure = error.failure().expect("layer failure");
-    assert_eq!(failure.context.ofe_id.as_ref(), Some(&lower_ofe));
-    assert_eq!(failure.context.tile_id, None);
-    assert_eq!(failure.context.surface_id, None);
-    assert_eq!(failure.context.source_id, None);
 }
 
 #[test]
@@ -1889,6 +1700,10 @@ fn surface_runtime_rejects_wrong_day_and_lse_ofe_receiver() {
             let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
             tiles[0].ofe_id = OfeId::try_new("ofe-wrong").expect("wrong OFE");
             UnifiedLseFinalization::try_new(
+                &finalization_expectations(
+                    finalization.water_protocol(),
+                    finalization.soil_thermal_candidates(),
+                ),
                 finalization.water_protocol().clone(),
                 tiles,
                 finalization.soil_thermal_candidates().to_vec(),
@@ -2362,6 +2177,7 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
     let mismatched_expectations = UnifiedReceiverExpectations::try_new(
         ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
         digest('9'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
         snapshot.clone(),
         ResourceOwnerId::try_new("soil-thermal").expect("thermal owner"),
         digest('4'),
@@ -2388,6 +2204,10 @@ fn receiver_construction_overflow_precedes_expectation_and_rollback_e011() {
             let mut tiles = finalization.ending_tile_states_pre_ingress().to_vec();
             tiles[0].surface_enthalpy_j_m2_tile_ground = f64::MAX;
             let poisoned = UnifiedLseFinalization::try_new(
+                &finalization_expectations(
+                    finalization.water_protocol(),
+                    finalization.soil_thermal_candidates(),
+                ),
                 finalization.water_protocol().clone(),
                 tiles,
                 finalization.soil_thermal_candidates().to_vec(),
@@ -2583,6 +2403,10 @@ fn poison_receiver_finalization(
         _ => rollback[2].owner_id = "wrong-thermal-owner".into(),
     }
     UnifiedLseFinalization::try_new(
+        &finalization_expectations(
+            finalization.water_protocol(),
+            finalization.soil_thermal_candidates(),
+        ),
         finalization.water_protocol().clone(),
         tiles,
         thermal,
@@ -2718,6 +2542,10 @@ fn sealed_two_tile_finalization_reports_the_actual_second_thermal_receiver() {
                 TileId::try_new("wrong-second").expect("offending thermal tile");
             thermal.push(second_thermal);
             UnifiedLseFinalization::try_new(
+                &finalization_expectations(
+                    finalization.water_protocol(),
+                    finalization.soil_thermal_candidates(),
+                ),
                 finalization.water_protocol().clone(),
                 tiles,
                 thermal,
@@ -2766,6 +2594,7 @@ fn public_bridge_reports_wrong_second_independent_thermal_expectation_after_arit
     let expectations = UnifiedReceiverExpectations::try_new(
         ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
         digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
         snapshot.clone(),
         ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
         digest('4'),
@@ -2846,6 +2675,7 @@ fn public_bridge_reports_deleted_first_independent_thermal_expectation_after_ari
     let expectations = UnifiedReceiverExpectations::try_new(
         ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
         digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
         snapshot.clone(),
         ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
         digest('4'),

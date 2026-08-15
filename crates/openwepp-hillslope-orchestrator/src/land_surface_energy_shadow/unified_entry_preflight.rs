@@ -19,6 +19,8 @@ use super::{
 };
 
 pub(super) struct UnifiedEntryPreflight {
+    pub(super) actual_snapshot: Sha256Digest,
+    pub(super) attempted_sha256: String,
     pub(super) soil_requests: Vec<MixedRealHydrologyRequest>,
     pub(super) surface_requests: Vec<WaterAmount>,
 }
@@ -31,7 +33,7 @@ pub(super) fn validate_unified_entry(
     ingress: &DirectSurfaceLiquidIngressInput,
     expected_snapshot: &Sha256Digest,
 ) -> Result<UnifiedEntryPreflight, LandSurfaceEnergyShadowError> {
-    let (actual_snapshot, soil_requests, surface_requests) =
+    let (actual_snapshot, attempted_sha256, soil_requests, surface_requests) =
         preflight_unified_entry_identity_envelope(
             soil_adapter,
             configuration,
@@ -40,7 +42,8 @@ pub(super) fn validate_unified_entry(
             ingress,
             expected_snapshot,
         )?;
-    unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
+    unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     if !ingress.interval_s.is_finite() {
         return Err(unified_entry_failure(
             DirectSurfaceLiquidErrorCode::E003,
@@ -54,30 +57,31 @@ pub(super) fn validate_unified_entry(
         )
         .into());
     }
-    preflight_request_domains(request_batch, &actual_snapshot)?;
+    preflight_request_domains(request_batch, &actual_snapshot)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     validate_native_shadow_supported_domain(
         soil_adapter.owner,
         configuration,
         &actual_snapshot,
-        &water_request_batch_sha256(request_batch),
+        &attempted_sha256,
     )?;
-    preflight_request_cardinality(request_batch, &actual_snapshot)?;
-    preflight_request_bounds(request_batch, &actual_snapshot)?;
+    preflight_request_cardinality(request_batch, &actual_snapshot)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
+    preflight_request_bounds(request_batch, &actual_snapshot)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     if let Err(error) = request_batch.validate() {
         let (code, detail) = protocol_error_code_and_detail(&error);
-        return Err(request_failure(
-            code,
-            request_batch,
+        return Err(complete_unified_failure(
+            request_failure(code, request_batch, &actual_snapshot, None, detail),
             &actual_snapshot,
-            None,
-            detail,
+            &attempted_sha256,
         ));
     }
     validate_native_shadow_exact_one_custody(
         soil_adapter.owner,
         configuration,
         &actual_snapshot,
-        &water_request_batch_sha256(request_batch),
+        &attempted_sha256,
     )?;
     if ingress.day_index != soil_adapter.owner.day_index()
         || ingress.interval_s.to_bits() != soil_adapter.owner.interval_s().to_bits()
@@ -95,6 +99,8 @@ pub(super) fn validate_unified_entry(
         .into());
     }
     Ok(UnifiedEntryPreflight {
+        actual_snapshot,
+        attempted_sha256,
         soil_requests,
         surface_requests,
     })
@@ -110,6 +116,7 @@ fn preflight_unified_entry_identity_envelope(
 ) -> Result<
     (
         Sha256Digest,
+        String,
         Vec<MixedRealHydrologyRequest>,
         Vec<WaterAmount>,
     ),
@@ -162,7 +169,15 @@ fn preflight_unified_entry_identity_envelope(
         configuration,
         surface_state,
     )?;
-    preflight_request_identities(request_batch, &actual_snapshot)?;
+    let attempted_sha256 = unified_entry_attempt_sha256(
+        soil_adapter,
+        request_batch,
+        soil_sources,
+        ingress,
+        &actual_snapshot,
+    );
+    preflight_request_identities(request_batch, &actual_snapshot)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     if let Err(error) = preflight_surface_liquid_ingress_input_identities(configuration, ingress) {
         return Err(contextualize_ingress_identity_failure(
             &error,
@@ -176,7 +191,9 @@ fn preflight_unified_entry_identity_envelope(
         .into());
     }
     let (soil_requests, surface_requests) =
-        partition_requests(request_batch, soil_sources, configuration, &actual_snapshot)?;
+        partition_requests(request_batch, soil_sources, configuration, &actual_snapshot).map_err(
+            |error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256),
+        )?;
     if request_batch.transaction_id.0 == 0
         || request_batch.transaction_id != soil_adapter.owner.transaction_id()
         || ingress.transaction_id != request_batch.transaction_id
@@ -194,7 +211,50 @@ fn preflight_unified_entry_identity_envelope(
         )
         .into());
     }
-    Ok((actual_snapshot, soil_requests, surface_requests))
+    Ok((
+        actual_snapshot,
+        attempted_sha256,
+        soil_requests,
+        surface_requests,
+    ))
+}
+
+pub(super) fn complete_unified_failure(
+    error: LandSurfaceEnergyShadowError,
+    actual_snapshot: &Sha256Digest,
+    attempted_sha256: &str,
+) -> LandSurfaceEnergyShadowError {
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = error else {
+        return error;
+    };
+    let code = error.code();
+    let (phase, context, detail) = error.failure().map_or_else(
+        || {
+            (
+                DirectSurfaceLiquidPhase::Authorization,
+                DirectSurfaceLiquidErrorContext::default(),
+                error.to_string(),
+            )
+        },
+        |failure| {
+            (
+                failure.phase,
+                failure.context.clone(),
+                failure.detail.clone(),
+            )
+        },
+    );
+    DirectSurfaceLiquidError::canonical_failure(
+        code,
+        phase,
+        context,
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(actual_snapshot.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
+        detail,
+    )
+    .into()
 }
 
 #[allow(clippy::too_many_arguments)]

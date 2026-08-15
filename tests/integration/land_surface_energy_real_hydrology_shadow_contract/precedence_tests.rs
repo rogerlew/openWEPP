@@ -266,6 +266,50 @@ fn configured_surface_source_identity_precedes_request_and_winter_e003() {
 }
 
 #[test]
+fn source_mapping_e002_attempt_hash_binds_wb14_inputs() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+        .expect("source-map snapshot");
+    let mut batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    batch.requests[0].key.source_id =
+        SourceId::try_new("syntactically-valid-wrong-store").expect("wrong source");
+    let attempted = |ingress: DirectSurfaceLiquidIngressInput| {
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot.clone()),
+                &batch,
+                &BTreeMap::new(),
+                &ingress,
+                |_| panic!("source-map poison reached callback"),
+            )
+            .expect_err("source-map poison"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .expect("complete attempted hash")
+    };
+    let baseline = attempted(ingress_input());
+    let mut changed = ingress_input();
+    changed.wb14_parameters[0].matric_potential_m = 0.2;
+    assert_ne!(baseline, attempted(changed));
+}
+
+#[test]
 fn unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -282,14 +326,15 @@ fn unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands() {
         configuration.records[0].key.source_id.clone(),
         1.0,
     );
-    let attempted = |mut ingress: DirectSurfaceLiquidIngressInput| {
+    let attempted = |request_batch: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::PotentialWaterRequestBatch,
+                     mut ingress: DirectSurfaceLiquidIngressInput| {
         ingress.interval_s = f64::NAN;
         let failure = canonical_failure(
             execute_unified_real_hydrology_shadow(
                 &adapter,
                 &configuration,
                 &receiver_expectations(1, snapshot.clone()),
-                &batch,
+                request_batch,
                 &BTreeMap::new(),
                 &ingress,
                 |_| panic!("nonfinite cadence reached callback"),
@@ -302,7 +347,7 @@ fn unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands() {
             .attempted_owner_sha256
             .expect("attempted hash")
     };
-    let baseline = attempted(ingress_input());
+    let baseline = attempted(&batch, ingress_input());
     let mut mass = ingress_input();
     let DirectTileGroundIngress::OpenRawPrecipitation {
         raw_precipitation, ..
@@ -315,9 +360,12 @@ fn unified_attempt_hash_distinguishes_ingress_component_and_wb14_operands() {
     wb14.wb14_parameters[0].effective_conductivity_m_s = 2.0e-6;
     let mut interval_index = ingress_input();
     interval_index.interval_index = 1;
-    assert_ne!(baseline, attempted(mass));
-    assert_ne!(baseline, attempted(wb14));
-    assert_ne!(baseline, attempted(interval_index));
+    let mut changed_request = batch.clone();
+    changed_request.requests[0].amount_kg_m2_stand_ground = 0.5;
+    assert_ne!(baseline, attempted(&batch, mass));
+    assert_ne!(baseline, attempted(&batch, wb14));
+    assert_ne!(baseline, attempted(&batch, interval_index));
+    assert_ne!(baseline, attempted(&changed_request, ingress_input()));
 }
 
 #[test]
@@ -576,6 +624,10 @@ fn final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amount
                     _ => unreachable!("bounded poison table"),
                 }
                 UnifiedLseFinalization::try_new(
+                    &finalization_expectations(
+                        baseline.water_protocol(),
+                        baseline.soil_thermal_candidates(),
+                    ),
                     protocol,
                     baseline.ending_tile_states_pre_ingress().to_vec(),
                     baseline.soil_thermal_candidates().to_vec(),
@@ -634,6 +686,10 @@ fn finalization_applies_precedence_across_protocol_and_all_receiver_sets() {
             }
             let failure = canonical_failure(
                 UnifiedLseFinalization::try_new(
+                    &finalization_expectations(
+                        baseline.water_protocol(),
+                        baseline.soil_thermal_candidates(),
+                    ),
                     protocol,
                     lse,
                     thermal,

@@ -50,6 +50,13 @@ fn execute_snow_poison(
 fn execute_winter_mutation(
     mutate: impl FnOnce(&mut DirectRunFrame),
 ) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
+    execute_winter_mutation_with_ingress(mutate, ingress_input())
+}
+
+fn execute_winter_mutation_with_ingress(
+    mutate: impl FnOnce(&mut DirectRunFrame),
+    ingress: DirectSurfaceLiquidIngressInput,
+) -> (LandSurfaceEnergyShadowError, Sha256Digest, bool) {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
         WaterSourceType::SurfaceLiquid,
@@ -73,7 +80,7 @@ fn execute_winter_mutation(
         &receiver_expectations(1, snapshot.clone()),
         &batch,
         &BTreeMap::new(),
-        &ingress_input(),
+        &ingress,
         |_| {
             callback_called = true;
             Err(LandSurfaceEnergyShadowError::Identity(
@@ -83,6 +90,22 @@ fn execute_winter_mutation(
     )
     .expect_err("snow scalar poison must fail at entry");
     (error, snapshot, callback_called)
+}
+
+#[test]
+fn winter_e004_attempt_hash_binds_wb14_inputs() {
+    let run = |ingress| {
+        let (error, snapshot, callback_called) = execute_winter_mutation_with_ingress(
+            |frame| frame.lanes[0].winter_column.frost = valid_frost_container(),
+            ingress,
+        );
+        assert!(!callback_called);
+        assert_snow_failure(error, &snapshot, DirectSurfaceLiquidErrorCode::E004)
+    };
+    let baseline = run(ingress_input());
+    let mut changed = ingress_input();
+    changed.wb14_parameters[0].infiltration_storage_capacity_m = 0.05;
+    assert_ne!(baseline, run(changed));
 }
 
 fn assert_snow_failure(
@@ -345,8 +368,8 @@ fn frost_fine(
 fn valid_frost_container() -> openwepp_hillslope_orchestrator::DirectFrostLaneState {
     let mut frost = openwepp_hillslope_orchestrator::DirectFrostLaneState::zero();
     frost.total_fine_layer_count = 3.0;
-    frost.layer_shadows = vec![frost_shadow(1), frost_shadow(2)];
-    frost.fine_layers = vec![frost_fine(1, 1), frost_fine(1, 2), frost_fine(2, 1)];
+    frost.layer_shadows = vec![frost_shadow(1)];
+    frost.fine_layers = vec![frost_fine(1, 1), frost_fine(1, 2), frost_fine(1, 3)];
     frost
 }
 
@@ -359,23 +382,20 @@ fn poison_frost_structure(
         1 => frost.total_fine_layer_count = -1.0,
         2 => frost.total_fine_layer_count = 2.5,
         3 => frost.total_fine_layer_count = 2.0,
-        4 => frost.layer_shadows[1].layer_index = 1,
-        5 => frost.layer_shadows.swap(0, 1),
-        6 => frost.layer_shadows[0].layer_index = 0,
-        7 => frost.fine_layers[1] = frost.fine_layers[0],
-        8 => frost.fine_layers.swap(0, 2),
-        9 => frost.fine_layers[1].fine_index = 3,
-        10 => frost.fine_layers[2].layer_index = 3,
-        11 => frost.fine_layers[0].fine_index = 2,
-        12 => {
-            frost.layer_shadows.pop();
-        }
+        4 => frost.layer_shadows[0].layer_index = 0,
+        5 => frost.fine_layers[1] = frost.fine_layers[0],
+        6 => frost.fine_layers.swap(0, 2),
+        7 => frost.fine_layers[1].fine_index = 3,
+        // Shadow and fine-layer indices must each fit the production lane.
+        8 => frost.layer_shadows[0].layer_index = 2,
+        9 => frost.fine_layers[2].layer_index = 2,
+        10 => frost.fine_layers[0].fine_index = 2,
         // Fine groups without any declared layer shadow.
-        13 => frost.layer_shadows.clear(),
+        11 => frost.layer_shadows.clear(),
         // A declared layer shadow without its reciprocal fine-layer group.
-        14 => {
-            frost.fine_layers.pop();
-            frost.total_fine_layer_count = 2.0;
+        12 => {
+            frost.fine_layers.clear();
+            frost.total_fine_layer_count = 0.0;
         }
         _ => unreachable!("complete frost structure poison table"),
     }
@@ -384,7 +404,7 @@ fn poison_frost_structure(
 #[test]
 fn frost_container_structure_precedes_unsupported_state_and_carry() {
     for runtime_carry in [false, true] {
-        for poison in 0..15 {
+        for poison in 0..13 {
             assert_mutation_code(
                 move |frame| {
                     let mut frost = valid_frost_container();

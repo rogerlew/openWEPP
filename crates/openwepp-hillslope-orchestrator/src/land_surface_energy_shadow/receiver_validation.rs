@@ -837,14 +837,16 @@ impl FramedSha256 {
 pub(super) fn receiver_expectation_fields_sha256(
     lse_owner_id: &ResourceOwnerId,
     beginning_lse: &super::Sha256Digest,
+    hydrology_owner_id: &ResourceOwnerId,
     beginning_hydrology: &super::Sha256Digest,
     thermal_owner_id: &ResourceOwnerId,
     beginning_thermal: &super::Sha256Digest,
     rows: &[(OfeId, TileId, Vec<SoilLayerId>)],
 ) -> String {
-    let mut out = FramedSha256::new("openwepp-unified-receiver-expectations-v2");
+    let mut out = FramedSha256::new("openwepp-unified-receiver-expectations-v3");
     out.string("lse_owner", lse_owner_id.as_str());
     out.string("lse_beginning", beginning_lse.as_str());
+    out.string("hydrology_owner", hydrology_owner_id.as_str());
     out.string("hydrology_beginning", beginning_hydrology.as_str());
     out.string("thermal_owner", thermal_owner_id.as_str());
     out.string("thermal_beginning", beginning_thermal.as_str());
@@ -869,6 +871,7 @@ pub(super) fn receiver_expectations_sha256(value: &UnifiedReceiverExpectations) 
     receiver_expectation_fields_sha256(
         &value.lse_owner_id,
         &value.beginning_lse_state_sha256,
+        &value.hydrology_owner_id,
         &value.beginning_hydrology_snapshot_sha256,
         &value.soil_thermal_owner_id,
         &value.beginning_soil_thermal_state_sha256,
@@ -2192,6 +2195,7 @@ mod tests {
         let expectations = UnifiedReceiverExpectations::try_new(
             lse_owner.clone(),
             digest('2'),
+            hydrology_owner.clone(),
             digest('3'),
             thermal_owner.clone(),
             digest('4'),

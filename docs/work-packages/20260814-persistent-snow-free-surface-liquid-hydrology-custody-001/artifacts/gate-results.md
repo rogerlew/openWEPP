@@ -817,6 +817,42 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze these exact bytes and obtain fresh independent dual review
   before any heavy terminal execution.
 
+## Exact-byte review at `73299b981`
+
+- HOLD: both fresh reviewers found that a soil request can name one OFE while
+  its source map selects another configured OFE lane sharing the same layer ID.
+- HOLD: both fresh reviewers found that standalone sealing checks an LSE
+  rollback row for equality but does not bind it to the actual beginning LSE
+  digest.
+- HOLD: the Rust review found source-map, winter-domain and exact-one public
+  failures that retain only a request-batch attempted hash after the complete
+  ingress/WB14/soil-map envelope is available.
+- PASS but non-dispositive: unified integration 52/52, custody authority 10/10,
+  selected orchestrator 145/145, formatting and diff hygiene.
+- Pending: remediate every finding, add the cross-OFE, forged-LSE,
+  attempted-hash-sensitivity and frost-cardinality poisons, then repeat fresh
+  dual exact-byte review. Heavy execution remains illegitimate.
+
+## `73299b981` HOLD remediation
+
+- PASS: soil requests now bind request OFE to the exact configured production
+  lane index, lane ID and layer membership before E003 or callback execution.
+- PASS: standalone finalization's sole public constructor consumes complete
+  independent receiver expectations and binds the exact LSE, hydrology and
+  soil-thermal beginning digests; equal-but-forged LSE rows fail E011.
+- PASS: one complete attempted-input hash frames request, ingress, WB14,
+  soil-source and actual-snapshot identity and is threaded through source-map,
+  winter, exact-one and authorization failures.
+- PASS: persisted and runtime frost indices outside production layer
+  cardinality fail E003 before unsupported-domain E004.
+- PASS on the combined worktree: selected orchestrator 145/145; unified
+  integration 54/54; custody authority 10/10; four affected crate checks;
+  strict orchestrator all-target/all-feature Clippy; formatting and diff
+  hygiene.
+- PASS: cohesive extraction leaves every governed Rust file below 3,000 lines.
+- Pending: freeze exact bytes and repeat fresh dual review. Heavy execution
+  remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
