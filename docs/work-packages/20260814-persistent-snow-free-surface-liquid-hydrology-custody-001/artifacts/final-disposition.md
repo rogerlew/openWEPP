@@ -118,3 +118,11 @@ typed first-mismatch projection without weakening independent receiver
 completion. Focused evidence passes 67/67 integration, 10/10 authority and
 600/600 orchestrator-library tests. A clean remediation commit and fresh dual
 exact-byte review remain required before heavy gates. This remains nonterminal.
+Exact-byte review at `2afffa9dc` then found divergent public water-protocol
+precedence and receiver invalid-area E002/E003 classification, plus one stale
+evidence sentence. The evidence sentence is corrected, LSE now owns reusable
+staged protocol validation, and public receiver paths have an explicit post-
+identity lane-domain gate. Focused evidence passes 29/29 LSE, 69/69 integration,
+10/10 custody authority and 600/600 orchestrator-library tests. A clean commit
+and fresh dual exact-byte review remain required before heavy gates. This
+remains nonterminal and does not resume Child 3.

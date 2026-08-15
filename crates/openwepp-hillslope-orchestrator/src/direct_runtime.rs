@@ -378,11 +378,11 @@ pub use subsurface::{
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
 };
 pub(crate) use surface_liquid_attachment::{
-    SurfaceLiquidAreaIdentityPolicy, SurfaceLiquidFrameIdentityMismatch,
-    first_surface_liquid_frame_identity_mismatch, surface_liquid_attachment_error,
-    surface_liquid_attachment_hashes, surface_liquid_configuration_context,
-    surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
-    surface_liquid_state_context, validate_surface_liquid_frame_identities,
+    SurfaceLiquidFrameIdentityMismatch, first_surface_liquid_frame_identity_mismatch,
+    surface_liquid_attachment_error, surface_liquid_attachment_hashes,
+    surface_liquid_configuration_context, surface_liquid_raw_snapshot_attempt_sha256,
+    surface_liquid_raw_snapshot_sha256, surface_liquid_state_context,
+    validate_surface_liquid_frame_identities,
 };
 pub use surface_liquid_closure::{
     DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,

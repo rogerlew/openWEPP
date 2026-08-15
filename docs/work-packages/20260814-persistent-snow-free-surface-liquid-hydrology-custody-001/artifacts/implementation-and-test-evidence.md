@@ -13,8 +13,9 @@ Status: `re-review corrections complete / focused gates PASS / final re-review p
   include all masses, day/interval carry, cumulative supply/infiltration and
   accepted transaction lineage.
 - Beginning-store withdrawals preserve the complete LSE `GroundWaterKey`, use
-  one immutable snapshot, authorize same-store competition proportionally and
-  allocate the final floating remainder without exceeding supply.
+  one immutable snapshot and authorize same-store competition with one
+  symmetric common downward scale without row-specific or canonical-last
+  remainder repair.
 - The resource candidate validates exact `F <= A <= D`, debits finalized use
   only, credits accepted condensation on OFE-ground basis and emits capacity
   overflow instead of clipping it away.

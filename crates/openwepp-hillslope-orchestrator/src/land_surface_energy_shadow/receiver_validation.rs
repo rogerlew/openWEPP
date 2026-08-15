@@ -7,15 +7,15 @@ use super::{
     OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
     ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
     ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
-    SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol,
-    checked_surface_liquid_add, checked_surface_liquid_close, checked_surface_liquid_div,
-    checked_surface_liquid_mul, checked_surface_liquid_sub, checked_surface_liquid_sum,
+    SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol, WaterProtocolRow,
+    WaterProtocolViolation, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
-    SurfaceLiquidAreaIdentityPolicy, SurfaceLiquidFrameIdentityMismatch,
-    first_surface_liquid_frame_identity_mismatch, surface_liquid_raw_snapshot_attempt_sha256,
-    surface_liquid_raw_snapshot_sha256,
+    SurfaceLiquidFrameIdentityMismatch, first_surface_liquid_frame_identity_mismatch,
+    surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
 };
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
 
@@ -55,7 +55,6 @@ pub(super) fn validate_surface_production_binding(
         &frame.lanes,
         configuration,
         owner.layer_maps().len(),
-        SurfaceLiquidAreaIdentityPolicy::ExactBits,
         |topology_index, binding, lane| {
             let mapping = &owner.layer_maps()[topology_index];
             binding.production_lane_index == mapping.ofe_lane.lane_index
@@ -109,6 +108,32 @@ pub(super) fn validate_surface_production_binding(
         ofe_id,
         record,
         detail,
+    ))
+}
+
+pub(super) fn validate_surface_production_lane_domains(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let frame = owner.beginning_frame();
+    let Some((topology_index, _)) = frame
+        .lanes
+        .iter()
+        .enumerate()
+        .find(|(_, lane)| !lane.area_m2.is_finite() || lane.area_m2 <= 0.0)
+    else {
+        return Ok(());
+    };
+    Err(snapshot_failure_at(
+        DirectSurfaceLiquidErrorCode::E003,
+        owner,
+        configuration,
+        configuration
+            .ofe_bindings
+            .get(topology_index)
+            .map(|binding| &binding.ofe_id),
+        None,
+        "surface production lane area is not finite positive",
     ))
 }
 
@@ -265,157 +290,24 @@ pub(super) fn canonicalize_unified_error(
     request_failure(code, batch, beginning_sha256, None, detail)
 }
 
-#[allow(clippy::too_many_lines)]
 pub(super) fn preflight_protocol_domains(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    for (detail, row) in protocol
-        .requests
-        .iter()
-        .map(|row| ("nonfinite water request", row))
-        .chain(
-            protocol
-                .finalized_uses
-                .iter()
-                .map(|row| ("nonfinite finalized water use", row)),
-        )
-    {
-        if !row.amount_kg_m2_stand_ground.is_finite() {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E003,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
-    }
-    for row in &protocol.authorizations {
-        if !row.amount_kg_m2_stand_ground.is_finite() {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E003,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "nonfinite water authorization",
-            ));
-        }
-    }
-    if let Some(credit) = protocol.condensation_credits.iter().find(|credit| {
-        !credit.amount_kg_m2_stand_ground.is_finite()
-            || !credit.temperature_k.is_finite()
-            || !credit.specific_liquid_enthalpy_j_kg.is_finite()
-    }) {
-        return Err(protocol_failure_for_condensation(
-            DirectSurfaceLiquidErrorCode::E003,
-            beginning_sha256,
-            attempted_sha256,
-            credit,
-            "nonfinite condensation credit",
-        ));
-    }
-    if let Some(credit) = protocol
-        .condensation_credits
-        .iter()
-        .find(|credit| !(200.0..=350.0).contains(&credit.temperature_k))
-    {
-        return Err(protocol_failure_for_condensation(
-            DirectSurfaceLiquidErrorCode::E003,
-            beginning_sha256,
-            attempted_sha256,
-            credit,
-            "condensation temperature domain",
-        ));
-    }
-    Ok(())
+    protocol.validate_domain_stage().map_err(|violation| {
+        contextualize_protocol_violation(protocol, beginning_sha256, attempted_sha256, &violation)
+    })
 }
 
-#[allow(clippy::too_many_lines)]
 pub(super) fn preflight_protocol_bounds(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    for (detail, row) in protocol
-        .requests
-        .iter()
-        .map(|row| ("negative water request", row))
-        .chain(
-            protocol
-                .finalized_uses
-                .iter()
-                .map(|row| ("negative finalized water use", row)),
-        )
-    {
-        if row.amount_kg_m2_stand_ground < 0.0 {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E006,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
-    }
-    for authorization in &protocol.authorizations {
-        if authorization.amount_kg_m2_stand_ground < 0.0 {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E006,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &authorization.key,
-                "negative water authorization",
-            ));
-        }
-        if protocol.requests.iter().any(|request| {
-            request.key == authorization.key
-                && authorization.amount_kg_m2_stand_ground > request.amount_kg_m2_stand_ground
-        }) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E006,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &authorization.key,
-                "authorization exceeds request",
-            ));
-        }
-    }
-    for finalized in &protocol.finalized_uses {
-        if protocol.authorizations.iter().any(|authorization| {
-            authorization.key == finalized.key
-                && finalized.amount_kg_m2_stand_ground > authorization.amount_kg_m2_stand_ground
-        }) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E006,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &finalized.key,
-                "finalized use exceeds authorization",
-            ));
-        }
-    }
-    if let Some(credit) = protocol
-        .condensation_credits
-        .iter()
-        .find(|credit| credit.amount_kg_m2_stand_ground <= 0.0)
-    {
-        return Err(protocol_failure_for_condensation(
-            DirectSurfaceLiquidErrorCode::E006,
-            beginning_sha256,
-            attempted_sha256,
-            credit,
-            "nonpositive condensation amount",
-        ));
-    }
-    Ok(())
+    protocol.validate_bound_stage().map_err(|violation| {
+        contextualize_protocol_violation(protocol, beginning_sha256, attempted_sha256, &violation)
+    })
 }
 
 pub(super) fn preflight_request_identities(
@@ -465,186 +357,71 @@ pub(super) fn preflight_request_cardinality(
     Ok(())
 }
 
-#[allow(clippy::too_many_lines)]
 pub(super) fn preflight_protocol_identities(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    if protocol.transaction_id.0 == 0 {
-        return Err(protocol_failure(
-            DirectSurfaceLiquidErrorCode::E002,
-            protocol,
-            beginning_sha256,
-            attempted_sha256,
-            "zero water transaction",
-        ));
-    }
-    for row in &protocol.requests {
-        if let Err(error) = row.key.validate(protocol.transaction_id) {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure_for_key(
-                code,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
-    }
-    for row in &protocol.authorizations {
-        if let Err(error) = row.key.validate(protocol.transaction_id) {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure_for_key(
-                code,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
-    }
-    for row in &protocol.finalized_uses {
-        if let Err(error) = row.key.validate(protocol.transaction_id) {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure_for_key(
-                code,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                detail,
-            ));
-        }
-    }
-    for credit in &protocol.condensation_credits {
-        if credit.transaction_id != protocol.transaction_id
-            || credit.hydrology_owner_id != protocol.hydrology_owner_id
-        {
-            return Err(protocol_failure_for_condensation(
-                DirectSurfaceLiquidErrorCode::E002,
-                beginning_sha256,
-                attempted_sha256,
-                credit,
-                "condensation identity mismatch",
-            ));
-        }
-    }
-    Ok(())
+    protocol.validate_identity_stage().map_err(|violation| {
+        contextualize_protocol_violation(protocol, beginning_sha256, attempted_sha256, &violation)
+    })
 }
 
-#[allow(clippy::too_many_lines)]
 pub(super) fn preflight_protocol_cardinality(
     protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let mut requests = std::collections::BTreeSet::new();
-    for row in &protocol.requests {
-        if !requests.insert(row.key.clone()) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E005,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "duplicate water request",
-            ));
-        }
-    }
-    let mut authorizations = std::collections::BTreeSet::new();
-    for row in &protocol.authorizations {
-        if !requests.contains(&row.key) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E005,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "authorization without exact request",
-            ));
-        }
-        if !authorizations.insert(row.key.clone()) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E005,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "duplicate water authorization",
-            ));
-        }
-    }
-    let mut finalized = std::collections::BTreeSet::new();
-    for row in &protocol.finalized_uses {
-        if !authorizations.contains(&row.key) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E005,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "finalized use without exact authorization",
-            ));
-        }
-        if !finalized.insert(row.key.clone()) {
-            return Err(protocol_failure_for_key(
-                DirectSurfaceLiquidErrorCode::E005,
-                protocol,
-                beginning_sha256,
-                attempted_sha256,
-                &row.key,
-                "duplicate finalized water use",
-            ));
-        }
-    }
-    if let Some(key) = protocol
-        .requests
-        .iter()
-        .map(|row| &row.key)
-        .find(|key| !authorizations.contains(*key) || !finalized.contains(*key))
-        .or_else(|| {
-            protocol
-                .authorizations
-                .iter()
-                .map(|row| &row.key)
-                .find(|key| !finalized.contains(*key))
-        })
-    {
-        return Err(protocol_failure_for_key(
-            DirectSurfaceLiquidErrorCode::E005,
-            protocol,
-            beginning_sha256,
-            attempted_sha256,
-            key,
-            "incomplete request-authorization-use identity set",
-        ));
-    }
-    let mut credits = std::collections::BTreeSet::new();
-    for credit in &protocol.condensation_credits {
-        if !credits.insert((
-            credit.ofe_id.clone(),
-            credit.tile_id.clone(),
-            credit.surface_id.clone(),
-        )) {
-            return Err(protocol_failure_for_condensation(
-                DirectSurfaceLiquidErrorCode::E005,
-                beginning_sha256,
-                attempted_sha256,
-                credit,
-                "duplicate condensation credit",
-            ));
-        }
-    }
-    Ok(())
+    protocol.validate_cardinality_stage().map_err(|violation| {
+        contextualize_protocol_violation(protocol, beginning_sha256, attempted_sha256, &violation)
+    })
 }
 
 pub(super) fn protocol_error_code_and_detail(
     error: &LandSurfaceEnergyError,
 ) -> (DirectSurfaceLiquidErrorCode, String) {
     (lse_error_code(error), error.to_string())
+}
+
+fn contextualize_protocol_violation(
+    protocol: &WaterProtocol,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+    violation: &WaterProtocolViolation,
+) -> LandSurfaceEnergyShadowError {
+    let (code, detail) = protocol_error_code_and_detail(&violation.error);
+    let key = match violation.row {
+        WaterProtocolRow::Request(index) => protocol.requests.get(index).map(|row| &row.key),
+        WaterProtocolRow::Authorization(index) => {
+            protocol.authorizations.get(index).map(|row| &row.key)
+        }
+        WaterProtocolRow::FinalizedUse(index) => {
+            protocol.finalized_uses.get(index).map(|row| &row.key)
+        }
+        WaterProtocolRow::Protocol | WaterProtocolRow::CondensationCredit(_) => None,
+    };
+    if let Some(key) = key {
+        return protocol_failure_for_key(
+            code,
+            protocol,
+            beginning_sha256,
+            attempted_sha256,
+            key,
+            detail,
+        );
+    }
+    if let WaterProtocolRow::CondensationCredit(index) = violation.row
+        && let Some(credit) = protocol.condensation_credits.get(index)
+    {
+        return protocol_failure_for_condensation(
+            code,
+            beginning_sha256,
+            attempted_sha256,
+            credit,
+            detail,
+        );
+    }
+    protocol_failure(code, protocol, beginning_sha256, attempted_sha256, detail)
 }
 
 pub(super) fn protocol_failure(

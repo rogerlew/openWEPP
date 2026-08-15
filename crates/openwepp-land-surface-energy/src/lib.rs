@@ -43,6 +43,7 @@ pub const VEGETATION_MODEL_DEFINITION_SHA256: &str =
 
 #[cfg(test)]
 mod authority_schema_tests {
+    use openwepp_kernel_contract::ResourceOwnerId;
     use serde_json::Value;
 
     use super::*;
@@ -95,6 +96,63 @@ mod authority_schema_tests {
         let diagnostics: NumericalDiagnostics =
             serde_json::from_value(instance("diagnostics")).expect("diagnostics schema");
         diagnostics.validate().expect("diagnostics authority");
+    }
+
+    #[test]
+    fn protocol_identity_stage_precedes_earlier_row_domain_in_direct_and_owner_envelope_paths() {
+        let mut water: WaterProtocol =
+            serde_json::from_value(instance("water_protocol")).expect("water schema");
+        water.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+        water.authorizations[1].key.transaction_id =
+            openwepp_kernel_contract::TransactionId(water.transaction_id.0 + 1);
+
+        let violation = water
+            .validate_identity_stage()
+            .expect_err("later-row identity poison");
+        assert_eq!(violation.row, WaterProtocolRow::Authorization(1));
+        assert_eq!(
+            violation.error.class(),
+            LandSurfaceEnergyErrorClass::Identity
+        );
+        assert_eq!(
+            water
+                .validate()
+                .expect_err("canonical protocol poison")
+                .class(),
+            LandSurfaceEnergyErrorClass::Identity,
+        );
+
+        let transaction_id = water.transaction_id;
+        let receipt_digest = water.beginning_snapshot_sha256.clone();
+        let receipt = |kind, owner: &str| CandidateOwnerReceipt {
+            transaction_id,
+            owner_kind: kind,
+            owner_id: ResourceOwnerId::try_new(owner).expect("receipt owner"),
+            beginning_state_sha256: receipt_digest.clone(),
+            candidate_state_sha256: receipt_digest.clone(),
+        };
+        let envelope = OwnerEnvelopeIdentity {
+            transaction_id,
+            lse_configuration_sha256: water.beginning_snapshot_sha256.clone(),
+            water_protocol: water,
+            candidate_owner_receipts: CandidateReceiptSet {
+                vegetation: receipt(CandidateOwnerKind::Vegetation, "vegetation"),
+                hydrology: receipt(CandidateOwnerKind::Hydrology, "hydrology"),
+                land_surface_energy: receipt(
+                    CandidateOwnerKind::LandSurfaceEnergy,
+                    "land-surface-energy",
+                ),
+                soil_thermal: receipt(CandidateOwnerKind::SoilThermal, "soil-thermal"),
+                biogeochemistry: receipt(CandidateOwnerKind::Biogeochemistry, "biogeochemistry"),
+            },
+        };
+        assert_eq!(
+            envelope
+                .validate()
+                .expect_err("owner envelope protocol poison")
+                .class(),
+            LandSurfaceEnergyErrorClass::Identity,
+        );
     }
 
     #[test]

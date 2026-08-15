@@ -19,6 +19,29 @@ fn assert_hashes(failure: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidF
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
+fn raw_unified_snapshot(
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+) -> Sha256Digest {
+    let state = owner
+        .beginning_frame()
+        .surface_liquid_shadow
+        .as_deref()
+        .expect("surface owner");
+    let mut digest = Sha256::new();
+    for bytes in [
+        b"openwepp-unified-hydrology-snapshot-v2".as_slice(),
+        configuration.owner_id.as_str().as_bytes(),
+        owner.snapshot_bytes(),
+        configuration.configuration_sha256.as_bytes(),
+        state.state_sha256.as_bytes(),
+    ] {
+        digest.update((bytes.len() as u64).to_be_bytes());
+        digest.update(bytes);
+    }
+    Sha256Digest::try_new(format!("{:x}", digest.finalize())).expect("raw unified snapshot")
+}
+
 fn two_ofe_attachment_fixture() -> (
     DirectRunFrame,
     DirectSurfaceLiquidConfiguration,
@@ -786,6 +809,139 @@ fn stale_config_or_state_digest_with_nonfinite_bits_is_identity_failure_without_
 }
 
 #[test]
+fn receiver_rejects_every_invalid_lane_area_as_e003_without_mutation_or_callback() {
+    for area in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, -1.0] {
+        let (mut frame, configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        frame.lanes[0].area_m2 = area;
+        let lane_bits = frame.lanes[0].area_m2.to_bits();
+        let beginning_surface = frame
+            .surface_liquid_shadow
+            .as_deref()
+            .expect("surface owner")
+            .clone();
+        let (real_owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+        let snapshot_failure = canonical_failure(
+            unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration)
+                .expect_err("invalid receiver lane area"),
+        );
+        assert_eq!(snapshot_failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_hashes(&snapshot_failure);
+
+        let snapshot = raw_unified_snapshot(&real_owner, &configuration);
+        let batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        let callback_count = std::cell::Cell::new(0);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| {
+                    callback_count.set(callback_count.get() + 1);
+                    panic!("invalid lane domain reached callback")
+                },
+            )
+            .expect_err("invalid receiver lane area"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_hashes(&failure);
+        assert_eq!(callback_count.get(), 0);
+        assert_eq!(
+            real_owner.beginning_frame().lanes[0].area_m2.to_bits(),
+            lane_bits
+        );
+        assert_eq!(
+            real_owner
+                .beginning_frame()
+                .surface_liquid_shadow
+                .as_deref(),
+            Some(&beginning_surface),
+        );
+    }
+}
+
+#[test]
+fn receiver_state_identity_precedes_invalid_lane_domain_without_mutation_or_callback() {
+    for state_poison in 0..2 {
+        let (mut frame, configuration) = configured_surface_frame(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            1.0,
+        );
+        frame.lanes[0].area_m2 = f64::NAN;
+        let state = frame
+            .surface_liquid_shadow
+            .as_deref_mut()
+            .expect("surface owner");
+        match state_poison {
+            0 => {
+                state.records[0].key.tile_id =
+                    TileId::try_new("wrong-state-tile").expect("wrong tile")
+            }
+            1 => state.records[0].liquid_kg_m2_tile = 1.25,
+            _ => unreachable!("bounded state poison table"),
+        }
+        let lane_bits = frame.lanes[0].area_m2.to_bits();
+        let beginning_surface = frame
+            .surface_liquid_shadow
+            .as_deref()
+            .expect("surface owner")
+            .clone();
+        let (real_owner, _) = owner(&frame);
+        let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&real_owner);
+        let snapshot = raw_unified_snapshot(&real_owner, &configuration);
+        let batch = surface_potential_batch(
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            configuration.records[0].key.source_id.clone(),
+            1.0,
+        );
+        let callback_count = std::cell::Cell::new(0);
+        let failure = canonical_failure(
+            execute_unified_real_hydrology_shadow(
+                &adapter,
+                &configuration,
+                &receiver_expectations(1, snapshot),
+                &batch,
+                &BTreeMap::new(),
+                &ingress_input(),
+                |_| {
+                    callback_count.set(callback_count.get() + 1);
+                    panic!("state identity/lane-domain poison reached callback")
+                },
+            )
+            .expect_err("state identity must precede lane domain"),
+        );
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_hashes(&failure);
+        assert_eq!(callback_count.get(), 0);
+        assert_eq!(
+            real_owner.beginning_frame().lanes[0].area_m2.to_bits(),
+            lane_bits
+        );
+        assert_eq!(
+            real_owner
+                .beginning_frame()
+                .surface_liquid_shadow
+                .as_deref(),
+            Some(&beginning_surface),
+        );
+    }
+}
+
+#[test]
 fn exact_one_custody_precedes_finite_cadence_failure() {
     let (mut frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -860,8 +1016,8 @@ fn final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amount
                 let mut protocol = baseline.water_protocol().clone();
                 match poison {
                     0 => {
-                        protocol.requests[0].key.transaction_id = TransactionId(42);
                         protocol.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+                        protocol.authorizations[0].key.transaction_id = TransactionId(42);
                     }
                     1 => {
                         protocol.requests.push(protocol.requests[0].clone());
@@ -869,7 +1025,7 @@ fn final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amount
                     }
                     _ => unreachable!("bounded poison table"),
                 }
-                UnifiedLseFinalization::try_new(
+                let standalone = UnifiedLseFinalization::try_new(
                     &finalization_expectations(
                         baseline.water_protocol(),
                         baseline.soil_thermal_candidates(),
@@ -878,7 +1034,22 @@ fn final_protocol_identity_and_cardinality_precede_nonfinite_and_negative_amount
                     baseline.ending_tile_states_pre_ingress().to_vec(),
                     baseline.soil_thermal_candidates().to_vec(),
                     baseline.rollback_hashes().to_vec(),
-                )
+                );
+                let standalone_failure = canonical_failure(
+                    standalone
+                        .as_ref()
+                        .expect_err("standalone mixed protocol poison")
+                        .clone(),
+                );
+                assert_eq!(
+                    standalone_failure.code,
+                    [
+                        DirectSurfaceLiquidErrorCode::E002,
+                        DirectSurfaceLiquidErrorCode::E005,
+                    ][poison]
+                );
+                assert_hashes(&standalone_failure);
+                standalone
             },
         );
         let failure = canonical_failure(result.expect_err("mixed protocol poison"));

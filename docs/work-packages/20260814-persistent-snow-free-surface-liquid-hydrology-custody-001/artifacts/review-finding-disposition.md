@@ -544,3 +544,13 @@ is rejected, deferred or moved to another package.
 
 The hydrology review returned PASS with no material finding. No `4360daef1`
 finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `2afffa9dc`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-2AF-HIGH-001: public WaterProtocol validation interleaves global precedence and orchestrator duplicates staged validation | Accepted | Remediated: LSE owns public identity→domain→cardinality→bound stages with typed offending-row locators; direct validate, owner envelope and orchestrator contextualization reuse them; identical mixed-defect vectors return E002 through all four boundaries |
+| A-TERMINAL-2AF-MEDIUM-002: current evidence claims prohibited final floating authorization remainder | Accepted | Remediated: current evidence now records the symmetric common downward scale; historical failed attempts remain preserved only in gate history |
+| B-TERMINAL-2AF-HIGH-001: receiver exact-bit lane-area identity maps invalid numeric area to E002 instead of E003 | Accepted | Remediated: the shared projection is finite-positive-aware; public snapshot/unified paths complete all E002 checks then run an explicit all-lane E003 domain gate; NaN/±Inf/zero/negative and mixed later-E002 vectors PASS with complete rollback/callback evidence |
+
+No `2afffa9dc` finding is rejected, deferred or moved to another package.

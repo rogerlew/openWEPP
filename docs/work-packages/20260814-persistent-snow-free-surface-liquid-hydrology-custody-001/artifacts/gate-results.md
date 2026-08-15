@@ -1153,6 +1153,51 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `2afffa9dc`
+
+- HOLD: Rust review found public LSE water-protocol validation interleaves
+  identity/domain/cardinality/bound precedence while the orchestrator duplicates
+  staged passes to compensate.
+- HOLD: hydrology review found receiver exact-bit lane-area identity maps
+  nonfinite/nonpositive production area to E002 and omits later explicit E003
+  lane-domain validation.
+- HOLD: Rust review found a current evidence sentence claiming the prohibited
+  final floating authorization remainder; the sentence is corrected to the
+  symmetric common downward scale without rewriting historical attempts.
+- PASS but non-dispositive: LSE 28/28; integration 67/67; custody authority
+  10/10; selected orchestrator 86/86; AUTH11 3/3; anti-evasion; affected strict
+  Clippy; formatting and diff hygiene.
+- Pending: centralize staged WaterProtocol validation, correct receiver lane-
+  area domain handling and repeat fresh dual review. Heavy execution remains
+  blocked.
+
+## `2afffa9dc` HOLD remediation
+
+- Ran: LSE — PASS, 29/29; unified integration — PASS, 69/69; custody authority
+  — PASS, 10/10; balance authority — PASS, 7/7; orchestrator library — PASS,
+  600/600 with three slow tests; affected strict all-target/all-feature Clippy,
+  compile checks, formatting and diff hygiene — PASS.
+- Ran: science admission — PASS, 46 contracts and 28 surfaces; anti-evasion —
+  PASS; AUTH11 — PASS, 3/3; surface-liquid unit compliance — PASS; package
+  Markdown — PASS, 106 files with zero errors and warnings.
+- Static + Ran: LSE `WaterProtocol` owns public identity, domain, cardinality
+  and bound stages plus typed row locators. Direct validation, owner envelope,
+  standalone finalization and unified execution produce the same canonical
+  E002 for the mixed early-NaN/later-identity poison.
+- Static + Ran: the shared frame projection is finite-positive-aware for both
+  configured and production area. Public snapshot and unified entry run an
+  explicit all-lane E003 gate after every E002 state/digest check and before
+  snapshot publication or callback.
+- Ran: receiver vectors cover NaN, positive/negative infinity, zero and
+  negative area plus lane-domain × state-key/stale-digest precedence, complete
+  hashes, callback zero and unchanged bytes.
+- Preserved non-product retries: nonexistent `--test integration` was replaced
+  with the root package target; a helper-name filter selecting zero tests was
+  replaced by the enclosing test and passed 1/1; one local type correction was
+  required during compilation.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

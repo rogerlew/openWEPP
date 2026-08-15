@@ -18,7 +18,8 @@ use super::{
     request_failure, shadow_error_code, snapshot_failure,
     unified_beginning_hydrology_snapshot_sha256, validate_native_shadow_exact_one_custody,
     validate_native_shadow_supported_domain, validate_receiver_expectations,
-    validate_surface_production_binding, water_request_batch_sha256,
+    validate_surface_production_binding, validate_surface_production_lane_domains,
+    water_request_batch_sha256,
 };
 
 pub(super) struct UnifiedEntryPreflight {
@@ -288,6 +289,8 @@ fn preflight_unified_entry_identity_envelope(
             &attempted_sha256,
         )
     })?;
+    validate_surface_production_lane_domains(soil_adapter.owner, configuration)
+        .map_err(|error| complete_unified_failure(error, &actual_snapshot, &attempted_sha256))?;
     configuration.validate().map_err(|error| {
         join_raw_and_unified_attempt(
             snapshot_failure(

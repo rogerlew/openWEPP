@@ -22,8 +22,8 @@ pub use openwepp_land_surface_energy::{
     SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
     StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
     TileState, WaterAmount, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
-    WaterSourceType, WaterUseOperands, evaluate_open_surface, finalize_open_phase,
-    solve_open_potential_phase, validate_water_use,
+    WaterProtocolRow, WaterProtocolViolation, WaterSourceType, WaterUseOperands,
+    evaluate_open_surface, finalize_open_phase, solve_open_potential_phase, validate_water_use,
 };
 use openwepp_land_surface_energy::{OpenSurfaceSolveOutcome, WaterBranch, solve_open_surface};
 use sha2::{Digest, Sha256};
@@ -65,7 +65,8 @@ use receiver_validation::{
     protocol_error_code_and_detail, protocol_failure, receiver_atomic_failure,
     receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
     request_failure, require_receiver_close, shadow_error_code, snapshot_failure,
-    validate_surface_production_binding, water_protocol_sha256, water_request_batch_sha256,
+    validate_surface_production_binding, validate_surface_production_lane_domains,
+    water_protocol_sha256, water_request_batch_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -465,16 +466,6 @@ impl UnifiedLseFinalization {
         )?;
         preflight_protocol_cardinality(&water_protocol, &beginning, &attempted_protocol)?;
         preflight_protocol_bounds(&water_protocol, &beginning, &attempted_protocol)?;
-        if let Err(error) = water_protocol.validate() {
-            let (code, detail) = protocol_error_code_and_detail(&error);
-            return Err(protocol_failure(
-                code,
-                &water_protocol,
-                &beginning,
-                &attempted_protocol,
-                detail,
-            ));
-        }
         if let Some(violation) = first_sealed_finalization_violation(
             receiver_expectations,
             &water_protocol,
@@ -794,6 +785,7 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
             "invalid beginning surface-liquid owner",
         )
     })?;
+    validate_surface_production_lane_domains(soil_adapter.owner, surface_configuration)?;
     surface_configuration.validate().map_err(|error| {
         snapshot_failure(
             error.code(),

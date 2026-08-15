@@ -1,6 +1,5 @@
 use super::super::surface_liquid_attachment::{
-    SurfaceLiquidAreaIdentityPolicy, SurfaceLiquidFrameIdentityMismatch,
-    first_surface_liquid_frame_identity_mismatch,
+    SurfaceLiquidFrameIdentityMismatch, first_surface_liquid_frame_identity_mismatch,
 };
 use super::*;
 use crate::direct_runtime::{
@@ -181,24 +180,13 @@ fn assert_frame_receiver_identity_projection_equivalence() {
     let project = |configuration: &DirectSurfaceLiquidConfiguration,
                    lanes: &[crate::DirectLaneFrame],
                    mapped_lane_count: usize| {
-        let attachment = first_surface_liquid_frame_identity_mismatch(
+        first_surface_liquid_frame_identity_mismatch(
             clean_frame.identity.run_id,
             lanes,
             configuration,
             mapped_lane_count,
-            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
             |_, _, _| true,
-        );
-        let receiver = first_surface_liquid_frame_identity_mismatch(
-            clean_frame.identity.run_id,
-            lanes,
-            configuration,
-            mapped_lane_count,
-            SurfaceLiquidAreaIdentityPolicy::ExactBits,
-            |_, _, _| true,
-        );
-        assert_eq!(attachment, receiver, "shared identity projection drift");
-        attachment
+        )
     };
 
     let mut wrong_run = clean_configuration.clone();
@@ -254,7 +242,6 @@ fn assert_frame_receiver_identity_projection_equivalence() {
             &nonfinite_lanes,
             &identity_and_domain,
             nonfinite_lanes.len(),
-            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
             |_, _, _| true,
         ),
         Some(SurfaceLiquidFrameIdentityMismatch::Lane { topology_index: 0 }),

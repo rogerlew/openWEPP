@@ -608,7 +608,6 @@ pub(crate) fn validate_surface_liquid_frame_identities(
         lanes,
         configuration,
         lanes.len(),
-        SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
         |_, _, _| true,
     );
     let Some(mismatch) = mismatch else {
@@ -666,18 +665,11 @@ pub(crate) enum SurfaceLiquidFrameIdentityMismatch {
     },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum SurfaceLiquidAreaIdentityPolicy {
-    ExactBits,
-    FinitePositiveOnly,
-}
-
 pub(crate) fn first_surface_liquid_frame_identity_mismatch<F>(
     run_id: u64,
     lanes: &[DirectLaneFrame],
     configuration: &DirectSurfaceLiquidConfiguration,
     mapped_lane_count: usize,
-    area_policy: SurfaceLiquidAreaIdentityPolicy,
     mut additional_lane_identity_matches: F,
 ) -> Option<SurfaceLiquidFrameIdentityMismatch>
 where
@@ -716,17 +708,11 @@ where
                 .enumerate()
                 .find(|(_, record)| {
                     record.key.ofe_id == *ofe_id
-                        && match area_policy {
-                            SurfaceLiquidAreaIdentityPolicy::ExactBits => {
-                                record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-                            }
-                            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly => {
-                                record.ofe_area_m2.is_finite()
-                                    && lane.area_m2.is_finite()
-                                    && lane.area_m2 > 0.0
-                                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-                            }
-                        }
+                        && record.ofe_area_m2.is_finite()
+                        && record.ofe_area_m2 > 0.0
+                        && lane.area_m2.is_finite()
+                        && lane.area_m2 > 0.0
+                        && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
                 })
         {
             return Some(SurfaceLiquidFrameIdentityMismatch::Area {
