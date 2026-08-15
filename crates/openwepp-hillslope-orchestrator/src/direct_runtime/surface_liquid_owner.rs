@@ -1878,6 +1878,12 @@ fn apply_surface_liquid_resource_phase_inner(
     finalized_uses: &[WaterAmount],
     condensation_credits: &[CondensationCredit],
 ) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
+    preflight_resource_phase_public_identities(
+        configuration,
+        arbitration,
+        finalized_uses,
+        condensation_credits,
+    )?;
     arbitration.beginning_state.validate_for_transaction(
         configuration,
         arbitration.transaction_id,
@@ -1981,6 +1987,52 @@ fn apply_surface_liquid_resource_phase_inner(
     };
     candidate.validate(configuration)?;
     Ok(candidate)
+}
+
+fn preflight_resource_phase_public_identities(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    arbitration: &DirectSurfaceLiquidArbitration,
+    finalized_uses: &[WaterAmount],
+    condensation_credits: &[CondensationCredit],
+) -> Result<(), DirectSurfaceLiquidError> {
+    configuration.preflight_schema_and_identities()?;
+    let accepted_predecessor = arbitration
+        .beginning_state
+        .preflight_schema_and_identities(configuration)?;
+    if arbitration.transaction_id.0 == 0
+        || Some(arbitration.transaction_id) == arbitration.expected_predecessor
+    {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "invalid candidate transaction",
+        ));
+    }
+    if accepted_predecessor != arbitration.expected_predecessor {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "predecessor transaction mismatch",
+        ));
+    }
+
+    // The shared validator already walks every retained and caller-supplied
+    // protocol identity before inspecting any numeric operand. Use that pass
+    // only to surface E001/E002 here; the normal call below retains the
+    // established E003/E005/E006 ordering after configuration and state
+    // validation.
+    match preflight_resource_phase_inputs(
+        configuration,
+        arbitration,
+        finalized_uses,
+        condensation_credits,
+    ) {
+        Err(error)
+            if matches!(
+                error.code(),
+                DirectSurfaceLiquidErrorCode::E001 | DirectSurfaceLiquidErrorCode::E002
+            ) =>
+        {
+            Err(error)
+        }
+        Ok(()) | Err(_) => Ok(()),
+    }
 }
 
 #[allow(clippy::too_many_lines)]

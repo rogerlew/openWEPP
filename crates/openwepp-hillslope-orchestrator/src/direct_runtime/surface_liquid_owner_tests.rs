@@ -1,4 +1,8 @@
 use super::*;
+use crate::direct_runtime::{
+    DirectIngressAmount, DirectOfeWb14Parameters, DirectSurfaceLiquidIngressInput,
+    DirectTileGroundIngress, execute_surface_liquid_ingress,
+};
 
 fn raw_state_hash(state: &DirectSurfaceLiquidOwnedState) -> String {
     super::super::surface_liquid_attachment::surface_liquid_raw_state_sha256(state)
@@ -2012,6 +2016,159 @@ fn public_resource_phase_classifies_condensation_domain_and_bound_exactly() {
         .code(),
         DirectSurfaceLiquidErrorCode::E003
     );
+}
+
+#[test]
+fn resource_input_identity_precedes_configuration_and_state_domains() {
+    let valid_configuration = configuration();
+    let beginning = state(&valid_configuration);
+    let transaction = TransactionId(9_913);
+    let open = record_index(&valid_configuration, "open");
+    let demand = request(&valid_configuration, open, transaction, 0.2);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &valid_configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&demand),
+    )
+    .expect("valid arbitration");
+    let valid_finalized = WaterAmount {
+        key: demand.key,
+        amount_kg_m2_stand_ground: 0.1,
+    };
+    let record = &valid_configuration.records[open];
+    let valid_condensation = CondensationCredit {
+        transaction_id: transaction,
+        hydrology_owner_id: valid_configuration.owner_id.clone(),
+        ofe_id: record.key.ofe_id.clone(),
+        tile_id: record.key.tile_id.clone(),
+        surface_id: record.key.surface_id.clone(),
+        amount_kg_m2_stand_ground: 0.1,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+        temperature_k: 280.0,
+        specific_liquid_enthalpy_j_kg: openwepp_land_surface_energy::liquid_enthalpy_j_kg(280.0),
+    };
+
+    for domain_source in ["configuration", "state"] {
+        for identity_source in ["finalized", "condensation"] {
+            let mut poisoned_configuration = valid_configuration.clone();
+            let mut poisoned_arbitration = arbitration.clone();
+            match domain_source {
+                "configuration" => {
+                    poisoned_configuration.records[open].tile_fraction = f64::NAN;
+                }
+                "state" => {
+                    poisoned_arbitration.beginning_state.records[open].liquid_kg_m2_tile = f64::NAN;
+                }
+                _ => unreachable!("bounded domain-source table"),
+            }
+
+            let mut finalized = valid_finalized.clone();
+            let mut condensation = Vec::new();
+            match identity_source {
+                "finalized" => finalized.key.transaction_id = TransactionId(9_914),
+                "condensation" => {
+                    let mut wrong = valid_condensation.clone();
+                    wrong.transaction_id = TransactionId(9_914);
+                    condensation.push(wrong);
+                }
+                _ => unreachable!("bounded identity-source table"),
+            }
+
+            let error = apply_surface_liquid_resource_phase(
+                &poisoned_configuration,
+                &poisoned_arbitration,
+                std::slice::from_ref(&finalized),
+                &condensation,
+            )
+            .expect_err("public resource E002 must precede config/state E003");
+            assert_eq!(
+                error.code(),
+                DirectSurfaceLiquidErrorCode::E002,
+                "domain source {domain_source}, identity source {identity_source}",
+            );
+            let failure = error.failure().expect("canonical resource failure");
+            assert!(failure.rollback.beginning_owner_sha256.is_some());
+            assert!(failure.rollback.attempted_owner_sha256.is_some());
+        }
+    }
+}
+
+#[test]
+fn ingress_identity_precedes_configuration_and_state_domains() {
+    let valid_configuration = configuration();
+    let beginning = state(&valid_configuration);
+    let transaction = TransactionId(9_915);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &valid_configuration,
+        &beginning,
+        transaction,
+        None,
+        &[],
+    )
+    .expect("empty arbitration");
+    let resource =
+        apply_surface_liquid_resource_phase(&valid_configuration, &arbitration, &[], &[])
+            .expect("valid resource candidate");
+    let record = &valid_configuration.records[record_index(&valid_configuration, "open")];
+    let unknown_tile = tile("unknown-ingress-tile");
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id: transaction,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: 1_800.0,
+        tile_ingress: vec![DirectTileGroundIngress::OpenRawPrecipitation {
+            ofe_id: record.key.ofe_id.clone(),
+            tile_id: unknown_tile.clone(),
+            surface_id: record.key.surface_id.clone(),
+            raw_precipitation: DirectIngressAmount {
+                mass_kg_m2_tile_ground: 0.1,
+                temperature_k: 280.0,
+                specific_liquid_enthalpy_j_kg: openwepp_land_surface_energy::liquid_enthalpy_j_kg(
+                    280.0,
+                ),
+                start_s: 0.0,
+                end_s: 1_800.0,
+            },
+        }],
+        wb14_parameters: vec![DirectOfeWb14Parameters {
+            ofe_id: valid_configuration.ofe_topology[0].clone(),
+            effective_conductivity_m_s: 1.0e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 0.0,
+        }],
+    };
+
+    for domain_source in ["configuration", "beginning_state", "working_state"] {
+        let mut poisoned_configuration = valid_configuration.clone();
+        let mut poisoned_resource = resource.clone();
+        match domain_source {
+            "configuration" => {
+                poisoned_configuration.records[0].tile_fraction = f64::NAN;
+            }
+            "beginning_state" => {
+                poisoned_resource.beginning_state.records[0].liquid_kg_m2_tile = f64::NAN;
+            }
+            "working_state" => {
+                poisoned_resource.working_state.records[0].liquid_kg_m2_tile = f64::NAN;
+            }
+            _ => unreachable!("bounded domain-source table"),
+        }
+
+        let error =
+            execute_surface_liquid_ingress(&poisoned_configuration, &poisoned_resource, &input)
+                .expect_err("public ingress E002 must precede config/state E003");
+        assert_eq!(
+            error.code(),
+            DirectSurfaceLiquidErrorCode::E002,
+            "domain source {domain_source}",
+        );
+        let failure = error.failure().expect("canonical ingress failure");
+        assert_eq!(failure.context.tile_id.as_ref(), Some(&unknown_tile));
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
+    }
 }
 
 #[test]

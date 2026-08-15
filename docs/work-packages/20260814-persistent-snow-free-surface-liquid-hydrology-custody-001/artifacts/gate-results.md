@@ -891,6 +891,33 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   zero errors or warnings.
 - Pending: freeze new exact bytes and obtain fresh independent dual review.
 
+## Exact-byte review at `10b914da1`
+
+- HOLD: fresh Rust review found two exported public seams where configuration
+  or state E003 validation can mask caller-supplied E002 identities.
+- HOLD: fresh hydrology/ownership review found applicable configured surface
+  and source-store identity absent from receiver-closure error context.
+- PASS on the reviewed bytes: 97/97 selected library tests, 39/39 unified
+  integration tests and 10/10 custody authority tests.
+- PASS: both reviews found no other material arithmetic, hydrology, custody,
+  rollback or production-isolation defect.
+
+## `10b914da1` HOLD remediation
+
+- PASS: resource and ingress public entry points now perform whole-envelope
+  E001/E002 identity preflight before any configuration/state E003 validation;
+  seven mixed-poison permutations pass.
+- PASS: receiver operands freeze and digest-bind exact configured
+  `(OFE, tile, surface, source)` identity and propagate it through applicable
+  E003/E010/E011 closure failures without fabricating parcel identity.
+- PASS on the combined worktree: 101/101 selected library tests, 39/39 unified
+  integration tests and 10/10 custody authority tests.
+- FAIL then PASS: strict affected-crate Clippy first identified a test-only
+  103-line fixture; the explicit test-fixture lint annotation preserves the
+  production limit and the rerun passed. Formatting and diff hygiene pass.
+- Pending: commit corrected bytes and repeat fresh independent dual review
+  before any terminal heavy execution.
+
 ## Exact-byte review at `c9524729a`
 
 - HOLD: fresh Rust review found producer and independent closure assign child

@@ -267,6 +267,7 @@ pub struct RealReceiverClosureOperands {
     expected_production_soil: Vec<(OfeId, usize, u32, Vec<SoilLayerId>)>,
     expected_soil_thermal: Vec<(OfeId, TileId, SoilLayerId)>,
     expected_lse_tiles: Vec<(OfeId, TileId)>,
+    configured_surface_context: Vec<(OfeId, TileId, SurfaceId, SourceId)>,
 }
 
 impl RealReceiverClosureOperands {
@@ -2297,6 +2298,18 @@ fn freeze_real_receiver_closure_operands(
     )?;
     let (expected_production_soil, expected_soil_thermal, expected_lse_tiles) =
         receiver_validation::expected_receiver_identities(configuration);
+    let configured_surface_context = configuration
+        .records
+        .iter()
+        .map(|record| {
+            (
+                record.key.ofe_id.clone(),
+                record.key.tile_id.clone(),
+                record.key.surface_id.clone(),
+                record.key.source_id.clone(),
+            )
+        })
+        .collect();
     Ok(RealReceiverClosureOperands {
         transaction_id: ingress.transaction_id(),
         hydrology_owner_id: owner.hydrology_owner_id().clone(),
@@ -2309,6 +2322,7 @@ fn freeze_real_receiver_closure_operands(
         expected_production_soil,
         expected_soil_thermal,
         expected_lse_tiles,
+        configured_surface_context,
     })
 }
 

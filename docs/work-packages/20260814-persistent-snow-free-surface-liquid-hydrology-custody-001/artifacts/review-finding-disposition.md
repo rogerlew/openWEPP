@@ -395,3 +395,13 @@ fresh hydrology/ownership review returned PASS; an accidental broad run with
 | A-TERMINAL-C952-MEDIUM-003: nonfinite production-lane area attaches and is later reported as E002 | Accepted | Remediated: all-lane identity then domain preflight rejects NaN/±infinity as contextual E003; position/precedence poisons PASS |
 
 No `c9524729a` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `10b914da1`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-10B-HIGH-001: resource and ingress public seams allow configuration/state E003 to mask caller-supplied E002 identity | Accepted | Remediated in worktree: whole-envelope E001/E002 preflight and seven mixed-poison permutations PASS |
+| B-TERMINAL-10B-MAJOR-001: receiver closure errors omit applicable configured surface/source identity | Accepted | Remediated in worktree: authoritative receiver identity mapping is frozen, digest-bound and propagated; context/digest poisons PASS |
+
+No `10b914da1` finding is rejected, deferred, or moved to another package.
+Fresh review is pending on the corrected exact bytes.

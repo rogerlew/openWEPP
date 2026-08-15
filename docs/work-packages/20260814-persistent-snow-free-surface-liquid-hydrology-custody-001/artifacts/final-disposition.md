@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / terminal exact-byte review pending`
+Status: `in progress / exact-byte review remediation active`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted

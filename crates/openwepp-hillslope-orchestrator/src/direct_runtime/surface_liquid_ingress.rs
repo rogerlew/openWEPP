@@ -692,16 +692,21 @@ fn execute_surface_liquid_ingress_inner(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
-    configuration.validate()?;
-    resource.beginning_state().validate(configuration)?;
+    configuration.preflight_schema_and_identities()?;
+    resource
+        .beginning_state()
+        .preflight_schema_and_identities(configuration)?;
     if input.transaction_id != resource.transaction_id() || input.transaction_id.0 == 0 {
         return Err(DirectSurfaceLiquidError::Identity(
             "ingress transaction mismatch",
         ));
     }
-    validate_resource_working_state(configuration, resource)?;
+    preflight_resource_working_state_identities(configuration, resource)?;
     preflight_tile_ingress_identities(configuration, input)?;
     preflight_parameter_identities(configuration, input.transaction_id, &input.wb14_parameters)?;
+    configuration.validate()?;
+    resource.beginning_state().validate(configuration)?;
+    validate_resource_working_state_domains(configuration, resource)?;
     if !input.interval_s.is_finite() {
         return Err(DirectSurfaceLiquidError::Domain(
             "nonfinite ingress interval",
@@ -824,7 +829,7 @@ fn execute_surface_liquid_ingress_inner(
     })
 }
 
-fn validate_resource_working_state(
+fn preflight_resource_working_state_identities(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
 ) -> Result<(), DirectSurfaceLiquidError> {
@@ -848,12 +853,31 @@ fn validate_resource_working_state(
         if working.key != configured.key
             || beginning.key != configured.key
             || working.last_accepted_transaction_id != beginning.last_accepted_transaction_id
-            || !working.liquid_kg_m2_tile.is_finite()
-            || working.liquid_kg_m2_tile < 0.0
-            || working.liquid_kg_m2_tile > configured.capacity_kg_m2_tile
         {
             return Err(DirectSurfaceLiquidError::Identity(
                 "invalid resource working-state record",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_resource_working_state_domains(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+) -> Result<(), DirectSurfaceLiquidError> {
+    for (working, configured) in resource
+        .working_state()
+        .records
+        .iter()
+        .zip(&configuration.records)
+    {
+        if !working.liquid_kg_m2_tile.is_finite()
+            || working.liquid_kg_m2_tile < 0.0
+            || working.liquid_kg_m2_tile > configured.capacity_kg_m2_tile
+        {
+            return Err(DirectSurfaceLiquidError::Domain(
+                "invalid resource working-state liquid",
             ));
         }
     }

@@ -1299,6 +1299,7 @@ fn receiver_equation_failure(
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
     DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E010,
         DirectSurfaceLiquidPhase::IndependentClosure,
@@ -1307,7 +1308,9 @@ fn receiver_equation_failure(
             owner_id: Some(owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
-            ..DirectSurfaceLiquidErrorContext::default()
+            surface_id,
+            source_id,
+            parcel_id: None,
         },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
@@ -1323,13 +1326,16 @@ pub(super) fn receiver_atomic_failure(
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
     DirectSurfaceLiquidError::atomic_envelope_failure(
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(operands.transaction_id),
             owner_id: Some(operands.hydrology_owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
-            ..DirectSurfaceLiquidErrorContext::default()
+            surface_id,
+            source_id,
+            parcel_id: None,
         },
         Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
         Some(receiver_operands_sha256(operands)),
@@ -1343,6 +1349,7 @@ fn receiver_arithmetic_failure(
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
     DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
@@ -1351,7 +1358,9 @@ fn receiver_arithmetic_failure(
             owner_id: Some(operands.hydrology_owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
-            ..DirectSurfaceLiquidErrorContext::default()
+            surface_id,
+            source_id,
+            parcel_id: None,
         },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
@@ -1410,11 +1419,33 @@ pub(super) fn expected_receiver_identities(
     (production, thermal, lse)
 }
 
-pub(super) fn validate_receiver_envelope(
+fn validate_configured_receiver_context(
     operands: &RealReceiverClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    validate_numeric_domains(operands)?;
-    let production = operands
+    let configured_tiles = operands
+        .configured_surface_context
+        .iter()
+        .map(|(ofe, tile, _, _)| (ofe.clone(), tile.clone()))
+        .collect::<Vec<_>>();
+    if configured_tiles != operands.expected_lse_tiles {
+        let index = first_mismatch(&operands.expected_lse_tiles, &configured_tiles);
+        let identity = operands
+            .expected_lse_tiles
+            .get(index)
+            .or_else(|| configured_tiles.get(index));
+        return Err(receiver_envelope_failure(
+            operands,
+            &operands.hydrology_owner_id,
+            identity.map(|row| &row.0),
+            identity.map(|row| &row.1),
+            "configured surface receiver context mismatch",
+        ));
+    }
+    Ok(())
+}
+
+fn actual_production_identities(operands: &RealReceiverClosureOperands) -> Vec<ProductionIdentity> {
+    operands
         .production_soil
         .iter()
         .map(|lane| {
@@ -1428,7 +1459,15 @@ pub(super) fn validate_receiver_envelope(
                     .collect(),
             )
         })
-        .collect::<Vec<_>>();
+        .collect()
+}
+
+pub(super) fn validate_receiver_envelope(
+    operands: &RealReceiverClosureOperands,
+) -> Result<(), DirectSurfaceLiquidError> {
+    validate_numeric_domains(operands)?;
+    validate_configured_receiver_context(operands)?;
+    let production = actual_production_identities(operands);
     if production != operands.expected_production_soil {
         let index = first_mismatch(&operands.expected_production_soil, &production);
         let ofe = production
@@ -1794,6 +1833,7 @@ fn join_failure(
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
     DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E010,
         DirectSurfaceLiquidPhase::IndependentClosure,
@@ -1802,7 +1842,9 @@ fn join_failure(
             owner_id: Some(owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
-            ..DirectSurfaceLiquidErrorContext::default()
+            surface_id,
+            source_id,
+            parcel_id: None,
         },
         DirectSurfaceLiquidRollbackHashes {
             beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
@@ -1819,21 +1861,51 @@ fn receiver_envelope_failure(
     tile_id: Option<&TileId>,
     detail: &'static str,
 ) -> DirectSurfaceLiquidError {
+    let (surface_id, source_id) = configured_receiver_context(operands, ofe_id, tile_id);
     DirectSurfaceLiquidError::atomic_envelope_failure(
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(operands.transaction_id),
             owner_id: Some(owner_id.clone()),
             ofe_id: ofe_id.cloned(),
             tile_id: tile_id.cloned(),
-            ..DirectSurfaceLiquidErrorContext::default()
+            surface_id,
+            source_id,
+            parcel_id: None,
         },
         Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
         Some(receiver_operands_sha256(operands)),
         detail,
     )
 }
+
+fn configured_receiver_context(
+    operands: &RealReceiverClosureOperands,
+    ofe_id: Option<&OfeId>,
+    tile_id: Option<&TileId>,
+) -> (Option<SurfaceId>, Option<SourceId>) {
+    let Some(ofe_id) = ofe_id else {
+        return (None, None);
+    };
+    let exact = tile_id.and_then(|tile_id| {
+        operands
+            .configured_surface_context
+            .iter()
+            .find(|(ofe, tile, _, _)| ofe == ofe_id && tile == tile_id)
+    });
+    let context = exact.or_else(|| {
+        let mut matches = operands
+            .configured_surface_context
+            .iter()
+            .filter(|(ofe, _, _, _)| ofe == ofe_id);
+        let first = matches.next()?;
+        matches.next().is_none().then_some(first)
+    });
+    context.map_or((None, None), |(_, _, surface, source)| {
+        (Some(surface.clone()), Some(source.clone()))
+    })
+}
 pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
-    let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v3");
+    let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v4");
     out.u128("transaction", operands.transaction_id.0);
     out.string("hydrology_owner", operands.hydrology_owner_id.as_str());
     out.string("lse_owner", operands.lse_owner_id.as_str());
@@ -1869,6 +1941,7 @@ pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -
         out.string("expected_lse_ofe", ofe.as_str());
         out.string("expected_lse_tile", tile.as_str());
     }
+    frame_configured_receiver_context(&mut out, operands);
     out.count("production_count", operands.production_soil.len());
     for lane in &operands.production_soil {
         out.string("production_ofe", lane.ofe_id.as_str());
@@ -1932,11 +2005,28 @@ pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -
     out.finish()
 }
 
+fn frame_configured_receiver_context(
+    out: &mut FramedSha256,
+    operands: &RealReceiverClosureOperands,
+) {
+    out.count(
+        "configured_surface_context_count",
+        operands.configured_surface_context.len(),
+    );
+    for (ofe, tile, surface, source) in &operands.configured_surface_context {
+        out.string("configured_surface_context_ofe", ofe.as_str());
+        out.string("configured_surface_context_tile", tile.as_str());
+        out.string("configured_surface_context_surface", surface.as_str());
+        out.string("configured_surface_context_source", source.as_str());
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use openwepp_kernel_contract::TransactionId;
 
+    #[allow(clippy::too_many_lines)]
     fn fixture() -> RealReceiverClosureOperands {
         let hydrology_owner_id =
             ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner");
@@ -2014,6 +2104,18 @@ mod tests {
             .iter()
             .map(|row| (row.ofe_id.clone(), row.tile_id.clone()))
             .collect();
+        let configured_surface_context = lse_tiles
+            .iter()
+            .enumerate()
+            .map(|(index, row)| {
+                (
+                    row.ofe_id.clone(),
+                    row.tile_id.clone(),
+                    SurfaceId::try_new(format!("surface-{}", index + 1)).expect("surface"),
+                    SourceId::try_new(format!("source-{}", index + 1)).expect("source"),
+                )
+            })
+            .collect();
         RealReceiverClosureOperands {
             transaction_id: TransactionId(41),
             hydrology_owner_id,
@@ -2027,6 +2129,7 @@ mod tests {
             expected_production_soil,
             expected_soil_thermal,
             expected_lse_tiles,
+            configured_surface_context,
         }
     }
 
@@ -2048,6 +2151,15 @@ mod tests {
             Some("ofe-2")
         );
         assert_eq!(failure.context.tile_id.as_ref().map(TileId::as_str), tile);
+        assert_eq!(
+            failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+            Some("surface-2")
+        );
+        assert_eq!(
+            failure.context.source_id.as_ref().map(SourceId::as_str),
+            Some("source-2")
+        );
+        assert!(failure.context.parcel_id.is_none());
     }
 
     #[test]
@@ -2078,6 +2190,77 @@ mod tests {
         assert_eq!(
             failure.context.tile_id.as_ref().map(TileId::as_str),
             Some("tile-2")
+        );
+        assert_eq!(
+            failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+            Some("surface-2")
+        );
+        assert_eq!(
+            failure.context.source_id.as_ref().map(SourceId::as_str),
+            Some("source-2")
+        );
+    }
+
+    #[test]
+    fn receiver_close_e010_and_e003_carry_configured_surface_context() {
+        let operands = fixture();
+        let ofe = &operands.soil_thermal[1].ofe_id;
+        let tile = &operands.soil_thermal[1].tile_id;
+        for (actual, expected, code) in [
+            (11.0, 10.0, DirectSurfaceLiquidErrorCode::E010),
+            (f64::NAN, 10.0, DirectSurfaceLiquidErrorCode::E003),
+        ] {
+            let error = require_receiver_close(
+                &operands,
+                &operands.soil_thermal_owner_id,
+                actual,
+                expected,
+                DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+                Some(ofe),
+                Some(tile),
+                "receiver-close context poison",
+            )
+            .expect_err("poison must fail");
+            let failure = error.failure().expect("canonical failure");
+            assert_eq!(failure.code, code);
+            assert_eq!(
+                failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+                Some("surface-2")
+            );
+            assert_eq!(
+                failure.context.source_id.as_ref().map(SourceId::as_str),
+                Some("source-2")
+            );
+            assert!(failure.context.parcel_id.is_none());
+        }
+    }
+
+    #[test]
+    fn topology_join_and_context_digest_bind_configured_ids() {
+        let baseline = fixture();
+        let baseline_sha256 = receiver_operands_sha256(&baseline);
+
+        let mut topology = baseline.clone();
+        topology.soil_thermal.swap(0, 1);
+        let error = validate_real_receiver_closure(&topology).expect_err("topology poison");
+        let failure = error.failure().expect("canonical join failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(
+            failure.context.surface_id.as_ref().map(SurfaceId::as_str),
+            Some("surface-2")
+        );
+        assert_eq!(
+            failure.context.source_id.as_ref().map(SourceId::as_str),
+            Some("source-2")
+        );
+
+        let mut identity_poison = baseline;
+        identity_poison.configured_surface_context[1].3 =
+            SourceId::try_new("source-2-poison").expect("source poison");
+        assert_ne!(
+            receiver_operands_sha256(&identity_poison),
+            baseline_sha256,
+            "configured receiver context must be digest-bound"
         );
     }
 }
