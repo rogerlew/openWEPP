@@ -578,6 +578,57 @@ struct TimedParcel {
     enthalpy_j_m2_basis_ofe_ground: f64,
 }
 
+#[derive(Clone, Copy)]
+pub(super) enum CanonicalSurfaceLiquidSource<'a> {
+    Local {
+        store_key: &'a DirectSurfaceLiquidStoreKey,
+        kind: DirectSurfaceLiquidParcelKind,
+    },
+    Condensation {
+        transaction_id: TransactionId,
+        store_key: &'a DirectSurfaceLiquidStoreKey,
+    },
+}
+
+pub(super) fn canonical_surface_liquid_source_id(
+    source: CanonicalSurfaceLiquidSource<'_>,
+) -> String {
+    match source {
+        CanonicalSurfaceLiquidSource::Local { store_key, kind } => format!(
+            "local:{:?}:{:?}:{kind:?}",
+            store_key.ofe_id, store_key.tile_id
+        ),
+        CanonicalSurfaceLiquidSource::Condensation {
+            transaction_id,
+            store_key,
+        } => format!(
+            "condensation:{}:{:?}:{:?}",
+            transaction_id.0, store_key.ofe_id, store_key.tile_id
+        ),
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct CanonicalParcelOrderKey<'a> {
+    pub start_s: f64,
+    pub end_s: f64,
+    pub origin_store_key: &'a DirectSurfaceLiquidStoreKey,
+    pub kind: DirectSurfaceLiquidParcelKind,
+    pub source_parcel_id: &'a str,
+}
+
+pub(super) fn canonical_parcel_order(
+    left: CanonicalParcelOrderKey<'_>,
+    right: CanonicalParcelOrderKey<'_>,
+) -> std::cmp::Ordering {
+    left.start_s
+        .total_cmp(&right.start_s)
+        .then_with(|| left.end_s.total_cmp(&right.end_s))
+        .then_with(|| left.origin_store_key.cmp(right.origin_store_key))
+        .then_with(|| left.kind.cmp(&right.kind))
+        .then_with(|| left.source_parcel_id.cmp(right.source_parcel_id))
+}
+
 fn parcel_temperature_k(
     parcel: &TimedParcel,
     transaction_id: TransactionId,
@@ -1027,10 +1078,10 @@ fn validate_and_build_local_ingress(
                 "condensation overflow temperature/enthalpy mismatch",
             ));
         }
-        let id = format!(
-            "condensation:{}:{:?}:{:?}",
-            input.transaction_id.0, overflow.store_key.ofe_id, overflow.store_key.tile_id
-        );
+        let id = canonical_surface_liquid_source_id(CanonicalSurfaceLiquidSource::Condensation {
+            transaction_id: input.transaction_id,
+            store_key: &overflow.store_key,
+        });
         let enthalpy = checked_surface_liquid_mul(
             overflow.amount_kg_m2_ofe_ground,
             overflow.specific_liquid_enthalpy_j_kg,
@@ -1142,10 +1193,10 @@ fn append_amount(
                 "parcel enthalpy construction is nonfinite or underflowed",
             )
         })?;
-    let id = format!(
-        "local:{:?}:{:?}:{kind:?}",
-        configured.key.ofe_id, configured.key.tile_id
-    );
+    let id = canonical_surface_liquid_source_id(CanonicalSurfaceLiquidSource::Local {
+        store_key: &configured.key,
+        kind,
+    });
     parcels.push(TimedParcel {
         parcel_id: id,
         origin_store_key: configured.key.clone(),
@@ -1907,12 +1958,22 @@ fn receipt(
 }
 
 fn parcel_order(left: &TimedParcel, right: &TimedParcel) -> std::cmp::Ordering {
-    left.start_s
-        .total_cmp(&right.start_s)
-        .then_with(|| left.end_s.total_cmp(&right.end_s))
-        .then_with(|| left.origin_store_key.cmp(&right.origin_store_key))
-        .then_with(|| left.kind.cmp(&right.kind))
-        .then_with(|| left.parcel_id.cmp(&right.parcel_id))
+    canonical_parcel_order(
+        CanonicalParcelOrderKey {
+            start_s: left.start_s,
+            end_s: left.end_s,
+            origin_store_key: &left.origin_store_key,
+            kind: left.kind,
+            source_parcel_id: &left.parcel_id,
+        },
+        CanonicalParcelOrderKey {
+            start_s: right.start_s,
+            end_s: right.end_s,
+            origin_store_key: &right.origin_store_key,
+            kind: right.kind,
+            source_parcel_id: &right.parcel_id,
+        },
+    )
 }
 
 fn liquid_specific_enthalpy(temperature_k: f64) -> f64 {

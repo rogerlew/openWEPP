@@ -342,9 +342,10 @@ fn unequal_area_runoff_routes_once_and_preserves_mass_and_enthalpy() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix() {
     let configuration = mixed_kind_routed_configuration();
-    let beginning = initial_state(&configuration, 1.0);
+    let beginning = initial_state(&configuration, 0.5);
     let transaction_id = TransactionId(413);
     let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
     let zero = amount(0.0, 285.0, 0.0, INTERVAL_S);
@@ -367,7 +368,13 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
             },
             open_ingress(&configuration.records[1], 0.3),
         ],
-        wb14_parameters: parameters(&configuration),
+        wb14_parameters: parameters(&configuration)
+            .into_iter()
+            .map(|mut row| {
+                row.infiltration_storage_capacity_m = 5.0e-5;
+                row
+            })
+            .collect(),
     };
     let DirectTileGroundIngress::OpenRawPrecipitation {
         raw_precipitation, ..
@@ -382,32 +389,404 @@ fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix(
     candidate
         .validate(&configuration, &resource, &input)
         .expect("independent mixed-kind closure");
-    let throughfall_id = format!(
-        "local:{:?}:{:?}:{:?}",
-        ofe("upper"),
-        tile("upper-tile"),
-        DirectSurfaceLiquidParcelKind::CanopyThroughfall
-    );
-    assert!(candidate.receipts.iter().any(|receipt| {
-        receipt.source_parcel_id == throughfall_id
-            && receipt.basis_ofe_id == ofe("upper")
-            && receipt.kind == DirectSurfaceLiquidParcelKind::CanopyThroughfall
-            && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
-    }));
-    assert!(candidate.receipts.iter().any(|receipt| {
-        receipt.source_parcel_id == throughfall_id
-            && receipt.basis_ofe_id == ofe("lower")
-            && receipt.kind == DirectSurfaceLiquidParcelKind::UpstreamRunon
-            && receipt.start_s.to_bits() == 600.0_f64.to_bits()
-            && receipt.end_s.to_bits() == 1_500.0_f64.to_bits()
-    }));
-    let lower_temperatures = candidate
+    let actual = candidate
         .receipts
         .iter()
-        .filter(|receipt| receipt.basis_ofe_id == ofe("lower"))
-        .map(|receipt| receipt.temperature_k.to_bits())
-        .collect::<BTreeSet<_>>();
-    assert!(lower_temperatures.len() >= 2);
+        .map(|receipt| {
+            (
+                receipt.source_parcel_id.clone(),
+                receipt.basis_ofe_id.clone(),
+                receipt.kind,
+                receipt.disposition,
+                receipt.recipient.clone(),
+                receipt.start_s.to_bits(),
+                receipt.end_s.to_bits(),
+                receipt.mass_kg_m2_basis_ofe_ground.to_bits(),
+                receipt.temperature_k.to_bits(),
+                receipt.enthalpy_j_m2_basis_ofe_ground.to_bits(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let upper_key = configuration.records[0].key.clone();
+    let lower_key = configuration.records[1].key.clone();
+    let upper_binding = binding("upper", 0);
+    let lower_binding = binding("lower", 1);
+    let upper_soil = DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+        ofe_id: ofe("upper"),
+        production_lane_index: upper_binding.production_lane_index,
+        production_lane_id: upper_binding.production_lane_id,
+        ordered_soil_layer_ids: upper_binding.ordered_soil_layer_ids,
+        soil_thermal_layer_id: upper_binding.infiltration_soil_thermal_layer_id,
+    };
+    let lower_soil = DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+        ofe_id: ofe("lower"),
+        production_lane_index: lower_binding.production_lane_index,
+        production_lane_id: lower_binding.production_lane_id,
+        ordered_soil_layer_ids: lower_binding.ordered_soil_layer_ids,
+        soil_thermal_layer_id: lower_binding.infiltration_soil_thermal_layer_id,
+    };
+    let upper_store = DirectSurfaceLiquidReceiptRecipient::SurfaceStore {
+        store_key: upper_key.clone(),
+    };
+    let lower_store = DirectSurfaceLiquidReceiptRecipient::SurfaceStore {
+        store_key: lower_key.clone(),
+    };
+    let routed = DirectSurfaceLiquidReceiptRecipient::RoutedOfe {
+        source_ofe_id: ofe("upper"),
+        destination_ofe_id: ofe("lower"),
+        destination_store_key: lower_key.clone(),
+    };
+    let outlet = DirectSurfaceLiquidReceiptRecipient::Outlet {
+        ofe_id: ofe("lower"),
+    };
+    let throughfall = "local:OfeId(\"upper\"):TileId(\"upper-tile\"):CanopyThroughfall";
+    let drainage = "local:OfeId(\"upper\"):TileId(\"upper-tile\"):CanopyInitialDrainage";
+    let precipitation = "local:OfeId(\"lower\"):TileId(\"lower-tile\"):RawPrecipitation";
+    macro_rules! expected_row {
+        ($source:expr, $basis:literal, $kind:ident, $disposition:ident, $recipient:expr,
+         $start:expr, $end:expr, $mass:expr, $temperature:expr, $enthalpy:expr) => {
+            (
+                $source.to_owned(),
+                ofe($basis),
+                DirectSurfaceLiquidParcelKind::$kind,
+                DirectSurfaceLiquidReceiptDisposition::$disposition,
+                $recipient.clone(),
+                $start,
+                $end,
+                $mass,
+                $temperature,
+                $enthalpy,
+            )
+        };
+    }
+    let expected = vec![
+        expected_row!(
+            throughfall,
+            "upper",
+            CanopyThroughfall,
+            Infiltration,
+            upper_soil,
+            0,
+            4_655_631_299_166_339_072,
+            4_584_964_660_638_322_963,
+            4_643_780_029_834_417_493,
+            4_656_912_838_609_132_157
+        ),
+        expected_row!(
+            drainage,
+            "upper",
+            CanopyInitialDrainage,
+            Infiltration,
+            upper_soil,
+            0,
+            4_655_631_299_166_339_072,
+            4_580_461_061_010_952_468,
+            4_643_780_029_834_417_493,
+            4_652_409_238_981_761_662
+        ),
+        expected_row!(
+            throughfall,
+            "upper",
+            CanopyThroughfall,
+            RetainedSurface,
+            upper_store,
+            0,
+            4_655_631_299_166_339_072,
+            4_584_964_660_638_322_962,
+            4_643_780_029_834_417_493,
+            4_656_912_838_609_132_156
+        ),
+        expected_row!(
+            drainage,
+            "upper",
+            CanopyInitialDrainage,
+            RetainedSurface,
+            upper_store,
+            0,
+            4_655_631_299_166_339_072,
+            4_580_461_061_010_952_464,
+            4_643_780_029_834_417_493,
+            4_652_409_238_981_761_658
+        ),
+        expected_row!(
+            throughfall,
+            "upper",
+            CanopyThroughfall,
+            RoutedRunoff,
+            routed,
+            0,
+            4_655_631_299_166_339_072,
+            4_599_676_419_421_066_582,
+            4_643_780_029_834_417_493,
+            4_671_597_243_375_096_090
+        ),
+        expected_row!(
+            drainage,
+            "upper",
+            CanopyInitialDrainage,
+            RoutedRunoff,
+            routed,
+            0,
+            4_655_631_299_166_339_072,
+            4_595_172_819_793_696_086,
+            4_643_780_029_834_417_493,
+            4_667_093_643_747_725_594
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            0,
+            4_648_488_871_632_306_176,
+            4_580_461_061_010_952_465,
+            4_643_780_029_834_417_493,
+            4_652_409_238_981_761_657
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            0,
+            4_648_488_871_632_306_176,
+            4_584_964_660_638_322_962,
+            4_643_780_029_834_417_493,
+            4_656_912_838_609_132_154
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            RetainedSurface,
+            lower_store,
+            0,
+            4_648_488_871_632_306_176,
+            4_573_055_141_623_720_988,
+            4_643_780_029_834_417_493,
+            4_644_966_847_572_157_265
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            RetainedSurface,
+            lower_store,
+            0,
+            4_648_488_871_632_306_176,
+            4_577_558_741_251_091_480,
+            4_643_780_029_834_417_493,
+            4_649_470_447_199_527_757
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            0,
+            4_643_828_408_346_039_637,
+            0
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            0,
+            4_643_828_408_346_039_637,
+            0
+        ),
+        expected_row!(
+            precipitation,
+            "lower",
+            RawPrecipitation,
+            Infiltration,
+            lower_soil,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            0,
+            4_643_828_408_346_039_637,
+            0
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            RetainedSurface,
+            lower_store,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_568_551_541_996_350_486,
+            4_643_828_408_346_039_637,
+            4_641_596_917_733_799_006
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            RetainedSurface,
+            lower_store,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_573_055_141_623_720_982,
+            4_643_828_408_346_039_637,
+            4_646_100_517_361_169_502
+        ),
+        expected_row!(
+            precipitation,
+            "lower",
+            RawPrecipitation,
+            RetainedSurface,
+            lower_store,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_582_862_980_812_216_728,
+            4_643_828_408_346_039_637,
+            4_656_031_829_262_105_321
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            4_654_311_885_213_007_872,
+            4_655_631_299_166_339_072,
+            0,
+            4_643_780_029_834_417_493,
+            0
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            Infiltration,
+            lower_soil,
+            4_654_311_885_213_007_872,
+            4_655_631_299_166_339_072,
+            0,
+            4_643_780_029_834_417_493,
+            0
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            OutletRunoff,
+            outlet,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_584_464_260_679_726_241,
+            4_643_828_408_346_039_637,
+            4_657_301_034_627_793_922
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            OutletRunoff,
+            outlet,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_588_967_860_307_096_737,
+            4_643_828_408_346_039_637,
+            4_661_804_634_255_164_418
+        ),
+        expected_row!(
+            precipitation,
+            "lower",
+            RawPrecipitation,
+            OutletRunoff,
+            outlet,
+            4_648_488_871_632_306_176,
+            4_654_311_885_213_007_872,
+            4_598_625_579_508_013_466,
+            4_643_828_408_346_039_637,
+            4_671_447_160_954_164_354
+        ),
+        expected_row!(
+            drainage,
+            "lower",
+            UpstreamRunon,
+            OutletRunoff,
+            outlet,
+            4_654_311_885_213_007_872,
+            4_655_631_299_166_339_072,
+            4_577_558_741_251_091_480,
+            4_643_780_029_834_417_493,
+            4_649_470_447_199_527_757
+        ),
+        expected_row!(
+            throughfall,
+            "lower",
+            UpstreamRunon,
+            OutletRunoff,
+            outlet,
+            4_654_311_885_213_007_872,
+            4_655_631_299_166_339_072,
+            4_582_062_340_878_461_976,
+            4_643_780_029_834_417_493,
+            4_653_974_046_826_898_253
+        ),
+    ];
+    assert_eq!(actual, expected);
+    assert_eq!(
+        candidate
+            .ending_state
+            .records
+            .iter()
+            .map(|row| (
+                row.key.clone(),
+                row.liquid_kg_m2_tile.to_bits(),
+                row.last_accepted_transaction_id,
+            ))
+            .collect::<Vec<_>>(),
+        vec![
+            (upper_key, 0.1_f64.to_bits(), Some(transaction_id)),
+            (lower_key, 0.1_f64.to_bits(), Some(transaction_id)),
+        ]
+    );
+    assert_eq!(
+        candidate
+            .ending_state
+            .continuations
+            .iter()
+            .map(|row| (
+                row.ofe_id.clone(),
+                row.day_index,
+                row.next_interval_index,
+                row.cumulative_supply_m.to_bits(),
+                row.cumulative_infiltration_m.to_bits(),
+                row.last_accepted_transaction_id,
+            ))
+            .collect::<Vec<_>>(),
+        vec![
+            (
+                ofe("upper"),
+                3,
+                1,
+                4_558_673_246_493_684_322,
+                4_542_503_522_391_573_293,
+                Some(transaction_id),
+            ),
+            (
+                ofe("lower"),
+                3,
+                1,
+                4_557_750_909_289_998_844,
+                4_542_503_522_391_573_293,
+                Some(transaction_id),
+            ),
+        ]
+    );
 
     input.tile_ingress.reverse();
     let reordered = execute_surface_liquid_ingress(&configuration, &resource, &input)
@@ -1875,41 +2254,29 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
     )
     .expect("persistent projection baseline");
 
-    let mut poisons = Vec::new();
+    let upper_store = configuration.records[0].key.clone();
+    let middle_store = configuration.records[1].key.clone();
+    let mut store_poisons = Vec::new();
     let mut wrong_store = candidate.ending_state.clone();
     wrong_store.records[0].liquid_kg_m2_tile += 0.001;
-    poisons.push(("wrong ending store", wrong_store));
-    let mut supply = candidate.ending_state.clone();
-    supply.continuations[0].cumulative_supply_m += 1.0e-6;
-    poisons.push(("cumulative supply", supply));
-    let mut infiltration = candidate.ending_state.clone();
-    infiltration.continuations[0].cumulative_infiltration_m += 1.0e-6;
-    poisons.push(("cumulative infiltration", infiltration));
-    let mut rollover_day = candidate.ending_state.clone();
-    rollover_day.continuations[0].day_index += 1;
-    poisons.push(("rollover day", rollover_day));
-    let mut rollover_interval = candidate.ending_state.clone();
-    rollover_interval.continuations[0].next_interval_index = 48;
-    poisons.push(("rollover interval", rollover_interval));
-    let mut stale_transaction = candidate.ending_state.clone();
-    stale_transaction.continuations[0].last_accepted_transaction_id = Some(TransactionId(410));
-    poisons.push(("continuation transaction", stale_transaction));
-    let mut missing = candidate.ending_state.clone();
-    missing.continuations.remove(1);
-    poisons.push(("missing continuation", missing));
-    let mut duplicate = candidate.ending_state.clone();
-    duplicate
-        .continuations
-        .push(duplicate.continuations[0].clone());
-    poisons.push(("duplicate continuation", duplicate));
-    let mut reordered = candidate.ending_state.clone();
-    reordered.continuations.swap(0, 1);
-    poisons.push(("reordered continuation", reordered));
-    let mut wrong_ofe = candidate.ending_state.clone();
-    wrong_ofe.continuations[0].ofe_id = ofe("forged");
-    poisons.push(("wrong continuation OFE", wrong_ofe));
-
-    for (label, mut ending) in poisons {
+    store_poisons.push(("wrong ending store", wrong_store, upper_store.clone()));
+    let mut missing_store = candidate.ending_state.clone();
+    missing_store.records.remove(1);
+    store_poisons.push(("missing ending store", missing_store, middle_store.clone()));
+    let mut extra_store = candidate.ending_state.clone();
+    extra_store.records.push(extra_store.records[0].clone());
+    store_poisons.push(("extra ending store", extra_store, upper_store.clone()));
+    let mut reordered_store = candidate.ending_state.clone();
+    reordered_store.records.swap(0, 1);
+    store_poisons.push((
+        "reordered ending store",
+        reordered_store,
+        middle_store.clone(),
+    ));
+    let mut wrong_store_id = candidate.ending_state.clone();
+    wrong_store_id.records[0].key = configuration.records[1].key.clone();
+    store_poisons.push(("wrong ending store identity", wrong_store_id, upper_store));
+    for (label, mut ending, expected_store) in store_poisons {
         ending.state_sha256 = ending.recomputed_sha256().expect("poison digest");
         let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
             &configuration,
@@ -1919,7 +2286,56 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
             &ending,
         )
         .expect_err(label);
-        assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010, "{label}");
+        let failure = error.failure().expect("typed store failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
+        assert_eq!(failure.context.ofe_id, Some(expected_store.ofe_id));
+        assert_eq!(failure.context.tile_id, Some(expected_store.tile_id));
+    }
+
+    let mut poisons = Vec::new();
+    let mut supply = candidate.ending_state.clone();
+    supply.continuations[0].cumulative_supply_m += 1.0e-6;
+    poisons.push(("cumulative supply", supply, ofe("upper")));
+    let mut infiltration = candidate.ending_state.clone();
+    infiltration.continuations[0].cumulative_infiltration_m += 1.0e-6;
+    poisons.push(("cumulative infiltration", infiltration, ofe("upper")));
+    let mut rollover_day = candidate.ending_state.clone();
+    rollover_day.continuations[0].day_index += 1;
+    poisons.push(("rollover day", rollover_day, ofe("upper")));
+    let mut rollover_interval = candidate.ending_state.clone();
+    rollover_interval.continuations[0].next_interval_index = 48;
+    poisons.push(("rollover interval", rollover_interval, ofe("upper")));
+    let mut stale_transaction = candidate.ending_state.clone();
+    stale_transaction.continuations[0].last_accepted_transaction_id = Some(TransactionId(410));
+    poisons.push(("continuation transaction", stale_transaction, ofe("upper")));
+    let mut missing = candidate.ending_state.clone();
+    missing.continuations.remove(1);
+    poisons.push(("missing continuation", missing, ofe("middle")));
+    let mut duplicate = candidate.ending_state.clone();
+    duplicate
+        .continuations
+        .push(duplicate.continuations[0].clone());
+    poisons.push(("duplicate continuation", duplicate, ofe("upper")));
+    let mut reordered = candidate.ending_state.clone();
+    reordered.continuations.swap(0, 1);
+    poisons.push(("reordered continuation", reordered, ofe("middle")));
+    let mut wrong_ofe = candidate.ending_state.clone();
+    wrong_ofe.continuations[0].ofe_id = ofe("forged");
+    poisons.push(("wrong continuation OFE", wrong_ofe, ofe("upper")));
+
+    for (label, mut ending, expected_ofe) in poisons {
+        ending.state_sha256 = ending.recomputed_sha256().expect("poison digest");
+        let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &candidate.closure_operands,
+            &candidate.receipts,
+            &ending,
+        )
+        .expect_err(label);
+        let failure = error.failure().expect("typed continuation failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010, "{label}");
+        assert_eq!(failure.context.ofe_id, Some(expected_ofe), "{label}");
     }
 
     let mut forged = candidate.clone();
@@ -1951,7 +2367,26 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
         &digest,
     )
     .expect_err("ending digest mismatch after joins");
-    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+    let failure = error.failure().expect("typed digest failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+    assert_eq!(failure.context.ofe_id, None);
+    assert_eq!(failure.context.tile_id, None);
+
+    let mut aggregate = candidate.ending_state.clone();
+    aggregate.owner_id = owner("forged-owner");
+    aggregate.state_sha256 = aggregate.recomputed_sha256().expect("aggregate digest");
+    let error = super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        &configuration,
+        &resource,
+        &candidate.closure_operands,
+        &candidate.receipts,
+        &aggregate,
+    )
+    .expect_err("aggregate owner mismatch");
+    let failure = error.failure().expect("typed aggregate failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+    assert_eq!(failure.context.ofe_id, None);
+    assert_eq!(failure.context.tile_id, None);
 }
 
 #[test]
