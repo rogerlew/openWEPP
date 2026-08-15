@@ -81,8 +81,12 @@ branch, PR or push is in scope.
   `0cb11eb12` and `93c46d3db`. Hydrology closure review returned PASS at
   `ab703c83a`. The Rust closure review found only exact workspace Clippy and
   full-suite evidence blockers; test-only lint correction and the scoped
-  Stage-0 source guard now pass a complete exact-head heavy rerun at
-  `74d512f44` (2,783/2,783). Fresh terminal reviews remain pending.
+  Stage-0 source guard pass a complete exact-head heavy rerun at `74d512f44`
+  (2,783/2,783). Terminal Rust review then found nonterminal receiver-deletion
+  attribution and large-finite closure arithmetic defects. Their correction at
+  `82bfdc3a0` passes 544/544 orchestrator and 19/19 focused integration tests,
+  strict Clippy, formatting, diff hygiene, and line-count governance. Fresh
+  exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

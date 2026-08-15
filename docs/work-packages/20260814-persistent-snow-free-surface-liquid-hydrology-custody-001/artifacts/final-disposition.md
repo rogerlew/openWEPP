@@ -21,6 +21,10 @@ The Rust closure review retained two evidence-only blockers: exact workspace
 strict Clippy and a complete exact-head full suite. Test-only lint corrections
 and the narrowed Stage-0 meteorology source guard now pass at `74d512f44`,
 including 2,783/2,783 full-workspace tests, doctests, dependency policy,
-all-feature strict Clippy, formatting and diff hygiene. Fresh terminal reviews
-and terminal verification remain required. This is not yet a terminal
-custody-lift or resumed-Child-3 claim.
+all-feature strict Clippy, formatting and diff hygiene. Terminal Rust review
+then found two material defects: nonterminal receiver-deletion attribution and
+large-finite closure arithmetic. The correction at `82bfdc3a0` centralizes
+checked unit-aware arithmetic, guards every named conversion/accumulation and
+reports missing expected receiver identity. Focused gates pass, but fresh
+exact-byte reviews and terminal verification remain required. This is not yet
+a terminal custody-lift or resumed-Child-3 claim.

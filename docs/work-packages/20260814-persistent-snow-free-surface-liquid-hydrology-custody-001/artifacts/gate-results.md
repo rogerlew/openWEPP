@@ -438,3 +438,24 @@ Attempt-3 raw logs are retained under `artifacts/gate-run-20260814-3/`.
   is non-failing policy output.
 
 Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
+
+## Terminal Rust review remediation at `82bfdc3a0`
+
+- HOLD retained: terminal Rust review found that deleting a nonterminal
+  independent thermal expectation named the shifted actual receiver instead of
+  the missing expected receiver, and duplicated closure tolerance arithmetic
+  could overflow its scale to infinity and accept a wrong finite value.
+- PASS: ordered expectation comparison is membership-aware before positional
+  replacement/reorder attribution; deletion reports the exact missing
+  owner/OFE/tile and retains beginning/attempted rollback hashes without
+  invoking the callback.
+- PASS: one checked unit-aware arithmetic surface now guards resource basis
+  conversion, ingress parcel enthalpy and sums, routed-area conversion,
+  dedicated store/parcel closure and independent real-receiver closure.
+- PASS: large-finite overflow and nonzero-underflow poisons exercise every
+  named boundary.
+- PASS: orchestrator quick suite, 544/544; real-LSE/real-hydrology integration,
+  19/19; affected strict all-feature Clippy; formatting; and diff hygiene.
+- PASS: `surface_liquid_owner.rs` is 2,347 lines after cohesive extraction of
+  its crate-local tests; no nonexempt 3,000-line file was introduced.
+- Pending: fresh exact-byte Rust and hydrology reviews.

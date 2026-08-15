@@ -113,3 +113,17 @@ The hydrology closure review at `ab703c83a` returned PASS with no material
 finding. The three closure findings above are evidence and test-governance
 defects only; their correction changes no constitutive source, authority,
 model identity, candidate, owner, or production selector behavior.
+
+## Terminal Rust review findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-RUST-HIGH-001: nonterminal independent thermal deletion reports shifted actual receiver | Accepted | Remediated at `82bfdc3a0`; focused PASS |
+| A-TERMINAL-RUST-HIGH-002: duplicated closure tolerance scale can overflow and accept wrong finite values | Accepted | Remediated at `82bfdc3a0`; focused PASS |
+
+Deletion attribution now first identifies a missing member of the unique
+expected sequence; present replacements and reorders continue to retain the
+actual offending identity. Checked unit-aware arithmetic rejects nonfinite or
+nonzero-underflowed conversion, sum, difference, scale and tolerance values
+before a closure predicate can pass. No tolerance, source operand, authority,
+model identity or production selector changed.
