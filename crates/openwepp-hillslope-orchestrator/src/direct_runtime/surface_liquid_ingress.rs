@@ -1273,15 +1273,6 @@ fn advance_one_ofe(
                     "interval supply mass accumulation is nonfinite",
                 )
             })?;
-        let supply_enthalpy = checked_surface_liquid_sum(contributions.iter().map(|row| row.2))
-            .ok_or_else(|| {
-                ingress_arithmetic_failure(
-                    transaction_id,
-                    arithmetic_key,
-                    None,
-                    "interval supply enthalpy accumulation is nonfinite",
-                )
-            })?;
         let duration_s = checked_surface_liquid_sub(end_s, start_s).ok_or_else(|| {
             ingress_arithmetic_failure(
                 transaction_id,
@@ -1330,36 +1321,39 @@ fn advance_one_ofe(
                         "infiltration depth-to-mass conversion is nonfinite or underflowed",
                     )
                 })?;
-        let h_mix = checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
-            ingress_arithmetic_failure(
-                transaction_id,
-                arithmetic_key,
-                None,
-                "mixed parcel enthalpy is nonfinite or underflowed",
-            )
-        })?;
-        let temperature_offset = checked_surface_liquid_div(h_mix, LIQUID_HEAT_CAPACITY_J_KG_K)
-            .ok_or_else(|| {
-                ingress_arithmetic_failure(
-                    transaction_id,
-                    arithmetic_key,
-                    None,
-                    "mixed parcel temperature offset is nonfinite or underflowed",
-                )
-            })?;
-        let temperature_k = checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, temperature_offset)
-            .ok_or_else(|| {
-                ingress_arithmetic_failure(
-                    transaction_id,
-                    arithmetic_key,
-                    None,
-                    "mixed parcel temperature is nonfinite",
-                )
-            })?;
         let mut allocated_infiltration = 0.0;
         let contribution_count = contributions.len();
         let mut excess_parts = Vec::with_capacity(contribution_count);
-        for (index, (parcel, mass, _)) in contributions.into_iter().enumerate() {
+        for (index, (parcel, mass, enthalpy)) in contributions.into_iter().enumerate() {
+            let specific_enthalpy =
+                checked_surface_liquid_div(enthalpy, mass).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "parcel specific enthalpy is nonfinite or underflowed",
+                    )
+                })?;
+            let temperature_offset =
+                checked_surface_liquid_div(specific_enthalpy, LIQUID_HEAT_CAPACITY_J_KG_K)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "parcel temperature offset is nonfinite or underflowed",
+                        )
+                    })?;
+            let temperature_k =
+                checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, temperature_offset)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            arithmetic_key,
+                            Some(parcel.parcel_id.clone()),
+                            "parcel temperature is nonfinite",
+                        )
+                    })?;
             let infiltrated = if index + 1 == contribution_count {
                 checked_surface_liquid_sub(total_infiltration, allocated_infiltration).ok_or_else(
                     || {
@@ -1409,8 +1403,8 @@ fn advance_one_ofe(
                     "parcel excess mass is nonfinite",
                 )
             })?;
-            let infiltration_q =
-                checked_surface_liquid_mul(infiltrated, h_mix).ok_or_else(|| {
+            let infiltration_q = checked_surface_liquid_mul(infiltrated, specific_enthalpy)
+                .ok_or_else(|| {
                     ingress_arithmetic_failure(
                         transaction_id,
                         arithmetic_key,
@@ -1462,8 +1456,6 @@ fn advance_one_ofe(
             configuration,
             ending,
             excess_parts,
-            h_mix,
-            temperature_k,
             start_s,
             end_s,
             transaction_id,
@@ -1543,8 +1535,6 @@ fn retain_excess_proportionally(
     configuration: &DirectSurfaceLiquidConfiguration,
     ending: &mut DirectSurfaceLiquidOwnedState,
     excess_parts: Vec<(&TimedParcel, f64)>,
-    h_mix: f64,
-    temperature_k: f64,
     start_s: f64,
     end_s: f64,
     transaction_id: TransactionId,
@@ -1606,6 +1596,38 @@ fn retain_excess_proportionally(
         let mut allocated_retained = 0.0;
         let count = parts.len();
         for (part_index, (parcel, excess)) in parts.into_iter().enumerate() {
+            let specific_enthalpy = checked_surface_liquid_div(
+                parcel.enthalpy_j_m2_basis_ofe_ground,
+                parcel.mass_kg_m2_basis_ofe_ground,
+            )
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    Some(parcel.parcel_id.clone()),
+                    "retained parcel specific enthalpy is nonfinite or underflowed",
+                )
+            })?;
+            let temperature_offset =
+                checked_surface_liquid_div(specific_enthalpy, LIQUID_HEAT_CAPACITY_J_KG_K)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &store_key,
+                            Some(parcel.parcel_id.clone()),
+                            "retained parcel temperature offset is nonfinite or underflowed",
+                        )
+                    })?;
+            let temperature_k =
+                checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, temperature_offset)
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &store_key,
+                            Some(parcel.parcel_id.clone()),
+                            "retained parcel temperature is nonfinite",
+                        )
+                    })?;
             let retained_mass = if part_index + 1 == count {
                 checked_surface_liquid_sub(total_retained, allocated_retained).ok_or_else(|| {
                     ingress_arithmetic_failure(
@@ -1666,14 +1688,16 @@ fn retain_excess_proportionally(
                     end_s,
                     retained_mass,
                     temperature_k,
-                    checked_surface_liquid_mul(retained_mass, h_mix).ok_or_else(|| {
-                        ingress_arithmetic_failure(
-                            transaction_id,
-                            &store_key,
-                            Some(parcel.parcel_id.clone()),
-                            "retained enthalpy is nonfinite or underflowed",
-                        )
-                    })?,
+                    checked_surface_liquid_mul(retained_mass, specific_enthalpy).ok_or_else(
+                        || {
+                            ingress_arithmetic_failure(
+                                transaction_id,
+                                &store_key,
+                                Some(parcel.parcel_id.clone()),
+                                "retained enthalpy is nonfinite or underflowed",
+                            )
+                        },
+                    )?,
                     transaction_id,
                 ));
             }
@@ -1687,15 +1711,18 @@ fn retain_excess_proportionally(
                     start_s,
                     end_s,
                     mass_kg_m2_basis_ofe_ground: runoff_mass,
-                    enthalpy_j_m2_basis_ofe_ground: checked_surface_liquid_mul(runoff_mass, h_mix)
-                        .ok_or_else(|| {
-                            ingress_arithmetic_failure(
-                                transaction_id,
-                                &store_key,
-                                Some(parcel.parcel_id.clone()),
-                                "runoff enthalpy is nonfinite or underflowed",
-                            )
-                        })?,
+                    enthalpy_j_m2_basis_ofe_ground: checked_surface_liquid_mul(
+                        runoff_mass,
+                        specific_enthalpy,
+                    )
+                    .ok_or_else(|| {
+                        ingress_arithmetic_failure(
+                            transaction_id,
+                            &store_key,
+                            Some(parcel.parcel_id.clone()),
+                            "runoff enthalpy is nonfinite or underflowed",
+                        )
+                    })?,
                 });
             }
         }

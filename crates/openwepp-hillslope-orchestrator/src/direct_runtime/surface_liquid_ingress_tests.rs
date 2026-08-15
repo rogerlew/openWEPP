@@ -797,6 +797,170 @@ fn arithmetic_preflight_finds_aggregate_e003_before_producer_and_finite_closure_
 }
 
 #[test]
+fn same_ofe_source_enthalpy_swap_fails_per_projection_key_before_ofe_total() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::CoveredCanopyRelease);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(399);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let zero = amount(0.0, 284.0, 0.0, INTERVAL_S);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![DirectTileGroundIngress::CoveredCanopyRelease {
+            ofe_id: ofe("only"),
+            tile_id: tile("tile"),
+            surface_id: surface("surface-tile"),
+            release: DirectCanopyLiquidRelease {
+                throughfall: amount(0.1, 280.0, 0.0, INTERVAL_S),
+                initial_drainage: amount(0.1, 290.0, 0.0, INTERVAL_S),
+                second_drainage: zero.clone(),
+                stemflow: zero,
+            },
+        }],
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("covered candidate");
+    let (first, second) = candidate
+        .closure_operands
+        .swap_first_two_source_enthalpies_for_test();
+    let expected_parcel = first.min(second);
+    let attempted = candidate.ending_state.recomputed_sha256().expect("digest");
+    assert_closure_failure(
+        &candidate
+            .validate(&configuration, &resource, &input)
+            .expect_err("source enthalpy swap"),
+        DirectSurfaceLiquidErrorCode::E010,
+        transaction_id,
+        &configuration,
+        &configuration.records[0].key,
+        Some(&expected_parcel),
+        &resource.beginning_state().state_sha256,
+        &attempted,
+    );
+}
+
+#[test]
+fn per_source_comparison_scale_overflow_is_e003() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(400);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.1)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut candidate =
+        execute_surface_liquid_ingress(&configuration, &resource, &input).expect("open candidate");
+    let source_id = candidate
+        .closure_operands
+        .poison_first_source_comparison_scale_for_test();
+    let mut first = true;
+    for receipt in candidate
+        .receipts
+        .iter_mut()
+        .filter(|receipt| receipt.source_parcel_id == source_id)
+    {
+        receipt.enthalpy_j_m2_basis_ofe_ground = if first {
+            first = false;
+            f64::MAX * 0.6
+        } else {
+            0.0
+        };
+    }
+    assert!(!first);
+    let attempted = candidate.ending_state.recomputed_sha256().expect("digest");
+    assert_closure_failure(
+        &candidate
+            .validate(&configuration, &resource, &input)
+            .expect_err("per-source arithmetic"),
+        DirectSurfaceLiquidErrorCode::E003,
+        transaction_id,
+        &configuration,
+        &configuration.records[0].key,
+        Some(&source_id),
+        &resource.beginning_state().state_sha256,
+        &attempted,
+    );
+}
+
+#[test]
+fn routed_projection_failures_use_downstream_store_context() {
+    let configuration = routed_configuration();
+    let beginning = initial_state(&configuration, 1.0);
+    let transaction_id = TransactionId(401);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![
+            open_ingress(&configuration.records[0], 1.0),
+            open_ingress(&configuration.records[1], 0.0),
+        ],
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("routed candidate");
+    let destination = &configuration.records[1].key;
+
+    let mut finite = candidate.clone();
+    let source_id = finite
+        .closure_operands
+        .add_downstream_projection_poison_for_test(destination.ofe_id.clone(), 1.0);
+    let attempted = finite.ending_state.recomputed_sha256().expect("digest");
+    assert_closure_failure(
+        &finite
+            .validate(&configuration, &resource, &input)
+            .expect_err("downstream finite mismatch"),
+        DirectSurfaceLiquidErrorCode::E010,
+        transaction_id,
+        &configuration,
+        destination,
+        Some(&source_id),
+        &resource.beginning_state().state_sha256,
+        &attempted,
+    );
+
+    let mut arithmetic = candidate;
+    let source_id = arithmetic
+        .closure_operands
+        .add_downstream_projection_poison_for_test(destination.ofe_id.clone(), f64::MAX * 0.6);
+    let mut first = true;
+    for receipt in arithmetic.receipts.iter_mut().filter(|receipt| {
+        receipt.source_parcel_id == source_id && receipt.basis_ofe_id == destination.ofe_id
+    }) {
+        receipt.enthalpy_j_m2_basis_ofe_ground = if first {
+            first = false;
+            f64::MAX * 0.6
+        } else {
+            0.0
+        };
+    }
+    assert!(!first);
+    let attempted = arithmetic.ending_state.recomputed_sha256().expect("digest");
+    assert_closure_failure(
+        &arithmetic
+            .validate(&configuration, &resource, &input)
+            .expect_err("downstream arithmetic mismatch"),
+        DirectSurfaceLiquidErrorCode::E003,
+        transaction_id,
+        &configuration,
+        destination,
+        Some(&source_id),
+        &resource.beginning_state().state_sha256,
+        &attempted,
+    );
+}
+
+#[test]
 fn producer_second_store_ledger_and_wb14_mismatches_report_exact_identity() {
     let configuration = routed_configuration();
     let beginning = initial_state(&configuration, 0.0);
@@ -1004,6 +1168,34 @@ fn producer_upper_and_middle_deletions_report_the_missing_identity() {
     }
 }
 
+#[test]
+fn producer_identity_helper_attributes_reorder_and_replacement_to_actual_rows() {
+    let expected = vec![ofe("upper"), ofe("middle"), ofe("lower")];
+    let reordered = vec![ofe("middle"), ofe("upper"), ofe("lower")];
+    let replacement = vec![ofe("replacement"), ofe("middle"), ofe("lower")];
+    assert_eq!(
+        first_identity_aware_mismatch(&reordered, &expected, Clone::clone),
+        Some(&reordered[0])
+    );
+    assert_eq!(
+        first_identity_aware_mismatch(&replacement, &expected, Clone::clone),
+        Some(&replacement[0])
+    );
+
+    let expected_map = expected
+        .iter()
+        .cloned()
+        .map(|key| (key, 1))
+        .collect::<BTreeMap<_, _>>();
+    let mut replacement_map = expected_map.clone();
+    replacement_map.remove(&ofe("upper"));
+    replacement_map.insert(ofe("replacement"), 1);
+    assert_eq!(
+        first_map_identity_mismatch(&replacement_map, &expected_map),
+        Some(&ofe("replacement"))
+    );
+}
+
 #[allow(clippy::too_many_arguments)]
 fn assert_producer_e009(
     error: &DirectSurfaceLiquidError,
@@ -1025,6 +1217,40 @@ fn assert_producer_e009(
     );
     assert_eq!(failure.context.ofe_id.as_ref(), ofe_id);
     assert_eq!(failure.context.tile_id.as_ref(), tile_id);
+    assert_eq!(failure.context.parcel_id.as_deref(), parcel_id);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning_sha256)
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(attempted_sha256)
+    );
+}
+
+#[allow(clippy::too_many_arguments)]
+fn assert_closure_failure(
+    error: &DirectSurfaceLiquidError,
+    code: DirectSurfaceLiquidErrorCode,
+    transaction_id: TransactionId,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    key: &DirectSurfaceLiquidStoreKey,
+    parcel_id: Option<&str>,
+    beginning_sha256: &str,
+    attempted_sha256: &str,
+) {
+    let failure = error.failure().expect("canonical closure failure");
+    assert_eq!(failure.code, code);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+    assert_eq!(failure.context.transaction_id, Some(transaction_id));
+    assert_eq!(
+        failure.context.owner_id,
+        Some(configuration.owner_id.clone())
+    );
+    assert_eq!(failure.context.ofe_id.as_ref(), Some(&key.ofe_id));
+    assert_eq!(failure.context.tile_id.as_ref(), Some(&key.tile_id));
+    assert_eq!(failure.context.surface_id.as_ref(), Some(&key.surface_id));
+    assert_eq!(failure.context.source_id.as_ref(), Some(&key.source_id));
     assert_eq!(failure.context.parcel_id.as_deref(), parcel_id);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
