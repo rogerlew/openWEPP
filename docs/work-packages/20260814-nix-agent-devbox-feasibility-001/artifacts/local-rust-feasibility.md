@@ -4,7 +4,7 @@ Status: `Ran / provisional ow-dev-01 evidence / no cross-machine claim`
 
 Date: `2026-08-14`
 
-Commit under test: `f069772f2` plus the documented ownership-claim correction.
+Commit under test: `be5e5f8d1` plus the documented environment-helper changes.
 The worktree was dirty only for developer-environment documentation and helper
 changes; no Rust source or Cargo manifest changed.
 
@@ -87,6 +87,34 @@ Fresh isolated `cargo check --workspace` targets with downloads already warm:
 | 16 | 17.57 s | 83.48 s | 9.29 s | 502,684 KiB |
 
 Sixteen was fastest in this single-job probe, but only 1.9% faster than 12.
-Do not select the host default until the realistic concurrent workload measures
-interactive latency and sustained thermal behavior. Twelve remains the leading
-provisional concurrency-safe candidate.
+
+## Concurrent Workload Intake
+
+The realistic local mix ran one fresh-target workspace check, two independent
+focused checks, and a 50-pass repository scan at the same time. An initial
+harness run was rejected because its background-shell scoping made the timing
+logs unreliable. The corrected runs were:
+
+| Heavy jobs | Heavy workspace | Kernel (4 jobs) | Vegetation (4 jobs) | Scan x50 |
+| ---: | ---: | ---: | ---: | ---: |
+| 12 | 20.16 s | 8.88 s | 12.89 s | 0.42 s |
+| 8 | 20.74 s | 8.57 s | 12.65 s | 0.41 s |
+
+For comparison, the isolated baselines were 17.91 seconds for the 12-job
+workspace check, 4.94 seconds for kernel, and 8.60 seconds for vegetation.
+Contention is visible, but the host remains responsive and completes every arm.
+Reducing the heavy job from 12 to 8 costs only 0.58 seconds while improving both
+focused checks. The repository scan is effectively unchanged.
+
+## Local Concurrency Decision
+
+- Admit only one heavy command per host with `tools/dev/heavy`; a competing
+  command exits 75 rather than silently queueing and consuming an agent slot.
+- Default wrapped Cargo builds and nextest campaigns to 8 workers/threads while
+  focused agents may be active.
+- Permit an explicit 16-worker override only for an otherwise idle, exclusive
+  heavy run. The single-job probe supports it, but sustained thermal behavior
+  remains part of the final cross-machine campaign.
+- Keep focused checks isolated at 4 Cargo jobs in the feasibility harness.
+- Treat these as safe ow-dev-01 intake defaults, not as evidence that this host
+  is faster than `forest`.

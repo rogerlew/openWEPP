@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Admit at most one heavy Cargo/nextest command across all host worktrees.
+set -euo pipefail
+
+if (( $# == 0 )); then
+    echo "usage: tools/dev/heavy <command> [args...]" >&2
+    exit 2
+fi
+
+if [[ -z "${OPENWEPP_CACHE_ROOT:-}" ]]; then
+    echo "error: enter the openWEPP Nix development shell first" >&2
+    exit 2
+fi
+
+openwepp_heavy_jobs="${OPENWEPP_HEAVY_JOBS:-8}"
+openwepp_heavy_test_threads="${OPENWEPP_HEAVY_TEST_THREADS:-8}"
+openwepp_heavy_lock="$OPENWEPP_CACHE_ROOT/locks/host-heavy.lock"
+
+mkdir -p "$(dirname "$openwepp_heavy_lock")"
+
+openwepp_heavy_rc=0
+flock --exclusive --nonblock --close --conflict-exit-code 75 \
+    "$openwepp_heavy_lock" \
+    env \
+    CARGO_BUILD_JOBS="$openwepp_heavy_jobs" \
+    NEXTEST_TEST_THREADS="$openwepp_heavy_test_threads" \
+    "$@" || openwepp_heavy_rc=$?
+
+if (( openwepp_heavy_rc == 75 )); then
+    echo "error: another heavy openWEPP command is already running on this host" >&2
+fi
+
+exit "$openwepp_heavy_rc"

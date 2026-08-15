@@ -124,7 +124,7 @@ heavy-run time alone.
   `CARGO_INCREMENTAL=0` plus shared sccache.
 - [x] Benchmark the system linker against Clang plus mold without committing a
   global optimization before evidence exists.
-- [ ] Select bounded Cargo/nextest concurrency and a one-heavy-run-per-host
+- [x] Select bounded Cargo/nextest concurrency and a one-heavy-run-per-host
   admission mechanism.
 
 ### Phase 3 — Freeze The Landed Comparison Identity

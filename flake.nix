@@ -56,17 +56,17 @@
             nativeBuildInputs = devTools;
           }
           ''
-            cargo --version
-            rustc --version
-            cargo nextest --version
-            cargo deny --version
-            python3.12 --version
-            uv --version
-            sccache --version
-            mold --version
-            git-lfs --version
-            shellcheck ${./tools/dev/openwepp-env} ${./tools/dev/check-host}
-            touch "$out"
+                cargo --version
+                rustc --version
+                cargo nextest --version
+                cargo deny --version
+                python3.12 --version
+                uv --version
+                sccache --version
+                mold --version
+                git-lfs --version
+            shellcheck ${./tools/dev/openwepp-env} ${./tools/dev/check-host} ${./tools/dev/heavy}
+                touch "$out"
           '';
 
       formatter.${system} = pkgs.nixfmt;

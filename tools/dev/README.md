@@ -24,6 +24,26 @@ OPENWEPP_TASK_ID=review-b nix develop
 Do not rely on `nix develop /path/to/flake` to select build identity: Nix keeps
 the caller's current directory. Change into the intended worktree first.
 
+## Heavy Commands
+
+Use the host-wide admission wrapper for full-workspace Clippy, nextest,
+release, comparator, and similar closure commands:
+
+```bash
+tools/dev/heavy cargo nextest run --workspace --profile full
+```
+
+Only one wrapped heavy command can run across all worktrees on the host. A
+collision exits with status `75`. The concurrency intake selected 8 Cargo build
+jobs and 8 nextest test threads while focused agents remain active. An
+exclusive run may override either value deliberately:
+
+```bash
+OPENWEPP_HEAVY_JOBS=16 \
+OPENWEPP_HEAVY_TEST_THREADS=16 \
+tools/dev/heavy cargo nextest run --workspace --profile full
+```
+
 ## Python
 
 Create the ignored repository virtual environment with the pinned Nix Python:
