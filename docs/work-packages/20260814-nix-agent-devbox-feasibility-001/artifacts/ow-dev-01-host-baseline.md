@@ -14,7 +14,18 @@ Date: `2026-08-14`
   `q /tmp 1777 root root 3d`.
 - A scoped `systemd-tmpfiles --clean --dry-run --prefix=/tmp` produced no
   deletion candidates at intake.
-- Rust and Nix were not installed in the ordinary user environment at intake.
+- Nix was absent at initial intake. The user subsequently installed the
+  recommended multi-user distribution: Nix `2.35.2`, active `nix-daemon`, and
+  the `nixbld` build-user group.
+- `/etc/nix/nix.conf` now enables `nix-command flakes`; the previous file is
+  retained as `/etc/nix/nix.conf.codex-backup-20260814`.
+- Ran: daemon store information query succeeded and `nix eval --expr '1 + 1'`
+  returned `2`.
+- GitHub CLI authentication is active for `rogerlew` over HTTPS. Git's global
+  `github.com` and `gist.github.com` helpers already invoke
+  `/usr/bin/gh auth git-credential`; no plaintext Git credential file was
+  present. A secret-safe `git credential fill` confirmed username `rogerlew`
+  and a nonempty credential without recording its value.
 
 The live `/etc` override is host state, not yet a tracked deployment mechanism.
 Phase 0 must add a report-only host check so drift is visible.

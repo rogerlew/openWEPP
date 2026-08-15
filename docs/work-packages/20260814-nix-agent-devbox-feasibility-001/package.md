@@ -1,6 +1,6 @@
 # Establish The Nix Agent Development Box And Prove Cutover Feasibility
 
-Status: `ACTIVE / feature branch scaffolded / host cleanup configured / implementation not started`
+Status: `ACTIVE / host prerequisites verified / Nix flake implementation next`
 
 Date: `2026-08-14`
 
@@ -104,7 +104,7 @@ heavy-run time alone.
 
 ### Phase 1 — Implement The Pinned Nix Development Shell
 
-- [ ] Install multi-user Nix on `ow-dev-01` using the official installer and
+- [x] Install multi-user Nix on `ow-dev-01` using the official installer and
   record the installed Nix version and daemon state.
 - [ ] Add and lock the minimal openWEPP development flake.
 - [ ] Prove `nix develop` supplies every canonical developer and gate command.
@@ -207,3 +207,9 @@ cutover decision follows the declared evidence, and the first real
   host is idle. Rationale: benchmark validity and noninterference both require
   isolation from the current full-workspace campaign. Date/Author: 2026-08-14
   / Codex at user direction.
+- Decision: enable `nix-command` and `flakes` in the multi-user daemon
+  configuration before flake implementation. Rationale: Nix 2.35.2 installed
+  successfully but left both features disabled, so the planned locked
+  development shell could not execute. The daemon-store query and a pure
+  evaluation passed after the bounded configuration change. Date/Author:
+  2026-08-14 / Codex at user direction.
