@@ -104,3 +104,10 @@ attempt framing. Focused evidence passes 28/28 LSE, 66/66 integration, 10/10
 authority and 600/600 orchestrator-library tests. A clean remediation commit,
 fresh dual exact-byte reviews and terminal verification remain required. This
 is not yet a terminal custody-lift or resumed-Child-3 claim.
+Exact-byte hydrology review at `15a110ece` then found attachment production-
+lane numeric E003 could mask later state identity/digest E002. The current
+worktree separates attachment frame identity from lane numeric domain and adds
+the two required cross-poisons. Focused evidence passes 67/67 integration,
+10/10 authority and 600/600 orchestrator-library tests. A clean remediation
+commit and fresh dual exact-byte review remain required before heavy gates.
+This remains nonterminal and does not resume Child 3.

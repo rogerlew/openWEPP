@@ -475,6 +475,58 @@ fn attachment_lane_identity_precedes_nonfinite_area_in_any_position() {
 }
 
 #[test]
+fn attachment_state_identity_precedes_nonfinite_lane_area_without_mutation() {
+    for state_poison in 0..2 {
+        let (mut frame, configuration, state) = two_ofe_attachment_fixture();
+        frame
+            .configure_surface_liquid_shadow(&configuration, state.clone())
+            .expect("initial attachment");
+        frame.lanes[0].area_m2 = f64::NAN;
+        let beginning_surface = frame
+            .surface_liquid_shadow
+            .as_deref()
+            .expect("beginning surface owner")
+            .clone();
+        let beginning_lane_area_bits = frame
+            .lanes
+            .iter()
+            .map(|lane| lane.area_m2.to_bits())
+            .collect::<Vec<_>>();
+        let mut attempted_state = state.clone();
+        match state_poison {
+            0 => {
+                attempted_state.records[1].key.tile_id =
+                    TileId::try_new("wrong-state-tile").expect("wrong tile")
+            }
+            1 => attempted_state.records[1].liquid_kg_m2_tile = 1.25,
+            _ => unreachable!("bounded state poison table"),
+        }
+
+        let error = frame
+            .configure_surface_liquid_shadow(&configuration, attempted_state)
+            .expect_err("state identity must precede lane numeric domain");
+        let failure = canonical_failure(LandSurfaceEnergyShadowError::SurfaceLiquid(error));
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
+        assert_hashes(&failure);
+        assert_eq!(
+            frame.surface_liquid_shadow.as_deref(),
+            Some(&beginning_surface),
+            "failed attachment replaced the accepted owner",
+        );
+        assert_eq!(
+            frame
+                .lanes
+                .iter()
+                .map(|lane| lane.area_m2.to_bits())
+                .collect::<Vec<_>>(),
+            beginning_lane_area_bits,
+            "failed attachment mutated production lanes",
+        );
+    }
+}
+
+#[test]
 fn request_identity_precedes_nonfinite_beginning_surface_state() {
     for state_index in 0..2 {
         let (mut frame, configuration) = configured_two_tile_surface_frame();

@@ -670,13 +670,22 @@ pub(crate) fn validate_surface_liquid_frame_identities(
             ));
         }
     }
+    Ok(())
+}
+
+pub(crate) fn validate_surface_liquid_frame_domains(
+    lanes: &[DirectLaneFrame],
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning_owner_sha256: Option<&str>,
+    attempted_owner_sha256: Option<&str>,
+) -> Result<(), DirectSurfaceLiquidError> {
     for (topology_index, ofe_id) in configuration.ofe_topology.iter().enumerate() {
         if !lanes[topology_index].area_m2.is_finite() || lanes[topology_index].area_m2 <= 0.0 {
             return Err(surface_liquid_frame_domain_error(
                 configuration,
                 ofe_id,
-                beginning_owner_sha256.clone(),
-                attempted_owner_sha256.clone(),
+                beginning_owner_sha256.map(str::to_owned),
+                attempted_owner_sha256.map(str::to_owned),
                 "surface-liquid production lane area is not positive finite",
             ));
         }

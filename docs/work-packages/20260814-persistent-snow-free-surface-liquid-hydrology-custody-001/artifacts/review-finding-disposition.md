@@ -526,3 +526,12 @@ No `3ac61997d` finding is rejected, deferred or moved to another package.
 | A-TERMINAL-413-HIGH-002: ingress-identity attempted hash omits raw configuration/state bytes | Accepted | Remediated: ingress E002 contextualization joins the raw snapshot attempt with the unified projection; same stale digest and ingress defect with distinct raw NaN payloads produce distinct attempted hashes |
 
 No `413c0c32a` finding is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `15a110ece`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| B-TERMINAL-15A-HIGH-001: attachment lane numeric E003 can mask later state identity/digest E002 | Accepted | Remediated: frame cross-input identity and production-lane numeric validation are separate; configuration/frame/state structure and declared digests precede lane-domain E003; lane-NaN × state-key/stale-digest vectors return E002 with complete hashes and unchanged attachment/lane bytes |
+
+The Rust review returned PASS with no material finding. No `15a110ece` finding
+is rejected, deferred or moved to another package.

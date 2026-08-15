@@ -682,6 +682,12 @@ impl DirectRunFrame {
                 attempted_owner_sha256.clone(),
             )
         })?;
+        surface_liquid_attachment::validate_surface_liquid_frame_domains(
+            &self.lanes,
+            configuration,
+            beginning_owner_sha256.as_deref(),
+            attempted_owner_sha256.as_deref(),
+        )?;
         configuration.validate().map_err(|error| {
             surface_liquid_attachment_error(
                 error,

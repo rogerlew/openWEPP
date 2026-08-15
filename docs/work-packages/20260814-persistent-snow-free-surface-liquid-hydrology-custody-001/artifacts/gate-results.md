@@ -1079,6 +1079,42 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `15a110ece`
+
+- PASS: fresh Rust correctness review found no material blocker and confirmed
+  all requested taxonomy, identity, hashing, coverage, rollback and line-count
+  surfaces.
+- HOLD: fresh hydrology review found attachment frame validation still combines
+  cross-input identity and production-lane numeric domain; lane NaN can mask a
+  later state-key or stale-digest E002.
+- PASS but non-dispositive: LSE 28/28; unified integration 66/66; custody
+  authority 10/10; surface-liquid subset 86/86; affected strict Clippy;
+  admission; anti-evasion; AUTH11; unit compliance; formatting and diff
+  hygiene.
+- Pending: split attachment frame identity from lane numeric domain, add both
+  cross-poisons and repeat fresh dual exact-byte review. Heavy execution remains
+  blocked.
+
+## `15a110ece` HOLD remediation
+
+- Ran: unified integration — PASS, 67/67; custody authority — PASS, 10/10;
+  orchestrator library — PASS, 600/600 with three slow tests; affected strict
+  all-target/all-feature Clippy, formatting and diff hygiene — PASS.
+- Ran: science admission — PASS, 46 contracts and 28 science surfaces; package
+  Markdown lint — PASS, 102 files with zero errors and warnings.
+- Static + Ran: attachment frame identity is split from production-lane numeric
+  domain. Lane-area NaN combined independently with state-key mismatch and
+  stale state digest returns E002/Restart with complete hashes, unchanged
+  accepted surface owner and unchanged raw production-lane bits.
+- Preserved test retry: the first new vector used an invalid one-lane snapshot
+  adapter on a two-lane fixture; the final proof uses accepted-owner equality
+  and raw lane-area-bit preservation.
+- Preserved Clippy retries: by-value optional hash parameters triggered
+  `needless_pass_by_value`, then borrowed `Option<String>` triggered
+  `ref_option`; the final `Option<&str>` interface passes strict Clippy.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on
