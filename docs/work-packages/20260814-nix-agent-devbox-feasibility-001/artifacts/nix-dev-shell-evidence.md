@@ -58,8 +58,38 @@ TMPDIR=/tmp/openwepp-roger-openWEPP-295c6e060aa9
 ```
 
 The task identity is derived from the absolute Git worktree path unless the
-operator supplies `OPENWEPP_TASK_ID`. Cross-worktree isolation remains to be
-proved after this environment increment is committed.
+operator supplies `OPENWEPP_TASK_ID`. Cross-worktree isolation was proved after
+the first environment increment was committed.
+
+Post-commit proof used a temporary detached worktree at `e64ee6a3c`, with LFS
+smudging disabled to avoid copying payload data. From inside that worktree,
+`nix develop` allocated:
+
+```text
+CARGO_TARGET_DIR=/workdir/.cache/openwepp/targets/nix-isolation-smoke-3c157e22a9fb
+TMPDIR=/tmp/openwepp-roger-nix-isolation-smoke-3c157e22a9fb
+```
+
+Both differed from the primary checkout paths and locked Cargo metadata passed.
+The temporary worktree and its empty target/scratch directories were removed
+after the proof.
+
+An initial probe invoked `nix develop /path/to/secondary/flake` while the
+current directory remained the primary checkout. Nix correctly retained the
+caller's current directory, so the environment selected the primary identity.
+The developer README now requires changing into the intended worktree first.
+
+Same-task collision proof then held one Nix shell open and invoked a second
+shell from the primary checkout. The initial hook detected contention but did
+not propagate the sourced helper's failure; the hook was corrected to exit on
+helper failure. The repeated second invocation exited `1` with:
+
+```text
+error: task 'openWEPP-295c6e060aa9' already owns this Cargo target
+use a separate worktree or set a unique OPENWEPP_TASK_ID
+```
+
+The lock is nonblocking and is released when the owning shell exits.
 
 ## Capacity
 

@@ -33,6 +33,7 @@
         sccache
         shellcheck
         uv
+        util-linux
       ];
     in
     {
@@ -41,7 +42,7 @@
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ];
 
         shellHook = ''
-          source ${./tools/dev/openwepp-env}
+          source ${./tools/dev/openwepp-env} || exit $?
           printf 'openWEPP Nix shell\n'
           printf '  target:  %s\n' "$CARGO_TARGET_DIR"
           printf '  scratch: %s\n' "$TMPDIR"

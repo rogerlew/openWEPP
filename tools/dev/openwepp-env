@@ -29,8 +29,16 @@ export UV_CACHE_DIR="$openwepp_cache_root/uv"
 export CARGO_TARGET_DIR="$openwepp_cache_root/targets/$openwepp_task_id"
 export TMPDIR="/tmp/openwepp-$USER-$openwepp_task_id"
 
-mkdir -p "$CARGO_HOME" "$SCCACHE_DIR" "$UV_CACHE_DIR" "$CARGO_TARGET_DIR"
+mkdir -p "$CARGO_HOME" "$SCCACHE_DIR" "$UV_CACHE_DIR" "$CARGO_TARGET_DIR" "$openwepp_cache_root/locks"
 mkdir -p "$TMPDIR"
 chmod 0700 "$TMPDIR"
 
-unset openwepp_repo_root openwepp_repo_key openwepp_cache_root openwepp_task_id
+exec {openwepp_target_lock_fd}>"$openwepp_cache_root/locks/$openwepp_task_id.lock"
+if ! flock -n "$openwepp_target_lock_fd"; then
+    echo "error: task '$openwepp_task_id' already owns this Cargo target" >&2
+    echo "use a separate worktree or set a unique OPENWEPP_TASK_ID" >&2
+    return 1
+fi
+export OPENWEPP_TARGET_LOCK_FD="$openwepp_target_lock_fd"
+
+unset openwepp_repo_root openwepp_repo_key openwepp_cache_root openwepp_task_id openwepp_target_lock_fd
