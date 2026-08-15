@@ -10,6 +10,7 @@ use super::{
     checked_surface_liquid_close, checked_surface_liquid_div, checked_surface_liquid_mul,
     checked_surface_liquid_sub, checked_surface_liquid_sum,
 };
+use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
     surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
 };
@@ -24,10 +25,18 @@ pub(super) fn validate_surface_production_binding(
         || configuration.ofe_bindings.len() != frame.lanes.len()
         || owner.layer_maps().len() != frame.lanes.len()
     {
-        return Err(snapshot_failure(
+        let mismatch_rank = configuration
+            .ofe_bindings
+            .len()
+            .min(owner.layer_maps().len())
+            .min(frame.lanes.len());
+        let offender = configuration.ofe_bindings.get(mismatch_rank);
+        return Err(snapshot_failure_at(
             DirectSurfaceLiquidErrorCode::E002,
             owner,
             configuration,
+            offender.map(|binding| &binding.ofe_id),
+            None,
             "surface production run or lane count",
         ));
     }
@@ -42,15 +51,26 @@ pub(super) fn validate_surface_production_binding(
             || binding.production_lane_id != lane.lane_id
             || binding.ordered_soil_layer_ids != mapping.layer_ids
             || binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len()
-            || configuration.records.iter().any(|record| {
-                record.key.ofe_id == binding.ofe_id
-                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-            })
         {
-            return Err(snapshot_failure(
+            return Err(snapshot_failure_at(
                 DirectSurfaceLiquidErrorCode::E002,
                 owner,
                 configuration,
+                Some(&binding.ofe_id),
+                None,
+                "surface production OFE/lane/area/layer binding",
+            ));
+        }
+        if let Some(record) = configuration.records.iter().find(|record| {
+            record.key.ofe_id == binding.ofe_id
+                && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+        }) {
+            return Err(snapshot_failure_at(
+                DirectSurfaceLiquidErrorCode::E002,
+                owner,
+                configuration,
+                Some(&binding.ofe_id),
+                Some(record),
                 "surface production OFE/lane/area/layer binding",
             ));
         }
@@ -64,18 +84,30 @@ pub(super) fn snapshot_failure(
     configuration: &DirectSurfaceLiquidConfiguration,
     detail: &'static str,
 ) -> LandSurfaceEnergyShadowError {
+    snapshot_failure_at(code, owner, configuration, None, None, detail)
+}
+
+fn snapshot_failure_at(
+    code: DirectSurfaceLiquidErrorCode,
+    owner: &RealHydrologyShadowAdapter,
+    configuration: &DirectSurfaceLiquidConfiguration,
+    ofe_id: Option<&OfeId>,
+    record: Option<&DirectSurfaceLiquidConfigurationRecord>,
+    detail: &'static str,
+) -> LandSurfaceEnergyShadowError {
     let state = owner.beginning_frame().surface_liquid_shadow.as_deref();
     let beginning = surface_liquid_raw_snapshot_sha256(owner.snapshot_bytes(), state);
     let attempted =
         surface_liquid_raw_snapshot_attempt_sha256(owner.snapshot_bytes(), configuration, state);
-    let record = configuration.records.first();
     DirectSurfaceLiquidError::canonical_failure(
         code,
         DirectSurfaceLiquidPhase::Restart,
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(owner.transaction_id()),
             owner_id: Some(configuration.owner_id.clone()),
-            ofe_id: record.map(|row| row.key.ofe_id.clone()),
+            ofe_id: record
+                .map(|row| row.key.ofe_id.clone())
+                .or_else(|| ofe_id.cloned()),
             tile_id: record.map(|row| row.key.tile_id.clone()),
             surface_id: record.map(|row| row.key.surface_id.clone()),
             source_id: record.map(|row| row.key.source_id.clone()),

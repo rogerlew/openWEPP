@@ -1,12 +1,16 @@
 //! Canonical error completion for attaching the optional surface-liquid owner.
 
-use openwepp_land_surface_energy::{OfeId, SurfaceClass, WaterSourceType};
+use openwepp_land_surface_energy::{
+    CondensationCredit, GroundWaterKey, OfeId, RequestingComponent, StandGroundWaterAmountBasis,
+    SurfaceClass, WaterAmount, WaterAuthorization, WaterAuthorizationReason, WaterSourceType,
+};
 use sha2::{Digest, Sha256};
 
 use super::{
-    DirectGroundIngressMode, DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidError,
-    DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState,
-    DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey,
+    DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey,
 };
 
 struct RawAttemptHash(Sha256);
@@ -68,6 +72,123 @@ impl RawAttemptHash {
             },
         );
         self.string("key-source", key.source_id.as_str());
+    }
+
+    fn water_key(&mut self, key: &GroundWaterKey) {
+        self.bytes("water-transaction", &key.transaction_id.0.to_be_bytes());
+        self.string("water-owner", key.requesting_owner_id.as_str());
+        self.u64(
+            "water-component",
+            match key.requesting_component {
+                RequestingComponent::VegetationRoot => 0,
+                RequestingComponent::GroundSurface => 1,
+            },
+        );
+        self.string("water-ofe", key.ofe_id.as_str());
+        self.string("water-requesting-tile", key.requesting_tile_id.as_str());
+        self.option_string(
+            "water-occupancy",
+            key.occupancy_id
+                .as_ref()
+                .map(openwepp_land_surface_energy::ComponentId::as_str),
+        );
+        self.option_string(
+            "water-surface",
+            key.surface_id
+                .as_ref()
+                .map(openwepp_land_surface_energy::SurfaceId::as_str),
+        );
+        self.u64(
+            "water-surface-class-present",
+            u64::from(key.surface_class.is_some()),
+        );
+        if let Some(surface_class) = key.surface_class {
+            self.u64(
+                "water-surface-class",
+                match surface_class {
+                    SurfaceClass::BareMineralSoil => 0,
+                    SurfaceClass::ForestLitter => 1,
+                },
+            );
+        }
+        self.u64(
+            "water-source-type",
+            match key.source_type {
+                WaterSourceType::SurfaceLiquid => 0,
+                WaterSourceType::LitterLiquid => 1,
+                WaterSourceType::SoilLayerLiquid => 2,
+            },
+        );
+        self.string("water-source", key.source_id.as_str());
+        self.option_string(
+            "water-source-tile",
+            key.source_tile_id
+                .as_ref()
+                .map(openwepp_kernel_contract::TileId::as_str),
+        );
+        self.option_string(
+            "water-soil-layer",
+            key.soil_layer_id
+                .as_ref()
+                .map(openwepp_kernel_contract::SoilLayerId::as_str),
+        );
+        self.u64(
+            "water-basis",
+            match key.amount_basis {
+                StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval => 0,
+            },
+        );
+    }
+
+    fn water_amount(&mut self, tag: &'static str, value: &WaterAmount) {
+        self.string("water-row-kind", tag);
+        self.water_key(&value.key);
+        self.u64("water-amount", value.amount_kg_m2_stand_ground.to_bits());
+    }
+
+    fn water_authorization(&mut self, value: &WaterAuthorization) {
+        self.water_key(&value.key);
+        self.u64(
+            "authorization-amount",
+            value.amount_kg_m2_stand_ground.to_bits(),
+        );
+        self.u64(
+            "authorization-reason",
+            match value.reason {
+                WaterAuthorizationReason::FullSupply => 0,
+                WaterAuthorizationReason::ProportionalSupply => 1,
+                WaterAuthorizationReason::ZeroSupply => 2,
+                WaterAuthorizationReason::DrySource => 3,
+                WaterAuthorizationReason::FrozenSource => 4,
+                WaterAuthorizationReason::InaccessibleSource => 5,
+            },
+        );
+    }
+
+    fn condensation_credit(&mut self, value: &CondensationCredit) {
+        self.bytes(
+            "condensation-transaction",
+            &value.transaction_id.0.to_be_bytes(),
+        );
+        self.string("condensation-owner", value.hydrology_owner_id.as_str());
+        self.string("condensation-ofe", value.ofe_id.as_str());
+        self.string("condensation-tile", value.tile_id.as_str());
+        self.string("condensation-surface", value.surface_id.as_str());
+        self.u64(
+            "condensation-amount",
+            value.amount_kg_m2_stand_ground.to_bits(),
+        );
+        self.u64(
+            "condensation-basis",
+            match value.amount_basis {
+                StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval => 0,
+            },
+        );
+        self.u64("condensation-temperature", value.temperature_k.to_bits());
+        self.u64(
+            "condensation-enthalpy",
+            value.specific_liquid_enthalpy_j_kg.to_bits(),
+        );
     }
 
     fn finish(self) -> String {
@@ -182,6 +303,132 @@ pub(crate) fn surface_liquid_raw_state_sha256(state: &DirectSurfaceLiquidOwnedSt
     hash.finish()
 }
 
+pub(crate) fn surface_liquid_raw_authorization_attempt_sha256(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning: &DirectSurfaceLiquidOwnedState,
+    transaction_id: openwepp_kernel_contract::TransactionId,
+    expected_predecessor: Option<openwepp_kernel_contract::TransactionId>,
+    requests: &[WaterAmount],
+) -> String {
+    let mut hash = RawAttemptHash::new("openwepp-surface-liquid-authorization-attempt-v1");
+    hash_raw_configuration(&mut hash, configuration);
+    hash_raw_state(&mut hash, beginning);
+    hash.bytes("candidate-transaction", &transaction_id.0.to_be_bytes());
+    hash.option_transaction(expected_predecessor.map(|value| value.0));
+    hash.u64("request-count", requests.len() as u64);
+    for request in requests {
+        hash.water_amount("request", request);
+    }
+    hash.finish()
+}
+
+pub(crate) fn surface_liquid_raw_resource_attempt_sha256(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    arbitration: &DirectSurfaceLiquidArbitration,
+    finalized_uses: &[WaterAmount],
+    condensation_credits: &[CondensationCredit],
+) -> String {
+    let mut hash = RawAttemptHash::new("openwepp-surface-liquid-resource-attempt-v1");
+    hash_raw_configuration(&mut hash, configuration);
+    hash_raw_state(&mut hash, arbitration.beginning_state());
+    hash.bytes(
+        "candidate-transaction",
+        &arbitration.transaction_id().0.to_be_bytes(),
+    );
+    hash.option_transaction(arbitration.expected_predecessor().map(|value| value.0));
+    hash.u64("request-count", arbitration.requests().len() as u64);
+    for request in arbitration.requests() {
+        hash.water_amount("request", request);
+    }
+    hash.u64(
+        "authorization-count",
+        arbitration.authorizations().len() as u64,
+    );
+    for authorization in arbitration.authorizations() {
+        hash.water_authorization(authorization);
+    }
+    hash.u64(
+        "request-store-key-count",
+        arbitration.request_store_keys().len() as u64,
+    );
+    for store_key in arbitration.request_store_keys() {
+        hash.store_key(store_key);
+    }
+    hash.u64("finalized-use-count", finalized_uses.len() as u64);
+    for finalized in finalized_uses {
+        hash.water_amount("finalized-use", finalized);
+    }
+    hash.u64("condensation-count", condensation_credits.len() as u64);
+    for credit in condensation_credits {
+        hash.condensation_credit(credit);
+    }
+    hash.finish()
+}
+
+pub(crate) fn surface_liquid_raw_candidate_attempt_sha256(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    candidate: &DirectSurfaceLiquidResourceCandidate,
+) -> String {
+    let mut hash = RawAttemptHash::new("openwepp-surface-liquid-candidate-attempt-v1");
+    hash_raw_configuration(&mut hash, configuration);
+    hash_raw_state(&mut hash, candidate.beginning_state());
+    hash_raw_state(&mut hash, candidate.working_state());
+    hash.bytes(
+        "candidate-transaction",
+        &candidate.transaction_id().0.to_be_bytes(),
+    );
+    hash.option_transaction(candidate.expected_predecessor().map(|value| value.0));
+    hash.u64("request-count", candidate.requests().len() as u64);
+    for request in candidate.requests() {
+        hash.water_amount("request", request);
+    }
+    hash.u64(
+        "authorization-count",
+        candidate.authorizations().len() as u64,
+    );
+    for authorization in candidate.authorizations() {
+        hash.water_authorization(authorization);
+    }
+    hash.u64(
+        "request-store-key-count",
+        candidate.request_store_keys().len() as u64,
+    );
+    for store_key in candidate.request_store_keys() {
+        hash.store_key(store_key);
+    }
+    hash.u64(
+        "finalized-use-count",
+        candidate.finalized_uses().len() as u64,
+    );
+    for finalized in candidate.finalized_uses() {
+        hash.water_amount("finalized-use", finalized);
+    }
+    hash.u64(
+        "condensation-count",
+        candidate.condensation_credits().len() as u64,
+    );
+    for credit in candidate.condensation_credits() {
+        hash.condensation_credit(credit);
+    }
+    hash.u64(
+        "overflow-count",
+        candidate.condensation_overflow().len() as u64,
+    );
+    for overflow in candidate.condensation_overflow() {
+        hash.store_key(&overflow.store_key);
+        hash.u64(
+            "overflow-amount",
+            overflow.amount_kg_m2_ofe_ground.to_bits(),
+        );
+        hash.u64("overflow-temperature", overflow.temperature_k.to_bits());
+        hash.u64(
+            "overflow-enthalpy",
+            overflow.specific_liquid_enthalpy_j_kg.to_bits(),
+        );
+    }
+    hash.finish()
+}
+
 pub(crate) fn surface_liquid_raw_attempt_sha256(
     configuration: &DirectSurfaceLiquidConfiguration,
     state: Option<&DirectSurfaceLiquidOwnedState>,
@@ -241,15 +488,12 @@ pub(crate) fn surface_liquid_configuration_context(
     configuration: &DirectSurfaceLiquidConfiguration,
     ofe_id: Option<&OfeId>,
 ) -> DirectSurfaceLiquidErrorContext {
-    let record = ofe_id.map_or_else(
-        || configuration.records.first(),
-        |ofe_id| {
-            configuration
-                .records
-                .iter()
-                .find(|record| &record.key.ofe_id == ofe_id)
-        },
-    );
+    let record = ofe_id.and_then(|ofe_id| {
+        configuration
+            .records
+            .iter()
+            .find(|record| &record.key.ofe_id == ofe_id)
+    });
     record.map_or_else(
         || DirectSurfaceLiquidErrorContext {
             owner_id: Some(configuration.owner_id.clone()),

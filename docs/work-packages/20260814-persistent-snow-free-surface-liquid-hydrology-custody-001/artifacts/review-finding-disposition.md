@@ -338,3 +338,17 @@ No `0e5262b4b` finding is rejected, deferred, or moved to another package.
 | A-TERMINAL-DD8-EVIDENCE-006: exact-head heavy evidence and line-count inventory incomplete | Accepted | Inventory reconciled below; heavy rerun remains pending after fresh PASS review |
 
 No `dd8127b04` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `fe6cc4bd5`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-FE6-HIGH-001: unified request/protocol precedence differs from canonical order | Accepted | Identity/structure and numeric passes now enforce E002, E003, E005, E006 order; mixed poisons PASS |
+| A-TERMINAL-FE6-HIGH-002: receiver E011 can preempt derived E003 | Accepted | Receipt aggregation/conversion and receiver arithmetic dry-run before expectation/topology/rollback E011; mixed poisons PASS |
+| A-TERMINAL-FE6-HIGH-003: public rollback hashes absent or trust declared state digest | Accepted | Beginning hashes use actual raw accepted state; attempted request/protocol/candidate framing is complete; unified mapping retains both hashes |
+| A-TERMINAL-FE6-MEDIUM-004: redundant caller-order `D_sum` changes overflow context | Accepted | Removed; complete-key-order checked sum is sole arithmetic; reverse-order overflow context PASS |
+| A-TERMINAL-FE6-MEDIUM-005: restart `W>W_max` is E006 | Accepted | Classified as domain E003 with identity-before-domain poison |
+| A/B-TERMINAL-FE6-MEDIUM-006: later/cardinality binding and ingress context is fabricated or incomplete | Accepted | Exact later/excess record identity or typed absence; ingress always retains configured owner; multi-OFE and direct poisons PASS |
+| A-TERMINAL-FE6-EVIDENCE-007: exact-head heavy evidence absent | Accepted | Pending after fresh PASS review |
+
+No `fe6cc4bd5` finding is rejected, deferred, or moved to another package.

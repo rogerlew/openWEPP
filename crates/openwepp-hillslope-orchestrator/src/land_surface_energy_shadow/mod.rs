@@ -50,6 +50,7 @@ use crate::{
     execute_surface_liquid_ingress,
 };
 
+mod receiver_preflight;
 mod receiver_validation;
 use receiver_validation::{
     FramedSha256, canonicalize_finalized_error, canonicalize_unified_error,
@@ -825,13 +826,6 @@ where
         surface_configuration,
         expected_beginning_hydrology_snapshot_sha256,
     )?;
-    validate_receiver_expectations(
-        soil_adapter.owner,
-        surface_configuration,
-        receiver_expectations,
-        request_batch,
-        expected_beginning_hydrology_snapshot_sha256,
-    )?;
     let beginning_surface = soil_adapter
         .owner
         .beginning_frame()
@@ -861,7 +855,14 @@ where
             .first()
             .and_then(|record| record.last_accepted_transaction_id),
         &surface_requests,
-    )?;
+    )
+    .map_err(|error| {
+        canonicalize_unified_error(
+            error.into(),
+            request_batch,
+            expected_beginning_hydrology_snapshot_sha256,
+        )
+    })?;
     let authorizations = restore_authorization_order(
         request_batch,
         &soil,
@@ -887,6 +888,7 @@ where
         soil_adapter,
         surface_configuration,
         receiver_expectations,
+        request_batch,
         arbitration,
         finalized,
         ingress,
@@ -1253,6 +1255,7 @@ fn construct_unified_candidate(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,
+    request_batch: &PotentialWaterRequestBatch,
     arbitration: UnifiedRealHydrologyArbitration,
     finalized: UnifiedLseFinalization,
     ingress: &DirectSurfaceLiquidIngressInput,
@@ -1280,6 +1283,7 @@ fn construct_unified_candidate(
         soil_adapter.owner,
         surface_configuration,
         receiver_expectations,
+        request_batch,
         &surface_ingress,
         &mut ending_frame,
         &mut ending_tile_states_pre_ingress,
@@ -1306,11 +1310,12 @@ fn construct_unified_candidate(
     Ok(candidate)
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn apply_ingress_to_real_receivers(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,
+    request_batch: &PotentialWaterRequestBatch,
     ingress: &DirectSurfaceLiquidIngressCandidate,
     ending_frame: &mut DirectRunFrame,
     lse_tiles: &mut [TileState],
@@ -1329,6 +1334,24 @@ fn apply_ingress_to_real_receivers(
         soil_thermal,
         beginning_hydrology_snapshot_sha256,
         &receiver_attempt_sha256,
+    )?;
+    receiver_preflight::preflight_receiver_derived_arithmetic(
+        owner,
+        configuration,
+        receiver_expectations,
+        ingress,
+        ending_frame,
+        lse_tiles,
+        soil_thermal,
+        beginning_hydrology_snapshot_sha256,
+        &receiver_attempt_sha256,
+    )?;
+    validate_receiver_expectations(
+        owner,
+        configuration,
+        receiver_expectations,
+        request_batch,
+        beginning_hydrology_snapshot_sha256,
     )?;
     validate_receiver_sets(
         configuration,

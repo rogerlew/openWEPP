@@ -1175,16 +1175,17 @@ impl DirectSurfaceLiquidOwnedState {
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        let beginning_owner_sha256 =
+            Some(super::surface_liquid_attachment::surface_liquid_raw_state_sha256(self));
         self.validate_inner(configuration).map_err(|error| {
-            let code = error.code();
-            error.complete_context(
-                code,
+            super::surface_liquid_attachment::surface_liquid_attachment_error(
+                error,
                 DirectSurfaceLiquidPhase::Restart,
                 DirectSurfaceLiquidErrorContext {
                     owner_id: Some(self.owner_id.clone()),
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
-                Some(self.state_sha256.clone()),
+                beginning_owner_sha256,
                 None,
             )
         })
@@ -1484,8 +1485,7 @@ impl DirectSurfaceLiquidArbitration {
         self.transaction_id
     }
 
-    #[must_use]
-    pub const fn expected_predecessor(&self) -> Option<TransactionId> {
+    pub(crate) const fn expected_predecessor(&self) -> Option<TransactionId> {
         self.expected_predecessor
     }
 
@@ -1502,6 +1502,10 @@ impl DirectSurfaceLiquidArbitration {
     #[must_use]
     pub fn authorizations(&self) -> &[WaterAuthorization] {
         &self.authorizations
+    }
+
+    pub(crate) fn request_store_keys(&self) -> &[DirectSurfaceLiquidStoreKey] {
+        &self.request_store_keys
     }
 }
 
@@ -1531,6 +1535,11 @@ impl DirectSurfaceLiquidResourceCandidate {
     #[must_use]
     pub const fn transaction_id(&self) -> TransactionId {
         self.transaction_id
+    }
+
+    #[must_use]
+    pub const fn expected_predecessor(&self) -> Option<TransactionId> {
+        self.expected_predecessor
     }
 
     #[must_use]
@@ -1568,22 +1577,36 @@ impl DirectSurfaceLiquidResourceCandidate {
         &self.authorizations
     }
 
+    pub(crate) fn request_store_keys(&self) -> &[DirectSurfaceLiquidStoreKey] {
+        &self.request_store_keys
+    }
+
     pub fn validate(
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        let beginning_owner_sha256 = Some(
+            super::surface_liquid_attachment::surface_liquid_raw_state_sha256(
+                &self.beginning_state,
+            ),
+        );
+        let attempted_owner_sha256 = Some(
+            super::surface_liquid_attachment::surface_liquid_raw_candidate_attempt_sha256(
+                configuration,
+                self,
+            ),
+        );
         validate_resource_candidate(configuration, self).map_err(|error| {
-            let code = error.code();
-            error.complete_context(
-                code,
+            super::surface_liquid_attachment::surface_liquid_attachment_error(
+                error,
                 DirectSurfaceLiquidPhase::ResourceCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(self.transaction_id),
                     owner_id: Some(configuration.owner_id.clone()),
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
-                Some(self.beginning_state.state_sha256.clone()),
-                self.working_state.recomputed_sha256().ok(),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
             )
         })
     }
@@ -1596,6 +1619,17 @@ pub fn authorize_surface_liquid_withdrawals(
     expected_predecessor: Option<TransactionId>,
     requests: &[WaterAmount],
 ) -> Result<DirectSurfaceLiquidArbitration, DirectSurfaceLiquidError> {
+    let beginning_owner_sha256 =
+        Some(super::surface_liquid_attachment::surface_liquid_raw_state_sha256(beginning));
+    let attempted_owner_sha256 = Some(
+        super::surface_liquid_attachment::surface_liquid_raw_authorization_attempt_sha256(
+            configuration,
+            beginning,
+            transaction_id,
+            expected_predecessor,
+            requests,
+        ),
+    );
     authorize_surface_liquid_withdrawals_inner(
         configuration,
         beginning,
@@ -1604,17 +1638,16 @@ pub fn authorize_surface_liquid_withdrawals(
         requests,
     )
     .map_err(|error| {
-        let code = error.code();
-        error.complete_context(
-            code,
+        super::surface_liquid_attachment::surface_liquid_attachment_error(
+            error,
             DirectSurfaceLiquidPhase::Authorization,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(transaction_id),
                 owner_id: Some(configuration.owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
-            Some(beginning.state_sha256.clone()),
-            None,
+            beginning_owner_sha256,
+            attempted_owner_sha256,
         )
     })
 }
@@ -1679,7 +1712,6 @@ fn authorize_surface_liquid_withdrawals_inner(
         .map(|record| (record.key.clone(), record))
         .collect::<BTreeMap<_, _>>();
     let mut request_store_keys = Vec::with_capacity(requests.len());
-    let mut demand_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
     for request in requests {
         if request.amount_kg_m2_stand_ground < 0.0 {
             return Err(water_protocol_failure(
@@ -1702,18 +1734,6 @@ fn authorize_surface_liquid_withdrawals_inner(
                     detail,
                 )
             })?;
-        let demand = demand_by_store.entry(store_key.clone()).or_default();
-        let accumulated = checked_surface_liquid_add(*demand, request.amount_kg_m2_stand_ground)
-            .ok_or_else(|| {
-                water_protocol_failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    DirectSurfaceLiquidPhase::Authorization,
-                    transaction_id,
-                    &request.key,
-                    "same-store demand accumulation is nonfinite",
-                )
-            })?;
-        *demand = accumulated;
         request_store_keys.push(store_key);
     }
     let mut authorization_amounts = vec![0.0; requests.len()];
@@ -1742,15 +1762,6 @@ fn authorize_surface_liquid_withdrawals_inner(
                     "same-store supply multiplication is nonfinite or underflowed",
                 )
             })?;
-        if !demand_by_store[&store_key].is_finite() {
-            return Err(water_protocol_failure(
-                DirectSurfaceLiquidErrorCode::E003,
-                DirectSurfaceLiquidPhase::Authorization,
-                transaction_id,
-                &first_request.key,
-                "same-store demand preflight is nonfinite",
-            ));
-        }
         let mut canonical_indexes = indexes;
         canonical_indexes.sort_by(|left, right| requests[*left].key.cmp(&requests[*right].key));
         let total_demand = checked_surface_liquid_sum(
@@ -1866,6 +1877,19 @@ pub fn apply_surface_liquid_resource_phase(
     finalized_uses: &[WaterAmount],
     condensation_credits: &[CondensationCredit],
 ) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
+    let beginning_owner_sha256 = Some(
+        super::surface_liquid_attachment::surface_liquid_raw_state_sha256(
+            arbitration.beginning_state(),
+        ),
+    );
+    let attempted_owner_sha256 = Some(
+        super::surface_liquid_attachment::surface_liquid_raw_resource_attempt_sha256(
+            configuration,
+            arbitration,
+            finalized_uses,
+            condensation_credits,
+        ),
+    );
     apply_surface_liquid_resource_phase_inner(
         configuration,
         arbitration,
@@ -1873,17 +1897,16 @@ pub fn apply_surface_liquid_resource_phase(
         condensation_credits,
     )
     .map_err(|error| {
-        let code = error.code();
-        error.complete_context(
-            code,
+        super::surface_liquid_attachment::surface_liquid_attachment_error(
+            error,
             DirectSurfaceLiquidPhase::ResourceCandidate,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(arbitration.transaction_id),
                 owner_id: Some(configuration.owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
-            Some(arbitration.beginning_state.state_sha256.clone()),
-            None,
+            beginning_owner_sha256,
+            attempted_owner_sha256,
         )
     })
 }
@@ -2600,7 +2623,7 @@ fn validate_restart_store_record(
         .map_err(|error| restart_record_failure(error, context.clone()))?;
     if state.liquid_kg_m2_tile > configuration.capacity_kg_m2_tile {
         return Err(restart_record_failure(
-            DirectSurfaceLiquidError::Bound("state liquid exceeds capacity"),
+            DirectSurfaceLiquidError::Domain("state liquid exceeds capacity"),
             context,
         ));
     }

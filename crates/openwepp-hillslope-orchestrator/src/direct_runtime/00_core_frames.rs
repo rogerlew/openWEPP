@@ -656,13 +656,12 @@ impl DirectRunFrame {
         if configuration.ofe_bindings.len() != self.lanes.len()
             || configuration.ofe_topology.len() != self.lanes.len()
         {
-            let mismatch_index = self
-                .lanes
-                .len()
-                .min(configuration.ofe_topology.len().saturating_sub(1));
+            let excess_configured_ofe = (configuration.ofe_topology.len() > self.lanes.len())
+                .then(|| configuration.ofe_topology.get(self.lanes.len()))
+                .flatten();
             return Err(surface_liquid_frame_identity_error(
                 configuration,
-                configuration.ofe_topology.get(mismatch_index),
+                excess_configured_ofe,
                 beginning_owner_sha256,
                 attempted_owner_sha256,
                 "surface-liquid production lane cardinality does not match the direct frame",

@@ -788,6 +788,36 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
 
+## Fifth exact-byte review remediation
+
+- HOLD retained: exact `fe6cc4bd5` reviews found unified/global precedence,
+  public attempted-hash, caller-order overflow context, restart taxonomy and
+  later/cardinality binding/ingress context defects.
+- PASS: public request/protocol and receiver validation now observes canonical
+  precedence through derived arithmetic. Direct and unified failures carry raw
+  beginning/attempt hashes and exact available offender identity.
+- PASS: only canonical-key `D_sum` arithmetic remains; restart over-capacity is
+  E003; later/excess OFEs report exact identity while missing identity is typed
+  absence.
+- FAIL retained: an intermediate 69-test filtered run had one stale declared-
+  hash assertion; an intermediate 32-test integration run had two stale
+  precedence assertions. These were test-expectation defects and are preserved
+  here rather than counted as passing evidence.
+- PASS after integrated remediation: orchestrator quick suite, 578/578;
+  focused authority/unified suites, 42/42; owner tests, 33/33; strict affected
+  Clippy; formatting; and diff hygiene.
+- PASS: the two growing test surfaces were cohesively split to 2,979 and 2,955
+  lines; the extracted context and raw-hash modules are 85 and 100 lines. No
+  touched Rust source exceeds the 3,000-line ceiling.
+- PASS on the combined final worktree: all four affected-crate checks; strict
+  all-target/all-feature Clippy for all four affected crates; science admission
+  with 46 contracts and 21 bound science surfaces; authority anti-evasion;
+  AUTH11 3/3; SC-SURFACELIQUID unit compliance; formatting; worktree and
+  base-relative diff hygiene; and package/contract Markdown lint, 69 files with
+  zero errors or warnings.
+- Pending: stable commit, fresh exact-byte dual review, then complete heavy
+  rerun.
+
 ## Fourth exact-byte review remediation
 
 - HOLD retained: exact `dd8127b04` Rust and hydrology reviews found joint

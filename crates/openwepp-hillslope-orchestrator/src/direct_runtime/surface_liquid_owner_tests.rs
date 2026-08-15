@@ -1,5 +1,19 @@
 use super::*;
 
+fn raw_state_hash(state: &DirectSurfaceLiquidOwnedState) -> String {
+    super::super::surface_liquid_attachment::surface_liquid_raw_state_sha256(state)
+}
+
+fn rollback_attempt(error: &DirectSurfaceLiquidError) -> String {
+    error
+        .failure()
+        .expect("canonical public failure")
+        .rollback
+        .attempted_owner_sha256
+        .clone()
+        .expect("complete attempted hash")
+}
+
 fn owner(value: &str) -> ResourceOwnerId {
     ResourceOwnerId::try_new(value).expect("valid owner")
 }
@@ -164,6 +178,79 @@ fn strict_configuration_and_state_round_trip_bind_topology_and_ingress() {
     let error = DirectSurfaceLiquidConfiguration::from_canonical_bytes(with_unknown.as_bytes())
         .expect_err("unknown field");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E001);
+}
+
+#[test]
+fn public_owner_hashes_bind_raw_invalid_state_request_and_resource_bits() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let open = record_index(&configuration, "open");
+
+    let invalid_state_hash = |bits| {
+        let mut invalid = beginning.clone();
+        invalid.records[open].liquid_kg_m2_tile = f64::from_bits(bits);
+        let declared = invalid.state_sha256.clone();
+        let error = invalid
+            .validate(&configuration)
+            .expect_err("raw invalid accepted owner must fail");
+        let failure = error.failure().expect("canonical owner failure");
+        assert_ne!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(declared.as_str())
+        );
+        failure
+            .rollback
+            .beginning_owner_sha256
+            .clone()
+            .expect("raw beginning owner hash")
+    };
+    assert_ne!(
+        invalid_state_hash(0x7ff8_0000_0000_0201),
+        invalid_state_hash(0x7ff8_0000_0000_0202)
+    );
+
+    let transaction = TransactionId(920);
+    let invalid_request_hash = |bits| {
+        let invalid = request(&configuration, open, transaction, f64::from_bits(bits));
+        rollback_attempt(
+            &authorize_surface_liquid_withdrawals(
+                &configuration,
+                &beginning,
+                transaction,
+                None,
+                &[invalid],
+            )
+            .expect_err("raw invalid request must fail"),
+        )
+    };
+    assert_ne!(
+        invalid_request_hash(0x7ff8_0000_0000_0211),
+        invalid_request_hash(0x7ff8_0000_0000_0212)
+    );
+
+    let demand = request(&configuration, open, transaction, 0.2);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&demand),
+    )
+    .expect("valid arbitration");
+    let invalid_resource_hash = |bits| {
+        let finalized = WaterAmount {
+            key: demand.key.clone(),
+            amount_kg_m2_stand_ground: f64::from_bits(bits),
+        };
+        rollback_attempt(
+            &apply_surface_liquid_resource_phase(&configuration, &arbitration, &[finalized], &[])
+                .expect_err("raw invalid finalized use must fail"),
+        )
+    };
+    assert_ne!(
+        invalid_resource_hash(0x7ff8_0000_0000_0221),
+        invalid_resource_hash(0x7ff8_0000_0000_0222)
+    );
 }
 
 #[test]
@@ -541,9 +628,9 @@ fn tiny_positive_same_store_oversubscription_fails_closed_without_key_priority()
     assert_eq!(failure.context.source_id, Some(first.key.source_id));
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
-    assert_eq!(failure.rollback.attempted_owner_sha256, None);
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
 #[test]
@@ -584,9 +671,9 @@ fn canonical_last_tiny_request_is_checked_before_remainder_in_any_caller_order()
         assert_eq!(failure.context.source_id, Some(tiny.key.source_id.clone()));
         assert_eq!(
             failure.rollback.beginning_owner_sha256.as_deref(),
-            Some(beginning.state_sha256.as_str())
+            Some(raw_state_hash(&beginning).as_str())
         );
-        assert_eq!(failure.rollback.attempted_owner_sha256, None);
+        assert!(failure.rollback.attempted_owner_sha256.is_some());
     }
 }
 
@@ -602,30 +689,29 @@ fn same_store_finite_demand_overflow_fails_before_authorization_or_candidate() {
     second.key.requesting_owner_id = owner("overflow-second");
     let requests = vec![first.clone(), second.clone()];
 
-    let error = authorize_surface_liquid_withdrawals(
-        &configuration,
-        &beginning,
-        transaction,
-        None,
-        &requests,
-    )
-    .expect_err("finite requests with an infinite sum must fail closed");
-    let failure = error.failure().expect("canonical overflow failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
-    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
-    assert_eq!(failure.context.transaction_id, Some(transaction));
-    assert_eq!(failure.context.owner_id, Some(owner("overflow-second")));
-    assert_eq!(failure.context.ofe_id, Some(second.key.ofe_id.clone()));
-    assert_eq!(failure.context.tile_id, second.key.source_tile_id.clone());
-    assert_eq!(failure.context.surface_id, second.key.surface_id.clone());
-    assert_eq!(
-        failure.context.source_id,
-        Some(second.key.source_id.clone())
-    );
-    assert_eq!(
-        failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
-    );
+    for caller_order in [requests.clone(), vec![second.clone(), first.clone()]] {
+        let error = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &caller_order,
+        )
+        .expect_err("finite requests with an infinite canonical sum must fail closed");
+        let failure = error.failure().expect("canonical overflow failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+        assert_eq!(failure.context.transaction_id, Some(transaction));
+        assert_eq!(failure.context.owner_id, Some(owner("overflow-first")));
+        assert_eq!(failure.context.ofe_id, Some(first.key.ofe_id.clone()));
+        assert_eq!(failure.context.tile_id, first.key.source_tile_id.clone());
+        assert_eq!(failure.context.surface_id, first.key.surface_id.clone());
+        assert_eq!(failure.context.source_id, Some(first.key.source_id.clone()));
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            Some(raw_state_hash(&beginning).as_str())
+        );
+    }
 
     let store = configuration
         .store_key_for_water(&first.key)
@@ -1193,7 +1279,7 @@ fn configuration_and_restart_record_failures_preserve_available_identity() {
     assert_eq!(failure.context.source_id, Some(expected_key.source_id));
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(accepted.state_sha256.as_str())
+        Some(raw_state_hash(&accepted).as_str())
     );
     assert_eq!(failure.rollback.attempted_owner_sha256, None);
 }
@@ -1223,7 +1309,7 @@ fn sealed_candidate_revalidation_rejects_forged_and_stale_state_with_e009() {
     assert_eq!(failure.context.transaction_id, Some(TransactionId(901)));
     assert_eq!(
         failure.rollback.beginning_owner_sha256,
-        Some(beginning.state_sha256.clone())
+        Some(raw_state_hash(&beginning))
     );
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 
@@ -1325,6 +1411,41 @@ fn invalid_restart_cannot_emit_canonical_persistence_bytes() {
 }
 
 #[test]
+fn restart_store_capacity_is_domain_and_identity_precedes_capacity() {
+    let configuration = configuration();
+    let mut above_capacity = state(&configuration);
+    let open = record_index(&configuration, "open");
+    above_capacity.records[open].liquid_kg_m2_tile =
+        f64::from_bits(configuration.records[open].capacity_kg_m2_tile.to_bits() + 1);
+    let failure = above_capacity
+        .validate(&configuration)
+        .expect_err("finite state liquid above capacity is out of domain")
+        .failure()
+        .expect("canonical restart domain failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
+    assert_eq!(
+        failure.context.ofe_id,
+        Some(configuration.records[open].key.ofe_id.clone())
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(raw_state_hash(&above_capacity).as_str())
+    );
+
+    let mut mixed = above_capacity;
+    mixed.records[open].key.tile_id = tile("wrong-tile");
+    assert_eq!(
+        mixed
+            .validate(&configuration)
+            .expect_err("restart identity precedes capacity domain")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E002
+    );
+}
+
+#[test]
 fn authorization_is_reconstructed_before_and_after_resource_construction() {
     let configuration = configuration();
     let beginning = state(&configuration);
@@ -1402,7 +1523,7 @@ fn public_authorization_preserves_identity_domain_protocol_bound_precedence() {
     assert_eq!(failure.context.transaction_id, Some(transaction));
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
 
     let finite = request(&configuration, open, transaction, 0.1);
@@ -1423,7 +1544,7 @@ fn public_authorization_preserves_identity_domain_protocol_bound_precedence() {
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
 
     let duplicate_negative = request(&configuration, open, transaction, -f64::MIN_POSITIVE);
@@ -1456,7 +1577,7 @@ fn public_authorization_preserves_identity_domain_protocol_bound_precedence() {
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
 }
 
@@ -1507,7 +1628,7 @@ fn public_resource_phase_classifies_finalized_use_before_later_structure() {
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
 
     let negative = WaterAmount {
@@ -1523,7 +1644,7 @@ fn public_resource_phase_classifies_finalized_use_before_later_structure() {
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E006);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
 
     let duplicate_negative = WaterAmount {
@@ -1540,6 +1661,84 @@ fn public_resource_phase_classifies_finalized_use_before_later_structure() {
         .expect_err("duplicate finalized protocol precedes finite negative bound")
         .code(),
         DirectSurfaceLiquidErrorCode::E005
+    );
+}
+
+#[test]
+fn retained_protocol_preflight_obeys_identity_domain_cardinality_bound_order() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(911);
+    let open = record_index(&configuration, "open");
+    let demand = request(&configuration, open, transaction, 0.2);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&demand),
+    )
+    .expect("valid arbitration");
+
+    let mut identity_and_nonfinite = arbitration.clone();
+    identity_and_nonfinite.requests[0].key.transaction_id = TransactionId(912);
+    identity_and_nonfinite.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &identity_and_nonfinite, &[], &[],)
+            .expect_err("retained identity precedes retained nonfinite domain")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E002
+    );
+
+    let mut nonfinite_and_duplicate = arbitration.clone();
+    nonfinite_and_duplicate.requests[0].amount_kg_m2_stand_ground = f64::NAN;
+    nonfinite_and_duplicate
+        .requests
+        .push(nonfinite_and_duplicate.requests[0].clone());
+    nonfinite_and_duplicate
+        .authorizations
+        .push(nonfinite_and_duplicate.authorizations[0].clone());
+    nonfinite_and_duplicate
+        .request_store_keys
+        .push(nonfinite_and_duplicate.request_store_keys[0].clone());
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &nonfinite_and_duplicate, &[], &[],)
+            .expect_err("retained nonfinite domain precedes duplicate protocol")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E003
+    );
+
+    let mut duplicate_and_negative = arbitration.clone();
+    duplicate_and_negative.requests[0].amount_kg_m2_stand_ground = -f64::MIN_POSITIVE;
+    duplicate_and_negative.authorizations[0].amount_kg_m2_stand_ground = 0.0;
+    duplicate_and_negative
+        .requests
+        .push(duplicate_and_negative.requests[0].clone());
+    duplicate_and_negative
+        .authorizations
+        .push(duplicate_and_negative.authorizations[0].clone());
+    duplicate_and_negative
+        .request_store_keys
+        .push(duplicate_and_negative.request_store_keys[0].clone());
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &duplicate_and_negative, &[], &[],)
+            .expect_err("retained duplicate protocol precedes finite negative bound")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E005
+    );
+
+    let mut negative = arbitration;
+    negative.requests[0].amount_kg_m2_stand_ground = -f64::MIN_POSITIVE;
+    negative.authorizations[0].amount_kg_m2_stand_ground = 0.0;
+    let finalized = WaterAmount {
+        key: negative.requests[0].key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &negative, &[finalized], &[])
+            .expect_err("finite negative retained request is a bound failure")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E006
     );
 }
 
@@ -1664,7 +1863,7 @@ fn sealed_candidate_revalidation_preserves_identity_and_numeric_codes() {
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(beginning.state_sha256.as_str())
+        Some(raw_state_hash(&beginning).as_str())
     );
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 

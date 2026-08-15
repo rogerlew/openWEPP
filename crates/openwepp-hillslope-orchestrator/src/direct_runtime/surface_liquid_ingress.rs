@@ -677,6 +677,7 @@ pub fn execute_surface_liquid_ingress(
             phase,
             DirectSurfaceLiquidErrorContext {
                 transaction_id: Some(input.transaction_id),
+                owner_id: Some(configuration.owner_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
             Some(resource.beginning_state().state_sha256.clone()),
@@ -2012,3 +2013,7 @@ fn mass_tolerance(scale: f64) -> f64 {
 #[cfg(test)]
 #[path = "surface_liquid_ingress_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "surface_liquid_ingress_context_tests.rs"]
+mod context_tests;
