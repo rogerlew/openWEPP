@@ -149,6 +149,143 @@ fn request(
     }
 }
 
+fn attachment_frame() -> crate::DirectRunFrame {
+    let identity = crate::DirectRunIdentity::new(71, 1, 1, 1).expect("frame identity");
+    let mut frame = crate::DirectRunFrame::skeleton(identity).expect("frame");
+    frame.lanes[0].area_m2 = 100.0;
+    frame.lanes[0].subsurface_layers = vec![
+        crate::DirectSubsurfaceLayerState::neutral(),
+        crate::DirectSubsurfaceLayerState::neutral(),
+    ];
+    frame
+}
+
+fn assert_complete_e002(error: &DirectSurfaceLiquidError, tile_id: &TileId) {
+    let failure = error.failure().expect("canonical E002 failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.context.tile_id.as_ref(), Some(tile_id));
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+}
+
+#[test]
+fn complete_configuration_identity_set_precedes_record_domains_in_any_row_position() {
+    for domain_index in 0..2 {
+        let mut invalid = configuration();
+        let identity_index = 1 - domain_index;
+        let identity_tile = invalid.records[identity_index].key.tile_id.clone();
+        invalid.records[domain_index].tile_fraction = f64::NAN;
+        invalid.records[identity_index].key.run_id += 1;
+        let error = invalid
+            .validate()
+            .expect_err("later wrong-run key must precede record domain");
+        let failure = error.failure().expect("canonical configuration failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(failure.context.tile_id.as_ref(), Some(&identity_tile));
+    }
+}
+
+#[test]
+fn complete_restart_identity_set_precedes_nan_and_overcapacity_in_any_row_position() {
+    let configuration = configuration();
+    for (domain_index, use_nan) in [(0, true), (1, false)] {
+        let mut invalid = state(&configuration);
+        let identity_index = 1 - domain_index;
+        let identity_tile = invalid.records[identity_index].key.tile_id.clone();
+        invalid.records[domain_index].liquid_kg_m2_tile = if use_nan {
+            f64::NAN
+        } else {
+            configuration.records[domain_index].capacity_kg_m2_tile + 1.0
+        };
+        invalid.records[identity_index].key.run_id += 1;
+        let error = invalid
+            .validate(&configuration)
+            .expect_err("later state key must precede record domain");
+        let failure = error.failure().expect("canonical restart failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+        assert_eq!(failure.context.tile_id.as_ref(), Some(&identity_tile));
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+    }
+}
+
+#[test]
+fn attachment_and_authorization_preflight_complete_restart_identity_before_domains() {
+    let configuration = configuration();
+    for domain_index in 0..2 {
+        let mut invalid = state(&configuration);
+        let identity_index = 1 - domain_index;
+        let identity_tile = invalid.records[identity_index].key.tile_id.clone();
+        invalid.records[domain_index].liquid_kg_m2_tile = if domain_index == 0 {
+            f64::NAN
+        } else {
+            configuration.records[domain_index].capacity_kg_m2_tile + 1.0
+        };
+        invalid.records[identity_index].key.run_id += 1;
+
+        let mut frame = attachment_frame();
+        let attachment = frame
+            .configure_surface_liquid_shadow(&configuration, invalid.clone())
+            .expect_err("attachment identity must precede state domain");
+        assert_complete_e002(&attachment, &identity_tile);
+        assert!(frame.surface_liquid_shadow.is_none());
+
+        let authorization = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &invalid,
+            TransactionId(9_901),
+            None,
+            &[],
+        )
+        .expect_err("authorization identity must precede state domain");
+        assert_complete_e002(&authorization, &identity_tile);
+        assert!(
+            authorization
+                .failure()
+                .expect("authorization failure")
+                .rollback
+                .beginning_owner_sha256
+                .is_some()
+        );
+    }
+}
+
+#[test]
+fn attachment_and_authorization_preflight_complete_configuration_identity_before_domains() {
+    let valid = configuration();
+    let beginning = state(&valid);
+    for domain_index in 0..2 {
+        let mut invalid = valid.clone();
+        let identity_index = 1 - domain_index;
+        let identity_tile = invalid.records[identity_index].key.tile_id.clone();
+        invalid.records[domain_index].tile_fraction = f64::NAN;
+        invalid.records[identity_index].key.run_id += 1;
+
+        let mut frame = attachment_frame();
+        let attachment = frame
+            .configure_surface_liquid_shadow(&invalid, beginning.clone())
+            .expect_err("attachment configuration identity before domain");
+        assert_complete_e002(&attachment, &identity_tile);
+        assert!(frame.surface_liquid_shadow.is_none());
+
+        let authorization = authorize_surface_liquid_withdrawals(
+            &invalid,
+            &beginning,
+            TransactionId(9_902),
+            None,
+            &[],
+        )
+        .expect_err("authorization configuration identity before domain");
+        assert_complete_e002(&authorization, &identity_tile);
+        assert!(
+            authorization
+                .failure()
+                .expect("authorization failure")
+                .rollback
+                .beginning_owner_sha256
+                .is_some()
+        );
+    }
+}
+
 #[test]
 fn strict_configuration_and_state_round_trip_bind_topology_and_ingress() {
     let configuration = configuration();

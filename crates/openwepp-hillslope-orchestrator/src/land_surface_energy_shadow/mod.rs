@@ -1450,7 +1450,7 @@ fn apply_ingress_to_real_receivers(
                 checked_surface_liquid_add(accumulated.0, infiltration_m).ok_or_else(|| {
                     receiver_phase_arithmetic_failure(
                         ingress.transaction_id(),
-                        configuration,
+                        &configuration.owner_id,
                         receipt,
                         beginning_hydrology_snapshot_sha256.as_str(),
                         &receiver_attempt_sha256,
@@ -1801,7 +1801,7 @@ fn receiver_envelope_failure(
 
 fn receiver_phase_arithmetic_failure(
     transaction_id: TransactionId,
-    configuration: &DirectSurfaceLiquidConfiguration,
+    owner_id: &ResourceOwnerId,
     receipt: &DirectSurfaceLiquidParcelReceipt,
     beginning_sha256: &str,
     attempted_sha256: &str,
@@ -1812,7 +1812,7 @@ fn receiver_phase_arithmetic_failure(
         DirectSurfaceLiquidPhase::IndependentClosure,
         DirectSurfaceLiquidErrorContext {
             transaction_id: Some(transaction_id),
-            owner_id: Some(configuration.owner_id.clone()),
+            owner_id: Some(owner_id.clone()),
             ofe_id: Some(receipt.recipient_store_key.ofe_id.clone()),
             tile_id: Some(receipt.recipient_store_key.tile_id.clone()),
             surface_id: Some(receipt.recipient_store_key.surface_id.clone()),
@@ -1864,22 +1864,6 @@ impl ReceiverFailureScope<'_> {
         )
         .into()
     }
-}
-
-fn ingress_receiver_arithmetic_failure(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    ingress: &DirectSurfaceLiquidIngressCandidate,
-    receipt: &DirectSurfaceLiquidParcelReceipt,
-    detail: &'static str,
-) -> LandSurfaceEnergyShadowError {
-    receiver_phase_arithmetic_failure(
-        ingress.transaction_id(),
-        configuration,
-        receipt,
-        &ingress.beginning_state().state_sha256,
-        &ingress.ending_state().state_sha256,
-        detail,
-    )
 }
 
 fn apply_receiver_receipt(
@@ -2164,14 +2148,36 @@ fn freeze_real_receiver_closure_operands(
     ending_soil_thermal: &[SoilThermalTileCandidate],
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
 ) -> Result<RealReceiverClosureOperands, LandSurfaceEnergyShadowError> {
-    let (infiltration_m_by_ofe, infiltration_enthalpy_by_tile, retained_enthalpy_by_tile) =
-        freeze_ingress_receiver_amounts(configuration, ingress)?;
+    let amounts = receiver_preflight::aggregate_receiver_receipts(
+        ingress.receipts(),
+        |owner, receipt, detail| {
+            let owner_id = match owner {
+                receiver_preflight::ReceiptAggregationOwner::SurfaceLiquid => {
+                    &configuration.owner_id
+                }
+                receiver_preflight::ReceiptAggregationOwner::LandSurfaceEnergy => {
+                    &receiver_expectations.lse_owner_id
+                }
+                receiver_preflight::ReceiptAggregationOwner::SoilThermal => {
+                    &receiver_expectations.soil_thermal_owner_id
+                }
+            };
+            receiver_phase_arithmetic_failure(
+                ingress.transaction_id(),
+                owner_id,
+                receipt,
+                &ingress.beginning_state().state_sha256,
+                &ingress.ending_state().state_sha256,
+                detail,
+            )
+        },
+    )?;
     let production_soil = freeze_production_soil_receivers(
         owner,
         configuration,
         beginning_frame,
         ending_frame,
-        &infiltration_m_by_ofe,
+        &amounts.infiltration_m_by_ofe,
     )?;
     let (soil_thermal, lse_tiles) = freeze_energy_receivers(
         configuration,
@@ -2179,8 +2185,8 @@ fn freeze_real_receiver_closure_operands(
         ending_lse_tiles,
         beginning_soil_thermal,
         ending_soil_thermal,
-        &infiltration_enthalpy_by_tile,
-        &retained_enthalpy_by_tile,
+        &amounts.infiltration_enthalpy_by_tile,
+        &amounts.retained_enthalpy_by_tile,
     )?;
     let (expected_production_soil, expected_soil_thermal, expected_lse_tiles) =
         receiver_validation::expected_receiver_identities(configuration);
@@ -2199,99 +2205,12 @@ fn freeze_real_receiver_closure_operands(
     })
 }
 
-type OfeAmountMap = BTreeMap<OfeId, f64>;
-type TileAmountMap = BTreeMap<(OfeId, TileId), f64>;
-
-fn freeze_ingress_receiver_amounts(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    ingress: &DirectSurfaceLiquidIngressCandidate,
-) -> Result<(OfeAmountMap, TileAmountMap, TileAmountMap), LandSurfaceEnergyShadowError> {
-    let mut infiltration_m_by_ofe = BTreeMap::<OfeId, f64>::new();
-    let mut infiltration_enthalpy_by_tile = BTreeMap::<(OfeId, TileId), f64>::new();
-    let mut retained_enthalpy_by_tile = BTreeMap::<(OfeId, TileId), f64>::new();
-    for receipt in ingress.receipts() {
-        match receipt.disposition {
-            DirectSurfaceLiquidReceiptDisposition::Infiltration => {
-                let infiltration_m = checked_surface_liquid_div(
-                    receipt.mass_kg_m2_basis_ofe_ground,
-                    WATER_DENSITY_KG_M3,
-                )
-                .ok_or_else(|| {
-                    ingress_receiver_arithmetic_failure(
-                        configuration,
-                        ingress,
-                        receipt,
-                        "infiltration receipt mass-to-depth arithmetic",
-                    )
-                })?;
-                let accumulated_depth = infiltration_m_by_ofe
-                    .entry(receipt.recipient_store_key.ofe_id.clone())
-                    .or_default();
-                *accumulated_depth = checked_surface_liquid_add(*accumulated_depth, infiltration_m)
-                    .ok_or_else(|| {
-                        ingress_receiver_arithmetic_failure(
-                            configuration,
-                            ingress,
-                            receipt,
-                            "infiltration OFE accumulation is nonfinite or underflowed",
-                        )
-                    })?;
-                let accumulated_enthalpy = infiltration_enthalpy_by_tile
-                    .entry((
-                        receipt.recipient_store_key.ofe_id.clone(),
-                        receipt.recipient_store_key.tile_id.clone(),
-                    ))
-                    .or_default();
-                *accumulated_enthalpy = checked_surface_liquid_add(
-                    *accumulated_enthalpy,
-                    receipt.enthalpy_j_m2_basis_ofe_ground,
-                )
-                .ok_or_else(|| {
-                    ingress_receiver_arithmetic_failure(
-                        configuration,
-                        ingress,
-                        receipt,
-                        "infiltration enthalpy accumulation is nonfinite or underflowed",
-                    )
-                })?;
-            }
-            DirectSurfaceLiquidReceiptDisposition::RetainedSurface => {
-                let accumulated_enthalpy = retained_enthalpy_by_tile
-                    .entry((
-                        receipt.recipient_store_key.ofe_id.clone(),
-                        receipt.recipient_store_key.tile_id.clone(),
-                    ))
-                    .or_default();
-                *accumulated_enthalpy = checked_surface_liquid_add(
-                    *accumulated_enthalpy,
-                    receipt.enthalpy_j_m2_basis_ofe_ground,
-                )
-                .ok_or_else(|| {
-                    ingress_receiver_arithmetic_failure(
-                        configuration,
-                        ingress,
-                        receipt,
-                        "retained enthalpy accumulation is nonfinite or underflowed",
-                    )
-                })?;
-            }
-            DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
-            | DirectSurfaceLiquidReceiptDisposition::OutletRunoff => {}
-        }
-    }
-    Ok((
-        infiltration_m_by_ofe,
-        infiltration_enthalpy_by_tile,
-        retained_enthalpy_by_tile,
-    ))
-}
-
 fn freeze_production_soil_receivers(
     owner: &RealHydrologyShadowAdapter,
     configuration: &DirectSurfaceLiquidConfiguration,
     beginning_frame: &DirectRunFrame,
     ending_frame: &DirectRunFrame,
-    infiltration_m_by_ofe: &OfeAmountMap,
+    infiltration_m_by_ofe: &receiver_preflight::OfeAmountMap,
 ) -> Result<Vec<ProductionSoilReceiverOperands>, LandSurfaceEnergyShadowError> {
     let mut production_soil = Vec::with_capacity(configuration.ofe_bindings.len());
     for binding in &configuration.ofe_bindings {
@@ -2362,8 +2281,8 @@ fn freeze_energy_receivers(
     ending_lse_tiles: &[TileState],
     beginning_soil_thermal: &[SoilThermalTileCandidate],
     ending_soil_thermal: &[SoilThermalTileCandidate],
-    infiltration_enthalpy_by_tile: &TileAmountMap,
-    retained_enthalpy_by_tile: &TileAmountMap,
+    infiltration_enthalpy_by_tile: &receiver_preflight::TileAmountMap,
+    retained_enthalpy_by_tile: &receiver_preflight::TileAmountMap,
 ) -> Result<
     (
         Vec<SoilThermalReceiverOperands>,

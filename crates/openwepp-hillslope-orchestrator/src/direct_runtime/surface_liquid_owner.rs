@@ -614,6 +614,7 @@ impl DirectSurfaceLiquidConfiguration {
                 "empty run or configuration records",
             ));
         }
+        self.preflight_complete_identity_set()?;
         let mut keys = BTreeSet::new();
         let mut tiles = BTreeSet::new();
         let topology_set = self.ofe_topology.iter().cloned().collect::<BTreeSet<_>>();
@@ -794,6 +795,11 @@ impl DirectSurfaceLiquidConfiguration {
         fraction_by_ofe: &BTreeMap<OfeId, f64>,
         route_by_ofe: &BTreeMap<OfeId, (Option<OfeId>, Option<TileId>)>,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        self.validate_topology_and_route_identities(
+            topology_set,
+            &fraction_by_ofe.keys().cloned().collect(),
+            route_by_ofe,
+        )?;
         for (ofe_id, sum) in fraction_by_ofe {
             let tolerance = TOPOLOGY_MULTIPLIER * f64::EPSILON * sum.abs().max(1.0);
             if (*sum - 1.0).abs() > tolerance {
@@ -805,66 +811,6 @@ impl DirectSurfaceLiquidConfiguration {
                         ..DirectSurfaceLiquidErrorContext::default()
                     },
                 ));
-            }
-        }
-        if &fraction_by_ofe.keys().cloned().collect::<BTreeSet<_>>() != topology_set {
-            return Err(DirectSurfaceLiquidError::Identity(
-                "OFE topology and record set mismatch",
-            ));
-        }
-        let ordered_ofes = &self.ofe_topology;
-        for (index, ofe_id) in ordered_ofes.iter().enumerate() {
-            let ofe_context = || DirectSurfaceLiquidErrorContext {
-                owner_id: Some(self.owner_id.clone()),
-                ofe_id: Some(ofe_id.clone()),
-                ..DirectSurfaceLiquidErrorContext::default()
-            };
-            let (destination, destination_tile) = route_by_ofe.get(ofe_id).ok_or_else(|| {
-                configuration_record_failure(
-                    DirectSurfaceLiquidError::Identity("missing OFE route"),
-                    ofe_context(),
-                )
-            })?;
-            match (destination, destination_tile) {
-                (None, None) if index + 1 == ordered_ofes.len() => {}
-                (Some(destination), Some(tile)) if index + 1 < ordered_ofes.len() => {
-                    let destination_index = ordered_ofes
-                        .iter()
-                        .position(|candidate| candidate == destination)
-                        .ok_or_else(|| {
-                            configuration_record_failure(
-                                DirectSurfaceLiquidError::Identity("unknown route destination"),
-                                DirectSurfaceLiquidErrorContext {
-                                    tile_id: Some(tile.clone()),
-                                    ..ofe_context()
-                                },
-                            )
-                        })?;
-                    if destination_index <= index
-                        || !self.records.iter().any(|record| {
-                            record.key.ofe_id == *destination && record.key.tile_id == *tile
-                        })
-                    {
-                        return Err(configuration_record_failure(
-                            DirectSurfaceLiquidError::Identity(
-                                "backward route or unknown destination tile",
-                            ),
-                            DirectSurfaceLiquidErrorContext {
-                                tile_id: Some(tile.clone()),
-                                ..ofe_context()
-                            },
-                        ));
-                    }
-                }
-                _ => {
-                    return Err(configuration_record_failure(
-                        DirectSurfaceLiquidError::Identity("invalid terminal or incomplete route"),
-                        DirectSurfaceLiquidErrorContext {
-                            tile_id: destination_tile.clone(),
-                            ..ofe_context()
-                        },
-                    ));
-                }
             }
         }
         Ok(())
@@ -1195,8 +1141,10 @@ impl DirectSurfaceLiquidOwnedState {
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<(), DirectSurfaceLiquidError> {
+        configuration.preflight_schema_and_identities()?;
+        let expected_lineage = self.preflight_schema_and_identities(configuration)?;
         configuration.validate()?;
-        self.validate_structure(configuration, self.accepted_transaction()?)?;
+        self.validate_structure(configuration, expected_lineage)?;
         if !is_sha256(&self.state_sha256) || self.state_sha256 != self.recomputed_sha256()? {
             return Err(DirectSurfaceLiquidError::Identity("state digest mismatch"));
         }
@@ -1660,7 +1608,18 @@ fn authorize_surface_liquid_withdrawals_inner(
     expected_predecessor: Option<TransactionId>,
     requests: &[WaterAmount],
 ) -> Result<DirectSurfaceLiquidArbitration, DirectSurfaceLiquidError> {
-    beginning.validate_for_transaction(configuration, transaction_id, expected_predecessor)?;
+    configuration.preflight_schema_and_identities()?;
+    let accepted_predecessor = beginning.preflight_schema_and_identities(configuration)?;
+    if transaction_id.0 == 0 || Some(transaction_id) == expected_predecessor {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "invalid candidate transaction",
+        ));
+    }
+    if accepted_predecessor != expected_predecessor {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "predecessor transaction mismatch",
+        ));
+    }
     for request in requests {
         request.key.validate(transaction_id).map_err(|_| {
             water_protocol_failure(
@@ -1683,6 +1642,7 @@ fn authorize_surface_liquid_withdrawals_inner(
                 )
             })?;
     }
+    beginning.validate_for_transaction(configuration, transaction_id, expected_predecessor)?;
     for request in requests {
         if !request.amount_kg_m2_stand_ground.is_finite() {
             return Err(water_protocol_failure(
@@ -2860,3 +2820,6 @@ fn is_sha256(value: &str) -> bool {
 #[cfg(test)]
 #[path = "surface_liquid_owner_tests.rs"]
 mod tests;
+
+#[path = "surface_liquid_owner/identity_validation.rs"]
+mod identity_validation;

@@ -855,6 +855,42 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   zero errors or warnings.
 - Pending: freeze a new exact commit and obtain fresh independent dual review.
 
+## Exact-byte review at `f249431d4`
+
+- PASS: fresh hydrology/science/ownership review found no material finding and
+  ran 73/73 surface-liquid, 10/10 authority, 35/35 unified integration and
+  581/581 orchestrator tests.
+- HOLD: fresh Rust review found whole-record configuration/state validation can
+  emit an earlier E003 before a later required E002 identity failure.
+- HOLD: the same review found duplicated checked receiver aggregation between
+  precedence preflight and final operand construction.
+- INTERRUPTED retained: the reviewer stopped a full-workspace attempt after
+  the material HOLD was confirmed; 176 passed, 19 were interrupted and 2,688
+  did not run. This is not terminal evidence.
+- Pending: remediate both accepted findings, freeze new bytes and repeat fresh
+  dual review before any terminal heavy run.
+
+## `f249431d4` HOLD remediation
+
+- PASS: complete configuration and restart identity sets are preflighted before
+  record-domain checks, and attachment/authorization outer identities precede
+  lower-priority configuration/state validation. Cross-row, reversed-order,
+  NaN/overcapacity plus later wrong-identity poisons pass.
+- PASS: a single checked receiver fold now constructs infiltration depth plus
+  infiltration/retained enthalpy maps for both precedence preflight and final
+  operand freezing. Context-specific failures are injected without duplicating
+  conversion or summation arithmetic; bit-exact drift and E003 poisons pass.
+- INTERRUPTED retained: two accidentally redundant orchestrator quick
+  invocations were terminated. They are not evidence; the retained clean run
+  passed 587/587.
+- PASS on the combined worktree: surface-liquid tests 77/77; unified
+  integration 35/35; custody authority 10/10; orchestrator quick 587/587;
+  AUTH11 3/3; affected check and strict all-target/all-feature Clippy;
+  admission with 46 contracts and 22 science surfaces; anti-evasion; SC unit
+  compliance; formatting; base/worktree diff hygiene; Markdown 73 files with
+  zero errors or warnings.
+- Pending: freeze new exact bytes and obtain fresh independent dual review.
+
 ## Fourth exact-byte review remediation
 
 - HOLD retained: exact `dd8127b04` Rust and hydrology reviews found joint

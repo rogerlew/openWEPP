@@ -379,9 +379,9 @@ pub use subsurface::{
 };
 pub(crate) use surface_liquid_attachment::{
     surface_liquid_attachment_error, surface_liquid_attachment_hashes,
-    surface_liquid_configuration_context, surface_liquid_frame_identity_error,
-    surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
-    surface_liquid_state_context,
+    surface_liquid_configuration_context, surface_liquid_raw_snapshot_attempt_sha256,
+    surface_liquid_raw_snapshot_sha256, surface_liquid_state_context,
+    validate_surface_liquid_frame_identities,
 };
 pub use surface_liquid_closure::{
     DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,

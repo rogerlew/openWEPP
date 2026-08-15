@@ -7,10 +7,11 @@ use openwepp_land_surface_energy::{
 use sha2::{Digest, Sha256};
 
 use super::{
-    DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
-    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
-    DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
-    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey,
+    DirectGroundIngressMode, DirectLaneFrame, DirectSurfaceLiquidArbitration,
+    DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
+    DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
+    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
+    DirectSurfaceLiquidStoreKey,
 };
 
 struct RawAttemptHash(Sha256);
@@ -570,4 +571,80 @@ pub(crate) fn surface_liquid_frame_identity_error(
         },
         detail,
     )
+}
+
+pub(crate) fn validate_surface_liquid_frame_identities(
+    run_id: u64,
+    lanes: &[DirectLaneFrame],
+    configuration: &DirectSurfaceLiquidConfiguration,
+    beginning_owner_sha256: Option<String>,
+    attempted_owner_sha256: Option<String>,
+) -> Result<(), DirectSurfaceLiquidError> {
+    if configuration.run_id != run_id {
+        return Err(surface_liquid_frame_identity_error(
+            configuration,
+            None,
+            beginning_owner_sha256,
+            attempted_owner_sha256,
+            "surface-liquid run identity does not match the direct frame",
+        ));
+    }
+    if configuration.ofe_bindings.len() != lanes.len()
+        || configuration.ofe_topology.len() != lanes.len()
+    {
+        let excess_configured_ofe = (configuration.ofe_topology.len() > lanes.len())
+            .then(|| configuration.ofe_topology.get(lanes.len()))
+            .flatten();
+        return Err(surface_liquid_frame_identity_error(
+            configuration,
+            excess_configured_ofe,
+            beginning_owner_sha256,
+            attempted_owner_sha256,
+            "surface-liquid production lane cardinality does not match the direct frame",
+        ));
+    }
+    for (topology_index, (ofe_id, binding)) in configuration
+        .ofe_topology
+        .iter()
+        .zip(&configuration.ofe_bindings)
+        .enumerate()
+    {
+        let lane = &lanes[topology_index];
+        if &binding.ofe_id != ofe_id
+            || binding.production_lane_index != topology_index
+            || binding.production_lane_id != lane.lane_id
+        {
+            return Err(surface_liquid_frame_identity_error(
+                configuration,
+                Some(ofe_id),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+                "surface-liquid production lane identity does not match the direct frame",
+            ));
+        }
+        if binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len() {
+            return Err(surface_liquid_frame_identity_error(
+                configuration,
+                Some(ofe_id),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+                "surface-liquid production soil-layer cardinality does not match the direct frame",
+            ));
+        }
+        if let Some(record) = configuration.records.iter().find(|record| {
+            record.key.ofe_id == *ofe_id
+                && record.ofe_area_m2.is_finite()
+                && lane.area_m2.is_finite()
+                && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+        }) {
+            return Err(surface_liquid_frame_identity_error(
+                configuration,
+                Some(&record.key.ofe_id),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+                "surface-liquid configured OFE area does not match the direct production lane",
+            ));
+        }
+    }
+    Ok(())
 }

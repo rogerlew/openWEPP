@@ -364,3 +364,14 @@ No `fe6cc4bd5` finding is rejected, deferred, or moved to another package.
 No `2e32a8a0e` finding is rejected, deferred, or moved to another package. The
 independent hydrology/ownership review of the same bytes returned PASS, but it
 does not override the Rust correctness HOLD.
+
+## Exact-head terminal-review findings at `f249431d4`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-F249-HIGH-001: configuration/state record validation can return an earlier E003 before a later E002 identity defect | Accepted | Remediated: whole-set identity preflight precedes every record-domain pass and outer public validation; cross-row/order poisons PASS |
+| A-TERMINAL-F249-MEDIUM-002: receiver checked aggregation is duplicated between preflight and final construction | Accepted | Remediated: one shared checked aggregation result serves preflight and final operand freezing; drift/poison tests PASS |
+
+No `f249431d4` finding is rejected, deferred, or moved to another package. The
+fresh hydrology/ownership review returned PASS; the interrupted full-workspace
+attempt is not terminal evidence.
