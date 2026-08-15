@@ -10,6 +10,9 @@ use super::{
     checked_surface_liquid_close, checked_surface_liquid_div, checked_surface_liquid_mul,
     checked_surface_liquid_sub, checked_surface_liquid_sum,
 };
+use crate::direct_runtime::{
+    surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
+};
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
 
 pub(super) fn validate_surface_production_binding(
@@ -61,14 +64,10 @@ pub(super) fn snapshot_failure(
     configuration: &DirectSurfaceLiquidConfiguration,
     detail: &'static str,
 ) -> LandSurfaceEnergyShadowError {
-    let mut beginning = FramedSha256::new("openwepp-production-hydrology-beginning-v1");
-    beginning.string("owner", owner.hydrology_owner_id().as_str());
-    beginning.bytes("snapshot", owner.snapshot_bytes());
-    let mut attempted = FramedSha256::new("openwepp-unified-snapshot-attempt-v1");
-    attempted.string("configuration", &configuration.configuration_sha256);
-    if let Some(state) = owner.beginning_frame().surface_liquid_shadow.as_deref() {
-        attempted.string("state", &state.state_sha256);
-    }
+    let state = owner.beginning_frame().surface_liquid_shadow.as_deref();
+    let beginning = surface_liquid_raw_snapshot_sha256(owner.snapshot_bytes(), state);
+    let attempted =
+        surface_liquid_raw_snapshot_attempt_sha256(owner.snapshot_bytes(), configuration, state);
     let record = configuration.records.first();
     DirectSurfaceLiquidError::canonical_failure(
         code,
@@ -83,8 +82,8 @@ pub(super) fn snapshot_failure(
             parcel_id: None,
         },
         DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(beginning.finish()),
-            attempted_owner_sha256: Some(attempted.finish()),
+            beginning_owner_sha256: Some(beginning),
+            attempted_owner_sha256: Some(attempted),
         },
         detail,
     )
@@ -135,7 +134,7 @@ pub(super) fn request_failure(
         code,
         DirectSurfaceLiquidPhase::Authorization,
         DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(batch.transaction_id),
+            transaction_id: Some(key.map_or(batch.transaction_id, |key| key.transaction_id)),
             owner_id: key.map(|key| key.requesting_owner_id.clone()),
             ofe_id: key.map(|key| key.ofe_id.clone()),
             tile_id: key.map(|key| key.requesting_tile_id.clone()),
@@ -159,16 +158,33 @@ pub(super) fn canonicalize_unified_error(
 ) -> LandSurfaceEnergyShadowError {
     let (code, detail) = match error {
         LandSurfaceEnergyShadowError::SurfaceLiquid(error) => {
-            let code = error.code();
-            let detail = error
-                .failure()
-                .map_or_else(|| error.to_string(), |failure| failure.detail.clone());
+            if let Some(failure) = error.failure() {
+                return DirectSurfaceLiquidError::canonical_failure(
+                    failure.code,
+                    failure.phase,
+                    failure.context.clone(),
+                    DirectSurfaceLiquidRollbackHashes {
+                        beginning_owner_sha256: failure
+                            .rollback
+                            .beginning_owner_sha256
+                            .clone()
+                            .or_else(|| Some(beginning_sha256.to_string())),
+                        attempted_owner_sha256: failure
+                            .rollback
+                            .attempted_owner_sha256
+                            .clone()
+                            .or_else(|| Some(water_request_batch_sha256(batch))),
+                    },
+                    failure.detail.clone(),
+                )
+                .into();
+            }
             return request_failure(
-                code,
+                error.code(),
                 batch,
                 beginning_sha256,
-                batch.requests.first().map(|row| &row.key),
-                detail,
+                None,
+                error.to_string(),
             );
         }
         LandSurfaceEnergyShadowError::Identity(detail)
@@ -184,13 +200,7 @@ pub(super) fn canonicalize_unified_error(
             "real hydrology authorization",
         ),
     };
-    request_failure(
-        code,
-        batch,
-        beginning_sha256,
-        batch.requests.first().map(|row| &row.key),
-        detail,
-    )
+    request_failure(code, batch, beginning_sha256, None, detail)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -240,7 +250,6 @@ pub(super) fn preflight_protocol_numerics(
     }) {
         return Err(protocol_failure_for_condensation(
             DirectSurfaceLiquidErrorCode::E003,
-            protocol,
             beginning_sha256,
             attempted_sha256,
             credit,
@@ -254,7 +263,6 @@ pub(super) fn preflight_protocol_numerics(
     {
         return Err(protocol_failure_for_condensation(
             DirectSurfaceLiquidErrorCode::E003,
-            protocol,
             beginning_sha256,
             attempted_sha256,
             credit,
@@ -330,12 +338,190 @@ pub(super) fn preflight_protocol_numerics(
     {
         return Err(protocol_failure_for_condensation(
             DirectSurfaceLiquidErrorCode::E006,
-            protocol,
             beginning_sha256,
             attempted_sha256,
             credit,
             "nonpositive condensation amount",
         ));
+    }
+    preflight_protocol_structure(protocol, beginning_sha256, attempted_sha256)
+}
+
+pub(super) fn preflight_request_structure(
+    batch: &PotentialWaterRequestBatch,
+    beginning_sha256: &Sha256Digest,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let mut keys = std::collections::BTreeSet::new();
+    for request in &batch.requests {
+        if let Err(error) = request.key.validate(batch.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(request_failure(
+                code,
+                batch,
+                beginning_sha256,
+                Some(&request.key),
+                detail,
+            ));
+        }
+        if !keys.insert(request.key.clone()) {
+            return Err(request_failure(
+                DirectSurfaceLiquidErrorCode::E005,
+                batch,
+                beginning_sha256,
+                Some(&request.key),
+                "duplicate potential water request",
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+fn preflight_protocol_structure(
+    protocol: &WaterProtocol,
+    beginning_sha256: &Sha256Digest,
+    attempted_sha256: &str,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let mut requests = std::collections::BTreeSet::new();
+    for row in &protocol.requests {
+        if let Err(error) = row.key.validate(protocol.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(protocol_failure_for_key(
+                code,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                detail,
+            ));
+        }
+        if !requests.insert(row.key.clone()) {
+            return Err(protocol_failure_for_key(
+                DirectSurfaceLiquidErrorCode::E005,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                "duplicate water request",
+            ));
+        }
+    }
+    let mut authorizations = std::collections::BTreeSet::new();
+    for row in &protocol.authorizations {
+        if let Err(error) = row.key.validate(protocol.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(protocol_failure_for_key(
+                code,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                detail,
+            ));
+        }
+        if !requests.contains(&row.key) {
+            return Err(protocol_failure_for_key(
+                DirectSurfaceLiquidErrorCode::E005,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                "authorization without exact request",
+            ));
+        }
+        if !authorizations.insert(row.key.clone()) {
+            return Err(protocol_failure_for_key(
+                DirectSurfaceLiquidErrorCode::E005,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                "duplicate water authorization",
+            ));
+        }
+    }
+    let mut finalized = std::collections::BTreeSet::new();
+    for row in &protocol.finalized_uses {
+        if let Err(error) = row.key.validate(protocol.transaction_id) {
+            let (code, detail) = protocol_error_code_and_detail(&error);
+            return Err(protocol_failure_for_key(
+                code,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                detail,
+            ));
+        }
+        if !authorizations.contains(&row.key) {
+            return Err(protocol_failure_for_key(
+                DirectSurfaceLiquidErrorCode::E005,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                "finalized use without exact authorization",
+            ));
+        }
+        if !finalized.insert(row.key.clone()) {
+            return Err(protocol_failure_for_key(
+                DirectSurfaceLiquidErrorCode::E005,
+                protocol,
+                beginning_sha256,
+                attempted_sha256,
+                &row.key,
+                "duplicate finalized water use",
+            ));
+        }
+    }
+    if let Some(key) = protocol
+        .requests
+        .iter()
+        .map(|row| &row.key)
+        .find(|key| !authorizations.contains(*key) || !finalized.contains(*key))
+        .or_else(|| {
+            protocol
+                .authorizations
+                .iter()
+                .map(|row| &row.key)
+                .find(|key| !finalized.contains(*key))
+        })
+    {
+        return Err(protocol_failure_for_key(
+            DirectSurfaceLiquidErrorCode::E005,
+            protocol,
+            beginning_sha256,
+            attempted_sha256,
+            key,
+            "incomplete request-authorization-use identity set",
+        ));
+    }
+    let mut credits = std::collections::BTreeSet::new();
+    for credit in &protocol.condensation_credits {
+        if credit.transaction_id != protocol.transaction_id
+            || credit.hydrology_owner_id != protocol.hydrology_owner_id
+        {
+            return Err(protocol_failure_for_condensation(
+                DirectSurfaceLiquidErrorCode::E002,
+                beginning_sha256,
+                attempted_sha256,
+                credit,
+                "condensation identity mismatch",
+            ));
+        }
+        if !credits.insert((
+            credit.ofe_id.clone(),
+            credit.tile_id.clone(),
+            credit.surface_id.clone(),
+        )) {
+            return Err(protocol_failure_for_condensation(
+                DirectSurfaceLiquidErrorCode::E005,
+                beginning_sha256,
+                attempted_sha256,
+                credit,
+                "duplicate condensation credit",
+            ));
+        }
     }
     Ok(())
 }
@@ -432,38 +618,53 @@ fn protocol_failure_for_key(
     key: &GroundWaterKey,
     detail: &'static str,
 ) -> LandSurfaceEnergyShadowError {
-    protocol_failure_with_context(
+    DirectSurfaceLiquidError::canonical_failure(
         code,
-        protocol,
-        beginning_sha256,
-        attempted_sha256,
-        Some(key.ofe_id.clone()),
-        Some(key.requesting_tile_id.clone()),
-        key.surface_id.clone(),
-        Some(key.source_id.clone()),
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(key.transaction_id),
+            owner_id: Some(protocol.hydrology_owner_id.clone()),
+            ofe_id: Some(key.ofe_id.clone()),
+            tile_id: Some(key.requesting_tile_id.clone()),
+            surface_id: key.surface_id.clone(),
+            source_id: Some(key.source_id.clone()),
+            parcel_id: None,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
         detail,
     )
+    .into()
 }
 
 fn protocol_failure_for_condensation(
     code: DirectSurfaceLiquidErrorCode,
-    protocol: &WaterProtocol,
     beginning_sha256: &Sha256Digest,
     attempted_sha256: &str,
     credit: &CondensationCredit,
     detail: &'static str,
 ) -> LandSurfaceEnergyShadowError {
-    protocol_failure_with_context(
+    DirectSurfaceLiquidError::canonical_failure(
         code,
-        protocol,
-        beginning_sha256,
-        attempted_sha256,
-        Some(credit.ofe_id.clone()),
-        Some(credit.tile_id.clone()),
-        Some(credit.surface_id.clone()),
-        None,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(credit.transaction_id),
+            owner_id: Some(credit.hydrology_owner_id.clone()),
+            ofe_id: Some(credit.ofe_id.clone()),
+            tile_id: Some(credit.tile_id.clone()),
+            surface_id: Some(credit.surface_id.clone()),
+            source_id: None,
+            parcel_id: None,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+        },
         detail,
     )
+    .into()
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -753,6 +954,7 @@ pub fn validate_real_receiver_closure(
             })?;
         require_receiver_close(
             operands,
+            &operands.soil_thermal_owner_id,
             thermal.ending_infiltration_credit_j_m2_ofe_ground,
             expected_credit,
             DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
@@ -762,6 +964,7 @@ pub fn validate_real_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            &operands.soil_thermal_owner_id,
             thermal.ending_enthalpy_j_m2_ofe_ground,
             expected_ending,
             DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
@@ -794,6 +997,7 @@ pub fn validate_real_receiver_closure(
                 })?;
         require_receiver_close(
             operands,
+            &operands.lse_owner_id,
             tile.ending_enthalpy_j_m2_tile_ground,
             expected,
             DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
@@ -833,6 +1037,7 @@ fn validate_production_soil_receiver_closure(
         for (layer, expected_ending) in lane.ordered_layers.iter().zip(expected) {
             require_receiver_close(
                 operands,
+                &operands.hydrology_owner_id,
                 layer.ending_liquid_m,
                 expected_ending,
                 DirectSurfaceLiquidClosureUnit::MassM,
@@ -883,6 +1088,7 @@ fn validate_production_soil_receiver_closure(
                 })?;
         require_receiver_close(
             operands,
+            &operands.hydrology_owner_id,
             lane.beginning_aggregate_soil_water_m,
             beginning_sum,
             DirectSurfaceLiquidClosureUnit::MassM,
@@ -892,6 +1098,7 @@ fn validate_production_soil_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            &operands.hydrology_owner_id,
             lane.ending_aggregate_soil_water_m,
             ending_sum,
             DirectSurfaceLiquidClosureUnit::MassM,
@@ -901,6 +1108,7 @@ fn validate_production_soil_receiver_closure(
         )?;
         require_receiver_close(
             operands,
+            &operands.hydrology_owner_id,
             lane.ending_aggregate_soil_water_m,
             expected_aggregate_ending,
             DirectSurfaceLiquidClosureUnit::MassM,
@@ -973,6 +1181,7 @@ fn independently_reconstruct_infiltration(
 #[allow(clippy::too_many_arguments)]
 pub(super) fn require_receiver_close(
     operands: &RealReceiverClosureOperands,
+    owner_id: &ResourceOwnerId,
     actual: f64,
     expected: f64,
     unit: DirectSurfaceLiquidClosureUnit,
@@ -982,11 +1191,38 @@ pub(super) fn require_receiver_close(
 ) -> Result<(), DirectSurfaceLiquidError> {
     match checked_surface_liquid_close(actual, expected, unit) {
         Some(true) => Ok(()),
-        Some(false) => Err(receiver_atomic_failure(operands, ofe_id, tile_id, detail)),
+        Some(false) => Err(receiver_equation_failure(
+            operands, owner_id, ofe_id, tile_id, detail,
+        )),
         None => Err(receiver_arithmetic_failure(
             operands, ofe_id, tile_id, detail,
         )),
     }
+}
+
+fn receiver_equation_failure(
+    operands: &RealReceiverClosureOperands,
+    owner_id: &ResourceOwnerId,
+    ofe_id: Option<&OfeId>,
+    tile_id: Option<&TileId>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E010,
+        DirectSurfaceLiquidPhase::IndependentClosure,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(operands.transaction_id),
+            owner_id: Some(owner_id.clone()),
+            ofe_id: ofe_id.cloned(),
+            tile_id: tile_id.cloned(),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
+            attempted_owner_sha256: Some(receiver_operands_sha256(operands)),
+        },
+        detail,
+    )
 }
 
 pub(super) fn receiver_atomic_failure(
@@ -1107,6 +1343,15 @@ pub(super) fn validate_receiver_envelope(
             .get(index)
             .or_else(|| operands.expected_production_soil.get(index))
             .map(|identity| &identity.0);
+        if production.len() != operands.expected_production_soil.len() {
+            return Err(receiver_envelope_failure(
+                operands,
+                &operands.hydrology_owner_id,
+                ofe,
+                None,
+                "production soil receiver cardinality mismatch",
+            ));
+        }
         return Err(join_failure(
             operands,
             &operands.hydrology_owner_id,
@@ -1131,6 +1376,15 @@ pub(super) fn validate_receiver_envelope(
         let identity = thermal
             .get(index)
             .or_else(|| operands.expected_soil_thermal.get(index));
+        if thermal.len() != operands.expected_soil_thermal.len() {
+            return Err(receiver_envelope_failure(
+                operands,
+                &operands.soil_thermal_owner_id,
+                identity.map(|row| &row.0),
+                identity.map(|row| &row.1),
+                "soil-thermal receiver cardinality mismatch",
+            ));
+        }
         return Err(join_failure(
             operands,
             &operands.soil_thermal_owner_id,
@@ -1149,6 +1403,15 @@ pub(super) fn validate_receiver_envelope(
         let identity = lse
             .get(index)
             .or_else(|| operands.expected_lse_tiles.get(index));
+        if lse.len() != operands.expected_lse_tiles.len() {
+            return Err(receiver_envelope_failure(
+                operands,
+                &operands.lse_owner_id,
+                identity.map(|row| &row.0),
+                identity.map(|row| &row.1),
+                "LSE tile receiver cardinality mismatch",
+            ));
+        }
         return Err(join_failure(
             operands,
             &operands.lse_owner_id,
@@ -1456,6 +1719,27 @@ fn join_failure(
         detail,
     )
 }
+
+fn receiver_envelope_failure(
+    operands: &RealReceiverClosureOperands,
+    owner_id: &ResourceOwnerId,
+    ofe_id: Option<&OfeId>,
+    tile_id: Option<&TileId>,
+    detail: &'static str,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::atomic_envelope_failure(
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(operands.transaction_id),
+            owner_id: Some(owner_id.clone()),
+            ofe_id: ofe_id.cloned(),
+            tile_id: tile_id.cloned(),
+            ..DirectSurfaceLiquidErrorContext::default()
+        },
+        Some(operands.beginning_hydrology_snapshot_sha256.to_string()),
+        Some(receiver_operands_sha256(operands)),
+        detail,
+    )
+}
 pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -> String {
     let mut out = FramedSha256::new("openwepp-real-receiver-closure-operands-v3");
     out.u128("transaction", operands.transaction_id.0);
@@ -1554,4 +1838,154 @@ pub(super) fn receiver_operands_sha256(operands: &RealReceiverClosureOperands) -
         );
     }
     out.finish()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use openwepp_kernel_contract::TransactionId;
+
+    fn fixture() -> RealReceiverClosureOperands {
+        let hydrology_owner_id =
+            ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner");
+        let lse_owner_id = ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner");
+        let soil_thermal_owner_id =
+            ResourceOwnerId::try_new("soil-thermal").expect("thermal owner");
+        let mut production_soil = Vec::new();
+        let mut soil_thermal = Vec::new();
+        let mut lse_tiles = Vec::new();
+        for index in 1..=2 {
+            let ofe_id = OfeId::try_new(format!("ofe-{index}")).expect("OFE");
+            let tile_id = TileId::try_new(format!("tile-{index}")).expect("tile");
+            let layer_id = SoilLayerId::try_new(format!("layer-{index}")).expect("layer");
+            production_soil.push(ProductionSoilReceiverOperands {
+                ofe_id: ofe_id.clone(),
+                production_lane_index: index - 1,
+                production_lane_id: u32::try_from(index).expect("bounded lane ID"),
+                tillage_depth_m: 0.1,
+                infiltration_m: 0.0,
+                beginning_aggregate_soil_water_m: 0.01,
+                ending_aggregate_soil_water_m: 0.01,
+                ordered_layers: vec![ProductionSoilLayerReceiverOperands {
+                    layer_id: layer_id.clone(),
+                    beginning_liquid_m: 0.01,
+                    ending_liquid_m: 0.01,
+                    layer_depth_m: 0.1,
+                    residual_theta: 0.0,
+                    frozen_depth_m: 0.0,
+                }],
+            });
+            soil_thermal.push(super::super::SoilThermalReceiverOperands {
+                ofe_id: ofe_id.clone(),
+                tile_id: tile_id.clone(),
+                layer_id: layer_id.clone(),
+                beginning_infiltration_credit_j_m2_ofe_ground: 0.0,
+                ending_infiltration_credit_j_m2_ofe_ground: 0.0,
+                beginning_enthalpy_j_m2_ofe_ground: 10.0,
+                infiltration_enthalpy_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 10.0,
+            });
+            lse_tiles.push(super::super::LseTileReceiverOperands {
+                ofe_id,
+                tile_id,
+                tile_fraction: 0.5,
+                beginning_enthalpy_j_m2_tile_ground: 10.0,
+                retained_enthalpy_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_tile_ground: 10.0,
+            });
+        }
+        let expected_production_soil = production_soil
+            .iter()
+            .map(|row| {
+                (
+                    row.ofe_id.clone(),
+                    row.production_lane_index,
+                    row.production_lane_id,
+                    row.ordered_layers
+                        .iter()
+                        .map(|layer| layer.layer_id.clone())
+                        .collect(),
+                )
+            })
+            .collect();
+        let expected_soil_thermal = soil_thermal
+            .iter()
+            .map(|row| {
+                (
+                    row.ofe_id.clone(),
+                    row.tile_id.clone(),
+                    row.layer_id.clone(),
+                )
+            })
+            .collect();
+        let expected_lse_tiles = lse_tiles
+            .iter()
+            .map(|row| (row.ofe_id.clone(), row.tile_id.clone()))
+            .collect();
+        RealReceiverClosureOperands {
+            transaction_id: TransactionId(41),
+            hydrology_owner_id,
+            lse_owner_id,
+            soil_thermal_owner_id,
+            beginning_hydrology_snapshot_sha256: Sha256Digest::try_new("a".repeat(64))
+                .expect("digest"),
+            production_soil,
+            soil_thermal,
+            lse_tiles,
+            expected_production_soil,
+            expected_soil_thermal,
+            expected_lse_tiles,
+        }
+    }
+
+    fn assert_later_e010(operands: &RealReceiverClosureOperands, owner: &str, tile: Option<&str>) {
+        let error = validate_real_receiver_closure(operands).expect_err("later mismatch");
+        let failure = error.failure().expect("canonical failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some(owner)
+        );
+        assert_eq!(
+            failure.context.ofe_id.as_ref().map(OfeId::as_str),
+            Some("ofe-2")
+        );
+        assert_eq!(failure.context.tile_id.as_ref().map(TileId::as_str), tile);
+    }
+
+    #[test]
+    fn later_receiver_equation_mismatches_are_e010_and_cardinality_is_e011() {
+        let mut production = fixture();
+        production.production_soil[1].ordered_layers[0].ending_liquid_m += 1.0e-3;
+        production.production_soil[1].ending_aggregate_soil_water_m += 1.0e-3;
+        assert_later_e010(&production, "production-hydrology", None);
+
+        let mut thermal = fixture();
+        thermal.soil_thermal[1].ending_enthalpy_j_m2_ofe_ground += 1.0;
+        assert_later_e010(&thermal, "soil-thermal", Some("tile-2"));
+
+        let mut lse = fixture();
+        lse.lse_tiles[1].ending_enthalpy_j_m2_tile_ground += 1.0;
+        assert_later_e010(&lse, "land-surface-energy-v1", Some("tile-2"));
+
+        let mut incomplete = fixture();
+        incomplete.soil_thermal.pop();
+        let error = validate_real_receiver_closure(&incomplete).expect_err("missing owner row");
+        let failure = error.failure().expect("canonical envelope failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+        assert_eq!(failure.phase, DirectSurfaceLiquidPhase::AtomicEnvelope);
+        assert_eq!(
+            failure.context.ofe_id.as_ref().map(OfeId::as_str),
+            Some("ofe-2")
+        );
+        assert_eq!(
+            failure.context.tile_id.as_ref().map(TileId::as_str),
+            Some("tile-2")
+        );
+    }
 }

@@ -10,9 +10,10 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     SoilThermalLayerSnapshot, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
     SoilThermalTileCandidate, SourceId, StandGroundWaterAmountBasis, SurfaceClass,
     SurfaceClassKind, SurfaceId, SurfaceStorageBranch, TileState, UnifiedLseFinalization,
-    UnifiedReceiverExpectations, WaterProtocol, WaterSourceType, execute_open_bare_soil_shadow,
-    execute_unified_real_hydrology_shadow, finalize_open_phase, solve_open_potential_phase,
-    unified_beginning_hydrology_snapshot_sha256, validate_real_receiver_closure,
+    UnifiedReceiverExpectations, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
+    WaterSourceType, execute_open_bare_soil_shadow, execute_unified_real_hydrology_shadow,
+    finalize_open_phase, solve_open_potential_phase, unified_beginning_hydrology_snapshot_sha256,
+    validate_real_receiver_closure,
 };
 use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
@@ -1158,6 +1159,132 @@ fn request_numeric_preflight_precedes_duplicate_validation() {
 }
 
 #[test]
+fn later_request_and_protocol_validation_preserve_exact_offender_context() {
+    let (frame, configuration) = configured_two_tile_surface_frame();
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot =
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &configuration).expect("snapshot");
+    let mut batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let covered = configuration
+        .records
+        .iter()
+        .find(|record| record.key.tile_id.as_str() == "covered")
+        .expect("covered configuration record");
+    let mut later = batch.requests[0].clone();
+    later.key.transaction_id = TransactionId(42);
+    later.key.requesting_tile_id = covered.key.tile_id.clone();
+    later.key.surface_id = Some(covered.key.surface_id.clone());
+    later.key.surface_class = Some(covered.key.surface_class);
+    later.key.source_type = covered.key.source_type;
+    later.key.source_id = covered.key.source_id.clone();
+    later.key.source_tile_id = Some(covered.key.tile_id.clone());
+    batch.requests.push(later.clone());
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = execute_unified_real_hydrology_shadow(
+        &adapter,
+        &configuration,
+        &receiver_expectations(1, snapshot.clone()),
+        &batch,
+        &BTreeMap::new(),
+        &ingress_input(),
+        |_| panic!("later malformed request must reject before callback"),
+    )
+    .expect_err("later request identity poison") else {
+        panic!("later request poison must remain canonical");
+    };
+    let failure = error.failure().expect("canonical later request failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(42)));
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("covered")
+    );
+    assert_eq!(
+        failure.context.source_id.as_ref().map(SourceId::as_str),
+        Some("surface-store:ofe-1:covered")
+    );
+
+    let valid_batch = surface_potential_batch(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        configuration.records[0].key.source_id.clone(),
+        1.0,
+    );
+    let protocol = accepted_surface_protocol(
+        &valid_batch,
+        &[WaterAuthorization {
+            key: valid_batch.requests[0].key.clone(),
+            amount_kg_m2_stand_ground: valid_batch.requests[0].amount_kg_m2_stand_ground,
+            reason: WaterAuthorizationReason::FullSupply,
+        }],
+        &snapshot,
+    );
+    let mut invalid_protocol = protocol.clone();
+    let mut later_request = protocol.requests[0].clone();
+    later_request.key.requesting_tile_id = covered.key.tile_id.clone();
+    later_request.key.surface_id = Some(covered.key.surface_id.clone());
+    later_request.key.surface_class = Some(covered.key.surface_class);
+    later_request.key.source_type = covered.key.source_type;
+    later_request.key.source_id = covered.key.source_id.clone();
+    later_request.key.source_tile_id = Some(covered.key.tile_id.clone());
+    invalid_protocol.requests.push(later_request.clone());
+    let mut later_authorization = WaterAuthorization {
+        key: later_request.key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+        reason: WaterAuthorizationReason::ZeroSupply,
+    };
+    later_authorization.key.transaction_id = TransactionId(42);
+    invalid_protocol.authorizations.push(later_authorization);
+    let LandSurfaceEnergyShadowError::SurfaceLiquid(error) = UnifiedLseFinalization::try_new(
+        invalid_protocol,
+        unified_finalization(protocol)
+            .ending_tile_states_pre_ingress()
+            .to_vec(),
+        unified_finalization(accepted_surface_protocol(
+            &valid_batch,
+            &[WaterAuthorization {
+                key: valid_batch.requests[0].key.clone(),
+                amount_kg_m2_stand_ground: valid_batch.requests[0].amount_kg_m2_stand_ground,
+                reason: WaterAuthorizationReason::FullSupply,
+            }],
+            &snapshot,
+        ))
+        .soil_thermal_candidates()
+        .to_vec(),
+        unified_finalization(accepted_surface_protocol(
+            &valid_batch,
+            &[WaterAuthorization {
+                key: valid_batch.requests[0].key.clone(),
+                amount_kg_m2_stand_ground: valid_batch.requests[0].amount_kg_m2_stand_ground,
+                reason: WaterAuthorizationReason::FullSupply,
+            }],
+            &snapshot,
+        ))
+        .rollback_hashes()
+        .to_vec(),
+    )
+    .expect_err("later protocol identity poison") else {
+        panic!("later protocol poison must remain canonical");
+    };
+    let failure = error.failure().expect("canonical later protocol failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.context.transaction_id, Some(TransactionId(42)));
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        Some("covered")
+    );
+    assert_eq!(
+        failure.context.source_id.as_ref().map(SourceId::as_str),
+        Some("surface-store:ofe-1:covered")
+    );
+}
+
+#[test]
 fn final_protocol_cardinality_and_bounds_are_canonical() {
     let (frame, configuration) = configured_surface_frame(
         SurfaceClass::BareMineralSoil,
@@ -1331,13 +1458,7 @@ fn surface_attachment_preserves_invalid_configuration_failure_and_rolls_back() {
         0,
     )
     .expect("attempted state");
-    let beginning_hash = frame
-        .surface_liquid_shadow
-        .as_ref()
-        .expect("attached beginning state")
-        .state_sha256
-        .clone();
-    let attempted_hash = attempted_state.state_sha256.clone();
+    let declared_attempted_hash = attempted_state.state_sha256.clone();
     let expected_key = configuration.records[0].key.clone();
     configuration.records[0].capacity_kg_m2_tile = f64::NAN;
 
@@ -1356,13 +1477,12 @@ fn surface_attachment_preserves_invalid_configuration_failure_and_rolls_back() {
     assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
     assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
     assert_eq!(failure.context.source_id, Some(expected_key.source_id));
-    assert_eq!(
-        failure.rollback.beginning_owner_sha256,
-        Some(beginning_hash)
-    );
-    assert_eq!(
-        failure.rollback.attempted_owner_sha256,
-        Some(attempted_hash)
+    assert!(failure.rollback.beginning_owner_sha256.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+    assert_ne!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(declared_attempted_hash.as_str()),
+        "raw attempt hash must not trust the embedded state digest"
     );
     assert_eq!(frame, original);
 }
@@ -1379,7 +1499,7 @@ fn first_surface_attachment_preserves_invalid_restart_attempt_hash_without_begin
         0,
     )
     .expect("attempted state");
-    let attempted_hash = attempted_state.state_sha256.clone();
+    let declared_attempted_hash = attempted_state.state_sha256.clone();
     attempted_state.records[0].liquid_kg_m2_tile = f64::NAN;
     let mut frame = production_frame(0.02, false);
     let original = frame.clone();
@@ -1391,9 +1511,10 @@ fn first_surface_attachment_preserves_invalid_restart_attempt_hash_without_begin
     assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Restart);
     assert_eq!(failure.rollback.beginning_owner_sha256, None);
-    assert_eq!(
-        failure.rollback.attempted_owner_sha256,
-        Some(attempted_hash)
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+    assert_ne!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(declared_attempted_hash.as_str())
     );
     assert_eq!(frame, original);
 }
@@ -1412,13 +1533,7 @@ fn surface_attachment_preserves_invalid_restart_failure_and_rolls_back() {
         0,
     )
     .expect("attempted state");
-    let beginning_hash = frame
-        .surface_liquid_shadow
-        .as_ref()
-        .expect("attached beginning state")
-        .state_sha256
-        .clone();
-    let attempted_hash = attempted_state.state_sha256.clone();
+    let declared_attempted_hash = attempted_state.state_sha256.clone();
     let expected_key = attempted_state.records[0].key.clone();
     attempted_state.records[0].liquid_kg_m2_tile = f64::NAN;
 
@@ -1437,15 +1552,112 @@ fn surface_attachment_preserves_invalid_restart_failure_and_rolls_back() {
     assert_eq!(failure.context.tile_id, Some(expected_key.tile_id));
     assert_eq!(failure.context.surface_id, Some(expected_key.surface_id));
     assert_eq!(failure.context.source_id, Some(expected_key.source_id));
-    assert_eq!(
-        failure.rollback.beginning_owner_sha256,
-        Some(beginning_hash)
-    );
-    assert_eq!(
-        failure.rollback.attempted_owner_sha256,
-        Some(attempted_hash)
+    assert!(failure.rollback.beginning_owner_sha256.is_some());
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+    assert_ne!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(declared_attempted_hash.as_str())
     );
     assert_eq!(frame, original);
+}
+
+#[test]
+fn surface_attachment_attempt_hashes_bind_raw_invalid_bits_not_stale_declared_digests() {
+    let configuration = surface_configuration(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+    );
+    let initial = DirectSurfaceLiquidOwnedState::new_initial(
+        &configuration,
+        &BTreeMap::from([(configuration.records[0].key.clone(), 2.0)]),
+        0,
+    )
+    .expect("initial state");
+
+    let state_failure_hash = |raw_bits| {
+        let mut attempted = initial.clone();
+        attempted.records[0].liquid_kg_m2_tile = f64::from_bits(raw_bits);
+        let mut frame = production_frame(0.02, false);
+        let error = frame
+            .configure_surface_liquid_shadow(&configuration, attempted)
+            .expect_err("raw nonfinite state must fail closed");
+        let failure = error.failure().expect("canonical state failure");
+        assert_eq!(failure.rollback.beginning_owner_sha256, None);
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("direct wrapper attempted hash")
+    };
+    let state_a = state_failure_hash(0x7ff8_0000_0000_0001);
+    let state_b = state_failure_hash(0x7ff8_0000_0000_0002);
+    assert_ne!(state_a, state_b, "raw NaN payload bits must enter the hash");
+
+    let configuration_failure_hash = |raw_bits| {
+        let mut attempted_configuration = configuration.clone();
+        attempted_configuration.records[0].capacity_kg_m2_tile = f64::from_bits(raw_bits);
+        assert_eq!(
+            attempted_configuration.configuration_sha256, configuration.configuration_sha256,
+            "poisons retain one stale declared digest"
+        );
+        let mut frame = production_frame(0.02, false);
+        let error = frame
+            .configure_surface_liquid_shadow(&attempted_configuration, initial.clone())
+            .expect_err("raw nonfinite configuration must fail closed");
+        let failure = error.failure().expect("canonical configuration failure");
+        assert_eq!(failure.rollback.beginning_owner_sha256, None);
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("direct wrapper attempted hash")
+    };
+    let configuration_a = configuration_failure_hash(0x7ff8_0000_0000_0011);
+    let configuration_b = configuration_failure_hash(0x7ff8_0000_0000_0012);
+    assert_ne!(
+        configuration_a, configuration_b,
+        "raw invalid configuration bits must enter the hash"
+    );
+}
+
+#[test]
+fn unified_snapshot_failure_hashes_bind_raw_invalid_configuration_bits() {
+    let (frame, configuration) = configured_surface_frame(
+        SurfaceClass::BareMineralSoil,
+        WaterSourceType::SurfaceLiquid,
+        1.0,
+    );
+    let (owner, _) = owner(&frame);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot_failure = |raw_bits| {
+        let mut attempted = configuration.clone();
+        attempted.records[0].ofe_area_m2 = f64::from_bits(raw_bits);
+        assert_eq!(
+            attempted.configuration_sha256, configuration.configuration_sha256,
+            "both attempts retain the same stale declared digest"
+        );
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+            unified_beginning_hydrology_snapshot_sha256(&adapter, &attempted)
+                .expect_err("invalid raw snapshot input must fail closed")
+        else {
+            panic!("snapshot failure must retain canonical surface-liquid context");
+        };
+        let failure = error.failure().expect("canonical snapshot failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert!(failure.rollback.beginning_owner_sha256.is_some());
+        failure
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("snapshot attempted hash")
+    };
+
+    let first = snapshot_failure(0x7ff8_0000_0000_0101);
+    let second = snapshot_failure(0x7ff8_0000_0000_0102);
+    assert_ne!(
+        first, second,
+        "raw invalid snapshot attempts must not collide"
+    );
 }
 
 #[test]
@@ -1784,27 +1996,42 @@ fn reject_receiver_topology_poisons(
     let mut poisons = Vec::new();
     let mut missing_production = baseline.clone();
     missing_production.production_soil.clear();
-    poisons.push(("production-hydrology", None, missing_production));
+    poisons.push((
+        DirectSurfaceLiquidErrorCode::E011,
+        "production-hydrology",
+        None,
+        missing_production,
+    ));
     let mut duplicate_thermal = baseline.clone();
     duplicate_thermal
         .soil_thermal
         .push(duplicate_thermal.soil_thermal[0].clone());
-    poisons.push(("soil-thermal", Some("open"), duplicate_thermal));
+    poisons.push((
+        DirectSurfaceLiquidErrorCode::E011,
+        "soil-thermal",
+        Some("open"),
+        duplicate_thermal,
+    ));
     let mut rekeyed_lse = baseline.clone();
     rekeyed_lse.lse_tiles[0].tile_id = TileId::try_new("wrong-receiver").expect("poison tile");
     poisons.push((
+        DirectSurfaceLiquidErrorCode::E010,
         "land-surface-energy-v1",
         Some("wrong-receiver"),
         rekeyed_lse,
     ));
-    for (owner, tile, poison) in poisons {
+    for (code, owner, tile, poison) in poisons {
         let attempted = poison.canonical_sha256();
         let error = validate_real_receiver_closure(&poison).expect_err("topology poison");
         let failure = error.failure().expect("canonical topology failure");
-        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+        assert_eq!(failure.code, code);
         assert_eq!(
             failure.phase,
-            openwepp_hillslope_orchestrator::DirectSurfaceLiquidPhase::IndependentClosure
+            if code == DirectSurfaceLiquidErrorCode::E011 {
+                DirectSurfaceLiquidPhase::AtomicEnvelope
+            } else {
+                DirectSurfaceLiquidPhase::IndependentClosure
+            }
         );
         assert_eq!(failure.context.transaction_id, Some(TransactionId(41)));
         assert_eq!(
@@ -1857,7 +2084,11 @@ fn reject_receiver_enthalpy_poisons(
             + multiplier * infiltration_enthalpy;
         thermal.ending_enthalpy_j_m2_ofe_ground =
             thermal.beginning_enthalpy_j_m2_ofe_ground + multiplier * infiltration_enthalpy;
-        assert_receiver_e011(validate_real_receiver_closure(&poison));
+        assert_receiver_e010(
+            validate_real_receiver_closure(&poison),
+            "soil-thermal",
+            Some("open"),
+        );
     }
 
     let retained_enthalpy =
@@ -1868,7 +2099,11 @@ fn reject_receiver_enthalpy_poisons(
         let tile = &mut poison.lse_tiles[0];
         tile.ending_enthalpy_j_m2_tile_ground = tile.beginning_enthalpy_j_m2_tile_ground
             + multiplier * retained_enthalpy / tile.tile_fraction;
-        assert_receiver_e011(validate_real_receiver_closure(&poison));
+        assert_receiver_e010(
+            validate_real_receiver_closure(&poison),
+            "land-surface-energy-v1",
+            Some("open"),
+        );
     }
 }
 
@@ -2048,18 +2283,36 @@ fn production_aggregate_reconstructs_nonzero_residual_unfrozen_water() {
     let mut poison = operands.clone();
     poison.production_soil[0].beginning_aggregate_soil_water_m -= residual_water_m;
     poison.production_soil[0].ending_aggregate_soil_water_m -= residual_water_m;
-    assert_receiver_e011(validate_real_receiver_closure(&poison));
+    assert_receiver_e010(
+        validate_real_receiver_closure(&poison),
+        "production-hydrology",
+        None,
+    );
 }
 
-fn assert_receiver_e011(
+fn assert_receiver_e010(
     result: Result<(), openwepp_hillslope_orchestrator::DirectSurfaceLiquidError>,
+    owner_id: &str,
+    tile_id: Option<&str>,
 ) {
     let error = result.expect_err("receiver poison must fail");
     let failure = error.failure().expect("canonical receiver failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E011);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
     assert!(failure.context.transaction_id.is_some());
-    assert!(failure.context.owner_id.is_some());
+    assert_eq!(
+        failure
+            .context
+            .owner_id
+            .as_ref()
+            .map(ResourceOwnerId::as_str),
+        Some(owner_id)
+    );
     assert!(failure.context.ofe_id.is_some());
+    assert_eq!(
+        failure.context.tile_id.as_ref().map(TileId::as_str),
+        tile_id
+    );
     assert!(failure.rollback.beginning_owner_sha256.is_some());
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }

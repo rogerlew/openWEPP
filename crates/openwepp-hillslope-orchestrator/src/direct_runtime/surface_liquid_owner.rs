@@ -14,8 +14,13 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
+mod resource_validation;
+
+use resource_validation::preflight_resource_phase_inputs;
+
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 const TOPOLOGY_MULTIPLIER: f64 = 64.0;
+const JOINT_AUTHORIZATION_SCALE_BIT_DECISIONS: usize = 64;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum DirectSurfaceLiquidClosureUnit {
@@ -66,6 +71,77 @@ pub(crate) fn checked_surface_liquid_div(numerator: f64, denominator: f64) -> Op
     } else {
         Some(result)
     }
+}
+
+fn authorization_sum_at_common_scale(raw_shares: &[f64], scale: f64) -> Option<f64> {
+    if !scale.is_finite() || !(0.0..=1.0).contains(&scale) {
+        return None;
+    }
+    raw_shares.iter().try_fold(0.0, |sum, raw_share| {
+        if !raw_share.is_finite() || *raw_share < 0.0 {
+            return None;
+        }
+        let scaled = raw_share * scale;
+        if !scaled.is_finite() {
+            return None;
+        }
+        checked_surface_liquid_add(sum, scaled)
+    })
+}
+
+/// Apply the SC-SURFACELIQUID-001 v6 common representability scale.
+fn jointly_safe_proportional_authorizations(raw_shares: &[f64], supply: f64) -> Option<Vec<f64>> {
+    let raw_sum = checked_surface_liquid_sum(raw_shares.iter().copied())?;
+    if raw_sum <= supply {
+        return Some(raw_shares.to_vec());
+    }
+    if !checked_surface_liquid_close(raw_sum, supply, DirectSurfaceLiquidClosureUnit::MassKgM2)? {
+        return None;
+    }
+
+    let initial_scale = checked_surface_liquid_div(supply, raw_sum)?;
+    if !(0.0..=1.0).contains(&initial_scale) || initial_scale == 0.0 {
+        return None;
+    }
+    let initial_sum = authorization_sum_at_common_scale(raw_shares, initial_scale)?;
+    let scale = if initial_sum <= supply {
+        initial_scale
+    } else {
+        let mut lower_bits = 0_u64;
+        let mut upper_bits = initial_scale.to_bits();
+        let mut decisions = 0_usize;
+        while lower_bits + 1 < upper_bits {
+            if decisions == JOINT_AUTHORIZATION_SCALE_BIT_DECISIONS {
+                return None;
+            }
+            let middle_bits = lower_bits + (upper_bits - lower_bits) / 2;
+            let middle = f64::from_bits(middle_bits);
+            if authorization_sum_at_common_scale(raw_shares, middle)? <= supply {
+                lower_bits = middle_bits;
+            } else {
+                upper_bits = middle_bits;
+            }
+            decisions += 1;
+        }
+        f64::from_bits(lower_bits)
+    };
+    if scale == 0.0 {
+        return None;
+    }
+
+    let authorizations = raw_shares
+        .iter()
+        .map(|raw_share| checked_surface_liquid_mul(*raw_share, scale))
+        .collect::<Option<Vec<_>>>()?;
+    if raw_shares
+        .iter()
+        .zip(&authorizations)
+        .any(|(raw_share, authorization)| *raw_share > 0.0 && *authorization == 0.0)
+        || checked_surface_liquid_sum(authorizations.iter().copied())? > supply
+    {
+        return None;
+    }
+    Some(authorizations)
 }
 
 pub(crate) fn checked_surface_liquid_close(
@@ -800,14 +876,18 @@ impl DirectSurfaceLiquidConfiguration {
     }
 
     pub fn from_canonical_bytes(bytes: &[u8]) -> Result<Self, DirectSurfaceLiquidError> {
+        let attempted_owner_sha256 =
+            super::surface_liquid_attachment::surface_liquid_raw_bytes_sha256(
+                "openwepp-surface-liquid-configuration-parse-v1",
+                bytes,
+            );
         Self::from_canonical_bytes_inner(bytes).map_err(|error| {
-            let code = error.code();
-            error.complete_context(
-                code,
+            super::surface_liquid_attachment::surface_liquid_attachment_error(
+                error,
                 DirectSurfaceLiquidPhase::Configuration,
                 DirectSurfaceLiquidErrorContext::default(),
                 None,
-                None,
+                Some(attempted_owner_sha256),
             )
         })
     }
@@ -1236,17 +1316,21 @@ impl DirectSurfaceLiquidOwnedState {
         configuration: &DirectSurfaceLiquidConfiguration,
         bytes: &[u8],
     ) -> Result<Self, DirectSurfaceLiquidError> {
+        let attempted_owner_sha256 =
+            super::surface_liquid_attachment::surface_liquid_raw_bytes_sha256(
+                "openwepp-surface-liquid-state-parse-v1",
+                bytes,
+            );
         Self::from_canonical_bytes_inner(configuration, bytes).map_err(|error| {
-            let code = error.code();
-            error.complete_context(
-                code,
+            super::surface_liquid_attachment::surface_liquid_attachment_error(
+                error,
                 DirectSurfaceLiquidPhase::Restart,
                 DirectSurfaceLiquidErrorContext {
                     owner_id: Some(configuration.owner_id.clone()),
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
                 None,
-                None,
+                Some(attempted_owner_sha256),
             )
         })
     }
@@ -1489,8 +1573,9 @@ impl DirectSurfaceLiquidResourceCandidate {
         configuration: &DirectSurfaceLiquidConfiguration,
     ) -> Result<(), DirectSurfaceLiquidError> {
         validate_resource_candidate(configuration, self).map_err(|error| {
-            error.recontextualize(
-                DirectSurfaceLiquidErrorCode::E009,
+            let code = error.code();
+            error.complete_context(
+                code,
                 DirectSurfaceLiquidPhase::ResourceCandidate,
                 DirectSurfaceLiquidErrorContext {
                     transaction_id: Some(self.transaction_id),
@@ -1543,14 +1628,6 @@ fn authorize_surface_liquid_withdrawals_inner(
     requests: &[WaterAmount],
 ) -> Result<DirectSurfaceLiquidArbitration, DirectSurfaceLiquidError> {
     beginning.validate_for_transaction(configuration, transaction_id, expected_predecessor)?;
-    let state_by_key = beginning
-        .records
-        .iter()
-        .map(|record| (record.key.clone(), record))
-        .collect::<BTreeMap<_, _>>();
-    let mut request_store_keys = Vec::with_capacity(requests.len());
-    let mut seen = BTreeSet::new();
-    let mut demand_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
     for request in requests {
         request.key.validate(transaction_id).map_err(|_| {
             water_protocol_failure(
@@ -1561,16 +1638,31 @@ fn authorize_surface_liquid_withdrawals_inner(
                 "invalid LSE request key",
             )
         })?;
-        if !request.amount_kg_m2_stand_ground.is_finite() || request.amount_kg_m2_stand_ground < 0.0
-        {
+        configuration
+            .store_key_for_water(&request.key)
+            .map_err(|error| {
+                water_protocol_failure(
+                    DirectSurfaceLiquidErrorCode::E002,
+                    DirectSurfaceLiquidPhase::Authorization,
+                    transaction_id,
+                    &request.key,
+                    error.to_string(),
+                )
+            })?;
+    }
+    for request in requests {
+        if !request.amount_kg_m2_stand_ground.is_finite() {
             return Err(water_protocol_failure(
                 DirectSurfaceLiquidErrorCode::E003,
                 DirectSurfaceLiquidPhase::Authorization,
                 transaction_id,
                 &request.key,
-                "request amount is nonfinite or negative",
+                "request amount is nonfinite",
             ));
         }
+    }
+    let mut seen = BTreeSet::new();
+    for request in requests {
         if !seen.insert(request.key.clone()) {
             return Err(water_protocol_failure(
                 DirectSurfaceLiquidErrorCode::E005,
@@ -1578,6 +1670,24 @@ fn authorize_surface_liquid_withdrawals_inner(
                 transaction_id,
                 &request.key,
                 "duplicate request",
+            ));
+        }
+    }
+    let state_by_key = beginning
+        .records
+        .iter()
+        .map(|record| (record.key.clone(), record))
+        .collect::<BTreeMap<_, _>>();
+    let mut request_store_keys = Vec::with_capacity(requests.len());
+    let mut demand_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
+    for request in requests {
+        if request.amount_kg_m2_stand_ground < 0.0 {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E006,
+                DirectSurfaceLiquidPhase::Authorization,
+                transaction_id,
+                &request.key,
+                "negative request amount",
             ));
         }
         let store_key = configuration
@@ -1632,14 +1742,36 @@ fn authorize_surface_liquid_withdrawals_inner(
                     "same-store supply multiplication is nonfinite or underflowed",
                 )
             })?;
-        let total_demand = demand_by_store[&store_key];
+        if !demand_by_store[&store_key].is_finite() {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::Authorization,
+                transaction_id,
+                &first_request.key,
+                "same-store demand preflight is nonfinite",
+            ));
+        }
+        let mut canonical_indexes = indexes;
+        canonical_indexes.sort_by(|left, right| requests[*left].key.cmp(&requests[*right].key));
+        let total_demand = checked_surface_liquid_sum(
+            canonical_indexes
+                .iter()
+                .map(|index| requests[*index].amount_kg_m2_stand_ground),
+        )
+        .ok_or_else(|| {
+            water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::Authorization,
+                transaction_id,
+                &requests[canonical_indexes[0]].key,
+                "canonical same-store demand accumulation is nonfinite",
+            )
+        })?;
         if total_demand <= supply {
-            for index in indexes {
+            for index in canonical_indexes {
                 authorization_amounts[index] = requests[index].amount_kg_m2_stand_ground;
             }
         } else if supply > 0.0 && total_demand > 0.0 {
-            let mut canonical_indexes = indexes;
-            canonical_indexes.sort_by(|left, right| requests[*left].key.cmp(&requests[*right].key));
             let checked_shares = canonical_indexes
                 .iter()
                 .map(|index| {
@@ -1666,10 +1798,22 @@ fn authorize_surface_liquid_withdrawals_inner(
                                 "proportional authorization division is nonfinite or underflowed",
                             )
                         })?;
-                    Ok((*index, share))
+                    Ok(share)
                 })
                 .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
-            for (index, amount) in checked_shares {
+            let corrected_shares =
+                jointly_safe_proportional_authorizations(&checked_shares, supply).ok_or_else(
+                    || {
+                        water_protocol_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            DirectSurfaceLiquidPhase::Authorization,
+                            transaction_id,
+                            &requests[canonical_indexes[0]].key,
+                            "joint proportional authorization is not safely representable",
+                        )
+                    },
+                )?;
+            for (index, amount) in canonical_indexes.into_iter().zip(corrected_shares) {
                 if !amount.is_finite()
                     || amount < 0.0
                     || amount > requests[index].amount_kg_m2_stand_ground
@@ -1751,27 +1895,18 @@ fn apply_surface_liquid_resource_phase_inner(
     finalized_uses: &[WaterAmount],
     condensation_credits: &[CondensationCredit],
 ) -> Result<DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidError> {
-    validate_arbitration(configuration, arbitration)?;
     arbitration.beginning_state.validate_for_transaction(
         configuration,
         arbitration.transaction_id,
         arbitration.expected_predecessor,
     )?;
-    if finalized_uses.len() != arbitration.requests.len() {
-        return Err(DirectSurfaceLiquidError::canonical_failure(
-            DirectSurfaceLiquidErrorCode::E005,
-            DirectSurfaceLiquidPhase::ResourceCandidate,
-            DirectSurfaceLiquidErrorContext {
-                transaction_id: Some(arbitration.transaction_id),
-                ..DirectSurfaceLiquidErrorContext::default()
-            },
-            DirectSurfaceLiquidRollbackHashes {
-                beginning_owner_sha256: None,
-                attempted_owner_sha256: None,
-            },
-            "incomplete finalized uses",
-        ));
-    }
+    preflight_resource_phase_inputs(
+        configuration,
+        arbitration,
+        finalized_uses,
+        condensation_credits,
+    )?;
+    validate_arbitration(configuration, arbitration)?;
     let debit_by_store = validate_finalized_uses(arbitration, finalized_uses)?;
     let (credit_by_store, credit_details) =
         collect_condensation_credits(configuration, arbitration, condensation_credits)?;
@@ -1878,8 +2013,6 @@ fn validate_resource_candidate(
         authorizations: candidate.authorizations.clone(),
         request_store_keys: candidate.request_store_keys.clone(),
     };
-    validate_arbitration(configuration, &retained_arbitration)?;
-    validate_finalized_uses(&retained_arbitration, &candidate.finalized_uses)?;
     let predecessor = candidate.beginning_state.accepted_transaction()?;
     candidate.beginning_state.validate_for_transaction(
         configuration,
@@ -1889,9 +2022,31 @@ fn validate_resource_candidate(
     if candidate.working_state.owner_id != candidate.beginning_state.owner_id
         || candidate.working_state.configuration_sha256
             != candidate.beginning_state.configuration_sha256
-        || candidate.working_state.state_sha256 != candidate.beginning_state.state_sha256
-        || candidate.working_state.continuations != candidate.beginning_state.continuations
         || candidate.working_state.records.len() != candidate.beginning_state.records.len()
+        || candidate
+            .working_state
+            .records
+            .iter()
+            .zip(&candidate.beginning_state.records)
+            .zip(&configuration.records)
+            .any(|((working, beginning), config)| {
+                working.key != beginning.key || working.key != config.key
+            })
+    {
+        return Err(DirectSurfaceLiquidError::Identity(
+            "resource candidate owner or record identity mismatch",
+        ));
+    }
+    preflight_resource_phase_inputs(
+        configuration,
+        &retained_arbitration,
+        &candidate.finalized_uses,
+        &candidate.condensation_credits,
+    )?;
+    validate_arbitration(configuration, &retained_arbitration)?;
+    validate_finalized_uses(&retained_arbitration, &candidate.finalized_uses)?;
+    if candidate.working_state.state_sha256 != candidate.beginning_state.state_sha256
+        || candidate.working_state.continuations != candidate.beginning_state.continuations
     {
         return Err(DirectSurfaceLiquidError::Closure(
             "resource candidate changed non-resource owner state",
@@ -2036,26 +2191,76 @@ type ResourceCandidateOperands<'a> = (
     BTreeMap<DirectSurfaceLiquidStoreKey, &'a CondensationCredit>,
 );
 
+fn canonical_finalized_debits(
+    transaction_id: TransactionId,
+    entries: Vec<(DirectSurfaceLiquidStoreKey, GroundWaterKey, f64)>,
+) -> Result<BTreeMap<DirectSurfaceLiquidStoreKey, f64>, DirectSurfaceLiquidError> {
+    let mut by_store =
+        BTreeMap::<DirectSurfaceLiquidStoreKey, BTreeMap<GroundWaterKey, f64>>::new();
+    for (store_key, water_key, amount) in entries {
+        if by_store
+            .entry(store_key)
+            .or_default()
+            .insert(water_key.clone(), amount)
+            .is_some()
+        {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E005,
+                DirectSurfaceLiquidPhase::ResourceCandidate,
+                transaction_id,
+                &water_key,
+                "duplicate finalized use during canonical debit aggregation",
+            ));
+        }
+    }
+
+    by_store
+        .into_iter()
+        .map(|(store_key, rows)| {
+            let mut sum = 0.0;
+            for (water_key, amount) in rows {
+                sum = checked_surface_liquid_add(sum, amount).ok_or_else(|| {
+                    water_protocol_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        DirectSurfaceLiquidPhase::ResourceCandidate,
+                        transaction_id,
+                        &water_key,
+                        "canonical finalized-use aggregation is nonfinite",
+                    )
+                })?;
+            }
+            Ok((store_key, sum))
+        })
+        .collect()
+}
+
 fn reconstruct_resource_candidate_operands<'a>(
     configuration: &DirectSurfaceLiquidConfiguration,
     candidate: &'a DirectSurfaceLiquidResourceCandidate,
 ) -> Result<ResourceCandidateOperands<'a>, DirectSurfaceLiquidError> {
-    let mut debit_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
+    let mut debit_entries = Vec::with_capacity(candidate.finalized_uses.len());
     let mut finalized_keys = BTreeSet::new();
     for finalized in &candidate.finalized_uses {
         finalized
             .key
             .validate(candidate.transaction_id)
             .map_err(|_| DirectSurfaceLiquidError::Identity("invalid finalized-use key"))?;
-        if !finalized.amount_kg_m2_stand_ground.is_finite()
-            || finalized.amount_kg_m2_stand_ground < 0.0
-        {
+        if !finalized.amount_kg_m2_stand_ground.is_finite() {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::ResourceCandidate,
+                candidate.transaction_id,
+                &finalized.key,
+                "nonfinite finalized use",
+            ));
+        }
+        if finalized.amount_kg_m2_stand_ground < 0.0 {
             return Err(water_protocol_failure(
                 DirectSurfaceLiquidErrorCode::E006,
                 DirectSurfaceLiquidPhase::ResourceCandidate,
                 candidate.transaction_id,
                 &finalized.key,
-                "negative or nonfinite finalized use",
+                "negative finalized use",
             ));
         }
         if !finalized_keys.insert(finalized.key.clone()) {
@@ -2064,8 +2269,13 @@ fn reconstruct_resource_candidate_operands<'a>(
             ));
         }
         let store = configuration.store_key_for_water(&finalized.key)?;
-        *debit_by_store.entry(store).or_default() += finalized.amount_kg_m2_stand_ground;
+        debit_entries.push((
+            store,
+            finalized.key.clone(),
+            finalized.amount_kg_m2_stand_ground,
+        ));
     }
+    let debit_by_store = canonical_finalized_debits(candidate.transaction_id, debit_entries)?;
     let mut credit_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
     let mut credit_details = BTreeMap::<DirectSurfaceLiquidStoreKey, &CondensationCredit>::new();
     for credit in &candidate.condensation_credits {
@@ -2117,7 +2327,7 @@ fn validate_finalized_uses(
         .map(|(index, request)| (request.key.clone(), index))
         .collect::<BTreeMap<_, _>>();
     let mut seen = BTreeSet::new();
-    let mut debit_by_store = BTreeMap::<DirectSurfaceLiquidStoreKey, f64>::new();
+    let mut debit_entries = Vec::with_capacity(finalized_uses.len());
     for finalized in finalized_uses {
         finalized
             .key
@@ -2149,15 +2359,22 @@ fn validate_finalized_uses(
                 "duplicate finalized use",
             ));
         }
-        if !finalized.amount_kg_m2_stand_ground.is_finite()
-            || finalized.amount_kg_m2_stand_ground < 0.0
-        {
+        if !finalized.amount_kg_m2_stand_ground.is_finite() {
+            return Err(water_protocol_failure(
+                DirectSurfaceLiquidErrorCode::E003,
+                DirectSurfaceLiquidPhase::ResourceCandidate,
+                arbitration.transaction_id,
+                &finalized.key,
+                "nonfinite finalized use",
+            ));
+        }
+        if finalized.amount_kg_m2_stand_ground < 0.0 {
             return Err(water_protocol_failure(
                 DirectSurfaceLiquidErrorCode::E006,
                 DirectSurfaceLiquidPhase::ResourceCandidate,
                 arbitration.transaction_id,
                 &finalized.key,
-                "negative or nonfinite finalized use",
+                "negative finalized use",
             ));
         }
         let authorization = &arbitration.authorizations[index];
@@ -2173,9 +2390,11 @@ fn validate_finalized_uses(
                 "F <= A <= D",
             ));
         }
-        *debit_by_store
-            .entry(arbitration.request_store_keys[index].clone())
-            .or_default() += finalized.amount_kg_m2_stand_ground;
+        debit_entries.push((
+            arbitration.request_store_keys[index].clone(),
+            finalized.key.clone(),
+            finalized.amount_kg_m2_stand_ground,
+        ));
     }
     if seen.len() != arbitration.requests.len() {
         return Err(DirectSurfaceLiquidError::canonical_failure(
@@ -2192,7 +2411,7 @@ fn validate_finalized_uses(
             "missing finalized-use identity",
         ));
     }
-    Ok(debit_by_store)
+    canonical_finalized_debits(arbitration.transaction_id, debit_entries)
 }
 
 type CondensationByStore<'a> = (
@@ -2246,19 +2465,27 @@ fn validate_candidate_condensation_credit(
 ) -> Result<(), DirectSurfaceLiquidError> {
     if credit.transaction_id != transaction_id
         || credit.hydrology_owner_id != configuration.owner_id
-        || credit.amount_basis != StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval
     {
         return Err(DirectSurfaceLiquidError::Identity(
             "condensation transaction or owner mismatch",
         ));
     }
-    require_positive(credit.amount_kg_m2_stand_ground, "condensation amount")?;
-    require_positive(credit.temperature_k, "condensation temperature")?;
-    if !(200.0..=350.0).contains(&credit.temperature_k)
+    if !credit.amount_kg_m2_stand_ground.is_finite()
+        || !credit.temperature_k.is_finite()
         || !credit.specific_liquid_enthalpy_j_kg.is_finite()
     {
         return Err(DirectSurfaceLiquidError::Domain(
-            "condensation temperature or enthalpy",
+            "nonfinite condensation amount, temperature, or enthalpy",
+        ));
+    }
+    if !(200.0..=350.0).contains(&credit.temperature_k) {
+        return Err(DirectSurfaceLiquidError::Domain("condensation temperature"));
+    }
+    if credit.amount_kg_m2_stand_ground <= 0.0
+        || credit.amount_basis != StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval
+    {
+        return Err(DirectSurfaceLiquidError::Bound(
+            "nonpositive condensation amount or wrong basis",
         ));
     }
     if credit.specific_liquid_enthalpy_j_kg.to_bits()

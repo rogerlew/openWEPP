@@ -630,11 +630,11 @@ impl DirectRunFrame {
         configuration: &DirectSurfaceLiquidConfiguration,
         state: DirectSurfaceLiquidOwnedState,
     ) -> Result<(), DirectSurfaceLiquidError> {
-        let beginning_owner_sha256 = self
-            .surface_liquid_shadow
-            .as_ref()
-            .map(|beginning| beginning.state_sha256.clone());
-        let attempted_owner_sha256 = Some(state.state_sha256.clone());
+        let (beginning_owner_sha256, attempted_owner_sha256) = surface_liquid_attachment_hashes(
+            configuration,
+            &state,
+            self.surface_liquid_shadow.as_deref(),
+        );
         configuration.validate().map_err(|error| {
             surface_liquid_attachment_error(
                 error,

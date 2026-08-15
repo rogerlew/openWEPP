@@ -54,10 +54,10 @@ mod receiver_validation;
 use receiver_validation::{
     FramedSha256, canonicalize_finalized_error, canonicalize_unified_error,
     finalization_receiver_sets_sha256, preflight_protocol_numerics, preflight_request_numerics,
-    protocol_error_code_and_detail, protocol_failure, receiver_atomic_failure,
-    receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
-    request_failure, require_receiver_close, snapshot_failure, validate_surface_production_binding,
-    water_protocol_sha256, water_request_batch_sha256,
+    preflight_request_structure, protocol_error_code_and_detail, protocol_failure,
+    receiver_atomic_failure, receiver_expectation_fields_sha256, receiver_expectations_sha256,
+    receiver_operands_sha256, request_failure, require_receiver_close, snapshot_failure,
+    validate_surface_production_binding, water_protocol_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -694,6 +694,7 @@ impl UnifiedRealHydrologyCandidate {
             }
             require_receiver_close(
                 &self.receiver_closure_operands,
+                &self.receiver_closure_operands.lse_owner_id,
                 tile.surface_enthalpy_j_m2_tile_ground,
                 operands.ending_enthalpy_j_m2_tile_ground,
                 DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
@@ -719,6 +720,7 @@ impl UnifiedRealHydrologyCandidate {
             }
             require_receiver_close(
                 &self.receiver_closure_operands,
+                &self.receiver_closure_operands.soil_thermal_owner_id,
                 layer.ending_enthalpy_j_m2_ofe_ground,
                 operands.ending_enthalpy_j_m2_ofe_ground,
                 DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
@@ -910,28 +912,16 @@ fn validate_unified_entry(
             "empty potential request cardinality",
         ));
     }
+    preflight_request_structure(request_batch, expected_snapshot)?;
     if let Err(error) = request_batch.validate() {
         let (code, detail) = protocol_error_code_and_detail(&error);
-        let key = request_batch.requests.first().map(|row| &row.key);
-        return Err(DirectSurfaceLiquidError::canonical_failure(
+        return Err(request_failure(
             code,
-            DirectSurfaceLiquidPhase::Authorization,
-            DirectSurfaceLiquidErrorContext {
-                transaction_id: Some(request_batch.transaction_id),
-                owner_id: Some(configuration.owner_id.clone()),
-                ofe_id: key.map(|key| key.ofe_id.clone()),
-                tile_id: key.map(|key| key.requesting_tile_id.clone()),
-                surface_id: key.and_then(|key| key.surface_id.clone()),
-                source_id: key.map(|key| key.source_id.clone()),
-                parcel_id: None,
-            },
-            DirectSurfaceLiquidRollbackHashes {
-                beginning_owner_sha256: Some(expected_snapshot.to_string()),
-                attempted_owner_sha256: Some(water_request_batch_sha256(request_batch)),
-            },
+            request_batch,
+            expected_snapshot,
+            None,
             detail,
-        )
-        .into());
+        ));
     }
     if request_batch.transaction_id == soil_adapter.owner.transaction_id()
         && ingress.transaction_id == request_batch.transaction_id
@@ -1175,6 +1165,15 @@ fn partition_requests(
                         "missing soil source mapping",
                     )
                 })?;
+                if request.key.soil_layer_id.as_ref() != Some(&source.layer_id) {
+                    return Err(request_failure(
+                        DirectSurfaceLiquidErrorCode::E002,
+                        batch,
+                        beginning_sha256,
+                        Some(&request.key),
+                        "mixed source identity",
+                    ));
+                }
                 consumed_soil_keys.insert(request.key.clone());
                 soil.push(MixedRealHydrologyRequest {
                     request: request.clone(),

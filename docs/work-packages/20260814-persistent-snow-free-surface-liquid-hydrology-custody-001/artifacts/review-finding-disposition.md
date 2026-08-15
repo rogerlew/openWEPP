@@ -325,3 +325,16 @@ No `2b713d659` finding is rejected, deferred, or moved to another package.
 | A-TERMINAL-0E5-EVIDENCE-006: interrupted-run narrative, terminal diff and line-count inventory are incomplete | Accepted | Failed wrapper commands truthfully recorded; historical EOF whitespace removed; all touched Rust files at or above 2,000 lines inventoried; complete heavy rerun remains pending after fresh PASS reviews |
 
 No `0e5262b4b` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `dd8127b04`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-DD8-HIGH-001: rounded proportional rows can jointly exceed immutable supply | Accepted | SC-SURFACELIQUID v6 binds one symmetric common binary64 representability scale; no last-key repair; ordinary-scale counterexample, reverse order and exact `F=A` ending PASS |
+| A-TERMINAL-DD8-HIGH-002: raw attempted hashes trust stale declared digests or are absent | Accepted | Complete raw configuration/state fields and parser bytes are framed; stale-digest NaN payload and whitespace collisions reject with distinct attempted hashes; beginning hash is actual accepted state or absent |
+| A/B-TERMINAL-DD8-HIGH-003: public error taxonomy and precedence are inconsistent | Accepted | Public owner and unified paths enforce E002 identity, E003 arithmetic/domain, E005 cardinality and E006 finite bounds; mixed-defect poisons PASS |
+| A-TERMINAL-DD8-HIGH-004: finite receiver equation mismatch is incorrectly E011 | Accepted | Independent soil, thermal and LSE equation mismatch is contextual E010; complete-owner/rollback mismatch remains E011 |
+| A-TERMINAL-DD8-HIGH-005: canonical conversion loses exact later-row context | Accepted | Existing canonical context is preserved; structural preflight identifies the actual later offending key; no first-row fallback remains |
+| A-TERMINAL-DD8-EVIDENCE-006: exact-head heavy evidence and line-count inventory incomplete | Accepted | Inventory reconciled below; heavy rerun remains pending after fresh PASS review |
+
+No `dd8127b04` finding is rejected, deferred, or moved to another package.

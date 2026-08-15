@@ -26,10 +26,40 @@ fn authorize(beginning_tile: f64, tile_fraction: f64, demands: &[f64]) -> Vec<f6
     if demand_sum <= supply {
         return demands.to_vec();
     }
-    demands
+    let raw = demands
         .iter()
         .map(|demand| demand * supply / demand_sum)
-        .collect()
+        .collect::<Vec<_>>();
+    let raw_sum = raw.iter().sum::<f64>();
+    if raw_sum <= supply {
+        return raw;
+    }
+    let tolerance = 1.0e-14 + 64.0 * f64::EPSILON * (raw_sum.abs() + supply.abs());
+    assert!(raw_sum - supply <= tolerance);
+    let initial_scale = supply / raw_sum;
+    let scaled_sum = |scale: f64| raw.iter().map(|amount| amount * scale).sum::<f64>();
+    let scale = if scaled_sum(initial_scale) <= supply {
+        initial_scale
+    } else {
+        let mut lower_bits = 0_u64;
+        let mut upper_bits = initial_scale.to_bits();
+        for _ in 0..64 {
+            if lower_bits + 1 >= upper_bits {
+                break;
+            }
+            let middle_bits = lower_bits + (upper_bits - lower_bits) / 2;
+            if scaled_sum(f64::from_bits(middle_bits)) <= supply {
+                lower_bits = middle_bits;
+            } else {
+                upper_bits = middle_bits;
+            }
+        }
+        assert_eq!(lower_bits + 1, upper_bits);
+        f64::from_bits(lower_bits)
+    };
+    let authorizations = raw.iter().map(|amount| amount * scale).collect::<Vec<_>>();
+    assert!(authorizations.iter().sum::<f64>() <= supply);
+    authorizations
 }
 
 fn split_amount_and_energy(mass: f64, energy: f64, child_mass: f64) -> (f64, f64) {
@@ -72,7 +102,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 5",
+        "contract_version: 6",
         "INV-SURFACELIQUID-001",
         "INV-SURFACELIQUID-002",
         "(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)",
@@ -91,6 +121,8 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         "No executable `Default`",
         "SURFACELIQUID-E-001",
         "SURFACELIQUID-E-002",
+        "greatest positive finite binary64 `c_k<=c_0`",
+        "no canonical-last remainder",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
@@ -148,6 +180,56 @@ fn independent_daf_and_condensation_vectors_bind_one_basis_conversion() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
+}
+
+#[test]
+fn independent_joint_supply_vector_is_symmetric_and_never_overdraws() {
+    let supply = 0.894_550_366_544_562_1_f64;
+    let demands = [1.550_567_735_753_300_3, 0.666_084_441_700_219_5];
+    let raw_sum = demands.iter().sum::<f64>();
+    let raw = demands
+        .iter()
+        .map(|demand| demand * supply / raw_sum)
+        .collect::<Vec<_>>();
+    assert!(raw.iter().sum::<f64>() > supply);
+
+    let forward = authorize(supply, 1.0, &demands);
+    let reversed = authorize(supply, 1.0, &[demands[1], demands[0]]);
+    assert_eq!(forward[0].to_bits(), reversed[1].to_bits());
+    assert_eq!(forward[1].to_bits(), reversed[0].to_bits());
+    assert!(forward.iter().sum::<f64>() <= supply);
+
+    let common_scale = supply / raw.iter().sum::<f64>();
+    assert_eq!(forward[0].to_bits(), (raw[0] * common_scale).to_bits());
+    assert_eq!(forward[1].to_bits(), (raw[1] * common_scale).to_bits());
+    assert_ne!(forward[1].to_bits(), (supply - forward[0]).to_bits());
+
+    let equal = authorize(1.0, 1.0, &[1.0, 1.0, 1.0]);
+    assert_eq!(equal, vec![1.0 / 3.0; 3]);
+
+    let canonical_debit = |rows: &[(&str, f64)]| {
+        let mut rows = rows.to_vec();
+        rows.sort_by_key(|(key, _)| *key);
+        rows.iter().map(|(_, amount)| amount).sum::<f64>()
+    };
+    let forward_uses = [("request-a", 0.1), ("request-b", 0.2), ("request-c", 0.3)];
+    let reverse_uses = [("request-c", 0.3), ("request-b", 0.2), ("request-a", 0.1)];
+    assert_ne!(
+        forward_uses
+            .iter()
+            .map(|(_, amount)| amount)
+            .sum::<f64>()
+            .to_bits(),
+        reverse_uses
+            .iter()
+            .map(|(_, amount)| amount)
+            .sum::<f64>()
+            .to_bits()
+    );
+    assert_eq!(
+        canonical_debit(&forward_uses).to_bits(),
+        canonical_debit(&reverse_uses).to_bits()
+    );
 }
 
 #[test]

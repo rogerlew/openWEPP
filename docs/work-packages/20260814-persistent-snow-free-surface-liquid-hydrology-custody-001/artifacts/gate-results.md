@@ -788,6 +788,30 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
 
+## Fourth exact-byte review remediation
+
+- HOLD retained: exact `dd8127b04` Rust and hydrology reviews found joint
+  proportional-supply representability, raw attempted hashing, direct public
+  taxonomy/precedence, receiver E010/E011 attribution, later-row context and
+  release-evidence defects.
+- PASS: SC-SURFACELIQUID-001 v6 freezes a common symmetric binary64 scale only
+  for aggregate representational overshoot inside the existing mass envelope.
+  The ordinary-scale one-ULP counterexample, reverse caller order, exact `F=A`
+  ending, three-equal-demand no-priority and three-distinct finalized-use order
+  vectors pass.
+- PASS: raw attempted configuration/state/parser bytes are completely framed;
+  stale embedded digests cannot alias distinct malformed attempts.
+- PASS: direct and unified public paths enforce canonical taxonomy and exact
+  offender context. Finite independent receiver equations use E010; atomic
+  envelope/cardinality uses E011.
+- FAIL retained: one exploratory nextest expression selected zero tests. It is
+  not evidence; the corrected owner run passed 30/30.
+- PASS after integrated remediation: orchestrator quick suite, 574/574;
+  focused authority/unified suites, 40/40; owner tests, 30/30; strict affected
+  Clippy; SC unit compliance; science admission with 46 contracts and 19
+  surfaces; formatting; and diff hygiene.
+- Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
+
 ## Third exact-byte review remediation
 
 - HOLD retained: the `0e5262b4b` reviews found canonical-last rounding

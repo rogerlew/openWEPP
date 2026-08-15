@@ -275,7 +275,7 @@ fn three_equal_demands_use_exact_formula_bits_without_canonical_last_priority() 
         &beginning,
         transaction,
         None,
-        &[request_c, request_a, request_b],
+        &[request_c.clone(), request_a.clone(), request_b.clone()],
     )
     .expect("three equal proportional authorizations");
     let expected = (1.0_f64 * 1.0_f64) / 3.0_f64;
@@ -288,6 +288,212 @@ fn three_equal_demands_use_exact_formula_bits_without_canonical_last_priority() 
     assert!(arbitration.authorizations().iter().all(|authorization| {
         authorization.reason == WaterAuthorizationReason::ProportionalSupply
     }));
+
+    let reversed = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[request_b, request_a, request_c],
+    )
+    .expect("reversed equal-demand authorizations");
+    let by_owner = |rows: &[WaterAuthorization]| {
+        rows.iter()
+            .map(|row| {
+                (
+                    row.key.requesting_owner_id.clone(),
+                    row.amount_kg_m2_stand_ground.to_bits(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>()
+    };
+    assert_eq!(
+        by_owner(arbitration.authorizations()),
+        by_owner(reversed.authorizations())
+    );
+}
+
+#[test]
+fn joint_supply_rounding_uses_one_symmetric_scale_and_exact_final_debit() {
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        owner("hydrology"),
+        71,
+        vec![ofe("ofe-z")],
+        vec![binding("ofe-z", 0)],
+        vec![record(
+            "ofe-z",
+            "joint-supply",
+            1.0,
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            DirectGroundIngressMode::OpenRawPrecipitation,
+        )],
+    )
+    .expect("joint-supply configuration");
+    let supply = 0.894_550_366_544_562_1_f64;
+    let liquid = BTreeMap::from([(configuration.records[0].key.clone(), supply)]);
+    let beginning = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &liquid, 3)
+        .expect("joint-supply beginning state");
+    let transaction = TransactionId(119);
+    let mut first = request(&configuration, 0, transaction, 1.550_567_735_753_300_3);
+    first.key.requesting_owner_id = owner("request-a");
+    let mut second = request(&configuration, 0, transaction, 0.666_084_441_700_219_5);
+    second.key.requesting_owner_id = owner("request-z");
+
+    let raw_sum = first.amount_kg_m2_stand_ground + second.amount_kg_m2_stand_ground;
+    let raw = [
+        first.amount_kg_m2_stand_ground * supply / raw_sum,
+        second.amount_kg_m2_stand_ground * supply / raw_sum,
+    ];
+    assert!(raw.iter().sum::<f64>() > supply);
+    let common_scale = supply / raw.iter().sum::<f64>();
+    let expected = [raw[0] * common_scale, raw[1] * common_scale];
+    assert!(expected.iter().sum::<f64>() <= supply);
+
+    let forward = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[first.clone(), second.clone()],
+    )
+    .expect("jointly safe forward authorization");
+    let reverse = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[second.clone(), first.clone()],
+    )
+    .expect("jointly safe reverse authorization");
+    let by_owner = |rows: &[WaterAuthorization]| {
+        rows.iter()
+            .map(|row| {
+                (
+                    row.key.requesting_owner_id.clone(),
+                    row.amount_kg_m2_stand_ground.to_bits(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>()
+    };
+    assert_eq!(
+        by_owner(forward.authorizations()),
+        by_owner(reverse.authorizations())
+    );
+    assert_eq!(
+        by_owner(forward.authorizations()),
+        BTreeMap::from([
+            (first.key.requesting_owner_id.clone(), expected[0].to_bits()),
+            (
+                second.key.requesting_owner_id.clone(),
+                expected[1].to_bits()
+            ),
+        ])
+    );
+    let authorized_sum = forward
+        .authorizations()
+        .iter()
+        .map(|row| row.amount_kg_m2_stand_ground)
+        .sum::<f64>();
+    assert!(authorized_sum <= supply);
+    let canonical_last_remainder = supply - expected[0];
+    assert_ne!(expected[1].to_bits(), canonical_last_remainder.to_bits());
+
+    let finalized = forward
+        .authorizations()
+        .iter()
+        .map(|authorization| WaterAmount {
+            key: authorization.key.clone(),
+            amount_kg_m2_stand_ground: authorization.amount_kg_m2_stand_ground,
+        })
+        .collect::<Vec<_>>();
+    let candidate = apply_surface_liquid_resource_phase(&configuration, &forward, &finalized, &[])
+        .expect("exact F=A candidate");
+    assert_eq!(
+        candidate.working_state().records[0]
+            .liquid_kg_m2_tile
+            .to_bits(),
+        (supply - authorized_sum).to_bits()
+    );
+    candidate
+        .validate(&configuration)
+        .expect("joint-supply candidate closure");
+}
+
+#[test]
+fn three_distinct_finalized_uses_debit_in_key_order_not_caller_order() {
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        owner("hydrology"),
+        71,
+        vec![ofe("ofe-z")],
+        vec![binding("ofe-z", 0)],
+        vec![record(
+            "ofe-z",
+            "ordered-final-use",
+            1.0,
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            DirectGroundIngressMode::OpenRawPrecipitation,
+        )],
+    )
+    .expect("ordered-final-use configuration");
+    let beginning = state(&configuration);
+    let transaction = TransactionId(120);
+    let mut first = request(&configuration, 0, transaction, 0.1);
+    first.key.requesting_owner_id = owner("request-a");
+    let mut second = request(&configuration, 0, transaction, 0.2);
+    second.key.requesting_owner_id = owner("request-b");
+    let mut third = request(&configuration, 0, transaction, 0.3);
+    third.key.requesting_owner_id = owner("request-c");
+
+    let run = |requests: Vec<WaterAmount>| {
+        let arbitration = authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &requests,
+        )
+        .expect("full-supply authorization");
+        let finalized = arbitration
+            .authorizations()
+            .iter()
+            .map(|authorization| WaterAmount {
+                key: authorization.key.clone(),
+                amount_kg_m2_stand_ground: authorization.amount_kg_m2_stand_ground,
+            })
+            .collect::<Vec<_>>();
+        let caller_sum = finalized
+            .iter()
+            .map(|row| row.amount_kg_m2_stand_ground)
+            .sum::<f64>();
+        let candidate =
+            apply_surface_liquid_resource_phase(&configuration, &arbitration, &finalized, &[])
+                .expect("canonical final-use debit");
+        candidate
+            .validate(&configuration)
+            .expect("independent canonical reconstruction");
+        (caller_sum, candidate)
+    };
+
+    let (forward_sum, forward) = run(vec![first.clone(), second.clone(), third.clone()]);
+    let (reverse_sum, reverse) = run(vec![third, second, first]);
+    assert_ne!(forward_sum.to_bits(), reverse_sum.to_bits());
+    assert_eq!(
+        forward.working_state().records[0]
+            .liquid_kg_m2_tile
+            .to_bits(),
+        reverse.working_state().records[0]
+            .liquid_kg_m2_tile
+            .to_bits()
+    );
+    let canonical_sum = (0.1_f64 + 0.2_f64) + 0.3_f64;
+    assert_eq!(
+        forward.working_state().records[0]
+            .liquid_kg_m2_tile
+            .to_bits(),
+        (1.0_f64 - canonical_sum).to_bits()
+    );
 }
 
 #[test]
@@ -784,7 +990,24 @@ fn valid_noncanonical_bytes_preserve_parsed_public_failure_context() {
     );
     assert_eq!(failure.context.transaction_id, None);
     assert_eq!(failure.rollback.beginning_owner_sha256, None);
-    assert_eq!(failure.rollback.attempted_owner_sha256, None);
+    let configuration_attempted_sha256 = failure
+        .rollback
+        .attempted_owner_sha256
+        .expect("raw configuration attempt hash");
+    let mut alternate_configuration_bytes = configuration
+        .canonical_bytes()
+        .expect("canonical configuration bytes");
+    alternate_configuration_bytes.push(b'\n');
+    let alternate_configuration_hash =
+        DirectSurfaceLiquidConfiguration::from_canonical_bytes(&alternate_configuration_bytes)
+            .expect_err("alternate trailing whitespace is noncanonical")
+            .failure()
+            .expect("alternate configuration failure")
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("alternate raw configuration attempt hash");
+    assert_ne!(configuration_attempted_sha256, alternate_configuration_hash);
 
     let transaction = TransactionId(117);
     let mut accepted = state(&configuration);
@@ -816,11 +1039,25 @@ fn valid_noncanonical_bytes_preserve_parsed_public_failure_context() {
     assert_eq!(failure.context.tile_id, None);
     assert_eq!(failure.context.surface_id, None);
     assert_eq!(failure.context.source_id, None);
-    assert_eq!(
-        failure.rollback.beginning_owner_sha256,
-        Some(accepted.state_sha256)
-    );
-    assert_eq!(failure.rollback.attempted_owner_sha256, None);
+    assert_eq!(failure.rollback.beginning_owner_sha256, None);
+    let state_attempted_sha256 = failure
+        .rollback
+        .attempted_owner_sha256
+        .expect("raw state attempt hash");
+    let mut alternate_state_bytes = accepted
+        .canonical_bytes(&configuration)
+        .expect("canonical accepted state bytes");
+    alternate_state_bytes.push(b' ');
+    let alternate_state_hash =
+        DirectSurfaceLiquidOwnedState::from_canonical_bytes(&configuration, &alternate_state_bytes)
+            .expect_err("alternate trailing whitespace is noncanonical")
+            .failure()
+            .expect("alternate state failure")
+            .rollback
+            .attempted_owner_sha256
+            .clone()
+            .expect("alternate raw state attempt hash");
+    assert_ne!(state_attempted_sha256, alternate_state_hash);
 }
 
 #[test]
@@ -981,7 +1218,7 @@ fn sealed_candidate_revalidation_rejects_forged_and_stale_state_with_e009() {
         .validate(&configuration)
         .expect_err("forged working state");
     let failure = error.failure().expect("canonical payload");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E009);
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
     assert_eq!(failure.context.transaction_id, Some(TransactionId(901)));
     assert_eq!(
@@ -997,7 +1234,7 @@ fn sealed_candidate_revalidation_rejects_forged_and_stale_state_with_e009() {
             .validate(&configuration)
             .expect_err("stale candidate")
             .code(),
-        DirectSurfaceLiquidErrorCode::E009
+        DirectSurfaceLiquidErrorCode::E002
     );
 }
 
@@ -1136,6 +1373,318 @@ fn authorization_is_reconstructed_before_and_after_resource_construction() {
             .validate(&configuration)
             .expect_err("retained authorization poison")
             .code(),
-        DirectSurfaceLiquidErrorCode::E009
+        DirectSurfaceLiquidErrorCode::E006
+    );
+}
+
+#[test]
+fn public_authorization_preserves_identity_domain_protocol_bound_precedence() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(904);
+    let open = record_index(&configuration, "open");
+
+    let mut wrong_identity = request(&configuration, open, transaction, f64::NAN);
+    wrong_identity.key.transaction_id = TransactionId(905);
+    let failure = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[wrong_identity],
+    )
+    .expect_err("identity precedes nonfinite domain")
+    .failure()
+    .expect("canonical identity failure")
+    .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+    assert_eq!(failure.context.transaction_id, Some(transaction));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+
+    let finite = request(&configuration, open, transaction, 0.1);
+    let mut nonfinite_duplicate = finite.clone();
+    nonfinite_duplicate.amount_kg_m2_stand_ground = f64::NAN;
+    let failure = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[finite, nonfinite_duplicate],
+    )
+    .expect_err("nonfinite domain precedes duplicate protocol")
+    .failure()
+    .expect("canonical domain failure")
+    .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+
+    let duplicate_negative = request(&configuration, open, transaction, -f64::MIN_POSITIVE);
+    assert_eq!(
+        authorize_surface_liquid_withdrawals(
+            &configuration,
+            &beginning,
+            transaction,
+            None,
+            &[duplicate_negative.clone(), duplicate_negative],
+        )
+        .expect_err("duplicate protocol precedes finite negative bound")
+        .code(),
+        DirectSurfaceLiquidErrorCode::E005
+    );
+
+    let negative = request(&configuration, open, transaction, -f64::MIN_POSITIVE);
+    let failure = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[negative],
+    )
+    .expect_err("finite negative request is a bound failure")
+    .failure()
+    .expect("canonical bound failure")
+    .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E006);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::Authorization);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+}
+
+#[test]
+fn public_resource_phase_classifies_finalized_use_before_later_structure() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(906);
+    let open = record_index(&configuration, "open");
+    let demand = request(&configuration, open, transaction, 0.2);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&demand),
+    )
+    .expect("valid arbitration");
+
+    let mut wrong_identity = WaterAmount {
+        key: demand.key.clone(),
+        amount_kg_m2_stand_ground: f64::NAN,
+    };
+    wrong_identity.key.transaction_id = TransactionId(907);
+    let failure =
+        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[wrong_identity], &[])
+            .expect_err("identity precedes nonfinite finalized use")
+            .failure()
+            .expect("canonical identity failure")
+            .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+
+    let nonfinite = WaterAmount {
+        key: demand.key.clone(),
+        amount_kg_m2_stand_ground: f64::NAN,
+    };
+    let failure = apply_surface_liquid_resource_phase(
+        &configuration,
+        &arbitration,
+        &[nonfinite.clone(), nonfinite],
+        &[],
+    )
+    .expect_err("nonfinite finalized use precedes duplicate/cardinality")
+    .failure()
+    .expect("canonical domain failure")
+    .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+
+    let negative = WaterAmount {
+        key: demand.key.clone(),
+        amount_kg_m2_stand_ground: -f64::MIN_POSITIVE,
+    };
+    let failure =
+        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[negative], &[])
+            .expect_err("finite negative finalized use is a bound failure")
+            .failure()
+            .expect("canonical bound failure")
+            .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E006);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+
+    let duplicate_negative = WaterAmount {
+        key: demand.key,
+        amount_kg_m2_stand_ground: -f64::MIN_POSITIVE,
+    };
+    assert_eq!(
+        apply_surface_liquid_resource_phase(
+            &configuration,
+            &arbitration,
+            &[duplicate_negative.clone(), duplicate_negative],
+            &[],
+        )
+        .expect_err("duplicate finalized protocol precedes finite negative bound")
+        .code(),
+        DirectSurfaceLiquidErrorCode::E005
+    );
+}
+
+#[test]
+fn public_resource_phase_classifies_condensation_domain_and_bound_exactly() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(908);
+    let arbitration =
+        authorize_surface_liquid_withdrawals(&configuration, &beginning, transaction, None, &[])
+            .expect("empty arbitration");
+    let record = &configuration.records[record_index(&configuration, "open")];
+    let valid = CondensationCredit {
+        transaction_id: transaction,
+        hydrology_owner_id: configuration.owner_id.clone(),
+        ofe_id: record.key.ofe_id.clone(),
+        tile_id: record.key.tile_id.clone(),
+        surface_id: record.key.surface_id.clone(),
+        amount_kg_m2_stand_ground: 0.1,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+        temperature_k: 280.0,
+        specific_liquid_enthalpy_j_kg: openwepp_land_surface_energy::liquid_enthalpy_j_kg(280.0),
+    };
+
+    let mut wrong_identity = valid.clone();
+    wrong_identity.transaction_id = TransactionId(909);
+    wrong_identity.amount_kg_m2_stand_ground = f64::NAN;
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[wrong_identity])
+            .expect_err("identity precedes nonfinite condensation")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E002
+    );
+
+    let mut nonfinite = valid.clone();
+    nonfinite.amount_kg_m2_stand_ground = f64::NAN;
+    assert_eq!(
+        apply_surface_liquid_resource_phase(
+            &configuration,
+            &arbitration,
+            &[],
+            &[valid.clone(), nonfinite],
+        )
+        .expect_err("nonfinite condensation precedes duplicate protocol")
+        .code(),
+        DirectSurfaceLiquidErrorCode::E003
+    );
+
+    let mut zero_amount = valid.clone();
+    zero_amount.amount_kg_m2_stand_ground = 0.0;
+    assert_eq!(
+        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[], &[zero_amount])
+            .expect_err("finite nonpositive condensation is a bound failure")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E006
+    );
+
+    let mut duplicate_zero = valid.clone();
+    duplicate_zero.amount_kg_m2_stand_ground = 0.0;
+    assert_eq!(
+        apply_surface_liquid_resource_phase(
+            &configuration,
+            &arbitration,
+            &[],
+            &[duplicate_zero.clone(), duplicate_zero],
+        )
+        .expect_err("duplicate condensation protocol precedes finite nonpositive bound")
+        .code(),
+        DirectSurfaceLiquidErrorCode::E005
+    );
+
+    let mut invalid_temperature = valid;
+    invalid_temperature.amount_kg_m2_stand_ground = 0.0;
+    invalid_temperature.temperature_k = 199.0;
+    invalid_temperature.specific_liquid_enthalpy_j_kg =
+        openwepp_land_surface_energy::liquid_enthalpy_j_kg(199.0);
+    assert_eq!(
+        apply_surface_liquid_resource_phase(
+            &configuration,
+            &arbitration,
+            &[],
+            &[invalid_temperature],
+        )
+        .expect_err("finite temperature domain precedes amount bound")
+        .code(),
+        DirectSurfaceLiquidErrorCode::E003
+    );
+}
+
+#[test]
+fn sealed_candidate_revalidation_preserves_identity_and_numeric_codes() {
+    let configuration = configuration();
+    let beginning = state(&configuration);
+    let transaction = TransactionId(910);
+    let open = record_index(&configuration, "open");
+    let demand = request(&configuration, open, transaction, 0.1);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&demand),
+    )
+    .expect("arbitration");
+    let finalized = WaterAmount {
+        key: demand.key,
+        amount_kg_m2_stand_ground: 0.05,
+    };
+    let candidate =
+        apply_surface_liquid_resource_phase(&configuration, &arbitration, &[finalized], &[])
+            .expect("candidate");
+
+    let mut wrong_identity = candidate.clone();
+    wrong_identity.working_state.records[open].key.tile_id = tile("wrong-tile");
+    let failure = wrong_identity
+        .validate(&configuration)
+        .expect_err("candidate identity poison")
+        .failure()
+        .expect("canonical candidate identity failure")
+        .clone();
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E002);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::ResourceCandidate);
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(beginning.state_sha256.as_str())
+    );
+    assert!(failure.rollback.attempted_owner_sha256.is_some());
+
+    let mut nonfinite = candidate.clone();
+    nonfinite.finalized_uses[0].amount_kg_m2_stand_ground = f64::NAN;
+    assert_eq!(
+        nonfinite
+            .validate(&configuration)
+            .expect_err("candidate nonfinite finalized-use poison")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E003
+    );
+
+    let mut negative = candidate;
+    negative.finalized_uses[0].amount_kg_m2_stand_ground = -f64::MIN_POSITIVE;
+    assert_eq!(
+        negative
+            .validate(&configuration)
+            .expect_err("candidate negative finalized-use poison")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E006
     );
 }

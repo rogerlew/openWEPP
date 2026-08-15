@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -50,6 +50,7 @@ publication, calibration, deployment, and cutover.
 | `REF-SURFACELIQUID-LSE-OWNER` | `SC-LANDSURFACEENERGY-001` version 3 | Hydrology-only liquid-mass ownership; exact LSE ground-water identity; signed condensation; immutable-beginning transaction; enthalpy-bearing ingress. | `[DIRECT][Static]` |
 | `REF-SURFACELIQUID-WATBAL-STAGE-B` | `SC-WATBAL-001#INV-WATBAL-101` | Hydrology-only candidate mutation and bounded Stage-B resource use. | `[DIRECT][Static]` |
 | `REF-SURFACELIQUID-WB14` | `compute_wb14_infiltration_depression_with_profile`, `DirectWb14InfiltrationProducerInputs`, `SC-RUNOFFPART-001#INV-RUNOFFPART-031`, and `SC-WATBAL-001#INV-WATBAL-103` | One actual chronological nonlinear infiltration partition, timed local precipitation and additional supply, routed carry, and runoff custody. | `[DIRECT][Static + Ran]` |
+| `REF-SURFACELIQUID-BINARY64` | Rust `f64` primitive semantics and IEEE-754 binary64 nonnegative bit ordering | Round-to-nearest proportional-row arithmetic and the bounded common-scale representability selection; no scientific tolerance or physics change. | `[DIRECT][Static + contract vectors]` |
 | `REF-SURFACELIQUID-PHYSICAL` | Conservation of mass and energy at an owner boundary | Exact debit/credit, capacity overflow, proportional parcel splits, and cross-owner identities. | `[INFERENCE][Static + contract vectors]` |
 
 Package artifacts summarize implementation evidence but do not replace these
@@ -64,6 +65,8 @@ canonical authorities.
 | `W_0,k`, `W_1,k` | `kg H2O m^-2 tile-ground` | beginning and ending persistent liquid mass |
 | `W_max,k` | `kg H2O m^-2 tile-ground` | finite store capacity |
 | `D_i`, `A_i`, `F_i` | `kg H2O m^-2 OFE-ground interval` | request, maximum authorization, and finalized use |
+| `R_i` | `kg H2O m^-2 OFE-ground interval` | raw binary64 proportional authorization before a joint representability correction |
+| `c_k` | dimensionless binary64 | one common downward authorization scale for all requests sharing source key `k` |
 | `C_i` | `kg H2O m^-2 OFE-ground interval` | accepted condensation credit |
 | `A_o` | `m^2` | horizontal plan area of one OFE |
 | `m_p` | `kg H2O m^-2 basis-OFE-ground` | one timed parcel amount keyed by `basis_ofe_id` |
@@ -280,10 +283,46 @@ For one source key:
 
 ```text
 S_k = f_t * W_0,k
-D_sum,k = sum_i(D_i)
+D_sum,k = checked_sum_in_complete_key_order(D_i)
 A_i = D_i                         when D_sum,k <= S_k
-A_i = D_i * S_k / D_sum,k         otherwise
+R_i = fl(fl(D_i * S_k) / D_sum,k) otherwise
 ```
+
+The multiplication, division, and sum above are finite checked IEEE-754
+binary64 operations. In the oversubscribed branch, raw rows are evaluated and
+summed in complete request-key order. If `R_sum,k=sum_i(R_i) <= S_k`, then
+`A_i=R_i` bit-for-bit.
+
+Binary64 rounding can instead produce a finite `R_sum,k>S_k` even though every
+row is the admitted proportional formula. That representability-only case is
+admitted only when the excess satisfies the mass-closure envelope:
+
+```text
+R_sum,k - S_k
+    <= 1e-14 kg m^-2
+       + 64*epsilon*(abs(R_sum,k)+abs(S_k)).
+```
+
+Then compute `c_0=fl(S_k/R_sum,k)`. If the checked canonical sum of
+`fl(R_i*c_0)` does not exceed `S_k`, select `c_k=c_0`. Otherwise select the
+greatest positive finite binary64 `c_k<=c_0` whose checked canonical sum of
+`fl(R_i*c_k)` does not exceed `S_k`. Selection is a monotone bisection over the
+ordered nonnegative binary64 bit interval from exact zero through `c_0` and
+terminates after at most 64 bit decisions. Final authorization is:
+
+```text
+A_i = fl(R_i*c_k) for every row sharing k.
+```
+
+Every positive `R_i` must remain positive after the common scale. Failure of
+any finite operation, an overshoot outside the stated mass envelope, absence
+of a positive jointly safe scale, or failure to establish the bound within 64
+bit decisions is `SURFACELIQUID-E-003`. This is one symmetric common scaling,
+not a per-key priority: no canonical-last remainder, largest-row repair,
+request-order repair, or row-specific next-down operation is admitted. Caller
+order therefore cannot change any request-key authorization bits. The rule is
+a bounded binary64 representability rule only; it does not loosen `A<=D`,
+`F<=A`, owner closure, or any physical acceptance tolerance.
 
 Requests preserve the complete `GroundWaterKey` and group only by exact
 `(OFE,source_tile,source_type,source_id)`. Zero demand or supply yields exact
@@ -299,6 +338,12 @@ uses the existing DTO basis `kg_h2o_m-2_stand_ground_interval`, meaning
 OFE-ground here. It carries exact transaction, hydrology owner, OFE, tile,
 surface, temperature, and specific-liquid-enthalpy identity. The configuration
 maps it uniquely to the tile's admitted source key.
+
+For each store, finalized uses are summed with finite checked binary64
+addition in complete `GroundWaterKey` order before the one tile-basis debit.
+Caller slice order cannot change the ending store bits. Candidate construction
+and independent reconstruction each derive this canonical sum from the typed
+finalized-use rows; neither consumes a producer-supplied debit total.
 
 ```text
 W_pre,raw,k = W_0,k - sum_i(F_i/f_t) + sum_i(C_i/f_t)
@@ -464,7 +509,7 @@ follow the later all-owner atomic replacement.
 |---|---|---|---|---|
 | 1 | malformed or unknown/missing field | schema | Reject before identity projection. | `SURFACELIQUID-E-001` |
 | 2 | owner/configuration/state/transaction/key mismatch | identity | Reject exact identity or lineage. | `SURFACELIQUID-E-002` |
-| 3 | nonfinite/out-of-domain capacity, fraction, mass, interval, temperature, or topology | domain | Reject without normalization. | `SURFACELIQUID-E-003` |
+| 3 | nonfinite/out-of-domain capacity, fraction, mass, interval, temperature, topology, or unsafe proportional representability | domain | Reject without normalization except the exact symmetric joint-authorization rule in section 2. | `SURFACELIQUID-E-003` |
 | 4 | snow, terminal snow, frozen, or thawing surface branch | unsupported domain | Reject before candidate work. | `SURFACELIQUID-E-004` |
 | 5 | duplicate/missing request, authorization, use, credit, or parcel | protocol cardinality | Reject complete protocol. | `SURFACELIQUID-E-005` |
 | 6 | `F>A`, `A>D`, negative amount, or wrong basis | resource bound | Reject; no tolerance repairs it. | `SURFACELIQUID-E-006` |
@@ -504,8 +549,8 @@ string. A generic category plus prose detail is not the canonical payload.
 |---|---|---|---|---|---|
 | `INV-SURFACELIQUID-001` | One persistent mass for every exact LSE bare-surface/litter source key; no adjacent value aliases it. | LSE ownership + physical conservation | strict config/state validator | identity/domain; `E-001..004` | schema/digest vectors + alias poisons |
 | `INV-SURFACELIQUID-002` | Restart bytes, digest, key set, predecessor lineage, and WB14 day continuation round-trip exactly. | correctness authority model | parser/serializer/restart | schema/identity; `E-001..003` | field mutation, cadence, and restart vectors |
-| `INV-SURFACELIQUID-003` | One immutable beginning snapshot supplies one proportional authorization. | LSE transaction + WATBAL Stage B | resource arbiter | cardinality/bound; `E-005..006` | zero/full/partial/competition vectors |
-| `INV-SURFACELIQUID-004` | Exact identity and `0<=F<=A<=D`; debit finalized use and credit condensation once. | LSE water protocol | candidate protocol validator | identity/bound; `E-005..006` | D/A/F and condensation vectors |
+| `INV-SURFACELIQUID-003` | One immutable beginning snapshot supplies one proportional authorization; a representational aggregate overshoot may use only the common, symmetric, bounded binary64 scale in section 2. | LSE transaction + WATBAL Stage B + IEEE-754 representability under physical conservation | resource arbiter | arithmetic/cardinality/bound; `E-003,E-005..006` | zero/full/partial/competition, joint-supply and order-reversal vectors |
+| `INV-SURFACELIQUID-004` | Exact identity and `0<=F<=A<=D`; aggregate finalized use in complete key order, debit it once, and credit condensation once. | LSE water protocol | candidate protocol validator | arithmetic/identity/bound; `E-003,E-005..006` | D/A/F, caller-order and condensation vectors |
 | `INV-SURFACELIQUID-005` | Persistent ponding replaces the native shadow's legacy depression retention. | exact-one ownership | WB14 input/profile validator | duplicate owner; `E-007` | zero-capacity and nonzero-delta poison |
 | `INV-SURFACELIQUID-006` | Each OFE/1800-second interval uses one actual stateful shared WB14 transition; open raw rain and covered canopy release are mutually exclusive ground supplies. | WB14 production path + V8 canopy ownership | direct-runtime adapter | producer binding; `E-008` | cadence-state and no-duplication contract vectors; executed 48-step/daily parity required at implementation gate |
 | `INV-SURFACELIQUID-007` | Mixed post-infiltration excess retains exact tile/source custody; remainder routes once with basis re-keying and OFE-area conversion. | runoff/routing authority + conservative mixing | retention/routing candidate | closure/topology; `E-009` | multi-temperature, multi-tile, unequal-area multi-OFE vectors |
@@ -539,6 +584,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | topology tolerance | `64*epsilon*max(abs(sum(f_t)),1)` | Exact LSE runtime configuration rule |
 | mass closure absolute term | `1e-14 kg m^-2` | Existing vegetation/owner closure convention |
 | enthalpy closure absolute term | `1e-9 J m^-2` | LSE component-ledger convention |
+| joint authorization search bound | `64 binary64 bit decisions` | Complete monotone bisection over one nonnegative IEEE-754 binary64 scale; representability only |
 
 Capacity and tile fraction are explicit site configuration. No universal
 capacity, inferred capacity, or executable default is admitted.
@@ -573,6 +619,12 @@ Parcel enthalpy uses the same scale rule with `1e-9 J m^-2`. These tolerances
 cannot repair missing/duplicate operands or wrong identity. Canonical
 serialization compares floating bit patterns exactly.
 
+The section-2 authorization scale may consult the mass envelope only after
+each raw proportional row and its canonical aggregate are finite. It may only
+move every row downward through one common representable factor and must prove
+the resulting aggregate is `<=S_k` exactly. It is not a generic approximate
+comparison and cannot admit an overdraw.
+
 ## Calibration And Identifiability Posture
 
 `science_implementation_status=IMPLEMENTATION_MISSING` until package closure.
@@ -600,7 +652,10 @@ not a calibration fallback.
 
 Independent positive vectors must cover strict zero/positive restart state;
 every configuration/state field affecting digests; exact initial and accepted
-lineage; zero/full/partial supply; competition; unused authorization; debit;
+lineage; zero/full/partial supply; competition; raw-share aggregate overshoot
+with a jointly safe common scale; three equal demands; request-order reversal;
+exact `F=A` ending-state debit after common scaling; three distinct finalized
+uses with caller-order reversal and bit-identical ending state; unused authorization; debit;
 OFE-basis condensation and capacity overflow; bare/litter identity; exact
 tile/OFE conversion; precipitation, runon, and every canopy release class;
 48 stateful timed nonlinear WB14 continuations with daily-wrapper parity;
@@ -614,6 +669,7 @@ snow aliases; duplicate store; nonzero legacy depression retention; missing or
 extra keys; scalar broadcast; stale/mixed transaction; current-ingress supply;
 request inflation; second authorization; authorization-as-use; wrong
 OFE/tile/surface/source/basis; omitted/doubled `f_t`; clipped condensation;
+canonical-last remainder or any row-specific authorization correction;
 missing temperature/enthalpy; per-parcel or copied Green-Ampt; proportional
 infiltration proxy; reset/replayed continuation; wrong cadence; raw rain plus
 canopy release; multiple calls per OFE/interval; untimed daily scalar;
@@ -650,3 +706,4 @@ This contract authorizes no production activation or publication.
 | 2026-08-14 | 3 | Codex | Bind the exact 1800-second/48-step stateful WB14 continuation, mutually exclusive open-rain/covered-canopy supply, conservative mixed enthalpy, exact tile/source retention, retained LSE energy receipt, water density, machine-readable registry seams, continuation restart schema, and basis-rekeyed unequal-area OFE routing. |
 | 2026-08-14 | 4 | Codex | Add the strict per-tile `ground_ingress_mode` discriminator required to validate mutually exclusive open-precipitation and covered-canopy ingress without caller-driven branch inference. |
 | 2026-08-14 | 5 | Codex | Bind every surface OFE to the actual production lane and ordered soil layers; require strict restart combinations; require shared production same-pass infiltration credit, typed soil-thermal and retained-LSE receipts, independent full-equation closure, and canonical contextual failure payloads. |
+| 2026-08-15 | 6 | Codex | Admit the symmetric binary64 joint-supply representability rule for a raw proportional aggregate overshoot: one common downward scale, exact no-overdraw proof, 64-decision bound, contextual E003 failure, canonical request/finalized-use aggregation, caller-order-invariant ending state, and no canonical-last remainder. |
