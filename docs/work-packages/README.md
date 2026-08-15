@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260814-nix-agent-devbox-feasibility-001/` — ACTIVE / BRANCH SCAFFOLDED:
+  establish a pinned Nix development shell and concurrency-safe Cargo cache,
+  target, worktree, and scratch layout on `ow-dev-01`; benchmark the same landed
+  openWEPP commit on `ow-dev-01` and an idle `forest`; and make an evidence-bound
+  primary-agent cutover decision without touching the work or caches of the
+  agent currently developing on `forest`.
+
 - `20260812-c3-woody-shared-state-authority-001/` — COMPLETE / collision-safe V4 shared-state implementation authority released
   DUAL REVIEW GO / HEAVY 6/6 PASS / TERMINAL A+B PASS: select displayed leaf
   C/N as the sole LAI and leaf-capacity owners, remove two unconsumed
