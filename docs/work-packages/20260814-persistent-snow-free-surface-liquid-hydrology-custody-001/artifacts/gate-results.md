@@ -650,3 +650,24 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: orchestrator quick suite, 560/560; real-LSE/real-hydrology integration,
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - Pending: fresh exact-byte Rust and hydrology closure review.
+
+## Partition taxonomy and routed-order remediation at `6e203beec`
+
+- HOLD retained: closure8 Rust review found malformed frozen partition
+  membership could be reported as arithmetic E003 before immutable E009,
+  cumulative infiltration lacked complete supply/capacity preflight, and the
+  mixed-kind routed ordering seam lacked a nondegenerate vector.
+- PASS: exhaustive arithmetic/domain scanning precedes membership-aware E009;
+  missing, duplicate, reordered and replacement rows retain exact available or
+  missing identity, while combined poisons prove E003 before E009 before E010.
+- PASS: frozen cumulative infiltration is bounded by both cumulative supply and
+  WB14 infiltration storage capacity, including zero-supply and distinct
+  positive-supply/zero-capacity poisons.
+- PASS: closure uses shared named water-density, liquid-heat-capacity and
+  reference-temperature constants without consuming producer results.
+- PASS: mixed canopy throughfall/drainage with unequal temperature/area and
+  downstream local overlap proves route-kind conversion, chronological
+  mixtures and caller-order invariance.
+- PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.

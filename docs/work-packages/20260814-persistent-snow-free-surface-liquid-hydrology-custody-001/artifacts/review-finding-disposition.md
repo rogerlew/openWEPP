@@ -245,3 +245,15 @@ mass/enthalpy relations are first-class closure seams.
 The receipt-free replay now returns exact expected ending store and continuation
 values. Independent validation joins them to the persistent owner, accepted
 transaction lineage and strict restart digest before the candidate can pass.
+
+## Partition taxonomy and routed-order findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-CLOSURE8-HIGH-002: partition structural mutations are misclassified E003 and continuation cross-field bounds are incomplete | Accepted | Remediated at `6e203beec`; focused PASS |
+| A-TERMINAL-CLOSURE8-MEDIUM-003: duplicated unnamed constants/order definitions and missing multi-kind routed vector create drift risk | Accepted | Remediated at `6e203beec`; focused PASS |
+
+Arithmetic/domain validation now exhaustively precedes membership-aware
+producer identity errors. Shared named physical constants remove transcription
+drift while the independent algorithm remains separate; a mixed-kind routed
+overlap vector freezes chronological ordering and mixture behavior.

@@ -118,9 +118,14 @@ branch, PR or push is in scope.
   access. Closure8 hydrology review found the replayed final store and WB14
   continuation were discarded before the persistent-state join. The correction
   at `862f26bb7` joins those independent endpoint values to the strict ending
-  state and restart digest. It passes 560/560 orchestrator, 19/19 focused
-  integration and 9/9 authority tests, strict Clippy, formatting, diff hygiene,
-  and line-count governance. Fresh exact-byte reviews remain pending.
+  state and restart digest. Closure8 Rust review additionally found partition
+  identity was misclassified as E003, continuation bounds were incomplete and
+  mixed-kind routed ordering lacked a nondegenerate poison. The correction at
+  `6e203beec` restores E003/E009/E010 precedence, enforces both continuation
+  bounds, shares named physical constants and adds the routed-order vector. It
+  passes 562/562 orchestrator, 19/19 focused integration and 9/9 authority
+  tests, strict Clippy, formatting, diff hygiene, and line-count governance.
+  Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

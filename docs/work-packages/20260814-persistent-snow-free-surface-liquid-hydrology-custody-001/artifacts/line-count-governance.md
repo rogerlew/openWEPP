@@ -12,9 +12,9 @@ Current affected-file counts after remediation:
 | `direct_runtime/surface_liquid_owner_tests.rs` | 876 | PASS; crate-local owner and checked-arithmetic tests extracted mechanically from the production module. |
 | `vegetation_real_hydrology_shadow.rs` | 2,157 | WARN: only canonical snapshot and production-lane accessors changed; no new constitutive owner was added. |
 | `direct_runtime/surface_liquid_ingress.rs` | 1,953 | PASS: ingress construction and complete frozen partition operands; crate-local tests are separate. |
-| `direct_runtime/surface_liquid_ingress_tests.rs` | 2,101 | PASS; focused independent partition, persistent-endpoint, coordinated identity and routing tests. |
+| `direct_runtime/surface_liquid_ingress_tests.rs` | 2,324 | PASS; focused independent partition, persistent-endpoint, taxonomy and mixed-kind routing tests. |
 | `land_surface_energy_shadow/mod.rs` | 2,881 | WARN: cohesive default-off arbitration plus complete receiver reconstruction; strict helpers are decomposed and a future campaign split may separate receiver closure DTOs. |
-| `direct_runtime/surface_liquid_closure.rs` | 2,441 | WARN: independent chronological WB14 partition, routed projection and persistent endpoint join; future campaign split will separate frozen operand projection from comparison/diagnostics. |
+| `direct_runtime/surface_liquid_closure.rs` | 2,532 | WARN: independent chronological WB14 partition, routed projection and persistent endpoint join; future campaign split will separate frozen operand projection from comparison/diagnostics. |
 | `direct_runtime/surface_liquid_wb14.rs` | 303 | PASS; dedicated shared production transition. |
 
 Strict affected-crate Clippy passes with `-D warnings`; no line-count lint is

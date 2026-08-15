@@ -58,6 +58,10 @@ correction at `c3fdeca50` independently replays WB14 from frozen inputs with no
 expected-side receipt access and binds complete recipient identity. Closure8
 hydrology review found the replay's final stores and WB14 continuation were not
 joined to the persistent ending state. The correction at `862f26bb7` performs
-that direct join before strict digest/state validation. Focused gates pass, but
-fresh exact-byte reviews and terminal verification remain required. This is not
-yet a terminal custody-lift or resumed-Child-3 claim.
+that direct join before strict digest/state validation. Closure8 Rust review
+also found partition membership misclassified as E003, incomplete continuation
+bounds and missing mixed-kind routing evidence. The correction at `6e203beec`
+restores typed precedence, enforces both frozen WB14 bounds and adds the
+nondegenerate routed-order vector. Focused gates pass, but fresh exact-byte
+reviews and terminal verification remain required. This is not yet a terminal
+custody-lift or resumed-Child-3 claim.
