@@ -22,9 +22,9 @@ use super::surface_liquid_owner::{
 };
 
 pub(super) const INTERVAL_S: f64 = 1_800.0;
-const WATER_DENSITY_KG_M3: f64 = 1_000.0;
-const LIQUID_HEAT_CAPACITY_J_KG_K: f64 = 4_218.0;
-const REFERENCE_TEMPERATURE_K: f64 = 273.15;
+pub(super) const WATER_DENSITY_KG_M3: f64 = 1_000.0;
+pub(super) const LIQUID_HEAT_CAPACITY_J_KG_K: f64 = 4_218.0;
+pub(super) const REFERENCE_TEMPERATURE_K: f64 = 273.15;
 #[cfg(test)]
 const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
 #[cfg(test)]

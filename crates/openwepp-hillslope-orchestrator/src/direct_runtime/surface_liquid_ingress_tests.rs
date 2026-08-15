@@ -95,6 +95,34 @@ fn routed_configuration() -> DirectSurfaceLiquidConfiguration {
     .expect("configuration")
 }
 
+fn mixed_kind_routed_configuration() -> DirectSurfaceLiquidConfiguration {
+    DirectSurfaceLiquidConfiguration::new(
+        owner("surface-water"),
+        91,
+        vec![ofe("upper"), ofe("lower")],
+        vec![binding("upper", 0), binding("lower", 1)],
+        vec![
+            config_record(
+                "upper",
+                "upper-tile",
+                100.0,
+                0.1,
+                DirectGroundIngressMode::CoveredCanopyRelease,
+                Some(("lower", "lower-tile")),
+            ),
+            config_record(
+                "lower",
+                "lower-tile",
+                250.0,
+                0.1,
+                DirectGroundIngressMode::OpenRawPrecipitation,
+                None,
+            ),
+        ],
+    )
+    .expect("mixed-kind routed configuration")
+}
+
 fn three_ofe_configuration() -> DirectSurfaceLiquidConfiguration {
     DirectSurfaceLiquidConfiguration::new(
         owner("surface-water"),
@@ -311,6 +339,82 @@ fn unequal_area_runoff_routes_once_and_preserves_mass_and_enthalpy() {
         .ending_state
         .validate(&configuration)
         .expect("ending state");
+}
+
+#[test]
+fn mixed_kinds_unequal_area_and_downstream_local_overlap_preserve_canonical_mix() {
+    let configuration = mixed_kind_routed_configuration();
+    let beginning = initial_state(&configuration, 1.0);
+    let transaction_id = TransactionId(413);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let zero = amount(0.0, 285.0, 0.0, INTERVAL_S);
+    let mut input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![
+            DirectTileGroundIngress::CoveredCanopyRelease {
+                ofe_id: ofe("upper"),
+                tile_id: tile("upper-tile"),
+                surface_id: surface("surface-upper-tile"),
+                release: DirectCanopyLiquidRelease {
+                    throughfall: amount(0.4, 280.0, 0.0, INTERVAL_S),
+                    initial_drainage: amount(0.2, 305.0, 0.0, INTERVAL_S),
+                    second_drainage: zero.clone(),
+                    stemflow: zero,
+                },
+            },
+            open_ingress(&configuration.records[1], 0.3),
+        ],
+        wb14_parameters: parameters(&configuration),
+    };
+    let DirectTileGroundIngress::OpenRawPrecipitation {
+        raw_precipitation, ..
+    } = &mut input.tile_ingress[1]
+    else {
+        panic!("open lower input");
+    };
+    *raw_precipitation = amount(0.3, 292.0, 600.0, 1_500.0);
+
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("mixed-kind routed candidate");
+    candidate
+        .validate(&configuration, &resource, &input)
+        .expect("independent mixed-kind closure");
+    let throughfall_id = format!(
+        "local:{:?}:{:?}:{:?}",
+        ofe("upper"),
+        tile("upper-tile"),
+        DirectSurfaceLiquidParcelKind::CanopyThroughfall
+    );
+    assert!(candidate.receipts.iter().any(|receipt| {
+        receipt.source_parcel_id == throughfall_id
+            && receipt.basis_ofe_id == ofe("upper")
+            && receipt.kind == DirectSurfaceLiquidParcelKind::CanopyThroughfall
+            && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+    }));
+    assert!(candidate.receipts.iter().any(|receipt| {
+        receipt.source_parcel_id == throughfall_id
+            && receipt.basis_ofe_id == ofe("lower")
+            && receipt.kind == DirectSurfaceLiquidParcelKind::UpstreamRunon
+            && receipt.start_s.to_bits() == 600.0_f64.to_bits()
+            && receipt.end_s.to_bits() == 1_500.0_f64.to_bits()
+    }));
+    let lower_temperatures = candidate
+        .receipts
+        .iter()
+        .filter(|receipt| receipt.basis_ofe_id == ofe("lower"))
+        .map(|receipt| receipt.temperature_k.to_bits())
+        .collect::<BTreeSet<_>>();
+    assert!(lower_temperatures.len() >= 2);
+
+    input.tile_ingress.reverse();
+    let reordered = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("caller-reordered mixed-kind candidate");
+    assert_eq!(candidate.receipts, reordered.receipts);
+    assert_eq!(candidate.ending_state, reordered.ending_state);
+    assert_eq!(candidate.closure_operands, reordered.closure_operands);
 }
 
 #[test]
@@ -1848,6 +1952,125 @@ fn independent_projection_binds_persistent_stores_continuations_and_digest() {
     )
     .expect_err("ending digest mismatch after joins");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn partition_input_membership_is_e009_and_arithmetic_e003_outranks_identity() {
+    let configuration = three_ofe_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(412);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: configuration
+            .records
+            .iter()
+            .map(|record| open_ingress(record, 0.1))
+            .collect(),
+        wb14_parameters: parameters(&configuration),
+    };
+    let candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("three-OFE candidate");
+
+    let mut membership_poisons = Vec::new();
+    let mut missing = candidate.clone();
+    let missing_id = missing.closure_operands.remove_partition_input_for_test(1);
+    membership_poisons.push(("missing", missing, missing_id));
+    let mut duplicate = candidate.clone();
+    let duplicate_id = duplicate
+        .closure_operands
+        .duplicate_partition_input_for_test(0);
+    membership_poisons.push(("duplicate", duplicate, duplicate_id));
+    let mut reordered = candidate.clone();
+    reordered
+        .closure_operands
+        .reorder_partition_inputs_for_test();
+    membership_poisons.push(("reordered", reordered, ofe("middle")));
+    let mut wrong = candidate.clone();
+    wrong
+        .closure_operands
+        .rekey_partition_input_for_test(0, ofe("forged"));
+    membership_poisons.push(("wrong OFE", wrong, ofe("upper")));
+
+    for (label, poison, expected_ofe) in membership_poisons {
+        let attempted = poison.ending_state.recomputed_sha256().expect("digest");
+        assert_producer_e009(
+            &poison
+                .validate(&configuration, &resource, &input)
+                .expect_err(label),
+            transaction_id,
+            &configuration,
+            Some(&expected_ofe),
+            None,
+            None,
+            &resource.beginning_state().state_sha256,
+            &attempted,
+        );
+    }
+
+    let mut arithmetic = candidate.clone();
+    arithmetic
+        .closure_operands
+        .poison_partition_cumulative_bound_for_test(0);
+    arithmetic
+        .closure_operands
+        .remove_partition_input_for_test(1);
+    arithmetic.ending_state.records[0].liquid_kg_m2_tile += 0.001;
+    arithmetic.ending_state.state_sha256 = arithmetic
+        .ending_state
+        .recomputed_sha256()
+        .expect("combined attempted digest");
+    let error = arithmetic
+        .validate(&configuration, &resource, &input)
+        .expect_err("E003 must outrank E009 and E010");
+    let failure = error.failure().expect("typed arithmetic failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+    assert_eq!(failure.context.ofe_id, Some(ofe("upper")));
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(resource.beginning_state().state_sha256.as_str())
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(arithmetic.ending_state.state_sha256.as_str())
+    );
+
+    let mut capacity = candidate.clone();
+    capacity
+        .closure_operands
+        .poison_partition_capacity_bound_for_test(0);
+    let capacity_error = capacity
+        .validate(&configuration, &resource, &input)
+        .expect_err("cumulative infiltration above capacity but below supply");
+    let capacity_failure = capacity_error.failure().expect("typed capacity failure");
+    assert_eq!(capacity_failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(capacity_failure.context.ofe_id, Some(ofe("upper")));
+    assert_eq!(
+        capacity_failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(resource.beginning_state().state_sha256.as_str())
+    );
+
+    let mut identity_over_closure = candidate;
+    identity_over_closure
+        .closure_operands
+        .remove_partition_input_for_test(1);
+    identity_over_closure.ending_state.records[0].liquid_kg_m2_tile += 0.001;
+    identity_over_closure.ending_state.state_sha256 = identity_over_closure
+        .ending_state
+        .recomputed_sha256()
+        .expect("identity attempted digest");
+    assert_eq!(
+        identity_over_closure
+            .validate(&configuration, &resource, &input)
+            .expect_err("E009 must outrank E010")
+            .code(),
+        DirectSurfaceLiquidErrorCode::E009
+    );
 }
 
 #[test]

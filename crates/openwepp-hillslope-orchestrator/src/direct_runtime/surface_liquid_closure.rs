@@ -12,6 +12,7 @@ use super::surface_liquid_ingress::{
     DirectIngressAmount, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
     DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
     DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, INTERVAL_S,
+    LIQUID_HEAT_CAPACITY_J_KG_K, REFERENCE_TEMPERATURE_K, WATER_DENSITY_KG_M3,
 };
 use super::surface_liquid_owner::{
     DirectCondensationOverflow, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
@@ -200,11 +201,35 @@ impl DirectSurfaceLiquidClosureOperands {
     }
 
     pub(super) fn first_partition_input_mismatch(&self, expected: &Self) -> Option<OfeId> {
-        self.partition_inputs
+        let actual_ids = self
+            .partition_inputs
             .iter()
-            .zip(&expected.partition_inputs)
-            .find(|(actual, frozen)| actual != frozen)
-            .map(|(actual, _)| actual.ofe_id.clone())
+            .map(|row| row.ofe_id.clone())
+            .collect::<Vec<_>>();
+        let expected_ids = expected
+            .partition_inputs
+            .iter()
+            .map(|row| row.ofe_id.clone())
+            .collect::<Vec<_>>();
+        let actual_set = actual_ids.iter().cloned().collect::<BTreeSet<_>>();
+        let expected_set = expected_ids.iter().cloned().collect::<BTreeSet<_>>();
+        expected_ids
+            .iter()
+            .find(|id| !actual_set.contains(*id))
+            .cloned()
+            .or_else(|| {
+                actual_ids
+                    .iter()
+                    .find(|id| !expected_set.contains(*id))
+                    .cloned()
+            })
+            .or_else(|| {
+                self.partition_inputs
+                    .iter()
+                    .zip(&expected.partition_inputs)
+                    .find(|(actual, frozen)| actual != frozen)
+                    .map(|(actual, _)| actual.ofe_id.clone())
+            })
             .or_else(|| {
                 self.partition_inputs
                     .get(expected.partition_inputs.len())
@@ -216,6 +241,42 @@ impl DirectSurfaceLiquidClosureOperands {
                     .get(self.partition_inputs.len())
                     .map(|row| row.ofe_id.clone())
             })
+    }
+
+    #[cfg(test)]
+    pub(super) fn remove_partition_input_for_test(&mut self, index: usize) -> OfeId {
+        self.partition_inputs.remove(index).ofe_id
+    }
+
+    #[cfg(test)]
+    pub(super) fn duplicate_partition_input_for_test(&mut self, index: usize) -> OfeId {
+        let duplicate = self.partition_inputs[index].clone();
+        let id = duplicate.ofe_id.clone();
+        self.partition_inputs.push(duplicate);
+        id
+    }
+
+    #[cfg(test)]
+    pub(super) fn reorder_partition_inputs_for_test(&mut self) {
+        self.partition_inputs.swap(0, 1);
+    }
+
+    #[cfg(test)]
+    pub(super) fn rekey_partition_input_for_test(&mut self, index: usize, ofe_id: OfeId) {
+        self.partition_inputs[index].ofe_id = ofe_id;
+    }
+
+    #[cfg(test)]
+    pub(super) fn poison_partition_cumulative_bound_for_test(&mut self, index: usize) {
+        self.partition_inputs[index].beginning_cumulative_supply_m = 0.0;
+        self.partition_inputs[index].beginning_cumulative_infiltration_m = f64::MIN_POSITIVE;
+    }
+
+    #[cfg(test)]
+    pub(super) fn poison_partition_capacity_bound_for_test(&mut self, index: usize) {
+        self.partition_inputs[index].infiltration_storage_capacity_m = 0.0;
+        self.partition_inputs[index].beginning_cumulative_supply_m = 1.0;
+        self.partition_inputs[index].beginning_cumulative_infiltration_m = f64::MIN_POSITIVE;
     }
 
     #[cfg(test)]
@@ -977,6 +1038,7 @@ pub(super) fn validate_surface_liquid_closure_operands(
             "independent closure transaction mismatch",
         ));
     }
+    preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
     validate_frozen_source_identities(configuration, resource, operands)?;
     validate_store_equations(configuration, resource, operands)?;
     validate_parcel_joins(configuration, operands, receipts, ending)
@@ -1300,8 +1362,8 @@ fn project_parcel_arithmetic(
                 continue;
             }
             let duration_s = end_s - start_s;
-            let interval_supply_m =
-                checked_surface_liquid_div(supply_mass, 1_000.0).ok_or_else(|| {
+            let interval_supply_m = checked_surface_liquid_div(supply_mass, WATER_DENSITY_KG_M3)
+                .ok_or_else(|| {
                     contextual_ofe_comparison_failure(
                         DirectSurfaceLiquidErrorCode::E003,
                         operands.transaction_id,
@@ -1332,8 +1394,8 @@ fn project_parcel_arithmetic(
             cumulative_supply_m = outcome.cumulative_supply_m;
             cumulative_infiltration_m = outcome.cumulative_infiltration_m;
             let total_infiltration =
-                checked_surface_liquid_mul(outcome.interval_infiltration_m, 1_000.0).ok_or_else(
-                    || {
+                checked_surface_liquid_mul(outcome.interval_infiltration_m, WATER_DENSITY_KG_M3)
+                    .ok_or_else(|| {
                         contextual_ofe_comparison_failure(
                             DirectSurfaceLiquidErrorCode::E003,
                             operands.transaction_id,
@@ -1341,8 +1403,7 @@ fn project_parcel_arithmetic(
                             ofe_id,
                             "partition infiltration mass arithmetic",
                         )
-                    },
-                )?;
+                    })?;
             let h_mix =
                 checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
                     contextual_ofe_comparison_failure(
@@ -1851,25 +1912,8 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if operands.partition_inputs.len() != configuration.ofe_topology.len() {
-        return Err(contextual_ofe_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E003,
-            operands.transaction_id,
-            &configuration.owner_id,
-            configuration
-                .ofe_topology
-                .first()
-                .ok_or(DirectSurfaceLiquidError::Closure("empty OFE topology"))?,
-            "frozen partition-input cardinality",
-        ));
-    }
-    for (partition, expected_ofe) in operands
-        .partition_inputs
-        .iter()
-        .zip(&configuration.ofe_topology)
-    {
-        if &partition.ofe_id != expected_ofe
-            || !partition.effective_conductivity_m_s.is_finite()
+    for partition in &operands.partition_inputs {
+        if !partition.effective_conductivity_m_s.is_finite()
             || partition.effective_conductivity_m_s <= 0.0
             || !partition.matric_potential_m.is_finite()
             || partition.matric_potential_m < 0.0
@@ -1879,6 +1923,10 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
             || partition.beginning_cumulative_supply_m < 0.0
             || !partition.beginning_cumulative_infiltration_m.is_finite()
             || partition.beginning_cumulative_infiltration_m < 0.0
+            || partition.beginning_cumulative_infiltration_m
+                > partition.beginning_cumulative_supply_m
+            || partition.beginning_cumulative_infiltration_m
+                > partition.infiltration_storage_capacity_m
             || !(1..=48).contains(&partition.ending_next_interval_index)
         {
             return Err(contextual_ofe_comparison_failure(
@@ -1902,8 +1950,9 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
         let temperature_valid = parcel.temperature_k.is_finite()
             && (200.0..=350.0).contains(&parcel.temperature_k)
             && parcel.specific_liquid_enthalpy_j_kg.is_finite();
-        let expected_specific = checked_surface_liquid_sub(parcel.temperature_k, 273.15)
-            .and_then(|delta| checked_surface_liquid_mul(4_218.0, delta));
+        let expected_specific =
+            checked_surface_liquid_sub(parcel.temperature_k, REFERENCE_TEMPERATURE_K)
+                .and_then(|delta| checked_surface_liquid_mul(LIQUID_HEAT_CAPACITY_J_KG_K, delta));
         let expected_enthalpy = checked_surface_liquid_mul(
             parcel.mass_kg_m2_basis_ofe_ground,
             parcel.specific_liquid_enthalpy_j_kg,
@@ -1992,6 +2041,48 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
                 )?;
             }
         }
+    }
+
+    let actual_ids = operands
+        .partition_inputs
+        .iter()
+        .map(|row| row.ofe_id.clone())
+        .collect::<Vec<_>>();
+    if actual_ids != configuration.ofe_topology {
+        let actual_set = actual_ids.iter().cloned().collect::<BTreeSet<_>>();
+        let expected_set = configuration
+            .ofe_topology
+            .iter()
+            .cloned()
+            .collect::<BTreeSet<_>>();
+        let identity = configuration
+            .ofe_topology
+            .iter()
+            .find(|expected| !actual_set.contains(*expected))
+            .cloned()
+            .or_else(|| {
+                actual_ids
+                    .iter()
+                    .find(|actual| !expected_set.contains(*actual))
+                    .cloned()
+            })
+            .or_else(|| {
+                actual_ids
+                    .iter()
+                    .zip(&configuration.ofe_topology)
+                    .find(|(actual, expected)| actual != expected)
+                    .map(|(actual, _)| actual.clone())
+            })
+            .or_else(|| actual_ids.get(configuration.ofe_topology.len()).cloned())
+            .or_else(|| configuration.ofe_topology.first().cloned())
+            .ok_or(DirectSurfaceLiquidError::Closure("empty OFE topology"))?;
+        return Err(contextual_ofe_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E009,
+            operands.transaction_id,
+            &configuration.owner_id,
+            &identity,
+            "frozen partition-input membership/order",
+        ));
     }
 
     let projection = project_parcel_arithmetic(configuration, operands, receipts)?;
@@ -2340,8 +2431,8 @@ fn validate_receipt_enthalpy(
         }
         return Ok(());
     }
-    let expected = checked_surface_liquid_sub(receipt.temperature_k, 273.15)
-        .and_then(|delta| checked_surface_liquid_mul(4_218.0, delta))
+    let expected = checked_surface_liquid_sub(receipt.temperature_k, REFERENCE_TEMPERATURE_K)
+        .and_then(|delta| checked_surface_liquid_mul(LIQUID_HEAT_CAPACITY_J_KG_K, delta))
         .and_then(|specific| {
             checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, specific)
         })
