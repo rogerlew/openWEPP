@@ -123,7 +123,7 @@ fn mixed_kind_routed_configuration() -> DirectSurfaceLiquidConfiguration {
     .expect("mixed-kind routed configuration")
 }
 
-fn three_ofe_configuration() -> DirectSurfaceLiquidConfiguration {
+pub(super) fn three_ofe_configuration() -> DirectSurfaceLiquidConfiguration {
     DirectSurfaceLiquidConfiguration::new(
         owner("surface-water"),
         91,

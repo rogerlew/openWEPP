@@ -419,6 +419,7 @@ impl UnifiedLseFinalization {
             &water_protocol,
             &ending_tile_states_pre_ingress,
             &soil_thermal_candidates,
+            &rollback_hashes,
             &attempted_receivers,
         )?;
         preflight_protocol_cardinality(&water_protocol, &beginning, &attempted_protocol)?;
@@ -1111,6 +1112,24 @@ fn validate_native_shadow_supported_domain(
         .beginning_frame()
         .lanes
         .iter()
+        .position(lane_has_invalid_snow_scalars)
+    {
+        return Err(DirectSurfaceLiquidError::canonical_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            DirectSurfaceLiquidPhase::AtomicEnvelope,
+            first_lane_error_context(owner, configuration, lane_index),
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: Some(beginning_hydrology_snapshot_sha256.to_string()),
+                attempted_owner_sha256: Some(attempted_sha256.to_owned()),
+            },
+            "nonfinite or negative production snow lane scalar",
+        )
+        .into());
+    }
+    if let Some(lane_index) = owner
+        .beginning_frame()
+        .lanes
+        .iter()
         .position(lane_has_unsupported_frozen_or_snow_state)
     {
         return Err(DirectSurfaceLiquidError::canonical_failure(
@@ -1126,6 +1145,37 @@ fn validate_native_shadow_supported_domain(
         .into());
     }
     Ok(())
+}
+
+fn lane_has_invalid_snow_scalars(lane: &crate::direct_runtime::DirectLaneFrame) -> bool {
+    let snow = &lane.winter_column.snow;
+    invalid_nonnegative_snow_scalars([
+        snow.runtime_swe_m,
+        snow.runtime_depth_m,
+        snow.runtime_density_kg_m3,
+        snow.runtime_settle_day_count,
+        snow.coe_boundary_depth_m,
+        snow.coe_boundary_density_kg_m3,
+        snow.coe_boundary_settle_day_count,
+        snow.liquid_water_retained_m,
+    ]) || lane.snow_runtime_carry.as_ref().is_some_and(|carry| {
+        invalid_nonnegative_snow_scalars([
+            carry.runtime_swe_m,
+            carry.runtime_depth_m,
+            carry.runtime_density_kg_m3,
+            carry.runtime_settle_day_count,
+            carry.coe_boundary_depth_m,
+            carry.coe_boundary_density_kg_m3,
+            carry.coe_boundary_settle_day_count,
+            carry.liquid_water_retained_m,
+        ])
+    })
+}
+
+fn invalid_nonnegative_snow_scalars(values: [f64; 8]) -> bool {
+    values
+        .into_iter()
+        .any(|value| !value.is_finite() || value < 0.0)
 }
 
 fn validate_native_shadow_exact_one_custody(
@@ -1493,7 +1543,7 @@ fn apply_ingress_to_real_receivers(
         receiver_expectations,
         lse_tiles,
         soil_thermal,
-        beginning_hydrology_snapshot_sha256,
+        rollback_hashes,
         &receiver_attempt_sha256,
     )?;
     receiver_preflight::preflight_receiver_derived_arithmetic(

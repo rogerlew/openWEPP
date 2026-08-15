@@ -2,6 +2,8 @@
 
 #![allow(clippy::missing_errors_doc)]
 
+#[path = "surface_liquid_closure_preflight.rs"]
+mod arithmetic_preflight;
 #[path = "surface_liquid_enthalpy_closure.rs"]
 mod enthalpy_reconstruction;
 #[path = "surface_liquid_raw_parent_closure.rs"]
@@ -1118,6 +1120,7 @@ pub(super) fn validate_surface_liquid_closure_operands(
             ));
         }
         preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
+        arithmetic_preflight::validate_partition_input_identities(configuration, operands)?;
         validate_frozen_source_identities(configuration, resource, operands)?;
         validate_store_equations(configuration, resource, operands)?;
         validate_parcel_joins(configuration, operands, receipts, ending)
@@ -1285,12 +1288,11 @@ fn add_expected_partition(
     expected.entry(key).or_default().checked_add(mass, enthalpy)
 }
 
-#[allow(clippy::too_many_lines)]
-fn project_parcel_arithmetic(
+fn project_actual_receipt_arithmetic(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
-) -> Result<ParcelArithmeticProjection, DirectSurfaceLiquidError> {
+) -> Result<BTreeMap<ParcelJoinKey, AmountPair>, DirectSurfaceLiquidError> {
     let mut actual = BTreeMap::<ParcelJoinKey, AmountPair>::new();
     for receipt in receipts {
         actual
@@ -1311,6 +1313,16 @@ fn project_parcel_arithmetic(
                 )
             })?;
     }
+    Ok(actual)
+}
+
+#[allow(clippy::too_many_lines)]
+fn project_parcel_arithmetic(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    receipts: &[DirectSurfaceLiquidParcelReceipt],
+) -> Result<ParcelArithmeticProjection, DirectSurfaceLiquidError> {
+    let actual = project_actual_receipt_arithmetic(configuration, operands, receipts)?;
 
     let mut raw_segments = operands
         .source_parcels
@@ -2415,46 +2427,10 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
         }
     }
 
-    let actual_ids = operands
-        .partition_inputs
-        .iter()
-        .map(|row| row.ofe_id.clone())
-        .collect::<Vec<_>>();
-    if actual_ids != configuration.ofe_topology {
-        let actual_set = actual_ids.iter().cloned().collect::<BTreeSet<_>>();
-        let expected_set = configuration
-            .ofe_topology
-            .iter()
-            .cloned()
-            .collect::<BTreeSet<_>>();
-        let identity = configuration
-            .ofe_topology
-            .iter()
-            .find(|expected| !actual_set.contains(*expected))
-            .cloned()
-            .or_else(|| {
-                actual_ids
-                    .iter()
-                    .find(|actual| !expected_set.contains(*actual))
-                    .cloned()
-            })
-            .or_else(|| {
-                actual_ids
-                    .iter()
-                    .zip(&configuration.ofe_topology)
-                    .find(|(actual, expected)| actual != expected)
-                    .map(|(actual, _)| actual.clone())
-            })
-            .or_else(|| actual_ids.get(configuration.ofe_topology.len()).cloned())
-            .or_else(|| configuration.ofe_topology.first().cloned())
-            .ok_or(DirectSurfaceLiquidError::Closure("empty OFE topology"))?;
-        return Err(contextual_ofe_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E009,
-            operands.transaction_id,
-            &configuration.owner_id,
-            &identity,
-            "frozen partition-input membership/order",
-        ));
+    if !arithmetic_preflight::partition_inputs_are_projectable(configuration, operands) {
+        project_actual_receipt_arithmetic(configuration, operands, receipts)?;
+        raw_parent_reconstruction::reconstruct_raw_parent_mass(configuration, operands)?;
+        return Ok(());
     }
 
     let projection = project_parcel_arithmetic(configuration, operands, receipts)?;

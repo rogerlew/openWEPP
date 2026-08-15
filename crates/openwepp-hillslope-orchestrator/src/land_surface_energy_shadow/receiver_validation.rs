@@ -2,7 +2,7 @@ use super::{
     CondensationCredit, Digest, DirectSurfaceLiquidClosureUnit, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidRollbackHashes, GroundWaterKey,
-    LandSurfaceEnergyError, LandSurfaceEnergyShadowError, OfeId, OwnerRollbackHash,
+    LandSurfaceEnergyError, LandSurfaceEnergyShadowError, OfeId, OwnerKind, OwnerRollbackHash,
     PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
     ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
     ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
@@ -1560,7 +1560,7 @@ pub(super) fn preflight_finalization_receiver_numerics(
     expectations: &UnifiedReceiverExpectations,
     lse_tiles: &[TileState],
     thermal_tiles: &[SoilThermalTileCandidate],
-    beginning_sha256: &super::Sha256Digest,
+    rollback_hashes: &[OwnerRollbackHash],
     attempted_sha256: &str,
 ) -> Result<(), super::LandSurfaceEnergyShadowError> {
     if let Some(tile) = lse_tiles.iter().find(|tile| {
@@ -1571,9 +1571,10 @@ pub(super) fn preflight_finalization_receiver_numerics(
             transaction_id,
             configuration,
             &expectations.lse_owner_id,
+            OwnerKind::LandSurfaceEnergy,
             &tile.ofe_id,
             &tile.tile_id,
-            beginning_sha256,
+            rollback_hashes,
             attempted_sha256,
             "nonfinite LSE tile receiver",
         ));
@@ -1593,9 +1594,10 @@ pub(super) fn preflight_finalization_receiver_numerics(
             transaction_id,
             configuration,
             &tile.owner_id,
+            OwnerKind::SoilThermal,
             &tile.ofe_id,
             &tile.tile_id,
-            beginning_sha256,
+            rollback_hashes,
             attempted_sha256,
             "nonfinite soil-thermal tile receiver",
         ));
@@ -1607,6 +1609,7 @@ pub(super) fn preflight_sealed_finalization_numerics(
     protocol: &WaterProtocol,
     lse_tiles: &[TileState],
     thermal_tiles: &[SoilThermalTileCandidate],
+    rollback_hashes: &[OwnerRollbackHash],
     attempted_sha256: &str,
 ) -> Result<(), super::LandSurfaceEnergyShadowError> {
     let lse_failure = lse_tiles.iter().find(|tile| {
@@ -1624,7 +1627,7 @@ pub(super) fn preflight_sealed_finalization_numerics(
                 || !layer.ending_temperature_k.is_finite()
         })
     });
-    let (context, detail) = if let Some(tile) = lse_failure {
+    let (context, owner_kind, detail) = if let Some(tile) = lse_failure {
         let ground_request = protocol
             .requests
             .iter()
@@ -1655,6 +1658,7 @@ pub(super) fn preflight_sealed_finalization_numerics(
                 source_id: ground_request.map(|key| key.source_id.clone()),
                 parcel_id: None,
             },
+            OwnerKind::LandSurfaceEnergy,
             "nonfinite sealed LSE tile receiver",
         )
     } else if let Some(tile) = thermal_failure {
@@ -1666,17 +1670,21 @@ pub(super) fn preflight_sealed_finalization_numerics(
                 tile_id: Some(tile.tile_id.clone()),
                 ..DirectSurfaceLiquidErrorContext::default()
             },
+            OwnerKind::SoilThermal,
             "nonfinite sealed soil-thermal tile receiver",
         )
     } else {
         return Ok(());
     };
+    let beginning_owner_sha256 = context.owner_id.as_ref().and_then(|owner_id| {
+        unique_owner_beginning_rollback(rollback_hashes, owner_kind, owner_id)
+    });
     Err(DirectSurfaceLiquidError::canonical_failure(
         DirectSurfaceLiquidErrorCode::E003,
         DirectSurfaceLiquidPhase::IndependentClosure,
         context,
         DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(protocol.beginning_snapshot_sha256.to_string()),
+            beginning_owner_sha256,
             attempted_owner_sha256: Some(attempted_sha256.to_owned()),
         },
         detail,
@@ -1689,9 +1697,10 @@ fn finalization_numeric_failure(
     transaction_id: super::TransactionId,
     configuration: &DirectSurfaceLiquidConfiguration,
     owner_id: &ResourceOwnerId,
+    owner_kind: OwnerKind,
     ofe_id: &OfeId,
     tile_id: &TileId,
-    beginning_sha256: &super::Sha256Digest,
+    rollback_hashes: &[OwnerRollbackHash],
     attempted_sha256: &str,
     detail: &'static str,
 ) -> super::LandSurfaceEnergyShadowError {
@@ -1712,12 +1721,28 @@ fn finalization_numeric_failure(
             parcel_id: None,
         },
         DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(beginning_sha256.to_string()),
+            beginning_owner_sha256: unique_owner_beginning_rollback(
+                rollback_hashes,
+                owner_kind,
+                owner_id,
+            ),
             attempted_owner_sha256: Some(attempted_sha256.to_owned()),
         },
         detail,
     )
     .into()
+}
+
+fn unique_owner_beginning_rollback(
+    rows: &[OwnerRollbackHash],
+    owner_kind: OwnerKind,
+    owner_id: &ResourceOwnerId,
+) -> Option<String> {
+    let mut matching = rows
+        .iter()
+        .filter(|row| row.owner_kind == owner_kind && row.owner_id.as_str() == owner_id.as_str());
+    let beginning = matching.next()?.before_sha256.to_string();
+    matching.next().is_none().then_some(beginning)
 }
 
 fn validate_numeric_domains(
@@ -2049,6 +2074,173 @@ fn frame_configured_receiver_context(
 mod tests {
     use super::*;
     use openwepp_kernel_contract::TransactionId;
+    use openwepp_land_surface_energy::SoilThermalLayerCandidate;
+
+    fn digest(character: char) -> Sha256Digest {
+        Sha256Digest::try_new(character.to_string().repeat(64)).expect("digest")
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn post_ingress_numeric_preflight_uses_implicated_owner_rollback_hash_or_absence() {
+        let ofe_id = OfeId::try_new("ofe-owner-hash").expect("OFE");
+        let tile_id = TileId::try_new("tile-owner-hash").expect("tile");
+        let lse_owner = ResourceOwnerId::try_new("lse-owner-hash").expect("LSE owner");
+        let thermal_owner = ResourceOwnerId::try_new("thermal-owner-hash").expect("thermal owner");
+        let hydrology_owner =
+            ResourceOwnerId::try_new("hydrology-owner-hash").expect("hydrology owner");
+        let configuration = DirectSurfaceLiquidConfiguration {
+            owner_id: ResourceOwnerId::try_new("surface-owner-hash").expect("surface owner"),
+            run_id: 1,
+            configuration_sha256: String::new(),
+            ofe_topology: Vec::new(),
+            ofe_bindings: Vec::new(),
+            records: Vec::new(),
+        };
+        let expectations = UnifiedReceiverExpectations::try_new(
+            lse_owner.clone(),
+            digest('2'),
+            digest('3'),
+            thermal_owner.clone(),
+            digest('4'),
+            vec![(
+                ofe_id.clone(),
+                tile_id.clone(),
+                vec![SoilLayerId::try_new("layer-owner-hash").expect("layer")],
+            )],
+        )
+        .expect("receiver expectations");
+        let lse_tiles = vec![TileState {
+            ofe_id: ofe_id.clone(),
+            tile_id: tile_id.clone(),
+            surface_enthalpy_j_m2_tile_ground: 10.0,
+            surface_temperature_warm_start_k: 290.0,
+        }];
+        let thermal_tiles = vec![SoilThermalTileCandidate {
+            owner_id: thermal_owner.clone(),
+            beginning_state_sha256: digest('4'),
+            ofe_id,
+            tile_id,
+            layers: vec![SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new("layer-owner-hash").expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 1.0,
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 1.0,
+                ending_temperature_k: 290.0,
+            }],
+        }];
+        let rollback = [
+            (OwnerKind::LandSurfaceEnergy, &lse_owner, '2'),
+            (OwnerKind::Hydrology, &hydrology_owner, '3'),
+            (OwnerKind::SoilThermal, &thermal_owner, '4'),
+        ]
+        .into_iter()
+        .map(|(owner_kind, owner_id, character)| OwnerRollbackHash {
+            owner_kind,
+            owner_id: owner_id.as_str().to_owned(),
+            before_sha256: digest(character),
+            after_sha256: digest(character),
+        })
+        .collect::<Vec<_>>();
+
+        let mut invalid_lse = lse_tiles.clone();
+        invalid_lse[0].surface_enthalpy_j_m2_tile_ground = f64::NAN;
+        let lse_attempt = super::super::finalization_receiver_sets_sha256(
+            &invalid_lse,
+            &thermal_tiles,
+            &rollback,
+        );
+        assert_numeric_owner_hash(
+            preflight_finalization_receiver_numerics(
+                TransactionId(41),
+                &configuration,
+                &expectations,
+                &invalid_lse,
+                &thermal_tiles,
+                &rollback,
+                &lse_attempt,
+            ),
+            "lse-owner-hash",
+            Some(digest('2').as_str()),
+            &lse_attempt,
+        );
+
+        let mut invalid_thermal = thermal_tiles.clone();
+        invalid_thermal[0].layers[0].ending_temperature_k = f64::NAN;
+        let thermal_attempt = super::super::finalization_receiver_sets_sha256(
+            &lse_tiles,
+            &invalid_thermal,
+            &rollback,
+        );
+        assert_numeric_owner_hash(
+            preflight_finalization_receiver_numerics(
+                TransactionId(41),
+                &configuration,
+                &expectations,
+                &lse_tiles,
+                &invalid_thermal,
+                &rollback,
+                &thermal_attempt,
+            ),
+            "thermal-owner-hash",
+            Some(digest('4').as_str()),
+            &thermal_attempt,
+        );
+
+        let mut duplicate_lse = rollback.clone();
+        duplicate_lse.push(rollback[0].clone());
+        let duplicate_attempt = super::super::finalization_receiver_sets_sha256(
+            &invalid_lse,
+            &thermal_tiles,
+            &duplicate_lse,
+        );
+        assert_numeric_owner_hash(
+            preflight_finalization_receiver_numerics(
+                TransactionId(41),
+                &configuration,
+                &expectations,
+                &invalid_lse,
+                &thermal_tiles,
+                &duplicate_lse,
+                &duplicate_attempt,
+            ),
+            "lse-owner-hash",
+            None,
+            &duplicate_attempt,
+        );
+    }
+
+    fn assert_numeric_owner_hash(
+        result: Result<(), LandSurfaceEnergyShadowError>,
+        owner_id: &str,
+        beginning: Option<&str>,
+        attempted: &str,
+    ) {
+        let LandSurfaceEnergyShadowError::SurfaceLiquid(error) =
+            result.expect_err("numeric receiver poison")
+        else {
+            panic!("numeric receiver poison must remain canonical");
+        };
+        let failure = error.failure().expect("canonical numeric failure");
+        assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+        assert_eq!(
+            failure
+                .context
+                .owner_id
+                .as_ref()
+                .map(ResourceOwnerId::as_str),
+            Some(owner_id)
+        );
+        assert_eq!(
+            failure.rollback.beginning_owner_sha256.as_deref(),
+            beginning
+        );
+        assert_eq!(
+            failure.rollback.attempted_owner_sha256.as_deref(),
+            Some(attempted)
+        );
+    }
 
     #[allow(clippy::too_many_lines)]
     fn fixture() -> RealReceiverClosureOperands {

@@ -101,7 +101,7 @@ fn assert_lse_numeric_context(baseline: &UnifiedLseFinalization) {
         failure.context.source_id.as_ref().map(SourceId::as_str),
         Some("soil:ofe-1:thermal-1")
     );
-    assert_exact_hashes(failure, &attempted);
+    assert_exact_hashes(failure, &digest('2'), &attempted);
 }
 
 fn assert_thermal_numeric_context(baseline: &UnifiedLseFinalization) {
@@ -130,7 +130,7 @@ fn assert_thermal_numeric_context(baseline: &UnifiedLseFinalization) {
             .map(ResourceOwnerId::as_str),
         Some("soil-thermal")
     );
-    assert_exact_hashes(failure, &attempted);
+    assert_exact_hashes(failure, &digest('4'), &attempted);
 }
 
 fn assert_topology_poison_context(baseline: &UnifiedLseFinalization) {
@@ -162,16 +162,17 @@ fn assert_topology_poison_context(baseline: &UnifiedLseFinalization) {
             .map(ResourceOwnerId::as_str),
         Some("land-surface-energy-v1")
     );
-    assert_exact_hashes(failure, &attempted);
+    assert_exact_hashes(failure, &digest('2'), &attempted);
 }
 
 fn assert_exact_hashes(
     failure: &openwepp_hillslope_orchestrator::DirectSurfaceLiquidFailure,
+    beginning: &Sha256Digest,
     attempted: &str,
 ) {
     assert_eq!(
         failure.rollback.beginning_owner_sha256.as_deref(),
-        Some(digest('3').as_str())
+        Some(beginning.as_str())
     );
     assert_eq!(
         failure.rollback.attempted_owner_sha256.as_deref(),

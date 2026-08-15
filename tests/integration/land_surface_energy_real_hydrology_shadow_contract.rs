@@ -37,6 +37,9 @@ mod raw_hash_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs"]
 mod precedence_tests;
 
+#[path = "land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs"]
+mod snow_preflight_tests;
+
 #[path = "land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs"]
 mod sealed_receiver_context_tests;
 

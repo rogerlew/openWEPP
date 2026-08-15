@@ -5,6 +5,7 @@ use openwepp_land_surface_energy::{SourceId, SurfaceId};
 
 use super::tests::{
     initial_state, one_tile_configuration, open_ingress, parameters, resource_candidate,
+    three_ofe_configuration,
 };
 use super::{
     DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
@@ -75,6 +76,56 @@ fn candidate_validation_preflights_public_schema_and_identity_before_closure_ari
         .validate(&empty_configuration, &resource, &input)
         .expect_err("schema preflight must precede closure arithmetic");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E001);
+}
+
+#[test]
+fn projection_arithmetic_e003_precedes_reordered_partition_e009() {
+    let configuration = three_ofe_configuration();
+    let beginning = initial_state(&configuration, 0.0);
+    let transaction_id = TransactionId(4_143);
+    let resource = resource_candidate(&configuration, &beginning, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: configuration
+            .records
+            .iter()
+            .map(|record| open_ingress(record, 0.1))
+            .collect(),
+        wb14_parameters: parameters(&configuration),
+    };
+    let mut candidate = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("three-OFE candidate");
+    candidate
+        .closure_operands
+        .reorder_partition_inputs_for_test();
+    let mut duplicate = candidate.receipts[0].clone();
+    duplicate.mass_kg_m2_basis_ofe_ground = f64::MAX * 0.75;
+    duplicate.enthalpy_j_m2_basis_ofe_ground = 0.0;
+    candidate.receipts[0] = duplicate.clone();
+    candidate.receipts[1] = duplicate;
+
+    let error = candidate
+        .validate(&configuration, &resource, &input)
+        .expect_err("later projection E003 must precede partition E009");
+    let failure = error.failure().expect("canonical arithmetic failure");
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
+    assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
+    assert_eq!(failure.context.transaction_id, Some(transaction_id));
+    assert_eq!(
+        failure.context.parcel_id,
+        Some(candidate.receipts[0].parcel_id.clone())
+    );
+    assert_eq!(
+        failure.rollback.beginning_owner_sha256.as_deref(),
+        Some(resource.beginning_state().state_sha256.as_str())
+    );
+    assert_eq!(
+        failure.rollback.attempted_owner_sha256.as_deref(),
+        Some(candidate.ending_state().state_sha256.as_str())
+    );
 }
 
 #[test]

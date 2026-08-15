@@ -918,6 +918,33 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: commit corrected bytes and repeat fresh independent dual review
   before any terminal heavy execution.
 
+## Exact-byte review at `83e1ee296`
+
+- HOLD: Rust review found partition E009 can preempt a later projection E003,
+  and receiver-owned E003 failures use the hydrology beginning digest.
+- HOLD: hydrology review found negative/nonfinite snow scalars can bypass the
+  positivity-only snow predicate and enter the snow-free path.
+- PASS on reviewed bytes: surface-liquid 84/84, custody authority 10/10 and
+  unified integration 39/39.
+
+## `83e1ee296` HOLD remediation
+
+- PASS: arithmetic-only closure preflight scans receipt/raw-parent arithmetic
+  before partition membership and covers reordered complete partitions.
+- PASS: sealed and post-ingress LSE/thermal numeric failures bind the unique
+  implicated owner/kind beginning hash or typed absence; attempted receiver-set
+  hashes remain exact.
+- PASS: all 16 snow-lane/runtime-carry scalars reject negative, NaN and both
+  infinities as E003 before positive snow's E004 branch; 80 cases pass.
+- FAIL retained: briefly propagating every closure-preflight error caused four
+  existing E010 identity joins to preempt producer E009. The accepted design
+  propagates E003 only after removing partition E009 from the arithmetic scan.
+- PASS on final combined worktree: selected library 106/106, unified integration
+  40/40, custody authority 10/10, strict affected all-target/all-feature Clippy,
+  formatting and diff hygiene.
+- Pending: commit corrected bytes and repeat fresh independent dual review
+  before any terminal heavy execution.
+
 ## Exact-byte review at `a5c2243e6`
 
 - HOLD: Rust review found ingress-candidate E003 could mask whole-input

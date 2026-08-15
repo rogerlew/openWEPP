@@ -406,6 +406,17 @@ No `c9524729a` finding is rejected, deferred, or moved to another package.
 No `10b914da1` finding is rejected, deferred, or moved to another package.
 Fresh review is pending on the corrected exact bytes.
 
+## Exact-head terminal-review findings at `83e1ee296`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-83E-HIGH-001: partition E009 can preempt later projection E003 in candidate validation | Accepted | Remediated: arithmetic-only preflight precedes partition identity; late-overflow plus reorder poison PASS |
+| A-TERMINAL-83E-HIGH-002: LSE/thermal E003 owner is paired with hydrology beginning digest | Accepted | Remediated: unique owner/kind rollback hash or typed absence in sealed and post-ingress paths; focused PASS |
+| B-TERMINAL-83E-HIGH-001: negative/nonfinite snow scalars bypass positivity-only snow predicate | Accepted | Remediated: exhaustive finite/nonnegative E003 preflight before E004; 80-case public poison PASS |
+
+No `83e1ee296` finding is rejected, deferred, or moved to another package.
+Fresh review is pending on the corrected exact bytes.
+
 ## Exact-head terminal-review findings at `a5c2243e6`
 
 | Finding | Disposition | Remediation status |
