@@ -62,6 +62,9 @@ that direct join before strict digest/state validation. Closure8 Rust review
 also found partition membership misclassified as E003, incomplete continuation
 bounds and missing mixed-kind routing evidence. The correction at `6e203beec`
 restores typed precedence, enforces both frozen WB14 bounds and adds the
-nondegenerate routed-order vector. Focused gates pass, but fresh exact-byte
-reviews and terminal verification remain required. This is not yet a terminal
-custody-lift or resumed-Child-3 claim.
+nondegenerate routed-order vector. Closure9/10 reviews found aggregate
+ending-state errors still fabricated first-OFE context and the canonical parcel
+order/source ID plus exact mixed-route outputs were not fully frozen. The
+correction at `aacf181d7` closes those context and evidence seams. Focused gates
+pass, but fresh exact-byte reviews and terminal verification remain required.
+This is not yet a terminal custody-lift or resumed-Child-3 claim.

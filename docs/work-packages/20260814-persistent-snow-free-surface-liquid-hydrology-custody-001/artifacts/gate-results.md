@@ -671,3 +671,23 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
   19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
 - Pending: fresh exact-byte Rust and hydrology closure review.
+
+## Canonical identity, exact-vector and ending-context remediation at `aacf181d7`
+
+- HOLD retained: closure9/10 reviews found ending-state aggregate and structural
+  failures could fabricate first-OFE context, canonical parcel order and source
+  ID remained duplicated, and the mixed-route test did not freeze exact
+  attribution/remainder outputs.
+- PASS: one canonical five-field parcel-order key drives production, frozen
+  identity and independent projected ordering; one constructor drives local
+  and condensation source IDs while allocation arithmetic remains independent.
+- PASS: owner/configuration/digest/full-state errors carry aggregate typed
+  transaction/owner context; store and continuation membership/order failures
+  carry exact missing, extra, replacement or reordered store/OFE identity.
+- PASS: the unequal-area mixed-kind/downstream-overlap fixture exercises
+  nonzero infiltration, retained surface water, routed and outlet runoff and
+  freezes every receipt identity, window, mass, mixture temperature and
+  enthalpy bit plus ending stores and WB14 continuations.
+- PASS: orchestrator quick suite, 562/562; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.

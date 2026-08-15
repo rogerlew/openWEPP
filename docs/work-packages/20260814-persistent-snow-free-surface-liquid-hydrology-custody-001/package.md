@@ -125,7 +125,12 @@ branch, PR or push is in scope.
   bounds, shares named physical constants and adds the routed-order vector. It
   passes 562/562 orchestrator, 19/19 focused integration and 9/9 authority
   tests, strict Clippy, formatting, diff hygiene, and line-count governance.
-  Fresh exact-byte reviews remain pending.
+  Closure9/10 reviews then found fabricated first-OFE ending-state context and
+  incomplete centralization/frozen evidence for parcel order and source
+  identity. The correction at `aacf181d7` centralizes those definitions,
+  reports membership-aware or aggregate typed context, and freezes every
+  mixed-route receipt, remainder and continuation bit. Fresh exact-byte reviews
+  remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

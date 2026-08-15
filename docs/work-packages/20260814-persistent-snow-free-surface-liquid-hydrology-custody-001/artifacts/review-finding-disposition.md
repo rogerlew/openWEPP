@@ -257,3 +257,17 @@ Arithmetic/domain validation now exhaustively precedes membership-aware
 producer identity errors. Shared named physical constants remove transcription
 drift while the independent algorithm remains separate; a mixed-kind routed
 overlap vector freezes chronological ordering and mixture behavior.
+
+## Ending context and exact identity/vector findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-CLOSURE9-HIGH-001: ending-state aggregate/structural failures fabricate first-OFE context | Accepted | Remediated at `aacf181d7`; focused PASS |
+| B-TERMINAL-CLOSURE10-MEDIUM-001 / A-TERMINAL-CLOSURE9-MEDIUM-002: canonical parcel order/source IDs remain duplicated and mixed-route outputs are not frozen | Accepted | Remediated at `aacf181d7`; focused PASS |
+| A-TERMINAL-CLOSURE9-MEDIUM-003: 2,324-line ingress test module incorrectly marked PASS without WARN rationale/split intent | Accepted | Remediated in line-count governance; no runtime effect |
+
+Aggregate context now uses typed absence rather than an invented OFE, and
+membership failures identify the exact available or missing key. Canonical
+non-arithmetic identity/order is shared, while a bit-frozen, nondegenerate
+fixture protects the independent physical implementations from coordinated
+ordering drift.
