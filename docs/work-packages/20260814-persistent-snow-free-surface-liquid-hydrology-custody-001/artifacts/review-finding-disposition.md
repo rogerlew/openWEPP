@@ -221,3 +221,17 @@ Window/disposition identity is explicit. Expected local and multi-hop routed
 segments are independently derived from frozen inputs/topology. Domain
 preflight covers every frozen and actual support/amount/temperature before
 producer or closure comparison.
+
+## Independent partition and recipient-identity findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-CLOSURE7-CRITICAL-001: expected nonrouted partition consumes actual receipts | Accepted | Remediated at `c3fdeca50`; focused PASS |
+| A-TERMINAL-CLOSURE7-HIGH-002: exact current/recipient tile identity absent | Accepted | Remediated at `c3fdeca50`; focused PASS |
+| A/B-TERMINAL-CLOSURE7-HIGH-003: routed descendant retains pre-route kind | Accepted | Remediated at `c3fdeca50`; focused PASS |
+| A/B-TERMINAL-CLOSURE7-HIGH-004: raw Q not joined to mass and specific enthalpy | Accepted | Remediated at `c3fdeca50`; focused PASS |
+| A-TERMINAL-CLOSURE7-MEDIUM-005: closure-module WARN lacks split intent | Accepted | Remediated in line-count governance |
+
+Expected nonrouted and routed partitions are wholly independent of actual
+receipts. Complete current/recipient identity, canonical routed kind and raw
+mass/enthalpy relations are first-class closure seams.

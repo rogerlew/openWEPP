@@ -498,6 +498,28 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: every edited Rust file remains below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology closure review.
 
+## Independent partition and recipient-identity remediation at `c3fdeca50`
+
+- CRITICAL HOLD retained: closure7 review found expected infiltration,
+  retention and routed residual still consumed actual receipt disposition/mass,
+  making coordinated owner/recipient swaps self-fulfilling.
+- HOLD retained: exact current/recipient tile identity was incomplete, routed
+  descendants retained pre-route kind, and raw Q was not joined to mass and
+  specific enthalpy.
+- PASS: expected partition replays chronological WB14 from frozen raw sources,
+  immutable WB14/beginning-continuation operands and independently reconstructed
+  pre-ingress stores/capacities with zero receipt access.
+- PASS: routed residual and multi-hop flow derive from that partition with area
+  conversion; descendants become `UpstreamRunon` before canonical sorting.
+- PASS: join identity binds owner, source, origin/current/recipient store and
+  full recipient identity, OFE, kind, support and disposition; raw Q and T/h
+  identities fail E003 before mixing.
+- PASS: coordinated owner/disposition swap, cross-tile retention, routed kind,
+  mass and raw-Q poisons fail with exact context and rollback hashes.
+- PASS: orchestrator quick suite, 559/559; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Window/disposition and independent routing remediation at `b5453e7d8`
 
 - HOLD retained: closure6 review found join keys omitted support-window and

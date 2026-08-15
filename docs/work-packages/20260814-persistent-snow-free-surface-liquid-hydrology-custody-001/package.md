@@ -110,9 +110,12 @@ branch, PR or push is in scope.
   source order without changing production physics. Closure6 review found join
   keys omitted window/disposition identity, expected routed support was circular
   from actual receipts, and support domains missed E003 precedence. The
-  correction at `b5453e7d8` binds exact window/disposition, derives expected
-  multi-hop routing from frozen inputs/topology and exhaustively preflights
-  domains. It passes 558/558 orchestrator, 19/19 focused integration and 9/9
+  correction at `b5453e7d8` bound routes/windows, but closure7 review found
+  expected infiltration/retention still copied actual receipts, recipient tile
+  identity was incomplete, routed kind drifted, and raw Q was unjoined. The
+  correction at `c3fdeca50` independently replays WB14 from frozen operands and
+  binds complete current/recipient identity with zero expected-side receipt
+  access. It passes 559/559 orchestrator, 19/19 focused integration and 9/9
   authority tests, strict Clippy, formatting, diff hygiene, and line-count
   governance. Fresh exact-byte reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.

@@ -51,7 +51,10 @@ collapsed chronological support into one whole-OFE mixture and hardcoded
 source support/order. The correction at `c4114fc8c` reconstructed chronology,
 but closure6 review found omitted window/disposition join identity, circular
 expected routed support and missing E003 support-domain precedence. The
-correction at `b5453e7d8` derives exact multi-hop expected routes independently
-and binds every support window/disposition. Focused gates pass, but fresh
-exact-byte reviews and terminal verification remain required. This is not yet a
-terminal custody-lift or resumed-Child-3 claim.
+correction at `b5453e7d8` derived routes/windows, but closure7 review found
+expected nonrouted disposition/mass still copied actual receipts, recipient
+tile identity was incomplete, routed kind drifted and raw Q was unjoined. The
+correction at `c3fdeca50` independently replays WB14 from frozen inputs with no
+expected-side receipt access and binds complete recipient identity. Focused
+gates pass, but fresh exact-byte reviews and terminal verification remain
+required. This is not yet a terminal custody-lift or resumed-Child-3 claim.
