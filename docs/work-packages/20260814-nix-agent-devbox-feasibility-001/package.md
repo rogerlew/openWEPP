@@ -1,6 +1,6 @@
 # Establish The Nix Agent Development Box And Prove Cutover Feasibility
 
-Status: `ACTIVE / host prerequisites verified / Nix flake implementation next`
+Status: `ACTIVE / ow-dev-01 intake complete / waiting for forest gate release`
 
 Date: `2026-08-14`
 
@@ -213,3 +213,12 @@ cutover decision follows the declared evidence, and the first real
   development shell could not execute. The daemon-store query and a pure
   evaluation passed after the bounded configuration change. Date/Author:
   2026-08-14 / Codex at user direction.
+- Decision: serialize heavy commands with `tools/dev/heavy`, default heavy
+  Cargo/nextest work to 8 workers, and retain 16 workers only as an explicit
+  idle-host override. Rationale: the corrected 8+4+4 concurrent intake improved
+  both focused-job latencies relative to 12+4+4 for only a 0.58-second heavy
+  workspace penalty; a nonblocking host-wide lock also prevents accidental
+  overlap across worktrees. Date/Author: 2026-08-14 / Codex at user direction.
+- Observation: the Phase 3 readiness poll still found the protected `forest`
+  package running full-workspace nextest, so comparison checkout preparation
+  remains intentionally deferred. Date/Author: 2026-08-14 / Codex.
